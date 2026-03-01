@@ -30,29 +30,57 @@ describe('walletService', () => {
       await expect(connectWallet('undeployed')).rejects.toThrow('Lace wallet not detected');
     });
 
-    it('connects successfully and returns address', async () => {
-      const mockAddress = 'addr_test1qz0x7nqc4hdz';
-      const mockWallet = {
-        getShieldedAddresses: vi.fn().mockResolvedValue([mockAddress]),
+    it('connects successfully and returns full WalletConnection with ConnectedAPI', async () => {
+      const mockShieldedAddresses = {
+        shieldedCoinPublicKey: 'coin_pub_key_hex',
+        shieldedEncryptionPublicKey: 'enc_pub_key_hex',
+      };
+      const mockServiceConfig = {
+        proverServerUri: 'http://localhost:6300',
+        indexerUri: 'http://localhost:8088',
+        indexerWsUri: 'ws://localhost:8088',
+      };
+      const mockConnectedAPI = {
+        getShieldedAddresses: vi.fn().mockResolvedValue(mockShieldedAddresses),
+        getConfiguration: vi.fn().mockResolvedValue(mockServiceConfig),
+        balanceUnsealedTransaction: vi.fn(),
+        submitTransaction: vi.fn(),
+        getConnectionStatus: vi.fn(),
       };
       const mockLace = {
-        connect: vi.fn().mockResolvedValue(mockWallet),
+        connect: vi.fn().mockResolvedValue(mockConnectedAPI),
       };
       (window as unknown as Record<string, unknown>).midnight = { mnLace: mockLace };
 
       const result = await connectWallet('undeployed');
 
       expect(mockLace.connect).toHaveBeenCalledWith('undeployed');
-      expect(mockWallet.getShieldedAddresses).toHaveBeenCalled();
-      expect(result).toEqual({ address: mockAddress, isConnected: true });
+      expect(mockConnectedAPI.getShieldedAddresses).toHaveBeenCalled();
+      expect(mockConnectedAPI.getConfiguration).toHaveBeenCalled();
+      expect(result.address).toBe('coin_pub_key_hex');
+      expect(result.isConnected).toBe(true);
+      expect(result.connectedAPI).toBe(mockConnectedAPI);
+      expect(result.shieldedAddresses).toBe(mockShieldedAddresses);
+      expect(result.serviceConfig).toBe(mockServiceConfig);
     });
 
     it('throws when no shielded address is available', async () => {
-      const mockWallet = {
-        getShieldedAddresses: vi.fn().mockResolvedValue([]),
+      const mockConnectedAPI = {
+        getShieldedAddresses: vi.fn().mockResolvedValue({
+          shieldedCoinPublicKey: '',
+          shieldedEncryptionPublicKey: '',
+        }),
+        getConfiguration: vi.fn().mockResolvedValue({
+          proverServerUri: '',
+          indexerUri: '',
+          indexerWsUri: '',
+        }),
+        balanceUnsealedTransaction: vi.fn(),
+        submitTransaction: vi.fn(),
+        getConnectionStatus: vi.fn(),
       };
       const mockLace = {
-        connect: vi.fn().mockResolvedValue(mockWallet),
+        connect: vi.fn().mockResolvedValue(mockConnectedAPI),
       };
       (window as unknown as Record<string, unknown>).midnight = { mnLace: mockLace };
 
@@ -66,6 +94,33 @@ describe('walletService', () => {
       (window as unknown as Record<string, unknown>).midnight = { mnLace: mockLace };
 
       await expect(connectWallet('undeployed')).rejects.toThrow('User rejected connection');
+    });
+
+    it('returns serviceConfig with proverServerUri from getConfiguration()', async () => {
+      const mockConnectedAPI = {
+        getShieldedAddresses: vi.fn().mockResolvedValue({
+          shieldedCoinPublicKey: 'some_key',
+          shieldedEncryptionPublicKey: 'some_enc_key',
+        }),
+        getConfiguration: vi.fn().mockResolvedValue({
+          proverServerUri: 'http://proof.example.com:6300',
+          indexerUri: 'http://indexer.example.com:8088',
+          indexerWsUri: 'ws://indexer.example.com:8088',
+        }),
+        balanceUnsealedTransaction: vi.fn(),
+        submitTransaction: vi.fn(),
+        getConnectionStatus: vi.fn(),
+      };
+      const mockLace = {
+        connect: vi.fn().mockResolvedValue(mockConnectedAPI),
+      };
+      (window as unknown as Record<string, unknown>).midnight = { mnLace: mockLace };
+
+      const result = await connectWallet('preprod');
+
+      expect(result.serviceConfig.proverServerUri).toBe('http://proof.example.com:6300');
+      expect(result.serviceConfig.indexerUri).toBe('http://indexer.example.com:8088');
+      expect(result.serviceConfig.indexerWsUri).toBe('ws://indexer.example.com:8088');
     });
   });
 

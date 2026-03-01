@@ -1,5 +1,12 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
-import { connectWallet as connectWalletService, disconnectWallet as disconnectWalletService, detectLaceWallet } from '../services/walletService';
+import {
+  connectWallet as connectWalletService,
+  disconnectWallet as disconnectWalletService,
+  detectLaceWallet,
+  type ConnectedAPI,
+  type ShieldedAddresses,
+  type ServiceConfiguration,
+} from '../services/walletService';
 
 interface WalletState {
   isConnected: boolean;
@@ -7,6 +14,9 @@ interface WalletState {
   isConnecting: boolean;
   error: string | null;
   isWalletDetected: boolean;
+  connectedAPI: ConnectedAPI | null;
+  shieldedAddresses: ShieldedAddresses | null;
+  serviceConfig: ServiceConfiguration | null;
   connect: (networkId: string) => Promise<void>;
   disconnect: () => void;
 }
@@ -22,6 +32,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isWalletDetected, setIsWalletDetected] = useState(() => detectLaceWallet());
+  const [connectedAPI, setConnectedAPI] = useState<ConnectedAPI | null>(null);
+  const [shieldedAddresses, setShieldedAddresses] = useState<ShieldedAddresses | null>(null);
+  const [serviceConfig, setServiceConfig] = useState<ServiceConfiguration | null>(null);
 
   useEffect(() => {
     if (isWalletDetected) return;
@@ -47,10 +60,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const result = await connectWalletService(networkId);
       setAddress(result.address);
       setIsConnected(true);
+      setConnectedAPI(result.connectedAPI);
+      setShieldedAddresses(result.shieldedAddresses);
+      setServiceConfig(result.serviceConfig);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to connect wallet');
       setIsConnected(false);
       setAddress(null);
+      setConnectedAPI(null);
+      setShieldedAddresses(null);
+      setServiceConfig(null);
     } finally {
       setIsConnecting(false);
     }
@@ -61,10 +80,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setIsConnected(false);
     setAddress(null);
     setError(null);
+    setConnectedAPI(null);
+    setShieldedAddresses(null);
+    setServiceConfig(null);
   }, []);
 
   return (
-    <WalletContext.Provider value={{ isConnected, address, isConnecting, error, isWalletDetected, connect, disconnect }}>
+    <WalletContext.Provider value={{ isConnected, address, isConnecting, error, isWalletDetected, connectedAPI, shieldedAddresses, serviceConfig, connect, disconnect }}>
       {children}
     </WalletContext.Provider>
   );
