@@ -25,7 +25,10 @@ import Index from '@/entrypoints/popup/pages/Index';
 import PasskeyAuthenticate from '@/entrypoints/popup/pages/passkeys/PasskeyAuthenticate';
 import PasskeyCreate from '@/entrypoints/popup/pages/passkeys/PasskeyCreate';
 import Reinitialize from '@/entrypoints/popup/pages/Reinitialize';
+import ShareClaim from '@/entrypoints/popup/pages/recovery/ShareClaim';
+import BackupTransfer from '@/entrypoints/popup/pages/recovery/BackupTransfer';
 import AutofillSettings from '@/entrypoints/popup/pages/settings/AutofillSettings';
+import BackupWallets from '@/entrypoints/popup/pages/settings/BackupWallets';
 import AutoLockSettings from '@/entrypoints/popup/pages/settings/AutoLockSettings';
 import ClipboardSettings from '@/entrypoints/popup/pages/settings/ClipboardSettings';
 import ContextMenuSettings from '@/entrypoints/popup/pages/settings/ContextMenuSettings';
@@ -198,6 +201,9 @@ const App: React.FC = () => {
     { path: '/settings/language', element: <LanguageSettings />, showBackButton: true, title: t('settings.language') },
     { path: '/settings/auto-lock', element: <AutoLockSettings />, showBackButton: true, title: t('settings.autoLockTimeout') },
     { path: '/settings/passkeys', element: <PasskeySettings />, showBackButton: true, title: t('settings.passkeySettings') },
+    { path: '/settings/backup-wallets', element: <BackupWallets />, showBackButton: true, title: 'Backup Wallets' },
+    { path: '/recovery/claim', element: <ShareClaim />, showBackButton: true, title: 'Recovery' },
+    { path: '/recovery/backup-transfer', element: <BackupTransfer />, showBackButton: true, title: 'Backup Transfer' },
   ], [t]);
 
   useEffect(() => {
