@@ -475,6 +475,7 @@
       "usernameCopied": "Utilizator copiat în clipboard",
       "emailCopied": "E-mail copiat în clipboard",
       "passwordCopied": "Parolă copiată în clipboard",
+      "totpCodeCopied": "TOTP code copied to clipboard",
       "urlCopied": "URL copiat în clipboard"
     },
     "createNewAliasFor": "Creează un alias nou pentru",
@@ -484,7 +485,8 @@
       "delete": "Șterge",
       "copyUsername": "Copiază utilizatorul",
       "copyEmail": "Copiază e-mailul",
-      "copyPassword": "Copiază parola"
+      "copyPassword": "Copiază parola",
+      "copyTotpCode": "Copy TOTP Code"
     },
     "urlContextMenu": {
       "title": "Opțiuni URL",
