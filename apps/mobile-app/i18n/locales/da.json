@@ -475,6 +475,7 @@
       "usernameCopied": "Brugernavn kopieret til udklipsholder",
       "emailCopied": "E-mail kopieret til udklipsholder",
       "passwordCopied": "Adgangskode kopieret til udklipsholder",
+      "totpCodeCopied": "TOTP code copied to clipboard",
       "urlCopied": "URL kopieret til udklipsholder"
     },
     "createNewAliasFor": "Opret nyt alias for",
@@ -484,7 +485,8 @@
       "delete": "Slet",
       "copyUsername": "Kopier brugernavn",
       "copyEmail": "Kopier e-mail",
-      "copyPassword": "Kopier adgangskode"
+      "copyPassword": "Kopier adgangskode",
+      "copyTotpCode": "Copy TOTP Code"
     },
     "urlContextMenu": {
       "title": "Url Indstillinger",
