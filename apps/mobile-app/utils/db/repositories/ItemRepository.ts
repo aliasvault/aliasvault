@@ -400,7 +400,7 @@ export class ItemRepository extends BaseRepository {
       // 3. Update FieldValues using preserve-and-track strategy
       await this.updateFieldValues(item.Id, item.Fields, item.ItemType, now);
 
-      // 4. Handle TOTP codes
+      // 4. Handle TOTP codes (insert new, update existing, soft-delete removed)
       await this.syncRelatedEntities(
         'TotpCodes',
         'ItemId',
@@ -408,10 +408,12 @@ export class ItemRepository extends BaseRepository {
         originalTotpCodeIds,
         totpCodes.filter(tc => !tc.IsDeleted),
         (totp) => [totp.Id || this.generateId(), totp.Name, totp.SecretKey, item.Id, now, now, 0],
-        `INSERT INTO TotpCodes (Id, Name, SecretKey, ItemId, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO TotpCodes (Id, Name, SecretKey, ItemId, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `UPDATE TotpCodes SET Name = ?, SecretKey = ?, UpdatedAt = ? WHERE Id = ?`,
+        (totp) => [totp.Name, totp.SecretKey, now, totp.Id]
       );
 
-      // 5. Handle Attachments
+      // 5. Handle Attachments (insert new, update existing, soft-delete removed)
       await this.syncRelatedEntities(
         'Attachments',
         'ItemId',
@@ -419,7 +421,9 @@ export class ItemRepository extends BaseRepository {
         originalAttachmentIds,
         attachments,
         (att) => [att.Id, att.Filename, att.Blob as Uint8Array, item.Id, now, now, 0],
-        `INSERT INTO Attachments (Id, Filename, Blob, ItemId, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO Attachments (Id, Filename, Blob, ItemId, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `UPDATE Attachments SET Filename = ?, Blob = ?, UpdatedAt = ? WHERE Id = ?`,
+        (att) => [att.Filename, att.Blob as Uint8Array, now, att.Id]
       );
 
       return 1;
@@ -664,7 +668,10 @@ export class ItemRepository extends BaseRepository {
   }
 
   /**
-   * Sync related entities (TOTP codes, attachments) with insert/delete tracking.
+   * Sync related entities (TOTP codes, attachments) with insert/update/delete tracking.
+   * - Deletes entities that were removed (in originalIds but not in current).
+   * - Updates existing entities (in both originalIds and current) when updateQuery and toUpdateParams are provided.
+   * - Inserts new entities (in current but not in originalIds).
    */
   private async syncRelatedEntities<T extends { Id: string }>(
     tableName: string,
@@ -673,7 +680,9 @@ export class ItemRepository extends BaseRepository {
     originalIds: string[],
     currentEntities: T[],
     toParams: (entity: T) => (string | number | null | Uint8Array)[],
-    insertQuery: string
+    insertQuery: string,
+    updateQuery?: string,
+    toUpdateParams?: (entity: T) => (string | number | null | Uint8Array)[]
   ): Promise<void> {
     const now = this.now();
     const currentIds = currentEntities.map(e => e.Id);
@@ -685,6 +694,15 @@ export class ItemRepository extends BaseRepository {
         `UPDATE ${tableName} SET IsDeleted = 1, UpdatedAt = ? WHERE Id = ?`,
         [now, id]
       );
+    }
+
+    // Update existing entities when their data changed
+    if (updateQuery && toUpdateParams) {
+      for (const entity of currentEntities) {
+        if (originalIds.includes(entity.Id)) {
+          await this.client.executeUpdate(updateQuery, toUpdateParams(entity));
+        }
+      }
     }
 
     // Insert new entities
