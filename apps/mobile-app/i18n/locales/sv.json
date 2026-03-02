@@ -475,7 +475,7 @@
       "usernameCopied": "Användarnamn har kopierats till urklipp",
       "emailCopied": "E-post har kopierats till urklipp",
       "passwordCopied": "Lösenord har kopierats till urklipp",
-      "totpCodeCopied": "TOTP code copied to clipboard",
+      "totpCodeCopied": "TOTP-kod kopierad till urklipp",
       "urlCopied": "URL kopierad till urklipp"
     },
     "createNewAliasFor": "Skapa nytt alias för",
@@ -486,7 +486,7 @@
       "copyUsername": "Kopiera användarnamn",
       "copyEmail": "Kopiera e-postadress",
       "copyPassword": "Kopiera lösenord",
-      "copyTotpCode": "Copy TOTP Code"
+      "copyTotpCode": "Kopiera TOTP-kod"
     },
     "urlContextMenu": {
       "title": "URL-alternativ",
