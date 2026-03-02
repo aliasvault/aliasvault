@@ -475,6 +475,7 @@
       "usernameCopied": "Username copied to clipboard",
       "emailCopied": "Email copied to clipboard",
       "passwordCopied": "Password copied to clipboard",
+      "totpCodeCopied": "TOTP code copied to clipboard",
       "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "Create new alias for",
@@ -484,7 +485,8 @@
       "delete": "Delete",
       "copyUsername": "Copy Username",
       "copyEmail": "Copy Email",
-      "copyPassword": "Copy Password"
+      "copyPassword": "Copy Password",
+      "copyTotpCode": "Copy TOTP Code"
     },
     "urlContextMenu": {
       "title": "URL Options",
