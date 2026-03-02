@@ -475,6 +475,7 @@
       "usernameCopied": "Nome de usuário copiado para a área de transferência",
       "emailCopied": "E-mail copiado para a área de transferência",
       "passwordCopied": "Senha copiada para a área de transferência",
+      "totpCodeCopied": "TOTP code copied to clipboard",
       "urlCopied": "URL copiado para a área de transferência"
     },
     "createNewAliasFor": "Criar novo alias para",
@@ -484,7 +485,8 @@
       "delete": "Excluir",
       "copyUsername": "Copiar Nome de Usuário",
       "copyEmail": "Copiar E-mail",
-      "copyPassword": "Copiar Senha"
+      "copyPassword": "Copiar Senha",
+      "copyTotpCode": "Copy TOTP Code"
     },
     "urlContextMenu": {
       "title": "Opções de URL",
