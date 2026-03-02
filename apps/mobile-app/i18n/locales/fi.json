@@ -475,6 +475,7 @@
       "usernameCopied": "Käyttäjänimi kopioitu leikepöydälle",
       "emailCopied": "Sähköpostiosoite kopioitu leikepöydälle",
       "passwordCopied": "Salasana kopioitu leikepöydälle",
+      "totpCodeCopied": "TOTP code copied to clipboard",
       "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "Luo uusi alias kohteelle",
@@ -484,7 +485,8 @@
       "delete": "Poista",
       "copyUsername": "Kopioi käyttäjänimi",
       "copyEmail": "Kopioi sähköposti",
-      "copyPassword": "Kopioi salasana"
+      "copyPassword": "Kopioi salasana",
+      "copyTotpCode": "Copy TOTP Code"
     },
     "urlContextMenu": {
       "title": "URL Options",
