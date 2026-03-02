@@ -1,5 +1,7 @@
 import * as OTPAuth from 'otpauth';
 import React, { useState, useEffect } from 'react';
+
+import { generateTotpCode } from '@/utils/TotpUtility';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -62,24 +64,6 @@ export const TotpSection: React.FC<TotpSectionProps> = ({ item }) : React.ReactN
   };
 
   /**
-   * Generate the totp code.
-   */
-  const generateTotpCode = (secretKey: string): string => {
-    try {
-      const totp = new OTPAuth.TOTP({
-        secret: secretKey,
-        algorithm: 'SHA1',
-        digits: 6,
-        period: 30
-      });
-      return totp.generate();
-    } catch (error) {
-      console.error('Error generating TOTP code:', error);
-      return 'Error';
-    }
-  };
-
-  /**
    * Copy the totp code to the clipboard.
    */
   const copyToClipboardWithClear = async (code: string): Promise<void> => {
@@ -132,7 +116,7 @@ export const TotpSection: React.FC<TotpSectionProps> = ({ item }) : React.ReactN
       const newCodes: Record<string, string> = {};
       totpCodes.forEach(code => {
         const generatedCode = generateTotpCode(code.SecretKey);
-        if (generatedCode !== 'Error') {
+        if (generatedCode) {
           newCodes[code.Id] = generatedCode;
         } else {
           newCodes[code.Id] = prevCodes[code.Id] ?? 'Error';
@@ -143,7 +127,8 @@ export const TotpSection: React.FC<TotpSectionProps> = ({ item }) : React.ReactN
 
     const initialCodes: Record<string, string> = {};
     totpCodes.forEach(code => {
-      initialCodes[code.Id] = generateTotpCode(code.SecretKey);
+      const codeStr = generateTotpCode(code.SecretKey);
+      initialCodes[code.Id] = codeStr || 'Error';
     });
     setCurrentCodes(initialCodes);
 

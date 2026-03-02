@@ -10,7 +10,9 @@ import Toast from 'react-native-toast-message';
 
 import { ItemIcon } from '@/components/items/ItemIcon';
 import { useDialog } from '@/context/DialogContext';
+import { useDb } from '@/context/DbContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
+import { generateTotpCode } from '@/utils/TotpUtility';
 import { useColors } from '@/hooks/useColorScheme';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
@@ -30,6 +32,7 @@ export function ItemCard({ item, onItemDelete, showFolderPath = false }: ItemCar
   const colors = useColors();
   const { t } = useTranslation();
   const { showConfirm } = useDialog();
+  const dbContext = useDb();
   const navigate = useNavigationDebounce();
 
   /**
@@ -155,6 +158,31 @@ export function ItemCard({ item, onItemDelete, showFolderPath = false }: ItemCar
           }
         }
         break;
+      case t('items.contextMenu.copyTotpCode'):
+        {
+          if (dbContext?.sqliteClient) {
+            try {
+              const totpCodes = await dbContext.sqliteClient.settings.getTotpCodesForItem(item.Id);
+              const activeTotp = totpCodes.find(tc => !tc.IsDeleted);
+              if (activeTotp) {
+                const code = generateTotpCode(activeTotp.SecretKey);
+                if (code) {
+                  await copyToClipboard(code);
+                  if (Platform.OS === 'ios') {
+                    Toast.show({
+                      type: 'success',
+                      text1: t('items.toasts.totpCodeCopied'),
+                      position: 'bottom',
+                    });
+                  }
+                }
+              }
+            } catch (error) {
+              console.error('Failed to copy TOTP code:', error);
+            }
+          }
+        }
+        break;
     }
   };
 
@@ -219,6 +247,17 @@ export function ItemCard({ item, onItemDelete, showFolderPath = false }: ItemCar
           ios: 'key',
           android: 'baseline_key',
           default: 'key',
+        }),
+      });
+    }
+
+    if (item.HasTotp) {
+      actions.push({
+        title: t('items.contextMenu.copyTotpCode'),
+        systemIcon: Platform.select({
+          ios: 'number',
+          android: 'baseline_pin',
+          default: 'number',
         }),
       });
     }
