@@ -475,6 +475,7 @@
       "usernameCopied": "Имя пользователя скопировано в буфер обмена",
       "emailCopied": "Email скопирован в буфер обмена",
       "passwordCopied": "Пароль скопирован в буфер обмена",
+      "totpCodeCopied": "TOTP code copied to clipboard",
       "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "Создайте новый псевдоним для",
@@ -484,7 +485,8 @@
       "delete": "Удалить",
       "copyUsername": "Скопировать имя пользователя",
       "copyEmail": "Скопировать Email",
-      "copyPassword": "Скопировать пароль"
+      "copyPassword": "Скопировать пароль",
+      "copyTotpCode": "Copy TOTP Code"
     },
     "urlContextMenu": {
       "title": "URL Options",
