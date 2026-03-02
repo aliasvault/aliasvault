@@ -475,6 +475,7 @@
       "usernameCopied": "שם המשתמש הועתק ללוח הגזירים",
       "emailCopied": "הדוא״ל הועתק ללוח הגזירים",
       "passwordCopied": "הסיסמה הועתקה ללוח הגזירים",
+      "totpCodeCopied": "TOTP code copied to clipboard",
       "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "יצירת כינוי חדש עבור",
@@ -484,7 +485,8 @@
       "delete": "מחיקה",
       "copyUsername": "העתקת שם משתמש",
       "copyEmail": "העתקת דוא״ל",
-      "copyPassword": "העתקת סיסמה"
+      "copyPassword": "העתקת סיסמה",
+      "copyTotpCode": "Copy TOTP Code"
     },
     "urlContextMenu": {
       "title": "URL Options",
