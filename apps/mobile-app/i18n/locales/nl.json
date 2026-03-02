@@ -475,6 +475,7 @@
       "usernameCopied": "Gebruikersnaam gekopieerd naar klembord",
       "emailCopied": "E-mail gekopieerd naar klembord",
       "passwordCopied": "Wachtwoord gekopieerd naar klembord",
+      "totpCodeCopied": "TOTP code copied to clipboard",
       "urlCopied": "URL gekopieerd naar klembord"
     },
     "createNewAliasFor": "Nieuwe alias maken voor",
@@ -484,7 +485,8 @@
       "delete": "Verwijderen",
       "copyUsername": "Kopieer gebruikersnaam",
       "copyEmail": "Kopieer e-mail",
-      "copyPassword": "Kopieer wachtwoord"
+      "copyPassword": "Kopieer wachtwoord",
+      "copyTotpCode": "Copy TOTP Code"
     },
     "urlContextMenu": {
       "title": "URL opties",
