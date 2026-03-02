@@ -475,6 +475,7 @@
       "usernameCopied": "Username copied to clipboard",
       "emailCopied": "Email copied to clipboard",
       "passwordCopied": "Password copied to clipboard",
+      "totpCodeCopied": "TOTP code copied to clipboard",
       "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "Create new alias for",
@@ -484,7 +485,8 @@
       "delete": "Sil",
       "copyUsername": "Kullanıcı Adını Kopyala",
       "copyEmail": "E-postayı Kopyala",
-      "copyPassword": "Parolayı Kopyala"
+      "copyPassword": "Parolayı Kopyala",
+      "copyTotpCode": "Copy TOTP Code"
     },
     "urlContextMenu": {
       "title": "URL Options",
