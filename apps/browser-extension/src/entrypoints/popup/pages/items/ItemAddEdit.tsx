@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import Modal from '@/entrypoints/popup/components/Dialogs/Modal';
 import AddFieldMenu, { type OptionalSection } from '@/entrypoints/popup/components/Forms/AddFieldMenu';
@@ -71,6 +71,7 @@ const ItemAddEdit: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const dbContext = useDb();
   const isEditMode = id !== undefined && id.length > 0;
@@ -746,12 +747,12 @@ const ItemAddEdit: React.FC = () => {
       void clearPersistedValues();
 
       /*
-       * Navigate back after save:
-       * - Edit mode: use navigate(-1) to return to the existing details page in history.
-       *   This avoids creating duplicate history entries.
-       * - Create mode: navigate to the new item's details page, replacing the add page.
+       * Navigate after save:
+       * - Edit mode and came from details: navigate(-1) so back from details goes to list (no duplicate details).
+       * - Edit mode and did not come from details: go to details with replace so we still land on details.
+       * - Create mode: go to new item details with replace.
        */
-      if (isEditMode) {
+      if (isEditMode && (location.state as { fromDetails?: boolean } | null)?.fromDetails) {
         navigate(-1);
       } else {
         navigate(`/items/${updatedItem.Id}`, { replace: true });
@@ -760,7 +761,7 @@ const ItemAddEdit: React.FC = () => {
       console.error('Error saving item:', err);
       setIsSaving(false);
     }
-  }, [item, isSaving, fieldValues, applicableSystemFields, customFields, dbContext, isEditMode, executeVaultMutationAsync, navigate, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyIdsMarkedForDeletion, webApi, clearPersistedValues]);
+  }, [item, isSaving, fieldValues, applicableSystemFields, customFields, dbContext, isEditMode, executeVaultMutationAsync, navigate, location.state, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyIdsMarkedForDeletion, webApi, clearPersistedValues]);
 
   /**
    * Handle delete action.

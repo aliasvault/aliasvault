@@ -43,9 +43,10 @@ const ItemDetails: React.FC = (): React.ReactElement => {
 
   /**
    * Navigate to the edit page for this item.
+   * Pass fromDetails so save can use navigate(-1) and avoid duplicate details in history.
    */
   const handleEdit = useCallback((): void => {
-    navigate(`/items/${id}/edit`);
+    navigate(`/items/${id}/edit`, { state: { fromDetails: true } });
   }, [id, navigate]);
 
   useEffect(() => {
