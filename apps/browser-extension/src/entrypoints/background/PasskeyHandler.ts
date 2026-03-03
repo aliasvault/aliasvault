@@ -7,7 +7,7 @@ import { handleGetEncryptionKey } from '@/entrypoints/background/VaultMessageHan
 
 import type { PasskeyWithItem } from '@/utils/db/mappers/PasskeyMapper';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import { extractDomain, extractRootDomain } from '@/utils/itemMatcher/ItemMatcher';
+import { extractDomain } from '@/utils/itemMatcher/ItemMatcher';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type {
@@ -48,15 +48,15 @@ export async function handleGetWebAuthnSettings(data: any): Promise<WebAuthnSett
     return { enabled: false };
   }
 
-  // If hostname is provided, check if it's disabled for that site
-  const { hostname } = data || {};
-  if (hostname) {
-    // Extract base domain for matching
-    const baseDomain = await extractRootDomain(await extractDomain(hostname));
+  // If URL is provided, check if it's disabled for that site
+  const { url } = data || {};
+  if (url) {
+    // Extract domain for matching
+    const domain = await extractDomain(url);
 
     // Check disabled sites
     const disabledSites = await LocalPreferencesService.getPasskeyDisabledSites();
-    if (disabledSites.includes(baseDomain)) {
+    if (disabledSites.includes(domain)) {
       return { enabled: false };
     }
   }

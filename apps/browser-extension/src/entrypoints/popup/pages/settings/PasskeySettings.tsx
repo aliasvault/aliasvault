@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
-import { extractDomain, extractRootDomain } from '@/utils/itemMatcher/ItemMatcher';
+import { extractDomain } from '@/utils/itemMatcher/ItemMatcher';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 import { browser } from "#imports";
@@ -45,19 +45,19 @@ const PasskeySettings: React.FC = () => {
    */
   const loadSettings = useCallback(async () : Promise<void> => {
     const tab = await getCurrentTab();
-    const hostname = new URL(tab.url ?? '').hostname;
-    const baseDomain = await extractRootDomain(await extractDomain(hostname));
+    const url = tab.url ?? '';
+    const domain = await extractDomain(url);
 
     // Load settings using LocalPreferencesService
     const disabledUrls = await LocalPreferencesService.getPasskeyDisabledSites();
     const isGloballyEnabled = await LocalPreferencesService.getPasskeyProviderEnabled();
 
-    // Check if current base domain is disabled
-    const isEnabled = !disabledUrls.includes(baseDomain);
+    // Check if current domain is disabled
+    const isEnabled = !disabledUrls.includes(domain);
 
     setSettings({
       disabledUrls,
-      currentUrl: baseDomain,
+      currentUrl: domain,
       isEnabled,
       isGloballyEnabled
     });

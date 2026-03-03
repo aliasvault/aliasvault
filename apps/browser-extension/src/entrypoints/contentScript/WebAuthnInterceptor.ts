@@ -262,7 +262,7 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
 export async function isWebAuthnInterceptionEnabled(): Promise<boolean> {
   try {
     const response = await sendMessage('GET_WEBAUTHN_SETTINGS', {
-      hostname: window.location.hostname
+      url: window.location.href
     }, 'background') as unknown as WebAuthnSettingsResponse;
     return response.enabled ?? false;
   } catch {

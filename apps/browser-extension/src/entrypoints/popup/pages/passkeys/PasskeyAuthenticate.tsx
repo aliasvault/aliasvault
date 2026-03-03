@@ -10,7 +10,7 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 
-import { extractDomain, extractRootDomain } from '@/utils/itemMatcher/ItemMatcher';
+import { extractDomain } from '@/utils/itemMatcher/ItemMatcher';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { PasskeyAuthenticator } from '@/utils/passkey/PasskeyAuthenticator';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
@@ -313,13 +313,12 @@ const PasskeyAuthenticate: React.FC = () => {
     }
 
     if (choice === 'always') {
-      // Add to permanent disabled list
-      const hostname = new URL(request.origin).hostname;
-      const baseDomain = await extractRootDomain(await extractDomain(hostname));
+      // Add to permanent disabled list (for this specific subdomain)
+      const domain = await extractDomain(request.origin);
 
       const disabledSites = await LocalPreferencesService.getPasskeyDisabledSites();
-      if (!disabledSites.includes(baseDomain)) {
-        disabledSites.push(baseDomain);
+      if (!disabledSites.includes(domain)) {
+        disabledSites.push(domain);
         await LocalPreferencesService.setPasskeyDisabledSites(disabledSites);
       }
     }

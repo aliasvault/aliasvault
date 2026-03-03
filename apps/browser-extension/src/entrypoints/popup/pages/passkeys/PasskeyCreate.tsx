@@ -16,7 +16,7 @@ import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
 import type { Item, Passkey } from '@/utils/dist/core/models/vault';
 import { FieldKey, ItemTypes, getFieldValue, createSystemField } from '@/utils/dist/core/models/vault';
-import { extractDomain, extractRootDomain, filterItems, AutofillMatchingMode } from '@/utils/itemMatcher/ItemMatcher';
+import { extractDomain, filterItems, AutofillMatchingMode } from '@/utils/itemMatcher/ItemMatcher';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { PasskeyAuthenticator } from '@/utils/passkey/PasskeyAuthenticator';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
@@ -490,13 +490,12 @@ const PasskeyCreate: React.FC = () => {
     }
 
     if (choice === 'always') {
-      // Add to permanent disabled list
-      const hostname = new URL(request.origin).hostname;
-      const baseDomain = await extractRootDomain(await extractDomain(hostname));
+      // Add to permanent disabled list (for this specific subdomain)
+      const domain = await extractDomain(request.origin);
 
       const disabledSites = await LocalPreferencesService.getPasskeyDisabledSites();
-      if (!disabledSites.includes(baseDomain)) {
-        disabledSites.push(baseDomain);
+      if (!disabledSites.includes(domain)) {
+        disabledSites.push(domain);
         await LocalPreferencesService.setPasskeyDisabledSites(disabledSites);
       }
     }
