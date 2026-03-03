@@ -475,7 +475,7 @@
       "usernameCopied": "用户名已复制到剪贴板",
       "emailCopied": "邮箱已复制到剪贴板",
       "passwordCopied": "密码已复制到剪贴板",
-      "totpCodeCopied": "TOTP code copied to clipboard",
+      "totpCodeCopied": "TOTP 验证码已复制到剪贴板",
       "urlCopied": "URL 已复制到剪贴板"
     },
     "createNewAliasFor": "创建新别名用于",
@@ -486,7 +486,7 @@
       "copyUsername": "复制用户名",
       "copyEmail": "复制邮箱",
       "copyPassword": "复制密码",
-      "copyTotpCode": "Copy TOTP Code"
+      "copyTotpCode": "复制 TOTP 验证码"
     },
     "urlContextMenu": {
       "title": "URL 选项",
