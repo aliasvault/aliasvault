@@ -375,7 +375,7 @@ export class VaultRegistrySimulator {
 ### 12. Midnight Private State is Device-Local (ADR-006)
 
 
-**Rule:** Midnight private state (witnesses) NEVER syncs across devices. Any secret that must be available on multiple devices MUST be stored inside the encrypted vault blob (SQLite DB), not solely in `chrome.storage.local` or Midnight private state.
+**Rule:** Midnight private state (witnesses) NEVER syncs across devices. Any secret that must be available on multiple devices MUST be stored inside the encrypted vault blob (vault `settings` JSON), not solely in `chrome.storage.local` or Midnight private state.
 
 **Why this matters:**
 - Midnight's ZK architecture keeps witnesses local — this is a privacy feature, not a bug
@@ -384,16 +384,13 @@ export class VaultRegistrySimulator {
 
 **Correct pattern:**
 ```typescript
-// ✅ CORRECT: Store secretKey in SQLite vault DB (travels with encrypted vault)
-sqliteClient.execute(
-  "INSERT OR REPLACE INTO Settings (Key, Value) VALUES ('midnightSecretKey', ?)",
-  [hexEncode(secretKey)]
-);
-// Vault export → encrypt → IPFS upload → secretKey is now in the backup
+// ✅ CORRECT: Store secretKey in vault settings (travels with encrypted vault)
+vaultStore.setSetting('midnightSecretKey', hexEncode(secretKey));
+// Vault toJson() → encrypt → IPFS upload → secretKey is now in the backup
 
-// On new device: download vault → decrypt → extract secretKey
-const row = sqliteClient.execute("SELECT Value FROM Settings WHERE Key = 'midnightSecretKey'");
-const secretKey = hexDecode(row.Value);
+// On new device: download vault → decrypt → parse JSON → extract secretKey
+const secretKeyHex = vaultStore.getSetting('midnightSecretKey');
+const secretKey = hexDecode(secretKeyHex);
 ```
 
 **Anti-pattern:**
@@ -693,7 +690,7 @@ export function hexToBytes(hex: string): Uint8Array {
 2. **Direct service calls** — For one-off operations (backup wallet add/remove, recovery claim). Popup page calls service directly, service reads secret key from `VaultCidStore`.
 
 **When to use which:**
-- Background messages: When you need the full `DbContext` (SQLite DB handle, cached state)
+- Background messages: When you need the full `DbContext` (VaultStore handle, cached state)
 - Direct service calls: When you only need the secret key for owner authentication + a contract call
 
 **Example (direct service call pattern):**
@@ -731,6 +728,121 @@ pnpm run build                # Vite 7 production build → dist/
 - `fs`/`path` externalization warnings from `midnight-js-contracts` are expected (dead code from CJS→ESM transpilation)
 
 **Discovery:** Story 3.7 — `tsc --noEmit` passed but `vite build` failed due to WASM ESM integration, CJS named export resolution, and pnpm-specific transitive dependency issues. All three checks are needed.
+
+### 23. JSON Vault Format — VaultStore Replaces SqliteClient (Sprint Change Proposal 2026-03-02)
+
+**Rule:** The vault blob stored on IPFS is a `VaultJson` JSON object, NOT a SQLite binary. `VaultStore` (in `@aliasvault/vault-types`) replaces `SqliteClient` for all local vault operations. The `shared/vault-sql/` package and `sql.js` WASM dependency are removed.
+
+**Why this matters:**
+- The architecture (Section 3) always designed the vault as `Map<CredentialID, Credential>` (JSON) — the SQLite format was carried forward from the .NET/EF Core codebase during Epic 2 as the fastest path to a working save/load flow
+- The legacy 8-table SQLite schema (Aliases, Services, Credentials, Passwords, etc.) has **1:1 relationships per credential** — Alias and Service are never shared. The normalized schema adds complexity with zero benefit.
+- Credential-level merge (`resolveVaultConflict()`) requires direct field access to `createdAt`/`updatedAt`/`isDeleted` — impossible with an opaque SQLite binary blob
+- No existing users → zero migration risk (Big Bang migration)
+- Net reduction: ~1,600 lines removed (`SqliteClient`), ~300 lines added (`VaultStore`). ~500KB bundle savings (`sql.js` WASM eliminated).
+
+**Key types** (in `shared/vault-types/`):
+```typescript
+interface VaultJson {
+  version: number
+  credentials: Record<string, CredentialTree>  // key = credential UUID
+  settings: Record<string, string>             // includes midnightSecretKey
+  encryptionKeys: EncryptionKeyEntry[]
+  lastModified: number                         // Unix timestamp ms
+}
+
+interface CredentialTree {
+  id: string                    // crypto.randomUUID()
+  service: { name: string; url?: string }
+  alias: { firstName?: string; lastName?: string; nickName?: string; birthDate: string; gender?: string; email?: string }
+  username?: string
+  password: { value: string; createdAt: number; updatedAt: number }
+  notes?: string
+  logo?: string                 // base64-encoded
+  attachments: Array<{ id: string; fileName: string; data: string; createdAt: number }>
+  totpCodes: Array<{ id: string; secret: string; createdAt: number }>
+  passkeys: Array<{ id: string; rpId: string; displayName: string; createdAt: number }>
+  createdAt: number
+  updatedAt: number
+  isDeleted: boolean            // Soft-delete tombstone for merge
+}
+```
+
+**VaultStore API** (mirrors SqliteClient method signatures for mechanical refactoring):
+```typescript
+class VaultStore {
+  // Lifecycle
+  static fromJson(json: string): VaultStore
+  toJson(): string
+
+  // CRUD (same signatures as SqliteClient)
+  getAllCredentials(): CredentialTree[]
+  getCredentialById(id: string): CredentialTree | null
+  createCredential(cred: Partial<CredentialTree>): string  // returns UUID
+  updateCredential(id: string, updates: Partial<CredentialTree>): void
+  deleteCredentialById(id: string): void  // soft-delete (isDeleted = true)
+
+  // Settings (replaces SQLite Settings table)
+  getSetting(key: string): string | null
+  setSetting(key: string, value: string): void
+}
+```
+
+**Migration pattern for UI files** (~16 files, mechanical rename):
+```typescript
+// ❌ OLD: SqliteClient + exportToBase64()
+const db = dbContext.sqliteClient;
+const creds = db.getAllCredentials();
+const base64 = db.exportToBase64();
+
+// ✅ NEW: VaultStore + toJson()
+const store = dbContext.vaultStore;
+const creds = store.getAllCredentials();
+const json = store.toJson();
+```
+
+**Discovery:** Epic 4 pre-implementation architectural review (2026-03-02) — Sprint Change Proposal documented and approved. See `_bmad-output/implementation-artifacts/sprint-change-proposal-2026-03-02.md` for full analysis.
+
+### 24. Browser Extension Ambient Module Declarations — `externals.d.ts` (Story 4.0 Code Review)
+
+**Rule:** Runtime-only packages that the browser extension uses via `await import()` but does NOT install as dependencies MUST be declared in `apps/browser-extension/src/types/externals.d.ts`. This file provides ambient module declarations so `tsc --noEmit` passes without requiring the actual packages.
+
+**Why this matters:**
+- The browser extension (`apps/*`) is **NOT in the pnpm workspace** — `pnpm-workspace.yaml` lists `packages/*`, `shared/*`, `services/*` only. `workspace:*` dependencies cannot resolve for `apps/`.
+- Service files (Rule 19) use `await import('@midnight-ntwrk/...')` and `await import('@aliasvault/contract')` — these resolve at runtime via Vite's dynamic import chunking, but `tsc` cannot find their type declarations at compile time.
+- Without ambient declarations, `tsc` reports `TS2307: Cannot find module` for every dynamic import site.
+
+**Packages declared in `externals.d.ts`:**
+| Package | Declaration Type | Reason |
+|---------|-----------------|--------|
+| `@midnight-ntwrk/midnight-js-contracts` | Bare (`declare module`) | Runtime-only, all imports return `any` |
+| `@midnight-ntwrk/midnight-js-indexer-public-data-provider` | Bare | Runtime-only |
+| `@midnight-ntwrk/midnight-js-http-client-proof-provider` | Bare | Runtime-only |
+| `@midnight-ntwrk/compact-js` | Bare | Runtime-only |
+| `@aliasvault/contract` | Bare | Runtime-only, not in workspace |
+| `@aliasvault/vault-sync` | Typed exports | `RecoveryClaimService.ts` uses inline `import('...').Type` references |
+| `argon2-browser/dist/argon2-bundled.min.js` | Bare | No `@types` package available |
+
+**Maintenance:** If `@aliasvault/vault-sync` adds new exported types used by `RecoveryClaimService.ts`, update the typed declaration in `externals.d.ts` to match. The canonical source is `shared/vault-sync/src/`.
+
+**Anti-pattern:**
+```typescript
+// ❌ WRONG: Adding @aliasvault/vault-sync as workspace:* devDependency
+// apps/browser-extension/package.json
+"devDependencies": {
+  "@aliasvault/vault-sync": "workspace:*"  // Won't resolve — apps/* not in workspace
+}
+```
+
+**Correct pattern:**
+```typescript
+// ✅ CORRECT: Ambient declaration in externals.d.ts
+declare module '@aliasvault/vault-sync' {
+  export interface RecoveryShareFile { ... }
+  export function validateShareFile(data: unknown): RecoveryShareFile;
+}
+```
+
+**Discovery:** Story 4.0 code review — "pre-existing" tsc errors traced to dependency version drift (`@types/chrome@0.0.280`, `@types/react@19`) exposing latent type issues, plus missing ambient declarations for runtime-only packages.
 
 ---
 
@@ -800,7 +912,11 @@ pnpm run build                # Vite 7 production build → dist/
 
 ### ❌ Device-Local-Only Storage of Cross-Device Secrets
 
-**Never** store the VaultRegistry `secretKey` (or any cross-device secret) solely in `chrome.storage.local` or Midnight private state. Always store in the encrypted vault DB so it syncs via IPFS (see Rule 12).
+**Never** store the VaultRegistry `secretKey` (or any cross-device secret) solely in `chrome.storage.local` or Midnight private state. Always store in the encrypted vault JSON so it syncs via IPFS (see Rule 12).
+
+### ❌ SQLite or Binary Vault Format
+
+**Never** use SQLite, binary blobs, or any non-JSON format for the vault stored on IPFS. The vault blob MUST be a `VaultJson` JSON object. `VaultStore` replaces `SqliteClient` for all local vault operations (see Rule 23).
 
 ---
 
@@ -841,10 +957,12 @@ Before merging any PR that touches cryptography or guardian recovery:
 
 ---
 
-**Last Updated:** 2026-03-01
+**Last Updated:** 2026-03-03
 **Source:** Generated from [architecture.md](_bmad-output/architecture.md)
 **Maintenance:** Update when implementing new patterns or discovering critical rules
 **Change Log:**
+- 2026-03-03: Added Rule 24 (Browser Extension Ambient Module Declarations — `externals.d.ts`). Documents `apps/*` not in pnpm workspace, ambient declarations for runtime-only packages (`@midnight-ntwrk/*`, `@aliasvault/contract`, `@aliasvault/vault-sync`, `argon2-browser`). Fixed all "pre-existing" tsc errors (dependency version drift from `@types/chrome@0.0.280` and `@types/react@19`). 9 files fixed, `tsc --noEmit` now reports zero errors.
+- 2026-03-02: Added Rule 23 (JSON Vault Format — VaultStore replaces SqliteClient). Sprint Change Proposal 2026-03-02: vault blob on IPFS is VaultJson JSON, not SQLite binary. VaultStore (~300 lines) replaces SqliteClient (1,611 lines). shared/vault-sql/ removed, shared/vault-types/ added. Updated Rule 12 (SQLite code → VaultStore code for secretKey storage). Updated Rule 21 (DbContext reference: SQLite DB handle → VaultStore handle). Added anti-pattern for SQLite/binary vault format. Updated architecture.md Section 3 (conflict resolution types), Pattern 5 (resolution algorithm), directory tree, and format decision record.
 - 2026-03-01: Added Rule 22 (Guardian Portal Production Build Verification) from Story 3.7. Vite build must pass alongside tsc and vitest for any changes to services/guardian-portal/. Documents WASM plugin requirements, ZK key copying, and build output expectations.
 - 2026-03-01: Added Rules 19-21 from Story 3.6 (Backup Wallet Configuration & Transfer). Rule 19: Browser extension Vite transform-time resolution — TSX components cannot import `@aliasvault/contract` directly, must use service wrappers with dynamic imports. Rule 20: Hex validation — `parseInt("gg", 16)` returns NaN, Uint8Array coerces to 0, causing silent data corruption. Canonical `utils/hex.ts` with regex validation. Rule 21: VaultCidStore secret key access from popup pages — two architecture patterns (background messages vs direct service calls). Updated Rule 11: confirmed `blockTimeGte()` always returns true in simulator (not just suspected).
 - 2026-02-28: Added Rule 17 (Midnight contract state reading patterns). Two patterns: `deployTxData.public` for initial snapshot vs `publicDataProvider.queryContractState()` + generated `ledger()` for fresh reads. Documented SDK type limitation where `ContractState` is opaque and requires cast or `ledger()` decoder. Added `typescript` as direct devDependency to contract + cli packages (bare `tsc` in build scripts requires it). Aligned guardian-portal `compact-js` version 0.14.0 → 2.4.0 to match CLI.

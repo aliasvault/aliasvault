@@ -578,7 +578,21 @@ owner revoking it, it is considered trusted and can transfer immediately.
 
 ---
 
-### Epic 4: Credential Management ✅ APPROVED
+### Epic 4: Credential Management ✅ APPROVED (Revised 2026-03-02)
+
+> [!NOTE]
+> **Sprint Change Proposal (2026-03-02)**
+>
+> Architectural review discovered that Epic 4's merge stories were designed against the architecture's
+> JSON vault model (`Map<CredentialID, Credential>`), but Epic 2 implemented the vault as a SQLite
+> binary blob (legacy EF Core pattern). The 8-table normalized schema has 1:1 relationships per
+> credential — the normalization adds complexity with zero benefit. With no existing users, the fix
+> is to align the implementation with the architecture's original intent before starting merge work.
+>
+> **Decision:** Replace SQLite vault format with JSON (Architecture Option A). Add Story 4.0 as
+> prerequisite. Net result: ~1,600 lines removed, ~300 lines added, 500KB bundle reduction.
+>
+> **Full proposal:** `_bmad-output/implementation-artifacts/sprint-change-proposal-2026-03-02.md`
 
 **User Outcome:** Users can manually add/edit credentials with proper conflict resolution when syncing across devices.
 
@@ -586,23 +600,39 @@ owner revoking it, it is considered trusted and can transfer immediately.
 
 | Item | Evidence | Scope |
 |------|----------|-------|
-| **Credential add/edit via IPFS** | FR9 | SQLite → Encrypt → IPFS → Update Midnight CID |
-| **Credential-level merge** | AR12 | Compare credential IDs, not entire vault blobs |
-| **Last-write-wins for same credential** | AR12 | Timestamp comparison for identical credential edits |
-| **Client-side conflict detection** | AR13 | Detect CID changed before saving |
+| **Vault format migration (SQLite → JSON)** | Architecture Section 3 | Replace `SqliteClient` with `VaultStore`, define `VaultJson` types |
+| **Credential add/edit validation** | FR9 | Verify existing CRUD works with new JSON store |
+| **Credential-level merge** | AR12 | `resolveVaultConflict()` on `VaultJson` — direct, no serialize/deserialize |
+| **Last-write-wins for same credential** | AR12 | `updatedAt` comparison on `CredentialTree` objects |
+| **Client-side conflict detection** | AR13 | Pre-save CID check + auto-merge via `VaultSyncService` |
 
 #### What EXISTS (reuse)
 
 | Item | Evidence | Status |
 |------|----------|--------|
-| `SqliteClient` CRUD | Lines 204-1610 | ✅ All credential operations |
-| `EncryptionUtility.symmetricEncrypt()` | Line 49 | ✅ Vault encryption |
+| `EncryptionUtility.symmetricEncrypt()` | Line 49 | ✅ Vault encryption unchanged |
+| `VaultSyncService` save/load pipeline | Story 2.3/2.4 | ✅ API unchanged, internals updated |
+| `IpfsService.upload()` / `download()` | Story 2.2 | ✅ Unchanged |
+| UI credential forms | Existing popup pages | ✅ Method signatures preserved |
 
 #### What TRANSFORMS (modify)
 
 | Item | Current | Target |
 |------|---------|--------|
-| Credential save | `WebApiService` → .NET | New `VaultSyncService` → IPFS + Midnight |
+| Vault storage format | SQLite binary blob (8 relational tables) | JSON object (`VaultJson` with `CredentialTree` map) |
+| Local vault store | `SqliteClient` (1,611 lines, sql.js WASM) | `VaultStore` (~300 lines, pure JS) |
+| Save pipeline | `exportToBase64()` → encrypt → IPFS | `VaultStore.toJson()` → encrypt → IPFS |
+| Load pipeline | decrypt → `initializeFromBase64()` | decrypt → `JSON.parse()` → `VaultStore.fromJson()` |
+| Extension bundle | Includes sql.js WASM (~500KB) | WASM removed |
+
+#### What's REMOVED (deleted)
+
+| Item | Size | Reason |
+|------|------|--------|
+| `SqliteClient.ts` | 1,611 lines | Replaced by VaultStore |
+| `shared/vault-sql/` package | 62.5KB SQL + migrations | No SQLite schema to manage |
+| `sql.js` WASM binary | ~500KB in bundle | No SQLite runtime needed |
+| EF Core migration system | ~200 lines date normalization SQL | No migrations needed |
 
 **Removed from scope (post-MVP):**
 - ~~FR17: Push notifications~~
@@ -612,57 +642,126 @@ owner revoking it, it is considered trusted and can transfer immediately.
 
 ---
 
+#### Story 4.0: Vault Format Migration (SQLite → JSON)
+
+**As a** developer
+**I want** the vault stored as a JSON object instead of a SQLite binary
+**So that** credential-level merge and conflict resolution can work as the architecture designed
+
+**Acceptance Criteria:**
+- [ ] `VaultJson` and `CredentialTree` types defined in new `shared/vault-types/` package
+- [ ] `VaultStore` class implements all public methods from SqliteClient with identical signatures
+- [ ] `DbContext.tsx` uses VaultStore (property renamed from `sqliteClient` to `vaultStore`)
+- [ ] `VaultMessageHandler.ts` uses VaultStore for all handler functions
+- [ ] Save flow: `VaultStore.toJson()` → `JSON.stringify()` → encrypt → IPFS → contract update
+- [ ] Load flow: decrypt → `JSON.parse()` → `VaultStore.fromJson()` → working vault
+- [ ] `useVaultMutate` calls `toJson()` instead of `exportToBase64()`
+- [ ] Mechanical rename `sqliteClient` → `vaultStore` across ~16 UI files
+- [ ] `sql.js` and `shared/vault-sql` dependencies removed from project
+- [ ] Extension bundle size reduced (~500KB WASM eliminated)
+- [ ] All existing credential CRUD operations pass (unit tests rewritten for VaultStore)
+- [ ] Settings preserved in `vault.settings` (including `midnightSecretKey` per Rule 12)
+- [ ] EncryptionKeys preserved in `vault.encryptionKeys`
+- [ ] Passkey CRUD (by RpId, by CredentialId) works on JSON store
+- [ ] `imgSrcFromBytes()` moved to standalone utility
+
+**Technical Notes:**
+- Alias and Service are 1:1 per Credential (never shared) — denormalization into `CredentialTree` is trivial
+- Soft-delete (`isDeleted`) becomes a boolean field on `CredentialTree` — no `IsDeleted` column migration
+- Credential IDs remain UUIDs (existing pattern preserved)
+- No existing users — zero migration risk
+
+**Source:** Architecture Section 3 (JSON vault design), Sprint Change Proposal 2026-03-02
+
+**Dependencies:** None (enables all other Epic 4 stories)
+
+---
+
 #### Story 4.1: Credential Add/Edit Flow
 
-**As a** user  
-**I want** to add or edit credentials in my vault  
+**As a** user
+**I want** to add or edit credentials in my vault
 **So that** my login information is securely stored
 
 **Acceptance Criteria:**
-- [ ] UI form: service name, username, password, alias email, notes
-- [ ] Generate `credentialId = hash(service + username + timestamp)` (Architecture line 341)
-- [ ] Store `createdAt` and `updatedAt` timestamps
-- [ ] On save: `SqliteClient.execute()` → `EncryptionUtility.symmetricEncrypt()` → `IpfsService.upload()` → `VaultRegistry.updateVault(cid)`
-- [ ] Success/error feedback in UI
+- [ ] Credential add form (service name, username, password, alias email, notes) works with VaultStore
+- [ ] Credential edit form updates existing credential via VaultStore
+- [ ] Credential delete sets `isDeleted: true` on CredentialTree
+- [ ] `createdAt` and `updatedAt` timestamps set correctly on all CRUD operations
+- [ ] On save: VaultStore mutation → vault sync → IPFS upload → contract update
+- [ ] Success/error feedback in UI unchanged
+- [ ] Credential IDs use UUIDs (existing `crypto.randomUUID()` pattern)
 
-**Source:** Architecture Section 3, lines 340-348
+**Source:** FR9, Architecture Section 3
+
+**Dependencies:** Story 4.0 (VaultStore must exist)
 
 ---
 
 #### Story 4.2: Credential-Level Merge
 
-**As a** user syncing from multiple devices  
-**I want** credential-level merge  
+**As a** user syncing from multiple devices
+**I want** credential-level merge
 **So that** I don't lose changes from other devices
 
 **Acceptance Criteria:**
-- [ ] Implement `resolveVaultConflict(localVault, remoteVault)` (Architecture line 351)
-- [ ] New credentials on remote: add to local
-- [ ] Same credential modified: last-write-wins via `updatedAt` comparison
-- [ ] Deletion conflicts: remote modification wins (user can delete again)
-- [ ] Edge case: simultaneous new credential with same service+username creates two entries (ID includes timestamp)
+- [ ] Implement `resolveVaultConflict(localVault: VaultJson, remoteVault: VaultJson): MergeResult`
+- [ ] New credentials on remote: add to merged vault
+- [ ] Same credential modified on both sides: last-write-wins via `updatedAt` comparison
+- [ ] Deletion conflicts: if local `isDeleted=true` but remote modified → remote wins (user can delete again)
+- [ ] Simultaneous new credential with same service+username: both kept (different UUIDs)
+- [ ] Settings merge: last-write-wins per key
+- [ ] EncryptionKeys merge: union of all unique keys
+- [ ] Return merge summary: `{ added: number, updated: number, conflicts: number }`
+- [ ] Unit tests for all merge scenarios (add, update, delete conflict, simultaneous create)
 
-**Source:** Architecture Section 3, lines 351-385, 395-396
+**Source:** Architecture Section 3, lines 351-388, 395-401
+
+**Dependencies:** Story 4.0 (VaultJson types must exist)
 
 ---
 
 #### Story 4.3: Conflict Detection & UX
 
-**As a** user saving my vault  
-**I want** to detect if the CID changed since I last loaded  
+**As a** user saving my vault
+**I want** to detect if the CID changed since I last loaded
 **So that** I don't overwrite changes from another device
 
 **Acceptance Criteria:**
-- [ ] Before save: fetch current CID from `VaultRegistry.getVaultCID()`
-- [ ] Compare with local `lastKnownCID`
-- [ ] If different: auto-merge using Story 4.2 logic
+- [ ] Before save: fetch current CID hash from VaultRegistry (via loadProvider)
+- [ ] Compare with local `lastKnownCidHash`
+- [ ] If same: save normally (no conflict)
+- [ ] If different: download remote vault → decrypt → parse JSON → merge using Story 4.2 logic
 - [ ] Show notification: "Changes merged: Added X credentials, updated Y credentials" (Architecture line 391)
 - [ ] User reviews merged vault before final upload
 - [ ] Option to force overwrite (advanced)
+- [ ] `VaultSyncService` extended with `saveWithConflictCheck()` method
 
-**Source:** Architecture Section 3, lines 389-392
+**Source:** Architecture Section 3, lines 389-401
 
-**Dependencies:** Story 2.3 (Save Flow provides the base sync logic)
+**Dependencies:** Story 4.2 (merge logic), Story 2.3 (existing save flow)
+
+**Known limitation (documented):** No atomic compare-and-swap on VaultRegistry. Race condition possible between CID check and save completion. Acceptable for MVP; CRDT-based merge deferred to V2.
+
+---
+
+#### Epic 4 Story Dependency Graph
+
+```
+Story 4.0 (Vault Format Migration)
+    ├── Story 4.1 (Credential Add/Edit validation)
+    └── Story 4.2 (Credential-Level Merge)
+            └── Story 4.3 (Conflict Detection & UX)
+```
+
+---
+
+#### Implementation Order (Recommended)
+
+1. **Story 4.0** — Foundation: vault format migration (largest, enables everything)
+2. **Story 4.1** — Validate existing credential flows with new store (small, fast)
+3. **Story 4.2** — Core merge logic, pure functions (medium)
+4. **Story 4.3** — Wire merge into save flow + UX (medium)
 
 ### Epic 5: Alias Email System ✅ APPROVED
 

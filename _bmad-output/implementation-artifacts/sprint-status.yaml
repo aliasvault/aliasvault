@@ -1,4 +1,4 @@
-# generated: 2026-02-21
+# generated: 2026-03-02 (updated: sprint change proposal - Epic 4 revision)
 # project: aliasvault
 # project_key: aliasvault
 # tracking_system: file-system
@@ -72,11 +72,12 @@ development_status:
   3-7-guardian-portal-production-build: review
   epic-3-retrospective: optional
 
-  # Epic 4: Credential Management
-  epic-4: backlog
-  4-1-credential-add-edit-flow: backlog
-  4-2-credential-level-merge: backlog
-  4-3-conflict-detection-ux: backlog
+  # Epic 4: Credential Management (Revised 2026-03-02 — Sprint Change Proposal)
+  epic-4: in-progress
+  4-0-vault-format-migration: done  # SQLite→JSON vault format complete — code review passed, all fixes applied
+  4-1-credential-add-edit-flow: backlog  # REVISED: validate existing CRUD with new JSON store
+  4-2-credential-level-merge: backlog  # REVISED: merge operates directly on VaultJson
+  4-3-conflict-detection-ux: backlog  # REVISED: saveWithConflictCheck() on VaultSyncService
   epic-4-retrospective: optional
 
   # Epic 5: Alias Email System

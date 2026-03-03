@@ -83,7 +83,7 @@ AliasVault 2.0 launches as a new decentralized product. Existing centralized inf
 
 - **Encryption Logic:** 100% preserved - Argon2id + AES-256-GCM implementation remains identical (client-side)
 - **UI/UX:** Vault views, item management, icons unchanged
-- **Local Caching:** IndexedDB/SQLite offline cache (read-only, aggressive caching strategy)
+- **Local Caching:** IndexedDB offline cache (read-only, aggressive caching strategy)
 
 **Technology Dependencies:**
 
@@ -114,7 +114,7 @@ AliasVault 2.0 launches as a new decentralized product. Existing centralized inf
 
 **6. SMTP Bridge Centralization:** MVP uses centralized Mox SMTP server + blockchain verification bridge. Post-MVP: tiered decentralization approach.
 
-**7. Multi-Device Private State & CID Distribution (ADR-006 — Corrected):** Midnight private state is **device-local by design** — witnesses never leave the user's machine. This is a privacy feature, not a limitation. Cross-device vault access is achieved through a layered approach: (1) the `vaultCidHash` is on the **public ledger** and readable by any device, (2) CID discovery uses Pinata pin listing + hash matching, (3) the owner's `secretKey` is stored inside the **encrypted vault blob** (SQLite Settings table) so it travels with the vault to new devices after download and decryption. See Story 2.3 ADR-006 for full analysis of alternatives evaluated.
+**7. Multi-Device Private State & CID Distribution (ADR-006 — Corrected):** Midnight private state is **device-local by design** — witnesses never leave the user's machine. This is a privacy feature, not a limitation. Cross-device vault access is achieved through a layered approach: (1) the `vaultCidHash` is on the **public ledger** and readable by any device, (2) CID discovery uses Pinata pin listing + hash matching, (3) the owner's `secretKey` is stored inside the **encrypted vault blob** (vault `settings` JSON object) so it travels with the vault to new devices after download and decryption. See Story 2.3 ADR-006 for full analysis of alternatives evaluated.
 
 **8. Alias Ownership & Anti-Squatting:** First-come-first-served + 1 NIGHT fee per alias claim. Future: expiration for unused aliases, tiered pricing for short names.
 
@@ -330,60 +330,95 @@ IPFS CIDs are content-addressed and provider-agnostic — the same CID resolves 
 - Vault structure is a **list/map of credentials**, each with independent lifecycle
 - Conflict scenarios are therefore **addition conflicts** (Device A adds credential X, Device B adds credential Y) vs **edit conflicts** (both edit the same credential)
 
+**Format Decision (Sprint Change Proposal 2026-03-02):** Vault blob on IPFS is a `VaultJson` JSON object, NOT a SQLite binary. The legacy SQLite format (8-table EF Core schema via `SqliteClient.exportToBase64()`) was carried forward from the .NET codebase during Epic 2 as the fastest path to a working save/load flow. Architectural review before Epic 4 confirmed the architecture always intended JSON (`Map<CredentialID, Credential>` — this section). Since there are no existing users, Story 4.0 performs a Big Bang migration: `SqliteClient` → `VaultStore`, `shared/vault-sql/` removed, `shared/vault-types/` added.
+
 **Implementation Strategy:**
 
 ```typescript
-// Vault data structure
-interface Vault {
-  version: string
-  credentials: Map<CredentialID, Credential>
-  lastModified: Timestamp
+// Vault JSON format (Story 4.0) — stored as JSON on IPFS
+interface VaultJson {
+  version: number                                // Schema version (1)
+  credentials: Record<string, CredentialTree>    // Key = credential UUID
+  settings: Record<string, string>               // Key-value pairs (includes midnightSecretKey)
+  encryptionKeys: EncryptionKeyEntry[]           // Encryption key history
+  lastModified: number                           // Unix timestamp ms
 }
 
-interface Credential {
-  id: CredentialID // Unique identifier (hash of service + username + timestamp)
-  service: string
-  username: string
-  password: string  // Encrypted
-  aliasEmail: string
-  createdAt: Timestamp
-  updatedAt: Timestamp
+// Denormalized credential — each credential is a self-contained tree
+// (Alias, Service, Password are 1:1 per credential — never shared)
+interface CredentialTree {
+  id: string                    // UUID (crypto.randomUUID())
+  service: { name: string; url?: string }
+  alias: { firstName?: string; lastName?: string; nickName?: string; birthDate: string; gender?: string; email?: string }
+  username?: string
+  password: { value: string; createdAt: number; updatedAt: number }
+  notes?: string
+  logo?: string                 // base64-encoded
+  attachments: Array<{ id: string; fileName: string; data: string; createdAt: number }>
+  totpCodes: Array<{ id: string; secret: string; createdAt: number }>
+  passkeys: Array<{ id: string; rpId: string; displayName: string; createdAt: number }>
+  createdAt: number             // Unix timestamp ms
+  updatedAt: number             // Unix timestamp ms
+  isDeleted: boolean            // Soft-delete for merge (tombstone)
 }
 
-// Conflict resolver (client-side)
-async function resolveVaultConflict(
-  localVault: Vault, 
-  remoteVault: Vault
-): Promise<Vault> {
-  const merged = new Map<CredentialID, Credential>()
-  
-  // Add all local credentials
-  for (const [id, cred] of localVault.credentials) {
-    merged.set(id, cred)
-  }
-  
-  // Merge remote credentials
-  for (const [id, remoteCred] of remoteVault.credentials) {
-    const localCred = merged.get(id)
-    
+interface EncryptionKeyEntry {
+  id: string
+  key: string                   // base64-encoded
+  createdAt: number
+}
+
+// Conflict resolver (client-side) — operates directly on VaultJson
+function resolveVaultConflict(
+  local: VaultJson,
+  remote: VaultJson
+): { merged: VaultJson; summary: MergeSummary } {
+  const merged: Record<string, CredentialTree> = {}
+  const summary: MergeSummary = { added: [], updated: [], deleted: [], kept: [] }
+
+  // Collect all credential IDs from both vaults
+  const allIds = new Set([...Object.keys(local.credentials), ...Object.keys(remote.credentials)])
+
+  for (const id of allIds) {
+    const localCred = local.credentials[id]
+    const remoteCred = remote.credentials[id]
+
     if (!localCred) {
-      // New credential from remote - add it
-      merged.set(id, remoteCred)
+      // Remote-only credential (added on other device)
+      merged[id] = remoteCred
+      summary.added.push(id)
+    } else if (!remoteCred) {
+      // Local-only credential (added on this device)
+      merged[id] = localCred
+      summary.kept.push(id)
     } else {
-      // Same credential modified on both devices
-      // Last-write-wins based on updatedAt timestamp
+      // Exists in both — last-write-wins based on updatedAt
       if (remoteCred.updatedAt > localCred.updatedAt) {
-        merged.set(id, remoteCred)
-        console.warn(`Conflict: ${id} resolved to remote (newer)`)
+        merged[id] = remoteCred
+        summary.updated.push(id)
+      } else {
+        merged[id] = localCred
+        summary.kept.push(id)
       }
-      // else keep local (it's newer or same)
     }
   }
-  
+
+  // Merge settings (remote wins on conflict)
+  const mergedSettings = { ...local.settings, ...remote.settings }
+
+  // Merge encryption keys (union by id)
+  const keyMap = new Map(local.encryptionKeys.map(k => [k.id, k]))
+  for (const rk of remote.encryptionKeys) keyMap.set(rk.id, rk)
+
   return {
-    ...localVault,
-    credentials: merged,
-    lastModified: Date.now()
+    merged: {
+      version: Math.max(local.version, remote.version),
+      credentials: merged,
+      settings: mergedSettings,
+      encryptionKeys: [...keyMap.values()],
+      lastModified: Date.now(),
+    },
+    summary,
   }
 }
 ```
@@ -395,8 +430,10 @@ async function resolveVaultConflict(
 - User reviews merged vault before final upload
 
 **Edge Case Handling:**
-- **Credential deletion conflicts:** If Device A deletes credential X while Device B modifies it → Remote modification wins (user can delete again if intended)
-- **Simultaneous new credential with same service+username:** Credential ID includes timestamp, so creates two entries (user can manually deduplicate)
+- **Soft-delete conflicts:** If Device A soft-deletes credential X (`isDeleted: true`) while Device B modifies it → last-write-wins via `updatedAt`. If the delete is newer, the tombstone persists; if the edit is newer, the credential is restored. User can re-delete if intended.
+- **Simultaneous new credentials:** UUID-based IDs (`crypto.randomUUID()`) ensure no collision — both credentials are preserved in the merged vault.
+- **Settings conflicts:** Remote settings win on key collision (simple last-write-wins). The `midnightSecretKey` setting is stable across devices, so collision is benign.
+- **Race condition (known MVP limitation):** Two devices saving simultaneously can overwrite each other's CID hash. Mitigation: `saveWithConflictCheck()` in `VaultSyncService` compares CID hash before save. A true race (both pass the check, both write) is possible but unlikely given human interaction timing. Documented in Story 4.3.
 
 **Deferred to V2:** CRDT-based automatic merge (using Automerge or Yjs) to eliminate all conflicts automatically
 
@@ -1306,9 +1343,9 @@ private state {
 }
 
 // TypeScript
-interface Vault {
-  vaultCID: string  // Correct
-  credentials: Map<CredentialID, Credential>
+interface VaultJson {
+  vaultCID: string  // Correct (application-layer, not inside vault blob)
+  credentials: Record<string, CredentialTree>
 }
 
 // ❌ INCORRECT variations to NEVER use:
@@ -1534,47 +1571,30 @@ async function saveVault(localVault: Vault): Promise<void> {
 
 **Resolution Algorithm:**
 ```typescript
-// Credential-level merge with last-write-wins
-async function resolveConflict(
-  localVault: Vault,
-  remoteVault: Vault
-): Promise<Vault> {
-  const merged = new Map<CredentialID, Credential>()
-  const changeLog: string[] = []
-  
-  // Add all local credentials
-  for (const [id, cred] of localVault.credentials) {
-    merged.set(id, cred)
-  }
-  
-  // Merge remote credentials
-  for (const [id, remoteCred] of remoteVault.credentials) {
-    const localCred = merged.get(id)
-    
-    if (!localCred) {
-      // New credential from remote device
-      merged.set(id, remoteCred)
-      changeLog.push(`Added: ${remoteCred.service}`)
-    } else {
-      // Same credential modified on both devices
-      if (remoteCred.updatedAt > localCred.updatedAt) {
-        merged.set(id, remoteCred)
-        changeLog.push(`Updated: ${remoteCred.service} (remote newer)`)
-      }
-      // else keep local (it's newer)
-    }
-  }
-  
-  // Show user notification
-  await showNotification({
-    title: 'Vault Synced',
-    message: `Merged changes from another device:\n${changeLog.join('\n')}`
-  })
-  
-  return {
-    ...localVault,
-    credentials: merged,
-    lastModified: Date.now()
+// Credential-level merge with last-write-wins — operates on VaultJson directly
+// See Section 3 (Conflict Resolution Strategy) for full resolveVaultConflict() implementation
+// and VaultJson/CredentialTree type definitions.
+
+// Merge summary returned to caller for UX notification
+interface MergeSummary {
+  added: string[]    // credential IDs added from remote
+  updated: string[]  // credential IDs where remote was newer
+  deleted: string[]  // credential IDs soft-deleted
+  kept: string[]     // credential IDs where local was kept
+}
+
+// Show user notification after merge
+async function notifyMergeResult(summary: MergeSummary): Promise<void> {
+  const changes: string[] = []
+  if (summary.added.length) changes.push(`Added ${summary.added.length} credentials`)
+  if (summary.updated.length) changes.push(`Updated ${summary.updated.length} credentials`)
+  if (summary.deleted.length) changes.push(`Deleted ${summary.deleted.length} credentials`)
+
+  if (changes.length > 0) {
+    await showNotification({
+      title: 'Vault Synced',
+      message: `Merged changes from another device:\n${changes.join('\n')}`
+    })
   }
 }
 ```
@@ -2258,6 +2278,14 @@ aliasvault/
 ├── shared/                          # Shared code (DRY principle)
 │   ├── package.json
 │   ├── tsconfig.json
+│   │
+│   ├── vault-types/                 # Vault JSON format types + VaultStore (Story 4.0)
+│   │   ├── src/
+│   │   │   ├── types.ts             # VaultJson, CredentialTree, EncryptionKeyEntry
+│   │   │   ├── VaultStore.ts        # In-memory vault operations (replaces SqliteClient)
+│   │   │   └── index.ts             # Re-export all
+│   │   ├── package.json
+│   │   └── tsconfig.json
 │   │
 │   ├── logic/                       # Shared business logic (platform-agnostic)
 │   │   ├── vaultLogic.ts            # Pure functions for vault operations
