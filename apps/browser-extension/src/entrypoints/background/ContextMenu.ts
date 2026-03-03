@@ -61,7 +61,7 @@ export function handleContextMenuClick(info: Browser.contextMenus.OnClickData, t
       // Get confirm text translation.
       t('content.passwordCopiedToClipboard').then((message) => {
         browser.scripting.executeScript({
-          target: { tabId: tab.id },
+          target: { tabId: tab.id! },
           func: copyPasswordToClipboard,
           args: [message, password]
         });

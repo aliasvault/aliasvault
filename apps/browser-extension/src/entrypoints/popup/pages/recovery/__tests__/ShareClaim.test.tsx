@@ -311,7 +311,7 @@ describe('ShareClaim', () => {
         vaultRegistryAddress: 'vr-001',
         pinataGateway: 'gw',
         sharesCid: undefined as any,
-        secretKey: null,
+        secretKey: null as any,
       });
     });
 
