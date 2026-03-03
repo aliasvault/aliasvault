@@ -53,14 +53,14 @@ const EmailDetails: React.FC = (): React.ReactElement => {
         setIsLoading(true);
         setError(null);
 
-        if (!dbContext?.sqliteClient || !id) {
+        if (!dbContext?.vaultStore || !id) {
           return;
         }
 
         const response = await webApi.get<Email>(`Email/${id}`);
 
         // Decrypt email locally using public/private key pairs
-        const encryptionKeys = dbContext.sqliteClient.getAllEncryptionKeys();
+        const encryptionKeys = dbContext.vaultStore.getAllEncryptionKeys();
         const decryptedEmail = await EncryptionUtility.decryptEmail(response, encryptionKeys);
         setEmail(decryptedEmail);
       } catch (err) {
@@ -72,7 +72,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
     };
 
     loadEmail();
-  }, [id, dbContext?.sqliteClient, webApi, setIsLoading, setIsInitialLoading]);
+  }, [id, dbContext?.vaultStore, webApi, setIsLoading, setIsInitialLoading]);
 
   /**
    * Handle deleting an email.
@@ -105,13 +105,13 @@ const EmailDetails: React.FC = (): React.ReactElement => {
       // Get the encrypted attachment bytes from the API
       const encryptedBytes = await webApi.downloadBlob(`Email/${id}/attachments/${attachment.id}`);
 
-      if (!dbContext?.sqliteClient || !email) {
+      if (!dbContext?.vaultStore || !email) {
         setError('Database context or email not available');
         return;
       }
 
       // Get encryption keys for decryption
-      const encryptionKeys = dbContext.sqliteClient.getAllEncryptionKeys();
+      const encryptionKeys = dbContext.vaultStore.getAllEncryptionKeys();
 
       // Decrypt the attachment using raw bytes
       const decryptedBytes = await EncryptionUtility.decryptAttachment(encryptedBytes, email, encryptionKeys);

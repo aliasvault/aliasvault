@@ -52,12 +52,12 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ credentialId }) => {
      * Loads the attachments for the credential.
      */
     const loadAttachments = async (): Promise<void> => {
-      if (!dbContext?.sqliteClient) {
+      if (!dbContext?.vaultStore) {
         return;
       }
 
       try {
-        const attachmentList = dbContext.sqliteClient.getAttachmentsForCredential(credentialId);
+        const attachmentList = dbContext.vaultStore.getAttachmentsForCredential(credentialId);
         setAttachments(attachmentList);
       } catch (error) {
         console.error('Error loading attachments:', error);
@@ -67,7 +67,7 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ credentialId }) => {
     };
 
     loadAttachments();
-  }, [credentialId, dbContext?.sqliteClient]);
+  }, [credentialId, dbContext?.vaultStore]);
 
   if (loading) {
     return (

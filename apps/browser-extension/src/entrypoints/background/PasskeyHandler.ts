@@ -23,7 +23,7 @@ import type {
   WebAuthnCreationPayload,
   WebAuthnPublicKeyGetPayload
 } from '@/utils/passkey/types';
-import { SqliteClient } from '@/utils/SqliteClient';
+import { VaultStore } from '@/utils/dist/shared/vault-types';
 
 import { browser, storage } from '#imports';
 
@@ -96,15 +96,17 @@ export async function handleWebAuthnCreate(data: any): Promise<any> {
       focused: true
     });
 
+    const popupWindowId = popup?.id;
+
     // Wait for response from popup
     return new Promise((resolve, reject) => {
-      pendingRequests.set(requestId, { resolve, reject, windowId: popup.id });
+      pendingRequests.set(requestId, { resolve, reject, windowId: popupWindowId });
 
       // Clean up if popup is closed without response
       const checkClosed = setInterval(async () => {
         try {
-          if (popup.id) {
-            const _window = await browser.windows.get(popup.id);
+          if (popupWindowId) {
+            await browser.windows.get(popupWindowId);
             // Window still exists, continue waiting
           }
         } catch {
@@ -125,7 +127,7 @@ export async function handleWebAuthnCreate(data: any): Promise<any> {
 
 /**
  * Handle WebAuthn get (authentication) request
- * Note: Passkey retrieval is now handled in the popup via SqliteClient
+ * Note: Passkey retrieval is now handled in the popup via VaultStore
  */
 export async function handleWebAuthnGet(data: any): Promise<any> {
   const { publicKey, origin, isAutomaticRequest } = data as WebAuthnGetRequest;
@@ -175,15 +177,17 @@ export async function handleWebAuthnGet(data: any): Promise<any> {
       focused: true
     });
 
+    const popupWindowId = popup?.id;
+
     // Wait for response from popup
     return new Promise((resolve, reject) => {
-      pendingRequests.set(requestId, { resolve, reject, windowId: popup.id });
+      pendingRequests.set(requestId, { resolve, reject, windowId: popupWindowId });
 
       // Clean up if popup is closed without response
       const checkClosed = setInterval(async () => {
         try {
-          if (popup.id) {
-            const _window = await browser.windows.get(popup.id);
+          if (popupWindowId) {
+            await browser.windows.get(popupWindowId);
             // Window still exists, continue waiting
           }
         } catch {
@@ -225,14 +229,13 @@ async function checkForMatchingPasskeys(publicKey: any, origin: string): Promise
       encryptedVault,
       encryptionKey
     );
-    const sqliteClient = new SqliteClient();
-    await sqliteClient.initializeFromBase64(decryptedVault);
+    const vaultStore = VaultStore.fromJson(decryptedVault);
 
     // Get the rpId from the request or derive from origin
     const rpId = publicKey.rpId || new URL(origin).hostname;
 
     // Get passkeys for this rpId
-    const passkeys = sqliteClient.getPasskeysByRpId(rpId);
+    const passkeys = vaultStore.getPasskeysByRpId(rpId);
 
     // If allowCredentials is specified, filter by those specific credentials
     if (publicKey.allowCredentials && publicKey.allowCredentials.length > 0) {

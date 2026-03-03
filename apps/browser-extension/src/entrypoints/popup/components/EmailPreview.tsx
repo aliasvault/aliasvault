@@ -115,7 +115,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
 
           // Only update emails if they actually changed to preserve displayedCount
           setEmails(prevEmails => {
-            const emailsChanged = JSON.stringify(prevEmails.map(e => e.id)) !== JSON.stringify(allMails.map(e => e.id));
+            const emailsChanged = JSON.stringify(prevEmails.map((e: MailboxEmail) => e.id)) !== JSON.stringify(allMails.map((e: MailboxEmail) => e.id));
             if (emailsChanged) {
               updateDisplayedEmails(allMails, displayedCount);
               return allMails;
@@ -141,7 +141,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
                 // Loop through all emails and decrypt them locally
                 const decryptedEmails: MailboxEmail[] = await EncryptionUtility.decryptEmailList(
                   allMails,
-                  dbContext.sqliteClient!.getAllEncryptionKeys()
+                  dbContext.vaultStore!.getAllEncryptionKeys()
                 );
 
                 if (loading && decryptedEmails.length > 0) {

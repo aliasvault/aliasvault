@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import type { Credential } from '@/utils/dist/shared/models/vault';
-import SqliteClient from '@/utils/SqliteClient';
+import { imgSrcFromBytes } from '@/utils/logoUtils';
 
 type CredentialCardProps = {
   credential: Credential;
@@ -61,7 +61,7 @@ const CredentialCard: React.FC<CredentialCardProps> = ({ credential }) => {
         className="w-full p-2 border dark:border-gray-600 rounded flex items-center bg-white dark:bg-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <img
-          src={SqliteClient.imgSrcFromBytes(credential.Logo)}
+          src={imgSrcFromBytes(credential.Logo)}
           alt={credential.ServiceName}
           className="w-8 h-8 mr-2 flex-shrink-0"
           onError={(e) => {

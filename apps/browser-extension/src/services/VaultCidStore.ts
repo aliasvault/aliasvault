@@ -58,34 +58,16 @@ export class VaultCidStore {
   }
 
   /**
-   * Store secretKey in the SQLite vault DB Settings table (ADR-006).
-   * This ensures the secretKey travels with the encrypted vault across devices.
-   * Uses SqliteClient.executeUpdate() — does NOT modify SqliteClient.ts.
-   *
-   * @param sqliteClient - Initialized SqliteClient with an open vault DB
-   * @param secretKeyHex - Hex-encoded 32-byte secret key
-   */
-  static storeSecretKeyInVault(
-    sqliteClient: { executeUpdate: (query: string, params: (string | number | null | Uint8Array)[]) => number },
-    secretKeyHex: string,
-  ): void {
-    sqliteClient.executeUpdate(
-      "INSERT OR REPLACE INTO Settings (Key, Value) VALUES (?, ?)",
-      ['midnightSecretKey', secretKeyHex],
-    );
-  }
-
-  /**
-   * Read secretKey from the SQLite vault DB Settings table.
+   * Read secretKey from the vault settings.
    * Used on new devices after downloading and decrypting the vault from IPFS.
    *
-   * @param sqliteClient - Initialized SqliteClient with an open vault DB
+   * @param vaultStore - Initialized vault store with getSetting capability
    * @returns Hex-encoded secret key, or null if not found
    */
   static readSecretKeyFromVault(
-    sqliteClient: { getSetting: (key: string, defaultValue?: string) => string },
+    vaultStore: { getSetting: (key: string, defaultValue?: string) => string },
   ): string | null {
-    const value = sqliteClient.getSetting('midnightSecretKey', '');
+    const value = vaultStore.getSetting('midnightSecretKey', '');
     return value || null;
   }
 }

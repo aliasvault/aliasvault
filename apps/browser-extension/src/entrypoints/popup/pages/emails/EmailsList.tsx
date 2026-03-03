@@ -42,12 +42,12 @@ const EmailsList: React.FC = () => {
       setIsLoading(true);
       setError(null);
 
-      if (!dbContext?.sqliteClient) {
+      if (!dbContext?.vaultStore) {
         return;
       }
 
       // Get unique email addresses from all credentials.
-      const emailAddresses = dbContext.sqliteClient.getAllEmailAddresses();
+      const emailAddresses = dbContext.vaultStore.getAllEmailAddresses();
 
       try {
         // For now we only show the latest 50 emails. No pagination.
@@ -58,7 +58,7 @@ const EmailsList: React.FC = () => {
         });
 
         // Decrypt emails locally using private key associated with the email address.
-        const encryptionKeys = dbContext.sqliteClient.getAllEncryptionKeys();
+        const encryptionKeys = dbContext.vaultStore.getAllEncryptionKeys();
 
         // Decrypt emails locally using public/private key pairs.
         const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, encryptionKeys);
@@ -74,7 +74,7 @@ const EmailsList: React.FC = () => {
       setIsLoading(false);
       setIsInitialLoading(false);
     }
-  }, [dbContext?.sqliteClient, webApi, setIsLoading, setIsInitialLoading, t]);
+  }, [dbContext?.vaultStore, webApi, setIsLoading, setIsInitialLoading, t]);
 
   useEffect(() => {
     loadEmails();

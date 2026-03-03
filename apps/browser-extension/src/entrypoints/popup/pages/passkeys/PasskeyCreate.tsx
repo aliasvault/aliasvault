@@ -79,8 +79,8 @@ const PasskeyCreate: React.FC = () => {
             setDisplayName(defaultName);
 
             // Check for existing passkeys for this RP ID and user
-            if (dbContext.sqliteClient && data.publicKey?.rp?.id) {
-              const allPasskeysForRpId = dbContext.sqliteClient.getPasskeysByRpId(data.publicKey.rp.id);
+            if (dbContext.vaultStore && data.publicKey?.rp?.id) {
+              const allPasskeysForRpId = dbContext.vaultStore.getPasskeysByRpId(data.publicKey.rp.id);
 
               /**
                * Filter by user ID and/or username if provided
@@ -139,7 +139,7 @@ const PasskeyCreate: React.FC = () => {
     };
 
     fetchRequestData();
-  }, [location, setIsInitialLoading, dbContext.dbInitialized, dbContext.sqliteClient, isLocked, t]);
+  }, [location, setIsInitialLoading, dbContext.dbInitialized, dbContext.vaultStore, isLocked, t]);
 
   // Auto-focus create new button or input field
   useEffect(() => {
@@ -188,7 +188,7 @@ const PasskeyCreate: React.FC = () => {
    * Handle passkey creation
    */
   const handleCreate = async () : Promise<void> => {
-    if (!request || !dbContext.sqliteClient) {
+    if (!request || !dbContext.vaultStore) {
       return;
     }
 
@@ -263,10 +263,10 @@ const PasskeyCreate: React.FC = () => {
         async () => {
           if (selectedPasskeyToReplace) {
             // Replace existing passkey: update the credential and passkey
-            const existingPasskey = dbContext.sqliteClient!.getPasskeyById(selectedPasskeyToReplace);
+            const existingPasskey = dbContext.vaultStore!.getPasskeyById(selectedPasskeyToReplace);
             if (existingPasskey) {
               // Update the parent credential with new favicon and user-provided display name
-              await dbContext.sqliteClient!.updateCredentialById(
+              await dbContext.vaultStore!.updateCredentialById(
                 {
                   Id: existingPasskey.CredentialId,
                   ServiceName: displayName,
@@ -289,7 +289,7 @@ const PasskeyCreate: React.FC = () => {
               );
 
               // Delete the old passkey
-              await dbContext.sqliteClient!.deletePasskeyById(selectedPasskeyToReplace);
+              await dbContext.vaultStore!.deletePasskeyById(selectedPasskeyToReplace);
 
               /**
                * Create new passkey with same credential
@@ -305,7 +305,7 @@ const PasskeyCreate: React.FC = () => {
                 }
               }
 
-              await dbContext.sqliteClient!.createPasskey({
+              await dbContext.vaultStore!.createPasskey({
                 Id: newPasskeyGuid,
                 CredentialId: existingPasskey.CredentialId,
                 RpId: stored.rpId,
@@ -319,7 +319,7 @@ const PasskeyCreate: React.FC = () => {
             }
           } else {
             // Create new credential and passkey
-            const credentialId = await dbContext.sqliteClient!.createCredential(
+            const credentialId = await dbContext.vaultStore!.createCredential(
               {
                 Id: '',
                 ServiceName: displayName,
@@ -355,7 +355,7 @@ const PasskeyCreate: React.FC = () => {
               }
             }
 
-            await dbContext.sqliteClient!.createPasskey({
+            await dbContext.vaultStore!.createPasskey({
               Id: newPasskeyGuid,
               CredentialId: credentialId,
               RpId: stored.rpId,

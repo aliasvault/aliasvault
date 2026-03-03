@@ -31,7 +31,7 @@ import {
   resetFailedAttempts,
   unlockWithPin
 } from '@/utils/PinUnlockService';
-import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
+
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
 import { storage } from '#imports';
@@ -231,15 +231,8 @@ const Unlock: React.FC = () => {
       // Store the encryption key in session storage.
       await dbContext.storeEncryptionKey(passwordHashBase64);
 
-      // Initialize the SQLite context with the new vault data.
-      const sqliteClient = await dbContext.initializeDatabase(vaultResponseJson, passwordHashBase64);
-
-      // Check if there are pending migrations
-      if (await sqliteClient.hasPendingMigrations()) {
-        navigate('/upgrade', { replace: true });
-        hideLoading();
-        return;
-      }
+      // Initialize the vault store with the new vault data.
+      await dbContext.initializeDatabase(vaultResponseJson, passwordHashBase64);
 
       // Clear dismiss until
       await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
@@ -249,12 +242,7 @@ const Unlock: React.FC = () => {
 
       navigate('/reinitialize', { replace: true });
     } catch (err) {
-      // Check if it's a version incompatibility error
-      if (err instanceof VaultVersionIncompatibleError) {
-        await app.logout(err.message);
-      } else {
-        setError(t('auth.errors.wrongPassword'));
-      }
+      setError(t('auth.errors.wrongPassword'));
       console.error('Unlock error:', err);
     } finally {
       hideLoading();
@@ -315,15 +303,8 @@ const Unlock: React.FC = () => {
       // Store the encryption key in session storage
       await dbContext.storeEncryptionKey(passwordHashBase64);
 
-      // Initialize the SQLite context with the vault data
-      const sqliteClient = await dbContext.initializeDatabase(vaultResponseJson, passwordHashBase64);
-
-      // Check if there are pending migrations
-      if (await sqliteClient.hasPendingMigrations()) {
-        navigate('/upgrade', { replace: true });
-        hideLoading();
-        return;
-      }
+      // Initialize the vault store with the vault data
+      await dbContext.initializeDatabase(vaultResponseJson, passwordHashBase64);
 
       // Clear dismiss until
       await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
@@ -386,15 +367,8 @@ const Unlock: React.FC = () => {
         encryptionSettings: result.encryptionSettings,
       });
 
-      // Initialize the database with the vault data
-      const sqliteClient = await dbContext.initializeDatabase(vaultResponse, result.decryptionKey);
-
-      // Check if there are pending migrations
-      if (await sqliteClient.hasPendingMigrations()) {
-        navigate('/upgrade', { replace: true });
-        hideLoading();
-        return;
-      }
+      // Initialize the vault store with the vault data
+      await dbContext.initializeDatabase(vaultResponse, result.decryptionKey);
 
       // Clear dismiss until
       await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
@@ -404,12 +378,7 @@ const Unlock: React.FC = () => {
 
       navigate('/reinitialize', { replace: true });
     } catch (err) {
-      // Check if it's a version incompatibility error
-      if (err instanceof VaultVersionIncompatibleError) {
-        await app.logout(err.message);
-      } else {
-        setError(t('common.errors.unknownErrorTryAgain'));
-      }
+      setError(t('common.errors.unknownErrorTryAgain'));
       console.error('Mobile unlock error:', err);
     } finally {
       hideLoading();

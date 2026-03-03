@@ -167,12 +167,6 @@ export default defineContentScript({
               return;
             }
 
-            if (authStatus.hasPendingMigrations) {
-              // Show upgrade required popup
-              await createUpgradeRequiredPopup(inputElement, container, await t('content.vaultUpgradeRequired'));
-              return;
-            }
-
             if (authStatus.error) {
               // Show upgrade required popup for version-related errors
               await createUpgradeRequiredPopup(inputElement, container, authStatus.error);

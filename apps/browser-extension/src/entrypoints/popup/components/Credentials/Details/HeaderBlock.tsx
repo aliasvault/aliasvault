@@ -1,7 +1,7 @@
 import React from 'react';
 
 import type { Credential } from '@/utils/dist/shared/models/vault';
-import SqliteClient from '@/utils/SqliteClient';
+import { imgSrcFromBytes } from '@/utils/logoUtils';
 
 type HeaderBlockProps = {
   credential: Credential;
@@ -14,7 +14,7 @@ const HeaderBlock: React.FC<HeaderBlockProps> = ({ credential }) => (
   <div className="flex items-center justify-between">
     <div className="flex items-center">
       <img
-        src={SqliteClient.imgSrcFromBytes(credential.Logo)}
+        src={imgSrcFromBytes(credential.Logo)}
         alt={credential.ServiceName}
         className="w-12 h-12 rounded-lg mr-4"
       />

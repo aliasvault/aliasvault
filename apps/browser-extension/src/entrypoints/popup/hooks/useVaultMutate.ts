@@ -44,10 +44,10 @@ export function useVaultMutate() : {
     setSyncStatus(t('common.encryptingVault'));
 
     // Encrypt vault locally before sending to background
-    const base64Vault = dbContext.sqliteClient!.exportToBase64();
+    const vaultJson = dbContext.vaultStore!.toJson();
     const encryptionKey = await sendMessage('GET_ENCRYPTION_KEY', {}, 'background') as string;
     const encryptedVaultBlob = await EncryptionUtility.symmetricEncrypt(
-      base64Vault,
+      vaultJson,
       encryptionKey
     );
 

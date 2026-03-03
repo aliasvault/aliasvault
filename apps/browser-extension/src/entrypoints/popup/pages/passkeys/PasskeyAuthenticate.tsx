@@ -63,7 +63,7 @@ const PasskeyAuthenticate: React.FC = () => {
 
             // Get passkeys for this rpId from the vault
             const rpId = data.publicKey.rpId || new URL(data.origin).hostname;
-            const passkeys = dbContext.sqliteClient!.getPasskeysByRpId(rpId);
+            const passkeys = dbContext.vaultStore!.getPasskeysByRpId(rpId);
 
             // Filter by allowCredentials if specified
             let filteredPasskeys = passkeys;
@@ -102,7 +102,7 @@ const PasskeyAuthenticate: React.FC = () => {
     };
 
     fetchRequestData();
-  }, [location, setIsInitialLoading, dbContext.dbInitialized, isLocked, dbContext.sqliteClient, t]);
+  }, [location, setIsInitialLoading, dbContext.dbInitialized, isLocked, dbContext.vaultStore, t]);
 
   // Auto-focus first passkey
   useEffect(() => {
@@ -138,7 +138,7 @@ const PasskeyAuthenticate: React.FC = () => {
    * Handle passkey authentication
    */
   const handleUsePasskey = async (passkeyId: string) : Promise<void> => {
-    if (!request || !dbContext.sqliteClient) {
+    if (!request || !dbContext.vaultStore) {
       return;
     }
 
@@ -147,7 +147,7 @@ const PasskeyAuthenticate: React.FC = () => {
 
     try {
       // Get the stored passkey from vault
-      const storedPasskey = dbContext.sqliteClient.getPasskeyById(passkeyId);
+      const storedPasskey = dbContext.vaultStore.getPasskeyById(passkeyId);
       if (!storedPasskey) {
         throw new Error(t('common.errors.unknownError'));
       }

@@ -87,12 +87,12 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ credentialId }) => {
      * Loads the TOTP codes for the credential.
      */
     const loadTotpCodes = async (): Promise<void> => {
-      if (!dbContext?.sqliteClient) {
+      if (!dbContext?.vaultStore) {
         return;
       }
 
       try {
-        const codes = dbContext.sqliteClient.getTotpCodesForCredential(credentialId);
+        const codes = dbContext.vaultStore.getTotpCodesForCredential(credentialId);
         setTotpCodes(codes);
       } catch (error) {
         console.error('Error loading TOTP codes:', error);
@@ -102,7 +102,7 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ credentialId }) => {
     };
 
     loadTotpCodes();
-  }, [credentialId, dbContext?.sqliteClient]);
+  }, [credentialId, dbContext?.vaultStore]);
 
   useEffect(() => {
     /**

@@ -59,8 +59,8 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
      */
     const loadSettings = async (): Promise<void> => {
       try {
-        if (dbContext.sqliteClient) {
-          const settings = dbContext.sqliteClient.getPasswordSettings();
+        if (dbContext.vaultStore) {
+          const settings = dbContext.vaultStore.getPasswordSettings();
           setCurrentSettings(settings);
           setIsLoaded(true);
         }
@@ -69,7 +69,7 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
       }
     };
     void loadSettings();
-  }, [dbContext.sqliteClient]);
+  }, [dbContext.vaultStore]);
 
   const generatePassword = useCallback((settings: PasswordSettings) => {
     try {

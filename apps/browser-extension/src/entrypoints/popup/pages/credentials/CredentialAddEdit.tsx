@@ -253,7 +253,7 @@ const CredentialAddEdit: React.FC = () => {
    * Load an existing credential from the database in edit mode.
    */
   useEffect(() => {
-    if (!dbContext?.sqliteClient) {
+    if (!dbContext?.vaultStore) {
       return;
     }
 
@@ -338,23 +338,23 @@ const CredentialAddEdit: React.FC = () => {
     }
 
     try {
-      const result = dbContext.sqliteClient.getCredentialById(id);
+      const result = dbContext.vaultStore.getCredentialById(id);
 
       if (result) {
         result.Alias.BirthDate = IdentityHelperUtils.normalizeBirthDateForDisplay(result.Alias.BirthDate);
 
         // Set form values
         Object.entries(result).forEach(([key, value]) => {
-          setValue(key as keyof Credential, value);
+          setValue(key as keyof Credential, value as Credential[keyof Credential]);
         });
 
         // Load attachments for this credential
-        const credentialAttachments = dbContext.sqliteClient.getAttachmentsForCredential(id);
+        const credentialAttachments = dbContext.vaultStore.getAttachmentsForCredential(id);
         setAttachments(credentialAttachments);
         setOriginalAttachmentIds(credentialAttachments.map(a => a.Id));
 
         // Load TOTP codes for this credential
-        const credentialTotpCodes = dbContext.sqliteClient.getTotpCodesForCredential(id);
+        const credentialTotpCodes = dbContext.vaultStore.getTotpCodesForCredential(id);
         setTotpCodes(credentialTotpCodes);
         setOriginalTotpCodeIds(credentialTotpCodes.map(tc => tc.Id));
 
@@ -371,7 +371,7 @@ const CredentialAddEdit: React.FC = () => {
       console.error('Error loading credential:', err);
       setIsInitialLoading(false);
     }
-  }, [dbContext.sqliteClient, id, navigate, setIsInitialLoading, setValue, loadPersistedValues, clearPersistedValues]);
+  }, [dbContext.vaultStore, id, navigate, setIsInitialLoading, setValue, loadPersistedValues, clearPersistedValues]);
 
   /**
    * Handle the delete button click.
@@ -382,7 +382,7 @@ const CredentialAddEdit: React.FC = () => {
     }
 
     executeVaultMutation(async () => {
-      dbContext.sqliteClient!.deleteCredentialById(id);
+      dbContext.vaultStore!.deleteCredentialById(id);
     }, {
       /**
        * Navigate to the credentials list page on success.
@@ -392,24 +392,24 @@ const CredentialAddEdit: React.FC = () => {
         navigate('/credentials');
       }
     });
-  }, [id, executeVaultMutation, dbContext.sqliteClient, navigate, clearPersistedValues]);
+  }, [id, executeVaultMutation, dbContext.vaultStore, navigate, clearPersistedValues]);
 
   /**
    * Initialize the identity and password generators with settings from user's vault.
    */
   const initializeGenerators = useCallback(async () => {
     // Get effective identity language (smart default based on UI language if no explicit override)
-    const identityLanguage = await dbContext.sqliteClient!.getEffectiveIdentityLanguage();
+    const identityLanguage = await dbContext.vaultStore!.getEffectiveIdentityLanguage();
 
     // Initialize identity generator based on language
     const identityGenerator = CreateIdentityGenerator(identityLanguage);
 
     // Initialize password generator with settings from vault
-    const passwordSettings = dbContext.sqliteClient!.getPasswordSettings();
+    const passwordSettings = dbContext.vaultStore!.getPasswordSettings();
     const passwordGenerator = CreatePasswordGenerator(passwordSettings);
 
     return { identityGenerator, passwordGenerator };
-  }, [dbContext.sqliteClient]);
+  }, [dbContext.vaultStore]);
 
   /**
    * Generate a random alias and password.
@@ -418,17 +418,17 @@ const CredentialAddEdit: React.FC = () => {
     const { identityGenerator, passwordGenerator } = await initializeGenerators();
 
     // Get gender preference from database
-    const genderPreference = dbContext.sqliteClient!.getDefaultIdentityGender();
+    const genderPreference = dbContext.vaultStore!.getDefaultIdentityGender();
 
     // Get age range preference and convert to birthdate options
-    const ageRange = dbContext.sqliteClient!.getDefaultIdentityAgeRange();
+    const ageRange = dbContext.vaultStore!.getDefaultIdentityAgeRange();
     const birthdateOptions = convertAgeRangeToBirthdateOptions(ageRange);
 
     // Generate identity with gender preference and birthdate options (null is handled by generator)
     const identity = identityGenerator.generateRandomIdentity(genderPreference, birthdateOptions);
     const password = passwordGenerator.generateRandomPassword();
 
-    const defaultEmailDomain = await dbContext.sqliteClient!.getDefaultEmailDomain();
+    const defaultEmailDomain = await dbContext.vaultStore!.getDefaultEmailDomain();
     const email = defaultEmailDomain ? `${identity.emailPrefix}@${defaultEmailDomain}` : identity.emailPrefix;
 
     // Check current values
@@ -501,8 +501,8 @@ const CredentialAddEdit: React.FC = () => {
       // If alias fields are empty, generate a completely random username
       if (!firstName && !lastName && !nickName && !birthDate) {
         const { identityGenerator } = await initializeGenerators();
-        const genderPreference = dbContext.sqliteClient!.getDefaultIdentityGender();
-        const ageRange = dbContext.sqliteClient!.getDefaultIdentityAgeRange();
+        const genderPreference = dbContext.vaultStore!.getDefaultIdentityGender();
+        const ageRange = dbContext.vaultStore!.getDefaultIdentityAgeRange();
         const birthdateOptions = convertAgeRangeToBirthdateOptions(ageRange);
         const randomIdentity = identityGenerator.generateRandomIdentity(genderPreference, birthdateOptions);
         username = randomIdentity.nickName;
@@ -541,7 +541,7 @@ const CredentialAddEdit: React.FC = () => {
     } catch (error) {
       console.error('Error generating random username:', error);
     }
-  }, [setValue, watch, setLastGeneratedValues, initializeGenerators, dbContext.sqliteClient]);
+  }, [setValue, watch, setLastGeneratedValues, initializeGenerators, dbContext.vaultStore]);
 
   /**
    * Handle form submission.
@@ -599,14 +599,14 @@ const CredentialAddEdit: React.FC = () => {
       setLocalLoading(false);
 
       if (isEditMode) {
-        await dbContext.sqliteClient!.updateCredentialById(data, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes);
+        await dbContext.vaultStore!.updateCredentialById(data, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes);
 
         // Delete passkeys if marked for deletion
         if (passkeyMarkedForDeletion) {
-          await dbContext.sqliteClient!.deletePasskeysByCredentialId(data.Id);
+          await dbContext.vaultStore!.deletePasskeysByCredentialId(data.Id);
         }
       } else {
-        const credentialId = await dbContext.sqliteClient!.createCredential(data, attachments, totpCodes);
+        const credentialId = await dbContext.vaultStore!.createCredential(data, attachments, totpCodes);
         data.Id = credentialId.toString();
       }
     }, {
@@ -625,7 +625,7 @@ const CredentialAddEdit: React.FC = () => {
         }
       },
     });
-  }, [isEditMode, dbContext.sqliteClient, executeVaultMutation, navigate, mode, watch, generateRandomAlias, webApi, clearPersistedValues, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyMarkedForDeletion]);
+  }, [isEditMode, dbContext.vaultStore, executeVaultMutation, navigate, mode, watch, generateRandomAlias, webApi, clearPersistedValues, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyMarkedForDeletion]);
 
   // Set header buttons on mount and clear on unmount
   useEffect((): (() => void) => {
@@ -1014,7 +1014,6 @@ const CredentialAddEdit: React.FC = () => {
             <AttachmentUploader
               attachments={attachments}
               onAttachmentsChange={setAttachments}
-              originalAttachmentIds={originalAttachmentIds}
             />
           </>
         )}

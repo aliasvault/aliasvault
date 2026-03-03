@@ -11,8 +11,7 @@ import { VaultSyncService, VaultSyncError, VaultSyncErrorCodes, base64ToUint8Arr
 import { BrowserVaultLoadProvider } from '@/services/BrowserVaultLoadProvider';
 import type { VaultLoadResponse } from '@/utils/types/messaging/VaultLoadResponse';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import { SqliteClient } from '@/utils/SqliteClient';
-import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
+import { VaultStore } from '@/utils/dist/shared/vault-types';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
 import { CredentialsResponse as messageCredentialsResponse } from '@/utils/types/messaging/CredentialsResponse';
 import { IdentitySettingsResponse } from '@/utils/types/messaging/IdentitySettingsResponse';
@@ -26,22 +25,22 @@ import { WebApiService } from '@/utils/WebApiService';
 import { t } from '@/i18n/StandaloneI18n';
 
 /**
- * Cache for the SqliteClient to avoid repeated decryption and initialization.
+ * Cache for the VaultStore to avoid repeated decryption and initialization.
  * The cached instance is the single source of truth for the in-memory vault.
  *
  * Cache Strategy:
- * - Local mutations (createCredential, etc.): Work directly on cachedSqliteClient, no cache clearing
+ * - Local mutations (createCredential, etc.): Work directly on cachedVaultStore, no cache clearing
  * - New vault from remote (login, sync): Clear cache by setting both to null
  * - Logout/clear vault: Clear cache by setting both to null
  *
- * The cache is cleared by setting cachedSqliteClient and cachedVaultBlob to null directly
+ * The cache is cleared by setting cachedVaultStore and cachedVaultBlob to null directly
  * in the functions that receive new vault data from external sources.
  */
-let cachedSqliteClient: SqliteClient | null = null;
+let cachedVaultStore: VaultStore | null = null;
 let cachedVaultBlob: string | null = null;
 
 /**
- * Check if the user is logged in and if the vault is locked, and also check for pending migrations.
+ * Check if the user is logged in and if the vault is locked.
  */
 export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, isVaultLocked: boolean, hasPendingMigrations: boolean, error?: string }> {
   const username = await storage.getItem('local:username');
@@ -52,52 +51,11 @@ export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, i
   const isLoggedIn = username !== null && accessToken !== null;
   const isVaultLocked = isLoggedIn && (vaultData === null || encryptionKey === null);
 
-  // If vault is locked, we can't check for pending migrations
-  if (isVaultLocked) {
-    return {
-      isLoggedIn,
-      isVaultLocked,
-      hasPendingMigrations: false
-    };
-  }
-
-  // If not logged in, no need to check migrations
-  if (!isLoggedIn) {
-    return {
-      isLoggedIn,
-      isVaultLocked,
-      hasPendingMigrations: false
-    };
-  }
-
-  // Vault is unlocked, check for pending migrations
-  try {
-    const sqliteClient = await createVaultSqliteClient();
-    const hasPendingMigrations = await sqliteClient.hasPendingMigrations();
-    return {
-      isLoggedIn,
-      isVaultLocked,
-      hasPendingMigrations
-    };
-  } catch (error) {
-    // If it's a version incompatibility error, we need to handle it specially
-    if (error instanceof VaultVersionIncompatibleError) {
-      // Return the error so the UI can handle it appropriately (logout user)
-      return {
-        isLoggedIn,
-        isVaultLocked,
-        hasPendingMigrations: false,
-        error: error.message
-      };
-    }
-
-    return {
-      isLoggedIn,
-      isVaultLocked,
-      hasPendingMigrations: false,
-      error: error instanceof Error ? error.message : await t('common.errors.unknownError')
-    };
-  }
+  return {
+    isLoggedIn,
+    isVaultLocked,
+    hasPendingMigrations: false
+  };
 }
 
 /**
@@ -113,7 +71,7 @@ export async function handleStoreVault(
     await storage.setItem('session:encryptedVault', vaultRequest.vaultBlob);
 
     // Clear cached client since we received a new vault blob from external source
-    cachedSqliteClient = null;
+    cachedVaultStore = null;
     cachedVaultBlob = null;
 
     /*
@@ -201,7 +159,7 @@ export async function handleSyncVault(
     ]);
 
     // Clear cached client since we received a new vault blob from server
-    cachedSqliteClient = null;
+    cachedVaultStore = null;
     cachedVaultBlob = null;
   }
 
@@ -273,7 +231,7 @@ export function handleClearVault(
 
   // Clear cached client and contract service since vault was cleared.
   // Contract service must be re-joined with the new secretKey on next login.
-  cachedSqliteClient = null;
+  cachedVaultStore = null;
   cachedVaultBlob = null;
   cachedContractService = null;
 
@@ -292,8 +250,8 @@ export async function handleGetCredentials(
   }
 
   try {
-    const sqliteClient = await createVaultSqliteClient();
-    const credentials = sqliteClient.getAllCredentials();
+    const vaultStore = await createVaultStore();
+    const credentials = vaultStore.getAllCredentials();
     return { success: true, credentials: credentials };
   } catch (error) {
     console.error('Error getting credentials:', error);
@@ -318,8 +276,8 @@ export async function handleGetFilteredCredentials(
   }
 
   try {
-    const sqliteClient = await createVaultSqliteClient();
-    const allCredentials = sqliteClient.getAllCredentials();
+    const vaultStore = await createVaultStore();
+    const allCredentials = vaultStore.getAllCredentials();
 
     const { filterCredentials, AutofillMatchingMode } = await import('@/utils/credentialMatcher/CredentialMatcher');
 
@@ -360,8 +318,8 @@ export async function handleGetSearchCredentials(
   }
 
   try {
-    const sqliteClient = await createVaultSqliteClient();
-    const allCredentials = sqliteClient.getAllCredentials();
+    const vaultStore = await createVaultStore();
+    const allCredentials = vaultStore.getAllCredentials();
 
     // If search term is empty, return empty array
     if (!message.searchTerm || message.searchTerm.trim() === '') {
@@ -408,13 +366,13 @@ export async function handleCreateIdentity(
   }
 
   try {
-    const sqliteClient = await createVaultSqliteClient();
+    const vaultStore = await createVaultStore();
 
-    // Add the new credential to the vault/database.
-    await sqliteClient.createCredential(message.credential, message.attachments || []);
+    // Add the new credential to the vault.
+    await vaultStore.createCredential(message.credential, message.attachments || []);
 
     // Upload the new vault to the server.
-    await uploadNewVaultToServer(sqliteClient);
+    await uploadNewVaultToServer(vaultStore);
 
     return { success: true };
   } catch (error) {
@@ -427,10 +385,10 @@ export async function handleCreateIdentity(
  * Get the email addresses for a vault.
  */
 export async function getEmailAddressesForVault(
-  sqliteClient: SqliteClient
+  vaultStore: VaultStore
 ): Promise<string[]> {
   // TODO: create separate query to only get email addresses to avoid loading all credentials.
-  const credentials = sqliteClient.getAllCredentials();
+  const credentials = vaultStore.getAllCredentials();
 
   // Get metadata from storage
   const privateEmailDomains = await storage.getItem('session:privateEmailDomains') as string[];
@@ -452,8 +410,8 @@ export async function getEmailAddressesForVault(
 export function handleGetDefaultEmailDomain(): Promise<stringResponse> {
   return (async (): Promise<stringResponse> => {
     try {
-      const sqliteClient = await createVaultSqliteClient();
-      const defaultEmailDomain = await sqliteClient.getDefaultEmailDomain();
+      const vaultStore = await createVaultStore();
+      const defaultEmailDomain = await vaultStore.getDefaultEmailDomain();
 
       return { success: true, value: defaultEmailDomain ?? undefined };
     } catch (error) {
@@ -470,9 +428,9 @@ export function handleGetDefaultEmailDomain(): Promise<stringResponse> {
 export async function handleGetDefaultIdentitySettings(
 ) : Promise<IdentitySettingsResponse> {
   try {
-    const sqliteClient = await createVaultSqliteClient();
-    const language = await sqliteClient.getEffectiveIdentityLanguage();
-    const gender = sqliteClient.getDefaultIdentityGender();
+    const vaultStore = await createVaultStore();
+    const language = await vaultStore.getEffectiveIdentityLanguage();
+    const gender = vaultStore.getDefaultIdentityGender();
 
     return {
       success: true,
@@ -493,8 +451,8 @@ export async function handleGetDefaultIdentitySettings(
 export async function handleGetPasswordSettings(
 ) : Promise<messagePasswordSettingsResponse> {
   try {
-    const sqliteClient = await createVaultSqliteClient();
-    const passwordSettings = sqliteClient.getPasswordSettings();
+    const vaultStore = await createVaultStore();
+    const passwordSettings = vaultStore.getPasswordSettings();
 
     return { success: true, settings: passwordSettings };
   } catch (error) {
@@ -706,12 +664,12 @@ export async function handleLoadVaultFromBlockchain(): Promise<VaultLoadResponse
 }
 
 /**
- * Upload a new version of the vault to the server using the provided sqlite client.
+ * Upload a new version of the vault to the server using the provided vault store.
  * @deprecated Replaced by handleUploadVaultToBlockchain() for blockchain flow.
  * Kept temporarily for handleCreateIdentity() which still uses the centralized API.
  */
-async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<VaultPostResponse> {
-  const updatedVaultData = sqliteClient.exportToBase64();
+async function uploadNewVaultToServer(vaultStore: VaultStore) : Promise<VaultPostResponse> {
+  const updatedVaultJson = vaultStore.toJson();
   const encryptionKey = await handleGetEncryptionKey();
 
   if (!encryptionKey) {
@@ -719,7 +677,7 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
   }
 
   const encryptedVault = await EncryptionUtility.symmetricEncrypt(
-    updatedVaultData,
+    updatedVaultJson,
     encryptionKey
   );
 
@@ -730,7 +688,7 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
 
   /*
    * Update cached vault blob to match the new encrypted version
-   * This prevents unnecessary cache invalidation since the in-memory sqliteClient is already up to date
+   * This prevents unnecessary cache invalidation since the in-memory vaultStore is already up to date
    */
   cachedVaultBlob = encryptedVault;
 
@@ -739,17 +697,17 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
 
   // Upload new encrypted vault to server.
   const username = await storage.getItem('local:username') as string;
-  const emailAddresses = await getEmailAddressesForVault(sqliteClient);
+  const emailAddresses = await getEmailAddressesForVault(vaultStore);
 
   const newVault: Vault = {
     blob: encryptedVault,
     createdAt: new Date().toISOString(),
-    credentialsCount: sqliteClient.getAllCredentials().length,
+    credentialsCount: vaultStore.getAllCredentials().length,
     currentRevisionNumber: vaultRevisionNumber,
     emailAddressList: emailAddresses,
     updatedAt: new Date().toISOString(),
     username: username,
-    version: (await sqliteClient.getDatabaseVersion()).version,
+    version: String(vaultStore.getDatabaseVersion()),
     // TODO: add public RSA encryption key to payload when implementing vault creation from browser extension. Currently only web app does this.
     encryptionPublicKey: '',
   };
@@ -768,34 +726,33 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
 }
 
 /**
- * Create a new sqlite client for the stored vault.
- * Uses a cache to avoid repeated decryption and initialization for read operations.
+ * Create a VaultStore for the stored vault.
+ * Uses a cache to avoid repeated decryption and deserialization for read operations.
  */
-async function createVaultSqliteClient() : Promise<SqliteClient> {
+async function createVaultStore() : Promise<VaultStore> {
   const encryptedVault = await storage.getItem('session:encryptedVault') as string;
   const encryptionKey = await handleGetEncryptionKey();
   if (!encryptedVault || !encryptionKey) {
     throw new Error(await t('common.errors.unknownError'));
   }
 
-  // Check if we have a valid cached client
-  if (cachedSqliteClient && cachedVaultBlob === encryptedVault) {
-    return cachedSqliteClient;
+  // Check if we have a valid cached store
+  if (cachedVaultStore && cachedVaultBlob === encryptedVault) {
+    return cachedVaultStore;
   }
 
   // Decrypt the vault
-  const decryptedVault = await EncryptionUtility.symmetricDecrypt(
+  const decryptedJson = await EncryptionUtility.symmetricDecrypt(
     encryptedVault,
     encryptionKey
   );
 
-  // Initialize the SQLite client with the decrypted vault
-  const sqliteClient = new SqliteClient();
-  await sqliteClient.initializeFromBase64(decryptedVault);
+  // Initialize the VaultStore from decrypted JSON
+  const vaultStore = VaultStore.fromJson(decryptedJson);
 
-  // Cache the client and vault blob
-  cachedSqliteClient = sqliteClient;
+  // Cache the store and vault blob
+  cachedVaultStore = vaultStore;
   cachedVaultBlob = encryptedVault;
 
-  return sqliteClient;
+  return vaultStore;
 }

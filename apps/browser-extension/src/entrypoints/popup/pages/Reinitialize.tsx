@@ -138,13 +138,6 @@ const Reinitialize: React.FC = () => {
             restoreLastPage().then(() => {
               setIsInitialLoading(false);
             });
-          },
-          /**
-           * Handle upgrade required.
-           */
-          onUpgradeRequired: () => {
-            navigate('/upgrade', { replace: true });
-            setIsInitialLoading(false);
           }
         });
       } else {

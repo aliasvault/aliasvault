@@ -94,7 +94,7 @@ const CredentialsList: React.FC = () => {
    * Retrieve latest vault and refresh the credentials list.
    */
   const onRefresh = useCallback(async () : Promise<void> => {
-    if (!dbContext?.sqliteClient) {
+    if (!dbContext?.vaultStore) {
       return;
     }
 
@@ -105,13 +105,7 @@ const CredentialsList: React.FC = () => {
          * On success.
          */
         onSuccess: async (_hasNewVault) => {
-          // Credentials list is refreshed automatically when the (new) sqlite client is available via useEffect hook below.
-        },
-        /**
-         * On offline.
-         */
-        _onOffline: () => {
-          // Not implemented for browser extension yet.
+          // Credentials list is refreshed automatically when the (new) vault store is available via useEffect hook below.
         },
         /**
          * On error.
@@ -166,9 +160,9 @@ const CredentialsList: React.FC = () => {
      * Refresh credentials list when a (new) sqlite client is available.
      */
     const refreshCredentials = async () : Promise<void> => {
-      if (dbContext?.sqliteClient) {
+      if (dbContext?.vaultStore) {
         setIsLoading(true);
-        const results = dbContext.sqliteClient?.getAllCredentials() ?? [];
+        const results = dbContext.vaultStore?.getAllCredentials() ?? [];
         setCredentials(results);
         setIsLoading(false);
         setIsInitialLoading(false);
@@ -176,7 +170,7 @@ const CredentialsList: React.FC = () => {
     };
 
     refreshCredentials();
-  }, [dbContext?.sqliteClient, setIsLoading, setIsInitialLoading]);
+  }, [dbContext?.vaultStore, setIsLoading, setIsInitialLoading]);
 
   /**
    * Get the title based on the active filter

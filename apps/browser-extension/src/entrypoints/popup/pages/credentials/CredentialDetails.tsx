@@ -52,12 +52,12 @@ const CredentialDetails: React.FC = (): React.ReactElement => {
       window.history.pushState({}, '', `popup.html#/credentials/${id}`);
     }
 
-    if (!dbContext?.sqliteClient || !id) {
+    if (!dbContext?.vaultStore || !id) {
       return;
     }
 
     try {
-      const result = dbContext.sqliteClient.getCredentialById(id);
+      const result = dbContext.vaultStore.getCredentialById(id);
       if (result) {
         setCredential(result);
         setIsInitialLoading(false);
@@ -68,7 +68,7 @@ const CredentialDetails: React.FC = (): React.ReactElement => {
     } catch (err) {
       console.error('Error loading credential:', err);
     }
-  }, [dbContext.sqliteClient, id, navigate, setIsInitialLoading]);
+  }, [dbContext.vaultStore, id, navigate, setIsInitialLoading]);
 
   // Set header buttons on mount and clear on unmount
   useEffect((): (() => void) => {

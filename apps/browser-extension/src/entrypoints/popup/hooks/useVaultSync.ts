@@ -6,7 +6,7 @@ import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import type { VaultLoadResponse } from '@/utils/types/messaging/VaultLoadResponse';
-import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
+
 
 /**
  * Utility function to ensure a minimum time has elapsed for an operation
@@ -36,7 +36,6 @@ type VaultSyncOptions = {
   onSuccess?: (hasNewVault: boolean) => void;
   onError?: (error: string) => void;
   onStatus?: (message: string) => void;
-  onUpgradeRequired?: () => void;
 }
 
 /**
@@ -46,7 +45,7 @@ type VaultSyncOptions = {
  * Flow:
  * 1. sendMessage('LOAD_VAULT_FROM_BLOCKCHAIN') → background handler
  * 2. Background reads on-chain cidHash, compares with local, downloads from IPFS if needed
- * 3. If new vault: decrypt blob, initialize SQLite, extract secretKey on first load (ADR-006)
+ * 3. If new vault: decrypt blob, initialize VaultStore, extract secretKey on first load (ADR-006)
  */
 export const useVaultSync = () : {
   syncVault: (options?: VaultSyncOptions) => Promise<boolean>;
@@ -56,7 +55,7 @@ export const useVaultSync = () : {
   const dbContext = useDb();
 
   const syncVault = useCallback(async (options: VaultSyncOptions = {}) => {
-    const { initialSync = false, onSuccess, onError, onStatus, onUpgradeRequired } = options;
+    const { initialSync = false, onSuccess, onError, onStatus } = options;
 
     // For the initial sync, we add an artificial delay to various steps which makes it feel more fluid.
     const enableDelay = initialSync;
@@ -92,12 +91,6 @@ export const useVaultSync = () : {
       if (loadResponse.upToDate) {
         onStatus?.(t('common.vaultUpToDate'));
 
-        // Still check for pending migrations on the existing local vault
-        if (await dbContext.hasPendingMigrations()) {
-          onUpgradeRequired?.();
-          return false;
-        }
-
         await withMinimumDelay(() => Promise.resolve(onSuccess?.(false)), 300, enableDelay);
         return false;
       }
@@ -113,40 +106,25 @@ export const useVaultSync = () : {
       try {
         // Get encryption key from background worker
         const encryptionKey = await sendMessage('GET_ENCRYPTION_KEY', {}, 'background') as string;
-        const sqliteClient = await withMinimumDelay(
+        const vaultStore = await withMinimumDelay(
           () => dbContext.initializeDatabaseFromBlob(loadResponse.encryptedBlob!, encryptionKey),
           1000,
           enableDelay,
         );
 
-        // Check if the current vault version is known and up to date
-        if (await sqliteClient.hasPendingMigrations()) {
-          onUpgradeRequired?.();
-          return false;
-        }
-
-        // Step 3: Extract secretKey from SQLite on first load (ADR-006)
-        // The secretKey is stored in the vault DB Settings table and travels with the encrypted vault.
+        // Extract secretKey from vault on first load (ADR-006).
+        // The secretKey is stored in the vault settings and travels with the encrypted vault.
         // On a new device, we need to extract it and cache it locally for future saves.
-        await dbContext.extractAndCacheSecretKey(sqliteClient);
+        await dbContext.extractAndCacheSecretKey(vaultStore);
 
         onSuccess?.(true);
         return true;
       } catch (error) {
-        if (error instanceof VaultVersionIncompatibleError) {
-          await app.logout(error.message);
-          return false;
-        }
         throw new Error('Vault could not be decrypted, if the problem persists please logout and login again.');
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error during vault sync';
       console.error('Vault sync error:', err);
-
-      if (err instanceof VaultVersionIncompatibleError) {
-        await app.logout(errorMessage);
-        return false;
-      }
 
       onError?.(errorMessage);
       return false;

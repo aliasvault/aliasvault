@@ -9,7 +9,7 @@ import type { Credential } from '@/utils/dist/shared/models/vault';
 import { CreatePasswordGenerator, PasswordGenerator, PasswordSettings } from '@/utils/dist/shared/password-generator';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
-import { SqliteClient } from '@/utils/SqliteClient';
+import { imgSrcFromBytes } from '@/utils/logoUtils';
 import { CredentialsResponse } from '@/utils/types/messaging/CredentialsResponse';
 import { IdentitySettingsResponse } from '@/utils/types/messaging/IdentitySettingsResponse';
 import { PasswordSettingsResponse } from '@/utils/types/messaging/PasswordSettingsResponse';
@@ -603,7 +603,7 @@ function createCredentialList(credentials: Credential[], input: HTMLInputElement
 
       const imgElement = document.createElement('img');
       imgElement.className = 'av-credential-logo';
-      imgElement.src = SqliteClient.imgSrcFromBytes(cred.Logo);
+      imgElement.src = imgSrcFromBytes(cred.Logo);
 
       credentialInfo.appendChild(imgElement);
       const credTextContainer = document.createElement('div');
