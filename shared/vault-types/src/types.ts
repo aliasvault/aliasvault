@@ -101,3 +101,22 @@ export type EncryptionKeyEntry = {
   privateKey: string;
   isPrimary: boolean;
 };
+
+/**
+ * Summary of what changed during a vault merge.
+ * Each array contains credential IDs affected by that merge action.
+ */
+export type MergeSummary = {
+  added: string[];
+  updated: string[];
+  deleted: string[];
+  kept: string[];
+};
+
+/**
+ * Result of resolveVaultConflict(): the merged vault and a summary of changes.
+ */
+export type MergeResult = {
+  merged: VaultJson;
+  summary: MergeSummary;
+};
