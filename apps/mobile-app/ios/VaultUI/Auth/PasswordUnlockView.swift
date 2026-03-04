@@ -8,10 +8,16 @@ private let locBundle = Bundle.vaultUI
 public struct PasswordUnlockView: View {
     @ObservedObject public var viewModel: PasswordUnlockViewModel
     @Environment(\.colorScheme) var colorScheme
-    @FocusState private var isPasswordFocused: Bool
+    @FocusState private var focusTextField: Bool
+    @FocusState private var focusSecureField: Bool
+    @State private var isPasswordVisible: Bool = false
 
     public init(viewModel: PasswordUnlockViewModel) {
         self._viewModel = ObservedObject(wrappedValue: viewModel)
+    }
+
+    private var isPasswordFocused: Bool {
+        focusTextField || focusSecureField
     }
 
     private var colors: ColorConstants.Colors.Type {
@@ -90,21 +96,68 @@ public struct PasswordUnlockView: View {
                                 .foregroundColor(colors.text.opacity(0.4))
                                 .font(.system(size: 16))
 
-                            SecureField(String(localized: "password", bundle: locBundle), text: $viewModel.password)
-                                .textFieldStyle(.plain)
-                                .font(.system(size: 16))
-                                .foregroundColor(colors.text)
-                                .focused($isPasswordFocused)
-                                .autocapitalization(.none)
-                                .disableAutocorrection(true)
-                                .submitLabel(.done)
-                                .onSubmit {
-                                    if !viewModel.password.isEmpty && !viewModel.isProcessing {
-                                        Task {
-                                            await viewModel.unlock()
+                            ZStack(alignment: .trailing) {
+                                // TextField (visible password)
+                                TextField(String(localized: "password", bundle: locBundle), text: $viewModel.password)
+                                    .textFieldStyle(.plain)
+                                    .font(.system(size: 16))
+                                    .foregroundColor(colors.text)
+                                    .focused($focusTextField)
+                                    .autocapitalization(.none)
+                                    .disableAutocorrection(true)
+                                    .submitLabel(.done)
+                                    .textContentType(.password)
+                                    .opacity(isPasswordVisible ? 1 : 0)
+                                    .onSubmit {
+                                        if !viewModel.password.isEmpty && !viewModel.isProcessing {
+                                            Task {
+                                                await viewModel.unlock()
+                                            }
                                         }
                                     }
-                                }
+
+                                // SecureField (masked password)
+                                SecureField(String(localized: "password", bundle: locBundle), text: $viewModel.password)
+                                    .textFieldStyle(.plain)
+                                    .font(.system(size: 16))
+                                    .foregroundColor(colors.text)
+                                    .focused($focusSecureField)
+                                    .autocapitalization(.none)
+                                    .disableAutocorrection(true)
+                                    .submitLabel(.done)
+                                    .textContentType(.password)
+                                    .opacity(isPasswordVisible ? 0 : 1)
+                                    .onSubmit {
+                                        if !viewModel.password.isEmpty && !viewModel.isProcessing {
+                                            Task {
+                                                await viewModel.unlock()
+                                            }
+                                        }
+                                    }
+
+                                // Toggle button
+                                Button(
+                                    action: {
+                                        // Haptic feedback
+                                        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                                        impactFeedback.impactOccurred()
+                                        isPasswordVisible.toggle()
+                                        if isPasswordVisible {
+                                            focusTextField = true
+                                        } else {
+                                            focusSecureField = true
+                                        }
+                                    },
+                                    label: {
+                                        Image(systemName: isPasswordVisible ? "eye.slash.fill" : "eye.fill")
+                                            .foregroundColor(colors.primary)
+                                            .font(.system(size: 18, weight: .medium))
+                                            .frame(width: 24, height: 24)
+                                            .contentShape(Rectangle())
+                                    }
+                                )
+                                .buttonStyle(ScaleButtonStyle())
+                            }
                         }
                         .padding(16)
                         .background(colors.accentBackground)
@@ -195,9 +248,25 @@ public struct PasswordUnlockView: View {
         .onAppear {
             // Delay focus slightly to ensure smooth animation
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                isPasswordFocused = true
+                if isPasswordVisible {
+                    focusTextField = true
+                } else {
+                    focusSecureField = true
+                }
             }
         }
+    }
+}
+
+// MARK: - Button Styles
+
+/// A button style that scales down when pressed for tactile feedback
+private struct ScaleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.85 : 1.0)
+            .opacity(configuration.isPressed ? 0.7 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 
