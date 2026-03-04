@@ -1,6 +1,6 @@
 # Story 4.2: Credential-Level Merge
 
-Status: review
+Status: done
 
 ## Story
 

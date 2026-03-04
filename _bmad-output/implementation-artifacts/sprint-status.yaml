@@ -61,7 +61,7 @@ development_status:
   epic-2-retrospective: optional
 
   # Epic 3: Recovery & Breach Defense
-  epic-3: in-progress
+  epic-3: done
   3-1-guardian-smart-contract: done
   3-2-shamir-secret-splitting-pattern-6: done
   3-2v2-pattern6-inverted-shamir-refactor: done
@@ -69,14 +69,14 @@ development_status:
   3-4-recovery-claim-flow-pattern-6: done
   3-5-ownership-transfer: descoped  # UI descoped — backup transfer (3.6) provides fast path; circuit stays in contract
   3-6-backup-wallet-configuration-and-transfer: done  # Contract Set→Map + maturity-based transfer + UI (settings + transfer page)
-  3-7-guardian-portal-production-build: review
+  3-7-guardian-portal-production-build: done
   epic-3-retrospective: optional
 
   # Epic 4: Credential Management (Revised 2026-03-02 — Sprint Change Proposal)
-  epic-4: in-progress
+  epic-4: done
   4-0-vault-format-migration: done  # SQLite→JSON vault format complete — code review passed, all fixes applied
   4-1-credential-add-edit-flow: done  # REVISED: validate existing CRUD with new JSON store — code review passed
-  4-2-credential-level-merge: review  # REVISED: merge operates directly on VaultJson
+  4-2-credential-level-merge: done  # REVISED: merge operates directly on VaultJson — code review passed
   4-3-conflict-detection-ux: done  # REVISED: saveWithConflictCheck() on VaultSyncService — code review passed
   epic-4-retrospective: optional
 
