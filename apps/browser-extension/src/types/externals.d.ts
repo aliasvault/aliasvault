@@ -43,6 +43,21 @@ declare module '@aliasvault/vault-sync' {
     shareFiles: RecoveryShareFile[];
     onChainRecoveryKeyHash: Uint8Array;
   }): Promise<RecoveryClaimResult>;
+
+  // Story 4.3: Conflict detection types
+  export interface MergeSummary {
+    added: string[];
+    updated: string[];
+    deleted: string[];
+    kept: string[];
+  }
+  export interface ConflictCheckResult {
+    cid: string;
+    cidHash: string;
+    merged: boolean;
+    summary?: MergeSummary;
+    uploadedBytes: Uint8Array;
+  }
 }
 
 // argon2 WASM bundle (no @types available)

@@ -93,6 +93,7 @@
     "encryptingVault": "Encrypting vault...",
     "syncingToBlockchain": "Syncing to blockchain...",
     "vaultSynced": "Synced",
+    "vaultMerged": "Vault synced: Added {{added}}, updated {{updated}}, deleted {{deleted}} credentials from another device",
     "checkingBlockchain": "Checking blockchain...",
     "noVaultFound": "No vault found on-chain",
     "vaultUpToDate": "Vault is up to date",

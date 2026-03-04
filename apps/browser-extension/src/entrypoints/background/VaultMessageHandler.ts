@@ -372,13 +372,13 @@ export async function handleCreateIdentity(
     // Add the new credential to the vault.
     await vaultStore.createCredential(message.credential, message.attachments || []);
 
-    // Encrypt and upload via blockchain (same pattern as handleUploadVault)
+    // Encrypt and upload via blockchain — pass pre-decrypted JSON to avoid redundant decrypt
     const vaultJson = vaultStore.toJson();
     const encryptedVault = await EncryptionUtility.symmetricEncrypt(vaultJson, encryptionKey);
     await storage.setItems([{ key: 'session:encryptedVault', value: encryptedVault }]);
     cachedVaultBlob = encryptedVault;
 
-    await handleUploadVaultToBlockchain(encryptedVault);
+    await handleUploadVaultToBlockchain(encryptedVault, vaultJson);
 
     return { success: true };
   } catch (error) {
@@ -504,9 +504,16 @@ export async function handleUploadVault(
     // Persist the current updated vault blob in session storage.
     await storage.setItem('session:encryptedVault', message.vaultBlob);
 
-    // Upload to blockchain (IPFS + contract).
+    // Upload to blockchain (IPFS + contract) with conflict detection.
     const result = await handleUploadVaultToBlockchain(message.vaultBlob);
-    return { success: true, status: 0, cid: result.cid, cidHash: result.cidHash };
+    return {
+      success: true,
+      status: 0,
+      cid: result.cid,
+      cidHash: result.cidHash,
+      merged: result.merged,
+      mergeSummary: result.mergeSummary,
+    };
   } catch (error) {
     console.error('Failed to upload vault:', error);
     // M2: Use structured VaultSyncError.retryable instead of string matching
@@ -591,10 +598,8 @@ function createPinataProvider(): PinataBrowserProvider {
 
 async function handleUploadVaultToBlockchain(
   encryptedVaultBase64: string,
-): Promise<{ cid: string; cidHash: string }> {
-  // Convert encrypted vault from base64 to Uint8Array for IPFS upload
-  const encryptedBytes = base64ToUint8Array(encryptedVaultBase64);
-
+  preDecryptedJson?: string,
+): Promise<{ cid: string; cidHash: string; merged?: boolean; mergeSummary?: { added: number; updated: number; deleted: number } }> {
   const pinataProvider = createPinataProvider();
 
   // Ensure contract service is joined (M4: cached, join once)
@@ -607,10 +612,52 @@ async function handleUploadVaultToBlockchain(
     await cachedContractService.joinVaultRegistry(hexToUint8Array(secretKeyHex));
   }
 
-  // Use VaultSyncService with BrowserVaultSyncProvider (H1: shared business logic)
-  const provider = new BrowserVaultSyncProvider(pinataProvider, cachedContractService);
-  const syncService = new VaultSyncService(provider);
-  return await syncService.saveVault(encryptedBytes);
+  const syncProvider = new BrowserVaultSyncProvider(pinataProvider, cachedContractService);
+  const loadProvider = new BrowserVaultLoadProvider(pinataProvider, cachedContractService);
+  const syncService = new VaultSyncService(syncProvider);
+
+  // Get encryption key for conflict-check decrypt/encrypt callbacks
+  const encryptionKey = await handleGetEncryptionKey();
+  if (!encryptionKey) {
+    throw new Error('Encryption key not available for conflict check.');
+  }
+
+  // Use pre-decrypted JSON if caller already has it (avoids redundant decrypt round-trip)
+  const localVaultJson = preDecryptedJson
+    ?? await EncryptionUtility.symmetricDecrypt(encryptedVaultBase64, encryptionKey);
+
+  // Platform-agnostic callbacks: browser extension provides EncryptionUtility wrappers
+  const decrypt = async (bytes: Uint8Array, key: string): Promise<string> => {
+    const base64 = uint8ArrayToBase64(bytes);
+    return await EncryptionUtility.symmetricDecrypt(base64, key);
+  };
+  const encrypt = async (plaintext: string, key: string): Promise<Uint8Array> => {
+    const base64 = await EncryptionUtility.symmetricEncrypt(plaintext, key);
+    return base64ToUint8Array(base64);
+  };
+
+  const result = await syncService.saveWithConflictCheck(
+    localVaultJson, encryptionKey, loadProvider, decrypt, encrypt,
+  );
+
+  // Cache invalidation on merge: update cached store + storage with merged vault
+  if (result.merged) {
+    const mergedBase64 = uint8ArrayToBase64(result.uploadedBytes);
+    await storage.setItem('session:encryptedVault', mergedBase64);
+    cachedVaultStore = null;
+    cachedVaultBlob = null;
+  }
+
+  return {
+    cid: result.cid,
+    cidHash: result.cidHash,
+    merged: result.merged,
+    mergeSummary: result.summary ? {
+      added: result.summary.added.length,
+      updated: result.summary.updated.length,
+      deleted: result.summary.deleted.length,
+    } : undefined,
+  };
 }
 
 /**

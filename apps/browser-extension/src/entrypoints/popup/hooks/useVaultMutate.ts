@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { sendMessage } from 'webext-bridge/popup';
 
@@ -28,6 +28,7 @@ export function useVaultMutate() : {
   const [syncStatus, setSyncStatus] = useState(t('common.syncingVault'));
   const dbContext = useDb();
   const { syncVault } = useVaultSync();
+  const mergeOccurredRef = useRef(false);
 
   /**
    * Execute the provided operation (e.g. create/update/delete credential)
@@ -61,7 +62,16 @@ export function useVaultMutate() : {
     const response = await sendMessage('UPLOAD_VAULT', request, 'background') as messageVaultUploadResponse;
 
     if (response.success) {
-      setSyncStatus(t('common.vaultSynced'));
+      if (response.merged && response.mergeSummary) {
+        setSyncStatus(t('common.vaultMerged', {
+          added: response.mergeSummary.added,
+          updated: response.mergeSummary.updated,
+          deleted: response.mergeSummary.deleted,
+        }));
+        mergeOccurredRef.current = true;
+      } else {
+        setSyncStatus(t('common.vaultSynced'));
+      }
       options.onSuccess?.();
     } else {
       throw new Error(response.error ?? t('common.errors.unknownError'));
@@ -111,6 +121,11 @@ export function useVaultMutate() : {
       console.error('Error during vault mutation:', error);
       options.onError?.(error instanceof Error ? error : new Error(t('common.errors.unknownError')));
     } finally {
+      if (mergeOccurredRef.current) {
+        // Hold merge notification visible for 3 seconds so user can read it
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        mergeOccurredRef.current = false;
+      }
       setIsLoading(false);
       setSyncStatus('');
     }

@@ -6,4 +6,6 @@ export type VaultUploadResponse = {
     cid?: string,
     cidHash?: string,
     retryable?: boolean,
+    merged?: boolean,
+    mergeSummary?: { added: number; updated: number; deleted: number },
 };
