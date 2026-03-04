@@ -88,5 +88,5 @@
   <string name="password_unlock_password_hint">Пароль</string>
   <string name="password_unlock_button">Разблокировать</string>
   <string name="password_unlock_incorrect">Неверный пароль. Повторите попытку.</string>
-  <string name="password_unlock_error">Failed to verify password</string>
+  <string name="password_unlock_error">Не удалось проверить пароль</string>
 </resources>
