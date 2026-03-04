@@ -77,7 +77,7 @@ development_status:
   4-0-vault-format-migration: done  # SQLite→JSON vault format complete — code review passed, all fixes applied
   4-1-credential-add-edit-flow: done  # REVISED: validate existing CRUD with new JSON store — code review passed
   4-2-credential-level-merge: review  # REVISED: merge operates directly on VaultJson
-  4-3-conflict-detection-ux: backlog  # REVISED: saveWithConflictCheck() on VaultSyncService
+  4-3-conflict-detection-ux: done  # REVISED: saveWithConflictCheck() on VaultSyncService — code review passed
   epic-4-retrospective: optional
 
   # Epic 5: Alias Email System
