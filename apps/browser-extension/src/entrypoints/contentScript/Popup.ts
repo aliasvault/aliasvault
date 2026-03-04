@@ -235,8 +235,8 @@ export async function createAutofillPopup(input: HTMLInputElement, credentials: 
     const loadingPopup = createLoadingPopup(input, creatingText, rootContainer);
 
     try {
-      // Sync with api to ensure we have the latest vault.
-      await sendMessage('SYNC_VAULT', {}, 'background');
+      // Sync with blockchain to ensure we have the latest vault.
+      await sendMessage('LOAD_VAULT_FROM_BLOCKCHAIN', {}, 'background');
 
       // Retrieve default email domain from background
       const response = await sendMessage('GET_DEFAULT_EMAIL_DOMAIN', {}, 'background') as StringResponse;
@@ -303,9 +303,13 @@ export async function createAutofillPopup(input: HTMLInputElement, credentials: 
       }
 
       // Create identity in background.
-      await sendMessage('CREATE_IDENTITY', {
+      const createResult = await sendMessage('CREATE_IDENTITY', {
         credential: JSON.parse(JSON.stringify(credential))
-      }, 'background');
+      }, 'background') as { success: boolean; error?: string };
+
+      if (!createResult?.success) {
+        throw new Error(createResult?.error || failedText);
+      }
 
       // Close popup.
       removeExistingPopup(rootContainer);

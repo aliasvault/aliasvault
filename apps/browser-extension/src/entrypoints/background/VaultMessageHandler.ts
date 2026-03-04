@@ -2,7 +2,7 @@
 import { storage } from 'wxt/utils/storage';
 
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/metadata';
-import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/shared/models/webapi';
+import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
 import { VaultCidStore } from '@/services/VaultCidStore';
 import { PinataBrowserProvider } from '@/services/PinataBrowserProvider';
 import { MidnightContractService } from '@/services/MidnightContractService';
@@ -134,6 +134,7 @@ export async function handleStoreEncryptionKeyDerivationParams(
 
 /**
  * Sync the vault with the server to check if a newer vault is available. If so, the vault will be updated.
+ * @deprecated No active callers — replaced by handleLoadVaultFromBlockchain(). Kept for safety.
  */
 export async function handleSyncVault(
 ) : Promise<messageBoolResponse> {
@@ -371,13 +372,19 @@ export async function handleCreateIdentity(
     // Add the new credential to the vault.
     await vaultStore.createCredential(message.credential, message.attachments || []);
 
-    // Upload the new vault to the server.
-    await uploadNewVaultToServer(vaultStore);
+    // Encrypt and upload via blockchain (same pattern as handleUploadVault)
+    const vaultJson = vaultStore.toJson();
+    const encryptedVault = await EncryptionUtility.symmetricEncrypt(vaultJson, encryptionKey);
+    await storage.setItems([{ key: 'session:encryptedVault', value: encryptedVault }]);
+    cachedVaultBlob = encryptedVault;
+
+    await handleUploadVaultToBlockchain(encryptedVault);
 
     return { success: true };
   } catch (error) {
     console.error('Failed to create identity:', error);
-    return { success: false, error: await t('common.errors.unknownError') };
+    const errorMessage = error instanceof Error ? error.message : await t('common.errors.unknownError');
+    return { success: false, error: errorMessage };
   }
 }
 
@@ -661,68 +668,6 @@ export async function handleLoadVaultFromBlockchain(): Promise<VaultLoadResponse
       retryable: syncError?.retryable ?? false,
     };
   }
-}
-
-/**
- * Upload a new version of the vault to the server using the provided vault store.
- * @deprecated Replaced by handleUploadVaultToBlockchain() for blockchain flow.
- * Kept temporarily for handleCreateIdentity() which still uses the centralized API.
- */
-async function uploadNewVaultToServer(vaultStore: VaultStore) : Promise<VaultPostResponse> {
-  const updatedVaultJson = vaultStore.toJson();
-  const encryptionKey = await handleGetEncryptionKey();
-
-  if (!encryptionKey) {
-    throw new Error(await t('common.errors.vaultIsLocked'));
-  }
-
-  const encryptedVault = await EncryptionUtility.symmetricEncrypt(
-    updatedVaultJson,
-    encryptionKey
-  );
-
-  // Update storage with the newly encrypted vault (serialized from current in-memory state)
-  await storage.setItems([
-    { key: 'session:encryptedVault', value: encryptedVault }
-  ]);
-
-  /*
-   * Update cached vault blob to match the new encrypted version
-   * This prevents unnecessary cache invalidation since the in-memory vaultStore is already up to date
-   */
-  cachedVaultBlob = encryptedVault;
-
-  // Get metadata from storage
-  const vaultRevisionNumber = await storage.getItem('session:vaultRevisionNumber') as number;
-
-  // Upload new encrypted vault to server.
-  const username = await storage.getItem('local:username') as string;
-  const emailAddresses = await getEmailAddressesForVault(vaultStore);
-
-  const newVault: Vault = {
-    blob: encryptedVault,
-    createdAt: new Date().toISOString(),
-    credentialsCount: vaultStore.getAllCredentials().length,
-    currentRevisionNumber: vaultRevisionNumber,
-    emailAddressList: emailAddresses,
-    updatedAt: new Date().toISOString(),
-    username: username,
-    version: String(vaultStore.getDatabaseVersion()),
-    // TODO: add public RSA encryption key to payload when implementing vault creation from browser extension. Currently only web app does this.
-    encryptionPublicKey: '',
-  };
-
-  const webApi = new WebApiService();
-  const response = await webApi.post<Vault, VaultPostResponse>('Vault', newVault);
-
-  // Check if response is successful (.status === 0)
-  if (response.status === 0) {
-    await storage.setItem('session:vaultRevisionNumber', response.newRevisionNumber);
-  } else {
-    throw new Error(await t('common.errors.unknownError'));
-  }
-
-  return response;
 }
 
 /**

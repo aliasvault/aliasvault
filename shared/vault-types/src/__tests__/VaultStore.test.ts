@@ -76,6 +76,20 @@ describe('Serialization roundtrip', () => {
     expect(parsed.lastModified).toBeGreaterThanOrEqual(before);
     expect(parsed.lastModified).toBeLessThanOrEqual(after);
   });
+
+  it('toJson stamps lastModified on roundtrip', async () => {
+    const store = VaultStore.createEmpty();
+    await store.createCredential(makeCredential(), []);
+    const before = Date.now();
+    const json = store.toJson();
+    const after = Date.now();
+    const parsed = JSON.parse(json);
+    expect(parsed.lastModified).toBeGreaterThanOrEqual(before);
+    expect(parsed.lastModified).toBeLessThanOrEqual(after);
+
+    const restored = VaultStore.fromJson(json);
+    expect(restored.getAllCredentials()).toHaveLength(1);
+  });
 });
 
 // --- 3.2 All CRUD ---
@@ -603,5 +617,138 @@ describe('Logo roundtrip', () => {
     const tree = parsed.credentials[id];
     expect(typeof tree.logo).toBe('string');
     expect(tree.logo).toBe(btoa('Hello'));
+  });
+});
+
+// --- 4.1 Timestamp behavior ---
+describe('Timestamp behavior', () => {
+  it('createCredential: createdAt === updatedAt, both are recent numbers', async () => {
+    const store = VaultStore.createEmpty();
+    const before = Date.now();
+    const id = await store.createCredential(makeCredential(), []);
+    const after = Date.now();
+
+    const parsed = JSON.parse(store.toJson());
+    const tree = parsed.credentials[id];
+
+    expect(typeof tree.createdAt).toBe('number');
+    expect(typeof tree.updatedAt).toBe('number');
+    expect(tree.createdAt).toBe(tree.updatedAt);
+    expect(tree.createdAt).toBeGreaterThanOrEqual(before);
+    expect(tree.createdAt).toBeLessThanOrEqual(after);
+  });
+
+  it('createCredential: password.createdAt === password.updatedAt', async () => {
+    const store = VaultStore.createEmpty();
+    const id = await store.createCredential(makeCredential(), []);
+
+    const parsed = JSON.parse(store.toJson());
+    const tree = parsed.credentials[id];
+
+    expect(typeof tree.password.createdAt).toBe('number');
+    expect(tree.password.createdAt).toBe(tree.password.updatedAt);
+  });
+
+  it('updateCredentialById (field change): updatedAt bumped, createdAt preserved', async () => {
+    const store = VaultStore.createEmpty();
+    const id = await store.createCredential(makeCredential(), []);
+
+    const initialParsed = JSON.parse(store.toJson());
+    const originalCreatedAt = initialParsed.credentials[id].createdAt;
+
+    await new Promise(resolve => setTimeout(resolve, 10));
+
+    await store.updateCredentialById(
+      makeCredential({ Id: id, ServiceName: 'Updated' }),
+      [], []
+    );
+
+    const updatedParsed = JSON.parse(store.toJson());
+    const tree = updatedParsed.credentials[id];
+
+    expect(tree.createdAt).toBe(originalCreatedAt);
+    expect(tree.updatedAt).toBeGreaterThan(originalCreatedAt);
+  });
+
+  it('updateCredentialById (password change): password.updatedAt bumped, password.createdAt preserved', async () => {
+    const store = VaultStore.createEmpty();
+    const id = await store.createCredential(makeCredential({ Password: 'old' }), []);
+
+    const initialParsed = JSON.parse(store.toJson());
+    const originalPwCreatedAt = initialParsed.credentials[id].password.createdAt;
+
+    await new Promise(resolve => setTimeout(resolve, 10));
+
+    await store.updateCredentialById(
+      makeCredential({ Id: id, Password: 'new' }),
+      [], []
+    );
+
+    const updatedParsed = JSON.parse(store.toJson());
+    const tree = updatedParsed.credentials[id];
+
+    expect(tree.password.createdAt).toBe(originalPwCreatedAt);
+    expect(tree.password.updatedAt).toBeGreaterThan(originalPwCreatedAt);
+  });
+
+  it('updateCredentialById (no changes): updatedAt still bumped', async () => {
+    const store = VaultStore.createEmpty();
+    const id = await store.createCredential(makeCredential(), []);
+
+    const initialParsed = JSON.parse(store.toJson());
+    const originalUpdatedAt = initialParsed.credentials[id].updatedAt;
+
+    await new Promise(resolve => setTimeout(resolve, 10));
+
+    await store.updateCredentialById(
+      makeCredential({ Id: id }),
+      [], []
+    );
+
+    const updatedParsed = JSON.parse(store.toJson());
+    expect(updatedParsed.credentials[id].updatedAt).toBeGreaterThan(originalUpdatedAt);
+  });
+
+  it('deleteCredentialById: updatedAt bumped, isDeleted set', async () => {
+    const store = VaultStore.createEmpty();
+    const id = await store.createCredential(makeCredential(), []);
+
+    const initialParsed = JSON.parse(store.toJson());
+    const originalUpdatedAt = initialParsed.credentials[id].updatedAt;
+
+    await new Promise(resolve => setTimeout(resolve, 10));
+
+    await store.deleteCredentialById(id);
+
+    const deletedParsed = JSON.parse(store.toJson());
+    const tree = deletedParsed.credentials[id];
+
+    expect(tree.isDeleted).toBe(true);
+    expect(tree.updatedAt).toBeGreaterThan(originalUpdatedAt);
+  });
+
+  it('attachment soft-delete: att.updatedAt bumped', async () => {
+    const store = VaultStore.createEmpty();
+    const att = makeAttachment();
+    const id = await store.createCredential(makeCredential(), [att]);
+
+    const initialParsed = JSON.parse(store.toJson());
+    const origAtt = initialParsed.credentials[id].attachments[0];
+    const origAttUpdatedAt = origAtt.updatedAt;
+
+    await new Promise(resolve => setTimeout(resolve, 10));
+
+    // Remove the original attachment (include in originalAttachmentIds but not in new attachments)
+    await store.updateCredentialById(
+      makeCredential({ Id: id }),
+      [origAtt.id],
+      []
+    );
+
+    const updatedParsed = JSON.parse(store.toJson());
+    const updatedAtt = updatedParsed.credentials[id].attachments[0];
+
+    expect(updatedAtt.isDeleted).toBe(true);
+    expect(updatedAtt.updatedAt).toBeGreaterThan(origAttUpdatedAt);
   });
 });
