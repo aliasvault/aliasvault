@@ -822,7 +822,7 @@ const json = store.toJson();
 | `@aliasvault/vault-sync` | Typed exports | `RecoveryClaimService.ts` uses inline `import('...').Type` references |
 | `argon2-browser/dist/argon2-bundled.min.js` | Bare | No `@types` package available |
 
-**Maintenance:** If `@aliasvault/vault-sync` adds new exported types used by `RecoveryClaimService.ts`, update the typed declaration in `externals.d.ts` to match. The canonical source is `shared/vault-sync/src/`.
+**Maintenance:** If `@aliasvault/vault-sync` adds new exported types used by browser extension code, update the typed declaration in `externals.d.ts` to match. The canonical source is `shared/vault-sync/src/`. Story 4.3 added `ConflictCheckResult` and `MergeSummary` to the declaration.
 
 **Anti-pattern:**
 ```typescript
@@ -843,6 +843,39 @@ declare module '@aliasvault/vault-sync' {
 ```
 
 **Discovery:** Story 4.0 code review — "pre-existing" tsc errors traced to dependency version drift (`@types/chrome@0.0.280`, `@types/react@19`) exposing latent type issues, plus missing ambient declarations for runtime-only packages.
+
+### 25. Vault Sync Conflict Detection — Platform-Agnostic Callback Pattern (Story 4.3)
+
+**Rule:** `VaultSyncService.saveWithConflictCheck()` in `shared/vault-sync/` handles save-time conflict detection. It accepts `decrypt` and `encrypt` **callback functions** — it does NOT import browser-specific crypto (`EncryptionUtility`) directly. The browser extension provides EncryptionUtility wrappers; future platforms (CLI, mobile) provide their own.
+
+**Why this matters:**
+- `shared/vault-sync/` is a platform-agnostic package — importing `EncryptionUtility` (which uses `chrome.runtime` APIs) would break it for non-browser platforms
+- The callback pattern keeps the merge pipeline testable with simple mocks (no WASM, no browser APIs)
+- `handleUploadVaultToBlockchain()` accepts an optional `preDecryptedJson` parameter — callers that already have the decrypted vault JSON (e.g., `handleCreateIdentity`) pass it directly to avoid a redundant decrypt→encrypt→decrypt round-trip
+
+**Callback signatures:**
+```typescript
+decrypt: (encryptedBytes: Uint8Array, key: string) => Promise<string>
+encrypt: (plaintext: string, key: string) => Promise<Uint8Array>
+```
+
+**Browser extension wiring** (in `VaultMessageHandler.ts`):
+```typescript
+const decrypt = async (bytes: Uint8Array, key: string): Promise<string> => {
+  const base64 = uint8ArrayToBase64(bytes);
+  return await EncryptionUtility.symmetricDecrypt(base64, key);
+};
+const encrypt = async (plaintext: string, key: string): Promise<Uint8Array> => {
+  const base64 = await EncryptionUtility.symmetricEncrypt(plaintext, key);
+  return base64ToUint8Array(base64);
+};
+```
+
+**Error handling:** All encrypt callback failures are wrapped in `VaultSyncError(ENCRYPT_FAILED)` via `encryptOrThrow()` — callers get consistent error types regardless of the callback implementation.
+
+**Merge notification timing:** After a merge, the `syncStatus` message is held visible for 3 seconds via a `useRef` flag before the loading overlay clears. Without this delay, the `finally` block immediately clears `isLoading`, making the notification invisible.
+
+**Discovery:** Story 4.3 code review — H1 (notification invisible without delay), H2 (encrypt errors not wrapped), M3 (redundant decrypt in handleCreateIdentity).
 
 ---
 
@@ -957,10 +990,11 @@ Before merging any PR that touches cryptography or guardian recovery:
 
 ---
 
-**Last Updated:** 2026-03-03
+**Last Updated:** 2026-03-04
 **Source:** Generated from [architecture.md](_bmad-output/architecture.md)
 **Maintenance:** Update when implementing new patterns or discovering critical rules
 **Change Log:**
+- 2026-03-04: Added Rule 25 (Vault Sync Conflict Detection — Platform-Agnostic Callback Pattern) from Story 4.3. `saveWithConflictCheck()` uses decrypt/encrypt callbacks instead of importing browser-specific crypto. Documents `preDecryptedJson` optimization, `encryptOrThrow()` error wrapping, and merge notification 3-second display hold. Updated Rule 24 maintenance note with Story 4.3 types (ConflictCheckResult, MergeSummary).
 - 2026-03-03: Added Rule 24 (Browser Extension Ambient Module Declarations — `externals.d.ts`). Documents `apps/*` not in pnpm workspace, ambient declarations for runtime-only packages (`@midnight-ntwrk/*`, `@aliasvault/contract`, `@aliasvault/vault-sync`, `argon2-browser`). Fixed all "pre-existing" tsc errors (dependency version drift from `@types/chrome@0.0.280` and `@types/react@19`). 9 files fixed, `tsc --noEmit` now reports zero errors.
 - 2026-03-02: Added Rule 23 (JSON Vault Format — VaultStore replaces SqliteClient). Sprint Change Proposal 2026-03-02: vault blob on IPFS is VaultJson JSON, not SQLite binary. VaultStore (~300 lines) replaces SqliteClient (1,611 lines). shared/vault-sql/ removed, shared/vault-types/ added. Updated Rule 12 (SQLite code → VaultStore code for secretKey storage). Updated Rule 21 (DbContext reference: SQLite DB handle → VaultStore handle). Added anti-pattern for SQLite/binary vault format. Updated architecture.md Section 3 (conflict resolution types), Pattern 5 (resolution algorithm), directory tree, and format decision record.
 - 2026-03-01: Added Rule 22 (Guardian Portal Production Build Verification) from Story 3.7. Vite build must pass alongside tsc and vitest for any changes to services/guardian-portal/. Documents WASM plugin requirements, ZK key copying, and build output expectations.
