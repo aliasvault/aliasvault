@@ -39,6 +39,22 @@ export interface VaultLoadProvider {
 }
 
 /**
+ * Result of saveWithConflictCheck(): indicates whether a merge occurred and the save result.
+ */
+export interface ConflictCheckResult {
+  /** CIDv1 string of the uploaded vault blob. */
+  cid: string;
+  /** Hex-encoded SHA-256 hash of the CID string. */
+  cidHash: string;
+  /** True if a merge was performed (remote vault differed from local). */
+  merged: boolean;
+  /** Present only when merged === true. Summary of what changed during merge. */
+  summary?: import('@aliasvault/vault-types').MergeSummary;
+  /** The encrypted bytes that were actually uploaded (merged vault if conflict, original if no conflict). */
+  uploadedBytes: Uint8Array;
+}
+
+/**
  * Result of a successful vault load operation.
  */
 export interface VaultLoadResult {

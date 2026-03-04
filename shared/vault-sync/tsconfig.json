@@ -13,7 +13,10 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@aliasvault/models/*": ["../models/src/*"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/__tests__/**"]

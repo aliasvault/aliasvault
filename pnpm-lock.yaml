@@ -410,6 +410,12 @@ importers:
       '@aliasvault/ipfs-service':
         specifier: workspace:*
         version: link:../ipfs-service
+      '@aliasvault/models':
+        specifier: workspace:*
+        version: link:../models
+      '@aliasvault/vault-types':
+        specifier: workspace:*
+        version: link:../vault-types
       secrets.js-34r7h:
         specifier: ^2.0.2
         version: 2.0.2

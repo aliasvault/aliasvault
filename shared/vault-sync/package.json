@@ -27,6 +27,8 @@
   "dependencies": {
     "@aliasvault/contract": "workspace:*",
     "@aliasvault/ipfs-service": "workspace:*",
+    "@aliasvault/models": "workspace:*",
+    "@aliasvault/vault-types": "workspace:*",
     "secrets.js-34r7h": "^2.0.2"
   },
   "devDependencies": {

@@ -7,7 +7,9 @@ export type {
   VaultSyncResult,
   VaultLoadProvider,
   VaultLoadResult,
+  ConflictCheckResult,
 } from './types.js';
+export type { MergeSummary } from '@aliasvault/vault-types';
 export {
   deriveEncryptionKey,
   generateRecoveryKey,
