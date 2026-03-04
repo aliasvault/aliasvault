@@ -75,8 +75,8 @@ development_status:
   # Epic 4: Credential Management (Revised 2026-03-02 — Sprint Change Proposal)
   epic-4: in-progress
   4-0-vault-format-migration: done  # SQLite→JSON vault format complete — code review passed, all fixes applied
-  4-1-credential-add-edit-flow: backlog  # REVISED: validate existing CRUD with new JSON store
-  4-2-credential-level-merge: backlog  # REVISED: merge operates directly on VaultJson
+  4-1-credential-add-edit-flow: done  # REVISED: validate existing CRUD with new JSON store — code review passed
+  4-2-credential-level-merge: review  # REVISED: merge operates directly on VaultJson
   4-3-conflict-detection-ux: backlog  # REVISED: saveWithConflictCheck() on VaultSyncService
   epic-4-retrospective: optional
 
