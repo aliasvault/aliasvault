@@ -187,6 +187,7 @@ export const ConfirmDialog: React.FC<IConfirmDialogProps> = ({
       gap: 8,
       justifyContent: 'center',
       paddingVertical: 12,
+      paddingHorizontal: 8,
     },
     buttonDisabled: {
       opacity: 0.6,
@@ -194,6 +195,8 @@ export const ConfirmDialog: React.FC<IConfirmDialogProps> = ({
     buttonText: {
       fontSize: 16,
       fontWeight: '500',
+      textAlign: 'center',
+      flexShrink: 1,
     },
   });
 
