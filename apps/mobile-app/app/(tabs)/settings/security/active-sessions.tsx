@@ -27,6 +27,7 @@ export default function ActiveSessionsScreen() : React.ReactNode {
   const [refreshTokens, setRefreshTokens] = useState<RefreshToken[]>([]);
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 200);
   const [isRefreshing, setIsRefreshing] = useMinDurationLoading(false, 200);
+  const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
 
   const styles = StyleSheet.create({
     detailText: {
@@ -158,6 +159,27 @@ export default function ActiveSessionsScreen() : React.ReactNode {
     return dateObject.toISOString().slice(0, 16).replace('T', ' ');
   };
 
+  /**
+   * Toggle the expansion state of a session.
+   * @param sessionId - The session ID to toggle
+   */
+  const toggleSessionExpansion = (sessionId: string) : void => {
+    setExpandedSessions((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(sessionId)) {
+        newSet.delete(sessionId);
+      } else {
+        newSet.add(sessionId);
+      }
+      return newSet;
+    });
+
+    // Trigger haptic feedback when toggling
+    if (Platform.OS === 'ios' || Platform.OS === 'android') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  };
+
   return (
     <ThemedContainer>
       <ThemedScrollView
@@ -184,7 +206,18 @@ export default function ActiveSessionsScreen() : React.ReactNode {
             refreshTokens.map((item) => (
               <View key={item.id} style={styles.sessionItem}>
                 <View style={styles.sessionHeader}>
-                  <ThemedText style={styles.deviceName} numberOfLines={2}>{item.deviceIdentifier}</ThemedText>
+                  <TouchableOpacity
+                    style={{ flex: 1 }}
+                    onPress={() => toggleSessionExpansion(item.id)}
+                    activeOpacity={0.7}
+                  >
+                    <ThemedText
+                      style={styles.deviceName}
+                      numberOfLines={expandedSessions.has(item.id) ? undefined : 2}
+                    >
+                      {item.deviceIdentifier}
+                    </ThemedText>
+                  </TouchableOpacity>
                   <TouchableOpacity onPress={() => handleRevokeSession(item.id)}>
                     <ThemedText style={styles.revokeButton}>{t('settings.securitySettings.activeSessions.revoke')}</ThemedText>
                   </TouchableOpacity>
