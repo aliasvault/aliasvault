@@ -83,7 +83,7 @@ development_status:
   # Epic 5: Alias Email System (Updated 2026-03-05 — ADR-008/009 story revisions, Story 5.0 added)
   epic-5: in-progress
   5-0-email-keypair-relay-authorization: review
-  5-1-aliasregistry-smart-contract: backlog
+  5-1-aliasregistry-smart-contract: review
   5-2-alias-generation-ui: backlog
   5-3-smtp-bridge-service: backlog
   5-4-mox-smtp-server-deployment: backlog
