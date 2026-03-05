@@ -9,6 +9,8 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Keyboard, Platform, ScrollView, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
 import Toast from 'react-native-toast-message';
 
+import { HapticsUtility } from '@/utils/HapticsUtility';
+
 import type { Folder } from '@/utils/db/repositories/FolderRepository';
 import { CreateIdentityGenerator, CreateUsernameEmailGenerator, UsernameEmailGenerator, Gender, Identity, IdentityHelperUtils, convertAgeRangeToBirthdateOptions } from '@/utils/dist/core/identity-generator';
 import type { Attachment, Item, ItemField, TotpCode, ItemType, FieldType, PasswordSettings } from '@/utils/dist/core/models/vault';
@@ -671,9 +673,7 @@ export default function AddEditItemScreen(): React.ReactNode {
       Fields: []
     });
 
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
+    HapticsUtility.impact();
   }, [item, isEditMode]);
 
   /**
@@ -915,9 +915,7 @@ export default function AddEditItemScreen(): React.ReactNode {
       setIsSaveDisabled(false);
 
       // Haptic feedback for successful save
-      if (Platform.OS === 'ios' || Platform.OS === 'android') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
+      HapticsUtility.notification(Haptics.NotificationFeedbackType.Success);
 
       // Navigate immediately - sync continues in background
       if (itemUrl && !isEditMode) {
@@ -982,9 +980,7 @@ export default function AddEditItemScreen(): React.ReactNode {
     emitter.emit('credentialChanged', id);
 
     // Haptic feedback for delete action (warning type for destructive action)
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    }
+    HapticsUtility.notification(Haptics.NotificationFeedbackType.Warning);
 
     setTimeout(() => {
       Toast.show({

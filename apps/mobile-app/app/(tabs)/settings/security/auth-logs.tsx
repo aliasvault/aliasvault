@@ -1,8 +1,9 @@
-import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, RefreshControl, Platform } from 'react-native';
+import { StyleSheet, View, RefreshControl } from 'react-native';
 import Toast from 'react-native-toast-message';
+
+import { HapticsUtility } from '@/utils/HapticsUtility';
 
 import type { AuthLogModel } from '@/utils/dist/core/models/webapi';
 import { AuthEventType } from '@/utils/dist/core/models/webapi';
@@ -109,9 +110,7 @@ export default function AuthLogsScreen() : React.ReactNode {
    */
   const onRefresh = async () : Promise<void> => {
     // Trigger haptic feedback when pull-to-refresh is activated
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
+    HapticsUtility.impact();
 
     setIsRefreshing(true);
     await loadLogs();

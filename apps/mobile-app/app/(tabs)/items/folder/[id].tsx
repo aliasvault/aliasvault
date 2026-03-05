@@ -1,6 +1,5 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
-import * as Haptics from 'expo-haptics';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +12,7 @@ import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsReposi
 import type { Item, ItemType } from '@/utils/dist/core/models/vault';
 import { getFieldValue, FieldKey, ItemTypes } from '@/utils/dist/core/models/vault';
 import emitter from '@/utils/EventEmitter';
+import { HapticsUtility } from '@/utils/HapticsUtility';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -227,9 +227,7 @@ export default function FolderViewScreen(): React.ReactNode {
    * Handle pull-to-refresh.
    */
   const onRefresh = useCallback(async () => {
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
+    HapticsUtility.impact();
 
     setRefreshing(true);
     setIsLoadingItems(true);
@@ -404,7 +402,7 @@ export default function FolderViewScreen(): React.ReactNode {
   const handleAddItem = useCallback(() => {
     navigate(() => {
       router.push(`/(tabs)/items/add-edit?folderId=${folderId}` as '/(tabs)/items/add-edit');
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      HapticsUtility.impact();
     });
   }, [folderId, router, navigate]);
 

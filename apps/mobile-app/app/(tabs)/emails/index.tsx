@@ -1,14 +1,14 @@
-import * as Haptics from 'expo-haptics';
 import { useNavigation } from 'expo-router';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, ScrollView, RefreshControl, Animated , Platform } from 'react-native';
+import { StyleSheet, Platform, View, ScrollView, RefreshControl, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import emitter from '@/utils/EventEmitter';
+import { HapticsUtility } from '@/utils/HapticsUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
@@ -145,11 +145,7 @@ export default function EmailsScreen() : React.ReactNode {
    */
   const onRefresh = useCallback(async () : Promise<void> => {
     // Trigger haptic feedback when pull-to-refresh is activated
-    if (Platform.OS === 'ios') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    } else if (Platform.OS === 'android') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
+    HapticsUtility.impact();
 
     setIsLoading(true);
     setIsRefreshing(true);
