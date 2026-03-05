@@ -16,12 +16,13 @@
     }
   },
   "scripts": {
-    "compact": "compact compile src/counter.compact src/managed/counter && compact compile src/vault-registry.compact src/managed/vault-registry",
+    "compact": "compact compile src/counter.compact src/managed/counter && compact compile src/vault-registry.compact src/managed/vault-registry && compact compile src/alias-registry.compact src/managed/alias-registry",
+    "compact:alias-registry": "compact compile src/alias-registry.compact src/managed/alias-registry",
     "compact:counter": "compact compile src/counter.compact src/managed/counter",
     "compact:vault-registry": "compact compile src/vault-registry.compact src/managed/vault-registry",
     "test": "vitest run",
     "test:compile": "npm run compact && vitest run",
-    "build": "rm -rf dist && tsc --project tsconfig.build.json && cp -Rf ./src/managed ./dist/managed && cp ./src/counter.compact ./dist && cp ./src/vault-registry.compact ./dist",
+    "build": "rm -rf dist && tsc --project tsconfig.build.json && cp -Rf ./src/managed ./dist/managed && cp ./src/counter.compact ./dist && cp ./src/vault-registry.compact ./dist && cp ./src/alias-registry.compact ./dist",
     "lint": "eslint src",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

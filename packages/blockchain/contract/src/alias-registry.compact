@@ -1,0 +1,90 @@
+pragma language_version >= 0.20;
+
+import CompactStandardLibrary;
+
+// AliasRegistry Contract — Story 5.1
+//
+// PURPOSE: Global alias registration mapping aliases to their owners'
+//          VaultRegistry contract addresses. The SMTP bridge queries this
+//          to find where to deliver encrypted emails.
+//
+// FUNCTIONS:
+//   Owner-only (verified via ownerCommitment(local_secret_key())):
+//     - releaseAlias(aliasHash)              Removes alias ownership
+//
+//   Public (any caller):
+//     - claimAlias(aliasHash, contractAddr)  Claims unclaimed alias
+//     - getOwner(aliasHash)                  Returns owner commitment
+//     - getContractAddress(aliasHash)        Returns VaultRegistry address
+//
+//   Pure circuits:
+//     - ownerCommitment(sk)                  Derives owner identity commitment
+//
+// ACCESS CONTROL MATRIX:
+//   Function           | Caller     | Verification
+//   claimAlias         | Any        | !aliasOwners.member(hash) (unclaimed only)
+//   getOwner           | Any        | None (read-only)
+//   getContractAddress | Any        | None (read-only)
+//   releaseAlias       | Owner only | ownerCommitment(local_secret_key())
+//   ownerCommitment    | Pure       | N/A
+//
+// STATE VARIABLES:
+//   - aliasOwners: Map<Bytes<32>, Bytes<32>>           — aliasHash -> ownerCommitment
+//   - aliasContracts: Map<Bytes<32>, Opaque<'string'>> — aliasHash -> VaultRegistry contract address
+//   - totalClaimCount: Counter                             — monotonic count of claims (never decrements)
+//
+// WITNESSES:
+//   - local_secret_key(): Bytes<32>  — caller's secret key from TypeScript private state
+
+// Public ledger: alias hash -> owner commitment
+export ledger aliasOwners: Map<Bytes<32>, Bytes<32>>;
+
+// Public ledger: alias hash -> VaultRegistry contract address
+export ledger aliasContracts: Map<Bytes<32>, Opaque<'string'>>;
+
+// Public ledger: monotonic count of alias claims (Counter has no decrement — never decreases on release)
+export ledger totalClaimCount: Counter;
+
+// Witness: returns the caller's secret key from private state
+witness local_secret_key(): Bytes<32>;
+
+// Derive an owner commitment from a secret key.
+// Uses domain separator "alias:owner:" — unique to AliasRegistry.
+// Different from "vault:owner:" (VaultRegistry) and "recovery:owner:" (GuardianRecovery).
+export circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
+  return persistentCommit<Bytes<32>>(pad(32, "alias:owner:"), sk);
+}
+
+// Claim an unclaimed alias. Stores the caller's owner commitment and
+// their VaultRegistry contract address (for bridge email routing).
+export circuit claimAlias(aliasHash: Bytes<32>, contractAddr: Opaque<'string'>): [] {
+  const hash = disclose(aliasHash);
+  const addr = disclose(contractAddr);
+  assert(!aliasOwners.member(hash), "Alias already claimed");
+  const sk = local_secret_key();
+  aliasOwners.insert(hash, ownerCommitment(sk));
+  aliasContracts.insert(hash, addr);
+  totalClaimCount.increment(1);
+}
+
+// Get the owner commitment for an alias. Returns default<Bytes<32>> if unclaimed.
+export circuit getOwner(aliasHash: Bytes<32>): Bytes<32> {
+  return aliasOwners.lookup(disclose(aliasHash));
+}
+
+// Get the VaultRegistry contract address for an alias owner.
+// Returns default if unclaimed. The SMTP bridge uses this to find
+// the user's emailPublicKey and call notifyNewMail.
+export circuit getContractAddress(aliasHash: Bytes<32>): Opaque<'string'> {
+  return aliasContracts.lookup(disclose(aliasHash));
+}
+
+// Release an alias. Only the alias owner can call this.
+export circuit releaseAlias(aliasHash: Bytes<32>): [] {
+  const hash = disclose(aliasHash);
+  const sk = local_secret_key();
+  assert(aliasOwners.member(hash), "Alias not claimed");
+  assert(aliasOwners.lookup(hash) == ownerCommitment(sk), "Not the alias owner");
+  aliasOwners.remove(hash);
+  aliasContracts.remove(hash);
+}
