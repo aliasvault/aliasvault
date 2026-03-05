@@ -783,6 +783,37 @@ Story 4.0 (Vault Format Migration)
 **FRs Covered:** FR20, FR21, FR22, FR23, FR24
 **ARs Covered:** AR7, AR19, AR20
 
+**Architecture Decisions:**
+- [ADR-008: X25519 Hybrid Encryption](file:///docs/architecture/adr-008-email-encryption-x25519.md)
+- [ADR-009: On-Chain Email Notification](file:///docs/architecture/adr-009-email-notification-on-chain.md)
+
+---
+
+#### Story 5.0: Email Keypair & Relay Authorization
+
+**As a** user
+**I want** an encryption keypair generated for my vault and the email relay authorized
+**So that** the SMTP bridge can encrypt emails only I can read, and deliver notifications to my vault
+
+**Acceptance Criteria:**
+- [ ] X25519 keypair generated client-side during vault creation (or lazily on first alias claim)
+- [ ] Public key (32 bytes) stored on-chain via `VaultRegistry.setEmailPublicKey(pubKey: Bytes<32>)`
+- [ ] Private key stored in vault blob (VaultJson `emailKeyPair.privateKey`)
+- [ ] `setMailRelay(relayCommitment: Bytes<32>)` circuit added to VaultRegistry (owner-only)
+- [ ] `notifyNewMail(manifestCid: Opaque<'string'>)` circuit added to VaultRegistry (relay-only)
+- [ ] `emailPublicKey: Bytes<32>`, `emailCount: Counter`, `inboxManifestCid: Opaque<'string'>`, `mailRelay: Bytes<32>` ledger variables added
+- [ ] Relay commitment pattern uses domain separator `"vault:relay:"` (consistent with owner/backup patterns)
+- [ ] Unit tests: setEmailPublicKey (owner-only), setMailRelay (owner-only), notifyNewMail (relay-only, unauthorized rejected)
+- [ ] Existing VaultRegistry tests still pass
+
+**Technical Notes:**
+- Use `tweetnacl` (`nacl.box.keyPair()`) for X25519 key generation
+- Relay commitment: `persistentCommit<Bytes<32>>(pad(32, "vault:relay:"), rk)` — same pattern as ownerCommitment/backupCommitment
+- Bridge publishes its relay commitment publicly; extension calls `setMailRelay()` during alias setup
+- See ADR-008 and ADR-009 for full design
+
+**Dependencies:** Epic 2 (VaultRegistry must exist)
+
 ---
 
 #### Story 5.1: AliasRegistry Smart Contract
@@ -793,19 +824,23 @@ Story 4.0 (Vault Format Migration)
 
 **Acceptance Criteria:**
 - [ ] `AliasRegistry.compact` contract deployed to Midnight testnet
-- [ ] `claimAlias(localPart: String, domain: String)` registers alias to caller's wallet
-- [ ] `getOwner(localPart: String, domain: String)` returns owner wallet (public) or null
-- [ ] `releaseAlias(localPart: String, domain: String)` removes ownership (owner only)
-- [ ] Anti-squatting: claim requires 1 NIGHT fee (transferred to protocol wallet)
-- [ ] Alias names validated: 3-64 chars, alphanumeric + hyphen, no leading/trailing hyphen
+- [ ] `claimAlias(aliasHash: Bytes<32>, contractAddr: Opaque<'string'>)` registers alias to caller's wallet with VaultRegistry contract address
+- [ ] `getOwner(aliasHash: Bytes<32>)` returns owner commitment or default (public)
+- [ ] `getContractAddress(aliasHash: Bytes<32>)` returns owner's VaultRegistry contract address
+- [ ] `releaseAlias(aliasHash: Bytes<32>)` removes ownership (owner only, verified via commitment)
+- [ ] Anti-squatting: deferred to post-MVP (DUST transaction cost provides baseline protection). See ZSwap `receiveShielded()` for future NIGHT fee implementation.
+- [ ] Alias names validated: 3-64 chars, alphanumeric + hyphen, no leading/trailing hyphen (validated client-side before hashing to `Bytes<32>`)
 - [ ] Unit tests for all contract functions
-- [ ] Integration test: claim → getOwner → release flow
+- [ ] Integration test: claim → getOwner → getContractAddress → release flow
 
 **Technical Notes:**
-- Use private state for alias-to-owner mapping (privacy)
-- Witness function for ownership queries
+- Compact uses `Opaque<'string'>` not `String`. Alias names hashed to `Bytes<32>` client-side (bridge and extension both hash `localPart@domain` → SHA-256)
+- Alias-to-owner mapping uses `Map<Bytes<32>, Bytes<32>>` (aliasHash → ownerCommitment)
+- Alias-to-contract mapping uses `Map<Bytes<32>, Opaque<'string'>>` (aliasHash → VaultRegistry contract address)
+- Owner identity verified via commitment pattern (same as VaultRegistry)
+- See ADR-009 for why contract address is needed (bridge must find user's VaultRegistry to read emailPublicKey and call notifyNewMail)
 
-**Dependencies:** Epic 2 (VaultRegistry must exist for public key lookup)
+**Dependencies:** Story 5.0 (VaultRegistry email extensions must exist)
 
 ---
 
@@ -819,14 +854,16 @@ Story 4.0 (Vault Format Migration)
 - [ ] "Generate Alias" button visible on extension popup
 - [ ] Custom alias name input with real-time validation
 - [ ] Auto-generate random alias option (e.g., `zk-tiger-7842@alias.id`)
-- [ ] Display NIGHT fee before confirmation
 - [ ] Wallet signature required to claim alias on-chain
+- [ ] On first alias claim: call `setMailRelay(bridgeRelayCommitment)` on user's VaultRegistry to authorize the bridge
 - [ ] Success: show new alias, copy-to-clipboard button
 - [ ] Error: display if alias already claimed
 
 **Technical Notes:**
 - Call `AliasRegistry.claimAlias()` via Midnight SDK
-- Store alias locally in SQLite for quick lookup
+- Store alias locally in VaultJson (as credential entry with `type: 'alias'` metadata) or IndexedDB alias index
+- Bridge's relay commitment is a well-known public value (published by bridge operator)
+- Extension checks if `mailRelay` is set on user's VaultRegistry; if not, calls `setMailRelay()` before claiming alias
 
 **Dependencies:** Story 5.1 (AliasRegistry contract)
 
@@ -839,21 +876,33 @@ Story 4.0 (Vault Format Migration)
 **So that** only legitimate emails reach vault owners
 
 **Acceptance Criteria:**
-- [ ] Express TypeScript service at `smtp-bridge/`
+- [ ] Express TypeScript service at `services/smtp-bridge/`
+- [ ] Full Midnight client setup: wallet provider, proof server, private state (LevelDB), ZK config from compiled VaultRegistry contract
+- [ ] Bridge wallet holds NIGHT balance for DUST generation (gas)
+- [ ] Bridge relay secret key stored in private state; relay commitment derived and published
 - [ ] `POST /receive-email` webhook endpoint
-- [ ] Extract alias from `to` header
-- [ ] Query `AliasRegistry.getOwner()` via Midnight SDK
+- [ ] Extract alias from `to` header, hash to `Bytes<32>`
+- [ ] Query `AliasRegistry.getOwner()` to verify alias is registered
+- [ ] Query `AliasRegistry.getContractAddress()` to find owner's VaultRegistry
+- [ ] Read `emailPublicKey` from owner's VaultRegistry public ledger
+- [ ] Encrypt email with X25519 hybrid encryption (ADR-008), upload to IPFS
+- [ ] Update inbox manifest on IPFS (append CID + timestamp, no sender metadata)
+- [ ] Call `notifyNewMail(manifestCid)` on owner's VaultRegistry (authorized via relay key)
+- [ ] Per-user serialization queue: one `notifyNewMail` tx at a time per VaultRegistry
+- [ ] Configurable batch window (default 30s): collect emails per user, then single manifest update + tx
 - [ ] Return 404 if alias not registered
 - [ ] Return 200 with encrypted email CID on success
 - [ ] Rate limiting: max 100 emails/minute per alias
 - [ ] Email size limit: 5MB max
 - [ ] Health check endpoint: `GET /health`
-- [ ] Prometheus metrics: emails received, errors, latency
+- [ ] Prometheus metrics: emails received, encryption errors, tx errors, latency
 
 **Technical Notes:**
-- Use `@midnight-ntwrk/client-sdk` for RPC calls
-- Cache public keys (TTL: 5 minutes) to reduce RPC calls
-- See architecture section 5 for implementation reference
+- Use Midnight JS providers pattern (same as browser extension): publicDataProvider, privateStateProvider, proofProvider, walletProvider
+- Cache alias→contractAddress and emailPublicKey (TTL: 5 minutes) to reduce RPC calls
+- Bridge needs VaultRegistry ZK config (proving keys) to submit `notifyNewMail` transactions
+- See ADR-008 for encryption flow, ADR-009 for notification flow
+- Manifest format: `{ "version": 1, "emails": [{ "cid": "...", "ts": 1234567890 }] }` — no sender metadata
 
 **Dependencies:** Story 5.1 (AliasRegistry contract)
 
@@ -894,18 +943,22 @@ Accounts:
 **So that** only the alias owner can read their mail
 
 **Acceptance Criteria:**
-- [ ] Fetch owner's public key from `VaultRegistry.getPublicKey()`
-- [ ] Encrypt email JSON with AES-256-GCM (random symmetric key)
-- [ ] Encrypt symmetric key with owner's public key (RSA-OAEP)
-- [ ] Package: `[encryptedKey][iv][authTag][encryptedBody]`
+- [ ] Read owner's X25519 public key from VaultRegistry public ledger (`emailPublicKey: Bytes<32>`)
+- [ ] Generate ephemeral X25519 keypair per email (forward secrecy)
+- [ ] Derive shared secret via ECDH: `nacl.box.before(recipientPublicKey, ephemeralSecretKey)`
+- [ ] Encrypt email JSON with NaCl `crypto_box` (X25519 + XSalsa20-Poly1305) or AES-256-GCM with derived key
+- [ ] Package: `[ephemeralPublicKey (32B) | nonce (24B) | ciphertext]`
+- [ ] Discard ephemeral secret key after encryption (forward secrecy)
 - [ ] Upload encrypted blob to Pinata IPFS
 - [ ] Return CIDv1 (validate with `assertCIDv1()`)
-- [ ] Handle attachments: include in JSON, encrypt together
+- [ ] Handle attachments: include in email JSON, encrypt together
 - [ ] Max email size after encryption: 10MB
 
 **Technical Notes:**
-- Reuse encryption patterns from `shared/logic/`
-- See architecture section 5 "Encryption Strategy"
+- Use `tweetnacl` for X25519 ECDH + encryption (same library as Story 5.0)
+- See ADR-008 for full encryption/decryption flow and code examples
+- Forward secrecy: each email uses a unique ephemeral keypair; compromising user's private key does not expose past emails
+- Email JSON schema: `{ from, to, subject, body, attachments: [{ name, contentType, base64 }], receivedAt }`
 
 **Dependencies:** Story 5.3 (Bridge calls this after ownership verification)
 
@@ -918,16 +971,20 @@ Accounts:
 **So that** I know to check my vault
 
 **Acceptance Criteria:**
-- [ ] `VaultRegistry.notifyNewMail(owner, emailCID)` function added
-- [ ] Emits public event: `{ event: 'NewMail', owner: hash(wallet), timestamp }`
-- [ ] CID stored in private state (owner can retrieve via witness)
-- [ ] Contract-sponsored transaction (protocol pays gas)
-- [ ] Extension polls for new mail events (every 60 seconds when active)
-- [ ] Badge notification on extension icon when new mail
+- [ ] `VaultRegistry.notifyNewMail(manifestCid: Opaque<'string'>)` circuit updates public ledger (relay-only, verified via `relayCommitment`)
+- [ ] `emailCount: Counter` incremented on each notification (extension detects changes)
+- [ ] `inboxManifestCid: Opaque<'string'>` updated with latest IPFS manifest CID (public ledger — user reads directly)
+- [ ] Bridge pays transaction gas from DUST (generated by bridge wallet's NIGHT balance)
+- [ ] Bridge batches notifications per user (configurable window, default 30s)
+- [ ] Extension subscribes to `contractStateObservable()` on user's VaultRegistry — reactive push, not polling
+- [ ] Extension detects `emailCount` change → reads `inboxManifestCid` → fetches manifest from IPFS → downloads new email CIDs
+- [ ] Badge notification on extension icon when new mail detected
+- [ ] Manifest format: `{ "version": 1, "emails": [{ "cid": "...", "ts": ... }] }` — no sender metadata
 
 **Technical Notes:**
-- Bridge calls this after IPFS upload succeeds
-- Use `sponsored: true` in transaction submission
+- No Solidity-style events in Compact — notification works via public ledger state mutation detected by `contractStateObservable()` (RxJS Observable from Midnight JS SDK)
+- Bridge is authorized via relay commitment (ADR-009). Unauthorized callers rejected by circuit.
+- See ADR-009 for full notification architecture, contract pseudocode, and extension subscription pattern
 
 **Dependencies:** Story 5.5 (Email must be on IPFS first)
 
@@ -941,18 +998,22 @@ Accounts:
 
 **Acceptance Criteria:**
 - [ ] "Inbox" tab in vault UI
-- [ ] List view: shows from, subject, date (decrypted)
-- [ ] Fetch email CIDs from `VaultRegistry` (witness function)
-- [ ] Download encrypted blob from IPFS
-- [ ] Decrypt using vault's private key
+- [ ] List view: shows from, subject, date (decrypted from email content)
+- [ ] Read `inboxManifestCid` from VaultRegistry public ledger
+- [ ] Fetch inbox manifest from IPFS (plaintext JSON with CID + timestamp entries)
+- [ ] Compare manifest against locally cached email CIDs to identify new emails
+- [ ] Download encrypted email blobs from IPFS
+- [ ] Decrypt using X25519: extract ephemeral public key (first 32B), derive shared secret with user's private key from VaultJson, decrypt with NaCl `crypto_box_open`
 - [ ] Display email body (HTML sanitized, text fallback)
 - [ ] Display attachments with download option
-- [ ] Mark as read (local state)
-- [ ] Delete email (unpin from IPFS, remove CID from contract)
+- [ ] Mark as read (local state in IndexedDB/localStorage)
+- [ ] Delete email (unpin from IPFS — manifest update on next bridge write, or dedicated cleanup)
 
 **Technical Notes:**
-- Decryption happens client-side only
-- Use existing `EncryptionUtility` patterns
+- Decryption happens client-side only using `tweetnacl`
+- User's X25519 private key is in VaultJson (`emailKeyPair.privateKey`)
+- See ADR-008 for decryption flow
+- Consider lightweight UX wireframe for Inbox tab — novel UI surface for this extension
 
 **Dependencies:** Story 5.6 (Emails must be stored and notified)
 
@@ -976,7 +1037,7 @@ Accounts:
 
 **Technical Notes:**
 - Call `AliasRegistry.releaseAlias()` for deletion
-- Local SQLite cache for fast listing
+- Alias list from VaultJson credential entries (type: 'alias') or IndexedDB alias index — no SQLite
 
 **Dependencies:** Story 5.2 (Aliases must be claimable first)
 
@@ -985,27 +1046,29 @@ Accounts:
 #### Epic 5 Story Dependency Graph
 
 ```
-Story 5.1 (AliasRegistry Contract)
-    ├── Story 5.2 (Generation UI)
-    │       └── Story 5.8 (Management UI)
-    └── Story 5.3 (SMTP Bridge)
-            ├── Story 5.4 (Mox Deployment)
-            └── Story 5.5 (Encryption + IPFS)
-                    └── Story 5.6 (Notification)
-                            └── Story 5.7 (Email Viewing)
+Story 5.0 (Email Keypair & Relay Auth) ─── foundational
+    └── Story 5.1 (AliasRegistry Contract)
+            ├── Story 5.2 (Generation UI + setMailRelay)
+            │       └── Story 5.8 (Management UI)
+            └── Story 5.3 (SMTP Bridge — full Midnight client)
+                    ├── Story 5.4 (Mox Deployment)
+                    └── Story 5.5 (X25519 Encryption + IPFS)
+                            └── Story 5.6 (On-Chain Notification)
+                                    └── Story 5.7 (Email Viewing + X25519 Decrypt)
 ```
 
 ---
 
 #### Implementation Order (Recommended)
 
-1. **Story 5.1** - Contract foundation
-2. **Story 5.2** - Users can claim aliases
-3. **Story 5.3** - Bridge service skeleton
-4. **Story 5.5** - Encryption logic (can parallelize with 5.4)
-5. **Story 5.4** - Mox deployment
-6. **Story 5.6** - Notification mechanism
-7. **Story 5.7** - Email viewing UI
-8. **Story 5.8** - Alias management UI
+1. **Story 5.0** — Email keypair + VaultRegistry contract extensions
+2. **Story 5.1** — AliasRegistry contract
+3. **Story 5.2** — Alias generation UI + relay authorization
+4. **Story 5.3** — Bridge service (full Midnight client)
+5. **Story 5.5** — X25519 encryption logic (can parallelize with 5.4)
+6. **Story 5.4** — Mox deployment
+7. **Story 5.6** — On-chain notification + manifest
+8. **Story 5.7** — Email viewing UI
+9. **Story 5.8** — Alias management UI
 
 
