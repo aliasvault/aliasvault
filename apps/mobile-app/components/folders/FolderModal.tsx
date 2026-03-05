@@ -8,8 +8,9 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
-  Platform,
 } from 'react-native';
+
+import { HapticsUtility } from '@/utils/HapticsUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { ModalWrapper } from '@/components/common/ModalWrapper';
@@ -62,9 +63,7 @@ export const FolderModal: React.FC<IFolderModalProps> = ({
       await onSave(trimmedName);
 
       // Haptic feedback for successful folder creation/edit
-      if (Platform.OS === 'ios' || Platform.OS === 'android') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
+      HapticsUtility.notification(Haptics.NotificationFeedbackType.Success);
 
       onClose();
     } catch (err) {

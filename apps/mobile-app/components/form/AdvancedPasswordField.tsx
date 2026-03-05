@@ -1,12 +1,12 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
-import * as Haptics from 'expo-haptics';
 import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View, TextInput, TextInputProps, StyleSheet, TouchableOpacity, Platform, ScrollView, Switch } from 'react-native';
+import { View, TextInput, TextInputProps, StyleSheet, Platform, TouchableOpacity, ScrollView, Switch } from 'react-native';
 
 import type { PasswordSettings } from '@/utils/dist/core/models/vault';
 import { CreatePasswordGenerator } from '@/utils/dist/core/password-generator';
+import { HapticsUtility } from '@/utils/HapticsUtility';
 import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/passwordLengthSlider';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -145,9 +145,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
         setShowPasswordState(true);
 
         // Haptic feedback for password generation
-        if (Platform.OS === 'ios' || Platform.OS === 'android') {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        }
+        HapticsUtility.impact();
       }
     }
   }, [currentSettings, generatePassword, onChangeText, setShowPasswordState]);

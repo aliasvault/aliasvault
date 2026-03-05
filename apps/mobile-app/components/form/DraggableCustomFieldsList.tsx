@@ -8,6 +8,7 @@ import DraggableFlatList, {
 
 import type { FieldType } from '@/utils/dist/core/models/vault';
 import { FieldTypes } from '@/utils/dist/core/models/vault';
+import { HapticsUtility } from '@/utils/HapticsUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
 
@@ -162,7 +163,7 @@ export const DraggableCustomFieldsList: React.FC<DraggableCustomFieldsListProps>
    * Handle drag begin
    */
   const handleDragBegin = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    HapticsUtility.impact(Haptics.ImpactFeedbackStyle.Medium);
   }, []);
 
   /**

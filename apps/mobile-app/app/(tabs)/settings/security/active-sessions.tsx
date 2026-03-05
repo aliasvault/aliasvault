@@ -1,8 +1,9 @@
-import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, TouchableOpacity, RefreshControl, Platform } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, RefreshControl } from 'react-native';
 import Toast from 'react-native-toast-message';
+
+import { HapticsUtility } from '@/utils/HapticsUtility';
 
 import type { RefreshToken } from '@/utils/dist/core/models/webapi';
 
@@ -136,9 +137,7 @@ export default function ActiveSessionsScreen() : React.ReactNode {
    */
   const onRefresh = async () : Promise<void> => {
     // Trigger haptic feedback when pull-to-refresh is activated
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
+    HapticsUtility.impact();
 
     setIsRefreshing(true);
     await loadSessions();
@@ -175,9 +174,7 @@ export default function ActiveSessionsScreen() : React.ReactNode {
     });
 
     // Trigger haptic feedback when toggling
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
+    HapticsUtility.impact();
   };
 
   return (
