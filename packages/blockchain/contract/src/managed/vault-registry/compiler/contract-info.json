@@ -168,6 +168,77 @@
       }
     },
     {
+      "name": "relayCommitment",
+      "pure": true,
+      "arguments": [
+        {
+          "name": "rk",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "setEmailPublicKey",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "pubKey",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "setMailRelay",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "relayCommit",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "notifyNewMail",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "manifestCid",
+          "type": {
+            "type-name": "Opaque",
+            "tsType": "string"
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
       "name": "isRegistered",
       "pure": false,
       "arguments": [
@@ -196,6 +267,15 @@
     },
     {
       "name": "local_backup_key",
+      "arguments": [
+      ],
+      "result type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "local_relay_key",
       "arguments": [
       ],
       "result type": {

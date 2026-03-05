@@ -3,6 +3,7 @@ import type * as __compactRuntime from '@midnight-ntwrk/compact-runtime';
 export type Witnesses<PS> = {
   local_secret_key(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, Uint8Array];
   local_backup_key(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, Uint8Array];
+  local_relay_key(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, Uint8Array];
 }
 
 export type ImpureCircuits<PS> = {
@@ -21,6 +22,12 @@ export type ImpureCircuits<PS> = {
                      walletCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   backupTransfer(context: __compactRuntime.CircuitContext<PS>,
                  newOwnerCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  setEmailPublicKey(context: __compactRuntime.CircuitContext<PS>,
+                    pubKey_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  setMailRelay(context: __compactRuntime.CircuitContext<PS>,
+               relayCommit_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  notifyNewMail(context: __compactRuntime.CircuitContext<PS>,
+                manifestCid_0: string): __compactRuntime.CircuitResults<PS, []>;
   isRegistered(context: __compactRuntime.CircuitContext<PS>,
                walletAddressHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, boolean>;
 }
@@ -28,6 +35,7 @@ export type ImpureCircuits<PS> = {
 export type PureCircuits = {
   ownerCommitment(sk_0: Uint8Array): Uint8Array;
   backupCommitment(bk_0: Uint8Array): Uint8Array;
+  relayCommitment(rk_0: Uint8Array): Uint8Array;
 }
 
 export type Circuits<PS> = {
@@ -49,6 +57,13 @@ export type Circuits<PS> = {
                      walletCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   backupTransfer(context: __compactRuntime.CircuitContext<PS>,
                  newOwnerCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  relayCommitment(context: __compactRuntime.CircuitContext<PS>, rk_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
+  setEmailPublicKey(context: __compactRuntime.CircuitContext<PS>,
+                    pubKey_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  setMailRelay(context: __compactRuntime.CircuitContext<PS>,
+               relayCommit_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  notifyNewMail(context: __compactRuntime.CircuitContext<PS>,
+                manifestCid_0: string): __compactRuntime.CircuitResults<PS, []>;
   isRegistered(context: __compactRuntime.CircuitContext<PS>,
                walletAddressHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, boolean>;
 }
@@ -71,6 +86,10 @@ export type Ledger = {
     lookup(key_0: Uint8Array): bigint;
     [Symbol.iterator](): Iterator<[Uint8Array, bigint]>
   };
+  readonly emailPublicKey: Uint8Array;
+  readonly emailCount: bigint;
+  readonly inboxManifestCid: string;
+  readonly mailRelay: Uint8Array;
 }
 
 export type ContractReferenceLocations = any;

@@ -3,11 +3,11 @@ pragma language_version >= 0.20;
 import CompactStandardLibrary;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// VaultRegistry Contract — Full Specification (Story 3.6: Maturity-Based Backup Transfer)
+// VaultRegistry Contract — Full Specification (Story 5.0: Email Keypair & Relay Authorization)
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // PURPOSE: On-chain vault registration, ownership, CID integrity, backup wallet
-//          recovery, and ownership transfer for AliasVault decentralized identity.
+//          recovery, ownership transfer, and email relay authorization for AliasVault.
 //
 // FUNCTIONS (by access control):
 //
@@ -18,6 +18,11 @@ import CompactStandardLibrary;
 //     - storeRecoveryKeyHash(keyHash)              [Epic 2.6] Stores hash of recovery key
 //     - addBackupWallet(walletCommitment, currentTime) [Story 3.6] Adds backup wallet with registration timestamp
 //     - removeBackupWallet(walletCommitment)       [Epic 2.6] Removes backup wallet from map
+//     - setEmailPublicKey(pubKey)                  [Story 5.0] Store X25519 public key for email encryption
+//     - setMailRelay(relayCommit)                  [Story 5.0] Authorize a mail relay commitment
+//
+//   Relay-only (verified via relayCommitment(local_relay_key())):
+//     - notifyNewMail(manifestCid)                 [Story 5.0] Update inbox manifest CID, increment email counter
 //
 //   Backup-wallet-only (verified via backupCommitment(local_backup_key()) + backupWallets.member()):
 //     - backupTransfer(newOwnerCommitment)         [Story 3.6] Maturity-based transfer (72h after registration)
@@ -28,10 +33,9 @@ import CompactStandardLibrary;
 //   Pure circuits (off-circuit computation):
 //     - ownerCommitment(sk)                        [Epic 2.1] Derives owner identity commitment
 //     - backupCommitment(bk)                       [Epic 2.6] Derives backup wallet identity commitment
+//     - relayCommitment(rk)                        [Story 5.0] Derives relay identity commitment
 //
 //   PLANNED (not implemented — deferred to future epics):
-//     - getPublicKey(wallet) witness               [Epic 5.5] Requires AliasRegistry + encryption key infra
-//     - notifyNewMail(owner, emailCID)             [Epic 5.6] Requires SMTP bridge + email storage pipeline
 //     - getRecoveryKey() witness                   [Epic 3.4] Recovery key in vault blob (ADR-006), not private state
 //
 // ACCESS CONTROL MATRIX:
@@ -44,10 +48,14 @@ import CompactStandardLibrary;
 //   │ storeRecoveryKeyHash                    │ Owner only    │ ownerCommitment(local_secret_key())           │
 //   │ addBackupWallet                         │ Owner only    │ ownerCommitment(local_secret_key())           │
 //   │ removeBackupWallet                      │ Owner only    │ ownerCommitment(local_secret_key())           │
+//   │ setEmailPublicKey                       │ Owner only    │ ownerCommitment(local_secret_key())           │
+//   │ setMailRelay                            │ Owner only    │ ownerCommitment(local_secret_key())           │
+//   │ notifyNewMail                           │ Relay only    │ relayCommitment(local_relay_key())            │
 //   │ backupTransfer                          │ Backup wallet │ backupCommitment(local_backup_key()) + member │
 //   │ isRegistered                            │ Any           │ None (read-only)                             │
 //   │ ownerCommitment                         │ Pure          │ N/A                                          │
 //   │ backupCommitment                        │ Pure          │ N/A                                          │
+//   │ relayCommitment                         │ Pure          │ N/A                                          │
 //   └─────────────────────────────────────────┴───────────────┴──────────────────────────────────────────────┘
 //
 // STATE VARIABLES:
@@ -59,10 +67,16 @@ import CompactStandardLibrary;
 //   Recovery & Backup (Epic 2.6 + Story 3.6):
 //     - recoveryKeyHash: Bytes<32>               — hash of recovery key (actual key in vault blob per ADR-006)
 //     - backupWallets: Map<Bytes<32>, Uint<64>>  — backup wallet commitment -> registration timestamp
+//   Email & Relay (Story 5.0 — ADR-008, ADR-009):
+//     - emailPublicKey: Bytes<32>                 — X25519 public key for email encryption
+//     - emailCount: Counter                       — count of email notifications
+//     - inboxManifestCid: Opaque<'string'>        — IPFS CID of inbox manifest (latest pointer)
+//     - mailRelay: Bytes<32>                      — authorized mail relay commitment
 //
 // WITNESSES:
 //     - local_secret_key(): Bytes<32>   — owner's secret key from TypeScript private state
 //     - local_backup_key(): Bytes<32>   — backup wallet's secret key (for backup wallet verification)
+//     - local_relay_key(): Bytes<32>    — relay's secret key from TypeScript private state
 //
 // COMPACT LANGUAGE CONSTRAINTS:
 //     - No `this.sender` — caller identity verified via witness + persistentCommit
@@ -93,11 +107,28 @@ export ledger recoveryKeyHash: Bytes<32>;
 // Public ledger: map of authorized backup wallet commitments -> registration timestamp
 export ledger backupWallets: Map<Bytes<32>, Uint<64>>;
 
+// ── Email & Relay (Story 5.0 — ADR-008, ADR-009) ──────────────────────
+
+// Public ledger: X25519 public key for email encryption (32 bytes)
+export ledger emailPublicKey: Bytes<32>;
+
+// Public ledger: count of email notifications (extension watches for changes)
+export ledger emailCount: Counter;
+
+// Public ledger: IPFS CID of the inbox manifest (latest pointer)
+export ledger inboxManifestCid: Opaque<'string'>;
+
+// Public ledger: authorized mail relay commitment
+export ledger mailRelay: Bytes<32>;
+
 // Witness: returns the owner's secret key from private state
 witness local_secret_key(): Bytes<32>;
 
 // Witness: returns the backup wallet's secret key from private state
 witness local_backup_key(): Bytes<32>;
+
+// Witness: returns the relay's secret key from private state
+witness local_relay_key(): Bytes<32>;
 
 // Derive an owner commitment from a secret key using persistentCommit (hiding commitment).
 // Uses a fixed domain separator — ownership does not rotate in VaultRegistry.
@@ -150,6 +181,10 @@ export circuit transferOwnership(newOwnerCommitment: Bytes<32>): [] {
   recoveryKeyHash = default<Bytes<32>>;
   // Clear all backup wallets — new owner starts with a clean slate
   backupWallets.resetToDefault();
+  // Reset email state — new owner must set their own key and relay
+  emailPublicKey = default<Bytes<32>>;
+  mailRelay = default<Bytes<32>>;
+  inboxManifestCid = default<Opaque<'string'>>;
 }
 
 // Store the hash of a recovery key. Only the owner can call this.
@@ -205,6 +240,42 @@ export circuit backupTransfer(newOwnerCommitment: Bytes<32>): [] {
   recoveryKeyHash = default<Bytes<32>>;
   // Clear all backup wallets — new owner starts with a clean slate
   backupWallets.resetToDefault();
+  // Reset email state — new owner must set their own key and relay
+  emailPublicKey = default<Bytes<32>>;
+  mailRelay = default<Bytes<32>>;
+  inboxManifestCid = default<Opaque<'string'>>;
+}
+
+// Derive a relay commitment from a relay key.
+// Uses domain separator "vault:relay:" — different from "vault:owner:" and "vault:backup:".
+export circuit relayCommitment(rk: Bytes<32>): Bytes<32> {
+  return persistentCommit<Bytes<32>>(pad(32, "vault:relay:"), rk);
+}
+
+// Owner-only: store X25519 public key for email encryption.
+export circuit setEmailPublicKey(pubKey: Bytes<32>): [] {
+  const key = disclose(pubKey);
+  const sk = local_secret_key();
+  assert(owner == ownerCommitment(sk), "Not the vault owner");
+  emailPublicKey = key;
+}
+
+// Owner-only: authorize a mail relay to call notifyNewMail.
+export circuit setMailRelay(relayCommit: Bytes<32>): [] {
+  const relay = disclose(relayCommit);
+  const sk = local_secret_key();
+  assert(owner == ownerCommitment(sk), "Not the vault owner");
+  mailRelay = relay;
+}
+
+// Relay-only: update inbox manifest CID and increment email counter.
+// Only the authorized relay (verified via relayCommitment) can call this.
+export circuit notifyNewMail(manifestCid: Opaque<'string'>): [] {
+  const cid = disclose(manifestCid);
+  const rk = local_relay_key();
+  assert(mailRelay == relayCommitment(rk), "Not authorized relay");
+  emailCount.increment(1);
+  inboxManifestCid = cid;
 }
 
 // Check if a wallet address hash is registered.

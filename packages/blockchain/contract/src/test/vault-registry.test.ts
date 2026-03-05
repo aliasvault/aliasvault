@@ -43,6 +43,27 @@ const createAttackerContext = (
   return attackerSim;
 };
 
+/**
+ * Helper: create a relay context by injecting the relay's private state
+ * into the owner's contract state (same cross-instance injection pattern).
+ */
+const createRelayContext = (relayKey: Uint8Array) => {
+  const ownerSk = makeSecretKey();
+  const { sim: ownerSim } = createRegisteredOwner(ownerSk);
+  // Owner authorizes the relay
+  const relayCommit = VaultRegistrySimulator.relayCommitment(relayKey);
+  ownerSim.setMailRelay(relayCommit);
+  // Create a simulator with a DIFFERENT secret key — relay must not pass owner-only checks
+  const relaySim = new VaultRegistrySimulator(makeSecretKey(), undefined, relayKey);
+  relaySim.circuitContext = createCircuitContext(
+    sampleContractAddress(),
+    ownerSim.circuitContext.currentZswapLocalState,
+    ownerSim.circuitContext.currentQueryContext.state,
+    relaySim.circuitContext.currentPrivateState,
+  );
+  return { ownerSim, relaySim, relayKey };
+};
+
 describe("VaultRegistry smart contract", () => {
   it("generates initial ledger state deterministically", () => {
     const sk = makeSecretKey();
@@ -164,6 +185,20 @@ describe("VaultRegistry smart contract", () => {
       const ledgerAfter = sim.transferOwnership(newOwnerCommitment);
 
       expect(ledgerAfter.backupWallets.isEmpty()).toBe(true);
+    });
+
+    it("resets email state on transfer (clean-slate)", () => {
+      const { sim } = createRegisteredOwner();
+      // Set email state
+      sim.setEmailPublicKey(crypto.randomBytes(32));
+      const relayKey = makeSecretKey();
+      sim.setMailRelay(VaultRegistrySimulator.relayCommitment(relayKey));
+      // Transfer ownership
+      const newOwnerCommitment = VaultRegistrySimulator.ownerCommitment(makeSecretKey());
+      const ledgerAfter = sim.transferOwnership(newOwnerCommitment);
+      // Email state should be reset
+      expect(Buffer.from(ledgerAfter.emailPublicKey)).toEqual(Buffer.from(ZERO_BYTES_32));
+      expect(Buffer.from(ledgerAfter.mailRelay)).toEqual(Buffer.from(ZERO_BYTES_32));
     });
   });
 
@@ -299,6 +334,165 @@ describe("VaultRegistry smart contract", () => {
 
     it.skip("full maturity flow (requires block-time mocking or E2E)", () => {
       // Full flow: register → add backup → wait 72h → backupTransfer → verify
+    });
+  });
+
+  describe("setEmailPublicKey", () => {
+    it("owner can set email public key", () => {
+      const { sim } = createRegisteredOwner();
+      const pubKey = crypto.randomBytes(32);
+      const ledgerAfter = sim.setEmailPublicKey(pubKey);
+      expect(Buffer.from(ledgerAfter.emailPublicKey)).toEqual(Buffer.from(pubKey));
+    });
+
+    it("non-owner cannot set email public key", () => {
+      const { sim: ownerSim } = createRegisteredOwner();
+      const attackerSim = createAttackerContext(ownerSim, makeSecretKey());
+      expect(() => attackerSim.setEmailPublicKey(crypto.randomBytes(32))).toThrow();
+    });
+
+    it("owner can overwrite email public key", () => {
+      const { sim } = createRegisteredOwner();
+      sim.setEmailPublicKey(crypto.randomBytes(32));
+      const newKey = crypto.randomBytes(32);
+      const ledgerAfter = sim.setEmailPublicKey(newKey);
+      expect(Buffer.from(ledgerAfter.emailPublicKey)).toEqual(Buffer.from(newKey));
+    });
+
+    it("initializes to default<Bytes<32>> before any set", () => {
+      const { sim } = createRegisteredOwner();
+      expect(Buffer.from(sim.getLedger().emailPublicKey)).toEqual(Buffer.from(ZERO_BYTES_32));
+    });
+  });
+
+  describe("setMailRelay", () => {
+    it("owner can set mail relay commitment", () => {
+      const { sim } = createRegisteredOwner();
+      const relayKey = makeSecretKey();
+      const relayCommit = VaultRegistrySimulator.relayCommitment(relayKey);
+      const ledgerAfter = sim.setMailRelay(relayCommit);
+      expect(Buffer.from(ledgerAfter.mailRelay)).toEqual(Buffer.from(relayCommit));
+    });
+
+    it("non-owner cannot set mail relay commitment", () => {
+      const { sim: ownerSim } = createRegisteredOwner();
+      const attackerSim = createAttackerContext(ownerSim, makeSecretKey());
+      const relayCommit = VaultRegistrySimulator.relayCommitment(makeSecretKey());
+      expect(() => attackerSim.setMailRelay(relayCommit)).toThrow();
+    });
+
+    it("owner can overwrite mail relay (re-authorization)", () => {
+      const { sim } = createRegisteredOwner();
+      const relayKey1 = makeSecretKey();
+      sim.setMailRelay(VaultRegistrySimulator.relayCommitment(relayKey1));
+      const relayKey2 = makeSecretKey();
+      const relayCommit2 = VaultRegistrySimulator.relayCommitment(relayKey2);
+      const ledgerAfter = sim.setMailRelay(relayCommit2);
+      expect(Buffer.from(ledgerAfter.mailRelay)).toEqual(Buffer.from(relayCommit2));
+    });
+
+    it("old relay rejected after re-authorization", () => {
+      const relayKey1 = makeSecretKey();
+      const { ownerSim, relaySim: oldRelaySim } = createRelayContext(relayKey1);
+      // Verify old relay works before re-authorization
+      oldRelaySim.notifyNewMail("bafyreifake001");
+      // Owner re-authorizes a new relay
+      const relayKey2 = makeSecretKey();
+      ownerSim.setMailRelay(VaultRegistrySimulator.relayCommitment(relayKey2));
+      // Sync old relay's contract state to pick up the new mailRelay value
+      oldRelaySim.circuitContext = createCircuitContext(
+        sampleContractAddress(),
+        ownerSim.circuitContext.currentZswapLocalState,
+        ownerSim.circuitContext.currentQueryContext.state,
+        oldRelaySim.circuitContext.currentPrivateState,
+      );
+      expect(() => oldRelaySim.notifyNewMail("bafyreifake002")).toThrow();
+    });
+  });
+
+  describe("notifyNewMail", () => {
+    it("authorized relay can call notifyNewMail", () => {
+      const relayKey = makeSecretKey();
+      const { relaySim } = createRelayContext(relayKey);
+      const ledgerAfter = relaySim.notifyNewMail("bafyreifake123");
+      expect(ledgerAfter.emailCount).toEqual(1n);
+    });
+
+    it("unauthorized caller cannot call notifyNewMail (wrong relay key)", () => {
+      const relayKey = makeSecretKey();
+      const { ownerSim } = createRelayContext(relayKey);
+      // Create attacker with different relay key
+      const attackerRelayKey = makeSecretKey();
+      const attackerSim = new VaultRegistrySimulator(makeSecretKey(), undefined, attackerRelayKey);
+      attackerSim.circuitContext = createCircuitContext(
+        sampleContractAddress(),
+        ownerSim.circuitContext.currentZswapLocalState,
+        ownerSim.circuitContext.currentQueryContext.state,
+        attackerSim.circuitContext.currentPrivateState,
+      );
+      expect(() => attackerSim.notifyNewMail("bafyreifake123")).toThrow();
+    });
+
+    it("emailCount increments on each call", () => {
+      const relayKey = makeSecretKey();
+      const { relaySim } = createRelayContext(relayKey);
+      relaySim.notifyNewMail("bafyreifake001");
+      relaySim.notifyNewMail("bafyreifake002");
+      const ledgerAfter = relaySim.notifyNewMail("bafyreifake003");
+      expect(ledgerAfter.emailCount).toEqual(3n);
+    });
+
+    it("inboxManifestCid updates to latest value", () => {
+      const relayKey = makeSecretKey();
+      const { relaySim } = createRelayContext(relayKey);
+      relaySim.notifyNewMail("bafyreifake001");
+      const ledgerAfter = relaySim.notifyNewMail("bafyreifake002");
+      expect(ledgerAfter.inboxManifestCid).toEqual("bafyreifake002");
+    });
+
+    it("fails if no relay is set (mailRelay == default)", () => {
+      const { sim } = createRegisteredOwner();
+      // Create a simulator with a relay key but owner hasn't called setMailRelay
+      const relayKey = makeSecretKey();
+      const relaySim = new VaultRegistrySimulator(sim.getPrivateState().secretKey, undefined, relayKey);
+      relaySim.circuitContext = createCircuitContext(
+        sampleContractAddress(),
+        sim.circuitContext.currentZswapLocalState,
+        sim.circuitContext.currentQueryContext.state,
+        relaySim.circuitContext.currentPrivateState,
+      );
+      expect(() => relaySim.notifyNewMail("bafyreifake123")).toThrow();
+    });
+  });
+
+  describe("relayCommitment (pure circuit)", () => {
+    it("produces deterministic output for same key", () => {
+      const rk = makeSecretKey();
+      const c1 = VaultRegistrySimulator.relayCommitment(rk);
+      const c2 = VaultRegistrySimulator.relayCommitment(rk);
+      expect(Buffer.from(c1)).toEqual(Buffer.from(c2));
+    });
+
+    it("produces different commitment than ownerCommitment for same key", () => {
+      const key = makeSecretKey();
+      const ownerC = VaultRegistrySimulator.ownerCommitment(key);
+      const relayC = VaultRegistrySimulator.relayCommitment(key);
+      expect(Buffer.from(ownerC)).not.toEqual(Buffer.from(relayC));
+    });
+
+    it("produces different commitment than backupCommitment for same key", () => {
+      const key = makeSecretKey();
+      const backupC = VaultRegistrySimulator.backupCommitment(key);
+      const relayC = VaultRegistrySimulator.relayCommitment(key);
+      expect(Buffer.from(backupC)).not.toEqual(Buffer.from(relayC));
+    });
+
+    it("produces different commitments for different keys", () => {
+      const rk1 = makeSecretKey();
+      const rk2 = makeSecretKey();
+      const c1 = VaultRegistrySimulator.relayCommitment(rk1);
+      const c2 = VaultRegistrySimulator.relayCommitment(rk2);
+      expect(Buffer.from(c1)).not.toEqual(Buffer.from(c2));
     });
   });
 

@@ -27,14 +27,17 @@ export type CounterPrivateState = {
 export type VaultRegistryPrivateState = {
   readonly secretKey: Uint8Array;
   readonly backupKey: Uint8Array;
+  readonly relayKey: Uint8Array;
 };
 
 export const createVaultRegistryPrivateState = (
   secretKey: Uint8Array,
   backupKey?: Uint8Array,
+  relayKey?: Uint8Array,
 ): VaultRegistryPrivateState => ({
   secretKey,
   backupKey: backupKey ?? new Uint8Array(32),
+  relayKey: relayKey ?? new Uint8Array(32),
 });
 
 // Counter has no witnesses — empty object required by Contract constructor.
@@ -53,5 +56,11 @@ export const vaultRegistryWitnesses = {
     VaultRegistryPrivateState,
     Uint8Array,
   ] => [privateState, privateState.backupKey],
+  local_relay_key: ({
+    privateState,
+  }: WitnessContext<Ledger, VaultRegistryPrivateState>): [
+    VaultRegistryPrivateState,
+    Uint8Array,
+  ] => [privateState, privateState.relayKey],
 };
 

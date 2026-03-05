@@ -24,9 +24,9 @@ export class VaultRegistrySimulator {
   readonly contract: Contract<VaultRegistryPrivateState>;
   circuitContext: CircuitContext<VaultRegistryPrivateState>;
 
-  constructor(secretKey: Uint8Array, backupKey?: Uint8Array) {
+  constructor(secretKey: Uint8Array, backupKey?: Uint8Array, relayKey?: Uint8Array) {
     this.contract = new Contract<VaultRegistryPrivateState>(vaultRegistryWitnesses);
-    const initialPrivateState = createVaultRegistryPrivateState(secretKey, backupKey);
+    const initialPrivateState = createVaultRegistryPrivateState(secretKey, backupKey, relayKey);
     // Note: circuitContext is public so tests can inject cross-instance state for access control testing (M1)
     const {
       currentPrivateState,
@@ -108,6 +108,30 @@ export class VaultRegistrySimulator {
     return ledger(this.circuitContext.currentQueryContext.state);
   }
 
+  public setEmailPublicKey(pubKey: Uint8Array): Ledger {
+    this.circuitContext = this.contract.impureCircuits.setEmailPublicKey(
+      this.circuitContext,
+      pubKey
+    ).context;
+    return ledger(this.circuitContext.currentQueryContext.state);
+  }
+
+  public setMailRelay(relayCommit: Uint8Array): Ledger {
+    this.circuitContext = this.contract.impureCircuits.setMailRelay(
+      this.circuitContext,
+      relayCommit
+    ).context;
+    return ledger(this.circuitContext.currentQueryContext.state);
+  }
+
+  public notifyNewMail(manifestCid: string): Ledger {
+    this.circuitContext = this.contract.impureCircuits.notifyNewMail(
+      this.circuitContext,
+      manifestCid
+    ).context;
+    return ledger(this.circuitContext.currentQueryContext.state);
+  }
+
   public isRegistered(walletAddressHash: Uint8Array): boolean {
     const result = this.contract.impureCircuits.isRegistered(
       this.circuitContext,
@@ -123,5 +147,9 @@ export class VaultRegistrySimulator {
 
   public static backupCommitment(bk: Uint8Array): Uint8Array {
     return pureCircuits.backupCommitment(bk);
+  }
+
+  public static relayCommitment(rk: Uint8Array): Uint8Array {
+    return pureCircuits.relayCommitment(rk);
   }
 }
