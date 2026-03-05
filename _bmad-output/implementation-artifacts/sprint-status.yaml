@@ -1,4 +1,4 @@
-# generated: 2026-03-02 (updated: sprint change proposal - Epic 4 revision)
+# generated: 2026-03-05 (updated: sprint planning - Epic 5 story updates per ADR-008/009)
 # project: aliasvault
 # project_key: aliasvault
 # tracking_system: file-system
@@ -33,7 +33,7 @@
 # - SM typically creates next story after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
-generated: 2026-02-21
+generated: 2026-03-05
 project: aliasvault
 project_key: aliasvault
 tracking_system: file-system
@@ -80,8 +80,9 @@ development_status:
   4-3-conflict-detection-ux: done  # REVISED: saveWithConflictCheck() on VaultSyncService — code review passed
   epic-4-retrospective: optional
 
-  # Epic 5: Alias Email System
-  epic-5: backlog
+  # Epic 5: Alias Email System (Updated 2026-03-05 — ADR-008/009 story revisions, Story 5.0 added)
+  epic-5: in-progress
+  5-0-email-keypair-relay-authorization: review
   5-1-aliasregistry-smart-contract: backlog
   5-2-alias-generation-ui: backlog
   5-3-smtp-bridge-service: backlog

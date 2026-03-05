@@ -354,9 +354,9 @@ export const vaultRegistryWitnesses = {
 ```typescript
 // vault-registry-simulator.ts
 export class VaultRegistrySimulator {
-  constructor(secretKey: Uint8Array, backupKey?: Uint8Array) {
+  constructor(secretKey: Uint8Array, backupKey?: Uint8Array, relayKey?: Uint8Array) {
     this.contract = new Contract<VaultRegistryPrivateState>(vaultRegistryWitnesses);
-    const initialPrivateState = createVaultRegistryPrivateState(secretKey, backupKey);
+    const initialPrivateState = createVaultRegistryPrivateState(secretKey, backupKey, relayKey);
     // ... createConstructorContext, createCircuitContext
   }
   // circuitContext is public so tests can inject cross-instance state for access control testing
@@ -366,6 +366,9 @@ export class VaultRegistrySimulator {
   }
   public static backupCommitment(bk: Uint8Array): Uint8Array {
     return pureCircuits.backupCommitment(bk);  // Different domain separator
+  }
+  public static relayCommitment(rk: Uint8Array): Uint8Array {
+    return pureCircuits.relayCommitment(rk);  // "vault:relay:" domain separator
   }
 }
 ```
@@ -467,9 +470,12 @@ pure circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
 pure circuit backupCommitment(bk: Bytes<32>): Bytes<32> {
   persistentCommit<Bytes<32>>(pad(32, "vault:backup:"), bk)
 }
+pure circuit relayCommitment(rk: Bytes<32>): Bytes<32> {
+  persistentCommit<Bytes<32>>(pad(32, "vault:relay:"), rk)
+}
 ```
 
-Multi-role commitments MUST use different domain separators (`"vault:owner:"` vs `"vault:backup:"`) to prevent cross-role commitment collisions even when using the same underlying key.
+Multi-role commitments MUST use different domain separators (`"vault:owner:"` vs `"vault:backup:"` vs `"vault:relay:"`) to prevent cross-role commitment collisions even when using the same underlying key.
 
 ### 15. GuardianRecovery Contract Patterns (Story 3.1)
 
@@ -484,6 +490,7 @@ guardianCommitment(gk): persistentCommit<Bytes<32>>(pad(32, "recovery:guardian:"
 // VaultRegistry — different domain (DO NOT mix)
 ownerCommitment(sk):    persistentCommit<Bytes<32>>(pad(32, "vault:owner:"), sk)
 backupCommitment(bk):   persistentCommit<Bytes<32>>(pad(32, "vault:backup:"), bk)
+relayCommitment(rk):    persistentCommit<Bytes<32>>(pad(32, "vault:relay:"), rk)
 ```
 
 **State mutation guards during active processes:**
@@ -990,10 +997,11 @@ Before merging any PR that touches cryptography or guardian recovery:
 
 ---
 
-**Last Updated:** 2026-03-04
+**Last Updated:** 2026-03-05
 **Source:** Generated from [architecture.md](_bmad-output/architecture.md)
 **Maintenance:** Update when implementing new patterns or discovering critical rules
 **Change Log:**
+- 2026-03-05: Updated Rules 11, 14, 15 with relay commitment pattern from Story 5.0. Rule 11: simulator constructor now accepts `relayKey?` param, added `relayCommitment` static method. Rule 14: added `"vault:relay:"` domain separator to multi-role commitment pattern. Rule 15: added `relayCommitment` to VaultRegistry domain separator cross-reference.
 - 2026-03-04: Added Rule 25 (Vault Sync Conflict Detection — Platform-Agnostic Callback Pattern) from Story 4.3. `saveWithConflictCheck()` uses decrypt/encrypt callbacks instead of importing browser-specific crypto. Documents `preDecryptedJson` optimization, `encryptOrThrow()` error wrapping, and merge notification 3-second display hold. Updated Rule 24 maintenance note with Story 4.3 types (ConflictCheckResult, MergeSummary).
 - 2026-03-03: Added Rule 24 (Browser Extension Ambient Module Declarations — `externals.d.ts`). Documents `apps/*` not in pnpm workspace, ambient declarations for runtime-only packages (`@midnight-ntwrk/*`, `@aliasvault/contract`, `@aliasvault/vault-sync`, `argon2-browser`). Fixed all "pre-existing" tsc errors (dependency version drift from `@types/chrome@0.0.280` and `@types/react@19`). 9 files fixed, `tsc --noEmit` now reports zero errors.
 - 2026-03-02: Added Rule 23 (JSON Vault Format — VaultStore replaces SqliteClient). Sprint Change Proposal 2026-03-02: vault blob on IPFS is VaultJson JSON, not SQLite binary. VaultStore (~300 lines) replaces SqliteClient (1,611 lines). shared/vault-sql/ removed, shared/vault-types/ added. Updated Rule 12 (SQLite code → VaultStore code for secretKey storage). Updated Rule 21 (DbContext reference: SQLite DB handle → VaultStore handle). Added anti-pattern for SQLite/binary vault format. Updated architecture.md Section 3 (conflict resolution types), Pattern 5 (resolution algorithm), directory tree, and format decision record.
