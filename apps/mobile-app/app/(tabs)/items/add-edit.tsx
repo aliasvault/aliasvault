@@ -9,8 +9,6 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Keyboard, Platform, ScrollView, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import { HapticsUtility } from '@/utils/HapticsUtility';
-
 import type { Folder } from '@/utils/db/repositories/FolderRepository';
 import { CreateIdentityGenerator, CreateUsernameEmailGenerator, UsernameEmailGenerator, Gender, Identity, IdentityHelperUtils, convertAgeRangeToBirthdateOptions } from '@/utils/dist/core/identity-generator';
 import type { Attachment, Item, ItemField, TotpCode, ItemType, FieldType, PasswordSettings } from '@/utils/dist/core/models/vault';
@@ -18,6 +16,7 @@ import { ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, is
 import type { FaviconExtractModel } from '@/utils/dist/core/models/webapi';
 import { CreatePasswordGenerator, PasswordGenerator } from '@/utils/dist/core/password-generator';
 import emitter from '@/utils/EventEmitter';
+import { HapticsUtility } from '@/utils/HapticsUtility';
 import { extractServiceNameFromUrl } from '@/utils/UrlUtility';
 
 import { useColors } from '@/hooks/useColorScheme';

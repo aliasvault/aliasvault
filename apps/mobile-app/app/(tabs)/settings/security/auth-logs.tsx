@@ -3,10 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, RefreshControl } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import { HapticsUtility } from '@/utils/HapticsUtility';
-
 import type { AuthLogModel } from '@/utils/dist/core/models/webapi';
 import { AuthEventType } from '@/utils/dist/core/models/webapi';
+import { HapticsUtility } from '@/utils/HapticsUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
