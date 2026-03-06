@@ -1,0 +1,4 @@
+- Improve username/password and 2FA autofill field form detection
+- Improve browser extension "save credentials" prompt reliability
+- Passkey authentication flow improvements where "use browser" option now looks at full domain instead of base domain
+- Translation updates

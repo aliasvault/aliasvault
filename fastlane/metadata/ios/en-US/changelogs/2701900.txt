@@ -1,0 +1,5 @@
+- Add 2FA TOTP copy option to long-press item context menu in main screen
+- Add haptic feedback to mobile app primary actions
+- Add password visiblity toggle to password unlock screen
+- Bugfixes
+- Translation updates

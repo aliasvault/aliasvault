@@ -1,0 +1,5 @@
+- Kopieer 2FA TOTP rechtstreeks vanuit het hoofdscherm (long-press menu)
+- Meer haptische feedback toegevoegd
+- Wachtwoord visiblity toggle toegevoegd aan ontgrendel met wachtwoord scherm
+- Bugfixes
+- Vertaling updates
