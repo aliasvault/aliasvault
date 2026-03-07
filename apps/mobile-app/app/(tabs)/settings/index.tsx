@@ -283,8 +283,11 @@ export default function SettingsScreen() : React.ReactNode {
     },
     settingItemValue: {
       color: colors.textMuted,
+      flexShrink: 1,
       fontSize: 16,
       marginRight: 8,
+      maxWidth: '50%',
+      textAlign: 'right',
     },
     skeletonLoader: {
       marginRight: 8,
