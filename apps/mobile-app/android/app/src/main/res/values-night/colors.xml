@@ -1,8 +1,5 @@
 <resources>
-  <!-- Splashscreen and autofill background (dark mode) -->
   <color name="splashscreen_background">#202020</color>
-
-  <!-- AliasVault Dark Mode Colors -->
   <color name="av_text">#ECEDEE</color>
   <color name="av_text_muted">#9BA1A6</color>
   <color name="av_background">#000000</color>
@@ -14,7 +11,5 @@
   <color name="av_tertiary">#eabf69</color>
   <color name="av_icon">#9BA1A6</color>
   <color name="av_error">#ef4444</color>
-
-  <!-- Loading overlay background (dark mode: black with 80% opacity) -->
   <color name="av_loading_overlay">#CC000000</color>
 </resources>

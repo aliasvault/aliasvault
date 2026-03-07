@@ -1,11 +1,7 @@
 <resources>
   <color name="splashscreen_background">#ffffff</color>
   <color name="ic_launcher_background">#FFFFFF</color>
-
-  <!-- Legacy color -->
   <color name="colorPrimary">#023c69</color>
-
-  <!-- AliasVault Light Mode Colors -->
   <color name="av_light_text">#11181C</color>
   <color name="av_light_text_muted">#4b5563</color>
   <color name="av_light_background">#f3f4f6</color>
@@ -16,8 +12,6 @@
   <color name="av_light_tertiary">#eabf69</color>
   <color name="av_light_icon">#687076</color>
   <color name="av_light_error">#D32F2F</color>
-
-  <!-- AliasVault Dark Mode Colors (in values/colors.xml, will be overridden in values-night/colors.xml) -->
   <color name="av_text">#11181C</color>
   <color name="av_text_muted">#4b5563</color>
   <color name="av_background">#f3f4f6</color>
@@ -29,10 +23,8 @@
   <color name="av_tertiary">#eabf69</color>
   <color name="av_icon">#687076</color>
   <color name="av_error">#D32F2F</color>
-
-  <!-- Loading overlay background (light mode: white with 80% opacity) -->
   <color name="av_loading_overlay">#CCFFFFFF</color>
-
-  <!-- Alias for primary color (used in PIN unlock) -->
   <color name="primary">@color/av_primary</color>
+  <color name="iconBackground">#000000</color>
+  <color name="colorPrimaryDark">#ffffff</color>
 </resources>

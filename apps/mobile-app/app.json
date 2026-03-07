@@ -28,7 +28,17 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
       },
-      "package": "net.aliasvault.app"
+      "package": "net.aliasvault.app",
+      "splash": {
+        "image": "./assets/images/adaptive-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff",
+        "dark": {
+          "image": "./assets/images/adaptive-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#202020"
+        }
+      }
     },
     "web": {
       "bundler": "metro",
@@ -37,15 +47,6 @@
     },
     "plugins": [
       "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/adaptive-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ],
       [
         "react-native-edge-to-edge",
         {

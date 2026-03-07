@@ -1,24 +1,14 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-  <style name="AppTheme" parent="Theme.EdgeToEdge.Light">
+  <style name="AppTheme" parent="Theme.EdgeToEdge">
     <item name="android:textColor">@android:color/black</item>
     <item name="android:editTextStyle">@style/ResetEditText</item>
     <item name="colorPrimary">@color/colorPrimary</item>
-    <item name="android:statusBarColor">@color/av_background</item>
-    <item name="android:navigationBarColor">#fff</item>
-    <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-    <!-- Light mode: use dark icons/text on light background -->
-    <item name="android:windowLightStatusBar">true</item>
-    <item name="android:windowLightNavigationBar">true</item>
+    <item name="enforceNavigationBarContrast">false</item>
   </style>
   <style name="ResetEditText" parent="@android:style/Widget.EditText">
     <item name="android:padding">0dp</item>
     <item name="android:textColorHint">#c8c8c8</item>
     <item name="android:textColor">@android:color/black</item>
-  </style>
-  <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
-    <item name="windowSplashScreenBackground">@color/splashscreen_background</item>
-    <item name="windowSplashScreenAnimatedIcon">@drawable/splashscreen_logo</item>
-    <item name="postSplashScreenTheme">@style/AppTheme</item>
   </style>
   <style name="PasskeyRegistrationTheme" parent="Theme.Material3.DayNight.NoActionBar">
     <item name="colorPrimary">@color/av_primary</item>
@@ -46,5 +36,12 @@
     <item name="android:insetTop">0dp</item>
     <item name="android:insetBottom">2dp</item>
     <item name="rippleColor">@color/av_primary</item>
+  </style>
+  <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
+    <item name="windowSplashScreenBackground">@color/splashscreen_background</item>
+    <item name="windowSplashScreenAnimatedIcon">@drawable/splashscreen_logo</item>
+    <item name="windowSplashScreenAnimationDuration">0</item>
+    <item name="android:windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+    <item name="postSplashScreenTheme">@style/AppTheme</item>
   </style>
 </resources>

@@ -12,7 +12,7 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_marginEnd="8dp"
-        android:src="@mipmap/ic_launcher_foreground"
+        android:src="@drawable/ic_launcher_foreground"
         android:contentDescription="@string/aliasvault_icon" />
 
     <TextView
