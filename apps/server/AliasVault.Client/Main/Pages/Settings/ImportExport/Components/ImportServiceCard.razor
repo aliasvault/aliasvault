@@ -6,6 +6,7 @@
 @inject GlobalNotificationService GlobalNotificationService
 @inject HttpClient HttpClient
 @inject IStringLocalizerFactory LocalizerFactory
+@inject IConfiguration Configuration
 @using Microsoft.Extensions.Localization
 @using AliasVault.ImportExport.Importers
 @using AliasVault.ImportExport.Models
@@ -243,10 +244,17 @@
     public EventCallback OnImportConfirmed { get; set; }
 
     /// <summary>
-    /// The callback for processing the file.
+    /// The callback for processing the file as text (for CSV/text formats).
     /// </summary>
     [Parameter]
     public Func<string, Task<List<ImportedCredential>>> ProcessFileCallback { get; set; } = null!;
+
+    /// <summary>
+    /// The callback for processing the file as raw bytes (for binary formats like 1PUX).
+    /// When set, the file is read as bytes instead of text.
+    /// </summary>
+    [Parameter]
+    public Func<byte[], Task<List<ImportedCredential>>>? ProcessBytesFileCallback { get; set; };
 
     private bool IsModalOpen { get; set; } = false;
     private bool IsImporting { get; set; } = false;
@@ -688,20 +696,33 @@
             IsImporting = true;
             StateHasChanged();
 
-            // Limit file size to 10MB
-            if (e.File.Size > 10 * 1024 * 1024)
+            var maxFileSizeMb = Configuration.GetValue<long>("MaxImportFileSizeMb", 5120);
+            var maxFileSizeBytes = maxFileSizeMb * 1024L * 1024L;
+
+            if (e.File.Size > maxFileSizeBytes)
             {
-                ImportError = Localizer["ImportErrorFileTooLarge"];
+                ImportError = string.Format(Localizer["ImportErrorFileTooLarge"], FormatFileSize(maxFileSizeMb));
                 return;
             }
 
-            await using var stream = e.File.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
-            using var reader = new StreamReader(stream);
-            var fileContents = await reader.ReadToEndAsync();
+            await using var stream = e.File.OpenReadStream(maxAllowedSize: maxFileSizeBytes);
 
-            var processingTask = ProcessFileCallback(fileContents);
+            Task<List<ImportedCredential>> processingTask;
+            if (ProcessBytesFileCallback != null)
+            {
+                using var memStream = new MemoryStream();
+                await stream.CopyToAsync(memStream);
+                var fileBytes = memStream.ToArray();
+                processingTask = ProcessBytesFileCallback(fileBytes);
+            }
+            else
+            {
+                using var reader = new StreamReader(stream);
+                var fileContents = await reader.ReadToEndAsync();
+                processingTask = ProcessFileCallback(fileContents);
+            }
+
             var delayTask = Task.Delay(500);
-
             await Task.WhenAll(processingTask, delayTask);
 
             ImportedCredentials = await processingTask;
@@ -762,5 +783,18 @@
         FaviconExtractionCancellation?.Cancel();
         IsExtractingFavicons = false;
         StateHasChanged();
+    }
+
+    /// <summary>
+    /// Formats a file size given in megabytes to a human-readable string (e.g. "5 GB" or "500 MB").
+    /// </summary>
+    private static string FormatFileSize(long megabytes)
+    {
+        if (megabytes >= 1024)
+        {
+            return $"{megabytes / 1024} GB";
+        }
+
+        return $"{megabytes} MB";
     }
 }

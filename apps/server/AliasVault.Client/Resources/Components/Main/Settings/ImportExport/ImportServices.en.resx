@@ -60,8 +60,8 @@
   </resheader>
   <!-- 1Password -->
   <data name="OnePasswordDescription" xml:space="preserve">
-    <value>Import passwords from your 1Password vault</value>
-    <comment>Description for 1Password import service</comment>
+    <value>Import passwords from your 1Password vault (CSV format)</value>
+    <comment>Description for 1Password CSV import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
     <value>In order to import your 1Password vault, you need to export it as a CSV file. You can do this by logging into your 1Password account in the 1Password 8 desktop app (Windows / MacOS / Linux), going to the 'File' menu and selecting 'Export' (to CSV).</value>
@@ -70,6 +70,19 @@
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
     <value>Once you have exported the file, you can upload it below.</value>
     <comment>1Password export instructions part 2</comment>
+  </data>
+  <!-- 1Password 1PUX (native format) -->
+  <data name="OnePassword1PuxDescription" xml:space="preserve">
+    <value>Import passwords from your 1Password vault (1PUX native format)</value>
+    <comment>Description for 1Password 1PUX import service</comment>
+  </data>
+  <data name="OnePassword1PuxInstructionsPart1" xml:space="preserve">
+    <value>The 1PUX format is the native export format of 1Password 8 and preserves more data (folders, tags, TOTP) than the CSV export. To export, open the 1Password 8 desktop app (Windows / macOS / Linux), go to 'File' → 'Export' and choose '1Password Unencrypted Export (.1pux)'.</value>
+    <comment>1Password 1PUX export instructions part 1</comment>
+  </data>
+  <data name="OnePassword1PuxInstructionsPart2" xml:space="preserve">
+    <value>Once you have the .1pux file, upload it directly below — no unzipping required.</value>
+    <comment>1Password 1PUX export instructions part 2</comment>
   </data>
   <!-- Bitwarden -->
   <data name="BitwardenDescription" xml:space="preserve">

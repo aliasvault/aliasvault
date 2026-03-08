@@ -163,7 +163,7 @@
     <comment>Error message when user tries to import a zip file</comment>
   </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
-    <value>File size exceeds 10MB limit.</value>
-    <comment>Error message when file is too large</comment>
+    <value>Die Dateigröße überschreitet das Limit von {0}.</value>
+    <comment>Error message when file is too large. {0} is replaced with the actual limit (e.g. "5 GB")</comment>
   </data>
 </root>
