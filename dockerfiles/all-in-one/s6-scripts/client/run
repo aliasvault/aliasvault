@@ -33,6 +33,7 @@ PRIVATE_EMAIL_DOMAINS=${PRIVATE_EMAIL_DOMAINS:-$DEFAULT_PRIVATE_EMAIL_DOMAINS}
 HIDDEN_PRIVATE_EMAIL_DOMAINS=${HIDDEN_PRIVATE_EMAIL_DOMAINS:-$DEFAULT_HIDDEN_PRIVATE_EMAIL_DOMAINS}
 SUPPORT_EMAIL=${SUPPORT_EMAIL:-$DEFAULT_SUPPORT_EMAIL}
 PUBLIC_REGISTRATION_ENABLED=${PUBLIC_REGISTRATION_ENABLED:-true}
+MAX_IMPORT_FILE_SIZE_MB=${MAX_IMPORT_FILE_SIZE_MB:-5120}
 
 mkdir -p /etc/nginx/ssl
 
@@ -74,7 +75,8 @@ cat > /app/client/wwwroot/appsettings.json << EOF
     "PrivateEmailDomains": $json_array,
     "HiddenPrivateEmailDomains": $hidden_json_array,
     "SupportEmail": "$SUPPORT_EMAIL",
-    "PublicRegistrationEnabled": "$PUBLIC_REGISTRATION_ENABLED"
+    "PublicRegistrationEnabled": "$PUBLIC_REGISTRATION_ENABLED",
+    "MaxImportFileSizeMb": $MAX_IMPORT_FILE_SIZE_MB
 }
 EOF
 
