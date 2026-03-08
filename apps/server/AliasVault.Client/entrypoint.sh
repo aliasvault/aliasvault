@@ -4,12 +4,14 @@ DEFAULT_PRIVATE_EMAIL_DOMAINS=""
 DEFAULT_HIDDEN_PRIVATE_EMAIL_DOMAINS=""
 DEFAULT_SUPPORT_EMAIL=""
 DEFAULT_PUBLIC_REGISTRATION_ENABLED="true"
+DEFAULT_MAX_IMPORT_FILE_SIZE_MB="5120"
 
 # Use the provided environment variables if they exist, otherwise use defaults
 PRIVATE_EMAIL_DOMAINS=${PRIVATE_EMAIL_DOMAINS:-$DEFAULT_PRIVATE_EMAIL_DOMAINS}
 HIDDEN_PRIVATE_EMAIL_DOMAINS=${HIDDEN_PRIVATE_EMAIL_DOMAINS:-$DEFAULT_HIDDEN_PRIVATE_EMAIL_DOMAINS}
 SUPPORT_EMAIL=${SUPPORT_EMAIL:-$DEFAULT_SUPPORT_EMAIL}
 PUBLIC_REGISTRATION_ENABLED=${PUBLIC_REGISTRATION_ENABLED:-$DEFAULT_PUBLIC_REGISTRATION_ENABLED}
+MAX_IMPORT_FILE_SIZE_MB=${MAX_IMPORT_FILE_SIZE_MB:-$DEFAULT_MAX_IMPORT_FILE_SIZE_MB}
 
 # Create SSL directory if it doesn't exist
 mkdir -p /etc/nginx/ssl
@@ -67,6 +69,9 @@ fi
 
 # Update public registration enabled in appsettings.json
 sed -i "s|\"PublicRegistrationEnabled\": \".*\"|\"PublicRegistrationEnabled\": \"$PUBLIC_REGISTRATION_ENABLED\"|g" /usr/share/nginx/html/appsettings.json
+
+# Update max import file size in appsettings.json
+sed -i "s|\"MaxImportFileSizeMb\": [0-9]*|\"MaxImportFileSizeMb\": $MAX_IMPORT_FILE_SIZE_MB|g" /usr/share/nginx/html/appsettings.json
 
 # Start the application
 nginx -g "daemon off;"
