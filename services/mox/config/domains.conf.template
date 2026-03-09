@@ -1,0 +1,27 @@
+# Domain configuration — processed by entrypoint.sh via sed before Mox starts
+# sconf format: uses tabs for indentation
+# ${BRIDGE_WEBHOOK_SECRET} is replaced at container startup by entrypoint.sh
+Domains:
+	alias.id:
+		DKIM:
+			Selectors:
+				dkim1:
+					HashEffective: sha256
+					Canonicalization:
+						HeaderRelaxed: true
+						BodyRelaxed: true
+					DontSealHeaders: false
+					Expiration: 0s
+					PrivateKeyFile: dkim1.alias.id.key
+			Sign:
+				- dkim1
+
+Accounts:
+	aliasvault:
+		Domain: alias.id
+		Destinations:
+			@alias.id:
+				Mailbox: Inbox
+		IncomingWebhook:
+			URL: http://localhost:3000/mox-webhook
+			Authorization: Bearer ${BRIDGE_WEBHOOK_SECRET}

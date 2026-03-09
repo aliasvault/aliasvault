@@ -1,5 +1,6 @@
 import express from 'express';
 import { createEmailRouter } from './routes/email.js';
+import { createMoxWebhookRouter } from './routes/moxWebhook.js';
 import { createHealthRouter } from './routes/health.js';
 import { metricsHandler } from './metrics.js';
 import type { BridgeContext } from './types/context.js';
@@ -11,6 +12,7 @@ export function createApp(ctx: BridgeContext) {
 
   app.use(createHealthRouter(ctx));
   app.use(createEmailRouter(ctx));
+  app.use(createMoxWebhookRouter(ctx));
   app.get('/metrics', metricsHandler);
 
   app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

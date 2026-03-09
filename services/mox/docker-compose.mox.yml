@@ -1,0 +1,30 @@
+services:
+  mox:
+    image: r.xmox.nl/mox:latest
+    entrypoint: ["/bin/sh", "/mox/config/entrypoint.sh"]
+    environment:
+      - MOX_DOCKER=yes
+      - BRIDGE_WEBHOOK_SECRET=${BRIDGE_WEBHOOK_SECRET}
+    network_mode: 'host'
+    volumes:
+      - ./config:/mox/config:z
+      - ./data:/mox/data:z
+    working_dir: /mox
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "sh", "-c", "echo QUIT | nc -w 2 localhost 25 | grep -q 220"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  smtp-bridge:
+    build:
+      context: ../..
+      dockerfile: services/smtp-bridge/Dockerfile
+    network_mode: 'host'
+    env_file:
+      - .env
+    depends_on:
+      mox:
+        condition: service_healthy
+    restart: on-failure

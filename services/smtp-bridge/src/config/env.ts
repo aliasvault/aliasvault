@@ -50,6 +50,10 @@ export function loadEnv() {
     // Contract
     vaultRegistryZkConfigPath: optional('VAULT_REGISTRY_ZK_CONFIG_PATH', './dist/managed/vault-registry'),
     aliasRegistryAddress: required('ALIAS_REGISTRY_ADDRESS'),
+
+    // Mox Webapi (optional — MVP: attachments skipped)
+    moxWebapiUrl: process.env.MOX_WEBAPI_URL ?? '',
+    moxWebapiPassword: process.env.MOX_WEBAPI_PASSWORD ?? '',
   };
 }
 
