@@ -30,7 +30,9 @@
     "switchAccounts": "Skift konto?",
     "loginWithMobile": "Log ind via mobilapp",
     "unlockWithMobile": "Lås op ved hjælp af Mobil App",
-    "scanQrCode": "Skan denne QR-kode med din AliasVault-mobilapp for at logge ind og låse din boks op."
+    "scanQrCode": "Skan denne QR-kode med din AliasVault-mobilapp for at logge ind og låse din boks op.",
+    "passwordAttemptsWarning": "Incorrect password. You will be logged out if you enter the wrong password {{remainingAttempts}} more times.",
+    "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
   },
   "menu": {
     "vault": "Boks",
