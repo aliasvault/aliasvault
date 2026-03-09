@@ -72,8 +72,8 @@
 "enter_password_to_unlock" = "Voer je hoofdwachtwoord in";
 "unlock" = "Ontgrendelen";
 "incorrect_password" = "Onjuist wachtwoord. Probeer het opnieuw.";
-"attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
-"max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
+"attempts_warning" = "Onjuist wachtwoord. Je wordt uitgelogd als je het verkeerde wachtwoord %d vaker invult.";
+"max_attempts_reached" = "Te veel mislukte ontgrendel pogingen. Je bent uitgelogd om veiligheidsredenen.";
 
 /* PIN Setup */
 "pin_setup_title" = "Pincode instellen";
