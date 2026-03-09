@@ -31,8 +31,8 @@
     "loginWithMobile": "Log in via de mobiele app",
     "unlockWithMobile": "Ontgrendel met mobiele app",
     "scanQrCode": "Scan deze QR-code met de AliasVault mobiele app om in te loggen en je kluis te ontgrendelen.",
-    "passwordAttemptsWarning": "Incorrect password. You will be logged out if you enter the wrong password {{remainingAttempts}} more times.",
-    "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
+    "passwordAttemptsWarning": "Onjuist wachtwoord. Je wordt uitgelogd als je het verkeerde wachtwoord {{remainingAttempts}} vaker invult.",
+    "maxAttemptsReached": "Te veel mislukte ontgrendel pogingen. Je bent uitgelogd om veiligheidsredenen."
   },
   "menu": {
     "vault": "Vault",
