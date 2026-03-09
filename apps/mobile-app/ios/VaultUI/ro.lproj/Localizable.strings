@@ -72,8 +72,8 @@
 "enter_password_to_unlock" = "Introdu parola principală";
 "unlock" = "Deblochează";
 "incorrect_password" = "Parolă incorectă. Încearcă din nou.";
-"attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
-"max_attempts_reached" = "Prea multe încercări eșuate de deblocare. Ați fost deconectat din motive de securitate.";
+"attempts_warning" = "Parolă incorectă. Vei fi deconectat dacă introduci parola greșită de încă %d ori.";
+"max_attempts_reached" = "Prea multe încercări eșuate de deblocare. Ai fost deconectat din motive de securitate.";
 
 /* PIN Setup */
 "pin_setup_title" = "Configurare PIN";
