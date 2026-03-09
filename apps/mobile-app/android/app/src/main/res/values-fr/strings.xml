@@ -80,6 +80,6 @@
   <string name="password_unlock_button">Déverrouiller</string>
   <string name="password_unlock_incorrect">Mot de passe incorrect. Veuillez réessayer.</string>
   <string name="password_unlock_error">Échec de la vérification du mot de passe</string>
-  <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
-  <string name="password_unlock_max_attempts_reached">Too many failed unlock attempts. You have been logged out for security reasons.</string>
+  <string name="password_unlock_attempts_warning">Mot de passe incorrect. Vous serez déconnecté si vous entrez le mauvais mot de passe plus de %d fois.</string>
+  <string name="password_unlock_max_attempts_reached">Trop de tentatives de déverrouillage échouées. Vous avez été déconnecté pour des raisons de sécurité.</string>
 </resources>
