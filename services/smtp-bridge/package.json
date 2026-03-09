@@ -1,0 +1,50 @@
+{
+  "name": "@aliasvault/smtp-bridge",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aliasvault/contract": "workspace:*",
+    "@aliasvault/ipfs-service": "workspace:*",
+    "@midnight-ntwrk/compact-js": "2.4.0",
+    "@midnight-ntwrk/compact-runtime": "0.14.0",
+    "@midnight-ntwrk/ledger-v7": "7.0.0",
+    "@midnight-ntwrk/midnight-js-contracts": "3.0.0",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "3.1.0",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "3.1.0",
+    "@midnight-ntwrk/midnight-js-level-private-state-provider": "3.1.0",
+    "@midnight-ntwrk/midnight-js-network-id": "3.1.0",
+    "@midnight-ntwrk/midnight-js-node-zk-config-provider": "3.1.0",
+    "@midnight-ntwrk/midnight-js-types": "3.0.0",
+    "@midnight-ntwrk/midnight-js-utils": "3.1.0",
+    "@midnight-ntwrk/wallet-sdk-dust-wallet": "1.0.0",
+    "@midnight-ntwrk/wallet-sdk-facade": "1.0.0",
+    "@midnight-ntwrk/wallet-sdk-hd": "3.0.0",
+    "@midnight-ntwrk/wallet-sdk-shielded": "1.0.0",
+    "@midnight-ntwrk/wallet-sdk-unshielded-wallet": "1.0.0",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.0",
+    "prom-client": "^15.1.0",
+    "tweetnacl": "^1.0.3",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/supertest": "^6.0.2",
+    "@types/ws": "^8.5.12",
+    "supertest": "^7.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.3",
+    "vitest": "^3.2.0"
+  }
+}
