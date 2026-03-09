@@ -3,23 +3,19 @@
   <string name="app_name">AliasVault</string>
   <string name="autofill_service_description" translatable="true">Автозаповнення AliasVault</string>
   <string name="aliasvault_icon">Піктограма AliasVault</string>
-  <!-- Common strings -->
   <string name="common_close">Закрити</string>
   <string name="common_next">Далі</string>
   <string name="common_cancel">Скасувати</string>
   <string name="common_back">Назад</string>
   <string name="unknown_error">Сталася невідома помилка</string>
-  <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Не вдалося отримати, відкрийте додаток</string>
   <string name="autofill_no_match_found">Збігів не знайдено. Створити новий?</string>
   <string name="autofill_open_app">Відкрити додаток</string>
   <string name="autofill_vault_locked">Vault заблоковано</string>
-  <!-- Biometric prompts -->
   <string name="biometric_store_key_title">Зберегти ключ шифрування</string>
   <string name="biometric_store_key_subtitle">Автентифікуйтеся, щоб надійно зберігати ключ шифрування в сховищі ключів Android. Це забезпечує безпечний доступ до сховища.</string>
   <string name="biometric_unlock_vault_title">Vault розблоковано</string>
   <string name="biometric_unlock_vault_subtitle">Автентифікуйтеся, щоб отримати доступ до сховища</string>
-  <!-- Passkey registration -->
   <string name="passkey_registration_title">Create Passkey</string>
   <string name="create_passkey_title">Create New Passkey</string>
   <string name="create_passkey_subtitle">Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.</string>
@@ -50,7 +46,6 @@
   <string name="passkey_retrieving">Retrieving passkey…</string>
   <string name="passkey_verifying">Verifying…</string>
   <string name="passkey_authenticating">Authenticating…</string>
-  <!-- Vault sync error messages -->
   <string name="connection_error_title">Connection Error</string>
   <string name="connection_error_message">No connection to the server can be made. Please check your internet connection and try creating the passkey again.</string>
   <string name="session_expired_title">Session Expired</string>
@@ -65,28 +60,26 @@
   <string name="network_error_message">A network error occurred. Please check your connection and try again.</string>
   <string name="server_version_not_supported_title">Server Update Required</string>
   <string name="server_version_not_supported_message">The server version is outdated. Please contact your administrator to update the server.</string>
-  <!-- Passkey authentication and unlock error messages -->
   <string name="error_unlock_method_required">Please enable biometric or PIN authentication in the main AliasVault app in order to continue</string>
   <string name="error_unlock_vault_first">Please unlock vault in AliasVault app first</string>
   <string name="error_vault_decrypt_failed">Failed to decrypt vault</string>
   <string name="error_biometric_cancelled">Biometric authentication cancelled</string>
   <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
-  <!-- PIN unlock -->
   <string name="pin_unlock_vault">Розблокувати Vault</string>
   <string name="pin_enter_to_unlock">Введіть свій ПІН-код, щоб розблокувати сховище</string>
   <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
   <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
-  <!-- PIN setup -->
   <string name="pin_setup_title">Налаштування PIN-коду</string>
   <string name="pin_setup_description">Виберіть PIN-код, щоб розблокувати сховище</string>
   <string name="pin_confirm_title">Підтвердити ПІН-код</string>
   <string name="pin_confirm_description">Введіть PIN-код ще раз для підтвердження</string>
   <string name="pin_mismatch">PIN-коди не збігаються. Спробуйте ще раз.</string>
-  <!-- Password unlock -->
   <string name="password_unlock_title">Розблокувати Vault</string>
   <string name="password_unlock_subtitle">Введіть ваш головний пароль</string>
   <string name="password_unlock_password_hint">Пароль</string>
   <string name="password_unlock_button">Розблокувати</string>
   <string name="password_unlock_incorrect">Невірний пароль. Будь ласка, спробуйте ще раз.</string>
   <string name="password_unlock_error">Failed to verify password</string>
+  <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
+  <string name="password_unlock_max_attempts_reached">Too many failed unlock attempts. You have been logged out for security reasons.</string>
 </resources>
