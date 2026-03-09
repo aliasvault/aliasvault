@@ -30,7 +30,9 @@
     "switchAccounts": "Змінити обліковий запис?",
     "loginWithMobile": "Увійти за допомогою мобільного додатку",
     "unlockWithMobile": "Розблокувати за допомогою мобільного додатку",
-    "scanQrCode": "Проскануйте цей QR-код за допомогою мобільного додатка AliasVault, щоб увійти та розблокувати сховище."
+    "scanQrCode": "Проскануйте цей QR-код за допомогою мобільного додатка AliasVault, щоб увійти та розблокувати сховище.",
+    "passwordAttemptsWarning": "Incorrect password. You will be logged out if you enter the wrong password {{remainingAttempts}} more times.",
+    "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
   },
   "menu": {
     "vault": "Vault",
