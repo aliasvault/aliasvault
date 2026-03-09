@@ -80,6 +80,6 @@
   <string name="password_unlock_button">Ontgrendelen</string>
   <string name="password_unlock_incorrect">Onjuist wachtwoord. Probeer het opnieuw.</string>
   <string name="password_unlock_error">Verifiëren wachtwoord mislukt</string>
-  <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
-  <string name="password_unlock_max_attempts_reached">Too many failed unlock attempts. You have been logged out for security reasons.</string>
+  <string name="password_unlock_attempts_warning">Onjuist wachtwoord. Je wordt uitgelogd als je het verkeerde wachtwoord %d vaker invult.</string>
+  <string name="password_unlock_max_attempts_reached">Te veel mislukte ontgrendel pogingen. Je bent uitgelogd om veiligheidsredenen.</string>
 </resources>
