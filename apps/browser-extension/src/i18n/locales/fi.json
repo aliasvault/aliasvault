@@ -30,7 +30,9 @@
     "switchAccounts": "Vaihdetaanko tiliä?",
     "loginWithMobile": "Kirjaudu sisään mobiilisovelluksella",
     "unlockWithMobile": "Avaa käyttämällä mobiilisovellusta",
-    "scanQrCode": "Skannaa tämä QR-koodi AliasVault-mobiilisovelluksellasi kirjautuaksesi sisään ja avataksesi holvisi."
+    "scanQrCode": "Skannaa tämä QR-koodi AliasVault-mobiilisovelluksellasi kirjautuaksesi sisään ja avataksesi holvisi.",
+    "passwordAttemptsWarning": "Incorrect password. You will be logged out if you enter the wrong password {{remainingAttempts}} more times.",
+    "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
   },
   "menu": {
     "vault": "Holvi",
