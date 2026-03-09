@@ -3,23 +3,19 @@
   <string name="app_name">AliasVault</string>
   <string name="autofill_service_description" translatable="true">השלמה אוטומטית עם AliasVault</string>
   <string name="aliasvault_icon">סמל AliasVault</string>
-  <!-- Common strings -->
   <string name="common_close">סגירה</string>
   <string name="common_next">הבא</string>
   <string name="common_cancel">ביטול</string>
   <string name="common_back">חזרה</string>
   <string name="unknown_error">אירעה שגיאה לא ידועה</string>
-  <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">המשיכה נכשלה, נא לפתוח את היישום</string>
   <string name="autofill_no_match_found">לא נמצאו התאמות, ליצור חדש?</string>
   <string name="autofill_open_app">פתיחת היישום</string>
   <string name="autofill_vault_locked">הכספת נעולה</string>
-  <!-- Biometric prompts -->
   <string name="biometric_store_key_title">אחסון מפתח הצפנה</string>
   <string name="biometric_store_key_subtitle">יש לעבור אימות כדי לאחסן בבטחה את מפתח ההצפנה שלך ב־Android Keystore (אחסון מפתחות). כך מופעלת גישה מאובטחת לכספת שלך.</string>
   <string name="biometric_unlock_vault_title">שחרור נעילת כספת</string>
   <string name="biometric_unlock_vault_subtitle">יש לעבור אימות כדי לגשת לכספת שלך</string>
-  <!-- Passkey registration -->
   <string name="passkey_registration_title">Create Passkey</string>
   <string name="create_passkey_title">Create New Passkey</string>
   <string name="create_passkey_subtitle">Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.</string>
@@ -50,7 +46,6 @@
   <string name="passkey_retrieving">Retrieving passkey…</string>
   <string name="passkey_verifying">Verifying…</string>
   <string name="passkey_authenticating">Authenticating…</string>
-  <!-- Vault sync error messages -->
   <string name="connection_error_title">שגיאת חיבור</string>
   <string name="connection_error_message">No connection to the server can be made. Please check your internet connection and try creating the passkey again.</string>
   <string name="session_expired_title">פג תוקף ההפעלה</string>
@@ -65,28 +60,26 @@
   <string name="network_error_message">אירעה שגיאת רשת. נא לבדוק את החיבור ולנסות שוב.</string>
   <string name="server_version_not_supported_title">יש לעדכן את השרת</string>
   <string name="server_version_not_supported_message">גרסת השרת מיושנת. נא ליצור קשר עם הנהלת השרת ולבקש מהם לעדכן אותו.</string>
-  <!-- Passkey authentication and unlock error messages -->
   <string name="error_unlock_method_required">Please enable biometric or PIN authentication in the main AliasVault app in order to continue</string>
   <string name="error_unlock_vault_first">נא לשחרר את נעילת הכספת ביישום של AppVault תחילה</string>
   <string name="error_vault_decrypt_failed">פענוח הכספת נכשל</string>
   <string name="error_biometric_cancelled">האימות הביומטרי בוטל</string>
   <string name="error_encryption_key_failed">משיכת מפתח ההצפנה נכשל</string>
-  <!-- PIN unlock -->
   <string name="pin_unlock_vault">שחרור נעילת כספת</string>
   <string name="pin_enter_to_unlock">נא למלא את הקוד האישי שלך כדי לשחרר את הכספת שלך</string>
   <string name="pin_locked_max_attempts">הקוד האישי ננעל אחרי יותר מדי ניסיונות כושלים</string>
   <string name="pin_incorrect_attempts_remaining">קוד אישי שגוי, נותרו %d ניסיונות</string>
-  <!-- PIN setup -->
   <string name="pin_setup_title">הגדרת קוד אישי</string>
   <string name="pin_setup_description">נא לבחור קוד אישי לשחרור נעילת הכספת שלך</string>
   <string name="pin_confirm_title">אישור קוד אישי</string>
   <string name="pin_confirm_description">נא למלא את הקוד האישי שלך מחדש לאישור</string>
   <string name="pin_mismatch">הקודים האישיים לא תואמים. נא לנסות שוב.</string>
-  <!-- Password unlock -->
   <string name="password_unlock_title">שחרור נעילת כספת</string>
   <string name="password_unlock_subtitle">נא למלא את סיסמת העל שלך</string>
   <string name="password_unlock_password_hint">סיסמה</string>
   <string name="password_unlock_button">שחרור נעילה</string>
   <string name="password_unlock_incorrect">סיסמה שגויה. נא לנסות שוב.</string>
   <string name="password_unlock_error">Failed to verify password</string>
+  <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
+  <string name="password_unlock_max_attempts_reached">Too many failed unlock attempts. You have been logged out for security reasons.</string>
 </resources>
