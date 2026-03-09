@@ -72,6 +72,8 @@
 "enter_password_to_unlock" = "Enter your master password";
 "unlock" = "Unlock";
 "incorrect_password" = "Incorrect password. Please try again.";
+"attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
+"max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
 
 /* PIN Setup */
 "pin_setup_title" = "Setup PIN";
