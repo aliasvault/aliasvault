@@ -80,6 +80,6 @@
   <string name="password_unlock_button">Deblochează</string>
   <string name="password_unlock_incorrect">Parolă incorectă. Încearcă din nou.</string>
   <string name="password_unlock_error">Verificarea parolei a eșuat</string>
-  <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
-  <string name="password_unlock_max_attempts_reached">Prea multe încercări eșuate de deblocare. Ați fost deconectat din motive de securitate.</string>
+  <string name="password_unlock_attempts_warning">Parolă incorectă. Vei fi deconectat dacă introduci parola greșită de încă %d ori.</string>
+  <string name="password_unlock_max_attempts_reached">Prea multe încercări eșuate de deblocare. Ai fost deconectat din motive de securitate.</string>
 </resources>
