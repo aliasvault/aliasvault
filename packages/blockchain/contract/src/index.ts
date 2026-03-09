@@ -16,6 +16,8 @@
 export * as Counter from "./managed/counter/contract/index.js";
 export * as VaultRegistry from "./managed/vault-registry/contract/index.js";
 export * as GuardianRecovery from "./managed/guardian-recovery/contract/index.js";
+export * as AliasRegistry from "./managed/alias-registry/contract/index.js";
 export * from "./witnesses";
 export * from "./guardian-recovery-witnesses";
+export * from "./alias-registry-witnesses";
 export * from "./cid-utils";

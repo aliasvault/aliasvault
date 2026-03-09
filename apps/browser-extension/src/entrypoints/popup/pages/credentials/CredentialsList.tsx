@@ -141,6 +141,11 @@ const CredentialsList: React.FC = () => {
           />
         )}
         <HeaderButton
+          onClick={() => navigate('/aliases/generate')}
+          title="Generate alias"
+          iconType={HeaderIconType.EMAIL}
+        />
+        <HeaderButton
           onClick={handleAddCredential}
           title="Add new credential"
           iconType={HeaderIconType.PLUS}
@@ -150,7 +155,7 @@ const CredentialsList: React.FC = () => {
 
     setHeaderButtons(headerButtonsJSX);
     return () => setHeaderButtons(null);
-  }, [setHeaderButtons, handleAddCredential]);
+  }, [setHeaderButtons, handleAddCredential, navigate]);
 
   /**
    * Load credentials list on mount and on sqlite client change.

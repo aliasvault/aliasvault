@@ -40,6 +40,8 @@ export interface MidnightContractConfig {
 interface VaultRegistryContract {
   callTx: {
     updateVault(cidHash: Uint8Array): Promise<unknown>;
+    setEmailPublicKey(pubKey: Uint8Array): Promise<unknown>;
+    setMailRelay(relayCommit: Uint8Array): Promise<unknown>;
   };
   deployTxData: {
     public: {
@@ -118,6 +120,96 @@ export class MidnightContractService {
     }
 
     await this.contract.callTx.updateVault(cidHash);
+  }
+
+  /**
+   * Set the X25519 email public key on-chain.
+   * Requires prior call to joinVaultRegistry().
+   *
+   * @param publicKey - X25519 public key as Uint8Array (32 bytes)
+   */
+  async setEmailPublicKey(publicKey: Uint8Array): Promise<void> {
+    if (!this.contract) {
+      throw new Error('Contract not joined. Call joinVaultRegistry() first.');
+    }
+
+    if (publicKey.length !== 32) {
+      throw new Error(`Public key must be exactly 32 bytes, got ${publicKey.length}`);
+    }
+
+    await this.contract.callTx.setEmailPublicKey(publicKey);
+  }
+
+  /**
+   * Authorize a mail relay on-chain.
+   * Requires prior call to joinVaultRegistry().
+   *
+   * @param relayCommit - Relay commitment as Uint8Array (32 bytes)
+   */
+  async setMailRelay(relayCommit: Uint8Array): Promise<void> {
+    if (!this.contract) {
+      throw new Error('Contract not joined. Call joinVaultRegistry() first.');
+    }
+
+    if (relayCommit.length !== 32) {
+      throw new Error(`Relay commitment must be exactly 32 bytes, got ${relayCommit.length}`);
+    }
+
+    await this.contract.callTx.setMailRelay(relayCommit);
+  }
+
+  /**
+   * Read the emailPublicKey from the public ledger via the indexer.
+   * Returns null if not set (zero bytes).
+   */
+  async readEmailPublicKey(): Promise<Uint8Array | null> {
+    const { indexerPublicDataProvider } = await import('@midnight-ntwrk/midnight-js-indexer-public-data-provider');
+    const { VaultRegistry } = await import('@aliasvault/contract');
+
+    if (!this.cachedPublicDataProvider) {
+      this.cachedPublicDataProvider = indexerPublicDataProvider(this.indexerUrl);
+    }
+    const contractState = await this.cachedPublicDataProvider.queryContractState(this.contractAddress);
+
+    if (!contractState) {
+      return null;
+    }
+
+    const ledgerState = VaultRegistry.ledger(contractState.data);
+    const emailPubKey = ledgerState.emailPublicKey as Uint8Array;
+
+    if (this.isZeroBytes(emailPubKey)) {
+      return null;
+    }
+
+    return emailPubKey;
+  }
+
+  /**
+   * Read the mailRelay commitment from the public ledger via the indexer.
+   * Returns null if not set (zero bytes).
+   */
+  async readMailRelay(): Promise<Uint8Array | null> {
+    const { indexerPublicDataProvider } = await import('@midnight-ntwrk/midnight-js-indexer-public-data-provider');
+    const { VaultRegistry } = await import('@aliasvault/contract');
+
+    if (!this.cachedPublicDataProvider) {
+      this.cachedPublicDataProvider = indexerPublicDataProvider(this.indexerUrl);
+    }
+    const contractState = await this.cachedPublicDataProvider.queryContractState(this.contractAddress);
+
+    if (!contractState) {
+      return null;
+    }
+
+    const ledgerState = VaultRegistry.ledger(contractState.data);
+    const mailRelay = ledgerState.mailRelay as Uint8Array;
+
+    if (this.isZeroBytes(mailRelay)) {
+      return null;
+    }
+
+    return mailRelay;
   }
 
   /**

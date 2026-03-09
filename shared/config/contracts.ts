@@ -22,4 +22,8 @@ export const CONTRACTS: Record<string, ContractConfig> = {
     address: 'e386083d04bdf1820466c8e1ac395ef06ecc2688fc4816e175bef51cb537f868', // Set after deployment (Story 2.5)
     version: '0.1.0',
   },
+  AliasRegistry: {
+    address: '', // Set after deployment — singleton global contract for all users
+    version: '0.1.0',
+  },
 };

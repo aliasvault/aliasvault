@@ -26,6 +26,7 @@ import PasskeyAuthenticate from '@/entrypoints/popup/pages/passkeys/PasskeyAuthe
 import PasskeyCreate from '@/entrypoints/popup/pages/passkeys/PasskeyCreate';
 import Reinitialize from '@/entrypoints/popup/pages/Reinitialize';
 import ShareClaim from '@/entrypoints/popup/pages/recovery/ShareClaim';
+import AliasGenerate from '@/entrypoints/popup/pages/aliases/AliasGenerate';
 import BackupTransfer from '@/entrypoints/popup/pages/recovery/BackupTransfer';
 import AutofillSettings from '@/entrypoints/popup/pages/settings/AutofillSettings';
 import BackupWallets from '@/entrypoints/popup/pages/settings/BackupWallets';
@@ -191,6 +192,7 @@ const App: React.FC = () => {
     { path: '/credentials/:id/edit', element: <CredentialAddEdit />, showBackButton: true, title: t('credentials.editCredential') },
     { path: '/passkeys/create', element: <PasskeyCreate />, layout: LayoutType.PASSKEY },
     { path: '/passkeys/authenticate', element: <PasskeyAuthenticate />, layout: LayoutType.PASSKEY },
+    { path: '/aliases/generate', element: <AliasGenerate />, showBackButton: true, title: 'Generate Alias' },
     { path: '/emails', element: <EmailsList />, showBackButton: false },
     { path: '/emails/:id', element: <EmailDetails />, showBackButton: true, title: t('emails.title') },
     { path: '/settings', element: <Settings />, showBackButton: false },
