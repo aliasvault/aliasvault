@@ -31,8 +31,8 @@
     "loginWithMobile": "Войти с помощью мобильного приложения",
     "unlockWithMobile": "Разблокировать через мобильное приложение",
     "scanQrCode": "Сканируйте QR-код в приложении AliasVault, чтобы войти.",
-    "passwordAttemptsWarning": "Incorrect password. You will be logged out if you enter the wrong password {{remainingAttempts}} more times.",
-    "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
+    "passwordAttemptsWarning": "Неверный пароль. Вы выйдете из системы, если введете его неправильно еще {{remainingAttempts}} раз.",
+    "maxAttemptsReached": "Слишком много неудачных попыток. Выход из системы выполнен в целях безопасности."
   },
   "menu": {
     "vault": "Хранилище",
