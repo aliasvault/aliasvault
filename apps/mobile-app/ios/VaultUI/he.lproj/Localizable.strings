@@ -72,6 +72,8 @@
 "enter_password_to_unlock" = "נא למלא את סיסמת העל שלך";
 "unlock" = "שחרור נעילה";
 "incorrect_password" = "סיסמה שגויה. נא לנסות שוב.";
+"attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
+"max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
 
 /* PIN Setup */
 "pin_setup_title" = "הגדרת קוד אישי";
