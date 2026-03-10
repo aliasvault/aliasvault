@@ -226,7 +226,8 @@ export class ItemQueries {
       AND fv.Value IS NOT NULL
       AND fv.Value != ''
       AND fv.IsDeleted = 0
-      AND i.IsDeleted = 0`;
+      AND i.IsDeleted = 0
+      AND i.DeletedAt IS NULL`;
 }
 
 /**
