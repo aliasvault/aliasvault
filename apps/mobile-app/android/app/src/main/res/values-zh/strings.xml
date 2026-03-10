@@ -80,6 +80,6 @@
   <string name="password_unlock_button">解锁</string>
   <string name="password_unlock_incorrect">密码错误，请重试。</string>
   <string name="password_unlock_error">密码验证失败</string>
-  <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
-  <string name="password_unlock_max_attempts_reached">Too many failed unlock attempts. You have been logged out for security reasons.</string>
+  <string name="password_unlock_attempts_warning">密码错误。若您再输入 %d 次错误的密码，则会被退出登录。</string>
+  <string name="password_unlock_max_attempts_reached">解锁尝试次数过多，出于安全考虑，您已被退出登录。</string>
 </resources>
