@@ -208,6 +208,21 @@ async function checkAndRestoreSavePromptEarly(ctx: Parameters<typeof createShado
        * Mount handler for early save prompt restore.
        */
       onMount(container) {
+        /**
+         * Stop keyboard event propagation to prevent host page shortcuts from triggering
+         * when typing in save prompt input fields.
+         */
+        const handleKeyboardEvent = (e: KeyboardEvent): void => {
+          const target = e.target as HTMLElement;
+          if (target && container.contains(target)) {
+            e.stopPropagation();
+          }
+        };
+
+        container.addEventListener('keydown', handleKeyboardEvent, true);
+        container.addEventListener('keyup', handleKeyboardEvent, true);
+        container.addEventListener('keypress', handleKeyboardEvent, true);
+
         // Restore the appropriate prompt type based on persisted state
         if (persistedState.promptType === 'add-url') {
           void restoreAddUrlPromptFromState(
@@ -434,6 +449,23 @@ export default defineContentScript({
        * Handle mount.
        */
       onMount(container) {
+        /**
+         * Stop keyboard event propagation to prevent host page shortcuts from triggering
+         * when typing in extension popups (e.g., Discourse "u" shortcut for "go back").
+         */
+        const handleKeyboardEvent = (e: KeyboardEvent): void => {
+          // Only stop propagation if the event originated from within our shadow DOM
+          const target = e.target as HTMLElement;
+          if (target && container.contains(target)) {
+            e.stopPropagation();
+          }
+        };
+
+        // Capture keyboard events at the container level to prevent bubbling to host page
+        container.addEventListener('keydown', handleKeyboardEvent, true);
+        container.addEventListener('keyup', handleKeyboardEvent, true);
+        container.addEventListener('keypress', handleKeyboardEvent, true);
+
         /**
          * Handle input field focus.
          */
