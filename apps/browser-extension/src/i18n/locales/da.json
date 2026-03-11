@@ -31,8 +31,8 @@
     "loginWithMobile": "Log ind via mobilapp",
     "unlockWithMobile": "Lås op ved hjælp af Mobil App",
     "scanQrCode": "Skan denne QR-kode med din AliasVault-mobilapp for at logge ind og låse din boks op.",
-    "passwordAttemptsWarning": "Incorrect password. You will be logged out if you enter the wrong password {{remainingAttempts}} more times.",
-    "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
+    "passwordAttemptsWarning": "Forkert adgangskode. Du vil blive logget ud, hvis du indtaster den forkerte adgangskode {{remainingAttempts}} flere gange.",
+    "maxAttemptsReached": "For mange mislykkede forsøg på oplåsning. Du er blevet logget ud af sikkerhedsårsager."
   },
   "menu": {
     "vault": "Boks",
