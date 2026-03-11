@@ -80,6 +80,6 @@
   <string name="password_unlock_button">Lås op</string>
   <string name="password_unlock_incorrect">Forkert adgangskode. Prøv venligst igen.</string>
   <string name="password_unlock_error">Kunne ikke bekræfte adgangskode</string>
-  <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
-  <string name="password_unlock_max_attempts_reached">Too many failed unlock attempts. You have been logged out for security reasons.</string>
+  <string name="password_unlock_attempts_warning">Forkert adgangskode. Du vil blive logget ud, hvis du indtaster den forkerte adgangskode %d flere gange.</string>
+  <string name="password_unlock_max_attempts_reached">For mange mislykkede forsøg på oplåsning. Du er blevet logget ud af sikkerhedsårsager.</string>
 </resources>
