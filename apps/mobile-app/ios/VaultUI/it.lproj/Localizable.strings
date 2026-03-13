@@ -72,8 +72,8 @@
 "enter_password_to_unlock" = "Inserisci la tua password principale";
 "unlock" = "Sblocca";
 "incorrect_password" = "Password errata. Riprovare.";
-"attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
-"max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
+"attempts_warning" = "Password errata. Sarai disconnesso se inserisci la password errata %d altre volte.";
+"max_attempts_reached" = "Troppi tentativi di sblocco falliti. Sei stato disconnesso per motivi di sicurezza.";
 
 /* PIN Setup */
 "pin_setup_title" = "Configurare PIN";
