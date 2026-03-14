@@ -21,6 +21,8 @@ import CredentialDetails from '@/entrypoints/popup/pages/credentials/CredentialD
 import CredentialsList from '@/entrypoints/popup/pages/credentials/CredentialsList';
 import EmailDetails from '@/entrypoints/popup/pages/emails/EmailDetails';
 import EmailsList from '@/entrypoints/popup/pages/emails/EmailsList';
+import InboxDetail from '@/entrypoints/popup/pages/emails/InboxDetail';
+import InboxList from '@/entrypoints/popup/pages/emails/InboxList';
 import Index from '@/entrypoints/popup/pages/Index';
 import PasskeyAuthenticate from '@/entrypoints/popup/pages/passkeys/PasskeyAuthenticate';
 import PasskeyCreate from '@/entrypoints/popup/pages/passkeys/PasskeyCreate';
@@ -195,6 +197,8 @@ const App: React.FC = () => {
     { path: '/aliases/generate', element: <AliasGenerate />, showBackButton: true, title: 'Generate Alias' },
     { path: '/emails', element: <EmailsList />, showBackButton: false },
     { path: '/emails/:id', element: <EmailDetails />, showBackButton: true, title: t('emails.title') },
+    { path: '/inbox', element: <InboxList />, showBackButton: false },
+    { path: '/inbox/:cid', element: <InboxDetail />, showBackButton: true, title: 'Inbox' },
     { path: '/settings', element: <Settings />, showBackButton: false },
     { path: '/settings/unlock-method', element: <VaultUnlockSettings />, showBackButton: true, title: t('settings.unlockMethod.title') },
     { path: '/settings/autofill', element: <AutofillSettings />, showBackButton: true, title: t('settings.autofillSettings') },

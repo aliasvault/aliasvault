@@ -11,6 +11,7 @@ import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, han
 import { handleOpenPopup, handlePopupWithCredential, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
 import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearVault, handleCreateIdentity, handleGetCredentials, handleGetFilteredCredentials, handleGetSearchCredentials, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVault, handleSyncVault, handleUploadVault, handleLoadVaultFromBlockchain } from '@/entrypoints/background/VaultMessageHandler';
 import { handleDetectLaceWallet, handleConnectLaceWallet, handleSignChallenge, handleGetWalletServiceUris } from '@/entrypoints/background/WalletMessageHandler';
+import { setupEmailAlarmListener, clearEmailBadge, registerEmailAlarm, unregisterEmailAlarm } from '@/entrypoints/background/EmailAlarmHandler';
 
 import { GLOBAL_CONTEXT_MENU_ENABLED_KEY } from '@/utils/Constants';
 import { EncryptionKeyDerivationParams } from "@/utils/dist/shared/models/metadata";
@@ -82,6 +83,20 @@ export default defineBackground({
     onMessage('CONNECT_LACE_WALLET', () => handleConnectLaceWallet());
     onMessage('SIGN_CHALLENGE', ({ data }) => handleSignChallenge(data as { challenge: string }));
     onMessage('GET_WALLET_SERVICE_URIS', () => handleGetWalletServiceUris());
+
+    // Email alarm polling — badge notifications when popup is closed
+    onMessage('CLEAR_EMAIL_BADGE', () => clearEmailBadge());
+    onMessage('REGISTER_EMAIL_ALARM', () => registerEmailAlarm());
+    onMessage('UNREGISTER_EMAIL_ALARM', () => unregisterEmailAlarm());
+
+    let cachedContractService: InstanceType<typeof import('@/services/MidnightContractService').MidnightContractService> | null = null;
+    setupEmailAlarmListener(async () => {
+      if (!cachedContractService) {
+        const { MidnightContractService } = await import('@/services/MidnightContractService');
+        cachedContractService = new MidnightContractService();
+      }
+      return cachedContractService.readEmailCount();
+    });
 
     // Setup context menus
     const isContextMenuEnabled = await storage.getItem(GLOBAL_CONTEXT_MENU_ENABLED_KEY) ?? true;

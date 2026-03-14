@@ -245,6 +245,67 @@ export class MidnightContractService {
   }
 
   /**
+   * Read inboxManifestCid from the public ledger via the indexer.
+   * Returns null if not set (empty string default on-chain).
+   */
+  async readInboxManifestCid(): Promise<string | null> {
+    const { indexerPublicDataProvider } = await import('@midnight-ntwrk/midnight-js-indexer-public-data-provider');
+    const { VaultRegistry } = await import('@aliasvault/contract');
+
+    if (!this.cachedPublicDataProvider) {
+      this.cachedPublicDataProvider = indexerPublicDataProvider(this.indexerUrl);
+    }
+    const contractState = await this.cachedPublicDataProvider.queryContractState(this.contractAddress);
+
+    if (!contractState) {
+      return null;
+    }
+
+    const ledgerState = VaultRegistry.ledger(contractState.data);
+    const manifestCid = ledgerState.inboxManifestCid as string;
+
+    if (!manifestCid || manifestCid.length === 0) {
+      return null;
+    }
+
+    return manifestCid;
+  }
+
+  /**
+   * Read emailCount from the public ledger via the indexer.
+   * Returns 0 if contract state not found.
+   */
+  async readEmailCount(): Promise<number> {
+    const { indexerPublicDataProvider } = await import('@midnight-ntwrk/midnight-js-indexer-public-data-provider');
+    const { VaultRegistry } = await import('@aliasvault/contract');
+
+    if (!this.cachedPublicDataProvider) {
+      this.cachedPublicDataProvider = indexerPublicDataProvider(this.indexerUrl);
+    }
+    const contractState = await this.cachedPublicDataProvider.queryContractState(this.contractAddress);
+
+    if (!contractState) {
+      return 0;
+    }
+
+    const ledgerState = VaultRegistry.ledger(contractState.data);
+    return (ledgerState.emailCount as number) ?? 0;
+  }
+
+  /**
+   * Get the public data provider for observable subscriptions.
+   * Lazily initializes the cached provider if not already created.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async getPublicDataProvider(): Promise<any> {
+    if (!this.cachedPublicDataProvider) {
+      const { indexerPublicDataProvider } = await import('@midnight-ntwrk/midnight-js-indexer-public-data-provider');
+      this.cachedPublicDataProvider = indexerPublicDataProvider(this.indexerUrl);
+    }
+    return this.cachedPublicDataProvider;
+  }
+
+  /**
    * Check if the contract has been joined.
    */
   isJoined(): boolean {

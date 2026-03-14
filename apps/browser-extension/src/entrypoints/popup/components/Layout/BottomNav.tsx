@@ -2,21 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-type TabName = 'credentials' | 'emails' | 'settings';
+import { useDb } from '@/entrypoints/popup/context/DbContext';
+import { EmailCacheService } from '@/services/EmailCacheService';
+
+type TabName = 'credentials' | 'emails' | 'inbox' | 'settings';
 
 /**
  * Bottom nav component.
  */
+const cacheService = new EmailCacheService();
+
 const BottomNav: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const dbContext = useDb();
   const [currentTab, setCurrentTab] = useState<TabName>('credentials');
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Check if user has email feature enabled
+  const hasEmailFeature = !!dbContext?.vaultStore?.getSetting('emailPublicKey');
 
   // Add effect to update currentTab based on route
   useEffect(() => {
     const path = location.pathname.substring(1); // Remove leading slash
-    const tabNames: TabName[] = ['credentials', 'emails', 'settings'];
+    const tabNames: TabName[] = ['credentials', 'emails', 'inbox', 'settings'];
 
     // Find the first tab name that matches the start of the path
     const matchingTab = tabNames.find(tab => path === tab || path.startsWith(`${tab}/`));
@@ -24,6 +34,14 @@ const BottomNav: React.FC = () => {
       setCurrentTab(matchingTab);
     }
   }, [location]);
+
+  // Load unread count for inbox badge
+  useEffect(() => {
+    if (!hasEmailFeature) return;
+    cacheService.getCachedEmails().then((emails) => {
+      setUnreadCount(emails.filter((e) => !e.isRead).length);
+    }).catch(() => {});
+  }, [hasEmailFeature, location]);
 
   /**
    * Handle tab change.
@@ -50,12 +68,14 @@ const BottomNav: React.FC = () => {
     return null;
   }
 
+  const tabWidth = hasEmailFeature ? 'w-1/4' : 'w-1/3';
+
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
       <div className="flex justify-around items-center h-14">
         <button
           onClick={() => handleTabChange('credentials')}
-          className={`flex flex-col items-center justify-center w-1/3 h-full ${
+          className={`flex flex-col items-center justify-center ${tabWidth} h-full ${
             currentTab === 'credentials' ? 'text-primary-600 dark:text-primary-500' : 'text-gray-500 dark:text-gray-400'
           }`}
         >
@@ -66,7 +86,7 @@ const BottomNav: React.FC = () => {
         </button>
         <button
           onClick={() => handleTabChange('emails')}
-          className={`flex flex-col items-center justify-center w-1/3 h-full ${
+          className={`flex flex-col items-center justify-center ${tabWidth} h-full ${
             currentTab === 'emails' ? 'text-primary-600 dark:text-primary-500' : 'text-gray-500 dark:text-gray-400'
           }`}
         >
@@ -75,9 +95,29 @@ const BottomNav: React.FC = () => {
           </svg>
           <span className="text-sm mt-1">{t('menu.emails')}</span>
         </button>
+        {hasEmailFeature && (
+          <button
+            onClick={() => handleTabChange('inbox')}
+            className={`flex flex-col items-center justify-center ${tabWidth} h-full relative ${
+              currentTab === 'inbox' ? 'text-primary-600 dark:text-primary-500' : 'text-gray-500 dark:text-gray-400'
+            }`}
+          >
+            <div className="relative">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </div>
+            <span className="text-sm mt-1">{t('menu.inbox', 'Inbox')}</span>
+          </button>
+        )}
         <button
           onClick={() => handleTabChange('settings')}
-          className={`flex flex-col items-center justify-center w-1/3 h-full ${
+          className={`flex flex-col items-center justify-center ${tabWidth} h-full ${
             currentTab === 'settings' ? 'text-primary-600 dark:text-primary-500' : 'text-gray-500 dark:text-gray-400'
           }`}
         >
