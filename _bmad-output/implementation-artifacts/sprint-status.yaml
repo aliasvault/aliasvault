@@ -82,15 +82,26 @@ development_status:
   4-3-conflict-detection-ux: done  # REVISED: saveWithConflictCheck() on VaultSyncService — code review passed
   epic-4-retrospective: optional
 
-  # Epic 5: Alias Email System (Updated 2026-03-06 — ADR-008/009 story revisions, Stories 5.5/5.6 descoped)
-  epic-5: in-progress
-  5-0-email-keypair-relay-authorization: review
-  5-1-aliasregistry-smart-contract: review
-  5-2-alias-generation-ui: review
+  # Epic 5: Alias Email System (Updated 2026-03-10 — all stories reviewed, 5.8 deferred)
+  epic-5: done
+  5-0-email-keypair-relay-authorization: done
+  5-1-aliasregistry-smart-contract: done
+  5-2-alias-generation-ui: done
   5-3-smtp-bridge-service: done
   5-4-mox-smtp-server-deployment: done
   5-5-email-encryption-ipfs-storage: covered  # Fully absorbed by Story 5.3 (encryption + IPFS in bridge pipeline)
   5-6-email-notification-via-contract: covered  # Bridge-side absorbed by 5.3 + 5.0; extension subscription + badge folded into 5.7
-  5-7-email-viewing-in-vault: backlog  # Expanded: now includes extension contractStateObservable subscription + badge notification (from 5.6 residual)
-  5-8-alias-management-ui: backlog
+  5-7-email-viewing-in-vault: done  # Expanded: now includes extension contractStateObservable subscription + badge notification (from 5.6 residual)
+  5-8-alias-management-ui: descoped  # Deferred — not required for testnet validation
   epic-5-retrospective: optional
+
+  # Epic 6: Testnet Deployment & E2E Validation (Created 2026-03-10)
+  epic-6: in-progress
+  6-1-sdk-alignment-contract-recompilation: review
+  6-2-browser-extension-multi-network-config: review
+  6-3-aliasregistry-deployment-script: backlog
+  6-4-preprod-contract-deployment: backlog
+  6-5-extension-e2e-smoke-test-preprod: backlog
+  6-6-smtp-pipeline-deployment-email-e2e: backlog
+  6-7-guardian-portal-preprod-validation: backlog
+  epic-6-retrospective: optional
