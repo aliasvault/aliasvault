@@ -10,7 +10,7 @@
  */
 
 import { CONTRACTS } from '../../../../shared/config/contracts';
-import { INDEXER_URL, PROOF_SERVER_URL } from '../entrypoints/popup/config/networkConfig';
+import { getNetworkConfig } from '../entrypoints/popup/config/networkConfig';
 import { hashAlias } from '../utils/aliasUtils';
 
 function getAliasRegistryAddress(): string {
@@ -49,9 +49,10 @@ async function joinAliasRegistry(secretKey: Uint8Array): Promise<any> {
     AliasRegistry.Contract,
   ).pipe(CompiledContract.withWitnesses(aliasRegistryWitnesses));
 
+  const defaults = getNetworkConfig();
   const providers = {
-    proofProvider: httpClientProofProvider(PROOF_SERVER_URL),
-    publicDataProvider: indexerPublicDataProvider(INDEXER_URL),
+    proofProvider: httpClientProofProvider(defaults.proofServerUrl),
+    publicDataProvider: indexerPublicDataProvider(defaults.indexerUrl),
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -97,7 +98,7 @@ export async function checkAliasAvailable(aliasName: string): Promise<boolean> {
   const { AliasRegistry } = await import('@aliasvault/contract');
 
   const contractAddress = getAliasRegistryAddress();
-  const provider = indexerPublicDataProvider(INDEXER_URL);
+  const provider = indexerPublicDataProvider(getNetworkConfig().indexerUrl);
   const contractState = await provider.queryContractState(contractAddress);
 
   if (!contractState) {

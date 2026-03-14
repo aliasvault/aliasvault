@@ -1,5 +1,7 @@
 import { defineConfig } from 'wxt';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import wasm from 'vite-plugin-wasm';
+import topLevelAwait from 'vite-plugin-top-level-await';
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -9,7 +11,8 @@ export default defineConfig({
       "activeTab",
       "contextMenus",
       "scripting",
-      "clipboardWrite"
+      "clipboardWrite",
+      "alarms"
     ];
 
     // Only add offscreen permission for Chrome and Edge
@@ -51,6 +54,8 @@ export default defineConfig({
   outDir: 'dist',
   vite: () => ({
     plugins: [
+      wasm(),
+      topLevelAwait(),
       viteStaticCopy({
         targets: [
           {

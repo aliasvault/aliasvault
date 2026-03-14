@@ -3,3 +3,4 @@ packages:
   - "packages/blockchain/*"
   - "shared/*"
   - "services/*"
+  - "apps/*"

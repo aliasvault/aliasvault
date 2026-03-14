@@ -11,7 +11,7 @@
  * This service handles only I/O (contract reads, IPFS fetch, contract calls).
  */
 
-import { INDEXER_URL, PROOF_SERVER_URL } from '../entrypoints/popup/config/networkConfig';
+import { getNetworkConfig } from '../entrypoints/popup/config/networkConfig';
 
 export interface RecoveryState {
   recoveryInitiatedAt: bigint;
@@ -39,7 +39,7 @@ export async function validateImportedShare(
  */
 export async function fetchOnChainRecoveryKeyHash(
   contractAddress: string,
-  indexerUrl: string = INDEXER_URL,
+  indexerUrl: string = getNetworkConfig().indexerUrl,
 ): Promise<Uint8Array | null> {
   const { indexerPublicDataProvider } = await import(
     '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
@@ -129,9 +129,12 @@ export async function executeRecoveryClaim(
 export async function callClaimRecoveryOnChain(
   contractAddress: string,
   secretKey: Uint8Array,
-  indexerUrl: string = INDEXER_URL,
-  proofServerUrl: string = PROOF_SERVER_URL,
+  indexerUrl?: string,
+  proofServerUrl?: string,
 ): Promise<void> {
+  const defaults = getNetworkConfig();
+  indexerUrl ??= defaults.indexerUrl;
+  proofServerUrl ??= defaults.proofServerUrl;
   const { findDeployedContract } = await import('@midnight-ntwrk/midnight-js-contracts');
   const { indexerPublicDataProvider } = await import(
     '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
@@ -174,7 +177,7 @@ export async function callClaimRecoveryOnChain(
  */
 export async function getRecoveryState(
   contractAddress: string,
-  indexerUrl: string = INDEXER_URL,
+  indexerUrl: string = getNetworkConfig().indexerUrl,
 ): Promise<RecoveryState | null> {
   const { indexerPublicDataProvider } = await import(
     '@midnight-ntwrk/midnight-js-indexer-public-data-provider'

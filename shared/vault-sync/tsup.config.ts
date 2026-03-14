@@ -10,4 +10,5 @@ export default defineConfig({
   minify: false,
   sourcemap: false,
   external: ['@aliasvault/contract', '@aliasvault/ipfs-service'],
+  noExternal: ['@aliasvault/vault-types', '@aliasvault/models', 'secrets.js-34r7h'],
 });

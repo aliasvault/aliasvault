@@ -7,7 +7,7 @@
  */
 
 import { CONTRACTS } from '../../../../shared/config/contracts';
-import { INDEXER_URL, PROOF_SERVER_URL } from '../entrypoints/popup/config/networkConfig';
+import { getNetworkConfig } from '../entrypoints/popup/config/networkConfig';
 
 /**
  * Configuration for MidnightContractService.
@@ -15,9 +15,9 @@ import { INDEXER_URL, PROOF_SERVER_URL } from '../entrypoints/popup/config/netwo
 export interface MidnightContractConfig {
   /** VaultRegistry contract address. If empty, uses CONTRACTS.VaultRegistry.address. */
   contractAddress?: string;
-  /** Indexer URL override. Defaults to networkConfig.INDEXER_URL. */
+  /** Indexer URL override. Defaults to getNetworkConfig().indexerUrl. */
   indexerUrl?: string;
-  /** Proof server URL override. Defaults to networkConfig.PROOF_SERVER_URL. */
+  /** Proof server URL override. Defaults to getNetworkConfig().proofServerUrl. */
   proofServerUrl?: string;
 }
 
@@ -60,8 +60,9 @@ export class MidnightContractService {
 
   constructor(config?: MidnightContractConfig) {
     this.contractAddress = config?.contractAddress || CONTRACTS.VaultRegistry.address;
-    this.indexerUrl = config?.indexerUrl || INDEXER_URL;
-    this.proofServerUrl = config?.proofServerUrl || PROOF_SERVER_URL;
+    const defaults = getNetworkConfig();
+    this.indexerUrl = config?.indexerUrl || defaults.indexerUrl;
+    this.proofServerUrl = config?.proofServerUrl || defaults.proofServerUrl;
 
     if (!this.contractAddress) {
       throw new Error(

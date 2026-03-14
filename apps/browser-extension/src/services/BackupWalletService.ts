@@ -11,7 +11,7 @@
  * The 72h maturation check is purely on-chain via blockTimeGte().
  */
 
-import { INDEXER_URL, PROOF_SERVER_URL } from '../entrypoints/popup/config/networkConfig';
+import { getNetworkConfig } from '../entrypoints/popup/config/networkConfig';
 
 export interface BackupWalletInfo {
   commitment: Uint8Array;
@@ -34,7 +34,7 @@ const MATURATION_PERIOD_SECONDS = 259200; // 72 hours
  */
 export async function getBackupWalletStatus(
   contractAddress: string,
-  indexerUrl: string = INDEXER_URL,
+  indexerUrl: string = getNetworkConfig().indexerUrl,
 ): Promise<BackupWalletInfo[]> {
   const { indexerPublicDataProvider } = await import(
     '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
@@ -93,9 +93,12 @@ export async function addBackupWallet(
   contractAddress: string,
   backupKey: Uint8Array,
   secretKey: Uint8Array,
-  indexerUrl: string = INDEXER_URL,
-  proofServerUrl: string = PROOF_SERVER_URL,
+  indexerUrl?: string,
+  proofServerUrl?: string,
 ): Promise<void> {
+  const defaults = getNetworkConfig();
+  indexerUrl ??= defaults.indexerUrl;
+  proofServerUrl ??= defaults.proofServerUrl;
   const { findDeployedContract } = await import('@midnight-ntwrk/midnight-js-contracts');
   const { indexerPublicDataProvider } = await import(
     '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
@@ -145,9 +148,12 @@ export async function removeBackupWallet(
   contractAddress: string,
   walletCommitment: Uint8Array,
   secretKey: Uint8Array,
-  indexerUrl: string = INDEXER_URL,
-  proofServerUrl: string = PROOF_SERVER_URL,
+  indexerUrl?: string,
+  proofServerUrl?: string,
 ): Promise<void> {
+  const defaults = getNetworkConfig();
+  indexerUrl ??= defaults.indexerUrl;
+  proofServerUrl ??= defaults.proofServerUrl;
   const { findDeployedContract } = await import('@midnight-ntwrk/midnight-js-contracts');
   const { indexerPublicDataProvider } = await import(
     '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
@@ -194,9 +200,12 @@ export async function executeBackupTransfer(
   contractAddress: string,
   backupKey: Uint8Array,
   newOwnerCommitment: Uint8Array,
-  indexerUrl: string = INDEXER_URL,
-  proofServerUrl: string = PROOF_SERVER_URL,
+  indexerUrl?: string,
+  proofServerUrl?: string,
 ): Promise<void> {
+  const defaults = getNetworkConfig();
+  indexerUrl ??= defaults.indexerUrl;
+  proofServerUrl ??= defaults.proofServerUrl;
   const { findDeployedContract } = await import('@midnight-ntwrk/midnight-js-contracts');
   const { indexerPublicDataProvider } = await import(
     '@midnight-ntwrk/midnight-js-indexer-public-data-provider'

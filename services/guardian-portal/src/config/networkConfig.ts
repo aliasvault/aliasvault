@@ -52,7 +52,7 @@ export function getNetworkConfig(networkId?: string): NetworkConfig {
   const id = (networkId ?? CURRENT_NETWORK) as MidnightNetworkId;
   const config = NETWORK_CONFIGS[id];
   if (!config) {
-    throw new Error(`Unknown network ID: "${networkId}". Valid IDs: ${Object.keys(NETWORK_CONFIGS).join(', ')}`);
+    throw new Error(`Unknown network ID: "${id}". Valid IDs: ${Object.keys(NETWORK_CONFIGS).join(', ')}`);
   }
   return config;
 }

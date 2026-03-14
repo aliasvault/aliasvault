@@ -19,6 +19,7 @@ import { EncryptionKeyDerivationParams } from "@/utils/dist/shared/models/metada
 import { defineBackground, storage, browser } from '#imports';
 
 export default defineBackground({
+  type: 'module',
   /**
    * This is the main entry point for the background script.
    */
