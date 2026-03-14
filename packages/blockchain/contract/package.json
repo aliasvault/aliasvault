@@ -16,9 +16,10 @@
     }
   },
   "scripts": {
-    "compact": "compact compile src/counter.compact src/managed/counter && compact compile src/vault-registry.compact src/managed/vault-registry && compact compile src/alias-registry.compact src/managed/alias-registry",
+    "compact": "compact compile src/counter.compact src/managed/counter && compact compile src/vault-registry.compact src/managed/vault-registry && compact compile src/alias-registry.compact src/managed/alias-registry && compact compile src/guardian-recovery.compact src/managed/guardian-recovery",
     "compact:alias-registry": "compact compile src/alias-registry.compact src/managed/alias-registry",
     "compact:counter": "compact compile src/counter.compact src/managed/counter",
+    "compact:guardian-recovery": "compact compile src/guardian-recovery.compact src/managed/guardian-recovery",
     "compact:vault-registry": "compact compile src/vault-registry.compact src/managed/vault-registry",
     "test": "vitest run",
     "test:compile": "npm run compact && vitest run",

@@ -16,7 +16,7 @@ services:
 
   indexer:
     container_name: 'counter-indexer'
-    image: 'midnightntwrk/indexer-standalone:3.0.0'
+    image: 'midnightntwrk/indexer-standalone:3.1.0'
     env_file: standalone.env.example
     ports:
       - '0:8088'
@@ -34,7 +34,7 @@ services:
         condition: service_healthy
 
   node:
-    image: 'midnightntwrk/midnight-node:0.20.0'
+    image: 'midnightntwrk/midnight-node:0.21.0'
     container_name: 'counter-node'
     ports:
       - '9944'

@@ -159,7 +159,7 @@ try {
   const { pureCircuits } = await import('@aliasvault/contract').then(m => m.VaultRegistry);
   const backupWalletCommitment = pureCircuits.backupCommitment(backupSecretKey);
   await api.withStatus('Adding backup wallet', () =>
-    vrApi.addBackupWallet(contract, backupWalletCommitment),
+    vrApi.addBackupWallet(contract, backupWalletCommitment, BigInt(Math.floor(Date.now() / 1000))),
   );
   console.log('  Backup wallet added successfully!\n');
 

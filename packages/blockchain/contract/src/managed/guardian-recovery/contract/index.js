@@ -453,12 +453,6 @@ export class Contract {
       currentZswapLocalState: context.currentZswapLocalState
     }
   }
-  _persistentCommit_0(value_0, rand_0) {
-    const result_0 = __compactRuntime.persistentCommit(_descriptor_1,
-                                                       value_0,
-                                                       rand_0);
-    return result_0;
-  }
   _blockTimeLt_0(context, partialProofData, time_0) {
     return _descriptor_2.fromValue(__compactRuntime.queryLedgerState(context,
                                                                      partialProofData,
@@ -479,6 +473,12 @@ export class Contract {
   }
   _blockTimeGte_0(context, partialProofData, time_0) {
     return !this._blockTimeLt_0(context, partialProofData, time_0);
+  }
+  _persistentCommit_0(value_0, rand_0) {
+    const result_0 = __compactRuntime.persistentCommit(_descriptor_1,
+                                                       value_0,
+                                                       rand_0);
+    return result_0;
   }
   _local_secret_key_0(context, partialProofData) {
     const witnessContext_0 = __compactRuntime.createWitnessContext(ledger(context.currentQueryContext.state), context.currentPrivateState, context.currentQueryContext.address);

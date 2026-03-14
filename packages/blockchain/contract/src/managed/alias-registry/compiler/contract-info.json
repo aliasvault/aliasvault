@@ -1,8 +1,12 @@
 {
+  "compiler-version": "0.29.0",
+  "language-version": "0.21.0",
+  "runtime-version": "0.14.0",
   "circuits": [
     {
       "name": "ownerCommitment",
       "pure": true,
+      "proof": false,
       "arguments": [
         {
           "name": "sk",
@@ -20,6 +24,7 @@
     {
       "name": "claimAlias",
       "pure": false,
+      "proof": true,
       "arguments": [
         {
           "name": "aliasHash",
@@ -45,6 +50,7 @@
     {
       "name": "getOwner",
       "pure": false,
+      "proof": true,
       "arguments": [
         {
           "name": "aliasHash",
@@ -62,6 +68,7 @@
     {
       "name": "getContractAddress",
       "pure": false,
+      "proof": true,
       "arguments": [
         {
           "name": "aliasHash",
@@ -79,6 +86,7 @@
     {
       "name": "releaseAlias",
       "pure": false,
+      "proof": true,
       "arguments": [
         {
           "name": "aliasHash",

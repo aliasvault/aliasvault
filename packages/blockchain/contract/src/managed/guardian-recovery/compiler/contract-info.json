@@ -1,8 +1,12 @@
 {
+  "compiler-version": "0.29.0",
+  "language-version": "0.21.0",
+  "runtime-version": "0.14.0",
   "circuits": [
     {
       "name": "ownerCommitment",
       "pure": true,
+      "proof": false,
       "arguments": [
         {
           "name": "sk",
@@ -20,6 +24,7 @@
     {
       "name": "guardianCommitment",
       "pure": true,
+      "proof": false,
       "arguments": [
         {
           "name": "gk",
@@ -37,6 +42,7 @@
     {
       "name": "initialize",
       "pure": false,
+      "proof": true,
       "arguments": [
         {
           "name": "ownerCom",
@@ -55,6 +61,7 @@
     {
       "name": "addGuardian",
       "pure": false,
+      "proof": true,
       "arguments": [
         {
           "name": "guardianCom",
@@ -73,6 +80,7 @@
     {
       "name": "removeGuardian",
       "pure": false,
+      "proof": true,
       "arguments": [
         {
           "name": "guardianCom",
@@ -91,6 +99,7 @@
     {
       "name": "storeSharesCidHash",
       "pure": false,
+      "proof": true,
       "arguments": [
         {
           "name": "cidHash",
@@ -109,6 +118,7 @@
     {
       "name": "initiateRecovery",
       "pure": false,
+      "proof": true,
       "arguments": [
         {
           "name": "currentTime",
@@ -127,6 +137,7 @@
     {
       "name": "approveRecovery",
       "pure": false,
+      "proof": true,
       "arguments": [
       ],
       "result-type": {
@@ -138,6 +149,7 @@
     {
       "name": "claimRecovery",
       "pure": false,
+      "proof": true,
       "arguments": [
       ],
       "result-type": {
@@ -149,6 +161,7 @@
     {
       "name": "cancelRecovery",
       "pure": false,
+      "proof": true,
       "arguments": [
       ],
       "result-type": {
