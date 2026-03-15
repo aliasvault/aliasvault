@@ -10,6 +10,7 @@ import {
   deriveSecretKey,
   parseDeployArgs,
   SECRET_KEY_DOMAIN,
+  ALIAS_REGISTRY_SECRET_KEY_DOMAIN,
 } from '../deploy-utils';
 
 describe('deploy-utils', () => {
@@ -43,6 +44,35 @@ describe('deploy-utils', () => {
 
     it('exports the domain separator constant', () => {
       expect(SECRET_KEY_DOMAIN).toBe(':aliasvault:vault-registry:owner');
+    });
+
+    it('exports the AliasRegistry domain separator constant', () => {
+      expect(ALIAS_REGISTRY_SECRET_KEY_DOMAIN).toBe(':aliasvault:alias-registry:owner');
+    });
+
+    it('uses default VaultRegistry domain when no domain param provided', () => {
+      const seed = 'compat-seed';
+      const expected = crypto.createHash('sha256')
+        .update(seed + SECRET_KEY_DOMAIN)
+        .digest();
+      const key = deriveSecretKey(seed);
+      expect(Buffer.from(key).toString('hex')).toBe(expected.toString('hex'));
+    });
+
+    it('uses custom domain when provided', () => {
+      const seed = 'compat-seed';
+      const expected = crypto.createHash('sha256')
+        .update(seed + ALIAS_REGISTRY_SECRET_KEY_DOMAIN)
+        .digest();
+      const key = deriveSecretKey(seed, ALIAS_REGISTRY_SECRET_KEY_DOMAIN);
+      expect(Buffer.from(key).toString('hex')).toBe(expected.toString('hex'));
+    });
+
+    it('different domains produce different keys for the same seed', () => {
+      const seed = 'same-seed';
+      const vrKey = deriveSecretKey(seed);
+      const arKey = deriveSecretKey(seed, ALIAS_REGISTRY_SECRET_KEY_DOMAIN);
+      expect(Buffer.from(vrKey).toString('hex')).not.toBe(Buffer.from(arKey).toString('hex'));
     });
   });
 
@@ -163,6 +193,51 @@ export const CONTRACTS: Record<string, ContractConfig> = {
     it('throws if file does not contain expected pattern', () => {
       fs.writeFileSync(configPath, 'export const FOO = 42;\n', 'utf-8');
       expect(() => updateContractsConfig(configPath, 'abc')).toThrow('Could not find VaultRegistry address field');
+    });
+
+    it('throws with contract name in error message for non-default contract', () => {
+      fs.writeFileSync(configPath, 'export const FOO = 42;\n', 'utf-8');
+      expect(() => updateContractsConfig(configPath, 'abc', 'AliasRegistry')).toThrow('Could not find AliasRegistry address field');
+    });
+
+    describe('multi-contract support', () => {
+      const multiContractConfig = `export const CONTRACTS = {
+  VaultRegistry: {
+    address: '',
+    version: '0.1.0',
+  },
+  AliasRegistry: {
+    address: '',
+    version: '0.1.0',
+  },
+};
+`;
+
+      beforeEach(() => {
+        fs.writeFileSync(configPath, multiContractConfig, 'utf-8');
+      });
+
+      it('updates VaultRegistry with default contractName param', () => {
+        updateContractsConfig(configPath, 'vault-addr-123');
+        const result = fs.readFileSync(configPath, 'utf-8');
+        expect(result).toContain("VaultRegistry: {\n    address: 'vault-addr-123'");
+        expect(result).toContain("AliasRegistry: {\n    address: ''");
+      });
+
+      it('updates AliasRegistry when contractName specified', () => {
+        updateContractsConfig(configPath, 'alias-addr-456', 'AliasRegistry');
+        const result = fs.readFileSync(configPath, 'utf-8');
+        expect(result).toContain("AliasRegistry: {\n    address: 'alias-addr-456'");
+        expect(result).toContain("VaultRegistry: {\n    address: ''");
+      });
+
+      it('updates both contracts independently', () => {
+        updateContractsConfig(configPath, 'vault-addr', 'VaultRegistry');
+        updateContractsConfig(configPath, 'alias-addr', 'AliasRegistry');
+        const result = fs.readFileSync(configPath, 'utf-8');
+        expect(result).toContain("VaultRegistry: {\n    address: 'vault-addr'");
+        expect(result).toContain("AliasRegistry: {\n    address: 'alias-addr'");
+      });
     });
   });
 });

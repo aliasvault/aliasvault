@@ -1,8 +1,11 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 
-/** Domain separator for deterministic secret key derivation */
+/** Domain separator for deterministic secret key derivation (VaultRegistry) */
 export const SECRET_KEY_DOMAIN = ':aliasvault:vault-registry:owner';
+
+/** Domain separator for AliasRegistry secret key derivation */
+export const ALIAS_REGISTRY_SECRET_KEY_DOMAIN = ':aliasvault:alias-registry:owner';
 
 /** Valid network targets */
 export type NetworkTarget = 'local' | 'preview' | 'preprod';
@@ -20,9 +23,9 @@ export interface DeployArgs {
  * Same seed always produces the same secretKey (reproducible across runs).
  * Uses SHA-256(seed + domain separator) as specified in story 2.5 Dev Notes.
  */
-export function deriveSecretKey(seed: string): Uint8Array {
+export function deriveSecretKey(seed: string, domain: string = SECRET_KEY_DOMAIN): Uint8Array {
   return crypto.createHash('sha256')
-    .update(seed + SECRET_KEY_DOMAIN)
+    .update(seed + domain)
     .digest();
 }
 
@@ -45,17 +48,17 @@ export function parseDeployArgs(argv: string[]): DeployArgs {
 }
 
 /**
- * Update the VaultRegistry address in shared/config/contracts.ts.
+ * Update a contract address in shared/config/contracts.ts.
  * Uses targeted regex replacement to preserve comments and formatting.
  */
-export function updateContractsConfig(configPath: string, contractAddress: string): void {
+export function updateContractsConfig(configPath: string, contractAddress: string, contractName: string = 'VaultRegistry'): void {
   const content = fs.readFileSync(configPath, 'utf-8');
 
-  // Match the address field inside the VaultRegistry block
-  const pattern = /(VaultRegistry:\s*\{[^}]*address:\s*')([^']*)(')/;
+  const escaped = contractName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(`(${escaped}:\\s*\\{[^}]*address:\\s*')([^']*)(')`);
 
   if (!pattern.test(content)) {
-    throw new Error('Could not find VaultRegistry address field in ' + configPath);
+    throw new Error(`Could not find ${contractName} address field in ${configPath}`);
   }
 
   const updated = content.replace(pattern, `$1${contractAddress}$3`);
