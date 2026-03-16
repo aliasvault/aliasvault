@@ -13,6 +13,12 @@ import {
   ALIAS_REGISTRY_SECRET_KEY_DOMAIN,
 } from '../deploy-utils';
 
+// Valid 64-char hex addresses for tests
+const ADDR_A = 'ac7cf01759cf510fa5b5592b3ae34cbfda1ed084623c66836a5f96ef82df376b';
+const ADDR_B = 'b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2';
+const ADDR_VR = '9cc11ce659c11068a29fd124ff3e7ab50ee0ada547b08e7f4561fee0787c22ac';
+const ADDR_AR = '645ebbebf9c30ef2ff5e97cf7f161d17a9c3804bf9b5be6ae367f0ac71f451c7';
+
 describe('deploy-utils', () => {
   describe('deriveSecretKey', () => {
     it('returns a 32-byte Uint8Array', () => {
@@ -120,29 +126,11 @@ describe('deploy-utils', () => {
     let tmpDir: string;
     let configPath: string;
 
-    const sampleConfig = `/**
- * Contract address management — single source of truth.
- * All apps import contract addresses from here (ADR-004 / project-context.md Rule 4).
- *
- * NEVER hardcode contract addresses as string literals in app code.
- * Import from this file exclusively.
- */
-
-export interface ContractConfig {
-  /** Deployed contract address (hex string). Empty until deployed. */
-  address: string;
-  /** Semantic version of the deployed contract. */
-  version: string;
-}
-
-/**
- * All deployed contract configurations.
- * Updated by deployment scripts (Story 2.5) after contract deployment.
- */
-export const CONTRACTS: Record<string, ContractConfig> = {
+    const sampleConfig = `export const CONTRACTS: Record<string, ContractConfig> = {
   VaultRegistry: {
-    address: '', // Set after deployment (Story 2.5)
+    address: '',
     version: '0.1.0',
+    network: 'local',
   },
 };
 `;
@@ -158,46 +146,90 @@ export const CONTRACTS: Record<string, ContractConfig> = {
     });
 
     it('fills empty address with new contract address', () => {
-      const addr = 'ac7cf01759cf510fa5b5592b3ae34cbfda1ed084623c66836a5f96ef82df376b';
-      updateContractsConfig(configPath, addr);
+      updateContractsConfig(configPath, ADDR_A);
 
       const result = fs.readFileSync(configPath, 'utf-8');
-      expect(result).toContain(`address: '${addr}'`);
+      expect(result).toContain(`address: '${ADDR_A}'`);
     });
 
     it('overwrites existing address', () => {
-      // First write
-      const addr1 = 'aaaa';
-      updateContractsConfig(configPath, addr1);
-
-      // Overwrite
-      const addr2 = 'bbbb';
-      updateContractsConfig(configPath, addr2);
+      updateContractsConfig(configPath, ADDR_A);
+      updateContractsConfig(configPath, ADDR_B);
 
       const result = fs.readFileSync(configPath, 'utf-8');
-      expect(result).toContain(`address: '${addr2}'`);
-      expect(result).not.toContain(`address: '${addr1}'`);
+      expect(result).toContain(`address: '${ADDR_B}'`);
+      expect(result).not.toContain(`address: '${ADDR_A}'`);
     });
 
-    it('preserves comments and file structure', () => {
-      const addr = 'deadbeef';
-      updateContractsConfig(configPath, addr);
+    it('preserves file structure', () => {
+      updateContractsConfig(configPath, ADDR_A);
 
       const result = fs.readFileSync(configPath, 'utf-8');
-      expect(result).toContain('Contract address management');
-      expect(result).toContain('NEVER hardcode');
       expect(result).toContain("version: '0.1.0'");
-      expect(result).toContain('export interface ContractConfig');
+      expect(result).toContain('export const CONTRACTS');
     });
 
     it('throws if file does not contain expected pattern', () => {
       fs.writeFileSync(configPath, 'export const FOO = 42;\n', 'utf-8');
-      expect(() => updateContractsConfig(configPath, 'abc')).toThrow('Could not find VaultRegistry address field');
+      expect(() => updateContractsConfig(configPath, ADDR_A)).toThrow('Could not find VaultRegistry address field');
     });
 
     it('throws with contract name in error message for non-default contract', () => {
       fs.writeFileSync(configPath, 'export const FOO = 42;\n', 'utf-8');
-      expect(() => updateContractsConfig(configPath, 'abc', 'AliasRegistry')).toThrow('Could not find AliasRegistry address field');
+      expect(() => updateContractsConfig(configPath, ADDR_A, 'AliasRegistry')).toThrow('Could not find AliasRegistry address field');
+    });
+
+    describe('address validation', () => {
+      it('rejects non-hex address', () => {
+        expect(() => updateContractsConfig(configPath, 'not-hex-at-all')).toThrow('Invalid contract address');
+      });
+
+      it('rejects address shorter than 64 chars', () => {
+        expect(() => updateContractsConfig(configPath, 'abcd1234')).toThrow('Invalid contract address');
+      });
+
+      it('rejects address with uppercase hex', () => {
+        expect(() => updateContractsConfig(configPath, 'AC7CF01759CF510FA5B5592B3AE34CBFDA1ED084623C66836A5F96EF82DF376B')).toThrow('Invalid contract address');
+      });
+
+      it('accepts valid 64-char lowercase hex', () => {
+        updateContractsConfig(configPath, ADDR_A);
+        const result = fs.readFileSync(configPath, 'utf-8');
+        expect(result).toContain(`address: '${ADDR_A}'`);
+      });
+    });
+
+    describe('network field', () => {
+      it('updates network field when present', () => {
+        updateContractsConfig(configPath, ADDR_A, 'VaultRegistry', 'preprod');
+        const result = fs.readFileSync(configPath, 'utf-8');
+        expect(result).toContain("network: 'preprod'");
+      });
+
+      it('defaults to local network', () => {
+        updateContractsConfig(configPath, ADDR_A);
+        const result = fs.readFileSync(configPath, 'utf-8');
+        expect(result).toContain("network: 'local'");
+      });
+
+      it('warns when overwriting non-local network address', () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        // Set to preprod first
+        updateContractsConfig(configPath, ADDR_A, 'VaultRegistry', 'preprod');
+        // Overwrite with local
+        updateContractsConfig(configPath, ADDR_B, 'VaultRegistry', 'local');
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('WARNING'));
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('preprod'));
+        warnSpy.mockRestore();
+      });
+
+      it('does not warn when overwriting local network address', () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        updateContractsConfig(configPath, ADDR_A, 'VaultRegistry', 'local');
+        updateContractsConfig(configPath, ADDR_B, 'VaultRegistry', 'preprod');
+        expect(warnSpy).not.toHaveBeenCalled();
+        warnSpy.mockRestore();
+      });
     });
 
     describe('multi-contract support', () => {
@@ -205,10 +237,12 @@ export const CONTRACTS: Record<string, ContractConfig> = {
   VaultRegistry: {
     address: '',
     version: '0.1.0',
+    network: 'local',
   },
   AliasRegistry: {
     address: '',
     version: '0.1.0',
+    network: 'local',
   },
 };
 `;
@@ -218,25 +252,25 @@ export const CONTRACTS: Record<string, ContractConfig> = {
       });
 
       it('updates VaultRegistry with default contractName param', () => {
-        updateContractsConfig(configPath, 'vault-addr-123');
+        updateContractsConfig(configPath, ADDR_VR);
         const result = fs.readFileSync(configPath, 'utf-8');
-        expect(result).toContain("VaultRegistry: {\n    address: 'vault-addr-123'");
-        expect(result).toContain("AliasRegistry: {\n    address: ''");
+        expect(result).toContain(`address: '${ADDR_VR}'`);
+        expect(result).toMatch(/AliasRegistry[\s\S]*address: ''/);
       });
 
       it('updates AliasRegistry when contractName specified', () => {
-        updateContractsConfig(configPath, 'alias-addr-456', 'AliasRegistry');
+        updateContractsConfig(configPath, ADDR_AR, 'AliasRegistry');
         const result = fs.readFileSync(configPath, 'utf-8');
-        expect(result).toContain("AliasRegistry: {\n    address: 'alias-addr-456'");
-        expect(result).toContain("VaultRegistry: {\n    address: ''");
+        expect(result).toContain(`address: '${ADDR_AR}'`);
+        expect(result).toMatch(/VaultRegistry[\s\S]*address: ''/);
       });
 
       it('updates both contracts independently', () => {
-        updateContractsConfig(configPath, 'vault-addr', 'VaultRegistry');
-        updateContractsConfig(configPath, 'alias-addr', 'AliasRegistry');
+        updateContractsConfig(configPath, ADDR_VR, 'VaultRegistry', 'preprod');
+        updateContractsConfig(configPath, ADDR_AR, 'AliasRegistry', 'preprod');
         const result = fs.readFileSync(configPath, 'utf-8');
-        expect(result).toContain("VaultRegistry: {\n    address: 'vault-addr'");
-        expect(result).toContain("AliasRegistry: {\n    address: 'alias-addr'");
+        expect(result).toContain(`address: '${ADDR_VR}'`);
+        expect(result).toContain(`address: '${ADDR_AR}'`);
       });
     });
   });

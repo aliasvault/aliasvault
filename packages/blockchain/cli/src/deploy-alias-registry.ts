@@ -69,7 +69,7 @@ async function main(): Promise<void> {
   // Write to shared config (unless --dry-run)
   if (!args.dryRun) {
     const configPath = path.resolve(currentDir, '..', '..', '..', '..', 'shared', 'config', 'contracts.ts');
-    updateContractsConfig(configPath, contractAddress, 'AliasRegistry');
+    updateContractsConfig(configPath, contractAddress, 'AliasRegistry', args.network);
     console.log(`Updated shared/config/contracts.ts → AliasRegistry.address = "${contractAddress}"`);
   } else {
     console.log('--dry-run: skipping shared/config/contracts.ts update');

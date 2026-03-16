@@ -65,6 +65,13 @@ so that the browser extension and SMTP bridge can operate on a live testnet.
   - [x] 7.2 Commit the updated `shared/config/contracts.ts` with message describing preprod deployment
   - [x] 7.3 Do NOT commit the wallet seed or any private key material
 
+### Review Follow-ups (AI)
+
+- [x] [AI-Review M1] Add hex address validation in `updateContractsConfig()` before writing to `contracts.ts` — reject non-64-char-hex strings
+- [x] [AI-Review M2] Add `network` field to `ContractConfig` so deploy-local can't silently overwrite preprod addresses
+- [x] [AI-Review L2] Add rollback row to troubleshooting table in Dev Notes: `git checkout HEAD~1 -- shared/config/contracts.ts`
+- [x] [AI-Review L3] Add address delivery mechanism notes to "Downstream Consumers" section (env vars for bridge/portal vs shared config for extension)
+
 ## Dev Notes
 
 ### This Is an Operational Story, Not a Code-Writing Story
@@ -137,13 +144,14 @@ Midnight is transitioning from `preprod` to `testnet` in newer tooling. Our code
 | `Proof generation timeout` | Retry — preprod can be slow; ensure proof server has enough RAM (4GB+) |
 | `Contract address not found in explorer` | Wait 1-2 minutes for indexer to sync |
 | `updateContractsConfig regex failed` | Verify `shared/config/contracts.ts` format matches expected pattern |
+| Wrong address committed | `git checkout HEAD~1 -- shared/config/contracts.ts` to restore previous addresses |
 
 ### Downstream Consumers After This Story
 
 Once preprod addresses are committed:
-- **Story 6.5:** Extension E2E smoke test — builds with `VITE_MIDNIGHT_NETWORK=preprod`, uses committed addresses
-- **Story 6.6:** SMTP bridge deployment — bridge `.env` points to preprod endpoints + AliasRegistry address
-- **Story 6.7:** Guardian portal validation — portal uses preprod network config
+- **Story 6.5:** Extension E2E smoke test — builds with `VITE_MIDNIGHT_NETWORK=preprod`, reads addresses from `shared/config/contracts.ts` (bundled at build time via workspace dep)
+- **Story 6.6:** SMTP bridge deployment — bridge reads AliasRegistry address from `.env` (`ALIAS_REGISTRY_ADDRESS`), not from shared config (separate service, no workspace dep)
+- **Story 6.7:** Guardian portal validation — portal reads VaultRegistry address from `.env` or runtime config, not from shared config (separate service)
 
 ### Project Structure Notes
 
@@ -186,8 +194,12 @@ Claude Opus 4.6
 
 ### File List
 
-- `shared/config/contracts.ts` (modified — preprod contract addresses)
-- `_bmad-output/implementation-artifacts/6-4-preprod-contract-deployment.md` (modified — task completion)
+- `shared/config/contracts.ts` (modified — preprod addresses + `network` field added to `ContractConfig`)
+- `packages/blockchain/cli/src/deploy-utils.ts` (modified — hex validation + network param in `updateContractsConfig`)
+- `packages/blockchain/cli/src/deploy-vault-registry.ts` (modified — pass `args.network` to `updateContractsConfig`)
+- `packages/blockchain/cli/src/deploy-alias-registry.ts` (modified — pass `args.network` to `updateContractsConfig`)
+- `packages/blockchain/cli/src/test/deploy-utils.test.ts` (modified — tests for hex validation, network field, cross-network warning)
+- `_bmad-output/implementation-artifacts/6-4-preprod-contract-deployment.md` (modified — task completion + review follow-ups)
 - `_bmad-output/implementation-artifacts/sprint-status.yaml` (modified — status update)
 
 ### Change Log

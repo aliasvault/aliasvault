@@ -68,7 +68,7 @@ async function main(): Promise<void> {
   // Write to shared config (unless --dry-run)
   if (!args.dryRun) {
     const configPath = path.resolve(currentDir, '..', '..', '..', '..', 'shared', 'config', 'contracts.ts');
-    updateContractsConfig(configPath, contractAddress);
+    updateContractsConfig(configPath, contractAddress, 'VaultRegistry', args.network);
     console.log(`Updated shared/config/contracts.ts → VaultRegistry.address = "${contractAddress}"`);
   } else {
     console.log('--dry-run: skipping shared/config/contracts.ts update');

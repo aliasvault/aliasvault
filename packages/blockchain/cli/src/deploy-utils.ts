@@ -51,16 +51,33 @@ export function parseDeployArgs(argv: string[]): DeployArgs {
  * Update a contract address in shared/config/contracts.ts.
  * Uses targeted regex replacement to preserve comments and formatting.
  */
-export function updateContractsConfig(configPath: string, contractAddress: string, contractName: string = 'VaultRegistry'): void {
-  const content = fs.readFileSync(configPath, 'utf-8');
-
-  const escaped = contractName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const pattern = new RegExp(`(${escaped}:\\s*\\{[^}]*address:\\s*')([^']*)(')`);
-
-  if (!pattern.test(content)) {
-    throw new Error(`Could not find ${contractName} address field in ${configPath}`);
+export function updateContractsConfig(configPath: string, contractAddress: string, contractName: string = 'VaultRegistry', network: NetworkTarget = 'local'): void {
+  if (!/^[0-9a-f]{64}$/.test(contractAddress)) {
+    throw new Error(`Invalid contract address: "${contractAddress}" — expected 64-char lowercase hex`);
   }
 
-  const updated = content.replace(pattern, `$1${contractAddress}$3`);
-  fs.writeFileSync(configPath, updated, 'utf-8');
+  let content = fs.readFileSync(configPath, 'utf-8');
+
+  // Warn if overwriting a different network's address
+  const networkMatch = new RegExp(`${contractName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:[^}]*network:\\s*'([^']*)'`).exec(content);
+  if (networkMatch && networkMatch[1] !== network && networkMatch[1] !== 'local') {
+    console.warn(`⚠️  WARNING: Overwriting ${contractName} ${networkMatch[1]} address with ${network} address`);
+  }
+
+  const escaped = contractName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  // Update address
+  const addrPattern = new RegExp(`(${escaped}:\\s*\\{[^}]*address:\\s*')([^']*)(')`);
+  if (!addrPattern.test(content)) {
+    throw new Error(`Could not find ${contractName} address field in ${configPath}`);
+  }
+  content = content.replace(addrPattern, `$1${contractAddress}$3`);
+
+  // Update network
+  const netPattern = new RegExp(`(${escaped}:\\s*\\{[^}]*network:\\s*')([^']*)(')`);
+  if (netPattern.test(content)) {
+    content = content.replace(netPattern, `$1${network}$3`);
+  }
+
+  fs.writeFileSync(configPath, content, 'utf-8');
 }
