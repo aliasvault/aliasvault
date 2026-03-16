@@ -100,7 +100,7 @@ development_status:
   6-1-sdk-alignment-contract-recompilation: review
   6-2-browser-extension-multi-network-config: review
   6-3-aliasregistry-deployment-script: review
-  6-4-preprod-contract-deployment: backlog
+  6-4-preprod-contract-deployment: review
   6-5-extension-e2e-smoke-test-preprod: backlog
   6-6-smtp-pipeline-deployment-email-e2e: backlog
   6-7-guardian-portal-preprod-validation: backlog
