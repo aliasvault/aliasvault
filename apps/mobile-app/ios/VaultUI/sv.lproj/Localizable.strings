@@ -72,8 +72,8 @@
 "enter_password_to_unlock" = "Ange ditt huvudlösenord";
 "unlock" = "Lås upp";
 "incorrect_password" = "Felaktigt lösenord. Försök igen.";
-"attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
-"max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
+"attempts_warning" = "Felaktigt lösenord. Du kommer att loggas ut om du anger fel lösenord %d gång(er) till.";
+"max_attempts_reached" = "För många misslyckade upplåsningsförsök. Du har blivit utloggad av säkerhetsskäl.";
 
 /* PIN Setup */
 "pin_setup_title" = "Ställ in PIN-kod";
