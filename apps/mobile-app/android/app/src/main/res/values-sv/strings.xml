@@ -80,6 +80,6 @@
   <string name="password_unlock_button">Lås upp</string>
   <string name="password_unlock_incorrect">Felaktigt lösenord. Försök igen.</string>
   <string name="password_unlock_error">Kunde inte verifiera lösenord</string>
-  <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
-  <string name="password_unlock_max_attempts_reached">Too many failed unlock attempts. You have been logged out for security reasons.</string>
+  <string name="password_unlock_attempts_warning">Felaktigt lösenord. Du kommer att loggas ut om du anger fel lösenord %d gång(er) till.</string>
+  <string name="password_unlock_max_attempts_reached">För många misslyckade upplåsningsförsök. Du har blivit utloggad av säkerhetsskäl.</string>
 </resources>
