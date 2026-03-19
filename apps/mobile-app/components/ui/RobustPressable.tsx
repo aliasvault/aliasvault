@@ -40,6 +40,8 @@ export const RobustPressable: React.FC<IRobustPressableProps> = ({
       ]}
       testID={testID}
       accessibilityLabel={testID}
+      accessible={true}
+      accessibilityRole="button"
     >
       {children}
     </Pressable>
