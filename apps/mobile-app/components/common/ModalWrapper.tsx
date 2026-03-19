@@ -117,6 +117,7 @@ export const ModalWrapper: React.FC<IModalWrapperProps> = ({
     },
     body: {
       padding: 20,
+      paddingTop: 0,
     },
     scrollBody: {
       maxHeight: maxScrollHeight,
