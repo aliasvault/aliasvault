@@ -202,9 +202,22 @@ class WebApiService(private val context: Context) {
 
             // Read response body
             val responseBody = try {
+                // Check if response is binary (octet-stream)
+                val contentType = connection.getHeaderField("Content-Type") ?: ""
+                val isBinary = contentType.contains("application/octet-stream", ignoreCase = true)
+
                 if (statusCode in 200..299) {
-                    BufferedReader(InputStreamReader(connection.inputStream)).use { reader ->
-                        reader.readText()
+                    if (isBinary) {
+                        // Read binary data and encode as base64
+                        connection.inputStream.use { inputStream ->
+                            val bytes = inputStream.readBytes()
+                            android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+                        }
+                    } else {
+                        // Read text data
+                        BufferedReader(InputStreamReader(connection.inputStream)).use { reader ->
+                            reader.readText()
+                        }
                     }
                 } else {
                     BufferedReader(InputStreamReader(connection.errorStream ?: connection.inputStream)).use { reader ->

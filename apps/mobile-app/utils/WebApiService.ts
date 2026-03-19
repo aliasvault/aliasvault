@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 import { AppInfo } from '@/utils/AppInfo';
 import type { StatusResponse, VaultResponse, AuthLogModel, RefreshToken } from '@/utils/dist/core/models/webapi';
 
@@ -198,16 +200,41 @@ export class WebApiService {
    */
   public async downloadBlob(endpoint: string): Promise<Uint8Array> {
     try {
-      const response = await this.authFetch<Response>(endpoint, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/octet-stream',
-        }
-      }, false);
+      const method = 'GET';
+      const headers: Record<string, string> = {
+        'Accept': 'application/octet-stream',
+      };
 
-      // Get the response as an ArrayBuffer
-      const arrayBuffer = await response.arrayBuffer();
-      return new Uint8Array(arrayBuffer);
+      // Execute request through native layer with auth
+      const responseJson = await NativeVaultManager.executeWebApiRequest(
+        method,
+        endpoint,
+        null,
+        JSON.stringify(headers),
+        true // requiresAuth
+      );
+
+      const response: NativeWebApiResponse = JSON.parse(responseJson);
+
+      // Handle auth errors
+      if (response.statusCode === 401) {
+        logoutEventEmitter.emit('auth.errors.sessionExpired');
+        throw new Error(i18n.t('auth.errors.sessionExpired'));
+      }
+
+      if (response.statusCode >= 400) {
+        throw new Error(i18n.t('auth.errors.httpError', { status: response.statusCode }));
+      }
+
+      // Convert base64 response body to Uint8Array
+      // The native layer returns binary data as base64 encoded string
+      if (!response.body) {
+        throw new Error('Empty response body');
+      }
+
+      // Decode base64 string to binary data using Buffer (React Native compatible)
+      const buffer = Buffer.from(response.body, 'base64');
+      return new Uint8Array(buffer);
     } catch (error) {
       console.error('Error downloading blob:', error);
       throw error;

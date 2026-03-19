@@ -182,15 +182,26 @@ public class WebApiService {
             )
         }
 
-        // Parse response body
-        let responseBody = String(data: data, encoding: .utf8) ?? ""
-
         // Extract headers
         var responseHeaders: [String: String] = [:]
         for (key, value) in httpResponse.allHeaderFields {
             if let keyString = key as? String, let valueString = value as? String {
                 responseHeaders[keyString] = valueString
             }
+        }
+
+        // Check if response is binary (octet-stream)
+        let contentType = responseHeaders["Content-Type"] ?? ""
+        let isBinary = contentType.lowercased().contains("application/octet-stream")
+
+        // Parse response body
+        let responseBody: String
+        if isBinary && httpResponse.statusCode >= 200 && httpResponse.statusCode < 300 {
+            // Encode binary data as base64
+            responseBody = data.base64EncodedString()
+        } else {
+            // Parse as text
+            responseBody = String(data: data, encoding: .utf8) ?? ""
         }
 
         return WebApiResponse(

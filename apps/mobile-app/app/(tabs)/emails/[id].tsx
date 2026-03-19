@@ -3,9 +3,10 @@ import { Buffer } from 'buffer';
 import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import { useLocalSearchParams, useRouter, useNavigation, Stack } from 'expo-router';
+import * as Sharing from 'expo-sharing';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, ActivityIndicator, Share, useColorScheme, Linking, Text, TextInput, Platform } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, useColorScheme, Linking, Text, TextInput, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 import ConversionUtility from '@/utils/ConversionUtility';
@@ -170,11 +171,16 @@ export default function EmailDetailsScreen() : React.ReactNode {
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      await Share.share({
-        url: tempFile,
-        title: attachment.filename,
-      });
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(tempFile, {
+          mimeType: attachment.mimeType || 'application/octet-stream',
+          dialogTitle: attachment.filename,
+        });
+      } else {
+        setError('Sharing is not available on this device');
+      }
 
+      // Cleanup after sharing completes
       await FileSystem.deleteAsync(tempFile);
     } catch (err) {
       console.error('handleDownloadAttachment error', err);
