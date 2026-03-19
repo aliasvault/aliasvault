@@ -72,8 +72,8 @@
 "enter_password_to_unlock" = "Ingrese su contraseña maestra";
 "unlock" = "Desbloquear";
 "incorrect_password" = "Contraseña incorrecta. Por favor, inténtelo de nuevo.";
-"attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
-"max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
+"attempts_warning" = "Contraseña incorrecta. Se cerrará la sesión si introduce la contraseña incorrecta %d veces más.";
+"max_attempts_reached" = "Demasiados intentos de desbloqueo fallidos. Se ha cerrado la sesión por razones de seguridad.";
 
 /* PIN Setup */
 "pin_setup_title" = "Configurar PIN";
