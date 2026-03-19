@@ -230,14 +230,18 @@
     <value>Po wyeksportowaniu pliku możesz go przesłać poniżej.</value>
     <comment>Strongbox export instructions part 2</comment>
   </data>
-  <!-- AliasVault -->
+  <!-- AliasVault CSV/AVUX/AVEX -->
   <data name="AliasVaultDescription" xml:space="preserve">
-    <value>Importuj hasła z innego serwera AliasVault lub kopii zapasowej</value>
+    <value>Import from AliasVault backup</value>
     <comment>Description for AliasVault import service</comment>
   </data>
   <data name="AliasVaultInstructionsPart1" xml:space="preserve">
-    <value>Jeśli posiadasz kopię zapasową bazy danych AliasVault w formacie CSV (z innego serwera AliasVault), możesz ją tutaj zaimportować.</value>
+    <value>Import your previously created AliasVault backup.</value>
     <comment>AliasVault import instructions</comment>
+  </data>
+  <data name="AliasVaultSupportedFormatsInfo" xml:space="preserve">
+    <value>Supports .avex (encrypted), .avux (unencrypted) and CSV (basic) formats.</value>
+    <comment>Supported formats information for AliasVault imports</comment>
   </data>
   <!-- Dropbox -->
   <data name="DropboxDescription" xml:space="preserve">
