@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 
-import { FormField, testField, testBirthdateFormat } from './TestUtils';
+import { FormDetector } from '../FormDetector';
+
+import { FormField, testField, testBirthdateFormat, createTestDom } from './TestUtils';
 
 describe('FormDetector Dutch tests', () => {
   it('contains tests for Dutch form field detection', () => {
@@ -115,5 +117,106 @@ describe('FormDetector Dutch tests', () => {
     testField(FormField.FirstName, 'Field645', htmlFile);
     testField(FormField.LastName, 'Field642', htmlFile);
     testField(FormField.BirthDate, 'Field675', htmlFile);
+  });
+
+  describe('Dutch login form 1 detection', () => {
+    const htmlFile = 'nl-login-form1.html';
+
+    testField(FormField.Username, 'login_form_user', htmlFile);
+    testField(FormField.Password, 'login_form_password', htmlFile);
+
+    it('should detect username field despite autocomplete="off"', () => {
+      const dom = createTestDom(htmlFile);
+      const doc = dom.window.document;
+
+      const usernameInput = doc.getElementById('login_form_user') as HTMLInputElement;
+      expect(usernameInput).not.toBeNull();
+      expect(usernameInput.getAttribute('autocomplete')).toBe('off');
+
+      const formDetector = new FormDetector(doc, usernameInput);
+      const detectedFields = formDetector.getForm();
+
+      expect(detectedFields?.usernameField).toBe(usernameInput);
+      expect(detectedFields?.usernameField?.id).toBe('login_form_user');
+    });
+
+    it('should detect password field with autocomplete="current-password"', () => {
+      const dom = createTestDom(htmlFile);
+      const doc = dom.window.document;
+
+      const passwordInput = doc.getElementById('login_form_password') as HTMLInputElement;
+      expect(passwordInput).not.toBeNull();
+      expect(passwordInput.getAttribute('autocomplete')).toBe('current-password');
+
+      const formDetector = new FormDetector(doc, passwordInput);
+      const detectedFields = formDetector.getForm();
+
+      expect(detectedFields?.passwordField).toBe(passwordInput);
+      expect(detectedFields?.passwordField?.id).toBe('login_form_password');
+    });
+
+    it('should not detect hidden fields as login fields', () => {
+      const dom = createTestDom(htmlFile);
+      const doc = dom.window.document;
+
+      const usernameInput = doc.getElementById('login_form_user') as HTMLInputElement;
+      const formDetector = new FormDetector(doc, usernameInput);
+      const detectedFields = formDetector.getForm();
+
+      const hiddenLocation = doc.getElementById('login_form_location') as HTMLInputElement;
+      const hiddenToken = doc.getElementById('login_form__token') as HTMLInputElement;
+
+      expect(detectedFields?.usernameField).not.toBe(hiddenLocation);
+      expect(detectedFields?.usernameField).not.toBe(hiddenToken);
+      expect(detectedFields?.passwordField).not.toBe(hiddenLocation);
+      expect(detectedFields?.passwordField).not.toBe(hiddenToken);
+    });
+
+    it('should not detect session option fields as login fields', () => {
+      const dom = createTestDom(htmlFile);
+      const doc = dom.window.document;
+
+      const usernameInput = doc.getElementById('login_form_user') as HTMLInputElement;
+      const formDetector = new FormDetector(doc, usernameInput);
+      const detectedFields = formDetector.getForm();
+
+      const sessionNameInput = doc.getElementById('login_form_sessionName') as HTMLInputElement;
+      const durationSelect = doc.getElementById('login_form_duration') as HTMLSelectElement;
+
+      expect(detectedFields?.usernameField).not.toBe(sessionNameInput);
+      expect(detectedFields?.usernameField).not.toBe(durationSelect);
+      expect(detectedFields?.passwordField).not.toBe(sessionNameInput);
+    });
+
+    it('should detect both username and password fields from the same form', () => {
+      const dom = createTestDom(htmlFile);
+      const doc = dom.window.document;
+
+      const usernameInput = doc.getElementById('login_form_user') as HTMLInputElement;
+      const passwordInput = doc.getElementById('login_form_password') as HTMLInputElement;
+
+      const formDetector = new FormDetector(doc, usernameInput);
+      const detectedFields = formDetector.getForm();
+
+      expect(detectedFields?.usernameField).toBe(usernameInput);
+      expect(detectedFields?.passwordField).toBe(passwordInput);
+    });
+
+    it('should handle form detection when clicking on username field with multiple inputs nearby', () => {
+      const dom = createTestDom(htmlFile);
+      const doc = dom.window.document;
+
+      const usernameInput = doc.getElementById('login_form_user') as HTMLInputElement;
+      const formDetector = new FormDetector(doc, usernameInput);
+
+      expect(formDetector.containsLoginForm()).toBe(true);
+
+      const detectedFields = formDetector.getForm();
+
+      expect(detectedFields?.usernameField).toBeTruthy();
+      expect(detectedFields?.passwordField).toBeTruthy();
+      expect(detectedFields?.emailField).toBeFalsy();
+      expect(detectedFields?.passwordConfirmField).toBeFalsy();
+    });
   });
 });
