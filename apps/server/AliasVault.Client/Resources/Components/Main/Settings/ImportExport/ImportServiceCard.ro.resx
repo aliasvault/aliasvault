@@ -167,31 +167,31 @@
     <comment>Error message when file is too large</comment>
   </data>
   <data name="EncryptedFilePasswordPrompt" xml:space="preserve">
-    <value>This file is encrypted. Please enter the password you used when creating the export.</value>
+    <value>Acest fișier este criptat. Introdu parola pe care ai folosit-o la crearea exportului.</value>
     <comment>Prompt for encrypted file password</comment>
   </data>
   <data name="DecryptionPasswordLabel" xml:space="preserve">
-    <value>Decryption Password</value>
+    <value>Parolă de decriptare</value>
     <comment>Label for decryption password input</comment>
   </data>
   <data name="DecryptionPasswordHint" xml:space="preserve">
-    <value>This is the password you set when creating the encrypted export (.avex file), not your vault master password.</value>
+    <value>Aceasta este parola pe care ai setat-o când ai creat exportul criptat (.avex), nu parola principală a seifului.</value>
     <comment>Hint explaining what password is needed</comment>
   </data>
   <data name="DecryptAndContinueButton" xml:space="preserve">
-    <value>Decrypt and Continue</value>
+    <value>Decriptează și continuă</value>
     <comment>Button text for decryption</comment>
   </data>
   <data name="DecryptingFile" xml:space="preserve">
-    <value>Decrypting file...</value>
+    <value>Se decriptează fișierul...</value>
     <comment>Progress text during decryption</comment>
   </data>
   <data name="IncorrectPasswordError" xml:space="preserve">
-    <value>Incorrect password. Please try again.</value>
+    <value>Parolă incorectă. Încearcă din nou.</value>
     <comment>Error message for incorrect decryption password</comment>
   </data>
   <data name="DecryptionErrorGeneric" xml:space="preserve">
-    <value>Failed to decrypt the file. Please check that the file is not corrupted and try again.</value>
+    <value>Decriptarea fișierului a eșuat. Verifică dacă fișierul nu este corupt și încearcă din nou.</value>
     <comment>Generic error message for decryption failure</comment>
   </data>
 </root>
