@@ -71,7 +71,7 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Select a service to import from.</value>
+    <value>Alege un serviciu din care să imporți.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
@@ -79,47 +79,47 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Export your vault to move credentials between AliasVault servers or to another password manager.</value>
+    <value>Exportă seiful tău pentru a muta datele de autentificare între serverele AliasVault sau către un alt manager de parole.</value>
     <comment>Export section description</comment>
   </data>
   <data name="RecommendedLabel" xml:space="preserve">
-    <value>Recommended</value>
+    <value>Recomandat</value>
     <comment>Label for recommended option</comment>
   </data>
   <data name="ExportAvexTitle" xml:space="preserve">
-    <value>Encrypted full vault export</value>
+    <value>Export criptat al întregului seif</value>
     <comment>Title for encrypted export option</comment>
   </data>
   <data name="ExportAvexDescription" xml:space="preserve">
-    <value>Password-protected backup of your entire vault. Includes all items, passkeys, and attachments. Use as manual backup and/or to restore to another AliasVault server.</value>
+    <value>Backup protejat prin parolă al întregului tău seif. Include toate elementele, passkey-urile și atașamentele. Folosește-l ca backup manual și/sau pentru a restaura pe un alt server AliasVault.</value>
     <comment>Description for encrypted export option</comment>
   </data>
   <data name="ExportAvuxTitle" xml:space="preserve">
-    <value>Unencrypted full vault export</value>
+    <value>Export necriptat al întregului seif</value>
     <comment>Title for unencrypted full export option</comment>
   </data>
   <data name="ExportAvuxDescription" xml:space="preserve">
-    <value>Complete vault export as unencrypted ZIP-compatible archive. Includes all items, passkeys and attachments.</value>
+    <value>Export complet al seifului ca arhivă compatibilă ZIP, necriptată. Include toate elementele, passkey-urile și atașamentele.</value>
     <comment>Description for unencrypted full export option</comment>
   </data>
   <data name="ExportCsvTitle" xml:space="preserve">
-    <value>CSV export</value>
+    <value>Export CSV</value>
     <comment>Title for CSV export option</comment>
   </data>
   <data name="ExportCsvDescription" xml:space="preserve">
-    <value>Basic export for importing into other password managers. Does not include passkeys or attachments.</value>
+    <value>Export de bază pentru import într-un alt manager de parole. Nu conține passkey-urile sau atașamentele.</value>
     <comment>Description for CSV export option</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>Export to CSV</value>
+    <value>Exportă în CSV</value>
     <comment>Button to export as CSV</comment>
   </data>
   <data name="ExportAvuxButton" xml:space="preserve">
-    <value>Export unencrypted vault (.avux)</value>
+    <value>Exportă seiful necriptat (.avux)</value>
     <comment>Button to export full vault as .avux archive</comment>
   </data>
   <data name="ExportingVaultMessage" xml:space="preserve">
-    <value>Exporting vault...</value>
+    <value>Se exportă seiful...</value>
     <comment>Message shown while exporting vault</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
@@ -165,25 +165,25 @@ Ești sigur că vrei să continui exportul?</value>
     <comment>Generic error message for password verification failure</comment>
   </data>
   <data name="ExportAvexButton" xml:space="preserve">
-    <value>Export encrypted vault (.avex)</value>
+    <value>Exportă seiful criptat (.avex)</value>
     <comment>Button to export encrypted vault as .avex archive</comment>
   </data>
   <data name="ExportEncryptedWarningMessage" xml:space="preserve">
-    <value>This will create an encrypted export of your entire vault. You will need to provide a password to encrypt the export file.
+    <value>Aceasta va crea un export criptat al întregului tău seif. Va trebui să furnizezi o parolă pentru a cripta fișierul de export.
 
-Are you sure you want to continue?</value>
+Ești sigur că vrei să continui?</value>
     <comment>Warning message for encrypted export confirmation</comment>
   </data>
   <data name="ExportEncryptedPasswordTitle" xml:space="preserve">
-    <value>Set Export Password</value>
+    <value>Setează parola pentru export</value>
     <comment>Title for export password modal</comment>
   </data>
   <data name="ExportEncryptedPasswordDescription" xml:space="preserve">
-    <value>Choose a strong, unique password to encrypt this export. This password is required to decrypt the export. If you lose this password, you will not be able to recover the exported data.</value>
+    <value>Alege o parolă puternică și unică pentru a cripta acest export. Această parolă este necesară pentru a decripta exportul. Dacă pierzi parola, nu vei putea recupera datele exportate.</value>
     <comment>Description for export password modal with security warning</comment>
   </data>
   <data name="ExportSuccessMessage" xml:space="preserve">
-    <value>Your vault has been exported successfully.</value>
+    <value>Seiful tău a fost exportat cu succes.</value>
     <comment>Success message after vault export completes</comment>
   </data>
 </root>
