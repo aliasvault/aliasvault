@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { FormField, testField } from './TestUtils';
+import { FormDetector } from '../FormDetector';
+
+import { FormField, testField, createTestDom } from './TestUtils';
 
 describe('FormDetector English tests', () => {
   it('contains tests for English form field detection', () => {
@@ -109,6 +111,152 @@ describe('FormDetector English tests', () => {
     const htmlFile = 'en-login-passwordless-1.html';
 
     testField(FormField.Email, 'form-group--1', htmlFile);
+  });
+
+  describe('English login form 3 detection (Emby Connect)', () => {
+    const htmlFile = 'en-login-form3.html';
+
+    testField(FormField.Email, 'embyinput0', htmlFile);
+    testField(FormField.Password, 'embyinput1', htmlFile);
+
+    it('should detect login form', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+      const formDetector = new FormDetector(document);
+      expect(formDetector.containsLoginForm()).toBe(true);
+    });
+
+    it('should ignore hidden fake username/password fields with height:0', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const emailInput = document.getElementById('embyinput0');
+      const formDetector = new FormDetector(document, emailInput as HTMLElement);
+      const form = formDetector.getForm();
+
+      expect(form).toBeTruthy();
+      expect(form?.emailField).toBeTruthy();
+      expect(form?.emailField?.className).toContain('txtUser');
+      expect(form?.emailField?.id).toBe('embyinput0');
+      expect(form?.passwordField).toBeTruthy();
+      expect(form?.passwordField?.className).toContain('txtPassword');
+      expect(form?.passwordField?.name).not.toBe('fakepasswordremembered');
+    });
+
+    it('should not autofill hidden fake fields', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const fakeUsernameInput = document.querySelector('input[name="fakeusernameremembered"]');
+      const formDetector = new FormDetector(document, fakeUsernameInput as HTMLElement);
+
+      expect(formDetector.isAutofillTriggerableField()).toBe(false);
+    });
+
+    it('should detect real username field when clicked', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const usernameInput = document.getElementById('embyinput0');
+      const formDetector = new FormDetector(document, usernameInput as HTMLElement);
+
+      expect(formDetector.isAutofillTriggerableField()).toBe(true);
+    });
+
+    it('should detect real password field when clicked', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const passwordInput = document.getElementById('embyinput1');
+      const formDetector = new FormDetector(document, passwordInput as HTMLElement);
+
+      expect(formDetector.isAutofillTriggerableField()).toBe(true);
+    });
+  });
+
+  describe('English login form 4 detection (Emby Connect - Swedish)', () => {
+    const htmlFile = 'en-login-form4.html';
+
+    testField(FormField.Email, 'embyinput0', htmlFile);
+    testField(FormField.Password, 'embyinput1', htmlFile);
+
+    it('should detect login form with Swedish labels', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+      const formDetector = new FormDetector(document);
+      expect(formDetector.containsLoginForm()).toBe(true);
+    });
+
+    it('should detect Swedish "E-post" label as email field', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const emailInput = document.getElementById('embyinput0');
+      const formDetector = new FormDetector(document, emailInput as HTMLElement);
+      const form = formDetector.getForm();
+
+      expect(form).toBeTruthy();
+      expect(form?.emailField).toBeTruthy();
+      expect(form?.emailField?.id).toBe('embyinput0');
+      expect(form?.emailField?.className).toContain('txtUser');
+    });
+
+    it('should detect Swedish "Lösenord" label as password field', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const passwordInput = document.getElementById('embyinput1');
+      const formDetector = new FormDetector(document, passwordInput as HTMLElement);
+      const form = formDetector.getForm();
+
+      expect(form).toBeTruthy();
+      expect(form?.passwordField).toBeTruthy();
+      expect(form?.passwordField?.id).toBe('embyinput1');
+      expect(form?.passwordField?.className).toContain('txtPassword');
+    });
+
+    it('should ignore hidden fake fields in Swedish form', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const emailInput = document.getElementById('embyinput0');
+      const formDetector = new FormDetector(document, emailInput as HTMLElement);
+      const form = formDetector.getForm();
+
+      expect(form).toBeTruthy();
+      expect(form?.emailField?.name).not.toBe('fakeusernameremembered');
+      expect(form?.passwordField?.name).not.toBe('fakepasswordremembered');
+    });
+
+    it('should not trigger autofill on fake Swedish form fields', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const fakeField = document.querySelector('input[name="fakeusernameremembered"]');
+      const formDetector = new FormDetector(document, fakeField as HTMLElement);
+
+      expect(formDetector.isAutofillTriggerableField()).toBe(false);
+    });
+
+    it('should trigger autofill on real Swedish email field', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const emailInput = document.getElementById('embyinput0');
+      const formDetector = new FormDetector(document, emailInput as HTMLElement);
+
+      expect(formDetector.isAutofillTriggerableField()).toBe(true);
+    });
+
+    it('should trigger autofill on real Swedish password field', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const passwordInput = document.getElementById('embyinput1');
+      const formDetector = new FormDetector(document, passwordInput as HTMLElement);
+
+      expect(formDetector.isAutofillTriggerableField()).toBe(true);
+    });
   });
 
 });

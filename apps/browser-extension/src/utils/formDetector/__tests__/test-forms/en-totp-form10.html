@@ -1,0 +1,18 @@
+<form action="https://dash.infinityfree.com/two-factor-challenge" method="post" autocomplete="off" id="auth-form">
+    <input type="hidden" name="_token" value="odBZolu8LUcDBeJxUlHkwug6YIGJ1JhlZEqb6w8b" autocomplete="off">
+
+    <p>
+        Two factor authentication is enabled on your account. Please enter a code from your authenticator app to continue.
+    </p>
+
+    <div class="mb-3">
+        <label class="form-label" for="code">
+            One Time Password
+        </label>
+        <input type="text" class="form-control" id="code" name="code" placeholder="123456" autocomplete="off" data-av-field-type="totp" data-av-autocomplete="off">
+    </div>
+
+    <div class="form-footer">
+        <button type="submit" class="btn btn-primary w-100">Log in</button>
+    </div>
+</form>
