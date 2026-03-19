@@ -71,7 +71,7 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Sélectionnez un service depuis lequel importer. Si vous utilisez un service qui n'est pas listé ici et que vous aimeriez le voir pris en charge, veuillez ouvrir une issue sur &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; ou contactez-nous.</value>
+    <value>Sélectionnez un service depuis lequel importer.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
@@ -79,16 +79,48 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Si vous voulez exporter vos identifiants AliasVault vers un autre serveur AliasVault (par ex. du cloud à l'auto-hébergé ou vice-versa) ou à un autre service, vous pouvez l'exporter ici. Notez que toutes les exportations sont non chiffrées, donc stockez-les dans un endroit sûr et supprimez-les lorsque vous n'en avez plus besoin.</value>
+    <value>Exportez votre coffre pour déplacer vos identifiants entre les serveurs AliasVault ou vers un autre gestionnaire de mots de passe.</value>
     <comment>Export section description</comment>
   </data>
+  <data name="RecommendedLabel" xml:space="preserve">
+    <value>Recommandé</value>
+    <comment>Label for recommended option</comment>
+  </data>
+  <data name="ExportAvexTitle" xml:space="preserve">
+    <value>Export complet du coffre chiffré</value>
+    <comment>Title for encrypted export option</comment>
+  </data>
+  <data name="ExportAvexDescription" xml:space="preserve">
+    <value>Sauvegarde protégée par mot de passe de votre coffre entier. Inclut tous les éléments, mots de passe et pièces jointes. Utilisez comme sauvegarde manuelle et/ou pour restaurer vers un autre serveur AliasVault.</value>
+    <comment>Description for encrypted export option</comment>
+  </data>
+  <data name="ExportAvuxTitle" xml:space="preserve">
+    <value>Export complet du coffre non chiffré</value>
+    <comment>Title for unencrypted full export option</comment>
+  </data>
+  <data name="ExportAvuxDescription" xml:space="preserve">
+    <value>Exportation complète du coffre en tant qu'archive compatible ZIP non chiffrée. Inclut tous les éléments, clés et pièces jointes.</value>
+    <comment>Description for unencrypted full export option</comment>
+  </data>
+  <data name="ExportCsvTitle" xml:space="preserve">
+    <value>Export CSV</value>
+    <comment>Title for CSV export option</comment>
+  </data>
+  <data name="ExportCsvDescription" xml:space="preserve">
+    <value>Export de base pour l'importation dans d'autres gestionnaires de mots de passe. N'inclut pas les mots de passe ou les pièces jointes.</value>
+    <comment>Description for CSV export option</comment>
+  </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>Exporter le coffre vers un fichier CSV non chiffré</value>
+    <value>Exporter en CSV</value>
     <comment>Button to export as CSV</comment>
   </data>
-  <data name="ExportSqliteButton" xml:space="preserve">
-    <value>Exporter le coffre vers un fichier SQLite non chiffré</value>
-    <comment>Button to export as SQLite</comment>
+  <data name="ExportAvuxButton" xml:space="preserve">
+    <value>Exporter le coffre non chiffré (.avux)</value>
+    <comment>Button to export full vault as .avux archive</comment>
+  </data>
+  <data name="ExportingVaultMessage" xml:space="preserve">
+    <value>Export du coffre...</value>
+    <comment>Message shown while exporting vault</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
     <value>Exporter le coffre-fort</value>
@@ -131,5 +163,27 @@
   <data name="PasswordVerificationFailed" xml:space="preserve">
     <value>Une erreur s'est produite lors de la vérification de votre mot de passe. Veuillez réessayer.</value>
     <comment>Generic error message for password verification failure</comment>
+  </data>
+  <data name="ExportAvexButton" xml:space="preserve">
+    <value>Exporter le coffre non chiffré (.avux)</value>
+    <comment>Button to export encrypted vault as .avex archive</comment>
+  </data>
+  <data name="ExportEncryptedWarningMessage" xml:space="preserve">
+    <value>Ceci va créer une exportation chiffrée de votre coffre entier. Vous devrez fournir un mot de passe pour chiffrer le fichier d'exportation.
+
+Êtes-vous sûr de vouloir continuer ?</value>
+    <comment>Warning message for encrypted export confirmation</comment>
+  </data>
+  <data name="ExportEncryptedPasswordTitle" xml:space="preserve">
+    <value>Définir le mot de passe d'exportation</value>
+    <comment>Title for export password modal</comment>
+  </data>
+  <data name="ExportEncryptedPasswordDescription" xml:space="preserve">
+    <value>Choisissez un mot de passe fort et unique pour chiffrer cet export. Ce mot de passe est requis pour déchiffrer l'exportation. Si vous perdez ce mot de passe, vous ne pourrez pas récupérer les données exportées.</value>
+    <comment>Description for export password modal with security warning</comment>
+  </data>
+  <data name="ExportSuccessMessage" xml:space="preserve">
+    <value>Votre coffre a été exporté avec succès.</value>
+    <comment>Success message after vault export completes</comment>
   </data>
 </root>
