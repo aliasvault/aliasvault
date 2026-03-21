@@ -71,7 +71,7 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Select a service to import from.</value>
+    <value>Выберите сервис для импорта.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
@@ -79,15 +79,15 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Export your vault to move credentials between AliasVault servers or to another password manager.</value>
+    <value>Экспортируйте хранилище для переноса данных между серверами AliasVault или в другой менеджер паролей.</value>
     <comment>Export section description</comment>
   </data>
   <data name="RecommendedLabel" xml:space="preserve">
-    <value>Recommended</value>
+    <value>Рекомендуется</value>
     <comment>Label for recommended option</comment>
   </data>
   <data name="ExportAvexTitle" xml:space="preserve">
-    <value>Encrypted full vault export</value>
+    <value>Зашифрованная копия всего хранилища</value>
     <comment>Title for encrypted export option</comment>
   </data>
   <data name="ExportAvexDescription" xml:space="preserve">
