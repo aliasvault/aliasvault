@@ -27,7 +27,7 @@ export default defineUnlistedScript(() => {
    * Check if navigator.credentials API is available
    * Some pages (iframes, non-secure contexts, older browsers) may not have this API
    */
-  if (!navigator.credentials) {
+  if (!navigator.credentials || !navigator.credentials.create || !navigator.credentials.get) {
     return;
   }
 
