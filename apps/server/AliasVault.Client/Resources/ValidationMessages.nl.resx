@@ -59,17 +59,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <!-- Password validation messages -->
-  <data name="PasswordMinLength" xml:space="preserve">
-    <value>Het nieuwe wachtwoord moet tenminste 10 tekens lang zijn.</value>
-    <comment>Error message for password minimum length validation</comment>
-  </data>
   <data name="PasswordsDoNotMatch" xml:space="preserve">
     <value>Nieuwe wachtwoorden komen niet overeen.</value>
     <comment>Error message when password confirmation doesn't match</comment>
   </data>
   <data name="PasswordMinLengthGeneric" xml:space="preserve">
-    <value>Wachtwoord moet minstens 10 tekens lang zijn.</value>
-    <comment>Generic error message for password minimum length validation</comment>
+    <value>Wachtwoord moet minstens {0} tekens lang zijn.</value>
+    <comment>Generic error message for password minimum length validation. {0} is the minimum password length.</comment>
   </data>
   <data name="PasswordsDoNotMatchGeneric" xml:space="preserve">
     <value>Wachtwoorden komen niet overeen.</value>

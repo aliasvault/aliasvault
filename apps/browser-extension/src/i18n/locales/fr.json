@@ -30,7 +30,9 @@
     "switchAccounts": "Changer de compte ?",
     "loginWithMobile": "Se connecter à l'aide de l'application mobile",
     "unlockWithMobile": "Déverrouiller en utilisant l'application mobile",
-    "scanQrCode": "Scannez ce code QR avec votre application mobile AliasVault pour vous connecter et déverrouiller votre coffre."
+    "scanQrCode": "Scannez ce code QR avec votre application mobile AliasVault pour vous connecter et déverrouiller votre coffre.",
+    "passwordAttemptsWarning": "Mot de passe incorrect. Vous serez déconnecté si vous entrez le mauvais mot de passe plus de {{remainingAttempts}} fois.",
+    "maxAttemptsReached": "Trop de tentatives de déverrouillage échouées. Vous avez été déconnecté pour des raisons de sécurité."
   },
   "menu": {
     "vault": "Coffre-fort",

@@ -71,7 +71,7 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Vælg en tjeneste at importere fra. Hvis du bruger en tjeneste, der ikke er anført her, og gerne vil se den understøttet, bedes du oprette en sag på &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; eller kontakte os.</value>
+    <value>Vælg en tjeneste at importere fra.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
@@ -79,16 +79,48 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Hvis du vil eksportere dine AliasVault-legitimationsoplysninger til en anden AliasVault-server (f.eks. fra cloud til self-hosted eller omvendt) eller til en helt anden tjeneste, kan du eksportere dem her. Bemærk, at alle eksporter er ukrypterede, så opbevar dem på et sikkert sted og slet dem, når du ikke længere har brug for dem.</value>
+    <value>Eksporter din boks for at flytte legitimationsoplysninger mellem AliasVault-servere eller til en anden adgangskodehåndtering.</value>
     <comment>Export section description</comment>
   </data>
+  <data name="RecommendedLabel" xml:space="preserve">
+    <value>Anbefalet</value>
+    <comment>Label for recommended option</comment>
+  </data>
+  <data name="ExportAvexTitle" xml:space="preserve">
+    <value>Krypteret eksport af fuld boks</value>
+    <comment>Title for encrypted export option</comment>
+  </data>
+  <data name="ExportAvexDescription" xml:space="preserve">
+    <value>Adgangskodebeskyttet backup af hele din boks. Inkluderer alle elementer, adgangsnøgler og vedhæftede filer. Brug som manuel backup og / eller til at gendanne til en anden AliasVault-server.</value>
+    <comment>Description for encrypted export option</comment>
+  </data>
+  <data name="ExportAvuxTitle" xml:space="preserve">
+    <value>Ukrypteret eksport af fuld boks</value>
+    <comment>Title for unencrypted full export option</comment>
+  </data>
+  <data name="ExportAvuxDescription" xml:space="preserve">
+    <value>Komplet boks eksport som ukrypteret ZIP-kompatibelt arkiv. Inkluderer alle elementer, adgangsnøgler og vedhæftede filer.</value>
+    <comment>Description for unencrypted full export option</comment>
+  </data>
+  <data name="ExportCsvTitle" xml:space="preserve">
+    <value>CSV eksport</value>
+    <comment>Title for CSV export option</comment>
+  </data>
+  <data name="ExportCsvDescription" xml:space="preserve">
+    <value>Grundlæggende eksport til import til andre adgangskodemanagere. Omfatter ikke adgangsnøgler eller vedhæftede filer.</value>
+    <comment>Description for CSV export option</comment>
+  </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>Eksportér boks til ukrypteret CSV-fil</value>
+    <value>Eksporter til CSV</value>
     <comment>Button to export as CSV</comment>
   </data>
-  <data name="ExportSqliteButton" xml:space="preserve">
-    <value>Eksportér boks til ukrypteret SQLite-fil</value>
-    <comment>Button to export as SQLite</comment>
+  <data name="ExportAvuxButton" xml:space="preserve">
+    <value>Eksporter ukrypteret boks (.avux)</value>
+    <comment>Button to export full vault as .avux archive</comment>
+  </data>
+  <data name="ExportingVaultMessage" xml:space="preserve">
+    <value>Eksporterer boks...</value>
+    <comment>Message shown while exporting vault</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
     <value>Eksportér boks</value>
@@ -131,5 +163,27 @@ Er du sikker på, at du vil fortsætte med eksporten?</value>
   <data name="PasswordVerificationFailed" xml:space="preserve">
     <value>Der opstod en fejl under verificering af din adgangskode. Prøv venligst igen.</value>
     <comment>Generic error message for password verification failure</comment>
+  </data>
+  <data name="ExportAvexButton" xml:space="preserve">
+    <value>Eksporter krypteret boks (.avex)</value>
+    <comment>Button to export encrypted vault as .avex archive</comment>
+  </data>
+  <data name="ExportEncryptedWarningMessage" xml:space="preserve">
+    <value>Dette vil oprette en krypteret eksport af hele din boks. Du skal angive en adgangskode for at kryptere eksportfilen.
+
+Er du sikker på, at du vil fortsætte?</value>
+    <comment>Warning message for encrypted export confirmation</comment>
+  </data>
+  <data name="ExportEncryptedPasswordTitle" xml:space="preserve">
+    <value>Angiv Eksporter Adgangskode</value>
+    <comment>Title for export password modal</comment>
+  </data>
+  <data name="ExportEncryptedPasswordDescription" xml:space="preserve">
+    <value>Vælg en stærk, unik adgangskode til kryptering af denne eksport. Denne adgangskode kræves for at dekryptere eksporten. Hvis du mister denne adgangskode, vil du ikke være i stand til at gendanne de eksporterede data.</value>
+    <comment>Description for export password modal with security warning</comment>
+  </data>
+  <data name="ExportSuccessMessage" xml:space="preserve">
+    <value>Din boks er blevet eksporteret med succes.</value>
+    <comment>Success message after vault export completes</comment>
   </data>
 </root>

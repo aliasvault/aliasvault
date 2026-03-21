@@ -166,4 +166,32 @@
     <value>Mărimea fișierului depășește limita de 10MB.</value>
     <comment>Error message when file is too large</comment>
   </data>
+  <data name="EncryptedFilePasswordPrompt" xml:space="preserve">
+    <value>Acest fișier este criptat. Introdu parola pe care ai folosit-o la crearea exportului.</value>
+    <comment>Prompt for encrypted file password</comment>
+  </data>
+  <data name="DecryptionPasswordLabel" xml:space="preserve">
+    <value>Parolă de decriptare</value>
+    <comment>Label for decryption password input</comment>
+  </data>
+  <data name="DecryptionPasswordHint" xml:space="preserve">
+    <value>Aceasta este parola pe care ai setat-o când ai creat exportul criptat (.avex), nu parola principală a seifului.</value>
+    <comment>Hint explaining what password is needed</comment>
+  </data>
+  <data name="DecryptAndContinueButton" xml:space="preserve">
+    <value>Decriptează și continuă</value>
+    <comment>Button text for decryption</comment>
+  </data>
+  <data name="DecryptingFile" xml:space="preserve">
+    <value>Se decriptează fișierul...</value>
+    <comment>Progress text during decryption</comment>
+  </data>
+  <data name="IncorrectPasswordError" xml:space="preserve">
+    <value>Parolă incorectă. Încearcă din nou.</value>
+    <comment>Error message for incorrect decryption password</comment>
+  </data>
+  <data name="DecryptionErrorGeneric" xml:space="preserve">
+    <value>Decriptarea fișierului a eșuat. Verifică dacă fișierul nu este corupt și încearcă din nou.</value>
+    <comment>Generic error message for decryption failure</comment>
+  </data>
 </root>

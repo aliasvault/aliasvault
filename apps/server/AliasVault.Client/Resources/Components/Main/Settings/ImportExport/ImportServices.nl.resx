@@ -230,14 +230,18 @@
     <value>Nadat je het bestand hebt geëxporteerd, kun je het hieronder uploaden.</value>
     <comment>Strongbox export instructions part 2</comment>
   </data>
-  <!-- AliasVault -->
+  <!-- AliasVault CSV/AVUX/AVEX -->
   <data name="AliasVaultDescription" xml:space="preserve">
-    <value>Importeer wachtwoorden van een andere AliasVault server of handmatige back-up</value>
+    <value>Importeren uit AliasVault back-up</value>
     <comment>Description for AliasVault import service</comment>
   </data>
   <data name="AliasVaultInstructionsPart1" xml:space="preserve">
-    <value>Als je een CSV-bestand back-up hebt van je AliasVault database (van een andere AliasVault server), kun je het hier importeren.</value>
+    <value>Importeer je eerder gemaakte AliasVault back-up.</value>
     <comment>AliasVault import instructions</comment>
+  </data>
+  <data name="AliasVaultSupportedFormatsInfo" xml:space="preserve">
+    <value>Ondersteunt .avex (gecodeerd), .avux (niet-versleuteld) en CSV (basis) formaten.</value>
+    <comment>Supported formats information for AliasVault imports</comment>
   </data>
   <!-- Dropbox -->
   <data name="DropboxDescription" xml:space="preserve">

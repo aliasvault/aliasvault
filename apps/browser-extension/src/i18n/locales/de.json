@@ -30,7 +30,9 @@
     "switchAccounts": "Konto wechseln?",
     "loginWithMobile": "Mit mobiler App anmelden",
     "unlockWithMobile": "Mit mobiler App entsperren",
-    "scanQrCode": "Scanne diesen QR-Code mit Deiner AliasVault-App, um Dich anzumelden und Deinen Tresor zu entsperren."
+    "scanQrCode": "Scanne diesen QR-Code mit Deiner AliasVault-App, um Dich anzumelden und Deinen Tresor zu entsperren.",
+    "passwordAttemptsWarning": "Incorrect password. You will be logged out if you enter the wrong password {{remainingAttempts}} more times.",
+    "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
   },
   "menu": {
     "vault": "Tresor",

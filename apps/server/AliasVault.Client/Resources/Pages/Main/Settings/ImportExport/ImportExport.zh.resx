@@ -71,7 +71,7 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>选择要从中导入的服务。如果您使用的服务未在此处列出，并且希望看到它得到支持，请在&lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt;上提出问题或与我们联系。</value>
+    <value>选择要从中导入数据的服务。</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
@@ -79,16 +79,48 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>如果您想将您的AliasVault凭据导出到另一台AliasVault服务器（例如从云到自托管，反之亦然）或完全导出到另一项服务，您可以在此处导出。请注意，所有导出都是未加密的，因此请将其存储在安全的地方，并在不再需要时将其删除。</value>
+    <value>导出您的密码库，以便在 AliasVault 服务器之间或与其他密码管理器之间转移凭据。</value>
     <comment>Export section description</comment>
   </data>
+  <data name="RecommendedLabel" xml:space="preserve">
+    <value>推荐</value>
+    <comment>Label for recommended option</comment>
+  </data>
+  <data name="ExportAvexTitle" xml:space="preserve">
+    <value>加密的完整密码库导出</value>
+    <comment>Title for encrypted export option</comment>
+  </data>
+  <data name="ExportAvexDescription" xml:space="preserve">
+    <value>对您的整个密码库进行密码保护备份。包含所有项目、通行密钥和附件。可用作手动备份或在其他 AliasVault 服务器恢复。</value>
+    <comment>Description for encrypted export option</comment>
+  </data>
+  <data name="ExportAvuxTitle" xml:space="preserve">
+    <value>未加密的完整密码库导出</value>
+    <comment>Title for unencrypted full export option</comment>
+  </data>
+  <data name="ExportAvuxDescription" xml:space="preserve">
+    <value>将整个密码库导出为未加密的 ZIP 兼容存档。包含所有项目、通行密钥和附件。</value>
+    <comment>Description for unencrypted full export option</comment>
+  </data>
+  <data name="ExportCsvTitle" xml:space="preserve">
+    <value>CSV 导出</value>
+    <comment>Title for CSV export option</comment>
+  </data>
+  <data name="ExportCsvDescription" xml:space="preserve">
+    <value>基本的导出文件，可用于导入到其他密码管理器。不含通行密钥或附件。</value>
+    <comment>Description for CSV export option</comment>
+  </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>将密码库导出到未加密的CSV文件</value>
+    <value>导出到 CSV</value>
     <comment>Button to export as CSV</comment>
   </data>
-  <data name="ExportSqliteButton" xml:space="preserve">
-    <value>将密码库导出到未加密的SQLite文件</value>
-    <comment>Button to export as SQLite</comment>
+  <data name="ExportAvuxButton" xml:space="preserve">
+    <value>导出未加密的密码库 (.avux)</value>
+    <comment>Button to export full vault as .avux archive</comment>
+  </data>
+  <data name="ExportingVaultMessage" xml:space="preserve">
+    <value>正在导出密码库…</value>
+    <comment>Message shown while exporting vault</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
     <value>导出密码库</value>
@@ -131,5 +163,27 @@
   <data name="PasswordVerificationFailed" xml:space="preserve">
     <value>验证密码时出错，请重试。</value>
     <comment>Generic error message for password verification failure</comment>
+  </data>
+  <data name="ExportAvexButton" xml:space="preserve">
+    <value>导出加密的密码库 (.avex)</value>
+    <comment>Button to export encrypted vault as .avex archive</comment>
+  </data>
+  <data name="ExportEncryptedWarningMessage" xml:space="preserve">
+    <value>这将创建一份包含您整个密码库的加密导出文件。您需要提供密码来加密导出文件。
+
+您确定要继续吗？</value>
+    <comment>Warning message for encrypted export confirmation</comment>
+  </data>
+  <data name="ExportEncryptedPasswordTitle" xml:space="preserve">
+    <value>设置导出密码</value>
+    <comment>Title for export password modal</comment>
+  </data>
+  <data name="ExportEncryptedPasswordDescription" xml:space="preserve">
+    <value>请使用一份独一无二的强密码来加密此导出文件，解密导出文件时需要此密码。若您丢失此密码，将无法恢复导出的数据。</value>
+    <comment>Description for export password modal with security warning</comment>
+  </data>
+  <data name="ExportSuccessMessage" xml:space="preserve">
+    <value>您的密码库已成功导出。</value>
+    <comment>Success message after vault export completes</comment>
   </data>
 </root>

@@ -230,14 +230,18 @@
     <value>După ce ai exportat fișierul, îl poți încărca mai jos.</value>
     <comment>Strongbox export instructions part 2</comment>
   </data>
-  <!-- AliasVault -->
+  <!-- AliasVault CSV/AVUX/AVEX -->
   <data name="AliasVaultDescription" xml:space="preserve">
-    <value>Importă parolele de pe un alt server AliasVault sau dintr-o copie de rezervă manuală</value>
+    <value>Importă din backup AliasVault</value>
     <comment>Description for AliasVault import service</comment>
   </data>
   <data name="AliasVaultInstructionsPart1" xml:space="preserve">
-    <value>Dacă ai o copie de rezervă CSV a bazei de date AliasVault (de la un server AliasVault diferit), o poți importa aici.</value>
+    <value>Importă backup-ul AliasVault pe care l-ai creat anterior.</value>
     <comment>AliasVault import instructions</comment>
+  </data>
+  <data name="AliasVaultSupportedFormatsInfo" xml:space="preserve">
+    <value>Suportă formatele .avex (criptat), .avux (necriptat) și CSV (format-simplu).</value>
+    <comment>Supported formats information for AliasVault imports</comment>
   </data>
   <!-- Dropbox -->
   <data name="DropboxDescription" xml:space="preserve">

@@ -71,7 +71,7 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>נא לבחור שירות לייבא ממנו. אם השירות שמשמש אותך לא מופיע ברשימה וחשוב לך לראות שהוא נתמך, נא לפתוח תיעוד תקלה ב־&lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; או ליצור איתנו קשר.</value>
+    <value>Select a service to import from.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
@@ -79,16 +79,48 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>כדי לייצא את פרטי הגישה שלך ב־AliasVault לשרת AliasVault אחר (למשל: מענן לשרת באירוח עצמי או להפך) או לשירות אחר באשר הוא, אפשר לייצר אותם מכאן. נא לשים לב שכל מה שמיוצא לא מוצפן, לכן חשוב לשמור את המידע במקום בטוח ולמחוק אותו כשאין בו יותר צורך.</value>
+    <value>Export your vault to move credentials between AliasVault servers or to another password manager.</value>
     <comment>Export section description</comment>
   </data>
+  <data name="RecommendedLabel" xml:space="preserve">
+    <value>Recommended</value>
+    <comment>Label for recommended option</comment>
+  </data>
+  <data name="ExportAvexTitle" xml:space="preserve">
+    <value>Encrypted full vault export</value>
+    <comment>Title for encrypted export option</comment>
+  </data>
+  <data name="ExportAvexDescription" xml:space="preserve">
+    <value>Password-protected backup of your entire vault. Includes all items, passkeys, and attachments. Use as manual backup and/or to restore to another AliasVault server.</value>
+    <comment>Description for encrypted export option</comment>
+  </data>
+  <data name="ExportAvuxTitle" xml:space="preserve">
+    <value>Unencrypted full vault export</value>
+    <comment>Title for unencrypted full export option</comment>
+  </data>
+  <data name="ExportAvuxDescription" xml:space="preserve">
+    <value>Complete vault export as unencrypted ZIP-compatible archive. Includes all items, passkeys and attachments.</value>
+    <comment>Description for unencrypted full export option</comment>
+  </data>
+  <data name="ExportCsvTitle" xml:space="preserve">
+    <value>CSV export</value>
+    <comment>Title for CSV export option</comment>
+  </data>
+  <data name="ExportCsvDescription" xml:space="preserve">
+    <value>Basic export for importing into other password managers. Does not include passkeys or attachments.</value>
+    <comment>Description for CSV export option</comment>
+  </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>ייצוא כספת לקובץ CSV לא מוצפן</value>
+    <value>Export to CSV</value>
     <comment>Button to export as CSV</comment>
   </data>
-  <data name="ExportSqliteButton" xml:space="preserve">
-    <value>ייצוא כספת לקובץ SQLite לא מוצפן</value>
-    <comment>Button to export as SQLite</comment>
+  <data name="ExportAvuxButton" xml:space="preserve">
+    <value>Export unencrypted vault (.avux)</value>
+    <comment>Button to export full vault as .avux archive</comment>
+  </data>
+  <data name="ExportingVaultMessage" xml:space="preserve">
+    <value>Exporting vault...</value>
+    <comment>Message shown while exporting vault</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
     <value>ייצוא כספת</value>
@@ -131,5 +163,27 @@
   <data name="PasswordVerificationFailed" xml:space="preserve">
     <value>An error occurred while verifying your password. Please try again.</value>
     <comment>Generic error message for password verification failure</comment>
+  </data>
+  <data name="ExportAvexButton" xml:space="preserve">
+    <value>Export encrypted vault (.avex)</value>
+    <comment>Button to export encrypted vault as .avex archive</comment>
+  </data>
+  <data name="ExportEncryptedWarningMessage" xml:space="preserve">
+    <value>This will create an encrypted export of your entire vault. You will need to provide a password to encrypt the export file.
+
+Are you sure you want to continue?</value>
+    <comment>Warning message for encrypted export confirmation</comment>
+  </data>
+  <data name="ExportEncryptedPasswordTitle" xml:space="preserve">
+    <value>Set Export Password</value>
+    <comment>Title for export password modal</comment>
+  </data>
+  <data name="ExportEncryptedPasswordDescription" xml:space="preserve">
+    <value>Choose a strong, unique password to encrypt this export. This password is required to decrypt the export. If you lose this password, you will not be able to recover the exported data.</value>
+    <comment>Description for export password modal with security warning</comment>
+  </data>
+  <data name="ExportSuccessMessage" xml:space="preserve">
+    <value>Your vault has been exported successfully.</value>
+    <comment>Success message after vault export completes</comment>
   </data>
 </root>

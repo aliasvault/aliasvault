@@ -30,7 +30,9 @@
     "switchAccounts": "Mudar de conta?",
     "loginWithMobile": "Entrar utilizado Dispositivo Móvel",
     "unlockWithMobile": "Desbloquear utilizando Dispositivo Móvel",
-    "scanQrCode": "Escaneie este código QR com seu aplicativo AliasVault para dispositivo móvel para entrar e desbloquear seu cofre."
+    "scanQrCode": "Escaneie este código QR com seu aplicativo AliasVault para dispositivo móvel para entrar e desbloquear seu cofre.",
+    "passwordAttemptsWarning": "Incorrect password. You will be logged out if you enter the wrong password {{remainingAttempts}} more times.",
+    "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
   },
   "menu": {
     "vault": "Cofre",

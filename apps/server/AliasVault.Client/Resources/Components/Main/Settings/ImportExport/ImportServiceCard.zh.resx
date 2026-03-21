@@ -166,4 +166,32 @@
     <value>文件大小超过 10MB 限制。</value>
     <comment>Error message when file is too large</comment>
   </data>
+  <data name="EncryptedFilePasswordPrompt" xml:space="preserve">
+    <value>此文件已加密。请输入您创建导出文件时使用的密码。</value>
+    <comment>Prompt for encrypted file password</comment>
+  </data>
+  <data name="DecryptionPasswordLabel" xml:space="preserve">
+    <value>解密密码</value>
+    <comment>Label for decryption password input</comment>
+  </data>
+  <data name="DecryptionPasswordHint" xml:space="preserve">
+    <value>这是您在创建加密导出文件（.avex 文件）时设置的密码，不是您的密码库主密码。</value>
+    <comment>Hint explaining what password is needed</comment>
+  </data>
+  <data name="DecryptAndContinueButton" xml:space="preserve">
+    <value>解密并继续</value>
+    <comment>Button text for decryption</comment>
+  </data>
+  <data name="DecryptingFile" xml:space="preserve">
+    <value>解密文件中…</value>
+    <comment>Progress text during decryption</comment>
+  </data>
+  <data name="IncorrectPasswordError" xml:space="preserve">
+    <value>密码错误，请重试。</value>
+    <comment>Error message for incorrect decryption password</comment>
+  </data>
+  <data name="DecryptionErrorGeneric" xml:space="preserve">
+    <value>文件解密失败。请检查文件是否损坏，然后重试。</value>
+    <comment>Generic error message for decryption failure</comment>
+  </data>
 </root>

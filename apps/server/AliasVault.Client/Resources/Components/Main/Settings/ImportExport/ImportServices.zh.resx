@@ -230,14 +230,18 @@
     <value>导出文件后，您可以在下方上传。</value>
     <comment>Strongbox export instructions part 2</comment>
   </data>
-  <!-- AliasVault -->
+  <!-- AliasVault CSV/AVUX/AVEX -->
   <data name="AliasVaultDescription" xml:space="preserve">
-    <value>从另一个 AliasVault 服务器或手动备份导入密码</value>
+    <value>从 AliasVault 备份导入</value>
     <comment>Description for AliasVault import service</comment>
   </data>
   <data name="AliasVaultInstructionsPart1" xml:space="preserve">
-    <value>如果您有 AliasVault 数据库的 CSV 文件备份（来自不同的 AliasVault 服务器），您可以在此处导入。</value>
+    <value>导入您之前创建的 AliasVault 备份文件。</value>
     <comment>AliasVault import instructions</comment>
+  </data>
+  <data name="AliasVaultSupportedFormatsInfo" xml:space="preserve">
+    <value>支持 .avex（加密）、.avux（未加密）和 CSV（基本）格式。</value>
+    <comment>Supported formats information for AliasVault imports</comment>
   </data>
   <!-- Dropbox -->
   <data name="DropboxDescription" xml:space="preserve">

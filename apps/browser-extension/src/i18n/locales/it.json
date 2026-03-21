@@ -30,7 +30,9 @@
     "switchAccounts": "Cambia account",
     "loginWithMobile": "Accedi con l'App Mobile",
     "unlockWithMobile": "Sblocca con l'App Mobile",
-    "scanQrCode": "Scansiona questo codice QR con l'app mobile di AliasVault per accedere e sbloccare la cassaforte."
+    "scanQrCode": "Scansiona questo codice QR con l'app mobile di AliasVault per accedere e sbloccare la cassaforte.",
+    "passwordAttemptsWarning": "Password errata. Sarai disconnesso se inserisci la password errata {{remainingAttempts}} altre volte.",
+    "maxAttemptsReached": "Troppi tentativi di sblocco falliti. Sei stato disconnesso per motivi di sicurezza."
   },
   "menu": {
     "vault": "Cassaforte",

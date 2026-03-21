@@ -30,7 +30,9 @@
     "switchAccounts": "¿Cambiar de cuenta?",
     "loginWithMobile": "Iniciar sesión con la aplicación móvil",
     "unlockWithMobile": "Desbloquear con la aplicación móvil",
-    "scanQrCode": "Escanea este código QR con tu aplicación móvil de AliasVault para iniciar sesión y desbloquear tu bóveda."
+    "scanQrCode": "Escanea este código QR con tu aplicación móvil de AliasVault para iniciar sesión y desbloquear tu bóveda.",
+    "passwordAttemptsWarning": "Contraseña incorrecta. Se cerrará la sesión si introduce la contraseña incorrecta {{remainingAttempts}} más veces.",
+    "maxAttemptsReached": "Demasiados intentos de desbloqueo fallidos. Se ha cerrado la sesión por razones de seguridad."
   },
   "menu": {
     "vault": "Bóveda",

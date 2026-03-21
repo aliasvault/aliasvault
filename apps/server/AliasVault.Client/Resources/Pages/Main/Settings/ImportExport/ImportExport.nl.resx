@@ -71,7 +71,7 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Selecteer een service om van te importeren. Als je een service gebruikt die hier niet wordt vermeld en je wilt deze graag ondersteund zien, dien dan een issue in op &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; of neem contact met ons op.</value>
+    <value>Selecteer een service om vanuit te importeren.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
@@ -79,16 +79,48 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Als je je AliasVault-inloggegevens wilt exporteren naar een andere AliasVault-server (bijv. van cloud naar zelf-gehost of omgekeerd) of naar een andere service, kun je deze hier exporteren. Let op dat alle exports onversleuteld zijn, dus bewaar deze op een veilige plaats en verwijder deze wanneer je ze niet meer nodig heeft.</value>
+    <value>Exporteer je kluis om inloggegevens tussen de AliasVault servers te verplaatsen of naar een andere wachtwoordbeheerder.</value>
     <comment>Export section description</comment>
   </data>
+  <data name="RecommendedLabel" xml:space="preserve">
+    <value>Aanbevolen</value>
+    <comment>Label for recommended option</comment>
+  </data>
+  <data name="ExportAvexTitle" xml:space="preserve">
+    <value>Volledig gecodeerde kluis export</value>
+    <comment>Title for encrypted export option</comment>
+  </data>
+  <data name="ExportAvexDescription" xml:space="preserve">
+    <value>Wachtwoordbeveiligde back-up van je hele kluis. Bevat alle items, toegangssleutels en bijlagen. Gebruik het als handmatige back-up en/of om te herstellen naar een andere AliasVault-server.</value>
+    <comment>Description for encrypted export option</comment>
+  </data>
+  <data name="ExportAvuxTitle" xml:space="preserve">
+    <value>Onversleutelde volledige kluisexport</value>
+    <comment>Title for unencrypted full export option</comment>
+  </data>
+  <data name="ExportAvuxDescription" xml:space="preserve">
+    <value>Volledige kluis export als onversleuteld ZIP-compatibel archief. Bevat alle items toegangssleutels en bijlagen.</value>
+    <comment>Description for unencrypted full export option</comment>
+  </data>
+  <data name="ExportCsvTitle" xml:space="preserve">
+    <value>CSV-export</value>
+    <comment>Title for CSV export option</comment>
+  </data>
+  <data name="ExportCsvDescription" xml:space="preserve">
+    <value>Basisexport voor het importeren in andere wachtwoordbeheerders. Het bevat geen toegangssleutels of bijlagen.</value>
+    <comment>Description for CSV export option</comment>
+  </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>Vault exporteren naar onversleuteld CSV-bestand</value>
+    <value>Exporteer naar CSV</value>
     <comment>Button to export as CSV</comment>
   </data>
-  <data name="ExportSqliteButton" xml:space="preserve">
-    <value>Vault exporteren naar onversleuteld SQLite-bestand</value>
-    <comment>Button to export as SQLite</comment>
+  <data name="ExportAvuxButton" xml:space="preserve">
+    <value>Niet-versleutelde kluis exporteren (.avux)</value>
+    <comment>Button to export full vault as .avux archive</comment>
+  </data>
+  <data name="ExportingVaultMessage" xml:space="preserve">
+    <value>Kluis exporteren...</value>
+    <comment>Message shown while exporting vault</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
     <value>Vault exporteren</value>
@@ -131,5 +163,27 @@ Weet je zeker dat je wilt doorgaan met de export?</value>
   <data name="PasswordVerificationFailed" xml:space="preserve">
     <value>Er is een fout opgetreden tijdens het verifiëren van je wachtwoord. Probeer het opnieuw.</value>
     <comment>Generic error message for password verification failure</comment>
+  </data>
+  <data name="ExportAvexButton" xml:space="preserve">
+    <value>Versleutelde kluis exporteren (.avex)</value>
+    <comment>Button to export encrypted vault as .avex archive</comment>
+  </data>
+  <data name="ExportEncryptedWarningMessage" xml:space="preserve">
+    <value>Dit zorgt voor een versleutelde export van je hele kluis. Je moet een wachtwoord opgeven om het exportbestand te versleutelen.
+
+Weet je zeker dat je door wilt gaan?</value>
+    <comment>Warning message for encrypted export confirmation</comment>
+  </data>
+  <data name="ExportEncryptedPasswordTitle" xml:space="preserve">
+    <value>Stel exportwachtwoord in</value>
+    <comment>Title for export password modal</comment>
+  </data>
+  <data name="ExportEncryptedPasswordDescription" xml:space="preserve">
+    <value>Kies een sterk, uniek wachtwoord om deze export te versleutelen. Dit wachtwoord is vereist om de export te decoderen. Als u dit wachtwoord verliest, kunt u de geëxporteerde gegevens niet herstellen.</value>
+    <comment>Description for export password modal with security warning</comment>
+  </data>
+  <data name="ExportSuccessMessage" xml:space="preserve">
+    <value>Je kluis is met succes geëxporteerd.</value>
+    <comment>Success message after vault export completes</comment>
   </data>
 </root>

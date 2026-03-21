@@ -72,6 +72,8 @@
 "enter_password_to_unlock" = "Entrez votre mot de passe maître";
 "unlock" = "Déverrouiller";
 "incorrect_password" = "Mot de passe incorrect. Veuillez réessayer.";
+"attempts_warning" = "Mot de passe incorrect. Vous serez déconnecté si vous entrez le mauvais mot de passe plus de %d fois.";
+"max_attempts_reached" = "Trop de tentatives de déverrouillage échouées. Vous avez été déconnecté pour des raisons de sécurité.";
 
 /* PIN Setup */
 "pin_setup_title" = "Configurer le code PIN";

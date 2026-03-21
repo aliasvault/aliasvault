@@ -72,6 +72,8 @@
 "enter_password_to_unlock" = "Indtast din hovedadgangskode";
 "unlock" = "Lås op";
 "incorrect_password" = "Forkert adgangskode. Prøv venligst igen.";
+"attempts_warning" = "Forkert adgangskode. Du vil blive logget ud, hvis du indtaster den forkerte adgangskode %d flere gange.";
+"max_attempts_reached" = "For mange mislykkede forsøg på oplåsning. Du er blevet logget ud af sikkerhedsårsager.";
 
 /* PIN Setup */
 "pin_setup_title" = "Konfigurer PIN-kode";

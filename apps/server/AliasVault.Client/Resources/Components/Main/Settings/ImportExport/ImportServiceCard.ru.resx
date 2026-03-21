@@ -166,4 +166,32 @@
     <value>Файл слишком велик (максимум 10 МБ).</value>
     <comment>Error message when file is too large</comment>
   </data>
+  <data name="EncryptedFilePasswordPrompt" xml:space="preserve">
+    <value>Этот файл зашифрован. Введите пароль, который вы указали при создании резервной копии.</value>
+    <comment>Prompt for encrypted file password</comment>
+  </data>
+  <data name="DecryptionPasswordLabel" xml:space="preserve">
+    <value>Пароль для расшифровки</value>
+    <comment>Label for decryption password input</comment>
+  </data>
+  <data name="DecryptionPasswordHint" xml:space="preserve">
+    <value>Это пароль, который вы создали для этого файла (.avex), а не основной пароль от вашего хранилища.</value>
+    <comment>Hint explaining what password is needed</comment>
+  </data>
+  <data name="DecryptAndContinueButton" xml:space="preserve">
+    <value>Расшифровать и продолжить</value>
+    <comment>Button text for decryption</comment>
+  </data>
+  <data name="DecryptingFile" xml:space="preserve">
+    <value>Расшифровка файла...</value>
+    <comment>Progress text during decryption</comment>
+  </data>
+  <data name="IncorrectPasswordError" xml:space="preserve">
+    <value>Неверный пароль. Повторите попытку.</value>
+    <comment>Error message for incorrect decryption password</comment>
+  </data>
+  <data name="DecryptionErrorGeneric" xml:space="preserve">
+    <value>Не удалось расшифровать файл. Убедитесь, что он не поврежден, и попробуйте еще раз.</value>
+    <comment>Generic error message for decryption failure</comment>
+  </data>
 </root>

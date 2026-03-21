@@ -166,4 +166,32 @@
     <value>Filstørrelsen overstiger grænsen på 10MB.</value>
     <comment>Error message when file is too large</comment>
   </data>
+  <data name="EncryptedFilePasswordPrompt" xml:space="preserve">
+    <value>Denne fil er krypteret. Angiv den adgangskode, du brugte, da du oprettede eksporten.</value>
+    <comment>Prompt for encrypted file password</comment>
+  </data>
+  <data name="DecryptionPasswordLabel" xml:space="preserve">
+    <value>Dekryptering Kode</value>
+    <comment>Label for decryption password input</comment>
+  </data>
+  <data name="DecryptionPasswordHint" xml:space="preserve">
+    <value>Dette er den adgangskode, du indstiller, når du opretter den krypterede eksport (.avex fil), ikke din boks hovedadgangskode.</value>
+    <comment>Hint explaining what password is needed</comment>
+  </data>
+  <data name="DecryptAndContinueButton" xml:space="preserve">
+    <value>Dekrypter og fortsæt</value>
+    <comment>Button text for decryption</comment>
+  </data>
+  <data name="DecryptingFile" xml:space="preserve">
+    <value>Dekrypterer fil...</value>
+    <comment>Progress text during decryption</comment>
+  </data>
+  <data name="IncorrectPasswordError" xml:space="preserve">
+    <value>Forkert adgangskode. Prøv venligst igen.</value>
+    <comment>Error message for incorrect decryption password</comment>
+  </data>
+  <data name="DecryptionErrorGeneric" xml:space="preserve">
+    <value>Kunne ikke dekryptere filen. Kontroller, at filen ikke er beskadiget, og prøv igen.</value>
+    <comment>Generic error message for decryption failure</comment>
+  </data>
 </root>

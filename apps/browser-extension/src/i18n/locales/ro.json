@@ -30,7 +30,9 @@
     "switchAccounts": "Treci la alt cont?",
     "loginWithMobile": "Autentificare prin aplicația mobilă",
     "unlockWithMobile": "Deblochează prin aplicația mobilă",
-    "scanQrCode": "Scanează acest cod QR cu aplicația mobilă AliasVault pentru a te autentifica și debloca seiful."
+    "scanQrCode": "Scanează acest cod QR cu aplicația mobilă AliasVault pentru a te autentifica și debloca seiful.",
+    "passwordAttemptsWarning": "Parolă incorectă. Vei fi deconectat dacă introduci parola greșită de încă {{remainingAttempts}} ori.",
+    "maxAttemptsReached": "Prea multe încercări eșuate de deblocare. Ai fost deconectat din motive de securitate."
   },
   "menu": {
     "vault": "Seif",

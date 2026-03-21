@@ -71,7 +71,7 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Seleccione un servicio desde el que importar. Si estás usando un servicio que no aparece aquí y te gustaría verlo soportado, por favor plantea un problema en &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; o contáctanos.</value>
+    <value>Seleccione un servicio desde el que importar.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
@@ -79,16 +79,48 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Si desea exportar sus credenciales de AliasVault a otro servidor AliasVault (p.e. de la nube a una instancia Self-hosted o viceversa) o a otro servicio en total, puedes exportarlo aquí. Tenga en cuenta que todas las exportaciones no están cifradas, así que guárdelas en un lugar seguro y borrarlas cuando ya no las necesites.</value>
+    <value>Exportar tu bóveda para mover credenciales entre los servidores AliasVault o a otro gestor de contraseñas.</value>
     <comment>Export section description</comment>
   </data>
+  <data name="RecommendedLabel" xml:space="preserve">
+    <value>Recomendado</value>
+    <comment>Label for recommended option</comment>
+  </data>
+  <data name="ExportAvexTitle" xml:space="preserve">
+    <value>Exportación cifrada de bóveda completa</value>
+    <comment>Title for encrypted export option</comment>
+  </data>
+  <data name="ExportAvexDescription" xml:space="preserve">
+    <value>Copia de seguridad protegida por contraseña de toda su bóveda. Incluye todos los elementos, claves de acceso y archivos adjuntos. Utilizar como copia de seguridad manual y/o para restaurar a otro servidor de AliasVault.</value>
+    <comment>Description for encrypted export option</comment>
+  </data>
+  <data name="ExportAvuxTitle" xml:space="preserve">
+    <value>Exportar bóveda completa sin cifrar</value>
+    <comment>Title for unencrypted full export option</comment>
+  </data>
+  <data name="ExportAvuxDescription" xml:space="preserve">
+    <value>Exportación completa de la bóveda como archivo no cifrado compatible con ZIP. Incluye todos los elementos, contraseñas y archivos adjuntos.</value>
+    <comment>Description for unencrypted full export option</comment>
+  </data>
+  <data name="ExportCsvTitle" xml:space="preserve">
+    <value>Exportar CSV</value>
+    <comment>Title for CSV export option</comment>
+  </data>
+  <data name="ExportCsvDescription" xml:space="preserve">
+    <value>Exportación básica para importar a otros gestores de contraseñas. No incluye claves de acceso o archivos adjuntos.</value>
+    <comment>Description for CSV export option</comment>
+  </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>Exportar bóveda a archivo CSV sin cifrar</value>
+    <value>Exportar a CSV</value>
     <comment>Button to export as CSV</comment>
   </data>
-  <data name="ExportSqliteButton" xml:space="preserve">
-    <value>Exportar bóveda a archivo SQLite sin cifrar</value>
-    <comment>Button to export as SQLite</comment>
+  <data name="ExportAvuxButton" xml:space="preserve">
+    <value>Exportar bóveda no cifrada (.avux)</value>
+    <comment>Button to export full vault as .avux archive</comment>
+  </data>
+  <data name="ExportingVaultMessage" xml:space="preserve">
+    <value>Exportando bóveda...</value>
+    <comment>Message shown while exporting vault</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
     <value>Exportar bóveda</value>
@@ -131,5 +163,27 @@
   <data name="PasswordVerificationFailed" xml:space="preserve">
     <value>Se ha producido un error al verificar su contraseña. Por favor, inténtelo de nuevo.</value>
     <comment>Generic error message for password verification failure</comment>
+  </data>
+  <data name="ExportAvexButton" xml:space="preserve">
+    <value>Exportar bóveda cifrada (.avex)</value>
+    <comment>Button to export encrypted vault as .avex archive</comment>
+  </data>
+  <data name="ExportEncryptedWarningMessage" xml:space="preserve">
+    <value>Esto creará una exportación cifrada de toda la bóveda. Necesitará proporcionar una contraseña para cifrar el archivo de exportación.
+
+¿Está seguro de que desea continuar?</value>
+    <comment>Warning message for encrypted export confirmation</comment>
+  </data>
+  <data name="ExportEncryptedPasswordTitle" xml:space="preserve">
+    <value>Establecer contraseña de exportación</value>
+    <comment>Title for export password modal</comment>
+  </data>
+  <data name="ExportEncryptedPasswordDescription" xml:space="preserve">
+    <value>Elija una contraseña única y fuerte para cifrar esta exportación. Esta contraseña es necesaria para descifrar la exportación. Si pierde esta contraseña, no podrá recuperar los datos exportados.</value>
+    <comment>Description for export password modal with security warning</comment>
+  </data>
+  <data name="ExportSuccessMessage" xml:space="preserve">
+    <value>Tu bóveda se ha exportado correctamente.</value>
+    <comment>Success message after vault export completes</comment>
   </data>
 </root>

@@ -30,7 +30,9 @@
     "switchAccounts": "Växla konton?",
     "loginWithMobile": "Logga in med hjälp av mobilapp",
     "unlockWithMobile": "Lås upp med hjälp av mobilapp",
-    "scanQrCode": "Skanna denna QR-kod med din AliasVault-mobilapp för att logga in och låsa upp ditt valv."
+    "scanQrCode": "Skanna denna QR-kod med din AliasVault-mobilapp för att logga in och låsa upp ditt valv.",
+    "passwordAttemptsWarning": "Felaktigt lösenord. Du kommer att loggas ut om du anger fel lösenord {{remainingAttempts}} gång(er) till.",
+    "maxAttemptsReached": "För många misslyckade upplåsningsförsök. Du har blivit utloggad av säkerhetsskäl."
   },
   "menu": {
     "vault": "Valv",

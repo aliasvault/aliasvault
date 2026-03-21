@@ -3,23 +3,19 @@
   <string name="app_name">AliasVault</string>
   <string name="autofill_service_description" translatable="true">AliasVault 自动填充</string>
   <string name="aliasvault_icon">AliasVault 图标</string>
-  <!-- Common strings -->
   <string name="common_close">关闭</string>
   <string name="common_next">下一步</string>
   <string name="common_cancel">取消</string>
   <string name="common_back">返回</string>
   <string name="unknown_error">发生未知错误</string>
-  <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">检索失败，请打开应用</string>
   <string name="autofill_no_match_found">未找到匹配项，是否新建？</string>
   <string name="autofill_open_app">打开应用</string>
   <string name="autofill_vault_locked">密码库已锁定</string>
-  <!-- Biometric prompts -->
   <string name="biometric_store_key_title">存储加密密钥</string>
   <string name="biometric_store_key_subtitle">进行认证即可将您的加密密钥安全存储至 Android 密钥库中，这将确保您能安全访问密码库。</string>
   <string name="biometric_unlock_vault_title">解锁密码库</string>
   <string name="biometric_unlock_vault_subtitle">请验证身份以访问您的密码库</string>
-  <!-- Passkey registration -->
   <string name="passkey_registration_title">创建通行密钥</string>
   <string name="create_passkey_title">创建新通行密钥</string>
   <string name="create_passkey_subtitle">为此网站注册一个新的通行密钥。它将安全地存储在您的密码库中，并通过 AliasVault 在您的设备间自动同步。</string>
@@ -50,7 +46,6 @@
   <string name="passkey_retrieving">正在检索通行密钥…</string>
   <string name="passkey_verifying">验证中…</string>
   <string name="passkey_authenticating">认证中…</string>
-  <!-- Vault sync error messages -->
   <string name="connection_error_title">连接错误</string>
   <string name="connection_error_message">无法连接到服务器。请检查您的互联网连接，然后重试创建通行密钥。</string>
   <string name="session_expired_title">会话已过期</string>
@@ -65,28 +60,26 @@
   <string name="network_error_message">网络发生错误，请检查您的连接后重试。</string>
   <string name="server_version_not_supported_title">服务器需要更新</string>
   <string name="server_version_not_supported_message">服务器版本过旧，请联系您的管理员更新服务器。</string>
-  <!-- Passkey authentication and unlock error messages -->
   <string name="error_unlock_method_required">请在 AliasVault 主应用中启用生物识别或 PIN 码认证以继续</string>
   <string name="error_unlock_vault_first">请先在 AliasVault 应用中解锁密码库</string>
   <string name="error_vault_decrypt_failed">解密密码库失败</string>
   <string name="error_biometric_cancelled">已取消生物识别认证</string>
   <string name="error_encryption_key_failed">检索加密密钥失败</string>
-  <!-- PIN unlock -->
   <string name="pin_unlock_vault">解锁密码库</string>
   <string name="pin_enter_to_unlock">输入您的 PIN 以解锁密码库</string>
   <string name="pin_locked_max_attempts">PIN 因多次尝试失败而被锁定</string>
   <string name="pin_incorrect_attempts_remaining">PIN 错误，剩余 %d 次尝试</string>
-  <!-- PIN setup -->
   <string name="pin_setup_title">设置 PIN</string>
   <string name="pin_setup_description">选择一个 PIN 以解锁保险库</string>
   <string name="pin_confirm_title">确认 PIN</string>
   <string name="pin_confirm_description">重新输入您的 PIN 以确认</string>
   <string name="pin_mismatch">PIN 不匹配，请重试。</string>
-  <!-- Password unlock -->
   <string name="password_unlock_title">解锁密码库</string>
   <string name="password_unlock_subtitle">输入您的主密码</string>
   <string name="password_unlock_password_hint">密码</string>
   <string name="password_unlock_button">解锁</string>
   <string name="password_unlock_incorrect">密码错误，请重试。</string>
   <string name="password_unlock_error">密码验证失败</string>
+  <string name="password_unlock_attempts_warning">密码错误。若您再输入 %d 次错误的密码，则会被退出登录。</string>
+  <string name="password_unlock_max_attempts_reached">解锁尝试次数过多，出于安全考虑，您已被退出登录。</string>
 </resources>

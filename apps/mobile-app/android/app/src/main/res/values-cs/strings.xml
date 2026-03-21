@@ -3,23 +3,19 @@
   <string name="app_name">AliasVault</string>
   <string name="autofill_service_description" translatable="true">AliasVault AutoFill</string>
   <string name="aliasvault_icon">AliasVault icon</string>
-  <!-- Common strings -->
   <string name="common_close">Close</string>
   <string name="common_next">Next</string>
   <string name="common_cancel">Cancel</string>
   <string name="common_back">Back</string>
   <string name="unknown_error">An unknown error occurred</string>
-  <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Failed to retrieve, open app</string>
   <string name="autofill_no_match_found">No match found, create new?</string>
   <string name="autofill_open_app">Open app</string>
   <string name="autofill_vault_locked">Vault locked</string>
-  <!-- Biometric prompts -->
   <string name="biometric_store_key_title">Store Encryption Key</string>
   <string name="biometric_store_key_subtitle">Authenticate to securely store your encryption key in the Android Keystore. This enables secure access to your vault.</string>
   <string name="biometric_unlock_vault_title">Unlock Vault</string>
   <string name="biometric_unlock_vault_subtitle">Authenticate to access your vault</string>
-  <!-- Passkey registration -->
   <string name="passkey_registration_title">Create Passkey</string>
   <string name="create_passkey_title">Create New Passkey</string>
   <string name="create_passkey_subtitle">Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.</string>
@@ -50,7 +46,6 @@
   <string name="passkey_retrieving">Retrieving passkey…</string>
   <string name="passkey_verifying">Verifying…</string>
   <string name="passkey_authenticating">Authenticating…</string>
-  <!-- Vault sync error messages -->
   <string name="connection_error_title">Connection Error</string>
   <string name="connection_error_message">No connection to the server can be made. Please check your internet connection and try creating the passkey again.</string>
   <string name="session_expired_title">Session Expired</string>
@@ -65,28 +60,26 @@
   <string name="network_error_message">A network error occurred. Please check your connection and try again.</string>
   <string name="server_version_not_supported_title">Server Update Required</string>
   <string name="server_version_not_supported_message">The server version is outdated. Please contact your administrator to update the server.</string>
-  <!-- Passkey authentication and unlock error messages -->
   <string name="error_unlock_method_required">Please enable biometric or PIN authentication in the main AliasVault app in order to continue</string>
   <string name="error_unlock_vault_first">Please unlock vault in AliasVault app first</string>
   <string name="error_vault_decrypt_failed">Failed to decrypt vault</string>
   <string name="error_biometric_cancelled">Biometric authentication cancelled</string>
   <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
-  <!-- PIN unlock -->
   <string name="pin_unlock_vault">Unlock Vault</string>
   <string name="pin_enter_to_unlock">Enter your PIN to unlock your vault</string>
   <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
   <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
-  <!-- PIN setup -->
   <string name="pin_setup_title">Setup PIN</string>
   <string name="pin_setup_description">Choose a PIN to unlock your vault</string>
   <string name="pin_confirm_title">Confirm PIN</string>
   <string name="pin_confirm_description">Re-enter your PIN to confirm</string>
   <string name="pin_mismatch">PINs do not match. Please try again.</string>
-  <!-- Password unlock -->
   <string name="password_unlock_title">Unlock Vault</string>
   <string name="password_unlock_subtitle">Enter your master password</string>
   <string name="password_unlock_password_hint">Password</string>
   <string name="password_unlock_button">Unlock</string>
   <string name="password_unlock_incorrect">Incorrect password. Please try again.</string>
   <string name="password_unlock_error">Failed to verify password</string>
+  <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
+  <string name="password_unlock_max_attempts_reached">Too many failed unlock attempts. You have been logged out for security reasons.</string>
 </resources>

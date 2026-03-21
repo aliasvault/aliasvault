@@ -59,17 +59,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <!-- Password validation messages -->
-  <data name="PasswordMinLength" xml:space="preserve">
-    <value>新密码必须至少包含 10 个字符。</value>
-    <comment>Error message for password minimum length validation</comment>
-  </data>
   <data name="PasswordsDoNotMatch" xml:space="preserve">
     <value>新密码不匹配。</value>
     <comment>Error message when password confirmation doesn't match</comment>
   </data>
   <data name="PasswordMinLengthGeneric" xml:space="preserve">
-    <value>密码必须至少包含 10 个字符。</value>
-    <comment>Generic error message for password minimum length validation</comment>
+    <value>密码必须至少包含 {0} 个字符。</value>
+    <comment>Generic error message for password minimum length validation. {0} is the minimum password length.</comment>
   </data>
   <data name="PasswordsDoNotMatchGeneric" xml:space="preserve">
     <value>密码不匹配。</value>

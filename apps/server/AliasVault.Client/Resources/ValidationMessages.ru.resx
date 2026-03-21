@@ -59,17 +59,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <!-- Password validation messages -->
-  <data name="PasswordMinLength" xml:space="preserve">
-    <value>Новый пароль должен быть не менее 10 символов.</value>
-    <comment>Error message for password minimum length validation</comment>
-  </data>
   <data name="PasswordsDoNotMatch" xml:space="preserve">
     <value>Новые пароли не совпадают.</value>
     <comment>Error message when password confirmation doesn't match</comment>
   </data>
   <data name="PasswordMinLengthGeneric" xml:space="preserve">
-    <value>Пароль должен быть не менее 10 символов.</value>
-    <comment>Generic error message for password minimum length validation</comment>
+    <value>Пароль должен содержать минимум {0} символов.</value>
+    <comment>Generic error message for password minimum length validation. {0} is the minimum password length.</comment>
   </data>
   <data name="PasswordsDoNotMatchGeneric" xml:space="preserve">
     <value>Пароли не совпадают.</value>

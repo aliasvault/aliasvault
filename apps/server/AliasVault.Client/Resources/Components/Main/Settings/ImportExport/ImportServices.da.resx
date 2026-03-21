@@ -230,14 +230,18 @@
     <value>Når du har eksporteret filen, kan du uploade den nedenfor.</value>
     <comment>Strongbox export instructions part 2</comment>
   </data>
-  <!-- AliasVault -->
+  <!-- AliasVault CSV/AVUX/AVEX -->
   <data name="AliasVaultDescription" xml:space="preserve">
-    <value>Importer adgangskoder fra en anden AliasVault-server eller manuel sikkerhedskopi</value>
+    <value>Importer fra AliasVault backup</value>
     <comment>Description for AliasVault import service</comment>
   </data>
   <data name="AliasVaultInstructionsPart1" xml:space="preserve">
-    <value>Hvis du har en CSV-fil med en sikkerhedskopi af din AliasVault-database (fra en anden AliasVault-server), kan du importere den her.</value>
+    <value>Importer din tidligere oprettede AliasVault backup.</value>
     <comment>AliasVault import instructions</comment>
+  </data>
+  <data name="AliasVaultSupportedFormatsInfo" xml:space="preserve">
+    <value>Understøtter .avex (krypteret), .avux (ukrypteret) og CSV (grundlæggende) formater.</value>
+    <comment>Supported formats information for AliasVault imports</comment>
   </data>
   <!-- Dropbox -->
   <data name="DropboxDescription" xml:space="preserve">

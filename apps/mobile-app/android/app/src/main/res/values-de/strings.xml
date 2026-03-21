@@ -3,23 +3,19 @@
   <string name="app_name">AliasVault</string>
   <string name="autofill_service_description" translatable="true">AliasVault AutoFill</string>
   <string name="aliasvault_icon">AliasVault-Icon</string>
-  <!-- Common strings -->
   <string name="common_close">Schließen</string>
   <string name="common_next">Weiter</string>
   <string name="common_cancel">Abbrechen</string>
   <string name="common_back">Zurück</string>
   <string name="unknown_error">Ein unbekannter Fehler ist aufgetreten</string>
-  <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Abruf der Daten fehlgeschlagen. Öffne die App</string>
   <string name="autofill_no_match_found">Keine Übereinstimmung gefunden, neun Eintrag erstellen?</string>
   <string name="autofill_open_app">App öffnen</string>
   <string name="autofill_vault_locked">Der Tresor ist gesperrt.</string>
-  <!-- Biometric prompts -->
   <string name="biometric_store_key_title">Schlüssel speichern</string>
   <string name="biometric_store_key_subtitle">Authentifiziere Dich, um Deinen Schlüssel sicher im Android Keystore zu speichern. Dies ermöglicht einen sicheren Zugriff auf Deinen Tresor.</string>
   <string name="biometric_unlock_vault_title">Tresor entsperren</string>
   <string name="biometric_unlock_vault_subtitle">Authentifiziere Dich, um auf Deinen Tresor zuzugreifen</string>
-  <!-- Passkey registration -->
   <string name="passkey_registration_title">Passkey erstellen</string>
   <string name="create_passkey_title">Neuen Passkey erstellen</string>
   <string name="create_passkey_subtitle">Registriere einen neuen Passkey für diese Website. Er wird sicher in Deinem Tresor gespeichert und automatisch mit AliasVault synchronisiert.</string>
@@ -50,7 +46,6 @@
   <string name="passkey_retrieving">Passkey wird abgerufen…</string>
   <string name="passkey_verifying">Verifizierung läuft…</string>
   <string name="passkey_authenticating">Authentifizierung läuft…</string>
-  <!-- Vault sync error messages -->
   <string name="connection_error_title">Verbindungsfehler</string>
   <string name="connection_error_message">Es kann keine Verbindung zum Server hergestellt werden. Bitte überprüfe Deine Internetverbindung und versuche das Erstellen des Passkeys erneut.</string>
   <string name="session_expired_title">Sitzung abgelaufen</string>
@@ -65,28 +60,26 @@
   <string name="network_error_message">Es ist ein Netzwerkfehler aufgetreten. Bitte überprüfe Deine Verbindung und versuche es erneut.</string>
   <string name="server_version_not_supported_title">Server-Update erforderlich</string>
   <string name="server_version_not_supported_message">Die Server-Version ist veraltet. Bitte kontaktiere den Administrator, um den Server zu aktualisieren.</string>
-  <!-- Passkey authentication and unlock error messages -->
   <string name="error_unlock_method_required">Bitte aktiviere die biometrische Authentifizierung oder die PIN-Sperre in der AliasVault-App um fortzufahren.</string>
   <string name="error_unlock_vault_first">Bitte entsperre zuerst den Tresor in der AliasVault-App</string>
   <string name="error_vault_decrypt_failed">Fehler beim Entschlüsseln des Tresors</string>
   <string name="error_biometric_cancelled">Biometrische Authentifizierung abgebrochen</string>
   <string name="error_encryption_key_failed">Fehler beim Abrufen des Schlüssel</string>
-  <!-- PIN unlock -->
   <string name="pin_unlock_vault">Tresor entsperren</string>
   <string name="pin_enter_to_unlock">Bitte gib Deine PIN zum Entsperren des Tresors ein</string>
   <string name="pin_locked_max_attempts">Deine PIN wurde nach zu vielen Fehlversuchen gesperrt</string>
   <string name="pin_incorrect_attempts_remaining">Ungültige PIN, %d verbleibende Versuche</string>
-  <!-- PIN setup -->
   <string name="pin_setup_title">PIN einrichten</string>
   <string name="pin_setup_description">Wähle eine PIN zum Entsperren des Tresors</string>
   <string name="pin_confirm_title">PIN bestätigen</string>
   <string name="pin_confirm_description">Zur Bestätigung PIN erneut eingeben</string>
   <string name="pin_mismatch">PINs stimmen nicht überein. Bitte versuche es erneut.</string>
-  <!-- Password unlock -->
   <string name="password_unlock_title">Tresor entsperren</string>
   <string name="password_unlock_subtitle">Gib Dein Master-Passwort ein</string>
   <string name="password_unlock_password_hint">Passwort</string>
   <string name="password_unlock_button">Entsperren</string>
   <string name="password_unlock_incorrect">Falsches Passwort. Bitte versuche es erneut.</string>
   <string name="password_unlock_error">Failed to verify password</string>
+  <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
+  <string name="password_unlock_max_attempts_reached">Too many failed unlock attempts. You have been logged out for security reasons.</string>
 </resources>

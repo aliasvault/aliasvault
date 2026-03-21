@@ -230,14 +230,18 @@
     <value>לאחר ייצוא הקובץ, אפשר להעלות אותו להלן.</value>
     <comment>Strongbox export instructions part 2</comment>
   </data>
-  <!-- AliasVault -->
+  <!-- AliasVault CSV/AVUX/AVEX -->
   <data name="AliasVaultDescription" xml:space="preserve">
-    <value>ייבוא סיסמאות משרת AliasVault אחר או גיבוי ידני</value>
+    <value>Import from AliasVault backup</value>
     <comment>Description for AliasVault import service</comment>
   </data>
   <data name="AliasVaultInstructionsPart1" xml:space="preserve">
-    <value>אם יש לך גיבוי ב־CSV של מסד הנתונים שלך ב־AliasVault (משרת AliasVault אחר), אפשר לייבא אותו דרך כאן.</value>
+    <value>Import your previously created AliasVault backup.</value>
     <comment>AliasVault import instructions</comment>
+  </data>
+  <data name="AliasVaultSupportedFormatsInfo" xml:space="preserve">
+    <value>Supports .avex (encrypted), .avux (unencrypted) and CSV (basic) formats.</value>
+    <comment>Supported formats information for AliasVault imports</comment>
   </data>
   <!-- Dropbox -->
   <data name="DropboxDescription" xml:space="preserve">

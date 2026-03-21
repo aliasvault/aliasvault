@@ -30,7 +30,9 @@
     "switchAccounts": "切换账户？",
     "loginWithMobile": "使用移动应用登录",
     "unlockWithMobile": "使用移动应用解锁",
-    "scanQrCode": "使用 AliasVault 移动端应用扫描该二维码，即可登录并解锁您的密码库。"
+    "scanQrCode": "使用 AliasVault 移动端应用扫描该二维码，即可登录并解锁您的密码库。",
+    "passwordAttemptsWarning": "密码错误。若您再输入 {{remainingAttempts}} 次错误的密码，则会被退出登录。",
+    "maxAttemptsReached": "解锁尝试次数过多，出于安全考虑，您已被退出登录。"
   },
   "menu": {
     "vault": "密码库",

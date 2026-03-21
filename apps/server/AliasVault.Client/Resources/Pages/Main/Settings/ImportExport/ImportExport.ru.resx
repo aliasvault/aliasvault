@@ -71,7 +71,7 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Выберите сервис, из которого хотите выполнить импорт. Если нужного сервиса нет в списке и вы хотите, чтобы он поддерживался, пожалуйста, создайте запрос на &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; или свяжитесь с нами.</value>
+    <value>Выберите сервис для импорта.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
@@ -79,16 +79,48 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Если вы хотите экспортировать свои учетные данные AliasVault на другой сервер AliasVault (например, из облака на собственный сервер или наоборот), либо в другой сервис, вы можете сделать это здесь. Имейте в виду, что все экспортируемые данные не шифруются, поэтому храните их в надежном месте и удалите, когда они больше не нужны.</value>
+    <value>Экспортируйте хранилище для переноса данных между серверами AliasVault или в другой менеджер паролей.</value>
     <comment>Export section description</comment>
   </data>
+  <data name="RecommendedLabel" xml:space="preserve">
+    <value>Рекомендуется</value>
+    <comment>Label for recommended option</comment>
+  </data>
+  <data name="ExportAvexTitle" xml:space="preserve">
+    <value>Зашифрованная копия всего хранилища</value>
+    <comment>Title for encrypted export option</comment>
+  </data>
+  <data name="ExportAvexDescription" xml:space="preserve">
+    <value>Защищенная копия всего хранилища: записи, ключи доступа (passkeys) и вложения. Для ручного резервного копирования или переноса данных на другой сервер.</value>
+    <comment>Description for encrypted export option</comment>
+  </data>
+  <data name="ExportAvuxTitle" xml:space="preserve">
+    <value>Незашифрованная копия всего хранилища</value>
+    <comment>Title for unencrypted full export option</comment>
+  </data>
+  <data name="ExportAvuxDescription" xml:space="preserve">
+    <value>Незашифрованная копия всего хранилища: записи, ключи доступа (passkeys) и вложения. ZIP-архив без пароля для переноса данных.</value>
+    <comment>Description for unencrypted full export option</comment>
+  </data>
+  <data name="ExportCsvTitle" xml:space="preserve">
+    <value>Экспорт в CSV</value>
+    <comment>Title for CSV export option</comment>
+  </data>
+  <data name="ExportCsvDescription" xml:space="preserve">
+    <value>Базовый экспорт для сторонних менеджеров паролей. Не включает ключи доступа (passkeys) и вложения.</value>
+    <comment>Description for CSV export option</comment>
+  </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>В CSV-файл (без шифрования)</value>
+    <value>Экспортировать в CSV</value>
     <comment>Button to export as CSV</comment>
   </data>
-  <data name="ExportSqliteButton" xml:space="preserve">
-    <value>В SQLite-файл (без шифрования)</value>
-    <comment>Button to export as SQLite</comment>
+  <data name="ExportAvuxButton" xml:space="preserve">
+    <value>Экспортировать незашифрованное хранилище (.avux)</value>
+    <comment>Button to export full vault as .avux archive</comment>
+  </data>
+  <data name="ExportingVaultMessage" xml:space="preserve">
+    <value>Экспорт хранилища...</value>
+    <comment>Message shown while exporting vault</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
     <value>Экспорт хранилища</value>
@@ -131,5 +163,27 @@
   <data name="PasswordVerificationFailed" xml:space="preserve">
     <value>Не удалось проверить пароль. Повторите попытку.</value>
     <comment>Generic error message for password verification failure</comment>
+  </data>
+  <data name="ExportAvexButton" xml:space="preserve">
+    <value>Экспортировать защищенное хранилище (.avex)</value>
+    <comment>Button to export encrypted vault as .avex archive</comment>
+  </data>
+  <data name="ExportEncryptedWarningMessage" xml:space="preserve">
+    <value>Будет создана зашифрованная копия всего хранилища. Вам потребуется задать пароль для защиты файла.
+
+Вы уверены, что хотите продолжить?</value>
+    <comment>Warning message for encrypted export confirmation</comment>
+  </data>
+  <data name="ExportEncryptedPasswordTitle" xml:space="preserve">
+    <value>Задайте пароль экспорта</value>
+    <comment>Title for export password modal</comment>
+  </data>
+  <data name="ExportEncryptedPasswordDescription" xml:space="preserve">
+    <value>Задайте надежный пароль для шифрования. Он потребуется для расшифровки файла. Если вы забудете этот пароль, восстановить данные из экспорта будет невозможно.</value>
+    <comment>Description for export password modal with security warning</comment>
+  </data>
+  <data name="ExportSuccessMessage" xml:space="preserve">
+    <value>Хранилище успешно экспортировано.</value>
+    <comment>Success message after vault export completes</comment>
   </data>
 </root>
