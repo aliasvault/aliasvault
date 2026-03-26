@@ -478,7 +478,8 @@ export class FormFiller {
       return;
     }
 
-    const birthDate = new Date(credential.Alias.BirthDate);
+    const [year, month, day] = credential.Alias.BirthDate.split('-').map(Number);
+    const birthDate = new Date(year, month - 1, day);
 
     if (this.form.birthdateField.single) {
       this.fillSingleBirthdateField(birthDate);
