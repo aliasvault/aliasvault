@@ -82,8 +82,13 @@ export async function handleDetectLaceWallet(): Promise<WalletResult<{ detected:
       target: { tabId: tab.tabId },
       world: 'MAIN',
       func: () => {
-        const lace = (window as any).midnight?.mnLace;
-        if (lace) {
+        const midnight = (window as any).midnight;
+        if (!midnight) return { detected: false };
+        // Lace v4+ registers under a UUID key instead of 'mnLace'
+        const lace = midnight.mnLace
+          ?? Object.keys(midnight).map((k) => midnight[k]).find((w) => w?.name === 'lace')
+          ?? Object.values(midnight)[0];
+        if (lace?.apiVersion) {
           return { detected: true, apiVersion: lace.apiVersion as string };
         }
         return { detected: false };
@@ -119,22 +124,19 @@ export async function handleConnectLaceWallet(): Promise<WalletResult<WalletConn
           return { __error: 'window.midnight not found. Is the Lace wallet extension installed and enabled?' };
         }
 
-        const lace = midnight.mnLace;
+        // Lace v4+ registers under a UUID key instead of 'mnLace'
+        const lace = midnight.mnLace
+          ?? Object.keys(midnight).map((k: string) => midnight[k]).find((w: any) => w?.name === 'lace')
+          ?? Object.values(midnight)[0] as any;
         if (!lace) {
-          return { __error: 'window.midnight.mnLace not found. Is the Midnight Lace wallet configured?' };
+          return { __error: 'No Midnight wallet found in window.midnight.' };
         }
 
         try {
-          // Lace exposes connect(networkId) (newer API) or enable() (older API)
-          let api: any;
-          if (typeof lace.connect === 'function') {
-            api = await lace.connect(networkId);
-          } else if (typeof lace.enable === 'function') {
-            api = await lace.enable();
-          } else {
-            const proto = Object.getOwnPropertyNames(Object.getPrototypeOf(lace) || {});
-            return { __error: `No connect() or enable() method found. Available: [${proto.join(',')}]` };
+          if (typeof lace.connect !== 'function') {
+            return { __error: `Wallet "${lace.name}" has no connect() method.` };
           }
+          const api: any = await lace.connect(networkId);
 
           // Lace v4+ API: getShieldedAddresses() and getUnshieldedAddress()
           const shieldedAddresses = typeof api.getShieldedAddresses === 'function'
@@ -209,16 +211,19 @@ export async function handleSignChallenge(data: { challenge: string }): Promise<
       args: [challenge, WALLET_NETWORK_ID],
       func: async (challengeStr: string, networkId: string) => {
         const midnight = (window as any).midnight;
-        if (!midnight?.mnLace) {
+        if (!midnight) {
           return { __error: 'Midnight Lace wallet not found.' };
         }
 
         try {
-          const lace = midnight.mnLace;
-          // Lace connect() reuses existing session if already authorized — no duplicate popup
-          const api = typeof lace.connect === 'function'
-            ? await lace.connect(networkId)
-            : await lace.enable();
+          // Lace v4+ registers under a UUID key instead of 'mnLace'
+          const lace = midnight.mnLace
+            ?? Object.keys(midnight).map((k: string) => midnight[k]).find((w: any) => w?.name === 'lace')
+            ?? Object.values(midnight)[0] as any;
+          if (!lace?.connect) {
+            return { __error: 'No Midnight wallet with connect() found.' };
+          }
+          const api = await lace.connect(networkId);
 
           // Get wallet address as identity proof
           const shieldedAddresses = typeof api.getShieldedAddresses === 'function'
@@ -305,9 +310,16 @@ export async function handleGetWalletServiceUris(): Promise<WalletResult<WalletS
       target: { tabId: tab.tabId },
       world: 'MAIN',
       func: async () => {
-        const lace = (window as any).midnight?.mnLace;
-        if (!lace) {
+        const midnight = (window as any).midnight;
+        if (!midnight) {
           return { __error: 'Midnight Lace wallet not found.' };
+        }
+        // Lace v4+ registers under a UUID key instead of 'mnLace'
+        const lace = midnight.mnLace
+          ?? Object.keys(midnight).map((k: string) => midnight[k]).find((w: any) => w?.name === 'lace')
+          ?? Object.values(midnight)[0] as any;
+        if (!lace) {
+          return { __error: 'No Midnight wallet found.' };
         }
 
         try {
