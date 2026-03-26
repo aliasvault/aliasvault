@@ -33,14 +33,14 @@ const NETWORK_CONFIGS: Record<MidnightNetworkId, NetworkConfig> = {
     indexerUrl: 'https://indexer.preprod.midnight.network/api/v3/graphql',
     wsIndexerUrl: 'wss://indexer.preprod.midnight.network/api/v3/graphql/ws',
     nodeUrl: 'https://rpc.preprod.midnight.network',
-    proofServerUrl: 'https://proof.preprod.midnight.network',
+    proofServerUrl: 'https://lace-proof-pub.preprod.midnight.network',
   },
   preview: {
     networkId: 'preview',
     indexerUrl: 'https://indexer.preview.midnight.network/api/v3/graphql',
     wsIndexerUrl: 'wss://indexer.preview.midnight.network/api/v3/graphql/ws',
     nodeUrl: 'https://rpc.preview.midnight.network',
-    proofServerUrl: 'https://proof.preview.midnight.network',
+    proofServerUrl: 'https://lace-proof-pub.preview.midnight.network',
   },
   qanet: {
     networkId: 'qanet',

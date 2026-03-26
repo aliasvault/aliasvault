@@ -35,7 +35,7 @@ describe('networkConfig', () => {
       expect(config.indexerUrl).toBe('https://indexer.preprod.midnight.network/api/v3/graphql');
       expect(config.wsIndexerUrl).toBe('wss://indexer.preprod.midnight.network/api/v3/graphql/ws');
       expect(config.nodeUrl).toBe('https://rpc.preprod.midnight.network');
-      expect(config.proofServerUrl).toBe('https://proof.preprod.midnight.network');
+      expect(config.proofServerUrl).toBe('https://lace-proof-pub.preprod.midnight.network');
     });
 
     it('defaults to CURRENT_NETWORK when no ID provided', () => {
