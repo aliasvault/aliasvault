@@ -4,13 +4,7 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
-  get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
-}) : x)(function(x) {
-  if (typeof require !== "undefined") return require.apply(this, arguments);
-  throw Error('Dynamic require of "' + x + '" is not supported');
-});
-var __commonJS = (cb, mod) => function __require2() {
+var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
 var __copyProps = (to, from, except, desc) => {
@@ -591,6 +585,14 @@ var require_dist = __commonJS({
   }
 });
 
+// src/crypto-shim.js
+var require_crypto_shim = __commonJS({
+  "src/crypto-shim.js"(exports, module) {
+    "use strict";
+    module.exports = globalThis.crypto;
+  }
+});
+
 // ../../node_modules/.pnpm/secrets.js-34r7h@2.0.2/node_modules/secrets.js-34r7h/secrets.js
 var require_secrets = __commonJS({
   "../../node_modules/.pnpm/secrets.js-34r7h@2.0.2/node_modules/secrets.js-34r7h/secrets.js"(exports, module) {
@@ -602,7 +604,7 @@ var require_secrets = __commonJS({
           return root.secrets = factory(window.crypto);
         });
       } else if (typeof exports === "object") {
-        module.exports = factory(__require("crypto"));
+        module.exports = factory(require_crypto_shim());
       } else {
         root.secrets = factory(root.crypto);
       }

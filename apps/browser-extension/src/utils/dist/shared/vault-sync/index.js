@@ -32,7 +32,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 
 // ../vault-types/dist/index.js
 var require_dist = __commonJS({
-  "../vault-types/dist/index.js"(exports2, module2) {
+  "../vault-types/dist/index.js"(exports, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
     var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
@@ -591,9 +591,17 @@ var require_dist = __commonJS({
   }
 });
 
+// src/crypto-shim.js
+var require_crypto_shim = __commonJS({
+  "src/crypto-shim.js"(exports, module2) {
+    "use strict";
+    module2.exports = globalThis.crypto;
+  }
+});
+
 // ../../node_modules/.pnpm/secrets.js-34r7h@2.0.2/node_modules/secrets.js-34r7h/secrets.js
 var require_secrets = __commonJS({
-  "../../node_modules/.pnpm/secrets.js-34r7h@2.0.2/node_modules/secrets.js-34r7h/secrets.js"(exports2, module2) {
+  "../../node_modules/.pnpm/secrets.js-34r7h@2.0.2/node_modules/secrets.js-34r7h/secrets.js"(exports, module2) {
     "use strict";
     (function(root, factory) {
       "use strict";
@@ -601,12 +609,12 @@ var require_secrets = __commonJS({
         define([], function() {
           return root.secrets = factory(window.crypto);
         });
-      } else if (typeof exports2 === "object") {
-        module2.exports = factory(require("crypto"));
+      } else if (typeof exports === "object") {
+        module2.exports = factory(require_crypto_shim());
       } else {
         root.secrets = factory(root.crypto);
       }
-    })(exports2, function(crypto2) {
+    })(exports, function(crypto2) {
       "use strict";
       var defaults, config, preGenPadding, runCSPRNGTest, CSPRNGTypes;
       function reset() {
@@ -1823,34 +1831,6 @@ function validateShareFile(data) {
   }
   return { version: 1, shareIndex: obj.shareIndex, shareHex: obj.shareHex };
 }
-// Annotate the CommonJS export names for ESM import in node:
-0 && (module.exports = {
-  RecoveryClaimError,
-  RecoveryClaimErrorCodes,
-  VaultSyncError,
-  VaultSyncErrorCodes,
-  VaultSyncService,
-  base64ToUint8Array,
-  bytesToHex,
-  claimRecovery,
-  combineShares,
-  decryptShareFromGuardian,
-  decryptWithRecoveryKey,
-  deriveEncryptionKey,
-  encryptShareForGuardian,
-  encryptWithRecoveryKey,
-  generateGuardianKeyPair,
-  generateRecoveryKey,
-  hexToUint8Array,
-  parseSharePackageFromBytes,
-  persistGuardianRecovery,
-  setupGuardianRecovery,
-  sha256,
-  splitIntoShares,
-  uint8ArrayToBase64,
-  validateShareFile,
-  validateSharePackage
-});
 /*! Bundled license information:
 
 secrets.js-34r7h/secrets.js:
