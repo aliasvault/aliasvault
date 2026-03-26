@@ -20,8 +20,8 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { VAULT_LOCKED_DISMISS_UNTIL_KEY } from '@/utils/Constants';
-import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
+import type { VaultLoadResponse } from '@/utils/types/messaging/VaultLoadResponse';
 import {
   getPinLength,
   isPinEnabled,
@@ -76,53 +76,46 @@ const Unlock: React.FC = () => {
   const [showMobileUnlockModal, setShowMobileUnlockModal] = useState(false);
 
   /**
-   * Make status call to API which acts as health check.
-   * This runs only once during component mount.
+   * Get the encrypted vault blob from session storage, or load from blockchain as fallback.
+   * The blob is stored in session during the initial login/sync flow (LOAD_VAULT_FROM_BLOCKCHAIN).
    */
-  const checkStatus = async () : Promise<boolean> => {
-    const statusResponse = await webApi.getStatus();
-    const statusError = webApi.validateStatusResponse(statusResponse);
-
-    if (statusResponse.serverVersion === '0.0.0') {
-      setError(t('common.errors.serverNotAvailable'));
-      return false;
+  const getEncryptedVaultBlob = async (): Promise<string> => {
+    // Try session storage first (blob stored during initial login/sync)
+    const blob = await storage.getItem('session:encryptedVault') as string | null;
+    if (blob) {
+      return blob;
     }
 
-    if (statusError !== null) {
-      await app.logout(t('common.errors.' + statusError));
-      return false;
+    // Fallback: load from blockchain if session was cleared
+    const loadResult = await sendMessage('LOAD_VAULT_FROM_BLOCKCHAIN', {}, 'background') as VaultLoadResponse;
+    if (loadResult.success && loadResult.encryptedBlob) {
+      return loadResult.encryptedBlob;
     }
 
-    setIsInitialLoading(false);
-    return true;
+    throw new Error('Vault not available. Please log out and log in again.');
   };
 
   /**
-   * Initialize unlock page - check status and PIN availability
+   * Initialize unlock page - check PIN availability and set unlock mode.
+   * No server health check needed — vault is loaded from blockchain.
    */
   useEffect(() => {
-    /**
-     * Initialize unlock page - check status and PIN availability
-     */
     const initialize = async (): Promise<void> => {
-      // First check PIN availability and set initial mode
-      const [pinEnabled, pinLength] = await Promise.all([
+      const [pinEnabled, storedPinLength] = await Promise.all([
         isPinEnabled(),
         getPinLength(),
       ]);
 
       setPinAvailable(pinEnabled);
-      setPinLength(pinLength || 6);
+      setPinLength(storedPinLength || 6);
 
-      // Default to PIN mode if available, otherwise password
       if (pinEnabled) {
         setUnlockMode('pin');
       } else {
         setUnlockMode('password');
       }
 
-      // Then check API status
-      await checkStatus();
+      setIsInitialLoading(false);
     };
 
     initialize();
@@ -201,12 +194,6 @@ const Unlock: React.FC = () => {
     setError(null);
     showLoading();
 
-    const isStatusOk = await checkStatus();
-    if (!isStatusOk) {
-      hideLoading();
-      return;
-    }
-
     try {
       // Use locally stored encryption params (stored during initial login)
       const storedParams = await sendMessage('GET_ENCRYPTION_KEY_DERIVATION_PARAMS', {}, 'background') as { salt: string; encryptionType: string; encryptionSettings: string } | null;
@@ -222,17 +209,17 @@ const Unlock: React.FC = () => {
         storedParams.encryptionSettings
       );
 
-      // Make API call to get latest vault
-      const vaultResponseJson = await webApi.get<VaultResponse>('Vault');
-
       // Get the derived key as base64 string required for decryption.
       const passwordHashBase64 = Buffer.from(passwordHash).toString('base64');
+
+      // Get encrypted vault blob from session (stored during login/sync) or load from blockchain
+      const encryptedBlob = await getEncryptedVaultBlob();
 
       // Store the encryption key in session storage.
       await dbContext.storeEncryptionKey(passwordHashBase64);
 
-      // Initialize the vault store with the new vault data.
-      await dbContext.initializeDatabase(vaultResponseJson, passwordHashBase64);
+      // Initialize the vault store by decrypting the blockchain-loaded blob.
+      await dbContext.initializeDatabaseFromBlob(encryptedBlob, passwordHashBase64);
 
       // Clear dismiss until
       await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
@@ -242,7 +229,11 @@ const Unlock: React.FC = () => {
 
       navigate('/reinitialize', { replace: true });
     } catch (err) {
-      setError(t('auth.errors.wrongPassword'));
+      if (err instanceof Error && err.message.startsWith('Vault not available')) {
+        setError(err.message);
+      } else {
+        setError(t('auth.errors.wrongPassword'));
+      }
       console.error('Unlock error:', err);
     } finally {
       hideLoading();
@@ -294,17 +285,17 @@ const Unlock: React.FC = () => {
     showLoading();
 
     try {
-      // Unlock with PIN
+      // Unlock with PIN — returns the stored encryption key
       const passwordHashBase64 = await unlockWithPin(pinToUse);
 
-      // Get latest vault from API
-      const vaultResponseJson = await webApi.get<VaultResponse>('Vault');
+      // Get encrypted vault blob from session or blockchain
+      const encryptedBlob = await getEncryptedVaultBlob();
 
       // Store the encryption key in session storage
       await dbContext.storeEncryptionKey(passwordHashBase64);
 
-      // Initialize the vault store with the vault data
-      await dbContext.initializeDatabase(vaultResponseJson, passwordHashBase64);
+      // Initialize the vault store by decrypting the blockchain-loaded blob
+      await dbContext.initializeDatabaseFromBlob(encryptedBlob, passwordHashBase64);
 
       // Clear dismiss until
       await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
@@ -350,14 +341,18 @@ const Unlock: React.FC = () => {
   const handleMobileUnlockSuccess = async (result: MobileLoginResult): Promise<void> => {
     showLoading();
     try {
-      // Revoke current tokens before setting new ones (since we're already logged in)
-      await webApi.revokeTokens();
+      // Revoke current tokens gracefully — non-blocking if server unavailable (AC #5)
+      try {
+        await webApi.revokeTokens();
+      } catch (revokeErr) {
+        console.warn('revokeTokens skipped (server unavailable):', revokeErr);
+      }
 
       // Set new auth tokens
       await authContext.setAuthTokens(result.username, result.token, result.refreshToken);
 
-      // Fetch vault from server with the new auth token
-      const vaultResponse = await webApi.get<VaultResponse>('Vault');
+      // Get encrypted vault blob from session or blockchain
+      const encryptedBlob = await getEncryptedVaultBlob();
 
       // Store the encryption key and derivation params
       await dbContext.storeEncryptionKey(result.decryptionKey);
@@ -367,8 +362,8 @@ const Unlock: React.FC = () => {
         encryptionSettings: result.encryptionSettings,
       });
 
-      // Initialize the vault store with the vault data
-      await dbContext.initializeDatabase(vaultResponse, result.decryptionKey);
+      // Initialize the vault store by decrypting the blockchain-loaded blob
+      await dbContext.initializeDatabaseFromBlob(encryptedBlob, result.decryptionKey);
 
       // Clear dismiss until
       await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
