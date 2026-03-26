@@ -232,15 +232,15 @@
   </data>
   <!-- AliasVault CSV/AVUX/AVEX -->
   <data name="AliasVaultDescription" xml:space="preserve">
-    <value>Import from AliasVault backup</value>
+    <value>Importa da backup di AliasVault</value>
     <comment>Description for AliasVault import service</comment>
   </data>
   <data name="AliasVaultInstructionsPart1" xml:space="preserve">
-    <value>Import your previously created AliasVault backup.</value>
+    <value>Importa il backup AliasVault creato in precedenza.</value>
     <comment>AliasVault import instructions</comment>
   </data>
   <data name="AliasVaultSupportedFormatsInfo" xml:space="preserve">
-    <value>Supports .avex (encrypted), .avux (unencrypted) and CSV (basic) formats.</value>
+    <value>Supporta i formati .avex (crittografati), .avux (non crittografati) e CSV (base).</value>
     <comment>Supported formats information for AliasVault imports</comment>
   </data>
   <!-- Dropbox -->
