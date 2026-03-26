@@ -1,3 +1,5 @@
+const APP_VERSION = '0.26.0-alpha';
+
 /**
  * AppInfo class which contains information about the application version
  * and default server URLs.
@@ -6,15 +8,13 @@ export class AppInfo {
   /**
    * The current extension version. This should be updated with each release of the extension.
    */
-  public static readonly VERSION = '0.26.0-alpha';
+  public static readonly VERSION = APP_VERSION;
 
   /**
    * The API version to send to the server (base semver without stage suffixes).
    * Apple app store requires semver format without stage suffixes.
    */
-  public static readonly API_VERSION = (() : string => {
-    return AppInfo.VERSION.split('-')[0];
-  })();
+  public static readonly API_VERSION = APP_VERSION.split('-')[0];
 
   /**
    * The minimum supported AliasVault server (API) version. If the server version is below this, the
