@@ -71,7 +71,7 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Select a service to import from.</value>
+    <value>Seleziona un servizio da cui importare.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
@@ -79,47 +79,47 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Export your vault to move credentials between AliasVault servers or to another password manager.</value>
+    <value>Esporta la tua cassaforte per spostare le credenziali tra i server AliasVault o in un altro gestore di password.</value>
     <comment>Export section description</comment>
   </data>
   <data name="RecommendedLabel" xml:space="preserve">
-    <value>Recommended</value>
+    <value>Consigliato</value>
     <comment>Label for recommended option</comment>
   </data>
   <data name="ExportAvexTitle" xml:space="preserve">
-    <value>Encrypted full vault export</value>
+    <value>Esportazione della cassaforte completa crittografata.</value>
     <comment>Title for encrypted export option</comment>
   </data>
   <data name="ExportAvexDescription" xml:space="preserve">
-    <value>Password-protected backup of your entire vault. Includes all items, passkeys, and attachments. Use as manual backup and/or to restore to another AliasVault server.</value>
+    <value>Backup protetto da password dell'intero vault. Include tutti gli elementi, le passkey e gli allegati. Usa come backup manuale e/o per ripristinare un altro server AliasVault.</value>
     <comment>Description for encrypted export option</comment>
   </data>
   <data name="ExportAvuxTitle" xml:space="preserve">
-    <value>Unencrypted full vault export</value>
+    <value>Esportazione della cassaforte completa non crittografata.</value>
     <comment>Title for unencrypted full export option</comment>
   </data>
   <data name="ExportAvuxDescription" xml:space="preserve">
-    <value>Complete vault export as unencrypted ZIP-compatible archive. Includes all items, passkeys and attachments.</value>
+    <value>Esportazione completa della cassaforte come archivio con ZIP non crittografato. Include tutti gli elementi, le chiavi di accesso e gli allegati.</value>
     <comment>Description for unencrypted full export option</comment>
   </data>
   <data name="ExportCsvTitle" xml:space="preserve">
-    <value>CSV export</value>
+    <value>Esportazione CSV</value>
     <comment>Title for CSV export option</comment>
   </data>
   <data name="ExportCsvDescription" xml:space="preserve">
-    <value>Basic export for importing into other password managers. Does not include passkeys or attachments.</value>
+    <value>Esportazione di base per l'importazione in altri gestori di password. Non include passkey o allegati.</value>
     <comment>Description for CSV export option</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>Export to CSV</value>
+    <value>Esporta in CSV</value>
     <comment>Button to export as CSV</comment>
   </data>
   <data name="ExportAvuxButton" xml:space="preserve">
-    <value>Export unencrypted vault (.avux)</value>
+    <value>Esporta cassaforte non crittografata (.avux)</value>
     <comment>Button to export full vault as .avux archive</comment>
   </data>
   <data name="ExportingVaultMessage" xml:space="preserve">
-    <value>Exporting vault...</value>
+    <value>Esportazione cassaforte...</value>
     <comment>Message shown while exporting vault</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
@@ -165,25 +165,25 @@ Sei sicuro di voler continuare con l'esportazione?</value>
     <comment>Generic error message for password verification failure</comment>
   </data>
   <data name="ExportAvexButton" xml:space="preserve">
-    <value>Export encrypted vault (.avex)</value>
+    <value>Esporta cassaforte crittografata (.avex)</value>
     <comment>Button to export encrypted vault as .avex archive</comment>
   </data>
   <data name="ExportEncryptedWarningMessage" xml:space="preserve">
-    <value>This will create an encrypted export of your entire vault. You will need to provide a password to encrypt the export file.
+    <value>Questo creerà un'esportazione crittografata dell'intera cassaforte. È necessario fornire una password per cifrare il file di esportazione.
 
-Are you sure you want to continue?</value>
+Sei sicuro di voler continuare?</value>
     <comment>Warning message for encrypted export confirmation</comment>
   </data>
   <data name="ExportEncryptedPasswordTitle" xml:space="preserve">
-    <value>Set Export Password</value>
+    <value>Imposta la Password di Esportazione</value>
     <comment>Title for export password modal</comment>
   </data>
   <data name="ExportEncryptedPasswordDescription" xml:space="preserve">
-    <value>Choose a strong, unique password to encrypt this export. This password is required to decrypt the export. If you lose this password, you will not be able to recover the exported data.</value>
+    <value>Scegli una password forte e univoca per cifrare questa esportazione. Questa password è necessaria per decifrare l'esportazione. Se perdi questa password, non sarai in grado di recuperare i dati esportati.</value>
     <comment>Description for export password modal with security warning</comment>
   </data>
   <data name="ExportSuccessMessage" xml:space="preserve">
-    <value>Your vault has been exported successfully.</value>
+    <value>La tua cassaforte è stata esportata con successo.</value>
     <comment>Success message after vault export completes</comment>
   </data>
 </root>
