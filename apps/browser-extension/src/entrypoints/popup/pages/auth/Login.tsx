@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { sendMessage } from 'webext-bridge/popup';
 
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 import { useWallet } from '@/entrypoints/popup/context/WalletContext';
 import { getExplorerAddressUrl } from '@/entrypoints/popup/config/explorerConfig';
+import type { VaultLoadResponse } from '@/utils/types/messaging/VaultLoadResponse';
+
+import { storage } from '#imports';
 
 /**
  * Login page — wallet-based authentication only.
@@ -15,9 +21,12 @@ import { getExplorerAddressUrl } from '@/entrypoints/popup/config/explorerConfig
  */
 const Login: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const app = useApp();
   const { setHeaderButtons } = useHeaderButtons();
   const { setIsInitialLoading } = useLoading();
   const [error, setError] = useState<string | null>(null);
+  const [isCheckingVault, setIsCheckingVault] = useState(false);
   const wallet = useWallet();
 
   useEffect(() => {
@@ -43,12 +52,59 @@ const Login: React.FC = () => {
     };
   }, [setHeaderButtons]);
 
+  const { setAuthTokens } = app;
+
+  /**
+   * Task 1 (AC #6): Set auth tokens after wallet verification so Reinitialize
+   * recognizes the user as logged in. Uses wallet address as placeholder token.
+   */
+  useEffect(() => {
+    if (wallet.isVerified && wallet.walletState) {
+      const addr = wallet.walletState.address;
+      const placeholder = `wallet:${addr}`;
+      setAuthTokens(addr, placeholder, placeholder);
+    }
+  }, [wallet.isVerified, wallet.walletState, setAuthTokens]);
+
   /**
    * Handle Lace wallet connection
    */
   const handleWalletConnect = async () : Promise<void> => {
     setError(null);
     await wallet.connectWallet();
+  };
+
+  /**
+   * Task 2 (AC #1, #2): After verification, check if vault exists on-chain
+   * to route new users to /create-password and returning users to /unlock.
+   */
+  const handleContinue = async (): Promise<void> => {
+    setIsCheckingVault(true);
+    setError(null);
+
+    try {
+      const loadResponse = await sendMessage('LOAD_VAULT_FROM_BLOCKCHAIN', {}, 'background') as VaultLoadResponse;
+
+      if (!loadResponse.success) {
+        setError(loadResponse.error ?? t('common.errors.unknownError'));
+        return;
+      }
+
+      if (loadResponse.notRegistered) {
+        navigate('/create-password', { replace: true });
+      } else if (loadResponse.encryptedBlob) {
+        await storage.setItem('session:encryptedVault', loadResponse.encryptedBlob);
+        navigate('/unlock', { replace: true });
+      } else if (loadResponse.upToDate) {
+        navigate('/unlock', { replace: true });
+      } else {
+        setError(t('common.errors.unknownError'));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
+    } finally {
+      setIsCheckingVault(false);
+    }
   };
 
   return (
@@ -110,6 +166,14 @@ const Login: React.FC = () => {
                   </a>
                 ) : null;
               })()}
+              <button
+                type="button"
+                onClick={handleContinue}
+                disabled={isCheckingVault}
+                className="mt-3 w-full px-4 py-2.5 text-sm font-medium text-center text-white bg-primary-600 border border-primary-600 rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-200 dark:bg-primary-700 dark:border-primary-700 dark:hover:bg-primary-600 dark:focus:ring-primary-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isCheckingVault ? t('common.loading') : t('auth.continue')}
+              </button>
             </div>
           ) : wallet.isConnected && wallet.walletState ? (
             /* State 2: Wallet connected, needs signature challenge */

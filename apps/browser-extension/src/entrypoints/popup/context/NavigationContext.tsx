@@ -48,6 +48,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       '/',
       '/reinitialize',
       '/login',
+      '/create-password',
       '/unlock',
       '/unlock-success',
       '/auth-settings',
