@@ -13,16 +13,26 @@ import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
 import { decryptEmailBlob, DecryptedEmail } from '@/services/EmailDecryptionService';
-import { EmailCacheService } from '@/services/EmailCacheService';
+import { emailCacheService } from '@/services/EmailCacheService';
 import { assertInboxCIDv1 } from '@/services/InboxService';
 import { PinataBrowserProvider } from '@/services/PinataBrowserProvider';
 import { getEmailKeyPairFromSettings } from '@/utils/emailKeyPair';
 
-const cacheService = new EmailCacheService();
+/**
+ * Parse combined "from" field into display name and email address.
+ * Handles "John Doe <john@example.com>" → { display: "John Doe", address: "john@example.com" }
+ * Falls back to raw string for both fields if no angle-bracket format detected.
+ */
+export function parseSender(from: string): { display: string; address: string } {
+  const match = from.match(/^(.+?)\s*<(.+?)>$/);
+  return match
+    ? { display: match[1].trim(), address: match[2] }
+    : { display: from, address: from };
+}
 
 /**
  * Inbox detail page — displays a single decrypted email from IPFS.
- * Re-fetches and decrypts from IPFS on each view (body not cached).
+ * Loads from cache when available, otherwise fetches and decrypts from IPFS and caches the result.
  */
 const InboxDetail: React.FC = () => {
   const { t } = useTranslation();
@@ -72,6 +82,14 @@ const InboxDetail: React.FC = () => {
 
         assertInboxCIDv1(decodedCid);
 
+        // Check cache first to avoid redundant IPFS downloads
+        const cachedBody = await emailCacheService.getCachedFullBody<DecryptedEmail>(decodedCid);
+        if (cachedBody) {
+          setEmail(cachedBody);
+          await emailCacheService.markAsRead(decodedCid);
+          return;
+        }
+
         const keyPair = getEmailKeyPairFromSettings(settings);
         if (!keyPair) {
           setError(t('inbox.errors.noKeyPair', 'Email encryption key not found'));
@@ -88,8 +106,11 @@ const InboxDetail: React.FC = () => {
         const decrypted = decryptEmailBlob(blob, keyPair.secretKey);
         setEmail(decrypted);
 
+        // Cache the full decrypted email body to avoid re-fetching from IPFS
+        await emailCacheService.cacheFullBody(decodedCid, decrypted);
+
         // Mark as read in cache
-        await cacheService.markAsRead(decodedCid);
+        await emailCacheService.markAsRead(decodedCid);
       } catch (err) {
         setError(err instanceof Error ? err.message : t('common.errors.unknownError', 'An error occurred'));
       } finally {
@@ -109,7 +130,7 @@ const InboxDetail: React.FC = () => {
     const decodedCid = decodeURIComponent(cid);
 
     try {
-      await cacheService.deleteEmail(decodedCid);
+      await emailCacheService.deleteEmail(decodedCid);
       if (PopoutUtility.isPopup()) {
         window.close();
       } else {
@@ -236,7 +257,7 @@ const InboxDetail: React.FC = () => {
           </div>
           {showMetadata && (
             <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400 mt-2">
-              <p><span className="font-bold">{t('emails.from', 'From:')}</span> {email.from}</p>
+              <p><span className="font-bold">{t('emails.from', 'From:')}</span> <span title={parseSender(email.from).address}>{parseSender(email.from).display}</span></p>
               <p><span className="font-bold">{t('emails.to', 'To:')}</span> {email.to}</p>
               <p><span className="font-bold">{t('emails.date', 'Date:')}</span> {new Date(email.receivedAt * 1000).toLocaleString()}</p>
             </div>

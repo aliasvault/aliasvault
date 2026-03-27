@@ -19,8 +19,6 @@ import Upgrade from '@/entrypoints/popup/pages/auth/Upgrade';
 import CredentialAddEdit from '@/entrypoints/popup/pages/credentials/CredentialAddEdit';
 import CredentialDetails from '@/entrypoints/popup/pages/credentials/CredentialDetails';
 import CredentialsList from '@/entrypoints/popup/pages/credentials/CredentialsList';
-import EmailDetails from '@/entrypoints/popup/pages/emails/EmailDetails';
-import EmailsList from '@/entrypoints/popup/pages/emails/EmailsList';
 import InboxDetail from '@/entrypoints/popup/pages/emails/InboxDetail';
 import InboxList from '@/entrypoints/popup/pages/emails/InboxList';
 import Index from '@/entrypoints/popup/pages/Index';
@@ -195,8 +193,6 @@ const App: React.FC = () => {
     { path: '/passkeys/create', element: <PasskeyCreate />, layout: LayoutType.PASSKEY },
     { path: '/passkeys/authenticate', element: <PasskeyAuthenticate />, layout: LayoutType.PASSKEY },
     { path: '/aliases/generate', element: <AliasGenerate />, showBackButton: true, title: 'Generate Alias' },
-    { path: '/emails', element: <EmailsList />, showBackButton: false },
-    { path: '/emails/:id', element: <EmailDetails />, showBackButton: true, title: t('emails.title') },
     { path: '/inbox', element: <InboxList />, showBackButton: false },
     { path: '/inbox/:cid', element: <InboxDetail />, showBackButton: true, title: 'Inbox' },
     { path: '/settings', element: <Settings />, showBackButton: false },

@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
-import { useDb } from '@/entrypoints/popup/context/DbContext';
-import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
-
 import { AppInfo } from '@/utils/AppInfo';
-import type { ApiErrorResponse, MailboxEmail } from '@/utils/dist/shared/models/webapi';
-import { EncryptionUtility } from '@/utils/EncryptionUtility';
 
 import { storage } from '#imports';
+
+/** Minimal shape for SpamOK API response emails — avoids importing server-only SpamOkEmail. */
+interface SpamOkEmail {
+  id: number;
+  subject: string;
+  dateSystem: string;
+}
 
 type EmailPreviewProps = {
   email: string;
@@ -17,19 +19,20 @@ type EmailPreviewProps = {
 
 /**
  * This component shows a preview of the latest emails in the inbox.
+ * Public domains (SpamOK) show inline previews via the SpamOK API.
+ * Private domains link to the blockchain inbox page.
  */
 export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
   const { t } = useTranslation();
-  const [emails, setEmails] = useState<MailboxEmail[]>([]);
-  const [displayedEmails, setDisplayedEmails] = useState<MailboxEmail[]>([]);
+  const [emails, setEmails] = useState<SpamOkEmail[]>([]);
+  const [displayedEmails, setDisplayedEmails] = useState<SpamOkEmail[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastEmailId, setLastEmailId] = useState<number>(0);
   const [isSpamOk, setIsSpamOk] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSupportedDomain, setIsSupportedDomain] = useState(false);
   const [displayedCount, setDisplayedCount] = useState(2);
-  const webApi = useWebApi();
-  const dbContext = useDb();
 
   const emailsPerLoad = 3;
   const canLoadMore = displayedCount < emails.length;
@@ -37,7 +40,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
   /**
    * Updates the displayed emails based on the current count.
    */
-  const updateDisplayedEmails = (allEmails: MailboxEmail[], count: number) : void => {
+  const updateDisplayedEmails = (allEmails: SpamOkEmail[], count: number) : void => {
     const displayed = allEmails.slice(0, count);
     setDisplayedEmails(displayed);
   };
@@ -70,17 +73,15 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
   };
 
   useEffect(() => {
-    /**
-     * Loads the latest emails from the server and decrypts them locally if needed.
-     */
     const loadEmails = async (): Promise<void> => {
       try {
         setError(null);
         const isPublic = await isPublicDomain(email);
-        const isPrivate = await isPrivateDomain(email);
-        const isSupported = isPublic || isPrivate;
+        const isPrivateDom = await isPrivateDomain(email);
+        const isSupported = isPublic || isPrivateDom;
 
         setIsSpamOk(isPublic);
+        setIsPrivate(isPrivateDom);
         setIsSupportedDomain(isSupported);
 
         if (!isSupported) {
@@ -106,7 +107,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
 
           // Store all emails, sorted by date
           const allMails = data?.mails
-            ?.toSorted((a: MailboxEmail, b: MailboxEmail) =>
+            ?.toSorted((a: SpamOkEmail, b: SpamOkEmail) =>
               new Date(b.dateSystem).getTime() - new Date(a.dateSystem).getTime()) ?? [];
 
           if (loading && allMails.length > 0) {
@@ -115,60 +116,15 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
 
           // Only update emails if they actually changed to preserve displayedCount
           setEmails(prevEmails => {
-            const emailsChanged = JSON.stringify(prevEmails.map((e: MailboxEmail) => e.id)) !== JSON.stringify(allMails.map((e: MailboxEmail) => e.id));
+            const emailsChanged = JSON.stringify(prevEmails.map((e: SpamOkEmail) => e.id)) !== JSON.stringify(allMails.map((e: SpamOkEmail) => e.id));
             if (emailsChanged) {
               updateDisplayedEmails(allMails, displayedCount);
               return allMails;
             }
             return prevEmails;
           });
-        } else if (isPrivate) {
-          // For private domains, use existing encrypted email logic
-          try {
-            /**
-             * We use authFetch here because we don't want to the inner method to throw an error if HTTP status is not 200.
-             * Instead we want to catch the error ourselves.
-             */
-            const response = await webApi.authFetch(`EmailBox/${email}`, { method: 'GET' }, true, false);
-            try {
-              const data = response as { mails: MailboxEmail[] };
-
-              // Store all emails, sorted by date
-              const allMails = data.mails
-                .toSorted((a, b) => new Date(b.dateSystem).getTime() - new Date(a.dateSystem).getTime());
-
-              if (allMails) {
-                // Loop through all emails and decrypt them locally
-                const decryptedEmails: MailboxEmail[] = await EncryptionUtility.decryptEmailList(
-                  allMails,
-                  dbContext.vaultStore!.getAllEncryptionKeys()
-                );
-
-                if (loading && decryptedEmails.length > 0) {
-                  setLastEmailId(decryptedEmails[0].id);
-                }
-
-                // Only update emails if they actually changed to preserve displayedCount
-                setEmails(prevEmails => {
-                  const emailsChanged = JSON.stringify(prevEmails.map(e => e.id)) !== JSON.stringify(decryptedEmails.map(e => e.id));
-                  if (emailsChanged) {
-                    updateDisplayedEmails(decryptedEmails, displayedCount);
-                    return decryptedEmails;
-                  }
-                  return prevEmails;
-                });
-              }
-            } catch {
-              // Try to parse as error response instead
-              const apiErrorResponse = response as ApiErrorResponse;
-              setError(t('emails.apiErrors.' + apiErrorResponse?.code));
-              return;
-            }
-          } catch {
-            setError(t('emails.errors.emailLoadError'));
-            return;
-          }
         }
+        // Private domains: no server fetch needed — inbox page handles blockchain emails
       } catch (err) {
         console.error('Error loading emails:', err);
         setError(t('emails.errors.emailUnexpectedError'));
@@ -177,14 +133,31 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
     };
 
     loadEmails();
-    // Set up auto-refresh interval
+    // Set up auto-refresh interval (only useful for SpamOK public domains)
     const interval = setInterval(loadEmails, 2000);
     return () : void => clearInterval(interval);
-  }, [email, loading, webApi, dbContext, t, displayedCount]);
+  }, [email, loading, t, displayedCount]);
 
   // Don't render anything if the domain is not supported
   if (!isSupportedDomain) {
     return null;
+  }
+
+  // Private domains: show link to blockchain inbox instead of server-fetched preview
+  if (isPrivate && !isSpamOk) {
+    return (
+      <div className="text-gray-500 dark:text-gray-400 mb-4">
+        <div className="flex items-center gap-2 mb-2">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('common.recentEmails')}</h2>
+        </div>
+        <Link
+          to="/inbox"
+          className="text-sm text-primary-600 dark:text-primary-400 hover:underline"
+        >
+          {t('emails.checkInbox', 'Check your inbox for recent emails')}
+        </Link>
+      </div>
+    );
   }
 
   if (error) {
@@ -231,43 +204,24 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
       </div>
 
       {displayedEmails.map((mail) => (
-        isSpamOk ? (
-          <a
-            key={mail.id}
-            href={`https://spamok.com/${email.split('@')[0]}/${mail.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`flex justify-between items-center p-2 ps-3 pe-3 rounded cursor-pointer bg-white dark:bg-gray-800 shadow hover:shadow-md transition-all border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${
-              mail.id > lastEmailId ? 'bg-yellow-50 dark:bg-yellow-900/30' : ''
-            }`}
-          >
-            <div className="truncate flex-1">
-              <span className="text-sm text-gray-900 dark:text-white">
-                {mail.subject.substring(0, 30)}{mail.subject.length > 30 ? '...' : ''}
-              </span>
-            </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-              {new Date(mail.dateSystem).toLocaleDateString()}
-            </div>
-          </a>
-        ) : (
-          <Link
-            key={mail.id}
-            to={`/emails/${mail.id}`}
-            className={`flex justify-between items-center p-2 ps-3 pe-3 rounded cursor-pointer bg-white dark:bg-gray-800 shadow hover:shadow-md transition-all border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${
-              mail.id > lastEmailId ? 'bg-yellow-50 dark:bg-yellow-900/30' : ''
-            }`}
-          >
-            <span className="truncate flex-1">
-              <span className="text-sm text-gray-900 dark:text-white">
-                {mail.subject.substring(0, 30)}{mail.subject.length > 30 ? '...' : ''}
-              </span>
+        <a
+          key={mail.id}
+          href={`https://spamok.com/${email.split('@')[0]}/${mail.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`flex justify-between items-center p-2 ps-3 pe-3 rounded cursor-pointer bg-white dark:bg-gray-800 shadow hover:shadow-md transition-all border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${
+            mail.id > lastEmailId ? 'bg-yellow-50 dark:bg-yellow-900/30' : ''
+          }`}
+        >
+          <div className="truncate flex-1">
+            <span className="text-sm text-gray-900 dark:text-white">
+              {mail.subject.substring(0, 30)}{mail.subject.length > 30 ? '...' : ''}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-              {new Date(mail.dateSystem).toLocaleDateString()}
-            </span>
-          </Link>
-        )
+          </div>
+          <div className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+            {new Date(mail.dateSystem).toLocaleDateString()}
+          </div>
+        </a>
       ))}
 
       {canLoadMore && (

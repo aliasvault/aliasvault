@@ -12,14 +12,12 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
-import { EmailCacheService, CachedEmail } from '@/services/EmailCacheService';
+import { emailCacheService, CachedEmail } from '@/services/EmailCacheService';
 import { fetchManifest, getNewEmailCids, fetchAndDecryptEmail } from '@/services/InboxService';
 import { MidnightContractService } from '@/services/MidnightContractService';
 import { PinataBrowserProvider } from '@/services/PinataBrowserProvider';
 import { getEmailKeyPairFromSettings } from '@/utils/emailKeyPair';
 import { useEmailSubscription } from '@/hooks/useEmailSubscription';
-
-const cacheService = new EmailCacheService();
 
 /**
  * Inbox list page — blockchain-native IPFS+X25519 email flow.
@@ -73,7 +71,7 @@ const InboxList: React.FC = () => {
 
       if (!manifestCid) {
         // No manifest yet — empty inbox
-        const cached = await cacheService.getCachedEmails();
+        const cached = await emailCacheService.getCachedEmails();
         setEmails(cached);
         return;
       }
@@ -87,14 +85,14 @@ const InboxList: React.FC = () => {
       const manifest = await fetchManifest(pinata, manifestCid);
 
       // Detect new emails
-      const knownCids = await cacheService.getKnownCids();
+      const knownCids = await emailCacheService.getKnownCids();
       const newCids = getNewEmailCids(manifest, knownCids);
 
       // Fetch and decrypt new emails, cache metadata
       for (const cid of newCids) {
         try {
           const email = await fetchAndDecryptEmail(pinata, cid, emailKeyPair.secretKey);
-          await cacheService.cacheEmail({
+          await emailCacheService.cacheEmail({
             cid: email.cid,
             from: email.from,
             to: email.to,
@@ -110,12 +108,12 @@ const InboxList: React.FC = () => {
       }
 
       // Save manifest cache
-      await cacheService.saveManifestCache(
+      await emailCacheService.saveManifestCache(
         manifestCid,
         manifest.emails.map((e) => e.cid),
       );
 
-      const cached = await cacheService.getCachedEmails();
+      const cached = await emailCacheService.getCachedEmails();
       setEmails(cached.sort((a, b) => b.receivedAt - a.receivedAt));
     } catch (err) {
       setError(err instanceof Error ? err.message : t('common.errors.unknownError', 'An error occurred'));

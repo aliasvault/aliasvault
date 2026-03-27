@@ -3,14 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
-import { EmailCacheService } from '@/services/EmailCacheService';
+import { emailCacheService } from '@/services/EmailCacheService';
 
-type TabName = 'credentials' | 'emails' | 'inbox' | 'settings';
-
-/**
- * Bottom nav component.
- */
-const cacheService = new EmailCacheService();
+type TabName = 'credentials' | 'emails' | 'settings';
 
 const BottomNav: React.FC = () => {
   const { t } = useTranslation();
@@ -26,9 +21,14 @@ const BottomNav: React.FC = () => {
   // Add effect to update currentTab based on route
   useEffect(() => {
     const path = location.pathname.substring(1); // Remove leading slash
-    const tabNames: TabName[] = ['credentials', 'emails', 'inbox', 'settings'];
 
-    // Find the first tab name that matches the start of the path
+    // Map /inbox paths to the emails tab (blockchain route)
+    if (path === 'inbox' || path.startsWith('inbox/')) {
+      setCurrentTab('emails');
+      return;
+    }
+
+    const tabNames: TabName[] = ['credentials', 'emails', 'settings'];
     const matchingTab = tabNames.find(tab => path === tab || path.startsWith(`${tab}/`));
     if (matchingTab) {
       setCurrentTab(matchingTab);
@@ -38,7 +38,7 @@ const BottomNav: React.FC = () => {
   // Load unread count for inbox badge
   useEffect(() => {
     if (!hasEmailFeature) return;
-    cacheService.getCachedEmails().then((emails) => {
+    emailCacheService.getCachedEmails().then((emails) => {
       setUnreadCount(emails.filter((e) => !e.isRead).length);
     }).catch(() => {});
   }, [hasEmailFeature, location]);
@@ -48,7 +48,8 @@ const BottomNav: React.FC = () => {
    */
   const handleTabChange = (tab: TabName) : void => {
     setCurrentTab(tab);
-    navigate(`/${tab}`);
+    // Route emails tab to /inbox (blockchain)
+    navigate(tab === 'emails' ? '/inbox' : `/${tab}`);
   };
 
   // Auth pages that don't show bottom navigation but still show header
@@ -68,14 +69,12 @@ const BottomNav: React.FC = () => {
     return null;
   }
 
-  const tabWidth = hasEmailFeature ? 'w-1/4' : 'w-1/3';
-
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
       <div className="flex justify-around items-center h-14">
         <button
           onClick={() => handleTabChange('credentials')}
-          className={`flex flex-col items-center justify-center ${tabWidth} h-full ${
+          className={`flex flex-col items-center justify-center w-1/3 h-full ${
             currentTab === 'credentials' ? 'text-primary-600 dark:text-primary-500' : 'text-gray-500 dark:text-gray-400'
           }`}
         >
@@ -86,38 +85,25 @@ const BottomNav: React.FC = () => {
         </button>
         <button
           onClick={() => handleTabChange('emails')}
-          className={`flex flex-col items-center justify-center ${tabWidth} h-full ${
+          className={`flex flex-col items-center justify-center w-1/3 h-full relative ${
             currentTab === 'emails' ? 'text-primary-600 dark:text-primary-500' : 'text-gray-500 dark:text-gray-400'
           }`}
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-          </svg>
+          <div className="relative">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            {hasEmailFeature && unreadCount > 0 && (
+              <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </div>
           <span className="text-sm mt-1">{t('menu.emails')}</span>
         </button>
-        {hasEmailFeature && (
-          <button
-            onClick={() => handleTabChange('inbox')}
-            className={`flex flex-col items-center justify-center ${tabWidth} h-full relative ${
-              currentTab === 'inbox' ? 'text-primary-600 dark:text-primary-500' : 'text-gray-500 dark:text-gray-400'
-            }`}
-          >
-            <div className="relative">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-              </svg>
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
-            </div>
-            <span className="text-sm mt-1">{t('menu.inbox', 'Inbox')}</span>
-          </button>
-        )}
         <button
           onClick={() => handleTabChange('settings')}
-          className={`flex flex-col items-center justify-center ${tabWidth} h-full ${
+          className={`flex flex-col items-center justify-center w-1/3 h-full ${
             currentTab === 'settings' ? 'text-primary-600 dark:text-primary-500' : 'text-gray-500 dark:text-gray-400'
           }`}
         >
