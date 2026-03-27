@@ -175,4 +175,59 @@ describe('EmailCacheService', () => {
       expect(result).toEqual(manifestCache);
     });
   });
+
+  describe('cacheFullBody', () => {
+    it('stores full decrypted email under emailBody: key', async () => {
+      const fullEmail = {
+        from: 'sender@example.com',
+        to: 'alias@alias.id',
+        subject: 'Test',
+        body: 'Full body text here',
+        attachments: [{ name: 'file.txt', contentType: 'text/plain', base64: 'aGVsbG8=' }],
+        receivedAt: 1709553600,
+      };
+
+      await cache.cacheFullBody(SAMPLE_EMAIL.cid, fullEmail);
+
+      expect(mockSet).toHaveBeenCalledWith({
+        [`emailBody:${SAMPLE_EMAIL.cid}`]: fullEmail,
+      });
+    });
+  });
+
+  describe('getCachedFullBody', () => {
+    it('returns null when no full body cached', async () => {
+      const result = await cache.getCachedFullBody('nonexistent-cid');
+      expect(result).toBeNull();
+    });
+
+    it('returns cached full body when available', async () => {
+      const fullEmail = {
+        from: 'sender@example.com',
+        to: 'alias@alias.id',
+        subject: 'Test',
+        body: 'Full body text here',
+        attachments: [],
+        receivedAt: 1709553600,
+      };
+      storageData[`emailBody:${SAMPLE_EMAIL.cid}`] = fullEmail;
+
+      const result = await cache.getCachedFullBody(SAMPLE_EMAIL.cid);
+      expect(result).toEqual(fullEmail);
+    });
+  });
+
+  describe('deleteEmail with full body', () => {
+    it('removes both metadata and full body from cache', async () => {
+      storageData['emailCacheIndex'] = [SAMPLE_EMAIL.cid];
+      storageData[`emailCache:${SAMPLE_EMAIL.cid}`] = SAMPLE_EMAIL;
+      storageData[`emailBody:${SAMPLE_EMAIL.cid}`] = { body: 'test' };
+
+      await cache.deleteEmail(SAMPLE_EMAIL.cid);
+
+      // Should remove both keys
+      expect(mockRemove).toHaveBeenCalledWith(`emailCache:${SAMPLE_EMAIL.cid}`);
+      expect(mockRemove).toHaveBeenCalledWith(`emailBody:${SAMPLE_EMAIL.cid}`);
+    });
+  });
 });
