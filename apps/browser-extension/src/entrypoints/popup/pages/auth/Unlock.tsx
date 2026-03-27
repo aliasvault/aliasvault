@@ -7,16 +7,13 @@ import { sendMessage } from 'webext-bridge/popup';
 
 import AlertMessage from '@/entrypoints/popup/components/AlertMessage';
 import Button from '@/entrypoints/popup/components/Button';
-import MobileUnlockModal from '@/entrypoints/popup/components/Dialogs/MobileUnlockModal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIcon, HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import UsernameAvatar from '@/entrypoints/popup/components/Unlock/UsernameAvatar';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
-import { useAuth } from '@/entrypoints/popup/context/AuthContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
-import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { VAULT_LOCKED_DISMISS_UNTIL_KEY } from '@/utils/Constants';
@@ -32,8 +29,6 @@ import {
   unlockWithPin
 } from '@/utils/PinUnlockService';
 
-import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
-
 import { storage } from '#imports';
 
 /**
@@ -47,12 +42,9 @@ type UnlockMode = 'pin' | 'password';
 const Unlock: React.FC = () => {
   const { t } = useTranslation();
   const app = useApp();
-  const authContext = useAuth();
   const dbContext = useDb();
   const navigate = useNavigate();
   const { setHeaderButtons } = useHeaderButtons();
-
-  const webApi = useWebApi();
 
   // Unlock mode state
   const [unlockMode, setUnlockMode] = useState<UnlockMode>('password');
@@ -71,9 +63,6 @@ const Unlock: React.FC = () => {
   // Common state
   const [error, setError] = useState<string | null>(null);
   const { showLoading, hideLoading, setIsInitialLoading } = useLoading();
-
-  // Mobile unlock state
-  const [showMobileUnlockModal, setShowMobileUnlockModal] = useState(false);
 
   /**
    * Get the encrypted vault blob from session storage, or load from blockchain as fallback.
@@ -336,51 +325,6 @@ const Unlock: React.FC = () => {
   };
 
   /**
-   * Handle successful mobile unlock
-   */
-  const handleMobileUnlockSuccess = async (result: MobileLoginResult): Promise<void> => {
-    showLoading();
-    try {
-      // Revoke current tokens gracefully — non-blocking if server unavailable (AC #5)
-      try {
-        await webApi.revokeTokens();
-      } catch (revokeErr) {
-        console.warn('revokeTokens skipped (server unavailable):', revokeErr);
-      }
-
-      // Set new auth tokens
-      await authContext.setAuthTokens(result.username, result.token, result.refreshToken);
-
-      // Get encrypted vault blob from session or blockchain
-      const encryptedBlob = await getEncryptedVaultBlob();
-
-      // Store the encryption key and derivation params
-      await dbContext.storeEncryptionKey(result.decryptionKey);
-      await dbContext.storeEncryptionKeyDerivationParams({
-        salt: result.salt,
-        encryptionType: result.encryptionType,
-        encryptionSettings: result.encryptionSettings,
-      });
-
-      // Initialize the vault store by decrypting the blockchain-loaded blob
-      await dbContext.initializeDatabaseFromBlob(encryptedBlob, result.decryptionKey);
-
-      // Clear dismiss until
-      await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
-
-      // Reset PIN failed attempts on successful unlock
-      await resetFailedAttempts();
-
-      navigate('/reinitialize', { replace: true });
-    } catch (err) {
-      setError(t('common.errors.unknownErrorTryAgain'));
-      console.error('Mobile unlock error:', err);
-    } finally {
-      hideLoading();
-    }
-  };
-
-  /**
    * Switch to password mode
    */
   const switchToPassword = () : void => {
@@ -548,18 +492,6 @@ const Unlock: React.FC = () => {
             {t('auth.unlockVault')}
           </Button>
 
-          {/* Mobile Unlock Button */}
-          <button
-            type="button"
-            onClick={() => setShowMobileUnlockModal(true)}
-            className="w-full max-w-md mt-4 px-4 py-2 text-sm font-medium text-center text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 dark:bg-gray-600 dark:text-white dark:border-gray-500 dark:hover:bg-gray-500 dark:focus:ring-gray-700 flex items-center justify-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-            </svg>
-            {t('auth.unlockWithMobile')}
-          </button>
-
           <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
             {t('auth.switchAccounts')} <button type="button" onClick={handleLogout} className="text-primary-600 hover:text-primary-700 dark:text-primary-500 dark:hover:text-primary-400 hover:underline font-medium">{t('auth.logout')}</button>
           </div>
@@ -572,14 +504,6 @@ const Unlock: React.FC = () => {
         </div>
       )}
 
-      {/* Mobile Unlock Modal */}
-      <MobileUnlockModal
-        isOpen={showMobileUnlockModal}
-        onClose={() => setShowMobileUnlockModal(false)}
-        onSuccess={handleMobileUnlockSuccess}
-        webApi={webApi}
-        mode="unlock"
-      />
     </div>
   );
 };

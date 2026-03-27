@@ -9,7 +9,7 @@ import { handleClipboardCopied, handleCancelClipboardClear, handleGetClipboardCl
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData } from '@/entrypoints/background/PasskeyHandler';
 import { handleOpenPopup, handlePopupWithCredential, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
-import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearVault, handleCreateIdentity, handleGetCredentials, handleGetFilteredCredentials, handleGetSearchCredentials, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVault, handleSyncVault, handleUploadVault, handleLoadVaultFromBlockchain } from '@/entrypoints/background/VaultMessageHandler';
+import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearVault, handleCreateIdentity, handleGetCredentials, handleGetFilteredCredentials, handleGetSearchCredentials, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVault, handleUploadVault, handleLoadVaultFromBlockchain } from '@/entrypoints/background/VaultMessageHandler';
 import { handleDetectLaceWallet, handleConnectLaceWallet, handleSignChallenge, handleGetWalletServiceUris } from '@/entrypoints/background/WalletMessageHandler';
 import { setupEmailAlarmListener, clearEmailBadge, registerEmailAlarm, unregisterEmailAlarm } from '@/entrypoints/background/EmailAlarmHandler';
 
@@ -44,7 +44,6 @@ export default defineBackground({
 
     onMessage('CREATE_IDENTITY', ({ data }) => handleCreateIdentity(data));
     onMessage('UPLOAD_VAULT', ({ data }) => handleUploadVault(data));
-    onMessage('SYNC_VAULT', () => handleSyncVault());
     onMessage('LOAD_VAULT_FROM_BLOCKCHAIN', () => handleLoadVaultFromBlockchain());
     onMessage('CLEAR_VAULT', () => handleClearVault());
 

@@ -2,7 +2,6 @@ import React, { createContext, useContext, useMemo, useCallback, useEffect, useS
 import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
-import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
 import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
 
@@ -20,17 +19,16 @@ type AppContextType = {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 /**
- * AppProvider that coordinates between auth, db, and webApi contexts.
+ * AppProvider that coordinates between auth and db contexts.
  */
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const auth = useAuth();
-  const webApi = useWebApi();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const isLoggingOutRef = useRef(false);
   const { t } = useTranslation();
 
   /**
-   * Logout the user by revoking tokens and clearing the auth tokens from storage.
+   * Logout the user by clearing the auth tokens from storage.
    * Prevents recursive logout calls by tracking logout state.
    */
   const logout = useCallback(async (errorMessage?: string): Promise<void> => {
@@ -40,7 +38,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     try {
       isLoggingOutRef.current = true;
-      await webApi.revokeTokens();
       await auth.clearAuth(errorMessage);
     } catch (error) {
       console.error('Error during logout:', error);
@@ -48,7 +45,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       isLoggingOutRef.current = false;
       setIsLoggedIn(false);
     }
-  }, [auth, webApi]);
+  }, [auth]);
 
   /**
    * Initialize the authentication state.

@@ -2,7 +2,6 @@
 import { storage } from 'wxt/utils/storage';
 
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/metadata';
-import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
 import { VaultCidStore } from '@/services/VaultCidStore';
 import { PinataBrowserProvider } from '@/services/PinataBrowserProvider';
 import { MidnightContractService } from '@/services/MidnightContractService';
@@ -20,8 +19,6 @@ import { StoreVaultRequest } from '@/utils/types/messaging/StoreVaultRequest';
 import { StringResponse as stringResponse } from '@/utils/types/messaging/StringResponse';
 import { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 import { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
-import { WebApiService } from '@/utils/WebApiService';
-
 import { t } from '@/i18n/StandaloneI18n';
 
 /**
@@ -130,41 +127,6 @@ export async function handleStoreEncryptionKeyDerivationParams(
     console.error('Failed to store encryption key derivation params:', error);
     return { success: false, error: await t('common.errors.unknownErrorTryAgain') };
   }
-}
-
-/**
- * Sync the vault with the server to check if a newer vault is available. If so, the vault will be updated.
- * @deprecated No active callers — replaced by handleLoadVaultFromBlockchain(). Kept for safety.
- */
-export async function handleSyncVault(
-) : Promise<messageBoolResponse> {
-  const webApi = new WebApiService();
-  const statusResponse = await webApi.getStatus();
-  const statusError = webApi.validateStatusResponse(statusResponse);
-  if (statusError !== null) {
-    return { success: false, error: await t('common.errors.' + statusError) };
-  }
-
-  const vaultRevisionNumber = await storage.getItem('session:vaultRevisionNumber') as number;
-
-  if (statusResponse.vaultRevision > vaultRevisionNumber) {
-    // Retrieve the latest vault from the server.
-    const vaultResponse = await webApi.get<VaultResponse>('Vault');
-
-    await storage.setItems([
-      { key: 'session:encryptedVault', value: vaultResponse.vault.blob },
-      { key: 'session:publicEmailDomains', value: vaultResponse.vault.publicEmailDomainList },
-      { key: 'session:privateEmailDomains', value: vaultResponse.vault.privateEmailDomainList },
-      { key: 'session:hiddenPrivateEmailDomains', value: vaultResponse.vault.hiddenPrivateEmailDomainList },
-      { key: 'session:vaultRevisionNumber', value: vaultResponse.vault.currentRevisionNumber }
-    ]);
-
-    // Clear cached client since we received a new vault blob from server
-    cachedVaultStore = null;
-    cachedVaultBlob = null;
-  }
-
-  return { success: true };
 }
 
 /**

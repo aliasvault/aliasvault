@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import * as Yup from 'yup';
 
 import LanguageSwitcher from '@/entrypoints/popup/components/LanguageSwitcher';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
@@ -10,70 +9,19 @@ import { GLOBAL_AUTOFILL_POPUP_ENABLED_KEY, DISABLED_SITES_KEY, VAULT_LOCKED_DIS
 
 import { storage } from '#imports';
 
-type ApiOption = {
-  label: string;
-  value: string;
-};
-
-const DEFAULT_OPTIONS: ApiOption[] = [
-  { label: 'Aliasvault.net', value: AppInfo.DEFAULT_API_URL },
-  { label: 'Self-hosted', value: 'custom' }
-];
-
-// Validation schema for URLs
-/**
- * Creates a URL validation schema with localized error messages.
- */
-const createUrlSchema = (t: (key: string) => string): Yup.ObjectSchema<{apiUrl: string; clientUrl: string}> => Yup.object().shape({
-  apiUrl: Yup.string()
-    .required(t('settings.validation.apiUrlRequired'))
-    .test('is-valid-api-url', t('settings.validation.apiUrlInvalid'), (value: string | undefined) => {
-      if (!value) {
-        return true; // Allow empty for non-custom option
-      }
-      try {
-        const url = new URL(value);
-        return url.protocol === 'http:' || url.protocol === 'https:';
-      } catch {
-        return false;
-      }
-    }),
-  clientUrl: Yup.string()
-    .required(t('settings.validation.clientUrlRequired'))
-    .test('is-valid-client-url', t('settings.validation.clientUrlInvalid'), (value: string | undefined) => {
-      if (!value) {
-        return true; // Allow empty for non-custom option
-      }
-      try {
-        const url = new URL(value);
-        return url.protocol === 'http:' || url.protocol === 'https:';
-      } catch {
-        return false;
-      }
-    })
-});
-
 /**
  * Auth settings page only shown when user is not logged in.
  */
 const AuthSettings: React.FC = () => {
   const { t } = useTranslation();
-  const [selectedOption, setSelectedOption] = useState<string>('');
-  const [customUrl, setCustomUrl] = useState<string>('');
-  const [customClientUrl, setCustomClientUrl] = useState<string>('');
   const [isGloballyEnabled, setIsGloballyEnabled] = useState<boolean>(true);
-  const [errors, setErrors] = useState<{ apiUrl?: string; clientUrl?: string }>({});
   const { setIsInitialLoading } = useLoading();
-
-  const urlSchema = createUrlSchema(t);
 
   useEffect(() => {
     /**
      * Load the stored settings from the storage.
      */
     const loadStoredSettings = async () : Promise<void> => {
-      const apiUrl = await storage.getItem('local:apiUrl') as string;
-      const clientUrl = await storage.getItem('local:clientUrl') as string;
       const globallyEnabled = await storage.getItem(GLOBAL_AUTOFILL_POPUP_ENABLED_KEY) !== false; // Default to true if not set
       const dismissUntil = await storage.getItem(VAULT_LOCKED_DISMISS_UNTIL_KEY) as number;
 
@@ -83,76 +31,11 @@ const AuthSettings: React.FC = () => {
         setIsGloballyEnabled(globallyEnabled);
       }
 
-      const matchingOption = DEFAULT_OPTIONS.find(opt => opt.value === apiUrl);
-
-      if (matchingOption) {
-        setSelectedOption(matchingOption.value);
-      } else if (apiUrl) {
-        setSelectedOption('custom');
-        setCustomUrl(apiUrl);
-        setCustomClientUrl(clientUrl ?? '');
-      } else {
-        setSelectedOption(DEFAULT_OPTIONS[0].value);
-      }
       setIsInitialLoading(false);
     };
 
     loadStoredSettings();
   }, [setIsInitialLoading]);
-
-  /**
-   * Handle option change
-   */
-  const handleOptionChange = async (e: React.ChangeEvent<HTMLSelectElement>) : Promise<void> => {
-    const value = e.target.value;
-    setSelectedOption(value);
-    if (value !== 'custom') {
-      await storage.setItem('local:apiUrl', '');
-      await storage.setItem('local:clientUrl', '');
-      setCustomUrl('');
-      setCustomClientUrl('');
-      setErrors({});
-    }
-  };
-
-  /**
-   * Handle custom API URL change
-   */
-  const handleCustomUrlChange = async (e: React.ChangeEvent<HTMLInputElement>) : Promise<void> => {
-    const value = e.target.value;
-    setCustomUrl(value);
-
-    try {
-      await urlSchema.validateAt('apiUrl', { apiUrl: value });
-      setErrors(prev => ({ ...prev, apiUrl: undefined }));
-      await storage.setItem('local:apiUrl', value);
-    } catch (error: unknown) {
-      if (error instanceof Yup.ValidationError) {
-        setErrors(prev => ({ ...prev, apiUrl: error.message }));
-        // On error we revert back to the aliasvault.net official hosted instance.
-        await storage.setItem('local:apiUrl', AppInfo.DEFAULT_API_URL);
-        await storage.setItem('local:clientUrl', AppInfo.DEFAULT_CLIENT_URL);
-      }
-    }
-  };
-
-  /**
-   * Handle custom client URL change
-   */
-  const handleCustomClientUrlChange = async (e: React.ChangeEvent<HTMLInputElement>) : Promise<void> => {
-    const value = e.target.value;
-    setCustomClientUrl(value);
-
-    try {
-      await urlSchema.validateAt('clientUrl', { clientUrl: value });
-      setErrors(prev => ({ ...prev, clientUrl: undefined }));
-      await storage.setItem('local:clientUrl', value);
-    } catch (error: unknown) {
-      if (error instanceof Yup.ValidationError) {
-        setErrors(prev => ({ ...prev, clientUrl: error.message }));
-      }
-    }
-  };
 
   /**
    * Toggle global popup.
@@ -173,80 +56,6 @@ const AuthSettings: React.FC = () => {
 
   return (
     <div className="p-4 space-y-6">
-      {/* Server Configuration Section */}
-      <div className="space-y-4 pb-6 border-b border-gray-200 dark:border-gray-700">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-            {t('settings.serverConfiguration', 'Server Configuration')}
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {t('settings.serverConfigurationDescription', 'Configure the AliasVault server URL for self-hosted instances')}
-          </p>
-        </div>
-
-        <div>
-          <label htmlFor="api-connection" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-            {t('settings.serverUrl')}
-          </label>
-          <select
-            id="api-connection"
-            value={selectedOption}
-            onChange={handleOptionChange}
-            className="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-          >
-            {DEFAULT_OPTIONS.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {selectedOption === 'custom' && (
-          <div className="space-y-4 pl-4 border-l-2 border-primary-500">
-            <div>
-              <label htmlFor="custom-api-url" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                {t('settings.customApiUrl', 'API URL')}
-              </label>
-              <input
-                id="custom-api-url"
-                type="text"
-                value={customUrl}
-                onChange={handleCustomUrlChange}
-                placeholder="https://vault.example.com/api"
-                className={`w-full bg-gray-50 border ${errors.apiUrl ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white`}
-              />
-              {errors.apiUrl && (
-                <p className="mt-1 text-sm text-red-500">{errors.apiUrl}</p>
-              )}
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {t('settings.apiUrlHint', 'The API endpoint URL (usually client URL + /api)')}
-              </p>
-            </div>
-
-            <div>
-              <label htmlFor="custom-client-url" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                {t('settings.customClientUrl', 'Client URL')}
-              </label>
-              <input
-                id="custom-client-url"
-                type="text"
-                value={customClientUrl}
-                onChange={handleCustomClientUrlChange}
-                placeholder="https://vault.example.com"
-                className={`w-full bg-gray-50 border ${errors.clientUrl ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white`}
-              />
-              {errors.clientUrl && (
-                <p className="mt-1 text-sm text-red-500">{errors.clientUrl}</p>
-              )}
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {t('settings.clientUrlHint', 'The web interface URL of your self-hosted instance')}
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* Autofill Settings Section */}
       <div className="space-y-4 pb-6 border-b border-gray-200 dark:border-gray-700">
         <div>

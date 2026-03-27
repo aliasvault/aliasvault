@@ -1,5 +1,3 @@
-import { Buffer } from 'buffer';
-
 import { yupResolver } from '@hookform/resolvers/yup';
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
@@ -21,7 +19,6 @@ import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
-import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
 import { SKIP_FORM_RESTORE_KEY } from '@/utils/Constants';
@@ -110,8 +107,6 @@ const CredentialAddEdit: React.FC = () => {
     formData: { name: '', secretKey: '' }
   });
   const [passkeyMarkedForDeletion, setPasskeyMarkedForDeletion] = useState(false);
-  const webApi = useWebApi();
-
   // Track last generated values to avoid overwriting manual entries
   const [lastGeneratedValues, setLastGeneratedValues] = useState<{
     username: string | null;
@@ -575,26 +570,6 @@ const CredentialAddEdit: React.FC = () => {
       data.ServiceUrl = (serviceUrl === 'http://' || serviceUrl === 'https://') ? '' : serviceUrl;
     }
 
-    // Extract favicon from service URL if the credential has one
-    if (data.ServiceUrl) {
-      setLocalLoading(true);
-      try {
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Favicon extraction timed out')), 5000)
-        );
-
-        const faviconPromise = webApi.get<{ image: string }>('Favicon/Extract?url=' + data.ServiceUrl);
-        const faviconResponse = await Promise.race([faviconPromise, timeoutPromise]) as { image: string };
-
-        if (faviconResponse?.image) {
-          const decodedImage = Uint8Array.from(Buffer.from(faviconResponse.image, 'base64'));
-          data.Logo = decodedImage;
-        }
-      } catch {
-        // Favicon extraction failed or timed out, this is not a critical error so we can ignore it.
-      }
-    }
-
     executeVaultMutation(async () => {
       setLocalLoading(false);
 
@@ -625,7 +600,7 @@ const CredentialAddEdit: React.FC = () => {
         }
       },
     });
-  }, [isEditMode, dbContext.vaultStore, executeVaultMutation, navigate, mode, watch, generateRandomAlias, webApi, clearPersistedValues, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyMarkedForDeletion]);
+  }, [isEditMode, dbContext.vaultStore, executeVaultMutation, navigate, mode, watch, generateRandomAlias, clearPersistedValues, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyMarkedForDeletion]);
 
   // Set header buttons on mount and clear on unmount
   useEffect((): (() => void) => {

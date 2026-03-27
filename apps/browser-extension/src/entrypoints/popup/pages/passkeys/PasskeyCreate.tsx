@@ -10,7 +10,6 @@ import { FormInput } from '@/entrypoints/popup/components/Forms/FormInput';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
-import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
@@ -31,7 +30,6 @@ const PasskeyCreate: React.FC = () => {
   const location = useLocation();
   const { setIsInitialLoading } = useLoading();
   const dbContext = useDb();
-  const webApi = useWebApi();
   const { executeVaultMutation, isLoading: isMutating, syncStatus } = useVaultMutate();
   const [request, setRequest] = useState<PendingPasskeyCreateRequest | null>(null);
   const [displayName, setDisplayName] = useState('');
@@ -40,7 +38,6 @@ const PasskeyCreate: React.FC = () => {
   const [existingPasskeys, setExistingPasskeys] = useState<Array<Passkey & { Username?: string | null; ServiceName?: string | null }>>([]);
   const [selectedPasskeyToReplace, setSelectedPasskeyToReplace] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [localLoading, setLocalLoading] = useState(false);
   const [showBypassDialog, setShowBypassDialog] = useState(false);
   const createNewButtonRef = useRef<HTMLButtonElement>(null);
   const displayNameInputRef = useRef<HTMLInputElement>(null);
@@ -156,7 +153,7 @@ const PasskeyCreate: React.FC = () => {
      * Handle Enter key to submit
      */
     const handleKeyDown = (e: KeyboardEvent) : void => {
-      if (e.key === 'Enter' && !localLoading && !isMutating) {
+      if (e.key === 'Enter' && !isMutating) {
         if (showCreateForm) {
           handleCreate();
         }
@@ -166,7 +163,7 @@ const PasskeyCreate: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () : void => window.removeEventListener('keydown', handleKeyDown);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showCreateForm, localLoading, isMutating]);
+  }, [showCreateForm, isMutating]);
 
   /**
    * Handle when user clicks "Create New Passkey" button
@@ -195,32 +192,6 @@ const PasskeyCreate: React.FC = () => {
     setError(null);
 
     try {
-      // Extract favicon from origin URL
-      let faviconLogo: Uint8Array | undefined = undefined;
-      if (request.origin) {
-        setLocalLoading(true);
-        try {
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Favicon extraction timed out')), 5000)
-          );
-
-          const faviconPromise = webApi.get<{ image: string }>('Favicon/Extract?url=' + request.origin);
-          const faviconResponse = await Promise.race([faviconPromise, timeoutPromise]) as { image: string };
-
-          if (faviconResponse?.image) {
-            // Use browser-compatible base64 decoding
-            const binaryString = atob(faviconResponse.image);
-            const decodedImage = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-              decodedImage[i] = binaryString.charCodeAt(i);
-            }
-            faviconLogo = decodedImage;
-          }
-        } catch {
-          // Favicon extraction failed or timed out, this is not a critical error so we can ignore it.
-        }
-      }
-
       // Build the CreateRequest
       const createRequest: CreateRequest = {
         origin: request.origin,
@@ -274,7 +245,7 @@ const PasskeyCreate: React.FC = () => {
                   Username: request.publicKey.user.name,
                   Password: '',
                   Notes: '',
-                  Logo: faviconLogo ?? undefined,
+                  Logo: undefined,
                   Alias: {
                     FirstName: '',
                     LastName: '',
@@ -327,7 +298,7 @@ const PasskeyCreate: React.FC = () => {
                 Username: request.publicKey.user.name,
                 Password: '',
                 Notes: '',
-                Logo: faviconLogo ?? undefined,
+                Logo: undefined,
                 Alias: {
                   FirstName: '',
                   LastName: '',
@@ -370,7 +341,7 @@ const PasskeyCreate: React.FC = () => {
         },
         {
           /**
-           * Wait for vault mutation to have synced with server, then send passkey create success response
+           * Wait for vault mutation to have synced, then send passkey create success response
            * with the GUID-based credential ID.
            */
           onSuccess: async () => {
@@ -495,7 +466,7 @@ const PasskeyCreate: React.FC = () => {
         />
       )}
 
-      {(localLoading || isMutating) && (
+      {isMutating && (
         <div className="fixed inset-0 flex flex-col justify-center items-center bg-white dark:bg-gray-900 bg-opacity-90 dark:bg-opacity-90 z-50">
           <LoadingSpinner />
           <div className="text-sm text-gray-500 mt-2">

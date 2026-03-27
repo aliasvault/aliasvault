@@ -18,6 +18,8 @@ interface IMobileUnlockModalProps {
 
 /**
  * Modal component for mobile login/unlock via QR code scanning.
+ * @deprecated Mobile unlock requires server — disabled until mobile app supports wallet auth (Story 6.4c).
+ * File kept for future mobile implementation. UI trigger removed from Unlock.tsx.
  */
 const MobileUnlockModal: React.FC<IMobileUnlockModalProps> = ({
   isOpen,

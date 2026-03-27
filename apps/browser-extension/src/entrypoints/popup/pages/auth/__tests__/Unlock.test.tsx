@@ -17,7 +17,6 @@ const {
   mockResetFailedAttempts,
   mockNavigate,
   mockLogout,
-  mockSetAuthTokens,
   mockStoreEncryptionKey,
   mockStoreEncryptionKeyDerivationParams,
   mockInitializeDatabaseFromBlob,
@@ -25,9 +24,6 @@ const {
   mockShowLoading,
   mockHideLoading,
   mockSetIsInitialLoading,
-  mockWebApiGet,
-  mockWebApiGetStatus,
-  mockWebApiRevokeTokens,
 } = vi.hoisted(() => ({
   mockSendMessage: vi.fn(),
   mockStorage: { getItem: vi.fn(), setItem: vi.fn(), removeItem: vi.fn() },
@@ -38,7 +34,6 @@ const {
   mockResetFailedAttempts: vi.fn(),
   mockNavigate: vi.fn(),
   mockLogout: vi.fn(),
-  mockSetAuthTokens: vi.fn(),
   mockStoreEncryptionKey: vi.fn(),
   mockStoreEncryptionKeyDerivationParams: vi.fn(),
   mockInitializeDatabaseFromBlob: vi.fn(),
@@ -46,9 +41,6 @@ const {
   mockShowLoading: vi.fn(),
   mockHideLoading: vi.fn(),
   mockSetIsInitialLoading: vi.fn(),
-  mockWebApiGet: vi.fn(),
-  mockWebApiGetStatus: vi.fn(),
-  mockWebApiRevokeTokens: vi.fn(),
 }));
 
 // ── Module mocks ──
@@ -98,10 +90,6 @@ vi.mock('@/entrypoints/popup/context/AppContext', () => ({
   useApp: () => ({ logout: mockLogout }),
 }));
 
-vi.mock('@/entrypoints/popup/context/AuthContext', () => ({
-  useAuth: () => ({ setAuthTokens: mockSetAuthTokens }),
-}));
-
 vi.mock('@/entrypoints/popup/context/DbContext', () => ({
   useDb: () => ({
     storeEncryptionKey: mockStoreEncryptionKey,
@@ -123,15 +111,6 @@ vi.mock('@/entrypoints/popup/context/HeaderButtonsContext', () => ({
   useHeaderButtons: () => ({ setHeaderButtons: vi.fn() }),
 }));
 
-vi.mock('@/entrypoints/popup/context/WebApiContext', () => ({
-  useWebApi: () => ({
-    get: mockWebApiGet,
-    getStatus: mockWebApiGetStatus,
-    validateStatusResponse: vi.fn(),
-    revokeTokens: mockWebApiRevokeTokens,
-  }),
-}));
-
 vi.mock('@/entrypoints/popup/utils/PopoutUtility', () => ({
   PopoutUtility: { isPopup: () => true },
 }));
@@ -143,29 +122,6 @@ vi.mock('@/entrypoints/popup/components/AlertMessage', () => ({
 vi.mock('@/entrypoints/popup/components/Button', () => ({
   default: ({ children, ...props }: React.PropsWithChildren<React.ButtonHTMLAttributes<HTMLButtonElement>>) =>
     <button {...props}>{children}</button>,
-}));
-
-vi.mock('@/entrypoints/popup/components/Dialogs/MobileUnlockModal', () => ({
-  default: (props: Record<string, unknown>) => {
-    if (!props.isOpen) return null;
-    const onSuccess = props.onSuccess as (result: Record<string, string>) => void;
-    return (
-      <button
-        data-testid="mobile-unlock-trigger"
-        onClick={() => onSuccess({
-          username: 'test-user',
-          token: 'mock-token',
-          refreshToken: 'mock-refresh',
-          decryptionKey: 'mobile-decryption-key-base64',
-          salt: 'mobile-salt',
-          encryptionType: 'argon2id',
-          encryptionSettings: '{}',
-        })}
-      >
-        Mock Mobile Unlock
-      </button>
-    );
-  },
 }));
 
 vi.mock('@/entrypoints/popup/components/HeaderButton', () => ({
@@ -213,8 +169,6 @@ beforeEach(() => {
   mockInitializeDatabaseFromBlob.mockResolvedValue({});
   mockStoreEncryptionKey.mockResolvedValue(undefined);
   mockStoreEncryptionKeyDerivationParams.mockResolvedValue(undefined);
-  mockSetAuthTokens.mockResolvedValue(undefined);
-  mockWebApiRevokeTokens.mockResolvedValue(undefined);
   mockResetFailedAttempts.mockResolvedValue(undefined);
 
   container = document.createElement('div');
@@ -254,14 +208,13 @@ function setInputValue(input: HTMLInputElement, value: string) {
 
 describe('Unlock — blockchain wiring (Story 6.4a)', () => {
   describe('AC #1: No server health check', () => {
-    it('does not call webApi.getStatus on mount', async () => {
+    it('initializes without server calls', async () => {
       await act(async () => { renderComponent(); });
 
-      expect(mockWebApiGetStatus).not.toHaveBeenCalled();
       expect(mockSetIsInitialLoading).toHaveBeenCalledWith(false);
     });
 
-    it('does not call webApi.getStatus on password submit', async () => {
+    it('password submit does not call server', async () => {
       await act(async () => { renderComponent(); });
 
       const input = getPasswordInput()!;
@@ -272,7 +225,9 @@ describe('Unlock — blockchain wiring (Story 6.4a)', () => {
         form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
       });
 
-      expect(mockWebApiGetStatus).not.toHaveBeenCalled();
+      // Only blockchain messages should be sent
+      const messageNames = mockSendMessage.mock.calls.map((c: unknown[]) => c[0]);
+      expect(messageNames).not.toContain('GET_VAULT');
     });
   });
 
@@ -291,7 +246,6 @@ describe('Unlock — blockchain wiring (Story 6.4a)', () => {
       expect(mockStorage.getItem).toHaveBeenCalledWith('session:encryptedVault');
       expect(mockInitializeDatabaseFromBlob).toHaveBeenCalledWith('encrypted-vault-base64', expect.any(String));
       expect(mockInitializeDatabase).not.toHaveBeenCalled();
-      expect(mockWebApiGet).not.toHaveBeenCalled();
     });
 
     it('falls back to LOAD_VAULT_FROM_BLOCKCHAIN when session empty', async () => {
@@ -383,55 +337,19 @@ describe('Unlock — blockchain wiring (Story 6.4a)', () => {
         expect(mockUnlockWithPin).toHaveBeenCalledWith('1234');
         expect(mockInitializeDatabaseFromBlob).toHaveBeenCalledWith('encrypted-vault-base64', 'pin-derived-key-base64');
         expect(mockInitializeDatabase).not.toHaveBeenCalled();
-        expect(mockWebApiGet).not.toHaveBeenCalled();
       } finally {
         vi.useRealTimers();
       }
     });
   });
 
-  describe('AC #4: Mobile unlock uses blockchain vault', () => {
-    it('uses initializeDatabaseFromBlob for mobile unlock', async () => {
+  describe('AC #6 (Story 6.4c): Mobile unlock UI removed', () => {
+    it('does not render mobile unlock button', async () => {
       await act(async () => { renderComponent(); });
 
-      // Click "Unlock with Mobile" to open modal
       const mobileBtn = Array.from(container.querySelectorAll('button'))
         .find(b => b.textContent?.includes('auth.unlockWithMobile'));
-      expect(mobileBtn).toBeDefined();
-      await act(async () => { mobileBtn!.click(); });
-
-      // Click mock trigger to invoke onSuccess
-      const trigger = container.querySelector('[data-testid="mobile-unlock-trigger"]') as HTMLButtonElement;
-      expect(trigger).not.toBeNull();
-      await act(async () => { trigger.click(); });
-
-      expect(mockStorage.getItem).toHaveBeenCalledWith('session:encryptedVault');
-      expect(mockInitializeDatabaseFromBlob).toHaveBeenCalledWith('encrypted-vault-base64', 'mobile-decryption-key-base64');
-      expect(mockInitializeDatabase).not.toHaveBeenCalled();
-      expect(mockWebApiGet).not.toHaveBeenCalled();
-      expect(mockNavigate).toHaveBeenCalledWith('/reinitialize', { replace: true });
-    });
-  });
-
-  describe('AC #5: revokeTokens wrapped in try/catch', () => {
-    it('mobile unlock succeeds even when revokeTokens fails', async () => {
-      mockWebApiRevokeTokens.mockRejectedValue(new Error('Server unavailable'));
-
-      await act(async () => { renderComponent(); });
-
-      // Open mobile modal
-      const mobileBtn = Array.from(container.querySelectorAll('button'))
-        .find(b => b.textContent?.includes('auth.unlockWithMobile'));
-      await act(async () => { mobileBtn!.click(); });
-
-      // Trigger mobile unlock
-      const trigger = container.querySelector('[data-testid="mobile-unlock-trigger"]') as HTMLButtonElement;
-      await act(async () => { trigger.click(); });
-
-      // revokeTokens failed but unlock still succeeded
-      expect(mockWebApiRevokeTokens).toHaveBeenCalled();
-      expect(mockInitializeDatabaseFromBlob).toHaveBeenCalled();
-      expect(mockNavigate).toHaveBeenCalledWith('/reinitialize', { replace: true });
+      expect(mobileBtn).toBeUndefined();
     });
   });
 
