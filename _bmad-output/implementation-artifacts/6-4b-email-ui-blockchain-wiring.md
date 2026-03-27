@@ -1,6 +1,6 @@
 # Story 6.4b: Email UI Blockchain Wiring
 
-Status: ready-for-dev
+Status: done
 
 <!-- Removes server-dependent email paths. Routes to existing blockchain InboxList + builds missing InboxDetail. -->
 
@@ -22,40 +22,40 @@ so that **I can view and manage my emails without any server dependency**.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Audit current email routing and switch list view (AC: #1)
-  - [ ] 1.1 Find the route definition in `App.tsx` that maps to email pages — determine whether `/emails` routes to `EmailsList.tsx` or `InboxList.tsx`
-  - [ ] 1.2 If `/emails` → `EmailsList.tsx`: reroute to `InboxList.tsx`
-  - [ ] 1.3 If both coexist at different routes (e.g., `/emails` vs `/inbox`): unify to a single blockchain route
-  - [ ] 1.4 Remove or deprecate `EmailsList.tsx` — do NOT delete if other components import from it; mark dead code
+- [x] Task 1: Audit current email routing and switch list view (AC: #1)
+  - [x] 1.1 Find the route definition in `App.tsx` that maps to email pages — determine whether `/emails` routes to `EmailsList.tsx` or `InboxList.tsx`
+  - [x] 1.2 If `/emails` → `EmailsList.tsx`: reroute to `InboxList.tsx`
+  - [x] 1.3 If both coexist at different routes (e.g., `/emails` vs `/inbox`): unify to a single blockchain route
+  - [x] 1.4 Remove or deprecate `EmailsList.tsx` — do NOT delete if other components import from it; mark dead code
 
-- [ ] Task 2: Create InboxDetail.tsx for blockchain email detail (AC: #2)
-  - [ ] 2.1 Route: `/inbox/:cid` (CID string replaces numeric ID from server path)
-  - [ ] 2.2 Load email: first check `EmailCacheService` for cached full body; if body not cached, re-fetch from IPFS via `InboxService.fetchAndDecryptEmail(pinata, cid, privateKey)`
-  - [ ] 2.3 Render: subject, from (parse into display name + address), to, date (format `receivedAt` unix timestamp), body (plaintext — no HTML rendering needed for blockchain emails)
-  - [ ] 2.4 Cache the full decrypted email body after first fetch to avoid redundant IPFS downloads
+- [x] Task 2: Create InboxDetail.tsx for blockchain email detail (AC: #2)
+  - [x] 2.1 Route: `/inbox/:cid` (CID string replaces numeric ID from server path)
+  - [x] 2.2 Load email: first check `EmailCacheService` for cached full body; if body not cached, re-fetch from IPFS via `InboxService.fetchAndDecryptEmail(pinata, cid, privateKey)`
+  - [x] 2.3 Render: subject, from (parse into display name + address), to, date (format `receivedAt` unix timestamp), body (plaintext — no HTML rendering needed for blockchain emails)
+  - [x] 2.4 Cache the full decrypted email body after first fetch to avoid redundant IPFS downloads
 
-- [ ] Task 3: Handle attachments from embedded base64 (AC: #3)
-  - [ ] 3.1 Blockchain emails embed attachments as `{ name: string, contentType: string, base64: string }[]` inside the decrypted email JSON
-  - [ ] 3.2 Render attachment list with download button
-  - [ ] 3.3 On download: `atob(attachment.base64)` → create Blob → trigger browser download
-  - [ ] 3.4 No separate IPFS fetch needed — attachments travel with the email blob
+- [x] Task 3: Handle attachments from embedded base64 (AC: #3)
+  - [x] 3.1 Blockchain emails embed attachments as `{ name: string, contentType: string, base64: string }[]` inside the decrypted email JSON
+  - [x] 3.2 Render attachment list with download button
+  - [x] 3.3 On download: `atob(attachment.base64)` → create Blob → trigger browser download
+  - [x] 3.4 No separate IPFS fetch needed — attachments travel with the email blob
 
-- [ ] Task 4: Email deletion via cache (AC: #4)
-  - [ ] 4.1 In InboxDetail, "Delete" button calls `EmailCacheService.deleteEmail(cid)` — removes from local cache index
-  - [ ] 4.2 Email remains on IPFS (immutable) but disappears from the user's inbox view
-  - [ ] 4.3 Navigate back to inbox list after deletion
+- [x] Task 4: Email deletion via cache (AC: #4)
+  - [x] 4.1 In InboxDetail, "Delete" button calls `EmailCacheService.deleteEmail(cid)` — removes from local cache index
+  - [x] 4.2 Email remains on IPFS (immutable) but disappears from the user's inbox view
+  - [x] 4.3 Navigate back to inbox list after deletion
 
-- [ ] Task 5: Fix EmailPreview.tsx private-domain path (AC: #5)
-  - [ ] 5.1 Read `EmailPreview.tsx` — the private-domain path calls `webApi.authFetch('EmailBox/{email}')`
-  - [ ] 5.2 Option A: Replace with InboxService call to show recent emails for that alias
-  - [ ] 5.3 Option B: Remove the server-fetched preview entirely — let users check the full inbox page
-  - [ ] 5.4 The SpamOK public-domain path (external API, not our server) can stay — it's a third-party service, not our centralized server
+- [x] Task 5: Fix EmailPreview.tsx private-domain path (AC: #5)
+  - [x] 5.1 Read `EmailPreview.tsx` — the private-domain path calls `webApi.authFetch('EmailBox/{email}')`
+  - [x] 5.2 Option A: Replace with InboxService call to show recent emails for that alias
+  - [x] 5.3 Option B: Remove the server-fetched preview entirely — let users check the full inbox page
+  - [x] 5.4 The SpamOK public-domain path (external API, not our server) can stay — it's a third-party service, not our centralized server
 
-- [ ] Task 6: Remove server-dependent email code and verify (AC: #6, #7)
-  - [ ] 6.1 Deprecate or remove `EmailsList.tsx` and `EmailDetails.tsx`
-  - [ ] 6.2 Search for any remaining `webApi` imports in `/pages/emails/`, `/services/Inbox*`, `/services/Email*`
-  - [ ] 6.3 Run email-related tests
-  - [ ] 6.4 Build with `VITE_MIDNIGHT_NETWORK=preprod`
+- [x] Task 6: Remove server-dependent email code and verify (AC: #6, #7)
+  - [x] 6.1 Deprecate or remove `EmailsList.tsx` and `EmailDetails.tsx`
+  - [x] 6.2 Search for any remaining `webApi` imports in `/pages/emails/`, `/services/Inbox*`, `/services/Email*`
+  - [x] 6.3 Run email-related tests
+  - [x] 6.4 Build with `VITE_MIDNIGHT_NETWORK=preprod`
 
 ## Dev Notes
 
@@ -164,6 +164,65 @@ function parseSender(from: string): { display: string; address: string } {
 ## Dev Agent Record
 
 ### Agent Model Used
+Claude Opus 4.6 (1M context)
+
 ### Debug Log References
+None — no blocking issues encountered.
+
 ### Completion Notes List
+
+**Task 1 — Routing unification:**
+- Found both `/emails` → EmailsList and `/inbox` → InboxList routes coexisting in App.tsx
+- Unified to single blockchain route: removed `/emails` and `/emails/:id` routes from App.tsx
+- BottomNav: removed separate "inbox" tab, made "emails" tab navigate to `/inbox`
+- BottomNav: moved unread badge from old inbox tab to emails tab, always 3-tab layout
+- Tab detection updated: `/inbox` path highlights the "emails" tab
+- Deprecated EmailsList.tsx with `@deprecated` JSDoc
+
+**Task 2 — InboxDetail cache-first loading:**
+- InboxDetail.tsx already existed with IPFS fetch, decrypt, render, attachments, delete
+- Added cache-first logic: checks `EmailCacheService.getCachedFullBody()` before IPFS download
+- Added body caching: after IPFS decrypt, calls `cacheService.cacheFullBody()` to persist
+- Extended EmailCacheService with `cacheFullBody(cid, email)` and `getCachedFullBody<T>(cid)` using `emailBody:{cid}` storage key
+- Updated `deleteEmail()` to also remove `emailBody:{cid}` key
+
+**Tasks 3, 4 — Already implemented:**
+- InboxDetail.tsx already had base64 attachment download (Uint8Array.from(atob(...)) → Blob)
+- InboxDetail.tsx already had cache deletion + navigate back to /inbox
+
+**Task 5 — EmailPreview private-domain path:**
+- Chose Option B: removed server-fetched preview for private domains
+- Private domains now show "Check your inbox" link to `/inbox` instead of fetching from server
+- Removed `useWebApi`, `useDb`, `EncryptionUtility`, `ApiErrorResponse` imports
+- SpamOK public-domain path preserved intact (third-party API, not our server)
+
+**Task 6 — Cleanup & verification:**
+- Deprecated EmailsList.tsx and EmailDetails.tsx with `@deprecated` JSDoc markers
+- Verified: no `webApi` calls remain in any active email component or service
+- 369 tests pass (including 6 new tests: 2 routing + 4 cache)
+- Build succeeds with `VITE_MIDNIGHT_NETWORK=preprod`
+
+**Code review follow-ups (2026-03-27):**
+- H1: Added `parseSender()` to InboxDetail.tsx — parses "Name \<email\>" into display + address, used in metadata render with title tooltip
+- H2: Added InboxDetail component tests (3 tests: cache-hit, cache-miss/IPFS, render verification) + parseSender unit tests (4 tests)
+- M1: Deleted EmailsList.tsx and EmailDetails.tsx — dead code with webApi imports fully removed
+- M2: Fixed type erasure — `cacheFullBody<T>` now generic, no double-cast in InboxDetail
+- L1: Replaced `MailboxEmail` server import in EmailPreview with local `SpamOkEmail` interface
+- L2: Exported `emailCacheService` singleton from EmailCacheService.ts, replaced 3 module-scope `new EmailCacheService()` instances in BottomNav, InboxList, InboxDetail
+
+### Change Log
+- 2026-03-27: Story 6.4b implementation — email UI blockchain wiring
+- 2026-03-27: Code review follow-ups — 6 items resolved (H1, H2, M1, M2, L1, L2)
+
 ### File List
+- `apps/browser-extension/src/entrypoints/popup/App.tsx` — removed legacy email routes and imports
+- `apps/browser-extension/src/entrypoints/popup/components/Layout/BottomNav.tsx` — unified email tab to /inbox, removed separate inbox tab, uses singleton
+- `apps/browser-extension/src/entrypoints/popup/pages/emails/InboxDetail.tsx` — added cache-first load, full body caching, parseSender, uses singleton
+- `apps/browser-extension/src/entrypoints/popup/pages/emails/InboxList.tsx` — uses singleton emailCacheService
+- `apps/browser-extension/src/entrypoints/popup/components/EmailPreview.tsx` — removed server webApi path, local SpamOkEmail type, inbox link for private domains
+- `apps/browser-extension/src/services/EmailCacheService.ts` — generic cacheFullBody/getCachedFullBody, singleton export, deleteEmail cleans body
+- `apps/browser-extension/src/entrypoints/popup/pages/emails/EmailsList.tsx` — DELETED (server-dependent dead code)
+- `apps/browser-extension/src/entrypoints/popup/pages/emails/EmailDetails.tsx` — DELETED (server-dependent dead code)
+- `apps/browser-extension/src/entrypoints/popup/pages/emails/__tests__/emailRouting.test.tsx` — NEW: routing unification tests (2 tests)
+- `apps/browser-extension/src/entrypoints/popup/pages/emails/__tests__/InboxDetail.test.tsx` — NEW: component + parseSender tests (7 tests)
+- `apps/browser-extension/src/services/__tests__/EmailCacheService.test.ts` — added full body cache tests (4 tests)

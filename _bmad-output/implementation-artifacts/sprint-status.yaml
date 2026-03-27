@@ -102,7 +102,7 @@ development_status:
   6-3-aliasregistry-deployment-script: review
   6-4-preprod-contract-deployment: review
   6-4a-unlock-page-blockchain-wiring: done  # Hotfix: Story 1.6 scope gap — Unlock.tsx still calls server API, blocks 6.5
-  6-4b-email-ui-blockchain-wiring: ready-for-dev  # Route email UI to existing blockchain InboxList + build InboxDetail
+  6-4b-email-ui-blockchain-wiring: done  # Route email UI to existing blockchain InboxList + build InboxDetail
   6-4c-server-dependency-cleanup: ready-for-dev  # Remove favicon, revokeTokens, dead SYNC_VAULT, server URL settings, gate mobile
   6-4d-new-user-onboarding-master-password: ready-for-dev  # Master password creation + empty vault init for first-time wallet users
   6-5-extension-e2e-smoke-test-preprod: ready-for-dev
