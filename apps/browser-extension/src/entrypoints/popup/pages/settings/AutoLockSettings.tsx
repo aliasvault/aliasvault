@@ -61,6 +61,7 @@ const AutoLockSettings: React.FC = () => {
               >
                 <option value="0">{t('settings.autoLockNever')}</option>
                 <option value="15">{t('settings.autoLock15Seconds')}</option>
+                <option value="30">{t('settings.autoLock30Seconds')}</option>
                 <option value="60">{t('settings.autoLock1Minute')}</option>
                 <option value="300">{t('settings.autoLock5Minutes')}</option>
                 <option value="900">{t('settings.autoLock15Minutes')}</option>
