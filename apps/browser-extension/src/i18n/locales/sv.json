@@ -390,6 +390,7 @@
     "autoLockTimeoutHelp": "Valvet kommer endast att låsas efter den angivna perioden av inaktivitet (ingen användning av autofyll eller öppnande av tilläggsruta). Valvet kommer alltid att låsa när webbläsaren stängs, oavsett inställning.",
     "autoLockNever": "Aldrig",
     "autoLock15Seconds": "15 sekunder",
+    "autoLock30Seconds": "30 seconds",
     "autoLock1Minute": "1 minut",
     "autoLock5Minutes": "5 minuter",
     "autoLock15Minutes": "15 minuter",
