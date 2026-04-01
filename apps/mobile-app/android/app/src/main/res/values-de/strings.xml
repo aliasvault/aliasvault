@@ -9,9 +9,9 @@
   <string name="common_back">Zurück</string>
   <string name="unknown_error">Ein unbekannter Fehler ist aufgetreten</string>
   <string name="autofill_failed_to_retrieve">Abruf der Daten fehlgeschlagen. Öffne die App</string>
-  <string name="autofill_no_match_found">Keine Übereinstimmung gefunden, neun Eintrag erstellen?</string>
+  <string name="autofill_no_match_found">Keine Übereinstimmung gefunden, neuen Eintrag erstellen?</string>
   <string name="autofill_open_app">App öffnen</string>
-  <string name="autofill_vault_locked">Der Tresor ist gesperrt.</string>
+  <string name="autofill_vault_locked">Der Tresor ist gesperrt</string>
   <string name="biometric_store_key_title">Schlüssel speichern</string>
   <string name="biometric_store_key_subtitle">Authentifiziere Dich, um Deinen Schlüssel sicher im Android Keystore zu speichern. Dies ermöglicht einen sicheren Zugriff auf Deinen Tresor.</string>
   <string name="biometric_unlock_vault_title">Tresor entsperren</string>
@@ -79,7 +79,7 @@
   <string name="password_unlock_password_hint">Passwort</string>
   <string name="password_unlock_button">Entsperren</string>
   <string name="password_unlock_incorrect">Falsches Passwort. Bitte versuche es erneut.</string>
-  <string name="password_unlock_error">Failed to verify password</string>
-  <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
-  <string name="password_unlock_max_attempts_reached">Too many failed unlock attempts. You have been logged out for security reasons.</string>
+  <string name="password_unlock_error">Passwort konnte nicht verifiziert werden</string>
+  <string name="password_unlock_attempts_warning">Ungültiges Passwort. Noch %d Versuche bis zur Abmeldung.</string>
+  <string name="password_unlock_max_attempts_reached">Zu viele fehlgeschlagene Entsperrversuche. Du wurdest aus Sicherheitsgründen abgemeldet.</string>
 </resources>
