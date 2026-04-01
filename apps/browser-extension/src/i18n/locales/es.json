@@ -390,6 +390,7 @@
     "autoLockTimeoutHelp": "La bóveda sólo se bloqueará después del período especificado de inactividad (no se abrirá el uso de autocompletado o la ventana emergente). La bóveda siempre se bloqueará cuando el navegador esté cerrado, independientemente de esta configuración.",
     "autoLockNever": "Nunca",
     "autoLock15Seconds": "15 segundos",
+    "autoLock30Seconds": "30 seconds",
     "autoLock1Minute": "1 minuto",
     "autoLock5Minutes": "5 minutos",
     "autoLock15Minutes": "15 minutos",
