@@ -21,7 +21,7 @@
 "username_prefix" = "Benutzername: ";
 "email_prefix" = "E-Mail-Adresse: ";
 "password" = "Passwort";
-"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
+"items_load_error" = "Fehler beim Laden der Einträge. Bitte öffne die AliasVault-App, um nach Änderungen zu suchen.";
 "no_item_selected" = "Kein Eintrag ausgewählt.";
 
 /* Context menu strings */
@@ -55,7 +55,7 @@
 "select_passkey_to_replace" = "Oder ersetze einen bestehenden Passkey";
 "replace_passkey" = "Passkey ersetzen";
 "replace_passkey_explanation" = "Dies wird den bestehenden Passkey durch einen neuen ersetzen. Bitte beachte, dass Dein alter Passkey überschrieben wird und nicht mehr zugänglich ist. Wenn Du stattdessen einen separaten Passkey erstellen möchtest, gehe zurück zum vorherigen Schritt.";
-"create_passkey_explanation" = "Dies erzeugt einen neuen Passkey und speichert ihn in Deinem Tresor. Er wird automatisch auf allen Geräten synchronisiert, die AliasVault verwenden.";
+"create_passkey_explanation" = "Dies erzeugt einen neuen Passkey und speichert ihn in Deinem Tresor. Er wird automatisch auf alle Deine Geräte synchronisiert, die AliasVault verwenden.";
 
 /* Passkey merge with existing item */
 "passkey_add_to_existing" = "Oder füge den Passkey einem existierenden Eintrag hinzu";
@@ -65,15 +65,15 @@
 /* PIN Unlock */
 "unlock_vault" = "Tresor entsperren";
 "enter_pin_to_unlock_vault" = "Bitte gib Deine PIN zum Entsperren des Tresors ein";
-"pin_locked_max_attempts" = "Dein PIN wurde nach zu vielen Fehlversuchen gesperrt";
+"pin_locked_max_attempts" = "Deine PIN wurde nach zu vielen Fehlversuchen gesperrt";
 "pin_incorrect_attempts_remaining" = "Ungültige PIN, %d verbleibende Versuche";
 
 /* Password Unlock */
 "enter_password_to_unlock" = "Gib Dein Master-Passwort ein";
 "unlock" = "Entsperren";
 "incorrect_password" = "Falsches Passwort. Bitte versuche es erneut.";
-"attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
-"max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
+"attempts_warning" = "Ungültiges Passwort. Noch %d Versuche bis zur Abmeldung.";
+"max_attempts_reached" = "Zu viele fehlgeschlagene Entsperrversuche. Du wurdest aus Sicherheitsgründen abgemeldet.";
 
 /* PIN Setup */
 "pin_setup_title" = "PIN einrichten";
