@@ -10,7 +10,7 @@
     "createVault": "Neuen Tresor erstellen",
     "twoFactorTitle": "Bitte gib den Sicherheits-Code aus Deiner Authentifizierungs-App ein.",
     "authCode": "Sicherheits-Code",
-    "authCodePlaceholder": "Gib den 6-stelligen Sicherheits-Code ein.",
+    "authCodePlaceholder": "Gib den 6-stelligen Sicherheits-Code ein",
     "verify": "Bestätige",
     "twoFactorNote": "Hinweis: Wenn Du keinen Zugriff auf Dein Authentifizierungsgerät hast, kannst Du Deine Zwei-Faktor-Authentifizierung (2FA) mit einem Wiederherstellungscode zurücksetzen, indem Du Dich über die Website anmeldest.",
     "masterPassword": "Master-Passwort",
@@ -20,7 +20,7 @@
     "useMasterPassword": "Master-Passwort benutzen",
     "unlockTitle": "Entsperre Deinen Tresor",
     "logoutConfirm": "Bist Du sicher, dass Du Dich abmelden möchtest?",
-    "unlockSuccessTitle": "Ihr Tresor wurde erfolgreich entsperrt",
+    "unlockSuccessTitle": "Dein Tresor wurde erfolgreich entsperrt",
     "unlockSuccessDescription": "Du kannst jetzt die Autofill-Funktion in Anmeldeformularen in Deinem Browser nutzen.",
     "closePopup": "Popup schließen",
     "browseVault": "Tresor durchsuchen",
@@ -53,9 +53,9 @@
     "undo": "Rückgängig machen",
     "save": "Speichern",
     "saving": "Wird gespeichert ...",
-    "edit": "Edit",
+    "edit": "Bearbeiten",
     "create": "Erstellen",
-    "or": "Oder",
+    "or": "oder",
     "close": "Schließen",
     "dismiss": "Dismiss",
     "logout": "Abmelden",
@@ -64,9 +64,9 @@
     "enabled": "Aktiviert",
     "disabled": "Deaktiviert",
     "showPassword": "Passwort anzeigen",
-    "hidePassword": "Passwort verbergen",
-    "show": "Show",
-    "hide": "Hide",
+    "hidePassword": "Passwort ausblenden",
+    "show": "Anzeigen",
+    "hide": "Ausblenden",
     "showDetails": "Details anzeigen",
     "hideDetails": "Details ausblenden",
     "copyToClipboard": "In die Zwischenablage kopieren",
@@ -84,20 +84,20 @@
     "email": "E-Mail-Adresse",
     "username": "Benutzername",
     "password": "Passwort",
-    "generate": "Generieren",
+    "generate": "Erzeugen",
     "serviceName": "Name des Dienstes",
     "loggedIn": "Angemeldet",
     "syncingVault": "Tresor wird synchronisiert",
-    "checkingVaultUpdates": "Prüfe auf Tresor-Updates",
-    "syncingUpdatedVault": "Aktualisierter Tresor wird synchronisiert",
+    "checkingVaultUpdates": "Prüfe auf Tresor-Änderungen",
+    "syncingUpdatedVault": "Geänderter Tresor-Inhalt wird synchronisiert",
     "loadMore": "Mehr laden",
     "offline": "Offline",
-    "offlineMode": "Im Offline-Modus arbeiten",
+    "offlineMode": "Arbeitet im Offline-Modus",
     "pendingSync": "Synchronisierung läuft...",
     "mergingVaultChanges": "Tresor Änderungen zusammenführen...",
     "uploadingVault": "Tresor wird gespeichert...",
     "errors": {
-      "serverNotAvailable": "Der AliasVault-Server konnte nicht erreicht werden. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
+      "serverNotAvailable": "Der AliasVault-Server ist nicht erreichbar. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
       "clientVersionNotSupported": "Diese Version der AliasVault-Browser-Erweiterung wird vom Server nicht mehr unterstützt. Bitte aktualisiere Deine Browser-Erweiterung auf die neueste Version.",
       "browserExtensionOutdated": "Diese Browser-Erweiterung ist veraltet und kann nicht verwendet werden, um auf diesen Tresor zuzugreifen. Bitte aktualisiere die Browser-Erweiterung, um fortzufahren.",
       "serverVersionNotSupported": "Der AliasVault-Server muss auf eine neuere Version aktualisiert werden, um diese Browser-Erweiterung nutzen zu können. Bitte kontaktiere den Support, falls Du Hilfe benötigst.",
@@ -105,10 +105,10 @@
       "unknownError": "Ein unbekannter Fehler ist aufgetreten",
       "unknownErrorTryAgain": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
       "vaultNotAvailable": "Tresor nicht verfügbar",
-      "vaultIsLocked": "Der Tresor ist gesperrt.",
+      "vaultIsLocked": "Der Tresor ist gesperrt",
       "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an.",
-      "syncConflictMaxRetries": "Tresor konnte nach mehreren Versuchen nicht synchronisiert werden. Bitte versuche es später erneut.",
-      "mergeFailed": "Fehler beim Zusammenführen der Tresoränderungen. Bitte versuchen Sie es erneut.",
+      "syncConflictMaxRetries": "Tresor konnte trotz mehrmaliger Versuche nicht synchronisiert werden. Bitte versuche es später erneut.",
+      "mergeFailed": "Fehler beim Zusammenführen der Tresor-Änderungen. Bitte versuchen Sie es erneut.",
       "invalidCode": "Bitte gib einen gültigen 6-stelligen Sicherheits-Code ein.",
       "serverError": "Der AliasVault-Server konnte nicht erreicht werden. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
       "wrongPassword": "Falsches Passwort. Bitte versuche es erneut.",
@@ -173,10 +173,10 @@
     "openAliasVaultToUpgrade": "Zum Aktualisieren AliasVault öffnen ",
     "vaultUpgradeRequired": "Aktualisierung des Tresors erforderlich.",
     "dismissPopup": "Popup schliessen",
-    "noTotpItemsFound": "No 2FA code matches found",
+    "noTotpItemsFound": "Kein passender 2FA-Code gefunden",
     "close": "Schließen",
     "savePrompt": {
-      "title": "Save to AliasVault?",
+      "title": "In AliasVault speichern?",
       "neverForThisSite": "Never for this site",
       "addUrlTitle": "Add URL to credential?",
       "addUrl": "Add URL"
@@ -217,7 +217,7 @@
     "filters": {
       "folders": "Folders",
       "passkeys": "Passkeys",
-      "totp": "2FA Codes"
+      "totp": "2FA-Codes"
     },
     "sort": {
       "title": "Sortieren nach",
@@ -304,8 +304,8 @@
     "secretKey": "Secret-Key",
     "saveToViewCode": "Speichern, um den Code anzuzeigen",
     "defaultName": "Authenticator",
-    "deleteTotpCodeTitle": "Delete 2FA Code",
-    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
+    "deleteTotpCodeTitle": "Lösche 2FA-Code",
+    "deleteTotpCodeConfirmation": "Bist du sicher, dass du den 2FA-Code \"{{name}}\" löschen willst?",
     "errors": {
       "invalidSecretKey": "Ungültiges Format des Secret-Key"
     }
@@ -366,11 +366,11 @@
     "disabledForThisSite": "Für diese Seite deaktivieren",
     "temporarilyDisabledUntil": "Vorübergehend deaktiviert bis ",
     "resetAllSiteSettings": "Alle seitenspezifischen Einstellungen zurücksetzen",
-    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
-    "disabledSites": "Disabled sites",
-    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "clearAllDisabledSites": "Clear all disabled sites",
-    "temporaryUntil": "until",
+    "autofillPopupDescription": "Zeige das Autofill-Popup, wenn Anmeldefelder erkannt werden.",
+    "disabledSites": "Deaktivierte Webseiten",
+    "disabledSitesDescription": "Webseiten, an welchen das Autofill-Popup nicht angezeigt wird.",
+    "clearAllDisabledSites": "List der deaktivierten Webseiten leeren",
+    "temporaryUntil": "bis",
     "appearance": "Erscheinungsbild",
     "theme": "Thema",
     "useDefault": "Standard verwenden",
@@ -390,7 +390,7 @@
     "autoLockTimeoutHelp": "Der Tresor wird erst nach dem angegebenen Zeitraum der Inaktivität gesperrt (keine Nutzung von Autofill oder Öffnen des Erweiterungs-Popups). Der Tresor wird immer gesperrt, wenn der Browser geschlossen wird, unabhängig von dieser Einstellung.",
     "autoLockNever": "Niemals",
     "autoLock15Seconds": "15 Sekunden",
-    "autoLock30Seconds": "30 seconds",
+    "autoLock30Seconds": "30 Sekunden",
     "autoLock1Minute": "1 Minute",
     "autoLock5Minutes": "5 Minuten",
     "autoLock15Minutes": "15 Minuten",
@@ -443,9 +443,9 @@
     "loginSave": {
       "title": "Save Login Prompt",
       "description": "Show a prompt to save login credentials when you submit a login form on a website.",
-      "blockedSites": "Blocked sites",
-      "blockedSitesDescription": "Sites where the save prompt will never appear.",
-      "clearAllBlockedSites": "Clear all blocked sites"
+      "blockedSites": "Gesperrte Webseiten",
+      "blockedSitesDescription": "Webseiten wo keine Speicheraufforderung angezeigt wird.",
+      "clearAllBlockedSites": "Alle gesperrten Webseiten zurücksetzen"
     },
     "unlockMethod": {
       "title": "Methode zum Entsperren des Tresors",
@@ -494,8 +494,8 @@
       "createNewPasskey": "Neuen Passkey erstellen",
       "replacingPasskey": "Ersetzen des Passkeys: {{displayName}}",
       "confirmReplace": "Ersetzen bestätigen",
-      "selectExistingLogin": "Add to existing login:",
-      "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
+      "selectExistingLogin": "Zu bestehendem Login hinzufügen:",
+      "selectExistingLoginDescription": "Diesen Passkey zu bestehenden Anmeldedaten für diese Webseite hinzufügen.",
       "attachingToCredential": "Passkey zu {{serviceName}} hinzufügen",
       "attachPasskey": "Passkey hinzufügen"
     },
@@ -547,6 +547,6 @@
   },
   "sync": {
     "offline": "Offline",
-    "tapToRetry": "Tap to retry sync"
+    "tapToRetry": "Tippen, um die Synchronisierung erneut zu probieren"
   }
 }
