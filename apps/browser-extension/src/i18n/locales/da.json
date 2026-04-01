@@ -390,6 +390,7 @@
     "autoLockTimeoutHelp": "Boksen vil kun låse efter den angivne periode med inaktivitet (ingen brug af autofyld eller åbning af udvidelsen). Boksen vil altid låse, når browseren lukkes, uanset denne indstilling.",
     "autoLockNever": "Aldrig",
     "autoLock15Seconds": "15 sekunder",
+    "autoLock30Seconds": "30 seconds",
     "autoLock1Minute": "1 minut",
     "autoLock5Minutes": "5 minutter",
     "autoLock15Minutes": "15 minutter",
