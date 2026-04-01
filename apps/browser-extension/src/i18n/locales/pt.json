@@ -390,6 +390,7 @@
     "autoLockTimeoutHelp": "O cofre será bloqueado apenas após o período de inatividade especificado (nenhuma utilização de preenchimento automático ou pop-up da extensão abertos). O cofre sempre será bloqueado quando o navegador for fechado, independentemente desta configuração.",
     "autoLockNever": "Nunca",
     "autoLock15Seconds": "15 segundos",
+    "autoLock30Seconds": "30 seconds",
     "autoLock1Minute": "1 minuto",
     "autoLock5Minutes": "5 minutos",
     "autoLock15Minutes": "15 minutos",
