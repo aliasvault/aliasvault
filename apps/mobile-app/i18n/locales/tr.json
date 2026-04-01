@@ -194,6 +194,7 @@
     "autoLockOptions": {
       "never": "Asla",
       "5seconds": "5 saniye",
+      "15seconds": "15 seconds",
       "30seconds": "30 saniye",
       "1minute": "1 dakika",
       "15minutes": "15 dakika",
