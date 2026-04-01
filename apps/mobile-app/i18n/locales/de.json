@@ -48,12 +48,12 @@
     "verifyingAuthCode": "Sicherheits-Code wird überprüft",
     "verify": "Bestätige",
     "unlockVault": "Tresor entsperren",
-    "unlockWithBiometric": "Unlock with {{biometric}}",
+    "unlockWithBiometric": "Mit {{biometric}} entsperren",
     "unlockWithPin": "Mit PIN entsperren",
-    "unlockWithPassword": "Unlock with Password",
+    "unlockWithPassword": "Mit Passwort entsperren",
     "enterPassword": "Bitte gib Dein Passwort zum Entsperren des Tresors ein",
     "enterPasswordPlaceholder": "Passwort",
-    "enterAuthCode": "Gib den 6-stelligen Sicherheits-Code ein.",
+    "enterAuthCode": "Gib den 6-stelligen Sicherheits-Code ein",
     "usernamePlaceholder": "Name / name@unternehmen.com",
     "passwordPlaceholder": "Gib Dein Passwort ein",
     "enableBiometric": "{{biometric}} aktivieren?",
@@ -116,11 +116,11 @@
     "secretKey": "Secret-Key",
     "instructions": "Gib den Secret-Key ein, der von der Website angezeigt wird, bei der Du die Zwei-Faktor-Authentifizierung hinzufügen möchtest.",
     "saveToViewCode": "Speichern, um den Code anzuzeigen",
-    "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "scanQrCode": "QR-Code scannen",
+    "enterManually": "Gib den Einrichtungs-Schlüssel ein",
     "errors": {
       "invalidSecretKey": "Ungültiges Format des Secret-Key",
-      "scanFailed": "Failed to scan QR code. Please try again."
+      "scanFailed": "Fehler beim Scannen des QR-Codes. Bitte versuche es erneut."
     }
   },
   "settings": {
@@ -185,16 +185,16 @@
     "exportConfirmTitle": "Tresor exportieren",
     "exportWarning": "Warnung: Beim Exportieren Deines Tresors in eine unverschlüsselte Datei werden alle Deine Passwörter und sensiblen Daten im Klartext sichtbar.\nFühre diesen Vorgang nur auf vertrauenswürdigen Geräten aus und stelle sicher, dass Du:\n\n• die exportierte Datei an einem sicheren Ort speicherst.\n• die Datei löschst, sobald Du sie nicht mehr brauchst.\n• die Datei niemals mit anderen teilst.\n\nBist Du sicher, dass Du mit dem Export fortfahren möchtest?",
     "passwordConfirm": {
-      "title": "Confirm Password",
-      "defaultDescription": "Please enter your master password to continue.",
-      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+      "title": "Passwort wiederholen",
+      "defaultDescription": "Bitte gebe Dein Master-Passwort ein, um fortzufahren.",
+      "exportDescription": "Bitte gebe aus Sicherheitsgründen Dein Master-Passwort ein, um diesen Export zu bestätigen."
     },
     "security": "Sicherheit",
     "appVersion": "App-Version {{version}} ({{url}})",
     "autoLockOptions": {
       "never": "Niemals",
       "5seconds": "5 Sekunden",
-      "15seconds": "15 seconds",
+      "15seconds": "15 Sekunden",
       "30seconds": "30 Sekunden",
       "1minute": "1 Minute",
       "15minutes": "15 Minuten",
@@ -217,7 +217,7 @@
       "biometricDisabledMessage": "{{biometric}} ist für AliasVault deaktiviert. Bitte aktiviere es zuerst in den Geräteeinstellungen, um es zu verwenden.",
       "biometricHelp": "Benutze Biometrie, um Deinen Tresor zu entsperren. Dieser ist durch den {{keystore}} gesichert ist.",
       "biometricUnavailableHelp": "{{biometric}} ist nicht verfügbar. Tippe, um die Einstellungen zu öffnen und/oder gehe zu den Geräteeinstellungen, um es zu aktivieren und zu konfigurieren.",
-      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
+      "featureRequiresPasscode": "Diese Funktion erfordert, dass ein Zugangscode auf deinem Gerät eingerichtet ist.",
       "pin": "PIN-Code",
       "pinDescription": "Benutze einen eigenen PIN-Code, um Deinen Tresor schneller zu entsperren.",
       "pinEnabled": "PIN-Sperre erfolgreich aktiviert",
@@ -324,7 +324,7 @@
         "confirmMessage": "Du bist dabei, Dich mit Deinem Konto auf einem anderen Gerät anzumelden. Dieses Gerät wird vollen Zugriff auf Deinen Tresor haben. Fahre nur fort, wenn Du diesem Gerät vertraust.",
         "successDescription": "Das andere Gerät wurde erfolgreich angemeldet.",
         "requestExpired": "Diese Anmeldeanfrage ist abgelaufen. Bitte generiere einen neuen QR-Code.",
-        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
+        "noPinOrBiometricError": "Das Entsperren über dein Mobiltelefon benötigt eine PIN oder biometrische Authentifizierung. Bitte aktivere PIN oder Face ID/Touch ID in den Tresor-Entsperr-Einstellungen um diese Funktion zu nutzen."
       }
     }
   },
@@ -417,7 +417,7 @@
     "publicEmailTitle": "Öffentliche Temp-E-Mail-Anbieter",
     "publicEmailDescription": "Anonyme, aber beschränkte Privatsphäre. E-Mail-Inhalt ist für jeden lesbar, der die Adresse kennt.",
     "searchPlaceholder": "Tresor durchsuchen...",
-    "noMatchingItems": "No items match the selected filter.",
+    "noMatchingItems": "Keine Einträge entsprechen den ausgewählten Filtern.",
     "noMatchingItemsSearch": "Keine passenden Elemente \"{{search}}\"",
     "noMatchingItemsWithFilter": "Keine {{filter}} Elemente passend zu \"{{search}}\"",
     "noItemsFound": "Keine Einträge gefunden. Erstellen Sie einen, um zu beginnen. Tipp: Sie können sich auch in der AliasVault-Webapp anmelden, um Anmeldedaten aus anderen Passwort-Managern zu importieren.",
@@ -447,10 +447,10 @@
     "switchBackToBrowser": "Wechsle zurück zu Deinem Browser, um fortzufahren",
     "filters": {
       "all": "Titel",
-      "showFolders": "Folders",
+      "showFolders": "Ordner",
       "passkeys": "Passkeys",
       "attachments": "Anhänge",
-      "totp": "2FA Codes"
+      "totp": "2FA-Codes"
     },
     "sort": {
       "title": "Sortieren nach",
@@ -476,8 +476,8 @@
       "usernameCopied": "Nutzername in die Zwischenablage kopiert",
       "emailCopied": "E-Mail in die Zwischenablage kopiert",
       "passwordCopied": "Passwort in die Zwischenablage kopiert",
-      "totpCodeCopied": "TOTP code copied to clipboard",
-      "urlCopied": "URL copied to clipboard"
+      "totpCodeCopied": "TOTP-Code in die Zwischenablage kopiert",
+      "urlCopied": "URL in die Zwischenablage kopiert"
     },
     "createNewAliasFor": "Neuen Alias für",
     "contextMenu": {
@@ -487,13 +487,13 @@
       "copyUsername": "Benutzername kopieren",
       "copyEmail": "E-Mail-Adresse kopieren",
       "copyPassword": "Passwort kopieren",
-      "copyTotpCode": "Copy TOTP Code"
+      "copyTotpCode": "Kopiere TOTP-Code"
     },
     "urlContextMenu": {
-      "title": "URL Options",
-      "copyLink": "Copy Link",
-      "openLink": "Open Link",
-      "shareLink": "Share Link"
+      "title": "URL-Optionen",
+      "copyLink": "Link kopieren",
+      "openLink": "Link öffnen",
+      "shareLink": "Link teilen"
     },
     "viewHistory": "Historie ansehen",
     "history": "Historie",
