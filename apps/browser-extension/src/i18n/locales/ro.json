@@ -390,6 +390,7 @@
     "autoLockTimeoutHelp": "Seiful se va bloca doar după perioada de inactivitate specificată (fără completare automată sau deschiderea extensiei). Seiful se va bloca întotdeauna la închiderea browserului.",
     "autoLockNever": "Niciodată",
     "autoLock15Seconds": "15 secunde",
+    "autoLock30Seconds": "30 secunde",
     "autoLock1Minute": "1 minut",
     "autoLock5Minutes": "5 minute",
     "autoLock15Minutes": "15 minute",
