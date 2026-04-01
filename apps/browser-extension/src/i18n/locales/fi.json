@@ -390,6 +390,7 @@
     "autoLockTimeoutHelp": "Holvi lukittuu vasta määritetyn käyttämättömyysjakson jälkeen (ei automaattista täyttöä tai laajennusten ponnahdusikkunoita ole avattu). Holvi lukittuu aina, kun selain suljetaan, tästä asetuksesta riippumatta.",
     "autoLockNever": "Ei koskaan",
     "autoLock15Seconds": "15 sekuntia",
+    "autoLock30Seconds": "30 seconds",
     "autoLock1Minute": "1 minuutti",
     "autoLock5Minutes": "5 minuuttia",
     "autoLock15Minutes": "15 minuuttia",
