@@ -167,7 +167,7 @@
     <comment>Error message when file is too large</comment>
   </data>
   <data name="EncryptedFilePasswordPrompt" xml:space="preserve">
-    <value>This file is encrypted. Please enter the password you used when creating the export.</value>
+    <value>Diese Datei ist verschlüsselt. Bitte gib das Passwort ein, das Du beim Erstellen des Exports verwendet hast.</value>
     <comment>Prompt for encrypted file password</comment>
   </data>
   <data name="DecryptionPasswordLabel" xml:space="preserve">
