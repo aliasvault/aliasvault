@@ -17,22 +17,22 @@
     "unlockVault": "Entsperren",
     "unlockWithPin": "Mit PIN entsperren",
     "enterPinToUnlock": "Bitte gib Deine PIN zum Entsperren des Tresors ein",
-    "useMasterPassword": "Master-Passwort benutzen",
+    "useMasterPassword": "Master-Passwort verwenden",
     "unlockTitle": "Entsperre Deinen Tresor",
     "logoutConfirm": "Bist Du sicher, dass Du Dich abmelden möchtest?",
     "unlockSuccessTitle": "Dein Tresor wurde erfolgreich entsperrt",
     "unlockSuccessDescription": "Du kannst jetzt die Autofill-Funktion in Anmeldeformularen in Deinem Browser nutzen.",
     "closePopup": "Popup schließen",
     "browseVault": "Tresor durchsuchen",
-    "autoCloseUnlockPopup": "Auto-close on future sign ins",
-    "closingIn": "Closing in {{seconds}}s...",
+    "autoCloseUnlockPopup": "Bei zukünftigen Anmeldungen automatisch schließen",
+    "closingIn": "Schließe in {{seconds}} Sekunden...",
     "connectingTo": "Verbinde zu",
     "switchAccounts": "Konto wechseln?",
     "loginWithMobile": "Mit mobiler App anmelden",
     "unlockWithMobile": "Mit mobiler App entsperren",
     "scanQrCode": "Scanne diesen QR-Code mit Deiner AliasVault-App, um Dich anzumelden und Deinen Tresor zu entsperren.",
-    "passwordAttemptsWarning": "Incorrect password. You will be logged out if you enter the wrong password {{remainingAttempts}} more times.",
-    "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
+    "passwordAttemptsWarning": "Ungültiges Passwort. Noch {{remainingAttempts}} Versuche bis zur Abmeldung.",
+    "maxAttemptsReached": "Zu viele fehlgeschlagene Entsperrversuche. Du wurdest aus Sicherheitsgründen abgemeldet."
   },
   "menu": {
     "vault": "Tresor",
@@ -44,10 +44,10 @@
     "error": "Fehler",
     "cancel": "Abbrechen",
     "confirm": "Bestätigen",
-    "remove": "Remove",
+    "remove": "Entfernen",
     "back": "Zurück",
     "next": "Weiter",
-    "use": "Benutzen",
+    "use": "Verwenden",
     "add": "Hinzufügen",
     "delete": "Löschen",
     "undo": "Rückgängig machen",
@@ -57,7 +57,7 @@
     "create": "Erstellen",
     "or": "oder",
     "close": "Schließen",
-    "dismiss": "Dismiss",
+    "dismiss": "Schließen",
     "logout": "Abmelden",
     "copied": "Kopiert!",
     "openInNewWindow": "In neuem Fenster öffnen",
@@ -137,7 +137,7 @@
       "USERNAME_INVALID_EMAIL": "Ungültige E-Mail-Adresse.",
       "USERNAME_INVALID_CHARACTERS": "Der Benutzername ist ungültig. Er darf nur aus Buchstaben oder Ziffern bestehen.",
       "VAULT_NOT_UP_TO_DATE": "Dein Tresor ist nicht aktuell. Bitte synchronisiere Deinen Tresor und versuche es erneut.",
-      "INTERNAL_SERVER_ERROR": "Internal server error.",
+      "INTERNAL_SERVER_ERROR": "Interner Server Fehler.",
       "VAULT_ERROR": "Der lokale Tresor ist nicht aktuell. Bitte synchronisiere Deinen Tresor, indem Du die Seite aktualisierst, und versuche es erneut."
     }
   },
@@ -177,9 +177,9 @@
     "close": "Schließen",
     "savePrompt": {
       "title": "In AliasVault speichern?",
-      "neverForThisSite": "Never for this site",
-      "addUrlTitle": "Add URL to credential?",
-      "addUrl": "Add URL"
+      "neverForThisSite": "Niemals für diese Webseite",
+      "addUrlTitle": "URL zu Anmeldeinformationen hinzufügen?",
+      "addUrl": "URL hinzufügen"
     }
   },
   "items": {
@@ -202,7 +202,7 @@
     "welcomeTitle": "Welcome to AliasVault!",
     "welcomeDescription": "Du möchtest die AliasVault-Browser-Erweiterung verwenden? Navigiere zu einer Website und verwende das AliasVault-Popup-Fenster um einen neuen Zugang zu erstellen.",
     "noPasskeysFound": "Es wurden noch kein Passkey erstellt. Ein Passkey wird durch den Besuch einer Website erzeugt, die Passkeys als Authentifizierungsmethode anbietet.",
-    "noMatchingItems": "No items match the selected filter.",
+    "noMatchingItems": "Keine Einträge entsprechen den ausgewählten Filtern.",
     "noMatchingItemsSearch": "Keine passenden Elemente \"{{search}}\"",
     "noMatchingItemsWithFilter": "Keine {{filter}} Elemente passend zu \"{{search}}\"",
     "clearSearch": "Suche löschen",
@@ -215,7 +215,7 @@
     "deleteFolderAndItems": "Ordner und alle Einträge löschen",
     "deleteFolderAndItemsDescription": "{{count}} Elemente(n) werden nach kürzlich gelöschtem Element verschoben.",
     "filters": {
-      "folders": "Folders",
+      "folders": "Ordner",
       "passkeys": "Passkeys",
       "totp": "2FA-Codes"
     },
@@ -249,7 +249,7 @@
   },
   "itemTypes": {
     "selectType": "Neuen Eintrag hinzufügen",
-    "typeLabel": "Item Type",
+    "typeLabel": "Elementtyp",
     "creating": "Wird erstellt",
     "editing": "Bearbeiten",
     "regenerateAlias": "Alias neu generieren",
@@ -259,16 +259,16 @@
     "fieldType": "Feldtyp",
     "fieldTypes": {
       "text": "Text",
-      "hidden": "Versteckt (versteckter Text)",
+      "hidden": "Versteckt (maskierter Text)",
       "email": "E-Mail",
       "url": "URL",
       "phone": "Telefon",
       "number": "Nummer",
-      "date": "Date",
+      "date": "Datum",
       "textArea": "Mehrzeiliger Text"
     },
     "login": {
-      "title": "Anmelden"
+      "title": "Anmeldung"
     },
     "alias": {
       "title": "Alias"
@@ -281,8 +281,8 @@
     }
   },
   "fieldLabels": {
-    "login.url": "Website-URL",
-    "login.username": "Username",
+    "login.url": "Webseiten-URL",
+    "login.username": "Benutzername",
     "login.password": "Passwort",
     "alias.first_name": "Vorname",
     "alias.last_name": "Nachname",
@@ -312,10 +312,10 @@
   },
   "attachmentUploader": {
     "uploading": "Hochladen...",
-    "uploadSuccess": "Files uploaded successfully.",
-    "deleteSuccess": "Attachment deleted successfully.",
-    "firefoxExpandRequired": "To upload files, use the expanded window.",
-    "openExpandedWindow": "Open Expanded Window"
+    "uploadSuccess": "Dateien erfolgreich hochgeladen.",
+    "deleteSuccess": "Anhang wurde erfolgreich gelöscht.",
+    "firefoxExpandRequired": "Um Dateien hochzuladen, benutze das erweiterte Fenster.",
+    "openExpandedWindow": "Erweitertes Fenster öffnen"
   },
   "emails": {
     "title": "E-Mails",
@@ -387,7 +387,7 @@
     "clipboardClear15Seconds": "Nach 15 Sekunden löschen",
     "autoLockTimeout": "Sperr-Timeout",
     "autoLockTimeoutDescription": "Tresor bei Inaktivität automatisch sperren",
-    "autoLockTimeoutHelp": "Der Tresor wird erst nach dem angegebenen Zeitraum der Inaktivität gesperrt (keine Nutzung von Autofill oder Öffnen des Erweiterungs-Popups). Der Tresor wird immer gesperrt, wenn der Browser geschlossen wird, unabhängig von dieser Einstellung.",
+    "autoLockTimeoutHelp": "Der Tresor wird erst nach dem angegebenen Zeitraum der Inaktivität gesperrt (keine Nutzung von Auto-Fill oder Öffnen des Erweiterungs-Popups). Der Tresor wird immer gesperrt, wenn der Browser geschlossen wird, unabhängig von dieser Einstellung.",
     "autoLockNever": "Niemals",
     "autoLock15Seconds": "15 Sekunden",
     "autoLock30Seconds": "30 Sekunden",
@@ -441,8 +441,8 @@
       }
     },
     "loginSave": {
-      "title": "Save Login Prompt",
-      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "title": "Aufforderung zum Speichern von Anmeldedaten anzeigen",
+      "description": "Zeige eine Aufforderung zum Speichern von Anmeldedaten, wenn Du ein Anmeldeformular einer Webseite ausfüllst.",
       "blockedSites": "Gesperrte Webseiten",
       "blockedSitesDescription": "Webseiten wo keine Speicheraufforderung angezeigt wird.",
       "clearAllBlockedSites": "Alle gesperrten Webseiten zurücksetzen"
