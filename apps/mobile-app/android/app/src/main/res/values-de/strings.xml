@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">AliasVault AutoFill</string>
+  <string name="autofill_service_description" translatable="true">AliasVault Autofill</string>
   <string name="aliasvault_icon">AliasVault-Icon</string>
   <string name="common_close">Schließen</string>
   <string name="common_next">Weiter</string>
