@@ -390,6 +390,7 @@
     "autoLockTimeoutHelp": "Der Tresor wird erst nach dem angegebenen Zeitraum der Inaktivität gesperrt (keine Nutzung von Autofill oder Öffnen des Erweiterungs-Popups). Der Tresor wird immer gesperrt, wenn der Browser geschlossen wird, unabhängig von dieser Einstellung.",
     "autoLockNever": "Niemals",
     "autoLock15Seconds": "15 Sekunden",
+    "autoLock30Seconds": "30 seconds",
     "autoLock1Minute": "1 Minute",
     "autoLock5Minutes": "5 Minuten",
     "autoLock15Minutes": "15 Minuten",
