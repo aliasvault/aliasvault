@@ -4,18 +4,18 @@
     "close": "Schließen",
     "delete": "Löschen",
     "save": "Speichern",
-    "edit": "Edit",
+    "edit": "Bearbeiten",
     "yes": "Ja",
     "no": "Nein",
     "ok": "OK",
     "continue": "Fortfahren",
     "loading": "Laden",
     "error": "Fehler",
-    "success": "Aktion erfolgreich",
+    "success": "Erfolg",
     "never": "Niemals",
     "copied": "In die Zwischenablage kopiert",
     "loadMore": "Mehr laden",
-    "use": "Benutzen",
+    "use": "Verwenden",
     "confirm": "Bestätigen",
     "next": "Weiter",
     "notice": "Hinweis",
@@ -23,7 +23,7 @@
     "disabled": "Deaktiviert",
     "twoFactorAuthentication": "Zwei-Faktor-Authentifizierung",
     "add": "Hinzufügen",
-    "generate": "Generieren",
+    "generate": "Erzeugen",
     "attachments": "Anhänge",
     "or": "oder",
     "deleteItemConfirmTitle": "Eintrag löschen",
@@ -41,8 +41,8 @@
     "password": "Passwort",
     "authCode": "Sicherheits-Code",
     "unlock": "Entsperren",
-    "unlocking": "Entsperren...",
-    "loggingIn": "Anmelden",
+    "unlocking": "Entsperre...",
+    "loggingIn": "Anmeldung…",
     "validatingCredentials": "Anmeldedaten werden überprüft",
     "syncingVault": "Tresor wird synchronisiert",
     "verifyingAuthCode": "Sicherheits-Code wird überprüft",
@@ -108,7 +108,7 @@
     "passkey": "Passkey",
     "helpText": "Passkeys werden auf der Webseite erzeugt, wenn sie aufgefordert werden. Sie können nicht manuell bearbeitet werden. Um diesen Passkey zu entfernen, kannst Du ihn aus diesem Zugang löschen.",
     "passkeyMarkedForDeletion": "Passkey zum Löschen vorgemerkt",
-    "passkeyWillBeDeleted": "Dieser Passkey wird gelöscht, wenn Du den Zugang speicherst."
+    "passkeyWillBeDeleted": "Dieser Passkey wird gelöscht, wenn Du die Zugangsdaten speicherst."
   },
   "totp": {
     "addCode": "2FA-Code hinzufügen",
@@ -347,7 +347,7 @@
       "cardInformation": "Karteninformationen"
     },
     "note": {
-      "title": "Beachte"
+      "title": "Notiz"
     },
     "addField": "Feld hinzufügen",
     "addCustomField": "Benutzerdefiniertes Feld hinzufügen",
