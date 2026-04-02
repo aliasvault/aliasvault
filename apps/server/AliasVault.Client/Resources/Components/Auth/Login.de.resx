@@ -124,7 +124,7 @@
   </data>
   <!-- Descriptions and help text -->
   <data name="TwoFactorAuthenticationDescription" xml:space="preserve">
-    <value>Dein Konto wird durch eine Authenticator-App gesichert. Bitte trage Deinen Sicherheits-Code ein</value>
+    <value>Dein Konto wird durch eine Authenticator-App gesichert. Bitte trage Deinen Sicherheits-Code ein.</value>
     <comment>Description for 2FA step</comment>
   </data>
   <data name="RecoveryCodeDescription" xml:space="preserve">
@@ -145,7 +145,7 @@
   </data>
   <!-- Loading and status messages -->
   <data name="LoggingInMessage" xml:space="preserve">
-    <value>Anmeldung läuft...</value>
+    <value>Anmeldung...</value>
     <comment>Loading message during login process</comment>
   </data>
   <data name="VerifyingTwoFactorCodeMessage" xml:space="preserve">
@@ -158,11 +158,11 @@
   </data>
   <!-- Error messages -->
   <data name="LoginErrorMessage" xml:space="preserve">
-    <value>Beim Verarbeiten der Anmelde-Anfrage ist ein Fehler aufgetreten. Bitte versuche es (später) erneut.</value>
+    <value>Während des Anmeldevorganges ist ein Fehler aufgetreten. Bitte versuche es (später) erneut.</value>
     <comment>Generic login error message</comment>
   </data>
   <data name="LoginRequestErrorMessage" xml:space="preserve">
-    <value>Beim Verarbeiten der Anmelde-Anfrage ist ein Fehler aufgetreten.</value>
+    <value>Während des Anmeldevorganges ist ein Fehler aufgetreten.</value>
     <comment>Login request processing error message</comment>
   </data>
   <!-- Placeholders -->
