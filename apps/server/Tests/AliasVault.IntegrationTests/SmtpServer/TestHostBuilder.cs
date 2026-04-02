@@ -43,13 +43,10 @@ public class TestHostBuilder : AbstractTestHostBuilder
         {
             // Override database connection with provided connection.
             services.Remove(services.First(x => x.ServiceType == typeof(IConfiguration)));
+            var memorySettings = CreateMemoryConfigurationSettings(dbConnection.ConnectionString);
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true)
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["DatabaseProvider"] = "postgresql",
-                    ["ConnectionStrings:AliasServerDbContext"] = dbConnection.ConnectionString,
-                })
+                .AddInMemoryCollection(memorySettings)
                 .Build();
 
             services.AddSingleton<IConfiguration>(configuration);
@@ -78,27 +75,37 @@ public class TestHostBuilder : AbstractTestHostBuilder
         return builder.Build();
     }
 
+    /// <inheritdoc />
+    protected override void AddIntegrationTestConfiguration(IDictionary<string, string?> settings)
+    {
+        settings[AdvertisedHostnameConfiguration.AdvertisedHostnameConfigurationKey] = IntegrationAdvertisedHostname;
+    }
+
     /// <summary>
     /// Configures the SMTP services for the test host.
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
     private static void ConfigureSmtpServices(IServiceCollection services)
     {
-        services.AddSingleton(new Config
+        services.AddSingleton(provider =>
         {
-            AllowedToDomains = new List<string> { "example.tld" },
-            SmtpTlsEnabled = "false",
-            AdvertisedHostname = IntegrationAdvertisedHostname,
+            var configuration = provider.GetRequiredService<IConfiguration>();
+            return new Config
+            {
+                AllowedToDomains = new List<string> { "example.tld" },
+                SmtpTlsEnabled = "false",
+                AdvertisedHostname = AdvertisedHostnameConfiguration.ReadAdvertisedHostname(configuration),
+            };
         });
 
         services.AddTransient<IMessageStore, DatabaseMessageStore>();
         services.AddSingleton<SmtpServer>(
             provider =>
             {
-                var config = provider.GetRequiredService<Config>();
-                var advertisedHostname = AdvertisedHostnameResolver.Resolve(
+                var configuration = provider.GetRequiredService<IConfiguration>();
+                var advertisedHostname = AdvertisedHostnameConfiguration.ResolveAdvertisedHostname(
+                    configuration,
                     Environment.GetEnvironmentVariable("SMTP_ADVERTISED_HOSTNAME"),
-                    config.AdvertisedHostname,
                     Dns.GetHostName);
                 var options = new SmtpServerOptionsBuilder()
                     .ServerName(advertisedHostname);
