@@ -8,6 +8,7 @@
 namespace AliasVault.IntegrationTests.SmtpServer;
 
 using System.Data.Common;
+using System.Net;
 using AliasVault.SmtpService;
 using AliasVault.SmtpService.Handlers;
 using AliasVault.SmtpService.Workers;
@@ -22,6 +23,11 @@ using Microsoft.Extensions.Hosting;
 /// </summary>
 public class TestHostBuilder : AbstractTestHostBuilder
 {
+    /// <summary>
+    /// Hostname advertised in SMTP banner / EHLO for integration tests (must match production resolver usage).
+    /// </summary>
+    public const string IntegrationAdvertisedHostname = "mail.integration.test";
+
     /// <summary>
     /// Builds the SmtpService test host with a provided database connection.
     /// </summary>
@@ -82,14 +88,20 @@ public class TestHostBuilder : AbstractTestHostBuilder
         {
             AllowedToDomains = new List<string> { "example.tld" },
             SmtpTlsEnabled = "false",
+            AdvertisedHostname = IntegrationAdvertisedHostname,
         });
 
         services.AddTransient<IMessageStore, DatabaseMessageStore>();
         services.AddSingleton<SmtpServer>(
             provider =>
             {
+                var config = provider.GetRequiredService<Config>();
+                var advertisedHostname = AdvertisedHostnameResolver.Resolve(
+                    Environment.GetEnvironmentVariable("SMTP_ADVERTISED_HOSTNAME"),
+                    config.AdvertisedHostname,
+                    Dns.GetHostName);
                 var options = new SmtpServerOptionsBuilder()
-                    .ServerName("aliasvault");
+                    .ServerName(advertisedHostname);
 
                 // Note: port 25 doesn't work in GitHub actions so we use these instead for the integration tests:
                 // - 2525 for the SMTP server

@@ -1300,6 +1300,42 @@ update_env_var() {
     printf "  ${GREEN}> $key has been set in $ENV_FILE.${NC}\n"
 }
 
+# Prompt for SMTP_ADVERTISED_HOSTNAME (banner / EHLO; should match PTR for the public IP).
+# On empty Enter, uses default_on_enter when non-empty; otherwise stores an empty value (OS hostname at runtime).
+# User may type "none" or "-" to force an empty .env value even when a default is shown.
+prompt_smtp_advertised_hostname() {
+    local default_on_enter="$1"
+    local current
+    current=$(grep "^SMTP_ADVERTISED_HOSTNAME=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2- | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+
+    printf "\n${CYAN}--- SMTP banner / EHLO hostname (PTR alignment) ---${NC}\n"
+    printf "Tools like MXToolbox expect this name to match reverse DNS (PTR) for this server's public IP.\n"
+    printf "Use the same FQDN as your MX record target (e.g. mail.example.com).\n"
+    if [ -n "$current" ]; then
+        printf "Current value: ${CYAN}${current}${NC}\n"
+    fi
+    if [ -n "$default_on_enter" ]; then
+        printf "Press Enter to keep or apply default: ${GREEN}${default_on_enter}${NC}\n"
+    else
+        printf "Press Enter to leave empty (service will use the OS hostname at runtime — not ideal for production).\n"
+    fi
+    printf "Type ${GREEN}none${NC} or ${GREEN}-${NC} to store an empty value explicitly.\n"
+    read -r -p "SMTP advertised hostname: " user_in
+
+    local trimmed
+    trimmed=$(echo "$user_in" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    local final
+    if [ -z "$trimmed" ]; then
+        final="$default_on_enter"
+    elif [ "$trimmed" = "none" ] || [ "$trimmed" = "-" ]; then
+        final=""
+    else
+        final="$trimmed"
+    fi
+
+    update_env_var "SMTP_ADVERTISED_HOSTNAME" "$final"
+}
+
 # Helper function to write secrets to files instead of .env
 write_secret_to_file() {
     local secret_name=$1
@@ -2182,6 +2218,17 @@ handle_email_configuration() {
                 fi
             done
 
+            local first_domain
+            first_domain=$(echo "$new_domains" | cut -d',' -f1 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+            local mail_suggest="mail.${first_domain}"
+            local existing_smtp
+            existing_smtp=$(grep "^SMTP_ADVERTISED_HOSTNAME=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2- | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+            local smtp_default_for_prompt="$mail_suggest"
+            if [ -n "$existing_smtp" ]; then
+                smtp_default_for_prompt="$existing_smtp"
+            fi
+            prompt_smtp_advertised_hostname "$smtp_default_for_prompt"
+
             # Update .env file and restart
             if ! update_env_var "PRIVATE_EMAIL_DOMAINS" "$new_domains"; then
                 printf "${RED}Failed to update configuration.${NC}\n"
@@ -2217,6 +2264,7 @@ handle_email_configuration() {
             printf "\n"
             printf "If emails don't arrive, please verify:\n"
             printf "   > DNS MX records are correctly configured\n"
+            printf "   > Reverse DNS (PTR) for your public IP matches SMTP_ADVERTISED_HOSTNAME (banner / EHLO)\n"
             printf "   > Your server's firewall allows incoming traffic on port 25 and 587\n"
             printf "   > Your ISP/hosting provider doesn't block SMTP traffic\n"
             printf "\n"
@@ -3195,6 +3243,14 @@ handle_hostname_configuration() {
     # Update the hostname
     update_env_var "HOSTNAME" "$NEW_HOSTNAME"
 
+    if [ "$HOSTNAME_CHANGED" = true ]; then
+        printf "\n${CYAN}If incoming mail uses this hostname in DNS (PTR / MX target), align the SMTP banner via SMTP_ADVERTISED_HOSTNAME.${NC}\n"
+        read -p "Configure SMTP advertised hostname now? (y/n): " cfg_smtp
+        if [ "$cfg_smtp" = "y" ] || [ "$cfg_smtp" = "Y" ]; then
+            prompt_smtp_advertised_hostname "$NEW_HOSTNAME"
+        fi
+    fi
+
     # If using self-signed cert and hostname changed, offer to regenerate
     if [ "$HOSTNAME_CHANGED" = true ]; then
         LETSENCRYPT_ENABLED=$(grep "^LETSENCRYPT_ENABLED=" "$ENV_FILE" | cut -d '=' -f2)
@@ -3342,6 +3398,31 @@ check_and_populate_env() {
     if ! grep -q "^SMTP_TLS_PORT=" "$ENV_FILE" || [ -z "$(grep "^SMTP_TLS_PORT=" "$ENV_FILE" | cut -d '=' -f2)" ]; then
         update_env_var "SMTP_TLS_PORT" "587"
         printf "  Set SMTP_TLS_PORT\n"
+    fi
+
+    # SMTP_ADVERTISED_HOSTNAME (optional; empty = OS hostname — set FQDN matching PTR in production)
+    local smtp_adv_value=""
+    if grep -q "^SMTP_ADVERTISED_HOSTNAME=" "$ENV_FILE" 2>/dev/null; then
+        smtp_adv_value=$(grep "^SMTP_ADVERTISED_HOSTNAME=" "$ENV_FILE" | cut -d'=' -f2- | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    fi
+    local env_host_smtp
+    env_host_smtp=$(grep "^HOSTNAME=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    local smtp_default_from_host=""
+    if [ -n "$env_host_smtp" ] && [ "$env_host_smtp" != "localhost" ]; then
+        smtp_default_from_host="$env_host_smtp"
+    fi
+    local existing_version
+    existing_version=$(grep "^ALIASVAULT_VERSION=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' \t\r\n')
+
+    if ! grep -q "^SMTP_ADVERTISED_HOSTNAME=" "$ENV_FILE" 2>/dev/null; then
+        if [ -n "$existing_version" ]; then
+            update_env_var "SMTP_ADVERTISED_HOSTNAME" ""
+            printf "  Added SMTP_ADVERTISED_HOSTNAME (empty). Set it with ${GREEN}./install.sh configure-email${NC} or edit .env for PTR/banner alignment.\n"
+        else
+            prompt_smtp_advertised_hostname "$smtp_default_from_host"
+        fi
+    elif [ -z "$smtp_adv_value" ] && [ -z "$existing_version" ]; then
+        prompt_smtp_advertised_hostname "$smtp_default_from_host"
     fi
 }
 

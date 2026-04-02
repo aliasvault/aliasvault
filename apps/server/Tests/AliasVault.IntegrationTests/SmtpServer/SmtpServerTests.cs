@@ -7,6 +7,7 @@
 
 namespace AliasVault.IntegrationTests.SmtpServer;
 
+using System.Net.Sockets;
 using System.Text;
 using AliasServerDb;
 using AliasVault.Cryptography.Server;
@@ -118,6 +119,42 @@ public class SmtpServerTests
         await _testHost.StopAsync();
         _testHost.Dispose();
         await _testHostBuilder.DisposeAsync();
+    }
+
+    /// <summary>
+    /// The SMTP greeting line must include the configured advertised hostname (same path as production resolver).
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task SmtpBanner_ContainsConfiguredHostname()
+    {
+        using var client = new TcpClient();
+        const int maxRetries = 10;
+        const int retryDelayMs = 100;
+
+        for (var attempt = 1; attempt <= maxRetries; attempt++)
+        {
+            try
+            {
+                await client.ConnectAsync("127.0.0.1", 2525);
+                break;
+            }
+            catch (SocketException) when (attempt < maxRetries)
+            {
+                await Task.Delay(retryDelayMs);
+            }
+        }
+
+        using var stream = client.GetStream();
+        var buffer = new byte[512];
+        var n = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length));
+        var line = Encoding.ASCII.GetString(buffer, 0, n);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(line, Does.StartWith("220 "));
+            Assert.That(line, Does.Contain(TestHostBuilder.IntegrationAdvertisedHostname));
+        });
     }
 
     /// <summary>
