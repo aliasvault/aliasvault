@@ -64,7 +64,7 @@
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Nachfolgend findest Du alle Deine Einträge.</value>
+    <value>Nachfolgend findest Du alle Deine Elemente.</value>
     <comment>Page description text</comment>
   </data>
   <!-- Settings Dropdown -->
@@ -98,11 +98,11 @@
   </data>
   <!-- Empty State -->
   <data name="NoItemsTitle" xml:space="preserve">
-    <value>Noch keine Einträge</value>
+    <value>Noch keine Elemente</value>
     <comment>Title when no items exist</comment>
   </data>
   <data name="CreateFirstItemText" xml:space="preserve">
-    <value>Erstelle deinen ersten Eintrag mit</value>
+    <value>Erstelle dein erstes Element mit</value>
     <comment>Text explaining how to create first item</comment>
   </data>
   <data name="NewAliasButtonText" xml:space="preserve">
@@ -122,7 +122,7 @@
     <comment>Separator text between options</comment>
   </data>
   <data name="ImportItemsText" xml:space="preserve">
-    <value>Wenn Du zuvor einen anderen Passwort-Manager verwendet hast, kannst Du Deine Einträge daraus importieren.</value>
+    <value>Wenn Du zuvor einen anderen Passwort-Manager verwendet hast, kannst Du Deine Daten daraus importieren.</value>
     <comment>Text explaining import option</comment>
   </data>
   <data name="ImportButtonText" xml:space="preserve">
@@ -131,7 +131,7 @@
   </data>
   <!-- Error Messages -->
   <data name="FailedToLoadItemsMessage" xml:space="preserve">
-    <value>Fehler beim Laden der Einträge.</value>
+    <value>Fehler beim Laden der Elemente.</value>
     <comment>Error message when items fail to load</comment>
   </data>
   <!-- Filter Options -->
@@ -173,7 +173,7 @@
   </data>
   <!-- Filtered Empty States -->
   <data name="NoItemsFound" xml:space="preserve">
-    <value>Keine Einträge entsprechen den ausgewählten Filtern.</value>
+    <value>Keine Elemente entsprechen den ausgewählten Filtern.</value>
     <comment>Empty state message when no items match the filter</comment>
   </data>
   <data name="EmptyFolderMessage" xml:space="preserve">
@@ -181,7 +181,7 @@
     <comment>Empty state message when folder has no items</comment>
   </data>
   <data name="AllItemsInFoldersMessage" xml:space="preserve">
-    <value>Alle Deine Einträge sind in Ordnern organisiert. Tippe auf einen Ordner oben, um Deine Anmeldedaten anzuzeigen, oder verwende die Suche, um bestimmte Einträge zu finden.</value>
+    <value>Alle Ihre Elemente sind in Ordnern organisiert. Tippen Sie auf einen Ordner oben, um Ihre Anmeldedaten anzuzeigen, oder verwenden Sie die Suche, um bestimmte Elemente zu finden.</value>
     <comment>Empty state message when all items are in folders and none at root level</comment>
   </data>
   <!-- Folder Management -->
