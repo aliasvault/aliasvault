@@ -26,8 +26,8 @@
     "generate": "Erzeugen",
     "attachments": "Anhänge",
     "or": "oder",
-    "deleteItemConfirmTitle": "Eintrag löschen",
-    "deleteItemConfirmDescription": "Bist Du sicher, dass Du diesen Eintrag löschen möchtest?",
+    "deleteItemConfirmTitle": "Element löschen",
+    "deleteItemConfirmDescription": "Bist Du sicher, dass Du dieses Element löschen möchtest?",
     "errors": {
       "unknownError": "Ein unbekannter Fehler ist aufgetreten.",
       "unknownErrorTryAgain": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
@@ -159,7 +159,7 @@
     "autoLock": "Sperr-Timeout",
     "clipboardClear": "Zwischenablage leeren",
     "clipboardClearDescription": "Kopierte Passwörter und vertrauliche Informationen nach einem bestimmten Zeitraum automatisch aus der Zwischenablage löschen.",
-    "clipboardClearAndroidWarning": "Hinweis: Einige Android-Geräte haben den Zwischenablage-Verlauf aktiviert, was möglicherweise zuvor kopierte Einträge zwischenspeichern kann, auch wenn AliasVault die Zwischenablage löscht. AliasVault kann nur den letzten Eintrag überschreiben. Ältere Einträge bleiben möglicherweise in der Geschichte sichtbar. Aus Sicherheitsgründen wird empfohlen, alle Funktionen zur Zwischenablage in den Geräteeinstellungen zu deaktivieren.",
+    "clipboardClearAndroidWarning": "Hinweis: Einige Android-Geräte haben den Zwischenablage-Verlauf aktiviert, was möglicherweise zuvor kopierte Einträge zwischenspeichern kann, auch wenn AliasVault die Zwischenablage löscht. AliasVault kann nur den letzten Eintrag überschreiben. Ältere Einträge bleiben möglicherweise im Verlauf sichtbar. Aus Sicherheitsgründen wird empfohlen, alle Verlaufsfunktionen zur Zwischenablage in den Geräteeinstellungen zu deaktivieren.",
     "clipboardClearOptions": {
       "never": "Niemals",
       "5seconds": "5 Sekunden",
@@ -385,9 +385,9 @@
   },
   "items": {
     "title": "Titel",
-    "addItem": "Eintrag hinzufügen",
-    "editItem": "Eintrag bearbeiten",
-    "deleteItem": "Eintrag löschen",
+    "addItem": "Element hinzufügen",
+    "editItem": "Element bearbeiten",
+    "deleteItem": "Element löschen",
     "itemDetails": "Details",
     "itemCreated": "Element erstellt",
     "itemCreatedMessage": "Ihr neues Element wurde hinzugefügt und ist bereit zum Einsatz.",
@@ -417,11 +417,11 @@
     "publicEmailTitle": "Öffentliche Temp-E-Mail-Anbieter",
     "publicEmailDescription": "Anonyme, aber beschränkte Privatsphäre. E-Mail-Inhalt ist für jeden lesbar, der die Adresse kennt.",
     "searchPlaceholder": "Tresor durchsuchen...",
-    "noMatchingItems": "Keine Einträge entsprechen den ausgewählten Filtern.",
+    "noMatchingItems": "Keine Elemente entsprechen den ausgewählten Filtern.",
     "noMatchingItemsSearch": "Keine passenden Elemente \"{{search}}\"",
     "noMatchingItemsWithFilter": "Keine {{filter}} Elemente passend zu \"{{search}}\"",
-    "noItemsFound": "Keine Einträge gefunden. Erstellen Sie einen, um zu beginnen. Tipp: Sie können sich auch in der AliasVault-Webapp anmelden, um Anmeldedaten aus anderen Passwort-Managern zu importieren.",
-    "allItemsInFolders": "Alle Ihre Einträge sind in Ordnern organisiert. Tippen Sie auf einen Ordner oben, um Ihre Anmeldedaten anzuzeigen, oder verwenden Sie die Suche, um bestimmte Einträge zu finden.",
+    "noItemsFound": "Keine Elemente gefunden. Erstelle ein Element, um zu beginnen. Tipp: Du kannst dich auch in der AliasVault-Webapp anmelden, um Anmeldedaten aus anderen Passwort-Managern zu importieren.",
+    "allItemsInFolders": "Alle Deine Elemente sind in Ordnern organisiert. Tippe auf einen Ordner oben, um Deine Anmeldedaten anzuzeigen, oder verwende die Suche, um bestimmte Elemente zu finden.",
     "noPasskeysFound": "Es wurden noch kein Passkey erstellt. Ein Passkey wird durch den Besuch einer Website erzeugt, die Passkeys als Authentifizierungsmethode anbietet.",
     "clearSearch": "Suche löschen",
     "clearFilter": "Filter löschen",
@@ -532,9 +532,9 @@
       "confirmDeleteMessage": "Dieses Element wird dauerhaft gelöscht und kann nicht wiederhergestellt werden.",
       "confirmEmptyAllTitle": "Zuletzt gelöscht leeren?",
       "confirmEmptyAllMessage": "Alle {{count}} Elemente werden dauerhaft gelöscht und können nicht wiederhergestellt werden.",
-      "itemRestored": "Eintrag wiederhergestellt",
-      "itemDeleted": "Eintrag dauerhaft gelöscht",
-      "allItemsDeleted": "Alle Einträge dauerhaft gelöscht"
+      "itemRestored": "Element wiederhergestellt",
+      "itemDeleted": "Element endgültig gelöscht",
+      "allItemsDeleted": "Alle Elemente endgültig gelöscht"
     }
   },
   "emails": {
@@ -569,7 +569,7 @@
   },
   "apiErrors": {
     "CLAIM_DOES_NOT_MATCH_USER": "Die aktuell gewählte E-Mail-Adresse wird bereits verwendet. Bitte ändere die E-Mail-Adresse, indem Du diese Zugangsdaten bearbeitest.",
-    "CLAIM_DOES_NOT_EXIST": "Beim Laden der E-Mails ist ein Fehler aufgetreten. Bitte bearbeite und speichere den Eintrag, um die Datenbank zu synchronisieren, und versuche es dann erneut.",
+    "CLAIM_DOES_NOT_EXIST": "Beim Laden der E-Mails ist ein Fehler aufgetreten. Bitte bearbeite und speichere das Element, um die Datenbank zu synchronisieren, und versuche es dann erneut.",
     "UNKNOWN_ERROR": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
     "ACCOUNT_LOCKED": "Das Konto wurde wegen zu vieler fehlgeschlagener Anmeldeversuche vorübergehend gesperrt. Bitte versuche es später erneut.",
     "ACCOUNT_BLOCKED": "Dein Konto wurde deaktiviert. Wenn Du glaubst, dass dies ein Fehler ist, kontaktiere bitte den Support.",
