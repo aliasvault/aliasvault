@@ -91,7 +91,7 @@
     <comment>Load more button text with count. {0} is placeholder for number of remaining emails</comment>
   </data>
   <data name="ClaimDoesNotExistError" xml:space="preserve">
-    <value>Beim Laden der E-Mails ist ein Fehler aufgetreten. Bitte bearbeite und speichere den Eintrag, um die Datenbank zu synchronisieren, und versuche es dann erneut.</value>
+    <value>Beim Laden der E-Mails ist ein Fehler aufgetreten. Bitte bearbeite und speichere einen beliebigen Eintrag, um die Datenbank zu synchronisieren, und versuche es dann erneut.</value>
     <comment>Error message when email claim does not exist</comment>
   </data>
   <data name="LoadEmailsFailedMessage" xml:space="preserve">
