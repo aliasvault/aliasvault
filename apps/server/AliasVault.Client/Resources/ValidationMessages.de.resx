@@ -94,7 +94,7 @@
   </data>
   <!-- Terms and conditions -->
   <data name="MustAcceptTerms" xml:space="preserve">
-    <value>Du musst die Allgemeinen Geschäftsbedingungen (AGB) akzeptieren.</value>
+    <value>Du musst die Nutzungsbedingungen akzeptieren.</value>
     <comment>Error message for terms and conditions acceptance</comment>
   </data>
 </root>
