@@ -9,11 +9,11 @@
 "title" = "Titel";
 "unknown_error" = "Ein unbekannter Fehler ist aufgetreten";
 
-"loading_items" = "Einträge werden geladen...";
-"no_items_found" = "Keine Einträge gefunden";
-"no_items_match" = "Keine existierenden Einträge entsprechen deiner Suche";
-"create_new_item" = "Neuen Eintrag erstellen";
-"select_item" = "Eintrag auswählen";
+"loading_items" = "Elemente werden geladen...";
+"no_items_found" = "Keine Elemente gefunden";
+"no_items_match" = "Keine existierenden Elemente entsprechen deiner Suche";
+"create_new_item" = "Neues Element anlegen";
+"select_item" = "Element auswählen";
 "select_text_to_insert" = "Text zum Einfügen auswählen";
 "choose_username" = "Wähle Deinen Benutzernamen";
 "select_text_to_insert_message" = "Text zum Einfügen in das fokussierte Eingabefeld auswählen";
@@ -21,8 +21,8 @@
 "username_prefix" = "Benutzername: ";
 "email_prefix" = "E-Mail-Adresse: ";
 "password" = "Passwort";
-"items_load_error" = "Fehler beim Laden der Einträge. Bitte öffne die AliasVault-App, um nach Änderungen zu suchen.";
-"no_item_selected" = "Kein Eintrag ausgewählt.";
+"items_load_error" = "Fehler beim Laden der Elemente. Bitte öffne die AliasVault-App, um nach Änderungen zu suchen.";
+"no_item_selected" = "Kein Element ausgewählt.";
 
 /* Context menu strings */
 "copy_username" = "Benutzername kopieren";
@@ -35,7 +35,7 @@
 "totp_code" = "TOTP-Code";
 
 /* Search bar */
-"search_items" = "Suche Einträge...";
+"search_items" = "Suche Elemente...";
 
 /* Passkey registration */
 "create_passkey_title" = "Neuen Passkey erstellen";
@@ -58,9 +58,9 @@
 "create_passkey_explanation" = "Dies erzeugt einen neuen Passkey und speichert ihn in Deinem Tresor. Er wird automatisch auf alle Deine Geräte synchronisiert, die AliasVault verwenden.";
 
 /* Passkey merge with existing item */
-"passkey_add_to_existing" = "Oder füge den Passkey einem existierenden Eintrag hinzu";
+"passkey_add_to_existing" = "Oder füge den Passkey einem vorhandenen Element hinzu";
 "add_passkey" = "Passkey hinzufügen";
-"merge_passkey_explanation" = "Dies wird einem existierenden Eintrag einen Passkey hinzufügen. Dein Passwort und andere Daten werden beibehalten.";
+"merge_passkey_explanation" = "Dies wird einem vorhanden Element einen Passkey hinzufügen. Dein Passwort und andere Daten werden beibehalten.";
 
 /* PIN Unlock */
 "unlock_vault" = "Tresor entsperren";
