@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">AliasVault AutoFill</string>
+  <string name="autofill_service_description" translatable="true">AliasVault Autofill</string>
   <string name="aliasvault_icon">AliasVault-Icon</string>
   <string name="common_close">Schließen</string>
   <string name="common_next">Weiter</string>
@@ -9,39 +9,39 @@
   <string name="common_back">Zurück</string>
   <string name="unknown_error">Ein unbekannter Fehler ist aufgetreten</string>
   <string name="autofill_failed_to_retrieve">Abruf der Daten fehlgeschlagen. Öffne die App</string>
-  <string name="autofill_no_match_found">Keine Übereinstimmung gefunden, neun Eintrag erstellen?</string>
+  <string name="autofill_no_match_found">Keine Übereinstimmung gefunden, neues Element erstellen?</string>
   <string name="autofill_open_app">App öffnen</string>
-  <string name="autofill_vault_locked">Der Tresor ist gesperrt.</string>
+  <string name="autofill_vault_locked">Der Tresor ist gesperrt</string>
   <string name="biometric_store_key_title">Schlüssel speichern</string>
   <string name="biometric_store_key_subtitle">Authentifiziere Dich, um Deinen Schlüssel sicher im Android Keystore zu speichern. Dies ermöglicht einen sicheren Zugriff auf Deinen Tresor.</string>
   <string name="biometric_unlock_vault_title">Tresor entsperren</string>
   <string name="biometric_unlock_vault_subtitle">Authentifiziere Dich, um auf Deinen Tresor zuzugreifen</string>
   <string name="passkey_registration_title">Passkey erstellen</string>
   <string name="create_passkey_title">Neuen Passkey erstellen</string>
-  <string name="create_passkey_subtitle">Registriere einen neuen Passkey für diese Website. Er wird sicher in Deinem Tresor gespeichert und automatisch mit AliasVault synchronisiert.</string>
+  <string name="create_passkey_subtitle">Registriere einen neuen Passkey für diese Webseite. Er wird sicher in Deinem Tresor gespeichert und automatisch mit AliasVault synchronisiert.</string>
   <string name="replace_passkey">Passkey ersetzen</string>
   <string name="passkey_display_name_label">Name des Passkeys</string>
   <string name="passkey_display_name_hint">Gib einen Namen für diesen Passkey ein</string>
   <string name="passkey_website_label">Webseite</string>
   <string name="passkey_username_label">Benutzername</string>
   <string name="passkey_create_button">Passkey erstellen</string>
-  <string name="passkey_creating">Passkey erstellen…</string>
-  <string name="passkey_saving">Tresor wird gespeichert…</string>
+  <string name="passkey_creating">Erstelle Passkey…</string>
+  <string name="passkey_saving">Speichere im Tresor…</string>
   <string name="passkey_syncing">Synchronisiere mit Server…</string>
   <string name="passkey_error_title">Fehler</string>
   <string name="passkey_error_empty_name">Bitte gib einen Namen für diesen Passkey ein</string>
   <string name="passkey_creation_failed">Fehler beim Erstellen des Passkeys</string>
   <string name="passkey_retry_button">Erneut versuchen</string>
   <string name="passkey_info_icon">Info-Symbol</string>
-  <string name="passkey_create_explanation">Dies erzeugt einen neuen Passkey und speichert ihn in Deinem Tresor. Er wird automatisch auf allen Geräten synchronisiert, die AliasVault verwenden.</string>
+  <string name="passkey_create_explanation">Dies erzeugt einen neuen Passkey und speichert ihn in Deinem Tresor. Er wird automatisch auf alle Deine Geräte synchronisiert, die AliasVault verwenden.</string>
   <string name="passkey_create_new_button">Neuen Passkey erstellen</string>
   <string name="passkey_select_to_replace">Oder ersetze einen bestehenden Passkey:</string>
-  <string name="passkey_add_to_existing">Oder füge den Passkey einem existierenden Eintrag hinzu:</string>
+  <string name="passkey_add_to_existing">Oder füge den Passkey einem vorhandenen Element hinzu:</string>
   <string name="passkey_replace_explanation">Dies wird den bestehenden Passkey durch einen neuen ersetzen. Bitte beachte, dass Dein alter Passkey überschrieben wird und nicht mehr zugänglich ist. Wenn Du stattdessen einen separaten Passkey erstellen möchtest, gehe zurück zum vorherigen Schritt.</string>
-  <string name="passkey_merge_explanation">Dies wird einem existierenden Eintrag einen Passkey hinzufügen. Dein Passwort und andere Daten werden beibehalten.</string>
-  <string name="passkey_replacing">Passkey ersetzen…</string>
+  <string name="passkey_merge_explanation">Dies wird einem vorhanden Element einen Passkey hinzufügen. Dein Passwort und andere Daten werden beibehalten.</string>
+  <string name="passkey_replacing">Ersetze Passkey…</string>
   <string name="add_passkey">Passkey hinzufügen</string>
-  <string name="add_passkey_subtitle">Passkey zu existierendem Eintrag hinzufügen</string>
+  <string name="add_passkey_subtitle">Passkey zu vorhandenem Element hinzufügen</string>
   <string name="passkey_checking_connection">Verbindung wird überprüft…</string>
   <string name="passkey_retrieving">Passkey wird abgerufen…</string>
   <string name="passkey_verifying">Verifizierung läuft…</string>
@@ -79,7 +79,7 @@
   <string name="password_unlock_password_hint">Passwort</string>
   <string name="password_unlock_button">Entsperren</string>
   <string name="password_unlock_incorrect">Falsches Passwort. Bitte versuche es erneut.</string>
-  <string name="password_unlock_error">Failed to verify password</string>
-  <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
-  <string name="password_unlock_max_attempts_reached">Too many failed unlock attempts. You have been logged out for security reasons.</string>
+  <string name="password_unlock_error">Passwort konnte nicht verifiziert werden</string>
+  <string name="password_unlock_attempts_warning">Ungültiges Passwort. Noch %d Versuche bis zur Abmeldung.</string>
+  <string name="password_unlock_max_attempts_reached">Zu viele fehlgeschlagene Entsperrversuche. Du wurdest aus Sicherheitsgründen abgemeldet.</string>
 </resources>

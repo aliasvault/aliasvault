@@ -71,7 +71,7 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Select a service to import from.</value>
+    <value>Wähle einen Dienst aus, um dessen Daten zu importieren.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
@@ -79,47 +79,47 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Export your vault to move credentials between AliasVault servers or to another password manager.</value>
+    <value>Exportiere Deinen Tresor, um Zugangsdaten zwischen AliasVault-Servern oder einem anderen Passwort-Manager zu verschieben.</value>
     <comment>Export section description</comment>
   </data>
   <data name="RecommendedLabel" xml:space="preserve">
-    <value>Recommended</value>
+    <value>Empfohlen</value>
     <comment>Label for recommended option</comment>
   </data>
   <data name="ExportAvexTitle" xml:space="preserve">
-    <value>Encrypted full vault export</value>
+    <value>Verschlüsselter vollständiger Tresor-Export</value>
     <comment>Title for encrypted export option</comment>
   </data>
   <data name="ExportAvexDescription" xml:space="preserve">
-    <value>Password-protected backup of your entire vault. Includes all items, passkeys, and attachments. Use as manual backup and/or to restore to another AliasVault server.</value>
+    <value>Passwortgeschützte Sicherung Deines gesamten Tresors. Enthält alle Elemente, Passwörter und Anhänge. Verwende diese als manuelle Sicherung und/oder um Deine Daten auf einem anderen AliasVault-Server wiederherzustellen.</value>
     <comment>Description for encrypted export option</comment>
   </data>
   <data name="ExportAvuxTitle" xml:space="preserve">
-    <value>Unencrypted full vault export</value>
+    <value>Unverschlüsselter vollständiger Tresor-Export</value>
     <comment>Title for unencrypted full export option</comment>
   </data>
   <data name="ExportAvuxDescription" xml:space="preserve">
-    <value>Complete vault export as unencrypted ZIP-compatible archive. Includes all items, passkeys and attachments.</value>
+    <value>Vollständiger Tresor Export als unverschlüsseltes ZIP-kompatibles Archiv. Enthält alle Elemente, Passwörter und Anhänge.</value>
     <comment>Description for unencrypted full export option</comment>
   </data>
   <data name="ExportCsvTitle" xml:space="preserve">
-    <value>CSV export</value>
+    <value>CSV-Export</value>
     <comment>Title for CSV export option</comment>
   </data>
   <data name="ExportCsvDescription" xml:space="preserve">
-    <value>Basic export for importing into other password managers. Does not include passkeys or attachments.</value>
+    <value>Einfacher Export für den Import in andere Passwort-Manager. Enthält keine Passkeys oder Anhänge.</value>
     <comment>Description for CSV export option</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>Export to CSV</value>
+    <value>Als CSV-Datei exportieren</value>
     <comment>Button to export as CSV</comment>
   </data>
   <data name="ExportAvuxButton" xml:space="preserve">
-    <value>Export unencrypted vault (.avux)</value>
+    <value>Als unverschlüsselte Tresordatei (.avux) exportieren</value>
     <comment>Button to export full vault as .avux archive</comment>
   </data>
   <data name="ExportingVaultMessage" xml:space="preserve">
-    <value>Exporting vault...</value>
+    <value>Exportiere Tresor...</value>
     <comment>Message shown while exporting vault</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
@@ -146,11 +146,11 @@ Bist Du sicher, dass Du mit dem Export fortfahren möchtest?</value>
     <comment>Reset vault section description</comment>
   </data>
   <data name="ExportPasswordConfirmTitle" xml:space="preserve">
-    <value>Confirm Export</value>
+    <value>Bestätige den Export</value>
     <comment>Title for password confirmation modal during export</comment>
   </data>
   <data name="ExportPasswordConfirmDescription" xml:space="preserve">
-    <value>For security reasons, please enter your master password to confirm this export.</value>
+    <value>Bitte gebe aus Sicherheitsgründen Dein Master-Passwort ein, um diesen Export zu bestätigen.</value>
     <comment>Description for password confirmation modal during export</comment>
   </data>
   <data name="VerifyingPasswordMessage" xml:space="preserve">
@@ -158,33 +158,33 @@ Bist Du sicher, dass Du mit dem Export fortfahren möchtest?</value>
     <comment>Message shown while verifying password</comment>
   </data>
   <data name="PasswordIncorrect" xml:space="preserve">
-    <value>The password you entered is incorrect. Please try again.</value>
+    <value>Das von dir eingegebene Passwort ist nicht korrekt. Bitte versuche es erneut.</value>
     <comment>Error message when password verification fails</comment>
   </data>
   <data name="PasswordVerificationFailed" xml:space="preserve">
-    <value>An error occurred while verifying your password. Please try again.</value>
+    <value>Ein Fehler ist bei der Überprüfung Deines Passworts aufgetreten. Bitte versuche es erneut.</value>
     <comment>Generic error message for password verification failure</comment>
   </data>
   <data name="ExportAvexButton" xml:space="preserve">
-    <value>Export encrypted vault (.avex)</value>
+    <value>Als verschlüsselte Tresordatei (.avex) exportieren</value>
     <comment>Button to export encrypted vault as .avex archive</comment>
   </data>
   <data name="ExportEncryptedWarningMessage" xml:space="preserve">
-    <value>This will create an encrypted export of your entire vault. You will need to provide a password to encrypt the export file.
+    <value>Dies wird einen verschlüsselten Export Deines gesamten Tresors erzeugen. Du musst ein Passwort angeben, um die Exportdatei zu verschlüsseln.
 
-Are you sure you want to continue?</value>
+Bist Du sicher, das Du fortfahren möchtest?</value>
     <comment>Warning message for encrypted export confirmation</comment>
   </data>
   <data name="ExportEncryptedPasswordTitle" xml:space="preserve">
-    <value>Set Export Password</value>
+    <value>Export-Passwort festlegen</value>
     <comment>Title for export password modal</comment>
   </data>
   <data name="ExportEncryptedPasswordDescription" xml:space="preserve">
-    <value>Choose a strong, unique password to encrypt this export. This password is required to decrypt the export. If you lose this password, you will not be able to recover the exported data.</value>
+    <value>Wähle ein starkes, einzigartiges Passwort, um diesen Export zu verschlüsseln. Dieses Passwort wird benötigt, um den Export zu entschlüsseln. Wenn Du dieses Passwort verlierst, kannst Du die exportierten Daten nicht wiederherstellen.</value>
     <comment>Description for export password modal with security warning</comment>
   </data>
   <data name="ExportSuccessMessage" xml:space="preserve">
-    <value>Your vault has been exported successfully.</value>
+    <value>Dein Tresor wurde erfolgreich exportiert.</value>
     <comment>Success message after vault export completes</comment>
   </data>
 </root>

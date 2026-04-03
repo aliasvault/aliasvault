@@ -194,6 +194,7 @@
     "autoLockOptions": {
       "never": "Niciodată",
       "5seconds": "5 secunde",
+      "15seconds": "15 secunde",
       "30seconds": "30 secunde",
       "1minute": "1 minut",
       "15minutes": "15 minute",

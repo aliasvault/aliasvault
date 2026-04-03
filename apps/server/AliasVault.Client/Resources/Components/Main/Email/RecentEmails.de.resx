@@ -83,7 +83,7 @@
     <comment>Error message when email address is already in use</comment>
   </data>
   <data name="EmailLoadError" xml:space="preserve">
-    <value>Beim Laden der E-Mails ist ein Fehler aufgetreten. Bitte bearbeite und speichere den Zugangsdaten-Eintrag, um die Datenbank zu synchronisieren, und versuche es dann erneut.</value>
+    <value>Beim Laden der E-Mails ist ein Fehler aufgetreten. Bitte bearbeite und speichere das Element, um die Datenbank zu synchronisieren, und versuche es dann erneut.</value>
     <comment>Error message when email loading fails</comment>
   </data>
   <data name="LoadMoreButton" xml:space="preserve">

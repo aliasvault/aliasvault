@@ -390,6 +390,7 @@
     "autoLockTimeoutHelp": "Kasa, yalnızca belirtilen süre boyunca herhangi bir işlem yapılmadığında (otomatik doldurma kullanılmadığında veya uzantı açılmadığında) kilitlenecektir. Ancak, bu ayardan bağımsız olarak tarayıcı kapatıldığında her zaman kilitlenir.",
     "autoLockNever": "Asla",
     "autoLock15Seconds": "15 saniye",
+    "autoLock30Seconds": "30 seconds",
     "autoLock1Minute": "1 dakika",
     "autoLock5Minutes": "5 dakika",
     "autoLock15Minutes": "15 dakika",

@@ -99,7 +99,7 @@
     <comment>Reset vault continue button</comment>
   </data>
   <data name="ResetVaultFinalWarning" xml:space="preserve">
-    <value>Final warning: You are about to permanently delete all your items!</value>
+    <value>Achtung: Du bist dabei, alle Deine Daten unwiderruflich zu löschen!</value>
     <comment>Reset vault final warning message</comment>
   </data>
   <data name="ResetVaultDeletionIrreversibleNote" xml:space="preserve">

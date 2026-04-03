@@ -194,6 +194,7 @@
     "autoLockOptions": {
       "never": "Никогда",
       "5seconds": "5 секунд",
+      "15seconds": "15 секунд",
       "30seconds": "30 секунд",
       "1minute": "1 минута",
       "15minutes": "15 минут",

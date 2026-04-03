@@ -390,6 +390,7 @@
     "autoLockTimeoutHelp": "Le coffre ne se verrouille qu'après la période d'inactivité spécifiée (aucune fenêtre pop-up de saisie automatique ou d'extension). Le coffre sera toujours verrouillé lorsque le navigateur sera fermé, quel que soit ce paramètre.",
     "autoLockNever": "Jamais",
     "autoLock15Seconds": "15 secondes",
+    "autoLock30Seconds": "30 secondes",
     "autoLock1Minute": "1 minute",
     "autoLock5Minutes": "5 minutes",
     "autoLock15Minutes": "15 minutes",

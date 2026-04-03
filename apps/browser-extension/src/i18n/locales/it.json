@@ -390,6 +390,7 @@
     "autoLockTimeoutHelp": "La cassaforte si bloccherà solo dopo il periodo specificato di inattività (nessun utilizzo di riempimento automatico o estensione popup aperto). La cassaforte si bloccherà sempre quando il browser è chiuso, indipendentemente da questa impostazione.",
     "autoLockNever": "Mai",
     "autoLock15Seconds": "15 secondi",
+    "autoLock30Seconds": "30 secondi",
     "autoLock1Minute": "1 minuto",
     "autoLock5Minutes": "5 minuti",
     "autoLock15Minutes": "15 minuti",

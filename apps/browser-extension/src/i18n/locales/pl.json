@@ -390,6 +390,7 @@
     "autoLockTimeoutHelp": "Sejf zostanie zablokowany dopiero po określonym okresie nieaktywności (żadne użycie autouzupełniania lub okienko rozszerzenia nie zostało otwarte). Sejf zostanie zablokowany, gdy przeglądarka zostanie zamknięta, niezależnie od tego ustawienia.",
     "autoLockNever": "Nigdy",
     "autoLock15Seconds": "15 sekund",
+    "autoLock30Seconds": "30 seconds",
     "autoLock1Minute": "1 minuta",
     "autoLock5Minutes": "5 minut",
     "autoLock15Minutes": "15 minut",

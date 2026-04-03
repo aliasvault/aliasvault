@@ -4,18 +4,18 @@
     "close": "Schließen",
     "delete": "Löschen",
     "save": "Speichern",
-    "edit": "Edit",
+    "edit": "Bearbeiten",
     "yes": "Ja",
     "no": "Nein",
     "ok": "OK",
     "continue": "Fortfahren",
     "loading": "Laden",
     "error": "Fehler",
-    "success": "Aktion erfolgreich",
+    "success": "Erfolg",
     "never": "Niemals",
     "copied": "In die Zwischenablage kopiert",
     "loadMore": "Mehr laden",
-    "use": "Benutzen",
+    "use": "Verwenden",
     "confirm": "Bestätigen",
     "next": "Weiter",
     "notice": "Hinweis",
@@ -23,11 +23,11 @@
     "disabled": "Deaktiviert",
     "twoFactorAuthentication": "Zwei-Faktor-Authentifizierung",
     "add": "Hinzufügen",
-    "generate": "Generieren",
+    "generate": "Erzeugen",
     "attachments": "Anhänge",
     "or": "oder",
-    "deleteItemConfirmTitle": "Eintrag löschen",
-    "deleteItemConfirmDescription": "Bist Du sicher, dass Du diesen Eintrag löschen möchtest?",
+    "deleteItemConfirmTitle": "Element löschen",
+    "deleteItemConfirmDescription": "Bist Du sicher, dass Du dieses Element löschen möchtest?",
     "errors": {
       "unknownError": "Ein unbekannter Fehler ist aufgetreten.",
       "unknownErrorTryAgain": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
@@ -41,19 +41,19 @@
     "password": "Passwort",
     "authCode": "Sicherheits-Code",
     "unlock": "Entsperren",
-    "unlocking": "Entsperren...",
-    "loggingIn": "Anmelden",
+    "unlocking": "Entsperre...",
+    "loggingIn": "Anmeldung…",
     "validatingCredentials": "Anmeldedaten werden überprüft",
     "syncingVault": "Tresor wird synchronisiert",
     "verifyingAuthCode": "Sicherheits-Code wird überprüft",
     "verify": "Bestätige",
     "unlockVault": "Tresor entsperren",
-    "unlockWithBiometric": "Unlock with {{biometric}}",
+    "unlockWithBiometric": "Mit {{biometric}} entsperren",
     "unlockWithPin": "Mit PIN entsperren",
-    "unlockWithPassword": "Unlock with Password",
+    "unlockWithPassword": "Mit Passwort entsperren",
     "enterPassword": "Bitte gib Dein Passwort zum Entsperren des Tresors ein",
     "enterPasswordPlaceholder": "Passwort",
-    "enterAuthCode": "Gib den 6-stelligen Sicherheits-Code ein.",
+    "enterAuthCode": "Gib den 6-stelligen Sicherheits-Code ein",
     "usernamePlaceholder": "Name / name@unternehmen.com",
     "passwordPlaceholder": "Gib Dein Passwort ein",
     "enableBiometric": "{{biometric}} aktivieren?",
@@ -108,7 +108,7 @@
     "passkey": "Passkey",
     "helpText": "Passkeys werden auf der Webseite erzeugt, wenn sie aufgefordert werden. Sie können nicht manuell bearbeitet werden. Um diesen Passkey zu entfernen, kannst Du ihn aus diesem Zugang löschen.",
     "passkeyMarkedForDeletion": "Passkey zum Löschen vorgemerkt",
-    "passkeyWillBeDeleted": "Dieser Passkey wird gelöscht, wenn Du den Zugang speicherst."
+    "passkeyWillBeDeleted": "Dieser Passkey wird gelöscht, wenn Du die Zugangsdaten speicherst."
   },
   "totp": {
     "addCode": "2FA-Code hinzufügen",
@@ -116,11 +116,11 @@
     "secretKey": "Secret-Key",
     "instructions": "Gib den Secret-Key ein, der von der Website angezeigt wird, bei der Du die Zwei-Faktor-Authentifizierung hinzufügen möchtest.",
     "saveToViewCode": "Speichern, um den Code anzuzeigen",
-    "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "scanQrCode": "QR-Code scannen",
+    "enterManually": "Gib den Einrichtungs-Schlüssel ein",
     "errors": {
       "invalidSecretKey": "Ungültiges Format des Secret-Key",
-      "scanFailed": "Failed to scan QR code. Please try again."
+      "scanFailed": "Fehler beim Scannen des QR-Codes. Bitte versuche es erneut."
     }
   },
   "settings": {
@@ -130,36 +130,36 @@
       "headerText": "AliasVault kann so eingerichtet werden, dass es die integrierte Passwort- und Passkey-Autofill-Funktion von iOS unterstützt. Befolge dazu die folgenden Schritte.",
       "passkeyNotice": "Passkeys werden durch iOS erstellt. Um sie in AliasVault zu speichern, stelle sicher, dass Autofill unten aktiviert ist.",
       "howToEnable": "So aktivierst Du Autofill & Passkey:",
-      "step1": "1. Tippe unten auf die Schaltfläche, um die iOS-Einstellungen zu öffnen.",
+      "step1": "1. Tippe unten auf die Schaltfläche, um die iOS-Einstellungen zu öffnen",
       "step2": "2. Gehe zu \"Allgemein\"",
       "step3": "3. Tippe auf \"Automatisch ausfüllen & Passwörter\"",
       "step4": "4. Aktiviere \"AliasVault\"",
-      "step5": "5. Deaktiviere andere Passwortanbieter (z. B. \"iCloud-Passwörter\"), um Konflikte zu vermeiden.",
+      "step5": "5. Deaktiviere andere Passwortanbieter (z. B. \"iCloud-Passwörter\"), um Konflikte zu vermeiden",
       "openIosSettings": "Öffne die iOS-Einstellugen",
       "alreadyConfigured": "Ich habe es bereits konfiguriert",
-      "warningText": "Für die Nutzung von Autofill ist eine Authentifizierung per Face ID, Touch ID oder Gerätecode erforderlich."
+      "warningText": "Für die Nutzung von Autofill ist eine Authentifizierung durch Face ID, Touch ID oder Gerätecode erforderlich."
     },
     "androidAutofillSettings": {
-      "warningTitle": "Achtung: Experimentelles Feature",
+      "warningTitle": "⚠️ Experimentelles Feature",
       "warningDescription": "Die Autofill- und Passkeys-Funktionalität für Android ist aktuell noch experimentell.",
       "warningLink": "Mehr Informationen findest Du hier",
       "headerText": "AliasVault kann so eingerichtet werden, dass es die integrierte Passwort- und Passkeys-Autofill-Funktion von Android unterstützt. Befolge dazu die folgenden Schritte.",
       "passkeyNotice": "Passkeys werden durch den Android Credential Manager (Android 14+) erstellt. Um sie in AliasVault zu speichern, stelle sicher, dass Autofill unten aktiviert ist.",
       "howToEnable": "So aktivierst Du Autofill & Passkey:",
-      "step1": "1. Tippe unten auf die Schaltfläche, um die Android-Einstellungen zu öffnen. Wähle \"AliasVault\" anschließend als bevorzugten Dienst aus.",
+      "step1": "1. Tippe unten auf die Schaltfläche, um die Android-Einstellungen zu öffnen. Wähle \"AliasVault\" anschließend als bevorzugten Dienst aus",
       "openAutofillSettings": "Öffne die Autofill-Einstellungen",
-      "buttonTip": "Falls die Schaltfläche oben nicht funktionieren sollte, könnte sie aufgrund von Sicherheitseinstellungen blockiert sein. Gehe in diesem Fall manuell zu \"Android-Einstellungen → Passwörter, Passkeys & Konten\"",
+      "buttonTip": "Falls die Schaltfläche oben nicht funktionieren sollte, könnte sie aufgrund von Sicherheitseinstellungen blockiert sein. Gehe in diesem Fall manuell zu \"Android-Einstellungen → Passwörter, Passkeys & Konten\".",
       "step2": "2. Manche Apps wie Google Chrome erfordern möglicherweise eine manuelle Konfiguration in ihren Einstellungen, um Drittanbieter-Autofill-Apps zuzulassen. Die meisten Apps sollten jedoch standardmäßig mit Autofill funktionieren.",
       "alreadyConfigured": "Ich habe es bereits konfiguriert",
       "advancedOptions": "Erweiterte Einstellungen",
       "showSearchText": "Suchtext anzeigen",
-      "showSearchTextDescription": "Füge den Text ein, den AliasVault von Android erhält und der verwendet wird, um nach passenden Anmeldedaten zu suchen."
+      "showSearchTextDescription": "Füge den Text ein, den AliasVault von Android erhält und der verwendet wird, um nach passenden Anmeldedaten zu suchen"
     },
     "vaultUnlock": "Methode zum Entsperren des Tresors",
     "autoLock": "Sperr-Timeout",
     "clipboardClear": "Zwischenablage leeren",
     "clipboardClearDescription": "Kopierte Passwörter und vertrauliche Informationen nach einem bestimmten Zeitraum automatisch aus der Zwischenablage löschen.",
-    "clipboardClearAndroidWarning": "Hinweis: Einige Android-Geräte haben den Zwischenablage-Verlauf aktiviert, was möglicherweise zuvor kopierte Einträge zwischenspeichern kann, auch wenn AliasVault die Zwischenablage löscht. AliasVault kann nur den letzten Eintrag überschreiben. Ältere Einträge bleiben möglicherweise in der Geschichte sichtbar. Aus Sicherheitsgründen wird empfohlen, alle Funktionen zur Zwischenablage in den Geräteeinstellungen zu deaktivieren.",
+    "clipboardClearAndroidWarning": "Hinweis: Einige Android-Geräte haben den Zwischenablage-Verlauf aktiviert, was möglicherweise zuvor kopierte Einträge zwischenspeichern kann, auch wenn AliasVault die Zwischenablage löscht. AliasVault kann nur den letzten Eintrag überschreiben. Ältere Einträge bleiben möglicherweise im Verlauf sichtbar. Aus Sicherheitsgründen wird empfohlen, alle Verlaufsfunktionen zur Zwischenablage in den Geräteeinstellungen zu deaktivieren.",
     "clipboardClearOptions": {
       "never": "Niemals",
       "5seconds": "5 Sekunden",
@@ -185,15 +185,16 @@
     "exportConfirmTitle": "Tresor exportieren",
     "exportWarning": "Warnung: Beim Exportieren Deines Tresors in eine unverschlüsselte Datei werden alle Deine Passwörter und sensiblen Daten im Klartext sichtbar.\nFühre diesen Vorgang nur auf vertrauenswürdigen Geräten aus und stelle sicher, dass Du:\n\n• die exportierte Datei an einem sicheren Ort speicherst.\n• die Datei löschst, sobald Du sie nicht mehr brauchst.\n• die Datei niemals mit anderen teilst.\n\nBist Du sicher, dass Du mit dem Export fortfahren möchtest?",
     "passwordConfirm": {
-      "title": "Confirm Password",
-      "defaultDescription": "Please enter your master password to continue.",
-      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+      "title": "Passwort wiederholen",
+      "defaultDescription": "Bitte gebe Dein Master-Passwort ein, um fortzufahren.",
+      "exportDescription": "Bitte gebe aus Sicherheitsgründen Dein Master-Passwort ein, um diesen Export zu bestätigen."
     },
     "security": "Sicherheit",
     "appVersion": "App-Version {{version}} ({{url}})",
     "autoLockOptions": {
       "never": "Niemals",
       "5seconds": "5 Sekunden",
+      "15seconds": "15 Sekunden",
       "30seconds": "30 Sekunden",
       "1minute": "1 Minute",
       "15minutes": "15 Minuten",
@@ -216,7 +217,7 @@
       "biometricDisabledMessage": "{{biometric}} ist für AliasVault deaktiviert. Bitte aktiviere es zuerst in den Geräteeinstellungen, um es zu verwenden.",
       "biometricHelp": "Benutze Biometrie, um Deinen Tresor zu entsperren. Dieser ist durch den {{keystore}} gesichert ist.",
       "biometricUnavailableHelp": "{{biometric}} ist nicht verfügbar. Tippe, um die Einstellungen zu öffnen und/oder gehe zu den Geräteeinstellungen, um es zu aktivieren und zu konfigurieren.",
-      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
+      "featureRequiresPasscode": "Diese Funktion erfordert, dass ein Zugangscode auf deinem Gerät eingerichtet ist.",
       "pin": "PIN-Code",
       "pinDescription": "Benutze einen eigenen PIN-Code, um Deinen Tresor schneller zu entsperren.",
       "pinEnabled": "PIN-Sperre erfolgreich aktiviert",
@@ -323,7 +324,7 @@
         "confirmMessage": "Du bist dabei, Dich mit Deinem Konto auf einem anderen Gerät anzumelden. Dieses Gerät wird vollen Zugriff auf Deinen Tresor haben. Fahre nur fort, wenn Du diesem Gerät vertraust.",
         "successDescription": "Das andere Gerät wurde erfolgreich angemeldet.",
         "requestExpired": "Diese Anmeldeanfrage ist abgelaufen. Bitte generiere einen neuen QR-Code.",
-        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
+        "noPinOrBiometricError": "Das Entsperren über dein Mobiltelefon benötigt eine PIN oder biometrische Authentifizierung. Bitte aktivere PIN oder Face ID/Touch ID in den Tresor-Entsperr-Einstellungen um diese Funktion zu nutzen."
       }
     }
   },
@@ -346,7 +347,7 @@
       "cardInformation": "Karteninformationen"
     },
     "note": {
-      "title": "Beachte"
+      "title": "Notiz"
     },
     "addField": "Feld hinzufügen",
     "addCustomField": "Benutzerdefiniertes Feld hinzufügen",
@@ -384,9 +385,9 @@
   },
   "items": {
     "title": "Titel",
-    "addItem": "Eintrag hinzufügen",
-    "editItem": "Eintrag bearbeiten",
-    "deleteItem": "Eintrag löschen",
+    "addItem": "Element hinzufügen",
+    "editItem": "Element bearbeiten",
+    "deleteItem": "Element löschen",
     "itemDetails": "Details",
     "itemCreated": "Element erstellt",
     "itemCreatedMessage": "Ihr neues Element wurde hinzugefügt und ist bereit zum Einsatz.",
@@ -416,11 +417,11 @@
     "publicEmailTitle": "Öffentliche Temp-E-Mail-Anbieter",
     "publicEmailDescription": "Anonyme, aber beschränkte Privatsphäre. E-Mail-Inhalt ist für jeden lesbar, der die Adresse kennt.",
     "searchPlaceholder": "Tresor durchsuchen...",
-    "noMatchingItems": "No items match the selected filter.",
+    "noMatchingItems": "Keine Elemente entsprechen den ausgewählten Filtern.",
     "noMatchingItemsSearch": "Keine passenden Elemente \"{{search}}\"",
     "noMatchingItemsWithFilter": "Keine {{filter}} Elemente passend zu \"{{search}}\"",
-    "noItemsFound": "Keine Einträge gefunden. Erstellen Sie einen, um zu beginnen. Tipp: Sie können sich auch in der AliasVault-Webapp anmelden, um Anmeldedaten aus anderen Passwort-Managern zu importieren.",
-    "allItemsInFolders": "Alle Ihre Einträge sind in Ordnern organisiert. Tippen Sie auf einen Ordner oben, um Ihre Anmeldedaten anzuzeigen, oder verwenden Sie die Suche, um bestimmte Einträge zu finden.",
+    "noItemsFound": "Keine Elemente gefunden. Erstelle ein Element, um zu beginnen. Tipp: Du kannst dich auch in der AliasVault-Webapp anmelden, um Anmeldedaten aus anderen Passwort-Managern zu importieren.",
+    "allItemsInFolders": "Alle Deine Elemente sind in Ordnern organisiert. Tippe auf einen Ordner oben, um Deine Anmeldedaten anzuzeigen, oder verwende die Suche, um bestimmte Elemente zu finden.",
     "noPasskeysFound": "Es wurden noch kein Passkey erstellt. Ein Passkey wird durch den Besuch einer Website erzeugt, die Passkeys als Authentifizierungsmethode anbietet.",
     "clearSearch": "Suche löschen",
     "clearFilter": "Filter löschen",
@@ -446,10 +447,10 @@
     "switchBackToBrowser": "Wechsle zurück zu Deinem Browser, um fortzufahren",
     "filters": {
       "all": "Titel",
-      "showFolders": "Folders",
+      "showFolders": "Ordner",
       "passkeys": "Passkeys",
       "attachments": "Anhänge",
-      "totp": "2FA Codes"
+      "totp": "2FA-Codes"
     },
     "sort": {
       "title": "Sortieren nach",
@@ -475,8 +476,8 @@
       "usernameCopied": "Nutzername in die Zwischenablage kopiert",
       "emailCopied": "E-Mail in die Zwischenablage kopiert",
       "passwordCopied": "Passwort in die Zwischenablage kopiert",
-      "totpCodeCopied": "TOTP code copied to clipboard",
-      "urlCopied": "URL copied to clipboard"
+      "totpCodeCopied": "TOTP-Code in die Zwischenablage kopiert",
+      "urlCopied": "URL in die Zwischenablage kopiert"
     },
     "createNewAliasFor": "Neuen Alias für",
     "contextMenu": {
@@ -486,13 +487,13 @@
       "copyUsername": "Benutzername kopieren",
       "copyEmail": "E-Mail-Adresse kopieren",
       "copyPassword": "Passwort kopieren",
-      "copyTotpCode": "Copy TOTP Code"
+      "copyTotpCode": "Kopiere TOTP-Code"
     },
     "urlContextMenu": {
-      "title": "URL Options",
-      "copyLink": "Copy Link",
-      "openLink": "Open Link",
-      "shareLink": "Share Link"
+      "title": "URL-Optionen",
+      "copyLink": "Link kopieren",
+      "openLink": "Link öffnen",
+      "shareLink": "Link teilen"
     },
     "viewHistory": "Historie ansehen",
     "history": "Historie",
@@ -531,9 +532,9 @@
       "confirmDeleteMessage": "Dieses Element wird dauerhaft gelöscht und kann nicht wiederhergestellt werden.",
       "confirmEmptyAllTitle": "Zuletzt gelöscht leeren?",
       "confirmEmptyAllMessage": "Alle {{count}} Elemente werden dauerhaft gelöscht und können nicht wiederhergestellt werden.",
-      "itemRestored": "Eintrag wiederhergestellt",
-      "itemDeleted": "Eintrag dauerhaft gelöscht",
-      "allItemsDeleted": "Alle Einträge dauerhaft gelöscht"
+      "itemRestored": "Element wiederhergestellt",
+      "itemDeleted": "Element endgültig gelöscht",
+      "allItemsDeleted": "Alle Elemente endgültig gelöscht"
     }
   },
   "emails": {
@@ -568,7 +569,7 @@
   },
   "apiErrors": {
     "CLAIM_DOES_NOT_MATCH_USER": "Die aktuell gewählte E-Mail-Adresse wird bereits verwendet. Bitte ändere die E-Mail-Adresse, indem Du diese Zugangsdaten bearbeitest.",
-    "CLAIM_DOES_NOT_EXIST": "Beim Laden der E-Mails ist ein Fehler aufgetreten. Bitte bearbeite und speichere den Eintrag, um die Datenbank zu synchronisieren, und versuche es dann erneut.",
+    "CLAIM_DOES_NOT_EXIST": "Beim Laden der E-Mails ist ein Fehler aufgetreten. Bitte bearbeite und speichere das Element, um die Datenbank zu synchronisieren, und versuche es dann erneut.",
     "UNKNOWN_ERROR": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
     "ACCOUNT_LOCKED": "Das Konto wurde wegen zu vieler fehlgeschlagener Anmeldeversuche vorübergehend gesperrt. Bitte versuche es später erneut.",
     "ACCOUNT_BLOCKED": "Dein Konto wurde deaktiviert. Wenn Du glaubst, dass dies ein Fehler ist, kontaktiere bitte den Support.",

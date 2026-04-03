@@ -20,11 +20,11 @@
     </xsd:element>
   </xsd:schema>
   <data name="ViewItemPageTitle">
-    <value>Eintrag anzeigen</value>
+    <value>Element anzeigen</value>
     <comment>Page title for viewing an item</comment>
   </data>
   <data name="ViewItemTitle">
-    <value>Eintrag anzeigen</value>
+    <value>Element anzeigen</value>
     <comment>Page header title for viewing an item</comment>
   </data>
   <data name="EditButtonMobile">
@@ -92,7 +92,7 @@
     <comment>Label for nickname field</comment>
   </data>
   <data name="ViewItemBreadcrumb">
-    <value>Eintrag anzeigen</value>
+    <value>Element anzeigen</value>
     <comment>Breadcrumb text for view item page</comment>
   </data>
   <data name="ItemNotFoundError">

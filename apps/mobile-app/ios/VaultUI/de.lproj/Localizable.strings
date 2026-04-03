@@ -9,11 +9,11 @@
 "title" = "Titel";
 "unknown_error" = "Ein unbekannter Fehler ist aufgetreten";
 
-"loading_items" = "Einträge werden geladen...";
-"no_items_found" = "Keine Einträge gefunden";
-"no_items_match" = "Keine existierenden Einträge entsprechen deiner Suche";
-"create_new_item" = "Neuen Eintrag erstellen";
-"select_item" = "Eintrag auswählen";
+"loading_items" = "Elemente werden geladen...";
+"no_items_found" = "Keine Elemente gefunden";
+"no_items_match" = "Keine existierenden Elemente entsprechen deiner Suche";
+"create_new_item" = "Neues Element anlegen";
+"select_item" = "Element auswählen";
 "select_text_to_insert" = "Text zum Einfügen auswählen";
 "choose_username" = "Wähle Deinen Benutzernamen";
 "select_text_to_insert_message" = "Text zum Einfügen in das fokussierte Eingabefeld auswählen";
@@ -21,8 +21,8 @@
 "username_prefix" = "Benutzername: ";
 "email_prefix" = "E-Mail-Adresse: ";
 "password" = "Passwort";
-"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
-"no_item_selected" = "Kein Eintrag ausgewählt.";
+"items_load_error" = "Fehler beim Laden der Elemente. Bitte öffne die AliasVault-App, um nach Änderungen zu suchen.";
+"no_item_selected" = "Kein Element ausgewählt.";
 
 /* Context menu strings */
 "copy_username" = "Benutzername kopieren";
@@ -35,11 +35,11 @@
 "totp_code" = "TOTP-Code";
 
 /* Search bar */
-"search_items" = "Einträge durchsuchen...";
+"search_items" = "Suche Elemente...";
 
 /* Passkey registration */
 "create_passkey_title" = "Neuen Passkey erstellen";
-"create_passkey_subtitle" = "Registriere einen neuen Passkey für diese Website. Er wird sicher in Deinem Tresor gespeichert und automatisch mit AliasVault synchronisiert.";
+"create_passkey_subtitle" = "Hinterlege einen neuen Passkey für diese Webseite. Er wird sicher in Deinem Tresor gespeichert und automatisch mit AliasVault synchronisiert.";
 "create_passkey_button_confirm" = "Passkey erstellen";
 
 /* Passkey provider */
@@ -48,19 +48,19 @@
 "no_passkeys_found" = "Keine Passkeys gefunden";
 "no_passkeys_match" = "Keine existierenden Passkeys stimmen mit Deiner Suche überein";
 "select_passkey" = "Passkey auswählen";
-"passkeys_load_error" = "Fehler beim Laden der Passkeys. Bitte öffne die AliasVault-App, um nach Updates zu suchen.";
+"passkeys_load_error" = "Fehler beim Laden der Passkeys. Bitte öffne die AliasVault-App, um nach Änderungen zu suchen.";
 
 /* Passkey replacement */
 "create_new_passkey" = "Neuen Passkey erstellen";
 "select_passkey_to_replace" = "Oder ersetze einen bestehenden Passkey";
 "replace_passkey" = "Passkey ersetzen";
 "replace_passkey_explanation" = "Dies wird den bestehenden Passkey durch einen neuen ersetzen. Bitte beachte, dass Dein alter Passkey überschrieben wird und nicht mehr zugänglich ist. Wenn Du stattdessen einen separaten Passkey erstellen möchtest, gehe zurück zum vorherigen Schritt.";
-"create_passkey_explanation" = "Dies erzeugt einen neuen Passkey und speichert ihn in Deinem Tresor. Er wird automatisch auf allen Geräten synchronisiert, die AliasVault verwenden.";
+"create_passkey_explanation" = "Dies erzeugt einen neuen Passkey und speichert ihn in Deinem Tresor. Er wird automatisch auf alle Deine Geräte synchronisiert, die AliasVault verwenden.";
 
 /* Passkey merge with existing item */
-"passkey_add_to_existing" = "Oder füge den Passkey einem existierenden Eintrag hinzu";
+"passkey_add_to_existing" = "Oder füge den Passkey einem vorhandenen Element hinzu";
 "add_passkey" = "Passkey hinzufügen";
-"merge_passkey_explanation" = "Dies wird einem existierenden Eintrag einen Passkey hinzufügen. Dein Passwort und andere Daten werden beibehalten.";
+"merge_passkey_explanation" = "Dies wird einem vorhanden Element einen Passkey hinzufügen. Dein Passwort und andere Daten werden beibehalten.";
 
 /* PIN Unlock */
 "unlock_vault" = "Tresor entsperren";
@@ -72,8 +72,8 @@
 "enter_password_to_unlock" = "Gib Dein Master-Passwort ein";
 "unlock" = "Entsperren";
 "incorrect_password" = "Falsches Passwort. Bitte versuche es erneut.";
-"attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
-"max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
+"attempts_warning" = "Ungültiges Passwort. Noch %d Versuche bis zur Abmeldung.";
+"max_attempts_reached" = "Zu viele fehlgeschlagene Entsperrversuche. Du wurdest aus Sicherheitsgründen abgemeldet.";
 
 /* PIN Setup */
 "pin_setup_title" = "PIN einrichten";

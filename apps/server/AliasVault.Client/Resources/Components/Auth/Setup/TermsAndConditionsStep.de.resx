@@ -41,14 +41,12 @@ Indem Du AliasVault nutzt, stimmst Du den folgenden Bedingungen zu:
 
 3. AliasVault kann Dein Konto sperren, wenn ein Verstoß gegen diese Regeln vermutet wird oder der Dienst missbraucht wird.
 
-4. Dir ist bewusst, dass AliasVault Deine Privatsphäre zwar verbessert, aber kein System absolut sicher ist – die Nutzung erfolgt auf eigenes Risiko.
-
-</value>
+4. Dir ist bewusst, dass AliasVault Deine Privatsphäre zwar verbessert, aber kein System absolut sicher ist – die Nutzung erfolgt auf eigenes Risiko.</value>
     <comment>Full terms and conditions content</comment>
   </data>
   <!-- Agreement checkbox -->
   <data name="AgreementCheckboxLabel">
-    <value>Ich habe die Nutzungsbedingungen gelesen und akzeptiere sie.</value>
+    <value>Ich habe die Nutzungsbedingungen gelesen und akzeptiere sie</value>
     <comment>Label for the agreement checkbox</comment>
   </data>
 </root>

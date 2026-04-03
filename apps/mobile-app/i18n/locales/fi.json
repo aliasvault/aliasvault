@@ -194,6 +194,7 @@
     "autoLockOptions": {
       "never": "Ei koskaan",
       "5seconds": "5 sekuntia",
+      "15seconds": "15 seconds",
       "30seconds": "30 sekuntia",
       "1minute": "1 minuutti",
       "15minutes": "15 minuuttia",

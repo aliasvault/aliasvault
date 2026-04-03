@@ -194,6 +194,7 @@
     "autoLockOptions": {
       "never": "从不",
       "5seconds": "5 秒",
+      "15seconds": "15 秒",
       "30seconds": "30 秒",
       "1minute": "1 分钟",
       "15minutes": "15 分钟",

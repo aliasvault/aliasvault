@@ -127,7 +127,7 @@
     <comment>Button text for canceling an action</comment>
   </data>
   <data name="Generate" xml:space="preserve">
-    <value>Generieren</value>
+    <value>Erzeugen</value>
     <comment>Button tooltip for generating a random value</comment>
   </data>
   <data name="Delete" xml:space="preserve">
@@ -139,11 +139,11 @@
     <comment>Button text for editing an item</comment>
   </data>
   <data name="Show" xml:space="preserve">
-    <value>Show</value>
+    <value>Anzeigen</value>
     <comment>Button text for showing content</comment>
   </data>
   <data name="Hide" xml:space="preserve">
-    <value>Hide</value>
+    <value>Ausblenden</value>
     <comment>Button text for hiding content</comment>
   </data>
   <data name="Close" xml:space="preserve">
@@ -159,7 +159,7 @@
     <comment>Button text for proceeding to the next step</comment>
   </data>
   <data name="Loading" xml:space="preserve">
-    <value>Laden...</value>
+    <value>Lade...</value>
     <comment>Loading message displayed during async operations</comment>
   </data>
   <data name="Yes" xml:space="preserve">
@@ -233,7 +233,7 @@
     <comment>Validation error message</comment>
   </data>
   <data name="ErrorRequired" xml:space="preserve">
-    <value>Dieses Feld ist ein Pflichtfeld</value>
+    <value>Dieses Feld ist ein Pflichtfeld.</value>
     <comment>Required field validation error</comment>
   </data>
   <data name="ErrorInvalidEmail" xml:space="preserve">
@@ -246,7 +246,7 @@
   </data>
   <!-- Common status messages -->
   <data name="Success" xml:space="preserve">
-    <value>Aktion erfolgreich</value>
+    <value>Erfolg</value>
     <comment>Success status message</comment>
   </data>
   <data name="Warning" xml:space="preserve">
@@ -284,15 +284,15 @@
     <comment>Generic error message when passwords don't match</comment>
   </data>
   <data name="ErrorMustAcceptTerms" xml:space="preserve">
-    <value>Du musst die Geschäftsbedingungen akzeptieren.</value>
+    <value>Du musst die Nutzungsbedingungen akzeptieren.</value>
     <comment>Error message for terms and conditions acceptance</comment>
   </data>
   <data name="ErrorSecretKeyRequired" xml:space="preserve">
-    <value>Schlüssel ist erforderlich</value>
+    <value>Der Geheim-Schlüssel ist erforderlich</value>
     <comment>Error message when secret key is required</comment>
   </data>
   <data name="ErrorUsernameRequired" xml:space="preserve">
-    <value>Der Benutzername ist erforderlich.</value>
+    <value>Der Benutzername ist erforderlich</value>
     <comment>Error message when username is required</comment>
   </data>
   <data name="ErrorPasswordRequired" xml:space="preserve">
@@ -325,7 +325,7 @@
     <comment>Status text when background sync is in progress</comment>
   </data>
   <data name="LoadingVault" xml:space="preserve">
-    <value>Vault wird geladen...</value>
+    <value>Tresor wird geladen...</value>
     <comment>Status text when vault is being loaded</comment>
   </data>
 </root>

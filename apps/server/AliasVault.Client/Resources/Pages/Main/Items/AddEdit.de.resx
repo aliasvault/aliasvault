@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Page titles and descriptions -->
   <data name="AddItemTitle">
-    <value>Eintrag hinzufügen</value>
+    <value>Element hinzufügen</value>
     <comment>Title for adding a new item</comment>
   </data>
   <data name="EditItemTitle">
@@ -29,16 +29,16 @@
     <comment>Title for editing an existing item</comment>
   </data>
   <data name="AddItemDescription">
-    <value>Erstelle unten einen neuen Eintrag.</value>
+    <value>Erstelle unten ein neues Element.</value>
     <comment>Description for adding a new item</comment>
   </data>
   <data name="EditItemDescription">
-    <value>Bearbeite den existieren Eintrag unten.</value>
+    <value>Bearbeite das vorhandene Element unten.</value>
     <comment>Description for editing an existing item</comment>
   </data>
   <!-- Breadcrumb items -->
   <data name="ViewItemBreadcrumb">
-    <value>Eintrag anzeigen</value>
+    <value>Element anzeigen</value>
     <comment>Breadcrumb text for viewing an item</comment>
   </data>
   <data name="EditItemBreadcrumb">
@@ -148,7 +148,7 @@
     <comment>Error message when item doesn't exist</comment>
   </data>
   <data name="ErrorSavingItem">
-    <value>Fehler beim Speichern des Eintrags. Bitte versuche es erneut.</value>
+    <value>Fehler beim Speichern des Elementes. Bitte versuche es erneut.</value>
     <comment>Error message when saving item fails</comment>
   </data>
   <!-- Success messages -->
@@ -190,7 +190,7 @@
     <comment>Header when passkey is marked for deletion</comment>
   </data>
   <data name="PasskeyWillBeDeleted">
-    <value>Dieser Passkey wird gelöscht, wenn du den Eintrag speicherst.</value>
+    <value>Dieser Passkey wird gelöscht, wenn du das Element speicherst.</value>
     <comment>Message explaining passkey will be deleted on save</comment>
   </data>
   <data name="UndoButton">

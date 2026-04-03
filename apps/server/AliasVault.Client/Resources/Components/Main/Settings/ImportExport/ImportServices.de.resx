@@ -60,7 +60,7 @@
   </resheader>
   <!-- 1Password -->
   <data name="OnePasswordDescription" xml:space="preserve">
-    <value>Importiere Deine Passwörter aus 1Password.</value>
+    <value>Importiere Deine Passwörter aus 1Password</value>
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
@@ -73,11 +73,11 @@
   </data>
   <!-- Bitwarden -->
   <data name="BitwardenDescription" xml:space="preserve">
-    <value>Importiere Deine Passwörter aus Bitwarden.</value>
+    <value>Importiere Deine Passwörter aus Bitwarden</value>
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>Um  Deinen Bitwarden-Tresor zu importieren, musst Du ihn zuerst als CSV-Datei exportieren. Melde Dich dazu in Deinem Bitwarden-Konto an, gehe ins Menü "Werkzeuge" und wähle "Tresor exportieren" (als CSV-Datei).</value>
+    <value>Um Deinen Bitwarden-Tresor zu importieren, musst Du ihn zuerst als CSV-Datei exportieren. Melde Dich dazu in Deinem Bitwarden-Konto an, gehe ins Menü "Werkzeuge" und wähle "Tresor exportieren" (als CSV-Datei).</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
@@ -86,11 +86,11 @@
   </data>
   <!-- LastPass -->
   <data name="LastPassDescription" xml:space="preserve">
-    <value>Importiere Deine Passwörter aus LastPass.</value>
+    <value>Importiere Deine Passwörter aus LastPass</value>
     <comment>Description for LastPass import service</comment>
   </data>
   <data name="LastPassInstructionsPart1" xml:space="preserve">
-    <value>Um Deinen LastPass-Tresor zu importieren, musst Du ihn zuerst als CSV-Datei exportieren. Melde Dich dazu in Deinem LastPass-Konto an, gehe in der linken Seitenleiste zu "Erweitere Optionen" und wähle "Exportieren" > " LastPass CSV-Datei".</value>
+    <value>Um Deinen LastPass-Tresor zu importieren, musst Du ihn zuerst als CSV-Datei exportieren. Melde Dich dazu in Deinem LastPass-Konto an, gehe in der linken Seitenleiste zu "Erweitere Optionen" und wähle "Exportieren" > "LastPass CSV-Datei".</value>
     <comment>LastPass export instructions part 1</comment>
   </data>
   <data name="LastPassInstructionsPart2" xml:space="preserve">
@@ -99,7 +99,7 @@
   </data>
   <!-- Chrome -->
   <data name="ChromeDescription" xml:space="preserve">
-    <value>Importiere Deine Passwörter aus dem Chrome-Passwort-Manager.</value>
+    <value>Importiere Deine Passwörter aus dem Chrome-Passwort-Manager</value>
     <comment>Description for Chrome import service</comment>
   </data>
   <data name="ChromeInstructionsPart1" xml:space="preserve">
@@ -133,7 +133,7 @@
     <comment>Generic CSV instructions part 1</comment>
   </data>
   <data name="GenericCsvStep1" xml:space="preserve">
-    <value>Lade die AliasVault-CSV-Vorlage herunter.</value>
+    <value>Lade die AliasVault-CSV-Vorlage herunter</value>
     <comment>Generic CSV step 1</comment>
   </data>
   <data name="GenericCsvStep2" xml:space="preserve">
@@ -141,9 +141,7 @@
     <comment>Generic CSV step 2</comment>
   </data>
   <data name="GenericCsvStep3" xml:space="preserve">
-    <value>Fülle Deine Zugangsdaten aus (ersetze die Beispiel-Daten).
-
-</value>
+    <value>Fülle Deine Zugangsdaten aus (ersetze die Beispiel-Daten)</value>
     <comment>Generic CSV step 3</comment>
   </data>
   <data name="GenericCsvStep4" xml:space="preserve">
@@ -234,15 +232,15 @@
   </data>
   <!-- AliasVault CSV/AVUX/AVEX -->
   <data name="AliasVaultDescription" xml:space="preserve">
-    <value>Import from AliasVault backup</value>
+    <value>Aus AliasVault-Sicherung importieren</value>
     <comment>Description for AliasVault import service</comment>
   </data>
   <data name="AliasVaultInstructionsPart1" xml:space="preserve">
-    <value>Import your previously created AliasVault backup.</value>
+    <value>Importiere eine zuvor erstelle AliasVault-Sicherung.</value>
     <comment>AliasVault import instructions</comment>
   </data>
   <data name="AliasVaultSupportedFormatsInfo" xml:space="preserve">
-    <value>Supports .avex (encrypted), .avux (unencrypted) and CSV (basic) formats.</value>
+    <value>Unterstützt werden verschlüsseltes (.avex), unverschlüsseltes (.avux) und einfaches (.csv) Dateiformat.</value>
     <comment>Supported formats information for AliasVault imports</comment>
   </data>
   <!-- Dropbox -->
@@ -256,11 +254,11 @@
   </data>
   <!-- RoboForm -->
   <data name="RoboformDescription" xml:space="preserve">
-    <value>Import passwords from RoboForm</value>
+    <value>Importiere Deine Passwörter aus RoboForm</value>
     <comment>Description for RoboForm import service</comment>
   </data>
   <data name="RoboformInstructionsPart1" xml:space="preserve">
-    <value>In order to import your RoboForm passwords, you need to export them as a CSV file. You can do this by opening RoboForm, going to 'RoboForm' menu > 'Options' > 'Account &amp; Data' > 'Export' and selecting CSV format.</value>
+    <value>Um Deine RoboForm-Passwörter zu importieren, musst Du diese als CSV-Datei exportieren. Du kannst dies tun, indem Du RoboForm öffnest, im Menü 'RoboForm' > 'Optionen' > 'Konto &amp; Daten' > 'Exportieren' auswählst und das CSV-Format verwendest.</value>
     <comment>RoboForm export instructions part 1</comment>
   </data>
   <data name="RoboformInstructionsPart2" xml:space="preserve">
@@ -269,11 +267,11 @@
   </data>
   <!-- Edge -->
   <data name="EdgeDescription" xml:space="preserve">
-    <value>Import passwords from your Microsoft Edge Password Manager</value>
+    <value>Importiere Deine Passwörter aus dem Microsoft Edge-Kennwortmanager</value>
     <comment>Description for Edge import service</comment>
   </data>
   <data name="EdgeInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Microsoft Edge passwords, you need to export them as a CSV file. You can do this by going to Menu > Settings > Password and autofill > Microsoft Password Manager > ... > Export passwords.</value>
+    <value>Um Deine Microsoft Edge-Passwörter zu importieren, musst Du diese als CSV-Datei exportieren. Du kannst dies tun, indem Du im Menü > Einstellungen > Kennwörter und AutoAusfüllen > Microsoft-Kennwortmanager > ... > Kennwörter exportieren auswählst.</value>
     <comment>Edge export instructions part 1</comment>
   </data>
   <data name="EdgeInstructionsPart2" xml:space="preserve">
@@ -282,11 +280,11 @@
   </data>
   <!-- Enpass -->
   <data name="EnpassDescription" xml:space="preserve">
-    <value>Import passwords from Enpass</value>
+    <value>Importiere Deine Passwörter aus Enpass</value>
     <comment>Description for Enpass import service</comment>
   </data>
   <data name="EnpassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Enpass passwords, you need to export them as a CSV file. You can do this by opening Enpass, going to 'Menu' > 'File' > 'Export' and selecting 'CSV file (.csv)'.</value>
+    <value>Um Deine Enpass-Passwörter zu importieren, musst Du diese als CSV-Datei exportieren. Du kannst dies tun, indem Du Enpass öffnest, im Menü 'Datei' > 'Export' auswählst und das CSV-Format verwendest.</value>
     <comment>Enpass export instructions part 1</comment>
   </data>
   <data name="EnpassInstructionsPart2" xml:space="preserve">

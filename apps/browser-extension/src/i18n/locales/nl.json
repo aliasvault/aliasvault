@@ -390,6 +390,7 @@
     "autoLockTimeoutHelp": "De vault zal alleen vergrendelen na de opgegeven periode van inactiviteit (geen automatisch invullen of extensie geopend). De vault wordt altijd vergrendeld wanneer de browser wordt afgesloten, ongeacht deze instelling.",
     "autoLockNever": "Nooit",
     "autoLock15Seconds": "15 seconden",
+    "autoLock30Seconds": "30 seconden",
     "autoLock1Minute": "1 minuut",
     "autoLock5Minutes": "5 minuten",
     "autoLock15Minutes": "15 minuten",

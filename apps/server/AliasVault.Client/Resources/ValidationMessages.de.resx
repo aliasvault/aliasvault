@@ -64,7 +64,7 @@
     <comment>Error message when password confirmation doesn't match</comment>
   </data>
   <data name="PasswordMinLengthGeneric" xml:space="preserve">
-    <value>Password must be at least {0} characters long.</value>
+    <value>Passwort muss mindestens {0} Zeichen lang sein.</value>
     <comment>Generic error message for password minimum length validation. {0} is the minimum password length.</comment>
   </data>
   <data name="PasswordsDoNotMatchGeneric" xml:space="preserve">
@@ -73,7 +73,7 @@
   </data>
   <!-- Required field validation messages -->
   <data name="UsernameRequired" xml:space="preserve">
-    <value>Der Benutzername ist erforderlich.</value>
+    <value>Der Benutzername ist erforderlich</value>
     <comment>Error message when username is required</comment>
   </data>
   <data name="PasswordRequired" xml:space="preserve">
@@ -81,7 +81,7 @@
     <comment>Error message when password is required</comment>
   </data>
   <data name="SecretKeyRequired" xml:space="preserve">
-    <value>Schlüssel ist erforderlich</value>
+    <value>Der Geheim-Schlüssel ist erforderlich</value>
     <comment>Error message when secret key is required</comment>
   </data>
   <data name="ServiceNameRequired" xml:space="preserve">
@@ -94,7 +94,7 @@
   </data>
   <!-- Terms and conditions -->
   <data name="MustAcceptTerms" xml:space="preserve">
-    <value>Du musst die Geschäftsbedingungen akzeptieren.</value>
+    <value>Du musst die Nutzungsbedingungen akzeptieren.</value>
     <comment>Error message for terms and conditions acceptance</comment>
   </data>
 </root>

@@ -96,7 +96,7 @@
     <comment>Text before login link</comment>
   </data>
   <data name="LoginHereLink" xml:space="preserve">
-    <value>Hier anmelden!</value>
+    <value>Hier anmelden</value>
     <comment>Link text for login page</comment>
   </data>
   <!-- Loading and status messages -->

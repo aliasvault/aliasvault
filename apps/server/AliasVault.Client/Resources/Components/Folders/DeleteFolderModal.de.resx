@@ -71,15 +71,15 @@
     <comment>Title for delete folder only option</comment>
   </data>
   <data name="DeleteFolderOnlyDescription" xml:space="preserve">
-    <value>Einträge in diesem Ordner werden in den Root verschoben</value>
+    <value>Elemente in diesem Ordner werden in das Stammverzeichnis verschoben</value>
     <comment>Description for delete folder only option</comment>
   </data>
   <data name="DeleteFolderAndContentsTitle" xml:space="preserve">
-    <value>Ordner und alle Einträge löschen</value>
+    <value>Ordner und deren Inhalt löschen</value>
     <comment>Title for delete folder and contents option</comment>
   </data>
   <data name="DeleteFolderAndContentsDescription" xml:space="preserve">
-    <value>Move {0} item(s) to trash</value>
+    <value>Verschiebe {0} Element(e) in den Papierkorb</value>
     <comment>Description for delete folder and contents option. {0} is item count.</comment>
   </data>
   <data name="CancelButton" xml:space="preserve">

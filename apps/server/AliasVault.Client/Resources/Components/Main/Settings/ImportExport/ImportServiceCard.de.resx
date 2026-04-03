@@ -135,63 +135,63 @@
     <comment>Warning note about favicon extraction duration</comment>
   </data>
   <data name="ExtractingFavicons" xml:space="preserve">
-    <value>Extrahiere Favicons... {0} / {1}</value>
+    <value>Lade Favicons... {0} / {1}</value>
     <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
   </data>
   <data name="SavingCredentials" xml:space="preserve">
-    <value>Saving credentials to vault... {0} / {1}</value>
+    <value>Speichere Anmeldeinformationen in Tresor... {0} / {1}</value>
     <comment>Progress text during credential save. {0} is current progress, {1} is total</comment>
   </data>
   <data name="SyncingVault" xml:space="preserve">
-    <value>Syncing vault to server...</value>
+    <value>Tresor wird mit Server synchronisiert...</value>
     <comment>Progress text when syncing vault to server after import</comment>
   </data>
   <data name="ImportSuccessMessage" xml:space="preserve">
-    <value>Successfully imported {0} credentials.</value>
+    <value>Es wurden erfolgreich {0} Zugangsdaten importiert.</value>
     <comment>Success message after import completes. {0} is the credential count</comment>
   </data>
   <data name="ImportErrorGeneric" xml:space="preserve">
-    <value>An error occurred during import. Please try again.</value>
+    <value>Fehler beim Import. Bitte versuchen Sie es erneut.</value>
     <comment>Generic error message when import fails</comment>
   </data>
   <data name="ImportErrorInvalidFile" xml:space="preserve">
-    <value>Please select a valid export file to import.</value>
+    <value>Bitte wähle eine gültige Exportdatei für den Import aus.</value>
     <comment>Error message when invalid file is selected</comment>
   </data>
   <data name="ImportErrorZipFile" xml:space="preserve">
-    <value>Please unzip the export file before importing. See the instructions below for more information.</value>
+    <value>Bitte entpacke die Exportdatei vor dem Importieren. Weitere Informationen findest Du in den Anweisungen unten.</value>
     <comment>Error message when user tries to import a zip file</comment>
   </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
-    <value>File size exceeds 10MB limit.</value>
+    <value>Die Dateigröße überschreitet die maximale Größe von 10MB.</value>
     <comment>Error message when file is too large</comment>
   </data>
   <data name="EncryptedFilePasswordPrompt" xml:space="preserve">
-    <value>This file is encrypted. Please enter the password you used when creating the export.</value>
+    <value>Diese Datei ist verschlüsselt. Bitte gib das Passwort ein, das Du beim Erstellen des Exports verwendet hast.</value>
     <comment>Prompt for encrypted file password</comment>
   </data>
   <data name="DecryptionPasswordLabel" xml:space="preserve">
-    <value>Decryption Password</value>
+    <value>Entschlüsselungspasswort</value>
     <comment>Label for decryption password input</comment>
   </data>
   <data name="DecryptionPasswordHint" xml:space="preserve">
-    <value>This is the password you set when creating the encrypted export (.avex file), not your vault master password.</value>
+    <value>Dies ist das Passwort, das Du beim Erstellen des verschlüsselten Exports (.avex Datei) gesetzt hast und nicht Dein Master-Passwort des Tresors.</value>
     <comment>Hint explaining what password is needed</comment>
   </data>
   <data name="DecryptAndContinueButton" xml:space="preserve">
-    <value>Decrypt and Continue</value>
+    <value>Entschlüsseln und Fortfahren</value>
     <comment>Button text for decryption</comment>
   </data>
   <data name="DecryptingFile" xml:space="preserve">
-    <value>Decrypting file...</value>
+    <value>Entschlüssele Datei...</value>
     <comment>Progress text during decryption</comment>
   </data>
   <data name="IncorrectPasswordError" xml:space="preserve">
-    <value>Incorrect password. Please try again.</value>
+    <value>Falsches Passwort. Bitte versuche es erneut.</value>
     <comment>Error message for incorrect decryption password</comment>
   </data>
   <data name="DecryptionErrorGeneric" xml:space="preserve">
-    <value>Failed to decrypt the file. Please check that the file is not corrupted and try again.</value>
+    <value>Fehler beim Entschlüsseln der Datei. Bitte überprüfe, ob die Datei nicht beschädigt ist und versuche es erneut.</value>
     <comment>Generic error message for decryption failure</comment>
   </data>
 </root>

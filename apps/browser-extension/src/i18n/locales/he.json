@@ -390,6 +390,7 @@
     "autoLockTimeoutHelp": "הכספת תינעל רק לאחר משך זמן של חוסר פעילות (אין שימוש בהשלמה אוטומטית או פתיחת חלונית הרחבה). הכספת תמיד תינעל עם סגירת הדפדפן, ללא תלות בהגדרה הזאת.",
     "autoLockNever": "אף פעם",
     "autoLock15Seconds": "15 שניות",
+    "autoLock30Seconds": "30 seconds",
     "autoLock1Minute": "דקה",
     "autoLock5Minutes": "5 דקות",
     "autoLock15Minutes": "15 דקות",

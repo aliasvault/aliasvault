@@ -390,6 +390,7 @@
     "autoLockTimeoutHelp": "密码库仅在达到指定的无操作时长后才会锁定（未使用自动填充功能或未打开扩展程序弹窗）。无论此设置如何，关闭浏览器时密码库始终会锁定。",
     "autoLockNever": "从不",
     "autoLock15Seconds": "15 秒",
+    "autoLock30Seconds": "30 秒",
     "autoLock1Minute": "1 分钟",
     "autoLock5Minutes": "5 分钟",
     "autoLock15Minutes": "15 分钟",
