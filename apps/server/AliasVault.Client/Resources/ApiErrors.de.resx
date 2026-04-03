@@ -132,10 +132,10 @@
     <value>Ungültiger Benutzername oder Passwort. Bitte versuche es erneut.</value>
   </data>
   <data name="USERNAME_REQUIRED" xml:space="preserve">
-    <value>Der Benutzername ist erforderlich.</value>
+    <value>Ein Benutzername ist erforderlich.</value>
   </data>
   <data name="USERNAME_ALREADY_IN_USE" xml:space="preserve">
-    <value>Benutzername ist bereits vergeben.</value>
+    <value>Dieser Benutzername ist bereits vergeben.</value>
   </data>
   <data name="USERNAME_AVAILABLE" xml:space="preserve">
     <value>Der Benutzername ist verfügbar.</value>
@@ -168,7 +168,7 @@
     <value>Es gibt ausstehende Migrationen. Bitte führe 'dotnet ef database update' aus, um diese durchzuführen.</value>
   </data>
   <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
-    <value>Internal server error.</value>
+    <value>Interner Server Fehler</value>
   </data>
   <data name="VAULT_ERROR" xml:space="preserve">
     <value>Der lokale Tresor ist nicht aktuell. Bitte synchronisiere Deinen Tresor, indem Du die Seite aktualisierst, und versuche es erneut.</value>
