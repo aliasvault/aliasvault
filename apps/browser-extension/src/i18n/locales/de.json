@@ -170,9 +170,9 @@
     "generateNewPassword": "Neues Passwort erzeugen",
     "togglePasswordVisibility": "Passwort ein-/ausblenden",
     "passwordCopiedToClipboard": "Passwort in die Zwischenablage kopiert",
-    "openAliasVaultToUpgrade": "Zum Aktualisieren AliasVault öffnen ",
+    "openAliasVaultToUpgrade": "Zum Aktualisieren AliasVault öffnen",
     "vaultUpgradeRequired": "Aktualisierung des Tresors erforderlich.",
-    "dismissPopup": "Popup schliessen",
+    "dismissPopup": "Popup schließen",
     "noTotpItemsFound": "Kein passender 2FA-Code gefunden",
     "close": "Schließen",
     "savePrompt": {
@@ -183,11 +183,11 @@
     }
   },
   "items": {
-    "title": "Titel",
+    "title": "Elemente",
     "itemName": "Name",
     "loginCredentials": "Zugangsdaten",
     "cardInformation": "Karteninformationen",
-    "addItem": "Eintrag hinzufügen",
+    "addItem": "Element hinzufügen",
     "addNewItem": "Neues Element hinzufügen",
     "saveItem": "Element speichern",
     "itemDetails": "Details",
@@ -202,18 +202,18 @@
     "welcomeTitle": "Welcome to AliasVault!",
     "welcomeDescription": "Du möchtest die AliasVault-Browser-Erweiterung verwenden? Navigiere zu einer Website und verwende das AliasVault-Popup-Fenster um einen neuen Zugang zu erstellen.",
     "noPasskeysFound": "Es wurden noch kein Passkey erstellt. Ein Passkey wird durch den Besuch einer Website erzeugt, die Passkeys als Authentifizierungsmethode anbietet.",
-    "noMatchingItems": "Keine Einträge entsprechen den ausgewählten Filtern.",
-    "noMatchingItemsSearch": "Keine passenden Einträge \"{{search}}\"",
-    "noMatchingItemsWithFilter": "Keine {{filter}} Einträge passend zu \"{{search}}\"",
+    "noMatchingItems": "Keine Elemente entsprechen den ausgewählten Filtern.",
+    "noMatchingItemsSearch": "Keine passenden Elemente \"{{search}}\"",
+    "noMatchingItemsWithFilter": "Keine {{filter}} Elemente passend zu \"{{search}}\"",
     "clearSearch": "Suche löschen",
     "clearFilter": "Filter löschen",
-    "emptyFolderHint": "Dieser Ordner ist leer. Um Einträge in diesen Ordner zu verschieben, bearbeiten Sie den Eintrag und wählen Sie diesen Ordner.",
-    "allItemsInFolders": "Alle Ihre Einträge sind in Ordnern organisiert. Tippen Sie auf einen Ordner oben, um Ihre Anmeldedaten anzuzeigen, oder verwenden Sie die Suche, um bestimmte Einträge zu finden.",
+    "emptyFolderHint": "Dieser Ordner ist leer. Um Elemente in diesen Ordner zu verschieben, bearbeiten Sie das Element und wählen Sie diesen Ordner.",
+    "allItemsInFolders": "Alle Ihre Elemente sind in Ordnern organisiert. Tippen Sie auf einen Ordner oben, um Ihre Anmeldedaten anzuzeigen, oder verwenden Sie die Suche, um bestimmte Elemente zu finden.",
     "deleteFolder": "Ordner löschen",
     "deleteFolderKeepItems": "Nur Ordner löschen",
-    "deleteFolderKeepItemsDescription": "Einträge werden zurück zur Hauptliste verschoben.",
-    "deleteFolderAndItems": "Ordner und alle Einträge löschen",
-    "deleteFolderAndItemsDescription": "{{count}} Einträge werden nach \"Kürzlich gelöschte Einträge\" verschoben.",
+    "deleteFolderKeepItemsDescription": "Elemente werden zurück zur Hauptliste verschoben.",
+    "deleteFolderAndItems": "Ordner und alle Elemente löschen",
+    "deleteFolderAndItemsDescription": "{{count}} Element(e) nach \"Kürzlich gelöscht\" verschoben.",
     "filters": {
       "folders": "Ordner",
       "passkeys": "Passkeys",
@@ -225,8 +225,8 @@
       "newestFirst": "Neuste zuerst",
       "alphabetical": "Alphabetisch (A-Z)"
     },
-    "deleteItemTitle": "Eintrag löschen",
-    "deleteItemConfirm": "Bist Du sicher, dass Du diesen Eintrag löschen möchtest?",
+    "deleteItemTitle": "Element löschen",
+    "deleteItemConfirm": "Bist Du sicher, dass Du dieses Element löschen möchtest?",
     "viewHistory": "Historie ansehen",
     "history": "Historie",
     "noHistoryAvailable": "Keine Historie verfügbar",
@@ -248,7 +248,7 @@
     }
   },
   "itemTypes": {
-    "selectType": "Neuen Eintrag hinzufügen",
+    "selectType": "Neues Element hinzufügen",
     "typeLabel": "Elementtyp",
     "creating": "Wird erstellt",
     "editing": "Bearbeiten",
@@ -339,7 +339,7 @@
     },
     "apiErrors": {
       "CLAIM_DOES_NOT_MATCH_USER": "Die aktuell gewählte E-Mail-Adresse wird bereits verwendet. Bitte ändere die E-Mail-Adresse, indem Du diese Zugangsdaten bearbeitest.",
-      "CLAIM_DOES_NOT_EXIST": "Beim Laden der E-Mails ist ein Fehler aufgetreten. Bitte bearbeite und speichere den Eintrag, um die Datenbank zu synchronisieren, und versuche es dann erneut."
+      "CLAIM_DOES_NOT_EXIST": "Beim Laden der E-Mails ist ein Fehler aufgetreten. Bitte bearbeite und speichere das Element, um die Datenbank zu synchronisieren, und versuche es dann erneut."
     }
   },
   "settings": {
