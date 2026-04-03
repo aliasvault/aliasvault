@@ -9,7 +9,7 @@
   <string name="common_back">Zurück</string>
   <string name="unknown_error">Ein unbekannter Fehler ist aufgetreten</string>
   <string name="autofill_failed_to_retrieve">Abruf der Daten fehlgeschlagen. Öffne die App</string>
-  <string name="autofill_no_match_found">Keine Übereinstimmung gefunden, neuen Eintrag erstellen?</string>
+  <string name="autofill_no_match_found">Keine Übereinstimmung gefunden, neues Element erstellen?</string>
   <string name="autofill_open_app">App öffnen</string>
   <string name="autofill_vault_locked">Der Tresor ist gesperrt</string>
   <string name="biometric_store_key_title">Schlüssel speichern</string>
@@ -36,12 +36,12 @@
   <string name="passkey_create_explanation">Dies erzeugt einen neuen Passkey und speichert ihn in Deinem Tresor. Er wird automatisch auf alle Deine Geräte synchronisiert, die AliasVault verwenden.</string>
   <string name="passkey_create_new_button">Neuen Passkey erstellen</string>
   <string name="passkey_select_to_replace">Oder ersetze einen bestehenden Passkey:</string>
-  <string name="passkey_add_to_existing">Oder füge den Passkey einem existierenden Eintrag hinzu:</string>
+  <string name="passkey_add_to_existing">Oder füge den Passkey einem vorhandenen Element hinzu:</string>
   <string name="passkey_replace_explanation">Dies wird den bestehenden Passkey durch einen neuen ersetzen. Bitte beachte, dass Dein alter Passkey überschrieben wird und nicht mehr zugänglich ist. Wenn Du stattdessen einen separaten Passkey erstellen möchtest, gehe zurück zum vorherigen Schritt.</string>
-  <string name="passkey_merge_explanation">Dies wird einem existierenden Eintrag einen Passkey hinzufügen. Dein Passwort und andere Daten werden beibehalten.</string>
+  <string name="passkey_merge_explanation">Dies wird einem vorhanden Element einen Passkey hinzufügen. Dein Passwort und andere Daten werden beibehalten.</string>
   <string name="passkey_replacing">Ersetze Passkey…</string>
   <string name="add_passkey">Passkey hinzufügen</string>
-  <string name="add_passkey_subtitle">Passkey zu existierendem Eintrag hinzufügen</string>
+  <string name="add_passkey_subtitle">Passkey zu vorhandenem Element hinzufügen</string>
   <string name="passkey_checking_connection">Verbindung wird überprüft…</string>
   <string name="passkey_retrieving">Passkey wird abgerufen…</string>
   <string name="passkey_verifying">Verifizierung läuft…</string>
