@@ -284,7 +284,7 @@
     <comment>Generic error message when passwords don't match</comment>
   </data>
   <data name="ErrorMustAcceptTerms" xml:space="preserve">
-    <value>Du musst die Allgemeinen Geschäftsbedingungen (AGB) akzeptieren.</value>
+    <value>Du musst die Nutzungsbedingungen akzeptieren.</value>
     <comment>Error message for terms and conditions acceptance</comment>
   </data>
   <data name="ErrorSecretKeyRequired" xml:space="preserve">
@@ -325,7 +325,7 @@
     <comment>Status text when background sync is in progress</comment>
   </data>
   <data name="LoadingVault" xml:space="preserve">
-    <value>Vault wird geladen...</value>
+    <value>Tresor wird geladen...</value>
     <comment>Status text when vault is being loaded</comment>
   </data>
 </root>
