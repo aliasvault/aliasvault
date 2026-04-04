@@ -8,6 +8,7 @@
 namespace AliasVault.IntegrationTests.SmtpServer;
 
 using System.Data.Common;
+using System.Net;
 using AliasVault.SmtpService;
 using AliasVault.SmtpService.Handlers;
 using AliasVault.SmtpService.Workers;
@@ -23,6 +24,11 @@ using Microsoft.Extensions.Hosting;
 public class TestHostBuilder : AbstractTestHostBuilder
 {
     /// <summary>
+    /// Hostname advertised in SMTP banner / EHLO for integration tests (must match production resolver usage).
+    /// </summary>
+    public const string IntegrationAdvertisedHostname = "mail.integration.test";
+
+    /// <summary>
     /// Builds the SmtpService test host with a provided database connection.
     /// </summary>
     /// <param name="dbConnection">The database connection to use for the test.</param>
@@ -37,13 +43,10 @@ public class TestHostBuilder : AbstractTestHostBuilder
         {
             // Override database connection with provided connection.
             services.Remove(services.First(x => x.ServiceType == typeof(IConfiguration)));
+            var memorySettings = CreateMemoryConfigurationSettings(dbConnection.ConnectionString);
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true)
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["DatabaseProvider"] = "postgresql",
-                    ["ConnectionStrings:AliasServerDbContext"] = dbConnection.ConnectionString,
-                })
+                .AddInMemoryCollection(memorySettings)
                 .Build();
 
             services.AddSingleton<IConfiguration>(configuration);
@@ -72,24 +75,40 @@ public class TestHostBuilder : AbstractTestHostBuilder
         return builder.Build();
     }
 
+    /// <inheritdoc />
+    protected override void AddIntegrationTestConfiguration(IDictionary<string, string?> settings)
+    {
+        settings[AdvertisedHostnameConfiguration.AdvertisedHostnameConfigurationKey] = IntegrationAdvertisedHostname;
+    }
+
     /// <summary>
     /// Configures the SMTP services for the test host.
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
     private static void ConfigureSmtpServices(IServiceCollection services)
     {
-        services.AddSingleton(new Config
+        services.AddSingleton(provider =>
         {
-            AllowedToDomains = new List<string> { "example.tld" },
-            SmtpTlsEnabled = "false",
+            var configuration = provider.GetRequiredService<IConfiguration>();
+            return new Config
+            {
+                AllowedToDomains = new List<string> { "example.tld" },
+                SmtpTlsEnabled = "false",
+                AdvertisedHostname = AdvertisedHostnameConfiguration.ReadAdvertisedHostname(configuration),
+            };
         });
 
         services.AddTransient<IMessageStore, DatabaseMessageStore>();
         services.AddSingleton<SmtpServer>(
             provider =>
             {
+                var configuration = provider.GetRequiredService<IConfiguration>();
+                var advertisedHostname = AdvertisedHostnameConfiguration.ResolveAdvertisedHostname(
+                    configuration,
+                    Environment.GetEnvironmentVariable("SMTP_ADVERTISED_HOSTNAME"),
+                    Dns.GetHostName);
                 var options = new SmtpServerOptionsBuilder()
-                    .ServerName("aliasvault");
+                    .ServerName(advertisedHostname);
 
                 // Note: port 25 doesn't work in GitHub actions so we use these instead for the integration tests:
                 // - 2525 for the SMTP server

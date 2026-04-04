@@ -517,7 +517,7 @@ public class ImportExportTests
             Assert.That(localCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://www.testwebsite.local"));
             Assert.That(localCredential.Username, Is.EqualTo("testusername"));
             Assert.That(localCredential.Password, Is.EqualTo("testpassword"));
-            Assert.That(localCredential.Notes, Is.EqualTo("testnote\nAlternative username 1: testusernamealternative"));
+            Assert.That(localCredential.Notes, Is.EqualTo($"testnote{Environment.NewLine}Alternative username 1: testusernamealternative"));
         });
     }
 

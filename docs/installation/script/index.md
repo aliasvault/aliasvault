@@ -164,6 +164,7 @@ After setting up your DNS, continue with configuring AliasVault to let it know w
   ````
 2. Follow the interactive prompts to:
     - Configure your domain(s)
+    - Set the **SMTP advertised hostname** (fully qualified domain name for the SMTP banner and EHLO; should match your PTR—see below)
     - Restart required services
 
 3. Once configured, you can:
@@ -176,6 +177,25 @@ After setting up your DNS, continue with configuring AliasVault to let it know w
 Important: DNS propagation can take up to 24-48 hours. During this time, email delivery might be inconsistent.
 
 If you encounter any issues, feel free to join the [Discord chat](https://discord.gg/DsaXMTEtpF) to get help from other users and maintainers.
+
+### SMTP advertised hostname (banner / EHLO and reverse DNS)
+{: #smtp-advertised-hostname }
+
+The built-in SMTP server presents a **hostname** in the initial connection banner (the `220` line) and in **EHLO** replies. Many tools and receiving systems compare that name to the **PTR record** (reverse DNS) of your server's **public IPv4 address**. If they disagree, services such as [MXToolbox SMTP Diagnostics](https://mxtoolbox.com/diagnostic.aspx) may flag **“Reverse DNS does not match SMTP Banner”** (or similar), which can hurt trust and deliverability.
+
+**PTR records** are created at your **hosting or DNS provider** for that IP; AliasVault does not configure them. You should set **`SMTP_ADVERTISED_HOSTNAME`** in your `.env` to the **same fully qualified domain name (FQDN)** you use for incoming mail—usually the host your **MX** record points to (for example `mail.your-aliasvault.net`).
+
+**How to set it**
+
+- **Install script:** `./install.sh configure-email` prompts for this value (with a suggested default). You may also be prompted during first-time `.env` setup, or optionally after `./install.sh configure-hostname` if you change the web hostname.
+- **Manual edit:** Set `SMTP_ADVERTISED_HOSTNAME` in `.env`, then restart SMTP (for example `./install.sh restart smtp`) or restart the whole stack.
+
+**If left empty:** the service falls back to the **operating system hostname** (under Docker, often the container name). That rarely matches your public PTR and is **not recommended** for production mail.
+
+After startup, the service logs an **Information** line with the **SMTP advertised hostname** in use (also visible in the admin panel under general logs where applicable).
+
+{: .note }
+For advanced or non-Docker setups, the same value can be supplied as `SmtpService:AdvertisedHostname` in the SMTP service `appsettings`. If both are set, the **`SMTP_ADVERTISED_HOSTNAME` environment variable takes precedence**.
 
 ### Optional: SMTP TLS (STARTTLS)
 

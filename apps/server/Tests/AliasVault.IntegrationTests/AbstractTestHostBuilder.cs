@@ -107,6 +107,30 @@ public class AbstractTestHostBuilder : IAsyncDisposable
     }
 
     /// <summary>
+    /// Adds extra in-memory configuration keys before the test <see cref="IConfiguration"/> is built.
+    /// </summary>
+    /// <param name="settings">Mutable dictionary merged into the configuration (includes database keys).</param>
+    protected virtual void AddIntegrationTestConfiguration(IDictionary<string, string?> settings)
+    {
+    }
+
+    /// <summary>
+    /// Builds the standard in-memory settings for integration tests, including database connection.
+    /// </summary>
+    /// <param name="aliasServerConnectionString">Connection string for <c>AliasServerDbContext</c>.</param>
+    /// <returns>Dictionary passed to ConfigurationBuilder.AddInMemoryCollection.</returns>
+    protected Dictionary<string, string?> CreateMemoryConfigurationSettings(string aliasServerConnectionString)
+    {
+        var settings = new Dictionary<string, string?>
+        {
+            ["DatabaseProvider"] = "postgresql",
+            ["ConnectionStrings:AliasServerDbContext"] = aliasServerConnectionString,
+        };
+        AddIntegrationTestConfiguration(settings);
+        return settings;
+    }
+
+    /// <summary>
     /// Creates a new test host builder with test database connection already configured.
     /// </summary>
     /// <returns>IHost.</returns>
@@ -136,13 +160,10 @@ public class AbstractTestHostBuilder : IAsyncDisposable
             .ConfigureServices((context, services) =>
             {
                 // Override configuration
+                var memorySettings = CreateMemoryConfigurationSettings(dbConnection.ConnectionString);
                 var configuration = new ConfigurationBuilder()
                     .AddJsonFile("appsettings.json", optional: true)
-                    .AddInMemoryCollection(new Dictionary<string, string?>
-                    {
-                        ["DatabaseProvider"] = "postgresql",
-                        ["ConnectionStrings:AliasServerDbContext"] = dbConnection.ConnectionString,
-                    })
+                    .AddInMemoryCollection(memorySettings)
                     .Build();
 
                 services.AddSingleton<IConfiguration>(configuration);
