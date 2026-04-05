@@ -87,7 +87,7 @@
     <comment>Label for secret key field</comment>
   </data>
   <data name="SecretKeyPlaceholder" xml:space="preserve">
-    <value>Secret-Key eintrage (manueller Eintrag)</value>
+    <value>Secret-Key manuell eintragen</value>
     <comment>Placeholder text for secret key input</comment>
   </data>
   <data name="SaveButton" xml:space="preserve">
