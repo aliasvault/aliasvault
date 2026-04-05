@@ -193,8 +193,8 @@ public static class BaseImporter
             // Handle folder assignment if folder mapping is provided
             if (folderNameToId != null && !string.IsNullOrWhiteSpace(importedCredential.FolderPath))
             {
-                var folderName = ExtractDeepestFolderName(importedCredential.FolderPath);
-                if (!string.IsNullOrWhiteSpace(folderName) && folderNameToId.TryGetValue(folderName, out var folderId))
+                // Use the full folder path for lookup (handles multi-level folders)
+                if (folderNameToId.TryGetValue(importedCredential.FolderPath, out var folderId))
                 {
                     item.FolderId = folderId;
                 }
@@ -395,6 +395,38 @@ public static class BaseImporter
 
         return folderNames;
     }
+
+    /// <summary>
+    /// Parses a folder path into individual folder names.
+    /// For example: "Root/Business/Banking" returns ["Root", "Business", "Banking"].
+    /// Supports depth up to 5 levels (0-4, where 0 is root level).
+    /// </summary>
+    /// <param name="folderPath">The folder path, potentially with hierarchy separators.</param>
+    /// <returns>A list of folder names in order, or empty list if invalid.</returns>
+    public static List<string> ParseFolderPath(string? folderPath)
+    {
+        if (string.IsNullOrWhiteSpace(folderPath))
+        {
+            return new List<string>();
+        }
+
+        // Handle common hierarchy separators: / and \
+        var separators = new[] { '/', '\\' };
+        var parts = folderPath.Split(separators, StringSplitOptions.RemoveEmptyEntries)
+            .Select(p => p.Trim())
+            .Where(p => !string.IsNullOrEmpty(p))
+            .ToList();
+
+        // Enforce maximum depth of 5 levels (depth 0-4)
+        const int maxDepth = 5;
+        if (parts.Count > maxDepth)
+        {
+            parts = parts.Take(maxDepth).ToList();
+        }
+
+        return parts;
+    }
+
 
     /// <summary>
     /// Adds credit card fields to an item from the ImportedCreditcard model.

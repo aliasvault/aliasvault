@@ -53,6 +53,68 @@ export class ItemRepository extends BaseRepository {
   public setLogoRepository(logoRepository: LogoRepository): void {
     this.logoRepository = logoRepository;
   }
+
+  /**
+   * Build folder paths for all folders.
+   * Returns a map of FolderId -> path array.
+   * @returns Map of folder ID to folder path array
+   */
+  private async buildFolderPaths(): Promise<Map<string, string[]>> {
+    const folderPathMap = new Map<string, string[]>();
+
+    try {
+      // Check if Folders table exists
+      if (!await this.tableExists('Folders')) {
+        return folderPathMap;
+      }
+
+      // Get all folders from database
+      const folderQuery = 'SELECT Id, Name, ParentFolderId FROM Folders WHERE IsDeleted = 0';
+      const folderResults = await this.client.executeQuery<{
+        Id: string;
+        Name: string;
+        ParentFolderId: string | null;
+      }>(folderQuery);
+
+      if (folderResults.length === 0) {
+        return folderPathMap;
+      }
+
+      // Helper function to build path for a specific folder
+      const getFolderPath = (folderId: string): string[] => {
+        const path: string[] = [];
+        let currentId: string | null = folderId;
+        let iterations = 0;
+        const maxIterations = 10; // Prevent infinite loops
+
+        while (currentId && iterations < maxIterations) {
+          const folder = folderResults.find(f => f.Id === currentId);
+          if (!folder) break;
+
+          path.unshift(folder.Name); // Add to beginning
+          currentId = folder.ParentFolderId;
+          iterations++;
+        }
+
+        return path;
+      };
+
+      // Build paths for all folders
+      for (const folder of folderResults) {
+        const path = getFolderPath(folder.Id);
+        if (path.length > 0) {
+          folderPathMap.set(folder.Id, path);
+        }
+      }
+
+      return folderPathMap;
+    } catch (error) {
+      // Folders table may not exist in older vault versions
+      console.error('Error building folder paths:', error);
+      return folderPathMap;
+    }
+  }
+
   /**
    * Fetch all active items (not deleted, not in trash) with their fields and tags.
    * @returns Array of Item objects
@@ -81,8 +143,11 @@ export class ItemRepository extends BaseRepository {
       tagsByItem = ItemMapper.groupTagsByItem(tagRows);
     }
 
-    // 5. Map rows to Item objects
-    return ItemMapper.mapRows(itemRows, fieldsByItem, tagsByItem);
+    // 5. Build folder paths
+    const folderPaths = await this.buildFolderPaths();
+
+    // 6. Map rows to Item objects
+    return ItemMapper.mapRows(itemRows, fieldsByItem, tagsByItem, folderPaths);
   }
 
   /**
@@ -117,8 +182,12 @@ export class ItemRepository extends BaseRepository {
       tags = ItemMapper.mapTagRows(tagRows);
     }
 
-    // 4. Map to Item object
-    return ItemMapper.mapRow(itemRow, fields, tags);
+    // 4. Build folder paths and get folder path for this item
+    const folderPaths = await this.buildFolderPaths();
+    const folderPath = itemRow.FolderId ? folderPaths.get(itemRow.FolderId) : undefined;
+
+    // 5. Map to Item object
+    return ItemMapper.mapRow(itemRow, fields, tags, folderPath);
   }
 
   /**
@@ -158,8 +227,12 @@ export class ItemRepository extends BaseRepository {
     );
     const fields = FieldMapper.processFieldRowsForSingleItem(fieldRows);
 
-    // 3. Map to Item object
-    return ItemMapper.mapRow(itemRow, fields, []);
+    // 3. Build folder paths and get folder path for this item
+    const folderPaths = await this.buildFolderPaths();
+    const folderPath = itemRow.FolderId ? folderPaths.get(itemRow.FolderId) : undefined;
+
+    // 4. Map to Item object
+    return ItemMapper.mapRow(itemRow, fields, [], folderPath);
   }
 
   /**
@@ -181,7 +254,13 @@ export class ItemRepository extends BaseRepository {
     const fieldRows = await this.client.executeQuery<FieldRow>(fieldQuery, itemIds);
     const fieldsByItem = FieldMapper.processFieldRows(fieldRows);
 
-    return itemRows.map(row => ItemMapper.mapDeletedItemRow(row, fieldsByItem.get(row.Id) || []));
+    // Build folder paths
+    const folderPaths = await this.buildFolderPaths();
+
+    return itemRows.map(row => {
+      const folderPath = row.FolderId ? folderPaths.get(row.FolderId) : undefined;
+      return ItemMapper.mapDeletedItemRow(row, fieldsByItem.get(row.Id) || [], folderPath);
+    });
   }
 
   /**

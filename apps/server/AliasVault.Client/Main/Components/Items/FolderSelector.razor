@@ -1,5 +1,7 @@
 @using AliasVault.Client.Main.Components.Layout
 @using AliasVault.Client.Main.Models
+@using AliasVault.Client.Main.Utilities
+@using AliasClientDb
 @using Microsoft.Extensions.Localization
 
 @inject FolderService FolderService
@@ -43,7 +45,7 @@
             <button type="button"
                     @onclick="() => SelectFolder(null)"
                     @onclick:preventDefault="true"
-                    class="@GetFolderButtonClass(null)">
+                    class="@GetFolderButtonClass(null, false, false) w-full">
                 <svg class="@GetFolderIconClass(null)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                 </svg>
@@ -56,31 +58,64 @@
                 }
             </button>
 
-            @* Folder Options *@
-            @foreach (var folder in Folders)
+            @* Folder Options - Hierarchical Tree View *@
+            @foreach (var node in FlatFolderTree)
             {
-                <button type="button"
-                        @onclick="() => SelectFolder(folder.Id)"
-                        @onclick:preventDefault="true"
-                        class="@GetFolderButtonClass(folder.Id)">
-                    <svg class="@GetFolderIconClass(folder.Id)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                    </svg>
-                    <span class="font-medium">@folder.Name</span>
-                    @if (folder.ItemCount > 0)
+                var canSelect = ExcludeFolderId == null || node.Folder.Id != ExcludeFolderId.Value;
+                var isDisabled = !canSelect;
+                var hasChildren = HasChildren(node);
+                var isExpanded = IsExpanded(node.Folder.Id);
+
+                <div class="flex items-stretch">
+                    @* Expand/Collapse Button *@
+                    @if (hasChildren)
                     {
-                        <span class="text-xs text-gray-400 dark:text-gray-500">(@folder.ItemCount)</span>
+                        <button type="button"
+                                @onclick="() => ToggleFolderExpansion(node.Folder.Id)"
+                                @onclick:preventDefault="true"
+                                @onclick:stopPropagation="true"
+                                class="px-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-md transition-colors flex items-center"
+                                style="margin-left: @(node.Depth * 1.5)rem">
+                            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform @(isExpanded ? "rotate-90" : "")"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
                     }
-                    @if (SelectedFolderId == folder.Id)
+                    else
                     {
-                        <svg class="w-5 h-5 ml-auto text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                        </svg>
+                        <div class="w-8" style="margin-left: @(node.Depth * 1.5)rem"></div>
                     }
-                </button>
+
+                    @* Folder Selection Button *@
+                    <button type="button"
+                            @onclick="() => SelectFolder(node.Folder.Id)"
+                            @onclick:preventDefault="true"
+                            disabled="@isDisabled"
+                            class="@GetFolderButtonClass(node.Folder.Id, isDisabled, hasChildren)">
+                        <div class="flex items-center gap-3 flex-1">
+                            <svg class="@GetFolderIconClass(node.Folder.Id, isDisabled)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                            </svg>
+                            <span class="font-medium">@node.Folder.Name</span>
+                            @if (ItemCounts.TryGetValue(node.Folder.Id, out var count) && count > 0)
+                            {
+                                <span class="text-xs text-gray-400 dark:text-gray-500">(@count)</span>
+                            }
+                        </div>
+                        @if (SelectedFolderId == node.Folder.Id)
+                        {
+                            <svg class="w-5 h-5 ml-auto text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        }
+                    </button>
+                </div>
             }
 
-            @if (Folders.Count == 0)
+            @if (FlatFolderTree.Count == 0)
             {
                 <p class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 italic">
                     @Localizer["NoFoldersAvailable"]
@@ -105,18 +140,133 @@
     [Parameter]
     public EventCallback<Guid?> SelectedFolderIdChanged { get; set; }
 
-    private List<FolderWithCount> Folders { get; set; } = [];
+    /// <summary>
+    /// Optional folder ID to exclude from the selector (useful when moving folders to prevent circular references).
+    /// </summary>
+    [Parameter]
+    public Guid? ExcludeFolderId { get; set; }
+
+    /// <summary>
+    /// All folders with counts.
+    /// </summary>
+    [Parameter]
+    public List<FolderWithCount> Folders { get; set; } = [];
+
+    private List<FolderTreeNode> FlatFolderTree { get; set; } = [];
+    private List<FolderTreeNode> FullFolderTree { get; set; } = [];
+    private HashSet<Guid> ExpandedFolderIds { get; set; } = new();
+    private Dictionary<Guid, int> ItemCounts { get; set; } = new();
     private bool ShowFolderModal { get; set; }
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        await LoadFoldersAsync();
+        if (Folders.Count == 0)
+        {
+            await LoadFoldersAsync();
+        }
+
+        BuildFolderTree();
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (Folders.Count > 0)
+        {
+            BuildFolderTree();
+        }
     }
 
     private async Task LoadFoldersAsync()
     {
         Folders = await FolderService.GetAllWithCountsAsync();
+    }
+
+    private void BuildFolderTree()
+    {
+        // Convert FolderWithCount to Folder entities for tree building
+        var folderEntities = Folders.Select(f => new Folder
+        {
+            Id = f.Id,
+            Name = f.Name,
+            ParentFolderId = f.ParentFolderId,
+            Weight = f.Weight
+        }).ToList();
+
+        // Build the tree structure
+        FullFolderTree = FolderTreeUtilities.BuildFolderTree(folderEntities);
+
+        // Auto-expand to the currently selected folder
+        if (SelectedFolderId.HasValue)
+        {
+            var pathToSelected = FolderTreeUtilities.GetFolderIdPath(SelectedFolderId.Value, folderEntities);
+            foreach (var folderId in pathToSelected)
+            {
+                // Expand all parent folders to show the selected folder
+                if (folderId != SelectedFolderId.Value)
+                {
+                    ExpandedFolderIds.Add(folderId);
+                }
+            }
+        }
+
+        // Update the flattened tree based on expanded state
+        UpdateFlattenedTree();
+
+        // Store item counts for quick lookup
+        ItemCounts = Folders.ToDictionary(f => f.Id, f => f.ItemCount);
+    }
+
+    private void UpdateFlattenedTree()
+    {
+        var result = new List<FolderTreeNode>();
+
+        void Traverse(List<FolderTreeNode> nodes)
+        {
+            foreach (var node in nodes)
+            {
+                if (ExcludeFolderId.HasValue && node.Folder.Id == ExcludeFolderId.Value)
+                {
+                    continue; // Skip excluded folder and its children
+                }
+
+                result.Add(node);
+
+                // Only show children if this folder is expanded
+                if (ExpandedFolderIds.Contains(node.Folder.Id) && node.Children.Count > 0)
+                {
+                    Traverse(node.Children);
+                }
+            }
+        }
+
+        Traverse(FullFolderTree);
+        FlatFolderTree = result;
+    }
+
+    private void ToggleFolderExpansion(Guid folderId)
+    {
+        if (ExpandedFolderIds.Contains(folderId))
+        {
+            ExpandedFolderIds.Remove(folderId);
+        }
+        else
+        {
+            ExpandedFolderIds.Add(folderId);
+        }
+
+        UpdateFlattenedTree();
+    }
+
+    private bool HasChildren(FolderTreeNode node)
+    {
+        return node.Children.Count > 0;
+    }
+
+    private bool IsExpanded(Guid folderId)
+    {
+        return ExpandedFolderIds.Contains(folderId);
     }
 
     private void OpenFolderModal()
@@ -137,10 +287,16 @@
         ShowFolderModal = false;
     }
 
-    private string GetFolderButtonClass(Guid? folderId)
+    private string GetFolderButtonClass(Guid? folderId, bool isDisabled = false, bool hasChevron = false)
     {
         var isSelected = SelectedFolderId == folderId;
-        var baseClass = "w-full px-3 py-2 text-left rounded-md flex items-center gap-3 transition-colors";
+        var roundingClass = hasChevron ? "rounded-r-md" : "rounded-md";
+        var baseClass = $"flex-1 px-3 py-2 text-left {roundingClass} flex items-center transition-colors";
+
+        if (isDisabled)
+        {
+            return $"{baseClass} bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-50";
+        }
 
         if (isSelected)
         {
@@ -150,8 +306,13 @@
         return $"{baseClass} text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700";
     }
 
-    private string GetFolderIconClass(Guid? folderId)
+    private string GetFolderIconClass(Guid? folderId, bool isDisabled = false)
     {
+        if (isDisabled)
+        {
+            return "w-5 h-5 text-gray-300 dark:text-gray-700";
+        }
+
         var isSelected = SelectedFolderId == folderId;
         return isSelected ? "w-5 h-5 text-primary-500" : "w-5 h-5 text-gray-400";
     }

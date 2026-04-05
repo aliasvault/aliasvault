@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
+import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import ReloadButton from '@/entrypoints/popup/components/ReloadButton';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
@@ -159,7 +160,7 @@ const EmailsList: React.FC = () => {
     return (
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-gray-900 dark:text-white text-xl">{t('emails.title')}</h2>
+          <PageTitle>{t('emails.title')}</PageTitle>
         </div>
         <div className="text-gray-500 dark:text-gray-400 space-y-2">
           <p className="text-sm">
@@ -174,7 +175,7 @@ const EmailsList: React.FC = () => {
     return (
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-gray-900 dark:text-white text-xl">{t('emails.title')}</h2>
+          <PageTitle>{t('emails.title')}</PageTitle>
           <ReloadButton onClick={loadEmails} />
         </div>
         <div className="text-gray-500 dark:text-gray-400 space-y-2">
@@ -189,7 +190,7 @@ const EmailsList: React.FC = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-gray-900 dark:text-white text-xl">{t('emails.title')}</h2>
+        <PageTitle>{t('emails.title')}</PageTitle>
         <ReloadButton onClick={loadEmails} />
       </div>
       <div className="space-y-2">

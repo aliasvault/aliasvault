@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import { extractDomain } from '@/utils/itemMatcher/ItemMatcher';
@@ -124,6 +125,7 @@ const PasskeySettings: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <PageTitle>{t('settings.passkeySettings')}</PageTitle>
       {/* Global Settings Section */}
       <section>
         <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-3">{t('settings.globalSettings')}</h3>

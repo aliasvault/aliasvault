@@ -3,6 +3,8 @@ import React, { createContext, useContext, useState, useCallback, useMemo } from
 type HeaderButtonsContextType = {
   setHeaderButtons: (buttons: React.ReactNode) => void;
   headerButtons: React.ReactNode;
+  setBackButtonTitle: (title: string | null) => void;
+  backButtonTitle: string | null;
 }
 
 /**
@@ -15,15 +17,22 @@ export const HeaderButtonsContext = createContext<HeaderButtonsContextType | und
  */
 export const HeaderButtonsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [headerButtons, setHeaderButtons] = useState<React.ReactNode>(null);
+  const [backButtonTitle, setBackButtonTitle] = useState<string | null>(null);
 
   const handleSetHeaderButtons = useCallback((buttons: React.ReactNode) => {
     setHeaderButtons(buttons);
   }, []);
 
+  const handleSetBackButtonTitle = useCallback((title: string | null) => {
+    setBackButtonTitle(title);
+  }, []);
+
   const value = useMemo(() => ({
     setHeaderButtons: handleSetHeaderButtons,
-    headerButtons
-  }), [handleSetHeaderButtons, headerButtons]);
+    headerButtons,
+    setBackButtonTitle: handleSetBackButtonTitle,
+    backButtonTitle
+  }), [handleSetHeaderButtons, headerButtons, handleSetBackButtonTitle, backButtonTitle]);
 
   return (
     <HeaderButtonsContext.Provider value={value}>
@@ -39,6 +48,8 @@ export const HeaderButtonsProvider: React.FC<{ children: React.ReactNode }> = ({
 export const useHeaderButtons = (): {
   setHeaderButtons: (buttons: React.ReactNode) => void;
   headerButtons: React.ReactNode;
+  setBackButtonTitle: (title: string | null) => void;
+  backButtonTitle: string | null;
 } => {
   const context = useContext(HeaderButtonsContext);
   if (context === undefined) {

@@ -14,6 +14,7 @@ import emitter from '@/utils/EventEmitter';
 import { useColors } from '@/hooks/useColorScheme';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 
+import { FolderBreadcrumb } from '@/components/folders/FolderBreadcrumb';
 import { AliasDetails } from '@/components/items/details/AliasDetails';
 import { AttachmentSection } from '@/components/items/details/AttachmentSection';
 import { CardDetails } from '@/components/items/details/CardDetails';
@@ -282,6 +283,9 @@ export default function ItemDetailsScreen() : React.ReactNode {
   return (
     <ThemedContainer>
       <ThemedScrollView>
+        {/* Folder breadcrumb navigation */}
+        <FolderBreadcrumb folderId={item.FolderId} />
+
         <ThemedView style={styles.header}>
           <ItemIcon item={item} style={styles.logo} />
           <View style={styles.headerText}>

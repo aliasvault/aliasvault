@@ -7,6 +7,9 @@
 
 namespace AliasVault.Client.Main.Pages;
 
+using System.Collections.Generic;
+using AliasClientDb;
+using AliasVault.Client.Main.Utilities;
 using AliasVault.Client.Services;
 using AliasVault.Client.Services.Auth;
 using AliasVault.RazorComponents.Models;
@@ -95,6 +98,12 @@ public abstract class MainBase : OwningComponentBase
     /// </summary>
     [Inject]
     public ILocalStorageService LocalStorage { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the FolderService.
+    /// </summary>
+    [Inject]
+    public FolderService FolderService { get; set; } = null!;
 
     /// <summary>
     /// Gets the SharedLocalizer. This is used to access shared resource translations like buttons, etc.
@@ -192,6 +201,106 @@ public abstract class MainBase : OwningComponentBase
         if (!_parametersInitialSet)
         {
             _parametersInitialSet = true;
+        }
+    }
+
+    /// <summary>
+    /// Builds breadcrumb navigation for folder hierarchy using async folder loading.
+    /// This helper method recursively builds folder breadcrumbs from the given folder up to the root.
+    /// </summary>
+    /// <param name="folderId">The folder ID to build breadcrumbs for.</param>
+    /// <param name="makeLastClickable">Whether the last folder (current page) should be clickable. Default is true for navigation to items within folders, false when on the folder page itself.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    protected async Task BuildFolderBreadcrumbsAsync(Guid folderId, bool makeLastClickable = true)
+    {
+        // Load all folders to build the path
+        var foldersWithCounts = await FolderService.GetAllWithCountsAsync();
+
+        // Convert FolderWithCount to Folder for use with FolderTreeUtilities
+        var allFolders = foldersWithCounts.Select(f => new Folder
+        {
+            Id = f.Id,
+            Name = f.Name,
+            ParentFolderId = f.ParentFolderId,
+            Weight = f.Weight,
+        }).ToList();
+
+        // Get the folder ID path from root to current folder
+        var folderIdPath = FolderTreeUtilities.GetFolderIdPath(folderId, allFolders);
+
+        if (folderIdPath.Count == 0)
+        {
+            return;
+        }
+
+        // Add breadcrumb for each folder in the path (from root to current)
+        for (int i = 0; i < folderIdPath.Count; i++)
+        {
+            var currentFolderId = folderIdPath[i];
+            var folder = allFolders.FirstOrDefault(f => f.Id == currentFolderId);
+            if (folder != null)
+            {
+                bool isLastFolder = i == folderIdPath.Count - 1;
+                bool shouldBeClickable = !isLastFolder || makeLastClickable;
+
+                BreadcrumbItems.Add(new BreadcrumbItem
+                {
+                    DisplayName = folder.Name,
+                    Url = shouldBeClickable ? $"/items/folder/{folder.Id}" : null,
+                });
+            }
+        }
+    }
+
+    /// <summary>
+    /// Builds breadcrumb navigation for folder hierarchy and adds it to BreadcrumbItems.
+    /// This helper method can be called from any page to add folder breadcrumbs.
+    /// </summary>
+    /// <param name="folderId">The folder ID to build breadcrumbs for.</param>
+    /// <param name="allFolders">List of all folders (for path computation).</param>
+    /// <param name="itemsLabel">Label for the "Items" breadcrumb (default: "Items" from localization).</param>
+    /// <param name="includeCurrentFolder">Whether to include the current folder as the last breadcrumb (default: true).</param>
+    protected void AddFolderBreadcrumbs(Guid? folderId, List<Folder> allFolders, string? itemsLabel = null, bool includeCurrentFolder = true)
+    {
+        if (!folderId.HasValue || allFolders.Count == 0)
+        {
+            return;
+        }
+
+        // Get the folder path (list of folder names from root to current)
+        var folderPath = FolderTreeUtilities.GetFolderPath(folderId, allFolders);
+        var folderIdPath = FolderTreeUtilities.GetFolderIdPath(folderId, allFolders);
+
+        if (folderPath.Count == 0)
+        {
+            return;
+        }
+
+        // Add breadcrumb for "Items" (vault home)
+        var itemsLabelText = itemsLabel ?? SharedLocalizer["Items"];
+        BreadcrumbItems.Add(new BreadcrumbItem
+        {
+            DisplayName = itemsLabelText,
+            Url = "/items",
+        });
+
+        // Determine how many folders to add as breadcrumbs
+        int endIndex = includeCurrentFolder ? folderPath.Count : folderPath.Count - 1;
+
+        // Add breadcrumb for each folder in the path
+        for (int i = 0; i < endIndex; i++)
+        {
+            var currentFolderId = folderIdPath[i];
+            var folderName = folderPath[i];
+
+            // Last item should not have a URL if includeCurrentFolder is true
+            bool isLastItem = includeCurrentFolder && i == folderPath.Count - 1;
+
+            BreadcrumbItems.Add(new BreadcrumbItem
+            {
+                DisplayName = folderName,
+                Url = isLastItem ? null : $"/items/folder/{currentFolderId}",
+            });
         }
     }
 

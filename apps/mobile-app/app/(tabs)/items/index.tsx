@@ -181,21 +181,35 @@ export default function ItemsScreen(): React.ReactNode {
       return [];
     }
 
-    const folderCounts = new Map<string, number>();
+    /**
+     * Count items per folder (including items in subfolders recursively).
+     * @param folderId - The folder ID to count items for
+     * @returns Total count of items in the folder and all subfolders
+     */
+    const getRecursiveItemCount = (folderId: string): number => {
+      // Get items directly in this folder
+      const directItems = itemsList.filter((item: Item) => item.FolderId === folderId);
 
-    // Count items per folder
-    itemsList.forEach((item: Item) => {
-      if (item.FolderId) {
-        folderCounts.set(item.FolderId, (folderCounts.get(item.FolderId) || 0) + 1);
-      }
-    });
+      // Get all child folders
+      const childFolders = folders.filter(f => f.ParentFolderId === folderId);
 
-    // Return folders with counts, sorted alphabetically
-    return folders.map(folder => ({
-      id: folder.Id,
-      name: folder.Name,
-      itemCount: folderCounts.get(folder.Id) || 0
-    })).sort((a, b) => a.name.localeCompare(b.name));
+      // Recursively count items in child folders
+      const childItemCount = childFolders.reduce((count, child) => {
+        return count + getRecursiveItemCount(child.Id);
+      }, 0);
+
+      return directItems.length + childItemCount;
+    };
+
+    // Return only root-level folders (no parent) with recursive counts, sorted alphabetically
+    return folders
+      .filter(folder => !folder.ParentFolderId) // Only root-level folders
+      .map(folder => ({
+        id: folder.Id,
+        name: folder.Name,
+        itemCount: getRecursiveItemCount(folder.Id)
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [folders, itemsList, searchQuery]);
 
   /**

@@ -132,7 +132,7 @@ public static class VaultImportService
         Dictionary<Guid, byte[]> logoDataById)
     {
         var credentials = new List<ImportedCredential>();
-        var folderMap = manifest.Folders.ToDictionary(f => f.Id, f => f.Name);
+        var folderMap = BuildFolderPathMap(manifest.Folders);
 
         foreach (var item in manifest.Items)
         {
@@ -150,9 +150,9 @@ public static class VaultImportService
             }
 
             // Get folder path
-            if (item.FolderId.HasValue && folderMap.TryGetValue(item.FolderId.Value, out var folderName))
+            if (item.FolderId.HasValue && folderMap.TryGetValue(item.FolderId.Value, out var folderPath))
             {
-                credential.FolderPath = folderName;
+                credential.FolderPath = folderPath;
             }
 
             // Extract field values
@@ -181,6 +181,54 @@ public static class VaultImportService
         }
 
         return credentials;
+    }
+
+    /// <summary>
+    /// Builds a map of folder IDs to their full hierarchical paths.
+    /// </summary>
+    /// <param name="folders">The list of folders from the manifest.</param>
+    /// <returns>A dictionary mapping folder IDs to full paths (e.g., "Work/Projects/Active").</returns>
+    private static Dictionary<Guid, string> BuildFolderPathMap(List<AvuxFolder> folders)
+    {
+        var folderMap = new Dictionary<Guid, string>();
+        var folderById = folders.ToDictionary(f => f.Id);
+
+        foreach (var folder in folders)
+        {
+            var path = BuildFolderPath(folder, folderById);
+            folderMap[folder.Id] = path;
+        }
+
+        return folderMap;
+    }
+
+    /// <summary>
+    /// Recursively builds the full path for a folder by traversing parent folders.
+    /// </summary>
+    /// <param name="folder">The folder to build the path for.</param>
+    /// <param name="folderById">Dictionary of all folders by ID.</param>
+    /// <returns>The full hierarchical path (e.g., "Work/Projects/Active").</returns>
+    private static string BuildFolderPath(AvuxFolder folder, Dictionary<Guid, AvuxFolder> folderById)
+    {
+        var pathParts = new List<string>();
+        var currentFolder = folder;
+
+        // Traverse up the folder hierarchy
+        while (currentFolder != null)
+        {
+            pathParts.Insert(0, currentFolder.Name);
+
+            if (currentFolder.ParentFolderId.HasValue && folderById.TryGetValue(currentFolder.ParentFolderId.Value, out var parentFolder))
+            {
+                currentFolder = parentFolder;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return string.Join("/", pathParts);
     }
 
     /// <summary>

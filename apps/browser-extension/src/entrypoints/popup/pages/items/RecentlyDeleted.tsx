@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
+import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
@@ -144,10 +145,10 @@ const RecentlyDeleted: React.FC = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="flex items-baseline gap-1.5 text-gray-900 dark:text-white text-xl">
+        <PageTitle className="flex items-baseline gap-1.5">
           {t('recentlyDeleted.title')}
           <span className="text-sm text-gray-500 dark:text-gray-400">({items.length})</span>
-        </h2>
+        </PageTitle>
         {items.length > 0 && (
           <button
             onClick={() => setShowConfirmEmptyAll(true)}

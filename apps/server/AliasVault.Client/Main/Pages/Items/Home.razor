@@ -2,12 +2,14 @@
 @page "/items/folder/{FolderId:guid}"
 @inherits MainBase
 @inject ItemService ItemService
-@inject FolderService FolderService
 @using AliasVault.RazorComponents.Tables
+@using AliasVault.RazorComponents.Models
 @using AliasVault.Client.Main.Models
 @using AliasVault.Client.Main.Components.Items
 @using AliasClientDb.Models
 @using AliasVault.Client.Main.Components.Folders
+@using AliasVault.Client.Main.Utilities
+@using AliasClientDb
 @using Microsoft.Extensions.Localization
 @implements IAsyncDisposable
 
@@ -183,27 +185,30 @@ else
             </div>
         }
 
-        @* Folders section - only show at root level when ShowFolders is enabled *@
-        @if (!IsInFolder && !IsSearching && ShowFolders)
+        @* Folders section - show at root OR inside folders to display subfolders *@
+        @if (!IsSearching && ShowFolders)
         {
             <div class="flex flex-wrap items-center gap-2 mb-4">
-                @foreach (var folder in Folders)
+                @foreach (var folder in CurrentLevelFolders)
                 {
                     <FolderPill Folder="@folder" OnClick="() => NavigateToFolder(folder.Id)" />
                 }
-                <button @onclick="ShowCreateFolderModal" class="@GetAddFolderButtonClass()">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                    </svg>
-                    <svg class="w-3.5 h-3.5 -ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
-                    @if (Folders.Count == 0)
-                    {
-                        <span>@Localizer["NewFolder"]</span>
-                    }
-                </button>
+                @if (CanCreateSubfolder)
+                {
+                    <button @onclick="ShowCreateFolderModal" class="@GetAddFolderButtonClass()">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                        </svg>
+                        <svg class="w-3.5 h-3.5 -ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                        @if (CurrentLevelFolders.Count == 0)
+                        {
+                            <span>@Localizer["NewFolder"]</span>
+                        }
+                    </button>
+                }
             </div>
         }
 
@@ -316,7 +321,7 @@ else
     OnDeleteFolderOnly="DeleteFolderOnlyAsync"
     OnDeleteFolderAndContents="DeleteFolderAndContentsAsync"
     FolderName="@CurrentFolderName"
-    ItemCount="@FilteredAndSortedItems.Count()" />
+    ItemCount="@CurrentFolderItemCount" />
 
 @code {
     private IStringLocalizer Localizer => LocalizerFactory.Create("Pages.Main.Items.Home", "AliasVault.Client");
@@ -339,14 +344,72 @@ else
     private List<ItemListEntry> Items { get; set; } = new();
 
     /// <summary>
-    /// Gets or sets the folders.
+    /// Gets or sets all folders in the system.
     /// </summary>
     private List<FolderWithCount> Folders { get; set; } = new();
+
+    /// <summary>
+    /// Gets all folders as Folder entities (for breadcrumb path computation).
+    /// </summary>
+    private List<Folder> AllFolders => Folders.Select(f => new Folder
+    {
+        Id = f.Id,
+        Name = f.Name,
+        ParentFolderId = f.ParentFolderId,
+        Weight = f.Weight
+    }).ToList();
+
+    /// <summary>
+    /// Gets the folders to display at the current level (root folders if not in folder, subfolders if in folder).
+    /// </summary>
+    private List<FolderWithCount> CurrentLevelFolders =>
+        Folders.Where(f => f.ParentFolderId == FolderId).ToList();
+
+    /// <summary>
+    /// Gets whether we can create a subfolder at the current level.
+    /// Returns true if at root, or if current folder is not at max depth.
+    /// </summary>
+    private bool CanCreateSubfolder
+    {
+        get
+        {
+            if (!IsInFolder)
+            {
+                return true; // Can always create folders at root
+            }
+
+            if (!FolderId.HasValue || AllFolders.Count == 0)
+            {
+                return false;
+            }
+
+            return FolderTreeUtilities.CanHaveSubfolders(FolderId.Value, AllFolders);
+        }
+    }
 
     /// <summary>
     /// Gets or sets the current folder name (when in folder view).
     /// </summary>
     private string CurrentFolderName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the total item count in the current folder tree (includes items in all subfolders recursively).
+    /// Used for the delete folder modal to determine if "delete with contents" option should be shown.
+    /// </summary>
+    private int CurrentFolderItemCount
+    {
+        get
+        {
+            if (!FolderId.HasValue)
+            {
+                return FilteredAndSortedItems.Count();
+            }
+
+            // Find the current folder in the Folders list and return its recursive count
+            var currentFolder = Folders.FirstOrDefault(f => f.Id == FolderId.Value);
+            return currentFolder?.ItemCount ?? 0;
+        }
+    }
 
     /// <summary>
     /// Gets or sets whether the settings dropdown is shown.
@@ -765,11 +828,13 @@ else
     }
 
     /// <summary>
-    /// Create a new folder.
+    /// Create a new folder. If inside a folder, creates as subfolder.
     /// </summary>
     private async Task CreateFolderAsync(string folderName)
     {
-        var folderId = await FolderService.CreateAsync(folderName);
+        // Use current folder as parent if we're inside a folder, otherwise null for root
+        var parentFolderId = IsInFolder ? FolderId : null;
+        var folderId = await FolderService.CreateAsync(folderName, parentFolderId);
         if (folderId != Guid.Empty)
         {
             // Reload folders
@@ -843,16 +908,28 @@ else
     }
 
     /// <summary>
-    /// Delete the current folder only (move items to root).
+    /// Delete the current folder only (move items to parent folder).
     /// </summary>
     private async Task DeleteFolderOnlyAsync()
     {
         if (FolderId.HasValue)
         {
+            // Get the parent folder ID before deletion
+            var folder = await FolderService.GetByIdAsync(FolderId.Value);
+            var parentFolderId = folder?.ParentFolderId;
+
             var success = await FolderService.DeleteAsync(FolderId.Value);
             if (success)
             {
-                NavigationManager.NavigateTo("/items");
+                // Navigate to parent folder if it exists, otherwise root
+                if (parentFolderId.HasValue)
+                {
+                    NavigationManager.NavigateTo($"/items/folder/{parentFolderId.Value}");
+                }
+                else
+                {
+                    NavigationManager.NavigateTo("/items");
+                }
             }
             else
             {
@@ -868,10 +945,22 @@ else
     {
         if (FolderId.HasValue)
         {
+            // Get the parent folder ID before deletion
+            var folder = await FolderService.GetByIdAsync(FolderId.Value);
+            var parentFolderId = folder?.ParentFolderId;
+
             var success = await FolderService.DeleteWithContentsAsync(FolderId.Value);
             if (success)
             {
-                NavigationManager.NavigateTo("/items");
+                // Navigate to parent folder if it exists, otherwise root
+                if (parentFolderId.HasValue)
+                {
+                    NavigationManager.NavigateTo($"/items/folder/{parentFolderId.Value}");
+                }
+                else
+                {
+                    NavigationManager.NavigateTo("/items");
+                }
             }
             else
             {
@@ -892,15 +981,22 @@ else
         var storedShowFolders = await LocalStorage.GetItemAsync<bool?>(ShowFoldersStorageKey);
         ShowFolders = storedShowFolders ?? true;
 
-        // Load folder name if in folder view
+        // Load folder name and build breadcrumbs if in folder view
         if (FolderId.HasValue)
         {
             var folder = await FolderService.GetByIdAsync(FolderId.Value);
             CurrentFolderName = folder?.Name ?? string.Empty;
+
+            // Build breadcrumbs for folder hierarchy using shared helper
+            // Make last folder non-clickable since we're on that folder page
+            BreadcrumbItems.RemoveAll(b => !b.ShowHomeIcon);
+            await BuildFolderBreadcrumbsAsync(FolderId.Value, makeLastClickable: false);
         }
         else
         {
             CurrentFolderName = string.Empty;
+            // Clear breadcrumbs at root level (only show Home from base class)
+            BreadcrumbItems.RemoveAll(b => !b.ShowHomeIcon);
         }
 
         await LoadItemsAsync();

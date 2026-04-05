@@ -1,5 +1,6 @@
 import type { Item, ItemField, Attachment, TotpCode, FieldHistory } from '@/utils/dist/core/models/vault';
 import { FieldKey, MAX_FIELD_HISTORY_RECORDS } from '@/utils/dist/core/models/vault';
+import { getFolderPath } from '@/utils/folderUtils';
 
 import { BaseRepository, type IDatabaseClient } from '../BaseRepository';
 import { FieldMapper, type FieldRow } from '../mappers/FieldMapper';
@@ -8,9 +9,12 @@ import {
   ItemQueries,
   FieldValueQueries,
   FieldDefinitionQueries,
-  FieldHistoryQueries
+  FieldHistoryQueries,
+  TotpCodeQueries,
+  AttachmentQueries
 } from '../queries/ItemQueries';
 
+import type { Folder } from './FolderRepository';
 import type { LogoRepository } from './LogoRepository';
 
 /**
@@ -28,6 +32,42 @@ export class ItemRepository extends BaseRepository {
     private logoRepository: LogoRepository
   ) {
     super(client);
+  }
+
+  /**
+   * Build folder paths for all folders using the shared utility.
+   * Returns a map of FolderId -> path array.
+   * @returns Map of folder ID to path array
+   */
+  private buildFolderPaths(): Map<string, string[]> {
+    const folderPathMap = new Map<string, string[]>();
+
+    try {
+      // Get all folders from database
+      const folders = this.client.executeQuery<Folder>(
+        'SELECT Id, Name, ParentFolderId, Weight FROM Folders WHERE IsDeleted = 0'
+      );
+
+      if (folders.length === 0) {
+        return folderPathMap;
+      }
+
+      // Use shared utility to build paths for all folders
+      for (const folder of folders) {
+        const path = getFolderPath(folder.Id, folders);
+        if (path.length > 0) {
+          folderPathMap.set(folder.Id, path);
+        }
+      }
+
+      return folderPathMap;
+    } catch (error) {
+      // Folders table may not exist in older vault versions
+      if (error instanceof Error && error.message.includes('no such table')) {
+        return folderPathMap;
+      }
+      throw error;
+    }
   }
 
   /**
@@ -66,7 +106,10 @@ export class ItemRepository extends BaseRepository {
     );
     const tagsByItem = ItemMapper.groupTagsByItem(tagRows);
 
-    return ItemMapper.mapRows(itemRows, fieldsByItem, tagsByItem);
+    // Build folder paths
+    const folderPaths = this.buildFolderPaths();
+
+    return ItemMapper.mapRows(itemRows, fieldsByItem, tagsByItem, folderPaths);
   }
 
   /**
@@ -94,7 +137,14 @@ export class ItemRepository extends BaseRepository {
     );
     const tags = ItemMapper.mapTagRows(tagRows);
 
-    return ItemMapper.mapRow(results[0], fields, tags);
+    // Get folder path if item is in a folder
+    let folderPath: string[] | undefined;
+    if (results[0].FolderId) {
+      const folderPaths = this.buildFolderPaths();
+      folderPath = folderPaths.get(results[0].FolderId);
+    }
+
+    return ItemMapper.mapRow(results[0], fields, tags, folderPath);
   }
 
   /**
@@ -183,7 +233,7 @@ export class ItemRepository extends BaseRepository {
         ItemType: number;
         FolderId: string | null;
         LogoId: string | null;
-      }>(`SELECT Name, ItemType, FolderId, LogoId FROM Items WHERE Id = ?`, [item.Id])[0];
+      }>(ItemQueries.GET_ITEM_FIELDS, [item.Id])[0];
 
       if (existing) {
         const nameChanged = (item.Name ?? null) !== existing.Name;
@@ -298,14 +348,12 @@ export class ItemRepository extends BaseRepository {
   public getRecentlyDeleted(): ItemWithDeletedAt[] {
     let itemRows: (ItemRow & { DeletedAt: string })[];
     try {
-      // Need a modified query that includes DeletedAt in the SELECT
       const query = `
-        SELECT DISTINCT
+        SELECT
           i.Id,
           i.Name,
           i.ItemType,
           i.FolderId,
-          f.Name as FolderPath,
           l.FileData as Logo,
           i.DeletedAt,
           CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
@@ -315,7 +363,6 @@ export class ItemRepository extends BaseRepository {
           i.UpdatedAt
         FROM Items i
         LEFT JOIN Logos l ON i.LogoId = l.Id
-        LEFT JOIN Folders f ON i.FolderId = f.Id
         WHERE i.IsDeleted = 0 AND i.DeletedAt IS NOT NULL
         ORDER BY i.DeletedAt DESC`;
 
@@ -340,7 +387,14 @@ export class ItemRepository extends BaseRepository {
     );
     const fieldsByItem = FieldMapper.processFieldRows(fieldRows);
 
-    return itemRows.map(row => ItemMapper.mapDeletedItemRow(row, fieldsByItem.get(row.Id) || []));
+    // Build folder paths
+    const folderPaths = this.buildFolderPaths();
+
+    return itemRows.map(row => ItemMapper.mapDeletedItemRow(
+      row,
+      fieldsByItem.get(row.Id) || [],
+      row.FolderId ? folderPaths.get(row.FolderId) : undefined
+    ));
   }
 
   /**
@@ -757,8 +811,7 @@ export class ItemRepository extends BaseRepository {
   private insertTotpCodes(itemId: string, totpCodes: TotpCode[], currentDateTime: string): void {
     for (const totpCode of totpCodes) {
       this.client.executeUpdate(
-        `INSERT INTO TotpCodes (Id, Name, SecretKey, ItemId, CreatedAt, UpdatedAt, IsDeleted)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        TotpCodeQueries.INSERT,
         [
           totpCode.Id || this.generateId(),
           totpCode.Name,
@@ -786,7 +839,7 @@ export class ItemRepository extends BaseRepository {
       Id: string;
       Name: string;
       SecretKey: string;
-    }>(`SELECT Id, Name, SecretKey FROM TotpCodes WHERE ItemId = ? AND IsDeleted = 0`, [itemId]);
+    }>(TotpCodeQueries.GET_BY_ITEM_ID, [itemId]);
 
     const existingByIdMap = new Map(existingTotpCodes.map(tc => [tc.Id, tc]));
 
@@ -796,7 +849,7 @@ export class ItemRepository extends BaseRepository {
       if (totpCode.IsDeleted) {
         if (wasOriginal) {
           this.client.executeUpdate(
-            `UPDATE TotpCodes SET IsDeleted = 1, UpdatedAt = ? WHERE Id = ?`,
+            TotpCodeQueries.SOFT_DELETE,
             [currentDateTime, totpCode.Id]
           );
         }
@@ -805,14 +858,13 @@ export class ItemRepository extends BaseRepository {
         const existing = existingByIdMap.get(totpCode.Id);
         if (existing && (existing.Name !== totpCode.Name || existing.SecretKey !== totpCode.SecretKey)) {
           this.client.executeUpdate(
-            `UPDATE TotpCodes SET Name = ?, SecretKey = ?, UpdatedAt = ? WHERE Id = ?`,
+            TotpCodeQueries.UPDATE,
             [totpCode.Name, totpCode.SecretKey, currentDateTime, totpCode.Id]
           );
         }
       } else {
         this.client.executeUpdate(
-          `INSERT INTO TotpCodes (Id, Name, SecretKey, ItemId, CreatedAt, UpdatedAt, IsDeleted)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          TotpCodeQueries.INSERT,
           [
             totpCode.Id || this.generateId(),
             totpCode.Name,
@@ -837,8 +889,7 @@ export class ItemRepository extends BaseRepository {
         : new Uint8Array(attachment.Blob);
 
       this.client.executeUpdate(
-        `INSERT INTO Attachments (Id, Filename, Blob, ItemId, CreatedAt, UpdatedAt, IsDeleted)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        AttachmentQueries.INSERT,
         [
           attachment.Id || this.generateId(),
           attachment.Filename,
@@ -868,7 +919,7 @@ export class ItemRepository extends BaseRepository {
     for (const originalId of originalIds) {
       if (!currentAttachmentIds.has(originalId)) {
         this.client.executeUpdate(
-          `UPDATE Attachments SET IsDeleted = 1, UpdatedAt = ? WHERE Id = ?`,
+          AttachmentQueries.SOFT_DELETE,
           [currentDateTime, originalId]
         );
       }
@@ -881,7 +932,7 @@ export class ItemRepository extends BaseRepository {
       if (attachment.IsDeleted) {
         if (wasOriginal) {
           this.client.executeUpdate(
-            `UPDATE Attachments SET IsDeleted = 1, UpdatedAt = ? WHERE Id = ?`,
+            AttachmentQueries.SOFT_DELETE,
             [currentDateTime, attachment.Id]
           );
         }
@@ -891,8 +942,7 @@ export class ItemRepository extends BaseRepository {
           : new Uint8Array(attachment.Blob);
 
         this.client.executeUpdate(
-          `INSERT INTO Attachments (Id, Filename, Blob, ItemId, CreatedAt, UpdatedAt, IsDeleted)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          AttachmentQueries.INSERT,
           [
             attachment.Id || this.generateId(),
             attachment.Filename,

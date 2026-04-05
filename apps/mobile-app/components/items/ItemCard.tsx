@@ -335,8 +335,8 @@ export function ItemCard({ item, onItemDelete, showFolderPath = false }: ItemCar
             <ItemIcon item={item} style={styles.logo} />
             <View style={styles.itemInfo}>
               <View style={styles.serviceNameRow}>
-                {showFolderPath && item.FolderPath && (
-                  <Text style={styles.folderPath}>{item.FolderPath} &gt; </Text>
+                {showFolderPath && item.FolderPath && item.FolderPath.length > 0 && (
+                  <Text style={styles.folderPath}>{item.FolderPath.join(' > ')} &gt; </Text>
                 )}
                 <Text style={styles.serviceName}>
                   {getItemName(item)}

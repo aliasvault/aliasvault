@@ -6,7 +6,7 @@
 export class ItemQueries {
   /**
    * Base SELECT for items with common fields.
-   * Includes LEFT JOIN to Logos and Folders, and subqueries for HasPasskey/HasAttachment/HasTotp.
+   * Includes LEFT JOIN to Logos and subqueries for HasPasskey/HasAttachment/HasTotp.
    */
   public static readonly BASE_SELECT = `
     SELECT DISTINCT
@@ -14,7 +14,6 @@ export class ItemQueries {
       i.Name,
       i.ItemType,
       i.FolderId,
-      f.Name as FolderPath,
       l.FileData as Logo,
       CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
       CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
@@ -22,8 +21,7 @@ export class ItemQueries {
       i.CreatedAt,
       i.UpdatedAt
     FROM Items i
-    LEFT JOIN Logos l ON i.LogoId = l.Id
-    LEFT JOIN Folders f ON i.FolderId = f.Id`;
+    LEFT JOIN Logos l ON i.LogoId = l.Id`;
 
   /**
    * Get all active items (not deleted, not in trash).
@@ -42,7 +40,6 @@ export class ItemQueries {
       i.Name,
       i.ItemType,
       i.FolderId,
-      f.Name as FolderPath,
       l.FileData as Logo,
       CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
       CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
@@ -51,7 +48,6 @@ export class ItemQueries {
       i.UpdatedAt
     FROM Items i
     LEFT JOIN Logos l ON i.LogoId = l.Id
-    LEFT JOIN Folders f ON i.FolderId = f.Id
     WHERE i.Id = ? AND i.IsDeleted = 0`;
 
   /**
@@ -121,7 +117,6 @@ export class ItemQueries {
       i.Name,
       i.ItemType,
       i.FolderId,
-      f.Name as FolderPath,
       l.FileData as Logo,
       CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
       CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
@@ -130,7 +125,6 @@ export class ItemQueries {
       i.UpdatedAt
     FROM Items i
     LEFT JOIN Logos l ON i.LogoId = l.Id
-    LEFT JOIN Folders f ON i.FolderId = f.Id
     INNER JOIN FieldValues fv ON fv.ItemId = i.Id
     WHERE LOWER(fv.Value) = LOWER(?)
       AND fv.FieldKey = ?
@@ -148,17 +142,15 @@ export class ItemQueries {
       i.Name,
       i.ItemType,
       i.FolderId,
-      f.Name as FolderPath,
       l.FileData as Logo,
       CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
       CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
-      CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
+      CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
       i.CreatedAt,
       i.UpdatedAt,
       i.DeletedAt
     FROM Items i
     LEFT JOIN Logos l ON i.LogoId = l.Id
-    LEFT JOIN Folders f ON i.FolderId = f.Id
     WHERE i.IsDeleted = 0 AND i.DeletedAt IS NOT NULL
     ORDER BY i.DeletedAt DESC`;
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { sendMessage } from 'webext-bridge/popup';
 
+import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -41,8 +42,8 @@ const ContextMenuSettings: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <PageTitle>{t('settings.contextMenuSettings')}</PageTitle>
       <section>
-        <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-3">{t('settings.contextMenu')}</h3>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="p-4">
             <div className="flex items-center justify-between">

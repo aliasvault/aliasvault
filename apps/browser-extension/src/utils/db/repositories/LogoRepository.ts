@@ -1,37 +1,5 @@
 import { BaseRepository } from '../BaseRepository';
-
-/**
- * SQL query constants for Logo operations.
- */
-const LogoQueries = {
-  /**
-   * Check if logo exists for source.
-   */
-  GET_ID_FOR_SOURCE: `
-    SELECT Id FROM Logos
-    WHERE Source = ? AND IsDeleted = 0
-    LIMIT 1`,
-
-  /**
-   * Insert new logo.
-   */
-  INSERT: `
-    INSERT INTO Logos (Id, Source, FileData, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, ?, ?, ?)`,
-
-  /**
-   * Count items using a logo.
-   */
-  COUNT_USAGE: `
-    SELECT COUNT(*) as count FROM Items
-    WHERE LogoId = ? AND IsDeleted = 0`,
-
-  /**
-   * Hard delete logo.
-   */
-  HARD_DELETE: `
-    DELETE FROM Logos WHERE Id = ?`
-};
+import { LogoQueries } from '../queries/LogoQueries';
 
 /**
  * Repository for Logo management operations.

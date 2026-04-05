@@ -5,7 +5,7 @@
 export class ItemQueries {
   /**
    * Base SELECT for items with common fields.
-   * Includes LEFT JOIN to Logos and Folders, and subqueries for HasPasskey/HasAttachment/HasTotp.
+   * Includes LEFT JOIN to Logos. Folder paths are computed in the repository layer.
    */
   public static readonly BASE_SELECT = `
     SELECT DISTINCT
@@ -13,7 +13,6 @@ export class ItemQueries {
       i.Name,
       i.ItemType,
       i.FolderId,
-      f.Name as FolderPath,
       l.FileData as Logo,
       CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
       CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
@@ -21,8 +20,7 @@ export class ItemQueries {
       i.CreatedAt,
       i.UpdatedAt
     FROM Items i
-    LEFT JOIN Logos l ON i.LogoId = l.Id
-    LEFT JOIN Folders f ON i.FolderId = f.Id`;
+    LEFT JOIN Logos l ON i.LogoId = l.Id`;
 
   /**
    * Get all active items (not deleted, not in trash).
@@ -55,11 +53,20 @@ export class ItemQueries {
    * Get all recently deleted items (in trash).
    */
   public static readonly GET_RECENTLY_DELETED = `
-    ${ItemQueries.BASE_SELECT},
+    SELECT
+      i.Id,
+      i.Name,
+      i.ItemType,
+      i.FolderId,
+      l.FileData as Logo,
+      CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
+      CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
+      CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
+      i.CreatedAt,
+      i.UpdatedAt,
       i.DeletedAt
     FROM Items i
     LEFT JOIN Logos l ON i.LogoId = l.Id
-    LEFT JOIN Folders f ON i.FolderId = f.Id
     WHERE i.IsDeleted = 0 AND i.DeletedAt IS NOT NULL
     ORDER BY i.DeletedAt DESC`;
 
@@ -228,6 +235,14 @@ export class ItemQueries {
       AND fv.IsDeleted = 0
       AND i.IsDeleted = 0
       AND i.DeletedAt IS NULL`;
+
+  /**
+   * Get item-level fields for change detection during updates.
+   */
+  public static readonly GET_ITEM_FIELDS = `
+    SELECT Name, ItemType, FolderId, LogoId
+    FROM Items
+    WHERE Id = ?`;
 }
 
 /**
@@ -369,5 +384,65 @@ export class FieldHistoryQueries {
   public static readonly SOFT_DELETE = `
     UPDATE FieldHistories
     SET IsDeleted = 1, UpdatedAt = ?
+    WHERE Id = ?`;
+}
+
+/**
+ * SQL query constants for TotpCode operations.
+ */
+export class TotpCodeQueries {
+  /**
+   * Get existing TOTP codes for an item.
+   */
+  public static readonly GET_BY_ITEM_ID = `
+    SELECT Id, Name, SecretKey
+    FROM TotpCodes
+    WHERE ItemId = ? AND IsDeleted = 0`;
+
+  /**
+   * Insert a new TOTP code.
+   */
+  public static readonly INSERT = `
+    INSERT INTO TotpCodes (Id, Name, SecretKey, ItemId, CreatedAt, UpdatedAt, IsDeleted)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+  /**
+   * Update an existing TOTP code.
+   */
+  public static readonly UPDATE = `
+    UPDATE TotpCodes
+    SET Name = ?,
+        SecretKey = ?,
+        UpdatedAt = ?
+    WHERE Id = ?`;
+
+  /**
+   * Soft delete a TOTP code.
+   */
+  public static readonly SOFT_DELETE = `
+    UPDATE TotpCodes
+    SET IsDeleted = 1,
+        UpdatedAt = ?
+    WHERE Id = ?`;
+}
+
+/**
+ * SQL query constants for Attachment operations.
+ */
+export class AttachmentQueries {
+  /**
+   * Insert a new attachment.
+   */
+  public static readonly INSERT = `
+    INSERT INTO Attachments (Id, Filename, Blob, ItemId, CreatedAt, UpdatedAt, IsDeleted)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+  /**
+   * Soft delete an attachment.
+   */
+  public static readonly SOFT_DELETE = `
+    UPDATE Attachments
+    SET IsDeleted = 1,
+        UpdatedAt = ?
     WHERE Id = ?`;
 }

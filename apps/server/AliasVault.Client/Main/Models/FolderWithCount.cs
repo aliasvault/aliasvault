@@ -25,7 +25,17 @@ public sealed class FolderWithCount
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the number of items in this folder.
+    /// Gets or sets the parent folder ID (null for root folders).
+    /// </summary>
+    public Guid? ParentFolderId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the folder weight for sorting.
+    /// </summary>
+    public int Weight { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of items in this folder (including subfolders recursively).
     /// </summary>
     public int ItemCount { get; set; }
 }

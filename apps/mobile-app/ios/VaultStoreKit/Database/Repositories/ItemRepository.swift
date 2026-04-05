@@ -7,6 +7,54 @@ public class ItemRepository: BaseRepository {
 
     // MARK: - Read Operations
 
+    /// Build folder paths for all folders.
+    /// Returns a map of FolderId -> path array.
+    /// - Returns: Dictionary of folder ID to folder path array
+    private func buildFolderPaths() throws -> [UUID: [String]] {
+        var folderPathMap: [UUID: [String]] = [:]
+
+        do {
+            // Get all folders from database
+            let folderQuery = "SELECT Id, Name, ParentFolderId FROM Folders WHERE IsDeleted = 0"
+            let folderResults = try client.executeQuery(folderQuery, params: [])
+
+            if folderResults.isEmpty {
+                return folderPathMap
+            }
+
+            // Convert to FolderUtils.Folder format
+            let folders = folderResults.compactMap { row -> FolderUtils.Folder? in
+                guard let idString = row["Id"] as? String,
+                      let id = UUID(uuidString: idString),
+                      let name = row["Name"] as? String else {
+                    return nil
+                }
+
+                let parentFolderId: UUID? = {
+                    guard let parentIdString = row["ParentFolderId"] as? String else {
+                        return nil
+                    }
+                    return UUID(uuidString: parentIdString)
+                }()
+
+                return FolderUtils.Folder(id: id, name: name, parentFolderId: parentFolderId)
+            }
+
+            // Use shared utility to build paths for all folders
+            for folder in folders {
+                let path = FolderUtils.getFolderPath(folderId: folder.id, folders: folders)
+                if !path.isEmpty {
+                    folderPathMap[folder.id] = path
+                }
+            }
+
+            return folderPathMap
+        } catch {
+            // Folders table may not exist in older vault versions
+            return folderPathMap
+        }
+    }
+
     /// Fetch all active items (not deleted, not in trash) with their fields.
     /// - Returns: Array of Item objects
     public func getAll() throws -> [Item] {
@@ -27,8 +75,11 @@ public class ItemRepository: BaseRepository {
         // 3. Process fields into a dictionary by ItemId
         let fieldsByItem = FieldMapper.processFieldRows(fieldRows)
 
-        // 4. Map rows to Item objects
-        return ItemMapper.mapRows(itemRows, fieldsByItem: fieldsByItem)
+        // 4. Build folder paths
+        let folderPaths = try buildFolderPaths()
+
+        // 5. Map rows to Item objects
+        return ItemMapper.mapRows(itemRows, fieldsByItem: fieldsByItem, folderPathsByFolderId: folderPaths)
     }
 
     /// Fetch a single item by ID with its fields.
@@ -46,8 +97,16 @@ public class ItemRepository: BaseRepository {
         let fieldRows = fieldResults.compactMap { SingleItemFieldRow(from: $0) }
         let fields = FieldMapper.processFieldRowsForSingleItem(fieldRows)
 
-        // 3. Map to Item object
-        return ItemMapper.mapRow(itemRow, fields: fields)
+        // 3. Build folder paths
+        let folderPaths = try buildFolderPaths()
+
+        // 4. Get folder path if item is in a folder
+        let folderPath = itemRow.folderId
+            .flatMap { UUID(uuidString: $0) }
+            .flatMap { folderPaths[$0] }
+
+        // 5. Map to Item object
+        return ItemMapper.mapRow(itemRow, fields: fields, folderPath: folderPath)
     }
 
     /// Fetch all unique email addresses from field values.
@@ -77,8 +136,14 @@ public class ItemRepository: BaseRepository {
         let fieldRows = fieldResults.compactMap { FieldRow(from: $0) }
         let fieldsByItem = FieldMapper.processFieldRows(fieldRows)
 
+        // Build folder paths
+        let folderPaths = try buildFolderPaths()
+
         return itemRows.compactMap { row in
-            ItemMapper.mapDeletedItemRow(row, fields: fieldsByItem[row.id] ?? [])
+            let folderPath = row.folderId
+                .flatMap { UUID(uuidString: $0) }
+                .flatMap { folderPaths[$0] }
+            return ItemMapper.mapDeletedItemRow(row, fields: fieldsByItem[row.id] ?? [], folderPath: folderPath)
         }
     }
 

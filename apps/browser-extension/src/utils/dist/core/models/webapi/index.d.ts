@@ -300,6 +300,7 @@ type DeleteAccountInitiateResponse = {
     serverEphemeral: string;
     encryptionType: string;
     encryptionSettings: string;
+    srpIdentity: string;
 };
 
 /**

@@ -1,7 +1,6 @@
 @page "/items/{id:guid}"
 @inherits MainBase
 @inject ItemService ItemService
-@inject FolderService FolderService
 @implements IAsyncDisposable
 @using Microsoft.Extensions.Localization
 @using AliasClientDb
@@ -312,10 +311,10 @@ else
             Folder = await FolderService.GetByIdAsync(Item.FolderId.Value);
         }
 
-        // Add breadcrumb items - Home is already added by MainBase, add folder if present
-        if (Folder != null)
+        // Add breadcrumb items - Home is already added by MainBase, add folder hierarchy if present
+        if (Item.FolderId.HasValue)
         {
-            BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = Folder.Name, Url = $"/items/folder/{Folder.Id}" });
+            await BuildFolderBreadcrumbsAsync(Item.FolderId.Value);
         }
 
         BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = Localizer["ViewItemBreadcrumb"] });

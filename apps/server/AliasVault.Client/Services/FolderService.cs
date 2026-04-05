@@ -13,6 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AliasClientDb;
 using AliasVault.Client.Main.Models;
+using AliasVault.Client.Main.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
@@ -34,15 +35,41 @@ public sealed class FolderService(DbService dbService)
             .Include(f => f.Items.Where(i => !i.IsDeleted && i.DeletedAt == null))
             .ToListAsync();
 
-        // Sort case-insensitively
-        folders = folders.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase).ToList();
+        // Build a map of direct item counts per folder
+        var directCounts = new Dictionary<Guid, int>();
+        foreach (var folder in folders)
+        {
+            directCounts[folder.Id] = folder.Items?.Count ?? 0;
+        }
 
-        return folders.Select(f => new FolderWithCount
+        // Calculate recursive counts (includes subfolders)
+        var folderWithCounts = folders.Select(f => new FolderWithCount
         {
             Id = f.Id,
             Name = f.Name ?? string.Empty,
-            ItemCount = f.Items?.Count ?? 0,
+            ParentFolderId = f.ParentFolderId,
+            Weight = f.Weight,
+            ItemCount = GetRecursiveItemCount(f.Id, folders, directCounts),
         }).ToList();
+
+        // Sort by weight, then by name (case-insensitive)
+        folderWithCounts = folderWithCounts
+            .OrderBy(f => f.Weight)
+            .ThenBy(f => f.Name, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        return folderWithCounts;
+    }
+
+    /// <summary>
+    /// Get folders filtered by parent folder ID with recursive item counts.
+    /// </summary>
+    /// <param name="parentFolderId">Parent folder ID (null for root folders).</param>
+    /// <returns>List of FolderWithCount objects.</returns>
+    public async Task<List<FolderWithCount>> GetByParentWithCountsAsync(Guid? parentFolderId)
+    {
+        var allFolders = await GetAllWithCountsAsync();
+        return allFolders.Where(f => f.ParentFolderId == parentFolderId).ToList();
     }
 
     /// <summary>
@@ -116,7 +143,7 @@ public sealed class FolderService(DbService dbService)
     }
 
     /// <summary>
-    /// Delete a folder, moving its items to root (FolderId = null).
+    /// Delete a folder, moving its items and subfolders to parent (or root if no parent).
     /// Syncs to server in background without blocking UI.
     /// </summary>
     /// <param name="folderId">The folder ID.</param>
@@ -136,15 +163,26 @@ public sealed class FolderService(DbService dbService)
 
         var currentDateTime = DateTime.UtcNow;
 
-        // Move all items in this folder to root
+        // Move all items in this folder to parent (or root if no parent)
         var itemsInFolder = await context.Items
             .Where(i => i.FolderId == folderId && !i.IsDeleted)
             .ToListAsync();
 
         foreach (var item in itemsInFolder)
         {
-            item.FolderId = null;
+            item.FolderId = folder.ParentFolderId;
             item.UpdatedAt = currentDateTime;
+        }
+
+        // Move all subfolders to parent (or root if no parent)
+        var subfolders = await context.Folders
+            .Where(f => f.ParentFolderId == folderId && !f.IsDeleted)
+            .ToListAsync();
+
+        foreach (var subfolder in subfolders)
+        {
+            subfolder.ParentFolderId = folder.ParentFolderId;
+            subfolder.UpdatedAt = currentDateTime;
         }
 
         // Soft delete the folder
@@ -158,7 +196,7 @@ public sealed class FolderService(DbService dbService)
     }
 
     /// <summary>
-    /// Delete a folder and all its contents (move items to trash).
+    /// Delete a folder and all its contents recursively (move items to trash, delete subfolders).
     /// Syncs to server in background without blocking UI.
     /// </summary>
     /// <param name="folderId">The folder ID.</param>
@@ -178,24 +216,59 @@ public sealed class FolderService(DbService dbService)
 
         var currentDateTime = DateTime.UtcNow;
 
-        // Move all items in this folder to trash
-        var itemsInFolder = await context.Items
-            .Where(i => i.FolderId == folderId && !i.IsDeleted && i.DeletedAt == null)
+        // Get all descendant folders
+        var allFolders = await context.Folders
+            .Where(f => !f.IsDeleted)
             .ToListAsync();
 
-        foreach (var item in itemsInFolder)
+        var descendantIds = FolderTreeUtilities.GetDescendantFolderIds(folderId, allFolders);
+        var allFolderIdsToDelete = new List<Guid> { folderId };
+        allFolderIdsToDelete.AddRange(descendantIds);
+
+        // Move all items in this folder and all subfolders to trash
+        var itemsInFolders = await context.Items
+            .Where(i => allFolderIdsToDelete.Contains(i.FolderId!.Value) && !i.IsDeleted && i.DeletedAt == null)
+            .ToListAsync();
+
+        foreach (var item in itemsInFolders)
         {
             item.DeletedAt = currentDateTime;
+            item.FolderId = null;
             item.UpdatedAt = currentDateTime;
         }
 
-        // Soft delete the folder
-        folder.IsDeleted = true;
-        folder.UpdatedAt = currentDateTime;
+        // Soft delete the folder and all subfolders
+        var foldersToDelete = await context.Folders
+            .Where(f => allFolderIdsToDelete.Contains(f.Id) && !f.IsDeleted)
+            .ToListAsync();
+
+        foreach (var folderToDelete in foldersToDelete)
+        {
+            folderToDelete.IsDeleted = true;
+            folderToDelete.UpdatedAt = currentDateTime;
+        }
 
         await context.SaveChangesAsync();
         dbService.SaveDatabaseInBackground();
 
         return true;
+    }
+
+    /// <summary>
+    /// Calculate recursive item count for a folder.
+    /// </summary>
+    private static int GetRecursiveItemCount(Guid folderId, List<Folder> allFolders, Dictionary<Guid, int> directCounts)
+    {
+        // Start with direct items in this folder
+        int count = directCounts.TryGetValue(folderId, out var directCount) ? directCount : 0;
+
+        // Add items from all descendant folders
+        var descendantIds = FolderTreeUtilities.GetDescendantFolderIds(folderId, allFolders);
+        foreach (var descendantId in descendantIds)
+        {
+            count += directCounts.TryGetValue(descendantId, out var descendantCount) ? descendantCount : 0;
+        }
+
+        return count;
     }
 }

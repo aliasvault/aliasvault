@@ -1,9 +1,10 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 
 import Logo from '@/entrypoints/popup/components/Logo';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
+import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import ServerSyncIndicator from './ServerSyncIndicator';
@@ -32,6 +33,7 @@ const Header: React.FC<HeaderProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const { backButtonTitle: customBackButtonTitle } = useHeaderButtons();
 
   // Updated route matching logic to handle URL parameters
   const currentRoute = routes?.find(route => {
@@ -40,6 +42,25 @@ const Header: React.FC<HeaderProps> = ({
     const regex = new RegExp(`^${pattern}$`);
     return regex.test(location.pathname);
   });
+
+  /**
+   * Determine the back button title.
+   * Priority: 1. Custom title from page (via context), 2. Static title from route config
+   */
+  const backButtonTitle = useMemo(() => {
+    // If no back button, return undefined
+    if (!currentRoute?.showBackButton) {
+      return currentRoute?.title;
+    }
+
+    // Priority 1: Use custom back button title if set by the page
+    if (customBackButtonTitle) {
+      return customBackButtonTitle;
+    }
+
+    // Priority 2: Use static title from route config
+    return currentRoute?.title;
+  }, [currentRoute, customBackButtonTitle]);
 
   /**
    * Handle back button click.
@@ -83,7 +104,8 @@ const Header: React.FC<HeaderProps> = ({
 
     // If logged in, navigate to items.
     if (app.isLoggedIn) {
-      navigate('/items');
+      // Navigate to items list and reset filters (if any).
+      navigate('/items', { state: { resetFilters: true } });
     } else {
       // If not logged in, navigate to index.
       navigate('/');
@@ -103,9 +125,9 @@ const Header: React.FC<HeaderProps> = ({
               <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-              {currentRoute.title && (
+              {backButtonTitle && (
                 <h1 className="text-lg font-medium text-gray-900 dark:text-white ml-2">
-                  {currentRoute.title}
+                  {backButtonTitle}
                 </h1>
               )}
             </div>

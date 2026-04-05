@@ -4,3 +4,5 @@ Business,,login,Item for business folder,,,0,,crisply,4CSp43uhSZri8A,
 ,,login,Test,,,0,,test2,asdasd,
 Business,,login,TutaNota,,,0,,avtest2@tutamail.com,blabla,otpauth://totp/Strongbox?secret=PLW4SB3PQ7MKVXY2MXF4NEXS6Y&algorithm=SHA1&digits=6&period=30
 Business,,login,Aliasvault.net,,,0,https://www.aliasvault.net,root,toor,
+Work/Projects,,login,WorkItem,,,0,https://work.example.com,workuser,workpass,
+Work/Projects/Active,,login,ActiveItem,,,0,https://active.example.com,activeuser,activepass,

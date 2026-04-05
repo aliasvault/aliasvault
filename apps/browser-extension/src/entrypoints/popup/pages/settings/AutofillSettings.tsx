@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import { AutofillMatchingMode, LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -192,6 +193,8 @@ const AutofillSettings: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <PageTitle>{t('settings.autofillSettings')}</PageTitle>
+
       {/* Autofill Popup Settings Section */}
       <section>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">

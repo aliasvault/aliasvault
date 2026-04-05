@@ -10,6 +10,7 @@
 @using System.Timers
 @using AliasClientDb
 @using AliasClientDb.Models
+@using AliasVault.Client.Main.Utilities
 
 <div class="relative" id="searchWidgetContainer">
     <input
@@ -70,7 +71,15 @@
                                 @onclick="() => SelectResult(result)">
                                 <DisplayFavicon FaviconBytes="@result.Logo?.FileData" Width="24" />
                                 <div class="ml-2">
-                                    <div>@result.Name</div>
+                                    <div class="font-medium text-gray-900 dark:text-white">
+                                        @if (result.FolderId.HasValue && FolderPathCache.TryGetValue(result.FolderId.Value, out var folderPath))
+                                        {
+                                            <span class="text-gray-500 dark:text-gray-400 text-sm font-normal" title="@FolderTreeUtilities.FormatFolderPath(folderPath)">
+                                                @GetTruncatedFolderPath(folderPath) &gt;
+                                            </span>
+                                        }
+                                        @result.Name
+                                    </div>
                                     @{
                                         var email = ItemService.GetFieldValue(result, FieldKey.LoginEmail);
                                         var username = ItemService.GetFieldValue(result, FieldKey.LoginUsername);
@@ -107,6 +116,7 @@
 
     private string SearchTerm { get; set; } = string.Empty;
     private List<Item> SearchResults { get; set; } = new();
+    private Dictionary<Guid, List<string>> FolderPathCache { get; set; } = new();
     private bool ShowResults { get; set; }
     private bool ShowHelpText { get; set; }
     private int SelectedIndex { get; set; } = -1;
@@ -209,6 +219,7 @@
                 var query = context.Items
                     .Include(x => x.Logo)
                     .Include(x => x.FieldValues.Where(fv => !fv.IsDeleted))
+                    .Include(x => x.Folder)
                     .Where(x => !x.IsDeleted)
                     .Where(x => x.DeletedAt == null)
                     .AsQueryable();
@@ -236,12 +247,28 @@
 
                 SearchResults = await query.Take(10).ToListAsync();
 
+                // Build folder path cache for all results
+                var allFolders = await context.Folders.Where(f => !f.IsDeleted).ToListAsync();
+                FolderPathCache.Clear();
+                foreach (var item in SearchResults)
+                {
+                    if (item.FolderId.HasValue)
+                    {
+                        var folderPath = FolderTreeUtilities.GetFolderPath(item.FolderId, allFolders);
+                        if (folderPath.Count > 0)
+                        {
+                            FolderPathCache[item.FolderId.Value] = folderPath;
+                        }
+                    }
+                }
+
                 // Select first entry by default so when pressing enter, the first result is immediately selected.
                 SelectedIndex = SearchResults.Count > 0 ? 0 : -1;
             }
             else
             {
                 SearchResults.Clear();
+                FolderPathCache.Clear();
                 SelectedIndex = -1;
             }
 
@@ -296,5 +323,25 @@
     private async Task FocusSearchField()
     {
         await JsInteropService.FocusElementById("searchWidget");
+    }
+
+    private string GetTruncatedFolderPath(List<string> pathSegments)
+    {
+        const int maxSegments = 3;
+
+        if (pathSegments.Count <= maxSegments)
+        {
+            return FolderTreeUtilities.FormatFolderPath(pathSegments);
+        }
+
+        // Truncate middle segments: "First > ... > Last"
+        var truncated = new List<string>
+        {
+            pathSegments[0],
+            "...",
+            pathSegments[pathSegments.Count - 1]
+        };
+
+        return FolderTreeUtilities.FormatFolderPath(truncated);
     }
 }

@@ -7,6 +7,7 @@ import net.aliasvault.app.vaultstore.models.FieldKey
 import net.aliasvault.app.vaultstore.models.FieldType
 import net.aliasvault.app.vaultstore.models.Item
 import net.aliasvault.app.vaultstore.models.ItemField
+import net.aliasvault.app.vaultstore.utils.FolderUtils
 import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
@@ -34,6 +35,53 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
     // MARK: - Read Operations
 
     /**
+     * Build folder paths for all folders.
+     * Returns a map of FolderId -> path array.
+     *
+     * @return Map of folder ID to folder path array.
+     */
+    private fun buildFolderPaths(): Map<UUID, List<String>> {
+        val folderPathMap = mutableMapOf<UUID, List<String>>()
+
+        try {
+            // Get all folders from database
+            val folderQuery = "SELECT Id, Name, ParentFolderId FROM Folders WHERE IsDeleted = 0"
+            val folderResults = executeQuery(folderQuery, emptyArray())
+
+            if (folderResults.isEmpty()) {
+                return folderPathMap
+            }
+
+            // Convert to FolderUtils.Folder format
+            val folders = folderResults.mapNotNull { row ->
+                try {
+                    val id = UUID.fromString(row["Id"] as? String ?: return@mapNotNull null)
+                    val name = row["Name"] as? String ?: return@mapNotNull null
+                    val parentFolderId = (row["ParentFolderId"] as? String)?.let { UUID.fromString(it) }
+                    FolderUtils.Folder(id, name, parentFolderId)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error parsing folder row", e)
+                    null
+                }
+            }
+
+            // Use shared utility to build paths for all folders
+            for (folder in folders) {
+                val path = FolderUtils.getFolderPath(folder.id, folders)
+                if (path.isNotEmpty()) {
+                    folderPathMap[folder.id] = path
+                }
+            }
+
+            return folderPathMap
+        } catch (e: Exception) {
+            // Folders table may not exist in older vault versions
+            Log.e(TAG, "Error building folder paths", e)
+            return folderPathMap
+        }
+    }
+
+    /**
      * Fetch all active items (not deleted, not in trash) with their fields.
      *
      * @return List of Item objects.
@@ -46,7 +94,6 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
               i.Name,
               i.ItemType,
               i.FolderId,
-              f.Name as FolderPath,
               l.FileData as Logo,
               CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
               CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
@@ -55,13 +102,15 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
               i.UpdatedAt
             FROM Items i
             LEFT JOIN Logos l ON i.LogoId = l.Id
-            LEFT JOIN Folders f ON i.FolderId = f.Id
             WHERE i.IsDeleted = 0 AND i.DeletedAt IS NULL
             ORDER BY i.CreatedAt DESC
         """.trimIndent()
 
         val items = mutableListOf<Item>()
         val itemIds = mutableListOf<String>()
+
+        // Build folder paths
+        val folderPaths = buildFolderPaths()
 
         val itemResults = executeQueryWithBlobs(itemQuery, emptyArray())
         for (row in itemResults) {
@@ -70,7 +119,6 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
                 val name = row["Name"] as? String
                 val itemType = row["ItemType"] as? String ?: continue
                 val folderId = row["FolderId"] as? String
-                val folderPath = row["FolderPath"] as? String
                 val logo = row["Logo"] as? ByteArray
                 val hasPasskey = (row["HasPasskey"] as? Long) == 1L
                 val hasAttachment = (row["HasAttachment"] as? Long) == 1L
@@ -78,12 +126,16 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
                 val createdAt = DateHelpers.parseDateString(row["CreatedAt"] as? String ?: "") ?: MIN_DATE
                 val updatedAt = DateHelpers.parseDateString(row["UpdatedAt"] as? String ?: "") ?: MIN_DATE
 
+                // Get folder path if item is in a folder
+                val folderUuid = folderId?.let { UUID.fromString(it) }
+                val folderPath = folderUuid?.let { folderPaths[it] }
+
                 val item = Item(
                     id = UUID.fromString(idString),
                     name = name,
                     itemType = itemType,
                     logo = logo,
-                    folderId = folderId?.let { UUID.fromString(it) },
+                    folderId = folderUuid,
                     folderPath = folderPath,
                     fields = emptyList(), // Will be populated below
                     hasPasskey = hasPasskey,
@@ -193,7 +245,6 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
               i.Name,
               i.ItemType,
               i.FolderId,
-              f.Name as FolderPath,
               l.FileData as Logo,
               CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
               CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
@@ -202,25 +253,30 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
               i.UpdatedAt
             FROM Items i
             LEFT JOIN Logos l ON i.LogoId = l.Id
-            LEFT JOIN Folders f ON i.FolderId = f.Id
             WHERE i.Id = ? AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
         """.trimIndent()
 
         val itemResults = executeQueryWithBlobs(itemQuery, arrayOf(itemId.uppercase()))
         val row = itemResults.firstOrNull() ?: return null
 
+        // Build folder paths
+        val folderPaths = buildFolderPaths()
+
         return try {
             val idString = row["Id"] as? String ?: return null
             val name = row["Name"] as? String
             val itemType = row["ItemType"] as? String ?: return null
             val folderId = row["FolderId"] as? String
-            val folderPath = row["FolderPath"] as? String
             val logo = row["Logo"] as? ByteArray
             val hasPasskey = (row["HasPasskey"] as? Long) == 1L
             val hasAttachment = (row["HasAttachment"] as? Long) == 1L
             val hasTotp = (row["HasTotp"] as? Long) == 1L
             val createdAt = DateHelpers.parseDateString(row["CreatedAt"] as? String ?: "") ?: MIN_DATE
             val updatedAt = DateHelpers.parseDateString(row["UpdatedAt"] as? String ?: "") ?: MIN_DATE
+
+            // Get folder path if item is in a folder
+            val folderUuid = folderId?.let { UUID.fromString(it) }
+            val folderPath = folderUuid?.let { folderPaths[it] }
 
             // Get field values for this item
             val fieldQuery = """
@@ -282,7 +338,7 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
                 name = name,
                 itemType = itemType,
                 logo = logo,
-                folderId = folderId?.let { UUID.fromString(it) },
+                folderId = folderUuid,
                 folderPath = folderPath,
                 fields = fields,
                 hasPasskey = hasPasskey,
@@ -332,7 +388,6 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
               i.Name,
               i.ItemType,
               i.FolderId,
-              f.Name as FolderPath,
               l.FileData as Logo,
               CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
               CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
@@ -342,7 +397,6 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
               i.DeletedAt
             FROM Items i
             LEFT JOIN Logos l ON i.LogoId = l.Id
-            LEFT JOIN Folders f ON i.FolderId = f.Id
             WHERE i.IsDeleted = 0 AND i.DeletedAt IS NOT NULL
             ORDER BY i.DeletedAt DESC
         """.trimIndent()
@@ -350,13 +404,15 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
         val items = mutableListOf<Item>()
         val results = executeQueryWithBlobs(query, emptyArray())
 
+        // Build folder paths
+        val folderPaths = buildFolderPaths()
+
         for (row in results) {
             try {
                 val idString = row["Id"] as? String ?: continue
                 val name = row["Name"] as? String
                 val itemType = row["ItemType"] as? String ?: continue
                 val folderId = row["FolderId"] as? String
-                val folderPath = row["FolderPath"] as? String
                 val logo = row["Logo"] as? ByteArray
                 val hasPasskey = (row["HasPasskey"] as? Long) == 1L
                 val hasAttachment = (row["HasAttachment"] as? Long) == 1L
@@ -364,13 +420,17 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
                 val createdAt = DateHelpers.parseDateString(row["CreatedAt"] as? String ?: "") ?: MIN_DATE
                 val updatedAt = DateHelpers.parseDateString(row["UpdatedAt"] as? String ?: "") ?: MIN_DATE
 
+                // Get folder path if item is in a folder
+                val folderUuid = folderId?.let { UUID.fromString(it) }
+                val folderPath = folderUuid?.let { folderPaths[it] }
+
                 items.add(
                     Item(
                         id = UUID.fromString(idString),
                         name = name,
                         itemType = itemType,
                         logo = logo,
-                        folderId = folderId?.let { UUID.fromString(it) },
+                        folderId = folderUuid,
                         folderPath = folderPath,
                         fields = emptyList(), // Not loading fields for trash items
                         hasPasskey = hasPasskey,

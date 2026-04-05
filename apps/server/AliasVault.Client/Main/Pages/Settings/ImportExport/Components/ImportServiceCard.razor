@@ -326,7 +326,7 @@
     private bool ExtractFavicons { get; set; } = true;
     private bool ImportFolders { get; set; } = true;
     private int DetectedFolderCount { get; set; } = 0;
-    private HashSet<string> DetectedFolderNames { get; set; } = new();
+    private List<string> DetectedFolderPaths { get; set; } = new();
     private bool IsExtractingFavicons { get; set; }
     private int FaviconExtractionProgress { get; set; }
     private int TotalFaviconsToExtract { get; set; }
@@ -746,32 +746,130 @@
     }
 
     /// <summary>
-    /// Creates folders that don't exist and returns a mapping of folder names to folder IDs.
+    /// Creates folders that don't exist and returns a mapping of folder paths to folder IDs.
+    /// Handles hierarchical folder structures by creating parent folders first.
     /// </summary>
     private async Task<Dictionary<string, Guid>> CreateOrGetFolders()
     {
-        var folderNameToId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
-        var existingFolders = await FolderService.GetAllWithCountsAsync();
+        var folderPathToId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+        var context = await DbService.GetDbContextAsync();
 
-        foreach (var folderName in DetectedFolderNames)
+        // Load all existing folders with their parent relationships
+        var existingFolders = await context.Folders
+            .Where(f => !f.IsDeleted)
+            .ToListAsync();
+
+        // Build a lookup of existing folders by full path
+        var existingFoldersByPath = new Dictionary<string, Folder>(StringComparer.OrdinalIgnoreCase);
+        foreach (var folder in existingFolders)
         {
-            // Check if folder already exists (case-insensitive)
-            var existingFolder = existingFolders.FirstOrDefault(f =>
-                f.Name.Equals(folderName, StringComparison.OrdinalIgnoreCase));
+            var fullPath = GetFolderFullPath(folder, existingFolders);
+            existingFoldersByPath[fullPath] = folder;
+        }
 
-            if (existingFolder != null)
+        // Process folders in order (they're already sorted by depth, parents before children)
+        foreach (var folderPath in DetectedFolderPaths)
+        {
+            // Check if folder already exists at this path
+            if (existingFoldersByPath.TryGetValue(folderPath, out var existingFolder))
             {
-                folderNameToId[folderName] = existingFolder.Id;
+                folderPathToId[folderPath] = existingFolder.Id;
             }
             else
             {
-                // Create new folder
-                var newFolderId = await FolderService.CreateAsync(folderName);
-                folderNameToId[folderName] = newFolderId;
+                // Extract folder name from the path (last segment after last /)
+                var lastSlashIndex = folderPath.LastIndexOf('/');
+                var folderName = lastSlashIndex >= 0 ? folderPath.Substring(lastSlashIndex + 1) : folderPath;
+
+                // Determine parent folder ID
+                Guid? parentFolderId = null;
+                if (lastSlashIndex >= 0)
+                {
+                    // Parent path is everything before the last /
+                    var parentPath = folderPath.Substring(0, lastSlashIndex);
+                    if (folderPathToId.TryGetValue(parentPath, out var parentId))
+                    {
+                        parentFolderId = parentId;
+                    }
+                }
+
+                // Create new folder with parent relationship
+                var newFolderId = await FolderService.CreateAsync(folderName, parentFolderId);
+                folderPathToId[folderPath] = newFolderId;
             }
         }
 
-        return folderNameToId;
+        return folderPathToId;
+    }
+
+    /// <summary>
+    /// Collects all unique folder paths from imported credentials, including intermediate paths.
+    /// For example, if credentials have "Root/Business/Banking" and "Root/Personal", this returns:
+    /// ["Root", "Root/Business", "Root/Business/Banking", "Root/Personal"] in hierarchical order.
+    /// </summary>
+    private List<string> CollectHierarchicalFolderPaths(List<ImportedCredential> credentials)
+    {
+        var folderPathSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var folderPathsWithDepth = new List<(string path, int depth)>();
+
+        foreach (var credential in credentials)
+        {
+            if (string.IsNullOrWhiteSpace(credential.FolderPath))
+            {
+                continue;
+            }
+
+            // Parse into individual folder names
+            var parts = BaseImporter.ParseFolderPath(credential.FolderPath);
+
+            // Build all hierarchical paths (parent, parent/child, parent/child/grandchild, etc.)
+            for (int i = 0; i < parts.Count; i++)
+            {
+                var path = string.Join("/", parts.Take(i + 1));
+
+                // Only add if we haven't seen this path before (case-insensitive)
+                if (!folderPathSet.Contains(path))
+                {
+                    folderPathSet.Add(path);
+                    folderPathsWithDepth.Add((path, i)); // i is the depth
+                }
+            }
+        }
+
+        // Sort by depth first (so parents are created before children), then by path
+        return folderPathsWithDepth
+            .OrderBy(f => f.depth)
+            .ThenBy(f => f.path, StringComparer.OrdinalIgnoreCase)
+            .Select(f => f.path)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Gets the full path of a folder by traversing up the parent hierarchy.
+    /// </summary>
+    /// <param name="folder">The folder to get the path for.</param>
+    /// <param name="allFolders">All folders in the database.</param>
+    /// <returns>The full path (e.g., "Root/Business/Banking").</returns>
+    private string GetFolderFullPath(Folder folder, List<Folder> allFolders)
+    {
+        var path = new List<string>();
+        var current = folder;
+
+        while (current != null)
+        {
+            path.Insert(0, current.Name ?? string.Empty);
+
+            if (current.ParentFolderId.HasValue)
+            {
+                current = allFolders.FirstOrDefault(f => f.Id == current.ParentFolderId.Value);
+            }
+            else
+            {
+                current = null;
+            }
+        }
+
+        return string.Join("/", path);
     }
 
     /// <summary>
@@ -1076,9 +1174,9 @@
         // Remove duplicates from the import list
         ImportedCredentials = ImportedCredentials.Except(duplicates).ToList();
 
-        // Detect folders in the import
-        DetectedFolderNames = BaseImporter.CollectUniqueFolderNames(ImportedCredentials);
-        DetectedFolderCount = DetectedFolderNames.Count;
+        // Detect folders in the import (hierarchical)
+        DetectedFolderPaths = CollectHierarchicalFolderPaths(ImportedCredentials);
+        DetectedFolderCount = DetectedFolderPaths.Count;
     }
 
     /// <summary>

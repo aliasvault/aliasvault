@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import DeleteFolderModal from '@/entrypoints/popup/components/Folders/DeleteFolderModal';
+import FolderBreadcrumb from '@/entrypoints/popup/components/Folders/FolderBreadcrumb';
 import FolderModal from '@/entrypoints/popup/components/Folders/FolderModal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
@@ -19,9 +20,11 @@ import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
+import type { Folder } from '@/utils/db/repositories/FolderRepository';
 import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
 import type { Item, ItemType } from '@/utils/dist/core/models/vault';
 import { ItemTypes } from '@/utils/dist/core/models/vault';
+import { canHaveSubfolders, getFolderPath } from '@/utils/folderUtils';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
@@ -116,7 +119,7 @@ const ItemsList: React.FC = () => {
   const navigate = useNavigate();
   const { syncVault } = useVaultSync();
   const { executeVaultMutationAsync } = useVaultMutate();
-  const { setHeaderButtons } = useHeaderButtons();
+  const { setHeaderButtons, setBackButtonTitle } = useHeaderButtons();
   const [items, setItems] = useState<Item[]>([]);
   // Initialize searchTerm from URL query parameter (restored from back navigation or popup restore)
   const [searchTerm, setSearchTerm] = useState(() => {
@@ -153,6 +156,16 @@ const ItemsList: React.FC = () => {
     const folder = folders.find((f: { Id: string; Name: string }) => f.Id === currentFolderId);
     return folder?.Name ?? null;
   }, [currentFolderId, dbContext?.sqliteClient, folderRefreshKey]);
+
+  // Get current folder's full path (for relative path computation in search results)
+  const currentFolderPath = useMemo(() => {
+    if (!currentFolderId || !dbContext?.sqliteClient) {
+      return null;
+    }
+    const folders = dbContext.sqliteClient.folders.getAll();
+    const path = getFolderPath(currentFolderId, folders);
+    return path.length > 0 ? path : null;
+  }, [currentFolderId, dbContext?.sqliteClient]);
 
   /**
    * Loading state with minimum duration for more fluid UX.
@@ -218,6 +231,7 @@ const ItemsList: React.FC = () => {
 
   /**
    * Handle save folder.
+   * Creates folder in current location (root or inside current folder).
    */
   const handleSaveFolder = useCallback(async (folderName: string) : Promise<void> => {
     if (!dbContext?.sqliteClient) {
@@ -226,6 +240,7 @@ const ItemsList: React.FC = () => {
     }
 
     await executeVaultMutationAsync(async () => {
+      // Create folder in current location (currentFolderId = null means root)
       await dbContext.sqliteClient!.folders.create(folderName, currentFolderId);
     });
 
@@ -242,6 +257,11 @@ const ItemsList: React.FC = () => {
       return;
     }
 
+    // Get the current folder to determine parent before deletion
+    const allFolders = dbContext.sqliteClient.folders.getAll();
+    const currentFolder = allFolders.find(f => f.Id === currentFolderId);
+    const parentFolderId = currentFolder?.ParentFolderId ?? null;
+
     await executeVaultMutationAsync(async () => {
       await dbContext.sqliteClient!.folders.delete(currentFolderId);
     });
@@ -252,8 +272,12 @@ const ItemsList: React.FC = () => {
     const deletedCount = dbContext.sqliteClient!.items.getRecentlyDeletedCount();
     setRecentlyDeletedCount(deletedCount);
 
-    // Navigate back to root
-    navigate('/items');
+    // Navigate to parent folder if it exists, otherwise root
+    if (parentFolderId) {
+      navigate(`/items/folder/${parentFolderId}`);
+    } else {
+      navigate('/items');
+    }
   }, [dbContext, currentFolderId, executeVaultMutationAsync, navigate]);
 
   /**
@@ -263,6 +287,11 @@ const ItemsList: React.FC = () => {
     if (!dbContext?.sqliteClient || !currentFolderId) {
       return;
     }
+
+    // Get the current folder to determine parent before deletion
+    const allFolders = dbContext.sqliteClient.folders.getAll();
+    const currentFolder = allFolders.find(f => f.Id === currentFolderId);
+    const parentFolderId = currentFolder?.ParentFolderId ?? null;
 
     await executeVaultMutationAsync(async () => {
       await dbContext.sqliteClient!.folders.deleteWithContents(currentFolderId);
@@ -274,8 +303,12 @@ const ItemsList: React.FC = () => {
     const deletedCount = dbContext.sqliteClient!.items.getRecentlyDeletedCount();
     setRecentlyDeletedCount(deletedCount);
 
-    // Navigate back to root
-    navigate('/items');
+    // Navigate to parent folder if it exists, otherwise root
+    if (parentFolderId) {
+      navigate(`/items/folder/${parentFolderId}`);
+    } else {
+      navigate('/items');
+    }
   }, [dbContext, currentFolderId, executeVaultMutationAsync, navigate]);
 
   /**
@@ -365,6 +398,32 @@ const ItemsList: React.FC = () => {
     return () => setHeaderButtons(null);
   }, [setHeaderButtons, handleAddItem, t]);
 
+  // Set back button title for folder view
+  useEffect(() => {
+    if (folderIdParam && dbContext?.sqliteClient) {
+      const allFolders = dbContext.sqliteClient.folders.getAll();
+      const currentFolder = allFolders.find(f => f.Id === folderIdParam);
+
+      if (currentFolder && currentFolder.ParentFolderId) {
+        // Has parent folder - show parent folder name
+        const parentFolder = allFolders.find(f => f.Id === currentFolder.ParentFolderId);
+        if (parentFolder) {
+          setBackButtonTitle(parentFolder.Name);
+        } else {
+          setBackButtonTitle(t('items.title'));
+        }
+      } else if (currentFolder) {
+        // Root folder - show "Items"
+        setBackButtonTitle(t('items.title'));
+      } else {
+        // Folder not found - fallback to "Items"
+        setBackButtonTitle(t('items.title'));
+      }
+    }
+
+    return (): void => setBackButtonTitle(null);
+  }, [folderIdParam, dbContext?.sqliteClient, setBackButtonTitle, t]);
+
   /**
    * Load items list on mount and on sqlite client change.
    */
@@ -429,11 +488,14 @@ const ItemsList: React.FC = () => {
   }, [navigate]);
 
   /**
-   * Get folders with item counts (only for root level when not searching)
+   * Get folders with item counts.
+   * - At root level: show only root folders (ParentFolderId IS NULL)
+   * - Inside a folder: show only direct subfolders (ParentFolderId = currentFolderId)
+   * - Counts include items in the folder AND all subfolders recursively
    */
   const getFoldersWithCounts = (): FolderWithCount[] => {
-    if (currentFolderId || searchTerm) {
-      return [];
+    if (searchTerm) {
+      return []; // Don't show folders when searching
     }
 
     if (!dbContext?.sqliteClient) {
@@ -443,23 +505,84 @@ const ItemsList: React.FC = () => {
     // Get all folders directly from the database
     const allFolders = dbContext.sqliteClient.folders.getAll();
 
-    // Count items per folder
-    const folderCounts = new Map<string, number>();
-    items.forEach((item: Item) => {
-      if (item.FolderId) {
-        folderCounts.set(item.FolderId, (folderCounts.get(item.FolderId) || 0) + 1);
+    // Filter folders based on current location
+    const relevantFolders = allFolders.filter((folder: Folder) => {
+      if (currentFolderId) {
+        // Inside a folder: show only direct children
+        return folder.ParentFolderId === currentFolderId;
+      } else {
+        /*
+         * At root: show only root-level folders
+         * Check for both null and undefined since SQLite might return either
+         */
+        return folder.ParentFolderId === null || folder.ParentFolderId === undefined;
       }
     });
 
-    // Build result with counts
-    const result = allFolders.map((folder: { Id: string; Name: string }) => ({
+    // Count items per folder (direct items only)
+    const directFolderCounts = new Map<string, number>();
+    items.forEach((item: Item) => {
+      if (item.FolderId) {
+        directFolderCounts.set(item.FolderId, (directFolderCounts.get(item.FolderId) || 0) + 1);
+      }
+    });
+
+    /**
+     * Recursively count items in a folder and all its subfolders.
+     * @param folderId - The folder ID to count items for
+     * @returns Total count of items in this folder and all descendant folders
+     */
+    const getRecursiveItemCount = (folderId: string): number => {
+      // Start with direct items in this folder
+      let count = directFolderCounts.get(folderId) || 0;
+
+      // Add counts from all child folders recursively
+      const childFolderIds = getAllChildFolderIds(folderId);
+      for (const childId of childFolderIds) {
+        count += directFolderCounts.get(childId) || 0;
+      }
+
+      return count;
+    };
+
+    // Build result with recursive counts
+    const result = relevantFolders.map((folder: Folder) => ({
       id: folder.Id,
       name: folder.Name,
-      itemCount: folderCounts.get(folder.Id) || 0
+      itemCount: getRecursiveItemCount(folder.Id)
     })).sort((a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name));
 
     return result;
   };
+
+  /**
+   * Get all child folder IDs recursively for a given folder.
+   * @param folderId - The parent folder ID to get children for
+   * @returns Array of all descendant folder IDs
+   */
+  const getAllChildFolderIds = useCallback((folderId: string): string[] => {
+    if (!dbContext?.sqliteClient) {
+      return [];
+    }
+
+    const allFolders = dbContext.sqliteClient.folders.getAll();
+    const childIds: string[] = [];
+
+    /**
+     * Recursively find all child folders.
+     * @param parentId - The parent folder ID
+     */
+    const findChildren = (parentId: string): void => {
+      const children = allFolders.filter(f => f.ParentFolderId === parentId);
+      for (const child of children) {
+        childIds.push(child.Id);
+        findChildren(child.Id); // Recursively find descendants
+      }
+    };
+
+    findChildren(folderId);
+    return childIds;
+  }, [dbContext]);
 
   /**
    * Filter items based on current view (folder, search, filter type)
@@ -467,8 +590,21 @@ const ItemsList: React.FC = () => {
   const filteredItems = items.filter((item: Item) => {
     // Filter by current folder (if in folder view)
     if (currentFolderId !== null) {
-      if (item.FolderId !== currentFolderId) {
-        return false;
+      // When searching inside a folder, include items in subfolders too
+      if (searchTerm) {
+        // Get all child folder IDs recursively
+        const childFolderIds = getAllChildFolderIds(currentFolderId);
+        const allFolderIds = [currentFolderId, ...childFolderIds];
+
+        // Item must be in current folder or any subfolder
+        if (!item.FolderId || !allFolderIds.includes(item.FolderId)) {
+          return false;
+        }
+      } else {
+        // When not searching, only show direct items (not items in subfolders)
+        if (item.FolderId !== currentFolderId) {
+          return false;
+        }
       }
     } else if (!searchTerm && showFolders) {
       /*
@@ -549,6 +685,40 @@ const ItemsList: React.FC = () => {
   const folders = getFoldersWithCounts();
 
   /**
+   * Calculate total item count including items in current folder and all child folders.
+   * Used for the delete folder modal to show accurate count.
+   */
+  const totalItemCountInFolderTree = useMemo(() => {
+    if (!currentFolderId) {
+      return filteredItems.length;
+    }
+
+    // Get all child folder IDs
+    const childFolderIds = getAllChildFolderIds(currentFolderId);
+    const allFolderIds = [currentFolderId, ...childFolderIds];
+
+    // Count items in current folder and all child folders
+    return items.filter(item =>
+      item.FolderId && allFolderIds.includes(item.FolderId)
+    ).length;
+  }, [currentFolderId, items, getAllChildFolderIds, filteredItems.length]);
+
+  /**
+   * Check if the current folder can have subfolders (not at max depth).
+   * At root level (currentFolderId = null), we can always create folders.
+   */
+  const canCreateSubfolder = useMemo(() => {
+    if (!currentFolderId) {
+      return true; // Root level, always allowed
+    }
+    if (!dbContext?.sqliteClient) {
+      return false;
+    }
+    const allFolders = dbContext.sqliteClient.folders.getAll();
+    return canHaveSubfolders(currentFolderId, allFolders);
+  }, [currentFolderId, dbContext?.sqliteClient]);
+
+  /**
    * Check if all items are in folders (no items at root level but items exist in folders).
    * This is used to show a helpful message when the user has imported credentials that were all in folders.
    */
@@ -564,6 +734,9 @@ const ItemsList: React.FC = () => {
 
   return (
     <div>
+      {/* Breadcrumb navigation - only show when inside a folder */}
+      <FolderBreadcrumb folderId={currentFolderId} />
+
       <div className="flex justify-between items-center gap-2 mb-4">
         <div className="relative min-w-0 flex-1 flex items-center gap-2">
           <button
@@ -833,7 +1006,7 @@ const ItemsList: React.FC = () => {
             </p>
           </div>
         </>
-      ) : filteredItems.length === 0 && folders.length === 0 && !hasItemsInFoldersOnly ? (
+      ) : filteredItems.length === 0 && folders.length === 0 && !hasItemsInFoldersOnly && !currentFolderId ? (
         <div className="text-gray-500 dark:text-gray-400 space-y-3 mb-10">
           {/* Show filter/search-specific messages only when actively filtering or searching */}
           {(filterType !== 'all' || searchTerm) && (
@@ -884,46 +1057,12 @@ const ItemsList: React.FC = () => {
               </div>
             </>
           )}
-          {/* Show help text when inside an empty folder */}
-          {currentFolderId && (
-            <p className="text-sm">
-              {t('items.emptyFolderHint')}
-            </p>
-          )}
         </div>
       ) : hasItemsInFoldersOnly && filteredItems.length === 0 && !currentFolderId && !searchTerm ? (
         /* Show message when all items are in folders and we're at root level */
         <>
-          {/* Folders as inline pills */}
-          <div className="flex flex-wrap items-center gap-2 mb-4">
-            {folders.map(folder => (
-              <FolderPill
-                key={folder.id}
-                folder={folder}
-                onClick={() => handleFolderClick(folder.id, folder.name)}
-              />
-            ))}
-            <button
-              onClick={handleAddFolder}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full transition-colors focus:outline-none text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700/50"
-            >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-              </svg>
-              <svg className="w-3 h-3 -ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-            </button>
-          </div>
-          <div className="text-gray-500 dark:text-gray-400 text-sm">
-            <p>{t('items.allItemsInFolders')}</p>
-          </div>
-        </>
-      ) : (
-        <>
-          {/* Folders as inline pills (only show at root level when not searching and showFolders is enabled) */}
-          {!currentFolderId && !searchTerm && showFolders && (
+          {/* Folders as inline pills - only render wrapper if there are folders OR if we can create subfolders */}
+          {(folders.length > 0 || canCreateSubfolder) && (
             <div className="flex flex-wrap items-center gap-2 mb-4">
               {folders.map(folder => (
                 <FolderPill
@@ -932,29 +1071,66 @@ const ItemsList: React.FC = () => {
                   onClick={() => handleFolderClick(folder.id, folder.name)}
                 />
               ))}
-              <button
-                onClick={handleAddFolder}
-                className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full transition-colors focus:outline-none ${
-                  folders.length > 0
-                    ? 'text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
-                    : 'text-gray-400 dark:text-gray-500 border border-dashed border-gray-300 dark:border-gray-600 hover:border-orange-400 dark:hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400'
-                }`}
-              >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                </svg>
-                <svg className="w-3 h-3 -ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                {folders.length === 0 && (
-                  /**
-                   * Only show text when there are no folders yet
-                   * if there are folders we hide the text to save on UI space
-                   */
-                  <span>{t('items.newFolder')}</span>
-                )}
-              </button>
+              {canCreateSubfolder && (
+                <button
+                  onClick={handleAddFolder}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full transition-colors focus:outline-none text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                >
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                  <svg className="w-3 h-3 -ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          )}
+          <div className="text-gray-500 dark:text-gray-400 text-sm">
+            <p>{t('items.allItemsInFolders')}</p>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Folders as inline pills - show when not searching */}
+          {/* At root: show only if showFolders is enabled */}
+          {/* Inside folder: always show subfolders and create button */}
+          {/* Only render wrapper if there are folders OR if we can create subfolders */}
+          {!searchTerm && (currentFolderId || showFolders) && (folders.length > 0 || canCreateSubfolder) && (
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              {folders.map(folder => (
+                <FolderPill
+                  key={folder.id}
+                  folder={folder}
+                  onClick={() => handleFolderClick(folder.id, folder.name)}
+                />
+              ))}
+              {canCreateSubfolder && (
+                <button
+                  onClick={handleAddFolder}
+                  className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full transition-colors focus:outline-none ${
+                    folders.length > 0
+                      ? 'text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                      : 'text-gray-400 dark:text-gray-500 border border-dashed border-gray-300 dark:border-gray-600 hover:border-orange-400 dark:hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400'
+                  }`}
+                >
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                  <svg className="w-3 h-3 -ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  {folders.length === 0 && (
+                    /**
+                     * Only show text when there are no folders yet
+                     * if there are folders we hide the text to save on UI space
+                     */
+                    <span>{t('items.newFolder')}</span>
+                  )}
+                </button>
+              )}
             </div>
           )}
 
@@ -967,9 +1143,17 @@ const ItemsList: React.FC = () => {
                   item={item}
                   showFolderPath={!!searchTerm && !!item.FolderPath}
                   searchTerm={searchTerm}
+                  currentFolderPath={currentFolderPath}
                 />
               ))}
             </ul>
+          )}
+
+          {/* Show help text when inside an empty folder with no items */}
+          {currentFolderId && sortedItems.length === 0 && !searchTerm && (
+            <div className="text-gray-500 dark:text-gray-400 text-sm mb-4">
+              <p>{t('items.emptyFolderHint')}</p>
+            </div>
           )}
 
           {/* Clear filter/search pills at bottom of list when filtering or searching */}
@@ -1030,7 +1214,7 @@ const ItemsList: React.FC = () => {
         onClose={() => setShowDeleteFolderModal(false)}
         onDeleteFolderOnly={handleDeleteFolderOnly}
         onDeleteFolderAndContents={handleDeleteFolderAndContents}
-        itemCount={filteredItems.length}
+        itemCount={totalItemCountInFolderTree}
       />
     </div>
   );

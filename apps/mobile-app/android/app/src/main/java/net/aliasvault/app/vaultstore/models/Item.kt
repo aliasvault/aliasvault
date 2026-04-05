@@ -11,7 +11,7 @@ import java.util.UUID
  * @property itemType The type of item (Login, Alias, CreditCard, Note).
  * @property logo The logo image data in bytes.
  * @property folderId The ID of the folder containing this item.
- * @property folderPath The path to the folder containing this item.
+ * @property folderPath The folder path as an array of folder names from root to current folder.
  * @property fields The list of field values for this item.
  * @property hasPasskey Whether this item has an associated passkey.
  * @property hasAttachment Whether this item has attachments.
@@ -25,7 +25,7 @@ data class Item(
     val itemType: String,
     val logo: ByteArray?,
     val folderId: UUID?,
-    val folderPath: String?,
+    val folderPath: List<String>?,
     val fields: List<ItemField>,
     val hasPasskey: Boolean,
     val hasAttachment: Boolean,

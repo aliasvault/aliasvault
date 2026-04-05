@@ -1,62 +1,13 @@
 import type { EncryptionKey, PasswordSettings, TotpCode, Attachment } from '@/utils/dist/core/models/vault';
 
 import { BaseRepository } from '../BaseRepository';
+import { SettingsQueries } from '../queries/SettingsQueries';
 
 /**
  * Sort order options for credentials list.
  * Values must match the C# CredentialSortOrder enum in the Blazor client for cross-platform sync.
  */
 export type CredentialSortOrder = 'OldestFirst' | 'NewestFirst' | 'Alphabetical';
-
-/**
- * SQL query constants for Settings and related operations.
- */
-const SettingsQueries = {
-  /**
-   * Get setting by key.
-   */
-  GET_SETTING: `
-    SELECT s.Value
-    FROM Settings s
-    WHERE s.Key = ?`,
-
-  /**
-   * Get all encryption keys.
-   */
-  GET_ENCRYPTION_KEYS: `
-    SELECT
-      x.PublicKey,
-      x.PrivateKey,
-      x.IsPrimary
-    FROM EncryptionKeys x`,
-
-  /**
-   * Get TOTP codes for an item.
-   */
-  GET_TOTP_FOR_ITEM: `
-    SELECT
-      Id,
-      Name,
-      SecretKey,
-      ItemId
-    FROM TotpCodes
-    WHERE ItemId = ? AND IsDeleted = 0`,
-
-  /**
-   * Get attachments for an item.
-   */
-  GET_ATTACHMENTS_FOR_ITEM: `
-    SELECT
-      Id,
-      Filename,
-      Blob,
-      ItemId,
-      CreatedAt,
-      UpdatedAt,
-      IsDeleted
-    FROM Attachments
-    WHERE ItemId = ? AND IsDeleted = 0`
-};
 
 /**
  * Repository for Settings and auxiliary data operations.
@@ -220,19 +171,19 @@ export class SettingsRepository extends BaseRepository {
 
     // Check if setting exists
     const results = this.client.executeQuery<{ count: number }>(
-      `SELECT COUNT(*) as count FROM Settings WHERE Key = ?`,
+      SettingsQueries.COUNT_BY_KEY,
       [key]
     );
     const exists = results[0]?.count > 0;
 
     if (exists) {
       this.client.executeUpdate(
-        `UPDATE Settings SET Value = ?, UpdatedAt = ? WHERE Key = ?`,
+        SettingsQueries.UPDATE_SETTING,
         [value, now, key]
       );
     } else {
       this.client.executeUpdate(
-        `INSERT INTO Settings (Key, Value, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?)`,
+        SettingsQueries.INSERT_SETTING,
         [key, value, now, now, 0]
       );
     }

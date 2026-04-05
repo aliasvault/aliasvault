@@ -93,7 +93,7 @@ public class ImportExportTests
         var importedCredentials = await BitwardenImporter.ImportFromCsvAsync(fileContent);
 
         // Assert
-        Assert.That(importedCredentials, Has.Count.EqualTo(8));
+        Assert.That(importedCredentials, Has.Count.EqualTo(12));
 
         // There is one entry which has an invalid TOTP code ("! in the secret), we ensure this logic does not throw a fatal error.
         var convertedItems = BaseImporter.ConvertToItem(importedCredentials);
@@ -152,6 +152,33 @@ public class ImportExportTests
             Assert.That(multiUrlItemTotpCode!.SecretKey, Is.EqualTo("PLW4SB3PQ7MKVXY2MXF4NEXS6Y"));
             Assert.That(multiUrlItemTotpCode.Name, Is.EqualTo("Alias Vault: Test name:test@test.org"), "TOTP name should be URL-decoded from the otpauth URI");
         });
+
+        // Test multi-depth folder paths
+        var workProjectItem = importedCredentials.First(c => c.ServiceName == "ProjectItem");
+        Assert.That(workProjectItem.FolderPath, Is.EqualTo("Work/Projects"));
+
+        var activeProjectItem = importedCredentials.First(c => c.ServiceName == "ActiveProjectItem");
+        Assert.That(activeProjectItem.FolderPath, Is.EqualTo("Work/Projects/Active"));
+
+        var bankAccountItem = importedCredentials.First(c => c.ServiceName == "BankAccount");
+        Assert.That(bankAccountItem.FolderPath, Is.EqualTo("Personal/Finance/Banking"));
+
+        var savingsAccountItem = importedCredentials.First(c => c.ServiceName == "SavingsAccount");
+        Assert.That(savingsAccountItem.FolderPath, Is.EqualTo("Personal/Finance/Banking/Savings"));
+
+        // Test hierarchical folder path parsing with ParseFolderPath
+        var workProjectsActiveParts = BaseImporter.ParseFolderPath("Work/Projects/Active");
+        Assert.That(workProjectsActiveParts, Has.Count.EqualTo(3));
+        Assert.That(workProjectsActiveParts[0], Is.EqualTo("Work"));
+        Assert.That(workProjectsActiveParts[1], Is.EqualTo("Projects"));
+        Assert.That(workProjectsActiveParts[2], Is.EqualTo("Active"));
+
+        var savingsParts = BaseImporter.ParseFolderPath("Personal/Finance/Banking/Savings");
+        Assert.That(savingsParts, Has.Count.EqualTo(4));
+        Assert.That(savingsParts[0], Is.EqualTo("Personal"));
+        Assert.That(savingsParts[1], Is.EqualTo("Finance"));
+        Assert.That(savingsParts[2], Is.EqualTo("Banking"));
+        Assert.That(savingsParts[3], Is.EqualTo("Savings"));
     }
 
     /// <summary>
@@ -1111,7 +1138,7 @@ public class ImportExportTests
 
         var folderMapping = new Dictionary<string, Guid>
         {
-            { "Projects", Guid.NewGuid() }, // Deepest folder from "Work/Projects"
+            { "Work/Projects", Guid.NewGuid() },
             { "Personal", Guid.NewGuid() },
         };
 
@@ -1119,7 +1146,7 @@ public class ImportExportTests
         var items = BaseImporter.ConvertToItem(credentials, folderMapping);
 
         // Assert
-        Assert.That(items[0].FolderId, Is.EqualTo(folderMapping["Projects"]), "Should assign Projects folder");
+        Assert.That(items[0].FolderId, Is.EqualTo(folderMapping["Work/Projects"]), "Should assign Work/Projects folder using full path");
         Assert.That(items[1].FolderId, Is.EqualTo(folderMapping["Personal"]), "Should assign Personal folder");
         Assert.That(items[2].FolderId, Is.Null, "Should have no folder");
     }

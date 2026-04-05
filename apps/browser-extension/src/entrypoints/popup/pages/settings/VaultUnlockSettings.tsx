@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import AlertMessage from '@/entrypoints/popup/components/AlertMessage';
 import Button from '@/entrypoints/popup/components/Button';
 import HelpModal from '@/entrypoints/popup/components/Dialogs/HelpModal';
+import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
@@ -167,6 +168,7 @@ const VaultUnlockSettings: React.FC = () => {
 
   return (
     <>
+      <PageTitle>{t('settings.unlockMethod.title')}</PageTitle>
       <div className="flex items-start gap-2">
         <p className="text-sm text-gray-600 dark:text-gray-400">
           {t('settings.unlockMethod.introText')}

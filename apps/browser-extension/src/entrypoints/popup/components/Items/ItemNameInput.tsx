@@ -1,9 +1,13 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { buildFolderTree, getFolderIdPath, type FolderTreeNode } from '@/utils/folderUtils';
 
 type Folder = {
   Id: string;
   Name: string;
+  ParentFolderId: string | null;
+  Weight: number;
 };
 
 type ItemNameInputProps = {
@@ -29,8 +33,43 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
 }) => {
   const { t } = useTranslation();
   const [showFolderModal, setShowFolderModal] = useState(false);
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 
   const selectedFolder = folders.find(f => f.Id === selectedFolderId);
+
+  // Build folder tree
+  const folderTree = useMemo(() => buildFolderTree(folders), [folders]);
+
+  /**
+   * Automatically expand parent folders when a folder is pre-selected.
+   * This ensures the selected folder is visible in the tree when the modal opens.
+   */
+  useEffect(() => {
+    if (selectedFolderId && folders.length > 0) {
+      const fullPath = getFolderIdPath(selectedFolderId, folders);
+      if (fullPath.length > 0) {
+        // Expand all folders in the path including the selected folder if it has children.
+        setExpandedFolders(new Set(fullPath));
+      }
+    } else {
+      setExpandedFolders(new Set());
+    }
+  }, [selectedFolderId, folders]);
+
+  /**
+   * Toggle folder expansion in tree view.
+   */
+  const toggleFolder = useCallback((folderId: string): void => {
+    setExpandedFolders(prev => {
+      const next = new Set(prev);
+      if (next.has(folderId)) {
+        next.delete(folderId);
+      } else {
+        next.add(folderId);
+      }
+      return next;
+    });
+  }, []);
 
   /**
    * Handle folder selection and close the modal.
@@ -60,6 +99,77 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
   const handleCloseFolderModal = useCallback((): void => {
     setShowFolderModal(false);
   }, []);
+
+  /**
+   * Render a folder tree node recursively.
+   */
+  const renderFolderNode = useCallback((node: FolderTreeNode, depth: number = 0): React.ReactNode => {
+    const isExpanded = expandedFolders.has(node.Id);
+    const hasChildren = node.children.length > 0;
+    const isSelected = selectedFolderId === node.Id;
+
+    return (
+      <div key={node.Id}>
+        <button
+          type="button"
+          onClick={() => handleSelectFolder(node.Id)}
+          className={`w-full px-3 py-2 text-left rounded-md flex items-center gap-2 transition-colors ${
+            isSelected
+              ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+          }`}
+          style={{ paddingLeft: `${depth * 12 + 12}px` }}
+        >
+          {/* Expand/Collapse button */}
+          {hasChildren && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFolder(node.Id);
+              }}
+              className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+            >
+              <svg
+                className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+              </svg>
+            </button>
+          )}
+
+          {/* Folder icon */}
+          <svg
+            className={`w-5 h-5 shrink-0 ${isSelected ? 'text-primary-500' : 'text-gray-400'} ${!hasChildren ? 'ml-5' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+          </svg>
+
+          {/* Folder name */}
+          <span className="font-medium flex-1">{node.Name}</span>
+
+          {/* Checkmark for selected */}
+          {isSelected && (
+            <svg className="w-5 h-5 text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+          )}
+        </button>
+
+        {/* Render children if expanded */}
+        {hasChildren && isExpanded && (
+          <div>
+            {node.children.map(child => renderFolderNode(child, depth + 1))}
+          </div>
+        )}
+      </div>
+    );
+  }, [expandedFolders, selectedFolderId, handleSelectFolder, toggleFolder]);
 
   return (
     <>
@@ -131,7 +241,7 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
                 </h3>
               </div>
 
-              {/* Folder Options */}
+              {/* Folder Options - Tree View */}
               <div className="space-y-1 max-h-64 overflow-y-auto">
                 {/* No Folder Option */}
                 <button
@@ -154,29 +264,8 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
                   )}
                 </button>
 
-                {/* Folder Options */}
-                {folders.map(folder => (
-                  <button
-                    key={folder.Id}
-                    type="button"
-                    onClick={() => handleSelectFolder(folder.Id)}
-                    className={`w-full px-3 py-2 text-left rounded-md flex items-center gap-3 transition-colors ${
-                      selectedFolderId === folder.Id
-                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <svg className={`w-5 h-5 ${selectedFolderId === folder.Id ? 'text-primary-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                    </svg>
-                    <span className="font-medium">{folder.Name}</span>
-                    {selectedFolderId === folder.Id && (
-                      <svg className="w-5 h-5 ml-auto text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    )}
-                  </button>
-                ))}
+                {/* Folder Tree */}
+                {folderTree.map(node => renderFolderNode(node, 0))}
               </div>
             </div>
           </div>

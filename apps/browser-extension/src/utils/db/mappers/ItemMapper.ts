@@ -13,7 +13,6 @@ export type ItemRow = {
   Name: string;
   ItemType: string;
   FolderId: string | null;
-  FolderPath: string | null;
   Logo: Uint8Array | null;
   HasPasskey: number;
   HasAttachment: number;
@@ -42,12 +41,14 @@ export class ItemMapper {
    * @param row - Raw item row from database
    * @param fields - Processed fields for this item
    * @param tags - Tags for this item
+   * @param folderPath - Computed folder path array (optional)
    * @returns Item object
    */
   public static mapRow(
     row: ItemRow,
     fields: ItemField[] = [],
-    tags: ItemTagRef[] = []
+    tags: ItemTagRef[] = [],
+    folderPath?: string[]
   ): Item {
     return {
       Id: row.Id,
@@ -55,7 +56,7 @@ export class ItemMapper {
       ItemType: row.ItemType as ItemType,
       Logo: row.Logo ?? undefined,
       FolderId: row.FolderId,
-      FolderPath: row.FolderPath || null,
+      FolderPath: folderPath,
       Tags: tags,
       Fields: fields,
       HasPasskey: row.HasPasskey === 1,
@@ -71,17 +72,20 @@ export class ItemMapper {
    * @param rows - Raw item rows from database
    * @param fieldsByItem - Map of ItemId to array of fields
    * @param tagsByItem - Map of ItemId to array of tags
+   * @param folderPathsByFolderId - Map of FolderId to folder path array (optional)
    * @returns Array of Item objects
    */
   public static mapRows(
     rows: ItemRow[],
     fieldsByItem: Map<string, ItemField[]>,
-    tagsByItem: Map<string, ItemTagRef[]>
+    tagsByItem: Map<string, ItemTagRef[]>,
+    folderPathsByFolderId?: Map<string, string[]>
   ): Item[] {
     return rows.map(row => this.mapRow(
       row,
       fieldsByItem.get(row.Id) || [],
-      tagsByItem.get(row.Id) || []
+      tagsByItem.get(row.Id) || [],
+      row.FolderId && folderPathsByFolderId ? folderPathsByFolderId.get(row.FolderId) : undefined
     ));
   }
 
@@ -124,11 +128,13 @@ export class ItemMapper {
    * Map a single item row for recently deleted items (includes DeletedAt).
    * @param row - Raw item row with DeletedAt
    * @param fields - Processed fields for this item
+   * @param folderPath - Computed folder path array (optional)
    * @returns Item object with DeletedAt
    */
   public static mapDeletedItemRow(
     row: ItemRow & { DeletedAt: string },
-    fields: ItemField[] = []
+    fields: ItemField[] = [],
+    folderPath?: string[]
   ): ItemWithDeletedAt {
     return {
       Id: row.Id,
@@ -136,7 +142,7 @@ export class ItemMapper {
       ItemType: row.ItemType as ItemType,
       Logo: row.Logo ? new Uint8Array(row.Logo) : undefined,
       FolderId: row.FolderId,
-      FolderPath: row.FolderPath,
+      FolderPath: folderPath,
       DeletedAt: row.DeletedAt,
       HasPasskey: row.HasPasskey === 1,
       HasAttachment: row.HasAttachment === 1,

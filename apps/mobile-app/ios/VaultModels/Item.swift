@@ -7,7 +7,7 @@ public struct Item: Codable, Hashable, Equatable {
     public let itemType: String
     public let logo: Data?
     public let folderId: UUID?
-    public let folderPath: String?
+    public let folderPath: [String]?
     public let fields: [ItemField]
     public let hasPasskey: Bool
     public let hasAttachment: Bool
@@ -21,7 +21,7 @@ public struct Item: Codable, Hashable, Equatable {
         itemType: String,
         logo: Data?,
         folderId: UUID?,
-        folderPath: String?,
+        folderPath: [String]?,
         fields: [ItemField],
         hasPasskey: Bool,
         hasAttachment: Bool,

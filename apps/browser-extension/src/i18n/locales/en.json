@@ -211,7 +211,7 @@
     "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
     "deleteFolder": "Delete Folder",
     "deleteFolderKeepItems": "Delete folder only",
-    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
     "deleteFolderAndItems": "Delete folder and all items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
@@ -404,7 +404,6 @@
     "clipboardSettings": "Clipboard Settings",
     "contextMenuSettings": "Context Menu Settings",
     "passkeySettings": "Passkey Settings",
-    "contextMenu": "Context Menu",
     "contextMenuEnabled": "Context menu is enabled",
     "contextMenuDisabled": "Context menu is disabled",
     "contextMenuDescription": "Right-click on input fields to access AliasVault options",

@@ -1,4 +1,5 @@
 import { BaseRepository } from '../BaseRepository';
+import { FolderQueries } from '../queries/FolderQueries';
 
 /**
  * Folder entity type.
@@ -9,81 +10,6 @@ export type Folder = {
   ParentFolderId: string | null;
   Weight: number;
 }
-
-/**
- * SQL query constants for Folder operations.
- */
-const FolderQueries = {
-  /**
-   * Get all active folders.
-   */
-  GET_ALL: `
-    SELECT Id, Name, ParentFolderId, Weight
-    FROM Folders
-    WHERE IsDeleted = 0
-    ORDER BY Weight, Name`,
-
-  /**
-   * Get folder by ID.
-   */
-  GET_BY_ID: `
-    SELECT Id, Name, ParentFolderId
-    FROM Folders
-    WHERE Id = ? AND IsDeleted = 0`,
-
-  /**
-   * Insert a new folder.
-   */
-  INSERT: `
-    INSERT INTO Folders (Id, Name, ParentFolderId, Weight, IsDeleted, CreatedAt, UpdatedAt)
-    VALUES (?, ?, ?, 0, 0, ?, ?)`,
-
-  /**
-   * Update folder name.
-   */
-  UPDATE_NAME: `
-    UPDATE Folders
-    SET Name = ?,
-        UpdatedAt = ?
-    WHERE Id = ?`,
-
-  /**
-   * Soft delete folder.
-   */
-  SOFT_DELETE: `
-    UPDATE Folders
-    SET IsDeleted = 1,
-        UpdatedAt = ?
-    WHERE Id = ?`,
-
-  /**
-   * Clear folder reference from items.
-   */
-  CLEAR_ITEMS_FOLDER: `
-    UPDATE Items
-    SET FolderId = NULL,
-        UpdatedAt = ?
-    WHERE FolderId = ?`,
-
-  /**
-   * Trash items in folder.
-   */
-  TRASH_ITEMS_IN_FOLDER: `
-    UPDATE Items
-    SET DeletedAt = ?,
-        UpdatedAt = ?,
-        FolderId = NULL
-    WHERE FolderId = ? AND IsDeleted = 0 AND DeletedAt IS NULL`,
-
-  /**
-   * Move item to folder.
-   */
-  MOVE_ITEM: `
-    UPDATE Items
-    SET FolderId = ?,
-        UpdatedAt = ?
-    WHERE Id = ?`
-};
 
 /**
  * Repository for Folder CRUD operations.
@@ -159,8 +85,34 @@ export class FolderRepository extends BaseRepository {
   }
 
   /**
+   * Get all child folder IDs recursively.
+   * @param folderId - The parent folder ID
+   * @returns Array of all descendant folder IDs
+   */
+  private getAllChildFolderIds(folderId: string): string[] {
+    const directChildren = this.client.executeQuery<{ Id: string }>(
+      FolderQueries.GET_CHILD_FOLDER_IDS,
+      [folderId]
+    );
+
+    const allChildIds: string[] = [];
+
+    for (const child of directChildren) {
+      allChildIds.push(child.Id);
+      // Recursively get all descendants
+      const descendants = this.getAllChildFolderIds(child.Id);
+      allChildIds.push(...descendants);
+    }
+
+    return allChildIds;
+  }
+
+  /**
    * Delete a folder (soft delete).
-   * Note: Items in the folder will have their FolderId set to NULL.
+   * Handles child folders and items:
+   * - Items in this folder only are moved to the parent folder (or root if no parent)
+   * - Items in child folders stay in their respective folders (since child folders are moved to parent)
+   * - All direct child folders are moved to the parent of the deleted folder
    * @param folderId - The ID of the folder to delete
    * @returns The number of rows updated
    */
@@ -168,8 +120,29 @@ export class FolderRepository extends BaseRepository {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
 
-      // Remove folder reference from all items in this folder
-      this.client.executeUpdate(FolderQueries.CLEAR_ITEMS_FOLDER, [
+      // Get the parent folder of the folder being deleted
+      const folder = this.getById(folderId);
+      const targetParentId = folder?.ParentFolderId || null;
+
+      // Move only items in this folder to the parent folder (or root if no parent)
+      if (targetParentId) {
+        // Has parent: move items to parent folder
+        this.client.executeUpdate(FolderQueries.MOVE_ITEMS_TO_FOLDER, [
+          targetParentId,
+          currentDateTime,
+          folderId
+        ]);
+      } else {
+        // No parent: move items to root (NULL)
+        this.client.executeUpdate(FolderQueries.CLEAR_ITEMS_FOLDER, [
+          currentDateTime,
+          folderId
+        ]);
+      }
+
+      // Move direct child folders to the parent of the deleted folder
+      this.client.executeUpdate(FolderQueries.UPDATE_PARENT_FOLDER, [
+        targetParentId,
         currentDateTime,
         folderId
       ]);
@@ -184,7 +157,9 @@ export class FolderRepository extends BaseRepository {
 
   /**
    * Delete a folder and all items within it (soft delete both folder and items).
-   * Items are moved to "Recently Deleted" (trash).
+   * Recursively handles child folders:
+   * - All items in this folder and child folders are moved to "Recently Deleted" (trash)
+   * - All child folders are also deleted
    * @param folderId - The ID of the folder to delete
    * @returns The number of items trashed
    */
@@ -192,20 +167,42 @@ export class FolderRepository extends BaseRepository {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
 
-      // Move all items in this folder to trash and clear FolderId
-      const itemsDeleted = this.client.executeUpdate(FolderQueries.TRASH_ITEMS_IN_FOLDER, [
+      // Get all child folder IDs recursively
+      const allChildFolderIds = this.getAllChildFolderIds(folderId);
+
+      let totalItemsDeleted = 0;
+
+      // Move all items in this folder to trash
+      totalItemsDeleted += this.client.executeUpdate(FolderQueries.TRASH_ITEMS_IN_FOLDER, [
         currentDateTime,
         currentDateTime,
         folderId
       ]);
 
-      // Soft delete the folder
+      // Move all items in child folders to trash
+      for (const childFolderId of allChildFolderIds) {
+        totalItemsDeleted += this.client.executeUpdate(FolderQueries.TRASH_ITEMS_IN_FOLDER, [
+          currentDateTime,
+          currentDateTime,
+          childFolderId
+        ]);
+      }
+
+      // Soft delete all child folders
+      for (const childFolderId of allChildFolderIds) {
+        this.client.executeUpdate(FolderQueries.SOFT_DELETE, [
+          currentDateTime,
+          childFolderId
+        ]);
+      }
+
+      // Soft delete the parent folder
       this.client.executeUpdate(FolderQueries.SOFT_DELETE, [
         currentDateTime,
         folderId
       ]);
 
-      return itemsDeleted;
+      return totalItemsDeleted;
     });
   }
 

@@ -6,6 +6,7 @@ import { sendMessage } from 'webext-bridge/popup';
 import LogoutConfirmModal from '@/entrypoints/popup/components/Dialogs/LogoutConfirmModal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
@@ -210,7 +211,7 @@ const Settings: React.FC = () => {
 
       <div className="space-y-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-gray-900 dark:text-white text-xl">{t('common.settings')}</h2>
+          <PageTitle>{t('common.settings')}</PageTitle>
         </div>
 
         {/* User Menu Section */}

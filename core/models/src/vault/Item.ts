@@ -22,7 +22,7 @@ export type Item = {
     ItemType: ItemType;
     Logo?: Uint8Array | number[];
     FolderId?: string | null;
-    FolderPath?: string | null;
+    FolderPath?: string[];
     Tags?: ItemTagRef[];
     Fields: ItemField[];
     HasPasskey?: boolean;

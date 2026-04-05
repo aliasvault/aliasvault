@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
@@ -89,6 +90,7 @@ const IdentityGeneratorSettings: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <PageTitle>{t('settings.identityGenerator')}</PageTitle>
       {/* Language Section */}
       <section>
         <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-3">

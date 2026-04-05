@@ -538,17 +538,15 @@ export default function AddEditItemScreen(): React.ReactNode {
         } catch (err) {
           console.error('Error loading password settings:', err);
         }
-        // Now load the item - passwordSettings is already set
         loadExistingItem();
       } else {
-        // Create mode - load password settings for new items too
+        // Create mode
         try {
           const settings = await dbContext.sqliteClient!.getPasswordSettings();
           setPasswordSettings(settings);
         } catch (err) {
           console.error('Error loading password settings:', err);
         }
-        // Create mode - initialize new item
         let serviceName = '';
         let decodedItemUrl = '';
 

@@ -5,14 +5,13 @@ import Foundation
 /// Mirrors the React Native implementation.
 public struct ItemQueries {
     /// Base SELECT for items with common fields.
-    /// Includes LEFT JOIN to Logos and Folders, and subqueries for HasPasskey/HasAttachment/HasTotp.
+    /// Includes LEFT JOIN to Logos and subqueries for HasPasskey/HasAttachment/HasTotp.
     public static let baseSelect = """
         SELECT DISTINCT
           i.Id,
           i.Name,
           i.ItemType,
           i.FolderId,
-          f.Name as FolderPath,
           l.FileData as Logo,
           CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
           CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
@@ -21,7 +20,6 @@ public struct ItemQueries {
           i.UpdatedAt
         FROM Items i
         LEFT JOIN Logos l ON i.LogoId = l.Id
-        LEFT JOIN Folders f ON i.FolderId = f.Id
         """
 
     /// Get all active items (not deleted, not in trash).
@@ -38,7 +36,6 @@ public struct ItemQueries {
           i.Name,
           i.ItemType,
           i.FolderId,
-          f.Name as FolderPath,
           l.FileData as Logo,
           CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
           CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
@@ -47,7 +44,6 @@ public struct ItemQueries {
           i.UpdatedAt
         FROM Items i
         LEFT JOIN Logos l ON i.LogoId = l.Id
-        LEFT JOIN Folders f ON i.FolderId = f.Id
         WHERE i.Id = ? AND i.IsDeleted = 0
         """
 

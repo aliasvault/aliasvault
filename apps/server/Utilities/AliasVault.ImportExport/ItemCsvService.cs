@@ -34,7 +34,7 @@ public static class ItemCsvService
             var record = new ItemCsvRecord
             {
                 ServiceName = item.Name ?? string.Empty,
-                FolderPath = item.Folder?.Name ?? string.Empty,
+                FolderPath = BuildFolderPath(item.Folder),
                 ServiceUrl = GetFieldValue(item, FieldKey.LoginUrl),
                 Username = GetFieldValue(item, FieldKey.LoginUsername),
                 CurrentPassword = GetFieldValue(item, FieldKey.LoginPassword),
@@ -121,6 +121,31 @@ public static class ItemCsvService
         }
 
         return credentials;
+    }
+
+    /// <summary>
+    /// Builds the full hierarchical path for a folder by traversing parent folders.
+    /// </summary>
+    /// <param name="folder">The folder to build the path for.</param>
+    /// <returns>The full hierarchical path (e.g., "Work/Projects/Active"), or empty string if null.</returns>
+    private static string BuildFolderPath(Folder? folder)
+    {
+        if (folder == null)
+        {
+            return string.Empty;
+        }
+
+        var pathParts = new List<string>();
+        var currentFolder = folder;
+
+        // Traverse up the folder hierarchy
+        while (currentFolder != null)
+        {
+            pathParts.Insert(0, currentFolder.Name);
+            currentFolder = currentFolder.ParentFolder;
+        }
+
+        return string.Join("/", pathParts);
     }
 
     /// <summary>

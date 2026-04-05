@@ -9,7 +9,6 @@ public struct ItemRow {
     public let name: String?
     public let itemType: String
     public let folderId: String?
-    public let folderPath: String?
     public let logo: Data?
     public let hasPasskey: Bool
     public let hasAttachment: Bool
@@ -31,7 +30,6 @@ public struct ItemRow {
         self.name = row["Name"] as? String
         self.itemType = itemType
         self.folderId = row["FolderId"] as? String
-        self.folderPath = row["FolderPath"] as? String
 
         // Handle logo data - can be base64 string or Blob
         if let logoBase64 = row["Logo"] as? String {
@@ -98,8 +96,13 @@ public struct ItemMapper {
     /// - Parameters:
     ///   - row: Raw item row from database
     ///   - fields: Processed fields for this item
+    ///   - folderPath: Computed folder path array (optional)
     /// - Returns: Item object
-    public static func mapRow(_ row: ItemRow, fields: [ItemField] = []) -> Item? {
+    public static func mapRow(
+        _ row: ItemRow,
+        fields: [ItemField] = [],
+        folderPath: [String]? = nil
+    ) -> Item? {
         guard let createdAt = DateHelpers.parseDateString(row.createdAt),
               let updatedAt = DateHelpers.parseDateString(row.updatedAt) else {
             return nil
@@ -111,7 +114,7 @@ public struct ItemMapper {
             itemType: row.itemType,
             logo: row.logo,
             folderId: row.folderId.flatMap { UUID(uuidString: $0) },
-            folderPath: row.folderPath,
+            folderPath: folderPath,
             fields: fields,
             hasPasskey: row.hasPasskey,
             hasAttachment: row.hasAttachment,
@@ -125,14 +128,19 @@ public struct ItemMapper {
     /// - Parameters:
     ///   - rows: Raw item rows from database
     ///   - fieldsByItem: Dictionary of ItemId to array of fields
+    ///   - folderPathsByFolderId: Dictionary of FolderId to folder path array (optional)
     /// - Returns: Array of Item objects
     public static func mapRows(
         _ rows: [ItemRow],
-        fieldsByItem: [String: [ItemField]]
+        fieldsByItem: [String: [ItemField]],
+        folderPathsByFolderId: [UUID: [String]] = [:]
     ) -> [Item] {
         return rows.compactMap { row in
             let fields = fieldsByItem[row.id] ?? []
-            return mapRow(row, fields: fields)
+            let folderPath = row.folderId
+                .flatMap { UUID(uuidString: $0) }
+                .flatMap { folderPathsByFolderId[$0] }
+            return mapRow(row, fields: fields, folderPath: folderPath)
         }
     }
 
@@ -140,8 +148,13 @@ public struct ItemMapper {
     /// - Parameters:
     ///   - row: Raw item row with DeletedAt
     ///   - fields: Processed fields for this item
+    ///   - folderPath: Computed folder path array (optional)
     /// - Returns: Item object (deletedAt stored as extension or separate property if needed)
-    public static func mapDeletedItemRow(_ row: ItemRow, fields: [ItemField] = []) -> Item? {
-        return mapRow(row, fields: fields)
+    public static func mapDeletedItemRow(
+        _ row: ItemRow,
+        fields: [ItemField] = [],
+        folderPath: [String]? = nil
+    ) -> Item? {
+        return mapRow(row, fields: fields, folderPath: folderPath)
     }
 }
