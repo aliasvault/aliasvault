@@ -476,7 +476,7 @@
     "bypass": {
       "description": "Wie lange möchtest Du den Passkey-Anbieter des Browsers für {{origin}} verwenden?",
       "thisTimeOnly": "Nur dieses Mal",
-      "alwaysForSite": "Für diese Seite immer"
+      "alwaysForSite": "Immer für diese Webseite"
     },
     "authenticate": {
       "title": "Mit Passkey anmelden",
@@ -507,15 +507,15 @@
   "recentlyDeleted": {
     "title": "Kürzlich gelöscht",
     "noItems": "Keine gelöschten Elemente",
-    "noItemsDescription": "Elemente, die du löscht, werden hier 30 Tage lang erscheinen, bevor sie endgültig entfernt werden.",
-    "description": "Diese Elemente werden nach 30 Tagen dauerhaft gelöscht. Sie können sie wiederherstellen oder sofort löschen.",
+    "noItemsDescription": "Elemente, die Du löscht, werden hier 30 Tage lang erscheinen, bevor sie endgültig entfernt werden.",
+    "description": "Diese Elemente werden nach 30 Tagen endgültig gelöscht. Sie können sie wiederherstellen oder sofort löschen.",
     "restore": "Wiederherstellen",
-    "deletePermanently": "Dauerhaft löschen",
+    "deletePermanently": "Endgültig löschen",
     "emptyAll": "Alle leeren",
     "daysRemaining_one": "Noch {{count}} Tage",
     "daysRemaining_other": "Noch {{count}} Tage",
     "expiringSoon": "Läuft bald ab",
-    "confirmDeleteTitle": "Dauerhaft löschen?",
+    "confirmDeleteTitle": "Endgültig löschen?",
     "confirmDeleteMessage": "Dieses Element wird dauerhaft gelöscht und kann nicht wiederhergestellt werden.",
     "confirmEmptyAllTitle": "Zuletzt gelöscht leeren?",
     "confirmEmptyAllMessage": "Alle {{count}} Elemente werden dauerhaft gelöscht und können nicht wiederhergestellt werden."
@@ -533,7 +533,7 @@
     "noDescriptionAvailable": "Für diese Version ist keine Beschreibung vorhanden.",
     "alerts": {
       "unableToGetVersionInfo": "Versionsinformationen konnten nicht abgerufen werden. Bitte versuche es erneut.",
-      "selfHostedServer": "Selbstgehosteter Server",
+      "selfHostedServer": "Selbst gehosteter Server",
       "selfHostedWarning": "Nutzt Du einen selbst gehosteten Server, musst Du Deine Instanz ebenfalls updaten. Andernfalls kannst Du Dich im Web-Client nicht mehr anmelden.",
       "continueUpgrade": "Aktualisierung fortsetzen",
       "upgradeFailed": "Aktualisierung fehlgeschlagen",
