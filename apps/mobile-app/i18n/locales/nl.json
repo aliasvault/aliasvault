@@ -40,7 +40,6 @@
     "username": "Gebruikersnaam of e-mail",
     "password": "Wachtwoord",
     "authCode": "Authenticatiecode",
-    "unlock": "Ontgrendelen",
     "unlocking": "Ontgrendelen...",
     "loggingIn": "Inloggen",
     "validatingCredentials": "Gegevens valideren",
@@ -52,7 +51,6 @@
     "unlockWithPin": "Ontgrendelen met PIN",
     "unlockWithPassword": "Ontgrendel met wachtwoord",
     "enterPassword": "Voer je wachtwoord in om je vault te ontgrendelen",
-    "enterPasswordPlaceholder": "Wachtwoord",
     "enterAuthCode": "Voer 6-cijferige code in",
     "usernamePlaceholder": "naam / naam@bedrijf.com",
     "passwordPlaceholder": "Voer je wachtwoord in",
@@ -185,8 +183,6 @@
     "exportConfirmTitle": "Vault exporteren",
     "exportWarning": "Waarschuwing: Het exporteren van je vault naar een onversleuteld bestand zal al je wachtwoorden en gevoelige informatie in platte tekst beschikbaar maken. Doe dit alleen op vertrouwde computers en zorg ervoor dat je:\n\n• Het geëxporteerde bestand op een veilige locatie opslaat\n• Het bestand verwijdert wanneer je het niet meer nodig hebt\n• Het geëxporteerde bestand nooit met anderen deelt\n\nWeet je zeker dat je wilt doorgaan met de export?",
     "passwordConfirm": {
-      "title": "Bevestig wachtwoord",
-      "defaultDescription": "Voer je hoofdwachtwoord in om verder te gaan.",
       "exportDescription": "Om veiligheidsredenen moet je je hoofdwachtwoord invoeren om deze export te bevestigen."
     },
     "security": "Beveiliging",
@@ -323,8 +319,7 @@
         "confirmSubtitle": "Verifieer om login goed te keuren op een ander apparaat.",
         "confirmMessage": "Je staat op het punt om in te loggen op een ander apparaat met je account. Dit andere apparaat krijgt volledige toegang tot je vault. Ga alleen verder als je dit apparaat vertrouwd.",
         "successDescription": "Succesvol ingelogd op het andere apparaat.",
-        "requestExpired": "Dit loginverzoek is verlopen. Genereer een nieuwe QR-code.",
-        "noPinOrBiometricError": "Ontgrendelen met mobiel vereist PIN of biometrische verificatie. Schakel PIN of Face ID/Touch ID in om deze functie te gebruiken."
+        "requestExpired": "Dit loginverzoek is verlopen. Genereer een nieuwe QR-code."
       }
     }
   },
@@ -422,7 +417,6 @@
     "noMatchingItemsWithFilter": "Geen {{filter}} items die overeenkomen met \"{{search}}\"",
     "noItemsFound": "Geen items gevonden. Maak er een aan om te beginnen. Tip: je kunt ook inloggen op de AliasVault webapp om items te importeren uit andere wachtwoord-managers.",
     "allItemsInFolders": "Al je items zijn georganiseerd in mappen. Tik op een map hierboven om je gegevens te bekijken, of gebruik de zoekopdracht om specifieke items te vinden.",
-    "noPasskeysFound": "Er zijn nog geen passkeys aangemaakt. Passkeys worden gemaakt door een website te bezoeken die passkeys als een authenticatiemethode biedt.",
     "clearSearch": "Wis zoekopdracht",
     "clearFilter": "Wis filter",
     "recentEmails": "Recente e-mails",
@@ -510,11 +504,10 @@
       "folderNameRequired": "Mapnaam is verplicht",
       "deleteFolder": "Map verwijderen",
       "deleteFolderKeepItems": "Verwijder alleen map",
-      "deleteFolderKeepItemsDescription": "Items zullen terug worden verplaatst naar de hoofdlijst.",
+      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
       "deleteFolderAndItems": "Verwijder map en alle items",
       "deleteFolderAndItemsDescription": "{{count}} item(s) zullen worden verplaatst naar recent verwijderd.",
       "emptyFolderHint": "Deze map is leeg. Om items naar deze map te verplaatsen, wijzig het item en selecteer deze map.",
-      "noFolder": "Geen map",
       "selectFolder": "Map selecteren"
     },
     "recentlyDeleted": {
@@ -598,7 +591,6 @@
     "offline": "Offline",
     "syncing": "Synchroniseren...",
     "pending": "Wachten...",
-    "retrySync": "Probeer opnieuw",
     "backOnline": "Terug online",
     "stillOffline": "Nog steeds offline",
     "syncFailed": "Sync mislukt"
@@ -606,19 +598,7 @@
   "app": {
     "status": {
       "unlockingVault": "Vault ontgrendelen",
-      "decryptingVault": "Vault decrypten",
-      "openingVaultReadOnly": "Vault openen in alleen-lezen modus",
-      "retryingConnection": "Opnieuw proberen..."
-    },
-    "offline": {
-      "banner": "Offline - wijzigingen worden gesynchroniseerd wanneer online",
-      "backOnline": "Terug online",
-      "stillOffline": "Nog steeds offline"
-    },
-    "alerts": {
-      "syncIssue": "Geen verbinding",
-      "openLocalVault": "Open lokale vault",
-      "retrySync": "Opnieuw proberen"
+      "decryptingVault": "Vault decrypten"
     },
     "navigation": {
       "login": "Login",
@@ -658,7 +638,6 @@
     "status": {
       "preparingUpgrade": "Upgrade voorbereiden...",
       "vaultAlreadyUpToDate": "De vault is al bijgewerkt",
-      "startingDatabaseTransaction": "Starten van database transactie...",
       "applyingDatabaseMigrations": "Databasemigratie toepassen...",
       "applyingMigration": "Toepassen van migratie {{current}} van {{total}}...",
       "committingChanges": "Wijzigingen doorvoeren..."
