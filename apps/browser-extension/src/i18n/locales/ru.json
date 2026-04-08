@@ -25,7 +25,6 @@
     "closePopup": "Закрыть окно",
     "browseVault": "Обзор содержимого хранилища",
     "autoCloseUnlockPopup": "Закрывать окно после входа",
-    "closingIn": "Закроется через {{seconds}}с...",
     "connectingTo": "Подключение к",
     "switchAccounts": "Переключить аккаунт?",
     "loginWithMobile": "Войти с помощью мобильного приложения",
@@ -178,8 +177,7 @@
     "savePrompt": {
       "title": "Сохранить в AliasVault?",
       "neverForThisSite": "Никогда для этого сайта",
-      "addUrlTitle": "Добавить URL к этой записи?",
-      "addUrl": "Добавить URL"
+      "addUrlTitle": "Добавить URL к этой записи?"
     }
   },
   "items": {
@@ -201,7 +199,6 @@
     "folder": "Папка",
     "welcomeTitle": "Добро пожаловать в AliasVault!",
     "welcomeDescription": "Чтобы использовать браузерное расширение AliasVault: перейдите на сайт и используйте всплывающее окно автозаполнения AliasVault для создания новых учетных данных.",
-    "noPasskeysFound": "Ключи доступа еще не созданы. Ключи доступа создаются при посещении веб-сайта, который предлагает их в качестве метода аутентификации.",
     "noMatchingItems": "Нет записей, соответствующих выбранному фильтру.",
     "noMatchingItemsSearch": "По запросу \"{{search}}\" ничего не найдено",
     "noMatchingItemsWithFilter": "Ничего не найдено в \"{{filter}}\" по запросу \"{{search}}\"",
@@ -211,7 +208,7 @@
     "allItemsInFolders": "Все ваши данные разложены по папкам. Выберите нужную папку выше или воспользуйтесь поиском, чтобы найти конкретную запись.",
     "deleteFolder": "Удалить папку",
     "deleteFolderKeepItems": "Удалить только папку",
-    "deleteFolderKeepItemsDescription": "Элементы будут перемещены обратно в основной список.",
+    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
     "deleteFolderAndItems": "Удалить папку и все элементы",
     "deleteFolderAndItemsDescription": "{{count}} объект(ов) будет перемещено в раздел «Недавно удалённые».",
     "filters": {
@@ -361,10 +358,8 @@
     "autofillMatchingUrlSubdomain": "URL + поддомен",
     "autofillMatchingUrlExact": "Только точный URL-адрес домена",
     "siteSpecificSettings": "Настройки для конкретного сайта",
-    "autofillPopupOn": "Всплывающее окно автозаполнения: ",
     "enabledForThisSite": "Включено для этого сайта",
     "disabledForThisSite": "Отключено для этого сайта",
-    "temporarilyDisabledUntil": "Временно отключен до тех пор, пока",
     "resetAllSiteSettings": "Сбросить все настройки для сайтов",
     "autofillPopupDescription": "Показывать автозаполнение при обнаружении полей входа.",
     "disabledSites": "Исключения",
@@ -404,7 +399,6 @@
     "clipboardSettings": "Настройки буфера обмена",
     "contextMenuSettings": "Настройки контекстного меню",
     "passkeySettings": "Настройки ключа доступа",
-    "contextMenu": "Контекстное меню",
     "contextMenuEnabled": "Контекстное меню включено",
     "contextMenuDisabled": "Контекстное меню отключено",
     "contextMenuDescription": "Щелкните правой кнопкой мыши на полях ввода, чтобы получить доступ к параметрам AliasVault",
