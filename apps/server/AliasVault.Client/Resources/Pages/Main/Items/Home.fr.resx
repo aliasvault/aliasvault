@@ -67,6 +67,10 @@
     <value>Trouvez tous vos éléments ci-dessous.</value>
     <comment>Page description text</comment>
   </data>
+  <data name="Items" xml:space="preserve">
+    <value>Items</value>
+    <comment>Items label used in breadcrumb navigation</comment>
+  </data>
   <!-- Settings Dropdown -->
   <data name="ViewModeLabel" xml:space="preserve">
     <value>Mode d'affichage</value>
