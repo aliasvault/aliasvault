@@ -25,7 +25,7 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -78,7 +78,7 @@ jobs:
         run: pwsh Tests/AliasVault.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps
 
       - name: Run ExtensionTests with retry
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           timeout_minutes: 60
           max_attempts: 3
@@ -95,7 +95,7 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -170,7 +170,7 @@ jobs:
         working-directory: apps/browser-extension
 
       - name: Build and run E2E tests with retry
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           timeout_minutes: 60
           max_attempts: 3
