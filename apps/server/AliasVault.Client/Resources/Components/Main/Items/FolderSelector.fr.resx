@@ -31,4 +31,8 @@
     <value>Aucun dossier disponible. Créez un dossier à partir de la page d'accueil du coffre.</value>
     <comment>Message shown when no folders exist</comment>
   </data>
+  <data name="MaxDepth">
+    <value>max depth</value>
+    <comment>Label shown for folders at maximum nesting depth</comment>
+  </data>
 </root>
