@@ -40,7 +40,6 @@
     "username": "Usuario o email",
     "password": "Contraseña",
     "authCode": "Código de autenticación",
-    "unlock": "Desbloquear",
     "unlocking": "Desbloqueando...",
     "loggingIn": "Iniciando sesión",
     "validatingCredentials": "Validando credenciales",
@@ -52,7 +51,6 @@
     "unlockWithPin": "Desbloquear con PIN",
     "unlockWithPassword": "Desbloquear con contraseña",
     "enterPassword": "Introduzca su contraseña para desbloquear su bóveda",
-    "enterPasswordPlaceholder": "Contraseña",
     "enterAuthCode": "Introduzca código de 6 dígitos",
     "usernamePlaceholder": "nombre / nombre@empresa.com",
     "passwordPlaceholder": "Introduzca su contraseña",
@@ -185,8 +183,6 @@
     "exportConfirmTitle": "Exportar bóveda",
     "exportWarning": "Advertencia: Exportando su bóveda a un archivo no cifrado expondrá todas sus contraseñas e información sensible en texto plano. Solo haga esto en dispositivos de confianza y asegúrese de que:\n\n• Almacene el archivo exportado en una ubicación segura\n• Elimine el archivo cuando ya no lo necesite\n• Nunca comparta el archivo exportado con otros\n\n¿Está seguro de que desea continuar con la exportación?",
     "passwordConfirm": {
-      "title": "Confirmar Contraseña",
-      "defaultDescription": "Por favor, introduzca su contraseña maestra para continuar.",
       "exportDescription": "Por razones de seguridad, por favor ingrese su contraseña maestra para confirmar esta exportación."
     },
     "security": "Seguridad",
@@ -323,8 +319,7 @@
         "confirmSubtitle": "Volver a autenticar para aprobar el inicio de sesión en otro dispositivo.",
         "confirmMessage": "Estás a punto de iniciar sesión en un dispositivo remoto con tu cuenta. Este otro dispositivo tendrá acceso completo a su bóveda. Sólo proceda si confía en este dispositivo.",
         "successDescription": "El dispositivo remoto se ha conectado correctamente.",
-        "requestExpired": "Esta solicitud de inicio de sesión ha caducado. Por favor, genere un nuevo código QR.",
-        "noPinOrBiometricError": "El desbloqueo móvil requiere PIN o autenticación biométrica. Por favor, habilite PIN o Face ID/Touch ID en la configuración de desbloqueo de bóveda para utilizar esta función."
+        "requestExpired": "Esta solicitud de inicio de sesión ha caducado. Por favor, genere un nuevo código QR."
       }
     }
   },
@@ -422,7 +417,6 @@
     "noMatchingItemsWithFilter": "No hay elementos {{filter}} que coincidan con \"{{search}}\"",
     "noItemsFound": "No se han encontrado elementos. Crea una para empezar. Consejo: también puedes iniciar sesión en la aplicación web de AliasVault para importar credenciales de otros gestores de contraseñas.",
     "allItemsInFolders": "Todos sus elementos están organizados en carpetas. Haga clic en una carpeta para ver sus credenciales o utilice la búsqueda para encontrar elementos específicos.",
-    "noPasskeysFound": "No se han creado llaves de acceso todavía. Las llaves se crean visitando un sitio web que ofrece llaves de acceso como método de autenticación.",
     "clearSearch": "Limpiar búsqueda",
     "clearFilter": "Eliminar filtros",
     "recentEmails": "Correos recientes",
@@ -510,11 +504,10 @@
       "folderNameRequired": "El nombre de la carpeta es obligatorio",
       "deleteFolder": "Borrar carpeta",
       "deleteFolderKeepItems": "Eliminar solo la carpeta",
-      "deleteFolderKeepItemsDescription": "Los elementos se moverán de nuevo a la lista principal.",
+      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
       "deleteFolderAndItems": "Eliminar carpeta y todos los elementos",
       "deleteFolderAndItemsDescription": "{{count}} elemento(s) serán movidos a Borrados Recientemente.",
       "emptyFolderHint": "Esta carpeta está vacía. Para mover elementos a esta carpeta, edite el elemento y seleccione esta carpeta.",
-      "noFolder": "Ninguna carpeta",
       "selectFolder": "Select Folder"
     },
     "recentlyDeleted": {
@@ -598,7 +591,6 @@
     "offline": "Sin conexión",
     "syncing": "Sincronizando...",
     "pending": "Sincronización pendiente",
-    "retrySync": "Toca para reintentar",
     "backOnline": "Vuelves a estar conectado",
     "stillOffline": "Aún sin conexión",
     "syncFailed": "Sincronización fallida"
@@ -606,19 +598,7 @@
   "app": {
     "status": {
       "unlockingVault": "Desbloqueando bóveda",
-      "decryptingVault": "Descifrando bóveda",
-      "openingVaultReadOnly": "Abriendo bóveda en modo sólo lectura",
-      "retryingConnection": "Reintentando la conexión..."
-    },
-    "offline": {
-      "banner": "Sin conexión - los cambios se sincronizarán cuando estén en línea",
-      "backOnline": "Vuelves a estar conectado",
-      "stillOffline": "Aún sin conexión"
-    },
-    "alerts": {
-      "syncIssue": "Sin conexión",
-      "openLocalVault": "Abrir bóveda local",
-      "retrySync": "Reintentar sincronización"
+      "decryptingVault": "Descifrando bóveda"
     },
     "navigation": {
       "login": "Iniciar sesión",
@@ -658,7 +638,6 @@
     "status": {
       "preparingUpgrade": "Preparando actualización...",
       "vaultAlreadyUpToDate": "La bóveda ya está actualizada",
-      "startingDatabaseTransaction": "Iniciando transacción de base de datos...",
       "applyingDatabaseMigrations": "Aplicando migraciones de base de datos...",
       "applyingMigration": "Aplicando migración {{current}} de {{total}}...",
       "committingChanges": "Confirmando los cambios..."
