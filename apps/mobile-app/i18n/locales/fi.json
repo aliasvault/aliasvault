@@ -40,7 +40,6 @@
     "username": "Käyttäjänimi tai sähköposti",
     "password": "Salasana",
     "authCode": "Todennuskoodi",
-    "unlock": "Avaa lukitus",
     "unlocking": "Lukitusta avataan...",
     "loggingIn": "Kirjaudutaan sisään",
     "validatingCredentials": "Vahvistetaan tunnistetietoja",
@@ -52,7 +51,6 @@
     "unlockWithPin": "Avaa PIN-koodilla",
     "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Syötä salasanasi avataksesi holvisi lukituksen",
-    "enterPasswordPlaceholder": "Salasana",
     "enterAuthCode": "Syötä 6-numeroinen koodi",
     "usernamePlaceholder": "nimi / nimi@yritys.fi",
     "passwordPlaceholder": "Syötä salasanasi",
@@ -185,8 +183,6 @@
     "exportConfirmTitle": "Vie holvi",
     "exportWarning": "Varoitus: Holvisi vienti salaamattomaan tiedostoon paljastaa kaikki salasanasi ja arkaluonteiset tiedot pelkässä tekstissä. Tee tämä vain luotettavilla tietokoneilla ja varmista, että:\n\n• Tallenna viety tiedosto turvalliseen paikkaan\n• Poista tiedosto, kun et enää tarvitse sitä\n• Älä koskaan jaa vietyä tiedostoa muiden kanssa\n\nOletko varma, että haluat jatkaa vientiä?",
     "passwordConfirm": {
-      "title": "Confirm Password",
-      "defaultDescription": "Please enter your master password to continue.",
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
     "security": "Turvallisuus",
@@ -323,8 +319,7 @@
         "confirmSubtitle": "Tunnistaudu uudelleen hyväksyäksesi kirjautuminen toisella laitteella.",
         "confirmMessage": "Olet kirjautumamassa sisään etälaitteeseen, jossa on oma tilisi. Tällä toisella laitteella on täysi pääsy holviisi. Jatka vain, jos luotat tähän laitteeseen.",
         "successDescription": "Etälaite on onnistuneesti kirjautunut sisään.",
-        "requestExpired": "Tämä kirjautumispyyntö on vanhentunut. Luo uusi QR-koodi.",
-        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
+        "requestExpired": "Tämä kirjautumispyyntö on vanhentunut. Luo uusi QR-koodi."
       }
     }
   },
@@ -422,7 +417,6 @@
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
     "noItemsFound": "Tietoja ei löytynyt. Luo sellainen aloittaaksesi. Vinkki: voit myös kirjautua AliasVaultin web-sovellukseen tuodaksesi käyttäjätietoja muista salasananhallintalaitteista.",
     "allItemsInFolders": "All your items are organized in folders. Tap a folder above to view your credentials, or use the search to find specific items.",
-    "noPasskeysFound": "Todennusavaimia ei ole vielä luotu. Todennusavaimet on luotu vierailemalla verkkosivustolla, joka tarjoaa todennusavaimia todennusmenetelmänä.",
     "clearSearch": "Clear search",
     "clearFilter": "Clear filter",
     "recentEmails": "Viimeaikaiset sähköpostit",
@@ -510,11 +504,10 @@
       "folderNameRequired": "Folder name is required",
       "deleteFolder": "Delete Folder",
       "deleteFolderKeepItems": "Delete folder only",
-      "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
       "deleteFolderAndItems": "Delete folder and all items",
       "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
       "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
-      "noFolder": "No Folder",
       "selectFolder": "Valitse kansio"
     },
     "recentlyDeleted": {
@@ -598,7 +591,6 @@
     "offline": "Offline",
     "syncing": "Syncing...",
     "pending": "Pending sync",
-    "retrySync": "Tap to retry",
     "backOnline": "Takaisin linjoilla!",
     "stillOffline": "Yhä offline-tilassa",
     "syncFailed": "Sync failed"
@@ -606,19 +598,7 @@
   "app": {
     "status": {
       "unlockingVault": "Avataan holvia",
-      "decryptingVault": "Pureraan holvin salausta",
-      "openingVaultReadOnly": "Avataan holvi vain luku -tilassa",
-      "retryingConnection": "Yritetään yhdistää uudelleen..."
-    },
-    "offline": {
-      "banner": "Offline - changes will sync when online",
-      "backOnline": "Takaisin linjoilla!",
-      "stillOffline": "Yhä offline-tilassa"
-    },
-    "alerts": {
-      "syncIssue": "Ei yhteyttä",
-      "openLocalVault": "Avaa paikallinen holvi",
-      "retrySync": "Yritä synkronointia uudelleen"
+      "decryptingVault": "Pureraan holvin salausta"
     },
     "navigation": {
       "login": "Kirjaudu sisään",
@@ -658,7 +638,6 @@
     "status": {
       "preparingUpgrade": "Valmistellaan päivitystä...",
       "vaultAlreadyUpToDate": "Holvi on jo ajan tasalla",
-      "startingDatabaseTransaction": "Aloitetaan tietokannan tapahtumaa...",
       "applyingDatabaseMigrations": "Toteutetaan tietokannan siirtoja...",
       "applyingMigration": "Suoritetaan tietokannan siirtoa {{current}} / {{total}}...",
       "committingChanges": "Suoritetaan muutoksia..."
