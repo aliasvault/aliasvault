@@ -40,7 +40,6 @@
     "username": "Usuário ou e-mail",
     "password": "Senha",
     "authCode": "Código de Autenticação",
-    "unlock": "Desbloquear",
     "unlocking": "Desbloqueando...",
     "loggingIn": "Fazendo login",
     "validatingCredentials": "Validando credenciais",
@@ -52,7 +51,6 @@
     "unlockWithPin": "Desbloquear com PIN",
     "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Digite sua senha para desbloquear o cofre",
-    "enterPasswordPlaceholder": "Senha",
     "enterAuthCode": "Digite o código de 6 dígitos",
     "usernamePlaceholder": "nome / nome@empresa.com",
     "passwordPlaceholder": "Digite sua senha",
@@ -185,8 +183,6 @@
     "exportConfirmTitle": "Exportar Cofre",
     "exportWarning": "Aviso: Exportar seu cofre para um arquivo descriptografado vai expor todas as suas senhas e dados sensíveis em texto. Realize isso apenas em dispositivos confiados e garanta que:\n\n• Guarde o arquivo em um local seguro\n• Exclua o arquivo quando não precisar mais\n• Nunca compartilhe o arquivo exportado com outras pessoas\n\nTem certeza que deseja continuar com o exporte?",
     "passwordConfirm": {
-      "title": "Confirmar Senha",
-      "defaultDescription": "Por favor, digite sua senha mestre para continuar.",
       "exportDescription": "Por questões de segurança, por favor, digite sua senha mestre para confirmar esta exportação."
     },
     "security": "Segurança",
@@ -323,8 +319,7 @@
         "confirmSubtitle": "Autentique novamente para aprovar login em outros dispositivos.",
         "confirmMessage": "Você está prestes a fazer login em um dispositivo remoto com sua conta. Este outro dispositivo terá acesso total ao seu cofre. Proceda apenas se você confia neste dispositivo.",
         "successDescription": "O login no dispositivo remoto foi feito com sucesso.",
-        "requestExpired": "Esta requisição de login expirou. Por favor, gere um novo código QR.",
-        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
+        "requestExpired": "Esta requisição de login expirou. Por favor, gere um novo código QR."
       }
     }
   },
@@ -422,7 +417,6 @@
     "noMatchingItemsWithFilter": "Nenhum item com o filtro {{filter}} corresponde à \"{{search}}\"",
     "noItemsFound": "Nenhum item encontrado. Crie um para iniciar. Dica: você também pode fazer login no aplicativo web do AliasVault para importar credenciais de outros gerenciadores de senhas.",
     "allItemsInFolders": "Todos os seus itens estão organizados em pastas. Toque em uma pasta acima para ver suas credenciais, ou utilize a busca para encontrar itens específicos.",
-    "noPasskeysFound": "Nenhuma passkey foi criada ainda. Passkeys são veiadas visitando um website que ofereça passkey como método de autenticação.",
     "clearSearch": "Limpar busca",
     "clearFilter": "Limpar filtro",
     "recentEmails": "E-mails recentes",
@@ -510,11 +504,10 @@
       "folderNameRequired": "Nome da pasta é obrigatório",
       "deleteFolder": "Excluir Pasta",
       "deleteFolderKeepItems": "Excluir apenas a pasta",
-      "deleteFolderKeepItemsDescription": "Itens serão movidos de volta para a lista principal.",
+      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
       "deleteFolderAndItems": "Excluir pasta e todos os itens",
       "deleteFolderAndItemsDescription": "{{count}} item(ns) serão movidos para Recentemente Excluídos.",
       "emptyFolderHint": "Esta pasta está vazia. Para mover itens para esta pasta, edite o item e selecione esta pasta.",
-      "noFolder": "Nenhuma Pasta",
       "selectFolder": "Selecionar Pasta"
     },
     "recentlyDeleted": {
@@ -598,7 +591,6 @@
     "offline": "Offline",
     "syncing": "Sincronizando...",
     "pending": "Sincronização pendente",
-    "retrySync": "Toque para tentar novamente",
     "backOnline": "Online novamente",
     "stillOffline": "Ainda está offline",
     "syncFailed": "Sincronização falhou"
@@ -606,19 +598,7 @@
   "app": {
     "status": {
       "unlockingVault": "Desbloqueando cofre",
-      "decryptingVault": "Descriptografando cofre",
-      "openingVaultReadOnly": "Abrindo cofre em modo de leitura",
-      "retryingConnection": "Reconectando..."
-    },
-    "offline": {
-      "banner": "Offline - mudanças serão sincronizadas quando estiver online",
-      "backOnline": "Online novamente",
-      "stillOffline": "Ainda está offline"
-    },
-    "alerts": {
-      "syncIssue": "Sem Conexão",
-      "openLocalVault": "Abrir Cofre Local",
-      "retrySync": "Tentar Sincronizar Novamente"
+      "decryptingVault": "Descriptografando cofre"
     },
     "navigation": {
       "login": "Login",
@@ -658,7 +638,6 @@
     "status": {
       "preparingUpgrade": "Preparando atualização...",
       "vaultAlreadyUpToDate": "Cofre está atualizado",
-      "startingDatabaseTransaction": "Iniciando transação no banco de dados...",
       "applyingDatabaseMigrations": "Aplicando migrações do banco de dados...",
       "applyingMigration": "Aplicando migração {{current}} de {{total}}...",
       "committingChanges": "Confirmando mudanças..."
