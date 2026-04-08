@@ -25,7 +25,6 @@
     "closePopup": "Popup schließen",
     "browseVault": "Tresor durchsuchen",
     "autoCloseUnlockPopup": "Bei zukünftigen Anmeldungen automatisch schließen",
-    "closingIn": "Schließe in {{seconds}} Sekunden...",
     "connectingTo": "Verbinde zu",
     "switchAccounts": "Konto wechseln?",
     "loginWithMobile": "Mit mobiler App anmelden",
@@ -178,8 +177,7 @@
     "savePrompt": {
       "title": "In AliasVault speichern?",
       "neverForThisSite": "Niemals für diese Webseite",
-      "addUrlTitle": "URL zu Anmeldeinformationen hinzufügen?",
-      "addUrl": "URL hinzufügen"
+      "addUrlTitle": "URL zu Anmeldeinformationen hinzufügen?"
     }
   },
   "items": {
@@ -201,7 +199,6 @@
     "folder": "Ordner",
     "welcomeTitle": "Welcome to AliasVault!",
     "welcomeDescription": "Du möchtest die AliasVault-Browser-Erweiterung verwenden? Navigiere zu einer Website und verwende das AliasVault-Popup-Fenster um einen neuen Zugang zu erstellen.",
-    "noPasskeysFound": "Es wurden noch kein Passkey erstellt. Ein Passkey wird durch den Besuch einer Website erzeugt, die Passkeys als Authentifizierungsmethode anbietet.",
     "noMatchingItems": "Keine Elemente entsprechen den ausgewählten Filtern.",
     "noMatchingItemsSearch": "Keine passenden Elemente \"{{search}}\"",
     "noMatchingItemsWithFilter": "Keine {{filter}} Elemente passend zu \"{{search}}\"",
@@ -211,7 +208,7 @@
     "allItemsInFolders": "Alle Ihre Elemente sind in Ordnern organisiert. Tippen Sie auf einen Ordner oben, um Ihre Anmeldedaten anzuzeigen, oder verwenden Sie die Suche, um bestimmte Elemente zu finden.",
     "deleteFolder": "Ordner löschen",
     "deleteFolderKeepItems": "Nur Ordner löschen",
-    "deleteFolderKeepItemsDescription": "Elemente werden zurück zur Hauptliste verschoben.",
+    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
     "deleteFolderAndItems": "Ordner und alle Elemente löschen",
     "deleteFolderAndItemsDescription": "{{count}} Element(e) nach \"Kürzlich gelöscht\" verschoben.",
     "filters": {
@@ -361,10 +358,8 @@
     "autofillMatchingUrlSubdomain": "URL + Subdomain",
     "autofillMatchingUrlExact": "Nur exakte URL-Domain",
     "siteSpecificSettings": "Seitenspezifische Einstellungen",
-    "autofillPopupOn": "Autofill-Popup auf: ",
     "enabledForThisSite": "Für diese Seite aktiviert",
     "disabledForThisSite": "Für diese Seite deaktivieren",
-    "temporarilyDisabledUntil": "Vorübergehend deaktiviert bis ",
     "resetAllSiteSettings": "Alle seitenspezifischen Einstellungen zurücksetzen",
     "autofillPopupDescription": "Zeige das Autofill-Popup, wenn Anmeldefelder erkannt werden.",
     "disabledSites": "Deaktivierte Webseiten",
@@ -404,7 +399,6 @@
     "clipboardSettings": "Zwischenablage-Einstellungen",
     "contextMenuSettings": "Kontextmenü-Einstellungen",
     "passkeySettings": "Passkey-Einstellungen",
-    "contextMenu": "Kontextmenü",
     "contextMenuEnabled": "Kontextmenü ist aktiviert",
     "contextMenuDisabled": "Kontextmenü ist deaktiviert",
     "contextMenuDescription": "Rechtsklicke auf Eingabefelder, um auf AliasVault-Optionen zuzugreifen",
