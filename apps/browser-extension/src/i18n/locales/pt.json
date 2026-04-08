@@ -25,7 +25,6 @@
     "closePopup": "Fechar este pop-up",
     "browseVault": "Navegar por conteúdo do cofre",
     "autoCloseUnlockPopup": "Fechar automaticamente nos próximos acessos",
-    "closingIn": "Fechando em {{seconds}}s...",
     "connectingTo": "Conectando à",
     "switchAccounts": "Mudar de conta?",
     "loginWithMobile": "Entrar utilizado Dispositivo Móvel",
@@ -178,8 +177,7 @@
     "savePrompt": {
       "title": "Salvar no AliasVault?",
       "neverForThisSite": "Nunca para este site",
-      "addUrlTitle": "Adicionar URL na credencial?",
-      "addUrl": "Adicionar URL"
+      "addUrlTitle": "Adicionar URL na credencial?"
     }
   },
   "items": {
@@ -201,7 +199,6 @@
     "folder": "Pasta",
     "welcomeTitle": "Boas-vindas ao AliasVault!",
     "welcomeDescription": "Para utilizar a extensão de navegador do AliasVault: navegue para um site e utilize o pop-up de preenchimento automático do AliasVault para criar uma nova credencial.",
-    "noPasskeysFound": "Nenhuma passkey foi criada ainda. Passkeys são veiadas visitando um website que ofereça passkey como método de autenticação.",
     "noMatchingItems": "Nenhum item corresponde ao filtro selecionado.",
     "noMatchingItemsSearch": "Nenhum item corresponde à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nenhum item com o filtro {{filter}} corresponde à \"{{search}}\"",
@@ -211,7 +208,7 @@
     "allItemsInFolders": "Todos os seus itens estão organizados em pastas. Clique em uma pasta acima para ver suas credenciais, ou utilize a busca para encontrar itens específicos.",
     "deleteFolder": "Excluir Pasta",
     "deleteFolderKeepItems": "Excluir apenas a pasta",
-    "deleteFolderKeepItemsDescription": "Itens serão movidos de volta para a lista principal.",
+    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
     "deleteFolderAndItems": "Excluir pasta e todos os itens",
     "deleteFolderAndItemsDescription": "{{count}} item(s) será(ão) movido(s) para Recentemente Excluídos.",
     "filters": {
@@ -361,10 +358,8 @@
     "autofillMatchingUrlSubdomain": "URL + subdomínio",
     "autofillMatchingUrlExact": "Apenas URL exato do domínio",
     "siteSpecificSettings": "Configurações Específicas do Site",
-    "autofillPopupOn": "Pop-up de preenchimento automático em: ",
     "enabledForThisSite": "Habilitado para este site",
     "disabledForThisSite": "Desabilitado para este site",
-    "temporarilyDisabledUntil": "Temporariamente desabilitado até ",
     "resetAllSiteSettings": "Redefinir todas as configurações específicas do site",
     "autofillPopupDescription": "Mostrar o popup de autopreenchimento quando campos de login forem detectados.",
     "disabledSites": "Sites desabilitados",
@@ -404,7 +399,6 @@
     "clipboardSettings": "Configurações da Área de Transferência",
     "contextMenuSettings": "Configurações do Menu de Contexto",
     "passkeySettings": "Configurações de Passkey",
-    "contextMenu": "Menu de Contexto",
     "contextMenuEnabled": "Menu de contexto está habilitado",
     "contextMenuDisabled": "Menu de contexto está desabilitado",
     "contextMenuDescription": "Clique com o botão direito nos campos para acessar as opções do AliasVault",
