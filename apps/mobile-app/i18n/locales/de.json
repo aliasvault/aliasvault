@@ -40,7 +40,6 @@
     "username": "Benutzername oder E-Mail-Adresse",
     "password": "Passwort",
     "authCode": "Sicherheits-Code",
-    "unlock": "Entsperren",
     "unlocking": "Entsperre...",
     "loggingIn": "Anmeldung…",
     "validatingCredentials": "Anmeldedaten werden überprüft",
@@ -52,7 +51,6 @@
     "unlockWithPin": "Mit PIN entsperren",
     "unlockWithPassword": "Mit Passwort entsperren",
     "enterPassword": "Bitte gib Dein Passwort zum Entsperren des Tresors ein",
-    "enterPasswordPlaceholder": "Passwort",
     "enterAuthCode": "Gib den 6-stelligen Sicherheits-Code ein",
     "usernamePlaceholder": "Name / name@unternehmen.com",
     "passwordPlaceholder": "Gib Dein Passwort ein",
@@ -185,8 +183,6 @@
     "exportConfirmTitle": "Tresor exportieren",
     "exportWarning": "Warnung: Beim Exportieren Deines Tresors in eine unverschlüsselte Datei werden alle Deine Passwörter und sensiblen Daten im Klartext sichtbar.\nFühre diesen Vorgang nur auf vertrauenswürdigen Geräten aus und stelle sicher, dass Du:\n\n• die exportierte Datei an einem sicheren Ort speicherst.\n• die Datei löschst, sobald Du sie nicht mehr brauchst.\n• die Datei niemals mit anderen teilst.\n\nBist Du sicher, dass Du mit dem Export fortfahren möchtest?",
     "passwordConfirm": {
-      "title": "Passwort wiederholen",
-      "defaultDescription": "Bitte gebe Dein Master-Passwort ein, um fortzufahren.",
       "exportDescription": "Bitte gebe aus Sicherheitsgründen Dein Master-Passwort ein, um diesen Export zu bestätigen."
     },
     "security": "Sicherheit",
@@ -323,8 +319,7 @@
         "confirmSubtitle": "Authentifizieren Dich erneut, um die Anmeldung auf einem anderen Gerät zu genehmigen.",
         "confirmMessage": "Du bist dabei, Dich mit Deinem Konto auf einem anderen Gerät anzumelden. Dieses Gerät wird vollen Zugriff auf Deinen Tresor haben. Fahre nur fort, wenn Du diesem Gerät vertraust.",
         "successDescription": "Das andere Gerät wurde erfolgreich angemeldet.",
-        "requestExpired": "Diese Anmeldeanfrage ist abgelaufen. Bitte generiere einen neuen QR-Code.",
-        "noPinOrBiometricError": "Das Entsperren über dein Mobiltelefon benötigt eine PIN oder biometrische Authentifizierung. Bitte aktivere PIN oder Face ID/Touch ID in den Tresor-Entsperr-Einstellungen um diese Funktion zu nutzen."
+        "requestExpired": "Diese Anmeldeanfrage ist abgelaufen. Bitte generiere einen neuen QR-Code."
       }
     }
   },
@@ -422,7 +417,6 @@
     "noMatchingItemsWithFilter": "Keine {{filter}} Elemente passend zu \"{{search}}\"",
     "noItemsFound": "Keine Elemente gefunden. Erstelle ein Element, um zu beginnen. Tipp: Du kannst dich auch in der AliasVault-Webapp anmelden, um Anmeldedaten aus anderen Passwort-Managern zu importieren.",
     "allItemsInFolders": "Alle Deine Elemente sind in Ordnern organisiert. Tippe auf einen Ordner oben, um Deine Anmeldedaten anzuzeigen, oder verwende die Suche, um bestimmte Elemente zu finden.",
-    "noPasskeysFound": "Es wurden noch kein Passkey erstellt. Ein Passkey wird durch den Besuch einer Website erzeugt, die Passkeys als Authentifizierungsmethode anbietet.",
     "clearSearch": "Suche löschen",
     "clearFilter": "Filter löschen",
     "recentEmails": "Neueste E-Mails",
@@ -510,11 +504,10 @@
       "folderNameRequired": "Ordnername ist erforderlich",
       "deleteFolder": "Ordner löschen",
       "deleteFolderKeepItems": "Nur Ordner löschen",
-      "deleteFolderKeepItemsDescription": "Elemente werden zurück zur Hauptliste verschoben.",
+      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
       "deleteFolderAndItems": "Ordner und alle Elemente löschen",
       "deleteFolderAndItemsDescription": "{{count}} Elemente(n) werden nach kürzlich gelöschtem Element verschoben.",
       "emptyFolderHint": "Dieser Ordner ist leer. Um Elemente in diesen Ordner zu verschieben, bearbeiten Sie das Element und wählen Sie diesen Ordner.",
-      "noFolder": "Kein Ordner",
       "selectFolder": "Ordner auswählen"
     },
     "recentlyDeleted": {
@@ -598,7 +591,6 @@
     "offline": "Offline",
     "syncing": "Synchronisierung läuft...",
     "pending": "Ausstehende Synchronisation ",
-    "retrySync": "Antippen, um es erneut zu versuchen",
     "backOnline": "Wieder online",
     "stillOffline": "Immer noch offline",
     "syncFailed": "Synchronisation fehlgeschlagen"
@@ -606,19 +598,7 @@
   "app": {
     "status": {
       "unlockingVault": "Tresor wird entsperrt",
-      "decryptingVault": "Tresor wird entschlüsselt",
-      "openingVaultReadOnly": "Tresor wird im Lese-Modus geöffnet",
-      "retryingConnection": "Verbindungsversuch wird wiederholt..."
-    },
-    "offline": {
-      "banner": "Offline - Änderungen werden synchronisiert, wenn online",
-      "backOnline": "Wieder online",
-      "stillOffline": "Immer noch offline"
-    },
-    "alerts": {
-      "syncIssue": "Keine Verbindung",
-      "openLocalVault": "Lokalen Tresor öffnen",
-      "retrySync": "Synchronisierung erneut versuchen"
+      "decryptingVault": "Tresor wird entschlüsselt"
     },
     "navigation": {
       "login": "Anmelden",
@@ -658,7 +638,6 @@
     "status": {
       "preparingUpgrade": "Aktualisierung wird vorbereitet...",
       "vaultAlreadyUpToDate": "Tresor ist bereits aktualisiert",
-      "startingDatabaseTransaction": "Datenbanktransaktion wird gestartet...",
       "applyingDatabaseMigrations": "Datenbankmigration wird durchgeführt...",
       "applyingMigration": "Führe Migration {{current}} von {{total}} durch...",
       "committingChanges": "Änderungen werden übernommen..."
