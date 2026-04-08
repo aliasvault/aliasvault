@@ -25,7 +25,6 @@
     "closePopup": "Închide această fereastră",
     "browseVault": "Răsfoiește conținutul seifului",
     "autoCloseUnlockPopup": "Închidere automată la următoarele autentificări",
-    "closingIn": "Se închide în {{seconds}}s...",
     "connectingTo": "Conectare la",
     "switchAccounts": "Treci la alt cont?",
     "loginWithMobile": "Autentificare prin aplicația mobilă",
@@ -178,8 +177,7 @@
     "savePrompt": {
       "title": "Salvează în AliasVault?",
       "neverForThisSite": "Niciodată pentru acest site",
-      "addUrlTitle": "Adaugă URL la datele de autentificare?",
-      "addUrl": "Adaugă URL"
+      "addUrlTitle": "Adaugă URL la datele de autentificare?"
     }
   },
   "items": {
@@ -201,7 +199,6 @@
     "folder": "Dosar",
     "welcomeTitle": "Bun venit în AliasVault!",
     "welcomeDescription": "Pentru a utiliza extensia de browser AliasVault: accesează un site web și folosește fereastra pop-up de completare automată AliasVault pentru a crea noi date de autentificare.",
-    "noPasskeysFound": "Nu a fost creat niciun passkey încă. Passkey-urile sunt create vizitând site-uri care oferă această metodă de autentificare.",
     "noMatchingItems": "Niciun element nu corespunde filtrului selectat.",
     "noMatchingItemsSearch": "Nu s-au găsit elemente pentru „{{search}}”",
     "noMatchingItemsWithFilter": "Niciun element {{filter}} nu se potrivește cu „{{search}}”",
@@ -211,7 +208,7 @@
     "allItemsInFolders": "Toate elementele tale sunt organizate în dosare. Apasă pe un dosar de mai sus pentru a vizualiza datele de autentificare sau folosește căutarea pentru a găsi elemente specifice.",
     "deleteFolder": "Șterge dosarul",
     "deleteFolderKeepItems": "Șterge doar dosarul",
-    "deleteFolderKeepItemsDescription": "Elementele vor fi mutate înapoi în lista principală.",
+    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
     "deleteFolderAndItems": "Șterge dosarul și toate elementele",
     "deleteFolderAndItemsDescription": "{{count}} element(e) vor fi mutate la Șterse Recent.",
     "filters": {
@@ -361,10 +358,8 @@
     "autofillMatchingUrlSubdomain": "URL + subdomeniu",
     "autofillMatchingUrlExact": "Doar domeniul exact al URL-ului",
     "siteSpecificSettings": "Setări specifice site-ului",
-    "autofillPopupOn": "Fereastra de completare automată pe: ",
     "enabledForThisSite": "Activat pentru acest site",
     "disabledForThisSite": "Dezactivat pentru acest site",
-    "temporarilyDisabledUntil": "Dezactivat temporar până la ",
     "resetAllSiteSettings": "Resetează toate setările specifice site-ului",
     "autofillPopupDescription": "Afișează fereastra pop-up de completare automată când sunt detectate câmpurile de autentificare.",
     "disabledSites": "Site-uri dezactivate",
@@ -404,7 +399,6 @@
     "clipboardSettings": "Setări clipboard",
     "contextMenuSettings": "Setări meniu contextual",
     "passkeySettings": "Setări passkey",
-    "contextMenu": "Meniu Contextual",
     "contextMenuEnabled": "Meniul contextual este activat",
     "contextMenuDisabled": "Meniul contextual este dezactivat",
     "contextMenuDescription": "Clic dreapta pe câmpurile de introducere pentru a accesa opțiunile AliasVault",
