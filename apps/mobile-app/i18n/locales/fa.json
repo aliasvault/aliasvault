@@ -40,7 +40,6 @@
     "username": "Username or email",
     "password": "Password",
     "authCode": "Authentication Code",
-    "unlock": "Unlock",
     "unlocking": "Unlocking...",
     "loggingIn": "Logging in",
     "validatingCredentials": "Validating credentials",
@@ -52,7 +51,6 @@
     "unlockWithPin": "Unlock with PIN",
     "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Enter your password to unlock your vault",
-    "enterPasswordPlaceholder": "Password",
     "enterAuthCode": "Enter 6-digit code",
     "usernamePlaceholder": "name / name@company.com",
     "passwordPlaceholder": "Enter your password",
@@ -185,8 +183,6 @@
     "exportConfirmTitle": "Export Vault",
     "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
     "passwordConfirm": {
-      "title": "Confirm Password",
-      "defaultDescription": "Please enter your master password to continue.",
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
     "security": "Security",
@@ -323,8 +319,7 @@
         "confirmSubtitle": "Re-authenticate to approve login on another device.",
         "confirmMessage": "You are about to log in on a remote device with your account. This other device will have full access to your vault. Only proceed if you trust this device.",
         "successDescription": "The remote device has been successfully logged in.",
-        "requestExpired": "This login request has expired. Please generate a new QR code.",
-        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
+        "requestExpired": "This login request has expired. Please generate a new QR code."
       }
     }
   },
@@ -422,7 +417,6 @@
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
     "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
     "allItemsInFolders": "All your items are organized in folders. Tap a folder above to view your credentials, or use the search to find specific items.",
-    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
     "clearSearch": "Clear search",
     "clearFilter": "Clear filter",
     "recentEmails": "Recent emails",
@@ -510,11 +504,10 @@
       "folderNameRequired": "Folder name is required",
       "deleteFolder": "Delete Folder",
       "deleteFolderKeepItems": "Delete folder only",
-      "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
       "deleteFolderAndItems": "Delete folder and all items",
       "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
       "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
-      "noFolder": "No Folder",
       "selectFolder": "Select Folder"
     },
     "recentlyDeleted": {
@@ -598,7 +591,6 @@
     "offline": "Offline",
     "syncing": "Syncing...",
     "pending": "Pending sync",
-    "retrySync": "Tap to retry",
     "backOnline": "Back online",
     "stillOffline": "Still offline",
     "syncFailed": "Sync failed"
@@ -606,19 +598,7 @@
   "app": {
     "status": {
       "unlockingVault": "Unlocking vault",
-      "decryptingVault": "Decrypting vault",
-      "openingVaultReadOnly": "Opening vault in read-only mode",
-      "retryingConnection": "Retrying connection..."
-    },
-    "offline": {
-      "banner": "Offline - changes will sync when online",
-      "backOnline": "Back online",
-      "stillOffline": "Still offline"
-    },
-    "alerts": {
-      "syncIssue": "No Connection",
-      "openLocalVault": "Open Local Vault",
-      "retrySync": "Retry Sync"
+      "decryptingVault": "Decrypting vault"
     },
     "navigation": {
       "login": "Login",
@@ -658,7 +638,6 @@
     "status": {
       "preparingUpgrade": "Preparing upgrade...",
       "vaultAlreadyUpToDate": "Vault is already up to date",
-      "startingDatabaseTransaction": "Starting database transaction...",
       "applyingDatabaseMigrations": "Applying database migrations...",
       "applyingMigration": "Applying migration {{current}} of {{total}}...",
       "committingChanges": "Committing changes..."
