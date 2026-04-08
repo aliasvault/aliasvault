@@ -40,7 +40,6 @@
     "username": "Nom d'utilisateur ou email",
     "password": "Mot de passe",
     "authCode": "Code d'authentification",
-    "unlock": "Déverrouiller",
     "unlocking": "Déverrouillage...",
     "loggingIn": "Connexion en cours",
     "validatingCredentials": "Validation des identifiants",
@@ -52,7 +51,6 @@
     "unlockWithPin": "Déverrouiller avec un code PIN",
     "unlockWithPassword": "Déverrouiller avec le mot de passe",
     "enterPassword": "Entrez votre mot de passe principal pour déverrouiller votre coffre-fort",
-    "enterPasswordPlaceholder": "Mot de passe",
     "enterAuthCode": "Saisissez le code à 6 chiffres",
     "usernamePlaceholder": "nom / nom@entreprise.com",
     "passwordPlaceholder": "Saisissez votre mot de passe",
@@ -185,8 +183,6 @@
     "exportConfirmTitle": "Exporter le coffre",
     "exportWarning": "Attention : L'exportation de votre coffre-fort vers un fichier non chiffré exposera tous vos mots de passe et informations sensibles en texte clair. Effectuez cette opération uniquement sur un appareil de confiance et veillez à : \n• Stocker le fichier exporté dans un emplacement sécurisé \n• Supprimer le fichier dès que vous n'en avez plus besoin \n• Ne jamais partager le fichier exporté avec d'autres personnes \n\nÊtes-vous sûr de vouloir poursuivre l'exportation ?",
     "passwordConfirm": {
-      "title": "Confirmez le mot de passe",
-      "defaultDescription": "Veuillez entrer votre mot de passe maître pour continuer.",
       "exportDescription": "Pour des raisons de sécurité, veuillez entrer votre mot de passe maître pour confirmer l'exportation."
     },
     "security": "Sécurité",
@@ -323,8 +319,7 @@
         "confirmSubtitle": "Se ré-authentifier pour approuver la connexion sur un autre appareil.",
         "confirmMessage": "Vous êtes sur le point de vous connecter sur un appareil distant avec votre compte. Cet autre appareil aura un accès complet à votre coffre. Ne procédez que si vous faites confiance à cet appareil.",
         "successDescription": "L'appareil distant a été connecté avec succès.",
-        "requestExpired": "Cette demande de connexion a expiré. Veuillez générer un nouveau code QR.",
-        "noPinOrBiometricError": "Le déverrouillage par mobile nécessite une authentification par code PIN ou biométrique. Veuillez activer le code PIN ou Face ID/Touch ID dans les paramètres de déverrouillage du coffre pour utiliser cette fonctionnalité."
+        "requestExpired": "Cette demande de connexion a expiré. Veuillez générer un nouveau code QR."
       }
     }
   },
@@ -422,7 +417,6 @@
     "noMatchingItemsWithFilter": "Aucun élément {{filter}} correspondant à \"{{search}}\"",
     "noItemsFound": "Aucun élément trouvé. Créez en un pour commencer. Astuce : vous pouvez également vous connecter à l'application Web AliasVault pour importer les identifiants depuis d'autres gestionnaires de mots de passe.",
     "allItemsInFolders": "Tous vos éléments sont organisés dans des dossiers. Appuyez sur un dossier ci-dessus pour voir vos identifiants, ou utilisez la recherche pour trouver des éléments spécifiques.",
-    "noPasskeysFound": "Aucune clé d'accès n'a encore été créée. Les clés d'accès sont créés en visitant un site Web qui propose des clés d'accès comme méthode d'authentification.",
     "clearSearch": "Effacer la recherche",
     "clearFilter": "Effacer le filtre",
     "recentEmails": "E-mails récents",
@@ -510,11 +504,10 @@
       "folderNameRequired": "Le nom du dossier est requis",
       "deleteFolder": "Supprimer le dossier",
       "deleteFolderKeepItems": "Supprimer le dossier uniquement",
-      "deleteFolderKeepItemsDescription": "Les éléments seront déplacés dans la liste principale.",
+      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
       "deleteFolderAndItems": "Supprimer le dossier et tous les éléments",
       "deleteFolderAndItemsDescription": "{{count}} élément(s) vont être déplacés vers Récemment supprimés.",
       "emptyFolderHint": "Ce dossier est vide. Pour déplacer des éléments vers ce dossier, éditez l'élément et sélectionnez ce dossier.",
-      "noFolder": "Aucun dossier",
       "selectFolder": "Sélectionner un dossier"
     },
     "recentlyDeleted": {
@@ -598,7 +591,6 @@
     "offline": "Hors ligne",
     "syncing": "Synchronisation...",
     "pending": "Synchronisation en attente",
-    "retrySync": "Appuyez pour réessayer",
     "backOnline": "Retour en ligne",
     "stillOffline": "Toujours hors-ligne",
     "syncFailed": "Échec de la synchronisation"
@@ -606,19 +598,7 @@
   "app": {
     "status": {
       "unlockingVault": "Déverrouillage du coffre",
-      "decryptingVault": "Décryptage du coffre",
-      "openingVaultReadOnly": "Ouvrir le coffre en mode lecture seule",
-      "retryingConnection": "Tentative de reconnexion..."
-    },
-    "offline": {
-      "banner": "Hors ligne - les modifications seront synchronisées lorsque vous serez en ligne",
-      "backOnline": "Retour en ligne",
-      "stillOffline": "Toujours hors-ligne"
-    },
-    "alerts": {
-      "syncIssue": "Pas de connexion",
-      "openLocalVault": "Ouvrir le coffre local",
-      "retrySync": "Réessayer la synchronisation"
+      "decryptingVault": "Décryptage du coffre"
     },
     "navigation": {
       "login": "Se connecter",
@@ -658,7 +638,6 @@
     "status": {
       "preparingUpgrade": "Préparation de la mise à jour...",
       "vaultAlreadyUpToDate": "Le coffre est déjà à jour",
-      "startingDatabaseTransaction": "Démarrage de la transaction de base de données...",
       "applyingDatabaseMigrations": "Application des migrations de base de données...",
       "applyingMigration": "Application de la migration {{current}} sur {{total}}...",
       "committingChanges": "Application des modifications..."
