@@ -31,4 +31,8 @@
     <value>Niciun dosar disponibil. Creează un dosar din pagina principală a seifului.</value>
     <comment>Message shown when no folders exist</comment>
   </data>
+  <data name="MaxDepth">
+    <value>max depth</value>
+    <comment>Label shown for folders at maximum nesting depth</comment>
+  </data>
 </root>
