@@ -67,6 +67,10 @@
     <value>Ниже вы найдете все ваши записи.</value>
     <comment>Page description text</comment>
   </data>
+  <data name="Items" xml:space="preserve">
+    <value>Items</value>
+    <comment>Items label used in breadcrumb navigation</comment>
+  </data>
   <!-- Settings Dropdown -->
   <data name="ViewModeLabel" xml:space="preserve">
     <value>Режим просмотра</value>
