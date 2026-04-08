@@ -25,7 +25,6 @@
     "closePopup": "Закрити цю підказку",
     "browseVault": "Переглянути вміст сховища",
     "autoCloseUnlockPopup": "Auto-close on future sign ins",
-    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Підключення до",
     "switchAccounts": "Змінити обліковий запис?",
     "loginWithMobile": "Увійти за допомогою мобільного додатку",
@@ -178,8 +177,7 @@
     "savePrompt": {
       "title": "Save to AliasVault?",
       "neverForThisSite": "Never for this site",
-      "addUrlTitle": "Add URL to credential?",
-      "addUrl": "Add URL"
+      "addUrlTitle": "Add URL to credential?"
     }
   },
   "items": {
@@ -201,7 +199,6 @@
     "folder": "Тека",
     "welcomeTitle": "Ласкаво просимо до AliasVult!",
     "welcomeDescription": "Щоб скористатися розширенням браузера AliasVault: перейдіть на вебсайт і скористайтеся спливаючим вікном автозаповнення AliasVault, щоб створити нові облікові дані.",
-    "noPasskeysFound": "Ключі доступу ще не створено. Ключі доступу створюються під час відвідування вебсайту, який пропонує ключі доступу як спосіб автентифікації.",
     "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
@@ -211,7 +208,7 @@
     "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
     "deleteFolder": "Delete Folder",
     "deleteFolderKeepItems": "Delete folder only",
-    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
     "deleteFolderAndItems": "Delete folder and all items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
@@ -361,10 +358,8 @@
     "autofillMatchingUrlSubdomain": "URL-адреса + піддомен",
     "autofillMatchingUrlExact": "Лише точний домен URL-адреси",
     "siteSpecificSettings": "Налаштування, специфічні для сайту",
-    "autofillPopupOn": "Спливаюче вікно автозаповнення на: ",
     "enabledForThisSite": "Увімкнено для цього сайту",
     "disabledForThisSite": "Вимкнено для цього сайту",
-    "temporarilyDisabledUntil": "Тимчасово вимкнено до ",
     "resetAllSiteSettings": "Скинути всі налаштування, характерні для сайту",
     "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
     "disabledSites": "Disabled sites",
@@ -404,7 +399,6 @@
     "clipboardSettings": "Параметри буфера обміну",
     "contextMenuSettings": "Налаштування контекстного меню",
     "passkeySettings": "Налаштування ключа доступу",
-    "contextMenu": "Контекстне меню",
     "contextMenuEnabled": "Контекстне меню увімкнено",
     "contextMenuDisabled": "Контекстне меню вимкнено",
     "contextMenuDescription": "Натисніть правою кнопкою миші на поля введення, щоб отримати доступ до параметрів AliasVault",
