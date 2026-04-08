@@ -25,7 +25,6 @@
     "closePopup": "סגירת החלונית הצצה הזאת",
     "browseVault": "עיון בתוכן הכספת",
     "autoCloseUnlockPopup": "Auto-close on future sign ins",
-    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "מתבצעת התחברות אל",
     "switchAccounts": "להחליף חשבונות?",
     "loginWithMobile": "Log in using Mobile App",
@@ -178,8 +177,7 @@
     "savePrompt": {
       "title": "Save to AliasVault?",
       "neverForThisSite": "Never for this site",
-      "addUrlTitle": "Add URL to credential?",
-      "addUrl": "Add URL"
+      "addUrlTitle": "Add URL to credential?"
     }
   },
   "items": {
@@ -201,7 +199,6 @@
     "folder": "תיקייה",
     "welcomeTitle": "ברוך בואך ל־AliasVault!",
     "welcomeDescription": "כדי להשתמש בהרחבת הדפדפן של AliasVault: יש לנווט לאתר ולהשתמש בחלונית ההשלמה האוטומטית של AliasVault כדי ליצור פרטי גישה חדשים.",
-    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
     "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
@@ -211,7 +208,7 @@
     "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
     "deleteFolder": "Delete Folder",
     "deleteFolderKeepItems": "Delete folder only",
-    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
     "deleteFolderAndItems": "Delete folder and all items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
@@ -361,10 +358,8 @@
     "autofillMatchingUrlSubdomain": "כתובת + שם תת־תחום",
     "autofillMatchingUrlExact": "תחום כתובת מדויקת בלבד",
     "siteSpecificSettings": "הגדרות תואמות אתר",
-    "autofillPopupOn": "חלונית השלמה אוטומטית ב־: ",
     "enabledForThisSite": "פעיל לאתר הזה",
     "disabledForThisSite": "כבוי לאתר הזה",
-    "temporarilyDisabledUntil": "כבוי זמנית עד ",
     "resetAllSiteSettings": "איפוס כל ההגדרות הנקודתיות לאתרים",
     "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
     "disabledSites": "Disabled sites",
@@ -404,7 +399,6 @@
     "clipboardSettings": "הגדרות לוח הגזירים",
     "contextMenuSettings": "הגדרות תפריט הקשר",
     "passkeySettings": "Passkey Settings",
-    "contextMenu": "תפריט הקשר",
     "contextMenuEnabled": "תפריט הקשר פעיל",
     "contextMenuDisabled": "תפריט הקשר כבוי",
     "contextMenuDescription": "ניתן ללחוץ על שדה עם הלחצן הימני כדי לגשת לאפשרויות AliasVault",
