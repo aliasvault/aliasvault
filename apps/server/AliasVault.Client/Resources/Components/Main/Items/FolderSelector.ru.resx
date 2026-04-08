@@ -31,4 +31,8 @@
     <value>Доступные папки не найдены. Создайте новую папку на главной странице хранилища.</value>
     <comment>Message shown when no folders exist</comment>
   </data>
+  <data name="MaxDepth">
+    <value>max depth</value>
+    <comment>Label shown for folders at maximum nesting depth</comment>
+  </data>
 </root>
