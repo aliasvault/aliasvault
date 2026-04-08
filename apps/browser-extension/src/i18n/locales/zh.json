@@ -25,7 +25,6 @@
     "closePopup": "关闭此弹窗",
     "browseVault": "浏览密码库内容",
     "autoCloseUnlockPopup": "将来登录时自动关闭",
-    "closingIn": "{{seconds}} 秒后关闭…",
     "connectingTo": "正在连接",
     "switchAccounts": "切换账户？",
     "loginWithMobile": "使用移动应用登录",
@@ -178,8 +177,7 @@
     "savePrompt": {
       "title": "保存到 AliasVault？",
       "neverForThisSite": "此网站不再显示",
-      "addUrlTitle": "将 URL 添加到凭据？",
-      "addUrl": "添加 URL"
+      "addUrlTitle": "将 URL 添加到凭据？"
     }
   },
   "items": {
@@ -201,7 +199,6 @@
     "folder": "文件夹",
     "welcomeTitle": "欢迎使用 AliasVault!",
     "welcomeDescription": "要使用AliasVault浏览器扩展：导航到某个网站，使用AliasVault自动填充弹窗创建新凭据。",
-    "noPasskeysFound": "尚未创建通行密钥。访问以通行密钥为认证方式的网站才能创建通行密钥。",
     "noMatchingItems": "没有项目符合所选筛选器。",
     "noMatchingItemsSearch": "未找到匹配“{{search}}”的项目",
     "noMatchingItemsWithFilter": "未找到匹配“{{search}}”的 {{filter}} 项目",
@@ -211,7 +208,7 @@
     "allItemsInFolders": "您的所有项目都已整理到文件夹中。点击上方文件夹即可查看您的凭据，或使用搜索查找特定的项目。",
     "deleteFolder": "删除文件夹",
     "deleteFolderKeepItems": "仅删除文件夹",
-    "deleteFolderKeepItemsDescription": "项目将被移回主列表。",
+    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
     "deleteFolderAndItems": "删除文件夹和所有项目",
     "deleteFolderAndItemsDescription": "{{count}} 个项目将被移至“近期删除”。",
     "filters": {
@@ -361,10 +358,8 @@
     "autofillMatchingUrlSubdomain": "URL + 子域名",
     "autofillMatchingUrlExact": "精确匹配URL域名",
     "siteSpecificSettings": "网站特定设置",
-    "autofillPopupOn": "自动填充弹窗在以下位置： ",
     "enabledForThisSite": "对此网站启用",
     "disabledForThisSite": "对此网站禁用",
-    "temporarilyDisabledUntil": "暂时禁用至 ",
     "resetAllSiteSettings": "重置所有网站特定设置",
     "autofillPopupDescription": "检测到登录字段时，显示自动填充弹窗。",
     "disabledSites": "禁用的网站",
@@ -404,7 +399,6 @@
     "clipboardSettings": "剪贴板设置",
     "contextMenuSettings": "上下文菜单设置",
     "passkeySettings": "通行密钥设置",
-    "contextMenu": "上下文菜单",
     "contextMenuEnabled": "上下文菜单已启用",
     "contextMenuDisabled": "上下文菜单已停用",
     "contextMenuDescription": "右键点击输入字段即可访问 AliasVault 选项",
