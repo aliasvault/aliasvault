@@ -71,7 +71,7 @@
     <comment>Title for delete folder only option</comment>
   </data>
   <data name="DeleteFolderOnlyDescription" xml:space="preserve">
-    <value>Записи из этой папки будут перемещены в основной раздел</value>
+    <value>Items will be moved to the parent folder</value>
     <comment>Description for delete folder only option</comment>
   </data>
   <data name="DeleteFolderAndContentsTitle" xml:space="preserve">
