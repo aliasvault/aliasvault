@@ -25,7 +25,6 @@
     "closePopup": "Luk denne popup",
     "browseVault": "Gennemse boksens indhold",
     "autoCloseUnlockPopup": "Luk automatisk ved fremtidige log in",
-    "closingIn": "Lukker om {{seconds}}...",
     "connectingTo": "Forbinder til",
     "switchAccounts": "Skift konto?",
     "loginWithMobile": "Log ind via mobilapp",
@@ -178,8 +177,7 @@
     "savePrompt": {
       "title": "Gem i AliasVault?",
       "neverForThisSite": "Aldrig for dette websted",
-      "addUrlTitle": "Tilføj URL til legitimationsoplysninger?",
-      "addUrl": "Tilføj URL"
+      "addUrlTitle": "Tilføj URL til legitimationsoplysninger?"
     }
   },
   "items": {
@@ -201,7 +199,6 @@
     "folder": "Mappe",
     "welcomeTitle": "Velkommen til AliasVault!",
     "welcomeDescription": "For at bruge AliasVault-browserudvidelsen: Gå til et websted og brug AliasVault-autofyld-popup'en til at oprette en ny logonoplysning.",
-    "noPasskeysFound": "Der er endnu ikke oprettet nogen passkeys. Passkeys oprettes ved at besøge et websted, der tilbyder passkeys som autentificeringsmetode.",
     "noMatchingItems": "Ingen elementer matcher det valgte filter.",
     "noMatchingItemsSearch": "Ingen elementer matcher \"{{search}}\"",
     "noMatchingItemsWithFilter": "Ingen {{filter}}-elementer matcher \"{{search}}\"",
@@ -211,7 +208,7 @@
     "allItemsInFolders": "Alle dine elementer er organiseret i mapper. Klik på en mappe ovenfor for at se dine oplysninger, eller brug søgefunktionen til at finde specifikke elementer.",
     "deleteFolder": "Slet mappe",
     "deleteFolderKeepItems": "Slet kun mappe",
-    "deleteFolderKeepItemsDescription": "Elementer flyttes tilbage til hovedlisten.",
+    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
     "deleteFolderAndItems": "Slet mappe og alle elementer",
     "deleteFolderAndItemsDescription": "{{count}} element(er) vil blive flyttet til Senest Slettede.",
     "filters": {
@@ -361,10 +358,8 @@
     "autofillMatchingUrlSubdomain": "URL + underdomæne",
     "autofillMatchingUrlExact": "Kun eksakt URL-domæne",
     "siteSpecificSettings": "Webstedsspecifikke indstillinger",
-    "autofillPopupOn": "Autofyld-popup på: ",
     "enabledForThisSite": "Aktiveret for dette websted",
     "disabledForThisSite": "Deaktiveret for dette websted",
-    "temporarilyDisabledUntil": "Midlertidigt deaktiveret indtil ",
     "resetAllSiteSettings": "Nulstil alle webstedsspecifikke indstillinger",
     "autofillPopupDescription": "Vis popup for autofyld når login-felter detekteres.",
     "disabledSites": "Deaktiverede websteder",
@@ -404,7 +399,6 @@
     "clipboardSettings": "Indstillinger for udklipsholder",
     "contextMenuSettings": "Indstillinger for kontekstmenu",
     "passkeySettings": "Indstillinger for passkey",
-    "contextMenu": "Kontekstmenu",
     "contextMenuEnabled": "Kontekstmenu er aktiveret",
     "contextMenuDisabled": "Kontekstmenu er deaktiveret",
     "contextMenuDescription": "Højreklik på inputfelter for at få adgang til AliasVault-funktioner",
