@@ -25,7 +25,6 @@
     "closePopup": "Chiudi questo popup",
     "browseVault": "Sfoglia i contenuti della cassaforte",
     "autoCloseUnlockPopup": "Chiusura automatica ai futuri accessi",
-    "closingIn": "Chiusura in {{seconds}}...",
     "connectingTo": "Connessione a",
     "switchAccounts": "Cambia account",
     "loginWithMobile": "Accedi con l'App Mobile",
@@ -178,8 +177,7 @@
     "savePrompt": {
       "title": "Salvare su AliasVault?",
       "neverForThisSite": "Mai per questo sito",
-      "addUrlTitle": "Aggiungere URL alle credenziali?",
-      "addUrl": "Aggiungi URL"
+      "addUrlTitle": "Aggiungere URL alle credenziali?"
     }
   },
   "items": {
@@ -201,7 +199,6 @@
     "folder": "Cartella",
     "welcomeTitle": "Benvenuto in AliasVault!",
     "welcomeDescription": "Per usare l'estensione browser AliasVault: naviga su un sito e usa la finestra di compilazione automatica per creare una nuova credenziale.",
-    "noPasskeysFound": "Non sono state ancora create passkey. Le passkey vengono create visitando un sito web che offre le passkey come metodo di autenticazione.",
     "noMatchingItems": "Nessun elemento corrisponde ai filtri selezionati",
     "noMatchingItemsSearch": "Nessun elemento corrispondente \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nessun elemento {{filter}} corrispondente \"{{search}}\"",
@@ -211,7 +208,7 @@
     "allItemsInFolders": "Tutti gli elementi sono organizzati in cartelle. Fare clic su una cartella qui sopra per visualizzare le credenziali o utilizzare la ricerca per trovare elementi specifici.",
     "deleteFolder": "Elimina Cartella",
     "deleteFolderKeepItems": "Elimina solo la cartella",
-    "deleteFolderKeepItemsDescription": "Gli elementi verranno spostati nella lista principale.",
+    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
     "deleteFolderAndItems": "Elimina cartella e tutti gli elementi",
     "deleteFolderAndItemsDescription": "{{count}} oggetto(i) verrà spostato in Eliminato Recentemente.",
     "filters": {
@@ -361,10 +358,8 @@
     "autofillMatchingUrlSubdomain": "URL + sottodominio",
     "autofillMatchingUrlExact": "Solo dominio URL esatto",
     "siteSpecificSettings": "Impostazioni specifiche per sito",
-    "autofillPopupOn": "Finestra compilazione automatica su: ",
     "enabledForThisSite": "Abilitato per questo sito",
     "disabledForThisSite": "Disabilitato per questo sito",
-    "temporarilyDisabledUntil": "Disabilitato temporaneamente fino a ",
     "resetAllSiteSettings": "Reimposta tutte le impostazioni specifiche per sito",
     "autofillPopupDescription": "Mostra il popup di riempimento automatico quando vengono rilevati i campi di accesso.",
     "disabledSites": "Siti disabilitati",
@@ -404,7 +399,6 @@
     "clipboardSettings": "Impostazioni appunti",
     "contextMenuSettings": "Preferenze menu contestuale",
     "passkeySettings": "Impostazioni Passkey",
-    "contextMenu": "Menu contestuale",
     "contextMenuEnabled": "Il menu contestuale è attivato",
     "contextMenuDisabled": "Il menu contestuale è disabilitato",
     "contextMenuDescription": "Click destro sui campi di input per accedere alle opzioni di AliasVault",
