@@ -40,7 +40,6 @@
     "username": "Brugernavn eller e-mail",
     "password": "Adgangskode",
     "authCode": "Autentificeringskode",
-    "unlock": "Lås op",
     "unlocking": "Låser op...",
     "loggingIn": "Logger ind",
     "validatingCredentials": "Validerer loginoplysninger",
@@ -52,7 +51,6 @@
     "unlockWithPin": "Lås op med PIN",
     "unlockWithPassword": "Lås op med adgangskode",
     "enterPassword": "Indtast din adgangskode for at låse din boks op",
-    "enterPasswordPlaceholder": "Adgangskode",
     "enterAuthCode": "Indtast 6-cifret kode",
     "usernamePlaceholder": "navn / navn@firma.dk",
     "passwordPlaceholder": "Indtast din adgangskode",
@@ -185,8 +183,6 @@
     "exportConfirmTitle": "Eksporter boks",
     "exportWarning": "Advarsel: Eksport af din boks til en ukrypteret fil vil blotlægge alle dine adgangskoder og følsomme oplysninger i klartekst. Gør kun dette på betroede enheder og sørg for at:\n\n• Opbevar den eksporterede fil på et sikkert sted\n• Slet filen, når du ikke længere har brug for den\n• Del aldrig den eksporterede fil med andre\n\nEr du sikker på, at du vil fortsætte med eksporten?",
     "passwordConfirm": {
-      "title": "Bekræft kodeord",
-      "defaultDescription": "Indtast venligst din hovedadgangskode for at fortsætte.",
       "exportDescription": "Af sikkerhedshensyn skal du indtaste din hovedadgangskode for at bekræfte denne eksport."
     },
     "security": "Sikkerhed",
@@ -323,8 +319,7 @@
         "confirmSubtitle": "Autentificer igen for at godkende login på en anden enhed.",
         "confirmMessage": "Du er ved at logge ind på en ekstern enhed med din konto. Denne enhed vil have fuld adgang til din boks. Fortsæt kun, hvis du har tillid til denne enhed.",
         "successDescription": "Den eksterne enhed er blevet logget ind korrekt.",
-        "requestExpired": "Denne loginanmodning er udløbet. Generer venligst en ny QR-kode.",
-        "noPinOrBiometricError": "Mobiloplåsning kræver PIN-kode eller biometrisk godkendelse. Aktivér PIN-kode eller Face ID/Touch ID i indstillinger for oplåsning af boksen for at bruge denne funktion."
+        "requestExpired": "Denne loginanmodning er udløbet. Generer venligst en ny QR-kode."
       }
     }
   },
@@ -422,7 +417,6 @@
     "noMatchingItemsWithFilter": "Ingen {{filter}}-elementer matcher \"{{search}}\"",
     "noItemsFound": "Ingen elementer fundet. Opret et for at komme i gang. Tip: Du kan også logge ind på AliasVault-webappen for at importere oplysninger fra andre adgangskodeadministratorer.",
     "allItemsInFolders": "Alle dine elementer er organiseret i mapper. Tryk på en mappe ovenfor for at se dine oplysninger, eller brug søgningen til at finde specifikke elementer.",
-    "noPasskeysFound": "Der er ikke oprettet nogen passkeys endnu. Passkeys oprettes ved at besøge en hjemmeside, der tilbyder passkeys som autentificeringsmetode.",
     "clearSearch": "Ryd søgning",
     "clearFilter": "Ryd filter",
     "recentEmails": "Seneste e-mails",
@@ -510,11 +504,10 @@
       "folderNameRequired": "Mappenavn er påkrævet",
       "deleteFolder": "Slet mappe",
       "deleteFolderKeepItems": "Slet kun mappe",
-      "deleteFolderKeepItemsDescription": "Elementer vil blive flyttet tilbage til hovedlisten.",
+      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
       "deleteFolderAndItems": "Slet mappe og alle elementer",
       "deleteFolderAndItemsDescription": "{{count}} element(er) vil blive flyttet til Senest slettet.",
       "emptyFolderHint": "Denne mappe er tom. For at flytte elementer til denne mappe skal du redigere elementet og vælge denne mappe.",
-      "noFolder": "Ingen mappe",
       "selectFolder": "Vælg mappe"
     },
     "recentlyDeleted": {
@@ -598,7 +591,6 @@
     "offline": "Offline",
     "syncing": "Synkroniserer...",
     "pending": "Afventer synkronisering",
-    "retrySync": "Tryk for at prøve igen",
     "backOnline": "Tilbage online",
     "stillOffline": "Stadig offline",
     "syncFailed": "Synkronisering mislykkedes"
@@ -606,19 +598,7 @@
   "app": {
     "status": {
       "unlockingVault": "Låser boks op",
-      "decryptingVault": "Dekrypterer boks",
-      "openingVaultReadOnly": "Åbner boks i skrivebeskyttet tilstand",
-      "retryingConnection": "Prøver at genoprette forbindelse..."
-    },
-    "offline": {
-      "banner": "Offline - ændringer vil blive synkroniseret, når du er online",
-      "backOnline": "Tilbage online",
-      "stillOffline": "Stadig offline"
-    },
-    "alerts": {
-      "syncIssue": "Ingen forbindelse",
-      "openLocalVault": "Åbn lokal boks",
-      "retrySync": "Prøv synkronisering igen"
+      "decryptingVault": "Dekrypterer boks"
     },
     "navigation": {
       "login": "Log på",
@@ -658,7 +638,6 @@
     "status": {
       "preparingUpgrade": "Forbereder opgradering...",
       "vaultAlreadyUpToDate": "Boksen er allerede opdateret",
-      "startingDatabaseTransaction": "Starter databasetransaktion...",
       "applyingDatabaseMigrations": "Anvender databasemigreringer...",
       "applyingMigration": "Anvender migrering {{current}} af {{total}}...",
       "committingChanges": "Gemmer ændringer..."
