@@ -40,7 +40,6 @@
     "username": "用户名或邮箱",
     "password": "密码",
     "authCode": "身份验证码",
-    "unlock": "解锁",
     "unlocking": "解锁中…",
     "loggingIn": "登录中",
     "validatingCredentials": "验证凭据中",
@@ -52,7 +51,6 @@
     "unlockWithPin": "使用 PIN 解锁",
     "unlockWithPassword": "使用密码解锁",
     "enterPassword": "输入您的密码以解锁密码库",
-    "enterPasswordPlaceholder": "密码",
     "enterAuthCode": "输入 6 位数代码",
     "usernamePlaceholder": "姓名 / name@company.com",
     "passwordPlaceholder": "输入您的密码",
@@ -185,8 +183,6 @@
     "exportConfirmTitle": "导出密码库",
     "exportWarning": "警告：将您的密码库导出到未加密文件将以明文形式暴露您的所有密码和敏感信息。仅在受信任的计算机上执行此操作，并确保您：\n\n• 将导出的文件存储在安全的位置\n• 不再需要时删除该文件\n• 切勿与他人共享导出的文件\n\n您确定要继续导出吗？",
     "passwordConfirm": {
-      "title": "确认密码",
-      "defaultDescription": "请输入您的主密码以继续。",
       "exportDescription": "出于安全考虑，请输入您的主密码以确认导出。"
     },
     "security": "安全",
@@ -323,8 +319,7 @@
         "confirmSubtitle": "重新认证以批准在另一台设备上登录。",
         "confirmMessage": "您即将使用您的账户在远程设备上登录。该设备将拥有对您密码库的完全访问权限。请仅在您信任该设备的情况下继续。",
         "successDescription": "远程设备已成功登录。",
-        "requestExpired": "此登录请求已过期，请生成新的二维码。",
-        "noPinOrBiometricError": "移动设备解锁需要 PIN 或生物识别认证。请在密码库解锁设置中启用 PIN 或面容 ID/触控 ID 以使用此功能。"
+        "requestExpired": "此登录请求已过期，请生成新的二维码。"
       }
     }
   },
@@ -422,7 +417,6 @@
     "noMatchingItemsWithFilter": "未找到匹配“{{search}}”的 {{filter}} 项目",
     "noItemsFound": "未找到项目。请创建一个以开始使用。提示：您也可以登录 AliasVault 网页应用，从其他密码管理器导入凭据。",
     "allItemsInFolders": "您的所有项目都已整理到文件夹中。点击上方文件夹即可查看您的凭据，或使用搜索查找特定的项目。",
-    "noPasskeysFound": "尚未创建通行密钥。访问以通行密钥为认证方式的网站才能创建通行密钥。",
     "clearSearch": "清除搜索",
     "clearFilter": "清除筛选器",
     "recentEmails": "近期邮件",
@@ -510,11 +504,10 @@
       "folderNameRequired": "文件夹名称为必填项",
       "deleteFolder": "删除文件夹",
       "deleteFolderKeepItems": "仅删除文件夹",
-      "deleteFolderKeepItemsDescription": "项目将被移回主列表。",
+      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
       "deleteFolderAndItems": "删除文件夹和所有项目",
       "deleteFolderAndItemsDescription": "{{count}} 个项目将被移至“近期删除”。",
       "emptyFolderHint": "此文件夹为空。要将项目移动到此文件夹，请编辑项目并选择此文件夹。",
-      "noFolder": "无文件夹",
       "selectFolder": "选择文件夹"
     },
     "recentlyDeleted": {
@@ -598,7 +591,6 @@
     "offline": "离线",
     "syncing": "同步中…",
     "pending": "待同步",
-    "retrySync": "点击重试",
     "backOnline": "重新上线",
     "stillOffline": "仍旧离线",
     "syncFailed": "同步失败"
@@ -606,19 +598,7 @@
   "app": {
     "status": {
       "unlockingVault": "解锁密码库",
-      "decryptingVault": "解密密码库",
-      "openingVaultReadOnly": "以只读模式打开密码库",
-      "retryingConnection": "正在重试连接…"
-    },
-    "offline": {
-      "banner": "离线 - 更改将在在线时同步",
-      "backOnline": "已在线",
-      "stillOffline": "依旧处于离线状态"
-    },
-    "alerts": {
-      "syncIssue": "无连接",
-      "openLocalVault": "打开本地密码库",
-      "retrySync": "重试同步"
+      "decryptingVault": "解密密码库"
     },
     "navigation": {
       "login": "登录",
@@ -658,7 +638,6 @@
     "status": {
       "preparingUpgrade": "正在准备升级…",
       "vaultAlreadyUpToDate": "当前密码库数据已是最新",
-      "startingDatabaseTransaction": "开始数据库事务…",
       "applyingDatabaseMigrations": "应用数据库迁移…",
       "applyingMigration": "应用迁移 {{current}} / {{total}}…",
       "committingChanges": "正在提交更改…"
