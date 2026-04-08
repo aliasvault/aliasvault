@@ -40,7 +40,6 @@
     "username": "Ім’я користувача або Email",
     "password": "Пароль",
     "authCode": "Код автентифікації",
-    "unlock": "Розблокувати",
     "unlocking": "Розблоковування...",
     "loggingIn": "Вхід в систему",
     "validatingCredentials": "Перевірка облікових даних",
@@ -52,7 +51,6 @@
     "unlockWithPin": "Розблокувати за допомогою PIN-коду",
     "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Введіть свій пароль, щоб розблокувати сховище",
-    "enterPasswordPlaceholder": "Пароль",
     "enterAuthCode": "Введіть 6-значний код",
     "usernamePlaceholder": "назва / name@company.com",
     "passwordPlaceholder": "Введіть Ваш пароль",
@@ -185,8 +183,6 @@
     "exportConfirmTitle": "Експорт сховища",
     "exportWarning": "Попередження: експортування сховища в незашифрований файл призведе до розкриття всіх ваших паролів і конфіденційної інформації у вигляді звичайного тексту. Робіть це лише на надійних пристроях і переконайтеся, що ви:\n\n• Зберігати експортований файл у безпечному місці;\n• Видаляйте файл, коли він вам більше не потрібен;\n• Ніколи не діліться експортованим файлом з іншими.\n\nВи справді бажаєте продовжити експорт?",
     "passwordConfirm": {
-      "title": "Confirm Password",
-      "defaultDescription": "Please enter your master password to continue.",
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
     "security": "Безпека",
@@ -323,8 +319,7 @@
         "confirmSubtitle": "Повторно пройдіть автентифікацію, щоб підтвердити вхід на іншому пристрої.",
         "confirmMessage": "Ви збираєтеся ввійти на віддаленому пристрої за допомогою свого облікового запису. Цей інший пристрій матиме повний доступ до вашого сховища. Продовжуйте, лише якщо ви довіряєте цьому пристрою.",
         "successDescription": "Віддалений пристрій успішно ввійшов у систему.",
-        "requestExpired": "Термін дії цього запиту на вхід минув. Будь ласка, згенеруйте новий QR-код.",
-        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
+        "requestExpired": "Термін дії цього запиту на вхід минув. Будь ласка, згенеруйте новий QR-код."
       }
     }
   },
@@ -422,7 +417,6 @@
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
     "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
     "allItemsInFolders": "All your items are organized in folders. Tap a folder above to view your credentials, or use the search to find specific items.",
-    "noPasskeysFound": "Ключі доступу ще не створено. Ключі доступу створюються під час відвідування вебсайту, який пропонує ключі доступу як спосіб автентифікації.",
     "clearSearch": "Clear search",
     "clearFilter": "Clear filter",
     "recentEmails": "Недавні електронні листи",
@@ -510,11 +504,10 @@
       "folderNameRequired": "Folder name is required",
       "deleteFolder": "Delete Folder",
       "deleteFolderKeepItems": "Delete folder only",
-      "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
       "deleteFolderAndItems": "Delete folder and all items",
       "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
       "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
-      "noFolder": "No Folder",
       "selectFolder": "Вибрати теку"
     },
     "recentlyDeleted": {
@@ -598,7 +591,6 @@
     "offline": "Offline",
     "syncing": "Syncing...",
     "pending": "Pending sync",
-    "retrySync": "Tap to retry",
     "backOnline": "Знову онлайн",
     "stillOffline": "Досі офлайн",
     "syncFailed": "Sync failed"
@@ -606,19 +598,7 @@
   "app": {
     "status": {
       "unlockingVault": "Розблокування сховища",
-      "decryptingVault": "Розшифрування сховища",
-      "openingVaultReadOnly": "Відкриття сховища в режимі лише для читання",
-      "retryingConnection": "Повторна спроба підключення..."
-    },
-    "offline": {
-      "banner": "Offline - changes will sync when online",
-      "backOnline": "Знову онлайн",
-      "stillOffline": "Досі офлайн"
-    },
-    "alerts": {
-      "syncIssue": "Відсутнє з'єднання",
-      "openLocalVault": "Відкрити локальне сховище",
-      "retrySync": "Повторити синхронізацію"
+      "decryptingVault": "Розшифрування сховища"
     },
     "navigation": {
       "login": "Увійти",
@@ -658,7 +638,6 @@
     "status": {
       "preparingUpgrade": "Підготовка оновлення...",
       "vaultAlreadyUpToDate": "Сховище вже оновлено",
-      "startingDatabaseTransaction": "Початок транзакції бази даних...",
       "applyingDatabaseMigrations": "Застосування міграцій бази даних...",
       "applyingMigration": "Застосування міграції {{current}} з {{total}}...",
       "committingChanges": "Внесення змін..."
