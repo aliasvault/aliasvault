@@ -67,6 +67,10 @@
     <value>在下方查找您的所有项目。</value>
     <comment>Page description text</comment>
   </data>
+  <data name="Items" xml:space="preserve">
+    <value>Items</value>
+    <comment>Items label used in breadcrumb navigation</comment>
+  </data>
   <!-- Settings Dropdown -->
   <data name="ViewModeLabel" xml:space="preserve">
     <value>视图模式</value>
