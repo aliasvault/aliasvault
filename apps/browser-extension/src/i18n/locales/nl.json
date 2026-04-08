@@ -25,7 +25,6 @@
     "closePopup": "Sluit deze popup",
     "browseVault": "Bekijk vault inhoud",
     "autoCloseUnlockPopup": "Automatisch sluiten bij toekomstige logins",
-    "closingIn": "Sluiten in {{seconds}}s...",
     "connectingTo": "Verbinden met",
     "switchAccounts": "Wisselen van account?",
     "loginWithMobile": "Log in via de mobiele app",
@@ -178,8 +177,7 @@
     "savePrompt": {
       "title": "Opslaan in AliasVault?",
       "neverForThisSite": "Nooit voor deze site",
-      "addUrlTitle": "URL naar inloggegevens toevoegen?",
-      "addUrl": "URL toevoegen"
+      "addUrlTitle": "URL naar inloggegevens toevoegen?"
     }
   },
   "items": {
@@ -201,7 +199,6 @@
     "folder": "Map",
     "welcomeTitle": "Welkom bij AliasVault!",
     "welcomeDescription": "Om de AliasVault browser extensie te gebruiken: navigeer naar een website en gebruik de AliasVault autofill popup om nieuwe credentials aan te maken.",
-    "noPasskeysFound": "Er zijn nog geen passkeys aangemaakt. Passkeys worden gemaakt door een website te bezoeken die passkeys als een authenticatiemethode biedt.",
     "noMatchingItems": "Geen items gevonden die overeenkomen met het geselecteerde filter.",
     "noMatchingItemsSearch": "Geen items die overeenkomen met \"{{search}}\"",
     "noMatchingItemsWithFilter": "Geen {{filter}} items die overeenkomen met \"{{search}}\"",
@@ -211,7 +208,7 @@
     "allItemsInFolders": "Al je items zijn georganiseerd in mappen. Klik op een map hierboven om je gegevens te bekijken, of gebruik de zoekopdracht om specifieke items te vinden.",
     "deleteFolder": "Map verwijderen",
     "deleteFolderKeepItems": "Verwijder alleen map",
-    "deleteFolderKeepItemsDescription": "Items zullen terug worden verplaatst naar de hoofdlijst.",
+    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
     "deleteFolderAndItems": "Verwijder map en alle items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) zullen worden verplaatst naar recent verwijderd.",
     "filters": {
@@ -361,10 +358,8 @@
     "autofillMatchingUrlSubdomain": "URL + subdomein",
     "autofillMatchingUrlExact": "Exacte URL-domein",
     "siteSpecificSettings": "Site-specifieke Instellingen",
-    "autofillPopupOn": "Autofill popup op: ",
     "enabledForThisSite": "Ingeschakeld voor deze site",
     "disabledForThisSite": "Uitgeschakeld voor deze site",
-    "temporarilyDisabledUntil": "Tijdelijk uitgeschakeld tot ",
     "resetAllSiteSettings": "Alle site-specifieke instellingen resetten",
     "autofillPopupDescription": "Toon de autofill popup wanneer login velden worden gedetecteerd.",
     "disabledSites": "Uitgeschakelde sites",
@@ -404,7 +399,6 @@
     "clipboardSettings": "Klembord instellingen",
     "contextMenuSettings": "Context menu instellingen",
     "passkeySettings": "Passkey instellingen",
-    "contextMenu": "Context menu",
     "contextMenuEnabled": "Context menu is ingeschakeld",
     "contextMenuDisabled": "Context menu is uitgeschakeld",
     "contextMenuDescription": "Klik met de rechtermuisknop op invoervelden om AliasVault opties te zien",
