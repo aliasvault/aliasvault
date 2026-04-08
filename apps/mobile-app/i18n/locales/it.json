@@ -40,7 +40,6 @@
     "username": "Nome utente o email",
     "password": "Password",
     "authCode": "Codice di autenticazione",
-    "unlock": "Sblocca",
     "unlocking": "Sblocco in corso...",
     "loggingIn": "Accesso in corso",
     "validatingCredentials": "Validazione credenziali",
@@ -52,7 +51,6 @@
     "unlockWithPin": "Sblocca con PIN",
     "unlockWithPassword": "Sblocca con Password",
     "enterPassword": "Inserisci la tua password per sbloccare la cassaforte",
-    "enterPasswordPlaceholder": "Password",
     "enterAuthCode": "Inserire codice a 6 cifre",
     "usernamePlaceholder": "nome / nome@azienda.com",
     "passwordPlaceholder": "Inserisci la tua password",
@@ -185,8 +183,6 @@
     "exportConfirmTitle": "Esporta cassaforte",
     "exportWarning": "Attenzione: Esportare la cassaforte in un file non cifrato esporrà tutte le password e le informazioni sensibili in testo semplice. Fallo solo su computer affidabili e assicurarti di:\n\n• Conservare il file esportato in una posizione sicura\n• Eliminare il file quando non ne hai più bisogno\n• Non condividere mai il file esportato con altri\n\nSei sicuro di voler continuare con l'esportazione?",
     "passwordConfirm": {
-      "title": "Conferma Password",
-      "defaultDescription": "Inserisci la tua password principale per continuare.",
       "exportDescription": "Per motivi di sicurezza, inserisci la tua password principale per confermare questa esportazione."
     },
     "security": "Sicurezza",
@@ -323,8 +319,7 @@
         "confirmSubtitle": "Ri-autenticazione per approvare il login su un altro dispositivo.",
         "confirmMessage": "Stai per accedere a un dispositivo remoto con il tuo account. Questo altro dispositivo avrà pieno accesso alla tua cassaforte. Procedi solo se ti fidi di questo dispositivo.",
         "successDescription": "Il dispositivo remoto è stato loggato con successo.",
-        "requestExpired": "Questa richiesta di accesso è scaduta. Si prega di generare un nuovo codice QR.",
-        "noPinOrBiometricError": "Sblocco mobile richiede PIN o autenticazione biometrica. Si prega di abilitare il PIN o Face ID/Touch ID nelle impostazioni di sblocco cassaforte per utilizzare questa funzionalità."
+        "requestExpired": "Questa richiesta di accesso è scaduta. Si prega di generare un nuovo codice QR."
       }
     }
   },
@@ -422,7 +417,6 @@
     "noMatchingItemsWithFilter": "Nessun elemento {{filter}} corrispondente \"{{search}}\"",
     "noItemsFound": "Nessuna credenziale trovata. Creane una per iniziare. Consiglio: puoi anche accedere al sito AliasVault per importare credenziali da altri gestori password.",
     "allItemsInFolders": "Tutti i tuoi oggetti sono organizzati in cartelle. Tocca una cartella qui sopra per visualizzare le tue credenziali o usa la ricerca per trovare elementi specifici.",
-    "noPasskeysFound": "Non sono state ancora create passkey. Le passkey vengono create visitando un sito web che offre le passkey come metodo di autenticazione.",
     "clearSearch": "Cancella ricerca",
     "clearFilter": "Cancella filtro",
     "recentEmails": "Email recenti",
@@ -510,11 +504,10 @@
       "folderNameRequired": "Il nome della cartella è obbligatorio",
       "deleteFolder": "Elimina Cartella",
       "deleteFolderKeepItems": "Elimina solo la cartella",
-      "deleteFolderKeepItemsDescription": "Gli elementi verranno spostati nella lista principale.",
+      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
       "deleteFolderAndItems": "Elimina cartella e tutti gli elementi",
       "deleteFolderAndItemsDescription": "{{count}} oggetto(i) verrà spostato in Eliminato Recentemente.",
       "emptyFolderHint": "Questa cartella è vuota. Per spostare gli elementi in questa cartella, modificare l'elemento e toccare l'icona della cartella nel campo nome.",
-      "noFolder": "Nessuna cartella",
       "selectFolder": "Seleziona cartella"
     },
     "recentlyDeleted": {
@@ -598,7 +591,6 @@
     "offline": "Offline",
     "syncing": "Sincronizzazione...",
     "pending": "In attesa di sincronizzazione…",
-    "retrySync": "Tocca per riprovare",
     "backOnline": "Torna online",
     "stillOffline": "Ancora offline",
     "syncFailed": "Sincronizzazione non riuscita"
@@ -606,19 +598,7 @@
   "app": {
     "status": {
       "unlockingVault": "Sblocco cassaforte in corso",
-      "decryptingVault": "Decriptazione cassaforte in corso",
-      "openingVaultReadOnly": "Apertura cassaforte in modalità sola lettura",
-      "retryingConnection": "Riprovando la connessione..."
-    },
-    "offline": {
-      "banner": "Offline - le modifiche si sincronizzeranno quando sarai online",
-      "backOnline": "Torna online",
-      "stillOffline": "Ancora offline"
-    },
-    "alerts": {
-      "syncIssue": "Nessuna Connessione",
-      "openLocalVault": "Apri cassaforte locale",
-      "retrySync": "Riprova sincronizzazione"
+      "decryptingVault": "Decriptazione cassaforte in corso"
     },
     "navigation": {
       "login": "Accesso",
@@ -658,7 +638,6 @@
     "status": {
       "preparingUpgrade": "Preparazione aggiornamento...",
       "vaultAlreadyUpToDate": "La cassaforte è già aggiornata",
-      "startingDatabaseTransaction": "Avvio transazione database...",
       "applyingDatabaseMigrations": "Applicazione migrazioni database...",
       "applyingMigration": "Applicazione migrazione {{current}} di {{total}}...",
       "committingChanges": "Modifica in corso..."
