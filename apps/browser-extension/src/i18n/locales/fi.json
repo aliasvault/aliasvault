@@ -25,7 +25,6 @@
     "closePopup": "Sulje tämä ponnahdusikkuna",
     "browseVault": "Selaa holvin sisältöä",
     "autoCloseUnlockPopup": "Auto-close on future sign ins",
-    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Yhdistetään kohteeseen",
     "switchAccounts": "Vaihdetaanko tiliä?",
     "loginWithMobile": "Kirjaudu sisään mobiilisovelluksella",
@@ -178,8 +177,7 @@
     "savePrompt": {
       "title": "Save to AliasVault?",
       "neverForThisSite": "Never for this site",
-      "addUrlTitle": "Add URL to credential?",
-      "addUrl": "Add URL"
+      "addUrlTitle": "Add URL to credential?"
     }
   },
   "items": {
@@ -201,7 +199,6 @@
     "folder": "Kansio",
     "welcomeTitle": "Tervetuloa AliasVaultiin!",
     "welcomeDescription": "Käyttääksesi AliasVault-selainlaajennusta, siirry jollekin verkkosivustolle ja käytä AliasVaultin automaattisen täytön ponnahdusikkunaa luodaksesi uuden tunnistetiedon.",
-    "noPasskeysFound": "Todennusavaimia ei ole vielä luotu. Todennusavaimet on luotu vierailemalla verkkosivustolla, joka tarjoaa todennusavaimia todennusmenetelmänä.",
     "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
@@ -211,7 +208,7 @@
     "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
     "deleteFolder": "Delete Folder",
     "deleteFolderKeepItems": "Delete folder only",
-    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
     "deleteFolderAndItems": "Delete folder and all items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
@@ -361,10 +358,8 @@
     "autofillMatchingUrlSubdomain": "URL + aliverkkotunnus",
     "autofillMatchingUrlExact": "Tarkka URL-verkkotunnus vain",
     "siteSpecificSettings": "Sivustokohtaiset asetukset",
-    "autofillPopupOn": "Automaattisen täytön ponnahdusikkuna päällä: ",
     "enabledForThisSite": "Otettu käyttöön tällä sivustolla",
     "disabledForThisSite": "Poistettu käytöstä tällä sivustolla",
-    "temporarilyDisabledUntil": "Väliaikaisesti pois käytöstä, kunnes ",
     "resetAllSiteSettings": "Nollaa kaikki sivustokohtaiset asetukset",
     "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
     "disabledSites": "Disabled sites",
@@ -404,7 +399,6 @@
     "clipboardSettings": "Leikepöydän asetukset",
     "contextMenuSettings": "Kontekstivalikon asetukset",
     "passkeySettings": "Todennusavainten asetukset",
-    "contextMenu": "Sisältövalikko",
     "contextMenuEnabled": "Kontekstivalikko on otettu käyttöön",
     "contextMenuDisabled": "Kontekstivalikko on poistettu käytöstä",
     "contextMenuDescription": "Oikea-napsauta syöttökenttiä päästäksesi AliasVaultin vaihtoehtoihin",
