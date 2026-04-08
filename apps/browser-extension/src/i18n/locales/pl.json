@@ -25,7 +25,6 @@
     "closePopup": "Zamknij to okno.",
     "browseVault": "Przeglądaj zawartość sejfu",
     "autoCloseUnlockPopup": "Automatyczne zamykanie przyszłych logowań",
-    "closingIn": "Zamknięcie w {{seconds}}s...",
     "connectingTo": "Łączenie z",
     "switchAccounts": "Przełącz konto",
     "loginWithMobile": "Zaloguj się za pomocą aplikacji mobilnej",
@@ -178,8 +177,7 @@
     "savePrompt": {
       "title": "Zapisać w AliasVault?",
       "neverForThisSite": "Nigdy dla tej strony",
-      "addUrlTitle": "Dodaj nowe dane logowania?",
-      "addUrl": "Dodaj adres URL"
+      "addUrlTitle": "Dodaj nowe dane logowania?"
     }
   },
   "items": {
@@ -201,7 +199,6 @@
     "folder": "Katalog",
     "welcomeTitle": "Witamy w AliasVault!",
     "welcomeDescription": "Aby skorzystać z rozszerzenia przeglądarki AliasVault - przejdź do strony internetowej i użyj okienka autozupelniania, aby utworzyć nowa tożsamość.",
-    "noPasskeysFound": "Nie utworzono jeszcze żadnych kluczy dostępu. Klucze dostępu tworzy się, odwiedzając stronę internetową, która oferuje klucze dostępu jako metodę uwierzytelniania.",
     "noMatchingItems": "Żaden element nie pasuje do wybranego filtra.",
     "noMatchingItemsSearch": "Nie znaleziono żadnych elementów pasujących do „{{search}}”",
     "noMatchingItemsWithFilter": "Brak elementów {{filter}} pasujących do „{{search}}”",
@@ -211,7 +208,7 @@
     "allItemsInFolders": "Wszystkie Twoje elementy są uporządkowane w folderach. Kliknij folder powyżej, aby wyświetlić swoje dane logowania, lub skorzystaj z wyszukiwarki, aby znaleźć konkretne elementy.",
     "deleteFolder": "Usuń folder",
     "deleteFolderKeepItems": "Usuń tylko folder",
-    "deleteFolderKeepItemsDescription": "Elementy zostaną przeniesione z powrotem do listy głównej.",
+    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
     "deleteFolderAndItems": "Usuń folder i wszystkie elementy",
     "deleteFolderAndItemsDescription": "{{count}} element(ów) zostaną przeniesione do Ostatnio usunięte.",
     "filters": {
@@ -361,10 +358,8 @@
     "autofillMatchingUrlSubdomain": "Adres URL + subdomena",
     "autofillMatchingUrlExact": "Dokładna domena adresu URL",
     "siteSpecificSettings": "Ustawienia dotyczące witryny",
-    "autofillPopupOn": "Wyskakujące okno autouzupełniania: ",
     "enabledForThisSite": "Włączone dla tej witryny",
     "disabledForThisSite": "Wyłączone dla tej witryny",
-    "temporarilyDisabledUntil": "Tymczasowo nieaktywne do ",
     "resetAllSiteSettings": "Zresetuj wszystkie ustawienia witryny",
     "autofillPopupDescription": "Pokaż wyskakujące okienko autouzupełniania po wykryciu pól logowania.",
     "disabledSites": "Wyłączone witryny",
@@ -404,7 +399,6 @@
     "clipboardSettings": "Ustawienia schowka",
     "contextMenuSettings": "Ustawienia menu kontekstowego",
     "passkeySettings": "Ustawienia kluczy dostępu",
-    "contextMenu": "Menu kontekstowe",
     "contextMenuEnabled": "Menu kontekstowe jest włączone",
     "contextMenuDisabled": "Menu kontekstowe jest wyłączone",
     "contextMenuDescription": "Kliknij prawym przyciskiem myszy na pola wejściowe, aby uzyskać dostęp do opcji AliasVault",
