@@ -40,7 +40,6 @@
     "username": "Nazwa użytkownika lub adres e-mail",
     "password": "Hasło",
     "authCode": "Kod uwierzytelniający",
-    "unlock": "Odblokuj sejf",
     "unlocking": "Odblokowywanie...",
     "loggingIn": "Logowanie",
     "validatingCredentials": "Weryfikacja danych logowania",
@@ -52,7 +51,6 @@
     "unlockWithPin": "Odblokuj za pomocą kodu PIN",
     "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Wprowadź hasło, aby odblokować sejf",
-    "enterPasswordPlaceholder": "Hasło",
     "enterAuthCode": "Wprowadź 6-cyfrowy kod",
     "usernamePlaceholder": "nazwa / nazwa@serwis.com",
     "passwordPlaceholder": "Wprowadź swoje hasło",
@@ -185,8 +183,6 @@
     "exportConfirmTitle": "Eksportuj sejf",
     "exportWarning": "Uwaga: Eksportowanie sejfu do niezaszyfrowanego pliku spowoduje zapisanie wszystkich haseł i poufnych informacji w postaci zwykłego tekstu. Wykonuj tę czynność wyłącznie na zaufanych urządzeniach i upewnij się, że:\n\n• Eksportowany plik jest przechowywany w bezpiecznej lokalizacji.\n• Plik zostanie usunięty, gdy nie będzie już potrzebny.\n• Eksportowany plik nie zostanie udostępniony innym osobom.\n\nCzy na pewno chcesz kontynuować eksport?",
     "passwordConfirm": {
-      "title": "Potwierdź hasło",
-      "defaultDescription": "Proszę wprowadzić hasło główne, aby kontynuować.",
       "exportDescription": "Ze względów bezpieczeństwa wprowadź swoje hasło główne, aby potwierdzić eksport."
     },
     "security": "Bezpieczeństwo",
@@ -323,8 +319,7 @@
         "confirmSubtitle": "Ponownie uwierzytelnij się, aby zatwierdzić logowanie na innym urządzeniu.",
         "confirmMessage": "Zamierzasz zalogować się na zdalnym urządzeniu przy użyciu swojego konta. To urządzenie będzie miało pełny dostęp do Twojego sejfu. Kontynuuj tylko wtedy, gdy ufasz temu urządzeniu.",
         "successDescription": "Udało się zalogować do urządzenia zdalnego.",
-        "requestExpired": "To żądanie logowania wygasło. Wygeneruj nowy kod QR.",
-        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
+        "requestExpired": "To żądanie logowania wygasło. Wygeneruj nowy kod QR."
       }
     }
   },
@@ -422,7 +417,6 @@
     "noMatchingItemsWithFilter": "Brak elementów {{filter}} pasujących do „{{search}}”",
     "noItemsFound": "Nie znaleziono żadnych elementów. Utwórz jeden, aby rozpocząć. Wskazówka: możesz również zalogować się do aplikacji internetowej AliasVault, aby zaimportować dane uwierzytelniające z innych menedżerów haseł.",
     "allItemsInFolders": "Wszystkie Twoje elementy są uporządkowane w folderach. Dotknij folderu powyżej, aby wyświetlić swoje poświadczenia, lub skorzystaj z wyszukiwania, aby znaleźć konkretne elementy.",
-    "noPasskeysFound": "Nie utworzono jeszcze żadnych kluczy dostępu. Klucze dostępu tworzy się, odwiedzając stronę internetową, która oferuje klucze dostępu jako metodę uwierzytelniania.",
     "clearSearch": "Wyczyść wyszukiwanie",
     "clearFilter": "Wyczyść filtr",
     "recentEmails": "Ostatnie wiadomości e-mail",
@@ -510,11 +504,10 @@
       "folderNameRequired": "Nazwa folderu jest wymagana",
       "deleteFolder": "Usuń folder",
       "deleteFolderKeepItems": "Usuń tylko folder",
-      "deleteFolderKeepItemsDescription": "Elementy zostaną przeniesione z powrotem do listy głównej.",
+      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
       "deleteFolderAndItems": "Usuń folder i wszystkie elementy",
       "deleteFolderAndItemsDescription": "{{count}} element(ów) zostaną przeniesione do Ostatnio usunięte.",
       "emptyFolderHint": "Ten folder jest pusty. Aby przenieść elementy do tego folderu, edytuj element i wybierz ten folder.",
-      "noFolder": "Brak folderu",
       "selectFolder": "Wybierz folder"
     },
     "recentlyDeleted": {
@@ -598,7 +591,6 @@
     "offline": "Jesteś w trybie offline",
     "syncing": "Trwa synchronizacja...",
     "pending": "Oczekuje na synchronizację",
-    "retrySync": "Dotknij, aby ponowić próbę",
     "backOnline": "Ponownie online",
     "stillOffline": "Wciąż offline",
     "syncFailed": "Synchronizacja nieudana"
@@ -606,19 +598,7 @@
   "app": {
     "status": {
       "unlockingVault": "Odblokowanie sejfu",
-      "decryptingVault": "Odszyfrowywanie sejfu",
-      "openingVaultReadOnly": "Otwieranie sejfu w trybie tylko do odczytu",
-      "retryingConnection": "Ponowne nawiązywanie połączenia..."
-    },
-    "offline": {
-      "banner": "Offline - zmiany będą synchronizowane w trybie online",
-      "backOnline": "Ponownie online",
-      "stillOffline": "Wciąż offline"
-    },
-    "alerts": {
-      "syncIssue": "Brak połączenia",
-      "openLocalVault": "Otwórz lokalny sejf",
-      "retrySync": "Ponów synchronizację"
+      "decryptingVault": "Odszyfrowywanie sejfu"
     },
     "navigation": {
       "login": "Logowanie",
@@ -658,7 +638,6 @@
     "status": {
       "preparingUpgrade": "Przygotowywanie aktualizacji...",
       "vaultAlreadyUpToDate": "Sejf jest już zaktualizowany",
-      "startingDatabaseTransaction": "Rozpoczęcie transakcji bazy danych...",
       "applyingDatabaseMigrations": "Wdrażanie migracji baz danych...",
       "applyingMigration": "Wdrażanie migracji {{current}} z {{total}}...",
       "committingChanges": "Wprowadzanie zmian..."
