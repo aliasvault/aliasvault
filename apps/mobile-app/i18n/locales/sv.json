@@ -40,7 +40,6 @@
     "username": "Användarnamn eller e-post",
     "password": "Lösenord",
     "authCode": "Autentiseringskod",
-    "unlock": "Lås upp",
     "unlocking": "Låser upp...",
     "loggingIn": "Loggar in",
     "validatingCredentials": "Validerar inloggningsuppgifter",
@@ -52,7 +51,6 @@
     "unlockWithPin": "Lås upp med PIN-kod",
     "unlockWithPassword": "Lås upp med lösenord",
     "enterPassword": "Ange PIN-koden för att låsa upp ditt valv",
-    "enterPasswordPlaceholder": "Lösenord",
     "enterAuthCode": "Ange 6-siffrig kod",
     "usernamePlaceholder": "namn / namn@företag.com",
     "passwordPlaceholder": "Ange ditt lösenord",
@@ -185,8 +183,6 @@
     "exportConfirmTitle": "Exportera valv",
     "exportWarning": "Varning: Exportering av ditt valv till en okrypterad fil kommer exponera alla dina lösenord och känslig information i ren text. Gör endast detta på enheter du litar på och se till att du:\n\n• Lagrar den exporterade filen på en säker plats\n• Raderar filen när du inte behöver den längre\n• Aldrig delar den exporterade filen med andra\n\nÄr du säker på att du vill fortsätta med exporteringen?",
     "passwordConfirm": {
-      "title": "Bekräfta Lösenord",
-      "defaultDescription": "Ange ditt huvudlösenord för att fortsätta.",
       "exportDescription": "Av säkerhetsskäl, ange ditt huvudlösenord för att bekräfta denna export."
     },
     "security": "Säkerhet",
@@ -323,8 +319,7 @@
         "confirmSubtitle": "Återautentisera för att godkänna inloggning på en annan enhet.",
         "confirmMessage": "Du är på väg att logga in på en fjärrenhet med ditt konto. Den här andra enheten kommer att ha full tillgång till ditt valv. Fortsätt endast om du litar på den här enheten.",
         "successDescription": "Fjärrenheten har loggats in.",
-        "requestExpired": "Denna inloggningsbegäran har löpt ut. Vänligen generera en ny QR-kod.",
-        "noPinOrBiometricError": "Mobil upplåsning kräver PIN-kod eller biometrisk autentisering. Aktivera PIN-kod eller Face ID/Touch ID i valvupplåsningsinställningar för att använda den här funktionen."
+        "requestExpired": "Denna inloggningsbegäran har löpt ut. Vänligen generera en ny QR-kod."
       }
     }
   },
@@ -422,7 +417,6 @@
     "noMatchingItemsWithFilter": "Inga {{filter}} objekt som matchar \"{{search}}\"",
     "noItemsFound": "Inga objekt hittades. Skapa ett för att komma igång. Tips: du kan även logga in på AliasVault webbapp för att importera inloggningsuppgifter från andra lösenordshanterare.",
     "allItemsInFolders": "Alla dina objekt är organiserade i mappar. Klicka på en mapp ovan för att visa dina inloggningsuppgifter, eller använd sökningen för att hitta specifika objekt.",
-    "noPasskeysFound": "Inga passkeys har skapats än. Du kan skapa passkeys på webbplatser som erbjuder detta som autentiseringsmetod.",
     "clearSearch": "Rensa sökning",
     "clearFilter": "Rensa filter",
     "recentEmails": "Senaste e-postmeddelanden",
@@ -510,11 +504,10 @@
       "folderNameRequired": "Mappnamn krävs",
       "deleteFolder": "Radera mapp",
       "deleteFolderKeepItems": "Ta endast bort mappen",
-      "deleteFolderKeepItemsDescription": "Objekt kommer att flyttas tillbaka till huvudlistan.",
+      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
       "deleteFolderAndItems": "Radera mapp och alla objekt",
       "deleteFolderAndItemsDescription": "{{count}} objekt kommer att flyttas till Nyligen borttagen.",
       "emptyFolderHint": "Mappen är tom. För att flytta objekt till den här mappen, redigera objektet och välj denna mappen.",
-      "noFolder": "Ingen mapp",
       "selectFolder": "Välj mapp"
     },
     "recentlyDeleted": {
@@ -598,7 +591,6 @@
     "offline": "Offline",
     "syncing": "Synkroniserar...",
     "pending": "Väntande synkronisering",
-    "retrySync": "Tryck för att försöka igen",
     "backOnline": "Tillbaka online",
     "stillOffline": "Fortfarande offline",
     "syncFailed": "Det gick inte att synkronisera"
@@ -606,19 +598,7 @@
   "app": {
     "status": {
       "unlockingVault": "Låser upp valv",
-      "decryptingVault": "Dekrypterar valvet",
-      "openingVaultReadOnly": "Öppnar valv i skrivskyddat läge",
-      "retryingConnection": "Försöker ansluta igen"
-    },
-    "offline": {
-      "banner": "Offline - ändringar synkas när du är online",
-      "backOnline": "Tillbaka online",
-      "stillOffline": "Fortfarande offline"
-    },
-    "alerts": {
-      "syncIssue": "Ingen anslutning",
-      "openLocalVault": "Öppna lokalt valv",
-      "retrySync": "Försök synka igen"
+      "decryptingVault": "Dekrypterar valvet"
     },
     "navigation": {
       "login": "Logga in",
@@ -658,7 +638,6 @@
     "status": {
       "preparingUpgrade": "Förbereder uppgradering...",
       "vaultAlreadyUpToDate": "Valvet är redan uppdaterat",
-      "startingDatabaseTransaction": "Påbörjar databastransaktion...",
       "applyingDatabaseMigrations": "Tillämpar databasmigreringar...",
       "applyingMigration": "Tillämpar migrering {{current}} av {{total}}...",
       "committingChanges": "Bekräftar ändringar..."
