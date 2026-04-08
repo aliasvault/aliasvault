@@ -40,7 +40,6 @@
     "username": "Numele de utilizator sau adresa de e-mail",
     "password": "Parolă",
     "authCode": "Cod de autentificare",
-    "unlock": "Deblochează",
     "unlocking": "Se deblochează...",
     "loggingIn": "Autentificare în curs",
     "validatingCredentials": "Se validează datele de autentificare",
@@ -52,7 +51,6 @@
     "unlockWithPin": "Deblochează cu PIN",
     "unlockWithPassword": "Deblochează cu parolă",
     "enterPassword": "Introdu parola pentru a debloca seiful",
-    "enterPasswordPlaceholder": "Parolă",
     "enterAuthCode": "Introdu codul din 6 cifre",
     "usernamePlaceholder": "nume / nume@companie.com",
     "passwordPlaceholder": "Introdu parola",
@@ -185,8 +183,6 @@
     "exportConfirmTitle": "Exportă seiful",
     "exportWarning": "Atenție: Exportul seifului într-un fișier necriptat va expune toate parolele în text clar. Fă acest lucru doar pe dispozitive de încredere și asigură-te că:\n\n• Stochezi fișierul într-un loc sigur\n• Ștergi fișierul imediat ce nu mai ai nevoie de el\n• Nu partajezi niciodată fișierul cu alții\n\nSigur dorești să continui exportul?",
     "passwordConfirm": {
-      "title": "Confirmă parola",
-      "defaultDescription": "Introdu parola ta principală pentru a continua.",
       "exportDescription": "Din motive de securitate, introdu parola ta principală pentru a confirma acest export."
     },
     "security": "Securitate",
@@ -323,8 +319,7 @@
         "confirmSubtitle": "Re-autentifică-te pentru a aproba logarea pe alt dispozitiv.",
         "confirmMessage": "Ești pe cale să te autentifici pe un dispozitiv la distanță. Acest dispozitiv va avea acces complet la seiful tău. Continuă doar dacă ai încredere în acel dispozitiv.",
         "successDescription": "Dispozitivul de la distanță a fost autentificat cu succes.",
-        "requestExpired": "Cererea de autentificare a expirat. Generează un cod QR nou.",
-        "noPinOrBiometricError": "Deblocarea pe mobil necesită PIN sau autentificare biometrică. Activează PIN-ul sau Face ID/Touch ID în setările de deblocare ale seifului pentru a folosi această funcție."
+        "requestExpired": "Cererea de autentificare a expirat. Generează un cod QR nou."
       }
     }
   },
@@ -422,7 +417,6 @@
     "noMatchingItemsWithFilter": "Niciun element {{filter}} nu se potrivește cu „{{search}}”",
     "noItemsFound": "Nu s-a găsit niciun element. Creează unul pentru a începe. Sfat: te poți autentifica în aplicația web AliasVault pentru a importa date de autentificare din alte managere de parole.",
     "allItemsInFolders": "Toate elementele tale sunt organizate în dosare. Apasă pe un dosar de mai sus pentru a vizualiza datele de autentificare sau folosește căutarea pentru a găsi elemente specifice.",
-    "noPasskeysFound": "Nu a fost creat niciun passkey încă. Passkey-urile se creează vizitând un site care oferă passkey ca metodă de autentificare.",
     "clearSearch": "Șterge căutarea",
     "clearFilter": "Șterge filtrul",
     "recentEmails": "E-mailuri recente",
@@ -510,11 +504,10 @@
       "folderNameRequired": "Numele dosarului este obligatoriu",
       "deleteFolder": "Șterge dosarul",
       "deleteFolderKeepItems": "Șterge doar dosarul",
-      "deleteFolderKeepItemsDescription": "Elementele vor fi mutate în lista principală.",
+      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
       "deleteFolderAndItems": "Șterge dosarul și toate elementele",
       "deleteFolderAndItemsDescription": "{{count}} element(e) vor fi mutate la Șterse Recent.",
       "emptyFolderHint": "Acest dosar este gol. Pentru a muta elemente aici, editează elementul și selectează acest dosar.",
-      "noFolder": "Niciun dosar",
       "selectFolder": "Selectează dosarul"
     },
     "recentlyDeleted": {
@@ -598,7 +591,6 @@
     "offline": "Offline",
     "syncing": "Se sincronizează...",
     "pending": "Sincronizare în așteptare",
-    "retrySync": "Apasă pentru a reîncerca",
     "backOnline": "Revenit online",
     "stillOffline": "În continuare offline",
     "syncFailed": "Sincronizarea a eșuat"
@@ -606,19 +598,7 @@
   "app": {
     "status": {
       "unlockingVault": "Se deblochează seiful",
-      "decryptingVault": "Se decriptează seiful",
-      "openingVaultReadOnly": "Se deschide seiful în mod doar-citire",
-      "retryingConnection": "Se reîncearcă conexiunea..."
-    },
-    "offline": {
-      "banner": "Offline - modificările se vor sincroniza când ești online",
-      "backOnline": "Revenit online",
-      "stillOffline": "În continuare offline"
-    },
-    "alerts": {
-      "syncIssue": "Lipsă conexiune",
-      "openLocalVault": "Deschide seiful local",
-      "retrySync": "Reîncearcă sincronizarea"
+      "decryptingVault": "Se decriptează seiful"
     },
     "navigation": {
       "login": "Autentificare",
@@ -658,7 +638,6 @@
     "status": {
       "preparingUpgrade": "Se pregătește actualizarea...",
       "vaultAlreadyUpToDate": "Seiful este deja actualizat",
-      "startingDatabaseTransaction": "Se inițiază tranzacția bazei de date...",
       "applyingDatabaseMigrations": "Se aplică migrările bazei de date...",
       "applyingMigration": "Se aplică migrarea {{current}} din {{total}}...",
       "committingChanges": "Se finalizează modificările..."
