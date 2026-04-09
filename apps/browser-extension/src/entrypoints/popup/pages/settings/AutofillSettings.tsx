@@ -13,6 +13,8 @@ type AutofillSettingsType = {
   disabledUrls: string[];
   temporaryDisabledUrls: Record<string, number>;
   isGloballyEnabled: boolean;
+  totpAutofillEnabled: boolean;
+  autoCopyTotpOnAutofill: boolean;
 }
 
 /**
@@ -33,7 +35,9 @@ const AutofillSettings: React.FC = () => {
   const [settings, setSettings] = useState<AutofillSettingsType>({
     disabledUrls: [],
     temporaryDisabledUrls: {},
-    isGloballyEnabled: true
+    isGloballyEnabled: true,
+    totpAutofillEnabled: true,
+    autoCopyTotpOnAutofill: true
   });
   const [autofillMatchingMode, setAutofillMatchingMode] = useState<AutofillMatchingMode>(AutofillMatchingMode.DEFAULT);
   const [loginSaveSettings, setLoginSaveSettings] = useState<LoginSaveSettingsType>({
@@ -51,6 +55,8 @@ const AutofillSettings: React.FC = () => {
     const disabledUrls = await LocalPreferencesService.getDisabledSites();
     const temporaryDisabledUrls = await LocalPreferencesService.getTemporaryDisabledSites();
     const isGloballyEnabled = await LocalPreferencesService.getGlobalAutofillPopupEnabled();
+    const totpAutofillEnabled = await LocalPreferencesService.getTotpAutofillEnabled();
+    const autoCopyTotpOnAutofill = await LocalPreferencesService.getAutoCopyTotpOnAutofill();
 
     // Clean up expired temporary disables
     const now = Date.now();
@@ -77,7 +83,9 @@ const AutofillSettings: React.FC = () => {
     setSettings({
       disabledUrls,
       temporaryDisabledUrls: cleanedTemporaryDisabledUrls,
-      isGloballyEnabled
+      isGloballyEnabled,
+      totpAutofillEnabled,
+      autoCopyTotpOnAutofill
     });
     setIsLoaded(true);
     setIsInitialLoading(false);
@@ -112,6 +120,34 @@ const AutofillSettings: React.FC = () => {
     setSettings(prev => ({
       ...prev,
       isGloballyEnabled: newGloballyEnabled
+    }));
+  };
+
+  /**
+   * Toggle TOTP autofill.
+   */
+  const toggleTotpAutofill = async () : Promise<void> => {
+    const newTotpAutofillEnabled = !settings.totpAutofillEnabled;
+
+    await LocalPreferencesService.setTotpAutofillEnabled(newTotpAutofillEnabled);
+
+    setSettings(prev => ({
+      ...prev,
+      totpAutofillEnabled: newTotpAutofillEnabled
+    }));
+  };
+
+  /**
+   * Toggle auto-copy TOTP on autofill.
+   */
+  const toggleAutoCopyTotpOnAutofill = async () : Promise<void> => {
+    const newAutoCopyTotpOnAutofill = !settings.autoCopyTotpOnAutofill;
+
+    await LocalPreferencesService.setAutoCopyTotpOnAutofill(newAutoCopyTotpOnAutofill);
+
+    setSettings(prev => ({
+      ...prev,
+      autoCopyTotpOnAutofill: newAutoCopyTotpOnAutofill
     }));
   };
 
@@ -195,18 +231,19 @@ const AutofillSettings: React.FC = () => {
     <div className="space-y-6">
       <PageTitle>{t('settings.autofillSettings')}</PageTitle>
 
-      {/* Autofill Popup Settings Section */}
+      {/* Autofill Features Section */}
       <section>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="p-4">
+          <div className="p-4 space-y-4">
+            {/* Credential Autofill Toggle */}
             <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900 dark:text-white">{t('settings.autofillPopup')}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 me-2">{t('settings.autofillPopupDescription')}</p>
+              <div className="flex-1 me-4">
+                <p className="font-medium text-gray-900 dark:text-white">{t('settings.credentialAutofill')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">{t('settings.credentialAutofillDescription')}</p>
               </div>
               <button
                 onClick={toggleGlobalPopup}
-                className={`px-4 py-2 rounded-md transition-colors ${
+                className={`flex-shrink-0 px-3 py-1.5 text-sm rounded-md transition-colors ${
                   settings.isGloballyEnabled
                     ? 'bg-green-500 hover:bg-green-600 text-white'
                     : 'bg-red-500 hover:bg-red-600 text-white'
@@ -216,67 +253,112 @@ const AutofillSettings: React.FC = () => {
               </button>
             </div>
 
+            {/* Divider */}
+            <div className="border-t border-gray-200 dark:border-gray-700"></div>
+
+            {/* TOTP Autofill Toggle */}
+            <div className="flex items-center justify-between">
+              <div className="flex-1 me-4">
+                <p className="font-medium text-gray-900 dark:text-white">{t('settings.totpAutofill')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">{t('settings.totpAutofillDescription')}</p>
+              </div>
+              <button
+                onClick={toggleTotpAutofill}
+                className={`flex-shrink-0 px-3 py-1.5 text-sm rounded-md transition-colors ${
+                  settings.totpAutofillEnabled
+                    ? 'bg-green-500 hover:bg-green-600 text-white'
+                    : 'bg-red-500 hover:bg-red-600 text-white'
+                }`}
+              >
+                {settings.totpAutofillEnabled ? t('common.enabled') : t('common.disabled')}
+              </button>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-200 dark:border-gray-700"></div>
+
+            {/* Auto-copy TOTP Toggle */}
+            <div className="flex items-center justify-between">
+              <div className="flex-1 me-4">
+                <p className="font-medium text-gray-900 dark:text-white">{t('settings.autoCopyTotpOnAutofill')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">{t('settings.autoCopyTotpOnAutofillDescription')}</p>
+              </div>
+              <button
+                onClick={toggleAutoCopyTotpOnAutofill}
+                className={`flex-shrink-0 px-3 py-1.5 text-sm rounded-md transition-colors ${
+                  settings.autoCopyTotpOnAutofill
+                    ? 'bg-green-500 hover:bg-green-600 text-white'
+                    : 'bg-red-500 hover:bg-red-600 text-white'
+                }`}
+              >
+                {settings.autoCopyTotpOnAutofill ? t('common.enabled') : t('common.disabled')}
+              </button>
+            </div>
+
             {/* Disabled sites list */}
             {getDisabledSitesCount() > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <button
-                  onClick={() => setShowDisabledSites(!showDisabledSites)}
-                  className="flex items-center justify-between w-full text-left"
-                >
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {t('settings.disabledSites')} ({getDisabledSitesCount()})
-                  </span>
-                  <svg
-                    className={`w-5 h-5 text-gray-500 transition-transform ${showDisabledSites ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+              <>
+                <div className="border-t border-gray-200 dark:border-gray-700"></div>
+                <div>
+                  <button
+                    onClick={() => setShowDisabledSites(!showDisabledSites)}
+                    className="flex items-center justify-between w-full text-left"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{t('settings.disabledSitesDescription')}</p>
-
-                {showDisabledSites && (
-                  <div className="mt-3">
-                    <ul className="space-y-2">
-                      {settings.disabledUrls.map((site) => (
-                        <li key={site} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
-                          <span className="text-sm text-gray-900 dark:text-white truncate">{site}</span>
-                          <button
-                            onClick={() => removeDisabledSite(site)}
-                            className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ml-2"
-                          >
-                            {t('common.remove')}
-                          </button>
-                        </li>
-                      ))}
-                      {Object.entries(settings.temporaryDisabledUrls).map(([site, expiry]) => (
-                        <li key={site} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
-                          <div className="truncate">
-                            <span className="text-sm text-gray-900 dark:text-white">{site}</span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                              ({t('settings.temporaryUntil')} {new Date(expiry).toLocaleTimeString()})
-                            </span>
-                          </div>
-                          <button
-                            onClick={() => removeDisabledSite(site)}
-                            className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ml-2"
-                          >
-                            {t('common.remove')}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                    <button
-                      onClick={resetSettings}
-                      className="w-full mt-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md text-gray-700 dark:text-gray-300 transition-colors text-sm"
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {t('settings.disabledSites')} ({getDisabledSitesCount()})
+                    </span>
+                    <svg
+                      className={`w-5 h-5 text-gray-500 transition-transform ${showDisabledSites ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      {t('settings.clearAllDisabledSites')}
-                    </button>
-                  </div>
-                )}
-              </div>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{t('settings.disabledSitesDescription')}</p>
+
+                  {showDisabledSites && (
+                    <div className="mt-3">
+                      <ul className="space-y-2">
+                        {settings.disabledUrls.map((site) => (
+                          <li key={site} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
+                            <span className="text-sm text-gray-900 dark:text-white truncate">{site}</span>
+                            <button
+                              onClick={() => removeDisabledSite(site)}
+                              className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ml-2"
+                            >
+                              {t('common.remove')}
+                            </button>
+                          </li>
+                        ))}
+                        {Object.entries(settings.temporaryDisabledUrls).map(([site, expiry]) => (
+                          <li key={site} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
+                            <div className="truncate">
+                              <span className="text-sm text-gray-900 dark:text-white">{site}</span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                                ({t('settings.temporaryUntil')} {new Date(expiry).toLocaleTimeString()})
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => removeDisabledSite(site)}
+                              className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ml-2"
+                            >
+                              {t('common.remove')}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                      <button
+                        onClick={resetSettings}
+                        className="w-full mt-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md text-gray-700 dark:text-gray-300 transition-colors text-sm"
+                      >
+                        {t('settings.clearAllDisabledSites')}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
         </div>

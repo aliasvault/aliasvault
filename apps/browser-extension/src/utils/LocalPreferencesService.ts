@@ -20,6 +20,10 @@ const KEYS = {
   AUTO_LOCK_TIMEOUT: 'local:aliasvault_auto_lock_timeout',
   VAULT_LOCKED_DISMISS_UNTIL: 'local:aliasvault_vault_locked_dismiss_until',
 
+  // Autofill behavior
+  TOTP_AUTOFILL_ENABLED: 'local:aliasvault_totp_autofill_enabled',
+  AUTO_COPY_TOTP_ON_AUTOFILL: 'local:aliasvault_auto_copy_totp_on_autofill',
+
   // Matching mode
   AUTOFILL_MATCHING_MODE: 'local:aliasvault_autofill_matching_mode',
 
@@ -444,5 +448,43 @@ export const LocalPreferencesService = {
    */
   async resetPasswordUnlockFailedAttempts(): Promise<void> {
     await storage.removeItem(KEYS.PASSWORD_UNLOCK_FAILED_ATTEMPTS);
+  },
+
+  /*
+   * ============================================
+   * Autofill Behavior Settings
+   * ============================================
+   */
+
+  /**
+   * Get whether TOTP autofill is enabled.
+   * @returns Whether TOTP autofill is enabled. Defaults to true (enabled by default).
+   */
+  async getTotpAutofillEnabled(): Promise<boolean> {
+    const value = await storage.getItem(KEYS.TOTP_AUTOFILL_ENABLED) as boolean | null;
+    return value !== false;
+  },
+
+  /**
+   * Set whether TOTP autofill is enabled.
+   */
+  async setTotpAutofillEnabled(enabled: boolean): Promise<void> {
+    await storage.setItem(KEYS.TOTP_AUTOFILL_ENABLED, enabled);
+  },
+
+  /**
+   * Get whether to automatically copy TOTP code to clipboard after autofill.
+   * @returns Whether to auto-copy TOTP. Defaults to true (enabled by default).
+   */
+  async getAutoCopyTotpOnAutofill(): Promise<boolean> {
+    const value = await storage.getItem(KEYS.AUTO_COPY_TOTP_ON_AUTOFILL) as boolean | null;
+    return value !== false;
+  },
+
+  /**
+   * Set whether to automatically copy TOTP code to clipboard after autofill.
+   */
+  async setAutoCopyTotpOnAutofill(enabled: boolean): Promise<void> {
+    await storage.setItem(KEYS.AUTO_COPY_TOTP_ON_AUTOFILL, enabled);
   },
 };
