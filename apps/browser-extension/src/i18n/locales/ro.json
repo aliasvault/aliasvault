@@ -208,7 +208,7 @@
     "allItemsInFolders": "Toate elementele tale sunt organizate în dosare. Apasă pe un dosar de mai sus pentru a vizualiza datele de autentificare sau folosește căutarea pentru a găsi elemente specifice.",
     "deleteFolder": "Șterge dosarul",
     "deleteFolderKeepItems": "Șterge doar dosarul",
-    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+    "deleteFolderKeepItemsDescription": "Elementele vor fi mutate în folderul părinte.",
     "deleteFolderAndItems": "Șterge dosarul și toate elementele",
     "deleteFolderAndItemsDescription": "{{count}} element(e) vor fi mutate la Șterse Recent.",
     "filters": {
