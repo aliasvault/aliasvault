@@ -504,7 +504,7 @@
       "folderNameRequired": "Le nom du dossier est requis",
       "deleteFolder": "Supprimer le dossier",
       "deleteFolderKeepItems": "Supprimer le dossier uniquement",
-      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+      "deleteFolderKeepItemsDescription": "Les éléments seront déplacés dans le dossier parent.",
       "deleteFolderAndItems": "Supprimer le dossier et tous les éléments",
       "deleteFolderAndItemsDescription": "{{count}} élément(s) vont être déplacés vers Récemment supprimés.",
       "emptyFolderHint": "Ce dossier est vide. Pour déplacer des éléments vers ce dossier, éditez l'élément et sélectionnez ce dossier.",
