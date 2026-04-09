@@ -71,7 +71,7 @@
     <comment>Title for delete folder only option</comment>
   </data>
   <data name="DeleteFolderOnlyDescription" xml:space="preserve">
-    <value>Items will be moved to the parent folder</value>
+    <value>Les éléments seront déplacés dans le dossier parent</value>
     <comment>Description for delete folder only option</comment>
   </data>
   <data name="DeleteFolderAndContentsTitle" xml:space="preserve">
