@@ -208,7 +208,7 @@
     "allItemsInFolders": "您的所有项目都已整理到文件夹中。点击上方文件夹即可查看您的凭据，或使用搜索查找特定的项目。",
     "deleteFolder": "删除文件夹",
     "deleteFolderKeepItems": "仅删除文件夹",
-    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+    "deleteFolderKeepItemsDescription": "项目将被移至父文件夹。",
     "deleteFolderAndItems": "删除文件夹和所有项目",
     "deleteFolderAndItemsDescription": "{{count}} 个项目将被移至“近期删除”。",
     "filters": {
