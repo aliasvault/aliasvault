@@ -190,7 +190,7 @@
     "autoLockOptions": {
       "never": "Nunca",
       "5seconds": "5 segundos",
-      "15seconds": "15 seconds",
+      "15seconds": "15 segundos",
       "30seconds": "30 segundos",
       "1minute": "1 minuto",
       "15minutes": "15 minutos",
@@ -504,7 +504,7 @@
       "folderNameRequired": "El nombre de la carpeta es obligatorio",
       "deleteFolder": "Borrar carpeta",
       "deleteFolderKeepItems": "Eliminar solo la carpeta",
-      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+      "deleteFolderKeepItemsDescription": "Los elementos se moverán a la carpeta principal.",
       "deleteFolderAndItems": "Eliminar carpeta y todos los elementos",
       "deleteFolderAndItemsDescription": "{{count}} elemento(s) serán movidos a Borrados Recientemente.",
       "emptyFolderHint": "Esta carpeta está vacía. Para mover elementos a esta carpeta, edite el elemento y seleccione esta carpeta.",
