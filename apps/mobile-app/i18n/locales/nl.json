@@ -504,7 +504,7 @@
       "folderNameRequired": "Mapnaam is verplicht",
       "deleteFolder": "Map verwijderen",
       "deleteFolderKeepItems": "Verwijder alleen map",
-      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+      "deleteFolderKeepItemsDescription": "Items zullen worden verplaatst naar de bovenliggende map.",
       "deleteFolderAndItems": "Verwijder map en alle items",
       "deleteFolderAndItemsDescription": "{{count}} item(s) zullen worden verplaatst naar recent verwijderd.",
       "emptyFolderHint": "Deze map is leeg. Om items naar deze map te verplaatsen, wijzig het item en selecteer deze map.",
