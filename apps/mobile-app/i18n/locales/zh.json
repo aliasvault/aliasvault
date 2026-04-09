@@ -504,7 +504,7 @@
       "folderNameRequired": "文件夹名称为必填项",
       "deleteFolder": "删除文件夹",
       "deleteFolderKeepItems": "仅删除文件夹",
-      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+      "deleteFolderKeepItemsDescription": "项目将被移至父文件夹。",
       "deleteFolderAndItems": "删除文件夹和所有项目",
       "deleteFolderAndItemsDescription": "{{count}} 个项目将被移至“近期删除”。",
       "emptyFolderHint": "此文件夹为空。要将项目移动到此文件夹，请编辑项目并选择此文件夹。",
