@@ -423,7 +423,7 @@ public class ImportExportTests
         var importedCredentials = await KeePassXcImporter.ImportFromCsvAsync(fileContent);
 
         // Assert
-        Assert.That(importedCredentials, Has.Count.EqualTo(2));
+        Assert.That(importedCredentials, Has.Count.EqualTo(3));
 
         // Test specific entries
         var sampleEntry = importedCredentials.First(c => c.ServiceName == "Sample Entry");
@@ -446,6 +446,17 @@ public class ImportExportTests
             Assert.That(sampleEntry2.Password, Is.EqualTo("12345"));
             Assert.That(sampleEntry2.Notes, Is.Empty);
             Assert.That(sampleEntry2.TwoFactorSecret, Is.Empty);
+        });
+
+        var nestedEntry = importedCredentials.First(c => c.ServiceName == "Nested Entry");
+        Assert.Multiple(() =>
+        {
+            Assert.That(nestedEntry.ServiceName, Is.EqualTo("Nested Entry"));
+            Assert.That(nestedEntry.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://example.com/"));
+            Assert.That(nestedEntry.Username, Is.EqualTo("testuser"));
+            Assert.That(nestedEntry.Password, Is.EqualTo("testpass123"));
+            Assert.That(nestedEntry.Notes, Is.EqualTo("Nested folder test"));
+            Assert.That(nestedEntry.FolderPath, Is.EqualTo("Database/Windows/Windowssub1"));
         });
     }
 
@@ -1088,7 +1099,7 @@ public class ImportExportTests
     }
 
     /// <summary>
-    /// Test case for KeePassXC group (folder) import.
+    /// Test case for KeePassXC group (folder) import with nested folder support.
     /// </summary>
     /// <returns>Async task.</returns>
     [Test]
@@ -1102,7 +1113,39 @@ public class ImportExportTests
 
         // Assert - verify folder path is extracted (KeePassXC uses Group column which contains folder hierarchy)
         var folderNames = BaseImporter.CollectUniqueFolderNames(importedCredentials);
-        Assert.That(folderNames, Has.Count.GreaterThanOrEqualTo(0), "Should collect any folders present");
+        Assert.That(folderNames, Has.Count.EqualTo(2), "Should collect leaf folder names");
+        Assert.That(folderNames, Does.Contain("Test1"), "Should contain Test1 folder");
+        Assert.That(folderNames, Does.Contain("Windowssub1"), "Should contain Windowssub1 folder");
+
+        // Verify the nested folder structure is properly extracted on the credential
+        var nestedCredential = importedCredentials.First(c => c.ServiceName == "Nested Entry");
+        Assert.That(nestedCredential.FolderPath, Is.EqualTo("Database/Windows/Windowssub1"), "Should preserve full nested folder path");
+
+        // Verify ParseFolderPath correctly splits the nested path into individual folder components
+        var folderParts = BaseImporter.ParseFolderPath(nestedCredential.FolderPath);
+        Assert.Multiple(() =>
+        {
+            Assert.That(folderParts, Has.Count.EqualTo(3), "Should parse three folder levels");
+            Assert.That(folderParts[0], Is.EqualTo("Database"), "First level should be Database");
+            Assert.That(folderParts[1], Is.EqualTo("Windows"), "Second level should be Windows");
+            Assert.That(folderParts[2], Is.EqualTo("Windowssub1"), "Third level should be Windowssub1");
+        });
+
+        // Verify that all folder levels would be created during import
+        // The folder system creates: "Database", "Database/Windows", and "Database/Windows/Windowssub1"
+        var allFolderPaths = new List<string>();
+        for (int i = 1; i <= folderParts.Count; i++)
+        {
+            allFolderPaths.Add(string.Join("/", folderParts.Take(i)));
+        }
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(allFolderPaths, Has.Count.EqualTo(3), "Should have three folder paths to create");
+            Assert.That(allFolderPaths[0], Is.EqualTo("Database"), "Should create Database folder");
+            Assert.That(allFolderPaths[1], Is.EqualTo("Database/Windows"), "Should create Database/Windows folder");
+            Assert.That(allFolderPaths[2], Is.EqualTo("Database/Windows/Windowssub1"), "Should create Database/Windows/Windowssub1 folder");
+        });
     }
 
     /// <summary>

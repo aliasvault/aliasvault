@@ -1,3 +1,4 @@
 "Group","Title","Username","Password","URL","Notes","TOTP","Icon","Last Modified","Created"
 "Test1","Sample Entry","User Name","Password","https://keepass.info/","Notes","","0","2025-03-29T18:29:16Z","2025-03-29T18:29:16Z"
 "Test1","Sample Entry #2","Michael321","12345","https://keepass.info/help/kb/testform.html","","","0","2025-03-29T18:29:16Z","2025-03-29T18:29:16Z"
+"Database/Windows/Windowssub1","Nested Entry","testuser","testpass123","https://example.com/","Nested folder test","","0","2025-03-29T18:29:16Z","2025-03-29T18:29:16Z"
