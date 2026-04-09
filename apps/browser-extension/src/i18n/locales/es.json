@@ -208,7 +208,7 @@
     "allItemsInFolders": "Todos sus elementos están organizados en carpetas. Haga clic en una carpeta para ver sus credenciales o utilice la búsqueda para encontrar elementos específicos.",
     "deleteFolder": "Borrar carpeta",
     "deleteFolderKeepItems": "Eliminar solo la carpeta",
-    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+    "deleteFolderKeepItemsDescription": "Los elementos se moverán a la carpeta principal.",
     "deleteFolderAndItems": "Eliminar carpeta y todos los elementos",
     "deleteFolderAndItemsDescription": "{{count}} elemento(s) serán movidos a Borrados Recientemente.",
     "filters": {
@@ -385,7 +385,7 @@
     "autoLockTimeoutHelp": "La bóveda sólo se bloqueará después del período especificado de inactividad (no se abrirá el uso de autocompletado o la ventana emergente). La bóveda siempre se bloqueará cuando el navegador esté cerrado, independientemente de esta configuración.",
     "autoLockNever": "Nunca",
     "autoLock15Seconds": "15 segundos",
-    "autoLock30Seconds": "30 seconds",
+    "autoLock30Seconds": "30 segundos",
     "autoLock1Minute": "1 minuto",
     "autoLock5Minutes": "5 minutos",
     "autoLock15Minutes": "15 minutos",
