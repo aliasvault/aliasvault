@@ -208,7 +208,7 @@
     "allItemsInFolders": "Tous vos éléments sont organisés dans des dossiers. Appuyez sur un dossier ci-dessus pour voir vos identifiants, ou utilisez la recherche pour trouver des éléments spécifiques.",
     "deleteFolder": "Supprimer le dossier",
     "deleteFolderKeepItems": "Supprimer le dossier uniquement",
-    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+    "deleteFolderKeepItemsDescription": "Les éléments seront déplacés dans le dossier parent.",
     "deleteFolderAndItems": "Supprimer le dossier et tous les éléments",
     "deleteFolderAndItemsDescription": "{{count}} élément(s) vont être déplacés vers Récemment supprimés.",
     "filters": {
