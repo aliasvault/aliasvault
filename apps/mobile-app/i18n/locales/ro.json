@@ -504,7 +504,7 @@
       "folderNameRequired": "Numele dosarului este obligatoriu",
       "deleteFolder": "Șterge dosarul",
       "deleteFolderKeepItems": "Șterge doar dosarul",
-      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+      "deleteFolderKeepItemsDescription": "Elementele vor fi mutate în folderul părinte.",
       "deleteFolderAndItems": "Șterge dosarul și toate elementele",
       "deleteFolderAndItemsDescription": "{{count}} element(e) vor fi mutate la Șterse Recent.",
       "emptyFolderHint": "Acest dosar este gol. Pentru a muta elemente aici, editează elementul și selectează acest dosar.",
