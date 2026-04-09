@@ -68,7 +68,7 @@
     <comment>Page description text</comment>
   </data>
   <data name="Items" xml:space="preserve">
-    <value>Items</value>
+    <value>Elementos</value>
     <comment>Items label used in breadcrumb navigation</comment>
   </data>
   <!-- Settings Dropdown -->
