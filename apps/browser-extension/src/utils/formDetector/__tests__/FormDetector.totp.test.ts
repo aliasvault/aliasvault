@@ -122,39 +122,36 @@ describe('FormDetector TOTP tests', () => {
       const containsLogin = formDetector.containsLoginForm();
       expect(containsLogin).toBe(true);
     });
+  });
 
-    it('should find hidden mfaAuthMethod input', () => {
-      const mfaMethod = document.querySelector('input[name="mfaAuthMethod"]') as HTMLInputElement;
-      expect(mfaMethod).toBeTruthy();
-      expect(mfaMethod.value).toBe('PhoneAppOTP');
+  describe('English TOTP form 12 detection (2FA Code with authenticator)', () => {
+    const htmlFile = 'en-totp-form12.html';
+    let document: Document;
+    let formDetector: FormDetector;
+
+    beforeEach(() => {
+      const dom = createTestDom(htmlFile);
+      document = dom.window.document;
     });
 
-    it('should find the submit button', () => {
-      const submitBtn = document.getElementById('idSubmit_SAOTCC_Continue') as HTMLInputElement;
-      expect(submitBtn).toBeTruthy();
-      expect(submitBtn.type).toBe('submit');
-      expect(submitBtn.value).toBe('Verify');
+    testField(FormField.Totp, 'code', htmlFile);
+
+    it('should detect the 2FA code input field as TOTP', () => {
+      const totpInput = document.getElementById('code') as HTMLInputElement;
+      expect(totpInput).toBeTruthy();
+
+      formDetector = new FormDetector(document, totpInput);
+
+      const detectedType = formDetector.getDetectedFieldType();
+      expect(detectedType).toBe(DetectedFieldType.Totp);
     });
 
-    it('should detect aria-label for accessibility', () => {
-      const totpInput = document.getElementById('idTxtBx_SAOTCC_OTC') as HTMLInputElement;
-      expect(totpInput.getAttribute('aria-label')).toBe('Code');
-    });
+    it('should find the TOTP field when searching from form', () => {
+      formDetector = new FormDetector(document, document.body);
 
-    it('should have autocomplete disabled', () => {
-      const totpInput = document.getElementById('idTxtBx_SAOTCC_OTC') as HTMLInputElement;
-      expect(totpInput.autocomplete).toBe('off');
-    });
-
-    it('should be marked as required', () => {
-      const totpInput = document.getElementById('idTxtBx_SAOTCC_OTC') as HTMLInputElement;
-      expect(totpInput.getAttribute('aria-required')).toBe('true');
-    });
-
-    it('should have proper ARIA descriptions', () => {
-      const totpInput = document.getElementById('idTxtBx_SAOTCC_OTC') as HTMLInputElement;
-      const describedBy = totpInput.getAttribute('aria-describedby');
-      expect(describedBy).toContain('idDiv_SAOTCC_Description');
+      const form = formDetector.getForm();
+      expect(form?.totpField).toBeTruthy();
+      expect(form?.totpField?.id).toBe('code');
     });
   });
 

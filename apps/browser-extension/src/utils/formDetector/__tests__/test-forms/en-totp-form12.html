@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>2FA Code Verification</title>
+</head>
+<body>
+  <div class="bg-white w-full max-w-lg mx-auto dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-md rounded-md mt-12">
+    <div class="p-8">
+      <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 leading-7">
+        Enter Your 2FA Code
+      </h2>
+      <div></div>
+
+      <div class="text-sm mt-4 leading-6">
+        Enter the code from your authenticator application before it expires or wait for a new one.
+      </div>
+
+      <div class="mt-8">
+        <form action="/2fa/verify" method="post" onsubmit="document.getElementById('verify-button').disabled = true">
+          <input name="_csrf_token" type="hidden" hidden="" value="KxBXVghiDxQyR3x_DSkfdAdGciQYPxY4cDb5k1lSHtJNOvyERrGMsUWk">
+          <div class="mt-2 text-gray-500 dark:text-gray-200 leading-tight">
+            <div class="mt-6 flex items-center">
+              <input autocomplete="off" class="font-mono tracking-[0.5em] w-36 pl-5 font-medium shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block border-gray-300 dark:border-gray-500 dark:text-gray-200 dark:bg-gray-900 rounded-l-md" id="code" maxlength="6" name="code" onclick="this.select();" oninput="this.value=this.value.replace(/[^0-9]/g, ''); if (this.value.length >= 6) document.getElementById('verify-button').focus()" oninvalid="document.getElementById('verify-button').disabled = false" placeholder="••••••" required="required" type="text" value="" data-av-autocomplete="off">
+              <button type="submit" class="whitespace-nowrap truncate inline-flex items-center justify-center gap-x-2 font-medium rounded-md px-3.5 py-2.5 text-sm shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:bg-gray-400 dark:disabled:text-white dark:disabled:text-gray-400 dark:disabled:bg-gray-700 bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:outline-indigo-600 rounded-l-none [&>span.label-enabled]:block [&>span.label-disabled]:hidden [&[disabled]>span.label-enabled]:hidden [&[disabled]>span.label-disabled]:block" id="verify-button">
+                <span class="label-enabled pointer-events-none">
+                  Verify →
+                </span>
+
+                <span class="label-disabled">
+                  <svg class="animate-spin h-4 w-4 text-indigo-500 inline-block h-5 w-5 mr-2 text-white dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle classname="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokewidth="4">
+                    </circle>
+                    <path classname="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                  </svg>
+                  Verifying...
+                </span>
+              </button>
+            </div>
+
+            <div class="mt-4 flex flex-inline items-center sm:justify-start justify-center">
+              <input name="remember_2fa" type="hidden" value="false">
+              <input class="block h-5 w-5 rounded dark:bg-gray-700 border-gray-300 text-indigo-600 focus:ring-indigo-600" id="remember_2fa" name="remember_2fa" type="checkbox" value="true">
+              <label class="block ml-2" for="remember_2fa">
+                Trust this device for 30 days
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="flex flex-col dark:text-gray-200 border-t border-gray-300 dark:border-gray-700">
+      <div class="p-8">
+        <ol class="list-disc space-y-1 ml-4 text-sm">
+          <li class="marker:text-indigo-700 dark:marker:text-indigo-700">
+            Can't access your authenticator app?
+            <a href="/2fa/use_recovery_code" class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-500 dark:hover:text-indigo-600 ">
+              Use recovery code
+            </a>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
