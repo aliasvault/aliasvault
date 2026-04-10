@@ -171,19 +171,19 @@
     <comment>Prompt for encrypted file password</comment>
   </data>
   <data name="DecryptionPasswordLabel" xml:space="preserve">
-    <value>Decodering wachtwoord</value>
+    <value>Decryptie wachtwoord</value>
     <comment>Label for decryption password input</comment>
   </data>
   <data name="DecryptionPasswordHint" xml:space="preserve">
-    <value>Dit is het wachtwoord dat je hebt ingesteld bij het maken van de versleutelde export (.avex bestand), niet het hoofdwachtwoord van de kluis.</value>
+    <value>Dit is het wachtwoord dat je hebt ingesteld bij het maken van de versleutelde export (.avex bestand), niet het hoofdwachtwoord van je vault.</value>
     <comment>Hint explaining what password is needed</comment>
   </data>
   <data name="DecryptAndContinueButton" xml:space="preserve">
-    <value>Decoderen en doorgaan</value>
+    <value>Decrypten en doorgaan</value>
     <comment>Button text for decryption</comment>
   </data>
   <data name="DecryptingFile" xml:space="preserve">
-    <value>Bestand decoderen...</value>
+    <value>Bestand decrypten...</value>
     <comment>Progress text during decryption</comment>
   </data>
   <data name="IncorrectPasswordError" xml:space="preserve">
@@ -191,7 +191,7 @@
     <comment>Error message for incorrect decryption password</comment>
   </data>
   <data name="DecryptionErrorGeneric" xml:space="preserve">
-    <value>Het decoderen van het bestand is mislukt. Controleer of het bestand niet beschadigd is en probeer het opnieuw.</value>
+    <value>Het decrypten van het bestand is mislukt. Controleer of het bestand niet beschadigd is en probeer het opnieuw.</value>
     <comment>Generic error message for decryption failure</comment>
   </data>
 </root>
