@@ -326,6 +326,7 @@
     "noEmails": "לא נמצאו הודעות דוא״ל",
     "noEmailsDescription": "לא קיבלת הודעות דוא״ל כלשהן לכתובות הדוא״ל הפרטיות שלך עדיין. כשמגיעה הודעה חדשה היא תופיע כאן.",
     "offlineMessage": "החיבור שלך מנותק. נא להתחבר לאינטרנט כדי לטעון את הודעות הדוא״ל שלך.",
+    "loadMore": "Load More ({{count}} remaining)",
     "dateFormat": {
       "justNow": "ממש הרגע",
       "minutesAgo_single": "לפני דקה",
