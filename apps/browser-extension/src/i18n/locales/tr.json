@@ -326,6 +326,7 @@
     "noEmails": "No emails found",
     "noEmailsDescription": "Özel e-posta adreslerinize henüz bir e-posta gelmedi. Yeni bir e-posta aldığınızda burada görünecektir.",
     "offlineMessage": "Çevrimdışısınız. E-postalarınızı yüklemek için lütfen internet bağlantısı sağlayın.",
+    "loadMore": "Load More ({{count}} remaining)",
     "dateFormat": {
       "justNow": "biraz önce",
       "minutesAgo_single": "{{count}} dakika önce",
