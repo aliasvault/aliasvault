@@ -545,6 +545,7 @@
     "sizeKB": "KB",
     "offlineMessage": "Sei offline. Collegati a internet per caricare le email.",
     "emptyMessage": "Non hai ancora ricevuto email ai tuoi indirizzi privati. Quando ne riceverai una nuova, apparirà qui.",
+    "loadMore": "Load More ({{count}} remaining)",
     "time": {
       "justNow": "proprio ora",
       "minutesAgo_single": "{{count}} min fa",
