@@ -347,7 +347,6 @@
     "openWebApp": "Abrir la aplicación web",
     "lock": "Bloquear",
     "globalSettings": "Ajustes globales",
-    "autofillPopup": "Ventana de autorrellenado",
     "activeOnAllSites": "Activo en todos los sitios (a menos que se deshabilite debajo)",
     "disabledOnAllSites": "Deshabilitado en todos los sitios",
     "rightClickContextMenu": "Menú contextual del clic derecho",
@@ -361,7 +360,6 @@
     "enabledForThisSite": "Habilitado para este sitio",
     "disabledForThisSite": "Deshabilitado para este sitio",
     "resetAllSiteSettings": "Reiniciar todos los ajustes específicos del sitio",
-    "autofillPopupDescription": "Mostrar el popup de autorrelleno cuando se detectan los campos de inicio de sesión.",
     "disabledSites": "Sitios desactivados",
     "disabledSitesDescription": "Sitios donde el popup de autorrelleno no aparecerá.",
     "clearAllDisabledSites": "Borrar todos los sitios desactivados",
@@ -434,6 +432,12 @@
         "female": "Mujer"
       }
     },
+    "credentialAutofill": "Credential autofill",
+    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
+    "totpAutofill": "2FA code autofill",
+    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
+    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
+    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
     "loginSave": {
       "title": "Guardar registro",
       "description": "Mostrar un mensaje para guardar las credenciales de inicio de sesión cuando envíe un formulario de inicio de sesión en un sitio web.",
