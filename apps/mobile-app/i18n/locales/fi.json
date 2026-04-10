@@ -545,6 +545,7 @@
     "sizeKB": "kB",
     "offlineMessage": "Olet offline-tilassa. Ole hyvä ja yhdistä internetiin ladataksesi sähköpostiosoitteesi.",
     "emptyMessage": "Et ole vielä saanut sähköpostiviestejä yksityisissä sähköpostiosoitteissasi. Kun saat uuden sähköpostiviestin, se näkyy täällä.",
+    "loadMore": "Load More ({{count}} remaining)",
     "time": {
       "justNow": "juuri nyt",
       "minutesAgo_single": "{{count}} min sitten",
