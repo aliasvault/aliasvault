@@ -3,6 +3,7 @@
 @using System.Text
 @using System.Text.Json
 @using AliasVault.Client.Main.Pages.Emails.Models
+@using AliasVault.RazorComponents.Services
 @using AliasVault.Shared.Models.Spamok
 @using AliasVault.Shared.Models.WebApi
 @using AliasVault.Shared.Models.WebApi.Email
@@ -13,6 +14,7 @@
 @inject HttpClient HttpClient
 @inject ILogger<Home> Logger
 @inject MinDurationLoadingService LoadingService
+@inject ConfirmModalService ConfirmModalService
 @using Microsoft.Extensions.Localization
 @implements IAsyncDisposable
 
@@ -33,6 +35,11 @@
             <div class="w-3 h-3 mr-2 rounded-full bg-primary-300 border-2 border-primary-100 animate-pulse" title="@Localizer["AutoRefreshEnabledTooltip"]"></div>
         }
         <RefreshButton OnClick="RefreshData" ButtonText="@Localizer["RefreshButton"]" />
+        
+        @if (CheckedEmailIds.Count > 0)
+        {
+            <DeleteAllSelectedButton OnClick="ShowBulkDeleteConfirmation" ButtonText="@string.Format(Localizer["DeleteSelectedEmails"], CheckedEmailIds.Count)" />
+        }
     </CustomActions>
 </PageHeader>
 
@@ -102,6 +109,7 @@ else
                             <EmailRow
                                 Email="email"
                                 OnEmailClick="ShowAliasVaultEmailInModal"
+                                IsChecked="@(CheckedEmailIds.Contains(email.Id))"
                                 IsSelected="false"
                                 IsNewEmail="@(NewEmailIds.Contains(email.Id))" />
                         }
@@ -132,7 +140,9 @@ else
                                 {
                                     <EmailRow
                                         Email="email"
+                                        OnEmailCheck="CheckEmail"
                                         OnEmailClick="SelectEmailForPreview"
+                                        IsChecked="@(CheckedEmailIds.Contains(email.Id))"
                                         IsSelected="@(SelectedEmailId == email.Id)"
                                         IsNewEmail="@(NewEmailIds.Contains(email.Id))" />
                                 }
@@ -200,6 +210,7 @@ else
     private CancellationTokenSource? _pollingCts;
     private DotNetObjectReference<Home>? _dotNetRef;
     private bool _isPageVisible = true;
+    private HashSet<int> CheckedEmailIds { get; set; } = new HashSet<int>(); 
     private HashSet<int> NewEmailIds { get; set; } = new();
     private HashSet<int> _knownEmailIds = new();
 
@@ -503,6 +514,7 @@ else
         // Clear selected email when refreshing
         SelectedEmailId = null;
         SelectedEmail = null;
+        CheckedEmailIds.Clear();
 
         // Reset pagination for fresh load
         CurrentPage = 1;
@@ -616,6 +628,20 @@ else
     }
 
     /// <summary>
+    /// Check an email for bulk actions (desktop layout).
+    /// </summary>
+    private void CheckEmail(int emailId)
+    {
+        if (CheckedEmailIds.Contains(emailId))
+        {
+            CheckedEmailIds.Remove(emailId);
+        } else 
+        {
+            CheckedEmailIds.Add(emailId);
+        }
+    }
+
+    /// <summary>
     /// Load the full email data for preview.
     /// </summary>
     private async Task LoadSelectedEmailForPreview(int emailId)
@@ -649,19 +675,34 @@ else
     /// </summary>
     private async Task HandleEmailDeleted(int emailId)
     {
+        await HandleEmailsDeleted(new List<int> {emailId});
+    }
+
+   /// <summary>
+    /// Handle emails deletion from preview panel.
+    /// </summary>
+    private async Task HandleEmailsDeleted(List<int> emailIds)
+    {
         // Remove the deleted email from the list
-        var deletedEmailIndex = EmailList.FindIndex(e => e.Id == emailId);
-        EmailList.RemoveAll(e => e.Id == emailId);
+        var deletedSelectedEmailIndex = -1;
+        
+        if (SelectedEmailId.HasValue && emailIds.Contains(SelectedEmailId.Value)) 
+        {
+            deletedSelectedEmailIndex = EmailList.FindIndex(e => e.Id == SelectedEmailId.Value);
+        } 
+
+        EmailList.RemoveAll(e => emailIds.Contains(e.Id));
 
         // Remove from tracking sets
-        NewEmailIds.Remove(emailId);
-        _knownEmailIds.Remove(emailId);
+        NewEmailIds.RemoveWhere(e => emailIds.Contains(e));
+        _knownEmailIds.RemoveWhere(e => emailIds.Contains(e));
+        CheckedEmailIds.Clear();
 
         // Update total records
-        TotalRecords = Math.Max(0, TotalRecords - 1);
+        TotalRecords = Math.Max(0, TotalRecords - emailIds.Count);
 
         // Handle selection logic
-        if (SelectedEmailId == emailId)
+        if (deletedSelectedEmailIndex >= 0)
         {
             SelectedEmailId = null;
             SelectedEmail = null;
@@ -670,23 +711,23 @@ else
             if (EmailList.Count > 0)
             {
                 // If we deleted the first email, select the new first email
-                if (deletedEmailIndex == 0)
+                if (deletedSelectedEmailIndex == 0)
                 {
                     var nextEmail = EmailList[0];
                     SelectedEmailId = nextEmail.Id;
                     await LoadSelectedEmailForPreview(nextEmail.Id);
                 }
                 // If we deleted an email in the middle, select the email at the same index (or the last one if index is out of bounds)
-                else if (deletedEmailIndex > 0)
+                else if (deletedSelectedEmailIndex > 0)
                 {
-                    var newIndex = Math.Min(deletedEmailIndex, EmailList.Count - 1);
+                    var newIndex = Math.Min(deletedSelectedEmailIndex, EmailList.Count - 1);
                     var nextEmail = EmailList[newIndex];
                     SelectedEmailId = nextEmail.Id;
                     await LoadSelectedEmailForPreview(nextEmail.Id);
                 }
             }
         }
-
+       
         StateHasChanged();
     }
 
@@ -742,6 +783,104 @@ else
         {
             IsLoadingMore = false;
             StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// Show confirmation modal before deleting multiple emails.
+    /// </summary>
+    private async Task ShowBulkDeleteConfirmation()
+    {
+        if (CheckedEmailIds.Count == 0)
+        {
+            return;
+        }
+
+        var result = await ConfirmModalService.ShowConfirmation(
+            Localizer["BulkDeleteEmailTitle"],
+            string.Format(Localizer["BulkDeleteEmailConfirmation"], CheckedEmailIds.Count()),
+            SharedLocalizer["Confirm"],
+            SharedLocalizer["Cancel"]
+        );
+
+        if (result)
+        {
+            await DeleteAllCheckedEmails();
+        }
+    }
+
+    /// <summary>
+    /// Bulk delete all checked emails.
+    /// </summary>
+    private async Task DeleteAllCheckedEmails()
+    {
+        if (CheckedEmailIds.Count == 0)
+        {
+            return;
+        }
+
+        var requestModel = new EmailBulkRequest
+        {
+           Ids = CheckedEmailIds.ToList(),
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"v1/Email/bulk");
+        request.Content = new StringContent(JsonSerializer.Serialize(requestModel), Encoding.UTF8, "application/json");
+
+        try
+        {
+            var response = await HttpClient.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                var emailBulkResponse = await response.Content.ReadFromJsonAsync<EmailBulkResponse>();
+                var successfulCount = emailBulkResponse?.SuccessfulEmailIds.Count;
+
+                if (successfulCount == CheckedEmailIds.Count)
+                {
+                    // Notify all emails deleted successfully.
+                    GlobalNotificationService.AddSuccessMessage(string.Format(Localizer["BulkDeleteEmailSuccess"], successfulCount), true);
+                }
+                else
+                {
+                    // Notify some errors, some deleted
+                    var errorCount = requestModel.Ids.Count() - successfulCount;
+                    GlobalNotificationService.AddErrorMessage(string.Format(Localizer["BulkDeleteEmailFailedMessage"], successfulCount, errorCount), true);
+                }
+
+                // Handle each email successfully deleted 
+                var successfulEmailIds = emailBulkResponse != null ? emailBulkResponse.SuccessfulEmailIds : [];
+                await HandleEmailsDeleted(successfulEmailIds);
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                var errorResponse = JsonSerializer.Deserialize<ApiErrorResponse>(errorContent);
+                switch (response.StatusCode)
+                {
+                    case HttpStatusCode.BadRequest:
+                        if (errorResponse != null)
+                        {
+                            switch (errorResponse.Code)
+                            {
+                                case "CLAIM_DOES_NOT_EXIST":
+                                    GlobalNotificationService.AddErrorMessage(Localizer["ClaimDoesNotExistError"], true);
+                                    break;
+                                default:
+                                    throw new ArgumentException(errorResponse.Message);
+                            }
+                        }
+                        break;
+                    case HttpStatusCode.Unauthorized:
+                        throw new UnauthorizedAccessException(errorResponse?.Message);
+                    default:
+                        throw new WebException(errorResponse?.Message);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            GlobalNotificationService.AddErrorMessage(ex.Message, true);
+            Logger.LogError(ex, "An error occurred while bulk deleting emails at server");
         }
     }
 }
