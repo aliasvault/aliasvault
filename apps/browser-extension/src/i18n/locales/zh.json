@@ -326,7 +326,7 @@
     "noEmails": "未找到邮件",
     "noEmailsDescription": "您的私人邮箱地址尚未收到任何邮件。当您收到新邮件时，会显示在这里。",
     "offlineMessage": "您处于离线状态。请连接互联网以加载邮件。",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "加载更多（剩余 {{count}} 封）",
     "dateFormat": {
       "justNow": "刚刚",
       "minutesAgo_single": "{{count}}分钟前",
@@ -433,12 +433,12 @@
         "female": "女"
       }
     },
-    "credentialAutofill": "Credential autofill",
-    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
-    "totpAutofill": "2FA code autofill",
-    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
-    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
-    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
+    "credentialAutofill": "凭据自动填充",
+    "credentialAutofillDescription": "检测到用户名/密码字段时显示自动填充弹窗",
+    "totpAutofill": "两步验证码自动填充",
+    "totpAutofillDescription": "检测到两步验证码字段时显示自动填充弹窗",
+    "autoCopyTotpOnAutofill": "自动将两步验证码复制到剪贴板",
+    "autoCopyTotpOnAutofillDescription": "自动填充凭据后，自动将第一个两步验证码复制到剪贴板",
     "loginSave": {
       "title": "保存登录提示",
       "description": "在网站上提交登录表单时，显示保存登录凭据的提示。",
