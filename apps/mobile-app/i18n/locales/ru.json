@@ -504,7 +504,7 @@
       "folderNameRequired": "Название папки обязательно",
       "deleteFolder": "Удалить папку",
       "deleteFolderKeepItems": "Удалить только папку",
-      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+      "deleteFolderKeepItemsDescription": "Элементы будут перемещены в родительскую папку.",
       "deleteFolderAndItems": "Удалить папку и все записи",
       "deleteFolderAndItemsDescription": "{{count}} объект(ов) будет перемещено в раздел «Недавно удалённые».",
       "emptyFolderHint": "Эта папка пуста. Чтобы переместить записи в эту папку, отредактируйте запись и выберите эту папку.",
@@ -545,7 +545,7 @@
     "sizeKB": "КБ",
     "offlineMessage": "Вы не в сети. Пожалуйста, подключитесь к Интернету, чтобы загрузить свои электронные письма.",
     "emptyMessage": "Вы еще не получали никаких электронных писем на свои личные адреса электронной почты. Когда вы получите новое электронное письмо, оно появится здесь.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Загрузить еще (осталось: {{count}})",
     "time": {
       "justNow": "прямо сейчас",
       "minutesAgo_single": "{{count}} мин назад",
