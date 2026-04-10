@@ -347,7 +347,6 @@
     "openWebApp": "Åbn web-app",
     "lock": "Lås",
     "globalSettings": "Globale indstillinger",
-    "autofillPopup": "Autofyld-popup",
     "activeOnAllSites": "Aktiv på alle websteder (medmindre deaktiveret nedenfor)",
     "disabledOnAllSites": "Deaktiveret på alle websteder",
     "rightClickContextMenu": "Højreklik-kontekstmenu",
@@ -361,7 +360,6 @@
     "enabledForThisSite": "Aktiveret for dette websted",
     "disabledForThisSite": "Deaktiveret for dette websted",
     "resetAllSiteSettings": "Nulstil alle webstedsspecifikke indstillinger",
-    "autofillPopupDescription": "Vis popup for autofyld når login-felter detekteres.",
     "disabledSites": "Deaktiverede websteder",
     "disabledSitesDescription": "Websteder hvor popup-vinduet for autofyld ikke vises.",
     "clearAllDisabledSites": "Ryd alle deaktiverede websteder",
@@ -434,6 +432,12 @@
         "female": "Kvinde"
       }
     },
+    "credentialAutofill": "Credential autofill",
+    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
+    "totpAutofill": "2FA code autofill",
+    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
+    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
+    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
     "loginSave": {
       "title": "Gem Login-prompt",
       "description": "Vis en prompt for at gemme loginoplysninger, når du indsender en login-formular på et websted.",
