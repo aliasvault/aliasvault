@@ -347,7 +347,6 @@
     "openWebApp": "Открыть веб-приложение",
     "lock": "Заблокировать",
     "globalSettings": "Глобальные настройки",
-    "autofillPopup": "Всплывающее окно автозаполнения",
     "activeOnAllSites": "Активен на всех сайтах (если не отключен ниже)",
     "disabledOnAllSites": "Отключено на всех сайтах",
     "rightClickContextMenu": "Контекстное меню правым щелчком мыши",
@@ -361,7 +360,6 @@
     "enabledForThisSite": "Включено для этого сайта",
     "disabledForThisSite": "Отключено для этого сайта",
     "resetAllSiteSettings": "Сбросить все настройки для сайтов",
-    "autofillPopupDescription": "Показывать автозаполнение при обнаружении полей входа.",
     "disabledSites": "Исключения",
     "disabledSitesDescription": "Сайты, на которых не будет появляться автозаполнение.",
     "clearAllDisabledSites": "Очистить список исключений",
@@ -434,6 +432,12 @@
         "female": "Женский"
       }
     },
+    "credentialAutofill": "Credential autofill",
+    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
+    "totpAutofill": "2FA code autofill",
+    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
+    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
+    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
     "loginSave": {
       "title": "Запрос на сохранение",
       "description": "Запрашивать сохранение пароля после входа на сайт.",
