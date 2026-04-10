@@ -347,7 +347,6 @@
     "openWebApp": "Ouvrir l’application web",
     "lock": "Verrouiller",
     "globalSettings": "Paramètres généraux",
-    "autofillPopup": "Remplissage automatique de la popup",
     "activeOnAllSites": "Activé sur tous les sites (sauf si désactivé ci-dessous)",
     "disabledOnAllSites": "Désactivé sur tous les sites",
     "rightClickContextMenu": "Clic-droit sur le menu contextuel",
@@ -361,7 +360,6 @@
     "enabledForThisSite": "Activé pour ce site",
     "disabledForThisSite": "Désactivé pour ce site",
     "resetAllSiteSettings": "Réinitialiser tous les paramètres spécifiques au site",
-    "autofillPopupDescription": "Afficher la fenêtre de saisie automatique lorsque les champs de connexion sont détectés.",
     "disabledSites": "Sites désactivés",
     "disabledSitesDescription": "Les sites où la fenêtre de saisie automatique n'apparaîtra pas.",
     "clearAllDisabledSites": "Effacer tous les sites désactivés",
@@ -434,6 +432,12 @@
         "female": "Femme"
       }
     },
+    "credentialAutofill": "Credential autofill",
+    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
+    "totpAutofill": "2FA code autofill",
+    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
+    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
+    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
     "loginSave": {
       "title": "Enregistrer l'invite de connexion",
       "description": "Afficher une invite pour enregistrer les identifiants de connexion lorsque vous soumettez un formulaire de connexion sur un site Web.",
