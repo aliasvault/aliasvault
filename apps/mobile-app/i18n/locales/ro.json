@@ -545,6 +545,7 @@
     "sizeKB": "KB",
     "offlineMessage": "Ești offline. Conectarea la internet este necesară pentru a încărca e-mailurile tale.",
     "emptyMessage": "Nu ai primit încă niciun e-mail pe adresele tale private. Atunci când vei primi un e-mail nou, acesta va apărea aici.",
+    "loadMore": "Load More ({{count}} remaining)",
     "time": {
       "justNow": "acum",
       "minutesAgo_single": "{{count}} minut în urmă",
