@@ -208,7 +208,7 @@
     "allItemsInFolders": "Tutti gli elementi sono organizzati in cartelle. Fare clic su una cartella qui sopra per visualizzare le credenziali o utilizzare la ricerca per trovare elementi specifici.",
     "deleteFolder": "Elimina Cartella",
     "deleteFolderKeepItems": "Elimina solo la cartella",
-    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+    "deleteFolderKeepItemsDescription": "Gli elementi verranno spostati nella cartella principale.",
     "deleteFolderAndItems": "Elimina cartella e tutti gli elementi",
     "deleteFolderAndItemsDescription": "{{count}} oggetto(i) verrà spostato in Eliminato Recentemente.",
     "filters": {
@@ -326,7 +326,7 @@
     "noEmails": "Nessuna email trovata",
     "noEmailsDescription": "Non hai ancora ricevuto email ai tuoi indirizzi email privati. Quando ne riceverai una nuova, apparirà qui.",
     "offlineMessage": "Sei offline. Collegati a internet per caricare le email.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Carica altro ({{count}} rimanenti)",
     "dateFormat": {
       "justNow": "proprio ora",
       "minutesAgo_single": "{{count}} min fa",
@@ -433,12 +433,12 @@
         "female": "Femmina"
       }
     },
-    "credentialAutofill": "Credential autofill",
-    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
-    "totpAutofill": "2FA code autofill",
-    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
-    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
-    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
+    "credentialAutofill": "Riempimento automatico credenziali",
+    "credentialAutofillDescription": "Mostra popup di riempimento automatico quando vengono rilevati campi username/password",
+    "totpAutofill": "Codice di autoriempimento 2FA",
+    "totpAutofillDescription": "Mostra popup di riempimento automatico quando vengono rilevati i campi del codice 2FA",
+    "autoCopyTotpOnAutofill": "Copia automaticamente 2FA negli appunti",
+    "autoCopyTotpOnAutofillDescription": "Copia automaticamente il primo codice 2FA negli appunti dopo l'auto-compilazione delle credenziali",
     "loginSave": {
       "title": "Salva Avviso Di Login",
       "description": "Mostra un prompt per salvare le credenziali di accesso quando si invia un modulo di accesso su un sito web.",
