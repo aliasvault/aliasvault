@@ -326,6 +326,7 @@
     "noEmails": "Электронные письма не найдены",
     "noEmailsDescription": "Вы еще не получали никаких электронных писем на свои личные адреса электронной почты. Когда вы получите новое электронное письмо, оно появится здесь.",
     "offlineMessage": "Вы не в сети. Пожалуйста, подключитесь к Интернету, чтобы загрузить свои электронные письма.",
+    "loadMore": "Загрузить еще (осталось: {{count}})",
     "dateFormat": {
       "justNow": "прямо сейчас",
       "minutesAgo_single": "{{count}} мин назад",
@@ -432,12 +433,12 @@
         "female": "Женский"
       }
     },
-    "credentialAutofill": "Credential autofill",
-    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
-    "totpAutofill": "2FA code autofill",
-    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
-    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
-    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
+    "credentialAutofill": "Автозаполнение данных",
+    "credentialAutofillDescription": "Показывать окно автозаполнения при обнаружении полей логина и пароля",
+    "totpAutofill": "Автозаполнение кодов 2FA",
+    "totpAutofillDescription": "Показывать окно автозаполнения при обнаружении полей для кодов 2FA",
+    "autoCopyTotpOnAutofill": "Копировать код 2FA в буфер обмена",
+    "autoCopyTotpOnAutofillDescription": "Автоматически копировать код 2FA в буфер обмена после заполнения учётных данных",
     "loginSave": {
       "title": "Запрос на сохранение",
       "description": "Запрашивать сохранение пароля после входа на сайт.",
