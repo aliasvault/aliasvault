@@ -6,12 +6,13 @@ import '@/entrypoints/contentScript/style.css';
 import { onMessage, sendMessage } from "webext-bridge/content-script";
 
 import { injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
-import { isAutoShowPopupEnabled, openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
+import { openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
 import { showSavePrompt, showAddUrlPrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState, restoreAddUrlPromptFromState } from '@/entrypoints/contentScript/SavePrompt';
 import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
 
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { DetectedFieldType } from '@/utils/formDetector/types/FormFields';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { LoginDetector } from '@/utils/loginDetector';
 import type { CapturedLogin, LastAutofilledCredential } from '@/utils/loginDetector';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
@@ -503,17 +504,24 @@ export default defineContentScript({
               return;
             }
 
-            // Only inject icon and show popup if autofill popup is enabled
-            if (await isAutoShowPopupEnabled()) {
-              // Store our detected field type for subsequent clicks
-              inputElement.setAttribute('data-av-field-type', detectedFieldType);
+            // Check if site allows autofill (site-specific disabled sites)
+            if (!await isSiteAllowed()) {
+              return;
+            }
 
-              injectIcon(inputElement, container);
+            // Check if we should show autofill UI for this field type
+            if (!await shouldShowAutofillUi(detectedFieldType)) {
+              return;
+            }
 
-              // Only show popup if debounce time has passed
-              if (popupDebounceTimeHasPassed()) {
-                await showPopupWithAuthCheck(inputElement, container, detectedFieldType);
-              }
+            // Store our detected field type for subsequent clicks
+            inputElement.setAttribute('data-av-field-type', detectedFieldType);
+
+            injectIcon(inputElement, container, detectedFieldType);
+
+            // Only show popup if debounce time has passed
+            if (popupDebounceTimeHasPassed()) {
+              await showPopupWithAuthCheck(inputElement, container, detectedFieldType);
             }
           }
         };
@@ -559,6 +567,44 @@ export default defineContentScript({
         });
 
         /**
+         * Check if autofill is disabled for the current site (site-specific settings only).
+         * @returns True if site allows autofill, false if site has disabled it
+         */
+        async function isSiteAllowed(): Promise<boolean> {
+          const disabledSites = await LocalPreferencesService.getDisabledSites();
+          const temporaryDisabledSites = await LocalPreferencesService.getTemporaryDisabledSites();
+          const currentHostname = window.location.hostname;
+
+          if (disabledSites.includes(currentHostname)) {
+            return false;
+          }
+
+          const temporaryDisabledUntil = temporaryDisabledSites[currentHostname];
+          if (temporaryDisabledUntil && Date.now() < temporaryDisabledUntil) {
+            return false;
+          }
+
+          return true;
+        }
+
+        /**
+         * Check if we should show autofill UI (icon/popup) for a given field type.
+         * Checks the appropriate toggle setting based on field type.
+         *
+         * @param fieldType - The detected field type
+         * @returns True if we should show UI for this field type, false otherwise
+         */
+        async function shouldShowAutofillUi(fieldType: DetectedFieldType | null): Promise<boolean> {
+          // For TOTP fields, check TOTP autofill toggle
+          if (fieldType === DetectedFieldType.Totp) {
+            return await LocalPreferencesService.getTotpAutofillEnabled();
+          }
+
+          // For credential fields, check credential autofill toggle
+          return await LocalPreferencesService.getGlobalAutofillPopupEnabled();
+        }
+
+        /**
          * Show popup for element.
          */
         async function showPopupForElement(element: Element, forceShow: boolean = false) : Promise<void> {
@@ -576,13 +622,18 @@ export default defineContentScript({
           const detectedFieldType = formDetector.getDetectedFieldType();
 
           /**
-           * By default we check if the popup is not disabled (for current site) and if the field is autofill-triggerable
+           * By default we check if the site allows autofill and if the field is autofill-triggerable
            * but if forceShow is true, we show the popup regardless.
            */
-          const canShowPopup = forceShow || (await isAutoShowPopupEnabled() && formDetector.isAutofillTriggerableField());
+          const canShowPopup = forceShow || (await isSiteAllowed() && formDetector.isAutofillTriggerableField());
 
           if (canShowPopup) {
-            injectIcon(inputElement, container);
+            // Check field-type-specific settings (credential vs TOTP toggles)
+            if (!await shouldShowAutofillUi(detectedFieldType)) {
+              return;
+            }
+
+            injectIcon(inputElement, container, detectedFieldType ?? undefined);
             await showPopupWithAuthCheck(inputElement, container, detectedFieldType ?? undefined);
           }
         }
@@ -625,7 +676,12 @@ export default defineContentScript({
 
             // Show appropriate popup based on field type
             if (fieldType === DetectedFieldType.Totp) {
-              openTotpPopup(inputElement, container);
+              // Check if TOTP autofill is enabled
+              const totpAutofillEnabled = await LocalPreferencesService.getTotpAutofillEnabled();
+              if (totpAutofillEnabled) {
+                openTotpPopup(inputElement, container);
+              }
+              // If disabled, don't show any popup (user can rely on clipboard auto-copy)
             } else {
               openAutofillPopup(inputElement, container);
             }

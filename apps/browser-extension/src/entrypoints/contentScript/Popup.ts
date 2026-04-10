@@ -1277,40 +1277,6 @@ function createItemList(items: Item[], input: HTMLInputElement, rootContainer: H
 /**
  * Check if auto-popup is disabled for current site
  */
-export async function isAutoShowPopupEnabled(): Promise<boolean> {
-  const disabledSites = await LocalPreferencesService.getDisabledSites();
-  const temporaryDisabledSites = await LocalPreferencesService.getTemporaryDisabledSites();
-  const globalPopupEnabled = await LocalPreferencesService.getGlobalAutofillPopupEnabled();
-
-  const currentHostname = window.location.hostname;
-
-  if (!globalPopupEnabled) {
-    // Popup is disabled for all sites.
-    return false;
-  }
-
-  if (disabledSites.includes(currentHostname)) {
-    // Popup is permanently disabled for current site.
-    return false;
-  }
-
-  // Check temporary disable
-  const temporaryDisabledUntil = temporaryDisabledSites[currentHostname];
-  if (temporaryDisabledUntil && Date.now() < temporaryDisabledUntil) {
-    // Popup is temporarily disabled for current site.
-    return false;
-  }
-
-  // Check time-based dismissal
-  const dismissUntil = await LocalPreferencesService.getVaultLockedDismissUntil();
-  if (dismissUntil && Date.now() < dismissUntil) {
-    // Popup is dismissed for a certain amount of time.
-    return false;
-  }
-
-  return true;
-}
-
 /**
  * Disable auto-popup for current site
  */

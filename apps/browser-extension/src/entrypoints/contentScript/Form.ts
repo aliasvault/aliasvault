@@ -1,12 +1,14 @@
 import { sendMessage } from 'webext-bridge/content-script';
 
-import { openAutofillPopup } from '@/entrypoints/contentScript/Popup';
+import { openAutofillPopup, openTotpPopup } from '@/entrypoints/contentScript/Popup';
 
 import { LOGO_MARK_SVG } from '@/utils/constants/logo';
 import type { Item } from '@/utils/dist/core/models/vault';
 import { itemToCredential, FieldKey } from '@/utils/dist/core/models/vault';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { FormFiller } from '@/utils/formDetector/FormFiller';
+import { DetectedFieldType } from '@/utils/formDetector/types/FormFields';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import type { LastAutofilledCredential } from '@/utils/loginDetector';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 import { SqliteClient } from '@/utils/SqliteClient';
@@ -143,6 +145,31 @@ export async function fillItem(item: Item, input: HTMLInputElement): Promise<voi
   sendMessage('SET_RECENTLY_SELECTED', { itemId: item.Id, domain: window.location.hostname }, 'background').catch(() => {
     // Ignore errors as background script might not be ready
   });
+
+  // Auto-copy TOTP to clipboard if enabled and item has TOTP after autofill.
+  const autoCopyTotpEnabled = await LocalPreferencesService.getAutoCopyTotpOnAutofill();
+  if (autoCopyTotpEnabled) {
+    try {
+      // Generate TOTP code via background
+      const response = await sendMessage('GENERATE_TOTP_CODE', { itemId: item.Id }, 'background') as {
+        success: boolean;
+        code?: string;
+        error?: string;
+      };
+
+      if (response.success && response.code) {
+        // Copy TOTP code to clipboard
+        await navigator.clipboard.writeText(response.code);
+
+        // Notify background script that clipboard was copied to start countdown
+        sendMessage('CLIPBOARD_COPIED', { value: response.code }, 'background').catch(() => {
+          // Ignore errors as background script might not be ready
+        });
+      }
+    } catch {
+      // Silently fail in case TOTP code is not available which is possible.
+    }
+  }
 }
 
 /**
@@ -189,8 +216,11 @@ function findActualInput(element: HTMLElement): HTMLInputElement {
 
 /**
  * Inject icon for a focused input element
+ * @param input - The input element to inject icon for
+ * @param container - The container element
+ * @param fieldType - The detected field type (optional, defaults to regular autofill)
  */
-export function injectIcon(input: HTMLInputElement, container: HTMLElement): void {
+export function injectIcon(input: HTMLInputElement, container: HTMLElement, fieldType?: DetectedFieldType): void {
   // Find the actual input element to use for positioning
   const actualInput = findActualInput(input);
 
@@ -272,7 +302,13 @@ export function injectIcon(input: HTMLInputElement, container: HTMLElement): voi
     }
 
     setTimeout(() => actualInput.focus(), 0);
-    openAutofillPopup(actualInput, container);
+
+    // Open the appropriate popup based on field type
+    if (fieldType === DetectedFieldType.Totp) {
+      openTotpPopup(actualInput, container);
+    } else {
+      openAutofillPopup(actualInput, container);
+    }
   });
 
   // Append the icon to the overlay container

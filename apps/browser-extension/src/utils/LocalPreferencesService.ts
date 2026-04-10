@@ -11,7 +11,7 @@ const KEYS = {
   PASSKEY_DISABLED_SITES: 'local:aliasvault_passkey_disabled_sites',
 
   // Global toggles
-  GLOBAL_AUTOFILL_POPUP_ENABLED: 'local:aliasvault_global_autofill_popup_enabled',
+  CREDENTIAL_AUTOFILL_POPUP_ENABLED: 'local:aliasvault_global_autofill_popup_enabled',
   GLOBAL_CONTEXT_MENU_ENABLED: 'local:aliasvault_global_context_menu_enabled',
   PASSKEY_PROVIDER_ENABLED: 'local:aliasvault_passkey_provider_enabled',
 
@@ -92,22 +92,6 @@ export const LocalPreferencesService = {
    */
   async setAutoCloseUnlockPopup(enabled: boolean): Promise<void> {
     await storage.setItem(KEYS.AUTO_CLOSE_UNLOCK_POPUP, enabled);
-  },
-
-  /**
-   * Get whether the global autofill popup is enabled.
-   * @returns Whether autofill popup is globally enabled. Defaults to true.
-   */
-  async getGlobalAutofillPopupEnabled(): Promise<boolean> {
-    const value = await storage.getItem(KEYS.GLOBAL_AUTOFILL_POPUP_ENABLED) as boolean | null;
-    return value !== false;
-  },
-
-  /**
-   * Set whether the global autofill popup is enabled.
-   */
-  async setGlobalAutofillPopupEnabled(enabled: boolean): Promise<void> {
-    await storage.setItem(KEYS.GLOBAL_AUTOFILL_POPUP_ENABLED, enabled);
   },
 
   /**
@@ -455,6 +439,22 @@ export const LocalPreferencesService = {
    * Autofill Behavior Settings
    * ============================================
    */
+
+  /**
+   * Get whether the global autofill popup is enabled.
+   * @returns Whether autofill popup is globally enabled. Defaults to true.
+   */
+  async getGlobalAutofillPopupEnabled(): Promise<boolean> {
+    const value = await storage.getItem(KEYS.CREDENTIAL_AUTOFILL_POPUP_ENABLED) as boolean | null;
+    return value !== false;
+  },
+
+  /**
+   * Set whether the global autofill popup is enabled.
+   */
+  async setGlobalAutofillPopupEnabled(enabled: boolean): Promise<void> {
+    await storage.setItem(KEYS.CREDENTIAL_AUTOFILL_POPUP_ENABLED, enabled);
+  },
 
   /**
    * Get whether TOTP autofill is enabled.
