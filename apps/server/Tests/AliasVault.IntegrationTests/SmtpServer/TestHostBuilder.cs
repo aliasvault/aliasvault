@@ -35,6 +35,8 @@ public class TestHostBuilder : AbstractTestHostBuilder
     /// <returns>IHost.</returns>
     public IHost Build(DbConnection dbConnection)
     {
+        Environment.SetEnvironmentVariable("SMTP_ADVERTISED_HOSTNAME", IntegrationAdvertisedHostname);
+
         // Get base builder with database connection already configured.
         var builder = CreateBuilder();
 
@@ -63,6 +65,8 @@ public class TestHostBuilder : AbstractTestHostBuilder
     /// <returns>IHost.</returns>
     public IHost Build()
     {
+        Environment.SetEnvironmentVariable("SMTP_ADVERTISED_HOSTNAME", IntegrationAdvertisedHostname);
+
         // Get base builder with database connection already configured.
         var builder = CreateBuilder();
 
@@ -73,12 +77,6 @@ public class TestHostBuilder : AbstractTestHostBuilder
         });
 
         return builder.Build();
-    }
-
-    /// <inheritdoc />
-    protected override void AddIntegrationTestConfiguration(IDictionary<string, string?> settings)
-    {
-        settings[AdvertisedHostnameConfiguration.AdvertisedHostnameConfigurationKey] = IntegrationAdvertisedHostname;
     }
 
     /// <summary>
@@ -94,7 +92,6 @@ public class TestHostBuilder : AbstractTestHostBuilder
             {
                 AllowedToDomains = new List<string> { "example.tld" },
                 SmtpTlsEnabled = "false",
-                AdvertisedHostname = AdvertisedHostnameConfiguration.ReadAdvertisedHostname(configuration),
             };
         });
 
@@ -102,9 +99,7 @@ public class TestHostBuilder : AbstractTestHostBuilder
         services.AddSingleton<SmtpServer>(
             provider =>
             {
-                var configuration = provider.GetRequiredService<IConfiguration>();
-                var advertisedHostname = AdvertisedHostnameConfiguration.ResolveAdvertisedHostname(
-                    configuration,
+                var advertisedHostname = ResolveAdvertisedHostname(
                     Environment.GetEnvironmentVariable("SMTP_ADVERTISED_HOSTNAME"),
                     Dns.GetHostName);
                 var options = new SmtpServerOptionsBuilder()
@@ -124,5 +119,29 @@ public class TestHostBuilder : AbstractTestHostBuilder
             });
 
         services.AddHostedService<SmtpServerWorker>();
+    }
+
+    private static string ResolveAdvertisedHostname(
+        string? environmentValue,
+        Func<string> dnsHostNameFallback)
+    {
+        var fromEnvironment = TrimOrNull(environmentValue);
+        if (fromEnvironment != null)
+        {
+            return fromEnvironment;
+        }
+
+        return dnsHostNameFallback();
+    }
+
+    private static string? TrimOrNull(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var trimmed = value.Trim();
+        return trimmed.Length == 0 ? null : trimmed;
     }
 }

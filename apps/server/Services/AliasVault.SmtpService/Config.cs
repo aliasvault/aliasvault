@@ -34,11 +34,4 @@ public class Config
     /// Domains not in this list will be rejected.
     /// </summary>
     public List<string> AllowedToDomains { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets the hostname advertised in the SMTP banner and EHLO.
-    /// In production this should match the FQDN used for reverse DNS (PTR) on the sending IP.
-    /// Overridden at runtime by environment variable SMTP_ADVERTISED_HOSTNAME when set.
-    /// </summary>
-    public string AdvertisedHostname { get; set; } = string.Empty;
 }

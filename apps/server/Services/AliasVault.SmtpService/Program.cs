@@ -43,7 +43,11 @@ config.SmtpTlsEnabled = tlsEnabled;
 var certPath = Environment.GetEnvironmentVariable("SMTP_CERTIFICATES_PATH") ?? "/certificates/smtp";
 config.SmtpCertificatesPath = certPath;
 
-config.AdvertisedHostname = AdvertisedHostnameConfiguration.ReadAdvertisedHostname(builder.Configuration);
+var advertisedHostname = Environment.GetEnvironmentVariable("SMTP_ADVERTISED_HOSTNAME");
+if (string.IsNullOrWhiteSpace(advertisedHostname))
+{
+    advertisedHostname = Dns.GetHostName();
+}
 
 // Check if TLS is requested but certificates are not available, if so, fallback to non-TLS mode.
 var tlsAvailable = false;
@@ -75,10 +79,6 @@ builder.Services.AddSingleton(
         // Use SmtpServerWorker logger so logs appear in the database (it's in the allowed sources list).
         var logger = provider.GetRequiredService<ILogger<SmtpServerWorker>>();
         var configuration = provider.GetRequiredService<IConfiguration>();
-        var advertisedHostname = AdvertisedHostnameConfiguration.ResolveAdvertisedHostname(
-            configuration,
-            Environment.GetEnvironmentVariable("SMTP_ADVERTISED_HOSTNAME"),
-            Dns.GetHostName);
         logger.LogInformation("SMTP advertised hostname (banner / EHLO): {AdvertisedHostname}", advertisedHostname);
         var options = new SmtpServerOptionsBuilder()
             .ServerName(advertisedHostname);
@@ -165,6 +165,37 @@ static (bool Success, X509Certificate2? Certificate, string? CertificateFile, st
     {
         return (false, null, null, $"Failed to load certificate: {ex.Message}");
     }
+}
+
+static string ResolveAdvertisedHostname(
+    string? environmentValue,
+    string? configurationValue,
+    Func<string> dnsHostNameFallback)
+{
+    var fromEnvironment = TrimOrNull(environmentValue);
+    if (fromEnvironment != null)
+    {
+        return fromEnvironment;
+    }
+
+    var fromConfiguration = TrimOrNull(configurationValue);
+    if (fromConfiguration != null)
+    {
+        return fromConfiguration;
+    }
+
+    return dnsHostNameFallback();
+}
+
+static string? TrimOrNull(string? value)
+{
+    if (string.IsNullOrWhiteSpace(value))
+    {
+        return null;
+    }
+
+    var trimmed = value.Trim();
+    return trimmed.Length == 0 ? null : trimmed;
 }
 
 // -----------------------------------------------------------------------
