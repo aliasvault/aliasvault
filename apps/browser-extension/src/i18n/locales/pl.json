@@ -347,7 +347,6 @@
     "openWebApp": "Otwórz aplikację internetową",
     "lock": "Zablokuj",
     "globalSettings": "Ustawienia ogólne",
-    "autofillPopup": "Okno autouzupełniania",
     "activeOnAllSites": "Aktywne we wszystkich witrynach (chyba że jest wyłączone)",
     "disabledOnAllSites": "Wyłączone na wszystkich witrynach",
     "rightClickContextMenu": "Aktywacja menu kontekstowego",
@@ -361,7 +360,6 @@
     "enabledForThisSite": "Włączone dla tej witryny",
     "disabledForThisSite": "Wyłączone dla tej witryny",
     "resetAllSiteSettings": "Zresetuj wszystkie ustawienia witryny",
-    "autofillPopupDescription": "Pokaż wyskakujące okienko autouzupełniania po wykryciu pól logowania.",
     "disabledSites": "Wyłączone witryny",
     "disabledSitesDescription": "Witryny, w których okienko autouzupełniania nie będzie wyświetlane.",
     "clearAllDisabledSites": "Usuń wszystkie wyłączone witryny",
@@ -434,6 +432,12 @@
         "female": "Kobieta"
       }
     },
+    "credentialAutofill": "Credential autofill",
+    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
+    "totpAutofill": "2FA code autofill",
+    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
+    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
+    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
     "loginSave": {
       "title": "Zapisz monit logowania",
       "description": "Pokaż monit o zapisanie danych logowania podczas przesyłania formularza logowania na stronie internetowej.",
