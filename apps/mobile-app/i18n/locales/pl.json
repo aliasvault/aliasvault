@@ -545,6 +545,7 @@
     "sizeKB": "KB",
     "offlineMessage": "Jesteś offline. Połącz się z Internetem, aby załadować wiadomości e-mail.",
     "emptyMessage": "Nie otrzymałeś jeszcze żadnych wiadomości e-mail na swoje prywatne adresy e-mail. Gdy otrzymasz nową wiadomość e-mail, pojawi się ona tutaj.",
+    "loadMore": "Load More ({{count}} remaining)",
     "time": {
       "justNow": "przed chwilą",
       "minutesAgo_single": "{{count}} minutę temu",
