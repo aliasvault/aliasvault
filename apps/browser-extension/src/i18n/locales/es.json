@@ -326,7 +326,7 @@
     "noEmails": "No se han encontrado correos electrónicos",
     "noEmailsDescription": "No has recibido ningún correo electrónico en tus direcciones privadas todavía. Cuando recibas un nuevo correo electrónico, aparecerá aquí.",
     "offlineMessage": "Está desconectado. Por favor, conéctese a Internet para cargar sus correos electrónicos.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Cargar más ({{count}} restantes)",
     "dateFormat": {
       "justNow": "ahora mismo",
       "minutesAgo_single": "Hace {{count}} min",
@@ -433,12 +433,12 @@
         "female": "Mujer"
       }
     },
-    "credentialAutofill": "Credential autofill",
-    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
-    "totpAutofill": "2FA code autofill",
-    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
-    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
-    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
+    "credentialAutofill": "Autorrelleno de credenciales",
+    "credentialAutofillDescription": "Mostrar ventana emergente de autorrelleno cuando se detectan campos de nombre de usuario/contraseña",
+    "totpAutofill": "Codigo 2FA de autorelleno",
+    "totpAutofillDescription": "Mostrar ventana emergente de autorrelleno cuando se detectan campos de código 2FA",
+    "autoCopyTotpOnAutofill": "Auto-copiar 2FA al portapapeles",
+    "autoCopyTotpOnAutofillDescription": "Copiar automáticamente el primer código 2FA al portapapeles después de rellenar automáticamente las credenciales",
     "loginSave": {
       "title": "Guardar registro",
       "description": "Mostrar un mensaje para guardar las credenciales de inicio de sesión cuando envíe un formulario de inicio de sesión en un sitio web.",
