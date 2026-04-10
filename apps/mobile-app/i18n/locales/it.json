@@ -504,7 +504,7 @@
       "folderNameRequired": "Il nome della cartella è obbligatorio",
       "deleteFolder": "Elimina Cartella",
       "deleteFolderKeepItems": "Elimina solo la cartella",
-      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+      "deleteFolderKeepItemsDescription": "Gli elementi verranno spostati nella cartella principale.",
       "deleteFolderAndItems": "Elimina cartella e tutti gli elementi",
       "deleteFolderAndItemsDescription": "{{count}} oggetto(i) verrà spostato in Eliminato Recentemente.",
       "emptyFolderHint": "Questa cartella è vuota. Per spostare gli elementi in questa cartella, modificare l'elemento e toccare l'icona della cartella nel campo nome.",
@@ -545,7 +545,7 @@
     "sizeKB": "KB",
     "offlineMessage": "Sei offline. Collegati a internet per caricare le email.",
     "emptyMessage": "Non hai ancora ricevuto email ai tuoi indirizzi privati. Quando ne riceverai una nuova, apparirà qui.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Carica altro ({{count}} rimanenti)",
     "time": {
       "justNow": "proprio ora",
       "minutesAgo_single": "{{count}} min fa",
