@@ -545,7 +545,7 @@
     "sizeKB": "KB",
     "offlineMessage": "Je bent offline. Maak verbinding met het internet om je e-mails te laden.",
     "emptyMessage": "Je hebt nog geen e-mails ontvangen op je privé e-mailadressen. Wanneer je een nieuwe e-mail ontvangt, zal deze hier verschijnen.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Meer laden ({{count}} resterend)",
     "time": {
       "justNow": "zojuist",
       "minutesAgo_single": "{{count}} min geleden",
