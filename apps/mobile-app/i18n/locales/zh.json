@@ -545,7 +545,7 @@
     "sizeKB": "KB",
     "offlineMessage": "您处于离线状态，请连接互联网以加载邮件。",
     "emptyMessage": "您的私人邮箱地址尚未收到任何邮件。当您收到新邮件时，会显示在这里。",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "加载更多（剩余 {{count}} 封）",
     "time": {
       "justNow": "刚刚",
       "minutesAgo_single": "{{count}} 分钟前",
