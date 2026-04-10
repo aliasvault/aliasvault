@@ -240,7 +240,7 @@
     <comment>AliasVault import instructions</comment>
   </data>
   <data name="AliasVaultSupportedFormatsInfo" xml:space="preserve">
-    <value>Ondersteunt .avex (gecodeerd), .avux (niet-versleuteld) en CSV (basis) formaten.</value>
+    <value>Ondersteunt .avex (encrypted), .avux (niet-encrypted) en CSV (basis) formaten.</value>
     <comment>Supported formats information for AliasVault imports</comment>
   </data>
   <!-- Dropbox -->
