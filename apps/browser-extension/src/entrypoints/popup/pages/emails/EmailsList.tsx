@@ -29,6 +29,9 @@ const EmailsList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [emails, setEmails] = useState<MailboxEmail[]>([]);
   const { setIsInitialLoading } = useLoading();
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalRecords, setTotalRecords] = useState<number>(0);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
 
   /**
    * Loading state with minimum duration for more fluid UX.
@@ -36,9 +39,14 @@ const EmailsList: React.FC = () => {
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 100);
 
   /**
+   * Page size for pagination.
+   */
+  const PAGE_SIZE = 50;
+
+  /**
    * Loads emails from the web API.
    */
-  const loadEmails = useCallback(async () : Promise<void> => {
+  const loadEmails = useCallback(async (reset: boolean = true) : Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
@@ -58,11 +66,10 @@ const EmailsList: React.FC = () => {
       const emailAddresses = dbContext.sqliteClient.items.getAllEmailAddresses();
 
       try {
-        // For now we only show the latest 50 emails. No pagination.
         const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', {
           addresses: emailAddresses,
           page: 1,
-          pageSize: 50,
+          pageSize: PAGE_SIZE,
         });
 
         // Decrypt emails locally using private key associated with the email address.
@@ -71,7 +78,11 @@ const EmailsList: React.FC = () => {
         // Decrypt emails locally using public/private key pairs.
         const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, encryptionKeys);
 
-        setEmails(decryptedEmails);
+        if (reset) {
+          setEmails(decryptedEmails);
+          setCurrentPage(data.currentPage);
+          setTotalRecords(data.totalRecords);
+        }
       } catch (error) {
         console.error(error);
         throw new Error(t('common.errors.unknownError'));
@@ -82,7 +93,44 @@ const EmailsList: React.FC = () => {
       setIsLoading(false);
       setIsInitialLoading(false);
     }
-  }, [dbContext?.sqliteClient, dbContext.isOffline, webApi, setIsLoading, setIsInitialLoading, t]);
+  }, [dbContext?.sqliteClient, dbContext.isOffline, webApi, setIsLoading, setIsInitialLoading, t, PAGE_SIZE]);
+
+  /**
+   * Loads more emails (next page).
+   */
+  const loadMoreEmails = useCallback(async () : Promise<void> => {
+    if (isLoadingMore || !dbContext?.sqliteClient || dbContext.isOffline) {
+      return;
+    }
+
+    try {
+      setIsLoadingMore(true);
+      setError(null);
+
+      const emailAddresses = dbContext.sqliteClient.items.getAllEmailAddresses();
+      const nextPage = currentPage + 1;
+
+      const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', {
+        addresses: emailAddresses,
+        page: nextPage,
+        pageSize: PAGE_SIZE,
+      });
+
+      // Decrypt emails locally
+      const encryptionKeys = dbContext.sqliteClient.settings.getAllEncryptionKeys();
+      const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, encryptionKeys);
+
+      // Append to existing emails
+      setEmails((prevEmails) => [...prevEmails, ...decryptedEmails]);
+      setCurrentPage(data.currentPage);
+      setTotalRecords(data.totalRecords);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
+      console.error('Failed to load more emails:', err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [isLoadingMore, dbContext?.sqliteClient, dbContext.isOffline, webApi, currentPage, PAGE_SIZE, t]);
 
   useEffect(() => {
     loadEmails();
@@ -187,11 +235,13 @@ const EmailsList: React.FC = () => {
     );
   }
 
+  const hasMoreEmails = totalRecords > emails.length;
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
         <PageTitle>{t('emails.title')}</PageTitle>
-        <ReloadButton onClick={loadEmails} />
+        <ReloadButton onClick={() => loadEmails(true)} />
       </div>
       <div className="space-y-2">
         {emails.map((email) => (
@@ -214,6 +264,29 @@ const EmailsList: React.FC = () => {
           </Link>
         ))}
       </div>
+
+      {/* Load More Button */}
+      {hasMoreEmails && emails.length > 0 && (
+        <div className="mt-4">
+          <button
+            onClick={loadMoreEmails}
+            disabled={isLoadingMore}
+            className="w-full px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 border border-primary-200 rounded-md hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:text-primary-400 dark:bg-primary-900/20 dark:border-primary-800 dark:hover:bg-primary-900/30"
+          >
+            {isLoadingMore ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                {t('common.loading')}
+              </span>
+            ) : (
+              <span>{t('emails.loadMore', { count: totalRecords - emails.length })}</span>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
