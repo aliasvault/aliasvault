@@ -545,7 +545,7 @@
     "sizeKB": "KB",
     "offlineMessage": "Está desconectado. Por favor, conéctese a Internet para cargar sus correos electrónicos.",
     "emptyMessage": "No has recibido ningún correo electrónico en tus direcciones privadas todavía. Cuando recibas un nuevo correo electrónico, aparecerá aquí.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Cargar más ({{count}} restantes)",
     "time": {
       "justNow": "ahora mismo",
       "minutesAgo_single": "Hace {{count}} min",
