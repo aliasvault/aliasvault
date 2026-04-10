@@ -347,7 +347,6 @@
     "openWebApp": "פתיחת אתר",
     "lock": "נעילה",
     "globalSettings": "הגדרות מקיפות",
-    "autofillPopup": "חלונית השלמה אוטומטית",
     "activeOnAllSites": "פעיל בכל האתרים (למעט אם נכבה להלן)",
     "disabledOnAllSites": "כבוי בכל האתרים",
     "rightClickContextMenu": "תפריט הקשר בלחיצה ימנית",
@@ -361,7 +360,6 @@
     "enabledForThisSite": "פעיל לאתר הזה",
     "disabledForThisSite": "כבוי לאתר הזה",
     "resetAllSiteSettings": "איפוס כל ההגדרות הנקודתיות לאתרים",
-    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
     "disabledSites": "Disabled sites",
     "disabledSitesDescription": "Sites where the autofill popup will not appear.",
     "clearAllDisabledSites": "Clear all disabled sites",
@@ -434,6 +432,12 @@
         "female": "נקבה"
       }
     },
+    "credentialAutofill": "Credential autofill",
+    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
+    "totpAutofill": "2FA code autofill",
+    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
+    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
+    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
     "loginSave": {
       "title": "Save Login Prompt",
       "description": "Show a prompt to save login credentials when you submit a login form on a website.",
