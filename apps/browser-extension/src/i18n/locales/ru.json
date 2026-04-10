@@ -208,7 +208,7 @@
     "allItemsInFolders": "Все ваши данные разложены по папкам. Выберите нужную папку выше или воспользуйтесь поиском, чтобы найти конкретную запись.",
     "deleteFolder": "Удалить папку",
     "deleteFolderKeepItems": "Удалить только папку",
-    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+    "deleteFolderKeepItemsDescription": "Элементы будут перемещены в родительскую папку.",
     "deleteFolderAndItems": "Удалить папку и все элементы",
     "deleteFolderAndItemsDescription": "{{count}} объект(ов) будет перемещено в раздел «Недавно удалённые».",
     "filters": {
