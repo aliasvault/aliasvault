@@ -545,6 +545,7 @@
     "sizeKB": "KB",
     "offlineMessage": "Du är offline. Anslut till internet för att ladda dina e-postmeddelanden.",
     "emptyMessage": "Du har inte mottagit några e-postmeddelanden på dina privata e-postadresser än. När du fått ett nytt e-postmeddelande så visas det här.",
+    "loadMore": "Load More ({{count}} remaining)",
     "time": {
       "justNow": "precis nu",
       "minutesAgo_single": "{{count}} minut sedan",
