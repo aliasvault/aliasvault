@@ -326,7 +326,7 @@
     "noEmails": "Geen e-mails gevonden",
     "noEmailsDescription": "Je hebt nog geen e-mails ontvangen op je privé e-mailadressen. Wanneer je een nieuwe e-mail ontvangt, zal deze hier verschijnen.",
     "offlineMessage": "Je bent offline. Maak verbinding met het internet om je e-mails te laden.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Meer laden ({{count}} resterend)",
     "dateFormat": {
       "justNow": "zojuist",
       "minutesAgo_single": "{{count}} min geleden",
