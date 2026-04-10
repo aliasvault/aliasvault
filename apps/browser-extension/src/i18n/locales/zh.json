@@ -326,6 +326,7 @@
     "noEmails": "未找到邮件",
     "noEmailsDescription": "您的私人邮箱地址尚未收到任何邮件。当您收到新邮件时，会显示在这里。",
     "offlineMessage": "您处于离线状态。请连接互联网以加载邮件。",
+    "loadMore": "Load More ({{count}} remaining)",
     "dateFormat": {
       "justNow": "刚刚",
       "minutesAgo_single": "{{count}}分钟前",
