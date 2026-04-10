@@ -326,6 +326,7 @@
     "noEmails": "Nu s-au găsit e-mailuri",
     "noEmailsDescription": "Nu ai primit încă niciun e-mail pe adresele tale private. Atunci când vei primi un e-mail nou, acesta va apărea aici.",
     "offlineMessage": "Sunteți offline. Conectează-te la internet pentru a încărca e-mailurile.",
+    "loadMore": "Încarcă mai multe ({{count}} rămase)",
     "dateFormat": {
       "justNow": "acum",
       "minutesAgo_single": "{{count}} minut în urmă",
@@ -432,12 +433,12 @@
         "female": "Feminin"
       }
     },
-    "credentialAutofill": "Credential autofill",
-    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
-    "totpAutofill": "2FA code autofill",
-    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
-    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
-    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
+    "credentialAutofill": "Completează automat datele de autentificare",
+    "credentialAutofillDescription": "Afișează fereastra de completare automată când sunt detectate câmpurile de utilizator și parolă",
+    "totpAutofill": "Completează automat codul 2FA",
+    "totpAutofillDescription": "Afișează fereastra de completare automată când sunt detectate câmpurile pentru codul 2FA",
+    "autoCopyTotpOnAutofill": "Copiază automat codul 2FA în clipboard",
+    "autoCopyTotpOnAutofillDescription": "Copiază automat primul cod 2FA în clipboard după completarea automată a datelor de autentificare",
     "loginSave": {
       "title": "Salvează solicitarea de autentificare",
       "description": "Afișează o solicitare de salvare a datelor de autentificare când trimiți un formular de conectare pe un site.",
