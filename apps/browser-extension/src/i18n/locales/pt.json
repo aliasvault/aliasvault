@@ -326,6 +326,7 @@
     "noEmails": "Nenhum e-mail encontrado",
     "noEmailsDescription": "Você ainda não recebeu nenhum e-mail em seus endereços de e-mail privados. Quando receber um novo e-mail, ele aparecerá aqui.",
     "offlineMessage": "Você está offline. Por favor, conecte-se à internet para carregar seus e-mails.",
+    "loadMore": "Load More ({{count}} remaining)",
     "dateFormat": {
       "justNow": "agora",
       "minutesAgo_single": "há {{count}} minuto",
