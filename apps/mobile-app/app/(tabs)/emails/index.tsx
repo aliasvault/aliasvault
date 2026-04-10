@@ -1,7 +1,7 @@
 import { useNavigation } from 'expo-router';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Platform, View, ScrollView, RefreshControl, Animated } from 'react-native';
+import { StyleSheet, Platform, View, ScrollView, RefreshControl, Animated, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
@@ -38,12 +38,17 @@ export default function EmailsScreen() : React.ReactNode {
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 200);
   const [isRefreshing, setIsRefreshing] = useMinDurationLoading(false, 200);
   const [isTabFocused, setIsTabFocused] = useState(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalRecords, setTotalRecords] = useState<number>(0);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const insets = useSafeAreaInsets();
+
+  const PAGE_SIZE = 50;
 
   /**
    * Load emails.
    */
-  const loadEmails = useCallback(async () : Promise<void> => {
+  const loadEmails = useCallback(async (reset: boolean = true) : Promise<void> => {
     try {
       setError(null);
 
@@ -61,11 +66,10 @@ export default function EmailsScreen() : React.ReactNode {
       const emailAddresses = await dbContext.sqliteClient.items.getAllEmailAddresses();
 
       try {
-        // For now we only show the latest 50 emails. No pagination.
         const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', {
           addresses: emailAddresses,
           page: 1,
-          pageSize: 50,
+          pageSize: PAGE_SIZE,
         });
 
         // Decrypt emails locally using private key associated with the email address
@@ -74,7 +78,11 @@ export default function EmailsScreen() : React.ReactNode {
         // Decrypt emails locally using public/private key pairs
         const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, encryptionKeys);
 
-        setEmails(decryptedEmails);
+        if (reset) {
+          setEmails(decryptedEmails);
+          setCurrentPage(data.currentPage);
+          setTotalRecords(data.totalRecords);
+        }
         setIsLoading(false);
       } catch {
         /*
@@ -99,7 +107,51 @@ export default function EmailsScreen() : React.ReactNode {
     } catch (err) {
       setError(err instanceof Error ? err.message : t('common.error'));
     }
-  }, [dbContext, webApi, setIsLoading, t]);
+  }, [dbContext, webApi, setIsLoading, t, PAGE_SIZE]);
+
+  /**
+   * Load more emails (next page).
+   */
+  const loadMoreEmails = useCallback(async () : Promise<void> => {
+    if (isLoadingMore || !dbContext?.sqliteClient || dbContext.isOffline) {
+      return;
+    }
+
+    try {
+      setIsLoadingMore(true);
+      setError(null);
+
+      const emailAddresses = await dbContext.sqliteClient.items.getAllEmailAddresses();
+      const nextPage = currentPage + 1;
+
+      const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', {
+        addresses: emailAddresses,
+        page: nextPage,
+        pageSize: PAGE_SIZE,
+      });
+
+      // Decrypt emails locally
+      const encryptionKeys = await dbContext.sqliteClient.getAllEncryptionKeys();
+      const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, encryptionKeys);
+
+      // Append to existing emails
+      setEmails((prevEmails) => [...prevEmails, ...decryptedEmails]);
+      setCurrentPage(data.currentPage);
+      setTotalRecords(data.totalRecords);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('common.error'));
+      console.error('Failed to load more emails:', err);
+
+      // Show toast for error
+      Toast.show({
+        type: 'error',
+        text1: t('common.errors.unknownError'),
+        position: 'bottom',
+      });
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [isLoadingMore, dbContext?.sqliteClient, dbContext.isOffline, webApi, currentPage, PAGE_SIZE, t]);
 
   useEffect(() => {
     const unsubscribeFocus = navigation.addListener('focus', () => {
@@ -176,7 +228,31 @@ export default function EmailsScreen() : React.ReactNode {
     loadingContainer: {
       flex: 1,
     },
+    loadMoreButton: {
+      alignItems: 'center',
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      justifyContent: 'center',
+      opacity: 1,
+      paddingVertical: 12,
+    },
+    loadMoreButtonDisabled: {
+      opacity: 0.5,
+    },
+    loadMoreButtonText: {
+      color: '#FFFFFF',
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    loadMoreSpinner: {
+      marginRight: 8,
+    },
   });
+
+  /**
+   * Check if there are more emails to load.
+   */
+  const hasMoreEmails = totalRecords > emails.length;
 
   /**
    * Render the content.
@@ -216,9 +292,38 @@ export default function EmailsScreen() : React.ReactNode {
       );
     }
 
-    return emails.map((email) => (
-      <EmailCard key={email.id} email={email} />
-    ));
+    return (
+      <>
+        {emails.map((email) => (
+          <EmailCard key={email.id} email={email} />
+        ))}
+
+        {/* Load More Button */}
+        {hasMoreEmails && (
+          <TouchableOpacity
+            style={[styles.loadMoreButton, isLoadingMore && styles.loadMoreButtonDisabled]}
+            onPress={loadMoreEmails}
+            disabled={isLoadingMore}
+            activeOpacity={0.7}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {isLoadingMore && (
+                <ActivityIndicator
+                  size="small"
+                  color="#FFFFFF"
+                  style={styles.loadMoreSpinner}
+                />
+              )}
+              <ThemedText style={styles.loadMoreButtonText}>
+                {isLoadingMore
+                  ? t('common.loading')
+                  : t('emails.loadMore', { count: totalRecords - emails.length })}
+              </ThemedText>
+            </View>
+          </TouchableOpacity>
+        )}
+      </>
+    );
   };
 
   return (
