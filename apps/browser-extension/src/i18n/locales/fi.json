@@ -347,7 +347,6 @@
     "openWebApp": "Avaa verkkosovellus",
     "lock": "Lukitse",
     "globalSettings": "Yleisesti pätevät asetukset",
-    "autofillPopup": "Automaattisen täytön ponnahdusikkuna",
     "activeOnAllSites": "Aktiivisena kaikilla sivustoilla (ellei sitä ole poistettu käytöstä alla)",
     "disabledOnAllSites": "Pois käytöstä kaikilla sivustoilla",
     "rightClickContextMenu": "Oikea-napsauta kontekstivalikkoa",
@@ -361,7 +360,6 @@
     "enabledForThisSite": "Otettu käyttöön tällä sivustolla",
     "disabledForThisSite": "Poistettu käytöstä tällä sivustolla",
     "resetAllSiteSettings": "Nollaa kaikki sivustokohtaiset asetukset",
-    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
     "disabledSites": "Disabled sites",
     "disabledSitesDescription": "Sites where the autofill popup will not appear.",
     "clearAllDisabledSites": "Clear all disabled sites",
@@ -434,6 +432,12 @@
         "female": "Nainen"
       }
     },
+    "credentialAutofill": "Credential autofill",
+    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
+    "totpAutofill": "2FA code autofill",
+    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
+    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
+    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
     "loginSave": {
       "title": "Save Login Prompt",
       "description": "Show a prompt to save login credentials when you submit a login form on a website.",
