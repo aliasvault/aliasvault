@@ -432,12 +432,12 @@
         "female": "Vrouwelijk"
       }
     },
-    "credentialAutofill": "Credential autofill",
-    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
-    "totpAutofill": "2FA code autofill",
-    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
-    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
-    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
+    "credentialAutofill": "Automatisch invullen van inloggegevens",
+    "credentialAutofillDescription": "Automatisch invullen popup weergeven wanneer gebruikersnaam/wachtwoord velden worden gedetecteerd",
+    "totpAutofill": "Automatisch invullen van 2FA code",
+    "totpAutofillDescription": "Automatisch invullen popup tonen wanneer 2FA code-velden worden gedetecteerd",
+    "autoCopyTotpOnAutofill": "2FA automatisch naar klembord kopiëren",
+    "autoCopyTotpOnAutofillDescription": "Automatisch de eerste 2FA-code kopiëren naar het klembord na het invullen van de inloggegevens",
     "loginSave": {
       "title": "Inloggegevens opslaan",
       "description": "Toon een melding om inloggegevens op te slaan wanneer je inlogt op een website.",
