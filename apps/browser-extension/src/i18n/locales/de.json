@@ -347,7 +347,6 @@
     "openWebApp": "Web-App öffnen",
     "lock": "Sperren",
     "globalSettings": "Allgemeine Einstellungen",
-    "autofillPopup": "Autofill-Popup",
     "activeOnAllSites": "Auf allen Seiten aktiv (sofern nicht unten deaktiviert)",
     "disabledOnAllSites": "Auf allen Seiten deaktiviert",
     "rightClickContextMenu": "Kontextmenü mit Rechtsklick",
@@ -361,7 +360,6 @@
     "enabledForThisSite": "Für diese Seite aktiviert",
     "disabledForThisSite": "Für diese Seite deaktivieren",
     "resetAllSiteSettings": "Alle seitenspezifischen Einstellungen zurücksetzen",
-    "autofillPopupDescription": "Zeige das Autofill-Popup, wenn Anmeldefelder erkannt werden.",
     "disabledSites": "Deaktivierte Webseiten",
     "disabledSitesDescription": "Webseiten, wo das Autofill-Popup nicht angezeigt wird.",
     "clearAllDisabledSites": "List der deaktivierten Webseiten leeren",
@@ -434,6 +432,12 @@
         "female": "Weiblich"
       }
     },
+    "credentialAutofill": "Credential autofill",
+    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
+    "totpAutofill": "2FA code autofill",
+    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
+    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
+    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
     "loginSave": {
       "title": "Aufforderung zum Speichern von Anmeldedaten anzeigen",
       "description": "Zeige eine Aufforderung zum Speichern von Anmeldedaten, wenn Du ein Anmeldeformular einer Webseite ausfüllst.",
