@@ -545,6 +545,7 @@
     "sizeKB": "KB",
     "offlineMessage": "Du er offline. Opret venligst forbindelse til internettet for at indlæse dine e-mails.",
     "emptyMessage": "Du har ikke modtaget nogen e-mails på dine private e-mailadresser endnu. Når du modtager en ny e-mail, vil den blive vist her.",
+    "loadMore": "Load More ({{count}} remaining)",
     "time": {
       "justNow": "lige nu",
       "minutesAgo_single": "{{count}} min siden",
