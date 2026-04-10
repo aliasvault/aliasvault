@@ -326,6 +326,7 @@
     "noEmails": "Sähköposteja ei löytynyt",
     "noEmailsDescription": "Et ole vielä vastaanottanut sähköposteja yksityisissä sähköpostiosoitteissasi. Kun saat uuden sähköpostiviestin, se näkyy täällä.",
     "offlineMessage": "Olet offline-tilassa. Ole hyvä ja yhdistä internetiin ladataksesi sähköpostiosoitteesi.",
+    "loadMore": "Load More ({{count}} remaining)",
     "dateFormat": {
       "justNow": "juuri nyt",
       "minutesAgo_single": "{{count}} min sitten",
