@@ -20,7 +20,7 @@
 
 @if (EmailModalVisible)
 {
-    <EmailModal Email="EmailModalEmail" IsSpamOk="false" OnClose="CloseEmailModal" OnEmailDeleted="RefreshData" />
+    <EmailModal Email="EmailModalEmail" IsSpamOk="false" OnClose="CloseEmailModal" OnEmailDeleted="HandleEmailDeletedFromModal" />
 }
 
 <PageHeader
@@ -28,11 +28,11 @@
     Title="@Localizer["PageTitle"]"
     Description="@Localizer["PageDescription"]">
     <CustomActions>
-        @if (DbService.Settings.AutoEmailRefresh)
+        @if (DbService.Settings.AutoEmailRefresh && CurrentPage == 1)
         {
             <div class="w-3 h-3 mr-2 rounded-full bg-primary-300 border-2 border-primary-100 animate-pulse" title="@Localizer["AutoRefreshEnabledTooltip"]"></div>
         }
-        <RefreshButton OnClick="RefreshData" ButtonText="@Localizer["RefreshButton"]" />
+        <RefreshButton OnClick="HandleRefreshButtonClick" ButtonText="@Localizer["RefreshButton"]" />
     </CustomActions>
 </PageHeader>
 
@@ -391,10 +391,17 @@ else
 
     /// <summary>
     /// Check for new emails without disrupting the current view.
+    /// Only runs when on page 1 to avoid interfering with pagination.
     /// </summary>
     private async Task CheckForNewEmails()
     {
         if (!_isPageVisible || !DbService.Settings.AutoEmailRefresh)
+        {
+            return;
+        }
+
+        // Only auto-refresh when viewing page 1, otherwise it interferes with pagination
+        if (CurrentPage != 1)
         {
             return;
         }
@@ -491,10 +498,20 @@ else
     private void HandlePageChanged(int newPage)
     {
         CurrentPage = newPage;
-        _ = RefreshData();
+        _ = RefreshData(preserveCurrentPage: true);
     }
 
-    private async Task RefreshData()
+    private async Task HandleRefreshButtonClick()
+    {
+        await RefreshData();
+    }
+
+    private async Task HandleEmailDeletedFromModal()
+    {
+        await RefreshData();
+    }
+
+    private async Task RefreshData(bool preserveCurrentPage = false)
     {
         LoadingService.StartLoading("emails", 300, StateHasChanged);
         NoEmailClaims = false;
@@ -504,8 +521,11 @@ else
         SelectedEmailId = null;
         SelectedEmail = null;
 
-        // Reset pagination for fresh load
-        CurrentPage = 1;
+        // Reset pagination for fresh load (unless preserving current page for pagination)
+        if (!preserveCurrentPage)
+        {
+            CurrentPage = 1;
+        }
         EmailList.Clear();
         NewEmailIds.Clear();
         _knownEmailIds.Clear();
