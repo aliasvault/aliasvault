@@ -347,7 +347,6 @@
     "openWebApp": "Öppna webbapp",
     "lock": "Lås",
     "globalSettings": "Globala inställningar",
-    "autofillPopup": "Autofyllrutan",
     "activeOnAllSites": "Aktiv på alla webbplatser (om inte inaktiverat nedan)",
     "disabledOnAllSites": "Inaktiverad på alla webbplatser",
     "rightClickContextMenu": "Högerklicksmeny",
@@ -361,7 +360,6 @@
     "enabledForThisSite": "Aktiverad för denna webbplats",
     "disabledForThisSite": "Inaktiverad för denna webbplats",
     "resetAllSiteSettings": "Återställ alla webbplatsspecifika inställningar",
-    "autofillPopupDescription": "Visa autofyllrutan när inloggningsfält upptäcks.",
     "disabledSites": "Inaktiverade webbplatser",
     "disabledSitesDescription": "Webbplatser där autofyllrutan inte kommer att visas.",
     "clearAllDisabledSites": "Rensa alla inaktiverade sajter",
@@ -434,6 +432,12 @@
         "female": "Kvinna"
       }
     },
+    "credentialAutofill": "Credential autofill",
+    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
+    "totpAutofill": "2FA code autofill",
+    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
+    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
+    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
     "loginSave": {
       "title": "Spara Inloggningsdialog",
       "description": "Visa en dialogruta för att spara inloggningsuppgifter när du skickar in ett inloggningsformulär på en webbplats.",
