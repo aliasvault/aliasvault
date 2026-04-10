@@ -545,6 +545,7 @@
     "sizeKB": "kB",
     "offlineMessage": "Keine Verbindung. Bitte verbinde Dich mit dem Internet, um Deine E-Mails zu laden.",
     "emptyMessage": "Du hast bisher keine E-Mails an Deine privaten E-Mail-Adressen erhalten. Neue E-Mails werden hier angezeigt, sobald sie eintreffen.",
+    "loadMore": "Load More ({{count}} remaining)",
     "time": {
       "justNow": "gerade eben",
       "minutesAgo_single": "vor {{count}} Minute",
