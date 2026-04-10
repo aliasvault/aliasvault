@@ -326,6 +326,7 @@
     "noEmails": "Aucun email trouvé",
     "noEmailsDescription": "Vous n'avez pas encore reçu d'emails dans vos adresses email privées. Quand vous recevez un nouvel email, il apparaîtra ici.",
     "offlineMessage": "Vous êtes déconnecté. Veuillez vous connecter à internet pour charger vos e-mails.",
+    "loadMore": "Load More ({{count}} remaining)",
     "dateFormat": {
       "justNow": "maintenant",
       "minutesAgo_single": "Il y a {{count}} minute",
