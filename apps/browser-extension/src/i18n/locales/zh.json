@@ -347,7 +347,6 @@
     "openWebApp": "打开网页应用",
     "lock": "锁定",
     "globalSettings": "全局设置",
-    "autofillPopup": "自动填充弹窗",
     "activeOnAllSites": "在所有网站上激活（除非在下方禁用）",
     "disabledOnAllSites": "在所有网站上禁用",
     "rightClickContextMenu": "右键上下文菜单",
@@ -361,7 +360,6 @@
     "enabledForThisSite": "对此网站启用",
     "disabledForThisSite": "对此网站禁用",
     "resetAllSiteSettings": "重置所有网站特定设置",
-    "autofillPopupDescription": "检测到登录字段时，显示自动填充弹窗。",
     "disabledSites": "禁用的网站",
     "disabledSitesDescription": "自动填充弹窗不会出现的网站。",
     "clearAllDisabledSites": "清除所有禁用的网站",
@@ -434,6 +432,12 @@
         "female": "女"
       }
     },
+    "credentialAutofill": "Credential autofill",
+    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
+    "totpAutofill": "2FA code autofill",
+    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
+    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
+    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
     "loginSave": {
       "title": "保存登录提示",
       "description": "在网站上提交登录表单时，显示保存登录凭据的提示。",
