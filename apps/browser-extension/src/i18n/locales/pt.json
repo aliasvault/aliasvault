@@ -347,7 +347,6 @@
     "openWebApp": "Abrir aplicativo web",
     "lock": "Bloquear",
     "globalSettings": "Configurações Gerais",
-    "autofillPopup": "Pop-up de preenchimento automático",
     "activeOnAllSites": "Ativado em todos os sites (a menos que esteja desabilitado abaixo)",
     "disabledOnAllSites": "Desativado em todos os sites",
     "rightClickContextMenu": "Menu do botão direito",
@@ -361,7 +360,6 @@
     "enabledForThisSite": "Habilitado para este site",
     "disabledForThisSite": "Desabilitado para este site",
     "resetAllSiteSettings": "Redefinir todas as configurações específicas do site",
-    "autofillPopupDescription": "Mostrar o popup de autopreenchimento quando campos de login forem detectados.",
     "disabledSites": "Sites desabilitados",
     "disabledSitesDescription": "Sites onde o popup de autopreenchimento não vão aparecer.",
     "clearAllDisabledSites": "Limpar todos os sites desabilitados",
@@ -434,6 +432,12 @@
         "female": "Feminino"
       }
     },
+    "credentialAutofill": "Credential autofill",
+    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
+    "totpAutofill": "2FA code autofill",
+    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
+    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
+    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
     "loginSave": {
       "title": "Salvar Prompt de Login",
       "description": "Mostra um prompt para salvar credenciais de login quando você faz login em algum website.",
