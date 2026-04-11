@@ -187,7 +187,7 @@
     <comment>Progress text during decryption</comment>
   </data>
   <data name="IncorrectPasswordError" xml:space="preserve">
-    <value>Incorrect password. Please try again.</value>
+    <value>Senha incorreta. Por favor tente novamente.</value>
     <comment>Error message for incorrect decryption password</comment>
   </data>
   <data name="DecryptionErrorGeneric" xml:space="preserve">
