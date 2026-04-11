@@ -326,7 +326,7 @@
     "noEmails": "Aucun email trouvé",
     "noEmailsDescription": "Vous n'avez pas encore reçu d'emails dans vos adresses email privées. Quand vous recevez un nouvel email, il apparaîtra ici.",
     "offlineMessage": "Vous êtes déconnecté. Veuillez vous connecter à internet pour charger vos e-mails.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Charger plus ({{count}} restants)",
     "dateFormat": {
       "justNow": "maintenant",
       "minutesAgo_single": "Il y a {{count}} minute",
@@ -433,12 +433,12 @@
         "female": "Femme"
       }
     },
-    "credentialAutofill": "Credential autofill",
-    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
-    "totpAutofill": "2FA code autofill",
-    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
-    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
-    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
+    "credentialAutofill": "Remplissage automatique des identifiants",
+    "credentialAutofillDescription": "Afficher la popup de saisie automatique lorsque les champs nom d'utilisateur/mot de passe sont détectés",
+    "totpAutofill": "Remplissage automatique du code 2FA",
+    "totpAutofillDescription": "Afficher la popup de saisie automatique lorsque des champs de code 2FA sont détectés",
+    "autoCopyTotpOnAutofill": "Copie automatique du code 2FA dans le presse-papiers",
+    "autoCopyTotpOnAutofillDescription": "Copier automatiquement le premier code 2FA dans le presse-papiers après le remplissage automatique des identifiants",
     "loginSave": {
       "title": "Enregistrer l'invite de connexion",
       "description": "Afficher une invite pour enregistrer les identifiants de connexion lorsque vous soumettez un formulaire de connexion sur un site Web.",
