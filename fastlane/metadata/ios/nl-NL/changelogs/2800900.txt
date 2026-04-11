@@ -1,0 +1,5 @@
+- Ondersteuning toegevoegd voor submappen
+- Meer auto-lock timeout opties toegevoegd
+- "Meer laden" knop toegevoegd aan email pagina
+- Rate-limiting toegevoegd aan wachtwoord ontgrendelpagina
+- Bug verholpen met het openen van email bijlagen

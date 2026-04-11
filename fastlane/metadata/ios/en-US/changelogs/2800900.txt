@@ -1,0 +1,5 @@
+- Add support for nested subfolders
+- Add more auto-lock timeout options
+- Add load more button to email page
+- Add rate-limiting to local password unlock
+- Fix bug with opening email attachments

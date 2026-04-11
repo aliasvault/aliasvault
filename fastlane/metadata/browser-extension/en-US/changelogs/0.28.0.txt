@@ -1,0 +1,7 @@
+- Add support for nested subfolders
+- Add auto-copy 2FA code to clipboard after autofill event
+- Add more auto-lock timeout options
+- Add load more button to email page
+- Improve 2FA autofill field detection
+- Add rate-limiting to local password unlock
+- Bugfixes
