@@ -504,7 +504,7 @@
       "folderNameRequired": "Ordnername ist erforderlich",
       "deleteFolder": "Ordner löschen",
       "deleteFolderKeepItems": "Nur Ordner löschen",
-      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+      "deleteFolderKeepItemsDescription": "Elemente werden in den übergeordneten Ordner verschoben.",
       "deleteFolderAndItems": "Ordner und alle Elemente löschen",
       "deleteFolderAndItemsDescription": "{{count}} Elemente(n) werden nach kürzlich gelöschtem Element verschoben.",
       "emptyFolderHint": "Dieser Ordner ist leer. Um Elemente in diesen Ordner zu verschieben, bearbeiten Sie das Element und wählen Sie diesen Ordner.",
@@ -545,7 +545,7 @@
     "sizeKB": "kB",
     "offlineMessage": "Keine Verbindung. Bitte verbinde Dich mit dem Internet, um Deine E-Mails zu laden.",
     "emptyMessage": "Du hast bisher keine E-Mails an Deine privaten E-Mail-Adressen erhalten. Neue E-Mails werden hier angezeigt, sobald sie eintreffen.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Weitere laden ({{count}} verbleibend)",
     "time": {
       "justNow": "gerade eben",
       "minutesAgo_single": "vor {{count}} Minute",
