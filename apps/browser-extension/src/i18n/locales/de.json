@@ -208,7 +208,7 @@
     "allItemsInFolders": "Alle Ihre Elemente sind in Ordnern organisiert. Tippen Sie auf einen Ordner oben, um Ihre Anmeldedaten anzuzeigen, oder verwenden Sie die Suche, um bestimmte Elemente zu finden.",
     "deleteFolder": "Ordner löschen",
     "deleteFolderKeepItems": "Nur Ordner löschen",
-    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+    "deleteFolderKeepItemsDescription": "Elemente werden in den übergeordneten Ordner verschoben.",
     "deleteFolderAndItems": "Ordner und alle Elemente löschen",
     "deleteFolderAndItemsDescription": "{{count}} Element(e) nach \"Kürzlich gelöscht\" verschoben.",
     "filters": {
@@ -326,7 +326,7 @@
     "noEmails": "Keine E-Mails gefunden",
     "noEmailsDescription": "Du hast bisher keine E-Mails an Deine privaten E-Mail-Adressen erhalten. Neue E-Mails werden hier angezeigt, sobald sie eintreffen.",
     "offlineMessage": "Keine Verbindung. Bitte verbinde Dich mit dem Internet, um Deine E-Mails zu laden.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Weitere laden ({{count}} verbleibend)",
     "dateFormat": {
       "justNow": "gerade eben",
       "minutesAgo_single": "vor {{count}} Minute",
@@ -433,12 +433,12 @@
         "female": "Weiblich"
       }
     },
-    "credentialAutofill": "Credential autofill",
-    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
-    "totpAutofill": "2FA code autofill",
-    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
-    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
-    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
+    "credentialAutofill": "Anmeldeinformationen-Autofill",
+    "credentialAutofillDescription": "Zeige Autofill Popup wenn Benutzername/Passwort-Felder erkannt wurden",
+    "totpAutofill": "2FA-Code Autofill",
+    "totpAutofillDescription": "Zeige Autofill-Popup wenn 2FA-Code-Felder erkannt wurden",
+    "autoCopyTotpOnAutofill": "2FA-Code automatisch in die Zwischenablage kopieren",
+    "autoCopyTotpOnAutofillDescription": "Kopiere automatisch den nächsten 2FA-Code in die Zwischenablage wenn die Zugangsdaten per Autofill ausgefüllt wurden",
     "loginSave": {
       "title": "Aufforderung zum Speichern von Anmeldedaten anzeigen",
       "description": "Zeige eine Aufforderung zum Speichern von Anmeldedaten, wenn Du ein Anmeldeformular einer Webseite ausfüllst.",
