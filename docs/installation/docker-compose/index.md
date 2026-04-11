@@ -63,6 +63,7 @@ services:
       SUPPORT_EMAIL: ""
       PRIVATE_EMAIL_DOMAINS: ""
       SMTP_TLS_ENABLED: "false"
+      SMTP_ADVERTISED_HOSTNAME: "aliasvault.yourdomain.com"
 ```
 3. Run `docker compose up -d` to start the container.
 4. After the container has started, AliasVault should now be running. You can access it at:
@@ -188,6 +189,17 @@ Afterwards, when you login to the AliasVault web app, you should now be able to 
 Important: DNS propagation can take up to 24-48 hours. During this time, email delivery might be inconsistent.
 
 If you encounter any issues, feel free to join the [Discord chat](https://discord.gg/DsaXMTEtpF) to get help from other users and maintainers.
+
+### SMTP advertised hostname (banner / EHLO and reverse DNS)
+
+When you expose SMTP (ports 25 and 587), remote clients see a **hostname** in the SMTP **banner** and **EHLO** responses. Diagnostic tools (for example [MXToolbox SMTP Diagnostics](https://mxtoolbox.com/diagnostic.aspx)) often check that this name is consistent with **reverse DNS (PTR)** for your server's public IP. **PTR** is configured at your provider; AliasVault only controls the **announced** name.
+
+Set **`SMTP_ADVERTISED_HOSTNAME`** in the `environment:` section of your Compose file (or in an `.env` file loaded by Compose) to the **same FQDN** as your mail host—typically the hostname your **MX** record targets (e.g. `mail.example.com`). Leave it empty only if you accept the fallback (OS/container hostname), which usually **does not** match PTR and is unsuitable for serious inbound mail.
+
+Restart the container after changing this value.
+
+{: .note }
+The [install script](../script/index.md) can walk you through the same setting interactively when you use `./install.sh configure-email` on a multi-container install.
 
 ### Optional: SMTP TLS (STARTTLS)
 

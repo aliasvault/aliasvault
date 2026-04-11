@@ -8,6 +8,7 @@
 namespace AliasVault.IntegrationTests.SmtpServer;
 
 using System.Data.Common;
+using System.Net;
 using AliasVault.SmtpService;
 using AliasVault.SmtpService.Handlers;
 using AliasVault.SmtpService.Workers;
@@ -23,12 +24,19 @@ using Microsoft.Extensions.Hosting;
 public class TestHostBuilder : AbstractTestHostBuilder
 {
     /// <summary>
+    /// Hostname advertised in SMTP banner / EHLO for integration tests (must match production resolver usage).
+    /// </summary>
+    public const string IntegrationAdvertisedHostname = "mail.integration.test";
+
+    /// <summary>
     /// Builds the SmtpService test host with a provided database connection.
     /// </summary>
     /// <param name="dbConnection">The database connection to use for the test.</param>
     /// <returns>IHost.</returns>
     public IHost Build(DbConnection dbConnection)
     {
+        Environment.SetEnvironmentVariable("SMTP_ADVERTISED_HOSTNAME", IntegrationAdvertisedHostname);
+
         // Get base builder with database connection already configured.
         var builder = CreateBuilder();
 
@@ -37,13 +45,10 @@ public class TestHostBuilder : AbstractTestHostBuilder
         {
             // Override database connection with provided connection.
             services.Remove(services.First(x => x.ServiceType == typeof(IConfiguration)));
+            var memorySettings = CreateMemoryConfigurationSettings(dbConnection.ConnectionString);
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true)
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["DatabaseProvider"] = "postgresql",
-                    ["ConnectionStrings:AliasServerDbContext"] = dbConnection.ConnectionString,
-                })
+                .AddInMemoryCollection(memorySettings)
                 .Build();
 
             services.AddSingleton<IConfiguration>(configuration);
@@ -60,6 +65,8 @@ public class TestHostBuilder : AbstractTestHostBuilder
     /// <returns>IHost.</returns>
     public IHost Build()
     {
+        Environment.SetEnvironmentVariable("SMTP_ADVERTISED_HOSTNAME", IntegrationAdvertisedHostname);
+
         // Get base builder with database connection already configured.
         var builder = CreateBuilder();
 
@@ -78,18 +85,25 @@ public class TestHostBuilder : AbstractTestHostBuilder
     /// <param name="services">The service collection to configure.</param>
     private static void ConfigureSmtpServices(IServiceCollection services)
     {
-        services.AddSingleton(new Config
+        services.AddSingleton(provider =>
         {
-            AllowedToDomains = new List<string> { "example.tld" },
-            SmtpTlsEnabled = "false",
+            var configuration = provider.GetRequiredService<IConfiguration>();
+            return new Config
+            {
+                AllowedToDomains = new List<string> { "example.tld" },
+                SmtpTlsEnabled = "false",
+            };
         });
 
         services.AddTransient<IMessageStore, DatabaseMessageStore>();
         services.AddSingleton<SmtpServer>(
             provider =>
             {
+                var advertisedHostname = ResolveAdvertisedHostname(
+                    Environment.GetEnvironmentVariable("SMTP_ADVERTISED_HOSTNAME"),
+                    Dns.GetHostName);
                 var options = new SmtpServerOptionsBuilder()
-                    .ServerName("aliasvault");
+                    .ServerName(advertisedHostname);
 
                 // Note: port 25 doesn't work in GitHub actions so we use these instead for the integration tests:
                 // - 2525 for the SMTP server
@@ -105,5 +119,29 @@ public class TestHostBuilder : AbstractTestHostBuilder
             });
 
         services.AddHostedService<SmtpServerWorker>();
+    }
+
+    private static string ResolveAdvertisedHostname(
+        string? environmentValue,
+        Func<string> dnsHostNameFallback)
+    {
+        var fromEnvironment = TrimOrNull(environmentValue);
+        if (fromEnvironment != null)
+        {
+            return fromEnvironment;
+        }
+
+        return dnsHostNameFallback();
+    }
+
+    private static string? TrimOrNull(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var trimmed = value.Trim();
+        return trimmed.Length == 0 ? null : trimmed;
     }
 }
