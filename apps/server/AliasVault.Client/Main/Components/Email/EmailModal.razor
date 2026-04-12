@@ -47,6 +47,24 @@
                 </div>
             </div>
 
+            <!-- Format Switcher -->
+            <div class="px-4 py-2 border-b flex gap-1 bg-gray-50 dark:bg-gray-800">
+                <button @onclick="() => SetViewMode(EmailViewMode.Html)"
+                        class="@(_viewMode == EmailViewMode.Html ? "px-3 py-1 text-sm font-medium rounded-md bg-blue-500 text-white" : "px-3 py-1 text-sm font-medium rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700")"
+                        disabled="@(string.IsNullOrWhiteSpace(Email?.MessageHtml))">
+                    HTML
+                </button>
+                <button @onclick="() => SetViewMode(EmailViewMode.Plain)"
+                        class="@(_viewMode == EmailViewMode.Plain ? "px-3 py-1 text-sm font-medium rounded-md bg-blue-500 text-white" : "px-3 py-1 text-sm font-medium rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700")"
+                        disabled="@(Email?.MessagePlain == null)">
+                    Plain
+                </button>
+                <button @onclick="() => SetViewMode(EmailViewMode.Source)"
+                        class="@(_viewMode == EmailViewMode.Source ? "px-3 py-1 text-sm font-medium rounded-md bg-blue-500 text-white" : "px-3 py-1 text-sm font-medium rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700")">
+                    Source
+                </button>
+            </div>
+
             <!-- Scrollable Content -->
             <div class="flex-1 overflow-y-auto p-4">
                 <div class="text-gray-700 dark:text-gray-300">
@@ -113,6 +131,16 @@
     /// </summary>
     [Parameter]
     public EventCallback<int> OnEmailDeleted { get; set; }
+
+    /// <summary>
+    /// The available email view modes.
+    /// </summary>
+    private enum EmailViewMode { Html, Plain, Source }
+
+    /// <summary>
+    /// The currently selected view mode.
+    /// </summary>
+    private EmailViewMode _viewMode = EmailViewMode.Html;
 
     /// <summary>
     /// The message body to display
@@ -237,30 +265,75 @@
         }
     }
 
+    /// <summary>
+    /// Sets the email body based on the selected view mode.
+    /// </summary>
+    private void SetViewMode(EmailViewMode mode)
+    {
+        _viewMode = mode;
+        if (Email == null)
+        {
+            return;
+        }
+
+        switch (mode)
+        {
+            case EmailViewMode.Html:
+                if (!string.IsNullOrWhiteSpace(Email.MessageHtml))
+                {
+                    EmailBody = ConversionUtility.SanitizeAndPrepareEmailHtml(Email.MessageHtml);
+                }
+                else
+                {
+                    EmailBody = Localizer["NoEmailBody"];
+                }
+
+                break;
+            case EmailViewMode.Plain:
+                if (Email.MessagePlain != null)
+                {
+                    var escapedText = System.Net.WebUtility.HtmlEncode(Email.MessagePlain);
+                    EmailBody = $"<pre style='font-family: system-ui, -apple-system, sans-serif; white-space: pre-wrap; word-wrap: break-word; margin: 0;'>{escapedText}</pre>";
+                }
+                else
+                {
+                    EmailBody = Localizer["NoEmailBody"];
+                }
+
+                break;
+            case EmailViewMode.Source:
+                if (!string.IsNullOrWhiteSpace(Email.MessageHtml))
+                {
+                    var escapedHtml = System.Net.WebUtility.HtmlEncode(Email.MessageHtml);
+                    EmailBody = $"<pre style='font-family: monospace; white-space: pre-wrap; word-wrap: break-word; margin: 0; font-size: 12px; line-height: 1.4;'>{escapedHtml}</pre>";
+                }
+                else
+                {
+                    EmailBody = Localizer["NoEmailBody"];
+                }
+
+                break;
+        }
+    }
+
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-        // Determine email body
+        // Determine initial view mode and email body
         if (Email != null)
         {
-            // Check if there is HTML content, if not, then set default viewtype to plain
-            if (Email.MessageHtml is not null && !string.IsNullOrWhiteSpace(Email.MessageHtml))
+            if (!string.IsNullOrWhiteSpace(Email.MessageHtml))
             {
-                // HTML is available, sanitize and prepare for display
-                EmailBody = ConversionUtility.SanitizeAndPrepareEmailHtml(Email.MessageHtml);
+                SetViewMode(EmailViewMode.Html);
             }
-            else if (Email.MessagePlain is not null)
+            else if (Email.MessagePlain != null)
             {
-                // No HTML but plain text is available
-                // Escape HTML entities and wrap in pre tag to preserve formatting
-                var escapedText = System.Net.WebUtility.HtmlEncode(Email.MessagePlain);
-                EmailBody = $"<pre style='font-family: system-ui, -apple-system, sans-serif; white-space: pre-wrap; word-wrap: break-word; margin: 0;'>{escapedText}</pre>";
+                SetViewMode(EmailViewMode.Plain);
             }
             else
             {
-                // No HTML and no plain text available
                 EmailBody = Localizer["NoEmailBody"];
             }
         }
