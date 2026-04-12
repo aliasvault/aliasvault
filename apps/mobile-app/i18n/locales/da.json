@@ -504,7 +504,7 @@
       "folderNameRequired": "Mappenavn er påkrævet",
       "deleteFolder": "Slet mappe",
       "deleteFolderKeepItems": "Slet kun mappe",
-      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+      "deleteFolderKeepItemsDescription": "Punkter vil blive flyttet til den overordnede mappe.",
       "deleteFolderAndItems": "Slet mappe og alle elementer",
       "deleteFolderAndItemsDescription": "{{count}} element(er) vil blive flyttet til Senest slettet.",
       "emptyFolderHint": "Denne mappe er tom. For at flytte elementer til denne mappe skal du redigere elementet og vælge denne mappe.",
@@ -545,7 +545,7 @@
     "sizeKB": "KB",
     "offlineMessage": "Du er offline. Opret venligst forbindelse til internettet for at indlæse dine e-mails.",
     "emptyMessage": "Du har ikke modtaget nogen e-mails på dine private e-mailadresser endnu. Når du modtager en ny e-mail, vil den blive vist her.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Indlæs flere ({{count}} tilbage)",
     "time": {
       "justNow": "lige nu",
       "minutesAgo_single": "{{count}} min siden",

@@ -32,7 +32,7 @@
     <comment>Message shown when no folders exist</comment>
   </data>
   <data name="MaxDepth">
-    <value>max depth</value>
+    <value>maks dybde</value>
     <comment>Label shown for folders at maximum nesting depth</comment>
   </data>
 </root>
