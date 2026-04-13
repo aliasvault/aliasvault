@@ -294,7 +294,9 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
     private async Task<bool> ProcessEmailForRecipient(MimeMessage message, IMailbox? toAddress)
     {
         // Check if toAddress domain is allowed.
-        if (toAddress is null || !config.AllowedToDomains.Contains(toAddress.Host.ToLowerInvariant()))
+        if (toAddress is null ||
+            string.IsNullOrWhiteSpace(toAddress.Host) ||
+            !config.AllowedToDomains.Contains(toAddress.Host.Trim().ToLowerInvariant()))
         {
             // ToAddress domain is not allowed.
             logger.LogInformation(
@@ -393,4 +395,5 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
 
         return newEmail.Id;
     }
+
 }

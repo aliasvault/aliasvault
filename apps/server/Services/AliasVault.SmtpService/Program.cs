@@ -34,7 +34,12 @@ builder.Services.ConfigureLogging(builder.Configuration, Assembly.GetExecutingAs
 // Create global config object, get values from environment variables.
 Config config = new Config();
 var emailDomains = Environment.GetEnvironmentVariable("PRIVATE_EMAIL_DOMAINS") ?? string.Empty;
-config.AllowedToDomains = emailDomains.Split(',').ToList();
+config.AllowedToDomains = emailDomains
+    .Split(',')
+    .Where(static x => !string.IsNullOrWhiteSpace(x))
+    .Select(static x => x.Trim().ToLowerInvariant())
+    .Distinct(StringComparer.Ordinal)
+    .ToList();
 
 var tlsEnabled = Environment.GetEnvironmentVariable("SMTP_TLS_ENABLED") ?? "false";
 config.SmtpTlsEnabled = tlsEnabled;
@@ -72,6 +77,7 @@ builder.Services.AddSingleton(config);
 
 builder.Services.AddAliasVaultDatabaseConfiguration(builder.Configuration);
 builder.Services.AddTransient<IMessageStore, DatabaseMessageStore>();
+builder.Services.AddTransient<IMailboxFilter, RecipientDomainMailboxFilter>();
 builder.Services.AddSingleton(
     provider =>
     {
