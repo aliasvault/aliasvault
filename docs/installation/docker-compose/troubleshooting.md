@@ -113,7 +113,6 @@ docker compose up -d
 2. Ensure ports 25 and 587 are accessible from the internet
 3. Check your server's firewall settings
 4. Verify that your ISP/hosting provider allows SMTP traffic and does not block port 25
-5. Confirm **`SMTP_ADVERTISED_HOSTNAME`** matches your mail FQDN and is consistent with **PTR** for your public IP (see [SMTP advertised hostname](./#smtp-advertised-hostname) in the installation guide)
 
 Refer to the [installation guide](./#3-email-server-setup) for more information on how to configure your DNS records and ports.
 

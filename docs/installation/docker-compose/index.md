@@ -190,16 +190,20 @@ Important: DNS propagation can take up to 24-48 hours. During this time, email d
 
 If you encounter any issues, feel free to join the [Discord chat](https://discord.gg/DsaXMTEtpF) to get help from other users and maintainers.
 
-### SMTP advertised hostname (banner / EHLO and reverse DNS)
+### Optional: SMTP advertised hostname
 
-When you expose SMTP (ports 25 and 587), remote clients see a **hostname** in the SMTP **banner** and **EHLO** responses. Diagnostic tools (for example [MXToolbox SMTP Diagnostics](https://mxtoolbox.com/diagnostic.aspx)) often check that this name is consistent with **reverse DNS (PTR)** for your server's public IP. **PTR** is configured at your provider; AliasVault only controls the **announced** name.
+When you expose SMTP (ports 25 and 587), remote clients see a **hostname** in the SMTP **banner** and **EHLO** responses. This value defaults to `aliasvault` which works fine for general email deliverability, but some diagnostic tools may check that this name is consistent with **reverse DNS (PTR)** with your email MX record.
 
-Set **`SMTP_ADVERTISED_HOSTNAME`** in the `environment:` section of your Compose file (or in an `.env` file loaded by Compose) to the **same FQDN** as your mail host—typically the hostname your **MX** record targets (e.g. `mail.example.com`). Leave it empty only if you accept the fallback (OS/container hostname), which usually **does not** match PTR and is unsuitable for serious inbound mail.
+If you wish to set this value, update the `docker-compose.yml` file:
+
+```bash
+# ...
+    environment:
+      SMTP_ADVERTISED_HOSTNAME: "main.yourdomain1.com"
+# ...
+```
 
 Restart the container after changing this value.
-
-{: .note }
-The [install script](../script/index.md) can walk you through the same setting interactively when you use `./install.sh configure-email` on a multi-container install.
 
 ### Optional: SMTP TLS (STARTTLS)
 

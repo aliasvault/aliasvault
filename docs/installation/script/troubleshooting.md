@@ -100,7 +100,6 @@ If you are not receiving emails on your aliases, check the following:
 - Ensure ports 25 and 587 are accessible
 - Check your server's firewall settings
 - Verify that your ISP/hosting provider allows SMTP traffic
-- Ensure **`SMTP_ADVERTISED_HOSTNAME`** in `.env` matches the FQDN your **PTR** (reverse DNS) resolves to for the server's public IP, so the SMTP banner/EHLO aligns with external checks (see [SMTP advertised hostname](./#smtp-advertised-hostname) in the installation guide)
 
 Refer to the [installation guide](./#3-email-server-setup) for more information on how to configure your DNS records and ports.
 
