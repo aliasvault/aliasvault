@@ -158,6 +158,44 @@ public class SmtpServerTests
     }
 
     /// <summary>
+    /// RCPT TO for external domains should be rejected immediately with a 550 relay denial.
+    /// </summary>
+    [Test]
+    public async Task RcptToExternalDomain_IsRejectedAtRcptStage()
+    {
+        using var client = await ConnectRawSmtpClient();
+        using var stream = client.GetStream();
+
+        _ = await ReadSmtpLineAsync(stream); // Greeting
+        Assert.That(await SendSmtpCommandAsync(stream, "HELO localhost"), Does.StartWith("250"));
+        Assert.That(await SendSmtpCommandAsync(stream, "MAIL FROM:<sender@example.com>"), Does.StartWith("250"));
+
+        var rcptResponse = await SendSmtpCommandAsync(stream, "RCPT TO:<recipient@unknowndomain.tld>");
+        Assert.Multiple(() =>
+        {
+            Assert.That(rcptResponse, Does.StartWith("550"));
+            Assert.That(rcptResponse.ToLowerInvariant(), Does.Contain("relay not permitted"));
+        });
+    }
+
+    /// <summary>
+    /// RCPT TO for managed domains should be accepted regardless of alias existence (privacy protection).
+    /// </summary>
+    [Test]
+    public async Task RcptToManagedDomain_IsAcceptedAtRcptStage()
+    {
+        using var client = await ConnectRawSmtpClient();
+        using var stream = client.GetStream();
+
+        _ = await ReadSmtpLineAsync(stream); // Greeting
+        Assert.That(await SendSmtpCommandAsync(stream, "HELO localhost"), Does.StartWith("250"));
+        Assert.That(await SendSmtpCommandAsync(stream, "MAIL FROM:<sender@example.com>"), Does.StartWith("250"));
+
+        var rcptResponse = await SendSmtpCommandAsync(stream, "RCPT TO:<not-claimed@example.tld>");
+        Assert.That(rcptResponse, Does.StartWith("250"));
+    }
+
+    /// <summary>
     /// Tests sending a single email in plain format to the SMTP server with valid claim to check if it is processed correctly.
     /// </summary>
     /// <returns>Task.</returns>
@@ -401,5 +439,42 @@ public class SmtpServerTests
         {
             await client.DisconnectAsync(true);
         }
+    }
+
+    private static async Task<TcpClient> ConnectRawSmtpClient()
+    {
+        var client = new TcpClient();
+        const int maxRetries = 10;
+        const int retryDelayMs = 100;
+
+        for (var attempt = 1; attempt <= maxRetries; attempt++)
+        {
+            try
+            {
+                await client.ConnectAsync("127.0.0.1", 2525);
+                return client;
+            }
+            catch (SocketException) when (attempt < maxRetries)
+            {
+                await Task.Delay(retryDelayMs);
+            }
+        }
+
+        throw new InvalidOperationException("Unable to connect to SMTP server for raw command test.");
+    }
+
+    private static async Task<string> SendSmtpCommandAsync(NetworkStream stream, string command)
+    {
+        var bytes = Encoding.ASCII.GetBytes($"{command}\r\n");
+        await stream.WriteAsync(bytes.AsMemory(0, bytes.Length));
+        await stream.FlushAsync();
+        return await ReadSmtpLineAsync(stream);
+    }
+
+    private static async Task<string> ReadSmtpLineAsync(NetworkStream stream)
+    {
+        var buffer = new byte[512];
+        var bytesRead = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length));
+        return Encoding.ASCII.GetString(buffer, 0, bytesRead).Trim();
     }
 }

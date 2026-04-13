@@ -95,6 +95,7 @@ public class TestHostBuilder : AbstractTestHostBuilder
             };
         });
 
+        services.AddTransient<IMailboxFilter, RecipientDomainMailboxFilter>();
         services.AddTransient<IMessageStore, DatabaseMessageStore>();
         services.AddSingleton<SmtpServer>(
             provider =>
