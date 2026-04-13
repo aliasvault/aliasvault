@@ -140,6 +140,9 @@ runs:
     - name: Configure signing
       if: ${{ inputs.signed == 'true' }}
       run: |
+        # Ensure file ends with newline before appending (guards against
+        # a missing trailing newline breaking the first appended property).
+        [ -s android/gradle.properties ] && [ "$(tail -c 1 android/gradle.properties)" != "" ] && echo "" >> android/gradle.properties
         cat >> android/gradle.properties <<EOF
         ALIASVAULT_UPLOAD_STORE_FILE=keystore.jks
         ALIASVAULT_UPLOAD_KEY_ALIAS=${{ env.ANDROID_KEY_ALIAS }}
