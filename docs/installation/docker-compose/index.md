@@ -63,7 +63,6 @@ services:
       SUPPORT_EMAIL: ""
       PRIVATE_EMAIL_DOMAINS: ""
       SMTP_TLS_ENABLED: "false"
-      SMTP_ADVERTISED_HOSTNAME: "aliasvault.yourdomain.com"
 ```
 3. Run `docker compose up -d` to start the container.
 4. After the container has started, AliasVault should now be running. You can access it at:
@@ -199,7 +198,7 @@ If you wish to set this value, update the `docker-compose.yml` file:
 ```bash
 # ...
     environment:
-      SMTP_ADVERTISED_HOSTNAME: "main.yourdomain1.com"
+      SMTP_ADVERTISED_HOSTNAME: "mail.yourdomain1.com"
 # ...
 ```
 
