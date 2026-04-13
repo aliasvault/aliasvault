@@ -167,37 +167,6 @@ static (bool Success, X509Certificate2? Certificate, string? CertificateFile, st
     }
 }
 
-static string ResolveAdvertisedHostname(
-    string? environmentValue,
-    string? configurationValue,
-    Func<string> dnsHostNameFallback)
-{
-    var fromEnvironment = TrimOrNull(environmentValue);
-    if (fromEnvironment != null)
-    {
-        return fromEnvironment;
-    }
-
-    var fromConfiguration = TrimOrNull(configurationValue);
-    if (fromConfiguration != null)
-    {
-        return fromConfiguration;
-    }
-
-    return dnsHostNameFallback();
-}
-
-static string? TrimOrNull(string? value)
-{
-    if (string.IsNullOrWhiteSpace(value))
-    {
-        return null;
-    }
-
-    var trimmed = value.Trim();
-    return trimmed.Length == 0 ? null : trimmed;
-}
-
 // -----------------------------------------------------------------------
 // Register hosted services via Status library wrapper in order to monitor and control (start/stop) them via the database.
 // -----------------------------------------------------------------------
