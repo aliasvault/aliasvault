@@ -6,7 +6,6 @@
 //-----------------------------------------------------------------------
 
 using System.Globalization;
-using System.Net;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using AliasServerDb;
@@ -46,7 +45,7 @@ config.SmtpCertificatesPath = certPath;
 var advertisedHostname = Environment.GetEnvironmentVariable("SMTP_ADVERTISED_HOSTNAME");
 if (string.IsNullOrWhiteSpace(advertisedHostname))
 {
-    advertisedHostname = Dns.GetHostName();
+    advertisedHostname = "aliasvault";
 }
 
 // Check if TLS is requested but certificates are not available, if so, fallback to non-TLS mode.
