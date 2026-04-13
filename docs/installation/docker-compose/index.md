@@ -184,10 +184,30 @@ docker compose up -d
 
 Afterwards, when you login to the AliasVault web app, you should now be able to create an alias with your configured private domain and be able to receive email on it.
 
+Inbound SMTP recipient validation happens in two stages:
+- During `RCPT TO`, AliasVault rejects recipients whose domain is not listed in `PRIVATE_EMAIL_DOMAINS` with `550 Relay not permitted`.
+- During message processing (`DATA`), AliasVault validates alias claims and user state. This privacy-oriented split avoids exposing alias existence too early.
+
 {: .note }
 Important: DNS propagation can take up to 24-48 hours. During this time, email delivery might be inconsistent.
 
 If you encounter any issues, feel free to join the [Discord chat](https://discord.gg/DsaXMTEtpF) to get help from other users and maintainers.
+
+#### Verify non-relay behavior quickly
+
+After deploying with your final `PRIVATE_EMAIL_DOMAINS`, you can run:
+
+```bash
+nmap --script smtp-open-relay -p 25 <your-server-hostname-or-ip>
+```
+
+You can also perform a manual SMTP check. `RCPT TO` with a non-managed domain should return `550 Relay not permitted`:
+
+```text
+HELO test.local
+MAIL FROM:<sender@external.tld>
+RCPT TO:<victim@other-domain.tld>
+```
 
 ### Optional: SMTP advertised hostname
 
