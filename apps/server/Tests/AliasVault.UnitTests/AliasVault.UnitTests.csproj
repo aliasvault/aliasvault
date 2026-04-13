@@ -49,7 +49,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Services\AliasVault.SmtpService\AliasVault.SmtpService.csproj" />
         <ProjectReference Include="..\..\AliasVault.Api\AliasVault.Api.csproj" />
         <ProjectReference Include="..\..\Databases\AliasClientDb\AliasClientDb.csproj" />
         <ProjectReference Include="..\..\Databases\AliasServerDb\AliasServerDb.csproj" />
