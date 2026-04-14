@@ -208,7 +208,7 @@
     "allItemsInFolders": "Alle dine elementer er organiseret i mapper. Klik på en mappe ovenfor for at se dine oplysninger, eller brug søgefunktionen til at finde specifikke elementer.",
     "deleteFolder": "Slet mappe",
     "deleteFolderKeepItems": "Slet kun mappe",
-    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+    "deleteFolderKeepItemsDescription": "Punkter vil blive flyttet til den overordnede mappe.",
     "deleteFolderAndItems": "Slet mappe og alle elementer",
     "deleteFolderAndItemsDescription": "{{count}} element(er) vil blive flyttet til Senest Slettede.",
     "filters": {
@@ -326,7 +326,7 @@
     "noEmails": "Ingen e-mails fundet",
     "noEmailsDescription": "Du har endnu ikke modtaget nogen e-mails på dine private e-mailadresser. Når du modtager en ny e-mail, vil den blive vist her.",
     "offlineMessage": "Du er offline. Opret venligst forbindelse til internettet for at indlæse dine e-mails.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Indlæs flere ({{count}} tilbage)",
     "dateFormat": {
       "justNow": "lige nu",
       "minutesAgo_single": "{{count}} min siden",
@@ -433,12 +433,12 @@
         "female": "Kvinde"
       }
     },
-    "credentialAutofill": "Credential autofill",
-    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
-    "totpAutofill": "2FA code autofill",
-    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
-    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
-    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
+    "credentialAutofill": "Loginoplysninger autofyld",
+    "credentialAutofillDescription": "Vis popup for automatisk udfyldning når brugernavn/adgangskodefelter detekteres",
+    "totpAutofill": "2FA kode autofyld",
+    "totpAutofillDescription": "Vis popup for autofyld når 2FA-kode felter detekteres",
+    "autoCopyTotpOnAutofill": "Auto-kopiere 2FA til udklipsholder",
+    "autoCopyTotpOnAutofillDescription": "Kopier automatisk den første 2FA-kode til udklipsholderen efter automatisk udfyldning af legitimationsoplysninger",
     "loginSave": {
       "title": "Gem Login-prompt",
       "description": "Vis en prompt for at gemme loginoplysninger, når du indsender en login-formular på et websted.",

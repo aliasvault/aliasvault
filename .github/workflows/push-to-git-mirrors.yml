@@ -11,12 +11,12 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  codeberg:
-    name: Codeberg
+  mirrors:
+    name: Push to mirrors
     runs-on: ubuntu-latest
     steps:
       - name: Checkout full history
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -28,3 +28,13 @@ jobs:
           git remote add codeberg "https://${CODEBERG_USERNAME}:${CODEBERG_TOKEN}@codeberg.org/aliasvault/aliasvault.git"
           git push codeberg --force origin/main:refs/heads/main
           git push codeberg --tags --force
+
+      - name: Push to GitLab
+        if: always()
+        env:
+          GITLAB_USER: ${{ secrets.GITLAB_USER }}
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        run: |
+          git remote add gitlab "https://${GITLAB_USER}:${GITLAB_TOKEN}@gitlab.com/aliasvault/aliasvault.git"
+          git push gitlab --force origin/main:refs/heads/main
+          git push gitlab --tags --force

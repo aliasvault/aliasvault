@@ -105,18 +105,6 @@ runs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Configure Gradle JVM memory for CI
-      run: |
-        mkdir -p android
-        cat >> android/gradle.properties <<EOF
-        org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError
-        org.gradle.daemon.performance.disable-logging=true
-        org.gradle.daemon=true
-        org.gradle.caching=true
-        EOF
-      shell: bash
-      working-directory: apps/mobile-app
-
     - name: Build JS bundle (Expo)
       run: |
         mkdir -p build
@@ -152,6 +140,9 @@ runs:
     - name: Configure signing
       if: ${{ inputs.signed == 'true' }}
       run: |
+        # Ensure file ends with newline before appending (guards against
+        # a missing trailing newline breaking the first appended property).
+        [ -s android/gradle.properties ] && [ "$(tail -c 1 android/gradle.properties)" != "" ] && echo "" >> android/gradle.properties
         cat >> android/gradle.properties <<EOF
         ALIASVAULT_UPLOAD_STORE_FILE=keystore.jks
         ALIASVAULT_UPLOAD_KEY_ALIAS=${{ env.ANDROID_KEY_ALIAS }}

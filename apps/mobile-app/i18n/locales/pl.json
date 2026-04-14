@@ -47,9 +47,9 @@
     "verifyingAuthCode": "Weryfikacja kodu uwierzytelniającego",
     "verify": "Weryfikacja",
     "unlockVault": "Odblokuj sejf",
-    "unlockWithBiometric": "Unlock with {{biometric}}",
+    "unlockWithBiometric": "Odblokuj z {{biometric}}",
     "unlockWithPin": "Odblokuj za pomocą kodu PIN",
-    "unlockWithPassword": "Unlock with Password",
+    "unlockWithPassword": "Odblokuj hasłem",
     "enterPassword": "Wprowadź hasło, aby odblokować sejf",
     "enterAuthCode": "Wprowadź 6-cyfrowy kod",
     "usernamePlaceholder": "nazwa / nazwa@serwis.com",
@@ -213,7 +213,7 @@
       "biometricDisabledMessage": "Funkcja {{biometric}} jest wyłączona dla AliasVault. Aby z niej skorzystać, należy najpierw włączyć ją w ustawieniach urządzenia.",
       "biometricHelp": "Użyj danych biometrycznych, aby odblokować sejf zabezpieczony przez {{keystore}}.",
       "biometricUnavailableHelp": "Funkcja {{biometric}} jest niedostępna. Dotknij, aby otworzyć ustawienia i/lub przejdź do ustawień urządzenia, aby ją włączyć.",
-      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
+      "featureRequiresPasscode": "Ta funkcja wymaga włączenia kodu PIN na twoim urządzeniu.",
       "pin": "Kod PIN",
       "pinDescription": "Użyj niestandardowego kodu PIN, aby szybciej odblokować sejf.",
       "pinEnabled": "Odblokowanie za pomocą kodu PIN zakończone sukcesem",
@@ -470,7 +470,7 @@
       "usernameCopied": "Nazwa użytkownika skopiowana do schowka",
       "emailCopied": "Wiadomość e-mail skopiowana do schowka",
       "passwordCopied": "Hasło skopiowane do schowka",
-      "totpCodeCopied": "TOTP code copied to clipboard",
+      "totpCodeCopied": "Kod TOTP skopiowano do schowka",
       "urlCopied": "Adres URL skopiowany do schowka"
     },
     "createNewAliasFor": "Utwórz nowy alias dla",
@@ -481,7 +481,7 @@
       "copyUsername": "Skopiuj nazwę użytkownika",
       "copyEmail": "Skopiuj adres e-mail",
       "copyPassword": "Skopiuj hasło",
-      "copyTotpCode": "Copy TOTP Code"
+      "copyTotpCode": "Kopiuj kod TOTP"
     },
     "urlContextMenu": {
       "title": "Opcje adresu URL",
@@ -504,7 +504,7 @@
       "folderNameRequired": "Nazwa folderu jest wymagana",
       "deleteFolder": "Usuń folder",
       "deleteFolderKeepItems": "Usuń tylko folder",
-      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+      "deleteFolderKeepItemsDescription": "Elementy zostaną przeniesione do folderu nadrzędnego.",
       "deleteFolderAndItems": "Usuń folder i wszystkie elementy",
       "deleteFolderAndItemsDescription": "{{count}} element(ów) zostaną przeniesione do Ostatnio usunięte.",
       "emptyFolderHint": "Ten folder jest pusty. Aby przenieść elementy do tego folderu, edytuj element i wybierz ten folder.",
@@ -545,7 +545,7 @@
     "sizeKB": "KB",
     "offlineMessage": "Jesteś offline. Połącz się z Internetem, aby załadować wiadomości e-mail.",
     "emptyMessage": "Nie otrzymałeś jeszcze żadnych wiadomości e-mail na swoje prywatne adresy e-mail. Gdy otrzymasz nową wiadomość e-mail, pojawi się ona tutaj.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Załaduj więcej (pozostało {{count}})",
     "time": {
       "justNow": "przed chwilą",
       "minutesAgo_single": "{{count}} minutę temu",
