@@ -69,7 +69,7 @@ export interface Spec extends TurboModule {
   setAutofillShowSearchText(showSearchText: boolean): Promise<void>;
 
   // Clipboard management
-  copyToClipboardWithExpiration(text: string, expirationSeconds: number): Promise<void>;
+  copyToClipboardWithExpiration(text: string, expirationSeconds: number, localOnly: boolean): Promise<void>;
 
   // Battery optimization management
   isIgnoringBatteryOptimizations(): Promise<boolean>;

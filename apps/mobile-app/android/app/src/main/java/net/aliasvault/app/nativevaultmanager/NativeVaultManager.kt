@@ -680,7 +680,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
      * @param promise The promise to resolve
      */
     @ReactMethod
-    override fun copyToClipboardWithExpiration(text: String, expirationSeconds: Double, promise: Promise?) {
+    override fun copyToClipboardWithExpiration(text: String, expirationSeconds: Double, localOnly: Boolean, promise: Promise?) {
         try {
             val clipboardManager = reactApplicationContext.getSystemService(
                 android.content.Context.CLIPBOARD_SERVICE,
