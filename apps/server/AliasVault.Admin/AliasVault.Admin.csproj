@@ -22,8 +22,8 @@
 
     <ItemGroup>
         <PackageReference Include="Blazor-ApexCharts" Version="6.1.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.2" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.2">
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.6" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.6">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

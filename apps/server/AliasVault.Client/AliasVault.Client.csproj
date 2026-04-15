@@ -137,13 +137,13 @@
 
     <ItemGroup>
         <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="10.0.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="10.0.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.2" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.2" />
-        <PackageReference Include="Microsoft.Extensions.Localization" Version="10.0.2" />
-        <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="10.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="10.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="10.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.6" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.6" />
+        <PackageReference Include="Microsoft.Extensions.Localization" Version="10.0.6" />
+        <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="10.0.6" />
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
