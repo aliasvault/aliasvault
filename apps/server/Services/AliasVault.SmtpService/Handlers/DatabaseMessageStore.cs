@@ -395,5 +395,4 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
 
         return newEmail.Id;
     }
-
 }
