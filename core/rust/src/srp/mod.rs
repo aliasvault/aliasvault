@@ -103,7 +103,7 @@ fn hex_to_bytes(hex: &str) -> Result<Vec<u8>, SrpError> {
 /// Generate cryptographically secure random bytes.
 fn generate_random_bytes(len: usize) -> Vec<u8> {
     let mut bytes = vec![0u8; len];
-    rand::thread_rng().fill_bytes(&mut bytes);
+    rand::rng().fill_bytes(&mut bytes);
     bytes
 }
 

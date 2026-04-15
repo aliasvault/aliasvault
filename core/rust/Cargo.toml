@@ -39,11 +39,11 @@ thiserror = "1.0"
 # SRP (Secure Remote Password) protocol
 srp = "0.6"
 sha2 = "0.10"
-rand = { version = "0.8", features = ["std", "std_rng"] }
+rand = { version = "0.9", features = ["std", "std_rng"] }
 num-bigint = "0.4"
 digest = "0.10"
 subtle = "2.5"
-getrandom = { version = "0.2", features = ["js"] }
+getrandom = { version = "0.3", features = ["wasm_js"] }
 
 # Argon2 password hashing
 argon2 = "0.5"
