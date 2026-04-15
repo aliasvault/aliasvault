@@ -154,7 +154,12 @@ export default function DeleteAccountScreen(): React.ReactNode {
       const data = await webApi.post<DeleteAccountInitiateRequest, DeleteAccountInitiateResponse>('Auth/delete-account/initiate', deleteAccountInitiateRequest);
       const currentSalt = data.salt;
       const currentServerEphemeral = data.serverEphemeral;
-      const srpIdentity = data.srpIdentity;
+      
+      /**
+       * Use srpIdentity from server response if available, otherwise fall back to username.
+       * Note: the fallback can be removed in the future after 0.26.0+ is deployed.
+       */    
+      const srpIdentity = data.srpIdentity ?? username;
 
       setLoadingStatus(t('settings.securitySettings.deleteAccount.verifyingWithServer'));
       // Convert base64 string to hex string

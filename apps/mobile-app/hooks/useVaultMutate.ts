@@ -185,7 +185,10 @@ export function useVaultMutate() : {
       throw new Error(t('common.errors.unknownError'));
     }
 
-    // Use srpIdentity from server response if available, otherwise fall back to username.
+    /**
+     * Use srpIdentity from server response if available, otherwise fall back to username.
+     * Note: the fallback can be removed in the future after 0.26.0+ is deployed.
+     */    
     const srpIdentity = data.srpIdentity ?? username;
     const privateKey = await NativeVaultManager.srpDerivePrivateKey(currentSalt, srpIdentity, currentPasswordHashString);
     const newClientSession = await NativeVaultManager.srpDeriveSession(
