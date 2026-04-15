@@ -22,6 +22,11 @@ public class RecipientDomainMailboxFilter(Config config, ILogger<RecipientDomain
     /// <summary>
     /// Validate sender mailbox.
     /// </summary>
+    /// <param name="context">The SMTP session context for the current connection.</param>
+    /// <param name="from">The sender mailbox from the MAIL FROM command.</param>
+    /// <param name="size">The declared message size in bytes.</param>
+    /// <param name="cancellationToken">A token that can cancel the asynchronous operation.</param>
+    /// <returns>A task containing <see langword="true" /> when the sender is accepted.</returns>
     public override Task<bool> CanAcceptFromAsync(ISessionContext context, IMailbox @from, int size, CancellationToken cancellationToken)
     {
         return Task.FromResult(true);
@@ -30,6 +35,11 @@ public class RecipientDomainMailboxFilter(Config config, ILogger<RecipientDomain
     /// <summary>
     /// Validate recipient mailbox during RCPT TO command.
     /// </summary>
+    /// <param name="context">The SMTP session context for the current connection.</param>
+    /// <param name="to">The recipient mailbox from the RCPT TO command.</param>
+    /// <param name="from">The sender mailbox from the MAIL FROM command.</param>
+    /// <param name="cancellationToken">A token that can cancel the asynchronous operation.</param>
+    /// <returns>A task containing <see langword="true" /> when the recipient is accepted.</returns>
     public override Task<bool> CanDeliverToAsync(ISessionContext context, IMailbox to, IMailbox @from, CancellationToken cancellationToken)
     {
         if (IsAllowedRecipientDomain(to.Host))
