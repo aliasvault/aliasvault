@@ -158,6 +158,9 @@
     "clipboardClear": "Limpar área de transferência",
     "clipboardClearDescription": "Limpa automaticamente as senhas e dados sensíveis copiados da sua área de transferência após o tempo especificado.",
     "clipboardClearAndroidWarning": "Nota: alguns dispositivos Android têm histórico de área de transferência habilitado, o que pode manter dados copiados anteriormente, mesmo após o AliasVault limpar a área de transferência. O AliasVault só pode remover o item mais recente, porém outros itens podem permanecer visíveis no histórico. Por questões de segurança, recomendamos desabilitar qualquer histórico de área de transferência nas configurações do seu dispositivo.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Nunca",
       "5seconds": "5 segundos",
