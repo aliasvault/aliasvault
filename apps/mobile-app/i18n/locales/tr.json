@@ -158,6 +158,9 @@
     "clipboardClear": "Panoyu Temizle",
     "clipboardClearDescription": "Kopyalanan parolaları ve hassas bilgileri, belirtilen süre sonunda panodan otomatik olarak temizleyin.",
     "clipboardClearAndroidWarning": "Not: Bazı Android cihazlarda pano geçmişi özelliği açıktır ve AliasVault panoyu temizledikten sonra bile daha önce kopyalanan öğeleri saklayabilir. AliasVault yalnızca en son öğeyi üzerine yazabilir, ancak daha eski girişler geçmişte görünmeye devam edebilir. Güvenlik nedeniyle, cihaz ayarlarınızdan pano geçmişi özelliklerini devre dışı bırakmanızı öneririz.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Asla",
       "5seconds": "5 saniye",
