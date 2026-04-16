@@ -160,6 +160,7 @@ public class SmtpServerTests
     /// <summary>
     /// RCPT TO for external domains should be rejected immediately with a 550 relay denial.
     /// </summary>
+    /// <returns>Task.</returns>
     [Test]
     public async Task RcptToExternalDomain_IsRejectedAtRcptStage()
     {
@@ -181,6 +182,7 @@ public class SmtpServerTests
     /// <summary>
     /// RCPT TO for managed domains should be accepted regardless of alias existence (privacy protection).
     /// </summary>
+    /// <returns>Task.</returns>
     [Test]
     public async Task RcptToManagedDomain_IsAcceptedAtRcptStage()
     {
