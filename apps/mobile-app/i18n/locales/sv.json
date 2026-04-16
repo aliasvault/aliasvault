@@ -158,6 +158,9 @@
     "clipboardClear": "Rensa urklipp",
     "clipboardClearDescription": "Rensa automatiskt kopierade lösenord och känslig information från urklipp efter en viss tidsperiod.",
     "clipboardClearAndroidWarning": "OBS: Vissa Android-enheter har urklipp historia aktiverad, som kan hålla reda på tidigare kopierade objekt, även efter AliasVault rensar urklipp. AliasVault kan bara skriva över det senaste objektet, men äldre poster kan förbli synliga i historiken. Av säkerhetsskäl rekommenderar vi att du inaktiverar alla funktioner för urklippshistorik i enhetens inställningar.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Aldrig",
       "5seconds": "5 sekunder",
