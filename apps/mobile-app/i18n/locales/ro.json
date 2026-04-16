@@ -158,9 +158,9 @@
     "clipboardClear": "Golește clipboardul",
     "clipboardClearDescription": "Șterge automat parolele copiate și informațiile sensibile din clipboard după o perioadă specificată.",
     "clipboardClearAndroidWarning": "Notă: unele dispozitive Android au istoricul clipboard-ului activat, care poate păstra elementele copiate anterior. AliasVault poate suprascrie doar cel mai recent element, dar intrările mai vechi pot rămâne vizibile în istoric. Din motive de securitate, recomandăm să dezactivați orice funcții ale istoricului clipboard-ului în setările dispozitivului.",
-    "clipboardLocalOnly": "Local Clipboard Only",
-    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
-    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
+    "clipboardLocalOnly": "Doar clipboard local",
+    "clipboardLocalOnlyDescription": "Păstrează datele de autentificare copiate pe acest dispozitiv, în loc să le sincronizezi cu celelalte dispozitive Apple prin intermediul Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "Dacă această opțiune este dezactivată, datele de autentificare copiate se pot sincroniza cu celelalte dispozitive Apple (Mac, iPad etc.) prin intermediul Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Niciodată",
       "5seconds": "5 secunde",
