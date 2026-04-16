@@ -158,6 +158,9 @@
     "clipboardClear": "Очистити буфер обміну",
     "clipboardClearDescription": "Автоматично очищати скопійовані паролі та конфіденційну інформацію з буфера обміну через вказаний період.",
     "clipboardClearAndroidWarning": "Примітка: деякі Android-пристрої мають включену історію обміну, яка може відстежувати раніше скопійовані елементи, навіть після того, як AliasVault очищує буфер обміну. AliasVault може перезаписати лише найновіший предмет, але старі записи можуть залишатися видимими в історії. З міркувань безпеки ми радимо вимкнути всі функції історії буфера обміну в налаштуваннях пристрою.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Ніколи",
       "5seconds": "5 секунд",
