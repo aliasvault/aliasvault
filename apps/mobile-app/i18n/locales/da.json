@@ -158,6 +158,9 @@
     "clipboardClear": "Ryd udklipsholder",
     "clipboardClearDescription": "Ryd automatisk kopierede adgangskoder og følsomme oplysninger fra din udklipsholder efter et bestemt tidsrum.",
     "clipboardClearAndroidWarning": "Bemærk: Nogle Android-enheder har udklipsholder-historik aktiveret, hvilket kan gemme tidligere kopierede elementer, selv efter AliasVault har ryddet udklipsholderen. AliasVault kan kun overskrive det seneste element, men ældre indlæg kan forblive synlige i historikken. Af sikkerhedsmæssige årsager anbefaler vi at deaktivere alle funktioner til udklipsholder-historik i din enheds indstillinger.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Aldrig",
       "5seconds": "5 sekunder",
