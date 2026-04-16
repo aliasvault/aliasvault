@@ -158,6 +158,9 @@
     "clipboardClear": "פינוי לוח הגזירים",
     "clipboardClearDescription": "לפנות אוטומטית סיסמאות שהועתקו ופרטים רגישים מלוח הגזירים שלך לאחר פרק זמן מסוים.",
     "clipboardClearAndroidWarning": "לתשומת ליבך: לחלק ממכשירי ה־Android יש היסטוריית לוח גזירים פעילה, מה שעלול להשאיר עקבות של פריטים שהועתקו בעבר, אפילו אחרי פינוי של לוח הגזירים על ידי AliasVault. ל־AliasVault יש אפשרות למחוק רק את הפריט העדכני ביותר, אבל רשומות ישנות יותר עשויות להישאר חשופות בהיסטוריה. מטעמי אבטחה, אנו ממליצים להשבית יכולות אחסון היסטורי של פריטי לוח הגזירים בהגדרות המכשיר שלך.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "אף פעם",
       "5seconds": "5 שניות",
