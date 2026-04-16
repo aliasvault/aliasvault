@@ -158,6 +158,9 @@
     "clipboardClear": "Wyczyść schowek",
     "clipboardClearDescription": "Automatycznie usuwa skopiowane hasła i poufne informacje ze schowka po upływie określonego czasu.",
     "clipboardClearAndroidWarning": "Uwaga: niektóre urządzenia z systemem Android mają włączoną historię schowka, która może śledzić wcześniej skopiowane elementy, nawet po wyczyszczeniu schowka przez AliasVault. AliasVault może nadpisać tylko najnowszy element, ale starsze wpisy mogą pozostać widoczne w historii. Ze względów bezpieczeństwa zalecamy wyłączenie funkcji historii schowka w ustawieniach urządzenia.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Nigdy",
       "5seconds": "5 sekund",
