@@ -158,6 +158,9 @@
     "clipboardClear": "Klembord wissen",
     "clipboardClearDescription": "Automatisch gekopieerde wachtwoorden en gevoelige informatie van je klembord wissen na een bepaalde tijdsperiode.",
     "clipboardClearAndroidWarning": "Opmerking: sommige Android-apparaten hebben klembord geschiedenis ingeschakeld, waarmee eerder gekopieerde items kunnen worden bijgehouden, zelfs nadat AliasVault het klembord heeft gewist. AliasVault kan alleen het meest recente item overschrijven, maar oudere items kunnen zichtbaar blijven in de geschiedenis. Om veiligheidsredenen raden we aan om alle klembordgeschiedenis opties in je apparaatinstellingen uit te schakelen.",
+    "clipboardLocalOnly": "Alleen lokaal klembord",
+    "clipboardLocalOnlyDescription": "Houd gekopieerde inloggegevens op dit apparaat in plaats van ze te synchroniseren met andere Apple-apparaten via het universele klembord.",
+    "clipboardLocalOnlyDisabledWarning": "Als dit uit staat, kunnen gekopieerde inloggegevens synchroniseren met je andere Apple-apparaten (Mac, iPad, enz.) via het universele klembord.",
     "clipboardClearOptions": {
       "never": "Nooit",
       "5seconds": "5 seconden",
