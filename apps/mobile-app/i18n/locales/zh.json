@@ -158,9 +158,9 @@
     "clipboardClear": "清除剪贴板",
     "clipboardClearDescription": "在指定时间后自动清除剪贴板中复制的密码及敏感信息。",
     "clipboardClearAndroidWarning": "注意：部分安卓设备已启用剪贴板历史记录功能，即使AliasVault清除了剪贴板内容，系统仍可能保留先前复制的项目。AliasVault仅能覆盖最近一项记录，但历史记录中的旧条目可能仍可见。出于安全考虑，建议您在设备设置中禁用所有剪贴板历史记录功能。",
-    "clipboardLocalOnly": "Local Clipboard Only",
-    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
-    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
+    "clipboardLocalOnly": "仅本地剪贴板",
+    "clipboardLocalOnlyDescription": "将复制的凭据保留在此设备上，而不是通过通用剪贴板将其同步到您的其他 Apple 设备。",
+    "clipboardLocalOnlyDisabledWarning": "关闭后，复制的凭据可以通过通用剪贴板同步到您其他的 Apple 设备（Mac、iPad 等）。",
     "clipboardClearOptions": {
       "never": "从不",
       "5seconds": "5 秒",
