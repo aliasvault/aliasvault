@@ -158,6 +158,9 @@
     "clipboardClear": "Limpiar portapapeles",
     "clipboardClearDescription": "Limpiar automáticamente las contraseñas copiadas e información sensible del portapapeles después de un período de tiempo especificado.",
     "clipboardClearAndroidWarning": "Nota: algunos dispositivos Android tienen el historial del portapapeles activado, que puede llevar un seguimiento de elementos previamente copiados, incluso después de que AliasVault borre el portapapeles. AliasVault sólo puede sobrescribir el elemento más reciente, pero las entradas más antiguas pueden seguir siendo visibles en la historia. Por razones de seguridad, recomendamos desactivar cualquier característica del historial del portapapeles en la configuración del dispositivo.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Nunca",
       "5seconds": "5 segundos",
