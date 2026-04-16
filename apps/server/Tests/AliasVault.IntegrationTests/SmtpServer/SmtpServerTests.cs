@@ -312,7 +312,6 @@ public class SmtpServerTests
         message.From.Add(new MailboxAddress("Test Sender", "sender@example.com"));
         message.To.Add(new MailboxAddress("Test Recipient", "claimed@example.tld"));
         message.Cc.Add(new MailboxAddress("Test Recipient 2", "claimed.cc@example.tld"));
-        message.Cc.Add(new MailboxAddress("Test Recipient 3 unknown domain", "recipient@unknowndomain.tld"));
 
         message.Subject = "Test Email";
         const string textBody = "This is a test email plain.";

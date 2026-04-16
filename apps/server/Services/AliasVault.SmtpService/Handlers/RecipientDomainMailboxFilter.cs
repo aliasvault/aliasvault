@@ -51,7 +51,8 @@ public class RecipientDomainMailboxFilter(Config config, ILogger<RecipientDomain
             "Rejected RCPT TO for recipient domain {RecipientDomain}: domain is not managed by this instance.",
             to.Host);
 
-        throw new SmtpResponseException(new SmtpResponse(SmtpReplyCode.RelayDenied, "Relay not permitted"));
+        // Use 550 to mirror typical "relay not permitted" behavior and keep client behavior consistent.
+        throw new SmtpResponseException(new SmtpResponse(SmtpReplyCode.MailboxUnavailable, "Relay not permitted"));
     }
 
     private bool IsAllowedRecipientDomain(string? domain)
