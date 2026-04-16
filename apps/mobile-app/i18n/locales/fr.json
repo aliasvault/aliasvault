@@ -158,6 +158,9 @@
     "clipboardClear": "Effacer le presse-papiers",
     "clipboardClearDescription": "Effacer automatiquement les mots de passe copiés et les informations sensibles du presse-papiers après une période donnée.",
     "clipboardClearAndroidWarning": "Remarque : certains appareils Android ont l'historique du presse-papiers activé, qui peut garder une trace des éléments précédemment copiés, même après que AliasVault a effacé le presse-papiers. AliasVault ne peut que remplacer l'élément le plus récent, mais les entrées plus anciennes peuvent rester visibles dans l'historique. Pour des raisons de sécurité, nous vous recommandons de désactiver toutes les fonctionnalités d'historique du presse-papiers dans les paramètres de votre appareil.",
+    "clipboardLocalOnly": "Presse-papiers local uniquement",
+    "clipboardLocalOnlyDescription": "Conserver les identifiants copiés sur cet appareil au lieu de les synchroniser à vos autres appareils Apple via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "Avec cette option désactivée, les identifiants copiés peuvent être synchronisés sur vos autres appareils Apple (Mac, iPad, etc.) via le presse-papiers universel.",
     "clipboardClearOptions": {
       "never": "Jamais",
       "5seconds": "5 secondes",
