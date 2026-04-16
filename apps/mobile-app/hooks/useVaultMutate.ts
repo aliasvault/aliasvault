@@ -185,12 +185,17 @@ export function useVaultMutate() : {
       throw new Error(t('common.errors.unknownError'));
     }
 
-    const privateKey = await NativeVaultManager.srpDerivePrivateKey(currentSalt, username, currentPasswordHashString);
+    /**
+     * Use srpIdentity from server response if available, otherwise fall back to username.
+     * Note: the fallback can be removed in the future after 0.26.0+ is deployed.
+     */    
+    const srpIdentity = data.srpIdentity ?? username;
+    const privateKey = await NativeVaultManager.srpDerivePrivateKey(currentSalt, srpIdentity, currentPasswordHashString);
     const newClientSession = await NativeVaultManager.srpDeriveSession(
       newClientEphemeral.secret,
       currentServerEphemeral,
       currentSalt,
-      username,
+      srpIdentity,
       privateKey
     );
 
@@ -226,7 +231,7 @@ export function useVaultMutate() : {
     }
 
     // Generate SRP password change data using native SRP
-    const newPrivateKey = await NativeVaultManager.srpDerivePrivateKey(newSalt, username, newPasswordHashString);
+    const newPrivateKey = await NativeVaultManager.srpDerivePrivateKey(newSalt, srpIdentity, newPasswordHashString);
     const newVerifier = await NativeVaultManager.srpDeriveVerifier(newPrivateKey);
 
     // Prepare vault for password change

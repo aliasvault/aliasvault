@@ -151,8 +151,8 @@
     [vaultManager setAutofillShowSearchText:showSearchText resolver:resolve rejecter:reject];
 }
 
-- (void)copyToClipboardWithExpiration:(NSString *)text expirationSeconds:(double)expirationSeconds resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager copyToClipboardWithExpiration:text expirationSeconds:expirationSeconds resolver:resolve rejecter:reject];
+- (void)copyToClipboardWithExpiration:(NSString *)text expirationSeconds:(double)expirationSeconds localOnly:(BOOL)localOnly resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager copyToClipboardWithExpiration:text expirationSeconds:expirationSeconds localOnly:localOnly resolver:resolve rejecter:reject];
 }
 
 // MARK: - Android-specific methods (stubs for iOS)

@@ -11,6 +11,9 @@ const KEYS = {
   // Timeouts
   CLIPBOARD_CLEAR_TIMEOUT: 'clipboard_clear_timeout',
 
+  // Clipboard local-only (iOS: prevents Universal Clipboard sync)
+  CLIPBOARD_LOCAL_ONLY: 'clipboard_local_only',
+
   // UI preferences
   SHOW_FOLDERS: 'items-show-folders',
   LAST_SEARCH_QUERY: 'items-last-search-query',
@@ -54,6 +57,23 @@ export const LocalPreferencesService = {
    */
   async setClipboardClearTimeout(timeout: number): Promise<void> {
     await AsyncStorage.setItem(KEYS.CLIPBOARD_CLEAR_TIMEOUT, timeout.toString());
+  },
+
+  /**
+   * Get whether local-only clipboard copy is enabled on iOS.
+   * When enabled, clipboard content is not synced via Universal Clipboard.
+   * @returns Whether local-only copy is enabled. Defaults to true.
+   */
+  async getClipboardLocalOnly(): Promise<boolean> {
+    const value = await AsyncStorage.getItem(KEYS.CLIPBOARD_LOCAL_ONLY);
+    return value === null ? true : value === 'true';
+  },
+
+  /**
+   * Set whether local-only clipboard copy is enabled on iOS.
+   */
+  async setClipboardLocalOnly(localOnly: boolean): Promise<void> {
+    await AsyncStorage.setItem(KEYS.CLIPBOARD_LOCAL_ONLY, localOnly.toString());
   },
 
   /**
@@ -109,6 +129,7 @@ export const LocalPreferencesService = {
     await Promise.all([
       AsyncStorage.removeItem(KEYS.AUTOFILL_CONFIGURED),
       AsyncStorage.removeItem(KEYS.CLIPBOARD_CLEAR_TIMEOUT),
+      AsyncStorage.removeItem(KEYS.CLIPBOARD_LOCAL_ONLY),
       AsyncStorage.removeItem(KEYS.SHOW_FOLDERS),
     ]);
   },

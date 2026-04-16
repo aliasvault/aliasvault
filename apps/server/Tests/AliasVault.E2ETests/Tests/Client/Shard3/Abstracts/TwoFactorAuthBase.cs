@@ -79,7 +79,7 @@ public class TwoFactorAuthBase : ClientPlaywrightTest
         });
 
         var secret = await Page.TextContentAsync("div[id='authenticator-secret']");
-        Assert.That(secret, Is.Not.Null.Or.Empty, "No secret displayed.");
+        Assert.That(secret, Is.Not.Null.And.Not.Empty, "No secret displayed.");
 
         // Verify that a QR code image is displayed: #qrcode-authenticator-uri > img
         var qrCode = await Page.Locator("#qrcode-authenticator-uri img").GetAttributeAsync("src");
@@ -87,7 +87,7 @@ public class TwoFactorAuthBase : ClientPlaywrightTest
 
         // Generate a 2FA code using the secret.
         var totpCode = TotpGenerator.TotpGenerator.GenerateTotpCode(secret);
-        Assert.That(totpCode, Is.Not.Null.Or.Empty, "No 2FA code generated.");
+        Assert.That(totpCode, Is.Not.Null.And.Not.Empty, "No 2FA code generated.");
 
         // Fill in the 2FA code and submit the form.
         var totpField = Page.Locator("input[id='verificationCode']");
@@ -107,7 +107,7 @@ public class TwoFactorAuthBase : ClientPlaywrightTest
 
         // Get the first recovery code.
         var recoveryCode = await Page.TextContentAsync("div[id='recovery-codes'] div:first-child");
-        Assert.That(recoveryCode, Is.Not.Null.Or.Empty, "Recovery codes displayed but first value could not be extracted.");
+        Assert.That(recoveryCode, Is.Not.Null.And.Not.Empty, "Recovery codes displayed but first value could not be extracted.");
 
         return (totpCode, recoveryCode!);
     }

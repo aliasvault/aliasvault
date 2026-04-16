@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, TouchableOpacity, Platform, AppState } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Platform, AppState, Switch } from 'react-native';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -26,6 +26,7 @@ export default function ClipboardClearScreen(): React.ReactNode {
     { value: 30, label: t('settings.clipboardClearOptions.30seconds') },
   ];
   const [selectedTimeout, setSelectedTimeout] = useState<number>(10);
+  const [localOnlyEnabled, setLocalOnlyEnabled] = useState<boolean>(true);
   const [isIgnoringBatteryOptimizations, setIsIgnoringBatteryOptimizations] = useState<boolean>(true);
   const appState = useRef(AppState.currentState);
 
@@ -36,6 +37,16 @@ export default function ClipboardClearScreen(): React.ReactNode {
     const loadCurrentTimeout = async (): Promise<void> => {
       const timeout = await LocalPreferencesService.getClipboardClearTimeout();
       setSelectedTimeout(timeout);
+    };
+
+    /**
+     * Load the current local-only clipboard preference (iOS only).
+     */
+    const loadLocalOnlyPreference = async (): Promise<void> => {
+      if (Platform.OS === 'ios') {
+        const localOnly = await LocalPreferencesService.getClipboardLocalOnly();
+        setLocalOnlyEnabled(localOnly);
+      }
     };
 
     /**
@@ -55,6 +66,7 @@ export default function ClipboardClearScreen(): React.ReactNode {
     };
 
     loadCurrentTimeout();
+    loadLocalOnlyPreference();
     checkBatteryOptimization();
 
     // Listen for app state changes to re-check permission when app comes to foreground
@@ -79,6 +91,14 @@ export default function ClipboardClearScreen(): React.ReactNode {
   const handleTimeoutChange = async (timeout: number): Promise<void> => {
     await LocalPreferencesService.setClipboardClearTimeout(timeout);
     setSelectedTimeout(timeout);
+  };
+
+  /**
+   * Handle local-only clipboard toggle (iOS only).
+   */
+  const handleLocalOnlyChange = async (enabled: boolean): Promise<void> => {
+    await LocalPreferencesService.setClipboardLocalOnly(enabled);
+    setLocalOnlyEnabled(enabled);
   };
 
   /**
@@ -168,6 +188,24 @@ export default function ClipboardClearScreen(): React.ReactNode {
       fontSize: 13,
       marginLeft: 8,
     },
+    localOnlyContainer: {
+      backgroundColor: colors.accentBackground,
+      borderRadius: 10,
+      marginTop: 16,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    localOnlyRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    localOnlyWarning: {
+      color: colors.textMuted,
+      fontSize: 13,
+      lineHeight: 20,
+      marginTop: 12,
+    },
     selectedIcon: {
       color: colors.primary,
       marginLeft: 8,
@@ -205,6 +243,25 @@ export default function ClipboardClearScreen(): React.ReactNode {
             );
           })}
         </View>
+        {Platform.OS === 'ios' && (
+          <View style={styles.localOnlyContainer}>
+            <View style={styles.localOnlyRow}>
+              <ThemedText style={styles.optionText}>
+                {t('settings.clipboardLocalOnly')}
+              </ThemedText>
+              <Switch
+                value={localOnlyEnabled}
+                onValueChange={handleLocalOnlyChange}
+                trackColor={{ false: colors.accentBorder, true: colors.primary }}
+              />
+            </View>
+            <ThemedText style={styles.localOnlyWarning}>
+              {localOnlyEnabled
+                ? t('settings.clipboardLocalOnlyDescription')
+                : t('settings.clipboardLocalOnlyDisabledWarning')}
+            </ThemedText>
+          </View>
+        )}
         {Platform.OS === 'android' && (
           <View style={styles.warningContainer}>
             <ThemedText style={styles.warningDescription}>
