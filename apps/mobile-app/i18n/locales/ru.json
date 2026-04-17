@@ -26,6 +26,7 @@
     "generate": "Сгенерировать",
     "attachments": "Вложения",
     "or": "или",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Удалить запись",
     "deleteItemConfirmDescription": "Вы уверены, что хотите удалить эту запись?",
     "errors": {
@@ -617,6 +618,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Хранилище автоматически блокируется по истечении таймаута.",
       "attemptingToUnlockMessage": "Попытка разблокировки."
+    },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
     },
     "loginSettings": {
       "title": "Подключение к API",
