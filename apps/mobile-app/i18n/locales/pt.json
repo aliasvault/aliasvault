@@ -26,6 +26,7 @@
     "generate": "Gerar",
     "attachments": "Anexos",
     "or": "ou",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Excluir Item",
     "deleteItemConfirmDescription": "Tem certeza que deseja excluir este item?",
     "errors": {
@@ -617,6 +618,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Cofre bloqueado automaticamente após período.",
       "attemptingToUnlockMessage": "Tentando desbloquear."
+    },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
     },
     "loginSettings": {
       "title": "Conexão com API",
