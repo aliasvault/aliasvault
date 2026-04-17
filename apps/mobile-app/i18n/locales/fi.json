@@ -26,6 +26,7 @@
     "generate": "Generate",
     "attachments": "Liitteet",
     "or": "tai",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Poista kohde",
     "deleteItemConfirmDescription": "Haluatko varmasti poistaa tämän kohteen?",
     "errors": {
@@ -617,6 +618,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Holvi lukittu automaattisesti aikakatkaisun jälkeen.",
       "attemptingToUnlockMessage": "Yritetään avata lukitus."
+    },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
     },
     "loginSettings": {
       "title": "API-yhteys",
