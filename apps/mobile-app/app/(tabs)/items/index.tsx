@@ -338,14 +338,14 @@ export default function ItemsScreen(): React.ReactNode {
       setIsLoadingItems(false);
     } catch (err) {
       console.error('Error loading items:', err);
-      Toast.show({
-        type: 'error',
-        text1: t('items.errorLoadingItems'),
-        text2: t('common.errors.unknownError'),
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      const errorStack = err instanceof Error ? err.stack ?? '' : '';
+      router.replace({
+        pathname: '/vault-error',
+        params: { errorMessage, errorStack, errorSource: 'items' },
       });
-      setIsLoadingItems(false);
     }
-  }, [dbContext.sqliteClient, setIsLoadingItems, t]);
+  }, [dbContext.sqliteClient, setIsLoadingItems, router]);
 
   useEffect(() => {
     const unsubscribeFocus = navigation.addListener('focus', () => {

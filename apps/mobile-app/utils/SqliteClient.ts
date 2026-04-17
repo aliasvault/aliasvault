@@ -250,8 +250,12 @@ class SqliteClient implements IDatabaseClient {
       const results = await NativeVaultManager.executeQuery(query, convertedParams);
       return results as T[];
     } catch (error) {
-      console.error('Error executing query:', error);
-      throw error;
+      const originalMessage = error instanceof Error ? error.message : String(error);
+      const queryPreview = query.trim().substring(0, 200);
+      const enrichedError = new Error(originalMessage);
+      enrichedError.stack = `SQL: ${queryPreview}\n\n${error instanceof Error && error.stack ? error.stack : ''}`;
+      console.error('Error executing query:', enrichedError.message);
+      throw enrichedError;
     }
   }
 
@@ -278,8 +282,12 @@ class SqliteClient implements IDatabaseClient {
       const result = await NativeVaultManager.executeUpdate(query, convertedParams);
       return result as number;
     } catch (error) {
-      console.error('Error executing update:', error);
-      throw error;
+      const originalMessage = error instanceof Error ? error.message : String(error);
+      const queryPreview = query.trim().substring(0, 200);
+      const enrichedError = new Error(originalMessage);
+      enrichedError.stack = `SQL: ${queryPreview}\n\n${error instanceof Error && error.stack ? error.stack : ''}`;
+      console.error('Error executing update:', enrichedError.message);
+      throw enrichedError;
     }
   }
 
