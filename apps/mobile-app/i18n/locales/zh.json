@@ -26,6 +26,7 @@
     "generate": "生成",
     "attachments": "附件",
     "or": "或",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "删除项目",
     "deleteItemConfirmDescription": "您确定要删除此项目吗？",
     "errors": {
@@ -617,6 +618,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "超时后密码库已自动锁定。",
       "attemptingToUnlockMessage": "正在尝试解锁。"
+    },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
     },
     "loginSettings": {
       "title": "API 连接",
