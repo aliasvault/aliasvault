@@ -26,6 +26,7 @@
     "generate": "Générer",
     "attachments": "Pièces jointes",
     "or": "ou",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Supprimer l'élement",
     "deleteItemConfirmDescription": "Êtes-vous certain de vouloir supprimer cet élément?",
     "errors": {
@@ -617,6 +618,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Coffre-fort verrouillé automatiquement après expiration du délai.",
       "attemptingToUnlockMessage": "Tentative de déverrouillage."
+    },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
     },
     "loginSettings": {
       "title": "Connexion API",
