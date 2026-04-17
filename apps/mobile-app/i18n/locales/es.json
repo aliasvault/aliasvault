@@ -26,6 +26,7 @@
     "generate": "Generar",
     "attachments": "Archivos adjuntos",
     "or": "o",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Eliminar elemento",
     "deleteItemConfirmDescription": "¿Está seguro de querer borrar este ítem?",
     "errors": {
@@ -617,6 +618,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Bóveda autobloqueada después del tiempo de espera.",
       "attemptingToUnlockMessage": "Intentando desbloquear."
+    },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
     },
     "loginSettings": {
       "title": "Conexión API",
