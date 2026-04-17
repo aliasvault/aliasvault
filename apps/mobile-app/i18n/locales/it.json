@@ -26,6 +26,7 @@
     "generate": "Genera",
     "attachments": "Allegati",
     "or": "o",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Elimina elemento",
     "deleteItemConfirmDescription": "Sei sicuro di voler rimuovere questo elemento?",
     "errors": {
@@ -617,6 +618,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Cassaforte bloccata automaticamente dopo timeout.",
       "attemptingToUnlockMessage": "Tentativo di sblocco in corso."
+    },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
     },
     "loginSettings": {
       "title": "Connessione API",
