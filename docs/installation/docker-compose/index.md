@@ -221,4 +221,3 @@ If you have multiple mail domains, use a single certificate with Subject Alterna
 
 ## 4. Troubleshooting
 For more detailed troubleshooting information, please refer to the [troubleshooting guide](./troubleshooting.md).
-
