@@ -26,7 +26,7 @@
     "generate": "生成",
     "attachments": "附件",
     "or": "或",
-    "retry": "Retry",
+    "retry": "重试",
     "deleteItemConfirmTitle": "删除项目",
     "deleteItemConfirmDescription": "您确定要删除此项目吗？",
     "errors": {
@@ -620,11 +620,11 @@
       "attemptingToUnlockMessage": "正在尝试解锁。"
     },
     "vaultError": {
-      "title": "Vault Error",
-      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
-      "showDetails": "Show error details",
-      "hideDetails": "Hide error details",
-      "copyErrorDetails": "Copy error details"
+      "title": "密码库错误",
+      "description": "加载您的密码库时发生错误。如果问题仍然存在，请联系支持人员。",
+      "showDetails": "显示错误详情",
+      "hideDetails": "隐藏错误详情",
+      "copyErrorDetails": "复制错误详情"
     },
     "loginSettings": {
       "title": "API 连接",
