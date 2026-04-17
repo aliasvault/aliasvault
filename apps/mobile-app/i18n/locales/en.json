@@ -621,7 +621,7 @@
     },
     "vaultError": {
       "title": "Vault Error",
-      "description": "An error occurred while loading your vault. You can retry or copy the error details to share with support.",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
       "showDetails": "Show error details",
       "hideDetails": "Hide error details",
       "copyErrorDetails": "Copy error details"
