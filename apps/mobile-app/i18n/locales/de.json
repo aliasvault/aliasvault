@@ -26,7 +26,7 @@
     "generate": "Erzeugen",
     "attachments": "Anhänge",
     "or": "oder",
-    "retry": "Retry",
+    "retry": "Erneut versuchen",
     "deleteItemConfirmTitle": "Element löschen",
     "deleteItemConfirmDescription": "Bist Du sicher, dass Du dieses Element löschen möchtest?",
     "errors": {
@@ -620,11 +620,11 @@
       "attemptingToUnlockMessage": "Entsperrvorgang läuft."
     },
     "vaultError": {
-      "title": "Vault Error",
-      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
-      "showDetails": "Show error details",
-      "hideDetails": "Hide error details",
-      "copyErrorDetails": "Copy error details"
+      "title": "Tresor Fehler",
+      "description": "Beim Laden Deines Tresors ist ein Fehler aufgetreten. Wenn dieses Problem weiterhin besteht, kontaktiere bitte den Support.",
+      "showDetails": "Detaillierte Fehlermeldung anzeigen",
+      "hideDetails": "Detaillierte Fehlermeldung ausblenden",
+      "copyErrorDetails": "Detaillierte Fehlermeldung kopieren"
     },
     "loginSettings": {
       "title": "API-Verbindung",
