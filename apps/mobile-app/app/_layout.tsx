@@ -145,6 +145,7 @@ function RootLayoutNav() : React.ReactNode {
         <Stack.Screen name="reinitialize" options={{ headerShown: false }} />
         <Stack.Screen name="unlock" options={{ headerShown: false }} />
         <Stack.Screen name="upgrade" options={{ headerShown: false }} />
+        <Stack.Screen name="vault-error" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>

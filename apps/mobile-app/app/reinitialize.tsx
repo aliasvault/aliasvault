@@ -48,115 +48,130 @@ export default function ReinitializeScreen() : React.ReactNode {
      * Initialize the app.
      */
     const initialize = async () : Promise<void> => {
-      const { isLoggedIn, enabledAuthMethods } = await app.initializeAuth();
+      try {
+        const { isLoggedIn, enabledAuthMethods } = await app.initializeAuth();
 
-      // If user is not logged in, navigate to login immediately
-      if (!isLoggedIn) {
-        router.replace('/login');
-        return;
-      }
+        // If user is not logged in, navigate to login immediately
+        if (!isLoggedIn) {
+          router.replace('/login');
+          return;
+        }
 
-      /**
-       * If we already have an unlocked vault, we can skip the biometric unlock
-       * but still need to perform vault sync to check for updates.
-       */
-      const isAlreadyUnlocked = await NativeVaultManager.isVaultUnlocked();
+        /**
+         * If we already have an unlocked vault, we can skip the biometric unlock
+         * but still need to perform vault sync to check for updates.
+         */
+        const isAlreadyUnlocked = await NativeVaultManager.isVaultUnlocked();
 
-      if (!isAlreadyUnlocked) {
-        // Check if we have an encrypted database
-        try {
-          const hasEncryptedDatabase = await NativeVaultManager.hasEncryptedDatabase();
+        if (!isAlreadyUnlocked) {
+          // Check if we have an encrypted database
+          try {
+            const hasEncryptedDatabase = await NativeVaultManager.hasEncryptedDatabase();
 
-          if (hasEncryptedDatabase) {
-            // Attempt automatic unlock using centralized helper
-            updateStatus(t('app.status.unlockingVault'));
-            // Small delay to ensure loading screen is fully rendered before showing native unlock dialog
-            await new Promise(resolve => setTimeout(resolve, 150));
-            const unlockResult = await VaultUnlockHelper.attemptAutomaticUnlock({ enabledAuthMethods, unlockVault: dbContext.unlockVault });
+            if (hasEncryptedDatabase) {
+              // Attempt automatic unlock using centralized helper
+              updateStatus(t('app.status.unlockingVault'));
+              // Small delay to ensure loading screen is fully rendered before showing native unlock dialog
+              await new Promise(resolve => setTimeout(resolve, 150));
+              const unlockResult = await VaultUnlockHelper.attemptAutomaticUnlock({ enabledAuthMethods, unlockVault: dbContext.unlockVault });
 
-            if (!unlockResult.success) {
-              // Unlock failed, redirect to unlock screen
-              console.error('Automatic unlock failed:', unlockResult.error);
+              if (!unlockResult.success) {
+                // Unlock failed, redirect to unlock screen
+                console.error('Automatic unlock failed:', unlockResult.error);
+                router.replace('/unlock');
+                return;
+              }
+
+              // Add small delay for UX
+              await new Promise(resolve => setTimeout(resolve, 150));
+              updateStatus(t('app.status.decryptingVault'));
+              await new Promise(resolve => setTimeout(resolve, 300));
+
+              // Check if the vault needs migration before syncing
+              if (await dbContext.hasPendingMigrations()) {
+                router.replace('/upgrade');
+                return;
+              }
+            } else {
+              // No encrypted database, redirect to unlock screen
               router.replace('/unlock');
               return;
             }
-
-            // Add small delay for UX
-            await new Promise(resolve => setTimeout(resolve, 150));
-            updateStatus(t('app.status.decryptingVault'));
-            await new Promise(resolve => setTimeout(resolve, 300));
-
-            // Check if the vault needs migration before syncing
-            if (await dbContext.hasPendingMigrations()) {
-              router.replace('/upgrade');
-              return;
-            }
-          } else {
-            // No encrypted database, redirect to unlock screen
+          } catch (err) {
+            console.error('Error during initial vault unlock:', err);
             router.replace('/unlock');
             return;
           }
-        } catch (err) {
-          console.error('Error during initial vault unlock:', err);
-          router.replace('/unlock');
-          return;
+        } else {
+          /**
+           * Vault already unlocked (e.g., from password unlock)
+           * Check if migrations are needed.
+           */
+          if (await dbContext.hasPendingMigrations()) {
+            router.replace('/upgrade');
+            return;
+          }
         }
-      } else {
-        /**
-         * Vault already unlocked (e.g., from password unlock)
-         * Check if migrations are needed.
+
+        /*
+         * Perform vault sync in background - don't block app access.
+         * The ServerSyncIndicator will show sync progress/offline status.
+         * This also handles uploading pending local changes (isDirty) from previous sessions.
          */
-        if (await dbContext.hasPendingMigrations()) {
-          router.replace('/upgrade');
-          return;
-        }
+        void (async (): Promise<void> => {
+          try {
+            await syncVault({
+              /**
+               * Handle successful vault sync.
+               */
+              onSuccess: async () => {
+                // Sync completed - ServerSyncIndicator will update
+                await dbContext.refreshSyncState();
+              },
+              /**
+               * Handle error during vault sync.
+               * Authentication errors are already handled in useVaultSync.
+               */
+              onError: async (error: string) => {
+                console.error('Vault sync error during reinitialize:', error);
+                await dbContext.refreshSyncState();
+              },
+              /**
+               * Handle offline state - just set offline mode and continue.
+               * The ServerSyncIndicator will show offline status.
+               */
+              onOffline: async () => {
+                await dbContext.setIsOffline(true);
+                await dbContext.refreshSyncState();
+              },
+              /**
+               * On upgrade required.
+               */
+              onUpgradeRequired: () : void => {
+                router.replace('/upgrade');
+              },
+            });
+          } finally {
+            await dbContext.refreshSyncState();
+          }
+        })();
+
+        // Navigate immediately
+        navigation.navigateAfterUnlock();
+      } catch (err) {
+        /*
+         * Catch any unhandled errors during vault re-initialization to prevent hard crashes.
+         * Redirect to vault error screen where users can view and copy the error details
+         * for remote debugging purposes.
+         */
+        console.error('Fatal error during vault re-initialization:', err);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        const errorStack = err instanceof Error ? err.stack ?? '' : '';
+        router.replace({
+          pathname: '/vault-error',
+          params: { errorMessage, errorStack, errorSource: 'reinitialize' },
+        });
       }
-
-      /*
-       * Perform vault sync in background - don't block app access.
-       * The ServerSyncIndicator will show sync progress/offline status.
-       * This also handles uploading pending local changes (isDirty) from previous sessions.
-       */
-      void (async (): Promise<void> => {
-        try {
-          await syncVault({
-            /**
-             * Handle successful vault sync.
-             */
-            onSuccess: async () => {
-              // Sync completed - ServerSyncIndicator will update
-              await dbContext.refreshSyncState();
-            },
-            /**
-             * Handle error during vault sync.
-             * Authentication errors are already handled in useVaultSync.
-             */
-            onError: async (error: string) => {
-              console.error('Vault sync error during reinitialize:', error);
-              await dbContext.refreshSyncState();
-            },
-            /**
-             * Handle offline state - just set offline mode and continue.
-             * The ServerSyncIndicator will show offline status.
-             */
-            onOffline: async () => {
-              await dbContext.setIsOffline(true);
-              await dbContext.refreshSyncState();
-            },
-            /**
-             * On upgrade required.
-             */
-            onUpgradeRequired: () : void => {
-              router.replace('/upgrade');
-            },
-          });
-        } finally {
-          await dbContext.refreshSyncState();
-        }
-      })();
-
-      // Navigate immediately
-      navigation.navigateAfterUnlock();
     };
 
     initialize();
