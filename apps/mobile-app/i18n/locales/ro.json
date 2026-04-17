@@ -26,6 +26,7 @@
     "generate": "Generează",
     "attachments": "Atașamente",
     "or": "sau",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Șterge elementul",
     "deleteItemConfirmDescription": "Sigur dorești să ștergi acest element?",
     "errors": {
@@ -617,6 +618,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Seiful s-a blocat automat din cauza inactivității.",
       "attemptingToUnlockMessage": "Se încearcă deblocarea."
+    },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
     },
     "loginSettings": {
       "title": "Conexiune API",
