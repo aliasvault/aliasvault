@@ -26,6 +26,7 @@
     "generate": "Erzeugen",
     "attachments": "Anhänge",
     "or": "oder",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Element löschen",
     "deleteItemConfirmDescription": "Bist Du sicher, dass Du dieses Element löschen möchtest?",
     "errors": {
@@ -617,6 +618,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Der Tresor wurde nach Zeitüberschreitung automatisch gesperrt.",
       "attemptingToUnlockMessage": "Entsperrvorgang läuft."
+    },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
     },
     "loginSettings": {
       "title": "API-Verbindung",
