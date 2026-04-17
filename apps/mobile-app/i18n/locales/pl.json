@@ -26,6 +26,7 @@
     "generate": "Wygeneruj",
     "attachments": "Załączniki",
     "or": "lub",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Usuń element",
     "deleteItemConfirmDescription": "Czy na pewno chcesz usunąć ten element?",
     "errors": {
@@ -617,6 +618,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Sejf zostanie automatycznie zablokowany po upływie czasu.",
       "attemptingToUnlockMessage": "Próba odblokowania."
+    },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
     },
     "loginSettings": {
       "title": "Połączenie API",
