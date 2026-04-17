@@ -26,6 +26,7 @@
     "generate": "Generer",
     "attachments": "Vedhæftede filer",
     "or": "eller",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Slet element",
     "deleteItemConfirmDescription": "Er du sikker på, at du vil slette dette element?",
     "errors": {
@@ -617,6 +618,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Boksen blev automatisk låst efter tidsafbrydelse.",
       "attemptingToUnlockMessage": "Forsøger at låse op."
+    },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
     },
     "loginSettings": {
       "title": "API-forbindelse",
