@@ -1,6 +1,6 @@
 import { sendMessage } from 'webext-bridge/content-script';
 
-import { openAutofillPopup, openTotpPopup } from '@/entrypoints/contentScript/Popup';
+import { openAutofillPopup, openTotpPopup, removeExistingPopup } from '@/entrypoints/contentScript/Popup';
 
 import { LOGO_MARK_SVG } from '@/utils/constants/logo';
 import type { Item } from '@/utils/dist/core/models/vault';
@@ -290,6 +290,15 @@ export function injectIcon(input: HTMLInputElement, container: HTMLElement, fiel
   window.addEventListener('scroll', updateIconPosition, true);
   window.addEventListener('resize', updateIconPosition);
 
+  /*
+   * Prevent mousedown from propagating to document to avoid triggering
+   * the "click outside" handler that would close the popup immediately.
+   */
+  icon.addEventListener('mousedown', (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  });
+
   // Add click event to trigger the autofill popup and refocus the input
   icon.addEventListener('click', async (e: MouseEvent) => {
     e.preventDefault();
@@ -303,11 +312,24 @@ export function injectIcon(input: HTMLInputElement, container: HTMLElement, fiel
 
     setTimeout(() => actualInput.focus(), 0);
 
-    // Open the appropriate popup based on field type
-    if (fieldType === DetectedFieldType.Totp) {
-      openTotpPopup(actualInput, container);
+    /*
+     * Toggle the popup: if it's already open, close it; otherwise open it.
+     * Check if popup exists in the container.
+     */
+    const existingPopup = container.querySelector('#aliasvault-credential-popup');
+    if (existingPopup) {
+      // Popup is open, close it
+      removeExistingPopup(container);
     } else {
-      openAutofillPopup(actualInput, container);
+      /*
+       * Open the appropriate popup based on field type.
+       * Pass forceShow=true since this is a manual user action (icon click).
+       */
+      if (fieldType === DetectedFieldType.Totp) {
+        openTotpPopup(actualInput, container, true);
+      } else {
+        openAutofillPopup(actualInput, container, true);
+      }
     }
   });
 

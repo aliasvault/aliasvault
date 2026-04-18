@@ -656,6 +656,13 @@ export default defineContentScript({
             };
 
             if (authStatus.isVaultLocked) {
+              // Check if the user has dismissed the vault locked popup
+              const dismissUntil = await LocalPreferencesService.getVaultLockedDismissUntil();
+              if (dismissUntil && Date.now() < dismissUntil) {
+                // User has dismissed the popup, don't show it again
+                return;
+              }
+
               // Vault is locked, show vault locked popup
               const { createVaultLockedPopup } = await import('@/entrypoints/contentScript/Popup');
               createVaultLockedPopup(inputElement, container);

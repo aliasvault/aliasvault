@@ -109,8 +109,11 @@ const createSuggestedNameSpan = (name: string): HTMLElement => {
 
 /**
  * Open (or refresh) the autofill popup including check if vault is locked.
+ * @param input - The input element that triggered the popup
+ * @param container - The container element
+ * @param forceShow - If true, always show the popup even if dismissed (for manual icon clicks)
  */
-export function openAutofillPopup(input: HTMLInputElement, container: HTMLElement) : void {
+export function openAutofillPopup(input: HTMLInputElement, container: HTMLElement, forceShow: boolean = false) : void {
   createLoadingPopup(input, '', container);
 
   /**
@@ -140,6 +143,16 @@ export function openAutofillPopup(input: HTMLInputElement, container: HTMLElemen
     if (response.success) {
       await createAutofillPopup(input, response.items, container);
     } else {
+      // Check if the user has dismissed the vault locked popup (only for auto-show, not manual clicks)
+      if (!forceShow) {
+        const dismissUntil = await LocalPreferencesService.getVaultLockedDismissUntil();
+        if (dismissUntil && Date.now() < dismissUntil) {
+          // User has dismissed the popup, don't show it again
+          removeExistingPopup(container);
+          return;
+        }
+      }
+
       await createVaultLockedPopup(input, container);
     }
   })();
@@ -148,8 +161,11 @@ export function openAutofillPopup(input: HTMLInputElement, container: HTMLElemen
 /**
  * Open (or refresh) the TOTP autofill popup for 2FA code fields.
  * Shows only items that have TOTP codes stored.
+ * @param input - The input element that triggered the popup
+ * @param container - The container element
+ * @param forceShow - If true, always show the popup even if dismissed (for manual icon clicks)
  */
-export function openTotpPopup(input: HTMLInputElement, container: HTMLElement) : void {
+export function openTotpPopup(input: HTMLInputElement, container: HTMLElement, forceShow: boolean = false) : void {
   createLoadingPopup(input, '', container);
 
   /**
@@ -176,6 +192,16 @@ export function openTotpPopup(input: HTMLInputElement, container: HTMLElement) :
     if (response.success) {
       await createTotpPopup(input, response.items, container);
     } else {
+      // Check if the user has dismissed the vault locked popup (only for auto-show, not manual clicks)
+      if (!forceShow) {
+        const dismissUntil = await LocalPreferencesService.getVaultLockedDismissUntil();
+        if (dismissUntil && Date.now() < dismissUntil) {
+          // User has dismissed the popup, don't show it again
+          removeExistingPopup(container);
+          return;
+        }
+      }
+
       await createVaultLockedPopup(input, container);
     }
   })();
@@ -349,8 +375,11 @@ async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefine
       return;
     }
 
+    // Check if the click is on the AliasVault icon
+    const isIconClick = targetElement.closest('.av-input-icon') !== null;
+
     // Check if the click is outside the popup and outside the shadow UI
-    if (popupElement && !popupElement.contains(target) && !input.contains(target) && targetElement.tagName !== 'ALIASVAULT-UI') {
+    if (popupElement && !popupElement.contains(target) && !input.contains(target) && !isIconClick && targetElement.tagName !== 'ALIASVAULT-UI') {
       removeExistingPopup(rootContainer);
     }
   };
@@ -995,8 +1024,11 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
       return;
     }
 
+    // Check if the click is on the AliasVault icon
+    const isIconClick = targetElement.closest('.av-input-icon') !== null;
+
     // Check if the click is outside the popup and outside the shadow UI
-    if (popup && !popup.contains(target) && !input.contains(target) && targetElement.tagName !== 'ALIASVAULT-UI') {
+    if (popup && !popup.contains(target) && !input.contains(target) && !isIconClick && targetElement.tagName !== 'ALIASVAULT-UI') {
       removeExistingPopup(rootContainer);
     }
   };
@@ -1083,8 +1115,11 @@ export async function createVaultLockedPopup(input: HTMLInputElement, rootContai
     const target = event.target as Node;
     const targetElement = event.target as HTMLElement;
 
+    // Check if the click is on the AliasVault icon
+    const isIconClick = targetElement.closest('.av-input-icon') !== null;
+
     // Check if the click is outside the popup and outside the shadow UI
-    if (popup && !popup.contains(target) && !input.contains(target) && targetElement.tagName !== 'ALIASVAULT-UI') {
+    if (popup && !popup.contains(target) && !input.contains(target) && !isIconClick && targetElement.tagName !== 'ALIASVAULT-UI') {
       removeExistingPopup(rootContainer);
       document.removeEventListener('mousedown', handleClickOutside);
     }
@@ -2502,8 +2537,11 @@ export async function createUpgradeRequiredPopup(input: HTMLInputElement, rootCo
     const target = event.target as Node;
     const targetElement = event.target as HTMLElement;
 
+    // Check if the click is on the AliasVault icon
+    const isIconClick = targetElement.closest('.av-input-icon') !== null;
+
     // Check if the click is outside the popup and outside the shadow UI
-    if (popup && !popup.contains(target) && !input.contains(target) && targetElement.tagName !== 'ALIASVAULT-UI') {
+    if (popup && !popup.contains(target) && !input.contains(target) && !isIconClick && targetElement.tagName !== 'ALIASVAULT-UI') {
       removeExistingPopup(rootContainer);
       document.removeEventListener('mousedown', handleClickOutside);
     }
