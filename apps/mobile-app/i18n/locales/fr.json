@@ -26,7 +26,7 @@
     "generate": "Générer",
     "attachments": "Pièces jointes",
     "or": "ou",
-    "retry": "Retry",
+    "retry": "Réessayer",
     "deleteItemConfirmTitle": "Supprimer l'élement",
     "deleteItemConfirmDescription": "Êtes-vous certain de vouloir supprimer cet élément?",
     "errors": {
@@ -620,11 +620,11 @@
       "attemptingToUnlockMessage": "Tentative de déverrouillage."
     },
     "vaultError": {
-      "title": "Vault Error",
-      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
-      "showDetails": "Show error details",
-      "hideDetails": "Hide error details",
-      "copyErrorDetails": "Copy error details"
+      "title": "Erreur du coffre",
+      "description": "Une erreur est survenue lors du chargement de votre coffre. Si le problème persiste, veuillez contacter le support.",
+      "showDetails": "Afficher les détails de l'erreur",
+      "hideDetails": "Masquer les détails de l'erreur",
+      "copyErrorDetails": "Copier les détails de l’erreur"
     },
     "loginSettings": {
       "title": "Connexion API",
