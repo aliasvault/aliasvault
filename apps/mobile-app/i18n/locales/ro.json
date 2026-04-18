@@ -26,7 +26,7 @@
     "generate": "Generează",
     "attachments": "Atașamente",
     "or": "sau",
-    "retry": "Retry",
+    "retry": "Reîncearcă",
     "deleteItemConfirmTitle": "Șterge elementul",
     "deleteItemConfirmDescription": "Sigur dorești să ștergi acest element?",
     "errors": {
@@ -620,11 +620,11 @@
       "attemptingToUnlockMessage": "Se încearcă deblocarea."
     },
     "vaultError": {
-      "title": "Vault Error",
-      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
-      "showDetails": "Show error details",
-      "hideDetails": "Hide error details",
-      "copyErrorDetails": "Copy error details"
+      "title": "Eroare seif",
+      "description": "A apărut o eroare la încărcarea seifului tău. Dacă problema persistă, contactează serviciul de asistență.",
+      "showDetails": "Afișează detaliile erorii",
+      "hideDetails": "Ascunde detaliile erorii",
+      "copyErrorDetails": "Copiază detaliile erorii"
     },
     "loginSettings": {
       "title": "Conexiune API",
