@@ -11,7 +11,7 @@
     ServiceName="Generic CSV"
     Description="@Localizer["GenericCsvDescription"]"
     LogoUrl="img/importers/generic-csv.svg"
-    AcceptedFileTypes=".csv"
+    AcceptedFileExtensions="AcceptedExtensions"
     ProcessFileCallback="ProcessFile">
     <p class="text-gray-700 dark:text-gray-300 mb-4">@Localizer["GenericCsvInstructionsPart1"]</p>
     <ol class="text-sm text-gray-700 dark:text-gray-300 space-y-2 mb-4">
@@ -36,6 +36,7 @@
 
 @code {
     private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Settings.ImportExport.ImportServices", "AliasVault.Client");
+    private static readonly string[] AcceptedExtensions = new[] { ".csv" };
 
     private static async Task<List<ImportedCredential>> ProcessFile(string filename, byte[] fileBytes)
     {

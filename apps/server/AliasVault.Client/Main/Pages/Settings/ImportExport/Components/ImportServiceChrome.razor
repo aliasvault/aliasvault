@@ -11,7 +11,7 @@
     ServiceName="Chrome"
     Description="@Localizer["ChromeDescription"]"
     LogoUrl="img/importers/chrome.svg"
-    AcceptedFileTypes=".csv"
+    AcceptedFileExtensions="AcceptedExtensions"
     ProcessFileCallback="ProcessFile">
     <p class="text-gray-700 dark:text-gray-300 mb-4">@Localizer["ChromeInstructionsPart1"]</p>
     <p class="text-gray-700 dark:text-gray-300 mb-4">@Localizer["ChromeInstructionsPart2"]</p>
@@ -19,6 +19,7 @@
 
 @code {
     private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Settings.ImportExport.ImportServices", "AliasVault.Client");
+    private static readonly string[] AcceptedExtensions = new[] { ".csv" };
 
     private static async Task<List<ImportedCredential>> ProcessFile(string filename, byte[] fileBytes)
     {

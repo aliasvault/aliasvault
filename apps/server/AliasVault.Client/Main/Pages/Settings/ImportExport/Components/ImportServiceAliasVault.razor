@@ -13,16 +13,14 @@
     ServiceName="AliasVault"
     Description="@Localizer["AliasVaultDescription"]"
     LogoUrl="img/logo.svg"
-    AcceptedFileTypes=".csv,.avux,.avex"
+    AcceptedFileExtensions="AcceptedExtensions"
     ProcessFileCallback="ProcessFile">
     <p class="text-gray-700 dark:text-gray-300 mb-4">@Localizer["AliasVaultInstructionsPart1"]</p>
-    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        @Localizer["AliasVaultSupportedFormatsInfo"]
-    </p>
 </ImportServiceCard>
 
 @code {
     private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Settings.ImportExport.ImportServices", "AliasVault.Client");
+    private static readonly string[] AcceptedExtensions = new[] { ".avex", ".avux", ".csv" };
     private ImportServiceCard? importServiceCard;
 
     /// <summary>
