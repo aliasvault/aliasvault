@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legitimate Login Form</title>
+</head>
+<body>
+    <!-- This form should STILL be detected as a login form despite having search fields on the same page -->
+
+    <!-- Search bar in navigation (should be excluded) -->
+    <nav>
+        <input type="text" id="nav-search" name="search" placeholder="Search...">
+    </nav>
+
+    <!-- Legitimate login form (should be detected) -->
+    <form id="login-form">
+        <div>
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" placeholder="Enter username">
+        </div>
+        <div>
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Enter email">
+        </div>
+        <div>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter password">
+        </div>
+        <button type="submit">Login</button>
+    </form>
+</body>
+</html>
