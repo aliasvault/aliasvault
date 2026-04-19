@@ -211,7 +211,36 @@ export class FormDetector {
   }
 
   /**
-   * Check if an input field matches exclusion patterns (search, filter, query fields).
+   * Check if a pattern matches as a whole word or compound word in the given text.
+   * Uses word boundaries to avoid false positives.
+   *
+   * Examples:
+   * - "search" matches: "search", "user-search", "searchBox", "search_input"
+   * - "search" doesn't match: "research", "searchable" (part of another word)
+   *
+   * @param text - The text to search in (lowercase).
+   * @param pattern - The pattern to search for (lowercase).
+   * @returns True if the pattern matches as a whole word/compound word.
+   */
+  private matchesWordBoundary(text: string, pattern: string): boolean {
+    /*
+     * Word boundaries: start of string, space, hyphen, underscore, or transition from lowercase to uppercase
+     * Pattern must be:
+     * - At the start: "search", "searchbox", "search-box", "search_box"
+     * - In the middle: "user-search", "data_search"
+     * - At the end: "quick-search"
+     * But NOT within another word: "research" (re-search), "birthdate" (date)
+     */
+    const wordBoundaryPattern = new RegExp(
+      `(^|[\\s\\-_]|(?<=[a-z])(?=[A-Z]))${pattern}($|[\\s\\-_]|(?<=[a-z])(?=[A-Z]))`,
+      'i'
+    );
+
+    return wordBoundaryPattern.test(text);
+  }
+
+  /**
+   * Check if an input field matches exclusion patterns (search, filter fields).
    * These fields should not trigger autofill even if they match other patterns.
    * Uses whole-word matching to avoid false positives (e.g., "date" shouldn't match "birthdate").
    * @param input - The input element to check.
@@ -246,22 +275,7 @@ export class FormDetector {
      */
     for (const attr of attributesToCheck) {
       for (const pattern of allExclusionPatterns) {
-        /*
-         * Check for whole-word matches or compound word matches (search-box, searchInput, etc.)
-         * Pattern must be:
-         * - At the start: "search", "searchbox", "search-box", "search_box"
-         * - In the middle: "user-search", "data_search"
-         * - At the end: "quick-search"
-         * But NOT within another word: "research" (re-search), "birthdate" (date)
-         *
-         * Word boundaries: start of string, space, hyphen, underscore, or transition from lowercase to uppercase
-         */
-        const wordBoundaryPattern = new RegExp(
-          `(^|[\\s\\-_]|(?<=[a-z])(?=[A-Z]))${pattern}($|[\\s\\-_]|(?<=[a-z])(?=[A-Z]))`,
-          'i'
-        );
-
-        if (wordBoundaryPattern.test(attr)) {
+        if (this.matchesWordBoundary(attr, pattern)) {
           return true;
         }
       }

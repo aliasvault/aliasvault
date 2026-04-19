@@ -109,12 +109,15 @@ export const EnglishEmailVerificationPatterns: EmailVerificationPatterns = {
 
 /**
  * English field exclusion patterns. These patterns identify fields that should NOT trigger autofill,
- * such as search boxes and filters. These are commonly found in admin panels,
- * data tables, and navigation areas where autofill would be inappropriate.
+ * such as search boxes, filters, and configuration fields. These are commonly found in admin panels,
+ * data tables, settings pages, and navigation areas where autofill would be inappropriate.
  */
 export const EnglishFieldExclusionPatterns: FieldExclusionPatterns = [
+  // Search and filter fields
   'search', 'find', 'lookup', 'searchbox', 'search-box', 'searchfield', 'search-field', 'searchinput', 'search-input', 'searchquery', 'search-query',
-  'filter', 'filterable', 'filterinput', 'filter-input', 'filterfield', 'filter-field', 'filterbox', 'filter-box'
+  'filter', 'filterable', 'filterinput', 'filter-input', 'filterfield', 'filter-field', 'filterbox', 'filter-box',
+  // Settings and configuration fields
+  'setting', 'settings', 'config', 'configuration', 'timeout', 'duration', 'interval', 'refresh', 'access'
 ];
 
 /**
@@ -179,8 +182,11 @@ export const DutchFieldPatterns: FieldPatterns = {
  * Dutch field exclusion patterns. These patterns identify fields that should NOT trigger autofill.
  */
 export const DutchFieldExclusionPatterns: FieldExclusionPatterns = [
+  // Search and filter fields
   'zoeken', 'zoek', 'zoekveld', 'zoek-veld', 'zoekinput', 'zoek-input', 'zoekbox', 'zoek-box',
-  'filter', 'filteren', 'filterveld', 'filter-veld', 'filterinput', 'filter-input'
+  'filter', 'filteren', 'filterveld', 'filter-veld', 'filterinput', 'filter-input',
+  // Settings and configuration fields
+  'instelling', 'instellingen', 'configuratie', 'timeout', 'interval',
 ];
 
 /**

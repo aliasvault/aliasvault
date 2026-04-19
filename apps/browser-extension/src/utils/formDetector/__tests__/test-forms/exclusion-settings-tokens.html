@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Settings - Token Configuration</title>
+</head>
+<body>
+    <!-- Settings page with token lifetime fields that should NOT trigger TOTP autofill -->
+    <div class="settings-panel">
+        <h1>Authentication Settings</h1>
+
+        <!-- Refresh Token Lifetime Field (should NOT trigger TOTP) -->
+        <div>
+            <label for="refreshTokenShort" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                Short Refresh Token Lifetime (hours)
+            </label>
+            <input
+                type="number"
+                id="refreshTokenShort"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                autocomplete="off">
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Determines how long the user stays logged in after inactivity. Used when "Remember me" is not checked during login.
+            </p>
+        </div>
+
+        <!-- Access Token Lifetime Field (should NOT trigger TOTP) -->
+        <div>
+            <label for="accessTokenLifetime" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                Access Token Lifetime (minutes)
+            </label>
+            <input
+                type="number"
+                id="accessTokenLifetime"
+                name="accessToken"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
+                autocomplete="off">
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                JWT token duration for API requests.
+            </p>
+        </div>
+
+        <!-- Session Timeout Field (should NOT trigger TOTP) -->
+        <div>
+            <label for="sessionTimeout" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                Session Timeout (minutes)
+            </label>
+            <input
+                type="number"
+                id="sessionTimeout"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
+                autocomplete="off">
+        </div>
+    </div>
+</body>
+</html>

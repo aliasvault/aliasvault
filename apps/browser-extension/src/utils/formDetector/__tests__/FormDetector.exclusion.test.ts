@@ -20,6 +20,34 @@ describe('FormDetector - Field Exclusion Patterns', () => {
     });
   });
 
+  describe('Real-world scenario: Settings page with token fields', () => {
+    const htmlFile = 'exclusion-settings-tokens.html';
+
+    it('should not trigger TOTP autofill on refresh token lifetime field', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const tokenInput = document.getElementById('refreshTokenShort');
+      const formDetector = new FormDetector(document, tokenInput as HTMLElement);
+
+      // Should not detect as TOTP form (token fields in settings are not TOTP codes)
+      expect(formDetector.containsLoginForm()).toBe(false);
+      expect(formDetector.getDetectedFieldType()).toBeNull();
+    });
+
+    it('should not trigger TOTP autofill on access token lifetime field', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const tokenInput = document.getElementById('accessTokenLifetime');
+      const formDetector = new FormDetector(document, tokenInput as HTMLElement);
+
+      // Should not detect as TOTP form
+      expect(formDetector.containsLoginForm()).toBe(false);
+      expect(formDetector.getDetectedFieldType()).toBeNull();
+    });
+  });
+
   describe('Exclusion patterns should not affect legitimate login fields', () => {
     const htmlFile = 'exclusion-legitimate-login.html';
 
