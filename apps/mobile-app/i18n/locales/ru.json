@@ -26,7 +26,7 @@
     "generate": "Сгенерировать",
     "attachments": "Вложения",
     "or": "или",
-    "retry": "Retry",
+    "retry": "Повторить",
     "deleteItemConfirmTitle": "Удалить запись",
     "deleteItemConfirmDescription": "Вы уверены, что хотите удалить эту запись?",
     "errors": {
@@ -620,7 +620,7 @@
       "attemptingToUnlockMessage": "Попытка разблокировки."
     },
     "vaultError": {
-      "title": "Vault Error",
+      "title": "Ошибка хранилища",
       "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
       "showDetails": "Show error details",
       "hideDetails": "Hide error details",
