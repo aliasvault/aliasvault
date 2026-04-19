@@ -145,6 +145,11 @@ public sealed class EmailService(DbService dbService, JsInteropService jsInterop
                 email.MessagePlain = await jsInteropService.SymmetricDecrypt(email.MessagePlain, decryptedSymmetricKeyBase64);
             }
 
+            if (email.MessageSource is not null)
+            {
+                email.MessageSource = await jsInteropService.SymmetricDecrypt(email.MessageSource, decryptedSymmetricKeyBase64);
+            }
+
             email.FromDisplay = await jsInteropService.SymmetricDecrypt(email.FromDisplay, decryptedSymmetricKeyBase64);
             email.FromLocal = await jsInteropService.SymmetricDecrypt(email.FromLocal, decryptedSymmetricKeyBase64);
             email.FromDomain = await jsInteropService.SymmetricDecrypt(email.FromDomain, decryptedSymmetricKeyBase64);

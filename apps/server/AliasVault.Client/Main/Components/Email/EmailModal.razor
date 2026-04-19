@@ -45,15 +45,38 @@
                         <p>@Localizer["ActionsLabel"] <button @onclick="ShowDeleteConfirmation" class="text-red-500 hover:text-red-700 text-sm">@Localizer["DeleteButton"]</button></p>
                     </div>
                 </div>
+                @if (AvailableViewModes.Count > 1)
+                {
+                    <div class="mt-3 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <label for="email-view-mode" class="shrink-0">@Localizer["ViewModeLabel"]</label>
+                        <select id="email-view-mode"
+                                @onchange="OnViewModeChanged"
+                                value="@CurrentViewMode.ToString()"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            @foreach (var mode in AvailableViewModes)
+                            {
+                                <option value="@mode.ToString()">@Localizer[ViewModeLocalizationKey(mode)]</option>
+                            }
+                        </select>
+                    </div>
+                }
             </div>
 
             <!-- Scrollable Content -->
             <div class="flex-1 overflow-y-auto p-4">
                 <div class="text-gray-700 dark:text-gray-300">
-                    <div>
-                        <iframe class="w-full overscroll-y-auto" style="height:500px;" srcdoc="@EmailBody" sandbox="allow-popups allow-popups-to-escape-sandbox">
-                        </iframe>
-                    </div>
+                    @if (CurrentViewMode == EmailViewMode.Source)
+                    {
+                        <pre class="w-full overflow-auto text-xs p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded whitespace-pre-wrap break-words"
+                             style="max-height:500px;">@EmailBody</pre>
+                    }
+                    else
+                    {
+                        <div>
+                            <iframe class="w-full overscroll-y-auto" style="height:500px;" srcdoc="@EmailBody" sandbox="allow-popups allow-popups-to-escape-sandbox">
+                            </iframe>
+                        </div>
+                    }
                 </div>
                 <div class="mt-4">
                     @if (Email?.Attachments?.Any() == true)
@@ -115,9 +138,35 @@
     public EventCallback<int> OnEmailDeleted { get; set; }
 
     /// <summary>
-    /// The message body to display
+    /// The message body to display (already rendered for the <see cref="CurrentViewMode"/>).
     /// </summary>
     private string EmailBody = string.Empty;
+
+    /// <summary>
+    /// Supported email body view modes.
+    /// </summary>
+    private enum EmailViewMode
+    {
+        /// <summary>Rendered HTML body (sanitized) in an iframe.</summary>
+        Html,
+
+        /// <summary>Plain text body, rendered in a preformatted block.</summary>
+        Plain,
+
+        /// <summary>Raw RFC 822 / MIME source, rendered in a preformatted block.</summary>
+        Source,
+    }
+
+    /// <summary>
+    /// The view modes the current email actually has content for,
+    /// in stable display order (HTML, Plain, Source).
+    /// </summary>
+    private List<EmailViewMode> AvailableViewModes { get; set; } = new();
+
+    /// <summary>
+    /// The view mode currently rendered in the modal body.
+    /// </summary>
+    private EmailViewMode CurrentViewMode { get; set; } = EmailViewMode.Html;
 
     /// <summary>
     /// Show confirmation modal before deleting email.
@@ -242,29 +291,92 @@
     {
         await base.OnInitializedAsync();
 
-        // Determine email body
-        if (Email != null)
+        if (Email == null)
         {
-            // Check if there is HTML content, if not, then set default viewtype to plain
-            if (Email.MessageHtml is not null && !string.IsNullOrWhiteSpace(Email.MessageHtml))
-            {
-                // HTML is available, sanitize and prepare for display
-                EmailBody = ConversionUtility.SanitizeAndPrepareEmailHtml(Email.MessageHtml);
-            }
-            else if (Email.MessagePlain is not null)
-            {
-                // No HTML but plain text is available
-                // Escape HTML entities and wrap in pre tag to preserve formatting
+            return;
+        }
+
+        // Figure out which view modes this email has content for, in a stable order.
+        AvailableViewModes.Clear();
+        if (!string.IsNullOrWhiteSpace(Email.MessageHtml))
+        {
+            AvailableViewModes.Add(EmailViewMode.Html);
+        }
+
+        if (!string.IsNullOrEmpty(Email.MessagePlain))
+        {
+            AvailableViewModes.Add(EmailViewMode.Plain);
+        }
+
+        if (!string.IsNullOrEmpty(Email.MessageSource))
+        {
+            AvailableViewModes.Add(EmailViewMode.Source);
+        }
+
+        // Default to the richest available view, matching legacy behaviour
+        // (HTML if present, otherwise plain text, otherwise raw source).
+        CurrentViewMode = AvailableViewModes.FirstOrDefault();
+        RenderEmailBody();
+    }
+
+    /// <summary>
+    /// Rebuild <see cref="EmailBody"/> for the current <see cref="CurrentViewMode"/>.
+    /// </summary>
+    private void RenderEmailBody()
+    {
+        if (Email == null || AvailableViewModes.Count == 0)
+        {
+            EmailBody = Localizer["NoEmailBody"];
+            return;
+        }
+
+        switch (CurrentViewMode)
+        {
+            case EmailViewMode.Html when !string.IsNullOrWhiteSpace(Email.MessageHtml):
+                EmailBody = ConversionUtility.SanitizeAndPrepareEmailHtml(Email.MessageHtml!);
+                break;
+
+            case EmailViewMode.Plain when !string.IsNullOrEmpty(Email.MessagePlain):
                 var escapedText = System.Net.WebUtility.HtmlEncode(Email.MessagePlain);
                 EmailBody = $"<pre style='font-family: system-ui, -apple-system, sans-serif; white-space: pre-wrap; word-wrap: break-word; margin: 0;'>{escapedText}</pre>";
-            }
-            else
-            {
-                // No HTML and no plain text available
+                break;
+
+            case EmailViewMode.Source when !string.IsNullOrEmpty(Email.MessageSource):
+                // Render as-is in a <pre>; HTML-encoding is handled by Blazor's
+                // implicit expression escaping where the pre is bound to
+                // @EmailBody in the markup.
+                EmailBody = Email.MessageSource!;
+                break;
+
+            default:
                 EmailBody = Localizer["NoEmailBody"];
-            }
+                break;
         }
     }
+
+    /// <summary>
+    /// Handle a change on the view-mode <c>&lt;select&gt;</c>.
+    /// </summary>
+    private void OnViewModeChanged(ChangeEventArgs args)
+    {
+        if (args.Value is string raw && Enum.TryParse<EmailViewMode>(raw, ignoreCase: true, out var parsed)
+            && AvailableViewModes.Contains(parsed))
+        {
+            CurrentViewMode = parsed;
+            RenderEmailBody();
+        }
+    }
+
+    /// <summary>
+    /// Localization key for a given view mode's dropdown label.
+    /// </summary>
+    private static string ViewModeLocalizationKey(EmailViewMode mode) => mode switch
+    {
+        EmailViewMode.Html => "ViewModeHtml",
+        EmailViewMode.Plain => "ViewModeText",
+        EmailViewMode.Source => "ViewModeSource",
+        _ => "ViewModeHtml",
+    };
 
     /// <summary>
     /// Download an attachment.

@@ -118,4 +118,20 @@
     <value>Error downloading attachment</value>
     <comment>Error message for attachment download error</comment>
   </data>
+  <data name="ViewModeLabel" xml:space="preserve">
+    <value>View:</value>
+    <comment>Label for the email body view mode selector (HTML / Text / Source)</comment>
+  </data>
+  <data name="ViewModeHtml" xml:space="preserve">
+    <value>HTML</value>
+    <comment>Email body view mode option: rendered HTML</comment>
+  </data>
+  <data name="ViewModeText" xml:space="preserve">
+    <value>Text</value>
+    <comment>Email body view mode option: plain text</comment>
+  </data>
+  <data name="ViewModeSource" xml:space="preserve">
+    <value>Source</value>
+    <comment>Email body view mode option: raw MIME source</comment>
+  </data>
 </root>

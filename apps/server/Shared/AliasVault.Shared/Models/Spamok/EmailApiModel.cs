@@ -25,6 +25,11 @@ public class EmailApiModel : EmailApiModelBase
     public string? MessagePlain { get; set; }
 
     /// <summary>
+    /// Gets or sets the raw source (RFC 822 / MIME) of the email message.
+    /// </summary>
+    public string? MessageSource { get; set; }
+
+    /// <summary>
     /// Gets or sets the list of attachments in the email.
     /// </summary>
     public List<AttachmentApiModel> Attachments { get; set; } = [];

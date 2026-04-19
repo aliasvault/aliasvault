@@ -54,6 +54,7 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
             SecondsAgo = (int)DateTime.UtcNow.Subtract(email.DateSystem).TotalSeconds,
             MessageHtml = email.MessageHtml,
             MessagePlain = email.MessagePlain,
+            MessageSource = email.MessageSource,
             EncryptedSymmetricKey = email.EncryptedSymmetricKey,
             EncryptionKey = email.EncryptionKey.PublicKey,
         };
