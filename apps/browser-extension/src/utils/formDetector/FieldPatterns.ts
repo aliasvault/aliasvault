@@ -45,6 +45,13 @@ export type EmailVerificationPatterns = {
 }
 
 /**
+ * Type for field exclusion patterns. These patterns are used to exclude fields from autofill detection.
+ * Fields matching these patterns should not trigger the autofill popup, even if they match
+ * other field patterns (like username or email).
+ */
+export type FieldExclusionPatterns = string[];
+
+/**
  * English field patterns to detect English form fields.
  */
 export const EnglishFieldPatterns: FieldPatterns = {
@@ -99,6 +106,16 @@ export const EnglishEmailVerificationPatterns: EmailVerificationPatterns = {
     /use\s+another\s+email/i
   ]
 };
+
+/**
+ * English field exclusion patterns. These patterns identify fields that should NOT trigger autofill,
+ * such as search boxes and filters. These are commonly found in admin panels,
+ * data tables, and navigation areas where autofill would be inappropriate.
+ */
+export const EnglishFieldExclusionPatterns: FieldExclusionPatterns = [
+  'search', 'find', 'lookup', 'searchbox', 'search-box', 'searchfield', 'search-field', 'searchinput', 'search-input', 'searchquery', 'search-query',
+  'filter', 'filterable', 'filterinput', 'filter-input', 'filterfield', 'filter-field', 'filterbox', 'filter-box'
+];
 
 /**
  * English words to filter out from page titles during autofill matching to
@@ -157,6 +174,14 @@ export const DutchFieldPatterns: FieldPatterns = {
   birthDateYear: ['jaar'],
   totp: ['verificatiecode', 'eenmalig', 'authenticatie', 'tweefactor', 'beveiligingscode']
 };
+
+/**
+ * Dutch field exclusion patterns. These patterns identify fields that should NOT trigger autofill.
+ */
+export const DutchFieldExclusionPatterns: FieldExclusionPatterns = [
+  'zoeken', 'zoek', 'zoekveld', 'zoek-veld', 'zoekinput', 'zoek-input', 'zoekbox', 'zoek-box',
+  'filter', 'filteren', 'filterveld', 'filter-veld', 'filterinput', 'filter-input'
+];
 
 /**
  * Dutch gender option patterns
@@ -314,3 +339,13 @@ export const CombinedEmailVerificationPatterns: EmailVerificationPatterns = {
     ...DutchEmailVerificationPatterns.changeEmail
   ]
 };
+
+/**
+ * Combined field exclusion patterns from all supported languages. These patterns identify fields
+ * that should NOT trigger autofill, regardless of whether they match other field patterns.
+ * This prevents false positives on search boxes and filters commonly found
+ * in admin panels, data tables, and navigation areas.
+ */
+export const CombinedFieldExclusionPatterns: FieldExclusionPatterns = [
+  ...new Set([...EnglishFieldExclusionPatterns, ...DutchFieldExclusionPatterns])
+];

@@ -1,4 +1,4 @@
-import { CombinedEmailVerificationPatterns, CombinedFieldPatterns, CombinedGenderOptionPatterns, CombinedStopWords } from "./FieldPatterns";
+import { CombinedEmailVerificationPatterns, CombinedFieldExclusionPatterns, CombinedFieldPatterns, CombinedGenderOptionPatterns, CombinedStopWords } from "./FieldPatterns";
 import { DetectedFieldType, FormFields } from "./types/FormFields";
 
 /**
@@ -208,6 +208,66 @@ export class FormDetector {
   private getFormWrapper(): HTMLElement | null {
     const wrapper = this.clickedElement?.closest('form, [role="dialog"]') as HTMLElement | null;
     return wrapper;
+  }
+
+  /**
+   * Check if an input field matches exclusion patterns (search, filter, query fields).
+   * These fields should not trigger autofill even if they match other patterns.
+   * Uses whole-word matching to avoid false positives (e.g., "date" shouldn't match "birthdate").
+   * @param input - The input element to check.
+   * @returns True if the field matches exclusion patterns and should be excluded from autofill.
+   */
+  private matchesExclusionPatterns(input: HTMLInputElement): boolean {
+    // Collect all text attributes to check
+    const attributesToCheck = [
+      input.id,
+      input.getAttribute('name'),
+      input.getAttribute('placeholder'),
+      input.getAttribute('class'),
+      input.getAttribute('aria-label')
+    ]
+      .map(a => a?.toLowerCase() ?? '')
+      .filter(a => a.length > 0);
+
+    // Also check associated labels
+    if (input.id || input.getAttribute('name')) {
+      const label = this.document.querySelector(`label[for="${input.id || input.getAttribute('name')}"]`);
+      if (label) {
+        attributesToCheck.push(label.textContent?.toLowerCase() ?? '');
+      }
+    }
+
+    // Use the combined exclusion patterns
+    const allExclusionPatterns = CombinedFieldExclusionPatterns;
+
+    /*
+     * Check if any attribute contains any exclusion pattern
+     * Use whole-word or compound-word matching to avoid false positives
+     */
+    for (const attr of attributesToCheck) {
+      for (const pattern of allExclusionPatterns) {
+        /*
+         * Check for whole-word matches or compound word matches (search-box, searchInput, etc.)
+         * Pattern must be:
+         * - At the start: "search", "searchbox", "search-box", "search_box"
+         * - In the middle: "user-search", "data_search"
+         * - At the end: "quick-search"
+         * But NOT within another word: "research" (re-search), "birthdate" (date)
+         *
+         * Word boundaries: start of string, space, hyphen, underscore, or transition from lowercase to uppercase
+         */
+        const wordBoundaryPattern = new RegExp(
+          `(^|[\\s\\-_]|(?<=[a-z])(?=[A-Z]))${pattern}($|[\\s\\-_]|(?<=[a-z])(?=[A-Z]))`,
+          'i'
+        );
+
+        if (wordBoundaryPattern.test(attr)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -540,6 +600,14 @@ export class FormDetector {
 
     for (const input of Array.from(candidates)) {
       if (excludeElements.includes(input as HTMLInputElement)) {
+        continue;
+      }
+
+      /*
+       * Skip fields that match exclusion patterns (search, filter, query fields).
+       * These should never trigger autofill, even if they match other patterns.
+       */
+      if (this.matchesExclusionPatterns(input as HTMLInputElement)) {
         continue;
       }
 
