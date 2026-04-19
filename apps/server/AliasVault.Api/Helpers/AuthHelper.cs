@@ -86,9 +86,18 @@ public static class AuthHelper
     /// conflicts when a user is logged in on multiple clients from the same browser/device.
     /// For example, logging out from the browser extension won't affect the web app session.
     ///
-    /// NOTE: current implementation means that only one refresh token can be valid for a
-    /// specific user/device combo at a time. The identifier generation could be made more unique in the future
-    /// to prevent any potential unwanted conflicts.
+    /// For Android, the identifier also includes an app instance ID at the end to support
+    /// multiple Android User Profiles on the same physical device. Each Android User Profile
+    /// generates a unique UUID (without dashes) on first launch that persists for the lifetime
+    /// of that installation.
+    ///
+    /// Device identifier format examples:
+    /// - Web/Browser: "chrome|Mozilla/5.0...|en-US"
+    /// - Android: "android|Dalvik/2.1.0...|en-US|550e8400e29b41d4a716446655440000"
+    /// - iOS: "ios|AliasVault/1.0...|en-US"
+    ///
+    /// NOTE: This implementation ensures only one refresh token can be valid for a
+    /// specific user/device combo at a time.
     /// </summary>
     /// <param name="request">The HttpRequest instance for the request that the client used.</param>
     /// <returns>Unique device identifier as string.</returns>
@@ -97,11 +106,19 @@ public static class AuthHelper
         var userAgent = request.Headers.UserAgent.ToString();
         var acceptLanguage = request.Headers.AcceptLanguage.ToString();
 
-        // Client header is usually formatted like "[client name]-[version]" e.g. "chrome-0.25.0", take only "chrome"
+        // Client header is formatted like "[client name]-[version]" or "[client name]-[version]-[app-instance-id]"
+        // Examples: "chrome-0.25.0", "android-0.29.0-550e8400e29b41d4a716446655440000"
         var clientHeader = request.Headers["X-AliasVault-Client"].ToString();
-        var clientName = clientHeader?.Split('-')[0] ?? "unknown";
+        var clientParts = clientHeader?.Split('-') ?? [];
+        var clientName = clientParts.Length > 0 ? clientParts[0] : "unknown";
 
-        var rawIdentifier = $"{clientName}|{userAgent}|{acceptLanguage}";
-        return rawIdentifier;
+        // For Android, extract app instance ID if present (UUID without dashes as 3rd part)
+        var appInstanceSuffix = string.Empty;
+        if (clientName == "android" && clientParts.Length >= 3)
+        {
+            appInstanceSuffix = $"|{clientParts[2]}";
+        }
+
+        return $"{clientName}|{userAgent}|{acceptLanguage}{appInstanceSuffix}";
     }
 }

@@ -34,11 +34,28 @@ class WebApiService(private val context: Context) {
         private const val API_URL_KEY = "apiUrl"
         private const val ACCESS_TOKEN_KEY = "accessToken"
         private const val REFRESH_TOKEN_KEY = "refreshToken"
+        private const val APP_INSTANCE_ID_KEY = "appInstanceId"
         private const val DEFAULT_API_URL = "https://app.aliasvault.net/api"
         private const val SHARED_PREFS_NAME = "aliasvault"
     }
 
     private val sharedPreferences = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+
+    /**
+     * Unique app instance ID for this app installation/Android user profile.
+     * This is generated once and persists to differentiate between multiple
+     * Android User Profiles on the same device.
+     */
+    private val appInstanceId: String by lazy {
+        var id = sharedPreferences.getString(APP_INSTANCE_ID_KEY, null)
+        if (id == null) {
+            // Generate a random UUID and remove dashes to avoid conflicts with header format
+            id = java.util.UUID.randomUUID().toString().replace("-", "")
+            sharedPreferences.edit().putString(APP_INSTANCE_ID_KEY, id).apply()
+            Log.d(TAG, "Generated new app instance ID: $id")
+        }
+        id
+    }
 
     // MARK: - Configuration Management
 
@@ -309,16 +326,18 @@ class WebApiService(private val context: Context) {
 
     /**
      * Get the client version header value.
+     * Format: "android-{version}-{appInstanceId}"
+     * The app instance ID uniquely identifies this app installation/Android user profile.
      */
     private fun getClientVersionHeader(): String {
         return try {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
             val version = packageInfo.versionName ?: "0.0.0"
             val baseVersion = version.split("-").firstOrNull() ?: "0.0.0"
-            "android-$baseVersion"
+            "android-$baseVersion-$appInstanceId"
         } catch (e: PackageManager.NameNotFoundException) {
             Log.e(TAG, "Error getting package version", e)
-            "android-0.0.0"
+            "android-0.0.0-$appInstanceId"
         }
     }
 
