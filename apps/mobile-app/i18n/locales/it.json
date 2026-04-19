@@ -26,6 +26,7 @@
     "generate": "Genera",
     "attachments": "Allegati",
     "or": "o",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Elimina elemento",
     "deleteItemConfirmDescription": "Sei sicuro di voler rimuovere questo elemento?",
     "errors": {
@@ -158,6 +159,9 @@
     "clipboardClear": "Cancella appunti",
     "clipboardClearDescription": "Cancella automaticamente le password copiate e le informazioni sensibili dagli appunti dopo un periodo di tempo specificato.",
     "clipboardClearAndroidWarning": "Nota: alcuni dispositivi Android hanno la cronologia degli appunti abilitata, che può tenere traccia degli elementi precedentemente copiati, anche dopo che AliasVault cancella gli appunti. AliasVault può solo sovrascrivere l'elemento più recente, ma le voci più vecchie possono rimanere visibili nella cronologia. Per motivi di sicurezza, si consiglia di disabilitare le funzionalità della cronologia degli appunti nelle impostazioni del dispositivo.",
+    "clipboardLocalOnly": "Solo Appunti Locali",
+    "clipboardLocalOnlyDescription": "Mantieni le credenziali copiate su questo dispositivo invece di sincronizzarle con gli altri dispositivi Apple tramite Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "Con questo disattivato, le credenziali copiate potranno essere sincronizzare con gli altri dispositivi Apple (Mac, iPad, ecc.) tramite Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Mai",
       "5seconds": "5 secondi",
@@ -614,6 +618,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Cassaforte bloccata automaticamente dopo timeout.",
       "attemptingToUnlockMessage": "Tentativo di sblocco in corso."
+    },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
     },
     "loginSettings": {
       "title": "Connessione API",

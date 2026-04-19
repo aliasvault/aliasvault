@@ -26,6 +26,7 @@
     "generate": "Generate",
     "attachments": "Liitteet",
     "or": "tai",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Poista kohde",
     "deleteItemConfirmDescription": "Haluatko varmasti poistaa tämän kohteen?",
     "errors": {
@@ -158,6 +159,9 @@
     "clipboardClear": "Tyhjennä leikepöytä",
     "clipboardClearDescription": "Poista automaattisesti kopioidut salasanat ja arkaluonteiset tiedot leikepöydältä tietyn ajanjakson jälkeen.",
     "clipboardClearAndroidWarning": "Huomaa: joillakin Android-laitteilla on leikepöydän historia otettuna käyttöön, mikä saattaa seurata aiemmin kopioituja kohteita, vaikka AliasVault poistaisi leikepöydän. AliasVault voi korvata vain viimeisimmän kohteen, mutta vanhemmat kohteet voivat jäädä näkyviin historiassa. Turvallisuussyistä suosittelemme poistamaan kaikki leikepöydän historia-ominaisuudet käytöstä laitteesi asetuksista.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Ei koskaan",
       "5seconds": "5 sekuntia",
@@ -614,6 +618,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Holvi lukittu automaattisesti aikakatkaisun jälkeen.",
       "attemptingToUnlockMessage": "Yritetään avata lukitus."
+    },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
     },
     "loginSettings": {
       "title": "API-yhteys",

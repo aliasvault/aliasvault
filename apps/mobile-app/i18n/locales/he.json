@@ -26,6 +26,7 @@
     "generate": "Generate",
     "attachments": "צרופות",
     "or": "או",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Delete Item",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
@@ -158,6 +159,9 @@
     "clipboardClear": "פינוי לוח הגזירים",
     "clipboardClearDescription": "לפנות אוטומטית סיסמאות שהועתקו ופרטים רגישים מלוח הגזירים שלך לאחר פרק זמן מסוים.",
     "clipboardClearAndroidWarning": "לתשומת ליבך: לחלק ממכשירי ה־Android יש היסטוריית לוח גזירים פעילה, מה שעלול להשאיר עקבות של פריטים שהועתקו בעבר, אפילו אחרי פינוי של לוח הגזירים על ידי AliasVault. ל־AliasVault יש אפשרות למחוק רק את הפריט העדכני ביותר, אבל רשומות ישנות יותר עשויות להישאר חשופות בהיסטוריה. מטעמי אבטחה, אנו ממליצים להשבית יכולות אחסון היסטורי של פריטי לוח הגזירים בהגדרות המכשיר שלך.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "אף פעם",
       "5seconds": "5 שניות",
@@ -614,6 +618,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "הכספת ננעלה אוטומטית לאחר תום הזמן שהוקצב.",
       "attemptingToUnlockMessage": "מתבצע ניסיון לשחרור נעילה."
+    },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
     },
     "loginSettings": {
       "title": "חיבור API",

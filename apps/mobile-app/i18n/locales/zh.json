@@ -26,6 +26,7 @@
     "generate": "生成",
     "attachments": "附件",
     "or": "或",
+    "retry": "重试",
     "deleteItemConfirmTitle": "删除项目",
     "deleteItemConfirmDescription": "您确定要删除此项目吗？",
     "errors": {
@@ -158,6 +159,9 @@
     "clipboardClear": "清除剪贴板",
     "clipboardClearDescription": "在指定时间后自动清除剪贴板中复制的密码及敏感信息。",
     "clipboardClearAndroidWarning": "注意：部分安卓设备已启用剪贴板历史记录功能，即使AliasVault清除了剪贴板内容，系统仍可能保留先前复制的项目。AliasVault仅能覆盖最近一项记录，但历史记录中的旧条目可能仍可见。出于安全考虑，建议您在设备设置中禁用所有剪贴板历史记录功能。",
+    "clipboardLocalOnly": "仅本地剪贴板",
+    "clipboardLocalOnlyDescription": "将复制的凭据保留在此设备上，而不是通过通用剪贴板将其同步到您的其他 Apple 设备。",
+    "clipboardLocalOnlyDisabledWarning": "关闭后，复制的凭据可以通过通用剪贴板同步到您其他的 Apple 设备（Mac、iPad 等）。",
     "clipboardClearOptions": {
       "never": "从不",
       "5seconds": "5 秒",
@@ -614,6 +618,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "超时后密码库已自动锁定。",
       "attemptingToUnlockMessage": "正在尝试解锁。"
+    },
+    "vaultError": {
+      "title": "密码库错误",
+      "description": "加载您的密码库时发生错误。如果问题仍然存在，请联系支持人员。",
+      "showDetails": "显示错误详情",
+      "hideDetails": "隐藏错误详情",
+      "copyErrorDetails": "复制错误详情"
     },
     "loginSettings": {
       "title": "API 连接",

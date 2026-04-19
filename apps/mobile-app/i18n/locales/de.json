@@ -26,6 +26,7 @@
     "generate": "Erzeugen",
     "attachments": "Anhänge",
     "or": "oder",
+    "retry": "Erneut versuchen",
     "deleteItemConfirmTitle": "Element löschen",
     "deleteItemConfirmDescription": "Bist Du sicher, dass Du dieses Element löschen möchtest?",
     "errors": {
@@ -158,6 +159,9 @@
     "clipboardClear": "Zwischenablage leeren",
     "clipboardClearDescription": "Kopierte Passwörter und vertrauliche Informationen nach einem bestimmten Zeitraum automatisch aus der Zwischenablage löschen.",
     "clipboardClearAndroidWarning": "Hinweis: Einige Android-Geräte haben den Zwischenablage-Verlauf aktiviert, was möglicherweise zuvor kopierte Einträge zwischenspeichern kann, auch wenn AliasVault die Zwischenablage löscht. AliasVault kann nur den letzten Eintrag überschreiben. Ältere Einträge bleiben möglicherweise im Verlauf sichtbar. Aus Sicherheitsgründen wird empfohlen, alle Verlaufsfunktionen zur Zwischenablage in den Geräteeinstellungen zu deaktivieren.",
+    "clipboardLocalOnly": "Nur lokale Zwischenablage",
+    "clipboardLocalOnlyDescription": "Behalte kopierte Anmeldedaten auf diesem Gerät, anstatt sie über die allgemeine Zwischenablage mit Deinen anderen Apple-Geräten zu synchronisieren.",
+    "clipboardLocalOnlyDisabledWarning": "Damit können kopierte Anmeldedaten mit Deinen anderen Apple-Geräten (Mac, iPad, etc.) über die allgemeine Zwischenablage synchronisiert werden.",
     "clipboardClearOptions": {
       "never": "Niemals",
       "5seconds": "5 Sekunden",
@@ -614,6 +618,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Der Tresor wurde nach Zeitüberschreitung automatisch gesperrt.",
       "attemptingToUnlockMessage": "Entsperrvorgang läuft."
+    },
+    "vaultError": {
+      "title": "Tresor Fehler",
+      "description": "Beim Laden Deines Tresors ist ein Fehler aufgetreten. Wenn dieses Problem weiterhin besteht, kontaktiere bitte den Support.",
+      "showDetails": "Detaillierte Fehlermeldung anzeigen",
+      "hideDetails": "Detaillierte Fehlermeldung ausblenden",
+      "copyErrorDetails": "Detaillierte Fehlermeldung kopieren"
     },
     "loginSettings": {
       "title": "API-Verbindung",
