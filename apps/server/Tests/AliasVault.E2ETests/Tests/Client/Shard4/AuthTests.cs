@@ -7,6 +7,7 @@
 
 namespace AliasVault.E2ETests.Tests.Client.Shard4;
 
+using AliasVault.Auth;
 using AliasVault.Shared.Core;
 using AliasVault.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -34,7 +35,7 @@ public class AuthTests : ClientPlaywrightTest
 
         // Check if the IP address is not anonymized as IP logging is disabled by default.
         // The opposite of this is tested in the IP logging test in ApiTests.cs.
-        Assert.That(authLogEntry.IpAddress, Is.EqualTo("xxx.xxx.xxx.xxx"), "Auth log entry IP address is not anonymized while IP logging should be disabled. Check test configuration.");
+        Assert.That(authLogEntry.IpAddress, Is.EqualTo(IpAddressUtility.AnonymizedIp), "Auth log entry IP address is not anonymized while IP logging should be disabled. Check test configuration.");
 
         // Check if the refresh token is stored in the database and its expiration date is set to the long lifetime
         // after registration. The registration page does not have a "Remember me" checkbox, but it is assumed that
@@ -321,5 +322,76 @@ public class AuthTests : ClientPlaywrightTest
             Assert.That(authLogEntry.Client, Is.Not.Null, "Auth log client header is null.");
             Assert.That(authLogEntry.Client, Does.Contain("web-" + currentVersion), "Auth log client header does not contain expected value.");
         });
+    }
+
+    /// <summary>
+    /// Test that registration rate limiting works correctly.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    [Order(8)]
+    public async Task RegistrationRateLimitingTest()
+    {
+        // Set the registration rate limit to 2 accounts per IP per 24 hours
+        await ApiServerSettings.SetSettingAsync("MaxRegistrationsPerIpPer24Hours", "2");
+
+        // Logout the current test user
+        await Logout();
+
+        // Register first account
+        var user1 = "ratelimit1@example.com";
+        await Register(checkForSuccess: true, username: user1);
+        await Logout();
+
+        // Register second account
+        var user2 = "ratelimit2@example.com";
+        await Register(checkForSuccess: true, username: user2);
+        await Logout();
+
+        // Attempt to register third account - should be blocked by rate limit
+        var user3 = "ratelimit3@example.com";
+        await NavigateToRegistration();
+
+        var emailField = await WaitForAndGetElement("input[id='email']");
+        var passwordField = await WaitForAndGetElement("input[id='password']");
+        var confirmPasswordField = await WaitForAndGetElement("input[id='confirm-password']");
+
+        await emailField.FillAsync(user3);
+        await passwordField.FillAsync(TestUserPassword);
+        await confirmPasswordField.FillAsync(TestUserPassword);
+
+        var registerButton = await WaitForAndGetElement("button[type='submit']");
+        await registerButton.ClickAsync();
+
+        // Wait for rate limit error message
+        await Task.Delay(1000);
+        var pageContent = await Page.TextContentAsync("body");
+
+        // Check that registration was blocked (should still be on registration page with error)
+        Assert.That(await Page.UrlAsync(), Does.Contain("user/register"), "Should still be on registration page after rate limit exceeded.");
+
+        // Verify that the auth log contains a failed registration with the rate limit exceeded reason
+        var failedRegistration = await ApiDbContext.AuthLogs.FirstOrDefaultAsync(x =>
+            x.Username == user3 &&
+            x.EventType == AuthEventType.Register &&
+            !x.IsSuccess &&
+            x.FailureReason == AuthFailureReason.RegistrationRateLimitExceeded);
+
+        Assert.That(failedRegistration, Is.Not.Null, "Failed registration auth log entry with rate limit exceeded reason not found.");
+
+        // Verify only 2 successful registrations were recorded
+        var successfulRegistrations = await ApiDbContext.AuthLogs.CountAsync(x =>
+            (x.Username == user1 || x.Username == user2 || x.Username == user3) &&
+            x.EventType == AuthEventType.Register &&
+            x.IsSuccess);
+
+        Assert.That(successfulRegistrations, Is.EqualTo(2), "Expected exactly 2 successful registrations.");
+
+        // Reset the rate limit setting back to default
+        await ApiServerSettings.SetSettingAsync("MaxRegistrationsPerIpPer24Hours", "5");
+
+        // Re-login as the original test user for subsequent tests
+        await NavigateToLogin();
+        await Login();
     }
 }

@@ -53,6 +53,11 @@ public enum AuthFailureReason
     AccountBlocked = 7,
 
     /// <summary>
+    /// Indicates that the registration attempt was blocked due to IP-based rate limiting.
+    /// </summary>
+    RegistrationRateLimitExceeded = 8,
+
+    /// <summary>
     /// Indicates that the failure reason was unknown.
     /// </summary>
     Unknown = 99,

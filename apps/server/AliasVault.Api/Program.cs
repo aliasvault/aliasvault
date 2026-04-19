@@ -68,6 +68,7 @@ builder.Services.AddSingleton<ITimeProvider, SystemTimeProvider>();
 builder.Services.AddScoped<TimeValidationJwtBearerEvents>();
 builder.Services.AddScoped<AuthLoggingService>();
 builder.Services.AddScoped<ServerSettingsService>();
+builder.Services.AddScoped<RegistrationRateLimitService>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddLogging(logging =>

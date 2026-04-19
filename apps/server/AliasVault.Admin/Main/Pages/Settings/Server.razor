@@ -32,6 +32,11 @@
             <input type="number" @bind="Settings.RefreshTokenLifetimeLong" id="refreshTokenLong" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Determines how long the user stays logged in after inactivity. Used when "Remember me" is checked during login.</p>
         </div>
+        <div>
+            <label for="maxRegistrationsPerIp" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Max Registrations per IP per 24 Hours</label>
+            <input type="number" @bind="Settings.MaxRegistrationsPerIpPer24Hours" id="maxRegistrationsPerIp" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Maximum number of new account registrations allowed from a single IP address (/24 range) within a 24 hour period. Set to 0 to disable rate limiting. Recommended: 5-10 for most deployments.</p>
+        </div>
     </div>
 </div>
 

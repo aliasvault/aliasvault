@@ -45,10 +45,11 @@ using SecureRemotePassword;
 /// <param name="authLoggingService">AuthLoggingService instance. This is used to log auth attempts to the database.</param>
 /// <param name="config">Config instance.</param>
 /// <param name="settingsService">ServerSettingsService instance.</param>
+/// <param name="registrationRateLimitService">RegistrationRateLimitService instance.</param>
 [Route("v{version:apiVersion}/[controller]")]
 [ApiController]
 [ApiVersion("1")]
-public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, SignInManager<AliasVaultUser> signInManager, IConfiguration configuration, IMemoryCache cache, ITimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService) : ControllerBase
+public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, SignInManager<AliasVaultUser> signInManager, IConfiguration configuration, IMemoryCache cache, ITimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, RegistrationRateLimitService registrationRateLimitService) : ControllerBase
 {
     /// <summary>
     /// Timeout in minutes for mobile login requests. Clients use 2 minutes for countdown, we use 3 here to give a bit of extra buffer time.
@@ -455,6 +456,15 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PUBLIC_REGISTRATION_DISABLED, 400));
         }
 
+        // Check IP-based registration rate limit
+        var settings = await settingsService.GetAllSettingsAsync();
+        var ipAddress = IpAddressUtility.GetIpFromContext(HttpContext, config.IpLoggingEnabled);
+        if (await registrationRateLimitService.IsRateLimitExceededAsync(ipAddress, settings.MaxRegistrationsPerIpPer24Hours))
+        {
+            await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Register, AuthFailureReason.RegistrationRateLimitExceeded);
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.REGISTRATION_RATE_LIMIT_EXCEEDED, 429));
+        }
+
         // Validate the username.
         var (isValid, apiErrorCode) = await ValidateUsername(model.Username);
         if (!isValid)
@@ -642,7 +652,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             Id = requestId,
             ClientPublicKey = model.ClientPublicKey,
             CreatedAt = timeProvider.UtcNow,
-            ClientIpAddress = IpAddressUtility.GetIpFromContext(HttpContext),
+            ClientIpAddress = IpAddressUtility.GetIpFromContext(HttpContext, config.IpLoggingEnabled),
         };
 
         context.MobileLoginRequests.Add(loginRequest);
@@ -813,7 +823,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         loginRequest.EncryptedDecryptionKey = model.EncryptedDecryptionKey;
         loginRequest.UserId = user.Id;
         loginRequest.FulfilledAt = timeProvider.UtcNow;
-        loginRequest.MobileIpAddress = IpAddressUtility.GetIpFromContext(HttpContext);
+        loginRequest.MobileIpAddress = IpAddressUtility.GetIpFromContext(HttpContext, config.IpLoggingEnabled);
 
         await context.SaveChangesAsync();
 
@@ -1164,7 +1174,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         {
             UserId = user.Id,
             DeviceIdentifier = deviceIdentifier,
-            IpAddress = IpAddressUtility.GetIpFromContext(HttpContext),
+            IpAddress = IpAddressUtility.GetIpFromContext(HttpContext, config.IpLoggingEnabled),
             Value = refreshToken,
             PreviousTokenValue = existingTokenValue,
             ExpireDate = timeProvider.UtcNow.Add(newTokenLifetime),

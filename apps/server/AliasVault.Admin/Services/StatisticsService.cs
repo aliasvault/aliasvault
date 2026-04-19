@@ -9,6 +9,7 @@ namespace AliasVault.Admin.Services;
 
 using AliasServerDb;
 using AliasVault.Admin.Main.Models;
+using AliasVault.Auth;
 using AliasVault.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -401,7 +402,7 @@ public class StatisticsService
             return ipAddress[..lastColonIndex] + ":xxx";
         }
 
-        return "xxx.xxx.xxx.xxx";
+        return IpAddressUtility.AnonymizedIp;
     }
 
     /// <summary>
@@ -446,7 +447,7 @@ public class StatisticsService
 
     /// <summary>
     /// Gets the top 10 IP address ranges by number of associated user accounts.
-    /// Only includes non-anonymized IPs (not "xxx.xxx.xxx.xxx").
+    /// Only includes non-anonymized IPs.
     /// </summary>
     /// <returns>List of top IP addresses.</returns>
     private async Task<List<TopIpAddress>> GetTopIpAddressesAsync()
@@ -455,7 +456,7 @@ public class StatisticsService
 
         // Get distinct IP addresses from successful auth logs only, excluding fully anonymized ones
         var ipStats = await context.AuthLogs
-            .Where(al => al.IpAddress != null && al.IpAddress != "xxx.xxx.xxx.xxx" && al.IsSuccess)
+            .Where(al => al.IpAddress != null && al.IpAddress != IpAddressUtility.AnonymizedIp && al.IsSuccess)
             .GroupBy(al => al.IpAddress)
             .Select(g => new
             {
@@ -557,7 +558,7 @@ public class StatisticsService
         var topIps = await context.AuthLogs
             .Where(al => al.Timestamp >= cutoffDate &&
                         al.IpAddress != null &&
-                        al.IpAddress != "xxx.xxx.xxx.xxx" &&
+                        al.IpAddress != IpAddressUtility.AnonymizedIp &&
                         al.IsSuccess &&
                         al.EventType == AuthEventType.Register)
             .GroupBy(al => al.IpAddress)
@@ -591,7 +592,7 @@ public class StatisticsService
         var topIps = await context.MobileLoginRequests
             .Where(mlr => mlr.CreatedAt >= cutoffDate &&
                          mlr.ClientIpAddress != null &&
-                         mlr.ClientIpAddress != "xxx.xxx.xxx.xxx")
+                         mlr.ClientIpAddress != IpAddressUtility.AnonymizedIp)
             .GroupBy(mlr => mlr.ClientIpAddress)
             .Select(g => new
             {
@@ -623,7 +624,7 @@ public class StatisticsService
         var topIps = await context.AuthLogs
             .Where(al => al.Timestamp >= cutoffDate &&
                         al.IpAddress != null &&
-                        al.IpAddress != "xxx.xxx.xxx.xxx" &&
+                        al.IpAddress != IpAddressUtility.AnonymizedIp &&
                         al.IsSuccess &&
                         al.EventType == AuthEventType.AccountDeletion)
             .GroupBy(al => al.IpAddress)

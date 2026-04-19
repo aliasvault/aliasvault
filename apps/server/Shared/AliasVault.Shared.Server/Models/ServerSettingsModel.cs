@@ -78,4 +78,10 @@ public class ServerSettingsModel
     /// Used when "Remember me" is checked.
     /// </summary>
     public int RefreshTokenLifetimeLong { get; set; } = 336;
+
+    /// <summary>
+    /// Gets or sets the maximum number of registrations allowed per IP address (/24 range) within 24 hours. Defaults to 5.
+    /// Set to 0 to disable IP-based registration rate limiting.
+    /// </summary>
+    public int MaxRegistrationsPerIpPer24Hours { get; set; } = 5;
 }

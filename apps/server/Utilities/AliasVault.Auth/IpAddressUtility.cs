@@ -15,12 +15,23 @@ using Microsoft.AspNetCore.Http;
 public static class IpAddressUtility
 {
     /// <summary>
+    /// Fully anonymized IP address constant used when IP logging is disabled.
+    /// </summary>
+    public const string AnonymizedIp = "xxx.xxx.xxx.xxx";
+
+    /// <summary>
     /// Extract IP address from HttpContext.
     /// </summary>
     /// <param name="httpContext">HttpContext to extract the IP address from.</param>
+    /// <param name="ipLoggingEnabled">Whether IP logging is enabled. If false, returns fully anonymized IP.</param>
     /// <returns>Ip address.</returns>
-    public static string GetIpFromContext(HttpContext? httpContext)
+    public static string GetIpFromContext(HttpContext? httpContext, bool ipLoggingEnabled = true)
     {
+        if (!ipLoggingEnabled)
+        {
+            return AnonymizedIp;
+        }
+
         string ipAddress = string.Empty;
 
         if (httpContext == null)

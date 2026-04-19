@@ -143,4 +143,9 @@ public enum ApiErrorCode
     /// Mobile login request already fulfilled.
     /// </summary>
     MOBILE_LOGIN_REQUEST_ALREADY_FULFILLED,
+
+    /// <summary>
+    /// Registration rate limit exceeded for this IP address.
+    /// </summary>
+    REGISTRATION_RATE_LIMIT_EXCEEDED,
 }
