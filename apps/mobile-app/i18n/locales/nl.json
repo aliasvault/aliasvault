@@ -620,8 +620,8 @@
       "attemptingToUnlockMessage": "Bezig met ontgrendelen."
     },
     "vaultError": {
-      "title": "Fout bij kluis",
-      "description": "Er is een fout opgetreden tijdens het laden van de kluis. Als dit probleem aanhoudt, neem dan contact op met support.",
+      "title": "Vault fout",
+      "description": "Er is een fout opgetreden tijdens het laden van de vault. Als dit probleem aanhoudt, neem dan contact op met support.",
       "showDetails": "Toon foutdetails",
       "hideDetails": "Verberg foutdetails",
       "copyErrorDetails": "Kopieer foutdetails"
