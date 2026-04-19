@@ -26,7 +26,7 @@
     "generate": "Generer",
     "attachments": "Vedhæftede filer",
     "or": "eller",
-    "retry": "Retry",
+    "retry": "Prøv igen",
     "deleteItemConfirmTitle": "Slet element",
     "deleteItemConfirmDescription": "Er du sikker på, at du vil slette dette element?",
     "errors": {
@@ -159,9 +159,9 @@
     "clipboardClear": "Ryd udklipsholder",
     "clipboardClearDescription": "Ryd automatisk kopierede adgangskoder og følsomme oplysninger fra din udklipsholder efter et bestemt tidsrum.",
     "clipboardClearAndroidWarning": "Bemærk: Nogle Android-enheder har udklipsholder-historik aktiveret, hvilket kan gemme tidligere kopierede elementer, selv efter AliasVault har ryddet udklipsholderen. AliasVault kan kun overskrive det seneste element, men ældre indlæg kan forblive synlige i historikken. Af sikkerhedsmæssige årsager anbefaler vi at deaktivere alle funktioner til udklipsholder-historik i din enheds indstillinger.",
-    "clipboardLocalOnly": "Local Clipboard Only",
-    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
-    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
+    "clipboardLocalOnly": "Kun Lokal Udklipsholder",
+    "clipboardLocalOnlyDescription": "Behold kopierede legitimationsoplysninger på denne enhed i stedet for at synkronisere dem med dine andre Apple-enheder via Universal Udklipsholder.",
+    "clipboardLocalOnlyDisabledWarning": "Med dette fra kan kopierede legitimationsoplysninger synkronisere til dine andre Apple-enheder (Mac, iPad osv.) via Universal Udklipsholder.",
     "clipboardClearOptions": {
       "never": "Aldrig",
       "5seconds": "5 sekunder",
@@ -620,11 +620,11 @@
       "attemptingToUnlockMessage": "Forsøger at låse op."
     },
     "vaultError": {
-      "title": "Vault Error",
-      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
-      "showDetails": "Show error details",
-      "hideDetails": "Hide error details",
-      "copyErrorDetails": "Copy error details"
+      "title": "Boks Fejl",
+      "description": "Der opstod en fejl under indlæsning af din boks. Hvis dette problem fortsætter, bedes du kontakte support.",
+      "showDetails": "Vis fejloplysninger",
+      "hideDetails": "Skjul fejloplysninger",
+      "copyErrorDetails": "Kopiér fejloplysninger"
     },
     "loginSettings": {
       "title": "API-forbindelse",
