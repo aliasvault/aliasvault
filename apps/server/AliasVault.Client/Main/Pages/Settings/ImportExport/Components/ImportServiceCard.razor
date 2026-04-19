@@ -75,6 +75,10 @@
 
                                 <div class="@(IsImporting ? "hidden" : "")">
                                     @ChildContent
+                                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                                        <strong>@Localizer["supportedFormats"]:</strong>
+                                        @AcceptedFileTypes
+                                    </p>
                                     <div class="mb-4 bg-amber-50 border border-amber-400 dark:bg-amber-800/30 dark:border-amber-500/50 rounded-lg p-4">
                                         <p class="mb-4 text-gray-700 dark:text-gray-200">@string.Format(Localizer["UploadExportFileText"], ServiceName)</p>
                                         <InputFile OnChange="HandleFileUpload" accept="@FileAcceptTypes" class="text-gray-700 dark:text-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-primary-900/40 dark:file:text-primary-300 dark:hover:file:bg-primary-800/60" />
