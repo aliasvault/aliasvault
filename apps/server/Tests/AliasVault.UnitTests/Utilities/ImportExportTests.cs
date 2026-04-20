@@ -1958,4 +1958,131 @@ public class ImportExportTests
 
         return item;
     }
+
+    /// <summary>
+    /// Test case for importing credentials from 1Password .1pux export format.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task ImportCredentialsFromOnePassword1pux()
+    {
+        // Arrange
+        var zipBytes = await ResourceReaderUtility.ReadEmbeddedResourceBytesAsync("AliasVault.UnitTests.TestData.Exports.test_export.1pux");
+
+        // Act
+        var importer = new OnePassword1puxImporter();
+        var importedCredentials = await importer.ImportFromArchiveAsync(zipBytes);
+
+        // Assert
+        Assert.That(importedCredentials, Has.Count.EqualTo(6));
+
+        // Test Login item with TOTP and custom fields
+        var loginItem = importedCredentials.First(c => c.ServiceName == "Example Login");
+        Assert.Multiple(() =>
+        {
+            Assert.That(loginItem.ServiceName, Is.EqualTo("Example Login"));
+            Assert.That(loginItem.Username, Is.EqualTo("jdoe"));
+            Assert.That(loginItem.Password, Is.EqualTo("mySecurePassword123"));
+            Assert.That(loginItem.ServiceUrls, Has.Count.EqualTo(1));
+            Assert.That(loginItem.ServiceUrls![0], Is.EqualTo("https://example.com"));
+            Assert.That(loginItem.TwoFactorSecret, Is.EqualTo("otpauth://totp/Example:jdoe?secret=JBSWY3DPEHPK3PXP&issuer=Example"));
+            Assert.That(loginItem.Notes, Is.EqualTo("My login notes here"));
+            Assert.That(loginItem.FolderPath, Is.EqualTo("Personal"));
+            Assert.That(loginItem.ItemType, Is.EqualTo(ImportedItemType.Login));
+            Assert.That(loginItem.Tags, Has.Count.EqualTo(2));
+            Assert.That(loginItem.Tags, Does.Contain("work"));
+            Assert.That(loginItem.Tags, Does.Contain("important"));
+            Assert.That(loginItem.CustomFields, Is.Not.Null);
+            Assert.That(loginItem.CustomFields!["Recovery Email"], Is.EqualTo("recovery@example.com"));
+        });
+
+        // Verify created/updated timestamps are converted from Unix time
+        var expectedCreatedDate = DateTimeOffset.FromUnixTimeSeconds(1614298956).UtcDateTime;
+        var expectedUpdatedDate = DateTimeOffset.FromUnixTimeSeconds(1635346445).UtcDateTime;
+        Assert.Multiple(() =>
+        {
+            Assert.That(loginItem.CreatedAt, Is.EqualTo(expectedCreatedDate));
+            Assert.That(loginItem.UpdatedAt, Is.EqualTo(expectedUpdatedDate));
+        });
+
+        // Test Credit Card item
+        var cardItem = importedCredentials.First(c => c.ServiceName == "My Visa Card");
+        Assert.Multiple(() =>
+        {
+            Assert.That(cardItem.ServiceName, Is.EqualTo("My Visa Card"));
+            Assert.That(cardItem.Notes, Is.EqualTo("Primary credit card"));
+            Assert.That(cardItem.FolderPath, Is.EqualTo("Personal"));
+            Assert.That(cardItem.ItemType, Is.EqualTo(ImportedItemType.Creditcard));
+            Assert.That(cardItem.Creditcard, Is.Not.Null);
+            Assert.That(cardItem.Creditcard!.CardholderName, Is.EqualTo("John Doe"));
+            Assert.That(cardItem.Creditcard.Number, Is.EqualTo("4111111111111111"));
+            Assert.That(cardItem.Creditcard.Cvv, Is.EqualTo("123"));
+            Assert.That(cardItem.Creditcard.Pin, Is.EqualTo("1234"));
+            Assert.That(cardItem.Creditcard.ExpiryYear, Is.EqualTo("2025"));
+            Assert.That(cardItem.Creditcard.ExpiryMonth, Is.EqualTo("12"));
+        });
+
+        // Test Identity item
+        var identityItem = importedCredentials.First(c => c.ServiceName == "My Identity");
+        Assert.Multiple(() =>
+        {
+            Assert.That(identityItem.ServiceName, Is.EqualTo("My Identity"));
+            Assert.That(identityItem.ItemType, Is.EqualTo(ImportedItemType.Alias));
+            Assert.That(identityItem.Alias, Is.Not.Null);
+            Assert.That(identityItem.Alias!.FirstName, Is.EqualTo("Jane"));
+            Assert.That(identityItem.Alias.LastName, Is.EqualTo("Smith"));
+            Assert.That(identityItem.Alias.Gender, Is.EqualTo("Female"));
+            Assert.That(identityItem.Alias.BirthDate, Is.Not.Null);
+            var expectedBirthDate = DateTimeOffset.FromUnixTimeSeconds(631152000).UtcDateTime;
+            Assert.That(identityItem.Alias.BirthDate, Is.EqualTo(expectedBirthDate));
+        });
+
+        // Test Secure Note item
+        var noteItem = importedCredentials.First(c => c.ServiceName == "Secure Note");
+        Assert.Multiple(() =>
+        {
+            Assert.That(noteItem.ServiceName, Is.EqualTo("Secure Note"));
+            Assert.That(noteItem.Notes, Is.EqualTo("This is a secure note with important information."));
+            Assert.That(noteItem.ItemType, Is.EqualTo(ImportedItemType.Note));
+        });
+
+        // Test Login from Work vault
+        var workLoginItem = importedCredentials.First(c => c.ServiceName == "Work Portal");
+        Assert.Multiple(() =>
+        {
+            Assert.That(workLoginItem.ServiceName, Is.EqualTo("Work Portal"));
+            Assert.That(workLoginItem.Username, Is.EqualTo("admin"));
+            Assert.That(workLoginItem.Password, Is.EqualTo("WorkPassword789!"));
+            Assert.That(workLoginItem.FolderPath, Is.EqualTo("Work"));
+            Assert.That(workLoginItem.ItemType, Is.EqualTo(ImportedItemType.Login));
+        });
+
+        // Test Document item with attachment
+        var docItem = importedCredentials.First(c => c.ServiceName == "Sample Document");
+        Assert.Multiple(() =>
+        {
+            Assert.That(docItem.ServiceName, Is.EqualTo("Sample Document"));
+            Assert.That(docItem.Notes, Is.EqualTo("Test document with attachment"));
+            Assert.That(docItem.FolderPath, Is.EqualTo("Personal"));
+            Assert.That(docItem.ItemType, Is.EqualTo(ImportedItemType.Note));
+            Assert.That(docItem.Attachments, Is.Not.Null);
+            Assert.That(docItem.Attachments, Has.Count.EqualTo(1));
+            Assert.That(docItem.Attachments![0].Filename, Is.EqualTo("sample-document.pdf"));
+            Assert.That(docItem.Attachments[0].Blob, Is.Not.Empty);
+            var attachmentContent = System.Text.Encoding.UTF8.GetString(docItem.Attachments[0].Blob!);
+            Assert.That(attachmentContent, Does.Contain("Sample document content"));
+        });
+
+        // Verify conversion to Item works correctly
+        var convertedItems = BaseImporter.ConvertToItem(importedCredentials);
+        Assert.That(convertedItems, Has.Count.EqualTo(6));
+
+        var convertedLogin = convertedItems.First(i => i.Name == "Example Login");
+        Assert.Multiple(() =>
+        {
+            Assert.That(convertedLogin.ItemType, Is.EqualTo(ItemType.Login));
+            Assert.That(convertedLogin.TotpCodes, Has.Count.EqualTo(1));
+            Assert.That(convertedLogin.TotpCodes.First().SecretKey, Is.EqualTo("JBSWY3DPEHPK3PXP"));
+        });
+    }
 }

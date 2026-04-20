@@ -70,6 +70,7 @@
       <EmbeddedResource Include="TestData\Exports\keepass_special_chars.csv" />
       <EmbeddedResource Include="TestData\Exports\keepassxc.csv" />
       <EmbeddedResource Include="TestData\Exports\1password_8.csv" />
+      <EmbeddedResource Include="TestData\Exports\test_export.1pux" />
       <EmbeddedResource Include="TestData\Exports\protonpass.csv" />
       <EmbeddedResource Include="TestData\Exports\lastpass.csv" />
       <EmbeddedResource Include="TestData\Exports\nordpass.csv" />
