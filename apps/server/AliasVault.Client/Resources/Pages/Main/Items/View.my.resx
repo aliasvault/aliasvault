@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <data name="ViewItemPageTitle">
+    <value>View item</value>
+    <comment>Page title for viewing an item</comment>
+  </data>
+  <data name="ViewItemTitle">
+    <value>View item</value>
+    <comment>Page header title for viewing an item</comment>
+  </data>
+  <data name="EditButtonMobile">
+    <value>Edit</value>
+    <comment>Text for edit button on mobile</comment>
+  </data>
+  <data name="EditButtonDesktop">
+    <value>Edit item</value>
+    <comment>Text for edit button on desktop</comment>
+  </data>
+  <data name="DeleteButtonMobile">
+    <value>Delete</value>
+    <comment>Text for delete button on mobile</comment>
+  </data>
+  <data name="DeleteButtonDesktop">
+    <value>Delete item</value>
+    <comment>Text for delete button on desktop</comment>
+  </data>
+  <data name="LoginDetailsSection">
+    <value>Login details</value>
+    <comment>Section header for login details</comment>
+  </data>
+  <data name="GeneratedItemDescription">
+    <value>Below you can view and copy the generated details for this item. Any emails sent to the shown address will automatically appear on this page.</value>
+    <comment>Description for generated item with email support</comment>
+  </data>
+  <data name="StoredItemDescription">
+    <value>Below you can view and copy the stored login details for this item.</value>
+    <comment>Description for stored item without email support</comment>
+  </data>
+  <data name="EmailLabel">
+    <value>Email</value>
+    <comment>Label for email field</comment>
+  </data>
+  <data name="UsernameLabel">
+    <value>Username</value>
+    <comment>Label for username field</comment>
+  </data>
+  <data name="PasswordLabel">
+    <value>Password</value>
+    <comment>Label for password field</comment>
+  </data>
+  <data name="AliasSection">
+    <value>Alias</value>
+    <comment>Section header for alias information</comment>
+  </data>
+  <data name="FullNameLabel">
+    <value>Full name</value>
+    <comment>Label for full name field</comment>
+  </data>
+  <data name="FirstNameLabel">
+    <value>First name</value>
+    <comment>Label for first name field</comment>
+  </data>
+  <data name="LastNameLabel">
+    <value>Last name</value>
+    <comment>Label for last name field</comment>
+  </data>
+  <data name="BirthdateLabel">
+    <value>Birthdate</value>
+    <comment>Label for birthdate field</comment>
+  </data>
+  <data name="NicknameLabel">
+    <value>Nickname</value>
+    <comment>Label for nickname field</comment>
+  </data>
+  <data name="ViewItemBreadcrumb">
+    <value>View item</value>
+    <comment>Breadcrumb text for view item page</comment>
+  </data>
+  <data name="ItemNotFoundError">
+    <value>This item does not exist (anymore). Please try again.</value>
+    <comment>Error message when item is not found</comment>
+  </data>
+  <data name="PasskeySectionHeader">
+    <value>Passkey</value>
+    <comment>Section header for passkey</comment>
+  </data>
+  <data name="PasskeyLabel">
+    <value>Passkey</value>
+    <comment>Label for passkey</comment>
+  </data>
+  <data name="PasskeySiteLabel">
+    <value>Site</value>
+    <comment>Label for passkey site/relying party ID</comment>
+  </data>
+  <data name="PasskeyDisplayNameLabel">
+    <value>Name</value>
+    <comment>Label for passkey display name</comment>
+  </data>
+  <data name="PasskeyHelpText">
+    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, edit this item and delete the passkey. To replace or create a new passkey, visit the website and follow its prompts.</value>
+    <comment>Help text explaining how passkeys work</comment>
+  </data>
+  <data name="Untitled">
+    <value>Untitled</value>
+    <comment>Placeholder for items without a name</comment>
+  </data>
+  <data name="NotesSection">
+    <value>Notes</value>
+    <comment>Section header for notes</comment>
+  </data>
+  <data name="CardSection">
+    <value>Card Details</value>
+    <comment>Section header for credit card details</comment>
+  </data>
+  <data name="CustomFieldsSection">
+    <value>Custom Fields</value>
+    <comment>Section header for custom fields</comment>
+  </data>
+</root>
