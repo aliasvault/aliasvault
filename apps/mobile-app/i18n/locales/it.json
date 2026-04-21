@@ -26,7 +26,7 @@
     "generate": "Genera",
     "attachments": "Allegati",
     "or": "o",
-    "retry": "Retry",
+    "retry": "Riprova",
     "deleteItemConfirmTitle": "Elimina elemento",
     "deleteItemConfirmDescription": "Sei sicuro di voler rimuovere questo elemento?",
     "errors": {
@@ -620,11 +620,11 @@
       "attemptingToUnlockMessage": "Tentativo di sblocco in corso."
     },
     "vaultError": {
-      "title": "Vault Error",
-      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
-      "showDetails": "Show error details",
-      "hideDetails": "Hide error details",
-      "copyErrorDetails": "Copy error details"
+      "title": "Errore nella Cassaforte",
+      "description": "Si è verificato un errore durante il caricamento della cassaforte. Se il problema persiste, si prega di contattare l'assistenza.",
+      "showDetails": "Mostra dettagli dell'errore",
+      "hideDetails": "Nascondi dettagli dell'errore",
+      "copyErrorDetails": "Copia dettagli dell'errore"
     },
     "loginSettings": {
       "title": "Connessione API",
