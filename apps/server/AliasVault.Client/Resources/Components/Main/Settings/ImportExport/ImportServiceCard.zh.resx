@@ -194,4 +194,8 @@
     <value>文件解密失败。请检查文件是否损坏，然后重试。</value>
     <comment>Generic error message for decryption failure</comment>
   </data>
+  <data name="supportedFormats" xml:space="preserve">
+    <value>Supported formats</value>
+    <comment>Label for supported file formats</comment>
+  </data>
 </root>
