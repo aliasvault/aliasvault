@@ -64,7 +64,7 @@
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
-    <value>Para importar seu cofre do 1Password, você precisará exportá-lo como um arquivo CSV. Você pode fazer isto entrando na sua conta 1Password no aplication 1Password 8 para desktop (Windows / MacOS / Linux), indo ao menu 'Arquivo' e selecionando 'Exportar (para CSV)'.</value>
+    <value>In order to import your 1Password vault, you need to export it. You can do this by logging into your 1Password account in the 1Password 8 desktop app (Windows / MacOS / Linux), going to the 'File' menu and selecting 'Export'.</value>
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
