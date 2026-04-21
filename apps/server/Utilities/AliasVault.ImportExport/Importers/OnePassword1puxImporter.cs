@@ -41,6 +41,9 @@ public class OnePassword1puxImporter : BaseArchiveImporter
 
         var credentials = new List<ImportedCredential>();
 
+        // Determine which vault should be promoted to root (if any)
+        var rootVaultName = DetermineRootVault(exportData);
+
         // Process all accounts and vaults
         foreach (var account in exportData.Accounts)
         {
@@ -48,15 +51,63 @@ public class OnePassword1puxImporter : BaseArchiveImporter
             {
                 var vaultName = vault.Attrs?.Name;
 
+                // If this vault should be promoted to root, use null as folder path
+                var folderPath = (vaultName != null && vaultName.Equals(rootVaultName, StringComparison.OrdinalIgnoreCase))
+                    ? null
+                    : vaultName;
+
                 foreach (var item in vault.Items)
                 {
-                    var credential = ConvertOnePasswordItemToCredential(item, vaultName, attachmentMap);
+                    var credential = ConvertOnePasswordItemToCredential(item, folderPath, attachmentMap);
                     credentials.Add(credential);
                 }
             }
         }
 
         return credentials;
+    }
+
+    /// <summary>
+    /// Determines which vault (if any) should be promoted to root level.
+    /// Only 1Password's default/reserved vault names ("Private", "Personal", "Employee") are promoted to root.
+    /// Custom vault names are always preserved as folders, regardless of item count.
+    /// This provides predictable behavior: default vaults go to root, custom vaults become folders.
+    /// </summary>
+    /// <param name="exportData">The 1Password export data.</param>
+    /// <returns>The name of the vault to promote to root, or null if none should be promoted.</returns>
+    private static string? DetermineRootVault(OnePassword1puxData exportData)
+    {
+        // Known 1Password default/reserved vault names (case-insensitive)
+        // These are the built-in vaults that cannot be renamed or deleted
+        var defaultVaultNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Private",
+            "Personal",
+            "Employee",
+        };
+
+        // Find the first vault that matches a default name or has type "P" (Personal)
+        foreach (var account in exportData.Accounts)
+        {
+            foreach (var vault in account.Vaults)
+            {
+                var vaultName = vault.Attrs?.Name;
+                var vaultType = vault.Attrs?.Type;
+                var itemCount = vault.Items?.Count ?? 0;
+
+                // Only promote if it's a default vault with items
+                if (itemCount > 0 && !string.IsNullOrWhiteSpace(vaultName))
+                {
+                    if (defaultVaultNames.Contains(vaultName) || vaultType == "P")
+                    {
+                        return vaultName;
+                    }
+                }
+            }
+        }
+
+        // No default vault found, keep all vaults as folders
+        return null;
     }
 
     /// <summary>
@@ -108,13 +159,10 @@ public class OnePassword1puxImporter : BaseArchiveImporter
 
         // Map category to item type and extract type-specific data
         credential.ItemType = MapCategoryToItemType(item.CategoryUuid);
-        ExtractItemData(credential, item);
+        ExtractItemData(credential, item, attachmentMap);
 
-        // Extract attachments
-        if (item.Details?.DocumentAttributes != null)
-        {
-            ExtractAttachments(credential, item.Details.DocumentAttributes, attachmentMap);
-        }
+        // Extract attachments (both from documentAttributes and item UUID-based files)
+        ExtractAttachments(credential, item, attachmentMap);
 
         return credential;
     }
@@ -143,7 +191,8 @@ public class OnePassword1puxImporter : BaseArchiveImporter
     /// </summary>
     /// <param name="credential">The credential to populate.</param>
     /// <param name="item">The 1Password item.</param>
-    private static void ExtractItemData(ImportedCredential credential, OnePasswordItem item)
+    /// <param name="attachmentMap">Dictionary mapping attachment paths to file data.</param>
+    private static void ExtractItemData(ImportedCredential credential, OnePasswordItem item, Dictionary<string, byte[]> attachmentMap)
     {
         if (item.Details == null)
         {
@@ -169,7 +218,7 @@ public class OnePassword1puxImporter : BaseArchiveImporter
         // Extract sections (custom fields and additional data)
         if (item.Details.Sections != null)
         {
-            ExtractSections(credential, item.Details.Sections);
+            ExtractSections(credential, item.Details.Sections, attachmentMap);
         }
     }
 
@@ -178,7 +227,8 @@ public class OnePassword1puxImporter : BaseArchiveImporter
     /// </summary>
     /// <param name="credential">The credential to populate.</param>
     /// <param name="sections">The list of sections.</param>
-    private static void ExtractSections(ImportedCredential credential, List<OnePasswordSection> sections)
+    /// <param name="attachmentMap">Dictionary mapping attachment paths to file data.</param>
+    private static void ExtractSections(ImportedCredential credential, List<OnePasswordSection> sections, Dictionary<string, byte[]> attachmentMap)
     {
         foreach (var section in sections)
         {
@@ -189,7 +239,27 @@ public class OnePassword1puxImporter : BaseArchiveImporter
 
             foreach (var field in section.Fields)
             {
-                if (field.Value == null || string.IsNullOrWhiteSpace(field.Title))
+                if (field.Value == null)
+                {
+                    continue;
+                }
+
+                // Check for file attachments
+                if (field.Value.File != null &&
+                    !string.IsNullOrWhiteSpace(field.Value.File.DocumentId) &&
+                    !string.IsNullOrWhiteSpace(field.Value.File.FileName))
+                {
+                    var filePath = $"files/{field.Value.File.DocumentId}__{field.Value.File.FileName}";
+                    if (attachmentMap.TryGetValue(filePath, out var fileData))
+                    {
+                        AddAttachment(credential, field.Value.File.FileName, fileData);
+                    }
+
+                    continue;
+                }
+
+                // Skip fields with no title for non-file fields
+                if (string.IsNullOrWhiteSpace(field.Title))
                 {
                     continue;
                 }
@@ -286,8 +356,7 @@ public class OnePassword1puxImporter : BaseArchiveImporter
             case "cardholder name":
             case "cardholder":
             case "name on card":
-                var cardholderName = GetFieldValueAsString(field.Value!);
-                if (!string.IsNullOrWhiteSpace(cardholderName))
+                if (TryGetFieldValueAsString(field.Value, out var cardholderName))
                 {
                     credential.Creditcard.CardholderName = cardholderName;
                 }
@@ -302,13 +371,9 @@ public class OnePassword1puxImporter : BaseArchiveImporter
                 {
                     credential.Creditcard.Number = field.Value.CreditCardNumber;
                 }
-                else
+                else if (TryGetFieldValueAsString(field.Value, out var numberValue))
                 {
-                    var numberValue = GetFieldValueAsString(field.Value!);
-                    if (!string.IsNullOrWhiteSpace(numberValue))
-                    {
-                        credential.Creditcard.Number = numberValue;
-                    }
+                    credential.Creditcard.Number = numberValue;
                 }
 
                 break;
@@ -317,8 +382,7 @@ public class OnePassword1puxImporter : BaseArchiveImporter
             case "verification number":
             case "security code":
             case "cvc":
-                var cvv = GetFieldValueAsString(field.Value!);
-                if (!string.IsNullOrWhiteSpace(cvv))
+                if (TryGetFieldValueAsString(field.Value, out var cvv))
                 {
                     credential.Creditcard.Cvv = cvv;
                 }
@@ -327,8 +391,7 @@ public class OnePassword1puxImporter : BaseArchiveImporter
 
             case "pin":
             case "pin code":
-                var pin = GetFieldValueAsString(field.Value!);
-                if (!string.IsNullOrWhiteSpace(pin))
+                if (TryGetFieldValueAsString(field.Value, out var pin))
                 {
                     credential.Creditcard.Pin = pin;
                 }
@@ -385,53 +448,147 @@ public class OnePassword1puxImporter : BaseArchiveImporter
             return fieldValue.Menu;
         }
 
+        if (!string.IsNullOrWhiteSpace(fieldValue.Phone))
+        {
+            return fieldValue.Phone;
+        }
+
+        if (fieldValue.Email?.EmailAddress != null)
+        {
+            return fieldValue.Email.EmailAddress;
+        }
+
+        if (fieldValue.Address != null)
+        {
+            return FormatAddress(fieldValue.Address);
+        }
+
         if (fieldValue.Date.HasValue)
         {
-            var date = DateTimeOffset.FromUnixTimeSeconds(fieldValue.Date.Value).UtcDateTime;
-            return date.ToString("yyyy-MM-dd");
+            return BaseImporter.FormatUnixTimestampAsDate(fieldValue.Date.Value);
         }
 
         if (fieldValue.MonthYear.HasValue)
         {
-            var monthYear = fieldValue.MonthYear.Value.ToString();
-            if (monthYear.Length == 6) // YYYYMM
-            {
-                return $"{monthYear.Substring(0, 4)}-{monthYear.Substring(4, 2)}";
-            }
+            return BaseImporter.FormatMonthYear(fieldValue.MonthYear.Value);
         }
 
         return null;
     }
 
     /// <summary>
-    /// Extracts attachments from document attributes.
+    /// Tries to get a field value as a string.
+    /// </summary>
+    /// <param name="fieldValue">The field value object.</param>
+    /// <param name="result">The resulting string value.</param>
+    /// <returns>True if a non-empty value was extracted; otherwise false.</returns>
+    private static bool TryGetFieldValueAsString(OnePasswordFieldValue? fieldValue, out string? result)
+    {
+        result = null;
+        if (fieldValue == null)
+        {
+            return false;
+        }
+
+        result = GetFieldValueAsString(fieldValue);
+        return !string.IsNullOrWhiteSpace(result);
+    }
+
+    /// <summary>
+    /// Formats an address value as a string.
+    /// </summary>
+    /// <param name="address">The address value.</param>
+    /// <returns>A formatted address string.</returns>
+    private static string? FormatAddress(OnePasswordAddressValue address)
+    {
+        var parts = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(address.Street))
+        {
+            parts.Add(address.Street);
+        }
+
+        if (!string.IsNullOrWhiteSpace(address.City))
+        {
+            parts.Add(address.City);
+        }
+
+        if (!string.IsNullOrWhiteSpace(address.State))
+        {
+            parts.Add(address.State);
+        }
+
+        if (!string.IsNullOrWhiteSpace(address.Zip))
+        {
+            parts.Add(address.Zip);
+        }
+
+        if (!string.IsNullOrWhiteSpace(address.Country))
+        {
+            parts.Add(address.Country);
+        }
+
+        return parts.Count > 0 ? string.Join(", ", parts) : null;
+    }
+
+    /// <summary>
+    /// Extracts attachments for a 1Password item.
+    /// Supports both document items (via documentAttributes) and regular items with attached files.
+    /// 1Password stores files as: files/&lt;documentId or itemUuid&gt;__&lt;filename&gt; (double underscore separator).
     /// </summary>
     /// <param name="credential">The credential to add attachments to.</param>
-    /// <param name="docAttributes">The document attributes.</param>
+    /// <param name="item">The 1Password item.</param>
     /// <param name="attachmentMap">Dictionary mapping attachment paths to file data.</param>
     private static void ExtractAttachments(
         ImportedCredential credential,
-        OnePasswordDocumentAttributes docAttributes,
+        OnePasswordItem item,
         Dictionary<string, byte[]> attachmentMap)
     {
-        if (string.IsNullOrWhiteSpace(docAttributes.DocumentId) || string.IsNullOrWhiteSpace(docAttributes.FileName))
+        // Try document attributes first (for Document category items)
+        if (item.Details?.DocumentAttributes != null &&
+            !string.IsNullOrWhiteSpace(item.Details.DocumentAttributes.DocumentId) &&
+            !string.IsNullOrWhiteSpace(item.Details.DocumentAttributes.FileName))
         {
-            return;
-        }
-
-        // 1Password stores files as: files/<documentId>__<filename> (2 underscores)
-        var attachmentPath = $"files/{docAttributes.DocumentId}__{docAttributes.FileName}";
-
-        if (attachmentMap.TryGetValue(attachmentPath, out var fileData))
-        {
-            credential.Attachments = new List<ImportedAttachment>
+            var docPath = $"files/{item.Details.DocumentAttributes.DocumentId}__{item.Details.DocumentAttributes.FileName}";
+            if (attachmentMap.TryGetValue(docPath, out var docData))
             {
-                new ImportedAttachment
-                {
-                    Filename = docAttributes.FileName,
-                    Blob = fileData,
-                },
-            };
+                AddAttachment(credential, item.Details.DocumentAttributes.FileName, docData);
+            }
         }
+
+        // Also check for item UUID-based attachments (for regular items with attached files)
+        // 1Password can attach files to any item type using: files/<itemUuid>__<filename>
+        if (!string.IsNullOrWhiteSpace(item.Uuid))
+        {
+            var attachmentPrefix = $"files/{item.Uuid}__";
+
+            var itemAttachments = attachmentMap
+                .Where(kvp => kvp.Key.StartsWith(attachmentPrefix, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            foreach (var attachmentEntry in itemAttachments)
+            {
+                // Extract filename (everything after the double underscore)
+                var filename = attachmentEntry.Key.Substring(attachmentPrefix.Length);
+                AddAttachment(credential, filename, attachmentEntry.Value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Helper method to add an attachment to a credential.
+    /// </summary>
+    /// <param name="credential">The credential to add the attachment to.</param>
+    /// <param name="filename">The filename of the attachment.</param>
+    /// <param name="fileData">The file data.</param>
+    private static void AddAttachment(ImportedCredential credential, string filename, byte[] fileData)
+    {
+        credential.Attachments ??= new List<ImportedAttachment>();
+
+        credential.Attachments.Add(new ImportedAttachment
+        {
+            Filename = filename,
+            Blob = fileData,
+        });
     }
 }

@@ -463,6 +463,30 @@ public class OnePasswordFieldValue
     /// </summary>
     [JsonPropertyName("menu")]
     public string? Menu { get; set; }
+
+    /// <summary>
+    /// Gets or sets the file value (for file attachment fields).
+    /// </summary>
+    [JsonPropertyName("file")]
+    public OnePasswordFileValue? File { get; set; }
+
+    /// <summary>
+    /// Gets or sets the email value (for email fields).
+    /// </summary>
+    [JsonPropertyName("email")]
+    public OnePasswordEmailValue? Email { get; set; }
+
+    /// <summary>
+    /// Gets or sets the phone value (for phone fields).
+    /// </summary>
+    [JsonPropertyName("phone")]
+    public string? Phone { get; set; }
+
+    /// <summary>
+    /// Gets or sets the address value (for address fields).
+    /// </summary>
+    [JsonPropertyName("address")]
+    public OnePasswordAddressValue? Address { get; set; }
 }
 
 /// <summary>
@@ -505,4 +529,82 @@ public class OnePasswordDocumentAttributes
     /// </summary>
     [JsonPropertyName("decryptedSize")]
     public long? DecryptedSize { get; set; }
+}
+
+/// <summary>
+/// Represents a file attachment value.
+/// </summary>
+public class OnePasswordFileValue
+{
+    /// <summary>
+    /// Gets or sets the filename.
+    /// </summary>
+    [JsonPropertyName("fileName")]
+    public string? FileName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the document ID.
+    /// </summary>
+    [JsonPropertyName("documentId")]
+    public string? DocumentId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the decrypted size.
+    /// </summary>
+    [JsonPropertyName("decryptedSize")]
+    public long? DecryptedSize { get; set; }
+}
+
+/// <summary>
+/// Represents an email value.
+/// </summary>
+public class OnePasswordEmailValue
+{
+    /// <summary>
+    /// Gets or sets the email address.
+    /// </summary>
+    [JsonPropertyName("email_address")]
+    public string? EmailAddress { get; set; }
+
+    /// <summary>
+    /// Gets or sets the provider.
+    /// </summary>
+    [JsonPropertyName("provider")]
+    public string? Provider { get; set; }
+}
+
+/// <summary>
+/// Represents an address value.
+/// </summary>
+public class OnePasswordAddressValue
+{
+    /// <summary>
+    /// Gets or sets the street address.
+    /// </summary>
+    [JsonPropertyName("street")]
+    public string? Street { get; set; }
+
+    /// <summary>
+    /// Gets or sets the city.
+    /// </summary>
+    [JsonPropertyName("city")]
+    public string? City { get; set; }
+
+    /// <summary>
+    /// Gets or sets the country.
+    /// </summary>
+    [JsonPropertyName("country")]
+    public string? Country { get; set; }
+
+    /// <summary>
+    /// Gets or sets the zip/postal code.
+    /// </summary>
+    [JsonPropertyName("zip")]
+    public string? Zip { get; set; }
+
+    /// <summary>
+    /// Gets or sets the state/province.
+    /// </summary>
+    [JsonPropertyName("state")]
+    public string? State { get; set; }
 }

@@ -1987,7 +1987,7 @@ public class ImportExportTests
             Assert.That(loginItem.ServiceUrls![0], Is.EqualTo("https://example.com"));
             Assert.That(loginItem.TwoFactorSecret, Is.EqualTo("otpauth://totp/Example:jdoe?secret=JBSWY3DPEHPK3PXP&issuer=Example"));
             Assert.That(loginItem.Notes, Is.EqualTo("My login notes here"));
-            Assert.That(loginItem.FolderPath, Is.EqualTo("Personal"));
+            Assert.That(loginItem.FolderPath, Is.Null); // Single vault "Personal" promoted to root
             Assert.That(loginItem.ItemType, Is.EqualTo(ImportedItemType.Login));
             Assert.That(loginItem.Tags, Has.Count.EqualTo(2));
             Assert.That(loginItem.Tags, Does.Contain("work"));
@@ -2011,7 +2011,7 @@ public class ImportExportTests
         {
             Assert.That(cardItem.ServiceName, Is.EqualTo("My Visa Card"));
             Assert.That(cardItem.Notes, Is.EqualTo("Primary credit card"));
-            Assert.That(cardItem.FolderPath, Is.EqualTo("Personal"));
+            Assert.That(cardItem.FolderPath, Is.Null); // Single vault "Personal" promoted to root
             Assert.That(cardItem.ItemType, Is.EqualTo(ImportedItemType.Creditcard));
             Assert.That(cardItem.Creditcard, Is.Not.Null);
             Assert.That(cardItem.Creditcard!.CardholderName, Is.EqualTo("John Doe"));
@@ -2063,7 +2063,7 @@ public class ImportExportTests
         {
             Assert.That(docItem.ServiceName, Is.EqualTo("Sample Document"));
             Assert.That(docItem.Notes, Is.EqualTo("Test document with attachment"));
-            Assert.That(docItem.FolderPath, Is.EqualTo("Personal"));
+            Assert.That(docItem.FolderPath, Is.Null); // Single vault "Personal" promoted to root
             Assert.That(docItem.ItemType, Is.EqualTo(ImportedItemType.Note));
             Assert.That(docItem.Attachments, Is.Not.Null);
             Assert.That(docItem.Attachments, Has.Count.EqualTo(1));
