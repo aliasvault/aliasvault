@@ -194,4 +194,8 @@
     <value>Failed to decrypt the file. Please check that the file is not corrupted and try again.</value>
     <comment>Generic error message for decryption failure</comment>
   </data>
+  <data name="supportedFormats" xml:space="preserve">
+    <value>Supported formats</value>
+    <comment>Label for supported file formats</comment>
+  </data>
 </root>
