@@ -284,11 +284,11 @@
     <comment>Generic error message when passwords don't match</comment>
   </data>
   <data name="ErrorMustAcceptTerms" xml:space="preserve">
-    <value>You must accept the terms and conditions.</value>
+    <value>စည်းကမ်းသတ်မှတ်ချက်များကို သင်လက်ခံရပါမည်။</value>
     <comment>Error message for terms and conditions acceptance</comment>
   </data>
   <data name="ErrorSecretKeyRequired" xml:space="preserve">
-    <value>Secret key is required</value>
+    <value>လျှို့ဝှက်သော့အား လိုအပ်သည်</value>
     <comment>Error message when secret key is required</comment>
   </data>
   <data name="ErrorUsernameRequired" xml:space="preserve">
@@ -305,11 +305,11 @@
     <comment>Divider text between options</comment>
   </data>
   <data name="LockVault" xml:space="preserve">
-    <value>Lock vault</value>
+    <value>လုံခြုံရေးအခန်းအား သော့ခတ်</value>
     <comment>Tooltip text for lock vault button</comment>
   </data>
   <data name="Home" xml:space="preserve">
-    <value>Home</value>
+    <value>ပင်မ</value>
     <comment>Home breadcrumb text</comment>
   </data>
   <data name="Notes" xml:space="preserve">
@@ -317,15 +317,15 @@
     <comment>Notes section heading</comment>
   </data>
   <data name="SyncVaultData" xml:space="preserve">
-    <value>Sync vault data</value>
+    <value>လုံခြုံရေးအခန်းဒေတာများ  စင့်ခ်လုပ်ရန်</value>
     <comment>Tooltip text for sync vault data button</comment>
   </data>
   <data name="SyncingChanges" xml:space="preserve">
-    <value>Syncing changes...</value>
+    <value>ပြောင်းလဲမှုများကို စင့်ခ်လုပ်နေသည်...</value>
     <comment>Status text when background sync is in progress</comment>
   </data>
   <data name="LoadingVault" xml:space="preserve">
-    <value>Loading vault...</value>
+    <value>လုံခြုံရေးအခန်းအား ဝန်ဆွဲတင်နေသည်...</value>
     <comment>Status text when vault is being loaded</comment>
   </data>
 </root>
