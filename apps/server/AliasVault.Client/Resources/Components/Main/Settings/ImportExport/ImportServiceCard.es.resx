@@ -194,4 +194,8 @@
     <value>Error al descifrar el archivo. Por favor, comprueba que el archivo no está dañado e inténtalo de nuevo.</value>
     <comment>Generic error message for decryption failure</comment>
   </data>
+  <data name="supportedFormats" xml:space="preserve">
+    <value>Supported formats</value>
+    <comment>Label for supported file formats</comment>
+  </data>
 </root>
