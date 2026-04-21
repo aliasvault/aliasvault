@@ -507,4 +507,31 @@ public static class BaseImporter
             UpdatedAt = updatedAt,
         });
     }
+
+    /// <summary>
+    /// Formats a Unix timestamp as a date string in ISO 8601 format (yyyy-MM-dd).
+    /// </summary>
+    /// <param name="unixTimestamp">The Unix timestamp (seconds since epoch).</param>
+    /// <returns>The formatted date string.</returns>
+    public static string FormatUnixTimestampAsDate(long unixTimestamp)
+    {
+        var date = DateTimeOffset.FromUnixTimeSeconds(unixTimestamp).UtcDateTime;
+        return date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>
+    /// Formats a month/year value (YYYYMM format) as a date string (YYYY-MM).
+    /// </summary>
+    /// <param name="monthYear">The month/year value in YYYYMM format.</param>
+    /// <returns>The formatted date string, or null if the format is invalid.</returns>
+    public static string? FormatMonthYear(int monthYear)
+    {
+        var monthYearStr = monthYear.ToString(CultureInfo.InvariantCulture);
+        if (monthYearStr.Length == 6) // YYYYMM
+        {
+            return $"{monthYearStr.Substring(0, 4)}-{monthYearStr.Substring(4, 2)}";
+        }
+
+        return null;
+    }
 }
