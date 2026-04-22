@@ -64,7 +64,7 @@
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
-    <value>In order to import your 1Password vault, you need to export it. You can do this by logging into your 1Password account in the 1Password 8 desktop app (Windows / MacOS / Linux), going to the 'File' menu and selecting 'Export'.</value>
+    <value>要导入您的 1Password 密码库，您需要先将其导出。您可以通过在 1Password 8 桌面应用程序（Windows / MacOS / Linux）中登录您的 1Password 账户，然后转到“文件”菜单并选择“导出”来完成此操作。</value>
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
