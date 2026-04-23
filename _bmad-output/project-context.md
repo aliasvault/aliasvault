@@ -603,7 +603,22 @@ const ledgerState = GuardianRecovery.ledger(contractState.data); // ← generate
 2. **Check community projects:** midnight-bank, midnight-game-2, MeshJS/midnight-starter-template, naval-battle-game, midnames, zkBadge
 3. **Cross-reference patterns:** Build a comparison table showing how each project handles the specific concern (provider wiring, wallet connection, private state, etc.)
 4. **Identify consensus vs divergence:** When 6+ projects agree on a pattern, it's reliable. When projects diverge, document both approaches with rationale for our choice.
-5. **Use MCP tools:** `midnight-search-typescript`, `midnight-search-compact`, `midnight-get-file` can pull code from indexed repositories
+5. **Use MCP tools.** Verified 2026-04-18 against actual version paths — see `_bmad-output/implementation-artifacts/7-0-local-devnet-research.md` for the verification log.
+   **Use (all verified working):**
+   - `midnight-fetch-docs` — canonical live-docs source; preferable to stale local copies
+   - `midnight-list-examples` — 12+ reference projects catalogued; satisfies the ≥8 protocol
+   - `midnight-search-docs` — keyword search across official docs
+   - `midnight-search-typescript`, `midnight-search-compact` — SDK code + Compact code search
+   - `midnight-get-file`, `midnight-get-repo-context` — pull specific files / one-call repo bootstrap
+   - `midnight-check-breaking-changes` — **first-call** before any `@midnight-ntwrk/*` or `compactc` upgrade. Surfaces concrete breaking-change lists (e.g. `NativePoint`→`JubjubPoint` for compact; `networkId` enum→string + `balanceTx` signature change + async `submitTx` for midnight-js). Caveat: compares to latest, manually trim if your target is older.
+   - `midnight-get-version-info` — drift monitoring. Track drift across our packages: extension (v4.0.4) vs blockchain-cli (v3.1.0) vs guardian-portal (v3.0.0) vs smtp-bridge (v3.0.0). Run at each Epic start.
+
+   **Do NOT use (verified unreliable or unavailable from Claude Code):**
+   - `midnight-get-migration-guide` — returns empty for precise `fromVersion`/`toVersion` pairs on our paths. Use `midnight-check-breaking-changes` instead.
+   - `midnight-review-contract` — requires MCP sampling (Claude Desktop only); unavailable from Claude Code. Score the deployment rubric (value / privacy / state-space at risk) manually using Nick Stanford's category definitions from the 2026-04-11 Midnight Fireside Dev Hang transcript.
+   - `midnight-check-version` — checks the MCP package itself on npm, not our project deps. Use `midnight-get-version-info` for dep drift.
+
+   **Cost of ignoring step 5:** Story 6.5b was rolled back from review after adversarial code review found `coinPublicKey` bug, missing tests, and AC #3 gaps. `midnight-check-breaking-changes --repo=midnight-js --currentVersion=3.0.0` would have surfaced the `networkId` enum→string change and the `balanceTx` signature change upfront, likely preventing the rollback.
 
 **Anti-pattern:**
 ```

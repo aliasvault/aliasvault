@@ -1,6 +1,6 @@
 # Story 6.5: Extension E2E Smoke Test on Preprod
 
-Status: ready-for-dev
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -252,9 +252,23 @@ Proof Server: midnightntwrk/proof-server:7.0.0
 ## Dev Agent Record
 
 ### Agent Model Used
+Claude Opus 4.6
 
 ### Debug Log References
 
+### Implementation Plan
+This is a manual testing story. The dev agent:
+1. Verified all prerequisites (contract addresses, network config, build tooling)
+2. Built extension with `VITE_MIDNIGHT_NETWORK=preprod` — confirmed preprod in bundle
+3. Created test report template at `_bmad-output/implementation-artifacts/6-5-test-report.md`
+4. Note: Proof server config uses public endpoint (`lace-proof-pub.preprod.midnight.network`), not local Docker — Task 1.1 may be unnecessary
+5. Tasks 2–9 require manual browser interaction (Lace wallet, extension popup, DevTools) — user executes, agent documents
+
 ### Completion Notes List
+- Task 1.4: Extension built successfully for preprod (39.6s, 26.7 MB, no errors)
+- Task 1 prereqs verified: VaultRegistry `9cc1...22ac`, AliasRegistry `645e...51c7`, networkConfig preprod endpoints correct
 
 ### File List
+- `_bmad-output/implementation-artifacts/6-5-test-report.md` (NEW — test report template)
+- `_bmad-output/implementation-artifacts/6-5-extension-e2e-smoke-test-preprod.md` (MODIFIED — status, dev agent record)
+- `_bmad-output/implementation-artifacts/sprint-status.yaml` (MODIFIED — status in-progress)

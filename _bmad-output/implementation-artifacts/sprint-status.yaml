@@ -105,7 +105,11 @@ development_status:
   6-4b-email-ui-blockchain-wiring: done  # Route email UI to existing blockchain InboxList + build InboxDetail
   6-4c-server-dependency-cleanup: done  # Remove favicon, revokeTokens, dead SYNC_VAULT, server URL settings, gate mobile
   6-4d-new-user-onboarding-master-password: done  # Master password creation + empty vault init for first-time wallet users
-  6-5-extension-e2e-smoke-test-preprod: ready-for-dev
+  6-5-extension-e2e-smoke-test-preprod: in-progress
+  6-5a-lace-wallet-proxy-provider-wiring: done  # Hotfix: blocks 6.5 AC 3-8 — all 6 providers wired (ADR-005 Option C). Code review passed 2026-04-01.
+  6-5b-midnight-sdk-v4-migration: in-progress  # Task 7 (compactc 0.30.0 recompile) DONE 2026-04-18. All 6.5b review fixes resolved: H1 (dynamic import→static), M1 (proverServerUri deprecation warnings + TODO for getProvingProvider migration), M2 (ConnectedAPI cached on window across chrome.scripting calls), M3 (joinVaultRegistry reuses cached publicDataProvider), M4 (connection-proof fallback removed — signData required), M6 (file-list dedupe), L1 (length check kept with rationale), L2 (VITE_INDEXER_URL/VITE_WS_INDEXER_URL/VITE_NODE_URL env overrides added). Only Task 9 (E2E) remains, still blocked on local DevNet infra (Story 6.5c + Task #2).
+  6-5c-blockchain-cli-sdk-v4-migration: in-progress  # Partial: compact-js 2.4.0→2.5.0 + compact-runtime 0.14.0→0.15.0 already bumped 2026-04-18 to unblock contract-test runtime-version check. Full midnight-js v3→v4 + ledger-v7→v8 + indexer v3→v4 migration still TBD.
   6-6-smtp-pipeline-deployment-email-e2e: backlog
   6-7-guardian-portal-preprod-validation: backlog
+  6-8-smtp-bridge-sdk-v4-migration: backlog  # Surfaced 2026-04-18 plan review. smtp-bridge on @midnight-ntwrk/midnight-js-contracts@3.0.0 — same migration pattern as 6-7 guardian portal.
   epic-6-retrospective: optional
