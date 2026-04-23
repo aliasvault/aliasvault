@@ -16,6 +16,10 @@ stats-*.json
 .wxt
 web-ext.config.ts
 
+# ZK artifacts copied from contract package at build time (copy-zk-assets script)
+public/keys/
+public/zkir/
+
 # Editor directories and files
 .idea
 .DS_Store
