@@ -26,7 +26,7 @@
     "generate": "Generera",
     "attachments": "Bifogade filer",
     "or": "eller",
-    "retry": "Retry",
+    "retry": "Försök igen",
     "deleteItemConfirmTitle": "Radera objekt",
     "deleteItemConfirmDescription": "Är du säker på att du vill radera det här objektet?",
     "errors": {
@@ -97,8 +97,8 @@
       "vaultOutdated": "Ditt valv är föråldrad. Logga in på AliasVault webbplats och följ stegen.",
       "failedToSyncVault": "Misslyckades att synkronisera valv",
       "versionNotSupported": "Denna version av mobilappen AliasVault stöds inte längre av servern. Vänligen uppdatera ditt appen till den senaste versionen.",
-      "serverVersionNotSupported": "AliasVault-servern behöver uppdateras till en nyare version för att kunna använda demobilapp. Kontakta support om du behöver hjälp.",
-      "appOutdated": "Denna app är föråldrad och kan inte användas för att komma åt den här (senare) valvversionen. Vänligen uppdatera AliasValv-appen för att fortsätta.",
+      "serverVersionNotSupported": "AliasVault-servern behöver uppdateras till en nyare version för att kunna använda mobilapp. Kontakta support om du behöver hjälp.",
+      "appOutdated": "Denna app är föråldrad och kan inte användas för att komma åt den här (nyare) valvversionen. Vänligen uppdatera AliasVault-appen för att fortsätta.",
       "passwordChanged": "Ditt lösenord har ändrats sedan du senast loggade in. Vänligen logga in igen av säkerhetsskäl.",
       "passwordChangeRequiresOnline": "Lösenordsbyte kräver en internetanslutning. Försök igen när du är online."
     }
@@ -136,7 +136,7 @@
       "step5": "5. Inaktivera andra lösenordshanterare (t.ex. \"iCloud-lösenord\") för att undvika konflikter",
       "openIosSettings": "Öppna iOS-inställningarna",
       "alreadyConfigured": "Jag har redan konfigurerat det",
-      "warningText": "OBS: Du måste autentisera med Face ID/Touch ID eller din enhets lösenord när du använder autofyll."
+      "warningText": "OBS: Du måste autentisera med Face ID/Touch ID eller din enhets lösenkod när du använder autofyll."
     },
     "androidAutofillSettings": {
       "warningTitle": "⚠️ Experimentell funktion",
@@ -159,9 +159,9 @@
     "clipboardClear": "Rensa urklipp",
     "clipboardClearDescription": "Rensa automatiskt kopierade lösenord och känslig information från urklipp efter en viss tidsperiod.",
     "clipboardClearAndroidWarning": "OBS: Vissa Android-enheter har urklipp historia aktiverad, som kan hålla reda på tidigare kopierade objekt, även efter AliasVault rensar urklipp. AliasVault kan bara skriva över det senaste objektet, men äldre poster kan förbli synliga i historiken. Av säkerhetsskäl rekommenderar vi att du inaktiverar alla funktioner för urklippshistorik i enhetens inställningar.",
-    "clipboardLocalOnly": "Local Clipboard Only",
-    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
-    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
+    "clipboardLocalOnly": "Endast lokalt urklipp",
+    "clipboardLocalOnlyDescription": "Behåll kopierade uppgifter på den här enheten istället för att synkronisera dem till dina andra Apple-enheter via Universella urklipp.",
+    "clipboardLocalOnlyDisabledWarning": "Med detta av kan kopierade uppgifter synkroniseras till dina övriga Apple enheter (Mac, iPad, osv.) via Universella urklipp.",
     "clipboardClearOptions": {
       "never": "Aldrig",
       "5seconds": "5 sekunder",
@@ -508,7 +508,7 @@
       "folderNameRequired": "Mappnamn krävs",
       "deleteFolder": "Radera mapp",
       "deleteFolderKeepItems": "Ta endast bort mappen",
-      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+      "deleteFolderKeepItemsDescription": "Objekt kommer att flyttas till den överordnade mappen.",
       "deleteFolderAndItems": "Radera mapp och alla objekt",
       "deleteFolderAndItemsDescription": "{{count}} objekt kommer att flyttas till Nyligen borttagen.",
       "emptyFolderHint": "Mappen är tom. För att flytta objekt till den här mappen, redigera objektet och välj denna mappen.",
@@ -549,7 +549,7 @@
     "sizeKB": "KB",
     "offlineMessage": "Du är offline. Anslut till internet för att ladda dina e-postmeddelanden.",
     "emptyMessage": "Du har inte mottagit några e-postmeddelanden på dina privata e-postadresser än. När du fått ett nytt e-postmeddelande så visas det här.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Läs in fler ({{count}} kvar)",
     "time": {
       "justNow": "precis nu",
       "minutesAgo_single": "{{count}} minut sedan",
@@ -620,11 +620,11 @@
       "attemptingToUnlockMessage": "Försöker låsa upp."
     },
     "vaultError": {
-      "title": "Vault Error",
-      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
-      "showDetails": "Show error details",
-      "hideDetails": "Hide error details",
-      "copyErrorDetails": "Copy error details"
+      "title": "Valvfel",
+      "description": "Ett fel uppstod när du laddade ditt valv. Om problemet kvarstår, kontakta support.",
+      "showDetails": "Visa felinformation",
+      "hideDetails": "Dölj felinformation",
+      "copyErrorDetails": "Kopiera felinformation"
     },
     "loginSettings": {
       "title": "API-anslutning",
