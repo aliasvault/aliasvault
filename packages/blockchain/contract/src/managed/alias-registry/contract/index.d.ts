@@ -15,6 +15,17 @@ export type ImpureCircuits<PS> = {
                aliasHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
 }
 
+export type ProvableCircuits<PS> = {
+  claimAlias(context: __compactRuntime.CircuitContext<PS>,
+             aliasHash_0: Uint8Array,
+             contractAddr_0: string): __compactRuntime.CircuitResults<PS, []>;
+  getOwner(context: __compactRuntime.CircuitContext<PS>, aliasHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
+  getContractAddress(context: __compactRuntime.CircuitContext<PS>,
+                     aliasHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, string>;
+  releaseAlias(context: __compactRuntime.CircuitContext<PS>,
+               aliasHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+}
+
 export type PureCircuits = {
   ownerCommitment(sk_0: Uint8Array): Uint8Array;
 }
@@ -57,6 +68,7 @@ export declare class Contract<PS = any, W extends Witnesses<PS> = Witnesses<PS>>
   witnesses: W;
   circuits: Circuits<PS>;
   impureCircuits: ImpureCircuits<PS>;
+  provableCircuits: ProvableCircuits<PS>;
   constructor(witnesses: W);
   initialState(context: __compactRuntime.ConstructorContext<PS>): __compactRuntime.ConstructorResult<PS>;
 }

@@ -32,6 +32,32 @@ export type ImpureCircuits<PS> = {
                walletAddressHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, boolean>;
 }
 
+export type ProvableCircuits<PS> = {
+  registerVault(context: __compactRuntime.CircuitContext<PS>,
+                walletAddressHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  updateVault(context: __compactRuntime.CircuitContext<PS>,
+              newCidHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  transferOwnership(context: __compactRuntime.CircuitContext<PS>,
+                    newOwnerCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  storeRecoveryKeyHash(context: __compactRuntime.CircuitContext<PS>,
+                       keyHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  addBackupWallet(context: __compactRuntime.CircuitContext<PS>,
+                  walletCommitment_0: Uint8Array,
+                  currentTime_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  removeBackupWallet(context: __compactRuntime.CircuitContext<PS>,
+                     walletCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  backupTransfer(context: __compactRuntime.CircuitContext<PS>,
+                 newOwnerCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  setEmailPublicKey(context: __compactRuntime.CircuitContext<PS>,
+                    pubKey_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  setMailRelay(context: __compactRuntime.CircuitContext<PS>,
+               relayCommit_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  notifyNewMail(context: __compactRuntime.CircuitContext<PS>,
+                manifestCid_0: string): __compactRuntime.CircuitResults<PS, []>;
+  isRegistered(context: __compactRuntime.CircuitContext<PS>,
+               walletAddressHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, boolean>;
+}
+
 export type PureCircuits = {
   ownerCommitment(sk_0: Uint8Array): Uint8Array;
   backupCommitment(bk_0: Uint8Array): Uint8Array;
@@ -100,6 +126,7 @@ export declare class Contract<PS = any, W extends Witnesses<PS> = Witnesses<PS>>
   witnesses: W;
   circuits: Circuits<PS>;
   impureCircuits: ImpureCircuits<PS>;
+  provableCircuits: ProvableCircuits<PS>;
   constructor(witnesses: W);
   initialState(context: __compactRuntime.ConstructorContext<PS>): __compactRuntime.ConstructorResult<PS>;
 }

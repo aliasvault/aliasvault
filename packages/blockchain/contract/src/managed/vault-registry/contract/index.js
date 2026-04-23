@@ -1,5 +1,5 @@
 import * as __compactRuntime from '@midnight-ntwrk/compact-runtime';
-__compactRuntime.checkRuntimeVersion('0.14.0');
+__compactRuntime.checkRuntimeVersion('0.15.0');
 
 const _descriptor_0 = new __compactRuntime.CompactTypeBytes(32);
 
@@ -479,6 +479,19 @@ export class Contract {
       }
     };
     this.impureCircuits = {
+      registerVault: this.circuits.registerVault,
+      updateVault: this.circuits.updateVault,
+      transferOwnership: this.circuits.transferOwnership,
+      storeRecoveryKeyHash: this.circuits.storeRecoveryKeyHash,
+      addBackupWallet: this.circuits.addBackupWallet,
+      removeBackupWallet: this.circuits.removeBackupWallet,
+      backupTransfer: this.circuits.backupTransfer,
+      setEmailPublicKey: this.circuits.setEmailPublicKey,
+      setMailRelay: this.circuits.setMailRelay,
+      notifyNewMail: this.circuits.notifyNewMail,
+      isRegistered: this.circuits.isRegistered
+    };
+    this.provableCircuits = {
       registerVault: this.circuits.registerVault,
       updateVault: this.circuits.updateVault,
       transferOwnership: this.circuits.transferOwnership,

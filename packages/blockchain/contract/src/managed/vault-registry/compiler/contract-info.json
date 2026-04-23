@@ -22,12 +22,12 @@
       }
     },
     {
-      "name": "guardianCommitment",
+      "name": "backupCommitment",
       "pure": true,
       "proof": false,
       "arguments": [
         {
-          "name": "gk",
+          "name": "bk",
           "type": {
             "type-name": "Bytes",
             "length": 32
@@ -40,12 +40,12 @@
       }
     },
     {
-      "name": "initialize",
+      "name": "registerVault",
       "pure": false,
       "proof": true,
       "arguments": [
         {
-          "name": "ownerCom",
+          "name": "walletAddressHash",
           "type": {
             "type-name": "Bytes",
             "length": 32
@@ -59,12 +59,12 @@
       }
     },
     {
-      "name": "addGuardian",
+      "name": "updateVault",
       "pure": false,
       "proof": true,
       "arguments": [
         {
-          "name": "guardianCom",
+          "name": "newCidHash",
           "type": {
             "type-name": "Bytes",
             "length": 32
@@ -78,12 +78,12 @@
       }
     },
     {
-      "name": "removeGuardian",
+      "name": "transferOwnership",
       "pure": false,
       "proof": true,
       "arguments": [
         {
-          "name": "guardianCom",
+          "name": "newOwnerCommitment",
           "type": {
             "type-name": "Bytes",
             "length": 32
@@ -97,12 +97,12 @@
       }
     },
     {
-      "name": "storeSharesCidHash",
+      "name": "storeRecoveryKeyHash",
       "pure": false,
       "proof": true,
       "arguments": [
         {
-          "name": "cidHash",
+          "name": "keyHash",
           "type": {
             "type-name": "Bytes",
             "length": 32
@@ -116,10 +116,17 @@
       }
     },
     {
-      "name": "initiateRecovery",
+      "name": "addBackupWallet",
       "pure": false,
       "proof": true,
       "arguments": [
+        {
+          "name": "walletCommitment",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
         {
           "name": "currentTime",
           "type": {
@@ -135,10 +142,17 @@
       }
     },
     {
-      "name": "approveRecovery",
+      "name": "removeBackupWallet",
       "pure": false,
       "proof": true,
       "arguments": [
+        {
+          "name": "walletCommitment",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
       ],
       "result-type": {
         "type-name": "Tuple",
@@ -147,10 +161,17 @@
       }
     },
     {
-      "name": "claimRecovery",
+      "name": "backupTransfer",
       "pure": false,
       "proof": true,
       "arguments": [
+        {
+          "name": "newOwnerCommitment",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
       ],
       "result-type": {
         "type-name": "Tuple",
@@ -159,15 +180,95 @@
       }
     },
     {
-      "name": "cancelRecovery",
+      "name": "relayCommitment",
+      "pure": true,
+      "proof": false,
+      "arguments": [
+        {
+          "name": "rk",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "setEmailPublicKey",
       "pure": false,
       "proof": true,
       "arguments": [
+        {
+          "name": "pubKey",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
       ],
       "result-type": {
         "type-name": "Tuple",
         "types": [
         ]
+      }
+    },
+    {
+      "name": "setMailRelay",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "relayCommit",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "notifyNewMail",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "manifestCid",
+          "type": {
+            "type-name": "Opaque",
+            "tsType": "string"
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "isRegistered",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "walletAddressHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Boolean"
       }
     }
   ],
@@ -182,7 +283,16 @@
       }
     },
     {
-      "name": "local_guardian_key",
+      "name": "local_backup_key",
+      "arguments": [
+      ],
+      "result type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "local_relay_key",
       "arguments": [
       ],
       "result type": {

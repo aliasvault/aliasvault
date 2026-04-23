@@ -21,6 +21,22 @@ export type ImpureCircuits<PS> = {
   cancelRecovery(context: __compactRuntime.CircuitContext<PS>): __compactRuntime.CircuitResults<PS, []>;
 }
 
+export type ProvableCircuits<PS> = {
+  initialize(context: __compactRuntime.CircuitContext<PS>,
+             ownerCom_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  addGuardian(context: __compactRuntime.CircuitContext<PS>,
+              guardianCom_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  removeGuardian(context: __compactRuntime.CircuitContext<PS>,
+                 guardianCom_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  storeSharesCidHash(context: __compactRuntime.CircuitContext<PS>,
+                     cidHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  initiateRecovery(context: __compactRuntime.CircuitContext<PS>,
+                   currentTime_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  approveRecovery(context: __compactRuntime.CircuitContext<PS>): __compactRuntime.CircuitResults<PS, []>;
+  claimRecovery(context: __compactRuntime.CircuitContext<PS>): __compactRuntime.CircuitResults<PS, []>;
+  cancelRecovery(context: __compactRuntime.CircuitContext<PS>): __compactRuntime.CircuitResults<PS, []>;
+}
+
 export type PureCircuits = {
   ownerCommitment(sk_0: Uint8Array): Uint8Array;
   guardianCommitment(gk_0: Uint8Array): Uint8Array;
@@ -73,6 +89,7 @@ export declare class Contract<PS = any, W extends Witnesses<PS> = Witnesses<PS>>
   witnesses: W;
   circuits: Circuits<PS>;
   impureCircuits: ImpureCircuits<PS>;
+  provableCircuits: ProvableCircuits<PS>;
   constructor(witnesses: W);
   initialState(context: __compactRuntime.ConstructorContext<PS>): __compactRuntime.ConstructorResult<PS>;
 }

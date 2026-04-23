@@ -1,5 +1,5 @@
 import * as __compactRuntime from '@midnight-ntwrk/compact-runtime';
-__compactRuntime.checkRuntimeVersion('0.14.0');
+__compactRuntime.checkRuntimeVersion('0.15.0');
 
 const _descriptor_0 = new __compactRuntime.CompactTypeUnsignedInteger(18446744073709551615n, 8);
 
@@ -322,6 +322,16 @@ export class Contract {
       }
     };
     this.impureCircuits = {
+      initialize: this.circuits.initialize,
+      addGuardian: this.circuits.addGuardian,
+      removeGuardian: this.circuits.removeGuardian,
+      storeSharesCidHash: this.circuits.storeSharesCidHash,
+      initiateRecovery: this.circuits.initiateRecovery,
+      approveRecovery: this.circuits.approveRecovery,
+      claimRecovery: this.circuits.claimRecovery,
+      cancelRecovery: this.circuits.cancelRecovery
+    };
+    this.provableCircuits = {
       initialize: this.circuits.initialize,
       addGuardian: this.circuits.addGuardian,
       removeGuardian: this.circuits.removeGuardian,
@@ -928,21 +938,21 @@ export class Contract {
                                                  partialProofData,
                                                  unlockTime_0),
                             '72-hour time-lock has not elapsed');
-    __compactRuntime.assert(_descriptor_0.fromValue(__compactRuntime.queryLedgerState(context,
-                                                                                      partialProofData,
-                                                                                      [
-                                                                                       { dup: { n: 0 } },
-                                                                                       { idx: { cached: false,
-                                                                                                pushPath: false,
-                                                                                                path: [
-                                                                                                       { tag: 'value',
-                                                                                                         value: { value: _descriptor_7.toValue(4n),
-                                                                                                                  alignment: _descriptor_7.alignment() } }] } },
-                                                                                       'size',
-                                                                                       { popeq: { cached: true,
-                                                                                                  result: undefined } }]).value)
-                            >=
-                            2n,
+    let t_0;
+    __compactRuntime.assert((t_0 = _descriptor_0.fromValue(__compactRuntime.queryLedgerState(context,
+                                                                                             partialProofData,
+                                                                                             [
+                                                                                              { dup: { n: 0 } },
+                                                                                              { idx: { cached: false,
+                                                                                                       pushPath: false,
+                                                                                                       path: [
+                                                                                                              { tag: 'value',
+                                                                                                                value: { value: _descriptor_7.toValue(4n),
+                                                                                                                         alignment: _descriptor_7.alignment() } }] } },
+                                                                                              'size',
+                                                                                              { popeq: { cached: true,
+                                                                                                         result: undefined } }]).value),
+                             t_0 >= 2n),
                             'Insufficient guardian approvals');
     __compactRuntime.queryLedgerState(context,
                                       partialProofData,
