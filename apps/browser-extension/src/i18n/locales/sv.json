@@ -208,7 +208,7 @@
     "allItemsInFolders": "Alla dina objekt är organiserade i mappar. Klicka på en mapp ovan för att visa dina uppgifter, eller använd sökningen för att hitta specifika objekt.",
     "deleteFolder": "Radera mapp",
     "deleteFolderKeepItems": "Ta endast bort mappen",
-    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+    "deleteFolderKeepItemsDescription": "Objekt kommer att flyttas till den överordnade mappen.",
     "deleteFolderAndItems": "Radera mapp och alla objekt",
     "deleteFolderAndItemsDescription": "{{count}} objekt kommer att flyttas till Nyligen borttagen.",
     "filters": {
@@ -326,7 +326,7 @@
     "noEmails": "Inga e-postmeddelanden hittades",
     "noEmailsDescription": "Du har inte mottagit några e-postmeddelanden på dina privata e-postadresser än. När du fått ett nytt e-postmeddelande så visas det här.",
     "offlineMessage": "Du är offline. Anslut till internet för att ladda dina e-postmeddelanden.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Läs in fler ({{count}} kvar)",
     "dateFormat": {
       "justNow": "precis nu",
       "minutesAgo_single": "{{count}} minut sedan",
@@ -433,12 +433,12 @@
         "female": "Kvinna"
       }
     },
-    "credentialAutofill": "Credential autofill",
-    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
-    "totpAutofill": "2FA code autofill",
-    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
-    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
-    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
+    "credentialAutofill": "Autofyll för inloggningsuppgifter",
+    "credentialAutofillDescription": "Visa popup för autofyll när användarnamn/lösenordsfält upptäcks",
+    "totpAutofill": "Autofyll för 2FA-kod",
+    "totpAutofillDescription": "Visa popup för autofyll när 2FA-kodfält upptäcks",
+    "autoCopyTotpOnAutofill": "Autokopiera 2FA till urklipp",
+    "autoCopyTotpOnAutofillDescription": "Kopiera automatiskt den första 2FA-koden till urklipp efter du autofyllt inloggningsuppgifter.",
     "loginSave": {
       "title": "Spara Inloggningsdialog",
       "description": "Visa en dialogruta för att spara inloggningsuppgifter när du skickar in ett inloggningsformulär på en webbplats.",
