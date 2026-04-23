@@ -6,7 +6,8 @@ import { VaultCidStore } from '@/services/VaultCidStore';
 import { PinataBrowserProvider } from '@/services/PinataBrowserProvider';
 import { MidnightContractService } from '@/services/MidnightContractService';
 import { BrowserVaultSyncProvider } from '@/services/BrowserVaultSyncProvider';
-import { VaultSyncService, VaultSyncError, VaultSyncErrorCodes, base64ToUint8Array, uint8ArrayToBase64, hexToUint8Array } from '@/utils/dist/shared/vault-sync';
+import { clearWalletState, getWalletState } from '@/services/providers/WalletState';
+import { VaultSyncService, VaultSyncError, VaultSyncErrorCodes, base64ToUint8Array, uint8ArrayToBase64, hexToUint8Array, sha256 } from '@/utils/dist/shared/vault-sync';
 import { BrowserVaultLoadProvider } from '@/services/BrowserVaultLoadProvider';
 import type { VaultLoadResponse } from '@/utils/types/messaging/VaultLoadResponse';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
@@ -20,6 +21,7 @@ import { StringResponse as stringResponse } from '@/utils/types/messaging/String
 import { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 import { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
 import { t } from '@/i18n/StandaloneI18n';
+import { filterCredentials, AutofillMatchingMode } from '@/utils/credentialMatcher/CredentialMatcher';
 
 /**
  * Cache for the VaultStore to avoid repeated decryption and initialization.
@@ -191,6 +193,8 @@ export function handleClearVault(
 
   // Clear blockchain-related CID and secret key cache on logout.
   VaultCidStore.clear();
+  // Clear Lace wallet proxy state (tab ID, keys) — requires re-connection on next login.
+  clearWalletState();
 
   // Clear cached client and contract service since vault was cleared.
   // Contract service must be re-joined with the new secretKey on next login.
@@ -241,8 +245,6 @@ export async function handleGetFilteredCredentials(
   try {
     const vaultStore = await createVaultStore();
     const allCredentials = vaultStore.getAllCredentials();
-
-    const { filterCredentials, AutofillMatchingMode } = await import('@/utils/credentialMatcher/CredentialMatcher');
 
     // Parse matching mode from string
     let matchingMode = AutofillMatchingMode.DEFAULT;
@@ -558,6 +560,54 @@ function createPinataProvider(): PinataBrowserProvider {
   return new PinataBrowserProvider({ pinataJwt, pinataGateway });
 }
 
+/**
+ * Minimal interface of MidnightContractService that ensureVaultRegistered needs.
+ * Declared separately so tests can supply a lightweight fake without mocking
+ * the entire ZK provider chain.
+ */
+export interface VaultRegistrationContract {
+  isVaultRegistered(): Promise<boolean>;
+  registerVaultOnChain(walletAddressHash: Uint8Array): Promise<void>;
+}
+
+/**
+ * Ensure the vault is registered on-chain before a save/update call.
+ *
+ * Orchestration:
+ *   1. Query on-chain state — if registered, no-op.
+ *   2. If not registered, require a wallet shieldedAddress (canonical identity).
+ *   3. Hash the address and call registerVaultOnChain.
+ *   4. Swallow "already registered" errors (race between two concurrent saves),
+ *      rethrow anything else.
+ *
+ * Exported so unit tests can cover the orchestration path without mocking the
+ * full MidnightContractService + wallet provider chain.
+ */
+export async function ensureVaultRegistered(
+  contractService: VaultRegistrationContract,
+  shieldedAddress: string,
+): Promise<void> {
+  const isRegistered = await contractService.isVaultRegistered();
+  if (isRegistered) {
+    return;
+  }
+  if (!shieldedAddress) {
+    throw new Error('Wallet shieldedAddress not available. Re-connect your Lace wallet.');
+  }
+  // Use the shared sha256 utility from @aliasvault/vault-sync — do NOT reimplement
+  // hashing here (Task 6.3 / Rule: single source of truth for crypto primitives).
+  const walletAddressHash = await sha256(shieldedAddress);
+  try {
+    await contractService.registerVaultOnChain(walletAddressHash);
+  } catch (err: any) {
+    if (err?.message?.includes('already registered')) {
+      console.warn('Vault already registered — proceeding to updateVault.');
+      return;
+    }
+    throw err;
+  }
+}
+
 async function handleUploadVaultToBlockchain(
   encryptedVaultBase64: string,
   preDecryptedJson?: string,
@@ -573,6 +623,12 @@ async function handleUploadVaultToBlockchain(
     cachedContractService = new MidnightContractService();
     await cachedContractService.joinVaultRegistry(hexToUint8Array(secretKeyHex));
   }
+
+  // First-time registration: ensure vault is registered on-chain before save.
+  // Extracted to ensureVaultRegistered() for unit testability.
+  // getWalletState is statically imported at the top of this file — MV3 service workers forbid dynamic import().
+  const walletState = await getWalletState();
+  await ensureVaultRegistered(cachedContractService, walletState?.shieldedAddress ?? '');
 
   const syncProvider = new BrowserVaultSyncProvider(pinataProvider, cachedContractService);
   const loadProvider = new BrowserVaultLoadProvider(pinataProvider, cachedContractService);

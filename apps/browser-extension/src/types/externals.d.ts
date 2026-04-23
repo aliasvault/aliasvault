@@ -11,7 +11,13 @@
 declare module '@midnight-ntwrk/midnight-js-contracts';
 declare module '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 declare module '@midnight-ntwrk/midnight-js-http-client-proof-provider';
+declare module '@midnight-ntwrk/midnight-js-fetch-zk-config-provider';
+declare module '@midnight-ntwrk/midnight-js-types';
 declare module '@midnight-ntwrk/compact-js';
+declare module '@midnight-ntwrk/compact-runtime';
+declare module '@midnight-ntwrk/dapp-connector-api';
+declare module '@midnight-ntwrk/ledger-v8';
+declare module '@midnight-ntwrk/midnight-js-network-id';
 
 // AliasVault workspace packages (loaded at runtime via dynamic import)
 declare module '@aliasvault/contract';

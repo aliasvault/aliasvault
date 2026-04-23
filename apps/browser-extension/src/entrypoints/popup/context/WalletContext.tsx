@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useMemo, useCallback, useEf
 import { sendMessage } from 'webext-bridge/popup';
 
 import { storage } from '#imports';
+import { clearWalletState } from '@/services/providers/WalletState';
 
 /**
  * Wallet state persisted in extension storage.
@@ -14,13 +15,14 @@ export interface WalletState {
 
 /**
  * Result from a successful signature challenge.
+ *
+ * Signature is always a real cryptographic signature from Lace's `signData` —
+ * the previous `connection-proof` fallback was removed 2026-04-18 per 6.5b review M4.
  */
 export interface SignatureResult {
   signature: string;
   publicKey: string;
   challenge: string;
-  /** 'signature' if signData succeeded, 'connection-proof' if fallback was used. */
-  authMethod: 'signature' | 'connection-proof';
 }
 
 type WalletContextType = {
@@ -166,6 +168,13 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   /**
    * Disconnect wallet and clear persisted state.
+   *
+   * Clears BOTH stores so the popup UI and the background proxy providers
+   * agree the wallet is disconnected:
+   *   - local:walletState   → popup-owned display state
+   *   - session:laceWalletState → background-owned auth state consumed by
+   *     LaceWalletProxy / LaceMidnightProxy. Without this, contract ops
+   *     would still execute with stale keys after the user clicks disconnect.
    */
   const disconnectWallet = useCallback((): void => {
     setWalletState(null);
@@ -174,6 +183,9 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setSignatureResult(null);
     setError(null);
     storage.removeItem(WALLET_STORAGE_KEY);
+    // Fire-and-forget: we don't block UI on session clear, but we do want
+    // the background state gone before any subsequent contract call.
+    void clearWalletState();
   }, []);
 
   /**

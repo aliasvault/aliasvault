@@ -10,8 +10,9 @@
  */
 
 import { CONTRACTS } from '../../../../shared/config/contracts';
-import { getNetworkConfig } from '../entrypoints/popup/config/networkConfig';
+import { getWalletNetworkConfig } from '../entrypoints/popup/config/networkConfig';
 import { hashAlias } from '../utils/aliasUtils';
+import { createMidnightProviders } from './providers/createMidnightProviders';
 
 function getAliasRegistryAddress(): string {
   const address = CONTRACTS.AliasRegistry.address;
@@ -31,12 +32,6 @@ function getAliasRegistryAddress(): string {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function joinAliasRegistry(secretKey: Uint8Array): Promise<any> {
   const { findDeployedContract } = await import('@midnight-ntwrk/midnight-js-contracts');
-  const { indexerPublicDataProvider } = await import(
-    '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
-  );
-  const { httpClientProofProvider } = await import(
-    '@midnight-ntwrk/midnight-js-http-client-proof-provider'
-  );
   const {
     AliasRegistry,
     aliasRegistryWitnesses,
@@ -49,14 +44,14 @@ async function joinAliasRegistry(secretKey: Uint8Array): Promise<any> {
     AliasRegistry.Contract,
   ).pipe(CompiledContract.withWitnesses(aliasRegistryWitnesses));
 
-  const defaults = getNetworkConfig();
-  const providers = {
-    proofProvider: httpClientProofProvider(defaults.proofServerUrl),
-    publicDataProvider: indexerPublicDataProvider(defaults.indexerUrl),
-  };
+  // Prefer wallet-provided service URIs (AC3) — falls back to hardcoded config
+  // if no wallet is connected. See networkConfig.getWalletNetworkConfig.
+  const defaults = await getWalletNetworkConfig();
+  const providers = await createMidnightProviders(
+    defaults.indexerUrl, defaults.wsIndexerUrl, defaults.proofServerUrl,
+  );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return findDeployedContract(providers as any, {
+  return findDeployedContract(providers, {
     contractAddress: getAliasRegistryAddress(),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     compiledContract: compiledContract as any,
@@ -98,7 +93,9 @@ export async function checkAliasAvailable(aliasName: string): Promise<boolean> {
   const { AliasRegistry } = await import('@aliasvault/contract');
 
   const contractAddress = getAliasRegistryAddress();
-  const provider = indexerPublicDataProvider(getNetworkConfig().indexerUrl);
+  // Read-only indexer query — prefer wallet-provided URIs if available (AC3)
+  const config = await getWalletNetworkConfig();
+  const provider = indexerPublicDataProvider(config.indexerUrl, config.wsIndexerUrl);
   const contractState = await provider.queryContractState(contractAddress);
 
   if (!contractState) {

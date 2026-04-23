@@ -11,7 +11,8 @@
  * The 72h maturation check is purely on-chain via blockTimeGte().
  */
 
-import { getNetworkConfig } from '../entrypoints/popup/config/networkConfig';
+import { getWalletNetworkConfig } from '../entrypoints/popup/config/networkConfig';
+import { createMidnightProviders } from './providers/createMidnightProviders';
 
 export interface BackupWalletInfo {
   commitment: Uint8Array;
@@ -34,14 +35,19 @@ const MATURATION_PERIOD_SECONDS = 259200; // 72 hours
  */
 export async function getBackupWalletStatus(
   contractAddress: string,
-  indexerUrl: string = getNetworkConfig().indexerUrl,
+  indexerUrl?: string,
+  wsIndexerUrl?: string,
 ): Promise<BackupWalletInfo[]> {
+  // AC3: Prefer wallet-provided service URIs; falls back to hardcoded config.
+  const defaults = await getWalletNetworkConfig();
+  indexerUrl ??= defaults.indexerUrl;
+  wsIndexerUrl ??= defaults.wsIndexerUrl;
   const { indexerPublicDataProvider } = await import(
     '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
   );
   const { VaultRegistry } = await import('@aliasvault/contract');
 
-  const publicDataProvider = indexerPublicDataProvider(indexerUrl);
+  const publicDataProvider = indexerPublicDataProvider(indexerUrl, wsIndexerUrl);
   const contractState = await publicDataProvider.queryContractState(contractAddress);
 
   if (!contractState) {
@@ -94,18 +100,16 @@ export async function addBackupWallet(
   backupKey: Uint8Array,
   secretKey: Uint8Array,
   indexerUrl?: string,
+  wsIndexerUrl?: string,
   proofServerUrl?: string,
 ): Promise<void> {
-  const defaults = getNetworkConfig();
+  // AC3: Prefer wallet-provided service URIs; falls back to hardcoded config
+  // if no wallet is connected. See networkConfig.getWalletNetworkConfig.
+  const defaults = await getWalletNetworkConfig();
   indexerUrl ??= defaults.indexerUrl;
+  wsIndexerUrl ??= defaults.wsIndexerUrl;
   proofServerUrl ??= defaults.proofServerUrl;
   const { findDeployedContract } = await import('@midnight-ntwrk/midnight-js-contracts');
-  const { indexerPublicDataProvider } = await import(
-    '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
-  );
-  const { httpClientProofProvider } = await import(
-    '@midnight-ntwrk/midnight-js-http-client-proof-provider'
-  );
   const {
     VaultRegistry,
     vaultRegistryWitnesses,
@@ -118,13 +122,11 @@ export async function addBackupWallet(
     VaultRegistry.Contract,
   ).pipe(CompiledContract.withWitnesses(vaultRegistryWitnesses));
 
-  const providers = {
-    proofProvider: httpClientProofProvider(proofServerUrl),
-    publicDataProvider: indexerPublicDataProvider(indexerUrl),
-  };
+  const providers = await createMidnightProviders(indexerUrl, wsIndexerUrl, proofServerUrl);
 
-  const contract = await findDeployedContract(providers as any, {
+  const contract = await findDeployedContract(providers, {
     contractAddress,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     compiledContract: compiledContract as any,
     privateStateId: 'vaultRegistryPrivateState',
     initialPrivateState: createVaultRegistryPrivateState(secretKey),
@@ -149,18 +151,16 @@ export async function removeBackupWallet(
   walletCommitment: Uint8Array,
   secretKey: Uint8Array,
   indexerUrl?: string,
+  wsIndexerUrl?: string,
   proofServerUrl?: string,
 ): Promise<void> {
-  const defaults = getNetworkConfig();
+  // AC3: Prefer wallet-provided service URIs; falls back to hardcoded config
+  // if no wallet is connected. See networkConfig.getWalletNetworkConfig.
+  const defaults = await getWalletNetworkConfig();
   indexerUrl ??= defaults.indexerUrl;
+  wsIndexerUrl ??= defaults.wsIndexerUrl;
   proofServerUrl ??= defaults.proofServerUrl;
   const { findDeployedContract } = await import('@midnight-ntwrk/midnight-js-contracts');
-  const { indexerPublicDataProvider } = await import(
-    '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
-  );
-  const { httpClientProofProvider } = await import(
-    '@midnight-ntwrk/midnight-js-http-client-proof-provider'
-  );
   const {
     VaultRegistry,
     vaultRegistryWitnesses,
@@ -173,18 +173,17 @@ export async function removeBackupWallet(
     VaultRegistry.Contract,
   ).pipe(CompiledContract.withWitnesses(vaultRegistryWitnesses));
 
-  const providers = {
-    proofProvider: httpClientProofProvider(proofServerUrl),
-    publicDataProvider: indexerPublicDataProvider(indexerUrl),
-  };
+  const providers = await createMidnightProviders(indexerUrl, wsIndexerUrl, proofServerUrl);
 
-  const contract = await findDeployedContract(providers as any, {
+  const contract = await findDeployedContract(providers, {
     contractAddress,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     compiledContract: compiledContract as any,
     privateStateId: 'vaultRegistryPrivateState',
     initialPrivateState: createVaultRegistryPrivateState(secretKey),
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (contract as any).callTx.removeBackupWallet(walletCommitment);
 }
 
@@ -201,18 +200,16 @@ export async function executeBackupTransfer(
   backupKey: Uint8Array,
   newOwnerCommitment: Uint8Array,
   indexerUrl?: string,
+  wsIndexerUrl?: string,
   proofServerUrl?: string,
 ): Promise<void> {
-  const defaults = getNetworkConfig();
+  // AC3: Prefer wallet-provided service URIs; falls back to hardcoded config
+  // if no wallet is connected. See networkConfig.getWalletNetworkConfig.
+  const defaults = await getWalletNetworkConfig();
   indexerUrl ??= defaults.indexerUrl;
+  wsIndexerUrl ??= defaults.wsIndexerUrl;
   proofServerUrl ??= defaults.proofServerUrl;
   const { findDeployedContract } = await import('@midnight-ntwrk/midnight-js-contracts');
-  const { indexerPublicDataProvider } = await import(
-    '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
-  );
-  const { httpClientProofProvider } = await import(
-    '@midnight-ntwrk/midnight-js-http-client-proof-provider'
-  );
   const {
     VaultRegistry,
     vaultRegistryWitnesses,
@@ -226,15 +223,13 @@ export async function executeBackupTransfer(
     VaultRegistry.Contract,
   ).pipe(CompiledContract.withWitnesses(vaultRegistryWitnesses));
 
-  const providers = {
-    proofProvider: httpClientProofProvider(proofServerUrl),
-    publicDataProvider: indexerPublicDataProvider(indexerUrl),
-  };
+  const providers = await createMidnightProviders(indexerUrl, wsIndexerUrl, proofServerUrl);
 
   // Use a dummy secret key — the backup wallet holder authenticates via backupKey
   const dummySecretKey = new Uint8Array(32);
-  const contract = await findDeployedContract(providers as any, {
+  const contract = await findDeployedContract(providers, {
     contractAddress,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     compiledContract: compiledContract as any,
     privateStateId: 'vaultRegistryPrivateState',
     initialPrivateState: createVaultRegistryPrivateState(dummySecretKey, backupKey),

@@ -2,6 +2,42 @@
  * Background script entry point - handles messages from the content script
  */
 
+/**
+ * DOM shim for Vite's __vitePreload helper.
+ *
+ * Vite wraps every dynamic `import()` with a modulepreload polyfill that calls
+ * document.getElementsByTagName, document.querySelector, document.createElement,
+ * document.head.appendChild, and window.__vitePreloadModuleMap / dispatchEvent.
+ * None of these exist in a Chrome MV3 background service worker.
+ *
+ * Setting `build.modulePreload: false` only removes <link> tags from HTML — it
+ * does NOT strip the JS wrapper (Vite #16429). `@vite-ignore` comments are
+ * stripped by WXT's build pipeline before Vite sees them.
+ *
+ * This shim provides the minimum no-op surface so the preload helper runs
+ * without error and the actual dynamic import still resolves normally.
+ *
+ * References:
+ *   - WXT #392, Vite #3311, Vite #16429
+ *   - Memory: feedback_vite_preload_service_worker.md
+ */
+if (typeof document === 'undefined') {
+  const noop = (): void => {};
+  const noopEl = { setAttribute: noop, rel: '', href: '', crossOrigin: '' };
+  // Minimal no-op shim for MV3 service worker. Cast to unknown first so we
+  // can assign to `Document`/`Window` without satisfying their full surface.
+  globalThis.document = {
+    getElementsByTagName: () => [],
+    querySelector: () => null,
+    createElement: () => noopEl,
+    head: { appendChild: noop },
+  } as unknown as Document;
+  globalThis.window = {
+    dispatchEvent: noop,
+    __vitePreloadModuleMap: new Map(),
+  } as unknown as Window & typeof globalThis;
+}
+
 import { onMessage, sendMessage } from "webext-bridge/background";
 
 import { handleResetAutoLockTimer, handlePopupHeartbeat, handleSetAutoLockTimeout } from '@/entrypoints/background/AutolockTimeoutHandler';
@@ -12,6 +48,7 @@ import { handleOpenPopup, handlePopupWithCredential, handleOpenPopupCreateCreden
 import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearVault, handleCreateIdentity, handleGetCredentials, handleGetFilteredCredentials, handleGetSearchCredentials, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVault, handleUploadVault, handleLoadVaultFromBlockchain } from '@/entrypoints/background/VaultMessageHandler';
 import { handleDetectLaceWallet, handleConnectLaceWallet, handleSignChallenge, handleGetWalletServiceUris } from '@/entrypoints/background/WalletMessageHandler';
 import { setupEmailAlarmListener, clearEmailBadge, registerEmailAlarm, unregisterEmailAlarm } from '@/entrypoints/background/EmailAlarmHandler';
+import { MidnightContractService } from '@/services/MidnightContractService';
 
 import { GLOBAL_CONTEXT_MENU_ENABLED_KEY } from '@/utils/Constants';
 import { EncryptionKeyDerivationParams } from "@/utils/dist/shared/models/metadata";
@@ -89,10 +126,9 @@ export default defineBackground({
     onMessage('REGISTER_EMAIL_ALARM', () => registerEmailAlarm());
     onMessage('UNREGISTER_EMAIL_ALARM', () => unregisterEmailAlarm());
 
-    let cachedContractService: InstanceType<typeof import('@/services/MidnightContractService').MidnightContractService> | null = null;
+    let cachedContractService: MidnightContractService | null = null;
     setupEmailAlarmListener(async () => {
       if (!cachedContractService) {
-        const { MidnightContractService } = await import('@/services/MidnightContractService');
         cachedContractService = new MidnightContractService();
       }
       return cachedContractService.readEmailCount();

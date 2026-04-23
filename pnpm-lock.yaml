@@ -56,6 +56,9 @@ importers:
       secure-remote-password:
         specifier: github:LinusU/secure-remote-password#73e5f732b6ca0cdbdc19da1a0c5f48cdbad2cbf0
         version: github.com/LinusU/secure-remote-password/73e5f732b6ca0cdbdc19da1a0c5f48cdbad2cbf0
+      semver:
+        specifier: ^7.7.1
+        version: 7.7.3
       tweetnacl:
         specifier: ^1.0.3
         version: 1.0.3
@@ -76,17 +79,35 @@ importers:
         specifier: workspace:*
         version: link:../../shared/vault-sync
       '@midnight-ntwrk/compact-js':
-        specifier: 2.4.0
-        version: 2.4.0
+        specifier: 2.5.0
+        version: 2.5.0
+      '@midnight-ntwrk/compact-runtime':
+        specifier: 0.15.0
+        version: 0.15.0
+      '@midnight-ntwrk/dapp-connector-api':
+        specifier: 4.0.1
+        version: 4.0.1
+      '@midnight-ntwrk/ledger-v8':
+        specifier: 8.0.3
+        version: 8.0.3
       '@midnight-ntwrk/midnight-js-contracts':
-        specifier: 3.1.0
-        version: 3.1.0
+        specifier: 4.0.4
+        version: 4.0.4
+      '@midnight-ntwrk/midnight-js-fetch-zk-config-provider':
+        specifier: 4.0.4
+        version: 4.0.4
       '@midnight-ntwrk/midnight-js-http-client-proof-provider':
-        specifier: 3.1.0
-        version: 3.1.0
+        specifier: 4.0.4
+        version: 4.0.4
       '@midnight-ntwrk/midnight-js-indexer-public-data-provider':
-        specifier: 3.1.0
-        version: 3.1.0(@types/react@19.0.14)(react-dom@19.0.0)(react@19.0.0)
+        specifier: 4.0.4
+        version: 4.0.4(@types/react@19.0.14)(react-dom@19.0.0)(react@19.0.0)
+      '@midnight-ntwrk/midnight-js-network-id':
+        specifier: 4.0.4
+        version: 4.0.4
+      '@midnight-ntwrk/midnight-js-types':
+        specifier: 4.0.4
+        version: 4.0.4
       '@types/chrome':
         specifier: ^0.0.280
         version: 0.0.280
@@ -105,6 +126,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.0.3
         version: 19.2.3(@types/react@19.0.14)
+      '@types/semver':
+        specifier: ^7.7.0
+        version: 7.7.1
       '@types/yup':
         specifier: ^0.29.14
         version: 0.29.14
@@ -383,11 +407,11 @@ importers:
   packages/blockchain:
     dependencies:
       '@midnight-ntwrk/compact-js':
-        specifier: 2.4.0
-        version: 2.4.0
+        specifier: 2.5.0
+        version: 2.5.0
       '@midnight-ntwrk/compact-runtime':
-        specifier: 0.14.0
-        version: 0.14.0
+        specifier: 0.15.0
+        version: 0.15.0
       '@midnight-ntwrk/ledger':
         specifier: ^4.0.0
         version: 4.0.0
@@ -1033,7 +1057,7 @@ packages:
       - '@types/react'
     dev: false
 
-  /@apollo/client@3.14.0(@types/react@19.0.14)(graphql-ws@6.0.6)(graphql@16.12.0)(react-dom@19.0.0)(react@19.0.0):
+  /@apollo/client@3.14.0(@types/react@19.0.14)(graphql-ws@6.0.8)(graphql@16.12.0)(react-dom@19.0.0)(react@19.0.0):
     resolution: {integrity: sha512-0YQKKRIxiMlIou+SekQqdCo0ZTHxOcES+K8vKB53cIDpwABNR0P0yRzPgsbgcj3zRJniD93S/ontsnZsCLZrxQ==}
     peerDependencies:
       graphql: ^15.0.0 || ^16.0.0
@@ -1057,7 +1081,7 @@ packages:
       '@wry/trie': 0.5.0
       graphql: 16.12.0
       graphql-tag: 2.12.6(graphql@16.12.0)
-      graphql-ws: 6.0.6(graphql@16.12.0)(ws@8.19.0)
+      graphql-ws: 6.0.8(graphql@16.12.0)(ws@8.19.0)
       hoist-non-react-statics: 3.3.2
       optimism: 0.18.1
       prop-types: 15.8.1
@@ -2148,12 +2172,12 @@ packages:
       utf8-codec: 1.0.0
     dev: false
 
-  /@effect/platform@0.90.10(effect@3.19.16):
+  /@effect/platform@0.90.10(effect@3.21.0):
     resolution: {integrity: sha512-QhDPgCaLfIMQKOCoCPQvRUS+Y34iYJ07jdZ/CBAvYFvg/iUBebsmFuHL63RCD/YZH9BuK/kqqLYAA3M0fmUEgg==}
     peerDependencies:
       effect: ^3.17.13
     dependencies:
-      effect: 3.19.16
+      effect: 3.21.0
       find-my-way-ts: 0.1.6
       msgpackr: 1.11.8
       multipasta: 0.2.7
@@ -2165,6 +2189,28 @@ packages:
       effect: ^3.19.16
     dependencies:
       effect: 3.19.16
+      find-my-way-ts: 0.1.6
+      msgpackr: 1.11.8
+      multipasta: 0.2.7
+    dev: false
+
+  /@effect/platform@0.94.3(effect@3.21.0):
+    resolution: {integrity: sha512-bvTR8xLQoRpKgHuprZDOeQdPkhyVw+WT05iI9jl2s8Qiblyk5Dz2JLwJU+EFeksIBaPYz49xa635Om91T1CefQ==}
+    peerDependencies:
+      effect: ^3.19.16
+    dependencies:
+      effect: 3.21.0
+      find-my-way-ts: 0.1.6
+      msgpackr: 1.11.8
+      multipasta: 0.2.7
+    dev: false
+
+  /@effect/platform@0.95.0(effect@3.21.0):
+    resolution: {integrity: sha512-WDlRiWRSWlmhCPq09bvAofK0qr5vM4yNklXjoJdZHmugKRRTpN/Okn3ODnjgM/Kb/4hjMrRyrsUeH/Brieq7KA==}
+    peerDependencies:
+      effect: ^3.20.0
+    dependencies:
+      effect: 3.21.0
       find-my-way-ts: 0.1.6
       msgpackr: 1.11.8
       multipasta: 0.2.7
@@ -3431,6 +3477,17 @@ packages:
       '@midnight-ntwrk/platform-js': 2.2.0
       effect: 3.19.16
       tslib: 2.8.1
+    dev: false
+
+  /@midnight-ntwrk/compact-js@2.5.0:
+    resolution: {integrity: sha512-vCLbndc3GtSTjZE30NtNqINOrrjZ2O/m8q4jCVeyx9t+rTLwwFqGXUOYobKbM34rwfnTz95ZAI6vVixYnarfrA==}
+    dependencies:
+      '@effect/platform': 0.95.0(effect@3.21.0)
+      '@midnight-ntwrk/compact-runtime': 0.15.0
+      '@midnight-ntwrk/ledger-v8': 8.0.3
+      '@midnight-ntwrk/platform-js': 2.2.4
+      effect: 3.21.0
+      tslib: 2.8.1
 
   /@midnight-ntwrk/compact-runtime@0.14.0:
     resolution: {integrity: sha512-VfZmfPDedRUPAYIhKAgS5y+KtxOkSSOCS24PAsGMjhMpzJaaWVSd5SajF6HtNZsciL54sqru4EpWvmCAqsbmYQ==}
@@ -3438,13 +3495,29 @@ packages:
       '@midnight-ntwrk/onchain-runtime-v2': 2.0.1
       '@types/object-inspect': 1.13.0
       object-inspect: 1.13.4
+    dev: false
+
+  /@midnight-ntwrk/compact-runtime@0.15.0:
+    resolution: {integrity: sha512-6+odrxb83ZZwF29SqNBBgaOR3hf5ej4KZVGibDwdXta9+uiv6qYW0fMrsKP9S+c2AqvY+vEb5NEFFI54lA7G5A==}
+    dependencies:
+      '@midnight-ntwrk/onchain-runtime-v3': 3.0.0
+      '@types/object-inspect': 1.13.0
+      object-inspect: 1.13.4
+
+  /@midnight-ntwrk/dapp-connector-api@4.0.1:
+    resolution: {integrity: sha512-IstRo8xfmlJlGgUcAJeRzPUmGCp0/xZR3/bfTOk33MHrzbGmB79r/zYziGavcclo1pkkoBHAodX4vz3xgFxczw==}
+    dev: true
 
   /@midnight-ntwrk/ledger-v7@7.0.0:
     resolution: {integrity: sha512-9rch1jU0T9pwt64nR79PhrnrT/mwrS1EKGh4J3q0UT0sBqmylw0c2eREdd26Mq9Kf4FOfAdKxJUaV+IlNh5yUA==}
+    dev: false
 
   /@midnight-ntwrk/ledger-v7@7.0.2:
     resolution: {integrity: sha512-8ICrpYxLXj9vCskCrP6Rxh8z7H4WkemYLj7BBtVyNxLZM5EDIxdVMo7+wZXtEUwPUcxPEFFBw3/5YddSE1zoOQ==}
     dev: false
+
+  /@midnight-ntwrk/ledger-v8@8.0.3:
+    resolution: {integrity: sha512-2BLMfHnZyKAHZxaGWjlenhity096lZ9jvyp1qrQH5J3ogpy7H5ostCW8kRj70dGv5T55qDAC5nJ+wnU/8CGUcQ==}
 
   /@midnight-ntwrk/ledger@4.0.0:
     resolution: {integrity: sha512-cnJisY8uQ4NO54miDnjs/ov6n102ZPfKEPxtiDKVEdlKijcc70jz/CI2yBCc0itlwwaqma7FM2Ou5N4pWpbwbg==}
@@ -3466,6 +3539,16 @@ packages:
       '@midnight-ntwrk/midnight-js-network-id': 3.1.0
       '@midnight-ntwrk/midnight-js-types': 3.1.0
       '@midnight-ntwrk/midnight-js-utils': 3.1.0
+    dev: false
+
+  /@midnight-ntwrk/midnight-js-contracts@4.0.4:
+    resolution: {integrity: sha512-lu9A45upwvPSy/YohU0TMvaeL2ru1zJt6axbuGwGup2L16p+fN8ojjHji6YGEC6XkgyISH3L0GfsgxsQKmt56g==}
+    dependencies:
+      '@midnight-ntwrk/compact-js': 2.5.0
+      '@midnight-ntwrk/midnight-js-network-id': 4.0.4
+      '@midnight-ntwrk/midnight-js-types': 4.0.4
+      '@midnight-ntwrk/midnight-js-utils': 4.0.4
+    dev: true
 
   /@midnight-ntwrk/midnight-js-fetch-zk-config-provider@3.0.0:
     resolution: {integrity: sha512-EQFNiyXStu/yXiW/yGjTNtWxTSYOsSkc/W9T0StCrm5fduphh5gGVjewy59gOBrVfZVZlVmsq2M0Su4S4Iehqw==}
@@ -3475,6 +3558,15 @@ packages:
     transitivePeerDependencies:
       - encoding
     dev: false
+
+  /@midnight-ntwrk/midnight-js-fetch-zk-config-provider@4.0.4:
+    resolution: {integrity: sha512-WMXxBVqDlAiu3c0ZTE3WaEUfNR4fRAEmaTlhr0U3pjaFKu77qiBp7bB+oIB8N6Xtj0Y1KRn/wlGLbZjxEL9jVg==}
+    dependencies:
+      '@midnight-ntwrk/midnight-js-types': 4.0.4
+      cross-fetch: 4.1.0
+    transitivePeerDependencies:
+      - encoding
+    dev: true
 
   /@midnight-ntwrk/midnight-js-http-client-proof-provider@3.0.0:
     resolution: {integrity: sha512-UJiF9V/JiuMc8ezK1i4+uiqcfq4sZKjHubio9LoiGefasQ34QKEMPgcOhcumQL0dlqaCG3IYrX76HfxElfUoMA==}
@@ -3502,6 +3594,21 @@ packages:
       lodash: 4.17.21
     transitivePeerDependencies:
       - encoding
+    dev: false
+
+  /@midnight-ntwrk/midnight-js-http-client-proof-provider@4.0.4:
+    resolution: {integrity: sha512-G6q7uPqKhCGZyKUo21MhoBjtfQ4pw6AEMBM6zrAvhrCFE9WV4FVrG1rpbJDtwxr/VVecIt1tD4myVqg2sEPNhg==}
+    dependencies:
+      '@midnight-ntwrk/midnight-js-contracts': 4.0.4
+      '@midnight-ntwrk/midnight-js-network-id': 4.0.4
+      '@midnight-ntwrk/midnight-js-types': 4.0.4
+      '@midnight-ntwrk/midnight-js-utils': 4.0.4
+      cross-fetch: 4.1.0
+      fetch-retry: 6.0.0
+      lodash: 4.18.1
+    transitivePeerDependencies:
+      - encoding
+    dev: true
 
   /@midnight-ntwrk/midnight-js-indexer-public-data-provider@3.0.0(@types/react@18.3.28)(react-dom@18.3.1)(react@18.3.1):
     resolution: {integrity: sha512-bQqCZrEMgNzzMFI+KK8CsKY9reN91EFRkoiihuHvxW+FMVsxwnv8+jmOmzRiRKbGX45FspTmLPwSR+Bn7mw6xQ==}
@@ -3559,17 +3666,17 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@midnight-ntwrk/midnight-js-indexer-public-data-provider@3.1.0(@types/react@19.0.14)(react-dom@19.0.0)(react@19.0.0):
-    resolution: {integrity: sha512-TJ/QyuiHp22L3x5rfoQHe9t6aa/lGWe4mDMXfX5Ih1AEiZqNN/dd5Hjb25owadG+TTOLE9e7NJRkf1zXUQG5DQ==}
+  /@midnight-ntwrk/midnight-js-indexer-public-data-provider@4.0.4(@types/react@19.0.14)(react-dom@19.0.0)(react@19.0.0):
+    resolution: {integrity: sha512-mCUy9VYg1islt5m6/2wb9RI7Q/2ZUWHZj+hdHHyAwcZ41DyhET/gOXPnfKjQu2Q5zoyEHOAko1yVcY3IMYmEvA==}
     dependencies:
-      '@apollo/client': 3.14.0(@types/react@19.0.14)(graphql-ws@6.0.6)(graphql@16.12.0)(react-dom@19.0.0)(react@19.0.0)
-      '@midnight-ntwrk/midnight-js-network-id': 3.1.0
-      '@midnight-ntwrk/midnight-js-types': 3.1.0
-      '@midnight-ntwrk/midnight-js-utils': 3.1.0
+      '@apollo/client': 3.14.0(@types/react@19.0.14)(graphql-ws@6.0.8)(graphql@16.12.0)(react-dom@19.0.0)(react@19.0.0)
+      '@midnight-ntwrk/midnight-js-network-id': 4.0.4
+      '@midnight-ntwrk/midnight-js-types': 4.0.4
+      '@midnight-ntwrk/midnight-js-utils': 4.0.4
       buffer: 6.0.3
       cross-fetch: 4.1.0
       graphql: 16.12.0
-      graphql-ws: 6.0.6(graphql@16.12.0)(ws@8.19.0)
+      graphql-ws: 6.0.8(graphql@16.12.0)(ws@8.19.0)
       isomorphic-ws: 5.0.0(ws@8.19.0)
       rxjs: 7.8.2
       ws: 8.19.0
@@ -3583,7 +3690,6 @@ packages:
       - react
       - react-dom
       - subscriptions-transport-ws
-      - uWebSockets.js
       - utf-8-validate
     dev: true
 
@@ -3606,6 +3712,11 @@ packages:
 
   /@midnight-ntwrk/midnight-js-network-id@3.1.0:
     resolution: {integrity: sha512-ImDa6igGofV5116K1UiKhfiu0/5+YFGajRCRt9Gpfcokn5QMFT/jfaPInKt3MZ0hHYdw2plYeo/nITQp1mrkCQ==}
+    dev: false
+
+  /@midnight-ntwrk/midnight-js-network-id@4.0.4:
+    resolution: {integrity: sha512-bieKcN9ybIf+HoaHPjCJGxmYrcmUrdEOErxkxhiqgos2k7DKM9mZO7AgzN0WnBbPHYdT4z0c740QAcG95BaV8g==}
+    dev: true
 
   /@midnight-ntwrk/midnight-js-node-zk-config-provider@3.1.0:
     resolution: {integrity: sha512-eLd1kOG12nYdmSsLhKVcy9PVZF5P/6eWTtRxL17Vjqjg2qyLA5jw6xKvsi9dbPmRDE5TYAF+UoM75w/wKq0eUA==}
@@ -3627,6 +3738,15 @@ packages:
       '@midnight-ntwrk/compact-js': 2.4.0
       '@midnight-ntwrk/platform-js': 2.2.0
       rxjs: 7.8.2
+    dev: false
+
+  /@midnight-ntwrk/midnight-js-types@4.0.4:
+    resolution: {integrity: sha512-/roDMGA7WgSXyNZPc0Xhg6Ane7IJuRJLNZ1euZxmDH4RH/XNa413L197GNpxZuZ9CNR4AozSH20VFlDpZDvERw==}
+    dependencies:
+      '@midnight-ntwrk/compact-js': 2.5.0
+      '@midnight-ntwrk/platform-js': 2.2.4
+      rxjs: 7.8.2
+    dev: true
 
   /@midnight-ntwrk/midnight-js-utils@3.0.0:
     resolution: {integrity: sha512-SXgJPJVEs3aghQuJoUkL25MZQsBeZhwYRCPLBICrPOEvRROWggHr04uMt15ytAtj2mHGtInVARlUXRh9TAUwPg==}
@@ -3640,21 +3760,41 @@ packages:
     dependencies:
       '@midnight-ntwrk/midnight-js-network-id': 3.1.0
       '@scure/base': 2.0.0
+    dev: false
+
+  /@midnight-ntwrk/midnight-js-utils@4.0.4:
+    resolution: {integrity: sha512-x0G2hqpFEyXv/v0Yx/L/veU9UygaJxJxZzf3LtCLMlMf1uoACqo10PiCrssynsn5Xg6Obju9I1cv1IPp5uliRg==}
+    dependencies:
+      '@midnight-ntwrk/midnight-js-network-id': 4.0.4
+      '@scure/base': 2.0.0
+    dev: true
 
   /@midnight-ntwrk/onchain-runtime-v2@2.0.1:
     resolution: {integrity: sha512-nVtDyPaWD14thZuSz/MVUNNkv4HO2nYf3E3QbaRCE4UR+jKnUrd0s/BN0fLpnrYFlcMNHS7/sZqAeosV80tsOQ==}
+    dev: false
+
+  /@midnight-ntwrk/onchain-runtime-v3@3.0.0:
+    resolution: {integrity: sha512-HbFbUOsvgpEFy1OT0Ni2LMFk4jnMQS1em+H+Mof/B3DpnNKl0Lkx5QiulKOc6pyU4KPEagOqx4fYNyVXFwgZ7g==}
 
   /@midnight-ntwrk/platform-js@2.2.0:
     resolution: {integrity: sha512-HWwS7bWnkRvufHowxutk4QA+nlLK0UVjxFCIfCkxVKLEO5UzgrfIUx2mY+P6BFnzGJZ0R6tZDTyJ2jh1Go258w==}
     dependencies:
-      '@effect/platform': 0.94.3(effect@3.19.16)
-      effect: 3.19.16
+      '@effect/platform': 0.94.3(effect@3.21.0)
+      effect: 3.21.0
+      tslib: 2.8.1
+    dev: false
+
+  /@midnight-ntwrk/platform-js@2.2.4:
+    resolution: {integrity: sha512-6mrYKSSE8kPgn/5rQ2xofDJk1yAZZRdLOO6Yelweuh5GOnOGz7Qw4venDG/c4TRqtV9ouFp+F5j7ta8aprMinw==}
+    dependencies:
+      '@effect/platform': 0.95.0(effect@3.21.0)
+      effect: 3.21.0
       tslib: 2.8.1
 
   /@midnight-ntwrk/wallet-sdk-abstractions@1.0.0:
     resolution: {integrity: sha512-kJb3I1jYCuI3y1nvCixPlw4QwThrUnv0RT/eHUFB36Zir49qW4qIa5a7g2vDLXW2PL2tbh8m5xoTDFQirThI9w==}
     dependencies:
-      effect: 3.19.16
+      effect: 3.21.0
     dev: false
 
   /@midnight-ntwrk/wallet-sdk-address-format@3.0.0:
@@ -3678,7 +3818,7 @@ packages:
     dependencies:
       '@midnight-ntwrk/wallet-sdk-address-format': 3.0.0
       '@midnight-ntwrk/wallet-sdk-hd': 3.0.0
-      effect: 3.19.16
+      effect: 3.21.0
     dev: false
 
   /@midnight-ntwrk/wallet-sdk-dust-wallet@1.0.0(ws@8.19.0):
@@ -3751,11 +3891,11 @@ packages:
   /@midnight-ntwrk/wallet-sdk-indexer-client@1.0.0(ws@8.19.0):
     resolution: {integrity: sha512-3ODr+Cmn/MC4t32d0/kRDA6S21RLf0ZFjDFtWMkof9tpfBANhp+HKT132Z8AlajxykJ7ZQZJLhPfWAh7pfDiag==}
     dependencies:
-      '@effect/platform': 0.90.10(effect@3.19.16)
+      '@effect/platform': 0.90.10(effect@3.21.0)
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.12.0)
       '@midnight-ntwrk/wallet-sdk-abstractions': 1.0.0
       '@midnight-ntwrk/wallet-sdk-utilities': 1.0.0
-      effect: 3.19.16
+      effect: 3.21.0
       graphql: 16.12.0
       graphql-http: 1.22.4(graphql@16.12.0)
       graphql-ws: 6.0.6(graphql@16.12.0)(ws@8.19.0)
@@ -3785,7 +3925,7 @@ packages:
       '@polkadot/types-support': 16.5.4
       '@types/bn.js': 5.2.0
       bn.js: 5.2.2
-      effect: 3.19.16
+      effect: 3.21.0
       rxjs: 7.8.2
       testcontainers: 11.11.0
     transitivePeerDependencies:
@@ -3800,11 +3940,11 @@ packages:
   /@midnight-ntwrk/wallet-sdk-prover-client@1.0.0:
     resolution: {integrity: sha512-dHZkrjCd3CitxmInoyjfyUFGGB2bxjfFV/DIspSd7pE4OKWvgheb4+1z8FKdkFOBdO4kjpuY+xuL5LWZhTfjFA==}
     dependencies:
-      '@effect/platform': 0.90.10(effect@3.19.16)
+      '@effect/platform': 0.90.10(effect@3.21.0)
       '@midnight-ntwrk/ledger-v7': 7.0.0
       '@midnight-ntwrk/wallet-sdk-abstractions': 1.0.0
       '@midnight-ntwrk/wallet-sdk-utilities': 1.0.0
-      effect: 3.19.16
+      effect: 3.21.0
     transitivePeerDependencies:
       - bare-abort-controller
       - bare-buffer
@@ -3817,7 +3957,7 @@ packages:
     dependencies:
       '@midnight-ntwrk/wallet-sdk-abstractions': 1.0.0
       '@midnight-ntwrk/wallet-sdk-utilities': 1.0.0
-      effect: 3.19.16
+      effect: 3.21.0
       rxjs: 7.8.2
     transitivePeerDependencies:
       - bare-abort-controller
@@ -3883,7 +4023,7 @@ packages:
   /@midnight-ntwrk/wallet-sdk-utilities@1.0.0:
     resolution: {integrity: sha512-lL7D/F9TvWVYXJMBUNkhsKi8gR3VWr5IB3f3ylJkGrhhJhQ0nUv0IBDR9omiKtAmZKg55cL+vYsZZqviY380ew==}
     dependencies:
-      effect: 3.19.16
+      effect: 3.21.0
       portfinder: 1.0.38
       rxjs: 7.8.2
       testcontainers: 11.11.0
@@ -6035,6 +6175,10 @@ packages:
       csstype: 3.2.3
     dev: true
 
+  /@types/semver@7.7.1:
+    resolution: {integrity: sha512-FmgJfu+MOcQ370SD0ev7EI8TlCAfKYU+B4m5T3yXc1CiRN94g/SZPtsCkk506aUDtlMnFZvasDwHHUcZUEaYuA==}
+    dev: true
+
   /@types/send@0.17.6:
     resolution: {integrity: sha512-Uqt8rPBE8SY0RK8JB1EzVOIZ32uqy8HwdxCnoCOsYrvnswqmFZ/k+9Ikidlk/ImhsdvBsloHbAlewb2IEBV/Og==}
     dependencies:
@@ -7522,6 +7666,7 @@ packages:
 
   /bare-events@2.8.2:
     resolution: {integrity: sha512-riJjyv1/mHLIPX4RwiK+oW9/4c3TEUeORHKefKAKnZ5kyslbN+HXowtbaVEqt4IMUB7OXlfixcs6gsFeo/jhiQ==}
+    requiresBuild: true
     peerDependencies:
       bare-abort-controller: '*'
     peerDependenciesMeta:
@@ -8959,6 +9104,13 @@ packages:
     dependencies:
       '@standard-schema/spec': 1.1.0
       fast-check: 3.23.2
+    dev: false
+
+  /effect@3.21.0:
+    resolution: {integrity: sha512-PPN80qRokCd1f015IANNhrwOnLO7GrrMQfk4/lnZRE/8j7UPWrNNjPV0uBrZutI/nHzernbW+J0hdqQysHiSnQ==}
+    dependencies:
+      '@standard-schema/spec': 1.1.0
+      fast-check: 3.23.2
 
   /electron-to-chromium@1.5.302:
     resolution: {integrity: sha512-sM6HAN2LyK82IyPBpznDRqlTQAtuSaO+ShzFiWTvoMJLHyZ+Y39r8VMfHzwbU8MVBzQ4Wdn85+wlZl2TLGIlwg==}
@@ -9774,6 +9926,7 @@ packages:
 
   /events-universal@1.0.1:
     resolution: {integrity: sha512-LUd5euvbMLpwOF8m6ivPCbhQeSiYVNb8Vs0fQ8QjXo0JTkEHpz8pxdQf0gStltaPpw0Cca8b39KxvK9cfKRiAw==}
+    requiresBuild: true
     dependencies:
       bare-events: 2.8.2
     transitivePeerDependencies:
@@ -10817,6 +10970,27 @@ packages:
     dependencies:
       graphql: 16.12.0
       ws: 8.19.0
+    dev: false
+
+  /graphql-ws@6.0.8(graphql@16.12.0)(ws@8.19.0):
+    resolution: {integrity: sha512-m3EOaNsUBXwAnkBWbzPfe0Nq8pXUfxsWnolC54sru3FzHvhTZL0Ouf/BoQsaGAXqM+YPerXOJ47BUnmgmoupCw==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@fastify/websocket': ^10 || ^11
+      crossws: ~0.3
+      graphql: ^15.10.1 || ^16
+      ws: ^8
+    peerDependenciesMeta:
+      '@fastify/websocket':
+        optional: true
+      crossws:
+        optional: true
+      ws:
+        optional: true
+    dependencies:
+      graphql: 16.12.0
+      ws: 8.19.0
+    dev: true
 
   /graphql@16.12.0:
     resolution: {integrity: sha512-DKKrynuQRne0PNpEbzuEdHlYOMksHSUI8Zc9Unei5gTsMNA2/vMpoMz/yKba50pejK56qj98qM0SjYxAKi13gQ==}
@@ -12711,6 +12885,10 @@ packages:
 
   /lodash@4.17.21:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
+
+  /lodash@4.18.1:
+    resolution: {integrity: sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==}
+    dev: true
 
   /log-symbols@2.2.0:
     resolution: {integrity: sha512-VeIAFslyIerEJLXHziedo2basKbMKtTw3vfn5IzG0XTjhAVEJyNHnL2p7vc+wBDSdQuUpNw3M2u6xb9QsAY5Eg==}
@@ -16221,6 +16399,7 @@ packages:
 
   /text-decoder@1.2.3:
     resolution: {integrity: sha512-3/o9z3X0X0fTupwsYvR03pJ/DjWuqqrfwBgTQzdWDiQSm9KitAyz/9WqsT2JQW7KV2m+bC2ol/zqpW37NHxLaA==}
+    requiresBuild: true
     dependencies:
       b4a: 1.7.3
     transitivePeerDependencies:

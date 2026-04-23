@@ -11,7 +11,8 @@
  * This service handles only I/O (contract reads, IPFS fetch, contract calls).
  */
 
-import { getNetworkConfig } from '../entrypoints/popup/config/networkConfig';
+import { getWalletNetworkConfig } from '../entrypoints/popup/config/networkConfig';
+import { createMidnightProviders } from './providers/createMidnightProviders';
 
 export interface RecoveryState {
   recoveryInitiatedAt: bigint;
@@ -39,14 +40,19 @@ export async function validateImportedShare(
  */
 export async function fetchOnChainRecoveryKeyHash(
   contractAddress: string,
-  indexerUrl: string = getNetworkConfig().indexerUrl,
+  indexerUrl?: string,
+  wsIndexerUrl?: string,
 ): Promise<Uint8Array | null> {
+  // AC3: Prefer wallet-provided service URIs; falls back to hardcoded config.
+  const defaults = await getWalletNetworkConfig();
+  indexerUrl ??= defaults.indexerUrl;
+  wsIndexerUrl ??= defaults.wsIndexerUrl;
   const { indexerPublicDataProvider } = await import(
     '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
   );
   const { VaultRegistry } = await import('@aliasvault/contract');
 
-  const publicDataProvider = indexerPublicDataProvider(indexerUrl);
+  const publicDataProvider = indexerPublicDataProvider(indexerUrl, wsIndexerUrl);
   const contractState = await publicDataProvider.queryContractState(contractAddress);
 
   if (!contractState) {
@@ -130,18 +136,15 @@ export async function callClaimRecoveryOnChain(
   contractAddress: string,
   secretKey: Uint8Array,
   indexerUrl?: string,
+  wsIndexerUrl?: string,
   proofServerUrl?: string,
 ): Promise<void> {
-  const defaults = getNetworkConfig();
+  // AC3: Prefer wallet-provided service URIs; falls back to hardcoded config.
+  const defaults = await getWalletNetworkConfig();
   indexerUrl ??= defaults.indexerUrl;
+  wsIndexerUrl ??= defaults.wsIndexerUrl;
   proofServerUrl ??= defaults.proofServerUrl;
   const { findDeployedContract } = await import('@midnight-ntwrk/midnight-js-contracts');
-  const { indexerPublicDataProvider } = await import(
-    '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
-  );
-  const { httpClientProofProvider } = await import(
-    '@midnight-ntwrk/midnight-js-http-client-proof-provider'
-  );
   const {
     GuardianRecovery,
     guardianRecoveryWitnesses,
@@ -154,13 +157,11 @@ export async function callClaimRecoveryOnChain(
     GuardianRecovery.Contract,
   ).pipe(CompiledContract.withWitnesses(guardianRecoveryWitnesses));
 
-  const providers = {
-    proofProvider: httpClientProofProvider(proofServerUrl),
-    publicDataProvider: indexerPublicDataProvider(indexerUrl),
-  };
+  const providers = await createMidnightProviders(indexerUrl, wsIndexerUrl, proofServerUrl);
 
-  const contract = await findDeployedContract(providers as any, {
+  const contract = await findDeployedContract(providers, {
     contractAddress,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     compiledContract: compiledContract as any,
     privateStateId: 'guardianRecoveryPrivateState',
     initialPrivateState: createGuardianRecoveryPrivateState(secretKey),
@@ -177,14 +178,19 @@ export async function callClaimRecoveryOnChain(
  */
 export async function getRecoveryState(
   contractAddress: string,
-  indexerUrl: string = getNetworkConfig().indexerUrl,
+  indexerUrl?: string,
+  wsIndexerUrl?: string,
 ): Promise<RecoveryState | null> {
+  // AC3: Prefer wallet-provided service URIs; falls back to hardcoded config.
+  const defaults = await getWalletNetworkConfig();
+  indexerUrl ??= defaults.indexerUrl;
+  wsIndexerUrl ??= defaults.wsIndexerUrl;
   const { indexerPublicDataProvider } = await import(
     '@midnight-ntwrk/midnight-js-indexer-public-data-provider'
   );
   const { GuardianRecovery } = await import('@aliasvault/contract');
 
-  const publicDataProvider = indexerPublicDataProvider(indexerUrl);
+  const publicDataProvider = indexerPublicDataProvider(indexerUrl, wsIndexerUrl);
   const contractState = await publicDataProvider.queryContractState(contractAddress);
 
   if (!contractState) {
