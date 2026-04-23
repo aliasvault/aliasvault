@@ -6,21 +6,48 @@ const mockIndexerPublicDataProvider = vi.fn(() => ({
   queryContractState: mockQueryContractState,
 }));
 const mockFindDeployedContract = vi.fn();
-const mockHttpClientProofProvider = vi.fn();
 const mockLedgerVR = vi.fn();
 const mockBackupCommitment = vi.fn();
 const mockCallTxAddBackupWallet = vi.fn();
 const mockCallTxRemoveBackupWallet = vi.fn();
 const mockCallTxBackupTransfer = vi.fn();
 
+// Mock networkConfig so the async getWalletNetworkConfig resolves to deterministic URLs.
+// Without this, the real implementation dynamically imports WalletState and may hang in tests.
+vi.mock('../../entrypoints/popup/config/networkConfig', () => ({
+  getNetworkConfig: () => ({
+    networkId: 'undeployed',
+    indexerUrl: 'http://localhost:8088',
+    wsIndexerUrl: 'ws://localhost:8088',
+    nodeUrl: 'http://localhost:9944',
+    proofServerUrl: 'http://localhost:6300',
+  }),
+  getWalletNetworkConfig: vi.fn().mockResolvedValue({
+    networkId: 'undeployed',
+    indexerUrl: 'http://localhost:8088',
+    wsIndexerUrl: 'ws://localhost:8088',
+    nodeUrl: 'http://localhost:9944',
+    proofServerUrl: 'http://localhost:6300',
+  }),
+}));
+
+// Mock createMidnightProviders — returns a stub providers object
+vi.mock('../providers/createMidnightProviders', () => ({
+  createMidnightProviders: vi.fn().mockResolvedValue({
+    privateStateProvider: {},
+    publicDataProvider: {},
+    zkConfigProvider: {},
+    proofProvider: {},
+    walletProvider: {},
+    midnightProvider: {},
+  }),
+}));
+
 vi.mock('@midnight-ntwrk/midnight-js-indexer-public-data-provider', () => ({
   indexerPublicDataProvider: mockIndexerPublicDataProvider,
 }));
 vi.mock('@midnight-ntwrk/midnight-js-contracts', () => ({
   findDeployedContract: mockFindDeployedContract,
-}));
-vi.mock('@midnight-ntwrk/midnight-js-http-client-proof-provider', () => ({
-  httpClientProofProvider: mockHttpClientProofProvider,
 }));
 vi.mock('@midnight-ntwrk/compact-js', () => ({
   CompiledContract: {

@@ -1,4 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+// Pin CURRENT_NETWORK to 'undeployed' regardless of VITE_MIDNIGHT_NETWORK env var
+// so these tests remain deterministic across local dev setups.
+vi.mock('../networkConfig', async () => {
+  const actual = await vi.importActual<typeof import('../networkConfig')>('../networkConfig');
+  return {
+    ...actual,
+    CURRENT_NETWORK: 'undeployed',
+  };
+});
+
 import {
   getExplorerConfig,
   getExplorerAddressUrl,

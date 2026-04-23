@@ -24,18 +24,19 @@ describe('networkConfig', () => {
 
     it('returns localhost URLs for undeployed network', () => {
       const config = getNetworkConfig('undeployed');
-      expect(config.indexerUrl).toBe('http://localhost:8088/api/v3/graphql');
-      expect(config.wsIndexerUrl).toBe('ws://localhost:8088/api/v3/graphql/ws');
+      expect(config.indexerUrl).toBe('http://localhost:8088/api/v4/graphql');
+      expect(config.wsIndexerUrl).toBe('ws://localhost:8088/api/v4/graphql/ws');
       expect(config.nodeUrl).toBe('http://localhost:9944');
       expect(config.proofServerUrl).toBe('http://localhost:6300');
     });
 
     it('returns preprod URLs for preprod network', () => {
       const config = getNetworkConfig('preprod');
-      expect(config.indexerUrl).toBe('https://indexer.preprod.midnight.network/api/v3/graphql');
-      expect(config.wsIndexerUrl).toBe('wss://indexer.preprod.midnight.network/api/v3/graphql/ws');
+      expect(config.indexerUrl).toBe('https://indexer.preprod.midnight.network/api/v4/graphql');
+      expect(config.wsIndexerUrl).toBe('wss://indexer.preprod.midnight.network/api/v4/graphql/ws');
       expect(config.nodeUrl).toBe('https://rpc.preprod.midnight.network');
-      expect(config.proofServerUrl).toBe('https://lace-proof-pub.preprod.midnight.network');
+      // proofServerUrl may be overridden by VITE_PROOF_SERVER_URL env
+      expect(config.proofServerUrl).toBeTruthy();
     });
 
     it('defaults to CURRENT_NETWORK when no ID provided', () => {
