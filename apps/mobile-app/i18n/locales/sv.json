@@ -32,6 +32,7 @@
     "errors": {
       "unknownError": "Ett okänt fel har inträffat.",
       "unknownErrorTryAgain": "Ett okänt fel inträffade. Försök igen.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "serverVersionTooOld": "AliasVault-servern behöver uppdateras till en nyare version för att kunna använda denna funktion. Vänligen kontakta serveradministratören om du behöver hjälp."
     }
   },
