@@ -11,7 +11,8 @@
         "PUBLIC_REGISTRATION_ENABLED": "true",
         "PRIVATE_EMAIL_DOMAINS": "example.tld,example2.tld,disabled.tld",
         "HIDDEN_PRIVATE_EMAIL_DOMAINS": "disabled.tld",
-        "IP_LOGGING_ENABLED": "true"
+        "IP_LOGGING_ENABLED": "true",
+        "MAX_UPLOAD_SIZE_MB": "1"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "http://0.0.0.0:5092"
@@ -27,7 +28,8 @@
         "PUBLIC_REGISTRATION_ENABLED": "true",
         "PRIVATE_EMAIL_DOMAINS": "example.tld,example2.tld,disabled.tld",
         "HIDDEN_PRIVATE_EMAIL_DOMAINS": "disabled.tld",
-        "IP_LOGGING_ENABLED": "true"
+        "IP_LOGGING_ENABLED": "true",
+        "MAX_UPLOAD_SIZE_MB": "100"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "https://0.0.0.0:7223"

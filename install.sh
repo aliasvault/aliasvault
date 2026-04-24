@@ -3368,6 +3368,12 @@ check_and_populate_env() {
     if ! grep -q "^SMTP_ADVERTISED_HOSTNAME=" "$ENV_FILE" 2>/dev/null; then
         update_env_var "SMTP_ADVERTISED_HOSTNAME" ""
     fi
+
+    # MAX_UPLOAD_SIZE_MB
+    if ! grep -q "^MAX_UPLOAD_SIZE_MB=" "$ENV_FILE" 2>/dev/null; then
+        update_env_var "MAX_UPLOAD_SIZE_MB" "100"
+        printf "  Set MAX_UPLOAD_SIZE_MB\n"
+    fi
 }
 
 main "$@"

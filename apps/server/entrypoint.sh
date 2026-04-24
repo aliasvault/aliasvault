@@ -14,6 +14,11 @@ else
     cp /etc/nginx/nginx-443.conf /etc/nginx/nginx.conf
 fi
 
+# Substitute MAX_UPLOAD_SIZE placeholder in the active nginx config.
+# Default to 100MB when unset (suitable for all-in-one images without explicit config).
+MAX_UPLOAD_SIZE_MB_VALUE="${MAX_UPLOAD_SIZE_MB:-100}"
+sed -i "s|__MAX_UPLOAD_SIZE__|${MAX_UPLOAD_SIZE_MB_VALUE}|g" /etc/nginx/nginx.conf
+
 # Function to check if certificate needs regeneration
 needs_cert_regeneration() {
     # If cert doesn't exist, need to generate

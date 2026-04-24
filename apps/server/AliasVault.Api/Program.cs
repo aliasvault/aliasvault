@@ -23,6 +23,7 @@ using AliasVault.Shared.Server.Services;
 using AliasVault.Shared.Server.Utilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -56,6 +57,20 @@ config.HiddenPrivateEmailDomains = hiddenPrivateEmailDomains?.ToList() ?? new Li
 
 var ipLoggingEnabled = Environment.GetEnvironmentVariable("IP_LOGGING_ENABLED") ?? "false";
 config.IpLoggingEnabled = bool.Parse(ipLoggingEnabled);
+
+// Configure maximum upload size (applies to vault syncs and any other client uploads).
+var maxUploadSizeMb = int.TryParse(Environment.GetEnvironmentVariable("MAX_UPLOAD_SIZE_MB"), out var parsedMb) && parsedMb > 0 ? parsedMb : 100;
+var maxUploadSizeBytes = (long)maxUploadSizeMb * 1024 * 1024;
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = maxUploadSizeBytes;
+});
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = maxUploadSizeBytes;
+});
 
 builder.Services.AddSingleton(config);
 builder.Services.AddSingleton<SharedConfig>(sp => sp.GetRequiredService<Config>());
