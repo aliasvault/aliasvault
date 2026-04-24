@@ -108,6 +108,7 @@
       "passwordChanged": "Twoje hasło uległo zmianie od czasu ostatniego logowania. Ze względów bezpieczeństwa prosimy o ponowne zalogowanie się.",
       "syncConflictMaxRetries": "Nie można zsynchronizować sejfu po wielu próbach. Spróbuj ponownie później.",
       "mergeFailed": "Nie udało się scalić zmian w sejfie. Spróbuj ponownie.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "invalidCode": "Wprowadź prawidłowy 6-cyfrowy kod uwierzytelniający.",
       "serverError": "Nie można połączyć się z serwerem AliasVault. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną, jeśli problem nadal występuje.",
       "wrongPassword": "Nieprawidłowe hasło. Spróbuj ponownie.",
@@ -546,6 +547,8 @@
   },
   "sync": {
     "offline": "Jesteś w trybie offline",
-    "tapToRetry": "Dotknij, aby ponowić synchronizację"
+    "tapToRetry": "Dotknij, aby ponowić synchronizację",
+    "syncErrorTitle": "Sync Failed",
+    "syncErrorDismiss": "Dismiss"
   }
 }
