@@ -12,7 +12,7 @@
         "PRIVATE_EMAIL_DOMAINS": "example.tld,example2.tld,disabled.tld",
         "HIDDEN_PRIVATE_EMAIL_DOMAINS": "disabled.tld",
         "IP_LOGGING_ENABLED": "true",
-        "MAX_UPLOAD_SIZE_MB": "1"
+        "MAX_UPLOAD_SIZE_MB": "100"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "http://0.0.0.0:5092"
