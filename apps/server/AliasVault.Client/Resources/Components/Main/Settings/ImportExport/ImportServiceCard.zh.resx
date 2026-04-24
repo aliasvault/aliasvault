@@ -162,6 +162,10 @@
     <value>请先解压导出文件再进行导入，更多信息请参见以下说明。</value>
     <comment>Error message when user tries to import a zip file</comment>
   </data>
+  <data name="ImportErrorUnsupportedFormat" xml:space="preserve">
+    <value>Unsupported file format. Supported formats: {0}</value>
+    <comment>Error message when user selects an unsupported file format. {0} is the list of supported extensions</comment>
+  </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
     <value>文件大小超过 10MB 限制。</value>
     <comment>Error message when file is too large</comment>
