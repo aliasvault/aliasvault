@@ -26,7 +26,7 @@
     "generate": "Generar",
     "attachments": "Archivos adjuntos",
     "or": "o",
-    "retry": "Retry",
+    "retry": "Reintentar",
     "deleteItemConfirmTitle": "Eliminar elemento",
     "deleteItemConfirmDescription": "¿Está seguro de querer borrar este ítem?",
     "errors": {
@@ -159,9 +159,9 @@
     "clipboardClear": "Limpiar portapapeles",
     "clipboardClearDescription": "Limpiar automáticamente las contraseñas copiadas e información sensible del portapapeles después de un período de tiempo especificado.",
     "clipboardClearAndroidWarning": "Nota: algunos dispositivos Android tienen el historial del portapapeles activado, que puede llevar un seguimiento de elementos previamente copiados, incluso después de que AliasVault borre el portapapeles. AliasVault sólo puede sobrescribir el elemento más reciente, pero las entradas más antiguas pueden seguir siendo visibles en la historia. Por razones de seguridad, recomendamos desactivar cualquier característica del historial del portapapeles en la configuración del dispositivo.",
-    "clipboardLocalOnly": "Local Clipboard Only",
-    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
-    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
+    "clipboardLocalOnly": "Solo portapapeles locales",
+    "clipboardLocalOnlyDescription": "Mantén las credenciales copiadas en este dispositivo en lugar de sincronizarlas con tus otros dispositivos Apple a través del Portapapeles Universal.",
+    "clipboardLocalOnlyDisabledWarning": "Con esto desactivado, las credenciales copiadas pueden sincronizarse a tus otros dispositivos Apple (Mac, iPad, etc.) a través del Portapapeles Universal.",
     "clipboardClearOptions": {
       "never": "Nunca",
       "5seconds": "5 segundos",
@@ -620,11 +620,11 @@
       "attemptingToUnlockMessage": "Intentando desbloquear."
     },
     "vaultError": {
-      "title": "Vault Error",
-      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
-      "showDetails": "Show error details",
-      "hideDetails": "Hide error details",
-      "copyErrorDetails": "Copy error details"
+      "title": "Error en la Bóveda",
+      "description": "Se ha producido un error al cargar la bóveda. Si el problema persiste, póngase en contacto con el servicio de asistencia.",
+      "showDetails": "Mostrar detalles del error",
+      "hideDetails": "Ocultar detalles del error",
+      "copyErrorDetails": "Copiar detalles del error"
     },
     "loginSettings": {
       "title": "Conexión API",
