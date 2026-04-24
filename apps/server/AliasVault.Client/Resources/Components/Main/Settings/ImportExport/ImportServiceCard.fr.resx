@@ -162,6 +162,10 @@
     <value>Veuillez décompresser le fichier d'exportation avant d'importer. Consultez les instructions ci-dessous pour plus d'informations.</value>
     <comment>Error message when user tries to import a zip file</comment>
   </data>
+  <data name="ImportErrorUnsupportedFormat" xml:space="preserve">
+    <value>Unsupported file format. Supported formats: {0}</value>
+    <comment>Error message when user selects an unsupported file format. {0} is the list of supported extensions</comment>
+  </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
     <value>La taille du fichier dépasse la limite de 10 Mo.</value>
     <comment>Error message when file is too large</comment>
