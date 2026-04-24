@@ -91,8 +91,10 @@ public sealed class FolderService(DbService dbService)
     /// </summary>
     /// <param name="name">The folder name.</param>
     /// <param name="parentFolderId">Optional parent folder ID.</param>
+    /// <param name="syncToServer">Whether to trigger a background sync to the server. Set to false when
+    /// the caller will batch multiple mutations and perform a single sync afterwards (e.g. bulk import).</param>
     /// <returns>The created folder ID.</returns>
-    public async Task<Guid> CreateAsync(string name, Guid? parentFolderId = null)
+    public async Task<Guid> CreateAsync(string name, Guid? parentFolderId = null, bool syncToServer = true)
     {
         var context = await dbService.GetDbContextAsync();
 
@@ -109,7 +111,11 @@ public sealed class FolderService(DbService dbService)
 
         context.Folders.Add(folder);
         await context.SaveChangesAsync();
-        dbService.SaveDatabaseInBackground();
+
+        if (syncToServer)
+        {
+            dbService.SaveDatabaseInBackground();
+        }
 
         return folder.Id;
     }

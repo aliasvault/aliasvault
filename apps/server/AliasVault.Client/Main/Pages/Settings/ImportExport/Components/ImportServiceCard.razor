@@ -804,8 +804,9 @@
                     }
                 }
 
-                // Create new folder with parent relationship
-                var newFolderId = await FolderService.CreateAsync(folderName, parentFolderId);
+                // Create new folder with parent relationship. Skip per-folder background sync —
+                // the final DbService.SaveDatabaseAsync() at the end of the import covers all mutations.
+                var newFolderId = await FolderService.CreateAsync(folderName, parentFolderId, syncToServer: false);
                 folderPathToId[folderPath] = newFolderId;
             }
         }
