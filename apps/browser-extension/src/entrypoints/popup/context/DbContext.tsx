@@ -76,6 +76,16 @@ type DbContextType = {
    */
   refreshSyncState: () => Promise<void>;
   hasPendingMigrations: () => Promise<boolean>;
+  /**
+   * Last sync error message persisted by the background sync. Surfaced as a popup
+   * alert. Null when no error is pending. Updated reactively via storage.watch so
+   * background-initiated sync failures show up immediately while popup is open.
+   */
+  syncError: string | null;
+  /**
+   * Dismiss the current sync error (clears both React state and persisted storage).
+   */
+  clearSyncError: () => Promise<void>;
 }
 
 const DbContext = createContext<DbContextType | undefined>(undefined);
@@ -127,6 +137,12 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const [serverRevision, setServerRevision] = useState(0);
 
   /**
+   * Last sync error written by the background sync. Driven by storage so background-only
+   * syncs (e.g. follow-up syncs after pending mutations) reach the user.
+   */
+  const [syncError, setSyncError] = useState<string | null>(null);
+
+  /**
    * Check if email errors should be suppressed.
    * Errors are suppressed when vault has local changes not yet synced,
    * as the server may not know about newly created items/aliases yet.
@@ -153,17 +169,40 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
      * Load the offline mode and sync state from local storage.
      */
     const loadSyncState = async (): Promise<void> => {
-      const [offlineMode, dirty, revision] = await Promise.all([
+      const [offlineMode, dirty, revision, lastError] = await Promise.all([
         storage.getItem('local:isOfflineMode') as Promise<boolean | null>,
         storage.getItem('local:isDirty') as Promise<boolean | null>,
-        storage.getItem('local:serverRevision') as Promise<number | null>
+        storage.getItem('local:serverRevision') as Promise<number | null>,
+        storage.getItem('local:lastSyncError') as Promise<string | null>
       ]);
       isOfflineRef.current = offlineMode ?? false;
       setIsOfflineState(offlineMode ?? false);
       setIsDirty(dirty ?? false);
       setServerRevision(revision ?? 0);
+      setSyncError(lastError ?? null);
     };
     loadSyncState();
+  }, []);
+
+  /**
+   * Subscribe to background-driven sync error updates so a popup alert appears
+   * even when the failing sync wasn't triggered by anything in the popup itself.
+   */
+  useEffect(() => {
+    const unwatch = storage.watch<string | null>('local:lastSyncError', (newValue) => {
+      setSyncError(newValue ?? null);
+    });
+    return (): void => {
+      unwatch();
+    };
+  }, []);
+
+  /**
+   * Dismiss the current sync error from both React state and persisted storage.
+   */
+  const clearSyncError = useCallback(async (): Promise<void> => {
+    setSyncError(null);
+    await storage.removeItem('local:lastSyncError');
   }, []);
 
   /**
@@ -325,7 +364,9 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     getVaultMetadata,
     refreshSyncState,
     hasPendingMigrations,
-  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, isDirty, isSyncing, isUploading, serverRevision, setIsOffline, shouldSuppressEmailErrors, loadDatabase, loadStoredDatabase, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, hasPendingMigrations]);
+    syncError,
+    clearSyncError,
+  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, isDirty, isSyncing, isUploading, serverRevision, setIsOffline, shouldSuppressEmailErrors, loadDatabase, loadStoredDatabase, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, hasPendingMigrations, syncError, clearSyncError]);
 
   return (
     <DbContext.Provider value={contextValue}>

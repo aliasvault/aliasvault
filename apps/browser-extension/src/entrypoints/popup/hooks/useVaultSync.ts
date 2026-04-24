@@ -122,8 +122,11 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
       onError?.(errorMessage);
       return false;
     } finally {
-      // Always clear syncing/uploading states when done
+      /*
+       * Always clear syncing/uploading states when done including on failure.
+       */
       dbContext.setIsSyncing(false);
+      dbContext.setIsUploading(false);
     }
   }, [app, dbContext, t]);
 

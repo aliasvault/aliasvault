@@ -5,6 +5,7 @@ import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
 import { AppInfo } from "./AppInfo";
 import { ApiAuthError } from './types/errors/ApiAuthError';
 import { NetworkError } from './types/errors/NetworkError';
+import { PayloadTooLargeError } from './types/errors/PayloadTooLargeError';
 
 import { storage } from '#imports';
 
@@ -87,6 +88,10 @@ export class WebApiService {
           // Token refresh failed due to network/server error - throw NetworkError for offline handling
           throw new NetworkError('Token refresh failed due to network error');
         }
+      }
+
+      if (response.status === 413 && throwOnError) {
+        throw new PayloadTooLargeError(`Request rejected with HTTP 413: payload exceeds server limit`);
       }
 
       if (!response.ok && throwOnError) {

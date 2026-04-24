@@ -1,9 +1,12 @@
 import React, { useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Routes, Route, useLocation } from 'react-router-dom';
 
 import { ClipboardCountdownBar } from '@/entrypoints/popup/components/ClipboardCountdownBar';
+import Modal from '@/entrypoints/popup/components/Dialogs/Modal';
 import BottomNav from '@/entrypoints/popup/components/Layout/BottomNav';
 import Header from '@/entrypoints/popup/components/Layout/Header';
+import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 /**
  * Route configuration type.
@@ -32,6 +35,8 @@ type DefaultLayoutProps = {
 const DefaultLayout: React.FC<DefaultLayoutProps> = ({ routes, headerButtons, message, children }) => {
   const mainRef = useRef<HTMLElement>(null);
   const location = useLocation();
+  const { t } = useTranslation();
+  const { syncError, clearSyncError } = useDb();
 
   // Reset scroll position when route changes
   useEffect(() => {
@@ -76,6 +81,16 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ routes, headerButtons, me
       </main>
 
       <BottomNav />
+
+      <Modal
+        isOpen={syncError !== null}
+        onClose={clearSyncError}
+        onConfirm={clearSyncError}
+        title={t('sync.syncErrorTitle')}
+        message={syncError ?? ''}
+        confirmText={t('sync.syncErrorDismiss')}
+        variant="danger"
+      />
     </div>
   );
 };

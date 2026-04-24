@@ -14,6 +14,7 @@ import { getItemWithFallback } from '@/utils/StorageUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
 import { NetworkError } from '@/utils/types/errors/NetworkError';
+import { PayloadTooLargeError } from '@/utils/types/errors/PayloadTooLargeError';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
 import type { DuplicateCheckResponse } from '@/utils/types/messaging/DuplicateCheckResponse';
@@ -682,11 +683,20 @@ export async function handleUploadVault(
   } catch (error) {
     console.error('Failed to upload vault:', error);
 
-    // Check if error is UPLOAD_OUTDATED (E-802) - server has newer vault
     const errorMessage = error instanceof Error ? error.message : '';
+
+    // Check if error is UPLOAD_OUTDATED (E-802) - server has newer vault
     if (errorMessage.includes('E-802')) {
       // Return status 2 (Outdated) so caller can handle merge
       return { success: false, status: 2, error: errorMessage };
+    }
+
+    /*
+     * Pass through any error already tagged with an E-XXX code (e.g. E-804 for HTTP 413).
+     * Stripping the targeted code and replacing it with E-801 would lose the actionable message.
+     */
+    if (/E-\d{3}/.test(errorMessage)) {
+      return { success: false, error: errorMessage };
     }
 
     // E-801: Upload failed for other reasons
@@ -810,7 +820,15 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
   };
 
   const webApi = new WebApiService();
-  const response = await webApi.post<Vault, VaultPostResponse>('Vault', newVault);
+  let response: VaultPostResponse;
+  try {
+    response = await webApi.post<Vault, VaultPostResponse>('Vault', newVault);
+  } catch (err) {
+    if (err instanceof PayloadTooLargeError) {
+      throw new Error(formatErrorWithCode(await t('common.errors.vaultTooLarge'), AppErrorCode.UPLOAD_TOO_LARGE));
+    }
+    throw err;
+  }
 
   // Check if response is successful (.status === 0)
   if (response.status === 0) {
@@ -1112,10 +1130,46 @@ export async function handleCheckSyncStatus(): Promise<SyncStatusCheckResult> {
 }
 
 /**
+ * Persists a sync error message to local storage so the popup can surface it
+ * even when the failing sync was triggered from the background (e.g. follow-up
+ * syncs after pending mutations). Cleared on the next successful sync.
+ *
+ * Skips errors that already have dedicated UX:
+ * - requiresLogout: handled by the forced re-login flow
+ * - wasOffline: handled by the offline indicator
+ */
+async function persistSyncErrorState(result: FullVaultSyncResult): Promise<void> {
+  if (result.requiresLogout || result.wasOffline) {
+    return;
+  }
+
+  const errorMessage = result.errorKey
+    ? await t('common.errors.' + result.errorKey)
+    : result.error;
+
+  if (errorMessage) {
+    await storage.setItem('local:lastSyncError', errorMessage);
+  } else if (result.success) {
+    await storage.removeItem('local:lastSyncError');
+  }
+}
+
+/**
  * Full vault sync orchestration that runs entirely in background context.
- * This ensures sync completes even if popup closes mid-operation.
+ * Wraps the internal implementation with sync-error persistence so the popup
+ * can show a targeted alert for failures even if it wasn't open at the time.
  */
 export async function handleFullVaultSync(): Promise<FullVaultSyncResult> {
+  const result = await handleFullVaultSyncInternal();
+  await persistSyncErrorState(result);
+  return result;
+}
+
+/**
+ * Internal implementation of the full vault sync. Wrapped by handleFullVaultSync
+ * so the result can be persisted to local storage for the popup to surface.
+ */
+async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
   // Check if sync is already in progress
   if (isSyncInProgress) {
     // Mark that we need to sync again after current sync completes

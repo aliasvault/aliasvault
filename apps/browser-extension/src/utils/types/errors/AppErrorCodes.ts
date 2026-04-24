@@ -66,6 +66,7 @@ export enum AppErrorCode {
   UPLOAD_FAILED = 'E-801',
   UPLOAD_OUTDATED = 'E-802', // Server has newer version
   UPLOAD_ENCRYPT_FAILED = 'E-803',
+  UPLOAD_TOO_LARGE = 'E-804', // Server rejected upload with HTTP 413 (vault exceeds MAX_UPLOAD_SIZE_MB)
 
   // Migration/version errors (E-9xx)
   MIGRATION_CHECK_FAILED = 'E-901',
@@ -159,6 +160,7 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     [AppErrorCode.UPLOAD_FAILED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.UPLOAD_OUTDATED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.UPLOAD_ENCRYPT_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.UPLOAD_TOO_LARGE]: 'common.errors.vaultTooLarge',
 
     // Migration/version errors (E-9xx)
     [AppErrorCode.MIGRATION_CHECK_FAILED]: 'common.errors.unknownErrorTryAgain',

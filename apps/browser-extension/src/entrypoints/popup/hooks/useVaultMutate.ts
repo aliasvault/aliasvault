@@ -127,6 +127,18 @@ export function useVaultMutate(): {
      */
     void sendMessage('FULL_VAULT_SYNC', {}, 'background').then(async (result) => {
       const syncResult = result as FullVaultSyncResult;
+      if (!syncResult.success && (syncResult.error || syncResult.errorKey)) {
+        /*
+         * Permanent failure (e.g. HTTP 413 vault too large). Stop polling and clear the upload
+         * spinner.
+         */
+        if (pollIntervalRef.current) {
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+        }
+        dbContext.setIsUploading(false);
+        return;
+      }
       if (syncResult.hasNewVault) {
         await dbContext.loadStoredDatabase();
       }
