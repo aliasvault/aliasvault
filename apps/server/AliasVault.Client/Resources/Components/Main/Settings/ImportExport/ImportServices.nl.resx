@@ -210,7 +210,7 @@
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
-    <value>Om je Proton Pass wachtwoorden te importeren, moet je deze exporteren als CSV-bestand. Je kunt dit doen door in te loggen op Proton Pass (web), op het 'Settings' menu te klikken > 'Export' > 'File format: CSV'. Klik vervolgens op 'Export'.</value>
+    <value>Om je Proton Pass kluis te importeren, moet je deze exporteren. U kunt dit doen in de Proton Pass browserextensie door naar 'Instellingen' > 'Exporteer' te gaan.</value>
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">
