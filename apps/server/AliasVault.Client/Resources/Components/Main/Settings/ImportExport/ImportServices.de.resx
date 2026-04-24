@@ -77,7 +77,7 @@
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>Um Deinen Bitwarden-Tresor zu importieren, musst Du ihn zuerst als CSV-Datei exportieren. Melde Dich dazu in Deinem Bitwarden-Konto an, gehe ins Menü "Werkzeuge" und wähle "Tresor exportieren" (als CSV-Datei).</value>
+    <value>In order to import your Bitwarden vault, you need to export it. You can do this by logging into your Bitwarden account, going to the 'Tools' menu and selecting 'Export vault'.</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
