@@ -108,6 +108,7 @@
       "passwordChanged": "Sua senha mudou desde o último login. Por favor, realize login novamente por questões de segurança.",
       "syncConflictMaxRetries": "Não foi possível sincronizar seu cofre após várias tentativas. Por favor, tente novamente mais tarde.",
       "mergeFailed": "Falha ao combinar mudanças do cofre. Por favor, tente novamente.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "invalidCode": "Por favor digite o código de autenticação de 6 dígitos.",
       "serverError": "Não foi possível conectar ao servidor do AliasVault. Por favor tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
       "wrongPassword": "Senha incorreta. Por favor tente novamente.",
@@ -546,6 +547,8 @@
   },
   "sync": {
     "offline": "Offline",
-    "tapToRetry": "Toque para tentar sincronizar novamente"
+    "tapToRetry": "Toque para tentar sincronizar novamente",
+    "syncErrorTitle": "Sync Failed",
+    "syncErrorDismiss": "Dismiss"
   }
 }
