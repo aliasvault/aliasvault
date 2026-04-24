@@ -108,6 +108,7 @@
       "passwordChanged": "С момента вашего последнего входа ваш пароль изменился. Пожалуйста, войдите еще раз в целях безопасности.",
       "syncConflictMaxRetries": "Ошибка синхронизации хранилища. Повторите попытку позже.",
       "mergeFailed": "Не удалось объединить изменения. Попробуйте снова.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "invalidCode": "Введите корректный 6-значный код подтверждения.",
       "serverError": "Сервер AliasVault недоступен. Повторите попытку позже или свяжитесь с техподдержкой.",
       "wrongPassword": "Неверный пароль. Повторите попытку.",
@@ -546,6 +547,8 @@
   },
   "sync": {
     "offline": "Офлайн",
-    "tapToRetry": "Повторить синхронизацию"
+    "tapToRetry": "Повторить синхронизацию",
+    "syncErrorTitle": "Sync Failed",
+    "syncErrorDismiss": "Dismiss"
   }
 }
