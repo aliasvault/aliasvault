@@ -77,7 +77,7 @@
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Bitwarden vault, you need to export it. You can do this by logging into your Bitwarden account, going to the 'Tools' menu and selecting 'Export vault'.</value>
+    <value>Om je Bitwarden kluis te importeren, moet je deze exporteren. Je kunt dit doen door in te loggen op je Bitwarden account, naar het menu 'Gereedschappen' te gaan en 'Exporteer kluis' te selecteren.</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
