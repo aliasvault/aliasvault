@@ -77,7 +77,7 @@
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>要导入您的 Bitwarden 密码库，您需要将其导出为 CSV 文件。您可以通过登录您的 Bitwarden 账户，进入“工具”菜单并选择“导出密码库”（至 CSV）来完成此操作。</value>
+    <value>In order to import your Bitwarden vault, you need to export it. You can do this by logging into your Bitwarden account, going to the 'Tools' menu and selecting 'Export vault'.</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
