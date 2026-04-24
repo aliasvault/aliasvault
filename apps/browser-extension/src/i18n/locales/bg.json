@@ -108,6 +108,7 @@
       "passwordChanged": "Your password has changed since the last time you logged in. Please login again for security reasons.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "mergeFailed": "Failed to merge vault changes. Please try again.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "invalidCode": "Please enter a valid 6-digit authentication code.",
       "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
       "wrongPassword": "Incorrect password. Please try again.",
@@ -546,6 +547,8 @@
   },
   "sync": {
     "offline": "Offline",
-    "tapToRetry": "Tap to retry sync"
+    "tapToRetry": "Tap to retry sync",
+    "syncErrorTitle": "Sync Failed",
+    "syncErrorDismiss": "Dismiss"
   }
 }
