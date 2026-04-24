@@ -279,7 +279,7 @@ public sealed class DbService : IDisposable
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error during background database sync.");
-                    _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"]);
+                    _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"], true);
                     _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
                 }
             },
@@ -720,7 +720,7 @@ public sealed class DbService : IDisposable
             if (response?.Vault == null || string.IsNullOrEmpty(response.Vault.Blob))
             {
                 _logger.LogError("Failed to fetch vault from server for merge.");
-                _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"]);
+                _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"], true);
                 return false;
             }
 
@@ -778,7 +778,7 @@ public sealed class DbService : IDisposable
                 if (await reader.ReadAsync())
                 {
                     _logger.LogError("Foreign key violation detected after merge.");
-                    _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"]);
+                    _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"], true);
                     return false;
                 }
             }
@@ -798,7 +798,7 @@ public sealed class DbService : IDisposable
         }
         catch (Exception ex)
         {
-            _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"]);
+            _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"], true);
             _logger.LogError(ex, "Error merging with server vault.");
             return false;
         }
