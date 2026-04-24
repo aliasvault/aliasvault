@@ -19,7 +19,7 @@
 
 @code {
     private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Settings.ImportExport.ImportServices", "AliasVault.Client");
-    private static readonly string[] AcceptedExtensions = new[] { ".csv", ".zip" };
+    private static readonly string[] AcceptedExtensions = new[] { ".zip", ".csv" };
 
     private static async Task<List<ImportedCredential>> ProcessFile(string filename, byte[] fileBytes)
     {
