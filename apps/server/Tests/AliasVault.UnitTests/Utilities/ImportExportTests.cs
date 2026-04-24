@@ -2196,8 +2196,6 @@ public class ImportExportTests
 
     /// <summary>
     /// Test case for importing credentials from a Proton Pass .zip export.
-    /// The fixture contains a single "Personal" vault (promoted to root) with 6 items:
-    /// 4 logins (one with a TOTP URI, one with URLs, one with no password), 1 alias, 1 note.
     /// </summary>
     /// <returns>Async task.</returns>
     [Test]
@@ -2211,7 +2209,7 @@ public class ImportExportTests
         var importedCredentials = await importer.ImportFromArchiveAsync(zipBytes);
 
         // Assert
-        Assert.That(importedCredentials, Has.Count.EqualTo(6));
+        Assert.That(importedCredentials, Has.Count.EqualTo(7));
 
         // Login with TOTP URI.
         var loginWithTotp = importedCredentials.First(c => c.ServiceName == "Test proton 1");
@@ -2230,7 +2228,7 @@ public class ImportExportTests
         var expectedCreatedAt = DateTimeOffset.FromUnixTimeSeconds(1744362003).UtcDateTime;
         Assert.That(loginWithTotp.CreatedAt, Is.EqualTo(expectedCreatedAt));
 
-        // Alias item — email comes from the envelope's aliasEmail field.
+        // Alias item
         var aliasItem = importedCredentials.First(c => c.ServiceName == "Test alias");
         Assert.Multiple(() =>
         {
@@ -2270,7 +2268,7 @@ public class ImportExportTests
             Assert.That(loginWithNote.ServiceUrls![0], Is.EqualTo("http://example.com/"));
         });
 
-        // Secure note — note text lives in metadata.note.
+        // Secure note
         var noteItem = importedCredentials.First(c => c.ServiceName == "Customnote");
         Assert.Multiple(() =>
         {
@@ -2278,9 +2276,25 @@ public class ImportExportTests
             Assert.That(noteItem.Notes, Is.EqualTo("Customnotecontent"));
         });
 
+        // Credit card
+        var cardItem = importedCredentials.First(c => c.ServiceName == "Testcreditcard");
+        Assert.Multiple(() =>
+        {
+            Assert.That(cardItem.ItemType, Is.EqualTo(ImportedItemType.Creditcard));
+            Assert.That(cardItem.Notes, Is.EqualTo("Custom note for creditcard"));
+            Assert.That(cardItem.FolderPath, Is.Null);
+            Assert.That(cardItem.Creditcard, Is.Not.Null);
+            Assert.That(cardItem.Creditcard!.CardholderName, Is.EqualTo("J Johnson"));
+            Assert.That(cardItem.Creditcard.Number, Is.EqualTo("1234123412341234123"));
+            Assert.That(cardItem.Creditcard.Cvv, Is.EqualTo("123"));
+            Assert.That(cardItem.Creditcard.Pin, Is.EqualTo("1234"));
+            Assert.That(cardItem.Creditcard.ExpiryYear, Is.EqualTo("2029"));
+            Assert.That(cardItem.Creditcard.ExpiryMonth, Is.EqualTo("06"));
+        });
+
         // Conversion to Item extracts the TOTP secret from the URI.
         var convertedItems = BaseImporter.ConvertToItem(importedCredentials);
-        Assert.That(convertedItems, Has.Count.EqualTo(6));
+        Assert.That(convertedItems, Has.Count.EqualTo(7));
 
         var convertedLogin = convertedItems.First(i => i.Name == "Test proton 1");
         Assert.Multiple(() =>
