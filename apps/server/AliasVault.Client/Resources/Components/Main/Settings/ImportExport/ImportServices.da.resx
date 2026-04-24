@@ -77,7 +77,7 @@
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>For at importere din Bitwarden-boks skal du eksportere den som en CSV-fil. Du kan gøre dette ved at logge ind på din Bitwarden-konto, gå til menuen 'Tools' (Værktøjer) og vælge 'Export vault' (Eksportér boks) til CSV.</value>
+    <value>In order to import your Bitwarden vault, you need to export it. You can do this by logging into your Bitwarden account, going to the 'Tools' menu and selecting 'Export vault'.</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
