@@ -32,6 +32,7 @@
     "errors": {
       "unknownError": "Une erreur inconnue s'est produite.",
       "unknownErrorTryAgain": "Une erreur inconnue s'est produite. Merci de réessayer.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "serverVersionTooOld": "Le serveur AliasVault doit être mis à jour vers une version plus récente pour pouvoir utiliser cette fonctionnalité. Veuillez contacter l'administrateur du serveur si vous avez besoin d'aide."
     }
   },
