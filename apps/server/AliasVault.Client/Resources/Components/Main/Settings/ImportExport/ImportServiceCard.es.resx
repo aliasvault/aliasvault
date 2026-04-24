@@ -163,7 +163,7 @@
     <comment>Error message when user tries to import a zip file</comment>
   </data>
   <data name="ImportErrorUnsupportedFormat" xml:space="preserve">
-    <value>Unsupported file format. Supported formats: {0}</value>
+    <value>Formato de archivo no soportado. Formatos soportados: {0}</value>
     <comment>Error message when user selects an unsupported file format. {0} is the list of supported extensions</comment>
   </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
@@ -199,7 +199,7 @@
     <comment>Generic error message for decryption failure</comment>
   </data>
   <data name="supportedFormats" xml:space="preserve">
-    <value>Supported formats</value>
+    <value>Formatos admitidos</value>
     <comment>Label for supported file formats</comment>
   </data>
 </root>
