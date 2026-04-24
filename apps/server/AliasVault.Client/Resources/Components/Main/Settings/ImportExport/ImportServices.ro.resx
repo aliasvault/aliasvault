@@ -210,7 +210,7 @@
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
-    <value>Pentru a importa parolele din Proton Pass, trebuie să le exporți ca fișier CSV. Poți face acest lucru autentificându-te în Proton Pass (web), dând clic pe meniul „Settings” > „Export” > „File format: CSV”. Apoi dă clic pe „Export”.</value>
+    <value>Pentru a importa seiful Proton Pass, exportă-l mai întâi. Poți face asta din extensia de browser Proton Pass, mergând la „Setări” > „Export”.</value>
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">
