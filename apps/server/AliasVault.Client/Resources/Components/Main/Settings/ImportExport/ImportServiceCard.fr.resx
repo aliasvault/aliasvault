@@ -167,8 +167,8 @@
     <comment>Error message when user selects an unsupported file format. {0} is the list of supported extensions</comment>
   </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
-    <value>La taille du fichier dépasse la limite de 10 Mo.</value>
-    <comment>Error message when file is too large</comment>
+    <value>File size exceeds {0}MB limit.</value>
+    <comment>Error message when file is too large. {0} is the maximum allowed size in megabytes</comment>
   </data>
   <data name="EncryptedFilePasswordPrompt" xml:space="preserve">
     <value>Ce fichier est chiffré. Veuillez entrer le mot de passe que vous avez utilisé lors de la création de l'exportation.</value>
