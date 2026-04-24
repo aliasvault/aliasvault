@@ -108,6 +108,7 @@
       "passwordChanged": "Ditt lösenord har ändrats sedan du senast loggade in. Vänligen logga in igen av säkerhetsskäl.",
       "syncConflictMaxRetries": "Kunde inte synkronisera valvet trots flera försök. Försök igen senare.",
       "mergeFailed": "Det gick inte att sammanfoga valvförändringar. Försök igen.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "invalidCode": "Ange en giltig 6-siffrig autentiseringskod.",
       "serverError": "Kunde inte nå AliasVault-servern. Försök igen senare eller kontakta support om problemet kvarstår.",
       "wrongPassword": "Felaktigt lösenord. Försök igen.",
@@ -546,6 +547,8 @@
   },
   "sync": {
     "offline": "Offline",
-    "tapToRetry": "Tryck för att försöka synka igen"
+    "tapToRetry": "Tryck för att försöka synka igen",
+    "syncErrorTitle": "Sync Failed",
+    "syncErrorDismiss": "Dismiss"
   }
 }
