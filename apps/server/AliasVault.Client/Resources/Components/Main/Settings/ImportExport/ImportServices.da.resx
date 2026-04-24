@@ -210,7 +210,7 @@
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
-    <value>For at importere dine Proton Pass-adgangskoder skal du eksportere dem som en CSV-fil. Du kan gøre dette ved at logge ind på Proton Pass (web), klikke på menuen 'Indstillinger' > 'Eksportér' > 'Filformat: CSV'. Klik derefter på 'Eksportér'.</value>
+    <value>In order to import your Proton Pass vault, you need to export it. You can do this in the Proton Pass browser extension by going to 'Settings' > 'Export'.</value>
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">
