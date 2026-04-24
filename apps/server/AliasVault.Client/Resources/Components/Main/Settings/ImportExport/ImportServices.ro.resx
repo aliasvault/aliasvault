@@ -64,7 +64,7 @@
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
-    <value>In order to import your 1Password vault, you need to export it. You can do this by logging into your 1Password account in the 1Password 8 desktop app (Windows / MacOS / Linux), going to the 'File' menu and selecting 'Export'.</value>
+    <value>Pentru a importa seiful 1Password, exportă-l mai întâi. Conectează-te la contul tău în aplicația 1Password 8 (Windows / MacOS / Linux), apoi mergi la meniul „Fișier” și selectează „Export”.</value>
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
@@ -77,7 +77,7 @@
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Bitwarden vault, you need to export it. You can do this by logging into your Bitwarden account, going to the 'Tools' menu and selecting 'Export vault'.</value>
+    <value>Pentru a importa seiful Bitwarden, exportă-l mai întâi. Conectează-te la contul tău Bitwarden, mergi la meniul „Tools” și selectează „Export vault”.</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
