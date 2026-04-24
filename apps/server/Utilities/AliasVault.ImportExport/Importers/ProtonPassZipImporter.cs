@@ -13,13 +13,11 @@ using AliasVault.ImportExport.Models.Imports;
 
 /// <summary>
 /// Imports credentials from a Proton Pass .zip export.
-/// The archive contains a "Proton Pass/data.json" file with all vaults and items.
-/// When the user has the premium file-attachments feature enabled, item blobs are
-/// placed under a "Proton Pass/files/" directory and referenced by item.files[].fileID.
 /// </summary>
 public class ProtonPassZipImporter : BaseArchiveImporter
 {
     private const string DataJsonPath = "Proton Pass/data.json";
+    private const string EncryptedDataPath = "Proton Pass/data.pgp";
     private const string FilesPath = "Proton Pass/files/";
 
     /// <summary>
@@ -37,6 +35,12 @@ public class ProtonPassZipImporter : BaseArchiveImporter
         Dictionary<string, byte[]> attachmentMap,
         Dictionary<string, byte[]> logoMap)
     {
+        // Reject encrypted exports up-front with a clear message.
+        if (archive.GetEntry(EncryptedDataPath) != null)
+        {
+            throw new InvalidOperationException("Encrypted Proton Pass exports (data.pgp) are not supported.");
+        }
+
         var exportData = await ReadJsonFromArchiveAsync<ProtonPassJsonExport>(archive, DataJsonPath);
         if (exportData == null)
         {
@@ -58,8 +62,9 @@ public class ProtonPassZipImporter : BaseArchiveImporter
 
             foreach (var item in vault.Items)
             {
-                // Skip trashed items (state != 1).
-                if (item.State != 1)
+                // Skip trashed items. State == 2 is "trashed"; other values (null/0/1) are treated
+                // as active since older envelope versions may omit the field entirely.
+                if (item.State == 2)
                 {
                     continue;
                 }
@@ -85,8 +90,7 @@ public class ProtonPassZipImporter : BaseArchiveImporter
     {
         foreach (var (vaultId, vault) in exportData.Vaults)
         {
-            if (!string.IsNullOrWhiteSpace(vault.Name) &&
-                vault.Name.Equals(DefaultVaultName, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(vault.Name) && vault.Name.Equals(DefaultVaultName, StringComparison.OrdinalIgnoreCase))
             {
                 return vaultId;
             }
@@ -102,10 +106,7 @@ public class ProtonPassZipImporter : BaseArchiveImporter
     /// <param name="folderPath">The folder path to assign (vault name or null for root).</param>
     /// <param name="attachmentMap">Dictionary mapping attachment paths to file data.</param>
     /// <returns>The imported credential, or null if the item has no data payload.</returns>
-    private static ImportedCredential? ConvertItemToCredential(
-        ProtonPassItem item,
-        string? folderPath,
-        Dictionary<string, byte[]> attachmentMap)
+    private static ImportedCredential? ConvertItemToCredential(ProtonPassItem item, string? folderPath, Dictionary<string, byte[]> attachmentMap)
     {
         if (item.Data == null)
         {
@@ -323,11 +324,6 @@ public class ProtonPassZipImporter : BaseArchiveImporter
 
     /// <summary>
     /// Extracts Proton Pass custom fields (extraFields) into the credential.
-    /// Known types:
-    /// - "text": plaintext value, stored in data.content.
-    /// - "hidden": sensitive value, stored in data.content.
-    /// - "totp": TOTP URI or secret, promoted to credential.TwoFactorSecret when absent,
-    ///          otherwise appended as a custom field.
     /// </summary>
     /// <param name="credential">The credential to populate.</param>
     /// <param name="extraFields">The list of extra fields from the item data.</param>
@@ -345,33 +341,25 @@ public class ProtonPassZipImporter : BaseArchiveImporter
                 continue;
             }
 
-            var type = field.Type?.ToLowerInvariant();
             var value = field.Data?.Content;
-
-            if (type == "totp")
+            if (string.IsNullOrWhiteSpace(value))
             {
-                var totpValue = !string.IsNullOrWhiteSpace(field.Data?.TotpUri) ? field.Data.TotpUri : value;
-                if (string.IsNullOrWhiteSpace(totpValue))
-                {
-                    continue;
-                }
-
-                if (string.IsNullOrWhiteSpace(credential.TwoFactorSecret))
-                {
-                    credential.TwoFactorSecret = totpValue;
-                }
-                else
-                {
-                    AddCustomField(credential, field.FieldName, totpValue);
-                }
-
                 continue;
             }
 
-            if (!string.IsNullOrWhiteSpace(value))
+            var type = field.Type?.ToLowerInvariant();
+            var isOtpAuthUri = value.StartsWith("otpauth://", StringComparison.OrdinalIgnoreCase);
+
+            // Promote any field that is either explicitly a TOTP field or whose value is
+            // an otpauth:// URI, but only when the login doesn't already have a 2FA secret
+            // from its built-in content.totpUri slot.
+            if ((type == "totp" || isOtpAuthUri) && string.IsNullOrWhiteSpace(credential.TwoFactorSecret))
             {
-                AddCustomField(credential, field.FieldName, value);
+                credential.TwoFactorSecret = value;
+                continue;
             }
+
+            AddCustomField(credential, field.FieldName, value);
         }
     }
 
@@ -395,10 +383,7 @@ public class ProtonPassZipImporter : BaseArchiveImporter
     /// <param name="credential">The credential to populate.</param>
     /// <param name="files">The item's referenced files.</param>
     /// <param name="attachmentMap">Dictionary mapping archive paths to file data.</param>
-    private static void ExtractAttachments(
-        ImportedCredential credential,
-        List<ProtonPassFile>? files,
-        Dictionary<string, byte[]> attachmentMap)
+    private static void ExtractAttachments(ImportedCredential credential, List<ProtonPassFile>? files, Dictionary<string, byte[]> attachmentMap)
     {
         if (files == null || files.Count == 0 || attachmentMap.Count == 0)
         {

@@ -113,9 +113,10 @@ public class ProtonPassItem
 
     /// <summary>
     /// Gets or sets the item state (1 = active, 2 = trashed).
+    /// Nullable because older Proton Pass export envelopes may omit this field.
     /// </summary>
     [JsonPropertyName("state")]
-    public int State { get; set; }
+    public int? State { get; set; }
 
     /// <summary>
     /// Gets or sets the alias email (populated for items of type "alias").
@@ -125,9 +126,11 @@ public class ProtonPassItem
 
     /// <summary>
     /// Gets or sets the content format version.
+    /// Nullable because older export envelopes (v1.8.0-era) may omit this field,
+    /// and the importer does not gate behaviour on its value.
     /// </summary>
     [JsonPropertyName("contentFormatVersion")]
-    public int ContentFormatVersion { get; set; }
+    public int? ContentFormatVersion { get; set; }
 
     /// <summary>
     /// Gets or sets the creation timestamp (Unix seconds).
@@ -374,7 +377,6 @@ public class ProtonPassExtraField
 
 /// <summary>
 /// Represents the inner data payload of a Proton Pass custom field.
-/// For text/hidden/totp the value lives under "content".
 /// </summary>
 public class ProtonPassExtraFieldData
 {
@@ -383,13 +385,6 @@ public class ProtonPassExtraFieldData
     /// </summary>
     [JsonPropertyName("content")]
     public string? Content { get; set; }
-
-    /// <summary>
-    /// Gets or sets the TOTP URI when the field is of type "totp".
-    /// Some exporter versions nest the secret under "totpUri" instead of "content".
-    /// </summary>
-    [JsonPropertyName("totpUri")]
-    public string? TotpUri { get; set; }
 }
 
 /// <summary>
