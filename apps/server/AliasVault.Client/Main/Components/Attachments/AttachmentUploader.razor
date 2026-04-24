@@ -57,6 +57,11 @@
     /// </summary>
     private string StatusMessage { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Maximum individual attachment file size in bytes.
+    /// </summary>
+    private int MaxFileSize { get; set; } = 1024 * 1024 * 10; // 10 MB
+
     /// <inheritdoc />
     protected override void OnInitialized()
     {
@@ -74,7 +79,7 @@
             try
             {
                 using var ms = new MemoryStream();
-                await file.OpenReadStream().CopyToAsync(ms);
+                await file.OpenReadStream(MaxFileSize).CopyToAsync(ms);
 
                 var attachment = new Attachment
                 {
