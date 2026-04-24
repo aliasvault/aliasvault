@@ -219,8 +219,7 @@ public class DbSyncTests : ClientPlaywrightTest
     {
         ApiTimeProvider.AdvanceBy(TimeSpan.FromSeconds(1));
         await clientActions();
-
-        return await ApiDbContext.Vaults.OrderByDescending(x => x.UpdatedAt).FirstAsync();
+        return await ApiDbContext.Vaults.OrderByDescending(x => x.RevisionNumber).FirstAsync();
     }
 
     /// <summary>
