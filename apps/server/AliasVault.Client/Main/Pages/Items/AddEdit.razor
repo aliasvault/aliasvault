@@ -1296,7 +1296,7 @@ else
 
         if (Id is null || Id == Guid.Empty)
         {
-            GlobalNotificationService.AddErrorMessage(Localizer["ErrorSavingItem"], true);
+            // Save failed. Stay on the page so the global notification bar can show the error.
             return;
         }
 

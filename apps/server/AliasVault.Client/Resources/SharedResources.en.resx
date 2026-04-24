@@ -231,6 +231,14 @@
     <value>An unknown error occurred. Please try again.</value>
     <comment>Generic unknown error message</comment>
   </data>
+  <data name="VaultTooLargeError" xml:space="preserve">
+    <value>The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.</value>
+    <comment>Shown when the server rejects a vault upload with HTTP 413 because the encrypted vault exceeds the configured upload size limit</comment>
+  </data>
+  <data name="VaultSaveError" xml:space="preserve">
+    <value>Failed to save changes to the vault. Please try again.</value>
+    <comment>Generic error shown when a vault save / sync to the server fails for an unexpected reason</comment>
+  </data>
   <data name="ErrorValidation" xml:space="preserve">
     <value>Please correct the errors below.</value>
     <comment>Validation error message</comment>

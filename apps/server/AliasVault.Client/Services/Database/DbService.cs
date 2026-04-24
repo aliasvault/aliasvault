@@ -8,6 +8,7 @@
 namespace AliasVault.Client.Services.Database;
 
 using System.Data;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using AliasClientDb;
@@ -260,9 +261,8 @@ public sealed class DbService : IDisposable
                     }
                     else
                     {
+                        // SaveToServerAsync already raised the user-facing error notification (targeted or generic).
                         _logger.LogWarning("Background sync to server failed.");
-                        _globalNotificationService.AddErrorMessage(
-                            "Failed to sync changes to server. Your changes are saved locally and will be synced on next refresh.");
                         _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
                     }
                 }
@@ -906,6 +906,15 @@ public sealed class DbService : IDisposable
         {
             var response = await _httpClient.PostAsJsonAsync("v1/Vault", vaultObject);
 
+            // 413: server / reverse-proxy rejected the upload because the vault exceeded MAX_UPLOAD_SIZE_MB.
+            // Show the targeted message and skip the generic notification fired in the catch / fallthrough.
+            if (response.StatusCode == HttpStatusCode.RequestEntityTooLarge)
+            {
+                _logger.LogError("Vault upload rejected by server with 413 Request Entity Too Large. The vault exceeds the server's configured MAX_UPLOAD_SIZE_MB.");
+                _globalNotificationService.AddErrorMessage(_sharedLocalizer["VaultTooLargeError"], true);
+                return false;
+            }
+
             // Ensure the request was successful
             response.EnsureSuccessStatusCode();
 
@@ -926,13 +935,16 @@ public sealed class DbService : IDisposable
             }
 
             _logger.LogError("Error during save: server response was empty or could not be deserialized.");
-            return false;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error saving database to server.");
-            return false;
         }
+
+        // Generic save failure (server error, network issue, malformed response, etc.). DbService owns
+        // the user-facing error so callers only need to react to the bool return value.
+        _globalNotificationService.AddErrorMessage(_sharedLocalizer["VaultSaveError"], true);
+        return false;
     }
 
     /// <summary>

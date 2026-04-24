@@ -749,11 +749,11 @@
         {
             GlobalNotificationService.AddSuccessMessage(string.Format(Localizer["ImportSuccessMessage"], ImportedCredentials.Count));
             NavigationManager.NavigateTo("/items");
+            return;
         }
-        else
-        {
-            ImportError = Localizer["ImportErrorGeneric"];
-        }
+
+        // Save failed. Close the import modal and let the user see the error via the global notification bar on the underlying page.
+        CloseModal();
     }
 
     /// <summary>
