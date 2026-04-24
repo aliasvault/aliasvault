@@ -1,6 +1,7 @@
 @using AliasVault.ImportExport.Models
 @using AliasVault.ImportExport.Importers
 @using Microsoft.Extensions.Localization
+@using System.Text
 @inject NavigationManager NavigationManager
 @inject GlobalNotificationService GlobalNotificationService
 @inject IStringLocalizerFactory LocalizerFactory
@@ -18,11 +19,26 @@
 
 @code {
     private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Settings.ImportExport.ImportServices", "AliasVault.Client");
-    private static readonly string[] AcceptedExtensions = new[] { ".csv" };
+    private static readonly string[] AcceptedExtensions = new[] { ".zip", ".csv" };
 
     private static async Task<List<ImportedCredential>> ProcessFile(string filename, byte[] fileBytes)
     {
-        var fileContents = System.Text.Encoding.UTF8.GetString(fileBytes);
-        return await ProtonPassImporter.ImportFromCsvAsync(fileContents);
+        var extension = Path.GetExtension(filename).ToLowerInvariant();
+
+        switch (extension)
+        {
+            case ".zip":
+                // Binary .zip file with structured JSON and optional file attachments
+                var zipImporter = new ProtonPassZipImporter();
+                return await zipImporter.ImportFromArchiveAsync(fileBytes);
+
+            case ".csv":
+                // Text CSV file
+                var fileContents = Encoding.UTF8.GetString(fileBytes);
+                return await ProtonPassImporter.ImportFromCsvAsync(fileContents);
+
+            default:
+                throw new InvalidOperationException($"Unsupported file extension: {extension}");
+        }
     }
 }
