@@ -108,6 +108,7 @@
       "passwordChanged": "Parola ta a fost schimbată de la ultima autentificare. Autentifică-te din nou din motive de securitate.",
       "syncConflictMaxRetries": "Sincronizarea seifului a eșuat după mai multe încercări. Reîncearcă mai târziu.",
       "mergeFailed": "Îmbinarea modificărilor seifului a eșuat. Încearcă din nou.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "invalidCode": "Introdu un cod de autentificare valid din 6 cifre.",
       "serverError": "Nu s-a putut stabili conexiunea cu serverul AliasVault. Încearcă din nou mai târziu sau contactează asistența dacă problema persistă.",
       "wrongPassword": "Parolă incorectă. Încearcă din nou.",
@@ -546,6 +547,8 @@
   },
   "sync": {
     "offline": "Offline",
-    "tapToRetry": "Apasă pentru a reîncerca sincronizarea"
+    "tapToRetry": "Apasă pentru a reîncerca sincronizarea",
+    "syncErrorTitle": "Sync Failed",
+    "syncErrorDismiss": "Dismiss"
   }
 }
