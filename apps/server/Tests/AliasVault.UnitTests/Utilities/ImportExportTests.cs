@@ -2193,4 +2193,101 @@ public class ImportExportTests
             Assert.That(convertedLogin.TotpCodes.First().SecretKey, Is.EqualTo("JBSWY3DPEHPK3PXP"));
         });
     }
+
+    /// <summary>
+    /// Test case for importing credentials from a Proton Pass .zip export.
+    /// The fixture contains a single "Personal" vault (promoted to root) with 6 items:
+    /// 4 logins (one with a TOTP URI, one with URLs, one with no password), 1 alias, 1 note.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task ImportCredentialsFromProtonPassZip()
+    {
+        // Arrange
+        var zipBytes = await ResourceReaderUtility.ReadEmbeddedResourceBytesAsync("AliasVault.UnitTests.TestData.Exports.protonpass.zip");
+
+        // Act
+        var importer = new ProtonPassZipImporter();
+        var importedCredentials = await importer.ImportFromArchiveAsync(zipBytes);
+
+        // Assert
+        Assert.That(importedCredentials, Has.Count.EqualTo(6));
+
+        // Login with TOTP URI.
+        var loginWithTotp = importedCredentials.First(c => c.ServiceName == "Test proton 1");
+        Assert.Multiple(() =>
+        {
+            Assert.That(loginWithTotp.ItemType, Is.EqualTo(ImportedItemType.Login));
+            Assert.That(loginWithTotp.Username, Is.EqualTo("user1"));
+            Assert.That(loginWithTotp.Password, Is.EqualTo("pass1"));
+            Assert.That(loginWithTotp.ServiceUrls, Has.Count.EqualTo(1));
+            Assert.That(loginWithTotp.ServiceUrls![0], Is.EqualTo("https://www.website.com/"));
+            Assert.That(loginWithTotp.TwoFactorSecret, Does.StartWith("otpauth://totp/"));
+            Assert.That(loginWithTotp.FolderPath, Is.Null); // "Personal" vault promoted to root
+            Assert.That(loginWithTotp.Email, Is.Null);
+        });
+
+        var expectedCreatedAt = DateTimeOffset.FromUnixTimeSeconds(1744362003).UtcDateTime;
+        Assert.That(loginWithTotp.CreatedAt, Is.EqualTo(expectedCreatedAt));
+
+        // Alias item — email comes from the envelope's aliasEmail field.
+        var aliasItem = importedCredentials.First(c => c.ServiceName == "Test alias");
+        Assert.Multiple(() =>
+        {
+            Assert.That(aliasItem.ItemType, Is.EqualTo(ImportedItemType.Login));
+            Assert.That(aliasItem.Email, Is.EqualTo("testalias.gating981@passinbox.com"));
+            Assert.That(aliasItem.Username, Is.EqualTo("testalias.gating981@passinbox.com"));
+            Assert.That(aliasItem.Password, Is.Null);
+            Assert.That(aliasItem.FolderPath, Is.Null);
+        });
+
+        // Login without URLs.
+        var loginNoUrls = importedCredentials.First(c => c.ServiceName == "Test proton2");
+        Assert.Multiple(() =>
+        {
+            Assert.That(loginNoUrls.Username, Is.EqualTo("testuser2"));
+            Assert.That(loginNoUrls.Password, Is.EqualTo("testpassword2"));
+            Assert.That(loginNoUrls.ServiceUrls, Is.Null);
+            Assert.That(loginNoUrls.TwoFactorSecret, Is.Null);
+        });
+
+        // Login without a password.
+        var loginNoPass = importedCredentials.First(c => c.ServiceName == "testwithoutpass");
+        Assert.Multiple(() =>
+        {
+            Assert.That(loginNoPass.Username, Is.EqualTo("testuser"));
+            Assert.That(loginNoPass.Password, Is.Null);
+        });
+
+        // Login with URLs and a note.
+        var loginWithNote = importedCredentials.First(c => c.ServiceName == "Customfields");
+        Assert.Multiple(() =>
+        {
+            Assert.That(loginWithNote.Username, Is.EqualTo("usernamecustom"));
+            Assert.That(loginWithNote.Password, Is.EqualTo("passwordecustom"));
+            Assert.That(loginWithNote.Notes, Is.EqualTo("Notecustom"));
+            Assert.That(loginWithNote.ServiceUrls, Has.Count.EqualTo(1));
+            Assert.That(loginWithNote.ServiceUrls![0], Is.EqualTo("http://example.com/"));
+        });
+
+        // Secure note — note text lives in metadata.note.
+        var noteItem = importedCredentials.First(c => c.ServiceName == "Customnote");
+        Assert.Multiple(() =>
+        {
+            Assert.That(noteItem.ItemType, Is.EqualTo(ImportedItemType.Note));
+            Assert.That(noteItem.Notes, Is.EqualTo("Customnotecontent"));
+        });
+
+        // Conversion to Item extracts the TOTP secret from the URI.
+        var convertedItems = BaseImporter.ConvertToItem(importedCredentials);
+        Assert.That(convertedItems, Has.Count.EqualTo(6));
+
+        var convertedLogin = convertedItems.First(i => i.Name == "Test proton 1");
+        Assert.Multiple(() =>
+        {
+            Assert.That(convertedLogin.ItemType, Is.EqualTo(ItemType.Login));
+            Assert.That(convertedLogin.TotpCodes, Has.Count.EqualTo(1));
+            Assert.That(convertedLogin.TotpCodes.First().SecretKey, Is.EqualTo("PLW4SB3PQ7MKVXY2MXF4NEXS6Y"));
+        });
+    }
 }
