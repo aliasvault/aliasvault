@@ -15,7 +15,7 @@
         <DocumentationFile>bin\Debug\net10.0\AliasVault.Client.xml</DocumentationFile>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <CacheBuster>dev</CacheBuster>
-        <NoWarn>NU1903</NoWarn>
+        <NoWarn>NU1903;WASM0001</NoWarn>
         <!-- No fingerprinting in debug mode -->
         <BlazorScript>_framework/blazor.webassembly.js</BlazorScript>
     </PropertyGroup>
@@ -31,7 +31,8 @@
         <CacheBuster>$([System.DateTime]::UtcNow.ToString("yyyyMMddHHmmss"))</CacheBuster>
         <WasmDebugLevel>0</WasmDebugLevel>
         <!-- Suppress IL2037 linker errors for EF Core reflection-based APIs -->
-        <NoWarn>NU1903;IL2037</NoWarn>
+        <!-- Suppress WASM0001 warnings for varargs in SQLitePCLRaw (sqlite3_config/sqlite3_db_config are not called at runtime) -->
+        <NoWarn>NU1903;IL2037;WASM0001</NoWarn>
     </PropertyGroup>
 
     <UsingTask TaskName="ReplaceText" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
