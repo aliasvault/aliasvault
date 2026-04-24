@@ -162,6 +162,10 @@
     <value>Probeer het exportbestand uit te pakken voordat je deze importeert. Zie de instructies hieronder voor meer informatie.</value>
     <comment>Error message when user tries to import a zip file</comment>
   </data>
+  <data name="ImportErrorUnsupportedFormat" xml:space="preserve">
+    <value>Unsupported file format. Supported formats: {0}</value>
+    <comment>Error message when user selects an unsupported file format. {0} is the list of supported extensions</comment>
+  </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
     <value>Bestandsgrootte is groter dan 10MB limiet.</value>
     <comment>Error message when file is too large</comment>
