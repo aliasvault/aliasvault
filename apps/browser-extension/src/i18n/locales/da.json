@@ -108,6 +108,7 @@
       "passwordChanged": "Din adgangskode er blevet ændret siden sidste logon. Log venligst ind igen af sikkerhedsmæssige årsager.",
       "syncConflictMaxRetries": "Kunne ikke synkronisere boksen efter flere forsøg. Prøv venligst igen senere.",
       "mergeFailed": "Kunne ikke flette ændringer i boks. Prøv venligst igen.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "invalidCode": "Indtast venligst en gyldig 6-cifret autentificeringskode.",
       "serverError": "Kunne ikke få forbindelse til AliasVault-serveren. Prøv venligst igen senere eller kontakt support, hvis problemet fortsætter.",
       "wrongPassword": "Forkert adgangskode. Prøv venligst igen.",
@@ -546,6 +547,8 @@
   },
   "sync": {
     "offline": "Offline",
-    "tapToRetry": "Tryk for at prøve synkronisering igen"
+    "tapToRetry": "Tryk for at prøve synkronisering igen",
+    "syncErrorTitle": "Sync Failed",
+    "syncErrorDismiss": "Dismiss"
   }
 }
