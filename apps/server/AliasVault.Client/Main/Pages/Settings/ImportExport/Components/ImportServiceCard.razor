@@ -1044,11 +1044,15 @@
             IsImporting = true;
             StateHasChanged();
 
-            // Limit file size to 50MB (increased for binary files with attachments)
-            var maxFileSize = 50 * 1024 * 1024;
+            // Limit file size fixed in code to 1024MB.
+            // This is a browser-memory safety ceiling, not a server/infra limit. The file
+            // is parsed entirely client-side and never uploaded. Server upload limits for the
+            // resulting vault sync are controlled separately via the MAX_UPLOAD_SIZE_MB env var.
+            const int maxFileSizeMb = 1024;
+            var maxFileSize = maxFileSizeMb * 1024 * 1024;
             if (e.File.Size > maxFileSize)
             {
-                ImportError = Localizer["ImportErrorFileTooLarge"];
+                ImportError = Localizer["ImportErrorFileTooLarge", maxFileSizeMb];
                 return;
             }
 
