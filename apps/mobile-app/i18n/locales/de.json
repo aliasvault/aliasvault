@@ -32,6 +32,7 @@
     "errors": {
       "unknownError": "Ein unbekannter Fehler ist aufgetreten.",
       "unknownErrorTryAgain": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "serverVersionTooOld": "Der AliasVault-Server muss auf eine neuere Version aktualisiert werden, um diese Funktion nutzen zu können. Bitte kontaktiere den Administrator des Servers, falls Du Hilfe benötigst."
     }
   },
