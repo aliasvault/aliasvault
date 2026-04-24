@@ -239,6 +239,7 @@ export const useVaultSync = (): {
     } finally {
       syncInProgressRef.current = false;
       dbContext.setIsSyncing(false);
+      dbContext.setIsUploading(false);
     }
   }, [app, dbContext, t]);
 

@@ -270,6 +270,15 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
     ) : AppError(message, cause)
 
     /**
+     * Error indicating the server rejected the vault upload with HTTP 413
+     * because the encrypted vault exceeds the configured MAX_UPLOAD_SIZE_MB limit.
+     */
+    class VaultTooLarge(
+        message: String = "Vault too large for server",
+        cause: Throwable? = null,
+    ) : AppError(message, cause)
+
+    /**
      * Error indicating max sync retries reached.
      */
     class MaxRetriesReached(
@@ -342,6 +351,7 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
             is VaultMergeFailed -> "E-701"
             is MergeUploadFailed -> "E-705"
             is VaultUploadFailed -> "E-801"
+            is VaultTooLarge -> "E-804"
             is MaxRetriesReached -> "E-901"
             is UnknownError -> "E-001"
             is ParseError -> "E-002"

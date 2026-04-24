@@ -363,6 +363,10 @@ extension VaultStore {
                     error: uploadResult.error ?? "Upload failed"
                 )
             }
+        } catch let error as AppError {
+            // Preserve typed AppError (e.g. vaultTooLarge → E-804) so the JS layer can show the targeted message.
+            setIsSyncing(false)
+            return handleSyncError(error)
         } catch {
             setIsSyncing(false)
             return VaultSyncResult(
@@ -515,6 +519,15 @@ extension VaultStore {
             )
         case .sessionExpired, .authenticationFailed, .passwordChanged,
              .clientVersionNotSupported, .serverVersionNotSupported:
+            return VaultSyncResult(
+                success: false,
+                action: .error,
+                newRevision: getCurrentVaultRevisionNumber(),
+                wasOffline: false,
+                error: error.code
+            )
+        case .vaultTooLarge:
+            // Return the bare E-XXX code so the JS layer can map it to the localized vaultTooLarge message.
             return VaultSyncResult(
                 success: false,
                 action: .error,

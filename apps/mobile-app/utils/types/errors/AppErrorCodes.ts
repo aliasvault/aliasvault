@@ -72,6 +72,7 @@ export enum AppErrorCode {
 
   // Upload errors (E-8xx) - from VaultSync.kt
   UPLOAD_FAILED = 'E-801', // AppError: vault upload failed
+  UPLOAD_TOO_LARGE = 'E-804', // Server rejected upload with HTTP 413 (vault exceeds MAX_UPLOAD_SIZE_MB)
 
   // Native module/retry errors (E-9xx)
   MAX_RETRIES_REACHED = 'E-901', // AppError: max sync retries reached
@@ -228,6 +229,7 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
 
     // Upload errors
     [AppErrorCode.UPLOAD_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.UPLOAD_TOO_LARGE]: 'common.errors.vaultTooLarge',
 
     // Native module/retry errors
     [AppErrorCode.MAX_RETRIES_REACHED]: 'common.errors.unknownErrorTryAgain',

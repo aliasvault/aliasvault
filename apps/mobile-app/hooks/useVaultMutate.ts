@@ -11,6 +11,9 @@ import EncryptionUtility from '@/utils/EncryptionUtility';
 
 import { useVaultSync } from '@/hooks/useVaultSync';
 
+import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
+import { PayloadTooLargeError } from '@/utils/types/errors/PayloadTooLargeError';
+
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
@@ -115,6 +118,15 @@ export function useVaultMutate() : {
         },
         onError: async (error) => {
           console.warn('Background sync failed:', error);
+          /*
+           * Surface the error to the user.
+           */
+          Toast.show({
+            type: 'error',
+            text1: t('common.error'),
+            text2: error,
+            position: 'bottom',
+          });
           options.onError?.(new Error(error));
         },
         onOffline: async () => {
@@ -268,6 +280,13 @@ export function useVaultMutate() : {
       options.onSuccess?.();
     } catch (error) {
       console.error('Error during password change operation:', error);
+      if (error instanceof PayloadTooLargeError) {
+        /*
+         * Server rejected the upload with HTTP 413. Re-throw with a translated, coded error
+         * so the UI can show a targeted "vault too large" message instead of a generic failure.
+         */
+        throw new Error(formatErrorWithCode(t('common.errors.vaultTooLarge'), AppErrorCode.UPLOAD_TOO_LARGE));
+      }
       throw error;
     }
   }, [dbContext, authContext, webApi, prepareVaultForPasswordChange, t]);

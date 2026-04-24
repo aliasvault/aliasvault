@@ -6,6 +6,7 @@ import type { StatusResponse, VaultResponse, AuthLogModel, RefreshToken } from '
 import i18n from '@/i18n';
 
 import { LocalAuthError } from './types/errors/LocalAuthError';
+import { PayloadTooLargeError } from './types/errors/PayloadTooLargeError';
 import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
@@ -89,6 +90,10 @@ export class WebApiService {
       if (response.statusCode === 401) {
         logoutEventEmitter.emit('auth.errors.sessionExpired');
         throw new Error(i18n.t('auth.errors.sessionExpired'));
+      }
+
+      if (response.statusCode === 413 && throwOnError) {
+        throw new PayloadTooLargeError(`Request rejected with HTTP 413: payload exceeds server limit`);
       }
 
       if (response.statusCode >= 400 && throwOnError) {

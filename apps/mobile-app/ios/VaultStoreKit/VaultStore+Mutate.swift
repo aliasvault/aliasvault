@@ -258,6 +258,12 @@ extension VaultStore {
 
         // Check response status
         guard response.statusCode == 200 else {
+            // 413: server / reverse-proxy rejected the upload because the vault exceeded
+            // MAX_UPLOAD_SIZE_MB. Throw a typed error so the JS layer gets E-804 and can
+            // surface the targeted "vault too large" message instead of a generic failure.
+            if response.statusCode == 413 {
+                throw AppError.vaultTooLarge
+            }
             return VaultUploadResult(
                 success: false,
                 status: -1,

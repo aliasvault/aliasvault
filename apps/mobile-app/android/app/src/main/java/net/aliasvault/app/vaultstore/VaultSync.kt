@@ -247,6 +247,11 @@ class VaultSync(
                     handleSyncError(AppError.VaultUploadFailed("Upload failed: ${uploadResult.error}"))
                 }
             }
+        } catch (e: AppError) {
+            // Preserve typed AppError (e.g. VaultTooLarge → E-804) so the JS layer can show the targeted message.
+            metadata.setIsSyncing(false)
+            Log.e(TAG, "Upload sync error: ${e.message}", e)
+            handleSyncError(e)
         } catch (e: Exception) {
             metadata.setIsSyncing(false)
             Log.e(TAG, "Upload sync error: ${e.message}", e)
@@ -400,6 +405,12 @@ class VaultSync(
             }
 
             if (response.statusCode != 200) {
+                // 413: server / reverse-proxy rejected the upload because the vault exceeded
+                // MAX_UPLOAD_SIZE_MB. Throw a typed error so the JS layer gets E-804 and can
+                // surface the targeted "vault too large" message instead of a generic failure.
+                if (response.statusCode == 413) {
+                    throw AppError.VaultTooLarge()
+                }
                 return VaultUploadResult(
                     success = false,
                     status = -1,
@@ -438,6 +449,10 @@ class VaultSync(
                 mutationSeqAtStart = mutationSeqAtStart,
                 error = if (vaultResponse.status != 0) "Vault upload returned status ${vaultResponse.status}" else null,
             )
+        } catch (e: AppError) {
+            // Let typed AppError (e.g. VaultTooLarge → E-804) propagate so performUploadSync can pass
+            // it to handleSyncError with the correct error code instead of wrapping it as a generic upload failure.
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "Error uploading vault", e)
             VaultUploadResult(

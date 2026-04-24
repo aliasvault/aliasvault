@@ -50,6 +50,10 @@ public enum AppError: Error {
     // Upload errors
     case vaultUploadFailed(message: String)
 
+    /// Server rejected the vault upload with HTTP 413 because the encrypted vault
+    /// exceeds the configured MAX_UPLOAD_SIZE_MB limit on the server.
+    case vaultTooLarge
+
     // Retry errors
     case maxRetriesReached
 
@@ -134,6 +138,8 @@ public enum AppError: Error {
             return "E-705"
         case .vaultUploadFailed:
             return "E-801"
+        case .vaultTooLarge:
+            return "E-804"
         case .maxRetriesReached:
             return "E-901"
         case .unknownError:
@@ -208,6 +214,8 @@ public enum AppError: Error {
             return "Upload after merge failed: \(message)"
         case .vaultUploadFailed(let message):
             return "Vault upload failed: \(message)"
+        case .vaultTooLarge:
+            return "Vault too large for server"
         case .maxRetriesReached:
             return "Max sync retries reached"
         case .unknownError(let message):
