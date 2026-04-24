@@ -16,6 +16,7 @@ namespace AliasVault.Api.Controllers.Tests;
 
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
+using AliasVault.Shared.Server.Services;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -31,11 +32,13 @@ using Microsoft.EntityFrameworkCore;
 /// <param name="userManager">UserManager instance.</param>
 /// <param name="environment">IWebHostEnvironment instance.</param>
 /// <param name="dbContextFactory">DbContext factory instance.</param>
+/// <param name="serverSettingsService">ServerSettingsService instance.</param>
 [ApiVersion("1")]
 public class TestController(
     UserManager<AliasVaultUser> userManager,
     IWebHostEnvironment environment,
-    IAliasServerDbContextFactory dbContextFactory) : AuthenticatedRequestController(userManager)
+    IAliasServerDbContextFactory dbContextFactory,
+    ServerSettingsService serverSettingsService) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Authenticated test request. Used to verify authentication is working.
@@ -409,6 +412,62 @@ public class TestController(
         {
             blocked = false,
             message = $"User {user.UserName} has been unblocked",
+        });
+    }
+
+    /// <summary>
+    /// Set a server setting by key/value. Used by E2E tests to tune runtime limits
+    /// (e.g. disabling the per-IP registration rate limit by setting it to 0).
+    /// Anonymous endpoint for E2E tests that cannot access auth tokens.
+    /// Only available in DEBUG builds.
+    /// </summary>
+    /// <param name="request">The setting to update.</param>
+    /// <returns>OK with the updated key and value.</returns>
+    [AllowAnonymous]
+    [HttpPost("server-settings")]
+    public async Task<IActionResult> SetServerSetting([FromBody] SetServerSettingRequest request)
+    {
+        if (!environment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Key))
+        {
+            return BadRequest("Key is required");
+        }
+
+        await serverSettingsService.SetSettingAsync(request.Key, request.Value);
+
+        return Ok(new
+        {
+            key = request.Key,
+            value = request.Value,
+        });
+    }
+
+    /// <summary>
+    /// Get a server setting by key.
+    /// Anonymous endpoint for E2E tests that cannot access auth tokens.
+    /// Only available in DEBUG builds.
+    /// </summary>
+    /// <param name="key">The setting key to read.</param>
+    /// <returns>OK with the current key and value (value may be null if unset).</returns>
+    [AllowAnonymous]
+    [HttpGet("server-settings/{key}")]
+    public async Task<IActionResult> GetServerSetting(string key)
+    {
+        if (!environment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
+        var value = await serverSettingsService.GetSettingAsync(key);
+
+        return Ok(new
+        {
+            key,
+            value,
         });
     }
 }
