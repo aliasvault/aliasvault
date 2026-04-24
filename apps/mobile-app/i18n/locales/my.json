@@ -32,6 +32,7 @@
     "errors": {
       "unknownError": "မသိသော အမှားတစ်ခု ဖြစ်ပွားခဲ့သည်။.",
       "unknownErrorTryAgain": "မသိသော အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်။ ကျေးဇူးပြု၍ ပြန်လည်ကြိုးစားပါ။",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "serverVersionTooOld": "ဤအင်္ဂါရပ်ကိုအသုံးပြုရန် AliasVault ဆာဗာကို ဗားရှင်းအသစ်သို့ အပ်ဒိတ်လုပ်ရန် လိုအပ်သည်။ အကူအညီလိုအပ်ပါက ဆာဗာအက်ဒမင်ထံ ဆက်သွယ်ပါ။"
     }
   },
