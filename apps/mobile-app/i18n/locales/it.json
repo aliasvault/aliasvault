@@ -32,6 +32,7 @@
     "errors": {
       "unknownError": "Si è verificato un errore sconosciuto.",
       "unknownErrorTryAgain": "Si è verificato un errore sconosciuto. Riprova.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "serverVersionTooOld": "Il server AliasVault deve essere aggiornato a una versione più recente per poter utilizzare questa funzione. Se hai bisogno di aiuto, contatta il supporto."
     }
   },
