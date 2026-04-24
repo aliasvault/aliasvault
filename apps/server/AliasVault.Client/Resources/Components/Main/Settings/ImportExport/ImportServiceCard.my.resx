@@ -162,6 +162,10 @@
     <value>Please unzip the export file before importing. See the instructions below for more information.</value>
     <comment>Error message when user tries to import a zip file</comment>
   </data>
+  <data name="ImportErrorUnsupportedFormat" xml:space="preserve">
+    <value>Unsupported file format. Supported formats: {0}</value>
+    <comment>Error message when user selects an unsupported file format. {0} is the list of supported extensions</comment>
+  </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
     <value>File size exceeds 10MB limit.</value>
     <comment>Error message when file is too large</comment>
