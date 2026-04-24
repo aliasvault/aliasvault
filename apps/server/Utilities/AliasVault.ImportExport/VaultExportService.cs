@@ -275,7 +275,7 @@ public static class VaultExportService
         foreach (var logo in logos.Where(l => !l.IsDeleted && l.FileData != null))
         {
             var relativePath = $"logos/{logo.Source}_{logo.Id}.png";
-            logoMap[relativePath] = logo.FileData;
+            logoMap[relativePath] = logo.FileData!;
         }
 
         return logoMap;
