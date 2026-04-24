@@ -210,7 +210,7 @@
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Proton Pass passwords, you need to export it as a CSV file. You can do this by logging into Proton Pass (web), clicking on the 'Settings' menu > 'Export' > 'File format: CSV'. Then click on 'Export'.</value>
+    <value>In order to import your Proton Pass vault, you need to export it. You can do this in the Proton Pass browser extension by going to 'Settings' > 'Export'.</value>
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">
