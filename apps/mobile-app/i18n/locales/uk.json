@@ -32,6 +32,7 @@
     "errors": {
       "unknownError": "Сталася невідома помилка.",
       "unknownErrorTryAgain": "Сталася невідома помилка. Будь ласка, спробуйте ще раз.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "serverVersionTooOld": "Сервер AliasVault потрібно оновити до новішої версії, щоб використовувати цю функцію. Будь ласка, зверніться до адміністратора серверу, якщо вам потрібна допомога."
     }
   },
