@@ -8,7 +8,7 @@
 {
     case FieldType.Password:
     case FieldType.Hidden:
-        <div class="col-span-6">
+        <div class="@(FullWidth ? "col-span-6" : "col-span-6 sm:col-span-3")">
             @RenderLabelWithHistory()
             <CopyPastePasswordFormRow
                 Id="@GetFieldId()"

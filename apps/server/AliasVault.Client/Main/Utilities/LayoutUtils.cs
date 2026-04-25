@@ -16,12 +16,36 @@ using AliasVault.Client.Main.Models;
 public static class LayoutUtils
 {
     /// <summary>
+    /// Field keys that should always render at full width regardless of their FieldType.
+    /// Used for fields where pairing with an adjacent half-width field would not match
+    /// the layout users expect (e.g. cardholder name on a credit card).
+    /// </summary>
+    private static readonly HashSet<string> AlwaysFullWidthFieldKeys = new(StringComparer.OrdinalIgnoreCase)
+    {
+        FieldKey.CardCardholderName,
+    };
+
+    /// <summary>
+    /// Pairs of field keys that should render side-by-side at half width when both are
+    /// present in the same field set. Pinning takes precedence over the always-full-width
+    /// rules (so e.g. CVV + PIN, both Hidden, can still pair). If only one of a pair is
+    /// present, normal layout rules apply.
+    /// </summary>
+    private static readonly (string A, string B)[] PinnedHalfWidthPairs =
+    {
+        (FieldKey.CardExpiryMonth, FieldKey.CardExpiryYear),
+        (FieldKey.CardCvv, FieldKey.CardPin),
+    };
+
+    /// <summary>
     /// Determines which fields should be displayed at full width based on the field list.
     /// Rules:
-    /// - Fields that are inherently full width (Password, TextArea, URL) always stay full width.
-    /// - If there's only one half-width-capable field, it should be full width.
-    /// - If there's an odd number of half-width-capable fields, the last one should be full width.
-    /// - Password fields are placed at the end and always full width.
+    /// - Pinned half-width pairs (e.g. expiry month/year, CVV/PIN) stay half width when both
+    ///   members are present; this takes precedence over type-based rules.
+    /// - Fields that are inherently full width (Password, Hidden, TextArea, URL) stay full width.
+    /// - Field keys in <see cref="AlwaysFullWidthFieldKeys"/> always stay full width.
+    /// - If there's only one remaining half-width-capable field, it becomes full width.
+    /// - If there's an odd number of remaining half-width-capable fields, the last one becomes full width.
     /// </summary>
     /// <param name="fields">The list of fields to analyze.</param>
     /// <returns>A set of field keys that should be displayed at full width.</returns>
@@ -43,29 +67,51 @@ public static class LayoutUtils
             FieldType.URL,
         };
 
-        // Separate fields into always-full-width and half-width-capable
-        var halfWidthCapableFields = new List<DisplayField>();
+        // Activate pinned-half-width pairs only when BOTH members are present in this field set
+        var presentKeys = fields
+            .Where(f => !string.IsNullOrEmpty(f.FieldKey))
+            .Select(f => f.FieldKey!)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var activePinnedHalfWidthKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (a, b) in PinnedHalfWidthPairs)
+        {
+            if (presentKeys.Contains(a) && presentKeys.Contains(b))
+            {
+                activePinnedHalfWidthKeys.Add(a);
+                activePinnedHalfWidthKeys.Add(b);
+            }
+        }
+
+        var promotionCandidates = new List<DisplayField>();
 
         foreach (var field in fields)
         {
-            if (alwaysFullWidthTypes.Contains(field.FieldType))
+            var fieldKey = field.FieldKey ?? string.Empty;
+
+            // Pinned half-width pair members stay half width regardless of FieldType
+            if (activePinnedHalfWidthKeys.Contains(fieldKey))
+            {
+                continue;
+            }
+
+            if (alwaysFullWidthTypes.Contains(field.FieldType) || AlwaysFullWidthFieldKeys.Contains(fieldKey))
             {
                 fullWidthFields.Add(GetFieldIdentifier(field));
             }
             else
             {
-                halfWidthCapableFields.Add(field);
+                promotionCandidates.Add(field);
             }
         }
 
-        // If there's only one half-width-capable field, make it full width
-        if (halfWidthCapableFields.Count == 1)
+        if (promotionCandidates.Count == 1)
         {
-            fullWidthFields.Add(GetFieldIdentifier(halfWidthCapableFields[0]));
+            fullWidthFields.Add(GetFieldIdentifier(promotionCandidates[0]));
         }
-        else if (halfWidthCapableFields.Count > 1 && halfWidthCapableFields.Count % 2 == 1)
+        else if (promotionCandidates.Count > 1 && promotionCandidates.Count % 2 == 1)
         {
-            fullWidthFields.Add(GetFieldIdentifier(halfWidthCapableFields[^1]));
+            fullWidthFields.Add(GetFieldIdentifier(promotionCandidates[^1]));
         }
 
         return fullWidthFields;
