@@ -188,7 +188,7 @@ public static class SystemFieldRegistry
                 FieldType: "Hidden",
                 IsHidden: true,
                 IsMultiValue: false,
-                ApplicableToTypes: new Dictionary<string, ItemTypeFieldConfig> { ["CreditCard"] = new ItemTypeFieldConfig(false) },
+                ApplicableToTypes: new Dictionary<string, ItemTypeFieldConfig> { ["CreditCard"] = new ItemTypeFieldConfig(true) },
                 EnableHistory: false,
                 Category: FieldCategory.Card,
                 DefaultDisplayOrder: 60),

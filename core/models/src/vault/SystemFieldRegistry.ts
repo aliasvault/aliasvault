@@ -237,7 +237,7 @@ export const SystemFieldRegistry: Record<string, SystemFieldDefinition> = {
     IsHidden: true,
     IsMultiValue: false,
     ApplicableToTypes: {
-      CreditCard: { ShowByDefault: false }
+      CreditCard: { ShowByDefault: true }
     },
     EnableHistory: false,
     Category: FieldCategories.Card,
