@@ -167,7 +167,7 @@
     <comment>Error message when user selects an unsupported file format. {0} is the list of supported extensions</comment>
   </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
-    <value>File size exceeds {0}MB limit.</value>
+    <value>Bestandsgrootte overschrijdt de limiet van {0}MB.</value>
     <comment>Error message when file is too large. {0} is the maximum allowed size in megabytes</comment>
   </data>
   <data name="EncryptedFilePasswordPrompt" xml:space="preserve">
