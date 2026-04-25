@@ -108,7 +108,7 @@
       "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an.",
       "syncConflictMaxRetries": "Tresor konnte trotz mehrmaliger Versuche nicht synchronisiert werden. Bitte versuche es später erneut.",
       "mergeFailed": "Fehler beim Zusammenführen der Tresor-Änderungen. Bitte versuchen Sie es erneut.",
-      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultTooLarge": "Der Tresor ist zu groß für den Server. Versuche einige Elemente oder Anhänge zu entfernen, um die Größe zu verringern und versuche es dann erneut.",
       "invalidCode": "Bitte gib einen gültigen 6-stelligen Sicherheits-Code ein.",
       "serverError": "Der AliasVault-Server ist nicht erreichbar. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
       "wrongPassword": "Falsches Passwort. Bitte versuche es erneut.",
@@ -548,7 +548,7 @@
   "sync": {
     "offline": "Offline",
     "tapToRetry": "Tippen, um die Synchronisierung erneut zu probieren",
-    "syncErrorTitle": "Sync Failed",
-    "syncErrorDismiss": "Dismiss"
+    "syncErrorTitle": "Synchronisierung fehlgeschlagen",
+    "syncErrorDismiss": "Schließen"
   }
 }
