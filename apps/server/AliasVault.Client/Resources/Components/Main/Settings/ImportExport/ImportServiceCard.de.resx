@@ -103,11 +103,11 @@
     <comment>Warning text when no new credentials are available for import</comment>
   </data>
   <data name="PreviewInstructions" xml:space="preserve">
-    <value>Überprüfen Sie, ob die folgenden erkannten Anmeldeinformationen korrekt sind, bevor Sie fortfahren:</value>
+    <value>Überprüfe, ob die folgenden erkannten Anmeldeinformationen korrekt sind, bevor Du fortfährst:</value>
     <comment>Instructions shown before the credential preview table</comment>
   </data>
   <data name="ServiceColumn" xml:space="preserve">
-    <value>Service</value>
+    <value>Dienst</value>
     <comment>Column header for service name in credential preview table</comment>
   </data>
   <data name="UsernameColumn" xml:space="preserve">
@@ -127,7 +127,7 @@
     <comment>Checkbox label for favicon extraction option</comment>
   </data>
   <data name="ConfirmImportText" xml:space="preserve">
-    <value>Sind Sie sicher, dass Sie die Zugangsdaten ({0}) importieren möchten? Hinweis: Der Importprozess kann eine kurze Zeit dauern.</value>
+    <value>Bist Du sicher, dass Du die Zugangsdaten ({0}) importieren möchtest? Hinweis: Der Importprozess kann eine kurze Zeit dauern.</value>
     <comment>Confirmation text before importing. {0} is the credential count</comment>
   </data>
   <data name="FaviconExtractionNote" xml:space="preserve">
@@ -151,7 +151,7 @@
     <comment>Success message after import completes. {0} is the credential count</comment>
   </data>
   <data name="ImportErrorGeneric" xml:space="preserve">
-    <value>Fehler beim Import. Bitte versuchen Sie es erneut.</value>
+    <value>Fehler beim Import. Bitte versuche es erneut.</value>
     <comment>Generic error message when import fails</comment>
   </data>
   <data name="ImportErrorInvalidFile" xml:space="preserve">
@@ -167,7 +167,7 @@
     <comment>Error message when user selects an unsupported file format. {0} is the list of supported extensions</comment>
   </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
-    <value>File size exceeds {0}MB limit.</value>
+    <value>Die Dateigröße überschreitet die maximale Größe von {0}MB.</value>
     <comment>Error message when file is too large. {0} is the maximum allowed size in megabytes</comment>
   </data>
   <data name="EncryptedFilePasswordPrompt" xml:space="preserve">
