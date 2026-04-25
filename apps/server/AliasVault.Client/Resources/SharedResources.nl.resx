@@ -229,11 +229,11 @@
     <comment>Generic unknown error message</comment>
   </data>
   <data name="VaultTooLargeError" xml:space="preserve">
-    <value>The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.</value>
+    <value>De kluis is te groot voor de server om te accepteren. Probeer sommige items of bijlagen te verwijderen om de grootte te verkleinen en probeer het opnieuw.</value>
     <comment>Shown when the server rejects a vault upload with HTTP 413 because the encrypted vault exceeds the configured upload size limit</comment>
   </data>
   <data name="VaultSaveError" xml:space="preserve">
-    <value>Failed to save changes to the vault. Please try again.</value>
+    <value>Wijzigingen opslaan in de kluis mislukt. Probeer het opnieuw.</value>
     <comment>Generic error shown when a vault save / sync to the server fails for an unexpected reason</comment>
   </data>
   <data name="ErrorValidation" xml:space="preserve">
