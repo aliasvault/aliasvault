@@ -268,9 +268,6 @@ const ItemDetails: React.FC = (): React.ReactElement => {
           {/* Custom Fields */}
           {groupedFields[FieldCategories.Custom] && groupedFields[FieldCategories.Custom].length > 0 && (
             <div className="space-y-2">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {t('common.customFields')}
-              </h2>
               {groupedFields[FieldCategories.Custom].map((field) => (
                 <FieldBlock key={field.FieldKey} field={field} itemId={item.Id} />
               ))}
