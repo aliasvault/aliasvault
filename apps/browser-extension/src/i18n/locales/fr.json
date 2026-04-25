@@ -108,7 +108,7 @@
       "passwordChanged": "Votre mot de passe a changé depuis la dernière fois que vous vous êtes connecté. Veuillez vous reconnecter pour des raisons de sécurité.",
       "syncConflictMaxRetries": "Impossible de synchroniser le coffre après plusieurs tentatives. Veuillez réessayer plus tard.",
       "mergeFailed": "Impossible de fusionner les modifications du coffre. Veuillez réessayer.",
-      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultTooLarge": "Le coffre est trop grand pour que le serveur l'accepte. Essayez de supprimer certains éléments ou pièces jointes pour réduire la taille et réessayez.",
       "invalidCode": "Veuillez entrer un code d'authentification valide à 6 chiffres.",
       "serverError": "Impossible d'accéder au serveur AliasVault. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
       "wrongPassword": "Mot de passe incorrect, veuillez réessayer.",
@@ -548,7 +548,7 @@
   "sync": {
     "offline": "Hors ligne",
     "tapToRetry": "Appuyez pour réessayer",
-    "syncErrorTitle": "Sync Failed",
-    "syncErrorDismiss": "Dismiss"
+    "syncErrorTitle": "Synchronisation échouée",
+    "syncErrorDismiss": "Ignorer"
   }
 }
