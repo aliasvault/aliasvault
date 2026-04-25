@@ -141,7 +141,7 @@ export function openAutofillPopup(input: HTMLInputElement, container: HTMLElemen
     }, 'background') as ItemsResponse;
 
     if (response.success) {
-      await createAutofillPopup(input, response.items, container);
+      await createAutofillPopup(input, response.items, container, response.recentlySelectedId);
     } else {
       // Check if the user has dismissed the vault locked popup (only for auto-show, not manual clicks)
       if (!forceShow) {
@@ -190,7 +190,7 @@ export function openTotpPopup(input: HTMLInputElement, container: HTMLElement, f
     }, 'background') as ItemsResponse;
 
     if (response.success) {
-      await createTotpPopup(input, response.items, container);
+      await createTotpPopup(input, response.items, container, response.recentlySelectedId);
     } else {
       // Check if the user has dismissed the vault locked popup (only for auto-show, not manual clicks)
       if (!forceShow) {
@@ -211,7 +211,7 @@ export function openTotpPopup(input: HTMLInputElement, container: HTMLElement, f
  * Create TOTP autofill popup showing items with 2FA codes.
  * Matches the styling of the regular autofill popup.
  */
-async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefined, rootContainer: HTMLElement) : Promise<void> {
+async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefined, rootContainer: HTMLElement, recentlySelectedId?: string | null) : Promise<void> {
   const searchPlaceholder = await t('content.searchVault');
   const hideFor1HourText = await t('content.hideFor1Hour');
   const hidePermanentlyText = await t('content.hidePermanently');
@@ -230,7 +230,7 @@ async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefine
     items = [];
   }
 
-  updateTotpPopupContent(items, credentialList, input, rootContainer, noTotpItemsText);
+  updateTotpPopupContent(items, credentialList, input, rootContainer, noTotpItemsText, recentlySelectedId);
 
   // Add divider
   const divider = document.createElement('div');
@@ -260,7 +260,7 @@ async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefine
 
     if (searchTerm === '') {
       // If search is empty, show the initially URL-filtered items
-      updateTotpPopupContent(items, credentialList, input, rootContainer, noTotpItemsText);
+      updateTotpPopupContent(items, credentialList, input, rootContainer, noTotpItemsText, recentlySelectedId);
     } else {
       // Search in TOTP items only
       const response = await sendMessage('SEARCH_ITEMS_WITH_TOTP', {
@@ -268,10 +268,11 @@ async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefine
       }, 'background') as ItemsResponse;
 
       if (response.success && response.items) {
+        // Search results don't carry prioritization, so don't highlight any item
         updateTotpPopupContent(response.items, credentialList, input, rootContainer, noTotpItemsText);
       } else {
         // On error, fallback to showing initial filtered items
-        updateTotpPopupContent(items, credentialList, input, rootContainer, noTotpItemsText);
+        updateTotpPopupContent(items, credentialList, input, rootContainer, noTotpItemsText, recentlySelectedId);
       }
     }
   });
@@ -398,7 +399,7 @@ async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefine
  * @param rootContainer - The root container element.
  * @param noMatchesText - Text to show when no items match.
  */
-function updateTotpPopupContent(items: Item[], itemList: HTMLElement | null, input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string) : void {
+function updateTotpPopupContent(items: Item[], itemList: HTMLElement | null, input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string, recentlySelectedId?: string | null) : void {
   if (!itemList) {
     itemList = document.getElementById('aliasvault-credential-list') as HTMLElement;
   }
@@ -438,7 +439,8 @@ function updateTotpPopupContent(items: Item[], itemList: HTMLElement | null, inp
 
     items.forEach(item => {
       const secret = secrets[item.Id];
-      const itemElement = createTotpItem(item, secret, input, rootContainer, hasSecrets ? codeElements : undefined);
+      const isRecentlySelected = recentlySelectedId != null && item.Id === recentlySelectedId;
+      const itemElement = createTotpItem(item, secret, input, rootContainer, hasSecrets ? codeElements : undefined, isRecentlySelected);
       itemList!.appendChild(itemElement);
     });
 
@@ -512,7 +514,8 @@ function createTotpItem(
   secret: string | undefined,
   input: HTMLInputElement,
   rootContainer: HTMLElement,
-  codeElements?: Map<string, { codeSpan: HTMLSpanElement; pieChart: SVGPathElement }>
+  codeElements?: Map<string, { codeSpan: HTMLSpanElement; pieChart: SVGPathElement }>,
+  isRecentlySelected: boolean = false
 ): HTMLElement {
   const itemElement = document.createElement('div');
   itemElement.className = 'av-credential-item';
@@ -534,10 +537,25 @@ function createTotpItem(
   const itemTextContainer = document.createElement('div');
   itemTextContainer.className = 'av-credential-text';
 
-  // Service name (primary text)
+  // Service name (primary text) with optional "recently used" indicator
   const serviceName = document.createElement('div');
   serviceName.className = 'av-service-name';
-  serviceName.textContent = item.Name || '';
+
+  if (isRecentlySelected) {
+    const serviceNameContainer = document.createElement('div');
+    serviceNameContainer.style.display = 'flex';
+    serviceNameContainer.style.alignItems = 'center';
+    serviceNameContainer.style.gap = '4px';
+
+    const serviceNameText = document.createElement('span');
+    serviceNameText.textContent = item.Name || '';
+    serviceNameContainer.appendChild(serviceNameText);
+    serviceNameContainer.appendChild(createRecentlySelectedIcon());
+
+    serviceName.appendChild(serviceNameContainer);
+  } else {
+    serviceName.textContent = item.Name || '';
+  }
 
   // TOTP code display beneath title (like username in normal credentials)
   const detailsContainer = document.createElement('div');
@@ -685,7 +703,7 @@ export function createLoadingPopup(input: HTMLInputElement, message: string, roo
  * @param itemList - The item list element.
  * @param input - The input element that triggered the popup. Required when filling items to know which form to fill.
  */
-export async function updatePopupContent(items: Item[], itemList: HTMLElement | null, input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string) : Promise<void> {
+export async function updatePopupContent(items: Item[], itemList: HTMLElement | null, input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string, recentlySelectedId?: string | null) : Promise<void> {
   if (!itemList) {
     itemList = document.getElementById('aliasvault-credential-list') as HTMLElement;
   }
@@ -698,8 +716,40 @@ export async function updatePopupContent(items: Item[], itemList: HTMLElement | 
   itemList.innerHTML = '';
 
   // Add items using the shared function
-  const itemElements = createItemList(items, input, rootContainer, noMatchesText);
+  const itemElements = createItemList(items, input, rootContainer, noMatchesText, recentlySelectedId);
   itemElements.forEach(element => itemList.appendChild(element));
+}
+
+/**
+ * Build a small history-arrow SVG badge indicating this item was the most recently
+ * autofilled on this site, so the user can quickly spot it among multiple matches.
+ */
+function createRecentlySelectedIcon(): SVGSVGElement {
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', '#6b7280');
+  svg.setAttribute('stroke-width', '2');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.style.width = '12px';
+  svg.style.height = '12px';
+  svg.style.flexShrink = '0';
+
+  const arc = document.createElementNS(svgNS, 'path');
+  arc.setAttribute('d', 'M3 12a9 9 0 1 0 9-9 9.74 9.74 0 0 0-6.74 2.74L3 8');
+  svg.appendChild(arc);
+
+  const corner = document.createElementNS(svgNS, 'polyline');
+  corner.setAttribute('points', '3 3 3 8 8 8');
+  svg.appendChild(corner);
+
+  const innerHands = document.createElementNS(svgNS, 'path');
+  innerHands.setAttribute('d', 'M12 7v5l4 2');
+  svg.appendChild(innerHands);
+
+  return svg;
 }
 
 /**
@@ -728,7 +778,7 @@ export function removeExistingPopup(container: HTMLElement) : void {
 /**
  * Create auto-fill popup
  */
-export async function createAutofillPopup(input: HTMLInputElement, items: Item[] | undefined, rootContainer: HTMLElement) : Promise<void> {
+export async function createAutofillPopup(input: HTMLInputElement, items: Item[] | undefined, rootContainer: HTMLElement, recentlySelectedId?: string | null) : Promise<void> {
   // Get all translations first
   const newText = await t('content.new');
   const searchPlaceholder = await t('content.searchVault');
@@ -751,7 +801,7 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
     items = [];
   }
 
-  await updatePopupContent(items, credentialList, input, rootContainer, noMatchesText);
+  await updatePopupContent(items, credentialList, input, rootContainer, noMatchesText, recentlySelectedId);
 
   // Add divider
   const divider = document.createElement('div');
@@ -920,7 +970,7 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
   // Handle search input.
   let searchTimeout: NodeJS.Timeout | null = null;
   searchInput.addEventListener('input', async () => {
-    await handleSearchInput(searchInput, items, rootContainer, searchTimeout, credentialList, input, noMatchesText);
+    await handleSearchInput(searchInput, items, rootContainer, searchTimeout, credentialList, input, noMatchesText, recentlySelectedId);
   });
 
   // Close button
@@ -1145,7 +1195,7 @@ export async function createVaultLockedPopup(input: HTMLInputElement, rootContai
  * @param input - The input field that triggered the popup
  * @param noMatchesText - Text to show when no matches found
  */
-async function handleSearchInput(searchInput: HTMLInputElement, initialItems: Item[], rootContainer: HTMLElement, searchTimeout: NodeJS.Timeout | null, itemList: HTMLElement | null, input: HTMLInputElement, noMatchesText?: string) : Promise<void> {
+async function handleSearchInput(searchInput: HTMLInputElement, initialItems: Item[], rootContainer: HTMLElement, searchTimeout: NodeJS.Timeout | null, itemList: HTMLElement | null, input: HTMLInputElement, noMatchesText?: string, recentlySelectedId?: string | null) : Promise<void> {
   if (searchTimeout) {
     clearTimeout(searchTimeout);
   }
@@ -1153,8 +1203,8 @@ async function handleSearchInput(searchInput: HTMLInputElement, initialItems: It
   const searchTerm = searchInput.value.trim();
 
   if (searchTerm === '') {
-    // If search is empty, show the initially URL-filtered items
-    await updatePopupContent(initialItems, itemList, input, rootContainer, noMatchesText);
+    // If search is empty, show the initially URL-filtered items with the recently-used star restored
+    await updatePopupContent(initialItems, itemList, input, rootContainer, noMatchesText, recentlySelectedId);
   } else {
     // Search in full vault with search term
     const response = await sendMessage('GET_SEARCH_ITEMS', {
@@ -1162,10 +1212,11 @@ async function handleSearchInput(searchInput: HTMLInputElement, initialItems: It
     }, 'background') as ItemsResponse;
 
     if (response.success && response.items) {
+      // Search results don't carry prioritization, so don't highlight any item
       await updatePopupContent(response.items, itemList, input, rootContainer, noMatchesText);
     } else {
       // On error, fallback to showing initial filtered items
-      await updatePopupContent(initialItems, itemList, input, rootContainer, noMatchesText);
+      await updatePopupContent(initialItems, itemList, input, rootContainer, noMatchesText, recentlySelectedId);
     }
   }
 }
@@ -1176,7 +1227,7 @@ async function handleSearchInput(searchInput: HTMLInputElement, initialItems: It
  * @param items - The items to display.
  * @param input - The input element that triggered the popup. Required when filling items to know which form to fill.
  */
-function createItemList(items: Item[], input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string): HTMLElement[] {
+function createItemList(items: Item[], input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string, recentlySelectedId?: string | null): HTMLElement[] {
   const elements: HTMLElement[] = [];
 
   if (items.length > 0) {
@@ -1213,6 +1264,11 @@ function createItemList(items: Item[], input: HTMLInputElement, rootContainer: H
       const serviceNameText = document.createElement('span');
       serviceNameText.textContent = item.Name || '';
       serviceNameContainer.appendChild(serviceNameText);
+
+      // Add "recently used" indicator if this item was the last autofill on this site
+      if (recentlySelectedId != null && item.Id === recentlySelectedId) {
+        serviceNameContainer.appendChild(createRecentlySelectedIcon());
+      }
 
       // Add passkey indicator if item has a passkey
       if (item.HasPasskey) {

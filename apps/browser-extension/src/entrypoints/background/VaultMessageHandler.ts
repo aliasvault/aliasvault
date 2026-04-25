@@ -6,7 +6,7 @@ import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/met
 import { FieldKey, ItemTypes, createSystemField, type Item } from '@/utils/dist/core/models/vault';
 import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import { filterItems, AutofillMatchingMode } from '@/utils/itemMatcher/ItemMatcher';
+import { filterItems, AutofillMatchingMode, extractRootDomain } from '@/utils/itemMatcher/ItemMatcher';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
 import { SqliteClient } from '@/utils/SqliteClient';
@@ -380,15 +380,19 @@ function filterItemsByUrl(items: Item[], currentUrl: string, pageTitle: string, 
  * If the item is not in the filtered results, fetch it from the vault and add it.
  *
  * @param items - The filtered items array
- * @param domain - The current domain for recently selected item validation
+ * @param rootDomain - The current root domain for recently selected item validation
  * @param allItems - All items from the vault (to fetch recently selected if not in filtered)
- * @returns The items array with recently selected item prioritized
+ * @returns The items (with recently selected prioritized) and the matched id, if any
  */
-async function prioritizeRecentlySelectedItem(items: Item[], domain: string, allItems: Item[]): Promise<Item[]> {
-  const recentlySelectedId = await RecentlySelectedItemService.getRecentlySelected(domain);
+async function prioritizeRecentlySelectedItem(
+  items: Item[],
+  rootDomain: string,
+  allItems: Item[]
+): Promise<{ items: Item[], recentlySelectedId: string | null }> {
+  const recentlySelectedId = await RecentlySelectedItemService.getRecentlySelected(rootDomain);
 
   if (!recentlySelectedId) {
-    return items;
+    return { items, recentlySelectedId: null };
   }
 
   // Find the recently selected item in the filtered results
@@ -402,7 +406,7 @@ async function prioritizeRecentlySelectedItem(items: Item[], domain: string, all
       ...items.slice(0, recentlySelectedIndex),
       ...items.slice(recentlySelectedIndex + 1)
     ];
-    return reorderedItems;
+    return { items: reorderedItems, recentlySelectedId };
   }
 
   // Item is not in filtered results - fetch it from all items and prepend it
@@ -410,24 +414,25 @@ async function prioritizeRecentlySelectedItem(items: Item[], domain: string, all
 
   if (!recentlySelectedItem) {
     // Item not found in vault (might have been deleted)
-    return items;
+    return { items, recentlySelectedId: null };
   }
 
   // Prepend the recently selected item to the filtered results
-  return [recentlySelectedItem, ...items];
+  return { items: [recentlySelectedItem, ...items], recentlySelectedId };
 }
 
 /**
- * Extract domain from URL for recently selected item scoping.
+ * Extract the root domain from a URL for recently-selected item scoping.
+ * Uses root domain (e.g. `example.com` for both `accounts.example.com` and `login.example.com`)
+ * so multi-step login flows that span subdomains still match.
  * @param url - The full URL
- * @returns The domain or the original URL if parsing fails
+ * @returns The root domain, or the original URL if parsing fails
  */
-function extractDomain(url: string): string {
+async function extractRootDomainFromUrl(url: string): Promise<string> {
   try {
     const urlObj = new URL(url);
-    return urlObj.hostname;
+    return await extractRootDomain(urlObj.hostname);
   } catch {
-    // If URL parsing fails, return the original URL
     return url;
   }
 }
@@ -503,13 +508,13 @@ export async function handleGetFilteredItems(
     const filteredItems = await filterItemsByUrl(allItems, message.currentUrl, message.pageTitle, message.matchingMode);
 
     // Prioritize recently selected item for multi-step login flows (opt-in only)
-    let prioritizedItems = filteredItems;
     if (message.includeRecentlySelected) {
-      const domain = extractDomain(message.currentUrl);
-      prioritizedItems = await prioritizeRecentlySelectedItem(filteredItems, domain, allItems);
+      const rootDomain = await extractRootDomainFromUrl(message.currentUrl);
+      const prioritized = await prioritizeRecentlySelectedItem(filteredItems, rootDomain, allItems);
+      return { success: true, items: prioritized.items, recentlySelectedId: prioritized.recentlySelectedId };
     }
 
-    return { success: true, items: prioritizedItems };
+    return { success: true, items: filteredItems };
   } catch (error) {
     console.error('Error getting filtered items:', error);
     // E-304: Item read failed
@@ -1843,10 +1848,10 @@ export async function handleGetItemsWithTotp(
     const filteredItems = await filterItemsByUrl(itemsWithTotp, message.currentUrl, message.pageTitle, message.matchingMode);
 
     // Prioritize recently selected item for multi-step login flows
-    const domain = extractDomain(message.currentUrl);
-    const prioritizedItems = await prioritizeRecentlySelectedItem(filteredItems, domain, itemsWithTotp);
+    const rootDomain = await extractRootDomainFromUrl(message.currentUrl);
+    const prioritized = await prioritizeRecentlySelectedItem(filteredItems, rootDomain, itemsWithTotp);
 
-    return { success: true, items: prioritizedItems };
+    return { success: true, items: prioritized.items, recentlySelectedId: prioritized.recentlySelectedId };
   } catch (error) {
     console.error('Error getting items with TOTP:', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
@@ -1962,7 +1967,8 @@ export async function handleSetRecentlySelected(
   message: { itemId: string; domain: string }
 ): Promise<{ success: boolean }> {
   try {
-    await RecentlySelectedItemService.setRecentlySelected(message.itemId, message.domain);
+    const rootDomain = await extractRootDomain(message.domain);
+    await RecentlySelectedItemService.setRecentlySelected(message.itemId, rootDomain);
     return { success: true };
   } catch (error) {
     console.error('Error setting recently selected item:', error);
@@ -1977,7 +1983,8 @@ export async function handleGetRecentlySelected(
   message: { domain: string }
 ): Promise<{ success: boolean; itemId?: string | null }> {
   try {
-    const itemId = await RecentlySelectedItemService.getRecentlySelected(message.domain);
+    const rootDomain = await extractRootDomain(message.domain);
+    const itemId = await RecentlySelectedItemService.getRecentlySelected(rootDomain);
     return { success: true, itemId };
   } catch (error) {
     console.error('Error getting recently selected item:', error);
