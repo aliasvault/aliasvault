@@ -32,7 +32,7 @@
     "errors": {
       "unknownError": "Er is een onbekende fout opgetreden.",
       "unknownErrorTryAgain": "Er is een onbekende fout opgetreden. Probeer het opnieuw.",
-      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultTooLarge": "De kluis is te groot voor de server om te accepteren. Probeer sommige items of bijlagen te verwijderen om de grootte te verkleinen en probeer het opnieuw.",
       "serverVersionTooOld": "De AliasVault server moet bijgewerkt worden naar een nieuwere versie om deze functie te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt."
     }
   },
