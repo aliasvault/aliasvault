@@ -507,8 +507,8 @@
   "recentlyDeleted": {
     "title": "Недавно удаленные",
     "noItems": "Нет удаленных элементов",
-    "noItemsDescription": "Удаленные элементы будут храниться здесь 30 дней, после чего они будут удалены безвозвратно.",
-    "description": "Эти элементы будут безвозвратно удалены через 30 дней. Вы можете восстановить их или удалить немедленно.",
+    "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+    "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
     "restore": "Восстановить",
     "deletePermanently": "Удалить безвозвратно",
     "emptyAll": "Очистить все",
