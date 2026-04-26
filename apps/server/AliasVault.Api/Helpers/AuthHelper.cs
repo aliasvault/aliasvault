@@ -106,19 +106,14 @@ public static class AuthHelper
         var userAgent = request.Headers.UserAgent.ToString();
         var acceptLanguage = request.Headers.AcceptLanguage.ToString();
 
-        // Client header is formatted like "[client name]-[version]" or "[client name]-[version]-[app-instance-id]"
-        // Examples: "chrome-0.25.0", "android-0.29.0-550e8400e29b41d4a716446655440000"
-        var clientHeader = request.Headers["X-AliasVault-Client"].ToString();
-        var clientParts = clientHeader?.Split('-') ?? [];
-        var clientName = clientParts.Length > 0 ? clientParts[0] : "unknown";
+        var clientInfo = ClientHeaderInfo.Parse(request.Headers[ClientHeaderInfo.HeaderName].ToString());
 
-        // For Android, extract app instance ID if present (UUID without dashes as 3rd part)
-        var appInstanceSuffix = string.Empty;
-        if (clientName == "android" && clientParts.Length >= 3)
-        {
-            appInstanceSuffix = $"|{clientParts[2]}";
-        }
+        // Only Android appends an app instance id, used to keep device identifiers unique
+        // across multiple Android User Profiles on the same physical device.
+        var appInstanceSuffix = clientInfo.ClientName == "android" && clientInfo.AppInstanceId is not null
+            ? $"|{clientInfo.AppInstanceId}"
+            : string.Empty;
 
-        return $"{clientName}|{userAgent}|{acceptLanguage}{appInstanceSuffix}";
+        return $"{clientInfo.ClientName}|{userAgent}|{acceptLanguage}{appInstanceSuffix}";
     }
 }

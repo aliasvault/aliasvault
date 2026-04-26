@@ -100,34 +100,13 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         // Check client version compatibility if header is provided
         var clientSupported = false;
-        if (!string.IsNullOrEmpty(clientHeader))
+        var clientInfo = ClientHeaderInfo.Parse(clientHeader);
+        if (!string.IsNullOrEmpty(clientInfo.ClientVersion)
+            && AppInfo.MinimumClientVersions.TryGetValue(clientInfo.ClientName, out var minimumVersion))
         {
-            // Client header format should be "{platform}-{version}" e.g. "chrome-1.4.0"
-            var parts = clientHeader.Split('-');
-            if (parts.Length == 2)
-            {
-                var platform = parts[0].ToLowerInvariant();
-                var clientVersion = parts[1];
-
-                if (AppInfo.MinimumClientVersions.TryGetValue(platform, out var minimumVersion))
-                {
-                    // Check if version meets minimum requirement AND is not in blocked list
-                    var meetsMinimum = VersionHelper.IsVersionEqualOrNewer(clientVersion, minimumVersion);
-                    var isBlocked = VersionHelper.IsVersionBlocked(platform, clientVersion, AppInfo.UnsupportedClientVersions);
-
-                    clientSupported = meetsMinimum && !isBlocked;
-                }
-                else
-                {
-                    // Unknown platform
-                    clientSupported = false;
-                }
-            }
-            else
-            {
-                // Invalid header format
-                clientSupported = false;
-            }
+            var meetsMinimum = VersionHelper.IsVersionEqualOrNewer(clientInfo.ClientVersion, minimumVersion);
+            var isBlocked = VersionHelper.IsVersionBlocked(clientInfo.ClientName, clientInfo.ClientVersion, AppInfo.UnsupportedClientVersions);
+            clientSupported = meetsMinimum && !isBlocked;
         }
 
         return Ok(new StatusResponse
