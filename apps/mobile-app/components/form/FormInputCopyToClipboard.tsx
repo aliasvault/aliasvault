@@ -31,67 +31,41 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const colors = useColors();
   const { t } = useTranslation();
-  const { activeFieldId, setActiveField } = useClipboardCountdown();
+  const { activeField, startCountdown, clearCountdown } = useClipboardCountdown();
 
   const animatedWidth = useRef(new Animated.Value(0)).current;
   // Create a stable unique ID based on label and value
   const fieldId = useRef(`${label}-${value}-${Math.random().toString(36).substring(2, 11)}`).current;
-  const isCountingDown = activeFieldId === fieldId;
+  const isCountingDown = activeField?.fieldId === fieldId;
+  // Re-trigger animation each time this field is (re)copied.
+  const trigger = isCountingDown ? activeField.trigger : 0;
+  const timeoutSeconds = isCountingDown ? activeField.timeoutSeconds : 0;
 
   useEffect(() => {
-    return (): void => {
-      // Cleanup on unmount
-      animatedWidth.stopAnimation();
-    };
-  }, [animatedWidth]);
-
-  useEffect(() => {
-    let animationRef: Animated.CompositeAnimation | null = null;
-    let isCancelled = false;
-
-    /* Handle animation based on whether this field is active */
-    if (isCountingDown) {
-      // This field is now active - reset and start animation
-      animatedWidth.stopAnimation();
-      animatedWidth.setValue(100);
-
-      // Get timeout and start animation
-      LocalPreferencesService.getClipboardClearTimeout().then((timeoutSeconds) => {
-        if (!isCancelled && timeoutSeconds > 0 && activeFieldId === fieldId) {
-          animationRef = Animated.timing(animatedWidth, {
-            toValue: 0,
-            duration: timeoutSeconds * 1000,
-            useNativeDriver: false,
-            easing: Easing.linear,
-          });
-          
-          animationRef.start((finished) => {
-            if (!isCancelled && finished && activeFieldId === fieldId) {
-              // Use requestAnimationFrame to defer state update
-              requestAnimationFrame(() => {
-                if (!isCancelled) {
-                  setActiveField(null);
-                }
-              });
-            }
-          });
-        }
-      });
-    } else {
-      // This field is not active - stop animation and reset
-      animatedWidth.stopAnimation();
+    if (!isCountingDown || timeoutSeconds <= 0) {
       animatedWidth.setValue(0);
+      return;
     }
 
-    // Cleanup function
-    return () => {
-      isCancelled = true;
-      if (animationRef) {
-        animationRef.stop();
+    animatedWidth.setValue(100);
+
+    const animation = Animated.timing(animatedWidth, {
+      toValue: 0,
+      duration: timeoutSeconds * 1000,
+      useNativeDriver: false,
+      easing: Easing.linear,
+    });
+
+    animation.start(({ finished }) => {
+      if (finished) {
+        clearCountdown();
       }
-      animatedWidth.stopAnimation();
+    });
+
+    return () => {
+      animation.stop();
     };
-  }, [isCountingDown, activeFieldId, fieldId, animatedWidth, setActiveField]);
+  }, [isCountingDown, timeoutSeconds, trigger, animatedWidth, clearCountdown]);
 
   /**
    * Copy the value to the clipboard.
@@ -107,12 +81,7 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
 
         // Handle animation state
         if (timeoutSeconds > 0) {
-          // Clear any existing active field and set this one as active
-          // Use functional update to avoid closure issues
-          setActiveField(() => {
-            // If there was a previous field, its animation will be stopped by the effect
-            return fieldId;
-          });
+          startCountdown(fieldId, timeoutSeconds);
         }
 
         if (Platform.OS !== 'android') {

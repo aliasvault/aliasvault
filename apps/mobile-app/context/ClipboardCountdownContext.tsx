@@ -1,8 +1,16 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
+export type ActiveClipboardField = {
+  fieldId: string;
+  timeoutSeconds: number;
+  /** Monotonic counter so re-copying the same field still triggers a state change. */
+  trigger: number;
+} | null;
+
 type ClipboardCountdownContextType = {
-  activeFieldId: string | null;
-  setActiveField: (fieldId: string | null | ((prev: string | null) => string | null)) => void;
+  activeField: ActiveClipboardField;
+  startCountdown: (fieldId: string, timeoutSeconds: number) => void;
+  clearCountdown: () => void;
 }
 
 const ClipboardCountdownContext = createContext<ClipboardCountdownContextType | undefined>(undefined);
@@ -11,17 +19,24 @@ const ClipboardCountdownContext = createContext<ClipboardCountdownContextType | 
  * Clipboard countdown context provider.
  */
 export const ClipboardCountdownProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
+  const [activeField, setActiveField] = useState<ActiveClipboardField>(null);
 
-  const setActiveField = useCallback((fieldId: string | null | ((prev: string | null) => string | null)) => {
-    if (typeof fieldId === 'function') {
-      setActiveFieldId(fieldId);
-    } else {
-      setActiveFieldId(fieldId);
-    }
+  const startCountdown = useCallback((fieldId: string, timeoutSeconds: number) => {
+    setActiveField((prev) => ({
+      fieldId,
+      timeoutSeconds,
+      trigger: (prev?.trigger ?? 0) + 1,
+    }));
   }, []);
 
-  const value = useMemo(() => ({ activeFieldId, setActiveField }), [activeFieldId, setActiveField]);
+  const clearCountdown = useCallback(() => {
+    setActiveField(null);
+  }, []);
+
+  const value = useMemo(
+    () => ({ activeField, startCountdown, clearCountdown }),
+    [activeField, startCountdown, clearCountdown],
+  );
 
   return (
     <ClipboardCountdownContext.Provider value={value}>
