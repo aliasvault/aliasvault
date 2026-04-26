@@ -14,6 +14,7 @@ import { getFieldValue, FieldKey, ItemTypes } from '@/utils/dist/core/models/vau
 import emitter from '@/utils/EventEmitter';
 import { canHaveSubfolders, getRecursiveItemCount } from '@/utils/folderUtils';
 import { HapticsUtility } from '@/utils/HapticsUtility';
+import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@/utils/itemFilters';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -39,18 +40,6 @@ import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
 
 import type { FolderWithCount } from '@/components/folders/FolderPill';
-
-/**
- * Filter types for the items list.
- */
-type FilterType = 'all' | 'passkeys' | 'attachments' | ItemType;
-
-/**
- * Check if a filter is an item type filter.
- */
-const isItemTypeFilter = (filter: FilterType): filter is ItemType => {
-  return Object.values(ItemTypes).includes(filter as ItemType);
-};
 
 /**
  * Item type filter option configuration.
@@ -87,8 +76,8 @@ export default function FolderViewScreen(): React.ReactNode {
   const flatListRef = useRef<FlatList<Item | null>>(null);
 
   const [itemsList, setItemsList] = useState<Item[]>([]);
+  const [allItemsInVault, setAllItemsInVault] = useState<Item[]>([]);
   const [folder, setFolder] = useState<Folder | null>(null);
-  const [subfolders, setSubfolders] = useState<FolderWithCount[]>([]);
   const [canCreateSubfolder, setCanCreateSubfolder] = useState(false);
   const [allFolders, setAllFolders] = useState<Folder[]>([]);
   // No minimum loading delay for folder view since data is already in memory
@@ -98,7 +87,7 @@ export default function FolderViewScreen(): React.ReactNode {
 
   // Search and filter state (scoped to this folder)
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<FilterType>('all');
+  const [filterType, setFilterType] = useState<ItemFilterType>('all');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
 
   // Sort state
@@ -143,29 +132,16 @@ export default function FolderViewScreen(): React.ReactNode {
    * Filter items by search query and type (within this folder only).
    */
   const filteredItems = useMemo(() => {
-    return itemsList.filter(item => {
-      // Apply type filter
-      let passesTypeFilter = true;
+    const typeFiltered = applyTypeFilter(itemsList, filterType);
 
-      if (filterType === 'passkeys') {
-        passesTypeFilter = item.HasPasskey === true;
-      } else if (filterType === 'attachments') {
-        passesTypeFilter = item.HasAttachment === true;
-      } else if (isItemTypeFilter(filterType)) {
-        passesTypeFilter = item.ItemType === filterType;
-      }
+    const searchLower = searchQuery.toLowerCase().trim();
+    if (!searchLower) {
+      return typeFiltered;
+    }
 
-      if (!passesTypeFilter) {
-        return false;
-      }
+    const searchWords = searchLower.split(/\s+/).filter(word => word.length > 0);
 
-      // Apply search filter
-      const searchLower = searchQuery.toLowerCase().trim();
-
-      if (!searchLower) {
-        return true;
-      }
-
+    return typeFiltered.filter(item => {
       const searchableFields = [
         item.Name?.toLowerCase() || '',
         getFieldValue(item, FieldKey.LoginUsername)?.toLowerCase() || '',
@@ -173,8 +149,6 @@ export default function FolderViewScreen(): React.ReactNode {
         getFieldValue(item, FieldKey.LoginUrl)?.toLowerCase() || '',
         getFieldValue(item, FieldKey.NotesContent)?.toLowerCase() || '',
       ];
-
-      const searchWords = searchLower.split(/\s+/).filter(word => word.length > 0);
 
       return searchWords.every(word =>
         searchableFields.some(field => field.includes(word))
@@ -196,8 +170,27 @@ export default function FolderViewScreen(): React.ReactNode {
       return 0;
     }
 
-    return getRecursiveItemCount(folderId, itemsList, allFolders);
-  }, [folderId, allFolders, itemsList]);
+    return getRecursiveItemCount(folderId, allItemsInVault, allFolders);
+  }, [folderId, allFolders, allItemsInVault]);
+
+  /**
+   * Direct subfolders of the current folder, with item counts that respect the active
+   * type/feature filter so each badge matches what the user will see when opening the folder.
+   */
+  const subfolders = useMemo((): FolderWithCount[] => {
+    if (!folderId || allFolders.length === 0) {
+      return [];
+    }
+
+    const itemsForCount = applyTypeFilter(allItemsInVault, filterType);
+
+    const childFolders = allFolders.filter((f: Folder) => f.ParentFolderId === folderId);
+    return childFolders.map((f) => ({
+      id: f.Id,
+      name: f.Name,
+      itemCount: getRecursiveItemCount(f.Id, itemsForCount, allFolders),
+    }));
+  }, [folderId, allFolders, allItemsInVault, filterType]);
 
   /**
    * Load items in this folder, subfolders, and folder details.
@@ -216,21 +209,12 @@ export default function FolderViewScreen(): React.ReactNode {
       // Filter to only items in this folder
       const folderItems = items.filter((item: Item) => item.FolderId === folderId);
       setItemsList(folderItems);
+      setAllItemsInVault(items);
 
       // Find this folder
       const currentFolder = folders.find((f: Folder) => f.Id === folderId);
       setFolder(currentFolder || null);
 
-      // Get subfolders (direct children only)
-      const childFolders = folders.filter((f: Folder) => f.ParentFolderId === folderId);
-
-      const subfoldersWithCounts: FolderWithCount[] = childFolders.map((f) => ({
-        id: f.Id,
-        name: f.Name,
-        itemCount: getRecursiveItemCount(f.Id, items, folders),
-      }));
-
-      setSubfolders(subfoldersWithCounts);
       setAllFolders(folders);
 
       // Calculate if we can create subfolders (check depth)

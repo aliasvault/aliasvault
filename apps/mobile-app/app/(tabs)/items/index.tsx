@@ -13,6 +13,7 @@ import type { Item, ItemType } from '@/utils/dist/core/models/vault';
 import { getFieldValue, FieldKey, ItemTypes } from '@/utils/dist/core/models/vault';
 import emitter from '@/utils/EventEmitter';
 import { HapticsUtility } from '@/utils/HapticsUtility';
+import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@/utils/itemFilters';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -37,18 +38,6 @@ import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
-
-/**
- * Filter types for the items list.
- */
-type FilterType = 'all' | 'passkeys' | 'attachments' | 'totp' | ItemType;
-
-/**
- * Check if a filter is an item type filter.
- */
-const isItemTypeFilter = (filter: FilterType): filter is ItemType => {
-  return Object.values(ItemTypes).includes(filter as ItemType);
-};
 
 /**
  * Item type filter option configuration.
@@ -93,7 +82,7 @@ export default function ItemsScreen(): React.ReactNode {
 
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<FilterType>('all');
+  const [filterType, setFilterType] = useState<ItemFilterType>('all');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [sortOrder, setSortOrder] = useState<CredentialSortOrder>('OldestFirst');
   const [showSortMenu, setShowSortMenu] = useState(false);
@@ -174,12 +163,17 @@ export default function ItemsScreen(): React.ReactNode {
 
   /**
    * Get folders with item counts for display.
+   * Counts respect the active type/feature filter so the folder badge always matches
+   * the number of items the user will see when navigating into the folder.
    */
   const foldersWithCounts = useMemo((): FolderWithCount[] => {
     // Don't show folders when searching
     if (searchQuery) {
       return [];
     }
+
+    // Apply the active type/feature filter to the items used for counting.
+    const itemsForCount = applyTypeFilter(itemsList, filterType);
 
     /**
      * Count items per folder (including items in subfolders recursively).
@@ -188,7 +182,7 @@ export default function ItemsScreen(): React.ReactNode {
      */
     const getRecursiveItemCount = (folderId: string): number => {
       // Get items directly in this folder
-      const directItems = itemsList.filter((item: Item) => item.FolderId === folderId);
+      const directItems = itemsForCount.filter((item: Item) => item.FolderId === folderId);
 
       // Get all child folders
       const childFolders = folders.filter(f => f.ParentFolderId === folderId);
@@ -210,7 +204,7 @@ export default function ItemsScreen(): React.ReactNode {
         itemCount: getRecursiveItemCount(folder.Id)
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [folders, itemsList, searchQuery]);
+  }, [folders, itemsList, searchQuery, filterType]);
 
   /**
    * Get the title based on the active filter.
@@ -248,40 +242,24 @@ export default function ItemsScreen(): React.ReactNode {
    * Filter items by folder, type, and search query.
    */
   const filteredItems = useMemo(() => {
-    return itemsList.filter(item => {
-      /*
-       * When showing folders (checkbox ON): only show root items (exclude items in folders)
-       * When not showing folders (checkbox OFF): show all items flat
-       */
-      if (!searchQuery && showFolderItems && item.FolderId) {
-        return false;
-      }
-      // When searching or not showing folders: show all matching items regardless of folder
+    /*
+     * When showing folders (checkbox ON): only show root items (exclude items in folders)
+     * When not showing folders (checkbox OFF): show all items flat
+     */
+    const folderScoped = !searchQuery && showFolderItems
+      ? itemsList.filter(item => !item.FolderId)
+      : itemsList;
 
-      // Apply type filter
-      let passesTypeFilter = true;
+    const typeFiltered = applyTypeFilter(folderScoped, filterType);
 
-      if (filterType === 'passkeys') {
-        passesTypeFilter = item.HasPasskey === true;
-      } else if (filterType === 'attachments') {
-        passesTypeFilter = item.HasAttachment === true;
-      } else if (filterType === 'totp') {
-        passesTypeFilter = item.HasTotp === true;
-      } else if (isItemTypeFilter(filterType)) {
-        passesTypeFilter = item.ItemType === filterType;
-      }
+    const searchLower = searchQuery.toLowerCase().trim();
+    if (!searchLower) {
+      return typeFiltered;
+    }
 
-      if (!passesTypeFilter) {
-        return false;
-      }
+    const searchWords = searchLower.split(/\s+/).filter(word => word.length > 0);
 
-      // Apply search filter
-      const searchLower = searchQuery.toLowerCase().trim();
-
-      if (!searchLower) {
-        return true;
-      }
-
+    return typeFiltered.filter(item => {
       const searchableFields = [
         item.Name?.toLowerCase() || '',
         getFieldValue(item, FieldKey.LoginUsername)?.toLowerCase() || '',
@@ -289,8 +267,6 @@ export default function ItemsScreen(): React.ReactNode {
         getFieldValue(item, FieldKey.LoginUrl)?.toLowerCase() || '',
         getFieldValue(item, FieldKey.NotesContent)?.toLowerCase() || '',
       ];
-
-      const searchWords = searchLower.split(/\s+/).filter(word => word.length > 0);
 
       return searchWords.every(word =>
         searchableFields.some(field => field.includes(word))
