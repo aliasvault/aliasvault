@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
+import { HapticsUtility } from '@/utils/HapticsUtility';
 
 /**
  * Copy text to clipboard with automatic expiration based on platform capabilities.
@@ -27,6 +28,8 @@ export async function copyToClipboardWithExpiration(
     : true;
 
   await NativeVaultManager.copyToClipboardWithExpiration(text, expirationSeconds, localOnly);
+
+  HapticsUtility.impact();
 }
 
 /**

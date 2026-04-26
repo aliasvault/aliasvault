@@ -5,7 +5,6 @@ import { View, Text, Platform, TouchableOpacity, StyleSheet, Animated, Easing } 
 import Toast from 'react-native-toast-message';
 
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
-import { HapticsUtility } from '@/utils/HapticsUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
 
@@ -105,9 +104,6 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
 
         // Use centralized clipboard utility
         await copyToClipboardWithExpiration(value, timeoutSeconds);
-
-        // Haptic feedback for successful copy
-        HapticsUtility.impact();
 
         // Handle animation state
         if (timeoutSeconds > 0) {
