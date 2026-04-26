@@ -22,6 +22,14 @@
     <item name="android:windowDrawsSystemBarBackgrounds">true</item>
     <item name="android:windowLightStatusBar">false</item>
     <item name="android:windowLightNavigationBar">false</item>
+    <!--
+      windowIsTranslucent keeps the calling app's activity in onPause rather than onStop
+      while our credential-provider UI is on top. Some apps (X.com) cancel their
+      CredentialManager request when their activity goes to onStop, so without this
+      flag the request is killed mid-biometric. The activity remains visually opaque
+      because its content view supplies its own background.
+    -->
+    <item name="android:windowIsTranslucent">true</item>
   </style>
 
   <!-- Dark mode splash screen theme -->

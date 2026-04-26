@@ -41,7 +41,8 @@
     <activity
         android:name=".credentialprovider.PasskeyAuthenticationActivity"
         android:exported="false"
-        android:theme="@style/PasskeyRegistrationTheme" />
+        android:theme="@style/PasskeyRegistrationTheme"
+        android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|density" />
 
     <!-- Passkey Registration Activity -->
     <activity
@@ -49,7 +50,8 @@
         android:exported="false"
         android:theme="@style/PasskeyRegistrationTheme"
         android:windowSoftInputMode="adjustResize"
-        android:fitsSystemWindows="true" />
+        android:fitsSystemWindows="true"
+        android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|density" />
 
     <!-- PIN Unlock Activity -->
     <activity
