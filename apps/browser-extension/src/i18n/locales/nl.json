@@ -108,7 +108,7 @@
       "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in.",
       "syncConflictMaxRetries": "Kan de vault niet synchroniseren na meerdere pogingen. Probeer het later opnieuw.",
       "mergeFailed": "Samenvoegen vault wijzigingen mislukt. Probeer het opnieuw.",
-      "vaultTooLarge": "De kluis is te groot voor de server om te accepteren. Probeer sommige items of bijlagen te verwijderen om de grootte te verkleinen en probeer het opnieuw.",
+      "vaultTooLarge": "De vault is te groot voor de server om te accepteren. Probeer sommige items of bijlagen te verwijderen om de grootte te verkleinen en probeer het opnieuw.",
       "invalidCode": "Voer een geldige 6-cijferige code in.",
       "serverError": "Kon de AliasVault server niet bereiken. Probeer het later opnieuw of neem contact op met support als het probleem aanhoudt.",
       "wrongPassword": "Onjuist wachtwoord. Probeer het opnieuw.",
