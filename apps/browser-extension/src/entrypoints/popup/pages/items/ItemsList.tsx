@@ -24,7 +24,7 @@ import type { Folder } from '@/utils/db/repositories/FolderRepository';
 import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
 import type { Item } from '@/utils/dist/core/models/vault';
 import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount } from '@/utils/folderUtils';
-import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@/utils/itemFilters';
+import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@/utils/itemFilters';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
@@ -108,7 +108,11 @@ const ItemsList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState(() => {
     return searchParams.get('search') || '';
   });
-  const [filterType, setItemFilterType] = useState<ItemFilterType>(getStoredFilter());
+  // URL filter takes precedence so navigating between folders preserves the active filter.
+  const [filterType, setItemFilterType] = useState<ItemFilterType>(() => {
+    const urlFilter = searchParams.get('filter');
+    return urlFilter ? parseItemFilterType(urlFilter) : getStoredFilter();
+  });
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [showDeleteFolderModal, setShowDeleteFolderModal] = useState(false);
@@ -157,10 +161,19 @@ const ItemsList: React.FC = () => {
 
   /**
    * Update URL when search term changes to persist it in navigation history.
+   * Preserves any existing filter param in the URL (set by folder navigation) — the
+   * filter is initialized from the URL on mount and otherwise managed in state, so
+   * we just leave whatever filter param is there alone.
    */
   useEffect(() => {
-    // Build the new URL with or without search param
-    const newUrl = searchTerm ? `${location.pathname}?search=${encodeURIComponent(searchTerm)}` : location.pathname;
+    const params = new URLSearchParams(location.search);
+    if (searchTerm) {
+      params.set('search', searchTerm);
+    } else {
+      params.delete('search');
+    }
+    const queryString = params.toString();
+    const newUrl = queryString ? `${location.pathname}?${queryString}` : location.pathname;
 
     // Only update if the URL actually changed
     const currentUrl = location.pathname + location.search;
@@ -434,13 +447,11 @@ const ItemsList: React.FC = () => {
   }, [dbContext?.sqliteClient, setIsLoading, setIsInitialLoading]);
 
   /**
-   * Get the title based on the active filter and current folder
+   * Get the title based on the active filter and current folder.
+   * An active filter takes precedence over the folder name so the title matches the
+   * filter that's actually being applied — same behavior as the root view.
    */
   const getFilterTitle = () : string => {
-    if (currentFolderId && currentFolderName) {
-      return currentFolderName;
-    }
-
     switch (filterType) {
       case 'passkeys':
         return t('items.filters.passkeys');
@@ -449,6 +460,9 @@ const ItemsList: React.FC = () => {
       case 'totp':
         return t('items.filters.totp');
       case 'all':
+        if (currentFolderId && currentFolderName) {
+          return currentFolderName;
+        }
         return t('items.title');
       default:
         // Check if it's an item type filter
@@ -458,17 +472,21 @@ const ItemsList: React.FC = () => {
             return t(itemTypeOption.titleKey);
           }
         }
+        if (currentFolderId && currentFolderName) {
+          return currentFolderName;
+        }
         return t('items.title');
     }
   };
 
   /**
-   * Navigate into a folder via URL
+   * Navigate into a folder via URL, preserving the active filter so the folder view
+   * shows the same subset reflected in the folder pill's badge count.
    */
   const handleFolderClick = useCallback((folderId: string, _folderName: string) => {
     setSearchTerm(''); // Clear search when entering folder
-    navigate(`/items/folder/${folderId}`);
-  }, [navigate]);
+    navigate(`/items/folder/${folderId}?filter=${encodeURIComponent(filterType)}`);
+  }, [navigate, filterType]);
 
   /**
    * Get folders with item counts.

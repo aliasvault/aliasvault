@@ -504,11 +504,14 @@ export default function ItemsScreen(): React.ReactNode {
   }, [dbContext.sqliteClient, executeVaultMutation, loadItems]);
 
   /**
-   * Navigate to a folder.
+   * Navigate to a folder, preserving the active type/feature filter so the folder view
+   * shows the same subset of items reflected in the folder's badge count.
    */
   const handleFolderClick = useCallback((folderId: string) => {
-    navigate(() => router.push(`/(tabs)/items/folder/${folderId}`));
-  }, [router, navigate]);
+    navigate(() => {
+      router.push(`/(tabs)/items/folder/${folderId}?filter=${encodeURIComponent(filterType)}` as '/(tabs)/items/folder/[id]');
+    });
+  }, [router, navigate, filterType]);
 
   /**
    * Create a new folder.

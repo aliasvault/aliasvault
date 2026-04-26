@@ -14,7 +14,7 @@ import { getFieldValue, FieldKey, ItemTypes } from '@/utils/dist/core/models/vau
 import emitter from '@/utils/EventEmitter';
 import { canHaveSubfolders, getRecursiveItemCount } from '@/utils/folderUtils';
 import { HapticsUtility } from '@/utils/HapticsUtility';
-import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@/utils/itemFilters';
+import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@/utils/itemFilters';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -65,7 +65,7 @@ const ITEM_TYPE_OPTIONS: ItemTypeOption[] = [
  * Simplified view with search scoped to this folder only.
  */
 export default function FolderViewScreen(): React.ReactNode {
-  const { id: folderId } = useLocalSearchParams<{ id: string }>();
+  const { id: folderId, filter: filterParam } = useLocalSearchParams<{ id: string; filter?: string }>();
   const { syncVault } = useVaultSync();
   const colors = useColors();
   const { t } = useTranslation();
@@ -85,9 +85,9 @@ export default function FolderViewScreen(): React.ReactNode {
   const [refreshing, setRefreshing] = useMinDurationLoading(false, 200);
   const { executeVaultMutation } = useVaultMutate();
 
-  // Search and filter state (scoped to this folder)
+  // Initial filter comes from the route param so navigating from a filtered list into a folder keeps the filter active.
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<ItemFilterType>('all');
+  const [filterType, setFilterType] = useState<ItemFilterType>(() => parseItemFilterType(filterParam));
   const [showFilterMenu, setShowFilterMenu] = useState(false);
 
   // Sort state
@@ -428,11 +428,14 @@ export default function FolderViewScreen(): React.ReactNode {
   }, [folderId, router, navigate]);
 
   /**
-   * Handle subfolder click - navigate to subfolder view.
+   * Handle subfolder click - navigate to subfolder view, preserving the active filter
+   * so the subfolder opens with the same filter that produced its badge count.
    */
   const handleSubfolderClick = useCallback((subfolderId: string) => {
-    navigate(() => router.push(`/(tabs)/items/folder/${subfolderId}`));
-  }, [router, navigate]);
+    navigate(() => {
+      router.push(`/(tabs)/items/folder/${subfolderId}?filter=${encodeURIComponent(filterType)}` as '/(tabs)/items/folder/[id]');
+    });
+  }, [router, navigate, filterType]);
 
   /**
    * Create a new subfolder.
