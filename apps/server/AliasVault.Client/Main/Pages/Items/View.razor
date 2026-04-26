@@ -27,11 +27,10 @@ else
                 Text="@Localizer["EditButtonDesktop"]"
                 Href="@($"/items/{Id}/edit")"
                 Color="primary" />
-            <LinkButton
-                SmallText="@Localizer["DeleteButtonMobile"]"
-                Text="@Localizer["DeleteButtonDesktop"]"
-                Href="@($"/items/{Id}/delete")"
-                Color="danger" />
+            <button type="button" @onclick="OpenDeleteModal" class="space-x-3 @ButtonStyles.BaseClasses @ButtonStyles.GetColorClasses("danger")">
+                <span class="hidden md:inline ms-1">@Localizer["DeleteButtonMobile"]</span>
+                <span class="md:hidden">@Localizer["DeleteButtonDesktop"]</span>
+            </button>
         </CustomActions>
     </PageHeader>
 
@@ -254,10 +253,36 @@ else
             }
         </div>
     </div>
+
+    <FormModal
+        IsOpen="ShowDeleteModal"
+        Title="@DeleteLocalizer["DeleteItemTitle"]"
+        IconBackgroundClass="bg-red-100 dark:bg-red-900/30"
+        ConfirmText="@DeleteLocalizer["YesImSureButton"]"
+        CancelText="@DeleteLocalizer["NoCancelButton"]"
+        ConfirmButtonClass="bg-red-600 hover:bg-red-700"
+        IsLoading="IsDeleting"
+        OnConfirm="ConfirmDelete"
+        OnClose="CancelDelete">
+        <Icon>
+            <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+        </Icon>
+        <ChildContent>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                @string.Format(DeleteLocalizer["DeleteItemDescription"].Value, Config.TrashRetentionDays)
+            </p>
+            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-md p-3">
+                <p class="text-sm font-medium text-gray-900 dark:text-white break-all">@(Item?.Name ?? string.Empty)</p>
+            </div>
+        </ChildContent>
+    </FormModal>
 }
 
 @code {
     private IStringLocalizer Localizer => LocalizerFactory.Create("Pages.Main.Items.View", "AliasVault.Client");
+    private IStringLocalizer DeleteLocalizer => LocalizerFactory.Create("Pages.Main.Items.Delete", "AliasVault.Client");
 
     /// <summary>
     /// Gets or sets the item ID.
@@ -270,6 +295,8 @@ else
     private Folder? Folder { get; set; }
     private Dictionary<FieldCategory, List<DisplayField>> GroupedFields { get; set; } = new();
     private List<string> UrlValues { get; set; } = new();
+    private bool ShowDeleteModal { get; set; }
+    private bool IsDeleting { get; set; }
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
@@ -360,7 +387,7 @@ else
         if (firstRender)
         {
             await KeyboardShortcutService.RegisterShortcutAsync("ge", NavigateToEdit);
-            await KeyboardShortcutService.RegisterShortcutAsync("gd", NavigateToDelete);
+            await KeyboardShortcutService.RegisterShortcutAsync("gd", OpenDeleteModal);
         }
     }
 
@@ -374,11 +401,58 @@ else
     }
 
     /// <summary>
-    /// Navigates to the delete page.
+    /// Opens the delete confirmation modal.
     /// </summary>
-    private Task NavigateToDelete()
+    private Task OpenDeleteModal()
     {
-        NavigationManager.NavigateTo($"/items/{Id}/delete");
+        ShowDeleteModal = true;
+        StateHasChanged();
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Closes the delete confirmation modal without deleting.
+    /// </summary>
+    private void CancelDelete()
+    {
+        if (IsDeleting)
+        {
+            return;
+        }
+
+        ShowDeleteModal = false;
+    }
+
+    /// <summary>
+    /// Confirms deletion of the current item, trashes it, and navigates back to the item list.
+    /// </summary>
+    private async Task ConfirmDelete()
+    {
+        if (IsDeleting)
+        {
+            return;
+        }
+
+        if (Item is null)
+        {
+            GlobalNotificationService.AddErrorMessage(DeleteLocalizer["DeleteItemNotFoundError"], true);
+            ShowDeleteModal = false;
+            return;
+        }
+
+        IsDeleting = true;
+        StateHasChanged();
+
+        try
+        {
+            await ItemService.TrashItemInBackgroundAsync(Id);
+            GlobalNotificationService.AddSuccessMessage(DeleteLocalizer["DeleteSuccessMessage"]);
+            NavigationManager.NavigateTo("/items");
+        }
+        finally
+        {
+            IsDeleting = false;
+            ShowDeleteModal = false;
+        }
     }
 }

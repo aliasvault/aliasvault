@@ -949,8 +949,9 @@ public sealed class DbService : IDisposable
 
     /// <summary>
     /// Prunes expired items from the trash.
-    /// Items that have been in trash (DeletedAt set) for longer than 30 days
-    /// are permanently deleted (IsDeleted = true).
+    /// Items that have been in trash (DeletedAt set) for longer than the
+    /// configured <see cref="Config.TrashRetentionDays"/> are permanently
+    /// deleted (IsDeleted = true).
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     private async Task PruneExpiredTrashItemsAsync()
@@ -964,7 +965,7 @@ public sealed class DbService : IDisposable
             var pruneInput = new JsInterop.RustCore.PruneInput
             {
                 Tables = tables,
-                RetentionDays = 30,
+                RetentionDays = _config.TrashRetentionDays,
                 CurrentTime = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
             };
 

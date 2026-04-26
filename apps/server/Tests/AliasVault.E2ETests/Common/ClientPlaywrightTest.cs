@@ -403,8 +403,14 @@ public abstract class ClientPlaywrightTest : PlaywrightTest
         await WaitForUrlAsync("items/**", "Delete");
         await Page.ClickAsync("text=Delete");
 
-        // Wait for the delete item page to load.
-        await WaitForUrlAsync("items/**/delete", "You can delete the item below");
+        // Wait for the delete confirmation modal to appear on the item view page.
+        await Page.GetByText("Are you sure you want to delete this item?", new PageGetByTextOptions { Exact = false })
+            .First
+            .WaitForAsync(new LocatorWaitForOptions
+            {
+                Timeout = TestDefaults.DefaultTimeout,
+                State = WaitForSelectorState.Attached,
+            });
 
         var submitButton = Page.Locator("text=Yes, I'm sure").First;
         await submitButton.ClickAsync();

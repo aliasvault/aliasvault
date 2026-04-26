@@ -73,4 +73,10 @@ public class Config
     /// Gets or sets a value indicating whether public registration is enabled.
     /// </summary>
     public bool PublicRegistrationEnabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of days that soft-deleted items stay in the
+    /// "Recently Deleted" trash before being permanently pruned.
+    /// </summary>
+    public int TrashRetentionDays { get; set; } = 30;
 }
