@@ -12,6 +12,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using AliasServerDb;
+using AliasVault.Api.Headers;
 using AliasVault.Api.Helpers;
 using AliasVault.Auth;
 using AliasVault.Cryptography.Client;

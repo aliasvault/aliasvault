@@ -141,6 +141,7 @@ class WebApiService(private val context: Context) {
 
         // Add client version header
         requestHeaders["X-AliasVault-Client"] = getClientVersionHeader()
+        requestHeaders["X-AliasVault-AppInstanceId"] = appInstanceId
 
         // Execute the request
         val response = executeRawRequest(
@@ -160,6 +161,7 @@ class WebApiService(private val context: Context) {
                 val retryHeaders = headers.toMutableMap()
                 retryHeaders["Authorization"] = "Bearer $newToken"
                 retryHeaders["X-AliasVault-Client"] = getClientVersionHeader()
+                retryHeaders["X-AliasVault-AppInstanceId"] = appInstanceId
 
                 val retryResponse = executeRawRequest(
                     method = method,
@@ -290,6 +292,7 @@ class WebApiService(private val context: Context) {
                 "X-Ignore-Failure" to "true",
             )
             headers["X-AliasVault-Client"] = getClientVersionHeader()
+            headers["X-AliasVault-AppInstanceId"] = appInstanceId
 
             val response = executeRawRequest(
                 method = "POST",
@@ -326,18 +329,17 @@ class WebApiService(private val context: Context) {
 
     /**
      * Get the client version header value.
-     * Format: "android-{version}-{appInstanceId}"
-     * The app instance ID uniquely identifies this app installation/Android user profile.
+     * Format: "android-{version}".
      */
     private fun getClientVersionHeader(): String {
         return try {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
             val version = packageInfo.versionName ?: "0.0.0"
             val baseVersion = version.split("-").firstOrNull() ?: "0.0.0"
-            "android-$baseVersion-$appInstanceId"
+            "android-$baseVersion"
         } catch (e: PackageManager.NameNotFoundException) {
             Log.e(TAG, "Error getting package version", e)
-            "android-0.0.0-$appInstanceId"
+            "android-0.0.0"
         }
     }
 

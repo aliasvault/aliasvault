@@ -8,6 +8,7 @@
 namespace AliasVault.Api.Helpers;
 
 using AliasServerDb;
+using AliasVault.Api.Headers;
 using AliasVault.Cryptography.Client;
 using Microsoft.Extensions.Caching.Memory;
 using SecureRemotePassword;
@@ -86,10 +87,9 @@ public static class AuthHelper
     /// conflicts when a user is logged in on multiple clients from the same browser/device.
     /// For example, logging out from the browser extension won't affect the web app session.
     ///
-    /// For Android, the identifier also includes an app instance ID at the end to support
-    /// multiple Android User Profiles on the same physical device. Each Android User Profile
-    /// generates a unique UUID (without dashes) on first launch that persists for the lifetime
-    /// of that installation.
+    /// When the optional X-AliasVault-AppInstanceId header is present (currently only sent by the
+    /// Android app to support multiple User Profiles on the same physical device), it is appended
+    /// to keep device identifiers unique across those profiles.
     ///
     /// Device identifier format examples:
     /// - Web/Browser: "chrome|Mozilla/5.0...|en-US"
@@ -103,17 +103,21 @@ public static class AuthHelper
     /// <returns>Unique device identifier as string.</returns>
     public static string GenerateDeviceIdentifier(HttpRequest request)
     {
-        var userAgent = request.Headers.UserAgent.ToString();
-        var acceptLanguage = request.Headers.AcceptLanguage.ToString();
-
         var clientInfo = ClientHeaderInfo.Parse(request.Headers[ClientHeaderInfo.HeaderName].ToString());
+        var appInstanceInfo = AppInstanceIdHeaderInfo.Parse(request.Headers[AppInstanceIdHeaderInfo.HeaderName].ToString());
 
-        // Only Android appends an app instance id, used to keep device identifiers unique
-        // across multiple Android User Profiles on the same physical device.
-        var appInstanceSuffix = clientInfo.ClientName == "android" && clientInfo.AppInstanceId is not null
-            ? $"|{clientInfo.AppInstanceId}"
-            : string.Empty;
+        List<string?> parts =
+        [
+            clientInfo.ClientName,
+            request.Headers.UserAgent.ToString(),
+            request.Headers.AcceptLanguage.ToString(),
+        ];
 
-        return $"{clientInfo.ClientName}|{userAgent}|{acceptLanguage}{appInstanceSuffix}";
+        if (appInstanceInfo.AppInstanceId is not null)
+        {
+            parts.Add(appInstanceInfo.AppInstanceId);
+        }
+
+        return string.Join('|', parts);
     }
 }
