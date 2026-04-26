@@ -64,7 +64,7 @@
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
-    <value>Per importare la cassaforte 1Password, è necessario esportarla come file CSV. Puoi farlo accedendo al tuo account 1Password nell'app desktop 1Password 8 (Windows / MacOS / Linux), vai al menu 'File' e seleziona 'Esporta' (per CSV).</value>
+    <value>Per importare la cassaforte 1Password, è necessario esportarla. Puoi farlo accedendo al tuo account 1Password nell'app desktop 1Password 8 (Windows / MacOS / Linux), vai al menu 'File' e seleziona 'Esporta'.</value>
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
@@ -77,7 +77,7 @@
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>Per importare la cassaforte Bitwarden, è necessario esportarla come file CSV. Puoi farlo accedendo al tuo account Bitwarden, andando al menu 'Strumenti' e selezionando 'Esporta vault' (in CSV).</value>
+    <value>In order to import your Bitwarden vault, you need to export it. You can do this by logging into your Bitwarden account, going to the 'Tools' menu and selecting 'Export vault'.</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
@@ -210,7 +210,7 @@
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
-    <value>Per importare le password di Proton Pass, è necessario esportarle come file CSV. Puoi farlo accedendo a Proton Pass (web), facendo clic sul menu 'Impostazioni' > 'Esporta' > 'Formato file: CSV'. Quindi fai clic su 'Esporta'.</value>
+    <value>In order to import your Proton Pass vault, you need to export it. You can do this in the Proton Pass browser extension by going to 'Settings' > 'Export'.</value>
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">

@@ -108,6 +108,7 @@
       "passwordChanged": "Twoje hasło uległo zmianie od czasu ostatniego logowania. Ze względów bezpieczeństwa prosimy o ponowne zalogowanie się.",
       "syncConflictMaxRetries": "Nie można zsynchronizować sejfu po wielu próbach. Spróbuj ponownie później.",
       "mergeFailed": "Nie udało się scalić zmian w sejfie. Spróbuj ponownie.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "invalidCode": "Wprowadź prawidłowy 6-cyfrowy kod uwierzytelniający.",
       "serverError": "Nie można połączyć się z serwerem AliasVault. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną, jeśli problem nadal występuje.",
       "wrongPassword": "Nieprawidłowe hasło. Spróbuj ponownie.",
@@ -326,7 +327,7 @@
     "noEmails": "Nie znaleziono wiadomości e-mail",
     "noEmailsDescription": "Nie otrzymałeś jeszcze żadnych wiadomości e-mail na prywatne adresy e-mail. Kiedy otrzymasz nowy e-mail, pojawi się on tutaj.",
     "offlineMessage": "Jesteś offline. Połącz się z Internetem, aby załadować wiadomości e-mail.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Załaduj więcej (pozostało {{count}})",
     "dateFormat": {
       "justNow": "w tej chwili",
       "minutesAgo_single": "{{count}} minut temu",
@@ -506,8 +507,8 @@
   "recentlyDeleted": {
     "title": "Ostatnio usunięte",
     "noItems": "Brak usuniętych elementów",
-    "noItemsDescription": "Usunięte elementy pojawią się tutaj na 30 dni, zanim zostaną trwale usunięte.",
-    "description": "Te elementy zostaną trwale usunięte po 30 dniach. Możesz je przywrócić lub natychmiast usunąć.",
+    "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+    "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
     "restore": "Przywróć",
     "deletePermanently": "Usuń bezpowrotnie",
     "emptyAll": "Opróżnij wszystkie",
@@ -546,6 +547,8 @@
   },
   "sync": {
     "offline": "Jesteś w trybie offline",
-    "tapToRetry": "Dotknij, aby ponowić synchronizację"
+    "tapToRetry": "Dotknij, aby ponowić synchronizację",
+    "syncErrorTitle": "Sync Failed",
+    "syncErrorDismiss": "Dismiss"
   }
 }

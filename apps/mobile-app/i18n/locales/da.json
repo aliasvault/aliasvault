@@ -26,11 +26,13 @@
     "generate": "Generer",
     "attachments": "Vedhæftede filer",
     "or": "eller",
+    "retry": "Prøv igen",
     "deleteItemConfirmTitle": "Slet element",
     "deleteItemConfirmDescription": "Er du sikker på, at du vil slette dette element?",
     "errors": {
       "unknownError": "Der opstod en ukendt fejl.",
       "unknownErrorTryAgain": "Der opstod en ukendt fejl. Prøv venligst igen.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "serverVersionTooOld": "AliasVault-serveren skal opdateres til en nyere version for at bruge denne funktion. Kontakt venligst serveradministratoren, hvis du har brug for hjælp."
     }
   },
@@ -158,6 +160,9 @@
     "clipboardClear": "Ryd udklipsholder",
     "clipboardClearDescription": "Ryd automatisk kopierede adgangskoder og følsomme oplysninger fra din udklipsholder efter et bestemt tidsrum.",
     "clipboardClearAndroidWarning": "Bemærk: Nogle Android-enheder har udklipsholder-historik aktiveret, hvilket kan gemme tidligere kopierede elementer, selv efter AliasVault har ryddet udklipsholderen. AliasVault kan kun overskrive det seneste element, men ældre indlæg kan forblive synlige i historikken. Af sikkerhedsmæssige årsager anbefaler vi at deaktivere alle funktioner til udklipsholder-historik i din enheds indstillinger.",
+    "clipboardLocalOnly": "Kun Lokal Udklipsholder",
+    "clipboardLocalOnlyDescription": "Behold kopierede legitimationsoplysninger på denne enhed i stedet for at synkronisere dem med dine andre Apple-enheder via Universal Udklipsholder.",
+    "clipboardLocalOnlyDisabledWarning": "Med dette fra kan kopierede legitimationsoplysninger synkronisere til dine andre Apple-enheder (Mac, iPad osv.) via Universal Udklipsholder.",
     "clipboardClearOptions": {
       "never": "Aldrig",
       "5seconds": "5 sekunder",
@@ -513,8 +518,8 @@
     "recentlyDeleted": {
       "title": "Senest slettet",
       "noItems": "Ingen slettede elementer",
-      "noItemsDescription": "Elementer du sletter, vil blive vist her i 30 dage, før de fjernes permanent.",
-      "description": "Disse elementer vil blive slettet permanent efter 30 dage. Du kan gendanne dem eller slette dem med det samme.",
+      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
       "restore": "Gendan",
       "deletePermanently": "Slet permanent",
       "emptyAll": "Tøm alt",
@@ -614,6 +619,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Boksen blev automatisk låst efter tidsafbrydelse.",
       "attemptingToUnlockMessage": "Forsøger at låse op."
+    },
+    "vaultError": {
+      "title": "Boks Fejl",
+      "description": "Der opstod en fejl under indlæsning af din boks. Hvis dette problem fortsætter, bedes du kontakte support.",
+      "showDetails": "Vis fejloplysninger",
+      "hideDetails": "Skjul fejloplysninger",
+      "copyErrorDetails": "Kopiér fejloplysninger"
     },
     "loginSettings": {
       "title": "API-forbindelse",

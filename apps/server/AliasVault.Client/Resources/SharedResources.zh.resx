@@ -228,6 +228,14 @@
     <value>发生未知错误，请重试。</value>
     <comment>Generic unknown error message</comment>
   </data>
+  <data name="VaultTooLargeError" xml:space="preserve">
+    <value>密码库过大，服务器无法接受。请尝试移除一些项目或附件以减小其大小，然后重试。</value>
+    <comment>Shown when the server rejects a vault upload with HTTP 413 because the encrypted vault exceeds the configured upload size limit</comment>
+  </data>
+  <data name="VaultSaveError" xml:space="preserve">
+    <value>无法保存对密码库的更改，请重试。</value>
+    <comment>Generic error shown when a vault save / sync to the server fails for an unexpected reason</comment>
+  </data>
   <data name="ErrorValidation" xml:space="preserve">
     <value>请更正以下错误。</value>
     <comment>Validation error message</comment>

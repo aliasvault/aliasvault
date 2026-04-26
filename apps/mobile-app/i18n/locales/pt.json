@@ -26,11 +26,13 @@
     "generate": "Gerar",
     "attachments": "Anexos",
     "or": "ou",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Excluir Item",
     "deleteItemConfirmDescription": "Tem certeza que deseja excluir este item?",
     "errors": {
       "unknownError": "Ocorreu um erro desconhecido.",
       "unknownErrorTryAgain": "Ocorreu um erro desconhecido. Por favor, tente novamente.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "serverVersionTooOld": "O servidor do AliasVault deve ser atualizado para uma versão mais recente para utilizar esta função. Por favor, entre em contato com o administrador do servidor se precisar de ajuda."
     }
   },
@@ -158,6 +160,9 @@
     "clipboardClear": "Limpar área de transferência",
     "clipboardClearDescription": "Limpa automaticamente as senhas e dados sensíveis copiados da sua área de transferência após o tempo especificado.",
     "clipboardClearAndroidWarning": "Nota: alguns dispositivos Android têm histórico de área de transferência habilitado, o que pode manter dados copiados anteriormente, mesmo após o AliasVault limpar a área de transferência. O AliasVault só pode remover o item mais recente, porém outros itens podem permanecer visíveis no histórico. Por questões de segurança, recomendamos desabilitar qualquer histórico de área de transferência nas configurações do seu dispositivo.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Nunca",
       "5seconds": "5 segundos",
@@ -513,8 +518,8 @@
     "recentlyDeleted": {
       "title": "Recentemente Excluídos",
       "noItems": "Nenhum item excluído",
-      "noItemsDescription": "Itens que você excluir aparecerão aqui por 30 dias antes de serem excluídos permanentemente.",
-      "description": "Estes itens serão excluídos permanentemente depois de 30 dias. Você pode restaurá-los ou excluí-los imediatamente.",
+      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
       "restore": "Restaurar",
       "deletePermanently": "Excluir Permanentemente",
       "emptyAll": "Esvaziar Tudo",
@@ -614,6 +619,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Cofre bloqueado automaticamente após período.",
       "attemptingToUnlockMessage": "Tentando desbloquear."
+    },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
     },
     "loginSettings": {
       "title": "Conexão com API",

@@ -26,11 +26,13 @@
     "generate": "Generate",
     "attachments": "Liitteet",
     "or": "tai",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Poista kohde",
     "deleteItemConfirmDescription": "Haluatko varmasti poistaa tämän kohteen?",
     "errors": {
       "unknownError": "Tapahtui tuntematon virhe.",
       "unknownErrorTryAgain": "Tapahtui tuntematon virhe. Yritä uudelleen.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "serverVersionTooOld": "AliasVault-palvelin on päivitettävä uudempaan versioon, jotta se voi käyttää tätä ominaisuutta. Ota yhteyttä palvelimen ylläpitäjään jos tarvitset apua."
     }
   },
@@ -158,6 +160,9 @@
     "clipboardClear": "Tyhjennä leikepöytä",
     "clipboardClearDescription": "Poista automaattisesti kopioidut salasanat ja arkaluonteiset tiedot leikepöydältä tietyn ajanjakson jälkeen.",
     "clipboardClearAndroidWarning": "Huomaa: joillakin Android-laitteilla on leikepöydän historia otettuna käyttöön, mikä saattaa seurata aiemmin kopioituja kohteita, vaikka AliasVault poistaisi leikepöydän. AliasVault voi korvata vain viimeisimmän kohteen, mutta vanhemmat kohteet voivat jäädä näkyviin historiassa. Turvallisuussyistä suosittelemme poistamaan kaikki leikepöydän historia-ominaisuudet käytöstä laitteesi asetuksista.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Ei koskaan",
       "5seconds": "5 sekuntia",
@@ -513,8 +518,8 @@
     "recentlyDeleted": {
       "title": "Recently Deleted",
       "noItems": "No deleted items",
-      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
-      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
       "restore": "Restore",
       "deletePermanently": "Delete Permanently",
       "emptyAll": "Empty All",
@@ -614,6 +619,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Holvi lukittu automaattisesti aikakatkaisun jälkeen.",
       "attemptingToUnlockMessage": "Yritetään avata lukitus."
+    },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
     },
     "loginSettings": {
       "title": "API-yhteys",

@@ -64,7 +64,7 @@
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
-    <value>Aby zaimportować sejf 1Password, należy wyeksportować go jako plik CSV. Można to zrobić, logując się na swoje konto 1Password w aplikacji komputerowej 1Password 8 (Windows / MacOS / Linux), przechodząc do menu „Plik” i wybierając opcję „Eksportuj” (do CSV).</value>
+    <value>In order to import your 1Password vault, you need to export it. You can do this by logging into your 1Password account in the 1Password 8 desktop app (Windows / MacOS / Linux), going to the 'File' menu and selecting 'Export'.</value>
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
@@ -77,7 +77,7 @@
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>Aby zaimportować sejf Bitwarden, należy wyeksportować go jako plik CSV. Można to zrobić, logując się na konto Bitwarden, przechodząc do menu „Narzędzia” i wybierając opcję „Eksportuj sejf” (do pliku CSV).</value>
+    <value>In order to import your Bitwarden vault, you need to export it. You can do this by logging into your Bitwarden account, going to the 'Tools' menu and selecting 'Export vault'.</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
@@ -210,7 +210,7 @@
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
-    <value>Aby zaimportować sejf z Proton Pass, należy wyeksportować je do pliku CSV. W tym celu należy zalogować się do Proton Pass (wersja internetowa), kliknąć menu „Ustawienia” > „Eksportuj” > „Format pliku: CSV”. Następnie należy kliknąć „Eksportuj”.</value>
+    <value>In order to import your Proton Pass vault, you need to export it. You can do this in the Proton Pass browser extension by going to 'Settings' > 'Export'.</value>
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">

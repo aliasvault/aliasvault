@@ -25,9 +25,9 @@
 "no_item_selected" = "未选择项目。";
 
 /* Context menu strings */
-"copy_username" = "复制用户名";
-"copy_password" = "复制密码";
-"copy_email" = "复制邮箱";
+"copy_username" = "拷贝用户名";
+"copy_password" = "拷贝密码";
+"copy_email" = "拷贝邮箱";
 "view_details" = "查看详情";
 "username_copied" = "用户名已复制";
 "password_copied" = "密码已复制";

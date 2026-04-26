@@ -108,6 +108,7 @@
       "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in.",
       "syncConflictMaxRetries": "Kan de vault niet synchroniseren na meerdere pogingen. Probeer het later opnieuw.",
       "mergeFailed": "Samenvoegen vault wijzigingen mislukt. Probeer het opnieuw.",
+      "vaultTooLarge": "De kluis is te groot voor de server om te accepteren. Probeer sommige items of bijlagen te verwijderen om de grootte te verkleinen en probeer het opnieuw.",
       "invalidCode": "Voer een geldige 6-cijferige code in.",
       "serverError": "Kon de AliasVault server niet bereiken. Probeer het later opnieuw of neem contact op met support als het probleem aanhoudt.",
       "wrongPassword": "Onjuist wachtwoord. Probeer het opnieuw.",
@@ -506,8 +507,8 @@
   "recentlyDeleted": {
     "title": "Recent verwijderd",
     "noItems": "Geen verwijderde items",
-    "noItemsDescription": "Items die je verwijdert verschijnen hier gedurende 30 dagen voordat ze definitief verwijderd worden.",
-    "description": "Deze items zullen na 30 dagen permanent verwijderd worden. Je kunt ze herstellen of ze direct verwijderen.",
+    "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+    "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
     "restore": "Herstel",
     "deletePermanently": "Permanent verwijderen",
     "emptyAll": "Alles verwijderen",
@@ -546,6 +547,8 @@
   },
   "sync": {
     "offline": "Offline",
-    "tapToRetry": "Probeer sync opnieuw"
+    "tapToRetry": "Probeer sync opnieuw",
+    "syncErrorTitle": "Synchronisatie mislukt",
+    "syncErrorDismiss": "Negeer"
   }
 }

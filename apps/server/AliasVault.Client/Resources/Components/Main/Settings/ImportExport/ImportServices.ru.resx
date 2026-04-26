@@ -64,7 +64,7 @@
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
-    <value>Чтобы импортировать хранилище 1Password, сначала экспортируйте его в CSV-файл. Для этого войдите в учетную запись 1Password в настольном приложении 1Password 8 (Windows / MacOS / Linux), откройте меню «Файл» и выберите «Экспорт» (CSV).</value>
+    <value>Чтобы импортировать хранилище 1Password, его необходимо сначала экспортировать. Для этого войдите в свою учетную запись в приложении 1Password для ПК (Windows / macOS / Linux), откройте меню «Файл» и выберите «Экспорт».</value>
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
@@ -77,7 +77,7 @@
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>Чтобы импортировать хранилище Bitwarden, сначала экспортируйте его в CSV-файл. Для этого войдите в учетную запись Bitwarden, откройте меню «Инструменты» и выберите «Экспорт хранилища» (CSV).</value>
+    <value>Чтобы импортировать ваше хранилище Bitwarden, его необходимо экспортировать. Это можно сделать, войдя в свой аккаунт Bitwarden, перейдя в меню «Инструменты» и выбрав «Экспортировать хранилище».</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
@@ -210,7 +210,7 @@
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
-    <value>Чтобы импортировать пароли из Proton Pass, сначала экспортируйте их в CSV‑файл. Для этого войдите в Proton Pass (веб‑версия), откройте меню «Настройки» > «Экспорт» > «Формат файла: CSV», а затем нажмите «Экспорт».</value>
+    <value>Чтобы импортировать ваше хранилище Proton Pass, его нужно сначала экспортировать. Это можно сделать в расширении Proton Pass для браузера: перейдите в "Настройки" > "Экспорт".</value>
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">

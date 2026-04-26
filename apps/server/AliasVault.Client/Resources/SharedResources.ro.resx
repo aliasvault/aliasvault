@@ -228,6 +228,14 @@
     <value>A apărut o eroare necunoscută. Încearcă din nou.</value>
     <comment>Generic unknown error message</comment>
   </data>
+  <data name="VaultTooLargeError" xml:space="preserve">
+    <value>Seiful este prea mare pentru a fi acceptat de server. Încercați să eliminați unele elemente sau atașamente pentru a reduce dimensiunea și încercați din nou.</value>
+    <comment>Shown when the server rejects a vault upload with HTTP 413 because the encrypted vault exceeds the configured upload size limit</comment>
+  </data>
+  <data name="VaultSaveError" xml:space="preserve">
+    <value>Nu s-au putut salva modificările în seif. Încearcă din nou.</value>
+    <comment>Generic error shown when a vault save / sync to the server fails for an unexpected reason</comment>
+  </data>
   <data name="ErrorValidation" xml:space="preserve">
     <value>Corectați erorile de mai jos.</value>
     <comment>Validation error message</comment>

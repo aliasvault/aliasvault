@@ -26,11 +26,13 @@
     "generate": "جنریٹ کریں",
     "attachments": "Attachments",
     "or": "یا",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Delete Item",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
       "unknownError": "An unknown error occurred.",
       "unknownErrorTryAgain": "ایک نامعلوم مسئلہ پیش آ گیا ہے۔ براہِ کرم دوبارہ کوشش کریں۔",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help."
     }
   },
@@ -158,6 +160,9 @@
     "clipboardClear": "Clear Clipboard",
     "clipboardClearDescription": "Automatically clear copied passwords and sensitive information from your clipboard after a specified time period.",
     "clipboardClearAndroidWarning": "Note: some Android devices have clipboard history enabled, which may keep track of previously copied items, even after AliasVault clears the clipboard. AliasVault can only overwrite the most recent item, but older entries may remain visible in history. For security reasons, we recommend disabling any clipboard history features in your device settings.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Never",
       "5seconds": "5 seconds",
@@ -513,8 +518,8 @@
     "recentlyDeleted": {
       "title": "Recently Deleted",
       "noItems": "No deleted items",
-      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
-      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
       "restore": "Restore",
       "deletePermanently": "Delete Permanently",
       "emptyAll": "Empty All",
@@ -614,6 +619,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Vault auto-locked after timeout.",
       "attemptingToUnlockMessage": "Attempting to unlock."
+    },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
     },
     "loginSettings": {
       "title": "API Connection",

@@ -26,11 +26,13 @@
     "generate": "Genereren",
     "attachments": "Bijlagen",
     "or": "of",
+    "retry": "Probeer opnieuw",
     "deleteItemConfirmTitle": "Verwijder item",
     "deleteItemConfirmDescription": "Weet je zeker dat je dit item wilt verwijderen?",
     "errors": {
       "unknownError": "Er is een onbekende fout opgetreden.",
       "unknownErrorTryAgain": "Er is een onbekende fout opgetreden. Probeer het opnieuw.",
+      "vaultTooLarge": "De kluis is te groot voor de server om te accepteren. Probeer sommige items of bijlagen te verwijderen om de grootte te verkleinen en probeer het opnieuw.",
       "serverVersionTooOld": "De AliasVault server moet bijgewerkt worden naar een nieuwere versie om deze functie te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt."
     }
   },
@@ -158,6 +160,9 @@
     "clipboardClear": "Klembord wissen",
     "clipboardClearDescription": "Automatisch gekopieerde wachtwoorden en gevoelige informatie van je klembord wissen na een bepaalde tijdsperiode.",
     "clipboardClearAndroidWarning": "Opmerking: sommige Android-apparaten hebben klembord geschiedenis ingeschakeld, waarmee eerder gekopieerde items kunnen worden bijgehouden, zelfs nadat AliasVault het klembord heeft gewist. AliasVault kan alleen het meest recente item overschrijven, maar oudere items kunnen zichtbaar blijven in de geschiedenis. Om veiligheidsredenen raden we aan om alle klembordgeschiedenis opties in je apparaatinstellingen uit te schakelen.",
+    "clipboardLocalOnly": "Alleen lokaal klembord",
+    "clipboardLocalOnlyDescription": "Houd gekopieerde inloggegevens op dit apparaat in plaats van ze te synchroniseren met andere Apple-apparaten via het universele klembord.",
+    "clipboardLocalOnlyDisabledWarning": "Als dit uit staat, kunnen gekopieerde inloggegevens synchroniseren met je andere Apple-apparaten (Mac, iPad, enz.) via het universele klembord.",
     "clipboardClearOptions": {
       "never": "Nooit",
       "5seconds": "5 seconden",
@@ -513,8 +518,8 @@
     "recentlyDeleted": {
       "title": "Recent verwijderd",
       "noItems": "Geen verwijderde items",
-      "noItemsDescription": "Items die je verwijdert verschijnen hier gedurende 30 dagen voordat ze definitief verwijderd worden.",
-      "description": "Deze items zullen na 30 dagen permanent verwijderd worden. Je kunt ze herstellen of ze direct verwijderen.",
+      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
       "restore": "Herstel",
       "deletePermanently": "Permanent verwijderen",
       "emptyAll": "Alles verwijderen",
@@ -614,6 +619,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Vault automatisch vergrendeld na time-out.",
       "attemptingToUnlockMessage": "Bezig met ontgrendelen."
+    },
+    "vaultError": {
+      "title": "Vault fout",
+      "description": "Er is een fout opgetreden tijdens het laden van de vault. Als dit probleem aanhoudt, neem dan contact op met support.",
+      "showDetails": "Toon foutdetails",
+      "hideDetails": "Verberg foutdetails",
+      "copyErrorDetails": "Kopieer foutdetails"
     },
     "loginSettings": {
       "title": "API-verbinding",

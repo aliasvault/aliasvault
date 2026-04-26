@@ -26,11 +26,13 @@
     "generate": "Generează",
     "attachments": "Atașamente",
     "or": "sau",
+    "retry": "Reîncearcă",
     "deleteItemConfirmTitle": "Șterge elementul",
     "deleteItemConfirmDescription": "Sigur dorești să ștergi acest element?",
     "errors": {
       "unknownError": "A apărut o eroare necunoscută.",
       "unknownErrorTryAgain": "A apărut o eroare necunoscută. Încearcă din nou.",
+      "vaultTooLarge": "Seiful este prea mare pentru a fi acceptat de server. Încercați să eliminați unele elemente sau atașamente pentru a reduce dimensiunea și încercați din nou.",
       "serverVersionTooOld": "Serverul AliasVault trebuie actualizat la o versiune mai nouă pentru a utiliza această funcție. Contactează administratorul serverului pentru ajutor."
     }
   },
@@ -158,6 +160,9 @@
     "clipboardClear": "Golește clipboardul",
     "clipboardClearDescription": "Șterge automat parolele copiate și informațiile sensibile din clipboard după o perioadă specificată.",
     "clipboardClearAndroidWarning": "Notă: unele dispozitive Android au istoricul clipboard-ului activat, care poate păstra elementele copiate anterior. AliasVault poate suprascrie doar cel mai recent element, dar intrările mai vechi pot rămâne vizibile în istoric. Din motive de securitate, recomandăm să dezactivați orice funcții ale istoricului clipboard-ului în setările dispozitivului.",
+    "clipboardLocalOnly": "Doar clipboard local",
+    "clipboardLocalOnlyDescription": "Păstrează datele de autentificare copiate pe acest dispozitiv, în loc să le sincronizezi cu celelalte dispozitive Apple prin intermediul Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "Dacă această opțiune este dezactivată, datele de autentificare copiate se pot sincroniza cu celelalte dispozitive Apple (Mac, iPad etc.) prin intermediul Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Niciodată",
       "5seconds": "5 secunde",
@@ -513,8 +518,8 @@
     "recentlyDeleted": {
       "title": "Șterse Recent",
       "noItems": "Nu există elemente șterse",
-      "noItemsDescription": "Elementele pe care le ștergi vor apărea aici timp de 30 de zile înainte de a fi eliminate definitiv.",
-      "description": "Aceste elemente vor fi șterse definitiv după 30 de zile. Le poți restaura sau șterge imediat.",
+      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
       "restore": "Restaurează",
       "deletePermanently": "Șterge definitiv",
       "emptyAll": "Golește tot",
@@ -614,6 +619,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Seiful s-a blocat automat din cauza inactivității.",
       "attemptingToUnlockMessage": "Se încearcă deblocarea."
+    },
+    "vaultError": {
+      "title": "Eroare seif",
+      "description": "A apărut o eroare la încărcarea seifului tău. Dacă problema persistă, contactează serviciul de asistență.",
+      "showDetails": "Afișează detaliile erorii",
+      "hideDetails": "Ascunde detaliile erorii",
+      "copyErrorDetails": "Copiază detaliile erorii"
     },
     "loginSettings": {
       "title": "Conexiune API",

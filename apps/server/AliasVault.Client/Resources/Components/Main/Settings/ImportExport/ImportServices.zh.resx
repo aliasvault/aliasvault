@@ -64,7 +64,7 @@
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
-    <value>要导入您的 1Password 密码库，您需要将其导出为 CSV 文件。您可以通过在 1Password 8 桌面应用程序（Windows / MacOS / Linux）中登录您的 1Password 账户，进入“文件”菜单并选择“导出”（至 CSV）来完成此操作。</value>
+    <value>要导入您的 1Password 密码库，您需要先将其导出。您可以通过在 1Password 8 桌面应用程序（Windows / MacOS / Linux）中登录您的 1Password 账户，然后转到“文件”菜单并选择“导出”来完成此操作。</value>
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
@@ -77,7 +77,7 @@
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>要导入您的 Bitwarden 密码库，您需要将其导出为 CSV 文件。您可以通过登录您的 Bitwarden 账户，进入“工具”菜单并选择“导出密码库”（至 CSV）来完成此操作。</value>
+    <value>要导入您的 Bitwarden 密码库，您需要先导出它。您可以登录您的 Bitwarden 账户，转到“工具”菜单，然后选择“导出保险库”来完成此操作。</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
@@ -210,7 +210,7 @@
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
-    <value>要导入您的 Proton Pass 密码，您需要将其导出为 CSV 文件。您可以通过登录 Proton Pass（网页版），点击“设置”菜单>“导出”>“文件格式：CSV”。然后点击“导出”来完成此操作。</value>
+    <value>要导入您的 Proton Pass 密码库，您需要先将其导出。您可以在 Proton Pass 浏览器扩展中转到“设置”>“导出”来执行此操作。</value>
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">

@@ -228,6 +228,14 @@
     <value>Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.</value>
     <comment>Generic unknown error message</comment>
   </data>
+  <data name="VaultTooLargeError" xml:space="preserve">
+    <value>Der Tresor ist zu groß für den Server. Versuche einige Elemente oder Anhänge zu entfernen, um die Größe zu verringern und versuche es dann erneut.</value>
+    <comment>Shown when the server rejects a vault upload with HTTP 413 because the encrypted vault exceeds the configured upload size limit</comment>
+  </data>
+  <data name="VaultSaveError" xml:space="preserve">
+    <value>Änderungen am Tresor konnten nicht gespeichert werden. Bitte versuche es erneut.</value>
+    <comment>Generic error shown when a vault save / sync to the server fails for an unexpected reason</comment>
+  </data>
   <data name="ErrorValidation" xml:space="preserve">
     <value>Bitte korrigiere die folgenden Fehler.</value>
     <comment>Validation error message</comment>

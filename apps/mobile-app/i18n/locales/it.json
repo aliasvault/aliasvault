@@ -26,11 +26,13 @@
     "generate": "Genera",
     "attachments": "Allegati",
     "or": "o",
+    "retry": "Riprova",
     "deleteItemConfirmTitle": "Elimina elemento",
     "deleteItemConfirmDescription": "Sei sicuro di voler rimuovere questo elemento?",
     "errors": {
       "unknownError": "Si è verificato un errore sconosciuto.",
       "unknownErrorTryAgain": "Si è verificato un errore sconosciuto. Riprova.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "serverVersionTooOld": "Il server AliasVault deve essere aggiornato a una versione più recente per poter utilizzare questa funzione. Se hai bisogno di aiuto, contatta il supporto."
     }
   },
@@ -158,6 +160,9 @@
     "clipboardClear": "Cancella appunti",
     "clipboardClearDescription": "Cancella automaticamente le password copiate e le informazioni sensibili dagli appunti dopo un periodo di tempo specificato.",
     "clipboardClearAndroidWarning": "Nota: alcuni dispositivi Android hanno la cronologia degli appunti abilitata, che può tenere traccia degli elementi precedentemente copiati, anche dopo che AliasVault cancella gli appunti. AliasVault può solo sovrascrivere l'elemento più recente, ma le voci più vecchie possono rimanere visibili nella cronologia. Per motivi di sicurezza, si consiglia di disabilitare le funzionalità della cronologia degli appunti nelle impostazioni del dispositivo.",
+    "clipboardLocalOnly": "Solo Appunti Locali",
+    "clipboardLocalOnlyDescription": "Mantieni le credenziali copiate su questo dispositivo invece di sincronizzarle con gli altri dispositivi Apple tramite Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "Con questo disattivato, le credenziali copiate potranno essere sincronizzare con gli altri dispositivi Apple (Mac, iPad, ecc.) tramite Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Mai",
       "5seconds": "5 secondi",
@@ -513,8 +518,8 @@
     "recentlyDeleted": {
       "title": "Eliminato di Recente",
       "noItems": "Nessun elemento eliminato",
-      "noItemsDescription": "Gli elementi cancellati appariranno qui per 30 giorni prima di essere rimossi definitivamente.",
-      "description": "Questi elementi verranno eliminati definitivamente dopo 30 giorni. È possibile ripristinarli o eliminarli immediatamente.",
+      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
       "restore": "Ripristina",
       "deletePermanently": "Elimina Definitivamente",
       "emptyAll": "Svuota Tutto",
@@ -614,6 +619,13 @@
     "reinitialize": {
       "vaultAutoLockedMessage": "Cassaforte bloccata automaticamente dopo timeout.",
       "attemptingToUnlockMessage": "Tentativo di sblocco in corso."
+    },
+    "vaultError": {
+      "title": "Errore nella Cassaforte",
+      "description": "Si è verificato un errore durante il caricamento della cassaforte. Se il problema persiste, si prega di contattare l'assistenza.",
+      "showDetails": "Mostra dettagli dell'errore",
+      "hideDetails": "Nascondi dettagli dell'errore",
+      "copyErrorDetails": "Copia dettagli dell'errore"
     },
     "loginSettings": {
       "title": "Connessione API",

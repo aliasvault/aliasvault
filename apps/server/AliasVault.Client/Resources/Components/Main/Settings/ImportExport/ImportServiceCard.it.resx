@@ -162,9 +162,13 @@
     <value>Si prega di decomprimere il file di esportazione prima dell'importazione. Per maggiori informazioni, consultare le istruzioni riportate di seguito.</value>
     <comment>Error message when user tries to import a zip file</comment>
   </data>
+  <data name="ImportErrorUnsupportedFormat" xml:space="preserve">
+    <value>Unsupported file format. Supported formats: {0}</value>
+    <comment>Error message when user selects an unsupported file format. {0} is the list of supported extensions</comment>
+  </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
-    <value>La dimensione del file supera il limite di 10MB.</value>
-    <comment>Error message when file is too large</comment>
+    <value>File size exceeds {0}MB limit.</value>
+    <comment>Error message when file is too large. {0} is the maximum allowed size in megabytes</comment>
   </data>
   <data name="EncryptedFilePasswordPrompt" xml:space="preserve">
     <value>Questo file è cifrato. Per favore inserisci la password che hai usato quando hai creato l'esportazione.</value>
@@ -193,5 +197,9 @@
   <data name="DecryptionErrorGeneric" xml:space="preserve">
     <value>Decifratura del file non riuscita. Verificare che il file non sia danneggiato e riprovare.</value>
     <comment>Generic error message for decryption failure</comment>
+  </data>
+  <data name="supportedFormats" xml:space="preserve">
+    <value>Formati supportati</value>
+    <comment>Label for supported file formats</comment>
   </data>
 </root>
