@@ -33,6 +33,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 150);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showMetadata, setShowMetadata] = useState(false);
+  const [viewMode, setViewMode] = useState<'html' | 'plain' | 'source'>('html');
   const { setIsInitialLoading } = useLoading();
   const { setHeaderButtons } = useHeaderButtons();
   const [headerButtonsConfigured, setHeaderButtonsConfigured] = useState(false);
@@ -71,6 +72,13 @@ const EmailDetails: React.FC = (): React.ReactElement => {
         const encryptionKeys = dbContext.sqliteClient.settings.getAllEncryptionKeys();
         const decryptedEmail = await EncryptionUtility.decryptEmail(response, encryptionKeys);
         setEmail(decryptedEmail);
+
+        // Set initial view mode based on available content
+        if (decryptedEmail.messageHtml) {
+          setViewMode('html');
+        } else if (decryptedEmail.messagePlain) {
+          setViewMode('plain');
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -252,17 +260,49 @@ const EmailDetails: React.FC = (): React.ReactElement => {
           )}
         </div>
 
+        {/* Format Switcher */}
+        <div className="flex gap-1 mt-4 mb-2">
+          <button
+            onClick={() => setViewMode('html')}
+            className={viewMode === 'html' ? 'px-3 py-1 text-sm font-medium rounded-md bg-blue-500 text-white' : 'px-3 py-1 text-sm font-medium rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}
+            disabled={!email.messageHtml}
+          >
+            HTML
+          </button>
+          <button
+            onClick={() => setViewMode('plain')}
+            className={viewMode === 'plain' ? 'px-3 py-1 text-sm font-medium rounded-md bg-blue-500 text-white' : 'px-3 py-1 text-sm font-medium rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}
+            disabled={!email.messagePlain}
+          >
+            Plain
+          </button>
+          <button
+            onClick={() => setViewMode('source')}
+            className={viewMode === 'source' ? 'px-3 py-1 text-sm font-medium rounded-md bg-blue-500 text-white' : 'px-3 py-1 text-sm font-medium rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}
+          >
+            Source
+          </button>
+        </div>
+
         {/* Email Body */}
-        <div className="bg-white mt-4">
-          {email.messageHtml ? (
+        <div className="bg-white">
+          {viewMode === 'html' && email.messageHtml ? (
             <iframe
               srcDoc={ConversionUtility.sanitizeAndPrepareEmailHtml(email.messageHtml)}
               className="w-full min-h-[500px] border-0"
               title={t('emails.emailContent')}
               sandbox="allow-popups allow-popups-to-escape-sandbox"
             />
+          ) : viewMode === 'plain' ? (
+            <pre className="whitespace-pre-wrap text-gray-800 dark:text-gray-200 p-3 font-sans">
+              {email.messagePlain ?? t('emails.emailNotFound')}
+            </pre>
+          ) : viewMode === 'source' ? (
+            <pre className="whitespace-pre-wrap text-gray-800 dark:text-gray-200 p-3 font-mono text-xs leading-relaxed">
+              {email.messageHtml ?? t('emails.emailNotFound')}
+            </pre>
           ) : (
-            <pre className="whitespace-pre-wrap text-gray-800 p-3">
+            <pre className="whitespace-pre-wrap text-gray-800 dark:text-gray-200 p-3">
               {email.messagePlain}
             </pre>
           )}
