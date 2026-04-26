@@ -22,22 +22,12 @@ import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import type { Folder } from '@/utils/db/repositories/FolderRepository';
 import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
-import type { Item, ItemType } from '@/utils/dist/core/models/vault';
-import { ItemTypes } from '@/utils/dist/core/models/vault';
+import type { Item } from '@/utils/dist/core/models/vault';
 import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount } from '@/utils/folderUtils';
+import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@/utils/itemFilters';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
-
-/**
- * Filter types for the items list.
- * - 'all': Show all items
- * - 'passkeys': Show only items with passkeys
- * - 'attachments': Show only items with attachments
- * - 'totp': Show only items with 2FA codes
- * - ItemType values: Filter by specific item type (Login, Alias, CreditCard, Note)
- */
-type FilterType = 'all' | 'passkeys' | 'attachments' | 'totp' | ItemType;
 
 const FILTER_STORAGE_KEY = 'items-filter';
 const FILTER_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
@@ -54,7 +44,7 @@ const SORT_OPTIONS: { value: CredentialSortOrder; labelKey: string }[] = [
 /**
  * Get stored filter from localStorage if not expired
  */
-const getStoredFilter = (): FilterType => {
+const getStoredFilter = (): ItemFilterType => {
   try {
     const stored = localStorage.getItem(FILTER_STORAGE_KEY);
     if (!stored) {
@@ -70,7 +60,7 @@ const getStoredFilter = (): FilterType => {
       return 'all';
     }
 
-    return filter as FilterType;
+    return filter as ItemFilterType;
   } catch {
     return 'all';
   }
@@ -79,7 +69,7 @@ const getStoredFilter = (): FilterType => {
 /**
  * Store filter in localStorage with timestamp
  */
-const storeFilter = (filter: FilterType): void => {
+const storeFilter = (filter: ItemFilterType): void => {
   try {
     localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify({
       filter,
@@ -88,13 +78,6 @@ const storeFilter = (filter: FilterType): void => {
   } catch {
     // Ignore storage errors
   }
-};
-
-/**
- * Check if a filter is an item type filter
- */
-const isItemTypeFilter = (filter: FilterType): filter is ItemType => {
-  return Object.values(ItemTypes).includes(filter as ItemType);
 };
 
 /**
@@ -125,7 +108,7 @@ const ItemsList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState(() => {
     return searchParams.get('search') || '';
   });
-  const [filterType, setFilterType] = useState<FilterType>(getStoredFilter());
+  const [filterType, setItemFilterType] = useState<ItemFilterType>(getStoredFilter());
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [showDeleteFolderModal, setShowDeleteFolderModal] = useState(false);
@@ -193,7 +176,7 @@ const ItemsList: React.FC = () => {
     const state = location.state as { resetFilters?: boolean } | null;
     if (state?.resetFilters) {
       setSearchTerm('');
-      setFilterType('all');
+      setItemFilterType('all');
       localStorage.removeItem(FILTER_STORAGE_KEY);
       // Clear the state to prevent re-triggering on subsequent renders
       navigate(location.pathname, { replace: true, state: {} });
@@ -492,6 +475,7 @@ const ItemsList: React.FC = () => {
    * - At root level: show only root folders (ParentFolderId IS NULL)
    * - Inside a folder: show only direct subfolders (ParentFolderId = currentFolderId)
    * - Counts include items in the folder AND all subfolders recursively
+   * - Counts respect the active type/feature filter so the badge matches what the user sees inside.
    */
   const getFoldersWithCounts = (): FolderWithCount[] => {
     if (searchTerm) {
@@ -519,9 +503,10 @@ const ItemsList: React.FC = () => {
       }
     });
 
-    // Count items per folder (direct items only)
+    // Count items per folder (direct items only) using items that pass the active filter
+    const filteredForCounts = applyTypeFilter(items, filterType);
     const directFolderCounts = new Map<string, number>();
-    items.forEach((item: Item) => {
+    filteredForCounts.forEach((item: Item) => {
       if (item.FolderId) {
         directFolderCounts.set(item.FolderId, (directFolderCounts.get(item.FolderId) || 0) + 1);
       }
@@ -558,79 +543,57 @@ const ItemsList: React.FC = () => {
   /**
    * Filter items based on current view (folder, search, filter type)
    */
-  const filteredItems = items.filter((item: Item) => {
+  const filteredItems = ((): Item[] => {
     // Filter by current folder (if in folder view)
+    let folderScoped: Item[];
     if (currentFolderId !== null) {
-      // When searching inside a folder, include items in subfolders too
       if (searchTerm) {
-        // Get all child folder IDs recursively
+        // When searching inside a folder, include items in subfolders too
         const allFolders = dbContext?.sqliteClient?.folders.getAll() || [];
         const childFolderIds = getDescendantFolderIds(currentFolderId, allFolders);
         const allFolderIds = [currentFolderId, ...childFolderIds];
-
-        // Item must be in current folder or any subfolder
-        if (!item.FolderId || !allFolderIds.includes(item.FolderId)) {
-          return false;
-        }
+        folderScoped = items.filter((item: Item) =>
+          item.FolderId !== null && item.FolderId !== undefined && allFolderIds.includes(item.FolderId)
+        );
       } else {
         // When not searching, only show direct items (not items in subfolders)
-        if (item.FolderId !== currentFolderId) {
-          return false;
-        }
+        folderScoped = items.filter((item: Item) => item.FolderId === currentFolderId);
       }
     } else if (!searchTerm && showFolders) {
       /*
        * When showing folders (checkbox ON): only show root items (exclude items in folders)
        * When not showing folders (checkbox OFF): show all items flat
        */
-      if (item.FolderId) {
-        return false;
-      }
+      folderScoped = items.filter((item: Item) => !item.FolderId);
+    } else {
+      folderScoped = items;
     }
 
-    // Apply type filter
-    let passesTypeFilter = true;
-    if (filterType === 'passkeys') {
-      passesTypeFilter = item.HasPasskey === true;
-    } else if (filterType === 'attachments') {
-      passesTypeFilter = item.HasAttachment === true;
-    } else if (filterType === 'totp') {
-      passesTypeFilter = item.HasTotp === true;
-    } else if (isItemTypeFilter(filterType)) {
-      // Filter by item type (Login, Alias, CreditCard, Note)
-      passesTypeFilter = item.ItemType === filterType;
-    }
+    const typeFiltered = applyTypeFilter(folderScoped, filterType);
 
-    if (!passesTypeFilter) {
-      return false;
-    }
-
-    // Apply search filter
     const searchLower = searchTerm.toLowerCase().trim();
     if (!searchLower) {
-      return true;
+      return typeFiltered;
     }
 
-    // Split search query into individual words
     const searchWords = searchLower.split(/\s+/).filter(word => word.length > 0);
 
-    // Build searchable fields array
-    const searchableFields: string[] = [
-      item.Name?.toLowerCase() || '',
-    ];
+    return typeFiltered.filter((item: Item) => {
+      const searchableFields: string[] = [
+        item.Name?.toLowerCase() || '',
+      ];
 
-    // Add field values to searchable fields
-    item.Fields?.forEach(field => {
-      const value = Array.isArray(field.Value) ? field.Value.join(' ').toLowerCase() : (field.Value || '').toLowerCase();
-      searchableFields.push(value);
-      searchableFields.push(field.Label.toLowerCase());
+      item.Fields?.forEach(field => {
+        const value = Array.isArray(field.Value) ? field.Value.join(' ').toLowerCase() : (field.Value || '').toLowerCase();
+        searchableFields.push(value);
+        searchableFields.push(field.Label.toLowerCase());
+      });
+
+      return searchWords.every(word =>
+        searchableFields.some(field => field.includes(word))
+      );
     });
-
-    // Every word must appear in at least one searchable field (order doesn't matter)
-    return searchWords.every(word =>
-      searchableFields.some(field => field.includes(word))
-    );
-  });
+  })();
 
   /**
    * Sort the filtered items based on the current sort order.
@@ -766,7 +729,7 @@ const ItemsList: React.FC = () => {
                     <button
                       onClick={() => {
                         const newFilter = 'all';
-                        setFilterType(newFilter);
+                        setItemFilterType(newFilter);
                         storeFilter(newFilter);
                         setShowFilterMenu(false);
                       }}
@@ -810,7 +773,7 @@ const ItemsList: React.FC = () => {
                       key={option.type}
                       onClick={() => {
                         const newFilter = option.type;
-                        setFilterType(newFilter);
+                        setItemFilterType(newFilter);
                         storeFilter(newFilter);
                         setShowFilterMenu(false);
                       }}
@@ -829,7 +792,7 @@ const ItemsList: React.FC = () => {
                   <button
                     onClick={() => {
                       const newFilter = 'passkeys';
-                      setFilterType(newFilter);
+                      setItemFilterType(newFilter);
                       storeFilter(newFilter);
                       setShowFilterMenu(false);
                     }}
@@ -843,7 +806,7 @@ const ItemsList: React.FC = () => {
                   <button
                     onClick={() => {
                       const newFilter = 'attachments';
-                      setFilterType(newFilter);
+                      setItemFilterType(newFilter);
                       storeFilter(newFilter);
                       setShowFilterMenu(false);
                     }}
@@ -857,7 +820,7 @@ const ItemsList: React.FC = () => {
                   <button
                     onClick={() => {
                       const newFilter = 'totp';
-                      setFilterType(newFilter);
+                      setItemFilterType(newFilter);
                       storeFilter(newFilter);
                       setShowFilterMenu(false);
                     }}
@@ -1008,7 +971,7 @@ const ItemsList: React.FC = () => {
                 {filterType !== 'all' && (
                   <button
                     onClick={() => {
-                      setFilterType('all');
+                      setItemFilterType('all');
                       localStorage.removeItem(FILTER_STORAGE_KEY);
                     }}
                     className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg transition-colors"
@@ -1140,7 +1103,7 @@ const ItemsList: React.FC = () => {
               {filterType !== 'all' && (
                 <button
                   onClick={() => {
-                    setFilterType('all');
+                    setItemFilterType('all');
                     localStorage.removeItem(FILTER_STORAGE_KEY);
                   }}
                   className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg transition-colors"
