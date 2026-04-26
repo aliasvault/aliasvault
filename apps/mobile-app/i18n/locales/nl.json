@@ -518,8 +518,8 @@
     "recentlyDeleted": {
       "title": "Recent verwijderd",
       "noItems": "Geen verwijderde items",
-      "noItemsDescription": "Items die je verwijdert verschijnen hier gedurende 30 dagen voordat ze definitief verwijderd worden.",
-      "description": "Deze items zullen na 30 dagen permanent verwijderd worden. Je kunt ze herstellen of ze direct verwijderen.",
+      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
       "restore": "Herstel",
       "deletePermanently": "Permanent verwijderen",
       "emptyAll": "Alles verwijderen",
