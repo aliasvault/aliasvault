@@ -518,8 +518,8 @@
     "recentlyDeleted": {
       "title": "Nyligen borttagna",
       "noItems": "Inga raderade objekt",
-      "noItemsDescription": "Objekt som du tar bort visas här i 30 dagar innan de tas bort permanent.",
-      "description": "Dessa objekt kommer att raderas permanent efter 30 dagar. Du kan återställa dem eller ta bort dem omedelbart.",
+      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
       "restore": "Återställ",
       "deletePermanently": "Radera permanent",
       "emptyAll": "Töm alla",
