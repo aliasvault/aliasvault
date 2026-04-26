@@ -361,9 +361,21 @@ else
 
     /// <summary>
     /// Gets the folders to display at the current level (root folders if not in folder, subfolders if in folder).
+    /// Item counts are recomputed against the active filter so that folder badges always
+    /// reflect the number of items the user will actually see when navigating into the folder.
     /// </summary>
     private List<FolderWithCount> CurrentLevelFolders =>
-        Folders.Where(f => f.ParentFolderId == FolderId).ToList();
+        Folders
+            .Where(f => f.ParentFolderId == FolderId)
+            .Select(f => new FolderWithCount
+            {
+                Id = f.Id,
+                Name = f.Name,
+                ParentFolderId = f.ParentFolderId,
+                Weight = f.Weight,
+                ItemCount = GetFilteredItemCountForFolder(f.Id),
+            })
+            .ToList();
 
     /// <summary>
     /// Gets whether we can create a subfolder at the current level.
@@ -557,17 +569,7 @@ else
             }
 
             // Then apply type/feature filter
-            filtered = FilterType switch
-            {
-                ItemFilterType.Passkeys => filtered.Where(x => x.HasPasskey),
-                ItemFilterType.Attachments => filtered.Where(x => x.HasAttachment),
-                ItemFilterType.Totp => filtered.Where(x => x.HasTotp),
-                ItemFilterType.Login => filtered.Where(x => x.ItemType == ItemType.Login),
-                ItemFilterType.Alias => filtered.Where(x => x.ItemType == ItemType.Alias),
-                ItemFilterType.CreditCard => filtered.Where(x => x.ItemType == ItemType.CreditCard),
-                ItemFilterType.Note => filtered.Where(x => x.ItemType == ItemType.Note),
-                _ => filtered, // All
-            };
+            filtered = ApplyTypeFilter(filtered);
 
             // Apply sort - use table column sort if in table view, otherwise use settings dropdown sort
             if (ViewMode == "table")
@@ -582,6 +584,40 @@ else
                 _ => filtered.OrderBy(x => x.CreatedAt), // OldestFirst (default)
             };
         }
+    }
+
+    /// <summary>
+    /// Applies the active type/feature filter to a sequence of items.
+    /// </summary>
+    /// <param name="items">The items to filter.</param>
+    /// <returns>The filtered items.</returns>
+    private IEnumerable<ItemListEntry> ApplyTypeFilter(IEnumerable<ItemListEntry> items)
+    {
+        return FilterType switch
+        {
+            ItemFilterType.Passkeys => items.Where(x => x.HasPasskey),
+            ItemFilterType.Attachments => items.Where(x => x.HasAttachment),
+            ItemFilterType.Totp => items.Where(x => x.HasTotp),
+            ItemFilterType.Login => items.Where(x => x.ItemType == ItemType.Login),
+            ItemFilterType.Alias => items.Where(x => x.ItemType == ItemType.Alias),
+            ItemFilterType.CreditCard => items.Where(x => x.ItemType == ItemType.CreditCard),
+            ItemFilterType.Note => items.Where(x => x.ItemType == ItemType.Note),
+            _ => items, // All
+        };
+    }
+
+    /// <summary>
+    /// Counts the items in a folder (and all of its descendants) that pass the active type/feature filter.
+    /// </summary>
+    /// <param name="folderId">The folder ID.</param>
+    /// <returns>The filtered, recursive item count.</returns>
+    private int GetFilteredItemCountForFolder(Guid folderId)
+    {
+        var descendantIds = FolderTreeUtilities.GetDescendantFolderIds(folderId, AllFolders);
+        var folderIds = new HashSet<Guid>(descendantIds) { folderId };
+
+        return ApplyTypeFilter(Items)
+            .Count(item => item.FolderId.HasValue && folderIds.Contains(item.FolderId.Value));
     }
 
     /// <summary>
