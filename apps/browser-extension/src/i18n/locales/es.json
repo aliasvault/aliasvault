@@ -507,8 +507,8 @@
   "recentlyDeleted": {
     "title": "Eliminados recientemente",
     "noItems": "No hay elementos eliminados",
-    "noItemsDescription": "Los elementos que elimines aparecerán aquí durante 30 días antes de ser eliminados permanentemente.",
-    "description": "Estos elementos se eliminarán permanentemente después de 30 días. Puede restaurarlos o eliminarlos inmediatamente.",
+    "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+    "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
     "restore": "Restaurar",
     "deletePermanently": "Eliminar permanentemente",
     "emptyAll": "Vaciar todo",
