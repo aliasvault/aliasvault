@@ -35,6 +35,12 @@ interface IItemCsvRecord {
   AliasLastName: string;
   AliasNickName: string;
   AliasBirthDate: string;
+  CardholderName: string;
+  CardNumber: string;
+  CardExpiryMonth: string;
+  CardExpiryYear: string;
+  CardCvv: string;
+  CardPin: string;
   Notes: string;
   CreatedAt: string;
   UpdatedAt: string;
@@ -127,6 +133,12 @@ export default function ImportExportScreen(): React.ReactNode {
       const aliasLastName = getFieldValueAsString(item, 'alias.lastName');
       const aliasBirthdate = getFieldValueAsString(item, 'alias.birthdate');
       const notes = getFieldValueAsString(item, 'notes.content');
+      const cardholderName = getFieldValueAsString(item, 'card.cardholder_name');
+      const cardNumber = getFieldValueAsString(item, 'card.number');
+      const cardExpiryMonth = getFieldValueAsString(item, 'card.expiry_month');
+      const cardExpiryYear = getFieldValueAsString(item, 'card.expiry_year');
+      const cardCvv = getFieldValueAsString(item, 'card.cvv');
+      const cardPin = getFieldValueAsString(item, 'card.pin');
 
       // Parse birthdate to formatted string (server expects MM/DD/YYYY format in CSV)
       const formattedBirthDate = aliasBirthdate ? formatDate(aliasBirthdate) : '';
@@ -144,6 +156,12 @@ export default function ImportExportScreen(): React.ReactNode {
         AliasLastName: aliasLastName,
         AliasNickName: '', // NickName is no longer stored as a separate field
         AliasBirthDate: formattedBirthDate,
+        CardholderName: cardholderName,
+        CardNumber: cardNumber,
+        CardExpiryMonth: cardExpiryMonth,
+        CardExpiryYear: cardExpiryYear,
+        CardCvv: cardCvv,
+        CardPin: cardPin,
         Notes: notes,
         CreatedAt: formatDate(item.CreatedAt),
         UpdatedAt: formatDate(item.UpdatedAt)
@@ -166,6 +184,12 @@ export default function ImportExportScreen(): React.ReactNode {
       'AliasLastName',
       'AliasNickName',
       'AliasBirthDate',
+      'CardholderName',
+      'CardNumber',
+      'CardExpiryMonth',
+      'CardExpiryYear',
+      'CardCvv',
+      'CardPin',
       'Notes',
       'CreatedAt',
       'UpdatedAt'
@@ -202,6 +226,12 @@ export default function ImportExportScreen(): React.ReactNode {
         escapeCsvValue(record.AliasLastName),
         escapeCsvValue(record.AliasNickName),
         escapeCsvValue(record.AliasBirthDate),
+        escapeCsvValue(record.CardholderName),
+        escapeCsvValue(record.CardNumber),
+        escapeCsvValue(record.CardExpiryMonth),
+        escapeCsvValue(record.CardExpiryYear),
+        escapeCsvValue(record.CardCvv),
+        escapeCsvValue(record.CardPin),
         escapeCsvValue(record.Notes),
         escapeCsvValue(record.CreatedAt),
         escapeCsvValue(record.UpdatedAt)

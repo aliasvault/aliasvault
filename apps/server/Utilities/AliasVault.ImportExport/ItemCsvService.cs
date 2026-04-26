@@ -48,6 +48,12 @@ public static class ItemCsvService
                 Notes = GetFieldValue(item, FieldKey.NotesContent),
                 CreatedAt = item.CreatedAt,
                 UpdatedAt = item.UpdatedAt,
+                CardholderName = GetFieldValue(item, FieldKey.CardCardholderName),
+                CardNumber = GetFieldValue(item, FieldKey.CardNumber),
+                CardExpiryMonth = GetFieldValue(item, FieldKey.CardExpiryMonth),
+                CardExpiryYear = GetFieldValue(item, FieldKey.CardExpiryYear),
+                CardCvv = GetFieldValue(item, FieldKey.CardCvv),
+                CardPin = GetFieldValue(item, FieldKey.CardPin),
             };
 
             records.Add(record);
@@ -117,6 +123,20 @@ public static class ItemCsvService
                 FolderPath = string.IsNullOrWhiteSpace(record.FolderPath) ? null : record.FolderPath,
             };
 
+            if (HasCardData(record))
+            {
+                credential.ItemType = ImportedItemType.Creditcard;
+                credential.Creditcard = new ImportedCreditcard
+                {
+                    CardholderName = record.CardholderName,
+                    Number = record.CardNumber,
+                    ExpiryMonth = record.CardExpiryMonth,
+                    ExpiryYear = record.CardExpiryYear,
+                    Cvv = record.CardCvv,
+                    Pin = record.CardPin,
+                };
+            }
+
             credentials.Add(credential);
         }
 
@@ -159,6 +179,21 @@ public static class ItemCsvService
         return item.FieldValues
             .FirstOrDefault(fv => fv.FieldKey == fieldKey && !fv.IsDeleted)
             ?.Value ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Returns true if the CSV record has any credit card field populated.
+    /// </summary>
+    /// <param name="record">The CSV record to inspect.</param>
+    /// <returns>True if any card field has a non-empty value.</returns>
+    private static bool HasCardData(ItemCsvRecord record)
+    {
+        return !string.IsNullOrWhiteSpace(record.CardholderName)
+            || !string.IsNullOrWhiteSpace(record.CardNumber)
+            || !string.IsNullOrWhiteSpace(record.CardExpiryMonth)
+            || !string.IsNullOrWhiteSpace(record.CardExpiryYear)
+            || !string.IsNullOrWhiteSpace(record.CardCvv)
+            || !string.IsNullOrWhiteSpace(record.CardPin);
     }
 
     /// <summary>
@@ -247,6 +282,42 @@ public class ItemCsvRecord
     /// Gets or sets the alias birth date.
     /// </summary>
     public DateTime? AliasBirthDate { get; set; } = null;
+
+    /// <summary>
+    /// Gets or sets the credit card cardholder name.
+    /// Empty for non-credit-card items.
+    /// </summary>
+    public string CardholderName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the credit card number.
+    /// Empty for non-credit-card items.
+    /// </summary>
+    public string CardNumber { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the credit card expiry month (01-12).
+    /// Empty for non-credit-card items.
+    /// </summary>
+    public string CardExpiryMonth { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the credit card expiry year (e.g., "2028").
+    /// Empty for non-credit-card items.
+    /// </summary>
+    public string CardExpiryYear { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the credit card CVV.
+    /// Empty for non-credit-card items.
+    /// </summary>
+    public string CardCvv { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the credit card PIN.
+    /// Empty for non-credit-card items.
+    /// </summary>
+    public string CardPin { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the notes.

@@ -80,6 +80,115 @@ public class ImportExportTests
     }
 
     /// <summary>
+    /// Test case for round-tripping a credit card item through CSV export and import.
+    /// Verifies that card-specific columns are populated on export and that the
+    /// importer recognizes the item as a credit card.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task ImportCreditCardItemFromCsv()
+    {
+        // Arrange
+        var loginItem = new Item
+        {
+            Id = new Guid("00000000-0000-0000-0000-000000000001"),
+            Name = "Login service",
+            ItemType = ItemType.Login,
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now,
+        };
+        AddFieldValue(loginItem, FieldKey.LoginUsername, "loginuser");
+        AddFieldValue(loginItem, FieldKey.LoginPassword, "loginpass");
+
+        var cardItem = new Item
+        {
+            Id = new Guid("00000000-0000-0000-0000-000000000002"),
+            Name = "My Visa",
+            ItemType = ItemType.CreditCard,
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now,
+        };
+        AddFieldValue(cardItem, FieldKey.CardCardholderName, "John Doe");
+        AddFieldValue(cardItem, FieldKey.CardNumber, "4111111111111111");
+        AddFieldValue(cardItem, FieldKey.CardExpiryMonth, "12");
+        AddFieldValue(cardItem, FieldKey.CardExpiryYear, "2030");
+        AddFieldValue(cardItem, FieldKey.CardCvv, "123");
+        AddFieldValue(cardItem, FieldKey.CardPin, "9876");
+        AddFieldValue(cardItem, FieldKey.NotesContent, "Card notes");
+
+        var csvContent = ItemCsvService.ExportItemsToCsv([loginItem, cardItem]);
+        var csvString = System.Text.Encoding.Default.GetString(csvContent);
+
+        // Assert: header includes the new card columns
+        var headerLine = csvString.Split('\n')[0];
+        Assert.Multiple(() =>
+        {
+            Assert.That(headerLine, Does.Contain("CardholderName"));
+            Assert.That(headerLine, Does.Contain("CardNumber"));
+            Assert.That(headerLine, Does.Contain("CardExpiryMonth"));
+            Assert.That(headerLine, Does.Contain("CardExpiryYear"));
+            Assert.That(headerLine, Does.Contain("CardCvv"));
+            Assert.That(headerLine, Does.Contain("CardPin"));
+        });
+
+        // Act
+        var importedCredentials = await ItemCsvService.ImportItemsFromCsv(csvString);
+
+        // Assert
+        Assert.That(importedCredentials, Has.Count.EqualTo(2));
+
+        var importedLogin = importedCredentials.First(c => c.ServiceName == "Login service");
+        Assert.Multiple(() =>
+        {
+            Assert.That(importedLogin.ItemType, Is.Null, "Login items should not have ItemType set by CSV importer.");
+            Assert.That(importedLogin.Creditcard, Is.Null);
+            Assert.That(importedLogin.Username, Is.EqualTo("loginuser"));
+        });
+
+        var importedCard = importedCredentials.First(c => c.ServiceName == "My Visa");
+        Assert.Multiple(() =>
+        {
+            Assert.That(importedCard.ItemType, Is.EqualTo(ImportedItemType.Creditcard));
+            Assert.That(importedCard.Creditcard, Is.Not.Null);
+            Assert.That(importedCard.Creditcard!.CardholderName, Is.EqualTo("John Doe"));
+            Assert.That(importedCard.Creditcard.Number, Is.EqualTo("4111111111111111"));
+            Assert.That(importedCard.Creditcard.ExpiryMonth, Is.EqualTo("12"));
+            Assert.That(importedCard.Creditcard.ExpiryYear, Is.EqualTo("2030"));
+            Assert.That(importedCard.Creditcard.Cvv, Is.EqualTo("123"));
+            Assert.That(importedCard.Creditcard.Pin, Is.EqualTo("9876"));
+            Assert.That(importedCard.Notes, Is.EqualTo("Card notes"));
+        });
+    }
+
+    /// <summary>
+    /// Verifies that CSV files exported by older versions (without credit card columns)
+    /// can still be imported successfully.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task ImportLegacyCsvWithoutCreditCardColumns()
+    {
+        // Arrange: a CSV with the pre-card column set only.
+        var legacyCsv =
+            "ServiceName,FolderPath,ServiceUrl,Username,CurrentPassword,AliasEmail,TwoFactorSecret,AliasGender,AliasFirstName,AliasLastName,AliasNickName,AliasBirthDate,Notes,CreatedAt,UpdatedAt\n"
+            + "Old Service,,https://old.example,olduser,oldpass,,,,,,,,,2024-01-01 00:00:00,2024-01-01 00:00:00\n";
+
+        // Act
+        var importedCredentials = await ItemCsvService.ImportItemsFromCsv(legacyCsv);
+
+        // Assert
+        Assert.That(importedCredentials, Has.Count.EqualTo(1));
+        var credential = importedCredentials[0];
+        Assert.Multiple(() =>
+        {
+            Assert.That(credential.ServiceName, Is.EqualTo("Old Service"));
+            Assert.That(credential.Username, Is.EqualTo("olduser"));
+            Assert.That(credential.ItemType, Is.Null);
+            Assert.That(credential.Creditcard, Is.Null);
+        });
+    }
+
+    /// <summary>
     /// Test case for importing credentials from Bitwarden CSV and ensuring all values are present.
     /// </summary>
     /// <returns>Async task.</returns>
