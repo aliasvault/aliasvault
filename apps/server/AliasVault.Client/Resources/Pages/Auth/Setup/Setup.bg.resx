@@ -25,11 +25,11 @@
     <comment>Title for the terms and conditions step</comment>
   </data>
   <data name="UsernameStepTitle">
-    <value>Choose Username</value>
+    <value>Избери потребителско име</value>
     <comment>Title for the username selection step</comment>
   </data>
   <data name="PasswordStepTitle">
-    <value>Set Password</value>
+    <value>Задаване на парола</value>
     <comment>Title for the password creation step</comment>
   </data>
   <data name="CreatingStepTitle">
@@ -42,11 +42,11 @@
   </data>
   <!-- Button text -->
   <data name="CreateAccountButton">
-    <value>Create Account</value>
+    <value>Създай Акаунт</value>
     <comment>Button text for creating account</comment>
   </data>
   <data name="ContinueButton">
-    <value>Continue</value>
+    <value>Напред</value>
     <comment>Continue button text</comment>
   </data>
 </root>
