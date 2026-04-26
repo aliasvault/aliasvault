@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigationType } from 'react-router-dom';
 
 /**
  * Return type for the useNavigationHistory hook.
@@ -19,9 +19,20 @@ interface INavigationHistory {
  */
 export const useNavigationHistory = (): INavigationHistory => {
   const location = useLocation();
+  const navigationType = useNavigationType();
   const historyRef = useRef<string[]>([]);
 
   useEffect(() => {
+    if (navigationType === 'REPLACE') {
+      // Mirror the replace in our tracked stack so the current entry stays accurate.
+      if (historyRef.current.length === 0) {
+        historyRef.current.push(location.pathname + location.search);
+      } else {
+        historyRef.current[historyRef.current.length - 1] = location.pathname + location.search;
+      }
+      return;
+    }
+
     const currentPath = location.pathname + location.search;
 
     // Check if this is a back/forward navigation by looking for the path in history
@@ -34,7 +45,7 @@ export const useNavigationHistory = (): INavigationHistory => {
       // New navigation - add to history
       historyRef.current.push(currentPath);
     }
-  }, [location]);
+  }, [location, navigationType]);
 
   /**
    * Find how many steps back we need to go to reach the target path.

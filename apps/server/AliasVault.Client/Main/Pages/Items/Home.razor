@@ -334,6 +334,15 @@ else
     public Guid? FolderId { get; set; }
 
     /// <summary>
+    /// Gets or sets the filter from the URL query string.
+    /// Used to preserve the active filter when navigating into a folder so the folder view
+    /// matches the count shown on its pill.
+    /// </summary>
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "filter")]
+    public string? FilterQuery { get; set; }
+
+    /// <summary>
     /// Gets or sets whether the items are being loaded.
     /// </summary>
     private bool IsLoading { get; set; } = true;
@@ -663,25 +672,33 @@ else
 
     /// <summary>
     /// Gets the title based on the active filter and folder.
+    /// An active filter takes precedence over the folder name so the title (and the
+    /// "Filtering by" pill) reflects what's actually being filtered — matching the
+    /// filter shown in the dropdown and the count in the header.
     /// </summary>
     private string GetFilterTitle()
     {
+        if (FilterType != ItemFilterType.All)
+        {
+            return FilterType switch
+            {
+                ItemFilterType.Passkeys => Localizer["FilterPasskeysOption"],
+                ItemFilterType.Attachments => Localizer["FilterAttachmentsOption"],
+                ItemFilterType.Totp => Localizer["FilterTotpOption"],
+                ItemFilterType.Login => ItemTypeSelectorLocalizer["TypeLogin"],
+                ItemFilterType.Alias => ItemTypeSelectorLocalizer["TypeAlias"],
+                ItemFilterType.CreditCard => ItemTypeSelectorLocalizer["TypeCreditCard"],
+                ItemFilterType.Note => ItemTypeSelectorLocalizer["TypeNote"],
+                _ => Localizer["PageTitle"],
+            };
+        }
+
         if (IsInFolder && !string.IsNullOrEmpty(CurrentFolderName))
         {
             return CurrentFolderName;
         }
 
-        return FilterType switch
-        {
-            ItemFilterType.Passkeys => Localizer["FilterPasskeysOption"],
-            ItemFilterType.Attachments => Localizer["FilterAttachmentsOption"],
-            ItemFilterType.Totp => Localizer["FilterTotpOption"],
-            ItemFilterType.Login => ItemTypeSelectorLocalizer["TypeLogin"],
-            ItemFilterType.Alias => ItemTypeSelectorLocalizer["TypeAlias"],
-            ItemFilterType.CreditCard => ItemTypeSelectorLocalizer["TypeCreditCard"],
-            ItemFilterType.Note => ItemTypeSelectorLocalizer["TypeNote"],
-            _ => Localizer["PageTitle"],
-        };
+        return Localizer["PageTitle"];
     }
 
     /// <summary>
@@ -716,14 +733,15 @@ else
     }
 
     /// <summary>
-    /// Sets the filter type and closes the dropdown.
+    /// Sets the filter type and closes the dropdown. The filter is reflected in the URL
+    /// query string so it persists across folder navigation and browser back/forward.
     /// </summary>
     private void SetFilter(ItemFilterType filterType)
     {
         FilterType = filterType;
         VisibleItemCount = BatchSize; // Reset visible items when filter changes
         ShowFilterDropdown = false;
-        StateHasChanged();
+        NavigationManager.NavigateTo(BuildItemsUrl(FolderId, filterType), replace: true);
     }
 
     /// <summary>
@@ -733,7 +751,21 @@ else
     {
         FilterType = ItemFilterType.All;
         VisibleItemCount = BatchSize; // Reset visible items when filter changes
-        StateHasChanged();
+        NavigationManager.NavigateTo(BuildItemsUrl(FolderId, ItemFilterType.All), replace: true);
+    }
+
+    /// <summary>
+    /// Builds the items list URL for a given folder and filter. The filter is always
+    /// included in the query string so the active filter persists across navigation,
+    /// including when navigating between folder views.
+    /// </summary>
+    /// <param name="folderId">The folder ID, or null for the root view.</param>
+    /// <param name="filterType">The active filter type.</param>
+    /// <returns>The URL to navigate to.</returns>
+    private static string BuildItemsUrl(Guid? folderId, ItemFilterType filterType)
+    {
+        var basePath = folderId.HasValue ? $"/items/folder/{folderId.Value}" : "/items";
+        return $"{basePath}?filter={filterType}";
     }
 
     /// <summary>
@@ -819,21 +851,22 @@ else
     }
 
     /// <summary>
-    /// Navigate to a folder.
+    /// Navigate to a folder, preserving the active filter so the folder view matches
+    /// the count shown on the folder pill.
     /// </summary>
     private void NavigateToFolder(Guid folderId)
     {
         VisibleItemCount = BatchSize; // Reset visible items when navigating to folder
-        NavigationManager.NavigateTo($"/items/folder/{folderId}");
+        NavigationManager.NavigateTo(BuildItemsUrl(folderId, FilterType));
     }
 
     /// <summary>
-    /// Navigate back to root.
+    /// Navigate back to root, preserving the active filter.
     /// </summary>
     private void NavigateToRoot()
     {
         VisibleItemCount = BatchSize; // Reset visible items when navigating to root
-        NavigationManager.NavigateTo("/items");
+        NavigationManager.NavigateTo(BuildItemsUrl(null, FilterType));
     }
 
     /// <summary>
@@ -958,14 +991,7 @@ else
             if (success)
             {
                 // Navigate to parent folder if it exists, otherwise root
-                if (parentFolderId.HasValue)
-                {
-                    NavigationManager.NavigateTo($"/items/folder/{parentFolderId.Value}");
-                }
-                else
-                {
-                    NavigationManager.NavigateTo("/items");
-                }
+                NavigationManager.NavigateTo(BuildItemsUrl(parentFolderId, FilterType));
             }
             else
             {
@@ -989,14 +1015,7 @@ else
             if (success)
             {
                 // Navigate to parent folder if it exists, otherwise root
-                if (parentFolderId.HasValue)
-                {
-                    NavigationManager.NavigateTo($"/items/folder/{parentFolderId.Value}");
-                }
-                else
-                {
-                    NavigationManager.NavigateTo("/items");
-                }
+                NavigationManager.NavigateTo(BuildItemsUrl(parentFolderId, FilterType));
             }
             else
             {
@@ -1009,6 +1028,12 @@ else
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+
+        // Sync the in-memory filter with the URL query so that browser back/forward and
+        // folder navigation preserve the active filter. Unknown values fall back to All.
+        FilterType = Enum.TryParse<ItemFilterType>(FilterQuery, ignoreCase: true, out var parsed)
+            ? parsed
+            : ItemFilterType.All;
 
         // Initialize table sort state from saved sort order
         SyncTableSortWithSortOrder();
