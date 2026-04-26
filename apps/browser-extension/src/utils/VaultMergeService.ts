@@ -1,6 +1,8 @@
 import initSqlJs, { Database, SqlJsStatic, SqlValue } from 'sql.js';
 import { browser } from 'wxt/browser';
 
+import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
+
 import init, { getSyncableTableNames, mergeVaults, pruneVault } from './dist/core/rust/aliasvault_core.js';
 
 /**
@@ -244,10 +246,10 @@ export class VaultMergeService {
    * 5. Export pruned database
    *
    * @param vaultBase64 - The vault as base64 SQLite
-   * @param retentionDays - Number of days to keep items in trash (default: 30)
+   * @param retentionDays - Number of days to keep items in trash (defaults to TRASH_RETENTION_DAYS)
    * @returns PruneResult with the pruned vault as base64
    */
-  public async prune(vaultBase64: string, retentionDays: number = 30): Promise<PruneResult> {
+  public async prune(vaultBase64: string, retentionDays: number = TRASH_RETENTION_DAYS): Promise<PruneResult> {
     try {
       // Initialize Rust WASM
       await this.initRust();

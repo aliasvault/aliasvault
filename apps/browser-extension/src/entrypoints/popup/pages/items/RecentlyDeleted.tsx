@@ -2,12 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
+import ItemIcon from '@/entrypoints/popup/components/Items/ItemIcon';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
+import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
 import type { Item } from '@/utils/dist/core/models/vault';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
@@ -15,10 +17,10 @@ import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 /**
  * Calculate days remaining until permanent deletion.
  * @param deletedAt - ISO timestamp when item was deleted
- * @param retentionDays - Number of days to retain (default 30)
+ * @param retentionDays - Number of days to retain (defaults to TRASH_RETENTION_DAYS)
  * @returns Number of days remaining, or 0 if already expired
  */
-const getDaysRemaining = (deletedAt: string, retentionDays: number = 30): number => {
+const getDaysRemaining = (deletedAt: string, retentionDays: number = TRASH_RETENTION_DAYS): number => {
   const deletedDate = new Date(deletedAt);
   const expiryDate = new Date(deletedDate.getTime() + retentionDays * 24 * 60 * 60 * 1000);
   const now = new Date();
@@ -162,19 +164,19 @@ const RecentlyDeleted: React.FC = () => {
       {items.length === 0 ? (
         <div className="text-gray-500 dark:text-gray-400 space-y-2 mb-10">
           <p>{t('recentlyDeleted.noItems')}</p>
-          <p className="text-sm">{t('recentlyDeleted.noItemsDescription')}</p>
+          <p className="text-sm">{t('recentlyDeleted.noItemsDescription', { days: TRASH_RETENTION_DAYS })}</p>
         </div>
       ) : (
         <>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            {t('recentlyDeleted.description')}
+            {t('recentlyDeleted.description', { days: TRASH_RETENTION_DAYS })}
           </p>
 
           <ul className="space-y-2">
             {items.map(item => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const deletedAt = (item as any).DeletedAt;
-              const daysRemaining = deletedAt ? getDaysRemaining(deletedAt) : 30;
+              const daysRemaining = deletedAt ? getDaysRemaining(deletedAt) : TRASH_RETENTION_DAYS;
 
               return (
                 <li key={item.Id} className="relative">
@@ -183,13 +185,7 @@ const RecentlyDeleted: React.FC = () => {
                       {/* Item card content (simplified) */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          {item.Logo && (
-                            <img
-                              src={`data:image/png;base64,${btoa(String.fromCharCode(...item.Logo))}`}
-                              alt=""
-                              className="w-6 h-6 rounded"
-                            />
-                          )}
+                          <ItemIcon item={item} className="w-6 h-6 rounded" />
                           <span className="font-medium text-gray-900 dark:text-white truncate">
                             {item.Name || t('items.untitled')}
                           </span>

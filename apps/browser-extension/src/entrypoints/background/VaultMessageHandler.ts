@@ -2,6 +2,7 @@
 import * as OTPAuth from 'otpauth';
 import { storage } from 'wxt/utils/storage';
 
+import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import { FieldKey, ItemTypes, createSystemField, type Item } from '@/utils/dist/core/models/vault';
 import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/core/models/webapi';
@@ -762,7 +763,7 @@ export async function handleClearPersistedFormValues(): Promise<void> {
 
 /**
  * Upload a new version of the vault to the server using the provided sqlite client.
- * Prunes expired trash items (older than 30 days) before uploading.
+ * Prunes expired trash items before uploading.
  */
 async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<VaultPostResponse> {
   let updatedVaultData = sqliteClient.exportToBase64();
@@ -775,11 +776,11 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
 
   /**
    * Prune expired items from trash before uploading.
-   * Items that have been in trash (DeletedAt set) for more than 30 days
+   * Items that have been in trash (DeletedAt set) longer than TRASH_RETENTION_DAYS
    * are permanently deleted (IsDeleted = true) as part of the sync process.
    */
   try {
-    const pruneResult = await vaultMergeService.prune(updatedVaultData, 30);
+    const pruneResult = await vaultMergeService.prune(updatedVaultData, TRASH_RETENTION_DAYS);
     if (pruneResult.success && pruneResult.statementCount > 0) {
       console.info(`[VaultSync] Pruned expired items from trash (${pruneResult.statementCount} statements)`);
       updatedVaultData = pruneResult.prunedVaultBase64;
