@@ -518,8 +518,8 @@
     "recentlyDeleted": {
       "title": "Recentemente Excluídos",
       "noItems": "Nenhum item excluído",
-      "noItemsDescription": "Itens que você excluir aparecerão aqui por 30 dias antes de serem excluídos permanentemente.",
-      "description": "Estes itens serão excluídos permanentemente depois de 30 dias. Você pode restaurá-los ou excluí-los imediatamente.",
+      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
       "restore": "Restaurar",
       "deletePermanently": "Excluir Permanentemente",
       "emptyAll": "Esvaziar Tudo",
