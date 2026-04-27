@@ -518,8 +518,8 @@
     "recentlyDeleted": {
       "title": "Zuletzt gelöscht",
       "noItems": "Keine gelöschten Elemente",
-      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
-      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
+      "noItemsDescription": "Elemente, die Du löscht, werden hier {{days}} Tage lang erscheinen, bevor sie endgültig entfernt werden.",
+      "description": "Diese Elemente werden nach {{days}} Tagen endgültig gelöscht. Du kannst sie wiederherstellen oder sofort löschen.",
       "restore": "Wiederherstellen",
       "deletePermanently": "Dauerhaft löschen",
       "emptyAll": "Alle leeren",
