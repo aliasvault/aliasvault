@@ -28,7 +28,7 @@
     <comment>Page header title for deleting item</comment>
   </data>
   <data name="DeleteItemDescription">
-    <value>Are you sure you want to delete this item? It will be moved to the recently deleted items and permanently deleted after {0} days.</value>
+    <value>您确定要删除此项目吗？它将被移至“近期删除”中，并在 {0} 天后被永久删除。</value>
     <comment>Confirmation message shown in the delete-item modal. Placeholder {0} is the trash retention period in days.</comment>
   </data>
   <data name="ItemEntrySection">
