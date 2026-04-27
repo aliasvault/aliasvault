@@ -507,8 +507,8 @@
   "recentlyDeleted": {
     "title": "Șterse Recent",
     "noItems": "Niciun element șters",
-    "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
-    "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
+    "noItemsDescription": "Elementele pe care le ștergi vor apărea aici timp de {{days}} zile înainte de a fi eliminate definitiv.",
+    "description": "Aceste elemente vor fi șterse definitiv după {{days}} zile. Le poți restaura sau șterge imediat.",
     "restore": "Restaurează",
     "deletePermanently": "Șterge Definitiv",
     "emptyAll": "Golește tot",
