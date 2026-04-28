@@ -32,7 +32,7 @@
     "errors": {
       "unknownError": "Se produjo un error desconocido.",
       "unknownErrorTryAgain": "Se ha producido un error desconocido. Por favor, inténtelo de nuevo.",
-      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultTooLarge": "La bóveda es demasiado grande para que el servidor lo acepte. Intente eliminar algunos elementos o archivos adjuntos para reducir el tamaño y vuelva a intentarlo.",
       "serverVersionTooOld": "El servidor AliasVault necesita ser actualizado a una versión más reciente para poder utilizar esta característica. Por favor, contacte con el administrador del servidor si necesita ayuda."
     }
   },
@@ -518,8 +518,8 @@
     "recentlyDeleted": {
       "title": "Eliminados recientemente",
       "noItems": "No hay elementos eliminados",
-      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
-      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
+      "noItemsDescription": "Los elementos que borre aparecerán aquí durante {{days}} días antes de ser eliminados permanentemente.",
+      "description": "Estos elementos serán eliminados permanentemente después de {{days}} días. Puedes restaurarlos o eliminarlos inmediatamente.",
       "restore": "Restaurar",
       "deletePermanently": "Eliminar permanentemente",
       "emptyAll": "Vaciar todo",
@@ -634,12 +634,12 @@
       "customApiUrl": "URL de API personalizada",
       "customApiUrlPlaceholder": "https://mi-instancia-Aliasvault.com/api",
       "version": "Versión {{version}}",
-      "advancedSettings": "Advanced settings",
-      "customProxyHeaders": "Custom proxy headers",
-      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
-      "headerName": "Header name",
+      "advancedSettings": "Configuración avanzada",
+      "customProxyHeaders": "Cabeceras proxy personalizadas",
+      "customProxyHeadersDescription": "Añade cabeceras HTTP que se enviarán con cada petición a tu servidor AliasVault. Puede utilizarse para configuraciones autoalojadas detrás de un proxy inverso, que comprueba cabeceras personalizadas (por ejemplo, Pangolin, Cloudflare Access).",
+      "headerName": "Nombre del encabezado",
       "headerNamePlaceholder": "X-Custom-Header",
-      "headerValue": "Header value"
+      "headerValue": "Valor de cabecera"
     }
   },
   "upgrade": {
