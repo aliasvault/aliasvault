@@ -29,6 +29,60 @@ else
     cp /etc/nginx/nginx-80-443.conf /etc/nginx/nginx.conf
 fi
 
+# Build the geo-block rules for the /admin IP allowlist from ADMIN_IP_ALLOWLIST.
+# Empty -> "default 0;" (everyone allowed). "private" -> default-deny with
+# loopback + RFC1918 carved out. Anything else is treated as a comma-separated
+# list of CIDRs/IPs (loopback is always allowed). Tokens that don't look like
+# an IPv4/IPv6 address or CIDR are skipped with a warning so a typo can't
+# crash-loop nginx; if no valid tokens remain we fail closed (deny everything
+# except loopback). When the resulting $admin_block is 1, the /admin location
+# quietly routes the request to the client app via @admin_fallback rather than
+# emitting a 403/404.
+is_valid_cidr() {
+    case "$1" in
+        *:*)
+            printf '%s' "$1" | grep -Eq '^[0-9a-fA-F:]+(/[0-9]{1,3})?$'
+            ;;
+        *)
+            printf '%s' "$1" | grep -Eq '^([0-9]{1,3}\.){3}[0-9]{1,3}(/[0-9]{1,2})?$'
+            ;;
+    esac
+}
+
+build_admin_ip_geo_rules() {
+    local raw="${ADMIN_IP_ALLOWLIST:-}"
+    case "$(printf '%s' "$raw" | tr '[:upper:]' '[:lower:]')" in
+        "")
+            printf '%s' "default 0;"
+            ;;
+        private)
+            printf '%s' "default 1; 127.0.0.0/8 0; 10.0.0.0/8 0; 172.16.0.0/12 0; 192.168.0.0/16 0;"
+            ;;
+        *)
+            local out="default 1; 127.0.0.0/8 0;"
+            local valid=0
+            local IFS=','
+            for cidr in $raw; do
+                cidr=$(printf '%s' "$cidr" | tr -d '[:space:]')
+                [ -z "$cidr" ] && continue
+                if is_valid_cidr "$cidr"; then
+                    out="$out $cidr 0;"
+                    valid=$((valid + 1))
+                else
+                    printf 'warning: ADMIN_IP_ALLOWLIST: ignoring invalid CIDR/IP %s\n' "$cidr" >&2
+                fi
+            done
+            if [ "$valid" -eq 0 ]; then
+                printf 'warning: ADMIN_IP_ALLOWLIST has no valid entries; /admin will fall through to the client app for all non-loopback traffic\n' >&2
+            fi
+            printf '%s' "$out"
+            ;;
+    esac
+}
+
+ADMIN_IP_GEO_RULES_VALUE=$(build_admin_ip_geo_rules)
+sed -i "s|__ADMIN_IP_GEO_RULES__|${ADMIN_IP_GEO_RULES_VALUE}|g" /etc/nginx/nginx.conf
+
 echo "Starting Nginx reverse proxy..."
 
 # Set nginx error log level based on verbosity
