@@ -3374,6 +3374,12 @@ check_and_populate_env() {
         update_env_var "MAX_UPLOAD_SIZE_MB" "100"
         printf "  Set MAX_UPLOAD_SIZE_MB\n"
     fi
+
+    # ADMIN_IP_ALLOWLIST
+    if ! grep -q "^ADMIN_IP_ALLOWLIST=" "$ENV_FILE" 2>/dev/null; then
+        update_env_var "ADMIN_IP_ALLOWLIST" ""
+        printf "  Set ADMIN_IP_ALLOWLIST\n"
+    fi
 }
 
 main "$@"
