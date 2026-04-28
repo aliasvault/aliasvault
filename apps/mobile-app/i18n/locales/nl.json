@@ -634,12 +634,12 @@
       "customApiUrl": "Aangepaste API URL",
       "customApiUrlPlaceholder": "https://jouw-aliasvault-instantie.nl/api",
       "version": "Versie: {{version}}",
-      "advancedSettings": "Advanced settings",
-      "customProxyHeaders": "Custom proxy headers",
-      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
-      "headerName": "Header name",
+      "advancedSettings": "Geavanceerde instellingen",
+      "customProxyHeaders": "Aangepaste proxy headers",
+      "customProxyHeadersDescription": "Voeg HTTP-headers toe die met elk verzoek naar uw AliasVault-server worden verzonden. Kan worden gebruikt voor zelfgehoste setups achter een reverse proxy die controleert op aangepaste headers (bijv. Pangolin, Cloudflare Access).",
+      "headerName": "Header-naam",
       "headerNamePlaceholder": "X-Custom-Header",
-      "headerValue": "Header value"
+      "headerValue": "Header-waarde"
     }
   },
   "upgrade": {
