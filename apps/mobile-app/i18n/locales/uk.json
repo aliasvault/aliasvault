@@ -218,7 +218,7 @@
       "biometricDisabledMessage": "{{biometric}} вимкнено для AliasVault. Щоб використовувати його, спочатку ввімкніть в налаштуваннях вашого пристрою.",
       "biometricHelp": "Використовуйте біометричні дані, щоб розблокувати сховище, захищене {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} недоступний. Натисніть, щоб відкрити налаштування, та/або перейдіть до налаштувань пристрою, щоб увімкнути та налаштувати його.",
-      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
+      "featureRequiresPasscode": "Ця функція вимагає включений пароль на вашому пристрої.",
       "pin": "ПІН-код",
       "pinDescription": "Використовуйте власний PIN-код, щоб швидше розблокувати сховище.",
       "pinEnabled": "Розблокування PIN-кодом успішно ввімкнено",
@@ -329,7 +329,7 @@
     }
   },
   "navigation": {
-    "vault": "Vault",
+    "vault": "Сховище",
     "emails": "Електронні листи",
     "settings": "Налаштування"
   },
@@ -375,7 +375,7 @@
     "alias.last_name": "Прізвище",
     "alias.gender": "Стать",
     "alias.birthdate": "Дата народження",
-    "card.cardholder_name": "Cardholder Name",
+    "card.cardholder_name": "Ім'я власника картки",
     "card.number": "Card Number",
     "card.expiry_month": "Expiry Month",
     "card.expiry_year": "Expiry Year",
