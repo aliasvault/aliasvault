@@ -11,9 +11,9 @@ nav_order: 5
 By default the admin panel at `/admin` is reachable from the public internet, alongside the regular client app. This is intentional and safe to leave as-is for most installations:
 
 - Sign-in requires the admin password you set during installation (and optional 2FA).
-- The admin login is protected against brute force: after 10 failed attempts the account is locked for 30 minutes.
+- The admin account is protected against brute force: after 10 failed sign-in attempts the account is locked for 30 minutes.
 
-If you'd still rather not expose `/admin` to the open internet, for example if your AliasVault server is only meant to be reached from a home network or VPN. You can restrict it by client IP at the reverse-proxy layer using the `ADMIN_IP_ALLOWLIST` setting in `.env`.
+If you'd still rather not expose `/admin` to the open internet, for example if your AliasVault server is only meant to be reached from a home network or VPN, you can restrict it by client IP at the reverse-proxy layer using the `ADMIN_IP_ALLOWLIST` environment variable.
 
 ## How it works
 
@@ -23,7 +23,7 @@ Requests from allowlisted IPs reach the admin panel as normal.
 
 ## Options
 
-Edit `.env` and set `ADMIN_IP_ALLOWLIST` to one of:
+Set `ADMIN_IP_ALLOWLIST` in the `environment:` section of your `docker-compose.yml` to one of:
 
 | Value | Effect |
 |---|---|
@@ -33,17 +33,30 @@ Edit `.env` and set `ADMIN_IP_ALLOWLIST` to one of:
 
 ### Examples
 
-```env
-# Only allow access from a specific home IP and a corporate /24:
-ADMIN_IP_ALLOWLIST=203.0.113.42,198.51.100.0/24
+```yaml
+# ...
+    environment:
+      # Only allow access from a specific home IP and a corporate /24:
+      ADMIN_IP_ALLOWLIST: "203.0.113.42,198.51.100.0/24"
+# ...
+```
 
-# Only allow access from machines on the local network:
-ADMIN_IP_ALLOWLIST=private
+```yaml
+# ...
+    environment:
+      # Only allow access from machines on the local network:
+      ADMIN_IP_ALLOWLIST: "private"
+# ...
 ```
 
 ## Apply the change
 
-After editing `.env`, restart the Docker container to make the changes active.
+After updating `docker-compose.yml`, the container must be recreated for the new environment value to take effect:
+
+```bash
+docker compose down
+docker compose up -d
+```
 
 ## Behind another reverse proxy
 
