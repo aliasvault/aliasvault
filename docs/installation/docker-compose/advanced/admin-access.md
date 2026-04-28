@@ -13,7 +13,7 @@ By default the admin panel at `/admin` is reachable from the public internet, al
 - Sign-in requires the admin password you set during installation (and optional 2FA).
 - The admin login is protected against brute force: after 10 failed attempts the account is locked for 30 minutes.
 
-If you'd still rather not expose `/admin` to the open internet — for example if your AliasVault is only meant to be reached from a home network or VPN. You can restrict it by client IP at the reverse-proxy layer using the `ADMIN_IP_ALLOWLIST` setting in `.env`.
+If you'd still rather not expose `/admin` to the open internet, for example if your AliasVault server is only meant to be reached from a home network or VPN. You can restrict it by client IP at the reverse-proxy layer using the `ADMIN_IP_ALLOWLIST` setting in `.env`.
 
 ## How it works
 
