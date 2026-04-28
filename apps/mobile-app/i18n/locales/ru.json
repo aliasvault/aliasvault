@@ -518,8 +518,8 @@
     "recentlyDeleted": {
       "title": "Недавно удаленные",
       "noItems": "Нет удаленных записей",
-      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
-      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
+      "noItemsDescription": "Удаленные объекты будут храниться здесь в течение {{days}} дн., после чего они будут удалены безвозвратно.",
+      "description": "Эти записи будут окончательно удалены через {{days}} дн. Вы можете восстановить их или удалить немедленно.",
       "restore": "Восстановить",
       "deletePermanently": "Удалить безвозвратно",
       "emptyAll": "Очистить все",
@@ -634,12 +634,12 @@
       "customApiUrl": "Пользовательский URL-адрес API",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "version": "Версия: {{version}}",
-      "advancedSettings": "Advanced settings",
-      "customProxyHeaders": "Custom proxy headers",
-      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
-      "headerName": "Header name",
-      "headerNamePlaceholder": "X-Custom-Header",
-      "headerValue": "Header value"
+      "advancedSettings": "Дополнительные настройки",
+      "customProxyHeaders": "Пользовательские заголовки прокси",
+      "customProxyHeadersDescription": "Добавьте HTTP-заголовки для запросов к серверу AliasVault. Это нужно, если доступ к вашему серверу защищен через прокси (например, Cloudflare Access), требующий проверки заголовков.",
+      "headerName": "Название заголовка",
+      "headerNamePlaceholder": "X-Custom-Заголовок",
+      "headerValue": "Значение заголовка"
     }
   },
   "upgrade": {
