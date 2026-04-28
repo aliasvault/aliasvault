@@ -633,7 +633,13 @@
       "selfHosted": "Self-hosted",
       "customApiUrl": "URL API personalizzata",
       "customApiUrlPlaceholder": "https://mia-istanza-aliasvault.com/api",
-      "version": "Versione: {{version}}"
+      "version": "Versione: {{version}}",
+      "advancedSettings": "Advanced settings",
+      "customProxyHeaders": "Custom proxy headers",
+      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
+      "headerName": "Header name",
+      "headerNamePlaceholder": "X-Custom-Header",
+      "headerValue": "Header value"
     }
   },
   "upgrade": {
