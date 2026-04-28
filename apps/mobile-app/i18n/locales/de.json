@@ -634,12 +634,12 @@
       "customApiUrl": "Benutzerdefinierte API-URL",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "version": "Version: {{version}}",
-      "advancedSettings": "Advanced settings",
-      "customProxyHeaders": "Custom proxy headers",
-      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
-      "headerName": "Header name",
+      "advancedSettings": "Erweiterte Einstellungen",
+      "customProxyHeaders": "Benutzerdefinierte Proxy-Header",
+      "customProxyHeadersDescription": "Füge HTTP-Header hinzu, die mit jeder Anfrage an Deinen AliasVault-Server gesendet werden. Kann für selbstgehostete Setups hinter einem Reverse-Proxy verwendet werden, der auf benutzerdefinierte Header prüft (z.B. Pangolin, Cloudflare Access).",
+      "headerName": "Header-Name",
       "headerNamePlaceholder": "X-Custom-Header",
-      "headerValue": "Header value"
+      "headerValue": "Header-Wert"
     }
   },
   "upgrade": {
