@@ -634,12 +634,12 @@
       "customApiUrl": "自定义 API URL",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "version": "版本：{{version}}",
-      "advancedSettings": "Advanced settings",
-      "customProxyHeaders": "Custom proxy headers",
-      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
-      "headerName": "Header name",
+      "advancedSettings": "高级设置",
+      "customProxyHeaders": "自定义代理标头",
+      "customProxyHeadersDescription": "添加 HTTP 标头，随每个发送到 AliasVault 服务器的请求一同发送。可用于位于反向代理（例如 Pangolin、Cloudflare Access）之后的自托管设置，该代理会检查自定义标头。",
+      "headerName": "标头名称",
       "headerNamePlaceholder": "X-Custom-Header",
-      "headerValue": "Header value"
+      "headerValue": "标头值"
     }
   },
   "upgrade": {
