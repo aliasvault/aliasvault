@@ -634,12 +634,12 @@
       "customApiUrl": "URL API personalizat",
       "customApiUrlPlaceholder": "https://instanta-mea.com/api",
       "version": "Versiune: {{version}}",
-      "advancedSettings": "Advanced settings",
-      "customProxyHeaders": "Custom proxy headers",
-      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
-      "headerName": "Header name",
+      "advancedSettings": "Setări avansate",
+      "customProxyHeaders": "Antete proxy personalizate",
+      "customProxyHeadersDescription": "Adaugă antete HTTP care vor fi trimise cu fiecare cerere către serverul tău AliasVault. Pot fi folosite pentru configurații self-hosted aflate în spatele unui reverse proxy care verifică antete personalizate (de exemplu, Pangolin sau Cloudflare Access).",
+      "headerName": "Nume antet",
       "headerNamePlaceholder": "X-Custom-Header",
-      "headerValue": "Header value"
+      "headerValue": "Valoare antet"
     }
   },
   "upgrade": {
