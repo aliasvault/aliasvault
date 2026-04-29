@@ -443,7 +443,26 @@
     "vaultSyncedSuccessfully": "Vault synced successfully",
     "vaultUpToDate": "Vault is up-to-date",
     "offlineMessage": "You are offline. Please connect to the internet to sync your vault.",
-    "switchBackToBrowser": "Switch back to your browser to continue.",
+    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "autofillOpenApp": {
+      "title": "Autofill request",
+      "description": "Choose an action for the app or website that requested autofill.",
+      "appOrUrlLabel": "App or URL",
+      "findExistingTitle": "Link to existing credential",
+      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
+      "createNewTitle": "Create new credential",
+      "createNewDescription": "Add a new credential to your vault for this app or URL."
+    },
+    "autofillLinkExisting": {
+      "title": "Link to existing credential",
+      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
+      "confirmTitle": "Link credential?",
+      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+    },
+    "autofillUrlAdded": {
+      "title": "Credential linked",
+      "message": "Autofill should now offer this credential the next time you open the app."
+    },
     "filters": {
       "all": "Items",
       "showFolders": "Folders",
