@@ -9,7 +9,7 @@
   <string name="common_back">Înapoi</string>
   <string name="unknown_error">A apărut o eroare necunoscută</string>
   <string name="autofill_failed_to_retrieve">Preluare eșuată, deschide aplicația</string>
-  <string name="autofill_no_match_found">Nicio potrivire găsită, creezi una nouă?</string>
+  <string name="autofill_no_match_found">No match found</string>
   <string name="autofill_open_app">Deschide aplicația</string>
   <string name="autofill_vault_locked">Seif blocat</string>
   <string name="biometric_store_key_title">Stocare cheie de criptare</string>
