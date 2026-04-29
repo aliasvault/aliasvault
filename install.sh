@@ -61,6 +61,7 @@ show_usage() {
     printf "  configure-email           Configure email domains for receiving emails\n"
     printf "  configure-registration    Configure new account registration (enable or disable)\n"
     printf "  configure-ip-logging      Configure IP address logging (enable or disable)\n"
+    printf "  configure-admin-access    Configure /admin IP allowlist (restrict admin access by client IP)\n"
     printf "  reset-admin-password      Reset admin password\n"
     printf "  uninstall                 Uninstall AliasVault\n"
     printf "\n"
@@ -162,6 +163,10 @@ parse_args() {
             ;;
         configure-ip-logging|ip-logging)
             COMMAND="configure-ip-logging"
+            shift
+            ;;
+        configure-admin-access|admin-access)
+            COMMAND="configure-admin-access"
             shift
             ;;
         start|s)
@@ -969,6 +974,9 @@ main() {
             ;;
         "configure-ip-logging")
             handle_ip_logging_configuration
+            ;;
+        "configure-admin-access")
+            handle_admin_access_configuration
             ;;
         "start")
             handle_start
@@ -3295,6 +3303,135 @@ handle_ip_logging_configuration() {
             return 1
             ;;
     esac
+}
+
+# Validate that a token looks like an IPv4/IPv6 address with optional CIDR mask.
+# IPv4 enforces each octet 0-255 and mask 0-32. IPv6 is checked loosely (hex
+# segments + colons) but with a strict 0-128 mask bound; nginx will reject any
+# malformed IPv6 at startup.
+is_valid_cidr() {
+    case "$1" in
+        *:*)
+            printf '%s' "$1" | grep -Eq '^[0-9a-fA-F:]+(/(12[0-8]|1[01][0-9]|[1-9]?[0-9]))?$'
+            ;;
+        *)
+            printf '%s' "$1" | grep -Eq '^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}(/(3[0-2]|[12]?[0-9]))?$'
+            ;;
+    esac
+}
+
+# Function to handle /admin IP allowlist configuration
+handle_admin_access_configuration() {
+    printf "${YELLOW}+++ Admin Access Configuration +++${NC}\n"
+    printf "\n"
+
+    # Check if AliasVault is installed
+    if [ ! -f "docker-compose.yml" ]; then
+        printf "${RED}Error: AliasVault must be installed first.${NC}\n"
+        exit 1
+    fi
+
+    CURRENT_SETTING=$(grep "^ADMIN_IP_ALLOWLIST=" "$ENV_FILE" | cut -d '=' -f2-)
+
+    printf "${CYAN}About Admin Access:${NC}\n"
+    printf "By default /admin is reachable from anywhere. You can optionally restrict it by client IP. \n"
+    printf "Requests from non-allowlisted IPs are silently routed to the client app and will throw a 404.\n"
+    printf "\n"
+    printf "${CYAN}Current Configuration:${NC}\n"
+    if [ -z "$CURRENT_SETTING" ]; then
+        printf "Admin IP Allowlist: ${GREEN}No restriction${NC} (reachable from anywhere)\n"
+    else
+        printf "Admin IP Allowlist: ${CYAN}${CURRENT_SETTING}${NC}\n"
+    fi
+    printf "\n"
+    printf "${CYAN}Options:${NC}\n"
+    printf "1) No restriction — /admin is reachable from anywhere (default)\n"
+    printf "2) Private networks only — allow loopback + RFC1918 (127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)\n"
+    printf "3) Custom — comma-separated CIDRs/IPs (e.g. 203.0.113.42,198.51.100.0/24)\n"
+    printf "4) Cancel\n"
+    printf "\n"
+
+    read -p "Select an option [1-4]: " allowlist_option
+
+    NEW_VALUE=""
+    case $allowlist_option in
+        1)
+            NEW_VALUE=""
+            ;;
+        2)
+            NEW_VALUE="private"
+            ;;
+        3)
+            while true; do
+                read -p "Enter comma-separated CIDRs/IPs: " CUSTOM_LIST
+                if [ -z "$CUSTOM_LIST" ]; then
+                    printf "${YELLOW}> List cannot be empty. Use option 1 to remove restrictions.${NC}\n"
+                    continue
+                fi
+
+                INVALID=""
+                CLEANED=""
+                OLD_IFS="$IFS"
+                IFS=','
+                for token in $CUSTOM_LIST; do
+                    token=$(printf '%s' "$token" | tr -d '[:space:]')
+                    [ -z "$token" ] && continue
+                    if is_valid_cidr "$token"; then
+                        if [ -z "$CLEANED" ]; then
+                            CLEANED="$token"
+                        else
+                            CLEANED="$CLEANED,$token"
+                        fi
+                    else
+                        if [ -z "$INVALID" ]; then
+                            INVALID="$token"
+                        else
+                            INVALID="$INVALID, $token"
+                        fi
+                    fi
+                done
+                IFS="$OLD_IFS"
+
+                if [ -n "$INVALID" ]; then
+                    printf "${YELLOW}> Invalid entries: ${INVALID}${NC}\n"
+                    printf "${YELLOW}> Each entry must be an IPv4/IPv6 address with an optional /mask. Try again.${NC}\n"
+                    continue
+                fi
+
+                NEW_VALUE="$CLEANED"
+                break
+            done
+            ;;
+        4)
+            printf "${YELLOW}Admin access configuration cancelled.${NC}\n"
+            return 0
+            ;;
+        *)
+            printf "${RED}Invalid option selected.${NC}\n"
+            return 1
+            ;;
+    esac
+
+    update_env_var "ADMIN_IP_ALLOWLIST" "$NEW_VALUE"
+
+    printf "\n${YELLOW}Warning: Docker containers need to be restarted to apply these changes.${NC}\n"
+    read -p "Restart now? (y/n): " restart_confirm
+
+    if [ "$restart_confirm" != "y" ] && [ "$restart_confirm" != "Y" ]; then
+        printf "${YELLOW}Please restart manually to apply the changes.${NC}\n"
+        exit 0
+    fi
+
+    handle_restart
+
+    printf "\n"
+    if [ -z "$NEW_VALUE" ]; then
+        print_success_box "Admin access restriction removed — /admin is now reachable from anywhere."
+    elif [ "$NEW_VALUE" = "private" ]; then
+        print_success_box "Admin access restricted to loopback + private networks."
+    else
+        print_success_box "Admin access restricted to: ${NEW_VALUE}"
+    fi
 }
 
 check_and_populate_env() {
