@@ -9,7 +9,7 @@
   <string name="common_back">חזרה</string>
   <string name="unknown_error">אירעה שגיאה לא ידועה</string>
   <string name="autofill_failed_to_retrieve">המשיכה נכשלה, נא לפתוח את היישום</string>
-  <string name="autofill_no_match_found">לא נמצאו התאמות, ליצור חדש?</string>
+  <string name="autofill_no_match_found">No match found</string>
   <string name="autofill_open_app">פתיחת היישום</string>
   <string name="autofill_vault_locked">הכספת נעולה</string>
   <string name="biometric_store_key_title">אחסון מפתח הצפנה</string>
