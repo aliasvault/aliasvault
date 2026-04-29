@@ -8,7 +8,12 @@
         <SortableTableRow Class="cursor-pointer" OnClick="@(() => NavigateToCredential(credential.Id))">
             <SortableTableColumn Padding="false">
                 <div class="flex items-center space-x-2 py-2 pl-2">
-                    <DisplayFavicon FaviconBytes="@credential.Logo" Width="24" />
+                    <ItemIcon
+                        ItemType="@credential.ItemType"
+                        Logo="@credential.Logo"
+                        CardNumber="@credential.CardNumber"
+                        AltText="@credential.Service"
+                        SizeClass="w-6 h-6" />
                     <span class="font-bold ml-2">@credential.Service</span>
                 </div>
             </SortableTableColumn>

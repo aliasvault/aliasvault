@@ -69,7 +69,12 @@
                             <div
                                 class="search-result @(i == SelectedIndex ? "bg-gray-100 dark:bg-gray-700" : "") px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
                                 @onclick="() => SelectResult(result)">
-                                <DisplayFavicon FaviconBytes="@result.Logo?.FileData" Width="24" />
+                                <ItemIcon
+                                    ItemType="@result.ItemType"
+                                    Logo="@result.Logo?.FileData"
+                                    CardNumber="@ItemService.GetFieldValue(result, FieldKey.CardNumber)"
+                                    AltText="@(result.Name ?? string.Empty)"
+                                    SizeClass="w-6 h-6" />
                                 <div class="ml-2">
                                     <div class="font-medium text-gray-900 dark:text-white">
                                         @if (result.FolderId.HasValue && FolderPathCache.TryGetValue(result.FolderId.Value, out var folderPath))
