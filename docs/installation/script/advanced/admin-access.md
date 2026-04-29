@@ -13,7 +13,7 @@ By default the admin panel at `/admin` is reachable from the public internet, al
 - Sign-in requires the admin password you set during installation (and optional 2FA).
 - The admin account is protected against brute force: after 10 failed sign-in attempts the account is locked for 30 minutes.
 
-If you'd still rather not expose `/admin` to the open internet. For example if your AliasVault server is only meant to be reached from a home network or VPN. You can restrict it by client IP at the reverse-proxy layer using the `ADMIN_IP_ALLOWLIST` setting in `.env`.
+If you'd still rather not expose `/admin` to the open internet — for example if your AliasVault server is only meant to be reached from a home network or VPN — you can restrict it by client IP at the reverse-proxy layer.
 
 ## How it works
 
@@ -21,33 +21,21 @@ When a request to `/admin` comes from an IP that is **not** on the allowlist, th
 
 Requests from allowlisted IPs reach the admin panel as normal.
 
-## Options
+## Configure
 
-Edit `.env` and set `ADMIN_IP_ALLOWLIST` to one of:
-
-| Value | Effect |
-|---|---|
-| _empty_ (default) | No restriction. `/admin` is reachable from anywhere. |
-| `private` | Only loopback and RFC1918 addresses are allowed (`127.0.0.0/8`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`). |
-| Comma-separated list of CIDRs/IPs | Only the listed ranges are allowed (loopback is always allowed). |
-
-### Examples
-
-```env
-# Only allow access from a specific home IP and a corporate /24:
-ADMIN_IP_ALLOWLIST=203.0.113.42,198.51.100.0/24
-
-# Only allow access from machines on the local network:
-ADMIN_IP_ALLOWLIST=private
-```
-
-## Apply the change
-
-After editing `.env`, restart AliasVault so the reverse proxy picks up the new value:
+Run the install script — it walks you through the options, validates your input, and offers to restart the containers for you:
 
 ```bash
-$ ./install.sh restart
+$ ./install.sh configure-admin-access
 ```
+
+You'll be prompted to choose one of:
+
+| Option | Effect |
+|---|---|
+| No restriction (default) | `/admin` is reachable from anywhere. |
+| Private networks only | Only loopback and RFC1918 addresses are allowed (`127.0.0.0/8`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`). |
+| Custom CIDRs/IPs | Only the listed ranges are allowed (loopback is always allowed). |
 
 ## Behind another reverse proxy
 
