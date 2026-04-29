@@ -13,6 +13,13 @@
 "no_items_found" = "未找到项目";
 "no_items_match" = "未找到符合搜索条件的项目";
 "create_new_item" = "创建新项目";
+"open_aliasvault" = "Open AliasVault";
+"untitled_credential" = "this credential";
+"link_url_prompt_title" = "Link to credential?";
+"link_url_prompt_message" = "Add \"{{url}}\" to {{name}} so AliasVault recognises this app or website next time?";
+"link_url_prompt_link_action" = "Link and fill";
+"link_url_prompt_skip_action" = "Just fill";
+"linking_url" = "Linking...";
 "select_item" = "选择项目";
 "select_text_to_insert" = "选择要插入的文本";
 "choose_username" = "选择用户名";
