@@ -53,6 +53,28 @@ export default function ItemsLayout(): React.ReactNode {
         }}
       />
       <Stack.Screen
+        name="autofill-open-app"
+        options={{
+          title: t('items.autofillOpenApp.title'),
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
+        name="autofill-link-existing"
+        options={{
+          title: t('items.autofillLinkExisting.title'),
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
+        name="autofill-url-added"
+        options={{
+          title: t('items.autofillUrlAdded.title'),
+          presentation: Platform.OS === 'ios' ? 'modal' : 'card',
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
         name="[id]"
         options={{
           title: t('items.itemDetails'),

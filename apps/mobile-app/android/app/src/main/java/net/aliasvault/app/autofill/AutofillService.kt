@@ -384,8 +384,9 @@ class AutofillService : AutofillService() {
         val appInfo = fieldFinder.getAppInfo()
         val encodedUrl = appInfo?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: ""
 
-        // Create deep link URL
-        val deepLinkUrl = "aliasvault://items/add-edit-page?itemUrl=$encodedUrl"
+        // Open the action picker so the user can choose between linking this app
+        // to an existing credential or creating a new one.
+        val deepLinkUrl = "aliasvault://items/autofill-open-app?itemUrl=$encodedUrl"
 
         // Add a click listener to open AliasVault app with deep link
         val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -553,10 +554,11 @@ class AutofillService : AutofillService() {
 
         val dataSetBuilder = Dataset.Builder(presentation)
 
-        // Create deep link URL to open the items page
+        // Open the action picker so the user can choose between linking this app
+        // to an existing credential or creating a new one.
         val appInfo = fieldFinder.getAppInfo()
         val encodedUrl = appInfo?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: ""
-        val deepLinkUrl = "aliasvault://items?itemUrl=$encodedUrl"
+        val deepLinkUrl = "aliasvault://items/autofill-open-app?itemUrl=$encodedUrl"
 
         // Add a click listener to open AliasVault app with deep link
         val intent = Intent(Intent.ACTION_VIEW).apply {

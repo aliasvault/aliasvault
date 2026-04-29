@@ -110,7 +110,7 @@ export default function AutofillCredentialCreatedScreen() : React.ReactNode {
           {t('items.itemCreatedMessage')}
         </ThemedText>
         <ThemedText style={[styles.message, styles.boldMessage]}>
-          {t('items.switchBackToBrowser')}
+          {t('items.switchBackToOriginalApp')}
         </ThemedText>
       </ThemedView>
     </ThemedSafeAreaView>
