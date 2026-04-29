@@ -13,6 +13,13 @@
 "no_items_found" = "Geen items gevonden";
 "no_items_match" = "Er zijn geen items gevonden die overeenkomen met je zoekopdracht";
 "create_new_item" = "Maak nieuw item";
+"open_aliasvault" = "Open AliasVault";
+"untitled_credential" = "this credential";
+"link_url_prompt_title" = "Link to credential?";
+"link_url_prompt_message" = "Add \"{{url}}\" to {{name}} so AliasVault recognises this app or website next time?";
+"link_url_prompt_link_action" = "Link and fill";
+"link_url_prompt_skip_action" = "Just fill";
+"linking_url" = "Linking...";
 "select_item" = "Item selecteren";
 "select_text_to_insert" = "Selecteer tekst om in te voegen";
 "choose_username" = "Kies gebruikersnaam";
