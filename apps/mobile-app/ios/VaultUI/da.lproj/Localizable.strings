@@ -13,6 +13,13 @@
 "no_items_found" = "Ingen elementer fundet";
 "no_items_match" = "Ingen eksisterende elementer matcher din søgning";
 "create_new_item" = "Opret nyt element";
+"open_aliasvault" = "Open AliasVault";
+"untitled_credential" = "this credential";
+"link_url_prompt_title" = "Link to credential?";
+"link_url_prompt_message" = "Add \"{{url}}\" to {{name}} so AliasVault recognises this app or website next time?";
+"link_url_prompt_link_action" = "Link and fill";
+"link_url_prompt_skip_action" = "Just fill";
+"linking_url" = "Linking...";
 "select_item" = "Vælg element";
 "select_text_to_insert" = "Vælg tekst der skal indsættes";
 "choose_username" = "Vælg brugernavn";
