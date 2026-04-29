@@ -61,18 +61,11 @@ public struct CredentialProviderView: View {
                                     if !viewModel.isChoosingTextToInsert {
                                         VStack(spacing: 12) {
                                             Button(action: {
-                                                var urlString = "aliasvault://items/add-edit-page"
-                                                if let serviceUrl = viewModel.serviceUrl {
-                                                    let encodedUrl = serviceUrl.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-                                                    urlString += "?itemUrl=\(encodedUrl)"
-                                                }
-                                                if let url = URL(string: urlString) {
-                                                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                                                }
+                                                openAutofillActionPicker(serviceUrl: viewModel.serviceUrl)
                                             }, label: {
                                                 HStack {
                                                     Image(systemName: "plus.circle.fill")
-                                                    Text(String(localized: "create_new_item", bundle: locBundle))
+                                                    Text(String(localized: "open_aliasvault", bundle: locBundle))
                                                 }
                                                 .padding()
                                                 .frame(maxWidth: .infinity)
@@ -92,7 +85,11 @@ public struct CredentialProviderView: View {
                                             credential: credential,
                                             isChoosingTextToInsert: viewModel.isChoosingTextToInsert,
                                             onSelect: { username, password in
-                                                viewModel.handleSelection(username: username, password: password)
+                                                viewModel.requestSelection(
+                                                    credential: credential,
+                                                    username: username,
+                                                    password: password
+                                                )
                                             },
                                             onCopy: {
                                                 viewModel.cancel()
@@ -122,14 +119,7 @@ public struct CredentialProviderView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack {
                         Button(action: {
-                            var urlString = "aliasvault://items/add-edit-page"
-                            if let serviceUrl = viewModel.serviceUrl {
-                                let encodedUrl = serviceUrl.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-                                urlString += "?itemUrl=\(encodedUrl)"
-                            }
-                            if let url = URL(string: urlString) {
-                                UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                            }
+                            openAutofillActionPicker(serviceUrl: viewModel.serviceUrl)
                         }, label: {
                             Image(systemName: "plus")
                             .foregroundColor(colors.primary)
@@ -144,6 +134,35 @@ public struct CredentialProviderView: View {
             } message: {
                 Text(viewModel.errorMessage)
             }
+            .alert(
+                String(localized: "link_url_prompt_title", bundle: locBundle),
+                isPresented: linkPromptIsPresented,
+                presenting: viewModel.pendingLinkSelection
+            ) { _ in
+                Button(String(localized: "link_url_prompt_link_action", bundle: locBundle)) {
+                    viewModel.confirmLinkAndFill()
+                }
+                Button(String(localized: "link_url_prompt_skip_action", bundle: locBundle)) {
+                    viewModel.declineLinkAndFill()
+                }
+                Button(String(localized: "cancel", bundle: locBundle), role: .cancel) {
+                    viewModel.pendingLinkSelection = nil
+                }
+            } message: { pending in
+                Text(linkPromptMessage(for: pending))
+            }
+            .overlay {
+                if viewModel.isLinkingUrl {
+                    ZStack {
+                        Color.black.opacity(0.4)
+                            .ignoresSafeArea()
+                        ProgressView(String(localized: "linking_url", bundle: locBundle))
+                            .padding(20)
+                            .background(colors.background)
+                            .cornerRadius(12)
+                    }
+                }
+            }
             .task {
                 try? await Task.sleep(nanoseconds: 100_000_000)
                 await viewModel.loadCredentials()
@@ -152,6 +171,47 @@ public struct CredentialProviderView: View {
                 viewModel.cancel()
             }
         }
+    }
+
+    /// Two-way binding that maps the optional pendingLinkSelection to a Bool
+    /// for SwiftUI's `alert(_:isPresented:presenting:)` modifier. Setting the
+    /// bound value to `false` clears the pending selection on the view-model.
+    private var linkPromptIsPresented: Binding<Bool> {
+        Binding(
+            get: { viewModel.pendingLinkSelection != nil },
+            set: { newValue in
+                if !newValue {
+                    viewModel.pendingLinkSelection = nil
+                }
+            }
+        )
+    }
+
+    /// Build the alert message, substituting the requesting URL/app and the
+    /// chosen credential's name into the localized template.
+    private func linkPromptMessage(for pending: PendingLinkSelection) -> String {
+        let template = String(localized: "link_url_prompt_message", bundle: locBundle)
+        let serviceUrl = viewModel.serviceUrl ?? ""
+        let name = pending.credentialName.isEmpty
+            ? String(localized: "untitled_credential", bundle: locBundle)
+            : pending.credentialName
+        return template
+            .replacingOccurrences(of: "{{url}}", with: serviceUrl)
+            .replacingOccurrences(of: "{{name}}", with: name)
+    }
+}
+
+/// Open the React Native "what would you like to do?" picker in the main
+/// AliasVault app via deep link. Shared by the empty-state CTA and the
+/// toolbar "+" button so iOS and Android land in the same flow.
+private func openAutofillActionPicker(serviceUrl: String?) {
+    var urlString = "aliasvault://items/autofill-open-app"
+    if let serviceUrl = serviceUrl,
+       let encodedUrl = serviceUrl.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
+        urlString += "?itemUrl=\(encodedUrl)"
+    }
+    if let url = URL(string: urlString) {
+        UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
 }
 
@@ -219,6 +279,15 @@ private struct AutofillCredentialCardWithSelection: View {
 
 // MARK: - ViewModel
 
+/// State for the "do you want to link this URL/app to the credential?" alert.
+/// Held on the view-model while the alert is visible.
+public struct PendingLinkSelection {
+    public let credentialId: UUID
+    public let credentialName: String
+    public let username: String
+    public let password: String
+}
+
 public class CredentialProviderViewModel: ObservableObject {
     @Published var credentials: [AutofillCredential] = []
     @Published var filteredCredentials: [AutofillCredential] = []
@@ -228,21 +297,31 @@ public class CredentialProviderViewModel: ObservableObject {
     @Published var errorMessage = ""
     @Published public var isChoosingTextToInsert = false
     @Published public var serviceUrl: String?
+    @Published public var pendingLinkSelection: PendingLinkSelection?
+    @Published public var isLinkingUrl = false
 
     private let loader: () async throws -> [AutofillCredential]
     private let selectionHandler: (String, String) -> Void
     private let cancelHandler: () -> Void
 
+    /// Optional async handler that, given an item ID and the requesting service URL,
+    /// appends the URL to that item's `login.url` field and syncs the vault.
+    /// When nil, the link-prompt flow is disabled and selection always falls through
+    /// directly to `selectionHandler`.
+    private let urlLinker: ((UUID, String) async -> Void)?
+
     public init(
         loader: @escaping () async throws -> [AutofillCredential],
         selectionHandler: @escaping (String, String) -> Void,
         cancelHandler: @escaping () -> Void,
-        serviceUrl: String? = nil
+        serviceUrl: String? = nil,
+        urlLinker: ((UUID, String) async -> Void)? = nil
     ) {
         self.loader = loader
         self.selectionHandler = selectionHandler
         self.cancelHandler = cancelHandler
         self.serviceUrl = serviceUrl
+        self.urlLinker = urlLinker
         if let url = serviceUrl {
             self.searchText = url
         }
@@ -284,6 +363,67 @@ public class CredentialProviderViewModel: ObservableObject {
                 searchText: searchText
             )
         }
+    }
+
+    /// Called by the credential card when the user taps a credential to fill.
+    /// Decides between filling immediately or first prompting the user to
+    /// link the requesting URL/app to this credential's URL list.
+    @MainActor
+    func requestSelection(credential: AutofillCredential, username: String, password: String) {
+        // Skip the link-prompt flow when we don't have everything we need
+        // (no service URL, no linker injected, or in text-insertion mode).
+        guard !isChoosingTextToInsert,
+              let serviceUrl = serviceUrl,
+              !serviceUrl.isEmpty,
+              urlLinker != nil else {
+            selectionHandler(username, password)
+            return
+        }
+
+        // If the requesting URL is already on this credential, we don't need to prompt again.
+        let alreadyLinked = credential.serviceUrls.contains { existing in
+            AutofillUrlNormalizer.normalize(existing).caseInsensitiveCompare(serviceUrl) == .orderedSame
+        }
+        if alreadyLinked {
+            selectionHandler(username, password)
+            return
+        }
+
+        pendingLinkSelection = PendingLinkSelection(
+            credentialId: credential.id,
+            credentialName: credential.serviceName ?? "",
+            username: username,
+            password: password
+        )
+    }
+
+    /// User confirmed linking. Append the URL locally + sync, then complete fill.
+    @MainActor
+    func confirmLinkAndFill() {
+        guard let pending = pendingLinkSelection,
+              let serviceUrl = serviceUrl,
+              let urlLinker = urlLinker else {
+            pendingLinkSelection = nil
+            return
+        }
+        pendingLinkSelection = nil
+        isLinkingUrl = true
+
+        Task { @MainActor in
+            await urlLinker(pending.credentialId, serviceUrl)
+            isLinkingUrl = false
+            selectionHandler(pending.username, pending.password)
+        }
+    }
+
+    /// User declined linking. Just complete the fill as-is.
+    @MainActor
+    func declineLinkAndFill() {
+        guard let pending = pendingLinkSelection else {
+            return
+        }
+        pendingLinkSelection = nil
+        selectionHandler(pending.username, pending.password)
     }
 
     func handleSelection(username: String, password: String) {

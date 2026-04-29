@@ -261,6 +261,45 @@ public class ItemRepository: BaseRepository {
         }
     }
 
+    /// Append a single value to a multi-value field on an existing item without
+    /// touching other field rows.
+    /// - Parameters:
+    ///   - itemId: The UUID of the item to append the value to (uppercased string)
+    ///   - fieldKey: The system FieldKey to append under (e.g. `FieldKey.loginUrl`)
+    ///   - value: The value to append
+    /// - Returns: The number of rows affected by the parent Item's UpdatedAt bump
+    @discardableResult
+    public func appendFieldValue(
+        itemId: String,
+        fieldKey: String,
+        value: String
+    ) throws -> Int {
+        return try withTransaction {
+            let now = self.now()
+
+            // Insert a fresh FieldValue row. Using a high weight so the new
+            // value sorts after any existing rows for the same key.
+            try client.executeUpdate(FieldValueQueries.insert, params: [
+                generateId(),
+                itemId,
+                nil, // FieldDefinitionId (system field)
+                fieldKey,
+                value,
+                9999,
+                now,
+                now,
+                0
+            ])
+
+            // Bump the parent Item's UpdatedAt so the change is picked up by
+            // the sync layer.
+            return try client.executeUpdate(
+                "UPDATE Items SET UpdatedAt = ? WHERE Id = ?",
+                params: [now, itemId]
+            )
+        }
+    }
+
     // MARK: - Private Helpers
 
     /// Insert field values for an item.

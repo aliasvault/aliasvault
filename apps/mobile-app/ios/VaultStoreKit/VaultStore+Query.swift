@@ -290,6 +290,20 @@ extension VaultStore {
         return try itemRepository.update(item)
     }
 
+    /// Append a URL to an existing credential's `login.url` multi-value field
+    /// without disturbing existing URLs on the credential. Caller is responsible
+    /// for kicking off `mutateVault(using:)` afterwards to push the change.
+    /// - Parameters:
+    ///   - itemId: The UUID of the credential to append to
+    ///   - url: The URL or app package identifier to add
+    public func appendUrl(toItemId itemId: UUID, url: String) throws {
+        try itemRepository.appendFieldValue(
+            itemId: itemId.uuidString.uppercased(),
+            fieldKey: FieldKey.loginUrl,
+            value: url
+        )
+    }
+
     // MARK: - Autofill Credentials
 
     /// Get all items for autofill from the database.

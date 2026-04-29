@@ -13,6 +13,13 @@
 "no_items_found" = "No items found";
 "no_items_match" = "No existing items match your search";
 "create_new_item" = "Create New Item";
+"open_aliasvault" = "Open AliasVault";
+"untitled_credential" = "this credential";
+"link_url_prompt_title" = "Link to credential?";
+"link_url_prompt_message" = "Add \"{{url}}\" to {{name}} so AliasVault recognises this app or website next time?";
+"link_url_prompt_link_action" = "Link and fill";
+"link_url_prompt_skip_action" = "Just fill";
+"linking_url" = "Linking...";
 "select_item" = "Select Item";
 "select_text_to_insert" = "Select Text to Insert";
 "choose_username" = "Choose Username";

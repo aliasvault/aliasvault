@@ -24,7 +24,41 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
             cancelHandler: {
                 self.handleCancel()
             },
-            serviceUrl: serviceUrl
+            serviceUrl: serviceUrl,
+            urlLinker: { itemId, url in
+                /*
+                 * Step 1 — Append the URL/app identifier to the chosen credential's
+                 * `login.url` multi-value field.
+                 */
+                do {
+                    try vaultStore.appendUrl(toItemId: itemId, url: url)
+                } catch {
+                    print("[Autofill] Failed to append URL to credential: \(error)")
+                    return
+                }
+
+                /*
+                 * Step 2 — Push the change to the server (skipped if offline, client will retry later).
+                 */
+                let webApiService = WebApiService()
+                do {
+                    try await vaultStore.mutateVault(using: webApiService)
+                } catch {
+                    print("[Autofill] Vault sync after URL link failed (vault stays dirty for main app to retry): \(error)")
+                }
+
+                /*
+                 * Step 3 — Refresh the iOS credential identity store with the
+                 * new URL.
+                 */
+                do {
+                    let credentials = try vaultStore.getAllAutofillCredentials()
+                    try await CredentialIdentityStore.shared.saveCredentialIdentities(credentials)
+                    print("[Autofill] Refreshed iOS credential identity cache (\(credentials.count) credentials)")
+                } catch {
+                    print("[Autofill] Failed to refresh iOS credential identity cache: \(error)")
+                }
+            }
         )
 
         // Set text insertion mode if needed
