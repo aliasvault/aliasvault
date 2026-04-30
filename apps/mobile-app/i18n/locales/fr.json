@@ -443,25 +443,25 @@
     "vaultSyncedSuccessfully": "Le coffre a été synchronisé avec succès",
     "vaultUpToDate": "Le coffre est à jour",
     "offlineMessage": "Vous êtes déconnecté. Veuillez vous connecter à internet pour synchroniser votre coffre.",
-    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "switchBackToOriginalApp": "Revenir à l'application originale pour continuer.",
     "autofillOpenApp": {
-      "title": "Autofill request",
-      "description": "Choose an action for the app or website that requested autofill.",
-      "appOrUrlLabel": "App or URL",
-      "findExistingTitle": "Link to existing credential",
-      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
-      "createNewTitle": "Create new credential",
-      "createNewDescription": "Add a new credential to your vault for this app or URL."
+      "title": "Demande de saisie automatique",
+      "description": "Choisissez une action pour l'application ou le site Web qui a demandé la saisie automatique.",
+      "appOrUrlLabel": "Application ou URL",
+      "findExistingTitle": "Lien vers l'identifiant existant",
+      "findExistingDescription": "Sélectionnez un identifiant existant dans votre coffre pour le lier à l'adresse ci-dessus.",
+      "createNewTitle": "Créer un nouvel identifiant",
+      "createNewDescription": "Ajouter un nouvel identifiant à votre coffre pour cette application ou cette URL."
     },
     "autofillLinkExisting": {
-      "title": "Link to existing credential",
-      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
-      "confirmTitle": "Link credential?",
-      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+      "title": "Lien vers l'identifiant existant",
+      "intro": "Sélectionnez un identifiant existant dans votre coffre pour le lier à \"{{target}}\".",
+      "confirmTitle": "Lier l'identifiant?",
+      "confirmMessage": "Êtes-vous sûr de vouloir lier «{{url}}» à cet identifiant?"
     },
     "autofillUrlAdded": {
-      "title": "Credential linked",
-      "message": "Autofill should now offer this credential the next time you open the app."
+      "title": "Identifiant lié",
+      "message": "Le remplissage automatique devrait maintenant proposer cet identifiant la prochaine fois que vous ouvrirez l'application."
     },
     "filters": {
       "all": "Éléments",
