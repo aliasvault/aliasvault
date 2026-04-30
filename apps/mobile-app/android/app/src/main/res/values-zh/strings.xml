@@ -9,7 +9,7 @@
   <string name="common_back">返回</string>
   <string name="unknown_error">发生未知错误</string>
   <string name="autofill_failed_to_retrieve">检索失败，请打开应用</string>
-  <string name="autofill_no_match_found">No match found</string>
+  <string name="autofill_no_match_found">未找到匹配项</string>
   <string name="autofill_open_app">打开应用</string>
   <string name="autofill_vault_locked">密码库已锁定</string>
   <string name="biometric_store_key_title">存储加密密钥</string>
