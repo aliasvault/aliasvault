@@ -443,12 +443,12 @@
     "vaultSyncedSuccessfully": "Seiful a fost sincronizat cu succes",
     "vaultUpToDate": "Seiful este actualizat",
     "offlineMessage": "Ești offline. Conectează-te la internet pentru a sincroniza seiful.",
-    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "switchBackToOriginalApp": "Revino la aplicația inițială pentru a continua.",
     "autofillOpenApp": {
-      "title": "Autofill request",
-      "description": "Choose an action for the app or website that requested autofill.",
-      "appOrUrlLabel": "App or URL",
-      "findExistingTitle": "Link to existing credential",
+      "title": "Solicitare de completare automată",
+      "description": "Alege o acțiune pentru aplicația sau site-ul web care a solicitat completarea automată.",
+      "appOrUrlLabel": "Aplicație sau URL",
+      "findExistingTitle": "Link către datele de autentificare existente",
       "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
       "createNewTitle": "Create new credential",
       "createNewDescription": "Add a new credential to your vault for this app or URL."
