@@ -443,9 +443,9 @@
     "vaultSyncedSuccessfully": "密码库同步成功",
     "vaultUpToDate": "密码库已为最新",
     "offlineMessage": "您处于离线状态，请连接互联网以同步密码库。",
-    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "switchBackToOriginalApp": "切换回原应用以继续。",
     "autofillOpenApp": {
-      "title": "Autofill request",
+      "title": "自动填充请求",
       "description": "Choose an action for the app or website that requested autofill.",
       "appOrUrlLabel": "App or URL",
       "findExistingTitle": "Link to existing credential",
