@@ -443,25 +443,25 @@
     "vaultSyncedSuccessfully": "Tresor erfolgreich synchronisiert",
     "vaultUpToDate": "Tresor ist auf dem neuesten Stand",
     "offlineMessage": "Keine Verbindung. Bitte verbinde Dich mit dem Internet, um Deinen Tresor zu synchronisieren.",
-    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "switchBackToOriginalApp": "Wechsel zurück zur ursprünglichen App, um fortzufahren.",
     "autofillOpenApp": {
-      "title": "Autofill request",
-      "description": "Choose an action for the app or website that requested autofill.",
-      "appOrUrlLabel": "App or URL",
-      "findExistingTitle": "Link to existing credential",
-      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
-      "createNewTitle": "Create new credential",
-      "createNewDescription": "Add a new credential to your vault for this app or URL."
+      "title": "Autofill-Anfrage",
+      "description": "Wähle eine Aktion für die App oder die Webseite, die Autofill angefordert hat.",
+      "appOrUrlLabel": "App oder URL",
+      "findExistingTitle": "Link zu existierenden Anmeldeinformationen",
+      "findExistingDescription": "Wähle eine existierende Anmeldeinformation aus Deinem Tresor, um die oben genannte Adresse zu verknüpfen.",
+      "createNewTitle": "Neue Anmeldeinformationen erstellen",
+      "createNewDescription": "Füge neue Anmeldeinformationen zu Deinem Tresor für diese App oder URL hinzu."
     },
     "autofillLinkExisting": {
-      "title": "Link to existing credential",
-      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
-      "confirmTitle": "Link credential?",
-      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+      "title": "Link zu existierenden Anmeldeinformationen",
+      "intro": "Wähle eine existierende Anmeldeinformation aus Deinem Tresor, um diese mit \"{{target}}\" zu verknüpfen.",
+      "confirmTitle": "Anmeldeinformationen verknüpfen?",
+      "confirmMessage": "Bist Du sicher, dass Du \"{{url}}\" mit diesen Anmeldeinformationen verknüpfen möchtest?"
     },
     "autofillUrlAdded": {
-      "title": "Credential linked",
-      "message": "Autofill should now offer this credential the next time you open the app."
+      "title": "Anmeldeinformationen verknüpft",
+      "message": "Autofill sollte diese Zugangsdaten jetzt beim nächsten Öffnen der App anbieten."
     },
     "filters": {
       "all": "Titel",
