@@ -446,22 +446,22 @@
     "switchBackToOriginalApp": "切换回原应用以继续。",
     "autofillOpenApp": {
       "title": "自动填充请求",
-      "description": "Choose an action for the app or website that requested autofill.",
-      "appOrUrlLabel": "App or URL",
-      "findExistingTitle": "Link to existing credential",
-      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
-      "createNewTitle": "Create new credential",
-      "createNewDescription": "Add a new credential to your vault for this app or URL."
+      "description": "选择对请求自动填充的应用或网站执行的操作。",
+      "appOrUrlLabel": "应用或 URL",
+      "findExistingTitle": "链接到现有凭据",
+      "findExistingDescription": "从您的密码库中选择一个现有凭据，链接到上面的地址。",
+      "createNewTitle": "创建新凭据",
+      "createNewDescription": "为此应用或 URL 添加新的凭据到您的密码库中。"
     },
     "autofillLinkExisting": {
-      "title": "Link to existing credential",
-      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
-      "confirmTitle": "Link credential?",
-      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+      "title": "链接到现有凭据",
+      "intro": "从您的密码库中选择一个现有凭据，链接到“{{target}}”。",
+      "confirmTitle": "链接凭据？",
+      "confirmMessage": "确定要将“{{url}}”链接到此凭据吗？"
     },
     "autofillUrlAdded": {
-      "title": "Credential linked",
-      "message": "Autofill should now offer this credential the next time you open the app."
+      "title": "凭据已链接",
+      "message": "下次打开应用时，自动填充应该会提供此凭据。"
     },
     "filters": {
       "all": "项目",
