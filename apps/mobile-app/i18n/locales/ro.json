@@ -448,20 +448,20 @@
       "title": "Solicitare de completare automată",
       "description": "Alege o acțiune pentru aplicația sau site-ul web care a solicitat completarea automată.",
       "appOrUrlLabel": "Aplicație sau URL",
-      "findExistingTitle": "Link către datele de autentificare existente",
-      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
-      "createNewTitle": "Create new credential",
-      "createNewDescription": "Add a new credential to your vault for this app or URL."
+      "findExistingTitle": "Asociază cu date de autentificare existente",
+      "findExistingDescription": "Selectează datele de autentificare existente din seif pentru a le asocia cu adresa de mai sus.",
+      "createNewTitle": "Creează date de autentificare noi",
+      "createNewDescription": "Adaugă date de autentificare noi în seif pentru această aplicație sau acest URL."
     },
     "autofillLinkExisting": {
-      "title": "Link to existing credential",
-      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
-      "confirmTitle": "Link credential?",
-      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+      "title": "Asociază cu date de autentificare existente",
+      "intro": "Selectează datele de autentificare existente din seif pentru a le asocia cu „{{target}}”.",
+      "confirmTitle": "Asociezi datele de autentificare?",
+      "confirmMessage": "Sigur vrei să asociezi „{{url}}” cu aceste date de autentificare?"
     },
     "autofillUrlAdded": {
-      "title": "Credential linked",
-      "message": "Autofill should now offer this credential the next time you open the app."
+      "title": "Date de autentificare asociate",
+      "message": "Completarea automată va oferi acum aceste date de autentificare data viitoare când deschizi aplicația."
     },
     "filters": {
       "all": "Elemente",
