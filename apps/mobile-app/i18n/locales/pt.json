@@ -26,7 +26,7 @@
     "generate": "Gerar",
     "attachments": "Anexos",
     "or": "ou",
-    "retry": "Retry",
+    "retry": "Tentar Novamente",
     "deleteItemConfirmTitle": "Excluir Item",
     "deleteItemConfirmDescription": "Tem certeza que deseja excluir este item?",
     "errors": {
