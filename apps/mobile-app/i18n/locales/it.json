@@ -456,7 +456,7 @@
     "autofillLinkExisting": {
       "title": "Link to existing credential",
       "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
-      "confirmTitle": "Link to credential?",
+      "confirmTitle": "Collegamento alle credenziali?",
       "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
     },
     "autofillUrlAdded": {
