@@ -456,7 +456,7 @@
     "autofillLinkExisting": {
       "title": "Link zu existierenden Anmeldeinformationen",
       "intro": "Wähle eine existierende Anmeldeinformation aus Deinem Tresor, um diese mit \"{{target}}\" zu verknüpfen.",
-      "confirmTitle": "Anmeldeinformationen verknüpfen?",
+      "confirmTitle": "Link to credential?",
       "confirmMessage": "Bist Du sicher, dass Du \"{{url}}\" mit diesen Anmeldeinformationen verknüpfen möchtest?"
     },
     "autofillUrlAdded": {
