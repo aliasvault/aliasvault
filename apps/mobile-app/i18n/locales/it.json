@@ -32,7 +32,7 @@
     "errors": {
       "unknownError": "Si è verificato un errore sconosciuto.",
       "unknownErrorTryAgain": "Si è verificato un errore sconosciuto. Riprova.",
-      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultTooLarge": "La cassaforte è troppo grande perché il server possa accettarla. Provare a rimuovere alcuni elementi o allegati per ridurre le dimensioni e riprovare.",
       "serverVersionTooOld": "Il server AliasVault deve essere aggiornato a una versione più recente per poter utilizzare questa funzione. Se hai bisogno di aiuto, contatta il supporto."
     }
   },
@@ -443,25 +443,25 @@
     "vaultSyncedSuccessfully": "Cassaforte sincronizzata con successo",
     "vaultUpToDate": "Cassaforte aggiornata",
     "offlineMessage": "Sei offline. Collegati a internet per sincronizzare la cassaforte.",
-    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "switchBackToOriginalApp": "Torna all'app originale per continuare.",
     "autofillOpenApp": {
-      "title": "Autofill request",
-      "description": "Choose an action for the app or website that requested autofill.",
-      "appOrUrlLabel": "App or URL",
-      "findExistingTitle": "Link to existing credential",
-      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
-      "createNewTitle": "Create new credential",
-      "createNewDescription": "Add a new credential to your vault for this app or URL."
+      "title": "Richiesta di riempimento automatico",
+      "description": "Scegli un'azione per l'app o il sito web che ha richiesto l'autenticazione automatica.",
+      "appOrUrlLabel": "App o URL",
+      "findExistingTitle": "Link alle credenziali esistenti",
+      "findExistingDescription": "Seleziona una credenziale esistente dalla tua cassaforte per collegare l'indirizzo qui sopra.",
+      "createNewTitle": "Crea Nuove Credenziali",
+      "createNewDescription": "Aggiungi una nuova credenziale alla tua cassaforte per questa app o URL."
     },
     "autofillLinkExisting": {
-      "title": "Link to existing credential",
-      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
+      "title": "Link alle credenziali esistenti",
+      "intro": "Seleziona delle credenziali esistenti dalla tua cassaforte per collegare \"{{target}}\".",
       "confirmTitle": "Collegamento alle credenziali?",
-      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+      "confirmMessage": "Sei sicuro di voler collegare \"{{url}}\" a queste credenziali?"
     },
     "autofillUrlAdded": {
-      "title": "Credential linked",
-      "message": "Autofill should now offer this credential the next time you open the app."
+      "title": "Credenziali collegate",
+      "message": "Il riempimento automatico dovrebbe ora funzionare con queste credenziali la prossima volta che apri l'app."
     },
     "filters": {
       "all": "Elementi",
@@ -537,8 +537,8 @@
     "recentlyDeleted": {
       "title": "Eliminato di Recente",
       "noItems": "Nessun elemento eliminato",
-      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
-      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
+      "noItemsDescription": "Gli elementi che elimini appariranno qui per {{days}} giorni prima di essere definitivamente rimossi.",
+      "description": "Questi elementi saranno eliminati definitivamente dopo {{days}} giorni. Puoi ripristinarli o eliminarli immediatamente.",
       "restore": "Ripristina",
       "deletePermanently": "Elimina Definitivamente",
       "emptyAll": "Svuota Tutto",
@@ -653,12 +653,12 @@
       "customApiUrl": "URL API personalizzata",
       "customApiUrlPlaceholder": "https://mia-istanza-aliasvault.com/api",
       "version": "Versione: {{version}}",
-      "advancedSettings": "Advanced settings",
-      "customProxyHeaders": "Custom proxy headers",
-      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
-      "headerName": "Header name",
+      "advancedSettings": "Impostazioni avanzate",
+      "customProxyHeaders": "Headers proxy personalizzate",
+      "customProxyHeadersDescription": "Aggiungi intestazioni HTTP che verranno inviate con ogni richiesta al tuo server AliasVault. Può essere utilizzato per configurazioni selfhosted dietro un reverse proxy che controlla le intestazioni personalizzate (ad esempio Pangolin, Cloudflare Access).",
+      "headerName": "Nome Header",
       "headerNamePlaceholder": "X-Custom-Header",
-      "headerValue": "Header value"
+      "headerValue": "Valore Header"
     }
   },
   "upgrade": {
