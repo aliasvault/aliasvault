@@ -549,6 +549,6 @@
     "offline": "Offline",
     "tapToRetry": "Tryck för att försöka synka igen",
     "syncErrorTitle": "Sync Failed",
-    "syncErrorDismiss": "Dismiss"
+    "syncErrorDismiss": "Avfärda"
   }
 }
