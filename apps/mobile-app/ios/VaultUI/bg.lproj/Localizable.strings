@@ -1,12 +1,12 @@
 /* English localization strings for VaultUI */
-"error" = "Error";
+"error" = "Грешка";
 "cancel" = "Отмени";
-"back" = "Back";
+"back" = "Назад";
 "next" = "Следващ";
-"edit" = "Edit";
-"website" = "Website";
-"username" = "Username";
-"title" = "Title";
+"edit" = "Редактиране";
+"website" = "Сайт";
+"username" = "Потребителско име";
+"title" = "Заглавие";
 "unknown_error" = "An unknown error occurred";
 
 "loading_items" = "Loading items...";
@@ -22,12 +22,12 @@
 "linking_url" = "Linking...";
 "select_item" = "Select Item";
 "select_text_to_insert" = "Select Text to Insert";
-"choose_username" = "Choose Username";
+"choose_username" = "Избери потребителско име";
 "select_text_to_insert_message" = "Select the text to insert into the focused input field";
 "choose_username_message" = "This website may require either your username or your email address to log in";
-"username_prefix" = "Username: ";
-"email_prefix" = "Email: ";
-"password" = "Password";
+"username_prefix" = "Потребителско име: ";
+"email_prefix" = "Имейл: ";
+"password" = "Парола";
 "items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
 "no_item_selected" = "No item selected.";
 
