@@ -62,6 +62,7 @@ show_usage() {
     printf "  configure-registration    Configure new account registration (enable or disable)\n"
     printf "  configure-ip-logging      Configure IP address logging (enable or disable)\n"
     printf "  configure-admin-access    Configure /admin IP allowlist (restrict admin access by client IP)\n"
+    printf "  configure-trusted-proxies Configure trusted upstream proxies for X-Forwarded-For\n"
     printf "  reset-admin-password      Reset admin password\n"
     printf "  uninstall                 Uninstall AliasVault\n"
     printf "\n"
@@ -95,6 +96,30 @@ print_logo() {
 }
 
 # Function to parse command line arguments
+# Canonical command list (primary forms only, no aliases). Used by
+# suggest_commands to render "Did you mean..." prefix matches when the user
+# enters an unknown command. Keep sorted so suggestions appear in stable order.
+KNOWN_COMMANDS="build configure-admin-access configure-dev-db configure-email configure-hostname configure-ip-logging configure-registration configure-ssl configure-trusted-proxies db-export db-import install migrate-db reset-admin-password restart start stop uninstall update update-installer"
+
+# Print "Did you mean ..." suggestions for any known command that has the user's
+# input as a prefix. Returns 0 if at least one match was found, 1 otherwise.
+suggest_commands() {
+    local input="$1"
+    local found=0
+    for cmd in $KNOWN_COMMANDS; do
+        case "$cmd" in
+            "$input"*)
+                if [ "$found" -eq 0 ]; then
+                    printf "${YELLOW}Did you mean:${NC}\n"
+                    found=1
+                fi
+                printf "  %s\n" "$cmd"
+                ;;
+        esac
+    done
+    [ "$found" -eq 1 ]
+}
+
 parse_args() {
     COMMAND=""
     VERBOSE=false
@@ -169,6 +194,10 @@ parse_args() {
             COMMAND="configure-admin-access"
             shift
             ;;
+        configure-trusted-proxies|trusted-proxies)
+            COMMAND="configure-trusted-proxies"
+            shift
+            ;;
         start|s)
             COMMAND="start"
             shift
@@ -220,8 +249,11 @@ parse_args() {
             exit 0
             ;;
         *)
-            echo "Unknown option: $1"
-            show_usage
+            printf "${RED}Unknown command: %s${NC}\n" "$1"
+            if suggest_commands "$1"; then
+                printf "\n"
+            fi
+            printf "Run '%s --help' to see all available commands.\n" "$0"
             exit 1
             ;;
     esac
@@ -977,6 +1009,9 @@ main() {
             ;;
         "configure-admin-access")
             handle_admin_access_configuration
+            ;;
+        "configure-trusted-proxies")
+            handle_trusted_proxies_configuration
             ;;
         "start")
             handle_start
@@ -3434,6 +3469,123 @@ handle_admin_access_configuration() {
     fi
 }
 
+# Function to handle trusted upstream proxies configuration
+handle_trusted_proxies_configuration() {
+    printf "${YELLOW}+++ Trusted Proxies Configuration +++${NC}\n"
+    printf "\n"
+
+    # Check if AliasVault is installed
+    if [ ! -f "docker-compose.yml" ]; then
+        printf "${RED}Error: AliasVault must be installed first.${NC}\n"
+        exit 1
+    fi
+
+    CURRENT_SETTING=$(grep "^TRUSTED_PROXIES=" "$ENV_FILE" | cut -d '=' -f2-)
+
+    printf "${CYAN}About Trusted Proxies:${NC}\n"
+    printf "When AliasVault sits behind another reverse proxy (HAProxy, Traefik, Cloudflare, etc.),\n"
+    printf "the built-in nginx reads the real client IP from the X-Forwarded-For header. To prevent\n"
+    printf "spoofing, this header is only honored when the request comes from a trusted upstream.\n"
+    printf "\n"
+    printf "${CYAN}Current Configuration:${NC}\n"
+    if [ -z "$CURRENT_SETTING" ]; then
+        printf "Trusted Proxies: ${GREEN}All RFC1918${NC} (default: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)\n"
+    elif [ "$CURRENT_SETTING" = "none" ]; then
+        printf "Trusted Proxies: ${CYAN}none${NC} (X-Forwarded-For is ignored)\n"
+    else
+        printf "Trusted Proxies: ${CYAN}${CURRENT_SETTING}${NC}\n"
+    fi
+    printf "\n"
+    printf "${CYAN}Options:${NC}\n"
+    printf "1) Default — trust all RFC1918 ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)\n"
+    printf "2) Custom — comma-separated CIDRs/IPs (e.g. 10.0.1.5,192.168.1.0/24) — recommended\n"
+    printf "3) None — trust no upstream proxies, log the direct peer IP only\n"
+    printf "4) Cancel\n"
+    printf "\n"
+
+    read -p "Select an option [1-4]: " trusted_option
+
+    NEW_VALUE=""
+    case $trusted_option in
+        1)
+            NEW_VALUE=""
+            ;;
+        2)
+            while true; do
+                read -p "Enter comma-separated CIDRs/IPs: " CUSTOM_LIST
+                if [ -z "$CUSTOM_LIST" ]; then
+                    printf "${YELLOW}> List cannot be empty. Use option 1 to restore default or option 3 to trust none.${NC}\n"
+                    continue
+                fi
+
+                INVALID=""
+                CLEANED=""
+                OLD_IFS="$IFS"
+                IFS=','
+                for token in $CUSTOM_LIST; do
+                    token=$(printf '%s' "$token" | tr -d '[:space:]')
+                    [ -z "$token" ] && continue
+                    if is_valid_cidr "$token"; then
+                        if [ -z "$CLEANED" ]; then
+                            CLEANED="$token"
+                        else
+                            CLEANED="$CLEANED,$token"
+                        fi
+                    else
+                        if [ -z "$INVALID" ]; then
+                            INVALID="$token"
+                        else
+                            INVALID="$INVALID, $token"
+                        fi
+                    fi
+                done
+                IFS="$OLD_IFS"
+
+                if [ -n "$INVALID" ]; then
+                    printf "${YELLOW}> Invalid entries: ${INVALID}${NC}\n"
+                    printf "${YELLOW}> Each entry must be an IPv4/IPv6 address with an optional /mask. Try again.${NC}\n"
+                    continue
+                fi
+
+                NEW_VALUE="$CLEANED"
+                break
+            done
+            ;;
+        3)
+            NEW_VALUE="none"
+            ;;
+        4)
+            printf "${YELLOW}Trusted proxies configuration cancelled.${NC}\n"
+            return 0
+            ;;
+        *)
+            printf "${RED}Invalid option selected.${NC}\n"
+            return 1
+            ;;
+    esac
+
+    update_env_var "TRUSTED_PROXIES" "$NEW_VALUE"
+
+    printf "\n${YELLOW}Warning: Docker containers need to be restarted to apply these changes.${NC}\n"
+    read -p "Restart now? (y/n): " restart_confirm
+
+    if [ "$restart_confirm" != "y" ] && [ "$restart_confirm" != "Y" ]; then
+        printf "${YELLOW}Please restart manually to apply the changes.${NC}\n"
+        exit 0
+    fi
+
+    handle_restart
+
+    printf "\n"
+    if [ -z "$NEW_VALUE" ]; then
+        print_success_box "Trusted proxies reset to default (all RFC1918 ranges)."
+    elif [ "$NEW_VALUE" = "none" ]; then
+        print_success_box "Trusted proxies disabled — X-Forwarded-For will be ignored."
+    else
+        print_success_box "Trusted proxies set to: ${NEW_VALUE}"
+    fi
+}
+
 check_and_populate_env() {
     printf "${CYAN}ℹ Checking .env values...${NC} ${GREEN}✓${NC}\n"
 
@@ -3516,6 +3668,12 @@ check_and_populate_env() {
     if ! grep -q "^ADMIN_IP_ALLOWLIST=" "$ENV_FILE" 2>/dev/null; then
         update_env_var "ADMIN_IP_ALLOWLIST" ""
         printf "  Set ADMIN_IP_ALLOWLIST\n"
+    fi
+
+    # TRUSTED_PROXIES
+    if ! grep -q "^TRUSTED_PROXIES=" "$ENV_FILE" 2>/dev/null; then
+        update_env_var "TRUSTED_PROXIES" ""
+        printf "  Set TRUSTED_PROXIES\n"
     fi
 }
 
