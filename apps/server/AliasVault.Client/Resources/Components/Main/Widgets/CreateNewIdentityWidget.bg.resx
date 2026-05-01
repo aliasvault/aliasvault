@@ -71,7 +71,7 @@
     <comment>Title of the create new alias popup</comment>
   </data>
   <data name="NameLabel" xml:space="preserve">
-    <value>Name</value>
+    <value>Име</value>
     <comment>Label for name field</comment>
   </data>
   <data name="WebsiteUrlLabel" xml:space="preserve">
@@ -95,11 +95,11 @@
     <comment>Placeholder text for note name field</comment>
   </data>
   <data name="CreateButton" xml:space="preserve">
-    <value>Create</value>
+    <value>Създаване</value>
     <comment>Create button text</comment>
   </data>
   <data name="ContinueButton" xml:space="preserve">
-    <value>Continue</value>
+    <value>Напред</value>
     <comment>Continue button text for non-alias types</comment>
   </data>
   <data name="CreateNewLoginTitle" xml:space="preserve">
