@@ -67,12 +67,12 @@
     <comment>Header for the notes section</comment>
   </data>
   <data name="AttachmentsSectionHeader">
-    <value>Attachments</value>
+    <value>Прикачени файлове</value>
     <comment>Header for the attachments section</comment>
   </data>
   <!-- Form labels -->
   <data name="ServiceNameLabel">
-    <value>Name</value>
+    <value>Име</value>
     <comment>Label for item name input</comment>
   </data>
   <data name="ServiceUrlLabel">
@@ -80,15 +80,15 @@
     <comment>Label for website URL input</comment>
   </data>
   <data name="EmailLabel">
-    <value>Email</value>
+    <value>Имейл</value>
     <comment>Label for email input</comment>
   </data>
   <data name="UsernameLabel">
-    <value>Username</value>
+    <value>Потребителско име</value>
     <comment>Label for username input</comment>
   </data>
   <data name="PasswordLabel">
-    <value>Password</value>
+    <value>Парола</value>
     <comment>Label for password input</comment>
   </data>
   <data name="FirstNameLabel">
@@ -174,7 +174,7 @@
     <comment>Label for passkey site/relying party ID</comment>
   </data>
   <data name="PasskeyDisplayNameLabel">
-    <value>Name</value>
+    <value>Име</value>
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
@@ -194,7 +194,7 @@
     <comment>Message explaining passkey will be deleted on save</comment>
   </data>
   <data name="UndoButton">
-    <value>Undo</value>
+    <value>Отмяна</value>
     <comment>Button to undo passkey deletion</comment>
   </data>
   <!-- Card section fields -->
