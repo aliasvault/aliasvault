@@ -25,7 +25,7 @@
     <comment>Option to add 2FA section</comment>
   </data>
   <data name="Attachments">
-    <value>Attachments</value>
+    <value>ပူးတွဲဖိုင်များ</value>
     <comment>Option to add attachments section</comment>
   </data>
   <data name="AddCustomField">
@@ -34,15 +34,15 @@
   </data>
   <!-- Field labels -->
   <data name="FieldLoginUsername">
-    <value>Username</value>
+    <value>အသုံးပြုသူအမည်</value>
     <comment>Username field label</comment>
   </data>
   <data name="FieldLoginPassword">
-    <value>Password</value>
+    <value>စကားဝှက်</value>
     <comment>Password field label</comment>
   </data>
   <data name="FieldLoginEmail">
-    <value>Email</value>
+    <value>အီးမေးလ်</value>
     <comment>Email field label</comment>
   </data>
   <data name="FieldLoginUrl">
@@ -90,7 +90,7 @@
     <comment>PIN field label</comment>
   </data>
   <data name="FieldNotesContent">
-    <value>Notes</value>
+    <value>မှတ်စုများ</value>
     <comment>Notes field label</comment>
   </data>
   <!-- Custom field modal -->
@@ -115,7 +115,7 @@
     <comment>Hidden field type option</comment>
   </data>
   <data name="FieldTypeEmail">
-    <value>Email</value>
+    <value>အီးမေးလ်</value>
     <comment>Email field type option</comment>
   </data>
   <data name="FieldTypeUrl">
@@ -140,11 +140,11 @@
   </data>
   <!-- Buttons -->
   <data name="Add">
-    <value>Add</value>
+    <value>ပေါင်းထည့်</value>
     <comment>Add button text</comment>
   </data>
   <data name="Cancel">
-    <value>Cancel</value>
+    <value>ပယ်ဖျက်မည်</value>
     <comment>Cancel button text</comment>
   </data>
   <!-- Default field label -->
