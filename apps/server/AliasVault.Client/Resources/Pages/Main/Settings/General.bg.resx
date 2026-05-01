@@ -124,7 +124,7 @@
     <comment>Description for clipboard clear seconds setting</comment>
   </data>
   <data name="ClipboardClearDisabledOption">
-    <value>Disabled</value>
+    <value>Изключено</value>
     <comment>Option to disable clipboard clearing</comment>
   </data>
   <data name="ClipboardClear5SecondsOption">
