@@ -1,12 +1,12 @@
 /* English localization strings for VaultUI */
-"error" = "Error";
-"cancel" = "Cancel";
-"back" = "Back";
-"next" = "Next";
-"edit" = "Edit";
-"website" = "Website";
-"username" = "Username";
-"title" = "Title";
+"error" = "အမှား";
+"cancel" = "ပယ်ဖျက်မည်";
+"back" = "နောက်သို့";
+"next" = "ရှေ့သို့";
+"edit" = "ပြင်ဆင်မည်";
+"website" = "ဝဘ်ဆိုက်";
+"username" = "အသုံးပြုသူအမည်";
+"title" = "ခေါင်းစဉ်";
 "unknown_error" = "An unknown error occurred";
 
 "loading_items" = "Loading items...";
@@ -27,7 +27,7 @@
 "choose_username_message" = "This website may require either your username or your email address to log in";
 "username_prefix" = "Username: ";
 "email_prefix" = "Email: ";
-"password" = "Password";
+"password" = "စကားဝှက်";
 "items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
 "no_item_selected" = "No item selected.";
 
@@ -70,7 +70,7 @@
 "merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
 
 /* PIN Unlock */
-"unlock_vault" = "Unlock Vault";
+"unlock_vault" = "လုံခြုံရေးအခန်းအား ဖွင့်ရန်";
 "enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
 "pin_locked_max_attempts" = "PIN locked after too many failed attempts";
 "pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
@@ -78,7 +78,7 @@
 /* Password Unlock */
 "enter_password_to_unlock" = "Enter your master password";
 "unlock" = "Unlock";
-"incorrect_password" = "Incorrect password. Please try again.";
+"incorrect_password" = "စကားဝှက် မှားယွင်းနေသည်။ ကျေးဇူးပြု၍ ထပ်မံကြိုးစားပါ။";
 "attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
 "max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
 
