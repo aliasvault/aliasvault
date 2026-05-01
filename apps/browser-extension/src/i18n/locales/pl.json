@@ -209,7 +209,7 @@
     "allItemsInFolders": "Wszystkie Twoje elementy są uporządkowane w folderach. Kliknij folder powyżej, aby wyświetlić swoje dane logowania, lub skorzystaj z wyszukiwarki, aby znaleźć konkretne elementy.",
     "deleteFolder": "Usuń folder",
     "deleteFolderKeepItems": "Usuń tylko folder",
-    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+    "deleteFolderKeepItemsDescription": "Elementy zostaną przeniesione do folderu nadrzędnego.",
     "deleteFolderAndItems": "Usuń folder i wszystkie elementy",
     "deleteFolderAndItemsDescription": "{{count}} element(ów) zostaną przeniesione do Ostatnio usunięte.",
     "filters": {
@@ -549,6 +549,6 @@
     "offline": "Jesteś w trybie offline",
     "tapToRetry": "Dotknij, aby ponowić synchronizację",
     "syncErrorTitle": "Sync Failed",
-    "syncErrorDismiss": "Dismiss"
+    "syncErrorDismiss": "Odrzuć"
   }
 }
