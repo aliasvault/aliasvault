@@ -1,0 +1,7 @@
+- Autofill verbeterd zodat bestaande inloggegevens aan een nieuwe URL gekoppeld kunnen worden
+- Itemtype filter verbeterd zodat ook submap aantallen worden bijgewerkt
+- Mogelijkheid toegevoegd om te kiezen tussen lokale clipboard copy of Apple Universal Clipboard
+- Ondersteuning toegevoegd voor custom proxy headers voor self-hosted gebruikers
+- Toon verbeterde foutmeldingen bij problemen
+- Creditcard gegevens toegevoegd aan de basis CSV export
+- Bug verholpen: wachtwoord wijzigen in de app

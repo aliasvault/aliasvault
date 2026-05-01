@@ -1,0 +1,7 @@
+- Improve autofill to allow to link existing credential to new URL
+- Improve item type filter to also update subfolder counts
+- Allow to choose between local clipboard copy or Apple Universal Clipboard
+- Add custom proxy header support to app for self-hosted users
+- Add improved errors in case of issues
+- Include creditcard details to basic CSV export
+- Fix password change errors that could occur in the app

@@ -1,0 +1,4 @@
+- Improve autofill field detection accuracy
+- Improve 2FA TOTP autofill prompt to show TOTP for specific account that was logged in with
+- Improve item type filter to also update subfolder counts
+- Fix "vault is locked" dismiss button

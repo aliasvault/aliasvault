@@ -1,0 +1,8 @@
+- Autofill flow verbeterd zodat bestaande inloggegevens aan een nieuwe URL gekoppeld kunnen worden
+- Itemtype filter verbeterd zodat ook submap aantallen worden bijgewerkt
+- Ondersteuning toegevoegd voor custom proxy headers voor self-hosted gebruikers
+- Toon verbeterde foutmeldingen bij problemen
+- Creditcard gegevens toegevoegd aan de basis CSV export
+- Bug verholpen: wachtwoord wijzigen in de app
+- Bug verholpen: sessie verlopen bij gebruik van meerdere Android profielen
+- Bug verholpen: Android passkey aanmaken werkte niet in bepaalde apps
