@@ -456,7 +456,7 @@
     "autofillLinkExisting": {
       "title": "Lien vers l'identifiant existant",
       "intro": "Sélectionnez un identifiant existant dans votre coffre pour le lier à \"{{target}}\".",
-      "confirmTitle": "Link to credential?",
+      "confirmTitle": "Lier l'identifiant?",
       "confirmMessage": "Êtes-vous sûr de vouloir lier «{{url}}» à cet identifiant?"
     },
     "autofillUrlAdded": {
