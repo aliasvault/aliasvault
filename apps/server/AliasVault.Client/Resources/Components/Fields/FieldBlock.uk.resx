@@ -94,11 +94,11 @@
   </data>
   <!-- Card Field Labels -->
   <data name="FieldLabel_card_number" xml:space="preserve">
-    <value>Card Number</value>
+    <value>Номер Картки</value>
     <comment>Label for card number field</comment>
   </data>
   <data name="FieldLabel_card_cardholder_name" xml:space="preserve">
-    <value>Cardholder Name</value>
+    <value>Ім'я власника картки</value>
     <comment>Label for cardholder name field</comment>
   </data>
   <data name="FieldLabel_card_expiry_month" xml:space="preserve">
