@@ -107,7 +107,7 @@
     <comment>Label for username confirmation input field</comment>
   </data>
   <data name="EnterPasswordLabel" xml:space="preserve">
-    <value>Enter your password</value>
+    <value>သင့် စကားဝှက်အား ရိုက်ထည့်ပါ</value>
     <comment>Label for password input field</comment>
   </data>
   <!-- Button text -->
@@ -125,7 +125,7 @@
     <comment>Loading message displayed while deleting account</comment>
   </data>
   <data name="UsernameRequired" xml:space="preserve">
-    <value>Username is required</value>
+    <value>အသုံးပြုသူအမည် လိုအပ်သည်</value>
     <comment>Error message when username is not provided</comment>
   </data>
   <data name="UsernameDoesNotMatch" xml:space="preserve">
