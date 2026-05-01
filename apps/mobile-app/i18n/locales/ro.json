@@ -456,7 +456,7 @@
     "autofillLinkExisting": {
       "title": "Asociază cu date de autentificare existente",
       "intro": "Selectează datele de autentificare existente din seif pentru a le asocia cu „{{target}}”.",
-      "confirmTitle": "Asociezi datele de autentificare?",
+      "confirmTitle": "Link to credential?",
       "confirmMessage": "Sigur vrei să asociezi „{{url}}” cu aceste date de autentificare?"
     },
     "autofillUrlAdded": {
