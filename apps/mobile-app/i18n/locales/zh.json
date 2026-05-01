@@ -456,7 +456,7 @@
     "autofillLinkExisting": {
       "title": "链接到现有凭据",
       "intro": "从您的密码库中选择一个现有凭据，链接到“{{target}}”。",
-      "confirmTitle": "Link to credential?",
+      "confirmTitle": "链接到凭据？",
       "confirmMessage": "确定要将“{{url}}”链接到此凭据吗？"
     },
     "autofillUrlAdded": {
