@@ -26,7 +26,7 @@
     "generate": "Generate",
     "attachments": "Liitteet",
     "or": "tai",
-    "retry": "Retry",
+    "retry": "Yritä uudelleen",
     "deleteItemConfirmTitle": "Poista kohde",
     "deleteItemConfirmDescription": "Haluatko varmasti poistaa tämän kohteen?",
     "errors": {
