@@ -549,6 +549,6 @@
     "offline": "Offline",
     "tapToRetry": "Tocca per riprovare la sincronizzazione",
     "syncErrorTitle": "Sync Failed",
-    "syncErrorDismiss": "Dismiss"
+    "syncErrorDismiss": "Annulla"
   }
 }
