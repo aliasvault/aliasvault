@@ -73,6 +73,51 @@ build_admin_ip_geo_rules() {
 ADMIN_IP_GEO_RULES_VALUE=$(build_admin_ip_geo_rules)
 sed -i "s|__ADMIN_IP_GEO_RULES__|${ADMIN_IP_GEO_RULES_VALUE}|g" /etc/nginx/nginx.conf
 
+# Build the set_real_ip_from directives from TRUSTED_PROXIES. These tell nginx
+# which upstream proxies it should accept the X-Forwarded-For header from when
+# determining the real client IP. Empty -> RFC1918 (backwards-compatible
+# default). "none" -> no directives (raw $remote_addr is always used). Otherwise
+# treated as a comma-separated list of CIDRs/IPs; invalid tokens are skipped
+# with a warning so a typo can't crash-loop nginx, and if no valid tokens
+# remain we emit no directives (equivalent to "none").
+build_trusted_proxies_directives() {
+    local raw="${TRUSTED_PROXIES:-}"
+    case "$(printf '%s' "$raw" | tr '[:upper:]' '[:lower:]')" in
+        "")
+            printf '%s' "set_real_ip_from 10.0.0.0/8; set_real_ip_from 172.16.0.0/12; set_real_ip_from 192.168.0.0/16;"
+            ;;
+        none)
+            printf '%s' ""
+            ;;
+        *)
+            local out=""
+            local valid=0
+            local IFS=','
+            for cidr in $raw; do
+                cidr=$(printf '%s' "$cidr" | tr -d '[:space:]')
+                [ -z "$cidr" ] && continue
+                if is_valid_cidr "$cidr"; then
+                    if [ -z "$out" ]; then
+                        out="set_real_ip_from $cidr;"
+                    else
+                        out="$out set_real_ip_from $cidr;"
+                    fi
+                    valid=$((valid + 1))
+                else
+                    printf 'warning: TRUSTED_PROXIES: ignoring invalid CIDR/IP %s\n' "$cidr" >&2
+                fi
+            done
+            if [ "$valid" -eq 0 ]; then
+                printf 'warning: TRUSTED_PROXIES has no valid entries; X-Forwarded-For will be ignored from all upstreams\n' >&2
+            fi
+            printf '%s' "$out"
+            ;;
+    esac
+}
+
+TRUSTED_PROXIES_VALUE=$(build_trusted_proxies_directives)
+sed -i "s|__TRUSTED_PROXIES__|${TRUSTED_PROXIES_VALUE}|g" /etc/nginx/nginx.conf
+
 # Function to check if certificate needs regeneration
 needs_cert_regeneration() {
     # If cert doesn't exist, need to generate
