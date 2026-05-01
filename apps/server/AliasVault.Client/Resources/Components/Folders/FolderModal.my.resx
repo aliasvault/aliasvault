@@ -83,11 +83,11 @@
     <comment>Create button text</comment>
   </data>
   <data name="SaveButton" xml:space="preserve">
-    <value>Save</value>
+    <value>သိမ်းဆည်းမည်</value>
     <comment>Save button text</comment>
   </data>
   <data name="CancelButton" xml:space="preserve">
-    <value>Cancel</value>
+    <value>ပယ်ဖျက်မည်</value>
     <comment>Cancel button text</comment>
   </data>
 </root>
