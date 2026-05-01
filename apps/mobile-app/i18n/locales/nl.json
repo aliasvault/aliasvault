@@ -443,25 +443,25 @@
     "vaultSyncedSuccessfully": "Vault succesvol gesynchroniseerd",
     "vaultUpToDate": "Vault is up-to-date",
     "offlineMessage": "Je bent offline. Maak verbinding met het internet om je vault te synchroniseren.",
-    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "switchBackToOriginalApp": "Ga terug naar de andere app om door te gaan.",
     "autofillOpenApp": {
-      "title": "Autofill request",
-      "description": "Choose an action for the app or website that requested autofill.",
-      "appOrUrlLabel": "App or URL",
-      "findExistingTitle": "Link to existing credential",
-      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
-      "createNewTitle": "Create new credential",
-      "createNewDescription": "Add a new credential to your vault for this app or URL."
+      "title": "Autofill verzoek",
+      "description": "Kies een actie voor de app of website die autofill heeft aangevraagd.",
+      "appOrUrlLabel": "App of URL",
+      "findExistingTitle": "Koppelen aan bestaande credential",
+      "findExistingDescription": "Selecteer een bestaande credential uit je vault om te koppelen aan het bovenstaande adres.",
+      "createNewTitle": "Nieuwe credential aanmaken",
+      "createNewDescription": "Voeg een nieuwe credential toe aan je vault voor deze app of URL."
     },
     "autofillLinkExisting": {
-      "title": "Link to existing credential",
-      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
-      "confirmTitle": "Link credential?",
-      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+      "title": "Koppelen aan bestaande credential",
+      "intro": "Selecteer een bestaande credential uit je vault om te linken aan {{target}}.",
+      "confirmTitle": "Link to credential?",
+      "confirmMessage": "Weet je zeker dat je deze credential wilt linken aan {{url}}?"
     },
     "autofillUrlAdded": {
-      "title": "Credential linked",
-      "message": "Autofill should now offer this credential the next time you open the app."
+      "title": "Credential gekoppeld",
+      "message": "Autofill zal nu deze credential tonen de volgende keer dat je de app opent."
     },
     "filters": {
       "all": "Items",
@@ -655,7 +655,7 @@
       "version": "Versie: {{version}}",
       "advancedSettings": "Geavanceerde instellingen",
       "customProxyHeaders": "Aangepaste proxy headers",
-      "customProxyHeadersDescription": "Voeg HTTP-headers toe die met elk verzoek naar uw AliasVault-server worden verzonden. Kan worden gebruikt voor zelfgehoste setups achter een reverse proxy die controleert op aangepaste headers (bijv. Pangolin, Cloudflare Access).",
+      "customProxyHeadersDescription": "Voeg HTTP-headers toe die met elk verzoek naar je AliasVault-server worden verzonden. Kan worden gebruikt voor zelfgehoste setups achter een reverse proxy die controleert op aangepaste headers (bijv. Pangolin, Cloudflare Access).",
       "headerName": "Header-naam",
       "headerNamePlaceholder": "X-Custom-Header",
       "headerValue": "Header-waarde"
