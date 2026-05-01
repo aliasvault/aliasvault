@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="EmailSectionTitle" xml:space="preserve">
-    <value>Email</value>
+    <value>အီးမေးလ်</value>
     <comment>Section title for email panel</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
@@ -87,7 +87,7 @@
     <comment>Error message when email loading fails</comment>
   </data>
   <data name="LoadMoreButton" xml:space="preserve">
-    <value>Load more</value>
+    <value>နောက်ထပ် ဝန်ဆွဲတင်ရန်</value>
     <comment>Button text to load more emails</comment>
   </data>
 </root>
