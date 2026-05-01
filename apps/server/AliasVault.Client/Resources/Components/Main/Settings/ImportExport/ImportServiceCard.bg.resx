@@ -75,7 +75,7 @@
     <comment>Cancel button text</comment>
   </data>
   <data name="BackButton" xml:space="preserve">
-    <value>Back</value>
+    <value>Назад</value>
     <comment>Back button text</comment>
   </data>
   <data name="NextButton" xml:space="preserve">
@@ -111,11 +111,11 @@
     <comment>Column header for service name in credential preview table</comment>
   </data>
   <data name="UsernameColumn" xml:space="preserve">
-    <value>Username</value>
+    <value>Потребителско име</value>
     <comment>Column header for username in credential preview table</comment>
   </data>
   <data name="PasswordColumn" xml:space="preserve">
-    <value>Password</value>
+    <value>Парола</value>
     <comment>Column header for password in credential preview table</comment>
   </data>
   <data name="MoreCredentials" xml:space="preserve">
@@ -162,9 +162,13 @@
     <value>Please unzip the export file before importing. See the instructions below for more information.</value>
     <comment>Error message when user tries to import a zip file</comment>
   </data>
+  <data name="ImportErrorUnsupportedFormat" xml:space="preserve">
+    <value>Unsupported file format. Supported formats: {0}</value>
+    <comment>Error message when user selects an unsupported file format. {0} is the list of supported extensions</comment>
+  </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
-    <value>File size exceeds 10MB limit.</value>
-    <comment>Error message when file is too large</comment>
+    <value>File size exceeds {0}MB limit.</value>
+    <comment>Error message when file is too large. {0} is the maximum allowed size in megabytes</comment>
   </data>
   <data name="EncryptedFilePasswordPrompt" xml:space="preserve">
     <value>This file is encrypted. Please enter the password you used when creating the export.</value>
@@ -193,5 +197,9 @@
   <data name="DecryptionErrorGeneric" xml:space="preserve">
     <value>Failed to decrypt the file. Please check that the file is not corrupted and try again.</value>
     <comment>Generic error message for decryption failure</comment>
+  </data>
+  <data name="supportedFormats" xml:space="preserve">
+    <value>Supported formats</value>
+    <comment>Label for supported file formats</comment>
   </data>
 </root>

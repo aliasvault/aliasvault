@@ -34,7 +34,7 @@
     "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
   },
   "menu": {
-    "vault": "Vault",
+    "vault": "Сховище",
     "emails": "Електронні адреси"
   },
   "common": {
@@ -108,6 +108,7 @@
       "passwordChanged": "Ваш пароль змінився з моменту останнього входу. З міркувань безпеки, будь ласка, увійдіть ще раз.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "mergeFailed": "Failed to merge vault changes. Please try again.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "invalidCode": "Please enter a valid 6-digit authentication code.",
       "serverError": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
       "wrongPassword": "Невірний пароль. Будь ласка, спробуйте ще раз.",
@@ -181,7 +182,7 @@
     }
   },
   "items": {
-    "title": "Items",
+    "title": "Об'єкти",
     "itemName": "Назва",
     "loginCredentials": "Дані для входу",
     "cardInformation": "Card Information",
@@ -287,8 +288,8 @@
     "alias.birthdate": "Birthdate",
     "login.email": "Пошта",
     "notes.content": "Нотатки",
-    "card.cardholder_name": "Cardholder Name",
-    "card.number": "Card Number",
+    "card.cardholder_name": "Ім'я власника картки",
+    "card.number": "Номер Картки",
     "card.expiry_month": "Expiry Month",
     "card.expiry_year": "Expiry Year",
     "card.cvv": "CVV",
@@ -506,8 +507,8 @@
   "recentlyDeleted": {
     "title": "Recently Deleted",
     "noItems": "No deleted items",
-    "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
-    "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+    "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+    "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
     "restore": "Restore",
     "deletePermanently": "Delete Permanently",
     "emptyAll": "Empty All",
@@ -546,6 +547,8 @@
   },
   "sync": {
     "offline": "Offline",
-    "tapToRetry": "Tap to retry sync"
+    "tapToRetry": "Tap to retry sync",
+    "syncErrorTitle": "Sync Failed",
+    "syncErrorDismiss": "Dismiss"
   }
 }

@@ -87,7 +87,7 @@
     <comment>Label for recommended option</comment>
   </data>
   <data name="ExportAvexTitle" xml:space="preserve">
-    <value>Volledig encrypted vault export</value>
+    <value>Volledig versleutelde vault export</value>
     <comment>Title for encrypted export option</comment>
   </data>
   <data name="ExportAvexDescription" xml:space="preserve">

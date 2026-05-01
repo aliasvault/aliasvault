@@ -9,7 +9,7 @@
   <string name="common_back">Назад</string>
   <string name="unknown_error">Сталася невідома помилка</string>
   <string name="autofill_failed_to_retrieve">Не вдалося отримати, відкрийте додаток</string>
-  <string name="autofill_no_match_found">Збігів не знайдено. Створити новий?</string>
+  <string name="autofill_no_match_found">No match found</string>
   <string name="autofill_open_app">Відкрити додаток</string>
   <string name="autofill_vault_locked">Vault заблоковано</string>
   <string name="biometric_store_key_title">Зберегти ключ шифрування</string>

@@ -26,11 +26,13 @@
     "generate": "Generate",
     "attachments": "Вкладення",
     "or": "або",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Delete Item",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
       "unknownError": "Сталася невідома помилка.",
       "unknownErrorTryAgain": "Сталася невідома помилка. Будь ласка, спробуйте ще раз.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "serverVersionTooOld": "Сервер AliasVault потрібно оновити до новішої версії, щоб використовувати цю функцію. Будь ласка, зверніться до адміністратора серверу, якщо вам потрібна допомога."
     }
   },
@@ -158,6 +160,9 @@
     "clipboardClear": "Очистити буфер обміну",
     "clipboardClearDescription": "Автоматично очищати скопійовані паролі та конфіденційну інформацію з буфера обміну через вказаний період.",
     "clipboardClearAndroidWarning": "Примітка: деякі Android-пристрої мають включену історію обміну, яка може відстежувати раніше скопійовані елементи, навіть після того, як AliasVault очищує буфер обміну. AliasVault може перезаписати лише найновіший предмет, але старі записи можуть залишатися видимими в історії. З міркувань безпеки ми радимо вимкнути всі функції історії буфера обміну в налаштуваннях пристрою.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Ніколи",
       "5seconds": "5 секунд",
@@ -213,7 +218,7 @@
       "biometricDisabledMessage": "{{biometric}} вимкнено для AliasVault. Щоб використовувати його, спочатку ввімкніть в налаштуваннях вашого пристрою.",
       "biometricHelp": "Використовуйте біометричні дані, щоб розблокувати сховище, захищене {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} недоступний. Натисніть, щоб відкрити налаштування, та/або перейдіть до налаштувань пристрою, щоб увімкнути та налаштувати його.",
-      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
+      "featureRequiresPasscode": "Ця функція вимагає включений пароль на вашому пристрої.",
       "pin": "ПІН-код",
       "pinDescription": "Використовуйте власний PIN-код, щоб швидше розблокувати сховище.",
       "pinEnabled": "Розблокування PIN-кодом успішно ввімкнено",
@@ -324,7 +329,7 @@
     }
   },
   "navigation": {
-    "vault": "Vault",
+    "vault": "Сховище",
     "emails": "Електронні листи",
     "settings": "Налаштування"
   },
@@ -370,8 +375,8 @@
     "alias.last_name": "Прізвище",
     "alias.gender": "Стать",
     "alias.birthdate": "Дата народження",
-    "card.cardholder_name": "Cardholder Name",
-    "card.number": "Card Number",
+    "card.cardholder_name": "Ім'я власника картки",
+    "card.number": "Номер Картки",
     "card.expiry_month": "Expiry Month",
     "card.expiry_year": "Expiry Year",
     "card.cvv": "CVV",
@@ -379,7 +384,7 @@
     "notes.content": "Нотатки"
   },
   "items": {
-    "title": "Items",
+    "title": "Об'єкти",
     "addItem": "Add Item",
     "editItem": "Edit Item",
     "deleteItem": "Delete Item",
@@ -433,14 +438,33 @@
     "includeNumbers": "Числа (0-9)",
     "includeSpecialChars": "Спеціальні символи (!@#)",
     "avoidAmbiguousChars": "Уникати неоднозначних символів",
-    "errorLoadingItems": "Error loading items",
+    "errorLoadingItems": "Помилка завантаження об'єктів",
     "vaultSyncFailed": "Не вдалося синхронізувати сховище",
     "vaultSyncedSuccessfully": "Сховище успішно синхронізовано",
     "vaultUpToDate": "Сховище оновлено",
     "offlineMessage": "Ви не в мережі. Приєднайтесь до Інтернету, щоб синхронізувати сховище.",
-    "switchBackToBrowser": "Щоб продовжити, поверніться до браузера.",
+    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "autofillOpenApp": {
+      "title": "Autofill request",
+      "description": "Choose an action for the app or website that requested autofill.",
+      "appOrUrlLabel": "App or URL",
+      "findExistingTitle": "Link to existing credential",
+      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
+      "createNewTitle": "Create new credential",
+      "createNewDescription": "Add a new credential to your vault for this app or URL."
+    },
+    "autofillLinkExisting": {
+      "title": "Link to existing credential",
+      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
+      "confirmTitle": "Link to credential?",
+      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+    },
+    "autofillUrlAdded": {
+      "title": "Credential linked",
+      "message": "Autofill should now offer this credential the next time you open the app."
+    },
     "filters": {
-      "all": "Items",
+      "all": "Об'єкти",
       "showFolders": "Folders",
       "passkeys": "Ключі доступу",
       "attachments": "Вкладення",
@@ -513,8 +537,8 @@
     "recentlyDeleted": {
       "title": "Recently Deleted",
       "noItems": "No deleted items",
-      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
-      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
       "restore": "Restore",
       "deletePermanently": "Delete Permanently",
       "emptyAll": "Empty All",
@@ -615,13 +639,26 @@
       "vaultAutoLockedMessage": "Сховище автоматично заблоковано після закінчення часу очікування.",
       "attemptingToUnlockMessage": "Спроба розблокування."
     },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
+    },
     "loginSettings": {
       "title": "API з'єднання",
       "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Розміщено на власному хостингу",
       "customApiUrl": "URL-адреса користувацького API",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
-      "version": "Версія: {{version}}"
+      "version": "Версія: {{version}}",
+      "advancedSettings": "Advanced settings",
+      "customProxyHeaders": "Custom proxy headers",
+      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
+      "headerName": "Header name",
+      "headerNamePlaceholder": "X-Custom-Header",
+      "headerValue": "Header value"
     }
   },
   "upgrade": {

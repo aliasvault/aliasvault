@@ -108,6 +108,7 @@
       "passwordChanged": "Tu contraseña ha cambiado desde la última vez que iniciaste sesión. Por favor, inicia sesión de nuevo por razones de seguridad.",
       "syncConflictMaxRetries": "No se pudo sincronizar la bóveda después de múltiples intentos. Inténtalo de nuevo más tarde.",
       "mergeFailed": "Error al combinar cambios en la bóveda. Por favor, inténtalo de nuevo.",
+      "vaultTooLarge": "La bóveda es demasiado grande para que el servidor lo acepte. Intente eliminar algunos elementos o archivos adjuntos para reducir el tamaño y vuelva a intentarlo.",
       "invalidCode": "Por favor, introduzca un código de autenticación de 6 dígitos válido.",
       "serverError": "No se pudo llegar al servidor AliasVault. Por favor, inténtelo de nuevo más tarde o póngase en contacto con el soporte si el problema persiste.",
       "wrongPassword": "Contraseña incorrecta. Por favor, inténtelo de nuevo.",
@@ -506,8 +507,8 @@
   "recentlyDeleted": {
     "title": "Eliminados recientemente",
     "noItems": "No hay elementos eliminados",
-    "noItemsDescription": "Los elementos que elimines aparecerán aquí durante 30 días antes de ser eliminados permanentemente.",
-    "description": "Estos elementos se eliminarán permanentemente después de 30 días. Puede restaurarlos o eliminarlos inmediatamente.",
+    "noItemsDescription": "Los elementos que borre aparecerán aquí durante {{days}} días antes de ser eliminados permanentemente.",
+    "description": "Estos elementos serán eliminados permanentemente después de {{days}} días. Puedes restaurarlos o eliminarlos inmediatamente.",
     "restore": "Restaurar",
     "deletePermanently": "Eliminar permanentemente",
     "emptyAll": "Vaciar todo",
@@ -546,6 +547,8 @@
   },
   "sync": {
     "offline": "Sin conexión",
-    "tapToRetry": "Toca para reintentar sincronizar"
+    "tapToRetry": "Toca para reintentar sincronizar",
+    "syncErrorTitle": "Error de sincronización",
+    "syncErrorDismiss": "Descartar"
   }
 }

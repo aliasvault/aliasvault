@@ -26,11 +26,13 @@
     "generate": "Generate",
     "attachments": "Ekler",
     "or": "or",
+    "retry": "Retry",
     "deleteItemConfirmTitle": "Delete Item",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
       "unknownError": "An unknown error occurred.",
       "unknownErrorTryAgain": "An unknown error occurred. Please try again.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help."
     }
   },
@@ -158,6 +160,9 @@
     "clipboardClear": "Panoyu Temizle",
     "clipboardClearDescription": "Kopyalanan parolaları ve hassas bilgileri, belirtilen süre sonunda panodan otomatik olarak temizleyin.",
     "clipboardClearAndroidWarning": "Not: Bazı Android cihazlarda pano geçmişi özelliği açıktır ve AliasVault panoyu temizledikten sonra bile daha önce kopyalanan öğeleri saklayabilir. AliasVault yalnızca en son öğeyi üzerine yazabilir, ancak daha eski girişler geçmişte görünmeye devam edebilir. Güvenlik nedeniyle, cihaz ayarlarınızdan pano geçmişi özelliklerini devre dışı bırakmanızı öneririz.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Asla",
       "5seconds": "5 saniye",
@@ -438,7 +443,26 @@
     "vaultSyncedSuccessfully": "Kasa başarıyla senkronize edildi",
     "vaultUpToDate": "Kasa güncel",
     "offlineMessage": "Çevrimdışısınız. E-postalarınızı yüklemek için lütfen internet bağlantısı sağlayın.",
-    "switchBackToBrowser": "Tarayıcınıza geri dönerek devam edin.",
+    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "autofillOpenApp": {
+      "title": "Autofill request",
+      "description": "Choose an action for the app or website that requested autofill.",
+      "appOrUrlLabel": "App or URL",
+      "findExistingTitle": "Link to existing credential",
+      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
+      "createNewTitle": "Create new credential",
+      "createNewDescription": "Add a new credential to your vault for this app or URL."
+    },
+    "autofillLinkExisting": {
+      "title": "Link to existing credential",
+      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
+      "confirmTitle": "Link to credential?",
+      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+    },
+    "autofillUrlAdded": {
+      "title": "Credential linked",
+      "message": "Autofill should now offer this credential the next time you open the app."
+    },
     "filters": {
       "all": "Items",
       "showFolders": "Folders",
@@ -513,8 +537,8 @@
     "recentlyDeleted": {
       "title": "Recently Deleted",
       "noItems": "No deleted items",
-      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
-      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
       "restore": "Restore",
       "deletePermanently": "Delete Permanently",
       "emptyAll": "Empty All",
@@ -615,13 +639,26 @@
       "vaultAutoLockedMessage": "Kasa zaman aşımının ardından otomatik olarak kilitlendi.",
       "attemptingToUnlockMessage": "Attempting to unlock."
     },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
+    },
     "loginSettings": {
       "title": "API Connection",
       "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Self-hosted",
       "customApiUrl": "Custom API URL",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
-      "version": "Version: {{version}}"
+      "version": "Version: {{version}}",
+      "advancedSettings": "Advanced settings",
+      "customProxyHeaders": "Custom proxy headers",
+      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
+      "headerName": "Header name",
+      "headerNamePlaceholder": "X-Custom-Header",
+      "headerValue": "Header value"
     }
   },
   "upgrade": {

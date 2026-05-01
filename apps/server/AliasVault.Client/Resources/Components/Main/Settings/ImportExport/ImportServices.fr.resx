@@ -64,7 +64,7 @@
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
-    <value>Afin d'importer votre coffre 1Password vous devez l'exporter sous la forme d'un fichier CSV. Vous pouvez le faire en vous connectant à votre compte 1Password dans l'application de bureau 1Password 8 (Windows / MacOS / Linux), dans le menu 'Fichier' et en sélectionnant 'Exporter' (vers CSV).</value>
+    <value>Afin d'importer votre coffre 1Password, vous devez l'exporter. Vous pouvez le faire en vous connectant à votre compte 1Password dans l'application de bureau 1Password 8 (Windows / MacOS / Linux), en allant dans le menu 'Fichier' et en sélectionnant 'Exporter'.</value>
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
@@ -77,7 +77,7 @@
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>Afin d'importer votre coffre Bitwarden, vous devez l'exporter en tant que fichier CSV. Vous pouvez le faire en vous connectant à votre compte Bitwarden, en allant dans le menu 'Outils' et en sélectionnant 'Exporter le coffre' (vers CSV).</value>
+    <value>Afin d'importer votre coffre Bitwarden, vous devez l'exporter. Vous pouvez le faire en vous connectant à votre compte Bitwarden, en allant dans le menu 'Outils' et en sélectionnant 'Exporter le coffre'.</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
@@ -210,7 +210,7 @@
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
-    <value>Afin d'importer vos mots de passe Proton Pass, vous devez les exporter dans un fichier CSV. Vous pouvez le faire en vous connectant à Proton Pass (web), en cliquant sur le menu 'Paramètres' > 'Exporter' > 'Format de fichier : CSV'. Puis cliquez sur 'Exporter'.</value>
+    <value>Afin d'importer votre coffre Proton Pass, vous devez l'exporter. Vous pouvez le faire dans l'extension du navigateur Proton Pass en allant dans 'Paramètres' > 'Exporter'.</value>
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">

@@ -108,6 +108,7 @@
       "passwordChanged": "Parola ta a fost schimbată de la ultima autentificare. Autentifică-te din nou din motive de securitate.",
       "syncConflictMaxRetries": "Sincronizarea seifului a eșuat după mai multe încercări. Reîncearcă mai târziu.",
       "mergeFailed": "Îmbinarea modificărilor seifului a eșuat. Încearcă din nou.",
+      "vaultTooLarge": "Seiful este prea mare pentru a fi acceptat de server. Încercați să eliminați unele elemente sau atașamente pentru a reduce dimensiunea și încercați din nou.",
       "invalidCode": "Introdu un cod de autentificare valid din 6 cifre.",
       "serverError": "Nu s-a putut stabili conexiunea cu serverul AliasVault. Încearcă din nou mai târziu sau contactează asistența dacă problema persistă.",
       "wrongPassword": "Parolă incorectă. Încearcă din nou.",
@@ -506,8 +507,8 @@
   "recentlyDeleted": {
     "title": "Șterse Recent",
     "noItems": "Niciun element șters",
-    "noItemsDescription": "Elementele șterse vor apărea aici timp de 30 de zile înainte de a fi eliminate definitiv.",
-    "description": "Aceste elemente vor fi șterse definitiv după 30 de zile. Le poți restaura sau șterge imediat.",
+    "noItemsDescription": "Elementele pe care le ștergi vor apărea aici timp de {{days}} zile înainte de a fi eliminate definitiv.",
+    "description": "Aceste elemente vor fi șterse definitiv după {{days}} zile. Le poți restaura sau șterge imediat.",
     "restore": "Restaurează",
     "deletePermanently": "Șterge Definitiv",
     "emptyAll": "Golește tot",
@@ -546,6 +547,8 @@
   },
   "sync": {
     "offline": "Offline",
-    "tapToRetry": "Apasă pentru a reîncerca sincronizarea"
+    "tapToRetry": "Apasă pentru a reîncerca sincronizarea",
+    "syncErrorTitle": "Sincronizare Eșuată",
+    "syncErrorDismiss": "Închide"
   }
 }

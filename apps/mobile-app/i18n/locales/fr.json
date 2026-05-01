@@ -26,11 +26,13 @@
     "generate": "Générer",
     "attachments": "Pièces jointes",
     "or": "ou",
+    "retry": "Réessayer",
     "deleteItemConfirmTitle": "Supprimer l'élement",
     "deleteItemConfirmDescription": "Êtes-vous certain de vouloir supprimer cet élément?",
     "errors": {
       "unknownError": "Une erreur inconnue s'est produite.",
       "unknownErrorTryAgain": "Une erreur inconnue s'est produite. Merci de réessayer.",
+      "vaultTooLarge": "Le coffre est trop grand pour que le serveur l'accepte. Essayez de supprimer certains éléments ou pièces jointes pour réduire la taille et réessayez.",
       "serverVersionTooOld": "Le serveur AliasVault doit être mis à jour vers une version plus récente pour pouvoir utiliser cette fonctionnalité. Veuillez contacter l'administrateur du serveur si vous avez besoin d'aide."
     }
   },
@@ -158,6 +160,9 @@
     "clipboardClear": "Effacer le presse-papiers",
     "clipboardClearDescription": "Effacer automatiquement les mots de passe copiés et les informations sensibles du presse-papiers après une période donnée.",
     "clipboardClearAndroidWarning": "Remarque : certains appareils Android ont l'historique du presse-papiers activé, qui peut garder une trace des éléments précédemment copiés, même après que AliasVault a effacé le presse-papiers. AliasVault ne peut que remplacer l'élément le plus récent, mais les entrées plus anciennes peuvent rester visibles dans l'historique. Pour des raisons de sécurité, nous vous recommandons de désactiver toutes les fonctionnalités d'historique du presse-papiers dans les paramètres de votre appareil.",
+    "clipboardLocalOnly": "Presse-papiers local uniquement",
+    "clipboardLocalOnlyDescription": "Conserver les identifiants copiés sur cet appareil au lieu de les synchroniser à vos autres appareils Apple via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "Avec cette option désactivée, les identifiants copiés peuvent être synchronisés sur vos autres appareils Apple (Mac, iPad, etc.) via le presse-papiers universel.",
     "clipboardClearOptions": {
       "never": "Jamais",
       "5seconds": "5 secondes",
@@ -438,7 +443,26 @@
     "vaultSyncedSuccessfully": "Le coffre a été synchronisé avec succès",
     "vaultUpToDate": "Le coffre est à jour",
     "offlineMessage": "Vous êtes déconnecté. Veuillez vous connecter à internet pour synchroniser votre coffre.",
-    "switchBackToBrowser": "Passez à votre navigateur pour continuer.",
+    "switchBackToOriginalApp": "Revenir à l'application originale pour continuer.",
+    "autofillOpenApp": {
+      "title": "Demande de saisie automatique",
+      "description": "Choisissez une action pour l'application ou le site Web qui a demandé la saisie automatique.",
+      "appOrUrlLabel": "Application ou URL",
+      "findExistingTitle": "Lien vers l'identifiant existant",
+      "findExistingDescription": "Sélectionnez un identifiant existant dans votre coffre pour le lier à l'adresse ci-dessus.",
+      "createNewTitle": "Créer un nouvel identifiant",
+      "createNewDescription": "Ajouter un nouvel identifiant à votre coffre pour cette application ou cette URL."
+    },
+    "autofillLinkExisting": {
+      "title": "Lien vers l'identifiant existant",
+      "intro": "Sélectionnez un identifiant existant dans votre coffre pour le lier à \"{{target}}\".",
+      "confirmTitle": "Link to credential?",
+      "confirmMessage": "Êtes-vous sûr de vouloir lier «{{url}}» à cet identifiant?"
+    },
+    "autofillUrlAdded": {
+      "title": "Identifiant lié",
+      "message": "Le remplissage automatique devrait maintenant proposer cet identifiant la prochaine fois que vous ouvrirez l'application."
+    },
     "filters": {
       "all": "Éléments",
       "showFolders": "Dossiers",
@@ -513,8 +537,8 @@
     "recentlyDeleted": {
       "title": "Supprimé récemment",
       "noItems": "Aucun élément supprimé",
-      "noItemsDescription": "Les éléments que vous supprimez apparaîtront ici pendant 30 jours avant d'être définitivement supprimés.",
-      "description": "Ces éléments seront définitivement supprimés après 30 jours. Vous pouvez les restaurer ou les supprimer immédiatement.",
+      "noItemsDescription": "Les éléments que vous supprimez apparaîtront ici pendant {{days}} jours avant d'être définitivement supprimés.",
+      "description": "Ces éléments seront définitivement supprimés après {{days}} jours. Vous pouvez les restaurer ou les supprimer immédiatement.",
       "restore": "Restaurer",
       "deletePermanently": "Supprimer définitivement",
       "emptyAll": "Tout vider",
@@ -615,13 +639,26 @@
       "vaultAutoLockedMessage": "Coffre-fort verrouillé automatiquement après expiration du délai.",
       "attemptingToUnlockMessage": "Tentative de déverrouillage."
     },
+    "vaultError": {
+      "title": "Erreur du coffre",
+      "description": "Une erreur est survenue lors du chargement de votre coffre. Si le problème persiste, veuillez contacter le support.",
+      "showDetails": "Afficher les détails de l'erreur",
+      "hideDetails": "Masquer les détails de l'erreur",
+      "copyErrorDetails": "Copier les détails de l’erreur"
+    },
     "loginSettings": {
       "title": "Connexion API",
       "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Auto-hébergé",
       "customApiUrl": "URL de l’API personnalisée",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
-      "version": "Version : {{version}}"
+      "version": "Version : {{version}}",
+      "advancedSettings": "Paramètres avancés",
+      "customProxyHeaders": "En-têtes de proxy personnalisés",
+      "customProxyHeadersDescription": "Ajoutez des en-têtes HTTP qui seront envoyés avec chaque requête à votre serveur AliasVault. Peut être utilisé pour les configurations auto-hébergées derrière un proxy inverse qui vérifie les en-têtes personnalisés (par exemple, Pangolin, Cloudflare Access).",
+      "headerName": "Nom de l'en-tête",
+      "headerNamePlaceholder": "En-tête X-Custom",
+      "headerValue": "Valeur de l'en-tête"
     }
   },
   "upgrade": {

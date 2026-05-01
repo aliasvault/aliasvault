@@ -162,28 +162,32 @@
     <value>Packa upp exportfilen innan du importerar. Se anvisningarna nedan för mer information.</value>
     <comment>Error message when user tries to import a zip file</comment>
   </data>
+  <data name="ImportErrorUnsupportedFormat" xml:space="preserve">
+    <value>Unsupported file format. Supported formats: {0}</value>
+    <comment>Error message when user selects an unsupported file format. {0} is the list of supported extensions</comment>
+  </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
-    <value>Filstorleken överskrider gränsen på 10MB.</value>
-    <comment>Error message when file is too large</comment>
+    <value>File size exceeds {0}MB limit.</value>
+    <comment>Error message when file is too large. {0} is the maximum allowed size in megabytes</comment>
   </data>
   <data name="EncryptedFilePasswordPrompt" xml:space="preserve">
-    <value>This file is encrypted. Please enter the password you used when creating the export.</value>
+    <value>Den här filen är krypterad. Ange lösenordet du använde när du skapade exporten.</value>
     <comment>Prompt for encrypted file password</comment>
   </data>
   <data name="DecryptionPasswordLabel" xml:space="preserve">
-    <value>Decryption Password</value>
+    <value>Dekrypteringslösenord</value>
     <comment>Label for decryption password input</comment>
   </data>
   <data name="DecryptionPasswordHint" xml:space="preserve">
-    <value>This is the password you set when creating the encrypted export (.avex file), not your vault master password.</value>
+    <value>Detta är lösenordet du angav när du skapade den krypterade exporten (.avex-filen), inte valvets huvudlösenord.</value>
     <comment>Hint explaining what password is needed</comment>
   </data>
   <data name="DecryptAndContinueButton" xml:space="preserve">
-    <value>Decrypt and Continue</value>
+    <value>Dekryptera och fortsätt</value>
     <comment>Button text for decryption</comment>
   </data>
   <data name="DecryptingFile" xml:space="preserve">
-    <value>Decrypting file...</value>
+    <value>Dekrypterar fil...</value>
     <comment>Progress text during decryption</comment>
   </data>
   <data name="IncorrectPasswordError" xml:space="preserve">
@@ -191,7 +195,11 @@
     <comment>Error message for incorrect decryption password</comment>
   </data>
   <data name="DecryptionErrorGeneric" xml:space="preserve">
-    <value>Failed to decrypt the file. Please check that the file is not corrupted and try again.</value>
+    <value>Det gick inte att dekryptera filen. Kontrollera att filen inte är skadad och försök igen.</value>
     <comment>Generic error message for decryption failure</comment>
+  </data>
+  <data name="supportedFormats" xml:space="preserve">
+    <value>Format som stöds</value>
+    <comment>Label for supported file formats</comment>
   </data>
 </root>

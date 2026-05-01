@@ -28,8 +28,8 @@
     <comment>Page header title for deleting item</comment>
   </data>
   <data name="DeleteItemDescription">
-    <value>Je kunt het item hieronder verwijderen.</value>
-    <comment>Page description for deleting item</comment>
+    <value>Weet je zeker dat je dit item wilt verwijderen? Het wordt verplaatst naar de recent verwijderde items en na {0} dagen permanent verwijderd.</value>
+    <comment>Confirmation message shown in the delete-item modal. Placeholder {0} is the trash retention period in days.</comment>
   </data>
   <data name="ItemEntrySection">
     <value>Item</value>

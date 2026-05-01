@@ -26,11 +26,13 @@
     "generate": "Generar",
     "attachments": "Archivos adjuntos",
     "or": "o",
+    "retry": "Reintentar",
     "deleteItemConfirmTitle": "Eliminar elemento",
     "deleteItemConfirmDescription": "¿Está seguro de querer borrar este ítem?",
     "errors": {
       "unknownError": "Se produjo un error desconocido.",
       "unknownErrorTryAgain": "Se ha producido un error desconocido. Por favor, inténtelo de nuevo.",
+      "vaultTooLarge": "La bóveda es demasiado grande para que el servidor lo acepte. Intente eliminar algunos elementos o archivos adjuntos para reducir el tamaño y vuelva a intentarlo.",
       "serverVersionTooOld": "El servidor AliasVault necesita ser actualizado a una versión más reciente para poder utilizar esta característica. Por favor, contacte con el administrador del servidor si necesita ayuda."
     }
   },
@@ -158,6 +160,9 @@
     "clipboardClear": "Limpiar portapapeles",
     "clipboardClearDescription": "Limpiar automáticamente las contraseñas copiadas e información sensible del portapapeles después de un período de tiempo especificado.",
     "clipboardClearAndroidWarning": "Nota: algunos dispositivos Android tienen el historial del portapapeles activado, que puede llevar un seguimiento de elementos previamente copiados, incluso después de que AliasVault borre el portapapeles. AliasVault sólo puede sobrescribir el elemento más reciente, pero las entradas más antiguas pueden seguir siendo visibles en la historia. Por razones de seguridad, recomendamos desactivar cualquier característica del historial del portapapeles en la configuración del dispositivo.",
+    "clipboardLocalOnly": "Solo portapapeles locales",
+    "clipboardLocalOnlyDescription": "Mantén las credenciales copiadas en este dispositivo en lugar de sincronizarlas con tus otros dispositivos Apple a través del Portapapeles Universal.",
+    "clipboardLocalOnlyDisabledWarning": "Con esto desactivado, las credenciales copiadas pueden sincronizarse a tus otros dispositivos Apple (Mac, iPad, etc.) a través del Portapapeles Universal.",
     "clipboardClearOptions": {
       "never": "Nunca",
       "5seconds": "5 segundos",
@@ -438,7 +443,26 @@
     "vaultSyncedSuccessfully": "Bóveda sincronizada correctamente",
     "vaultUpToDate": "La bóveda está actualizada",
     "offlineMessage": "Estás desconectado. Por favor, conéctate a Internet para sincronizar tu bóveda.",
-    "switchBackToBrowser": "Vuelva a su navegador para continuar.",
+    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "autofillOpenApp": {
+      "title": "Autofill request",
+      "description": "Choose an action for the app or website that requested autofill.",
+      "appOrUrlLabel": "App or URL",
+      "findExistingTitle": "Link to existing credential",
+      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
+      "createNewTitle": "Create new credential",
+      "createNewDescription": "Add a new credential to your vault for this app or URL."
+    },
+    "autofillLinkExisting": {
+      "title": "Link to existing credential",
+      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
+      "confirmTitle": "Link to credential?",
+      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+    },
+    "autofillUrlAdded": {
+      "title": "Credential linked",
+      "message": "Autofill should now offer this credential the next time you open the app."
+    },
     "filters": {
       "all": "Elementos",
       "showFolders": "Carpetas",
@@ -513,8 +537,8 @@
     "recentlyDeleted": {
       "title": "Eliminados recientemente",
       "noItems": "No hay elementos eliminados",
-      "noItemsDescription": "Los elementos que elimines aparecerán aquí durante 30 días antes de ser eliminados permanentemente.",
-      "description": "Estos elementos se eliminarán permanentemente después de 30 días. Puede restaurarlos o eliminarlos inmediatamente.",
+      "noItemsDescription": "Los elementos que borre aparecerán aquí durante {{days}} días antes de ser eliminados permanentemente.",
+      "description": "Estos elementos serán eliminados permanentemente después de {{days}} días. Puedes restaurarlos o eliminarlos inmediatamente.",
       "restore": "Restaurar",
       "deletePermanently": "Eliminar permanentemente",
       "emptyAll": "Vaciar todo",
@@ -615,13 +639,26 @@
       "vaultAutoLockedMessage": "Bóveda autobloqueada después del tiempo de espera.",
       "attemptingToUnlockMessage": "Intentando desbloquear."
     },
+    "vaultError": {
+      "title": "Error en la Bóveda",
+      "description": "Se ha producido un error al cargar la bóveda. Si el problema persiste, póngase en contacto con el servicio de asistencia.",
+      "showDetails": "Mostrar detalles del error",
+      "hideDetails": "Ocultar detalles del error",
+      "copyErrorDetails": "Copiar detalles del error"
+    },
     "loginSettings": {
       "title": "Conexión API",
       "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Autoalojado",
       "customApiUrl": "URL de API personalizada",
       "customApiUrlPlaceholder": "https://mi-instancia-Aliasvault.com/api",
-      "version": "Versión {{version}}"
+      "version": "Versión {{version}}",
+      "advancedSettings": "Configuración avanzada",
+      "customProxyHeaders": "Cabeceras proxy personalizadas",
+      "customProxyHeadersDescription": "Añade cabeceras HTTP que se enviarán con cada petición a tu servidor AliasVault. Puede utilizarse para configuraciones autoalojadas detrás de un proxy inverso, que comprueba cabeceras personalizadas (por ejemplo, Pangolin, Cloudflare Access).",
+      "headerName": "Nombre del encabezado",
+      "headerNamePlaceholder": "X-Custom-Header",
+      "headerValue": "Valor de cabecera"
     }
   },
   "upgrade": {

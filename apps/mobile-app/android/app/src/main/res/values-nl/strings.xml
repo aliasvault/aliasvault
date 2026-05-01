@@ -9,7 +9,7 @@
   <string name="common_back">Terug</string>
   <string name="unknown_error">Er is een onbekende fout opgetreden</string>
   <string name="autofill_failed_to_retrieve">Ophalen mislukt, open app</string>
-  <string name="autofill_no_match_found">Geen match gevonden, nieuwe maken?</string>
+  <string name="autofill_no_match_found">Geen resultaten gevonden</string>
   <string name="autofill_open_app">Open de app</string>
   <string name="autofill_vault_locked">Vault vergrendeld</string>
   <string name="biometric_store_key_title">Encryption key opslaan</string>

@@ -108,6 +108,7 @@
       "passwordChanged": "Ditt lösenord har ändrats sedan du senast loggade in. Vänligen logga in igen av säkerhetsskäl.",
       "syncConflictMaxRetries": "Kunde inte synkronisera valvet trots flera försök. Försök igen senare.",
       "mergeFailed": "Det gick inte att sammanfoga valvförändringar. Försök igen.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "invalidCode": "Ange en giltig 6-siffrig autentiseringskod.",
       "serverError": "Kunde inte nå AliasVault-servern. Försök igen senare eller kontakta support om problemet kvarstår.",
       "wrongPassword": "Felaktigt lösenord. Försök igen.",
@@ -208,7 +209,7 @@
     "allItemsInFolders": "Alla dina objekt är organiserade i mappar. Klicka på en mapp ovan för att visa dina uppgifter, eller använd sökningen för att hitta specifika objekt.",
     "deleteFolder": "Radera mapp",
     "deleteFolderKeepItems": "Ta endast bort mappen",
-    "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
+    "deleteFolderKeepItemsDescription": "Objekt kommer att flyttas till den överordnade mappen.",
     "deleteFolderAndItems": "Radera mapp och alla objekt",
     "deleteFolderAndItemsDescription": "{{count}} objekt kommer att flyttas till Nyligen borttagen.",
     "filters": {
@@ -326,7 +327,7 @@
     "noEmails": "Inga e-postmeddelanden hittades",
     "noEmailsDescription": "Du har inte mottagit några e-postmeddelanden på dina privata e-postadresser än. När du fått ett nytt e-postmeddelande så visas det här.",
     "offlineMessage": "Du är offline. Anslut till internet för att ladda dina e-postmeddelanden.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Läs in fler ({{count}} kvar)",
     "dateFormat": {
       "justNow": "precis nu",
       "minutesAgo_single": "{{count}} minut sedan",
@@ -433,12 +434,12 @@
         "female": "Kvinna"
       }
     },
-    "credentialAutofill": "Credential autofill",
-    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
-    "totpAutofill": "2FA code autofill",
-    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
-    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
-    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
+    "credentialAutofill": "Autofyll för inloggningsuppgifter",
+    "credentialAutofillDescription": "Visa popup för autofyll när användarnamn/lösenordsfält upptäcks",
+    "totpAutofill": "Autofyll för 2FA-kod",
+    "totpAutofillDescription": "Visa popup för autofyll när 2FA-kodfält upptäcks",
+    "autoCopyTotpOnAutofill": "Autokopiera 2FA till urklipp",
+    "autoCopyTotpOnAutofillDescription": "Kopiera automatiskt den första 2FA-koden till urklipp efter du autofyllt inloggningsuppgifter.",
     "loginSave": {
       "title": "Spara Inloggningsdialog",
       "description": "Visa en dialogruta för att spara inloggningsuppgifter när du skickar in ett inloggningsformulär på en webbplats.",
@@ -506,8 +507,8 @@
   "recentlyDeleted": {
     "title": "Senast raderade",
     "noItems": "Inga raderade objekt",
-    "noItemsDescription": "Objekt som du tar bort visas här i 30 dagar innan de tas bort permanent.",
-    "description": "Dessa objekt kommer att raderas permanent efter 30 dagar. Du kan återställa dem eller ta bort dem omedelbart.",
+    "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+    "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
     "restore": "Återställ",
     "deletePermanently": "Radera permanent",
     "emptyAll": "Töm alla",
@@ -546,6 +547,8 @@
   },
   "sync": {
     "offline": "Offline",
-    "tapToRetry": "Tryck för att försöka synka igen"
+    "tapToRetry": "Tryck för att försöka synka igen",
+    "syncErrorTitle": "Sync Failed",
+    "syncErrorDismiss": "Avfärda"
   }
 }

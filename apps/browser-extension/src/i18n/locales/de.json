@@ -108,6 +108,7 @@
       "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an.",
       "syncConflictMaxRetries": "Tresor konnte trotz mehrmaliger Versuche nicht synchronisiert werden. Bitte versuche es später erneut.",
       "mergeFailed": "Fehler beim Zusammenführen der Tresor-Änderungen. Bitte versuchen Sie es erneut.",
+      "vaultTooLarge": "Der Tresor ist zu groß für den Server. Versuche einige Elemente oder Anhänge zu entfernen, um die Größe zu verringern und versuche es dann erneut.",
       "invalidCode": "Bitte gib einen gültigen 6-stelligen Sicherheits-Code ein.",
       "serverError": "Der AliasVault-Server ist nicht erreichbar. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
       "wrongPassword": "Falsches Passwort. Bitte versuche es erneut.",
@@ -506,8 +507,8 @@
   "recentlyDeleted": {
     "title": "Kürzlich gelöscht",
     "noItems": "Keine gelöschten Elemente",
-    "noItemsDescription": "Elemente, die Du löscht, werden hier 30 Tage lang erscheinen, bevor sie endgültig entfernt werden.",
-    "description": "Diese Elemente werden nach 30 Tagen endgültig gelöscht. Sie können sie wiederherstellen oder sofort löschen.",
+    "noItemsDescription": "Elemente, die Du löscht, werden hier {{days}} Tage lang erscheinen, bevor sie endgültig entfernt werden.",
+    "description": "Diese Elemente werden nach {{days}} Tagen endgültig gelöscht. Du kannst sie wiederherstellen oder sofort löschen.",
     "restore": "Wiederherstellen",
     "deletePermanently": "Endgültig löschen",
     "emptyAll": "Alle leeren",
@@ -546,6 +547,8 @@
   },
   "sync": {
     "offline": "Offline",
-    "tapToRetry": "Tippen, um die Synchronisierung erneut zu probieren"
+    "tapToRetry": "Tippen, um die Synchronisierung erneut zu probieren",
+    "syncErrorTitle": "Synchronisierung fehlgeschlagen",
+    "syncErrorDismiss": "Schließen"
   }
 }

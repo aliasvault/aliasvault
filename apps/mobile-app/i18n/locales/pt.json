@@ -26,11 +26,13 @@
     "generate": "Gerar",
     "attachments": "Anexos",
     "or": "ou",
+    "retry": "Tentar Novamente",
     "deleteItemConfirmTitle": "Excluir Item",
     "deleteItemConfirmDescription": "Tem certeza que deseja excluir este item?",
     "errors": {
       "unknownError": "Ocorreu um erro desconhecido.",
       "unknownErrorTryAgain": "Ocorreu um erro desconhecido. Por favor, tente novamente.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "serverVersionTooOld": "O servidor do AliasVault deve ser atualizado para uma versão mais recente para utilizar esta função. Por favor, entre em contato com o administrador do servidor se precisar de ajuda."
     }
   },
@@ -158,6 +160,9 @@
     "clipboardClear": "Limpar área de transferência",
     "clipboardClearDescription": "Limpa automaticamente as senhas e dados sensíveis copiados da sua área de transferência após o tempo especificado.",
     "clipboardClearAndroidWarning": "Nota: alguns dispositivos Android têm histórico de área de transferência habilitado, o que pode manter dados copiados anteriormente, mesmo após o AliasVault limpar a área de transferência. O AliasVault só pode remover o item mais recente, porém outros itens podem permanecer visíveis no histórico. Por questões de segurança, recomendamos desabilitar qualquer histórico de área de transferência nas configurações do seu dispositivo.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Nunca",
       "5seconds": "5 segundos",
@@ -438,7 +443,26 @@
     "vaultSyncedSuccessfully": "Cofre sincronizado com sucesso",
     "vaultUpToDate": "Cofre está atualizado",
     "offlineMessage": "Você está offline. Por favor conecte-se à internet para sincronizar seu cofre.",
-    "switchBackToBrowser": "Volte ao navegador para continuar.",
+    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "autofillOpenApp": {
+      "title": "Autofill request",
+      "description": "Choose an action for the app or website that requested autofill.",
+      "appOrUrlLabel": "App or URL",
+      "findExistingTitle": "Link to existing credential",
+      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
+      "createNewTitle": "Create new credential",
+      "createNewDescription": "Add a new credential to your vault for this app or URL."
+    },
+    "autofillLinkExisting": {
+      "title": "Link to existing credential",
+      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
+      "confirmTitle": "Link to credential?",
+      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+    },
+    "autofillUrlAdded": {
+      "title": "Credential linked",
+      "message": "Autofill should now offer this credential the next time you open the app."
+    },
     "filters": {
       "all": "Itens",
       "showFolders": "Pastas",
@@ -513,8 +537,8 @@
     "recentlyDeleted": {
       "title": "Recentemente Excluídos",
       "noItems": "Nenhum item excluído",
-      "noItemsDescription": "Itens que você excluir aparecerão aqui por 30 dias antes de serem excluídos permanentemente.",
-      "description": "Estes itens serão excluídos permanentemente depois de 30 dias. Você pode restaurá-los ou excluí-los imediatamente.",
+      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
       "restore": "Restaurar",
       "deletePermanently": "Excluir Permanentemente",
       "emptyAll": "Esvaziar Tudo",
@@ -615,13 +639,26 @@
       "vaultAutoLockedMessage": "Cofre bloqueado automaticamente após período.",
       "attemptingToUnlockMessage": "Tentando desbloquear."
     },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
+    },
     "loginSettings": {
       "title": "Conexão com API",
       "aliasvaultNet": "AliasVault.net",
       "selfHosted": "Self-hosted",
       "customApiUrl": "URL de API Customizada",
       "customApiUrlPlaceholder": "https://minha-instancia-aliasvault.com/api",
-      "version": "Versão: {{version}}"
+      "version": "Versão: {{version}}",
+      "advancedSettings": "Advanced settings",
+      "customProxyHeaders": "Custom proxy headers",
+      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
+      "headerName": "Header name",
+      "headerNamePlaceholder": "X-Custom-Header",
+      "headerValue": "Header value"
     }
   },
   "upgrade": {

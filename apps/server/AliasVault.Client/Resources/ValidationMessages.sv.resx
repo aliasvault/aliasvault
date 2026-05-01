@@ -64,7 +64,7 @@
     <comment>Error message when password confirmation doesn't match</comment>
   </data>
   <data name="PasswordMinLengthGeneric" xml:space="preserve">
-    <value>Password must be at least {0} characters long.</value>
+    <value>Lösenordet måste vara minst {0} tecken långt.</value>
     <comment>Generic error message for password minimum length validation. {0} is the minimum password length.</comment>
   </data>
   <data name="PasswordsDoNotMatchGeneric" xml:space="preserve">

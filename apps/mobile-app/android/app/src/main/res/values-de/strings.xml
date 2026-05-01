@@ -9,7 +9,7 @@
   <string name="common_back">Zurück</string>
   <string name="unknown_error">Ein unbekannter Fehler ist aufgetreten</string>
   <string name="autofill_failed_to_retrieve">Abruf der Daten fehlgeschlagen. Öffne die App</string>
-  <string name="autofill_no_match_found">Keine Übereinstimmung gefunden, neues Element erstellen?</string>
+  <string name="autofill_no_match_found">Keine Übereinstimmungen gefunden</string>
   <string name="autofill_open_app">App öffnen</string>
   <string name="autofill_vault_locked">Der Tresor ist gesperrt</string>
   <string name="biometric_store_key_title">Schlüssel speichern</string>

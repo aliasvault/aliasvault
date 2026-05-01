@@ -228,6 +228,14 @@
     <value>Se ha producido un error desconocido. Por favor, inténtelo de nuevo.</value>
     <comment>Generic unknown error message</comment>
   </data>
+  <data name="VaultTooLargeError" xml:space="preserve">
+    <value>La bóveda es demasiado grande para que el servidor lo acepte. Intente eliminar algunos elementos o archivos adjuntos para reducir el tamaño y vuelva a intentarlo.</value>
+    <comment>Shown when the server rejects a vault upload with HTTP 413 because the encrypted vault exceeds the configured upload size limit</comment>
+  </data>
+  <data name="VaultSaveError" xml:space="preserve">
+    <value>Error al guardar los cambios en la bóveda. Por favor, inténtelo de nuevo.</value>
+    <comment>Generic error shown when a vault save / sync to the server fails for an unexpected reason</comment>
+  </data>
   <data name="ErrorValidation" xml:space="preserve">
     <value>Por favor, corrija los siguientes errores.</value>
     <comment>Validation error message</comment>

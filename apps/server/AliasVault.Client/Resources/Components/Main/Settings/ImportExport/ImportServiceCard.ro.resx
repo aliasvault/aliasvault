@@ -162,9 +162,13 @@
     <value>Dezarhivează fișierul de export înainte de import. Vezi instrucțiunile de mai jos pentru detalii.</value>
     <comment>Error message when user tries to import a zip file</comment>
   </data>
+  <data name="ImportErrorUnsupportedFormat" xml:space="preserve">
+    <value>Format de fișier neacceptat. Formate acceptate: {0}</value>
+    <comment>Error message when user selects an unsupported file format. {0} is the list of supported extensions</comment>
+  </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
-    <value>Mărimea fișierului depășește limita de 10MB.</value>
-    <comment>Error message when file is too large</comment>
+    <value>Mărimea fișierului depășește limita de {0}MB.</value>
+    <comment>Error message when file is too large. {0} is the maximum allowed size in megabytes</comment>
   </data>
   <data name="EncryptedFilePasswordPrompt" xml:space="preserve">
     <value>Acest fișier este criptat. Introdu parola pe care ai folosit-o la crearea exportului.</value>
@@ -193,5 +197,9 @@
   <data name="DecryptionErrorGeneric" xml:space="preserve">
     <value>Decriptarea fișierului a eșuat. Verifică dacă fișierul nu este corupt și încearcă din nou.</value>
     <comment>Generic error message for decryption failure</comment>
+  </data>
+  <data name="supportedFormats" xml:space="preserve">
+    <value>Formate acceptate</value>
+    <comment>Label for supported file formats</comment>
   </data>
 </root>

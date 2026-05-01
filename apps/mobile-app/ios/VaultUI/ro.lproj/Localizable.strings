@@ -13,6 +13,13 @@
 "no_items_found" = "Nu s-au găsit elemente";
 "no_items_match" = "Niciun element existent nu corespunde căutării tale";
 "create_new_item" = "Creează element nou";
+"open_aliasvault" = "Deschide AliasVault";
+"untitled_credential" = "aceste date de autentificare";
+"link_url_prompt_title" = "Asociezi cu datele de autentificare?";
+"link_url_prompt_message" = "Adaugă „{{url}}” la {{name}} astfel încât AliasVault să recunoască această aplicație sau acest site data viitoare?";
+"link_url_prompt_link_action" = "Asociază și completează";
+"link_url_prompt_skip_action" = "Doar completează";
+"linking_url" = "Se asociază...";
 "select_item" = "Selectează elementul";
 "select_text_to_insert" = "Selectează textul de inserat";
 "choose_username" = "Alege numele de utilizator";

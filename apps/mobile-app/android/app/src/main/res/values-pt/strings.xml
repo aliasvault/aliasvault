@@ -9,7 +9,7 @@
   <string name="common_back">Voltar</string>
   <string name="unknown_error">Ocorreu um erro desconhecido</string>
   <string name="autofill_failed_to_retrieve">Falha ao recuperar, abra o aplicativo</string>
-  <string name="autofill_no_match_found">Nenhum resultado encontrado, criar novo?</string>
+  <string name="autofill_no_match_found">No match found</string>
   <string name="autofill_open_app">Abrir aplicativo</string>
   <string name="autofill_vault_locked">Cofre bloqueado</string>
   <string name="biometric_store_key_title">Armazenar Chave de Criptografia</string>

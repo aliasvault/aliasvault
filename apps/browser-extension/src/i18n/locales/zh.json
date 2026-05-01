@@ -108,6 +108,7 @@
       "passwordChanged": "登录密码已更新，请重新登录以确保账户安全。",
       "syncConflictMaxRetries": "多次尝试后仍无法同步密码库，请稍后重试。",
       "mergeFailed": "合并密码库更改失败，请重试。",
+      "vaultTooLarge": "密码库过大，服务器无法接受。请尝试移除一些项目或附件以减小其大小，然后重试。",
       "invalidCode": "请输入有效的 6 位身份验证码。",
       "serverError": "无法访问 AliasVault 服务器。请稍后重试，若问题依旧，请联系支持人员。",
       "wrongPassword": "密码错误，请重试。",
@@ -506,8 +507,8 @@
   "recentlyDeleted": {
     "title": "近期删除",
     "noItems": "没有删除的项目",
-    "noItemsDescription": "您删除的项目将在此处停留 30 天，随后永久移除。",
-    "description": "这些项目将在 30 天后永久删除。您可以立即还原或永久删除。",
+    "noItemsDescription": "您删除的项目将在此处停留 {{days}} 天，随后永久移除。",
+    "description": "这些项目将在 {{days}} 天后永久删除。您可以立即还原或永久删除。",
     "restore": "还原",
     "deletePermanently": "永久删除",
     "emptyAll": "全部清空",
@@ -546,6 +547,8 @@
   },
   "sync": {
     "offline": "离线",
-    "tapToRetry": "点击重试同步"
+    "tapToRetry": "点击重试同步",
+    "syncErrorTitle": "同步失败",
+    "syncErrorDismiss": "忽略"
   }
 }

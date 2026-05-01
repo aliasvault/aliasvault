@@ -28,8 +28,8 @@
     <comment>Page header title for deleting item</comment>
   </data>
   <data name="DeleteItemDescription">
-    <value>Вы можете удалить элемент ниже.</value>
-    <comment>Page description for deleting item</comment>
+    <value>Вы действительно хотите удалить эту запись? Она будет перемещен в «Недавно удаленные» и окончательно удалена через {0} дн.</value>
+    <comment>Confirmation message shown in the delete-item modal. Placeholder {0} is the trash retention period in days.</comment>
   </data>
   <data name="ItemEntrySection">
     <value>Данные записи</value>

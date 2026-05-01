@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <data name="SearchVaultPlaceholder">
+    <value>Search vault...</value>
+    <comment>Placeholder text for search input field</comment>
+  </data>
+  <data name="SearchHelpText">
+    <value>Type a term to search for, this can be the service name, description or email address.</value>
+    <comment>Help text explaining what can be searched</comment>
+  </data>
+  <data name="SearchTooShortMessage">
+    <value>Please type more chars</value>
+    <comment>Message when search term is too short</comment>
+  </data>
+  <data name="SearchingForMessage">
+    <value>Searching for "{0}"</value>
+    <comment>Message showing current search term</comment>
+  </data>
+  <data name="NoResultsFoundMessage">
+    <value>No results found</value>
+    <comment>Message when no search results are found</comment>
+  </data>
+  <data name="SearchingMessage">
+    <value>Searching...</value>
+    <comment>Message when search is in progress</comment>
+  </data>
+</root>

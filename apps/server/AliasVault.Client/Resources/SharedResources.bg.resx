@@ -119,7 +119,7 @@
   </resheader>
   <!-- Common UI elements -->
   <data name="Save" xml:space="preserve">
-    <value>Save</value>
+    <value>Запазване</value>
     <comment>Button text for saving changes</comment>
   </data>
   <data name="Cancel" xml:space="preserve">
@@ -127,23 +127,23 @@
     <comment>Button text for canceling an action</comment>
   </data>
   <data name="Generate" xml:space="preserve">
-    <value>Generate</value>
+    <value>Генериране</value>
     <comment>Button tooltip for generating a random value</comment>
   </data>
   <data name="Delete" xml:space="preserve">
-    <value>Delete</value>
+    <value>Изтриване</value>
     <comment>Button text for deleting an item</comment>
   </data>
   <data name="Edit" xml:space="preserve">
-    <value>Edit</value>
+    <value>Редактиране</value>
     <comment>Button text for editing an item</comment>
   </data>
   <data name="Show" xml:space="preserve">
-    <value>Show</value>
+    <value>Покажи</value>
     <comment>Button text for showing content</comment>
   </data>
   <data name="Hide" xml:space="preserve">
-    <value>Hide</value>
+    <value>Скриване</value>
     <comment>Button text for hiding content</comment>
   </data>
   <data name="Close" xml:space="preserve">
@@ -151,7 +151,7 @@
     <comment>Button text for closing a dialog or modal</comment>
   </data>
   <data name="Back" xml:space="preserve">
-    <value>Back</value>
+    <value>Назад</value>
     <comment>Button text for going back</comment>
   </data>
   <data name="Next" xml:space="preserve">
@@ -159,64 +159,64 @@
     <comment>Button text for proceeding to the next step</comment>
   </data>
   <data name="Loading" xml:space="preserve">
-    <value>Loading...</value>
+    <value>Зареждане...</value>
     <comment>Loading message displayed during async operations</comment>
   </data>
   <data name="Yes" xml:space="preserve">
-    <value>Yes</value>
+    <value>Да</value>
     <comment>Confirmation button text</comment>
   </data>
   <data name="No" xml:space="preserve">
-    <value>No</value>
+    <value>Не</value>
     <comment>Rejection button text</comment>
   </data>
   <data name="Ok" xml:space="preserve">
-    <value>OK</value>
+    <value>ОК</value>
     <comment>OK button text</comment>
   </data>
   <data name="Continue" xml:space="preserve">
-    <value>Continue</value>
+    <value>Напред</value>
     <comment>Button text to continue with an action</comment>
   </data>
   <data name="Confirm" xml:space="preserve">
-    <value>Confirm</value>
+    <value>Потвърждаване</value>
     <comment>Button text to confirm an action</comment>
   </data>
   <data name="Refresh" xml:space="preserve">
-    <value>Refresh</value>
+    <value>Обнови</value>
     <comment>Button text to refresh content</comment>
   </data>
   <!-- Common form elements -->
   <data name="Email" xml:space="preserve">
-    <value>Email</value>
+    <value>Имейл</value>
     <comment>Label for email input field</comment>
   </data>
   <data name="Password" xml:space="preserve">
-    <value>Password</value>
+    <value>Парола</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="Username" xml:space="preserve">
-    <value>Username</value>
+    <value>Потребителско име</value>
     <comment>Label for username input field</comment>
   </data>
   <data name="Name" xml:space="preserve">
-    <value>Name</value>
+    <value>Име</value>
     <comment>Label for name input field</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Description</value>
+    <value>Описание</value>
     <comment>Label for description input field</comment>
   </data>
   <data name="Title" xml:space="preserve">
-    <value>Title</value>
+    <value>Заглавие</value>
     <comment>Label for title input field</comment>
   </data>
   <data name="Website" xml:space="preserve">
-    <value>Website</value>
+    <value>Сайт</value>
     <comment>Label for website input field</comment>
   </data>
   <data name="Search" xml:space="preserve">
-    <value>Search</value>
+    <value>Търсене</value>
     <comment>Label for search input field</comment>
   </data>
   <!-- Common error messages -->
@@ -228,8 +228,16 @@
     <value>An unknown error occurred. Please try again.</value>
     <comment>Generic unknown error message</comment>
   </data>
+  <data name="VaultTooLargeError" xml:space="preserve">
+    <value>The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.</value>
+    <comment>Shown when the server rejects a vault upload with HTTP 413 because the encrypted vault exceeds the configured upload size limit</comment>
+  </data>
+  <data name="VaultSaveError" xml:space="preserve">
+    <value>Failed to save changes to the vault. Please try again.</value>
+    <comment>Generic error shown when a vault save / sync to the server fails for an unexpected reason</comment>
+  </data>
   <data name="ErrorValidation" xml:space="preserve">
-    <value>Please correct the errors below.</value>
+    <value>Моля, поправете грешките по-долу.</value>
     <comment>Validation error message</comment>
   </data>
   <data name="ErrorRequired" xml:space="preserve">
@@ -237,28 +245,28 @@
     <comment>Required field validation error</comment>
   </data>
   <data name="ErrorInvalidEmail" xml:space="preserve">
-    <value>Please enter a valid email address.</value>
+    <value>Моля, въведете валиден имейл адрес.</value>
     <comment>Invalid email validation error</comment>
   </data>
   <data name="ErrorPasswordMismatch" xml:space="preserve">
-    <value>Passwords do not match.</value>
+    <value>Паролите не съвпадат.</value>
     <comment>Password confirmation mismatch error</comment>
   </data>
   <!-- Common status messages -->
   <data name="Success" xml:space="preserve">
-    <value>Success</value>
+    <value>Успех</value>
     <comment>Success status message</comment>
   </data>
   <data name="Warning" xml:space="preserve">
-    <value>Warning</value>
+    <value>Предупреждение</value>
     <comment>Warning status message</comment>
   </data>
   <data name="Error" xml:space="preserve">
-    <value>Error</value>
+    <value>Грешка</value>
     <comment>Error status message</comment>
   </data>
   <data name="Info" xml:space="preserve">
-    <value>Info</value>
+    <value>Информация</value>
     <comment>Information status message</comment>
   </data>
   <!-- Loading screen messages -->
@@ -280,7 +288,7 @@
     <comment>Generic error message for password minimum length validation</comment>
   </data>
   <data name="ErrorPasswordsDoNotMatchGeneric" xml:space="preserve">
-    <value>Passwords do not match.</value>
+    <value>Паролите не съвпадат.</value>
     <comment>Generic error message when passwords don't match</comment>
   </data>
   <data name="ErrorMustAcceptTerms" xml:space="preserve">
@@ -301,7 +309,7 @@
   </data>
   <!-- General UI text -->
   <data name="Or" xml:space="preserve">
-    <value>or</value>
+    <value>или</value>
     <comment>Divider text between options</comment>
   </data>
   <data name="LockVault" xml:space="preserve">

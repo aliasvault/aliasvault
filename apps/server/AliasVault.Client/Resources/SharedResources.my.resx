@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Microsoft ResX Schema
+
+    Version 2.0
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+
+    Example:
+
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- Common UI elements -->
+  <data name="Save" xml:space="preserve">
+    <value>သိမ်းဆည်းမည်</value>
+    <comment>Button text for saving changes</comment>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>ပယ်ဖျက်မည်</value>
+    <comment>Button text for canceling an action</comment>
+  </data>
+  <data name="Generate" xml:space="preserve">
+    <value>ထုတ်လုပ်မည်</value>
+    <comment>Button tooltip for generating a random value</comment>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>ဖျက်မည်</value>
+    <comment>Button text for deleting an item</comment>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>ပြင်ဆင်မည်</value>
+    <comment>Button text for editing an item</comment>
+  </data>
+  <data name="Show" xml:space="preserve">
+    <value>ပြသမည်</value>
+    <comment>Button text for showing content</comment>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>ဝှက်မည်</value>
+    <comment>Button text for hiding content</comment>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>ပိတ်မည်</value>
+    <comment>Button text for closing a dialog or modal</comment>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>နောက်သို့</value>
+    <comment>Button text for going back</comment>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>ရှေ့သို့</value>
+    <comment>Button text for proceeding to the next step</comment>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>ဝန်ဆွဲတင်နေသည်...</value>
+    <comment>Loading message displayed during async operations</comment>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>ဟုတ်</value>
+    <comment>Confirmation button text</comment>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>မဟုတ်</value>
+    <comment>Rejection button text</comment>
+  </data>
+  <data name="Ok" xml:space="preserve">
+    <value>အိုကေ</value>
+    <comment>OK button text</comment>
+  </data>
+  <data name="Continue" xml:space="preserve">
+    <value>ဆက်လက်</value>
+    <comment>Button text to continue with an action</comment>
+  </data>
+  <data name="Confirm" xml:space="preserve">
+    <value>အတည်ပြု</value>
+    <comment>Button text to confirm an action</comment>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>ရှင်းသန့်</value>
+    <comment>Button text to refresh content</comment>
+  </data>
+  <!-- Common form elements -->
+  <data name="Email" xml:space="preserve">
+    <value>အီးမေးလ်</value>
+    <comment>Label for email input field</comment>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>စကားဝှက်</value>
+    <comment>Label for password input field</comment>
+  </data>
+  <data name="Username" xml:space="preserve">
+    <value>အသုံးပြုသူအမည်</value>
+    <comment>Label for username input field</comment>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>အမည်</value>
+    <comment>Label for name input field</comment>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>ဖော်ပြချက်</value>
+    <comment>Label for description input field</comment>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>ခေါင်းစဉ်</value>
+    <comment>Label for title input field</comment>
+  </data>
+  <data name="Website" xml:space="preserve">
+    <value>ဝဘ်ဆိုက်</value>
+    <comment>Label for website input field</comment>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>ရှာဖွေ</value>
+    <comment>Label for search input field</comment>
+  </data>
+  <!-- Common error messages -->
+  <data name="ErrorGeneric" xml:space="preserve">
+    <value>အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်။ ကျေးဇူးပြု၍ ပြန်လည်ကြိုးစားပါ။</value>
+    <comment>Generic error message</comment>
+  </data>
+  <data name="ErrorUnknown" xml:space="preserve">
+    <value>မသိသော အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်။ ကျေးဇူးပြု၍ ပြန်လည်ကြိုးစားပါ။</value>
+    <comment>Generic unknown error message</comment>
+  </data>
+  <data name="VaultTooLargeError" xml:space="preserve">
+    <value>The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.</value>
+    <comment>Shown when the server rejects a vault upload with HTTP 413 because the encrypted vault exceeds the configured upload size limit</comment>
+  </data>
+  <data name="VaultSaveError" xml:space="preserve">
+    <value>Failed to save changes to the vault. Please try again.</value>
+    <comment>Generic error shown when a vault save / sync to the server fails for an unexpected reason</comment>
+  </data>
+  <data name="ErrorValidation" xml:space="preserve">
+    <value>အောက်ပါ အမှားကို ကျေးဇူးပြု၍ ပြင်ဆင်ပါ။</value>
+    <comment>Validation error message</comment>
+  </data>
+  <data name="ErrorRequired" xml:space="preserve">
+    <value>ဤအကွက်တွင် ဖြည့်ရန် လိုအပ်သည်။</value>
+    <comment>Required field validation error</comment>
+  </data>
+  <data name="ErrorInvalidEmail" xml:space="preserve">
+    <value>မှန်ကန်သော အီးမေးလ်လိပ်စာတစ်ခုကို ကျေးဇူးပြု၍ ဖြည့်စွက်ပါ။</value>
+    <comment>Invalid email validation error</comment>
+  </data>
+  <data name="ErrorPasswordMismatch" xml:space="preserve">
+    <value>စကားဝှက်များ မတူညီနေပါ။</value>
+    <comment>Password confirmation mismatch error</comment>
+  </data>
+  <!-- Common status messages -->
+  <data name="Success" xml:space="preserve">
+    <value>အောင်မြင်သည်</value>
+    <comment>Success status message</comment>
+  </data>
+  <data name="Warning" xml:space="preserve">
+    <value>သတိပေးချက်</value>
+    <comment>Warning status message</comment>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>အမှား</value>
+    <comment>Error status message</comment>
+  </data>
+  <data name="Info" xml:space="preserve">
+    <value>အချက်အလက်</value>
+    <comment>Information status message</comment>
+  </data>
+  <!-- Loading screen messages -->
+  <data name="RefreshPageText" xml:space="preserve">
+    <value>အကယ်၍ ဝန်ဆွဲတင်ခြင်း ရပ်တန့်နေပါက စာမျက်နှာအား ရှင်းသန့်ရင် ခလုတ်ကို သင်နှိပ်နိုင်သည်။</value>
+    <comment>Text shown above refresh button on loading screen</comment>
+  </data>
+  <!-- Validation error messages for forms -->
+  <data name="ErrorPasswordMinLength" xml:space="preserve">
+    <value>စကားဝှက်အသစ်သည် အက္ခရာ ၁၀ လုံး အနည်းဆုံး ရှိရမည်။</value>
+    <comment>Error message for password minimum length validation</comment>
+  </data>
+  <data name="ErrorPasswordsDoNotMatch" xml:space="preserve">
+    <value>စကားဝှက်အသစ်များ မတူညီနေပါ။</value>
+    <comment>Error message when password confirmation doesn't match</comment>
+  </data>
+  <data name="ErrorPasswordMinLengthGeneric" xml:space="preserve">
+    <value>စကားဝှက်သည် အနည်းဆုံး အက္ခရာ ၁၀ လုံး ရှိရမည်။</value>
+    <comment>Generic error message for password minimum length validation</comment>
+  </data>
+  <data name="ErrorPasswordsDoNotMatchGeneric" xml:space="preserve">
+    <value>စကားဝှက်များ မတူညီနေပါ။</value>
+    <comment>Generic error message when passwords don't match</comment>
+  </data>
+  <data name="ErrorMustAcceptTerms" xml:space="preserve">
+    <value>စည်းကမ်းသတ်မှတ်ချက်များကို သင်လက်ခံရပါမည်။</value>
+    <comment>Error message for terms and conditions acceptance</comment>
+  </data>
+  <data name="ErrorSecretKeyRequired" xml:space="preserve">
+    <value>လျှို့ဝှက်သော့အား လိုအပ်သည်</value>
+    <comment>Error message when secret key is required</comment>
+  </data>
+  <data name="ErrorUsernameRequired" xml:space="preserve">
+    <value>အသုံးပြုသူအမည် လိုအပ်သည်</value>
+    <comment>Error message when username is required</comment>
+  </data>
+  <data name="ErrorPasswordRequired" xml:space="preserve">
+    <value>စကားဝှက် လိုအပ်သည်</value>
+    <comment>Error message when password is required</comment>
+  </data>
+  <!-- General UI text -->
+  <data name="Or" xml:space="preserve">
+    <value>သို့မဟုတ်</value>
+    <comment>Divider text between options</comment>
+  </data>
+  <data name="LockVault" xml:space="preserve">
+    <value>လုံခြုံရေးအခန်းအား သော့ခတ်</value>
+    <comment>Tooltip text for lock vault button</comment>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>ပင်မ</value>
+    <comment>Home breadcrumb text</comment>
+  </data>
+  <data name="Notes" xml:space="preserve">
+    <value>မှတ်စုများ</value>
+    <comment>Notes section heading</comment>
+  </data>
+  <data name="SyncVaultData" xml:space="preserve">
+    <value>လုံခြုံရေးအခန်းဒေတာများ  စင့်ခ်လုပ်ရန်</value>
+    <comment>Tooltip text for sync vault data button</comment>
+  </data>
+  <data name="SyncingChanges" xml:space="preserve">
+    <value>ပြောင်းလဲမှုများကို စင့်ခ်လုပ်နေသည်...</value>
+    <comment>Status text when background sync is in progress</comment>
+  </data>
+  <data name="LoadingVault" xml:space="preserve">
+    <value>လုံခြုံရေးအခန်းအား ဝန်ဆွဲတင်နေသည်...</value>
+    <comment>Status text when vault is being loaded</comment>
+  </data>
+</root>

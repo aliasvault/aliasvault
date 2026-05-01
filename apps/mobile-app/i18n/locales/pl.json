@@ -26,11 +26,13 @@
     "generate": "Wygeneruj",
     "attachments": "Załączniki",
     "or": "lub",
+    "retry": "Ponów próbę",
     "deleteItemConfirmTitle": "Usuń element",
     "deleteItemConfirmDescription": "Czy na pewno chcesz usunąć ten element?",
     "errors": {
       "unknownError": "Wystąpił nieznany błąd.",
       "unknownErrorTryAgain": "Wystąpił nieznany błąd. Spróbuj ponownie.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "serverVersionTooOld": "Aby korzystać z tej funkcji, serwer AliasVault musi zostać zaktualizowany do nowszej wersji. Jeśli potrzebujesz pomocy, skontaktuj się z administratorem serwera."
     }
   },
@@ -158,6 +160,9 @@
     "clipboardClear": "Wyczyść schowek",
     "clipboardClearDescription": "Automatycznie usuwa skopiowane hasła i poufne informacje ze schowka po upływie określonego czasu.",
     "clipboardClearAndroidWarning": "Uwaga: niektóre urządzenia z systemem Android mają włączoną historię schowka, która może śledzić wcześniej skopiowane elementy, nawet po wyczyszczeniu schowka przez AliasVault. AliasVault może nadpisać tylko najnowszy element, ale starsze wpisy mogą pozostać widoczne w historii. Ze względów bezpieczeństwa zalecamy wyłączenie funkcji historii schowka w ustawieniach urządzenia.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Nigdy",
       "5seconds": "5 sekund",
@@ -438,7 +443,26 @@
     "vaultSyncedSuccessfully": "Synchronizacja sejfu zakończona sukcesem",
     "vaultUpToDate": "Sejf jest aktualny",
     "offlineMessage": "Jesteś offline. Połącz się z Internetem, aby zsynchronizować swój sejf.",
-    "switchBackToBrowser": "Wróć do przeglądarki, aby kontynuować.",
+    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "autofillOpenApp": {
+      "title": "Autofill request",
+      "description": "Choose an action for the app or website that requested autofill.",
+      "appOrUrlLabel": "App or URL",
+      "findExistingTitle": "Link to existing credential",
+      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
+      "createNewTitle": "Create new credential",
+      "createNewDescription": "Add a new credential to your vault for this app or URL."
+    },
+    "autofillLinkExisting": {
+      "title": "Link to existing credential",
+      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
+      "confirmTitle": "Link to credential?",
+      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+    },
+    "autofillUrlAdded": {
+      "title": "Credential linked",
+      "message": "Autofill should now offer this credential the next time you open the app."
+    },
     "filters": {
       "all": "Elementy",
       "showFolders": "Foldery",
@@ -513,8 +537,8 @@
     "recentlyDeleted": {
       "title": "Ostatnio usunięte",
       "noItems": "Brak usuniętych elementów",
-      "noItemsDescription": "Usunięte elementy pojawią się tutaj na 30 dni zanim zostaną trwale usunięte.",
-      "description": "Te elementy zostaną trwale usunięte po 30 dniach. Możesz je przywrócić lub natychmiast usunąć.",
+      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
       "restore": "Przywróć",
       "deletePermanently": "Usuń bezpowrotnie",
       "emptyAll": "Opróżnij wszystkie",
@@ -615,13 +639,26 @@
       "vaultAutoLockedMessage": "Sejf zostanie automatycznie zablokowany po upływie czasu.",
       "attemptingToUnlockMessage": "Próba odblokowania."
     },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
+    },
     "loginSettings": {
       "title": "Połączenie API",
       "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Własny hosting",
       "customApiUrl": "Niestandardowy adres URL interfejsu API",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
-      "version": "Wersja: {{version}}"
+      "version": "Wersja: {{version}}",
+      "advancedSettings": "Advanced settings",
+      "customProxyHeaders": "Custom proxy headers",
+      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
+      "headerName": "Header name",
+      "headerNamePlaceholder": "X-Custom-Header",
+      "headerValue": "Header value"
     }
   },
   "upgrade": {

@@ -26,11 +26,13 @@
     "generate": "Сгенерировать",
     "attachments": "Вложения",
     "or": "или",
+    "retry": "Повторить",
     "deleteItemConfirmTitle": "Удалить запись",
     "deleteItemConfirmDescription": "Вы уверены, что хотите удалить эту запись?",
     "errors": {
       "unknownError": "Произошла неизвестная ошибка.",
       "unknownErrorTryAgain": "Произошла неизвестная ошибка. Попробуйте снова.",
+      "vaultTooLarge": "Хранилище слишком велико для загрузки на сервер. Удалите часть данных или вложений и повторите попытку.",
       "serverVersionTooOld": "Сервер AliasVault необходимо обновить до более новой версии, чтобы использовать эту функцию. Если вам нужна помощь, обратитесь к администратору сервера."
     }
   },
@@ -158,6 +160,9 @@
     "clipboardClear": "Очистить буфер обмена",
     "clipboardClearDescription": "Автоматически удаляйте скопированные пароли и конфиденциальную информацию из буфера обмена по истечении заданного периода времени.",
     "clipboardClearAndroidWarning": "Примечание: на некоторых устройствах Android включена функция \"История буфера обмена\", которая позволяет отслеживать ранее скопированные элементы даже после того, как AliasVault очистит буфер обмена. AliasVault может перезаписать только самый последний элемент, но более старые записи могут оставаться видимыми в истории. По соображениям безопасности мы рекомендуем отключить все функции истории буфера обмена в настройках вашего устройства.",
+    "clipboardLocalOnly": "Только локальный буфер",
+    "clipboardLocalOnlyDescription": "Хранить данные только на этом устройстве, не передавая их в «Универсальный буфер обмена» Apple.",
+    "clipboardLocalOnlyDisabledWarning": "Когда эта функция выключена, скопированные данные могут синхронизироваться с другими вашими устройствами Apple через «Универсальный буфер обмена».",
     "clipboardClearOptions": {
       "never": "Никогда",
       "5seconds": "5 секунд",
@@ -438,7 +443,26 @@
     "vaultSyncedSuccessfully": "Хранилище успешно синхронизировано",
     "vaultUpToDate": "Хранилище актуально",
     "offlineMessage": "Вы не в сети. Пожалуйста, подключитесь к Интернету, чтобы синхронизировать ваше хранилище.",
-    "switchBackToBrowser": "Вернитесь в свой браузер, чтобы продолжить.",
+    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "autofillOpenApp": {
+      "title": "Autofill request",
+      "description": "Choose an action for the app or website that requested autofill.",
+      "appOrUrlLabel": "App or URL",
+      "findExistingTitle": "Link to existing credential",
+      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
+      "createNewTitle": "Create new credential",
+      "createNewDescription": "Add a new credential to your vault for this app or URL."
+    },
+    "autofillLinkExisting": {
+      "title": "Link to existing credential",
+      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
+      "confirmTitle": "Link to credential?",
+      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+    },
+    "autofillUrlAdded": {
+      "title": "Credential linked",
+      "message": "Autofill should now offer this credential the next time you open the app."
+    },
     "filters": {
       "all": "Записи",
       "showFolders": "Папки",
@@ -513,8 +537,8 @@
     "recentlyDeleted": {
       "title": "Недавно удаленные",
       "noItems": "Нет удаленных записей",
-      "noItemsDescription": "Удаленные записи будут храниться здесь 30 дней, после чего они будут удалены безвозвратно.",
-      "description": "Эти записи будут безвозвратно удалены через 30 дней. Вы можете восстановить их или удалить немедленно.",
+      "noItemsDescription": "Удаленные объекты будут храниться здесь в течение {{days}} дн., после чего они будут удалены безвозвратно.",
+      "description": "Эти записи будут окончательно удалены через {{days}} дн. Вы можете восстановить их или удалить немедленно.",
       "restore": "Восстановить",
       "deletePermanently": "Удалить безвозвратно",
       "emptyAll": "Очистить все",
@@ -615,13 +639,26 @@
       "vaultAutoLockedMessage": "Хранилище автоматически блокируется по истечении таймаута.",
       "attemptingToUnlockMessage": "Попытка разблокировки."
     },
+    "vaultError": {
+      "title": "Ошибка хранилища",
+      "description": "Не удалось загрузить хранилище. Если ошибка повторится, обратитесь в службу поддержки.",
+      "showDetails": "Подробнее об ошибке",
+      "hideDetails": "Скрыть подробности",
+      "copyErrorDetails": "Скопировать сведения об ошибке"
+    },
     "loginSettings": {
       "title": "Подключение к API",
       "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Собственный хостинг",
       "customApiUrl": "Пользовательский URL-адрес API",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
-      "version": "Версия: {{version}}"
+      "version": "Версия: {{version}}",
+      "advancedSettings": "Дополнительные настройки",
+      "customProxyHeaders": "Пользовательские заголовки прокси",
+      "customProxyHeadersDescription": "Добавьте HTTP-заголовки для запросов к серверу AliasVault. Это нужно, если доступ к вашему серверу защищен через прокси (например, Cloudflare Access), требующий проверки заголовков.",
+      "headerName": "Название заголовка",
+      "headerNamePlaceholder": "X-Custom-Заголовок",
+      "headerValue": "Значение заголовка"
     }
   },
   "upgrade": {

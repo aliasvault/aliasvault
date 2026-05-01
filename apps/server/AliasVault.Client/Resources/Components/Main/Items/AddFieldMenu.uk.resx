@@ -66,11 +66,11 @@
     <comment>Birth date field label</comment>
   </data>
   <data name="FieldCardNumber">
-    <value>Card Number</value>
+    <value>Номер Картки</value>
     <comment>Card number field label</comment>
   </data>
   <data name="FieldCardCardholderName">
-    <value>Cardholder Name</value>
+    <value>Ім'я власника картки</value>
     <comment>Cardholder name field label</comment>
   </data>
   <data name="FieldCardExpiryMonth">

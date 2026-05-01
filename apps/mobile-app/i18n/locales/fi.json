@@ -26,11 +26,13 @@
     "generate": "Generate",
     "attachments": "Liitteet",
     "or": "tai",
+    "retry": "Yritä uudelleen",
     "deleteItemConfirmTitle": "Poista kohde",
     "deleteItemConfirmDescription": "Haluatko varmasti poistaa tämän kohteen?",
     "errors": {
       "unknownError": "Tapahtui tuntematon virhe.",
       "unknownErrorTryAgain": "Tapahtui tuntematon virhe. Yritä uudelleen.",
+      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
       "serverVersionTooOld": "AliasVault-palvelin on päivitettävä uudempaan versioon, jotta se voi käyttää tätä ominaisuutta. Ota yhteyttä palvelimen ylläpitäjään jos tarvitset apua."
     }
   },
@@ -158,6 +160,9 @@
     "clipboardClear": "Tyhjennä leikepöytä",
     "clipboardClearDescription": "Poista automaattisesti kopioidut salasanat ja arkaluonteiset tiedot leikepöydältä tietyn ajanjakson jälkeen.",
     "clipboardClearAndroidWarning": "Huomaa: joillakin Android-laitteilla on leikepöydän historia otettuna käyttöön, mikä saattaa seurata aiemmin kopioituja kohteita, vaikka AliasVault poistaisi leikepöydän. AliasVault voi korvata vain viimeisimmän kohteen, mutta vanhemmat kohteet voivat jäädä näkyviin historiassa. Turvallisuussyistä suosittelemme poistamaan kaikki leikepöydän historia-ominaisuudet käytöstä laitteesi asetuksista.",
+    "clipboardLocalOnly": "Local Clipboard Only",
+    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
+    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
     "clipboardClearOptions": {
       "never": "Ei koskaan",
       "5seconds": "5 sekuntia",
@@ -438,7 +443,26 @@
     "vaultSyncedSuccessfully": "Holvi synkronoitu",
     "vaultUpToDate": "Holvi on ajan tasalla",
     "offlineMessage": "Olet ei-verkkotilassa. Yhdistä internetiin synkronoidaksesi holvisi.",
-    "switchBackToBrowser": "Siirry takaisin selaimeen jatkaaksesi.",
+    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "autofillOpenApp": {
+      "title": "Autofill request",
+      "description": "Choose an action for the app or website that requested autofill.",
+      "appOrUrlLabel": "App or URL",
+      "findExistingTitle": "Link to existing credential",
+      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
+      "createNewTitle": "Create new credential",
+      "createNewDescription": "Add a new credential to your vault for this app or URL."
+    },
+    "autofillLinkExisting": {
+      "title": "Link to existing credential",
+      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
+      "confirmTitle": "Link to credential?",
+      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+    },
+    "autofillUrlAdded": {
+      "title": "Credential linked",
+      "message": "Autofill should now offer this credential the next time you open the app."
+    },
     "filters": {
       "all": "Tiedot",
       "showFolders": "Folders",
@@ -513,8 +537,8 @@
     "recentlyDeleted": {
       "title": "Recently Deleted",
       "noItems": "No deleted items",
-      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
-      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
+      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
       "restore": "Restore",
       "deletePermanently": "Delete Permanently",
       "emptyAll": "Empty All",
@@ -615,13 +639,26 @@
       "vaultAutoLockedMessage": "Holvi lukittu automaattisesti aikakatkaisun jälkeen.",
       "attemptingToUnlockMessage": "Yritetään avata lukitus."
     },
+    "vaultError": {
+      "title": "Vault Error",
+      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
+      "showDetails": "Show error details",
+      "hideDetails": "Hide error details",
+      "copyErrorDetails": "Copy error details"
+    },
     "loginSettings": {
       "title": "API-yhteys",
       "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Itseylläpidetty (Self-hosted)",
       "customApiUrl": "Mukautettu API URL-osoite",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
-      "version": "Versio {{version}}"
+      "version": "Versio {{version}}",
+      "advancedSettings": "Advanced settings",
+      "customProxyHeaders": "Custom proxy headers",
+      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
+      "headerName": "Header name",
+      "headerNamePlaceholder": "X-Custom-Header",
+      "headerValue": "Header value"
     }
   },
   "upgrade": {

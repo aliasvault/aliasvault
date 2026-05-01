@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Main navigation links -->
   <data name="VaultNav">
-    <value>Vault</value>
+    <value>Сейф</value>
     <comment>Main navigation link for vault section</comment>
   </data>
   <data name="EmailsNav">
@@ -34,7 +34,7 @@
     <comment>Navigation link for general settings</comment>
   </data>
   <data name="SecuritySettingsNav">
-    <value>Security settings</value>
+    <value>Настройки за сигурност</value>
     <comment>Navigation link for security settings</comment>
   </data>
   <data name="ImportExportNav">

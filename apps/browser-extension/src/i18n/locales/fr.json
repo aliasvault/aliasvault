@@ -108,6 +108,7 @@
       "passwordChanged": "Votre mot de passe a changé depuis la dernière fois que vous vous êtes connecté. Veuillez vous reconnecter pour des raisons de sécurité.",
       "syncConflictMaxRetries": "Impossible de synchroniser le coffre après plusieurs tentatives. Veuillez réessayer plus tard.",
       "mergeFailed": "Impossible de fusionner les modifications du coffre. Veuillez réessayer.",
+      "vaultTooLarge": "Le coffre est trop grand pour que le serveur l'accepte. Essayez de supprimer certains éléments ou pièces jointes pour réduire la taille et réessayez.",
       "invalidCode": "Veuillez entrer un code d'authentification valide à 6 chiffres.",
       "serverError": "Impossible d'accéder au serveur AliasVault. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
       "wrongPassword": "Mot de passe incorrect, veuillez réessayer.",
@@ -506,8 +507,8 @@
   "recentlyDeleted": {
     "title": "Supprimé récemment",
     "noItems": "Aucun élément supprimé",
-    "noItemsDescription": "Les éléments que vous supprimez apparaîtront ici pendant 30 jours avant d'être définitivement supprimés.",
-    "description": "Ces éléments seront définitivement supprimés après 30 jours. Vous pouvez les restaurer ou les supprimer immédiatement.",
+    "noItemsDescription": "Les éléments que vous supprimez apparaîtront ici pendant {{days}} jours avant d'être définitivement supprimés.",
+    "description": "Ces éléments seront définitivement supprimés après {{days}} jours. Vous pouvez les restaurer ou les supprimer immédiatement.",
     "restore": "Restaurer",
     "deletePermanently": "Supprimer définitivement",
     "emptyAll": "Vider tout",
@@ -546,6 +547,8 @@
   },
   "sync": {
     "offline": "Hors ligne",
-    "tapToRetry": "Appuyez pour réessayer"
+    "tapToRetry": "Appuyez pour réessayer",
+    "syncErrorTitle": "Synchronisation échouée",
+    "syncErrorDismiss": "Ignorer"
   }
 }

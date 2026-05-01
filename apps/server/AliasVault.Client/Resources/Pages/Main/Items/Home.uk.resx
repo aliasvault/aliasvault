@@ -60,7 +60,7 @@
   </resheader>
   <!-- Page Header -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Vault</value>
+    <value>Сховище</value>
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
@@ -68,7 +68,7 @@
     <comment>Page description text</comment>
   </data>
   <data name="Items" xml:space="preserve">
-    <value>Items</value>
+    <value>Об'єкти</value>
     <comment>Items label used in breadcrumb navigation</comment>
   </data>
   <!-- Settings Dropdown -->
@@ -144,7 +144,7 @@
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
-    <value>Items</value>
+    <value>Об'єкти</value>
     <comment>Filter option to show all items</comment>
   </data>
   <data name="ShowFoldersOption" xml:space="preserve">

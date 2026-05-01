@@ -9,7 +9,7 @@
   <string name="common_back">Tillbaka</string>
   <string name="unknown_error">Ett okänt fel har inträffat</string>
   <string name="autofill_failed_to_retrieve">Det gick inte att hämta, öppna app</string>
-  <string name="autofill_no_match_found">Hittade ingen matchning, skapa ny?</string>
+  <string name="autofill_no_match_found">No match found</string>
   <string name="autofill_open_app">Öppna app</string>
   <string name="autofill_vault_locked">Valvet är låst</string>
   <string name="biometric_store_key_title">Lagra krypteringsnyckel</string>

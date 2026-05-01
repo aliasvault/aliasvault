@@ -13,6 +13,13 @@
 "no_items_found" = "未找到项目";
 "no_items_match" = "未找到符合搜索条件的项目";
 "create_new_item" = "创建新项目";
+"open_aliasvault" = "打开 AliasVault";
+"untitled_credential" = "此凭据";
+"link_url_prompt_title" = "链接到凭据？";
+"link_url_prompt_message" = "将“{{url}}”添加到 {{name}}，以便 AliasVault 下次识别此应用或网站？";
+"link_url_prompt_link_action" = "链接并填充";
+"link_url_prompt_skip_action" = "仅填充";
+"linking_url" = "链接中…";
 "select_item" = "选择项目";
 "select_text_to_insert" = "选择要插入的文本";
 "choose_username" = "选择用户名";
@@ -25,9 +32,9 @@
 "no_item_selected" = "未选择项目。";
 
 /* Context menu strings */
-"copy_username" = "复制用户名";
-"copy_password" = "复制密码";
-"copy_email" = "复制邮箱";
+"copy_username" = "拷贝用户名";
+"copy_password" = "拷贝密码";
+"copy_email" = "拷贝邮箱";
 "view_details" = "查看详情";
 "username_copied" = "用户名已复制";
 "password_copied" = "密码已复制";

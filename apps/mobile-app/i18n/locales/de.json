@@ -26,11 +26,13 @@
     "generate": "Erzeugen",
     "attachments": "Anhänge",
     "or": "oder",
+    "retry": "Erneut versuchen",
     "deleteItemConfirmTitle": "Element löschen",
     "deleteItemConfirmDescription": "Bist Du sicher, dass Du dieses Element löschen möchtest?",
     "errors": {
       "unknownError": "Ein unbekannter Fehler ist aufgetreten.",
       "unknownErrorTryAgain": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
+      "vaultTooLarge": "Der Tresor ist zu groß für den Server. Versuche einige Elemente oder Anhänge zu entfernen, um die Größe zu verringern und versuche es dann erneut.",
       "serverVersionTooOld": "Der AliasVault-Server muss auf eine neuere Version aktualisiert werden, um diese Funktion nutzen zu können. Bitte kontaktiere den Administrator des Servers, falls Du Hilfe benötigst."
     }
   },
@@ -158,6 +160,9 @@
     "clipboardClear": "Zwischenablage leeren",
     "clipboardClearDescription": "Kopierte Passwörter und vertrauliche Informationen nach einem bestimmten Zeitraum automatisch aus der Zwischenablage löschen.",
     "clipboardClearAndroidWarning": "Hinweis: Einige Android-Geräte haben den Zwischenablage-Verlauf aktiviert, was möglicherweise zuvor kopierte Einträge zwischenspeichern kann, auch wenn AliasVault die Zwischenablage löscht. AliasVault kann nur den letzten Eintrag überschreiben. Ältere Einträge bleiben möglicherweise im Verlauf sichtbar. Aus Sicherheitsgründen wird empfohlen, alle Verlaufsfunktionen zur Zwischenablage in den Geräteeinstellungen zu deaktivieren.",
+    "clipboardLocalOnly": "Nur lokale Zwischenablage",
+    "clipboardLocalOnlyDescription": "Behalte kopierte Anmeldedaten auf diesem Gerät, anstatt sie über die allgemeine Zwischenablage mit Deinen anderen Apple-Geräten zu synchronisieren.",
+    "clipboardLocalOnlyDisabledWarning": "Damit können kopierte Anmeldedaten mit Deinen anderen Apple-Geräten (Mac, iPad, etc.) über die allgemeine Zwischenablage synchronisiert werden.",
     "clipboardClearOptions": {
       "never": "Niemals",
       "5seconds": "5 Sekunden",
@@ -438,7 +443,26 @@
     "vaultSyncedSuccessfully": "Tresor erfolgreich synchronisiert",
     "vaultUpToDate": "Tresor ist auf dem neuesten Stand",
     "offlineMessage": "Keine Verbindung. Bitte verbinde Dich mit dem Internet, um Deinen Tresor zu synchronisieren.",
-    "switchBackToBrowser": "Wechsle zurück zu Deinem Browser, um fortzufahren",
+    "switchBackToOriginalApp": "Wechsel zurück zur ursprünglichen App, um fortzufahren.",
+    "autofillOpenApp": {
+      "title": "Autofill-Anfrage",
+      "description": "Wähle eine Aktion für die App oder die Webseite, die Autofill angefordert hat.",
+      "appOrUrlLabel": "App oder URL",
+      "findExistingTitle": "Link zu existierenden Anmeldeinformationen",
+      "findExistingDescription": "Wähle eine existierende Anmeldeinformation aus Deinem Tresor, um die oben genannte Adresse zu verknüpfen.",
+      "createNewTitle": "Neue Anmeldeinformationen erstellen",
+      "createNewDescription": "Füge neue Anmeldeinformationen zu Deinem Tresor für diese App oder URL hinzu."
+    },
+    "autofillLinkExisting": {
+      "title": "Link zu existierenden Anmeldeinformationen",
+      "intro": "Wähle eine existierende Anmeldeinformation aus Deinem Tresor, um diese mit \"{{target}}\" zu verknüpfen.",
+      "confirmTitle": "Link to credential?",
+      "confirmMessage": "Bist Du sicher, dass Du \"{{url}}\" mit diesen Anmeldeinformationen verknüpfen möchtest?"
+    },
+    "autofillUrlAdded": {
+      "title": "Anmeldeinformationen verknüpft",
+      "message": "Autofill sollte diese Zugangsdaten jetzt beim nächsten Öffnen der App anbieten."
+    },
     "filters": {
       "all": "Titel",
       "showFolders": "Ordner",
@@ -513,8 +537,8 @@
     "recentlyDeleted": {
       "title": "Zuletzt gelöscht",
       "noItems": "Keine gelöschten Elemente",
-      "noItemsDescription": "Elemente, die Sie löschen, werden hier 30 Tage lang erscheinen, bevor sie endgültig entfernt werden.",
-      "description": "Diese Elemente werden nach 30 Tagen dauerhaft gelöscht. Sie können sie wiederherstellen oder sofort löschen.",
+      "noItemsDescription": "Elemente, die Du löscht, werden hier {{days}} Tage lang erscheinen, bevor sie endgültig entfernt werden.",
+      "description": "Diese Elemente werden nach {{days}} Tagen endgültig gelöscht. Du kannst sie wiederherstellen oder sofort löschen.",
       "restore": "Wiederherstellen",
       "deletePermanently": "Dauerhaft löschen",
       "emptyAll": "Alle leeren",
@@ -615,13 +639,26 @@
       "vaultAutoLockedMessage": "Der Tresor wurde nach Zeitüberschreitung automatisch gesperrt.",
       "attemptingToUnlockMessage": "Entsperrvorgang läuft."
     },
+    "vaultError": {
+      "title": "Tresor Fehler",
+      "description": "Beim Laden Deines Tresors ist ein Fehler aufgetreten. Wenn dieses Problem weiterhin besteht, kontaktiere bitte den Support.",
+      "showDetails": "Detaillierte Fehlermeldung anzeigen",
+      "hideDetails": "Detaillierte Fehlermeldung ausblenden",
+      "copyErrorDetails": "Detaillierte Fehlermeldung kopieren"
+    },
     "loginSettings": {
       "title": "API-Verbindung",
       "aliasvaultNet": "AliasVault.net",
       "selfHosted": "Selbstgehostet",
       "customApiUrl": "Benutzerdefinierte API-URL",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
-      "version": "Version: {{version}}"
+      "version": "Version: {{version}}",
+      "advancedSettings": "Erweiterte Einstellungen",
+      "customProxyHeaders": "Benutzerdefinierte Proxy-Header",
+      "customProxyHeadersDescription": "Füge HTTP-Header hinzu, die mit jeder Anfrage an Deinen AliasVault-Server gesendet werden. Kann für selbstgehostete Setups hinter einem Reverse-Proxy verwendet werden, der auf benutzerdefinierte Header prüft (z.B. Pangolin, Cloudflare Access).",
+      "headerName": "Header-Name",
+      "headerNamePlaceholder": "X-Custom-Header",
+      "headerValue": "Header-Wert"
     }
   },
   "upgrade": {

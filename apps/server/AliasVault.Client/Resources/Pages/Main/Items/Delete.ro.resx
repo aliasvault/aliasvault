@@ -28,8 +28,8 @@
     <comment>Page header title for deleting item</comment>
   </data>
   <data name="DeleteItemDescription">
-    <value>Poți șterge elementul de mai jos.</value>
-    <comment>Page description for deleting item</comment>
+    <value>Ești sigur că vrei să ștergi acest element? Va fi mutat în elementele șterse recent și va fi șters definitiv după {0} zile.</value>
+    <comment>Confirmation message shown in the delete-item modal. Placeholder {0} is the trash retention period in days.</comment>
   </data>
   <data name="ItemEntrySection">
     <value>Introducere element</value>
