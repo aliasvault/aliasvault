@@ -193,6 +193,14 @@
                                             <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">(@string.Format(Localizer["FoldersDetected"], DetectedFolderCount))</span>
                                         </label>
                                     }
+                                    @if (DetectedAttachmentCount > 0)
+                                    {
+                                        <label class="flex items-center">
+                                            <input type="checkbox" @bind="ImportAttachments" class="form-checkbox h-4 w-4 text-primary-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700">
+                                            <span class="ml-2 text-gray-700 dark:text-gray-300">@Localizer["ImportAttachmentsLabel"]</span>
+                                            <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">(@string.Format(Localizer["AttachmentsDetected"], DetectedAttachmentCount, FormatBytes(DetectedAttachmentsTotalSize)))</span>
+                                        </label>
+                                    }
                                 </div>
                             }
                             <div class="flex justify-end mt-6 space-x-2">
@@ -338,6 +346,9 @@
     private bool ImportFolders { get; set; } = true;
     private int DetectedFolderCount { get; set; } = 0;
     private List<string> DetectedFolderPaths { get; set; } = new();
+    private bool ImportAttachments { get; set; } = true;
+    private int DetectedAttachmentCount { get; set; } = 0;
+    private long DetectedAttachmentsTotalSize { get; set; } = 0;
     private bool IsExtractingFavicons { get; set; }
     private int FaviconExtractionProgress { get; set; }
     private int TotalFaviconsToExtract { get; set; }
@@ -711,6 +722,16 @@
         if (ImportFolders && DetectedFolderCount > 0)
         {
             folderNameToId = await CreateOrGetFolders();
+        }
+
+        // If the user opted out of importing attachments, strip them before conversion
+        // so they don't end up persisted on the resulting items.
+        if (!ImportAttachments)
+        {
+            foreach (var credential in ImportedCredentials)
+            {
+                credential.Attachments = null;
+            }
         }
 
         var items = BaseImporter.ConvertToItem(ImportedCredentials, folderNameToId);
@@ -1145,6 +1166,23 @@
         // Detect folders in the import (hierarchical)
         DetectedFolderPaths = CollectHierarchicalFolderPaths(ImportedCredentials);
         DetectedFolderCount = DetectedFolderPaths.Count;
+
+        // Detect attachments in the import (count and total blob size)
+        DetectedAttachmentCount = 0;
+        DetectedAttachmentsTotalSize = 0;
+        foreach (var credential in ImportedCredentials)
+        {
+            if (credential.Attachments == null)
+            {
+                continue;
+            }
+
+            foreach (var attachment in credential.Attachments)
+            {
+                DetectedAttachmentCount++;
+                DetectedAttachmentsTotalSize += attachment.Blob?.LongLength ?? 0;
+            }
+        }
     }
 
     /// <summary>
@@ -1264,5 +1302,27 @@
         FaviconExtractionCancellation?.Cancel();
         IsExtractingFavicons = false;
         StateHasChanged();
+    }
+
+    /// <summary>
+    /// Formats a byte count as a human-readable size string (e.g. "3.9 MB").
+    /// </summary>
+    /// <param name="bytes">The number of bytes.</param>
+    /// <returns>The formatted size string.</returns>
+    private static string FormatBytes(long bytes)
+    {
+        string[] units = { "B", "KB", "MB", "GB", "TB" };
+        double size = bytes;
+        int unitIndex = 0;
+
+        while (size >= 1024 && unitIndex < units.Length - 1)
+        {
+            size /= 1024;
+            unitIndex++;
+        }
+
+        return unitIndex == 0
+            ? $"{size:0} {units[unitIndex]}"
+            : string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0.#} {1}", size, units[unitIndex]);
     }
 }
