@@ -13,24 +13,14 @@ namespace AliasVault.Admin.Main.Models;
 public class RecentUsageAliases
 {
     /// <summary>
-    /// Gets or sets the user ID.
+    /// Gets or sets the user display info (id, username, status badges).
     /// </summary>
-    public string UserId { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets the username.
-    /// </summary>
-    public string Username { get; set; } = string.Empty;
+    public UserDisplay User { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the number of aliases created in the last 72 hours.
     /// </summary>
     public int AliasCount72h { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the account is disabled/blocked.
-    /// </summary>
-    public bool IsDisabled { get; set; }
 
     /// <summary>
     /// Gets or sets the date when the user registered their account.

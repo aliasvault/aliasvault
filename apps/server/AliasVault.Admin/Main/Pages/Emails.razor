@@ -48,14 +48,7 @@ else
                     <SortableTableColumn>@(viewModel.Email.FromLocal.Length > 10 ? viewModel.Email.FromLocal.Substring(0, 10) : viewModel.Email.FromLocal)@@@(viewModel.Email.FromDomain.Length > 10 ? viewModel.Email.FromDomain.Substring(0, 10) : viewModel.Email.FromDomain)</SortableTableColumn>
                     <SortableTableColumn>@viewModel.Email.ToLocal@@@viewModel.Email.ToDomain</SortableTableColumn>
                     <SortableTableColumn>
-                        @if (viewModel.UserName.Length > 0)
-                        {
-                            <span class="line-clamp-1"><a href="users/@viewModel.UserId">@viewModel.UserName</a></span>
-                        }
-                        else
-                        {
-                            <span class="line-clamp-1">n/a</span>
-                        }
+                        <UserNameDisplay User="@viewModel.User" />
                     </SortableTableColumn>
                     <SortableTableColumn>@viewModel.Email.Attachments.Count</SortableTableColumn>
                 </SortableTableRow>
@@ -176,7 +169,7 @@ else
             var encryptionKeyIds = emailList.Select(x => x.UserEncryptionKeyId).Distinct().ToList();
             var encryptionKeyUsernames = await dbContext.UserEncryptionKeys
                         .Where(x => encryptionKeyIds.Contains(x.Id))
-                        .Join(dbContext.AliasVaultUsers, x => x.UserId, y => y.Id, (x, y) => new { EncryptionKeyId = x.Id, UserId = y.Id, y.UserName })
+                        .Join(dbContext.AliasVaultUsers, x => x.UserId, y => y.Id, (x, y) => new { EncryptionKeyId = x.Id, UserId = y.Id, y.UserName, y.Blocked })
                         .ToListAsync(cancellationToken);
 
             // Create new list of viewmodels
@@ -185,7 +178,16 @@ else
             foreach (var email in emailList)
             {
                 var encryptionKey = encryptionKeyUsernames.FirstOrDefault(x => x.EncryptionKeyId == email.UserEncryptionKeyId);
-                EmailViewModelList.Add(new EmailViewModel { Email = email, UserId = encryptionKey?.UserId ?? string.Empty, UserName = encryptionKey?.UserName ?? string.Empty });
+                EmailViewModelList.Add(new EmailViewModel
+                {
+                    Email = email,
+                    User = new UserDisplay
+                    {
+                        UserId = encryptionKey?.UserId,
+                        UserName = encryptionKey?.UserName,
+                        Blocked = encryptionKey?.Blocked ?? false,
+                    },
+                });
             }
 
             IsLoading = false;
@@ -266,8 +268,7 @@ else
     private sealed class EmailViewModel
     {
         public Email Email { get; set; } = new();
-        public string UserId { get; set; } = string.Empty;
-        public string UserName { get; set; } = string.Empty;
+        public UserDisplay User { get; set; } = new();
     }
 
     protected override void Dispose(bool disposing)

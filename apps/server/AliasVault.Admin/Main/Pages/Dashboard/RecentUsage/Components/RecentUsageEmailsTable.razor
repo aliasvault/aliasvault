@@ -21,15 +21,7 @@
                 {
                     <SortableTableRow>
                         <SortableTableColumn IsPrimary="true">
-                            <a href="users/@user.UserId" class="text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer">
-                                @user.Username
-                            </a>
-                            @if (user.IsDisabled)
-                            {
-                                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                    Blocked
-                                </span>
-                            }
+                            <UserNameDisplay User="@user.User" />
                         </SortableTableColumn>
                         <SortableTableColumn>@user.EmailCount72h.ToString("N0")</SortableTableColumn>
                         <SortableTableColumn>@StatisticsService.GetAccountAge(user.RegistrationDate)</SortableTableColumn>

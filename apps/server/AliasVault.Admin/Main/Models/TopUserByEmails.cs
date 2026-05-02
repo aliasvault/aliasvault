@@ -13,14 +13,9 @@ namespace AliasVault.Admin.Main.Models;
 public class TopUserByEmails
 {
     /// <summary>
-    /// Gets or sets the user ID.
+    /// Gets or sets the user display info (id, username, status badges).
     /// </summary>
-    public string UserId { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets the username.
-    /// </summary>
-    public string Username { get; set; } = string.Empty;
+    public UserDisplay User { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the number of emails.
