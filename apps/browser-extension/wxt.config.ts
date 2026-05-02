@@ -22,7 +22,7 @@ export default defineConfig({
     return {
       name: "AliasVault",
       description: "AliasVault Browser AutoFill Extension. Keeping your personal information private.",
-      version: "0.29.0",
+      version: "0.30.0",
       content_security_policy: {
         extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
       },
