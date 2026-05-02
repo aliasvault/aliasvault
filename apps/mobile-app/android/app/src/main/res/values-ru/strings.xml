@@ -9,7 +9,7 @@
   <string name="common_back">Назад</string>
   <string name="unknown_error">Произошла неизвестная ошибка</string>
   <string name="autofill_failed_to_retrieve">Не удалось извлечь, открыть приложение</string>
-  <string name="autofill_no_match_found">No match found</string>
+  <string name="autofill_no_match_found">Совпадений не найдено</string>
   <string name="autofill_open_app">Открыть приложение</string>
   <string name="autofill_vault_locked">Хранилище заблокировано</string>
   <string name="biometric_store_key_title">Храните ключ шифрования</string>
