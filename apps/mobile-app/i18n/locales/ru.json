@@ -443,25 +443,25 @@
     "vaultSyncedSuccessfully": "Хранилище успешно синхронизировано",
     "vaultUpToDate": "Хранилище актуально",
     "offlineMessage": "Вы не в сети. Пожалуйста, подключитесь к Интернету, чтобы синхронизировать ваше хранилище.",
-    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "switchBackToOriginalApp": "Вернитесь в приложение для продолжения.",
     "autofillOpenApp": {
-      "title": "Autofill request",
-      "description": "Choose an action for the app or website that requested autofill.",
-      "appOrUrlLabel": "App or URL",
-      "findExistingTitle": "Link to existing credential",
-      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
-      "createNewTitle": "Create new credential",
-      "createNewDescription": "Add a new credential to your vault for this app or URL."
+      "title": "Запрос автозаполнения",
+      "description": "Выберите действие для приложения или сайта, запросившего автозаполнение.",
+      "appOrUrlLabel": "Приложение или URL",
+      "findExistingTitle": "Связать с имеющейся записью",
+      "findExistingDescription": "Выберите запись из вашего хранилища, чтобы связать её с указанным выше адресом.",
+      "createNewTitle": "Создать новую запись",
+      "createNewDescription": "Добавьте новую запись в хранилище для этого приложения или URL."
     },
     "autofillLinkExisting": {
-      "title": "Link to existing credential",
-      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
-      "confirmTitle": "Link to credential?",
-      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+      "title": "Связать с имеющейся записью",
+      "intro": "Выберите запись в хранилище, чтобы связать её с \"{{target}}\".",
+      "confirmTitle": "Связать с этой записью?",
+      "confirmMessage": "Вы уверены, что хотите связать \"{{url}}\" с этой записью?"
     },
     "autofillUrlAdded": {
-      "title": "Credential linked",
-      "message": "Autofill should now offer this credential the next time you open the app."
+      "title": "Запись привязана",
+      "message": "Автозаполнение предложит эту запись при следующем использовании приложения."
     },
     "filters": {
       "all": "Записи",
