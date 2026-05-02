@@ -108,7 +108,7 @@
       "passwordChanged": "La tua password è cambiata dall'ultima volta che hai effettuato l'accesso. Effettua nuovamente l'accesso per motivi di sicurezza.",
       "syncConflictMaxRetries": "Impossibile sincronizzare la cassaforte dopo più tentativi. Riprova più tardi.",
       "mergeFailed": "Sincronizzazione della cassaforte non riuscita. Riprovare.",
-      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultTooLarge": "La cassaforte è troppo grande perché il server possa accettarla. Provare a rimuovere alcuni elementi o allegati per ridurre le dimensioni e riprovare.",
       "invalidCode": "Inserisci un codice di autenticazione a 6 cifre valido.",
       "serverError": "Impossibile raggiungere il server AliasVault. Riprova più tardi o contatta il supporto se il problema persiste.",
       "wrongPassword": "Password errata. Riprovare.",
@@ -507,8 +507,8 @@
   "recentlyDeleted": {
     "title": "Eliminato di Recente",
     "noItems": "Nessun elemento eliminato",
-    "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
-    "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
+    "noItemsDescription": "Gli elementi che elimini appariranno qui per {{days}} giorni prima di essere definitivamente rimossi.",
+    "description": "Questi elementi saranno eliminati definitivamente dopo {{days}} giorni. Puoi ripristinarli o eliminarli immediatamente.",
     "restore": "Ripristina",
     "deletePermanently": "Elimina Definitivamente",
     "emptyAll": "Svuota Tutto",
@@ -548,7 +548,7 @@
   "sync": {
     "offline": "Offline",
     "tapToRetry": "Tocca per riprovare la sincronizzazione",
-    "syncErrorTitle": "Sync Failed",
+    "syncErrorTitle": "Sincronizzazione non riuscita",
     "syncErrorDismiss": "Annulla"
   }
 }
