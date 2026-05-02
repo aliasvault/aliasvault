@@ -11,14 +11,13 @@ else if (RelatedUsers.Any())
         {
             <SortableTableRow>
                 <SortableTableColumn IsPrimary="true">
-                    <a href="users/@relatedUser.UserId">@relatedUser.Username</a>
+                    <UserNameDisplay User="@relatedUser.User" />
                 </SortableTableColumn>
                 <SortableTableColumn>@relatedUser.SharedIpAddresses.ToString("N0")</SortableTableColumn>
                 <SortableTableColumn>@relatedUser.MostRecentSharedIp</SortableTableColumn>
                 <SortableTableColumn>@relatedUser.CredentialsCount.ToString("N0")</SortableTableColumn>
                 <SortableTableColumn>@relatedUser.EmailClaimsCount.ToString("N0")</SortableTableColumn>
                 <SortableTableColumn>@relatedUser.RegistrationDate.ToString("yyyy-MM-dd HH:mm")</SortableTableColumn>
-                <SortableTableColumn><StatusPill Enabled="!relatedUser.IsBlocked" TextTrue="Active" TextFalse="Blocked" /></SortableTableColumn>
             </SortableTableRow>
         }
     </SortableTable>
@@ -70,7 +69,6 @@ else
         new TableColumn { Title = "Credentials", PropertyName = "CredentialsCount" },
         new TableColumn { Title = "Email Claims", PropertyName = "EmailClaimsCount" },
         new TableColumn { Title = "Registered", PropertyName = "RegistrationDate" },
-        new TableColumn { Title = "Status", PropertyName = "IsBlocked" },
     ];
 
     private IEnumerable<RelatedUserInfo> SortedRelatedUsersList => SortList(RelatedUsers, SortColumn, SortDirection);
@@ -176,14 +174,17 @@ else
                        from vault in vaultGroup.DefaultIfEmpty()
                        select new RelatedUserInfo
                        {
-                           UserId = user.Id,
-                           Username = user.UserName ?? "Unknown",
+                           User = new UserDisplay
+                           {
+                               UserId = user.Id,
+                               UserName = user.UserName ?? "Unknown",
+                               Blocked = user.Blocked,
+                           },
                            SharedIpAddresses = data.SharedIps,
                            MostRecentSharedIp = data.MostRecentSharedIp ?? "-",
                            CredentialsCount = vault?.CredentialsCount ?? 0,
                            EmailClaimsCount = vault?.EmailClaimsCount ?? 0,
                            RegistrationDate = user.CreatedAt,
-                           IsBlocked = user.Blocked
                        })
                        .OrderByDescending(x => x.SharedIpAddresses)
                        .Take(20)
@@ -204,13 +205,12 @@ else
     {
         return sortColumn switch
         {
-            "Username" => SortableTable.SortListByProperty(relatedUsers, r => r.Username, sortDirection),
+            "Username" => SortableTable.SortListByProperty(relatedUsers, r => r.User.UserName ?? string.Empty, sortDirection),
             "SharedIpAddresses" => SortableTable.SortListByProperty(relatedUsers, r => r.SharedIpAddresses, sortDirection),
             "MostRecentSharedIp" => SortableTable.SortListByProperty(relatedUsers, r => r.MostRecentSharedIp, sortDirection),
             "CredentialsCount" => SortableTable.SortListByProperty(relatedUsers, r => r.CredentialsCount, sortDirection),
             "EmailClaimsCount" => SortableTable.SortListByProperty(relatedUsers, r => r.EmailClaimsCount, sortDirection),
             "RegistrationDate" => SortableTable.SortListByProperty(relatedUsers, r => r.RegistrationDate, sortDirection),
-            "IsBlocked" => SortableTable.SortListByProperty(relatedUsers, r => r.IsBlocked, sortDirection),
             _ => relatedUsers
         };
     }
@@ -225,13 +225,11 @@ else
 
     private class RelatedUserInfo
     {
-        public string UserId { get; set; } = string.Empty;
-        public string Username { get; set; } = string.Empty;
+        public UserDisplay User { get; set; } = new();
         public int SharedIpAddresses { get; set; }
         public string MostRecentSharedIp { get; set; } = string.Empty;
         public int CredentialsCount { get; set; }
         public int EmailClaimsCount { get; set; }
         public DateTime RegistrationDate { get; set; }
-        public bool IsBlocked { get; set; }
     }
 }

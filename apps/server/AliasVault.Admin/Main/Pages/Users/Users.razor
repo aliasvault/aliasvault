@@ -60,21 +60,7 @@ else
                 <SortableTableRow OnClick="@(() => NavigateToUser(user.Id))">
                     <SortableTableColumn IsPrimary="true">@user.CreatedAt.ToString("yyyy-MM-dd HH:mm")</SortableTableColumn>
                     <SortableTableColumn>
-                        <div class="flex items-center gap-2">
-                            <span>@user.UserName</span>
-                            @if (user.IsInactive)
-                            {
-                                <StatusPill Enabled="false" TextFalse="Inactive" />
-                            }
-                            @if (user.Blocked)
-                            {
-                                <StatusPill Enabled="false" TextFalse="Blocked" />
-                            }
-                            @if (user.TwoFactorEnabled)
-                            {
-                                <StatusPill Enabled="true" TextTrue="2FA" />
-                            }
-                        </div>
+                        <UserNameDisplay User="@user.User" AsLink="false" />
                     </SortableTableColumn>
                     <SortableTableColumn>@RelativeTimeFormatter.Format(user.LastActivityDate)</SortableTableColumn>
                     <SortableTableColumn>@user.CredentialCount</SortableTableColumn>
@@ -237,12 +223,16 @@ else
                 return new UserViewModel
                 {
                     Id = user.Id,
-                    UserName = user.UserName?.ToLower() ?? "N/A",
-                    TwoFactorEnabled = user.TwoFactorEnabled,
-                    Blocked = user.Blocked,
+                    User = new UserDisplay
+                    {
+                        UserId = user.Id,
+                        UserName = user.UserName?.ToLower() ?? "N/A",
+                        Blocked = user.Blocked,
+                        IsInactive = isInactive,
+                        TwoFactorEnabled = user.TwoFactorEnabled,
+                    },
                     CreatedAt = user.CreatedAt,
                     LastActivityDate = user.LastActivityDate,
-                    IsInactive = isInactive,
                     VaultCount = user.Vaults.Count(),
                     CredentialCount = user.Vaults.OrderByDescending(x => x.RevisionNumber).First().CredentialCount,
                     EmailClaimCount = user.EmailClaimCount,

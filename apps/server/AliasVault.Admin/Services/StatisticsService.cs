@@ -148,6 +148,7 @@ public class StatisticsService
             {
                 UserId = g.Key,
                 Username = g.First().User.UserName,
+                Blocked = g.First().User.Blocked,
                 TotalStorageBytes = g.OrderByDescending(v => v.RevisionNumber).First().FileSize,
             })
             .OrderByDescending(u => u.TotalStorageBytes)
@@ -157,8 +158,12 @@ public class StatisticsService
 
         var users = topUsers.Select(u => new TopUserByStorage
         {
-            UserId = u.UserId,
-            Username = u.Username ?? UnknownUsername,
+            User = new UserDisplay
+            {
+                UserId = u.UserId,
+                UserName = u.Username ?? UnknownUsername,
+                Blocked = u.Blocked,
+            },
             StorageBytes = u.TotalStorageBytes,
             StorageDisplaySize = FormatKilobytes(u.TotalStorageBytes),
         }).ToList();
@@ -190,6 +195,7 @@ public class StatisticsService
             {
                 UserId = g.Key,
                 Username = g.First().User!.UserName,
+                Blocked = g.First().User!.Blocked,
                 AliasCount = g.Count(),
             })
             .OrderByDescending(u => u.AliasCount)
@@ -199,8 +205,12 @@ public class StatisticsService
 
         var users = topUsers.Select(u => new TopUserByAliases
         {
-            UserId = u.UserId!,
-            Username = u.Username ?? UnknownUsername,
+            User = new UserDisplay
+            {
+                UserId = u.UserId,
+                UserName = u.Username ?? UnknownUsername,
+                Blocked = u.Blocked,
+            },
             AliasCount = u.AliasCount,
         }).ToList();
 
@@ -229,6 +239,7 @@ public class StatisticsService
             {
                 UserId = g.Key,
                 Username = g.First().EncryptionKey.User!.UserName,
+                Blocked = g.First().EncryptionKey.User!.Blocked,
                 EmailCount = g.Count(),
             })
             .OrderByDescending(u => u.EmailCount)
@@ -238,8 +249,12 @@ public class StatisticsService
 
         var users = topUsers.Select(u => new TopUserByEmails
         {
-            UserId = u.UserId!,
-            Username = u.Username ?? UnknownUsername,
+            User = new UserDisplay
+            {
+                UserId = u.UserId,
+                UserName = u.Username ?? UnknownUsername,
+                Blocked = u.Blocked,
+            },
             EmailCount = u.EmailCount,
         }).ToList();
 
@@ -268,6 +283,7 @@ public class StatisticsService
             {
                 UserId = g.Key,
                 Username = g.First().User.UserName,
+                Blocked = g.First().User.Blocked,
                 CredentialCount = g.OrderByDescending(v => v.RevisionNumber).First().CredentialsCount,
             })
             .OrderByDescending(u => u.CredentialCount)
@@ -277,8 +293,12 @@ public class StatisticsService
 
         var users = topUsers.Select(u => new TopUserByCredentials
         {
-            UserId = u.UserId,
-            Username = u.Username ?? UnknownUsername,
+            User = new UserDisplay
+            {
+                UserId = u.UserId,
+                UserName = u.Username ?? UnknownUsername,
+                Blocked = u.Blocked,
+            },
             CredentialCount = u.CredentialCount,
         }).ToList();
 
@@ -503,10 +523,13 @@ public class StatisticsService
 
         return topUsers.Select(u => new RecentUsageAliases
         {
-            UserId = u.UserId!,
-            Username = u.Username ?? UnknownUsername,
+            User = new UserDisplay
+            {
+                UserId = u.UserId,
+                UserName = u.Username ?? UnknownUsername,
+                Blocked = u.IsDisabled,
+            },
             AliasCount72h = u.AliasCount72h,
-            IsDisabled = u.IsDisabled,
             RegistrationDate = u.RegistrationDate,
         }).ToList();
     }
@@ -537,10 +560,13 @@ public class StatisticsService
 
         return topUsers.Select(u => new RecentUsageEmails
         {
-            UserId = u.UserId!,
-            Username = u.Username ?? UnknownUsername,
+            User = new UserDisplay
+            {
+                UserId = u.UserId,
+                UserName = u.Username ?? UnknownUsername,
+                Blocked = u.IsDisabled,
+            },
             EmailCount72h = u.EmailCount72h,
-            IsDisabled = u.IsDisabled,
             RegistrationDate = u.RegistrationDate,
         }).ToList();
     }

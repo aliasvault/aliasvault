@@ -1,0 +1,59 @@
+@inherits ComponentBase
+
+@if (User is null || string.IsNullOrEmpty(User.UserName))
+{
+    <span class="line-clamp-1 italic text-gray-500 dark:text-gray-400">@EmptyText</span>
+}
+else
+{
+    <div class="inline-flex items-center gap-2">
+        @if (RenderAsLink)
+        {
+            <a href="users/@User.UserId" class="line-clamp-1">@User.UserName</a>
+        }
+        else if (!string.IsNullOrEmpty(User.UserId))
+        {
+            <span class="line-clamp-1">@User.UserName</span>
+        }
+        else
+        {
+            <span class="line-clamp-1 italic">@User.UserName</span>
+        }
+        @if (User.Blocked)
+        {
+            <StatusPill Enabled="false" TextFalse="Blocked" />
+        }
+        @if (User.IsInactive)
+        {
+            <StatusPill Enabled="false" TextFalse="Inactive" />
+        }
+        @if (User.TwoFactorEnabled)
+        {
+            <StatusPill Enabled="true" TextTrue="2FA" />
+        }
+    </div>
+}
+
+@code {
+    /// <summary>
+    /// Gets or sets the user information to display. When the user (or its UserName) is null
+    /// the <see cref="EmptyText"/> fallback is rendered.
+    /// </summary>
+    [Parameter]
+    public UserDisplay? User { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the username should render as a link to the user
+    /// edit page when a UserId is available. Defaults to true.
+    /// </summary>
+    [Parameter]
+    public bool AsLink { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the text to show when there is no user (or no username).
+    /// </summary>
+    [Parameter]
+    public string EmptyText { get; set; } = "n/a";
+
+    private bool RenderAsLink => AsLink && !string.IsNullOrEmpty(User?.UserId);
+}

@@ -65,16 +65,11 @@ else
                     <SortableTableColumn IsPrimary="true">@log.Id</SortableTableColumn>
                     <SortableTableColumn>@log.Timestamp.ToString("yyyy-MM-dd HH:mm")</SortableTableColumn>
                     <SortableTableColumn>
-                        @if (UserLookup.TryGetValue(log.Username, out var userId))
-                        {
-                            <a href="users/@userId">
-                                @log.Username
-                            </a>
+                        @{
+                            var userInfo = UserLookup.GetValueOrDefault(log.Username)
+                                           ?? new UserDisplay { UserName = log.Username };
                         }
-                        else
-                        {
-                            <span class="italic">@log.Username</span>
-                        }
+                        <UserNameDisplay User="@userInfo" />
                     </SortableTableColumn>
                     <SortableTableColumn>@log.Client</SortableTableColumn>
                     <SortableTableColumn>@log.EventType</SortableTableColumn>
@@ -107,7 +102,7 @@ else
     ];
 
     private List<AuthLog> LogList { get; set; } = [];
-    private Dictionary<string, string> UserLookup { get; set; } = [];
+    private Dictionary<string, UserDisplay> UserLookup { get; set; } = [];
     private bool IsInitialized { get; set; } = false;
     private bool IsLoading { get; set; } = true;
     private int CurrentPage { get; set; } = 1;
@@ -314,10 +309,14 @@ else
             var usernames = LogList.Select(x => x.Username).Distinct().Where(x => !string.IsNullOrEmpty(x)).ToList();
             var users = await dbContext.AliasVaultUsers
                 .Where(u => u.UserName != null && usernames.Contains(u.UserName))
-                .Select(u => new { u.UserName, u.Id })
+                .Select(u => new { u.UserName, u.Id, u.Blocked })
                 .ToListAsync(cancellationToken);
 
-            UserLookup = users.Where(u => u.UserName != null).ToDictionary(u => u.UserName!, u => u.Id);
+            UserLookup = users
+                .Where(u => u.UserName != null)
+                .ToDictionary(
+                    u => u.UserName!,
+                    u => new UserDisplay { UserId = u.Id, UserName = u.UserName, Blocked = u.Blocked });
 
             IsLoading = false;
             IsInitialized = true;

@@ -18,24 +18,14 @@ public class UserViewModel
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the user display info (username + status badges).
+    /// </summary>
+    public UserDisplay User { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets the CreatedAt timestamp.
     /// </summary>
     public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// Gets or sets the user name.
-    /// </summary>
-    public string UserName { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the user has two-factor authentication enabled.
-    /// </summary>
-    public bool TwoFactorEnabled { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the user is blocked.
-    /// </summary>
-    public bool Blocked { get; set; }
 
     /// <summary>
     /// Gets or sets the vault count.
@@ -66,9 +56,4 @@ public class UserViewModel
     /// Gets or sets the last activity date of the user.
     /// </summary>
     public DateTime? LastActivityDate { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the user is considered inactive.
-    /// </summary>
-    public bool IsInactive { get; set; }
 }
