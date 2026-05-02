@@ -287,6 +287,24 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
+    /// Runs VACUUM on the in-memory SQLite database to reclaim free pages
+    /// after large deletes (e.g. vault reset, trash auto-prune). Without this
+    /// the connection/vault keeps more memory allocated than necessary.
+    /// </summary>
+    /// <returns>Task.</returns>
+    public async Task VacuumDatabaseAsync()
+    {
+        if (_sqlConnection is null)
+        {
+            return;
+        }
+
+        await using var command = _sqlConnection.CreateCommand();
+        command.CommandText = "VACUUM";
+        await command.ExecuteNonQueryAsync();
+    }
+
+    /// <summary>
     /// Export the in-memory SQLite database to a base64 string.
     /// </summary>
     /// <returns>Base64 encoded string that represents SQLite database.</returns>
@@ -997,6 +1015,10 @@ public sealed class DbService : IDisposable
                     command.CommandText = parameterizedSql;
                     await command.ExecuteNonQueryAsync();
                 }
+
+                // Trash pruning hard-deletes rows (including attachments/passkeys).
+                // Reclaim the freed pages so the live in-memory DB shrinks.
+                await VacuumDatabaseAsync();
             }
         }
         catch (Exception ex)

@@ -680,14 +680,22 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         context.Attachments.RemoveRange(context.Attachments);
         context.FieldValues.RemoveRange(context.FieldValues);
         context.FieldHistories.RemoveRange(context.FieldHistories);
+        context.FieldDefinitions.RemoveRange(context.FieldDefinitions);
         context.TotpCodes.RemoveRange(context.TotpCodes);
         context.Passkeys.RemoveRange(context.Passkeys);
+        context.ItemTags.RemoveRange(context.ItemTags);
+        context.Tags.RemoveRange(context.Tags);
         context.Items.RemoveRange(context.Items);
         context.Logos.RemoveRange(context.Logos);
         context.Folders.RemoveRange(context.Folders);
 
         // Save changes locally
         await context.SaveChangesAsync();
+
+        // Reclaim free pages from the in-memory SQLite so the live session
+        // reflects the smaller size; the server-bound copy is also vacuumed
+        // by ExportSqliteToBase64Async during SaveDatabaseAsync.
+        await dbService.VacuumDatabaseAsync();
 
         // Save the database to server
         return await dbService.SaveDatabaseAsync();
