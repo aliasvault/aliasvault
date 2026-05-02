@@ -94,6 +94,14 @@
     <value>Обнаружено папок: {0}</value>
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
   </data>
+  <data name="ImportAttachmentsLabel" xml:space="preserve">
+    <value>Импортировать обнаруженные вложения</value>
+    <comment>Checkbox label for importing file attachments detected in the source export</comment>
+  </data>
+  <data name="AttachmentsDetected" xml:space="preserve">
+    <value>Вложений: {0}, {1}</value>
+    <comment>Info text showing number of attachments detected and their total size. {0} is the count, {1} is the human-readable size (e.g. "3.9 MB")</comment>
+  </data>
   <data name="DuplicateCredentialsWarning" xml:space="preserve">
     <value>Найдено дубликатов: {0}. Они не будут импортированы.</value>
     <comment>Warning text when duplicate credentials are detected. {0} is the count</comment>
