@@ -95,11 +95,11 @@
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
   </data>
   <data name="ImportAttachmentsLabel" xml:space="preserve">
-    <value>Import detected attachments</value>
+    <value>Importeer gevonden bijlagen</value>
     <comment>Checkbox label for importing file attachments detected in the source export</comment>
   </data>
   <data name="AttachmentsDetected" xml:space="preserve">
-    <value>{0} attachment(s), {1}</value>
+    <value>{0} bijlage(n), {1}</value>
     <comment>Info text showing number of attachments detected and their total size. {0} is the count, {1} is the human-readable size (e.g. "3.9 MB")</comment>
   </data>
   <data name="DuplicateCredentialsWarning" xml:space="preserve">
