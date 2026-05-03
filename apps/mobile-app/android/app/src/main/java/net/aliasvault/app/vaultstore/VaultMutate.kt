@@ -12,6 +12,7 @@ import org.json.JSONObject
 /**
  * Handles vault mutation operations (uploading changes to server).
  */
+@Suppress("LongParameterList") // Aggregates the collaborators required for vault mutation and pruning
 class VaultMutate(
     private val database: VaultDatabase,
     private val itemRepository: ItemRepository,
