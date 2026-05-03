@@ -1,6 +1,6 @@
 [package]
 name = "aliasvault-core"
-version = "0.30.0"
+version = "0.29.1"
 edition = "2021"
 description = "Cross-platform core library for AliasVault"
 license = "AGPL-3.0"
