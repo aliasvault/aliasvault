@@ -192,7 +192,14 @@ public class ItemRepository: BaseRepository {
 
             // Soft delete related data
             try softDeleteByForeignKey(table: "TotpCodes", foreignKey: "ItemId", foreignKeyValue: itemId)
-            try softDeleteByForeignKey(table: "Attachments", foreignKey: "ItemId", foreignKeyValue: itemId)
+
+            // Soft delete attachments AND zero their blob bytes so storage is reclaimed
+            // immediately while the row remains as a tombstone for LWW sync.
+            try client.executeUpdate(
+                "UPDATE Attachments SET IsDeleted = 1, Blob = X'', UpdatedAt = ? WHERE ItemId = ? AND IsDeleted = 0",
+                params: [now, itemId]
+            )
+
             try softDeleteByForeignKey(table: "Passkeys", foreignKey: "ItemId", foreignKeyValue: itemId)
 
             if try tableExists("ItemTags") {

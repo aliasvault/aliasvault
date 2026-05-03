@@ -261,7 +261,7 @@ class VaultMutate(
      * if any rows were pruned, persist the cleaned version and reload the
      * in-memory database so subsequent reads see the pruned state.
      *
-     * All errors are swallowed: pruning is best-effort and must never block 
+     * All errors are swallowed: pruning is best-effort and must never block
      * the surrounding upload.
      */
     private fun pruneLocalVault() {

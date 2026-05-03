@@ -9,7 +9,7 @@
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
                         <th scope="col" class="px-6 py-3">Filename</th>
-                        <th scope="col" class="px-6 py-3">Created At</th>
+                        <th scope="col" class="px-6 py-3">Size</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -27,7 +27,7 @@
                                 }
                             </td>
                             <td class="px-6 py-4">
-                                @attachment.CreatedAt.ToLocalTime().ToString("g")
+                                @FormatSize(attachment.Blob?.Length ?? 0)
                             </td>
                         </tr>
                     }
@@ -47,6 +47,24 @@
     /// </summary>
     [Parameter]
     public ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
+
+    private static string FormatSize(int bytes)
+    {
+        const double Kib = 1024d;
+        const double Mib = Kib * 1024d;
+
+        if (bytes < Kib)
+        {
+            return string.Create(System.Globalization.CultureInfo.CurrentCulture, $"{bytes} B");
+        }
+
+        if (bytes < Mib)
+        {
+            return string.Create(System.Globalization.CultureInfo.CurrentCulture, $"{(bytes / Kib):F1} KB");
+        }
+
+        return string.Create(System.Globalization.CultureInfo.CurrentCulture, $"{(bytes / Mib):F1} MB");
+    }
 
     private async Task DownloadAttachment(Attachment attachment)
     {

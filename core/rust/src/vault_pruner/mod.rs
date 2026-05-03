@@ -69,6 +69,9 @@ pub struct PruneStats {
     /// Number of orphan logos soft-deleted (no remaining active item references them)
     #[serde(default)]
     pub logos_pruned: u32,
+    /// Number of tombstoned attachments whose blob bytes were cleared.
+    #[serde(default)]
+    pub attachment_blobs_cleared: u32,
 }
 
 /// Output of the prune operation.
@@ -176,12 +179,13 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
             }
         }
 
-        // Mark related Attachments as deleted
+        // Mark related Attachments as deleted and drop their blob bytes. Leaves the 
+        // column non-null while reclaiming the storage on the next save.
         if let Some(attachments_table) = input.tables.iter().find(|t| t.name == "Attachments") {
             let related_count = count_related_records(&attachments_table.records, "ItemId", item_id);
             if related_count > 0 {
                 statements.push(SqlStatement {
-                    sql: "UPDATE Attachments SET IsDeleted = 1, UpdatedAt = ? WHERE ItemId = ? AND IsDeleted = 0".to_string(),
+                    sql: "UPDATE Attachments SET IsDeleted = 1, Blob = X'', UpdatedAt = ? WHERE ItemId = ? AND IsDeleted = 0".to_string(),
                     params: vec![
                         serde_json::json!(now_str),
                         serde_json::json!(item_id),
@@ -271,11 +275,54 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
         }
     }
 
+    // Pass 3 — sweep tombstoned attachments that still carry blob bytes.
+    // Older client versions could leave attachment with IsDeleted=1 but 
+    // a non-empty Blob, which inflates  the encrypted vault for no reason.
+    // This pass empties those blobs in place. The attachments tombstoned by 
+    // Pass 1 in this same call are already cleared there, so this pass only 
+    // catches historical leftovers.
+    if let Some(attachments_table) = input.tables.iter().find(|t| t.name == "Attachments") {
+        for attachment in &attachments_table.records {
+            let is_deleted = attachment.get("IsDeleted")
+                .map(|v| v.as_i64() == Some(1) || v.as_bool() == Some(true))
+                .unwrap_or(false);
+            if !is_deleted {
+                continue;
+            }
+
+            if !attachment_has_blob_bytes(attachment) {
+                continue;
+            }
+
+            if let Some(attachment_id) = attachment.get("Id").and_then(|v| v.as_str()) {
+                statements.push(SqlStatement {
+                    sql: "UPDATE Attachments SET Blob = X'', UpdatedAt = ? WHERE Id = ?".to_string(),
+                    params: vec![
+                        serde_json::json!(now_str),
+                        serde_json::json!(attachment_id),
+                    ],
+                });
+                stats.attachment_blobs_cleared += 1;
+            }
+        }
+    }
+
     Ok(PruneOutput {
         success: true,
         statements,
         stats,
     })
+}
+
+/// True if the attachment's Blob field is present and non-empty.
+fn attachment_has_blob_bytes(attachment: &Record) -> bool {
+    match attachment.get("Blob") {
+        None => false,
+        Some(serde_json::Value::Null) => false,
+        Some(serde_json::Value::String(s)) => !s.is_empty(),
+        Some(serde_json::Value::Array(a)) => !a.is_empty(),
+        Some(_) => true,
+    }
 }
 
 /// Prune vault using JSON strings.
@@ -345,6 +392,21 @@ mod tests {
         record.insert("ItemId".to_string(), serde_json::json!(item_id));
         record.insert("UpdatedAt".to_string(), serde_json::json!("2024-01-01T00:00:00Z"));
         record.insert("IsDeleted".to_string(), serde_json::json!(if is_deleted { 1 } else { 0 }));
+        record
+    }
+
+    fn make_attachment_record(
+        id: &str,
+        item_id: &str,
+        is_deleted: bool,
+        blob: serde_json::Value,
+    ) -> Record {
+        let mut record = HashMap::new();
+        record.insert("Id".to_string(), serde_json::json!(id));
+        record.insert("ItemId".to_string(), serde_json::json!(item_id));
+        record.insert("UpdatedAt".to_string(), serde_json::json!("2024-01-01T00:00:00Z"));
+        record.insert("IsDeleted".to_string(), serde_json::json!(if is_deleted { 1 } else { 0 }));
+        record.insert("Blob".to_string(), blob);
         record
     }
 
@@ -678,5 +740,139 @@ mod tests {
 
         assert_eq!(output.stats.logos_pruned, 0);
         assert_eq!(logo_update_count(&output), 0);
+    }
+
+    #[test]
+    fn test_trash_purge_clears_attachment_blobs() {
+        let now = Utc::now();
+        let now_str = now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+        let old_date = (now - Duration::days(60)).format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+
+        let input = PruneInput {
+            tables: vec![
+                TableData {
+                    name: "Items".to_string(),
+                    records: vec![make_item_record("item-1", Some(&old_date), false)],
+                },
+                TableData {
+                    name: "Attachments".to_string(),
+                    records: vec![make_attachment_record(
+                        "att-1",
+                        "item-1",
+                        false,
+                        serde_json::json!("aGVsbG8="),
+                    )],
+                },
+            ],
+            retention_days: 30,
+            current_time: now_str,
+        };
+
+        let output = prune_vault(input).unwrap();
+
+        assert_eq!(output.stats.items_pruned, 1);
+        assert_eq!(output.stats.attachments_pruned, 1);
+        // The trash-purge UPDATE for Attachments should now also clear the blob.
+        let attachment_update = output.statements.iter()
+            .find(|s| s.sql.starts_with("UPDATE Attachments"))
+            .expect("expected an UPDATE Attachments statement");
+        assert!(attachment_update.sql.contains("Blob = X''"),
+            "attachment trash purge must zero the blob: {}", attachment_update.sql);
+        // The pass-3 sweeper should NOT also fire for the same row in this call.
+        assert_eq!(output.stats.attachment_blobs_cleared, 0);
+    }
+
+    #[test]
+    fn test_sweeper_clears_blob_on_already_tombstoned_attachment() {
+        let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+        let input = PruneInput {
+            tables: vec![
+                TableData {
+                    name: "Items".to_string(),
+                    records: vec![],
+                },
+                TableData {
+                    name: "Attachments".to_string(),
+                    records: vec![make_attachment_record(
+                        "att-old",
+                        "item-1",
+                        true,
+                        serde_json::json!("aGVsbG8="),
+                    )],
+                },
+            ],
+            retention_days: 30,
+            current_time: now_str,
+        };
+
+        let output = prune_vault(input).unwrap();
+
+        assert_eq!(output.stats.attachment_blobs_cleared, 1);
+        let stmt = output.statements.iter()
+            .find(|s| s.sql.starts_with("UPDATE Attachments SET Blob = X''"))
+            .expect("expected the sweeper UPDATE");
+        // params: [updated_at, attachment_id]
+        assert_eq!(stmt.params.len(), 2);
+        assert_eq!(stmt.params[1], serde_json::json!("att-old"));
+    }
+
+    #[test]
+    fn test_sweeper_skips_already_empty_blob() {
+        let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+        let input = PruneInput {
+            tables: vec![
+                TableData {
+                    name: "Items".to_string(),
+                    records: vec![],
+                },
+                TableData {
+                    name: "Attachments".to_string(),
+                    records: vec![
+                        // Empty string (already cleared) — should be skipped.
+                        make_attachment_record("att-empty-string", "item-1", true, serde_json::json!("")),
+                        // Empty array form — should also be skipped.
+                        make_attachment_record("att-empty-array", "item-1", true, serde_json::json!([])),
+                        // Null Blob — should also be skipped.
+                        make_attachment_record("att-null", "item-1", true, serde_json::Value::Null),
+                    ],
+                },
+            ],
+            retention_days: 30,
+            current_time: now_str,
+        };
+
+        let output = prune_vault(input).unwrap();
+
+        assert_eq!(output.stats.attachment_blobs_cleared, 0);
+        assert!(output.statements.is_empty());
+    }
+
+    #[test]
+    fn test_sweeper_skips_active_attachment_with_blob() {
+        let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+        let input = PruneInput {
+            tables: vec![
+                TableData {
+                    name: "Items".to_string(),
+                    records: vec![],
+                },
+                TableData {
+                    name: "Attachments".to_string(),
+                    records: vec![make_attachment_record(
+                        "att-active",
+                        "item-1",
+                        false,
+                        serde_json::json!("aGVsbG8="),
+                    )],
+                },
+            ],
+            retention_days: 30,
+            current_time: now_str,
+        };
+
+        let output = prune_vault(input).unwrap();
+
+        assert_eq!(output.stats.attachment_blobs_cleared, 0);
+        assert!(output.statements.is_empty());
     }
 }

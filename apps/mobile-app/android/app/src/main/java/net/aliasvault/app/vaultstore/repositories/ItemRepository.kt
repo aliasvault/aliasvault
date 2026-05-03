@@ -433,7 +433,14 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
 
             // Soft delete related data
             softDeleteByForeignKey("TotpCodes", "ItemId", itemId)
-            softDeleteByForeignKey("Attachments", "ItemId", itemId)
+
+            // Soft delete attachments AND zero their blob bytes — tombstone stays
+            // for sync but storage is reclaimed immediately.
+            executeUpdate(
+                "UPDATE Attachments SET IsDeleted = 1, Blob = X'', UpdatedAt = ? WHERE ItemId = ? AND IsDeleted = 0",
+                arrayOf(now, itemId),
+            )
+
             softDeleteByForeignKey("Passkeys", "ItemId", itemId)
 
             if (tableExists("ItemTags")) {

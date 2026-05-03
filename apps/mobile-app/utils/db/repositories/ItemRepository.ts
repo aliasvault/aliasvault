@@ -322,7 +322,14 @@ export class ItemRepository extends BaseRepository {
 
       // Soft delete related data
       await this.softDeleteByForeignKey('TotpCodes', 'ItemId', itemId);
-      await this.softDeleteByForeignKey('Attachments', 'ItemId', itemId);
+
+      // Soft delete attachments AND zero their blob bytes — tombstone stays for
+      // sync but storage is reclaimed immediately. X'' is SQLite's empty-blob literal.
+      await this.client.executeUpdate(
+        `UPDATE Attachments SET IsDeleted = 1, Blob = X'', UpdatedAt = ? WHERE ItemId = ? AND IsDeleted = 0`,
+        [now, itemId]
+      );
+
       await this.softDeleteByForeignKey('Passkeys', 'ItemId', itemId);
       if (await this.tableExists('ItemTags')) {
         await this.softDeleteByForeignKey('ItemTags', 'ItemId', itemId);
@@ -460,7 +467,10 @@ export class ItemRepository extends BaseRepository {
         (totp) => [totp.Name, totp.SecretKey, now, totp.Id]
       );
 
-      // 5. Handle Attachments (insert new, update existing, soft-delete removed)
+      // 5. Handle Attachments (insert new, update existing, soft-delete removed).
+      // Override the default soft-delete SQL so removed attachments also have
+      // their Blob bytes cleared. The tombstone row remains for LWW sync, but 
+      // storage drops on next save.
       await this.syncRelatedEntities(
         'Attachments',
         'ItemId',
@@ -470,7 +480,8 @@ export class ItemRepository extends BaseRepository {
         (att) => [att.Id, att.Filename, att.Blob as Uint8Array, item.Id, now, now, 0],
         `INSERT INTO Attachments (Id, Filename, Blob, ItemId, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         `UPDATE Attachments SET Filename = ?, Blob = ?, UpdatedAt = ? WHERE Id = ?`,
-        (att) => [att.Filename, att.Blob as Uint8Array, now, att.Id]
+        (att) => [att.Filename, att.Blob as Uint8Array, now, att.Id],
+        `UPDATE Attachments SET IsDeleted = 1, Blob = X'', UpdatedAt = ? WHERE Id = ?`
       );
 
       return 1;
@@ -729,18 +740,22 @@ export class ItemRepository extends BaseRepository {
     toParams: (entity: T) => (string | number | null | Uint8Array)[],
     insertQuery: string,
     updateQuery?: string,
-    toUpdateParams?: (entity: T) => (string | number | null | Uint8Array)[]
+    toUpdateParams?: (entity: T) => (string | number | null | Uint8Array)[],
+    // Optional override for the soft-delete SQL. Useful for tables that carry
+    // blob payloads (e.g. Attachments) and want the bytes cleared in the same
+    // statement. Must accept params [updatedAt, id] in that order.
+    softDeleteSql?: string
   ): Promise<void> {
     const now = this.now();
     const currentIds = currentEntities.map(e => e.Id);
 
+    const deleteSql = softDeleteSql
+      ?? `UPDATE ${tableName} SET IsDeleted = 1, UpdatedAt = ? WHERE Id = ?`;
+
     // Delete entities that were removed
     const toDelete = originalIds.filter(id => !currentIds.includes(id));
     for (const id of toDelete) {
-      await this.client.executeUpdate(
-        `UPDATE ${tableName} SET IsDeleted = 1, UpdatedAt = ? WHERE Id = ?`,
-        [now, id]
-      );
+      await this.client.executeUpdate(deleteSql, [now, id]);
     }
 
     // Update existing entities when their data changed

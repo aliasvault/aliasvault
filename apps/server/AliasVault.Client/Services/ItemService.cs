@@ -580,6 +580,9 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         {
             attachment.IsDeleted = true;
             attachment.UpdatedAt = deleteDateTime;
+
+            // Reclaim attachment bytes immediately. Tombstone row stays for sync.
+            attachment.Blob = Array.Empty<byte>();
         }
 
         foreach (var totp in item.TotpCodes)
@@ -642,6 +645,9 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         {
             attachment.IsDeleted = true;
             attachment.UpdatedAt = deleteDateTime;
+
+            // Reclaim attachment bytes immediately. Tombstone row stays for sync.
+            attachment.Blob = Array.Empty<byte>();
         }
 
         foreach (var totp in item.TotpCodes)
@@ -1215,6 +1221,11 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         {
             attachmentToRemove.IsDeleted = true;
             attachmentToRemove.UpdatedAt = updateDateTime;
+
+            // Drop the blob bytes immediately. The tombstone row stays so the deletion
+            // syncs to other devices via LWW; an empty blob keeps the column non-null
+            // while reclaiming the storage on next save.
+            attachmentToRemove.Blob = Array.Empty<byte>();
         }
 
         // Process attachments from the new item (excluding deleted ones - they're handled above)
