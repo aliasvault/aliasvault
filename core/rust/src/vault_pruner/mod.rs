@@ -66,6 +66,9 @@ pub struct PruneStats {
     pub totp_codes_pruned: u32,
     /// Number of passkeys permanently deleted
     pub passkeys_pruned: u32,
+    /// Number of orphan logos soft-deleted (no remaining active item references them)
+    #[serde(default)]
+    pub logos_pruned: u32,
 }
 
 /// Output of the prune operation.
@@ -99,23 +102,25 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
         .ok_or_else(|| crate::error::VaultError::General(
             format!("Invalid current_time format: {}", input.current_time)
         ))?;
+    let now_str = now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
 
-    // Calculate cutoff date
+    // Calculate cutoff date for trash retention
     let cutoff_date = now - Duration::days(input.retention_days as i64);
 
-    // Find Items table
-    let items_table = input.tables.iter().find(|t| t.name == "Items");
-    if items_table.is_none() {
-        return Ok(PruneOutput {
-            success: true,
-            statements: vec![],
-            stats,
-        });
-    }
+    // Items table is required for both passes (trash purge + logo orphan check).
+    let items_table = match input.tables.iter().find(|t| t.name == "Items") {
+        Some(t) => t,
+        None => {
+            return Ok(PruneOutput {
+                success: true,
+                statements,
+                stats,
+            });
+        }
+    };
+    let items = &items_table.records;
 
-    let items = &items_table.unwrap().records;
-
-    // Find items that are in trash (DeletedAt set) and older than retention period
+    // Pass 1 — find items in trash older than retention period.
     let mut expired_item_ids: Vec<String> = Vec::new();
 
     for item in items {
@@ -144,18 +149,7 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
         }
     }
 
-    // If no expired items, return early
-    if expired_item_ids.is_empty() {
-        return Ok(PruneOutput {
-            success: true,
-            statements: vec![],
-            stats,
-        });
-    }
-
-    // Generate SQL statements to permanently delete the expired items and related entities
-    let now_str = now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
-
+    // Pass 1 — generate SQL for expired items + related entities.
     for item_id in &expired_item_ids {
         // Mark item as permanently deleted
         statements.push(SqlStatement {
@@ -224,6 +218,55 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
                     ],
                 });
                 stats.passkeys_pruned += related_count;
+            }
+        }
+    }
+
+    // Pass 2 — orphan logo cleanup. A Logo is orphan when no Item with
+    // IsDeleted=0 references it. Items being purged in Pass 1 are treated
+    // as effectively deleted so logos they referenced can be reclaimed in
+    // the same call.
+    if let Some(logos_table) = input.tables.iter().find(|t| t.name == "Logos") {
+        let expired_set: std::collections::HashSet<&str> =
+            expired_item_ids.iter().map(|s| s.as_str()).collect();
+
+        let mut referenced_logo_ids: std::collections::HashSet<String> =
+            std::collections::HashSet::new();
+        for item in items {
+            let is_deleted = item.get("IsDeleted")
+                .map(|v| v.as_i64() == Some(1) || v.as_bool() == Some(true))
+                .unwrap_or(false);
+            if is_deleted {
+                continue;
+            }
+            let item_id = item.get("Id").and_then(|v| v.as_str()).unwrap_or("");
+            if expired_set.contains(item_id) {
+                continue;
+            }
+            if let Some(logo_id) = item.get("LogoId").and_then(|v| v.as_str()) {
+                referenced_logo_ids.insert(logo_id.to_string());
+            }
+        }
+
+        for logo in &logos_table.records {
+            let is_deleted = logo.get("IsDeleted")
+                .map(|v| v.as_i64() == Some(1) || v.as_bool() == Some(true))
+                .unwrap_or(false);
+            if is_deleted {
+                continue;
+            }
+
+            if let Some(logo_id) = logo.get("Id").and_then(|v| v.as_str()) {
+                if !referenced_logo_ids.contains(logo_id) {
+                    statements.push(SqlStatement {
+                        sql: "UPDATE Logos SET IsDeleted = 1, UpdatedAt = ? WHERE Id = ?".to_string(),
+                        params: vec![
+                            serde_json::json!(now_str),
+                            serde_json::json!(logo_id),
+                        ],
+                    });
+                    stats.logos_pruned += 1;
+                }
             }
         }
     }
@@ -300,6 +343,29 @@ mod tests {
         let mut record = HashMap::new();
         record.insert("Id".to_string(), serde_json::json!(id));
         record.insert("ItemId".to_string(), serde_json::json!(item_id));
+        record.insert("UpdatedAt".to_string(), serde_json::json!("2024-01-01T00:00:00Z"));
+        record.insert("IsDeleted".to_string(), serde_json::json!(if is_deleted { 1 } else { 0 }));
+        record
+    }
+
+    fn make_item_with_logo(
+        id: &str,
+        logo_id: Option<&str>,
+        deleted_at: Option<&str>,
+        is_deleted: bool,
+    ) -> Record {
+        let mut record = make_item_record(id, deleted_at, is_deleted);
+        match logo_id {
+            Some(lid) => record.insert("LogoId".to_string(), serde_json::json!(lid)),
+            None => record.insert("LogoId".to_string(), serde_json::Value::Null),
+        };
+        record
+    }
+
+    fn make_logo_record(id: &str, is_deleted: bool) -> Record {
+        let mut record = HashMap::new();
+        record.insert("Id".to_string(), serde_json::json!(id));
+        record.insert("Source".to_string(), serde_json::json!("example.com"));
         record.insert("UpdatedAt".to_string(), serde_json::json!("2024-01-01T00:00:00Z"));
         record.insert("IsDeleted".to_string(), serde_json::json!(if is_deleted { 1 } else { 0 }));
         record
@@ -432,5 +498,185 @@ mod tests {
 
         assert!(output.success);
         assert_eq!(output.stats.items_pruned, 1);
+    }
+
+    fn logo_update_count(output: &PruneOutput) -> usize {
+        output.statements.iter()
+            .filter(|s| s.sql.starts_with("UPDATE Logos"))
+            .count()
+    }
+
+    #[test]
+    fn test_orphan_logo_with_no_referencing_items_is_pruned() {
+        let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+        let input = PruneInput {
+            tables: vec![
+                TableData {
+                    name: "Items".to_string(),
+                    records: vec![],
+                },
+                TableData {
+                    name: "Logos".to_string(),
+                    records: vec![make_logo_record("logo-orphan", false)],
+                },
+            ],
+            retention_days: 30,
+            current_time: now_str,
+        };
+
+        let output = prune_vault(input).unwrap();
+
+        assert!(output.success);
+        assert_eq!(output.stats.logos_pruned, 1);
+        assert_eq!(logo_update_count(&output), 1);
+    }
+
+    #[test]
+    fn test_logo_referenced_by_active_item_is_kept() {
+        let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+        let input = PruneInput {
+            tables: vec![
+                TableData {
+                    name: "Items".to_string(),
+                    records: vec![make_item_with_logo("item-1", Some("logo-1"), None, false)],
+                },
+                TableData {
+                    name: "Logos".to_string(),
+                    records: vec![make_logo_record("logo-1", false)],
+                },
+            ],
+            retention_days: 30,
+            current_time: now_str,
+        };
+
+        let output = prune_vault(input).unwrap();
+
+        assert!(output.success);
+        assert_eq!(output.stats.logos_pruned, 0);
+        assert_eq!(logo_update_count(&output), 0);
+    }
+
+    #[test]
+    fn test_logo_referenced_only_by_tombstoned_item_is_pruned() {
+        let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+        // The tombstoned item (IsDeleted=1) still has LogoId set; the logo
+        // should be considered orphan since no active item references it.
+        let input = PruneInput {
+            tables: vec![
+                TableData {
+                    name: "Items".to_string(),
+                    records: vec![make_item_with_logo("item-1", Some("logo-1"), None, true)],
+                },
+                TableData {
+                    name: "Logos".to_string(),
+                    records: vec![make_logo_record("logo-1", false)],
+                },
+            ],
+            retention_days: 30,
+            current_time: now_str,
+        };
+
+        let output = prune_vault(input).unwrap();
+
+        assert_eq!(output.stats.logos_pruned, 1);
+    }
+
+    #[test]
+    fn test_logo_referenced_only_by_item_being_purged_is_pruned() {
+        let now = Utc::now();
+        let now_str = now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+        // Item is in trash older than retention — Pass 1 will tombstone it,
+        // Pass 2 should reclaim its logo in the same call.
+        let old_date = (now - Duration::days(60)).format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+        let input = PruneInput {
+            tables: vec![
+                TableData {
+                    name: "Items".to_string(),
+                    records: vec![make_item_with_logo("item-1", Some("logo-1"), Some(&old_date), false)],
+                },
+                TableData {
+                    name: "Logos".to_string(),
+                    records: vec![make_logo_record("logo-1", false)],
+                },
+            ],
+            retention_days: 30,
+            current_time: now_str,
+        };
+
+        let output = prune_vault(input).unwrap();
+
+        assert_eq!(output.stats.items_pruned, 1);
+        assert_eq!(output.stats.logos_pruned, 1);
+    }
+
+    #[test]
+    fn test_logo_referenced_by_item_in_recent_trash_is_kept() {
+        let now = Utc::now();
+        let now_str = now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+        // Item is in trash but within retention — could still be restored,
+        // so its logo must be preserved.
+        let recent_date = (now - Duration::days(10)).format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+        let input = PruneInput {
+            tables: vec![
+                TableData {
+                    name: "Items".to_string(),
+                    records: vec![make_item_with_logo("item-1", Some("logo-1"), Some(&recent_date), false)],
+                },
+                TableData {
+                    name: "Logos".to_string(),
+                    records: vec![make_logo_record("logo-1", false)],
+                },
+            ],
+            retention_days: 30,
+            current_time: now_str,
+        };
+
+        let output = prune_vault(input).unwrap();
+
+        assert_eq!(output.stats.items_pruned, 0);
+        assert_eq!(output.stats.logos_pruned, 0);
+    }
+
+    #[test]
+    fn test_already_soft_deleted_logo_is_not_re_pruned() {
+        let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+        let input = PruneInput {
+            tables: vec![
+                TableData {
+                    name: "Items".to_string(),
+                    records: vec![],
+                },
+                TableData {
+                    name: "Logos".to_string(),
+                    records: vec![make_logo_record("logo-1", true)],
+                },
+            ],
+            retention_days: 30,
+            current_time: now_str,
+        };
+
+        let output = prune_vault(input).unwrap();
+
+        assert_eq!(output.stats.logos_pruned, 0);
+    }
+
+    #[test]
+    fn test_logo_pruning_skipped_when_logos_table_absent() {
+        let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+        let input = PruneInput {
+            tables: vec![
+                TableData {
+                    name: "Items".to_string(),
+                    records: vec![make_item_with_logo("item-1", Some("logo-1"), None, false)],
+                },
+            ],
+            retention_days: 30,
+            current_time: now_str,
+        };
+
+        let output = prune_vault(input).unwrap();
+
+        assert_eq!(output.stats.logos_pruned, 0);
+        assert_eq!(logo_update_count(&output), 0);
     }
 }

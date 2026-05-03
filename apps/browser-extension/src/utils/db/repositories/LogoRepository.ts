@@ -62,23 +62,6 @@ export class LogoRepository extends BaseRepository {
   }
 
   /**
-   * Clean up orphaned logo if no items reference it.
-   * @param logoId - The ID of the logo to potentially clean up
-   */
-  public cleanupOrphanedLogo(logoId: string): void {
-    const usageResult = this.client.executeQuery<{ count: number }>(
-      LogoQueries.COUNT_USAGE,
-      [logoId]
-    );
-    const usageCount = usageResult.length > 0 ? usageResult[0].count : 0;
-
-    if (usageCount === 0) {
-      this.client.executeUpdate(LogoQueries.HARD_DELETE, [logoId]);
-      console.debug(`[LogoRepository] Deleted orphaned logo: ${logoId}`);
-    }
-  }
-
-  /**
    * Extract and normalize source domain from a URL string.
    * Uses lowercase and removes www. prefix for case-insensitive matching.
    * @param urlString The URL to extract the domain from

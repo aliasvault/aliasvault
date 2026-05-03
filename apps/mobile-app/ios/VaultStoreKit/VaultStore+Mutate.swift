@@ -116,6 +116,9 @@ extension VaultStore {
         // Capture mutation sequence for race detection
         let mutationSeqAtStart = getMutationSequence()
 
+        // Prune expired trash items and cleanup orphaned logos
+        pruneLocalVault()
+
         // Prepare vault for upload
         let vault = try prepareVault()
 
@@ -219,6 +222,9 @@ extension VaultStore {
     /// The caller captures mutationSeqAtStart before calling this method
     public func uploadVault(using webApiService: WebApiService) async throws -> VaultUploadResult {
         let mutationSeqAtStart = getMutationSequence()
+
+        // Prune expired trash items and cleanup orphaned logos
+        pruneLocalVault()
 
         // Prepare vault for upload
         let vault = try prepareVault()
@@ -340,5 +346,30 @@ extension VaultStore {
 
         print("VaultStore: Could not extract version from migration ID '\(migrationId)', returning default")
         return "0.0.0"
+    }
+
+    /// Run the Rust vault pruner against the locally-stored encrypted vault and,
+    /// if any rows were pruned, persist the cleaned version and reload the
+    /// in-memory database so the UI reflects the change.
+    ///
+    /// All errors are swallowed: pruning is best-effort and must never block
+    /// the surrounding upload.
+    private func pruneLocalVault() {
+        do {
+            guard let encryptedVault = getEncryptedDatabase() else { return }
+            let encryptionKey = try getEncryptionKey()
+
+            let result = try VaultMergeService.shared.pruneVault(
+                vaultBase64: encryptedVault,
+                retentionDays: VaultConstants.trashRetentionDays,
+                encryptionKey: encryptionKey
+            )
+            guard result.prunedCount > 0 else { return }
+
+            try storeEncryptedDatabase(result.vaultBase64)
+            try unlockVault()
+        } catch {
+            print("VaultStore: Vault prune failed, continuing with upload: \(error)")
+        }
     }
 }

@@ -269,7 +269,7 @@ export class VaultMergeService {
 
       try {
         // Tables needed for pruning
-        const tableNames = ['Items', 'FieldValues', 'Attachments', 'TotpCodes', 'Passkeys'];
+        const tableNames = ['Items', 'FieldValues', 'Attachments', 'TotpCodes', 'Passkeys', 'Logos'];
 
         // Read tables as JSON
         const tables: TableData[] = tableNames.map(name => ({

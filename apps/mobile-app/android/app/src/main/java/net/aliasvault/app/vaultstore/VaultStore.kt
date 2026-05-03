@@ -81,7 +81,7 @@ class VaultStore(
     internal val metadata = VaultMetadataManager(storageProvider)
     private val auth = VaultAuth(storageProvider) { cache.clearCache() }
     private val sync = VaultSync(database, metadata, crypto, storageProvider, itemRepository)
-    private val mutate = VaultMutate(database, itemRepository, metadata)
+    private val mutate = VaultMutate(database, itemRepository, metadata, crypto, auth, storageProvider)
     private val cache = VaultCache(crypto, database, keystoreProvider, storageProvider)
     private val passkey = VaultPasskey(database)
     private val pin by lazy {

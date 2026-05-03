@@ -217,12 +217,6 @@ export class ItemQueries {
     WHERE Id = ?`;
 
   /**
-   * Get LogoId for an item.
-   */
-  public static readonly GET_LOGO_ID = `
-    SELECT LogoId FROM Items WHERE Id = ?`;
-
-  /**
    * Get all unique email addresses from field values.
    */
   public static readonly GET_ALL_EMAIL_ADDRESSES = `

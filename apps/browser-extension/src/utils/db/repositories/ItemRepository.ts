@@ -311,13 +311,6 @@ export class ItemRepository extends BaseRepository {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
 
-      // Get the LogoId before we clear it
-      const logoResult = this.client.executeQuery<{ LogoId: string | null }>(
-        ItemQueries.GET_LOGO_ID,
-        [itemId]
-      );
-      const logoId = logoResult.length > 0 ? logoResult[0].LogoId : null;
-
       // Hard delete all related entities
       this.hardDeleteByForeignKey('FieldValues', 'ItemId', itemId);
       this.hardDeleteByForeignKey('FieldHistories', 'ItemId', itemId);
@@ -326,18 +319,11 @@ export class ItemRepository extends BaseRepository {
       this.hardDeleteByForeignKey('Attachments', 'ItemId', itemId);
       this.hardDeleteByForeignKey('ItemTags', 'ItemId', itemId);
 
-      // Convert item to tombstone
-      const result = this.client.executeUpdate(ItemQueries.TOMBSTONE_ITEM, [
+      // Convert item to tombstone.
+      return this.client.executeUpdate(ItemQueries.TOMBSTONE_ITEM, [
         currentDateTime,
         itemId
       ]);
-
-      // Clean up orphaned logo
-      if (logoId) {
-        this.logoRepository.cleanupOrphanedLogo(logoId);
-      }
-
-      return result;
     });
   }
 

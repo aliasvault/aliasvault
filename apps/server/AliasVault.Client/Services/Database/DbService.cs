@@ -977,7 +977,7 @@ public sealed class DbService : IDisposable
         try
         {
             // Read table data for prune operation
-            var tableNames = new[] { "Items", "FieldValues", "Attachments", "TotpCodes", "Passkeys" };
+            var tableNames = new[] { "Items", "FieldValues", "Attachments", "TotpCodes", "Passkeys", "Logos" };
             var tables = await ReadTablesAsJsonAsync(_sqlConnection!, tableNames);
 
             var pruneInput = new JsInterop.RustCore.PruneInput

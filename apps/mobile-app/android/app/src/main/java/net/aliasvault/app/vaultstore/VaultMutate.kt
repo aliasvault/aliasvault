@@ -3,7 +3,9 @@ package net.aliasvault.app.vaultstore
 import android.util.Log
 import net.aliasvault.app.exceptions.SerializationException
 import net.aliasvault.app.exceptions.VaultOperationException
+import net.aliasvault.app.rustcore.VaultMergeService
 import net.aliasvault.app.vaultstore.repositories.ItemRepository
+import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -14,9 +16,18 @@ class VaultMutate(
     private val database: VaultDatabase,
     private val itemRepository: ItemRepository,
     private val metadata: VaultMetadataManager,
+    private val crypto: VaultCrypto,
+    private val auth: VaultAuth,
+    private val storageProvider: StorageProvider,
 ) {
     companion object {
         private const val TAG = "VaultMutate"
+
+        // Trash retention. Soft-deleted items stay in the recycle bin for this many
+        // days before the Rust pruner permanently removes them on the next upload.
+        // This value is declared in other places as well, make sure to update them
+        // when updating this value.
+        private const val TRASH_RETENTION_DAYS = 30
     }
 
     // region Vault Mutation
@@ -28,6 +39,9 @@ class VaultMutate(
     suspend fun mutateVault(webApiService: net.aliasvault.app.webapi.WebApiService): Boolean {
         // Capture mutation sequence for race detection
         val mutationSeqAtStart = metadata.getMutationSequence()
+
+        // Prune expired trash items and cleanup orphaned logos
+        pruneLocalVault()
 
         try {
             val vault = prepareVault()
@@ -90,6 +104,9 @@ class VaultMutate(
      */
     suspend fun uploadVault(webApiService: net.aliasvault.app.webapi.WebApiService): VaultUploadResult {
         val mutationSeqAtStart = metadata.getMutationSequence()
+
+        // Prune expired trash items and cleanup orphaned logos
+        pruneLocalVault()
 
         return try {
             val vault = prepareVault()
@@ -236,6 +253,33 @@ class VaultMutate(
             username = username,
             version = dbVersion,
         )
+    }
+
+    /**
+     * Run the Rust vault pruner against the locally-stored encrypted vault and,
+     * if any rows were pruned, persist the cleaned version and reload the
+     * in-memory database so subsequent reads see the pruned state.
+     *
+     * All errors are swallowed: pruning is best-effort and must never block 
+     * the surrounding upload.
+     */
+    private fun pruneLocalVault() {
+        val encryptionKey = crypto.encryptionKey ?: return
+
+        try {
+            val (prunedBase64, prunedCount) = VaultMergeService.pruneVault(
+                vaultBase64 = database.getEncryptedDatabase(),
+                retentionDays = TRASH_RETENTION_DAYS,
+                encryptionKey = encryptionKey,
+                tempDir = storageProvider.getCacheDir(),
+            )
+            if (prunedCount == 0) return
+
+            database.storeEncryptedDatabase(prunedBase64)
+            database.unlockVault(auth.getAuthMethods())
+        } catch (e: Exception) {
+            Log.w(TAG, "Vault prune failed, continuing with upload", e)
+        }
     }
 
     // endregion

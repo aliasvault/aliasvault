@@ -24,4 +24,10 @@ public struct VaultConstants {
     static let isSyncingKey = "aliasvault_is_syncing"
 
     static let defaultAutoLockTimeout: Int = 3600 // 1 hour in seconds
+
+    // Trash retention. Soft-deleted items stay in the recycle bin for this many
+    // days before the Rust pruner permanently removes them on the next sync.
+    // This value is declared in other places as well, make sure to update them
+    // when updating this value.
+    static let trashRetentionDays: Int = 30
 }

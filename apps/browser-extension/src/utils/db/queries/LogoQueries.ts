@@ -17,17 +17,4 @@ export class LogoQueries {
   public static readonly INSERT = `
     INSERT INTO Logos (Id, Source, FileData, CreatedAt, UpdatedAt, IsDeleted)
     VALUES (?, ?, ?, ?, ?, ?)`;
-
-  /**
-   * Count items using a logo.
-   */
-  public static readonly COUNT_USAGE = `
-    SELECT COUNT(*) as count FROM Items
-    WHERE LogoId = ? AND IsDeleted = 0`;
-
-  /**
-   * Hard delete logo.
-   */
-  public static readonly HARD_DELETE = `
-    DELETE FROM Logos WHERE Id = ?`;
 }

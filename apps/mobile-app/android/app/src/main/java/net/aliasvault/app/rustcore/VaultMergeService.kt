@@ -221,7 +221,7 @@ object VaultMergeService {
 
             try {
                 // Read tables needed for pruning
-                val pruneTableNames = listOf("Items", "FieldValues", "Attachments", "TotpCodes", "Passkeys")
+                val pruneTableNames = listOf("Items", "FieldValues", "Attachments", "TotpCodes", "Passkeys", "Logos")
                 val tables = JSONArray()
 
                 for (tableName in pruneTableNames) {

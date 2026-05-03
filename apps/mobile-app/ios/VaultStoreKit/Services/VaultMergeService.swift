@@ -155,7 +155,7 @@ public class VaultMergeService {
         defer { sqlite3_close(db) }
 
         // Read tables needed for pruning
-        let pruneTableNames = ["Items", "FieldValues", "Attachments", "TotpCodes", "Passkeys"]
+        let pruneTableNames = ["Items", "FieldValues", "Attachments", "TotpCodes", "Passkeys", "Logos"]
         var tables: [[String: Any]] = []
 
         for tableName in pruneTableNames {
