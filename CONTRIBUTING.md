@@ -10,6 +10,7 @@ Thanks for your interest in contributing to the AliasVault project! There are a 
 4. [Contributing to the Main Codebase](#4-contributing-to-the-main-codebase)
    - [4.1 Get in contact](#41-get-in-contact)
    - [4.2 Set up your local development environment](#42-set-up-your-local-development-environment)
+   - [4.3 Supported versions](#43-supported-versions)
 5. [License and Contributions](#5-license-and-contributions)
 
 ---
@@ -70,6 +71,10 @@ https://docs.aliasvault.net/misc/dev/
 > Tip: if the URL above is not available, the raw doc pages can also be found in the `docs` folder in this repository.
 
 If you run into any issues, feel free to join our [Discord](https://discord.gg/DsaXMTEtpF) to chat with the maintainers and author.
+
+### 4.3 Supported versions
+
+At this time during the public beta, we only support the **latest major and minor** release. Currentlt we are on **0.x**, so in practice that means the **latest minor** only. We do not accept pull requests and/or backports that target older release lines.
 
 ## 5. License and Contributions
 

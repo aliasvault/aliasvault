@@ -4,6 +4,10 @@ Security is very important to us. We truly appreciate the security community and
 
 We investigate all reported issues and work with researchers on responsible disclosure. Certain vulnerabilities, especially those impacting confidentiality, integrity, authentication, or core protection mechanisms, may qualify for a CVE (Common Vulnerabilities and Exposures) identifier. Others may still result in fixes or defense-in-depth improvements.
 
+## Supported versions
+
+During the public beta we only support the **latest major and minor** release. On the current **0.x** line, that means the **latest minor** only. Security fixes are only applied to the latest supported version: make sure to upgrade frequently to stay supported.
+
 ## 1. Reporting a Vulnerability
 
 **Email:** security@support.aliasvault.net
@@ -68,7 +72,7 @@ Class 1 issues are eligible for CVE assignment. These represent vulnerabilities 
 
 A report must:
 
-- Affect a **released version**
+- Affect a **released version** on the [supported release line](#supported-versions)
 - Be **reproducible**
 - Have a **concrete security impact**
 - Not depend on full device compromise
