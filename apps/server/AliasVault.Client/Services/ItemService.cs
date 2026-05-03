@@ -676,21 +676,27 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     {
         var context = await dbService.GetDbContextAsync();
 
-        // Hard delete all related entities and items.
-        context.Attachments.RemoveRange(context.Attachments);
-        context.FieldValues.RemoveRange(context.FieldValues);
-        context.FieldHistories.RemoveRange(context.FieldHistories);
-        context.FieldDefinitions.RemoveRange(context.FieldDefinitions);
-        context.TotpCodes.RemoveRange(context.TotpCodes);
-        context.Passkeys.RemoveRange(context.Passkeys);
-        context.ItemTags.RemoveRange(context.ItemTags);
-        context.Tags.RemoveRange(context.Tags);
-        context.Items.RemoveRange(context.Items);
-        context.Logos.RemoveRange(context.Logos);
-        context.Folders.RemoveRange(context.Folders);
+        // Bulk delete each table directly via SQL to bypass the change tracker.
+        // Order: dependents first, then principals.
+        await context.Attachments.ExecuteDeleteAsync();
+        await context.FieldValues.ExecuteDeleteAsync();
+        await context.FieldHistories.ExecuteDeleteAsync();
+        await context.TotpCodes.ExecuteDeleteAsync();
+        await context.Passkeys.ExecuteDeleteAsync();
+        await context.ItemTags.ExecuteDeleteAsync();
+        await context.FieldDefinitions.ExecuteDeleteAsync();
+        await context.Tags.ExecuteDeleteAsync();
+        await context.Items.ExecuteDeleteAsync();
+        await context.Logos.ExecuteDeleteAsync();
+        await context.Folders.ExecuteDeleteAsync();
 
-        // Save changes locally
-        await context.SaveChangesAsync();
+        // Drop any tracker entries that referenced the rows we just wiped so
+        // a follow-up SaveChanges doesn't try to operate on stale state.
+        context.ChangeTracker.Clear();
+
+        // Mark the tutorial as completed if it wasn't yet, so the empty post-reset items page
+        // doesn't redirect to /welcome.
+        await dbService.Settings.SetTutorialDoneAsync(true);
 
         // Reclaim free pages from the in-memory SQLite so the live session
         // reflects the smaller size; the server-bound copy is also vacuumed
