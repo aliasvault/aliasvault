@@ -48,6 +48,37 @@ describe('FormDetector - Field Exclusion Patterns', () => {
     });
   });
 
+  describe('Real-world scenario: Test/widget tokenfield containing "token"', () => {
+    const htmlFile = 'exclusion-test-tokenfield.html';
+
+    it('should not detect a "test-tokenfield" widget input as TOTP', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const widgetInput = document.getElementById('active-input');
+      const formDetector = new FormDetector(document, widgetInput as HTMLElement);
+
+      /*
+       * The TOTP include pattern matches "token" via substring, which would otherwise
+       * hit the "test-tokenfield-input" class. The per-field exclude ('test') vetoes
+       * it, so this widget should not be classified as a 2FA field.
+       */
+      expect(formDetector.containsLoginForm()).toBe(false);
+      expect(formDetector.getDetectedFieldType()).toBeNull();
+    });
+
+    it('should not detect the placeholder editor input as TOTP either', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const placeholderInput = document.getElementById('placeholder-input');
+      const formDetector = new FormDetector(document, placeholderInput as HTMLElement);
+
+      expect(formDetector.containsLoginForm()).toBe(false);
+      expect(formDetector.getDetectedFieldType()).toBeNull();
+    });
+  });
+
   describe('Exclusion patterns should not affect legitimate login fields', () => {
     const htmlFile = 'exclusion-legitimate-login.html';
 

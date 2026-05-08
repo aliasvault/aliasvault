@@ -1,20 +1,31 @@
 /**
+ * A single field pattern entry: terms that match a field type, plus optional
+ * terms that veto a match. Exclusions are applied with whole-word semantics
+ * and let us narrow broad include patterns (e.g. "token" hits "test-tokenfield"
+ * widgets that aren't actually 2FA inputs).
+ */
+export type FieldPatternEntry = {
+    include: string[];
+    exclude?: string[];
+}
+
+/**
  * Type for field patterns. These patterns are used to detect individual fields in the form.
  */
 export type FieldPatterns = {
-    username: string[];
-    firstName: string[];
-    lastName: string[];
-    fullName: string[];
-    email: string[];
-    emailConfirm: string[];
-    password: string[];
-    birthdate: string[];
-    gender: string[];
-    birthDateDay: string[];
-    birthDateMonth: string[];
-    birthDateYear: string[];
-    totp: string[];
+    username: FieldPatternEntry;
+    firstName: FieldPatternEntry;
+    lastName: FieldPatternEntry;
+    fullName: FieldPatternEntry;
+    email: FieldPatternEntry;
+    emailConfirm: FieldPatternEntry;
+    password: FieldPatternEntry;
+    birthdate: FieldPatternEntry;
+    gender: FieldPatternEntry;
+    birthDateDay: FieldPatternEntry;
+    birthDateMonth: FieldPatternEntry;
+    birthDateYear: FieldPatternEntry;
+    totp: FieldPatternEntry;
 }
 
 /**
@@ -53,21 +64,29 @@ export type FieldExclusionPatterns = string[];
 
 /**
  * English field patterns to detect English form fields.
+ *
+ * Each entry has an `include` list (terms that match the field type) and an
+ * optional `exclude` list (terms that veto a match for this field type only).
+ * Excludes are matched with whole-word semantics — useful for narrowing broad
+ * include terms (e.g. TOTP's "token" matches "test-tokenfield" widgets).
  */
 export const EnglishFieldPatterns: FieldPatterns = {
-  username: ['username', 'login', 'identifier', 'user'],
-  fullName: ['fullname', 'full-name', 'full name'],
-  firstName: ['firstname', 'first-name', 'first_name', 'fname', 'name', 'given-name'],
-  lastName: ['lastname', 'last-name', 'last_name', 'lname', 'surname', 'family-name'],
-  email: ['email', 'mail', 'emailaddress'],
-  emailConfirm: ['confirm', 'verification', 'repeat', 'retype', 'verify', 'email2'],
-  password: ['password', 'pwd', 'pass'],
-  birthdate: ['birthdate', 'birth-date', 'dob', 'date-of-birth'],
-  gender: ['gender', 'sex'],
-  birthDateDay: ['-day', 'birthdate_d', 'birthdayday', '_day', 'day'],
-  birthDateMonth: ['-month', 'birthdate_m', 'birthdaymonth', '_month', 'month'],
-  birthDateYear: ['-year', 'birthdate_y', 'birthdayyear', '_year', 'year'],
-  totp: ['totp', 'otp', 'one-time', 'onetime', 'six-digit', 'digit-code', 'token', 'authenticator', 'authentication', '2fa', 'twofa', 'two-factor', 'mfa', 'security-code', 'auth-code', 'passcode', 'pin-code', 'pincode', 'google_code', 'verification-code', 'verificationcode', 'tfa', 'tfacode', 'second-factor', 'one time password', 'code']
+  username: { include: ['username', 'login', 'identifier', 'user'] },
+  fullName: { include: ['fullname', 'full-name', 'full name'] },
+  firstName: { include: ['firstname', 'first-name', 'first_name', 'fname', 'name', 'given-name'] },
+  lastName: { include: ['lastname', 'last-name', 'last_name', 'lname', 'surname', 'family-name'] },
+  email: { include: ['email', 'mail', 'emailaddress'] },
+  emailConfirm: { include: ['confirm', 'verification', 'repeat', 'retype', 'verify', 'email2'] },
+  password: { include: ['password', 'pwd', 'pass'] },
+  birthdate: { include: ['birthdate', 'birth-date', 'dob', 'date-of-birth'] },
+  gender: { include: ['gender', 'sex'] },
+  birthDateDay: { include: ['-day', 'birthdate_d', 'birthdayday', '_day', 'day'] },
+  birthDateMonth: { include: ['-month', 'birthdate_m', 'birthdaymonth', '_month', 'month'] },
+  birthDateYear: { include: ['-year', 'birthdate_y', 'birthdayyear', '_year', 'year'] },
+  totp: {
+    include: ['totp', 'otp', 'one-time', 'onetime', 'six-digit', 'digit-code', 'token', 'authenticator', 'authentication', '2fa', 'twofa', 'two-factor', 'mfa', 'security-code', 'auth-code', 'passcode', 'pin-code', 'pincode', 'google_code', 'verification-code', 'verificationcode', 'tfa', 'tfacode', 'second-factor', 'one time password', 'code'],
+    exclude: ['test']
+  }
 };
 
 /**
@@ -163,19 +182,19 @@ export const EnglishStopWords = new Set([
  * Dutch field patterns used to detect Dutch form fields.
  */
 export const DutchFieldPatterns: FieldPatterns = {
-  username: ['gebruikersnaam', 'gebruiker', 'login', 'identifier'],
-  fullName: ['volledige naam'],
-  firstName: ['voornaam', 'naam'],
-  lastName: ['achternaam'],
-  email: ['e-mailadres', 'e-mail'],
-  emailConfirm: ['bevestig', 'herhaal', 'verificatie'],
-  password: ['wachtwoord', 'pwd'],
-  birthdate: ['geboortedatum', 'geboorte-datum'],
-  gender: ['geslacht', 'aanhef'],
-  birthDateDay: ['dag'],
-  birthDateMonth: ['maand'],
-  birthDateYear: ['jaar'],
-  totp: ['verificatiecode', 'eenmalig', 'authenticatie', 'tweefactor', 'beveiligingscode']
+  username: { include: ['gebruikersnaam', 'gebruiker', 'login', 'identifier'] },
+  fullName: { include: ['volledige naam'] },
+  firstName: { include: ['voornaam', 'naam'] },
+  lastName: { include: ['achternaam'] },
+  email: { include: ['e-mailadres', 'e-mail'] },
+  emailConfirm: { include: ['bevestig', 'herhaal', 'verificatie'] },
+  password: { include: ['wachtwoord', 'pwd'] },
+  birthdate: { include: ['geboortedatum', 'geboorte-datum'] },
+  gender: { include: ['geslacht', 'aanhef'] },
+  birthDateDay: { include: ['dag'] },
+  birthDateMonth: { include: ['maand'] },
+  birthDateYear: { include: ['jaar'] },
+  totp: { include: ['verificatiecode', 'eenmalig', 'authenticatie', 'tweefactor', 'beveiligingscode'] }
 };
 
 /**
@@ -272,16 +291,26 @@ export const DutchStopWords = new Set([
 import { TranslationEmailPatterns, TranslationUsernamePatterns, TranslationPasswordPatterns } from './TranslationPatterns';
 
 /**
+ * Merge per-field-type entries (include + optional exclude) from one or more
+ * languages, deduping each list while preserving original order.
+ */
+function mergeEntries(...entries: FieldPatternEntry[]): FieldPatternEntry {
+  const include = [...new Set(entries.flatMap(e => e.include))];
+  const exclude = [...new Set(entries.flatMap(e => e.exclude ?? []))];
+  return exclude.length > 0 ? { include, exclude } : { include };
+}
+
+/**
  * Combined field patterns which includes all supported languages.
  * This includes:
  * - Hardcoded English and Dutch patterns
  * - Translation-based patterns from all supported languages
  */
 export const CombinedFieldPatterns: FieldPatterns = {
-  username: [...new Set([...EnglishFieldPatterns.username, ...DutchFieldPatterns.username, ...TranslationUsernamePatterns])],
-  fullName: [...new Set([...EnglishFieldPatterns.fullName, ...DutchFieldPatterns.fullName])],
-  firstName: [...new Set([...EnglishFieldPatterns.firstName, ...DutchFieldPatterns.firstName])],
-  lastName: [...new Set([...EnglishFieldPatterns.lastName, ...DutchFieldPatterns.lastName])],
+  username: mergeEntries(EnglishFieldPatterns.username, DutchFieldPatterns.username, { include: TranslationUsernamePatterns }),
+  fullName: mergeEntries(EnglishFieldPatterns.fullName, DutchFieldPatterns.fullName),
+  firstName: mergeEntries(EnglishFieldPatterns.firstName, DutchFieldPatterns.firstName),
+  lastName: mergeEntries(EnglishFieldPatterns.lastName, DutchFieldPatterns.lastName),
   /**
    * NOTE: Dutch email patterns should be prioritized over English email patterns due to how
    * the nl-registration-form5.html honeypot field is named. The order of the patterns
@@ -290,15 +319,15 @@ export const CombinedFieldPatterns: FieldPatterns = {
    *
    * Translation patterns are added last to catch all language variations (e.g., "E-post" in Swedish)
    */
-  email: [...new Set([...DutchFieldPatterns.email, ...EnglishFieldPatterns.email, ...TranslationEmailPatterns])],
-  emailConfirm: [...new Set([...EnglishFieldPatterns.emailConfirm, ...DutchFieldPatterns.emailConfirm])],
-  password: [...new Set([...EnglishFieldPatterns.password, ...DutchFieldPatterns.password, ...TranslationPasswordPatterns])],
-  birthdate: [...new Set([...EnglishFieldPatterns.birthdate, ...DutchFieldPatterns.birthdate])],
-  gender: [...new Set([...EnglishFieldPatterns.gender, ...DutchFieldPatterns.gender])],
-  birthDateDay: [...new Set([...EnglishFieldPatterns.birthDateDay, ...DutchFieldPatterns.birthDateDay])],
-  birthDateMonth: [...new Set([...EnglishFieldPatterns.birthDateMonth, ...DutchFieldPatterns.birthDateMonth])],
-  birthDateYear: [...new Set([...EnglishFieldPatterns.birthDateYear, ...DutchFieldPatterns.birthDateYear])],
-  totp: [...new Set([...EnglishFieldPatterns.totp, ...DutchFieldPatterns.totp])]
+  email: mergeEntries(DutchFieldPatterns.email, EnglishFieldPatterns.email, { include: TranslationEmailPatterns }),
+  emailConfirm: mergeEntries(EnglishFieldPatterns.emailConfirm, DutchFieldPatterns.emailConfirm),
+  password: mergeEntries(EnglishFieldPatterns.password, DutchFieldPatterns.password, { include: TranslationPasswordPatterns }),
+  birthdate: mergeEntries(EnglishFieldPatterns.birthdate, DutchFieldPatterns.birthdate),
+  gender: mergeEntries(EnglishFieldPatterns.gender, DutchFieldPatterns.gender),
+  birthDateDay: mergeEntries(EnglishFieldPatterns.birthDateDay, DutchFieldPatterns.birthDateDay),
+  birthDateMonth: mergeEntries(EnglishFieldPatterns.birthDateMonth, DutchFieldPatterns.birthDateMonth),
+  birthDateYear: mergeEntries(EnglishFieldPatterns.birthDateYear, DutchFieldPatterns.birthDateYear),
+  totp: mergeEntries(EnglishFieldPatterns.totp, DutchFieldPatterns.totp)
 };
 
 /**

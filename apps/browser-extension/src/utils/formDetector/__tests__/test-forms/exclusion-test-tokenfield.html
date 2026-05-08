@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Tokenfield Widget</title>
+</head>
+<body>
+  <!--
+    Real-world widget where the host page uses class names containing the
+    substring "token" (e.g. "test-tokenfield"). The TOTP detector matches
+    "token" via substring inclusion, so without a per-field exclusion this
+    field gets misclassified as a 2FA code input.
+  -->
+  <div class="cell_editor" style="visibility: visible;">
+    <div class="default_editor">
+      <div class="test-widget-text-editor _grain1346_">
+        <div class="_grain1351_" style="max-width: 560px;">
+          <div tabindex="-1" class="_grain573_ _grain1347_" style="justify-content: left;">
+            <div class="_grain575_">
+              <input id="placeholder-input" type="text" autocomplete="new-password" class="test-tokenfield-input _grain576_">
+            </div>
+            <input type="text" tabindex="-1" class="_grain579_">
+            <div class="_grain1352_">s&ZeroWidthSpace;</div>
+          </div>
+        </div>
+        <div tabindex="-1" class="test-tokenfield _grain573_ _grain1347_" style="justify-content: left; width: 99px; height: 22px;">
+          <div class="_grain575_">
+            <input id="active-input" type="text" autocomplete="new-password" class="test-tokenfield-input _grain576_" style="width: 24px;">
+          </div>
+          <input type="text" tabindex="-1" class="_grain579_">
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

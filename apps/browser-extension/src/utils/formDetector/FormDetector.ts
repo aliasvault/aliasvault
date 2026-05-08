@@ -1,4 +1,4 @@
-import { CombinedEmailVerificationPatterns, CombinedFieldExclusionPatterns, CombinedFieldPatterns, CombinedGenderOptionPatterns, CombinedStopWords } from "./FieldPatterns";
+import { CombinedEmailVerificationPatterns, CombinedFieldExclusionPatterns, CombinedFieldPatterns, CombinedGenderOptionPatterns, CombinedStopWords, FieldPatternEntry } from "./FieldPatterns";
 import { DetectedFieldType, FormFields } from "./types/FormFields";
 
 /**
@@ -275,6 +275,43 @@ export class FormDetector {
      */
     for (const attr of attributesToCheck) {
       for (const pattern of allExclusionPatterns) {
+        if (this.matchesWordBoundary(attr, pattern)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if an input matches a field-type-specific exclusion pattern (e.g. TOTP "test").
+   * Whole-word matching is used so a pattern like "test" doesn't reject "latest".
+   */
+  private matchesEntryExclude(input: HTMLInputElement, entry: FieldPatternEntry): boolean {
+    if (!entry.exclude || entry.exclude.length === 0) {
+      return false;
+    }
+
+    const attributesToCheck = [
+      input.id,
+      input.getAttribute('name'),
+      input.getAttribute('placeholder'),
+      input.getAttribute('class'),
+      input.getAttribute('aria-label')
+    ]
+      .map(a => a?.toLowerCase() ?? '')
+      .filter(a => a.length > 0);
+
+    if (input.id || input.getAttribute('name')) {
+      const label = this.document.querySelector(`label[for="${input.id || input.getAttribute('name')}"]`);
+      if (label) {
+        attributesToCheck.push(label.textContent?.toLowerCase() ?? '');
+      }
+    }
+
+    for (const attr of attributesToCheck) {
+      for (const pattern of entry.exclude) {
         if (this.matchesWordBoundary(attr, pattern)) {
           return true;
         }
@@ -578,11 +615,12 @@ export class FormDetector {
    */
   private findAllInputFields(
     form: HTMLFormElement | null,
-    patterns: string[],
+    entry: FieldPatternEntry,
     types: string[],
     excludeElements: HTMLInputElement[] = [],
     checkVisibility: boolean = true
   ): HTMLInputElement[] {
+    const patterns = entry.include;
     // Query for standard input elements, select elements, and elements with type attributes
     const standardCandidates = form
       ? Array.from(form.querySelectorAll<HTMLElement>('input, select, [type]'))
@@ -622,6 +660,14 @@ export class FormDetector {
        * These should never trigger autofill, even if they match other patterns.
        */
       if (this.matchesExclusionPatterns(input as HTMLInputElement)) {
+        continue;
+      }
+
+      /*
+       * Skip fields that match this field-type's own exclude list (e.g. "test"
+       * for TOTP guards "test-tokenfield" widgets from matching "token").
+       */
+      if (this.matchesEntryExclude(input as HTMLInputElement, entry)) {
         continue;
       }
 
@@ -689,17 +735,17 @@ export class FormDetector {
       // Direct autocomplete matches take highest priority (score -2, higher than type=email at -1)
       if (autocomplete) {
         // Match autocomplete="username" for username patterns
-        if (patterns === CombinedFieldPatterns.username && autocomplete === 'username') {
+        if (entry === CombinedFieldPatterns.username && autocomplete === 'username') {
           matches.push({ input: input as HTMLInputElement, score: -2 });
           continue;
         }
         // Match autocomplete="email" for email patterns
-        if (patterns === CombinedFieldPatterns.email && autocomplete === 'email') {
+        if (entry === CombinedFieldPatterns.email && autocomplete === 'email') {
           matches.push({ input: input as HTMLInputElement, score: -2 });
           continue;
         }
         // Match autocomplete="current-password" or "new-password" for password patterns
-        if (patterns === CombinedFieldPatterns.password &&
+        if (entry === CombinedFieldPatterns.password &&
             (autocomplete === 'current-password' || autocomplete === 'new-password')) {
           matches.push({ input: input as HTMLInputElement, score: -2 });
           continue;
@@ -713,7 +759,7 @@ export class FormDetector {
       const ariaDescribedById = input.getAttribute('aria-describedby')?.toLowerCase() ?? '';
       if (ariaDescribedById) {
         // Match aria-describedby containing "username" for username patterns
-        if (patterns === CombinedFieldPatterns.username &&
+        if (entry === CombinedFieldPatterns.username &&
             ariaDescribedById.includes('username')) {
           matches.push({ input: input as HTMLInputElement, score: -2 });
           continue;
@@ -855,12 +901,12 @@ export class FormDetector {
    */
   private findInputField(
     form: HTMLFormElement | null,
-    patterns: string[],
+    entry: FieldPatternEntry,
     types: string[],
     excludeElements: HTMLInputElement[] = [],
     checkVisibility: boolean = true
   ): HTMLInputElement | null {
-    const all = this.findAllInputFields(form, patterns, types, excludeElements, checkVisibility);
+    const all = this.findAllInputFields(form, entry, types, excludeElements, checkVisibility);
 
     // Filter out parent-child duplicates and fields overlapping with excludeElements
     const filtered = this.filterOutNestedDuplicates(all, excludeElements);
@@ -922,10 +968,10 @@ export class FormDetector {
       /*
        * Check if label contains BOTH username and email patterns (dual-purpose field)
        */
-      const labelHasUsername = CombinedFieldPatterns.username.some(pattern =>
+      const labelHasUsername = CombinedFieldPatterns.username.include.some(pattern =>
         labelText.includes(pattern)
       );
-      const labelHasEmail = CombinedFieldPatterns.email.some(pattern =>
+      const labelHasEmail = CombinedFieldPatterns.email.include.some(pattern =>
         labelText.includes(pattern)
       );
 
@@ -935,10 +981,10 @@ export class FormDetector {
        * 2. AND the field's name/id contains username pattern but NOT email pattern
        */
       if (labelHasUsername && labelHasEmail) {
-        const hasUsernameInNameOrId = CombinedFieldPatterns.username.some(pattern =>
+        const hasUsernameInNameOrId = CombinedFieldPatterns.username.include.some(pattern =>
           fieldAttributes.includes(pattern)
         );
-        const hasEmailInNameOrId = CombinedFieldPatterns.email.some(pattern =>
+        const hasEmailInNameOrId = CombinedFieldPatterns.email.include.some(pattern =>
           fieldAttributes.includes(pattern)
         );
 
@@ -1353,6 +1399,14 @@ export class FormDetector {
 
     for (const input of allInputs) {
       if (!this.isElementVisible(input)) {
+        continue;
+      }
+
+      /*
+       * Apply the TOTP entry's exclude list to the heuristic fallback too
+       * (e.g. don't classify a "test-tokenfield" widget as TOTP).
+       */
+      if (this.matchesEntryExclude(input, CombinedFieldPatterns.totp)) {
         continue;
       }
 
