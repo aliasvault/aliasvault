@@ -57,26 +57,7 @@ public abstract class BaseArchiveImporter
     /// <returns>Dictionary mapping attachment paths to file data.</returns>
     protected virtual Dictionary<string, byte[]> ExtractAttachments(ZipArchive archive)
     {
-        var map = new Dictionary<string, byte[]>();
-        var attachmentPathPattern = GetAttachmentPathPattern();
-
-        if (string.IsNullOrEmpty(attachmentPathPattern))
-        {
-            return map;
-        }
-
-        foreach (var entry in archive.Entries)
-        {
-            if (entry.FullName.StartsWith(attachmentPathPattern, StringComparison.OrdinalIgnoreCase))
-            {
-                using var stream = entry.Open();
-                using var ms = new MemoryStream();
-                stream.CopyTo(ms);
-                map[entry.FullName] = ms.ToArray();
-            }
-        }
-
-        return map;
+        return ExtractFilesByPrefix(archive, GetAttachmentPathPattern());
     }
 
     /// <summary>
@@ -86,23 +67,44 @@ public abstract class BaseArchiveImporter
     /// <returns>Dictionary mapping logo paths to file data.</returns>
     protected virtual Dictionary<string, byte[]> ExtractLogos(ZipArchive archive)
     {
-        var map = new Dictionary<string, byte[]>();
-        var logoPathPattern = GetLogoPathPattern();
+        return ExtractFilesByPrefix(archive, GetLogoPathPattern());
+    }
 
-        if (string.IsNullOrEmpty(logoPathPattern))
+    /// <summary>
+    /// Extracts all file entries (skipping directory entries) from the archive whose
+    /// path starts with the given prefix.
+    /// </summary>
+    /// <param name="archive">The ZIP archive.</param>
+    /// <param name="pathPrefix">The path prefix to match (e.g. "attachments/"). When null or empty, an empty map is returned.</param>
+    /// <returns>Dictionary mapping entry paths to file data.</returns>
+    private static Dictionary<string, byte[]> ExtractFilesByPrefix(ZipArchive archive, string? pathPrefix)
+    {
+        var map = new Dictionary<string, byte[]>();
+
+        if (string.IsNullOrEmpty(pathPrefix))
         {
             return map;
         }
 
         foreach (var entry in archive.Entries)
         {
-            if (entry.FullName.StartsWith(logoPathPattern, StringComparison.OrdinalIgnoreCase))
+            if (!entry.FullName.StartsWith(pathPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                using var stream = entry.Open();
-                using var ms = new MemoryStream();
-                stream.CopyTo(ms);
-                map[entry.FullName] = ms.ToArray();
+                continue;
             }
+
+            // Skip directory entries: ZIP archives commonly include zero-byte entries
+            // for directories (paths ending in '/'). For those, ZipArchiveEntry.Name is empty.
+            // Including them here produced phantom attachments with empty filenames.
+            if (string.IsNullOrEmpty(entry.Name))
+            {
+                continue;
+            }
+
+            using var stream = entry.Open();
+            using var ms = new MemoryStream();
+            stream.CopyTo(ms);
+            map[entry.FullName] = ms.ToArray();
         }
 
         return map;

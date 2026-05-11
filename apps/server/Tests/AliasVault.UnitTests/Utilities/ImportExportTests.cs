@@ -2177,6 +2177,96 @@ public class ImportExportTests
     }
 
     /// <summary>
+    /// Regression test: a Bitwarden ZIP that includes a directory entry for the
+    /// item's attachment folder (e.g. "attachments/&lt;id&gt;/") must not produce a
+    /// phantom attachment with an empty filename. Many ZIP creators emit such
+    /// directory entries by default, and they previously matched the StartsWith
+    /// filter and ended up as empty-blob attachments rendered as "(unavailable)".
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task ImportBitwardenZipWithDirectoryEntriesIgnoresPhantomAttachments()
+    {
+        // Arrange - build a Bitwarden-style ZIP in memory containing both a
+        // directory entry and a single file entry under the item's attachment folder.
+        const string ItemId = "item-with-attachment-uuid";
+        const string FileName = "dataset_Backup_keys.json";
+        var fileBytes = System.Text.Encoding.UTF8.GetBytes("{\"keys\":\"value\"}");
+
+        const string DataJson = """
+        {
+          "encrypted": false,
+          "folders": [],
+          "items": [
+            {
+              "id": "item-with-attachment-uuid",
+              "organizationId": null,
+              "folderId": null,
+              "type": 1,
+              "reprompt": 0,
+              "name": "Login with Attachment",
+              "notes": "This item has an attachment",
+              "favorite": false,
+              "revisionDate": "2023-08-15T16:30:00.000Z",
+              "fields": [],
+              "login": {
+                "uris": [{"match": null, "uri": "https://secure.example.com"}],
+                "username": "admin",
+                "password": "AdminPass456!",
+                "totp": null
+              },
+              "collectionIds": null
+            }
+          ]
+        }
+        """;
+
+        byte[] zipBytes;
+        using (var ms = new MemoryStream())
+        {
+            using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                var dataEntry = archive.CreateEntry("data.json");
+                using (var writer = new StreamWriter(dataEntry.Open()))
+                {
+                    await writer.WriteAsync(DataJson);
+                }
+
+                // Directory entries (zero-byte, trailing slash) — emitted by many ZIP tools
+                // and the source of the original "(unavailable)" duplicate.
+                archive.CreateEntry("attachments/");
+                archive.CreateEntry($"attachments/{ItemId}/");
+
+                var fileEntry = archive.CreateEntry($"attachments/{ItemId}/{FileName}");
+                using (var fileStream = fileEntry.Open())
+                {
+                    await fileStream.WriteAsync(fileBytes);
+                }
+            }
+
+            zipBytes = ms.ToArray();
+        }
+
+        // Act
+        var importer = new BitwardenZipImporter();
+        var importedCredentials = await importer.ImportFromArchiveAsync(zipBytes);
+
+        // Assert - exactly one attachment with the real filename and content,
+        // and no phantom empty-filename entry from the directory entries.
+        Assert.That(importedCredentials, Has.Count.EqualTo(1));
+        var credential = importedCredentials[0];
+        Assert.That(credential.Attachments, Is.Not.Null);
+        Assert.That(credential.Attachments, Has.Count.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(credential.Attachments![0].Filename, Is.EqualTo(FileName));
+            Assert.That(credential.Attachments[0].Blob, Is.EqualTo(fileBytes));
+            Assert.That(credential.Attachments.Any(a => string.IsNullOrEmpty(a.Filename)), Is.False);
+            Assert.That(credential.Attachments.Any(a => a.Blob == null || a.Blob.Length == 0), Is.False);
+        });
+    }
+
+    /// <summary>
     /// Test case for importing credentials from 1Password .1pux export format.
     /// </summary>
     /// <returns>Async task.</returns>
