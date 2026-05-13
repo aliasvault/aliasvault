@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
-import { extractDomain } from '@/utils/itemMatcher/ItemMatcher';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { extractDomain } from '@/utils/RustCore';
 
 import { browser } from "#imports";
 

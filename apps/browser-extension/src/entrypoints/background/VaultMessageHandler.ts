@@ -7,9 +7,9 @@ import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/met
 import { FieldKey, ItemTypes, createSystemField, type Item } from '@/utils/dist/core/models/vault';
 import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked } from '@/utils/itemMatcher/ItemMatcher';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
+import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked } from '@/utils/RustCore';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';

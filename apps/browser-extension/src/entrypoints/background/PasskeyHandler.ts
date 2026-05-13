@@ -7,7 +7,6 @@ import { handleGetEncryptionKey } from '@/entrypoints/background/VaultMessageHan
 
 import type { PasskeyWithItem } from '@/utils/db/mappers/PasskeyMapper';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import { extractDomain } from '@/utils/itemMatcher/ItemMatcher';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type {
@@ -21,6 +20,7 @@ import type {
   WebAuthnCreationPayload,
   WebAuthnPublicKeyGetPayload
 } from '@/utils/passkey/types';
+import { extractDomain } from '@/utils/RustCore';
 import { SqliteClient } from '@/utils/SqliteClient';
 
 import { browser, storage } from '#imports';

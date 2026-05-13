@@ -10,11 +10,11 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 
-import { extractDomain } from '@/utils/itemMatcher/ItemMatcher';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { PasskeyAuthenticator } from '@/utils/passkey/PasskeyAuthenticator';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type { GetRequest, PasskeyGetCredentialResponse, PendingPasskeyGetRequest, StoredPasskeyRecord } from '@/utils/passkey/types';
+import { extractDomain } from '@/utils/RustCore';
 
 /**
  * PasskeyAuthenticate
