@@ -411,8 +411,12 @@ public class CredentialProviderViewModel: ObservableObject {
         }
 
         // If the requesting URL is already on this credential, we don't need to prompt again.
-        let alreadyLinked = credential.serviceUrls.contains { existing in
-            AutofillUrlNormalizer.normalize(existing).caseInsensitiveCompare(serviceUrl) == .orderedSame
+        // Compare on host only (subdomain + domain) so trailing slashes, paths,
+        // query strings, fragments, `www.`, and `http`/`https` differences don't
+        // cause us to propose linking a duplicate URL.
+        let serviceKey = AutofillUrlNormalizer.comparisonKey(serviceUrl)
+        let alreadyLinked = !serviceKey.isEmpty && credential.serviceUrls.contains { existing in
+            AutofillUrlNormalizer.comparisonKey(existing) == serviceKey
         }
         if alreadyLinked {
             selectionHandler(username, password)

@@ -94,3 +94,38 @@ export async function extractRootDomain(domain: string): Promise<string> {
   await ensureInit();
   return wasmExtractRootDomain(domain);
 }
+
+/**
+ * Reduce a URL to a comparison key (host only: subdomain + domain).
+ * Strips scheme, `www.`, path, query, fragment, and trailing slash so that
+ * `https://my.base.com/`, `https://my.base.com`, and
+ * `http://www.my.base.com/login?x=1` all collapse to `my.base.com`.
+ *
+ * Falls back to the lowercased trimmed input when host extraction yields
+ * no domain (the Rust extractor rejects reversed-TLD strings like
+ * `com.example.app`), so app bundle identifiers still compare by exact match.
+ */
+export async function getUrlComparisonKey(url: string): Promise<string> {
+  const trimmed = url.trim().toLowerCase();
+  if (!trimmed) {
+    return trimmed;
+  }
+  const domain = await extractDomain(trimmed);
+  return domain.length > 0 ? domain : trimmed;
+}
+
+/**
+ * True if `newUrl` is already represented in `existingUrls` (host-equivalent).
+ */
+export async function isUrlAlreadyLinked(existingUrls: string[], newUrl: string): Promise<boolean> {
+  const newKey = await getUrlComparisonKey(newUrl);
+  if (!newKey) {
+    return false;
+  }
+  for (const existing of existingUrls) {
+    if (await getUrlComparisonKey(existing) === newKey) {
+      return true;
+    }
+  }
+  return false;
+}

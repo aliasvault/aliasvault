@@ -7,7 +7,7 @@ import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/met
 import { FieldKey, ItemTypes, createSystemField, type Item } from '@/utils/dist/core/models/vault';
 import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import { filterItems, AutofillMatchingMode, extractRootDomain } from '@/utils/itemMatcher/ItemMatcher';
+import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked } from '@/utils/itemMatcher/ItemMatcher';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
 import { SqliteClient } from '@/utils/SqliteClient';
@@ -1702,14 +1702,12 @@ export async function handleAddUrlToCredential(message: { itemId: string; url: s
         ? existingField.Value
         : (existingField.Value ? [existingField.Value] : []);
 
-      // Check if URL already exists (normalize for comparison)
-      const normalizedNewUrl = message.url.toLowerCase().replace(/\/$/, '');
-      const urlExists = existingUrls.some(url =>
-        url.toLowerCase().replace(/\/$/, '') === normalizedNewUrl
-      );
-
-      if (urlExists) {
-        // URL already exists, nothing to do
+      /*
+       * Compare on host only (subdomain + domain) so trailing slashes, paths,
+       * query strings, fragments, `www.`, and http/https differences don't
+       * cause us to store a near-duplicate URL on the credential.
+       */
+      if (await isUrlAlreadyLinked(existingUrls as string[], message.url)) {
         return { success: true };
       }
 
@@ -1737,6 +1735,31 @@ export async function handleAddUrlToCredential(message: { itemId: string; url: s
   } catch (error) {
     console.error('Failed to add URL to credential:', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_UPDATE_FAILED) };
+  }
+}
+
+/**
+ * Check whether a URL is already linked (host-equivalent) to a credential.
+ */
+export async function handleIsUrlLinkedToCredential(message: { itemId: string; url: string }): Promise<{ linked: boolean }> {
+  try {
+    const encryptionKey = await handleGetEncryptionKey();
+    if (!encryptionKey) {
+      return { linked: false };
+    }
+    const sqliteClient = await createVaultSqliteClient();
+    const item = sqliteClient.items.getById(message.itemId);
+    if (!item) {
+      return { linked: false };
+    }
+    const urlField = item.Fields?.find(f => f.FieldKey === FieldKey.LoginUrl);
+    const existingUrls = urlField
+      ? (Array.isArray(urlField.Value) ? urlField.Value : (urlField.Value ? [urlField.Value] : []))
+      : [];
+    const linked = await isUrlAlreadyLinked(existingUrls as string[], message.url);
+    return { linked };
+  } catch {
+    return { linked: false };
   }
 }
 
