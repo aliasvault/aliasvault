@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
-import { AutofillMatchingMode, LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { AutofillMatchingMode } from '@/utils/RustCore';
 
 /**
  * Autofill settings type.

@@ -1,3 +1,5 @@
+import { AutofillMatchingMode } from '@/utils/RustCore';
+
 import { storage } from '#imports';
 
 /*
@@ -47,15 +49,6 @@ const KEYS = {
   // Brute force protection
   PASSWORD_UNLOCK_FAILED_ATTEMPTS: 'local:password_unlock_failed_attempts',
 } as const;
-
-/**
- * Autofill matching mode options.
- */
-export enum AutofillMatchingMode {
-  DEFAULT = 'default',
-  URL_SUBDOMAIN = 'url_subdomain',
-  URL_EXACT = 'url_exact',
-}
 
 /**
  * Service for managing user preferences that are stored locally (not in the vault).
