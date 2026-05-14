@@ -4,9 +4,16 @@ import { sendMessage } from 'webext-bridge/popup';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import SqliteClient from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
+import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 
 import { storage } from '#imports';
+
+/**
+ * Maximum time to wait for the background service worker to respond to GET_VAULT.
+ * If exceeded, the popup falls back to the unlock screen.
+ */
+const GET_VAULT_TIMEOUT_MS = 3500;
 
 /**
  * Vault metadata including the server revision.
@@ -226,7 +233,25 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    */
   const loadStoredDatabase = useCallback(async (): Promise<SqliteClient | null> => {
     try {
-      const response = await sendMessage('GET_VAULT', {}, 'background') as messageVaultResponse;
+      // Use timeout to prevent the popup from spinning indefinitely.
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error(formatErrorWithCode('Background service worker timed out', AppErrorCode.UNKNOWN_ERROR)));
+        }, GET_VAULT_TIMEOUT_MS);
+      });
+
+      let response: messageVaultResponse;
+      try {
+        response = await Promise.race([
+          sendMessage('GET_VAULT', {}, 'background') as Promise<messageVaultResponse>,
+          timeoutPromise,
+        ]);
+      } finally {
+        if (timeoutId !== undefined) {
+          clearTimeout(timeoutId);
+        }
+      }
 
       // Check if response contains an error - throw it so callers can handle
       if (!response?.success && response?.error) {
@@ -248,7 +273,13 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         return null;
       }
     } catch (error) {
-      console.error('Error retrieving vault from background:', error);
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes(AppErrorCode.VAULT_LOCKED)) {
+        // Vault is locked which is expected when the popup is opened after auto-lock timeout or browser restart.
+        console.info('Vault is locked; popup will prompt for unlock');
+      } else {
+        console.error('Error retrieving vault from background:', error);
+      }
       setDbInitialized(true);
       setDbAvailable(false);
       // Re-throw all errors so callers can display them with proper codes
@@ -310,7 +341,8 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    */
   useEffect(() : void => {
     if (!dbInitialized) {
-      loadStoredDatabase();
+      // Any errors are handled separately via dbAvailable/syncError state.
+      loadStoredDatabase().catch(() => { });
     }
   }, [dbInitialized, loadStoredDatabase]);
 
