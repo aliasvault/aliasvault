@@ -7,44 +7,83 @@ import { t } from '@/i18n/StandaloneI18n';
 
 import { browser } from "#imports";
 
+/*
+ * Register the click listener once at module load (top-level scope).
+ */
+browser.contextMenus.onClicked.addListener((info: Browser.contextMenus.OnClickData, tab?: Browser.tabs.Tab) =>
+  handleContextMenuClick(info, tab)
+);
+
+/**
+ * Create a context menu item.
+ */
+function createContextMenu(properties: Browser.contextMenus.CreateProperties) : Promise<void> {
+  return new Promise((resolve, reject) => {
+    try {
+      const result = browser.contextMenus.create(properties, () => {
+        const lastError = browser.runtime.lastError;
+        if (lastError) {
+          reject(new Error(lastError.message ?? 'contextMenus.create failed'));
+        } else {
+          resolve();
+        }
+      });
+      // Some polyfill versions return a thenable; if so, attach handlers as a fallback.
+      if (result && typeof (result as unknown as Promise<unknown>).then === 'function') {
+        (result as unknown as Promise<unknown>).then(() => resolve(), reject);
+      }
+    } catch (error) {
+      reject(error instanceof Error ? error : new Error(String(error)));
+    }
+  });
+}
+
 /**
  * Setup the context menus.
  */
 export async function setupContextMenus() : Promise<void> {
-  // Create root menu
-  browser.contextMenus.create({
-    id: "aliasvault-root",
-    title: "AliasVault",
-    contexts: ["all"]
-  });
+  try {
+    await browser.contextMenus.removeAll();
+  } catch (error) {
+    console.error('Failed to remove existing context menus:', error);
+  }
 
-  // Add fill option first (only for editable fields)
-  browser.contextMenus.create({
-    id: "aliasvault-activate-form",
-    parentId: "aliasvault-root",
-    title: await t('content.autofillWithAliasVault'),
-    contexts: ["editable"],
-  });
+  const [activateFormTitle, generatePasswordTitle] = await Promise.all([
+    t('content.autofillWithAliasVault'),
+    t('content.generateRandomPassword'),
+  ]);
 
-  // Add separator (only for editable fields)
-  browser.contextMenus.create({
-    id: "aliasvault-separator",
-    parentId: "aliasvault-root",
-    type: "separator",
-    contexts: ["editable"],
-  });
+  try {
+    // Root must exist before its children
+    await createContextMenu({
+      id: "aliasvault-root",
+      title: "AliasVault",
+      contexts: ["all"]
+    });
 
-  // Add password generator option
-  browser.contextMenus.create({
-    id: "aliasvault-generate-password",
-    parentId: "aliasvault-root",
-    title: await t('content.generateRandomPassword'),
-    contexts: ["all"]
-  });
-
-  browser.contextMenus.onClicked.addListener((info: Browser.contextMenus.OnClickData, tab?: Browser.tabs.Tab) =>
-    handleContextMenuClick(info, tab)
-  );
+    await Promise.all([
+      createContextMenu({
+        id: "aliasvault-activate-form",
+        parentId: "aliasvault-root",
+        title: activateFormTitle,
+        contexts: ["editable"],
+      }),
+      createContextMenu({
+        id: "aliasvault-separator",
+        parentId: "aliasvault-root",
+        type: "separator",
+        contexts: ["editable"],
+      }),
+      createContextMenu({
+        id: "aliasvault-generate-password",
+        parentId: "aliasvault-root",
+        title: generatePasswordTitle,
+        contexts: ["all"]
+      }),
+    ]);
+  } catch (error) {
+    console.error('Failed to create context menus:', error);
+  }
 }
 
 /**

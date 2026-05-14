@@ -49,10 +49,7 @@ const ContextMenuSettings: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">{t('settings.rightClickContextMenu')}</p>
-                <p className={`text-sm mt-1 ${isContextMenuEnabled ? 'text-gray-600 dark:text-gray-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {isContextMenuEnabled ? t('settings.contextMenuEnabled') : t('settings.contextMenuDisabled')}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 pe-2">
                   {t('settings.contextMenuDescription')}
                 </p>
               </div>
