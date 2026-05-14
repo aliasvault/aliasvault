@@ -399,8 +399,6 @@
     "clipboardSettings": "Clipboard Settings",
     "contextMenuSettings": "Context Menu Settings",
     "passkeySettings": "Passkey Settings",
-    "contextMenuEnabled": "Context menu is enabled",
-    "contextMenuDisabled": "Context menu is disabled",
     "contextMenuDescription": "Right-click on input fields to access AliasVault options",
     "selectLanguage": "Select Language",
     "serverConfiguration": "Server Configuration",
