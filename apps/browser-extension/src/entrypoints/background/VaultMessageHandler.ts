@@ -236,7 +236,7 @@ export async function handleGetVault(
     }
 
     if (!encryptionKey) {
-      console.error('Encryption key not available');
+      console.info('Encryption key not available (vault locked)');
       // E-202: No encryption key available (vault is locked)
       return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
     }
