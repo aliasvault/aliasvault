@@ -125,46 +125,49 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         model.PageSize = Math.Min(model.PageSize, 50);
 
         // Load all email addresses that the user has a claim to where the address is in the list.
-        var emailClaims = await context.UserEmailClaims
+        var validAddresses = await context.UserEmailClaims
             .Where(claim => claim.UserId == user.Id && model.Addresses.Contains(claim.Address))
+            .Select(claim => claim.Address)
             .ToListAsync();
 
         var query = context.Emails
             .AsNoTracking()
-            .Include(x => x.EncryptionKey)
-            .Where(email => context.UserEmailClaims
-                .Any(claim => claim.UserId == user.Id
-                              && claim.Address == email.To
-                              && model.Addresses.Contains(claim.Address)));
+            .Where(email => validAddresses.Contains(email.To));
 
-        var totalRecords = await query.CountAsync();
-
-        List<MailboxEmailApiModel> emails = await query.Select(x => new MailboxEmailApiModel
-            {
-                Id = x.Id,
-                Subject = x.Subject,
-                FromDisplay = x.From,
-                FromDomain = x.FromDomain,
-                FromLocal = x.FromLocal,
-                ToDomain = x.ToDomain,
-                ToLocal = x.ToLocal,
-                Date = DateTime.SpecifyKind(x.Date, DateTimeKind.Utc),
-                DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
-                SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
-                MessagePreview = x.MessagePreview ?? string.Empty,
-                EncryptedSymmetricKey = x.EncryptedSymmetricKey,
-                EncryptionKey = x.EncryptionKey.PublicKey,
-                HasAttachments = x.Attachments.Any(),
-            })
+        // Get all emails for the valid addresses.
+        var rows = await query
             .OrderByDescending(x => x.DateSystem)
             .Skip((model.Page - 1) * model.PageSize)
             .Take(model.PageSize)
+            .Select(x => new
+            {
+                TotalRecords = query.Count(),
+                Mail = new MailboxEmailApiModel
+                {
+                    Id = x.Id,
+                    Subject = x.Subject,
+                    FromDisplay = x.From,
+                    FromDomain = x.FromDomain,
+                    FromLocal = x.FromLocal,
+                    ToDomain = x.ToDomain,
+                    ToLocal = x.ToLocal,
+                    Date = DateTime.SpecifyKind(x.Date, DateTimeKind.Utc),
+                    DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
+                    SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
+                    MessagePreview = x.MessagePreview ?? string.Empty,
+                    EncryptedSymmetricKey = x.EncryptedSymmetricKey,
+                    EncryptionKey = x.EncryptionKey.PublicKey,
+                    HasAttachments = x.Attachments.Any(),
+                },
+            })
             .ToListAsync();
+
+        var totalRecords = rows.Count > 0 ? rows[0].TotalRecords : 0;
 
         MailboxBulkResponse returnValue = new()
         {
-            Addresses = emailClaims.Select(x => x.Address).ToList(),
-            Mails = emails,
+            Addresses = validAddresses,
+            Mails = rows.Select(r => r.Mail).ToList(),
             PageSize = model.PageSize,
             CurrentPage = model.Page,
             TotalRecords = totalRecords,

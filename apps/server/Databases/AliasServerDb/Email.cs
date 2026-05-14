@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 /// <summary>
 /// Represents an email message.
 /// </summary>
-[Index(nameof(ToLocal))]
+[Index(nameof(To), nameof(DateSystem))]
 [Index(nameof(Date))]
 [Index(nameof(DateSystem))]
 [Index(nameof(Visible))]
