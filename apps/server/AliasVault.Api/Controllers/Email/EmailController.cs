@@ -161,7 +161,7 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
 
         // See if this user has a valid claim to the email address.
         var normalizedEmailAddress = email.To.Trim().ToLower();
-        var emailClaim = await context.UserEmailClaims.FirstOrDefaultAsync(x => x.UserId == user.Id && x.Address == normalizedEmailAddress);
+        var emailClaim = await context.UserEmailClaims.FirstOrDefaultAsync(x => x.UserId == user.Id && x.Address == normalizedEmailAddress && !x.Disabled);
 
         if (emailClaim is null)
         {

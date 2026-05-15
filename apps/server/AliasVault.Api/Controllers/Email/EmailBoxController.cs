@@ -47,7 +47,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         var emailClaim = await context.UserEmailClaims
             .FirstOrDefaultAsync(x => x.Address == sanitizedEmail);
 
-        if (emailClaim is null)
+        if (emailClaim is null || emailClaim.Disabled)
         {
             return BadRequest(new ApiErrorResponse
             {
@@ -126,7 +126,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
 
         // Load all email addresses that the user has a claim to where the address is in the list.
         var validAddresses = await context.UserEmailClaims
-            .Where(claim => claim.UserId == user.Id && model.Addresses.Contains(claim.Address))
+            .Where(claim => claim.UserId == user.Id && model.Addresses.Contains(claim.Address) && !claim.Disabled)
             .Select(claim => claim.Address)
             .ToListAsync();
 
