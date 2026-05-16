@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Import / Export</value>
+    <comment>Page title</comment>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>On this page you can import and export your vault.</value>
+    <comment>Page description</comment>
+  </data>
+  <data name="ImportSectionTitle" xml:space="preserve">
+    <value>Import passwords</value>
+    <comment>Import section title</comment>
+  </data>
+  <data name="ImportSectionDescription" xml:space="preserve">
+    <value>Select a service to import from.</value>
+    <comment>Import section description with HTML link</comment>
+  </data>
+  <data name="ExportSectionTitle" xml:space="preserve">
+    <value>Export vault</value>
+    <comment>Export section title</comment>
+  </data>
+  <data name="ExportSectionDescription" xml:space="preserve">
+    <value>Export your vault to move credentials between AliasVault servers or to another password manager.</value>
+    <comment>Export section description</comment>
+  </data>
+  <data name="RecommendedLabel" xml:space="preserve">
+    <value>Recommended</value>
+    <comment>Label for recommended option</comment>
+  </data>
+  <data name="ExportAvexTitle" xml:space="preserve">
+    <value>Encrypted full vault export</value>
+    <comment>Title for encrypted export option</comment>
+  </data>
+  <data name="ExportAvexDescription" xml:space="preserve">
+    <value>Password-protected backup of your entire vault. Includes all items, passkeys, and attachments. Use as manual backup and/or to restore to another AliasVault server.</value>
+    <comment>Description for encrypted export option</comment>
+  </data>
+  <data name="ExportAvuxTitle" xml:space="preserve">
+    <value>Unencrypted full vault export</value>
+    <comment>Title for unencrypted full export option</comment>
+  </data>
+  <data name="ExportAvuxDescription" xml:space="preserve">
+    <value>Complete vault export as unencrypted ZIP-compatible archive. Includes all items, passkeys and attachments.</value>
+    <comment>Description for unencrypted full export option</comment>
+  </data>
+  <data name="ExportCsvTitle" xml:space="preserve">
+    <value>CSV export</value>
+    <comment>Title for CSV export option</comment>
+  </data>
+  <data name="ExportCsvDescription" xml:space="preserve">
+    <value>Basic export for importing into other password managers. Does not include passkeys or attachments.</value>
+    <comment>Description for CSV export option</comment>
+  </data>
+  <data name="ExportCsvButton" xml:space="preserve">
+    <value>Export to CSV</value>
+    <comment>Button to export as CSV</comment>
+  </data>
+  <data name="ExportAvuxButton" xml:space="preserve">
+    <value>Export unencrypted vault (.avux)</value>
+    <comment>Button to export full vault as .avux archive</comment>
+  </data>
+  <data name="ExportingVaultMessage" xml:space="preserve">
+    <value>Exporting vault...</value>
+    <comment>Message shown while exporting vault</comment>
+  </data>
+  <data name="ExportConfirmTitle" xml:space="preserve">
+    <value>Export vault</value>
+    <comment>Export confirmation dialog title</comment>
+  </data>
+  <data name="ExportWarningMessage" xml:space="preserve">
+    <value>Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted computers and ensure you:
+
+• Store the exported file in a secure location
+• Delete the file when you no longer need it
+• Never share the exported file with others
+
+Are you sure you want to continue with the export?</value>
+    <comment>Export warning confirmation message</comment>
+  </data>
+  <data name="ResetVaultSectionTitle" xml:space="preserve">
+    <value>Reset Vault</value>
+    <comment>Reset vault section title</comment>
+  </data>
+  <data name="ResetVaultSectionDescription" xml:space="preserve">
+    <value>This option allows you to completely empty your vault while keeping your account and email aliases. Use this if you want to start fresh after importing data from another password manager or if you want to clear all existing credentials to start over.</value>
+    <comment>Reset vault section description</comment>
+  </data>
+  <data name="ExportPasswordConfirmTitle" xml:space="preserve">
+    <value>Confirm Export</value>
+    <comment>Title for password confirmation modal during export</comment>
+  </data>
+  <data name="ExportPasswordConfirmDescription" xml:space="preserve">
+    <value>For security reasons, please enter your master password to confirm this export.</value>
+    <comment>Description for password confirmation modal during export</comment>
+  </data>
+  <data name="VerifyingPasswordMessage" xml:space="preserve">
+    <value>Verifying password...</value>
+    <comment>Message shown while verifying password</comment>
+  </data>
+  <data name="PasswordIncorrect" xml:space="preserve">
+    <value>The password you entered is incorrect. Please try again.</value>
+    <comment>Error message when password verification fails</comment>
+  </data>
+  <data name="PasswordVerificationFailed" xml:space="preserve">
+    <value>An error occurred while verifying your password. Please try again.</value>
+    <comment>Generic error message for password verification failure</comment>
+  </data>
+  <data name="ExportAvexButton" xml:space="preserve">
+    <value>Export encrypted vault (.avex)</value>
+    <comment>Button to export encrypted vault as .avex archive</comment>
+  </data>
+  <data name="ExportEncryptedWarningMessage" xml:space="preserve">
+    <value>This will create an encrypted export of your entire vault. You will need to provide a password to encrypt the export file.
+
+Are you sure you want to continue?</value>
+    <comment>Warning message for encrypted export confirmation</comment>
+  </data>
+  <data name="ExportEncryptedPasswordTitle" xml:space="preserve">
+    <value>Set Export Password</value>
+    <comment>Title for export password modal</comment>
+  </data>
+  <data name="ExportEncryptedPasswordDescription" xml:space="preserve">
+    <value>Choose a strong, unique password to encrypt this export. This password is required to decrypt the export. If you lose this password, you will not be able to recover the exported data.</value>
+    <comment>Description for export password modal with security warning</comment>
+  </data>
+  <data name="ExportSuccessMessage" xml:space="preserve">
+    <value>Your vault has been exported successfully.</value>
+    <comment>Success message after vault export completes</comment>
+  </data>
+</root>
