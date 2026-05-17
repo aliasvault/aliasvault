@@ -136,9 +136,12 @@ class PasskeyRegistrationActivity : FragmentActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        // Delegate PIN unlock result to coordinator
-        if (requestCode == UnlockCoordinator.REQUEST_CODE_PIN_UNLOCK) {
-            unlockCoordinator.handlePinUnlockResult(resultCode, data)
+        // Delegate unlock activity results to the coordinator
+        when (requestCode) {
+            UnlockCoordinator.REQUEST_CODE_PIN_UNLOCK ->
+                unlockCoordinator.handlePinUnlockResult(resultCode, data)
+            UnlockCoordinator.REQUEST_CODE_PASSWORD_UNLOCK ->
+                unlockCoordinator.handlePasswordUnlockResult(resultCode, data)
         }
     }
 

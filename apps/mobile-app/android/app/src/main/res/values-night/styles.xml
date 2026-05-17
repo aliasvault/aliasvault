@@ -10,8 +10,16 @@
     <item name="android:windowLightStatusBar">false</item>
     <item name="android:windowLightNavigationBar">false</item>
   </style>
-
-  <style name="PasskeyRegistrationTheme" parent="Theme.Material3.DayNight.NoActionBar">
+  <!-- Dark mode splash screen theme -->
+  <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
+    <item name="windowSplashScreenBackground">@color/splashscreen_background</item>
+    <item name="windowSplashScreenAnimatedIcon">@drawable/splashscreen_logo</item>
+    <item name="windowSplashScreenAnimationDuration">0</item>
+    <item name="android:windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+    <item name="postSplashScreenTheme">@style/AppTheme</item>
+  </style>
+  <!-- Dark mode overrides for Theme.App.Overlay. -->
+  <style name="Theme.App.Overlay" parent="Theme.Material3.DayNight.NoActionBar">
     <item name="colorPrimary">@color/av_primary</item>
     <item name="colorOnPrimary">#FFFFFF</item>
     <item name="android:colorBackground">@color/av_background</item>
@@ -22,22 +30,6 @@
     <item name="android:windowDrawsSystemBarBackgrounds">true</item>
     <item name="android:windowLightStatusBar">false</item>
     <item name="android:windowLightNavigationBar">false</item>
-    <!--
-      windowIsTranslucent keeps the calling app's activity in onPause rather than onStop
-      while our credential-provider UI is on top. Some apps (X.com) cancel their
-      CredentialManager request when their activity goes to onStop, so without this
-      flag the request is killed mid-biometric. The activity remains visually opaque
-      because its content view supplies its own background.
-    -->
     <item name="android:windowIsTranslucent">true</item>
-  </style>
-
-  <!-- Dark mode splash screen theme -->
-  <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
-    <item name="windowSplashScreenBackground">@color/splashscreen_background</item>
-    <item name="windowSplashScreenAnimatedIcon">@drawable/splashscreen_logo</item>
-    <item name="windowSplashScreenAnimationDuration">0</item>
-    <item name="android:windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
-    <item name="postSplashScreenTheme">@style/AppTheme</item>
   </style>
 </resources>

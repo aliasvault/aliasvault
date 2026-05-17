@@ -10,26 +10,6 @@
     <item name="android:textColorHint">#c8c8c8</item>
     <item name="android:textColor">@android:color/black</item>
   </style>
-  <style name="PasskeyRegistrationTheme" parent="Theme.Material3.DayNight.NoActionBar">
-    <item name="colorPrimary">@color/av_primary</item>
-    <item name="colorOnPrimary">#FFFFFF</item>
-    <item name="android:colorBackground">@color/av_background</item>
-    <item name="android:textColorPrimary">@color/av_text</item>
-    <item name="android:textColorSecondary">@color/av_text_muted</item>
-    <item name="android:statusBarColor">@color/av_background</item>
-    <item name="android:navigationBarColor">@color/av_background</item>
-    <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-    <item name="android:windowLightStatusBar">true</item>
-    <item name="android:windowLightNavigationBar">true</item>
-    <!--
-      windowIsTranslucent keeps the calling app's activity in onPause rather than onStop
-      while our credential-provider UI is on top. Some apps (X.com) cancel their
-      CredentialManager request when their activity goes to onStop, so without this
-      flag the request is killed mid-biometric. The activity remains visually opaque
-      because its content view supplies its own background.
-    -->
-    <item name="android:windowIsTranslucent">true</item>
-  </style>
   <style name="PinNumpadButton" parent="Widget.MaterialComponents.Button">
     <item name="android:layout_width">0dp</item>
     <item name="android:layout_height">56dp</item>
@@ -51,6 +31,19 @@
     <item name="windowSplashScreenAnimationDuration">0</item>
     <item name="android:windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
     <item name="postSplashScreenTheme">@style/AppTheme</item>
+  </style>
+  <style name="Theme.App.Overlay" parent="Theme.Material3.DayNight.NoActionBar">
+    <item name="colorPrimary">@color/av_primary</item>
+    <item name="colorOnPrimary">#FFFFFF</item>
+    <item name="android:colorBackground">@color/av_background</item>
+    <item name="android:textColorPrimary">@color/av_text</item>
+    <item name="android:textColorSecondary">@color/av_text_muted</item>
+    <item name="android:statusBarColor">@color/av_background</item>
+    <item name="android:navigationBarColor">@color/av_background</item>
+    <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+    <item name="android:windowLightStatusBar">true</item>
+    <item name="android:windowLightNavigationBar">true</item>
+    <item name="android:windowIsTranslucent">true</item>
   </style>
   <style name="Theme.App.NoDisplay" parent="@android:style/Theme.NoDisplay" />
 </resources>

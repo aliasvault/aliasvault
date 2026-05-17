@@ -3,7 +3,7 @@ package net.aliasvault.app.credentialprovider
 import android.content.Intent
 import android.util.Log
 import androidx.fragment.app.FragmentActivity
-import net.aliasvault.app.R
+import net.aliasvault.app.passwordunlock.PasswordUnlockActivity
 import net.aliasvault.app.pinunlock.PinUnlockActivity
 import net.aliasvault.app.vaultstore.AppError
 import net.aliasvault.app.vaultstore.VaultStore
@@ -36,12 +36,20 @@ class UnlockCoordinator(
          * when handling onActivityResult for PIN unlock.
          */
         const val REQUEST_CODE_PIN_UNLOCK = 1001
+
+        /**
+         * Request code for password unlock activity result.
+         * Activities using UnlockCoordinator should use this constant
+         * when handling onActivityResult for password unlock.
+         */
+        const val REQUEST_CODE_PASSWORD_UNLOCK = 1002
     }
 
     /**
      * Start the unlock flow by checking which auth method is enabled.
-     * Priority: Biometric -> PIN -> Error
-     * Biometrics takes priority, PIN serves as fallback if biometrics fails or is unavailable.
+     * Priority: Biometric -> PIN -> Password
+     * Biometrics takes priority, PIN serves as fallback, and master password
+     * is the final fallback (always available).
      */
     fun startUnlockFlow() {
         val pinEnabled = vaultStore.isPinEnabled()
@@ -59,9 +67,9 @@ class UnlockCoordinator(
                 launchPinUnlock()
             }
             else -> {
-                // Neither PIN nor biometric is enabled
-                Log.e(TAG, "No unlock method is enabled or available")
-                onError(activity.getString(R.string.error_unlock_method_required))
+                // Neither PIN nor biometric is enabled - fall back to master password
+                Log.d(TAG, "No biometric or PIN configured, falling back to password unlock")
+                launchPasswordUnlock()
             }
         }
     }
@@ -73,6 +81,16 @@ class UnlockCoordinator(
     fun launchPinUnlock() {
         val intent = Intent(activity, PinUnlockActivity::class.java)
         activity.startActivityForResult(intent, REQUEST_CODE_PIN_UNLOCK)
+    }
+
+    /**
+     * Launch password unlock activity.
+     * Used as a final fallback when neither biometric nor PIN unlock is available
+     * (or when both have failed).
+     */
+    fun launchPasswordUnlock() {
+        val intent = Intent(activity, PasswordUnlockActivity::class.java)
+        activity.startActivityForResult(intent, REQUEST_CODE_PASSWORD_UNLOCK)
     }
 
     /**
@@ -114,7 +132,6 @@ class UnlockCoordinator(
 
     /**
      * Handle result from PIN unlock activity.
-     * Call this from the activity's onActivityResult method.
      */
     fun handlePinUnlockResult(resultCode: Int, data: Intent?) {
         when (resultCode) {
@@ -141,13 +158,52 @@ class UnlockCoordinator(
                 onCancelled()
             }
             PinUnlockActivity.RESULT_PIN_DISABLED -> {
-                // PIN was disabled due to max attempts - fall back to biometric if available
-                Log.w(TAG, "PIN was disabled, attempting biometric unlock fallback")
+                // PIN was disabled due to max attempts - fall back to biometric if available,
+                // otherwise master password.
+                Log.w(TAG, "PIN was disabled, attempting fallback")
                 if (vaultStore.isBiometricAuthEnabled()) {
                     attemptBiometricUnlock()
                 } else {
-                    onError(activity.getString(R.string.error_unlock_method_required))
+                    launchPasswordUnlock()
                 }
+            }
+        }
+    }
+
+    /**
+     * Handle result from password unlock activity.
+     * Call this from the activity's onActivityResult method.
+     */
+    fun handlePasswordUnlockResult(resultCode: Int, data: Intent?) {
+        when (resultCode) {
+            PasswordUnlockActivity.RESULT_SUCCESS -> {
+                val encryptionKey = data?.getStringExtra(PasswordUnlockActivity.EXTRA_ENCRYPTION_KEY)
+                if (encryptionKey != null) {
+                    try {
+                        vaultStore.storeEncryptionKeyInMemory(encryptionKey)
+                        vaultStore.unlockVault()
+                        onUnlocked()
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to unlock vault after password unlock", e)
+                        onError(getUnlockErrorMessage(e))
+                    }
+                } else {
+                    Log.e(TAG, "No encryption key returned from password unlock")
+                    onError("Failed to unlock vault")
+                }
+            }
+            PasswordUnlockActivity.RESULT_MAX_ATTEMPTS_REACHED -> {
+                // Vault has been cleared due to too many failed attempts.
+                Log.w(TAG, "Password unlock failed: max attempts reached")
+                onError("Too many failed unlock attempts")
+            }
+            PasswordUnlockActivity.RESULT_CANCELLED -> {
+                Log.d(TAG, "Password unlock cancelled by user")
+                onCancelled()
+            }
+            else -> {
+                Log.e(TAG, "Unknown result from password unlock: $resultCode")
+                onError("Failed to unlock vault")
             }
         }
     }
@@ -168,23 +224,22 @@ class UnlockCoordinator(
     }
 
     /**
-     * Handle errors during biometric keystore retrieval.
-     * Falls back to PIN if enabled, otherwise reports the error.
+     * Handle errors during biometric keystore retrieval, including the
+     * user dismissing the prompt. Falls back to PIN if enabled, otherwise to
+     * master password, mirroring the in-app and iOS autofill behavior so the
+     * user always has another way to unlock if biometrics is unavailable
+     * (e.g. fingerprint not recognized, or they tapped Cancel deliberately
+     * because they want to use a different method).
      */
     private fun handleBiometricKeystoreError(e: Exception) {
-        // For any biometric error, try PIN fallback if enabled
         if (vaultStore.isPinEnabled()) {
-            Log.d(TAG, "Biometric failed (${e.message}), falling back to PIN")
+            Log.d(TAG, "Biometric unavailable (${e.message}), falling back to PIN")
             launchPinUnlock()
-            return // Don't call onError, we're falling back to PIN
+            return
         }
 
-        // No PIN fallback available - report the error
-        val errorMessage = when (e) {
-            is AppError.BiometricCancelled -> "Authentication cancelled"
-            else -> "Failed to retrieve encryption key"
-        }
-        onError(errorMessage)
+        Log.d(TAG, "Biometric unavailable (${e.message}), falling back to password")
+        launchPasswordUnlock()
     }
 
     /**
