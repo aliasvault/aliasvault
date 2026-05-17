@@ -67,7 +67,7 @@
     <comment>Message shown when no TOTP codes are configured</comment>
   </data>
   <data name="CopiedMessage" xml:space="preserve">
-    <value>Copied!</value>
+    <value>Tersalin!</value>
     <comment>Feedback message when TOTP code is copied to clipboard</comment>
   </data>
 </root>
