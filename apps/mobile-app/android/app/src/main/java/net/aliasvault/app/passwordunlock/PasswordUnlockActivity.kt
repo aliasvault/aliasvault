@@ -105,7 +105,7 @@ class PasswordUnlockActivity : AppCompatActivity() {
 
         // Initialize VaultStore
         vaultStore = VaultStore.getInstance(
-            AndroidKeystoreProvider(this) { null },
+            AndroidKeystoreProvider(this),
             AndroidStorageProvider(this),
         )
 

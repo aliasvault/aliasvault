@@ -71,16 +71,14 @@ class AutofillUnlockActivity : FragmentActivity() {
             appInfo = intent.getStringExtra(EXTRA_APP_INFO)
 
             vaultStore = VaultStore.getExistingInstance() ?: run {
-                val keystoreProvider = AndroidKeystoreProvider(applicationContext) { this }
+                val keystoreProvider = AndroidKeystoreProvider(applicationContext)
                 val storageProvider = AndroidStorageProvider(applicationContext)
                 VaultStore.getInstance(keystoreProvider, storageProvider)
             }
 
             setContentView(R.layout.activity_loading)
 
-            // Vault may have been unlocked in another flow between the
-            // FillResponse being built and the user tapping the row. Skip the
-            // unlock prompt entirely in that case.
+            // Skip the unlock prompt if the vault is already unlocked.
             if (vaultStore.isVaultUnlocked()) {
                 onVaultUnlocked()
                 return

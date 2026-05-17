@@ -49,9 +49,8 @@ class PasskeyRegistrationActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
 
         try {
-            // Get or initialize VaultStore instance
             vaultStore = VaultStore.getExistingInstance() ?: run {
-                val keystoreProvider = AndroidKeystoreProvider(applicationContext) { this }
+                val keystoreProvider = AndroidKeystoreProvider(applicationContext)
                 val storageProvider = AndroidStorageProvider(applicationContext)
                 VaultStore.getInstance(keystoreProvider, storageProvider)
             }

@@ -107,9 +107,12 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     private val vaultStore = VaultStore.getInstance(
-        AndroidKeystoreProvider(reactContext) { getFragmentActivity() },
+        AndroidKeystoreProvider(reactContext),
         AndroidStorageProvider(reactContext),
-    )
+    ).also { store ->
+        // Point the singleton's keystore provider at React's current activity.
+        store.setKeystoreActivityGetter { getFragmentActivity() }
+    }
 
     private val webApiService = WebApiService(reactContext)
 

@@ -113,7 +113,7 @@ class PinUnlockActivity : AppCompatActivity() {
 
         // Initialize VaultStore and ViewModel
         vaultStore = VaultStore.getInstance(
-            net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider(this) { null },
+            net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider(this),
             net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider(this),
         )
         viewModel = PinViewModel(this, vaultStore)

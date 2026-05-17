@@ -139,7 +139,7 @@ class MainActivity : ReactActivity() {
         }
 
         val vaultStore = net.aliasvault.app.vaultstore.VaultStore.getInstance(
-            net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider(this) { null },
+            net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider(this),
             net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider(this),
         )
 
@@ -262,7 +262,7 @@ class MainActivity : ReactActivity() {
                 }
 
                 val vaultStore = net.aliasvault.app.vaultstore.VaultStore.getInstance(
-                    net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider(this) { null },
+                    net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider(this),
                     net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider(this),
                 )
 
