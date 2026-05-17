@@ -98,7 +98,7 @@ class UnlockCoordinator(
      * Can be called directly to retry biometric unlock.
      */
     fun attemptBiometricUnlock() {
-        val keystoreProvider = AndroidKeystoreProvider(activity.applicationContext) { activity }
+        val keystoreProvider = AndroidKeystoreProvider(activity.applicationContext)
         keystoreProvider.retrieveKeyExternal(
             activity,
             object : KeystoreOperationCallback {

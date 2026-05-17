@@ -26,12 +26,23 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
 /**
- * Android implementation of the keystore provider that uses Android's Keystore and Biometric APIs.
+ * Android implementation of the keystore provider using Android's Keystore
+ * and Biometric APIs. Whichever component holds the foreground UI registers
+ * itself via [setActivityGetter] so biometric prompts attach correctly;
+ * callers with an activity on hand should prefer [retrieveKeyExternal].
  */
 class AndroidKeystoreProvider(
     private val context: Context,
-    private val getCurrentActivity: () -> Activity?,
 ) : KeystoreProvider {
+
+    @Volatile
+    private var getCurrentActivity: () -> Activity? = { null }
+
+    /** Register the source of the foreground activity for biometric prompts. */
+    fun setActivityGetter(getter: () -> Activity?) {
+        getCurrentActivity = getter
+    }
+
     companion object {
         /**
          * The tag for logging.

@@ -114,6 +114,12 @@ class VaultStore(
 
     // endregion
 
+    /** Point the keystore provider at the caller's foreground activity for biometric prompts. */
+    fun setKeystoreActivityGetter(getter: () -> android.app.Activity?) {
+        (keystoreProvider as? net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider)
+            ?.setActivityGetter(getter)
+    }
+
     // region Crypto Methods
 
     /**

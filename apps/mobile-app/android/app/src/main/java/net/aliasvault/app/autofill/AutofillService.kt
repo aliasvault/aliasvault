@@ -243,18 +243,12 @@ class AutofillService : AutofillService() {
             }
         }
 
-        // If we get here, either there was no instance or the vault wasn't unlocked.
-        // Use FillResponse-level authentication so that after the user unlocks
-        // through AutofillUnlockActivity, the OS automatically restores the
-        // calling app and shows the (now-populated) autofill picker.
         Log.d(TAG, "Vault is locked, requiring authentication before fill")
         callback(buildLockedFillResponse(fieldFinder, appInfo))
     }
 
     /**
-     * Build a [FillResponse] whose only entry is a "Vault locked" row that, when
-     * tapped, launches [AutofillUnlockActivity] to unlock the vault and resume
-     * the autofill flow in the calling app.
+     * Build a [FillResponse] whose only entry is a "Vault locked" row.
      */
     private fun buildLockedFillResponse(fieldFinder: FieldFinder, appInfo: String?): FillResponse {
         val autofillIds = fieldFinder.autofillableFields.map { it.first }.toTypedArray()
