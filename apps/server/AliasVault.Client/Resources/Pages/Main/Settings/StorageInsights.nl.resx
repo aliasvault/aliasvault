@@ -21,24 +21,24 @@
   </xsd:schema>
   <!-- Page title and description -->
   <data name="PageTitle">
-    <value>Kluis opslag inzichten</value>
+    <value>Vault opslaggebruik</value>
     <comment>Page title for vault storage insights</comment>
   </data>
   <data name="PageDescription">
-    <value>Bekijk een schatting van de grootte van je kluis. Voor de beste synchronisatieprestaties wordt aangeraden om je vault klein te houden en items te verwijderen die je niet meer nodig hebt.</value>
+    <value>Bekijk een schatting van de grootte van je vault. Voor de beste synchronisatie prestaties wordt aangeraden om je vault klein te houden en items te verwijderen die je niet meer nodig hebt.</value>
     <comment>Page description for vault storage insights</comment>
   </data>
   <data name="BreadcrumbTitle">
-    <value>Opslag inzichten</value>
+    <value>Opslaggebruik</value>
     <comment>Breadcrumb title for storage insights page</comment>
   </data>
   <!-- Estimated total -->
   <data name="EstimatedTotalTitle">
-    <value>Geschatte kluis grootte</value>
+    <value>Geschatte vault grootte</value>
     <comment>Title for the estimated total vault size card</comment>
   </data>
   <data name="EstimatedTotalDescription">
-    <value>Dit is een schatting die berekend is op basis van uw lokale gegevens.</value>
+    <value>Dit is een schatting die berekend is op basis van je lokale data.</value>
     <comment>Subtext explaining that the estimate is approximate</comment>
   </data>
   <!-- Counts -->
@@ -64,7 +64,7 @@
     <comment>Title for the breakdown bar section</comment>
   </data>
   <data name="BreakdownDescription">
-    <value>Geschatte verdeling van de kluisgrootte per categorie. Bijlagen en logo's nemen meestal de meeste ruimte in beslag.</value>
+    <value>Geschatte verdeling van de vault grootte per categorie. Bijlagen en logo's nemen meestal de meeste ruimte in beslag.</value>
     <comment>Description for the breakdown bar</comment>
   </data>
   <data name="BreakdownCredentialsLabel">
@@ -98,7 +98,7 @@
     <comment>Title for the top logos table</comment>
   </data>
   <data name="TopLogosDescription">
-    <value>Top 10 grootste service logo's. Logo's worden hergebruikt voor items met hetzelfde domein.</value>
+    <value>Top 10 grootste logo's. Logo's worden hergebruikt voor items met hetzelfde domein.</value>
     <comment>Description for the top logos table</comment>
   </data>
   <!-- Table column headers -->
@@ -132,7 +132,7 @@
     <comment>Title for the logo management section</comment>
   </data>
   <data name="LogoManagementDescription">
-    <value>Logo's worden gehaald van het favicon van de website van elk item. Je kunt elk logo verwijderen om ruimte terug te winnen, of ze opnieuw downloaden om verbeterde versies te krijgen.</value>
+    <value>Logo's worden opgehaald van de website van elk item. Je kunt elk logo verwijderen om ruimte terug te winnen, of ze opnieuw downloaden om verbeterde versies op te halen.</value>
     <comment>Description for the logo management section</comment>
   </data>
   <data name="DeleteAllLogosButton">
@@ -156,7 +156,7 @@
     <comment>Confirmation modal title for redownload-all-logos</comment>
   </data>
   <data name="RedownloadAllLogosConfirmMessage">
-    <value>Dit haalt het favicon opnieuw op voor elk inloggegeven met een website-URL, ter vervanging van het bestaande logo. Afhankelijk van de grootte van je kluis kan dit even duren. Doorgaan?</value>
+    <value>Dit haalt het logo opnieuw op voor elke credential met een website-URL, en vervangt het bestaande logo. Afhankelijk van de grootte van je vault kan dit even duren. Doorgaan?</value>
     <comment>Confirmation modal body for redownload-all-logos</comment>
   </data>
 </root>
