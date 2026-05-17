@@ -24,13 +24,10 @@ import android.text.style.StyleSpan
 import android.util.Log
 import android.view.autofill.AutofillValue
 import android.widget.RemoteViews
-import net.aliasvault.app.MainActivity
 import net.aliasvault.app.R
-import net.aliasvault.app.autofill.utils.AutofillFieldMapper
+import net.aliasvault.app.autofill.utils.AutofillDatasetBuilder
 import net.aliasvault.app.autofill.utils.FieldFinder
-import net.aliasvault.app.autofill.utils.ImageUtils
 import net.aliasvault.app.autofill.utils.RustItemMatcher
-import net.aliasvault.app.utils.ItemTypeIcon
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.interfaces.ItemOperationCallback
 import net.aliasvault.app.vaultstore.models.Item
@@ -187,12 +184,19 @@ class AutofillService : AutofillService() {
                                     TAG,
                                     "No items found for this app, showing 'no matches' option",
                                 )
-                                responseBuilder.addDataset(createNoMatchesDataset(fieldFinder))
+                                responseBuilder.addDataset(
+                                    AutofillDatasetBuilder.createNoMatchesDataset(
+                                        this@AutofillService,
+                                        fieldFinder.autofillableFields,
+                                        appInfo,
+                                    ),
+                                )
                             } else {
                                 // If there are matches, add them to the dataset
                                 for (item in filteredItems) {
-                                    val dataset = createItemDataset(
-                                        fieldFinder = fieldFinder,
+                                    val dataset = AutofillDatasetBuilder.createItemDataset(
+                                        context = this@AutofillService,
+                                        fields = fieldFinder.autofillableFields,
                                         item = item,
                                         copyTotpOnSelect = copyTotpOnFill && item.hasTotp,
                                     )
@@ -239,164 +243,43 @@ class AutofillService : AutofillService() {
             }
         }
 
-        // If we get here, either there was no instance or the vault wasn't unlocked
-        // Show a "vault locked" placeholder instead of launching the activity
-        Log.d(TAG, "Vault is locked, showing placeholder")
-
-        val responseBuilder = FillResponse.Builder()
-        responseBuilder.addDataset(createVaultLockedDataset(fieldFinder))
-        callback(responseBuilder.build())
+        // If we get here, either there was no instance or the vault wasn't unlocked.
+        // Use FillResponse-level authentication so that after the user unlocks
+        // through AutofillUnlockActivity, the OS automatically restores the
+        // calling app and shows the (now-populated) autofill picker.
+        Log.d(TAG, "Vault is locked, requiring authentication before fill")
+        callback(buildLockedFillResponse(fieldFinder, appInfo))
     }
 
     /**
-     * Build the picker Dataset for an item. Sets presentation (label + icon),
-     * stages placeholder values via [AutofillFieldMapper], and wires
-     * `Dataset.setAuthentication` to [AutofillFillActivity], passing
-     * [copyTotpOnSelect] through so the activity copies the TOTP code on
-     * selection when requested. The OS discards the placeholder values and
-     * substitutes the dataset returned by the activity.
+     * Build a [FillResponse] whose only entry is a "Vault locked" row that, when
+     * tapped, launches [AutofillUnlockActivity] to unlock the vault and resume
+     * the autofill flow in the calling app.
      */
-    private fun createItemDataset(
-        fieldFinder: FieldFinder,
-        item: Item,
-        copyTotpOnSelect: Boolean,
-    ): Dataset {
-        val presentation = RemoteViews(packageName, R.layout.autofill_dataset_item_icon)
-        val builder = Dataset.Builder(presentation)
-
-        val applyResult = AutofillFieldMapper.applyItem(builder, item, fieldFinder.autofillableFields)
-        if (!applyResult.hasValue && fieldFinder.autofillableFields.isNotEmpty()) {
-            Log.w(TAG, "Item ${item.name} has no autofillable data - this should have been filtered")
-            builder.setValue(
-                fieldFinder.autofillableFields.first().first,
-                AutofillValue.forText(""),
-            )
-        }
-
-        val displayValue = if (applyResult.labelSuffix != null) {
-            "${item.name} (${applyResult.labelSuffix})"
-        } else {
-            item.name
-        }
-        presentation.setTextViewText(R.id.text, displayValue)
-
-        val logoBytes = item.logo
-        val bitmap = if (logoBytes != null) {
-            ImageUtils.bytesToBitmap(logoBytes)
-        } else {
-            ItemTypeIcon.getIcon(
-                context = this@AutofillService,
-                itemType = ItemTypeIcon.ItemType.LOGIN,
-                size = 96,
-            )
-        }
-        if (bitmap != null) {
-            presentation.setImageViewBitmap(R.id.icon, bitmap)
-        }
-
+    private fun buildLockedFillResponse(fieldFinder: FieldFinder, appInfo: String?): FillResponse {
         val autofillIds = fieldFinder.autofillableFields.map { it.first }.toTypedArray()
         val fieldTypeOrdinals = IntArray(fieldFinder.autofillableFields.size) { i ->
             fieldFinder.autofillableFields[i].second.ordinal
         }
-        val authIntent = Intent(this, AutofillFillActivity::class.java).apply {
-            putExtra(AutofillFillActivity.EXTRA_ITEM_ID, item.id.toString().uppercase())
-            putExtra(AutofillFillActivity.EXTRA_AUTOFILL_IDS, autofillIds)
-            putExtra(AutofillFillActivity.EXTRA_FIELD_TYPES, fieldTypeOrdinals)
-            putExtra(AutofillFillActivity.EXTRA_COPY_TOTP, copyTotpOnSelect)
+
+        val unlockIntent = Intent(this, AutofillUnlockActivity::class.java).apply {
+            putExtra(AutofillUnlockActivity.EXTRA_AUTOFILL_IDS, autofillIds)
+            putExtra(AutofillUnlockActivity.EXTRA_FIELD_TYPES, fieldTypeOrdinals)
+            putExtra(AutofillUnlockActivity.EXTRA_APP_INFO, appInfo)
         }
         val pendingIntent = PendingIntent.getActivity(
             this,
-            item.id.hashCode(),
-            authIntent,
+            0,
+            unlockIntent,
             PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_CANCEL_CURRENT,
         )
-        builder.setAuthentication(pendingIntent.intentSender)
 
-        return builder.build()
-    }
-
-    /**
-     * Create a dataset for the "no matches" option.
-     * @param fieldFinder The field finder
-     * @return The dataset
-     */
-    private fun createNoMatchesDataset(fieldFinder: FieldFinder): Dataset {
-        // Create presentation for the "no matches" option
         val presentation = RemoteViews(packageName, R.layout.autofill_dataset_item_logo)
-        presentation.setTextViewText(
-            R.id.text,
-            getString(R.string.autofill_no_match_found),
-        )
+        presentation.setTextViewText(R.id.text, getString(R.string.autofill_vault_locked))
 
-        val dataSetBuilder = Dataset.Builder(presentation)
-
-        // Get the app/website information to use as item URL
-        val appInfo = fieldFinder.getAppInfo()
-        val encodedUrl = appInfo?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: ""
-
-        // Open the action picker so the user can choose between linking this app
-        // to an existing credential or creating a new one.
-        val deepLinkUrl = "aliasvault://items/autofill-open-app?itemUrl=$encodedUrl"
-
-        // Add a click listener to open AliasVault app with deep link
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            data = android.net.Uri.parse(deepLinkUrl)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        val pendingIntent = PendingIntent.getActivity(
-            this@AutofillService,
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
-        dataSetBuilder.setAuthentication(pendingIntent.intentSender)
-
-        // Add a placeholder value to both username and password fields to satisfy the requirement that at least one value must be set
-        if (fieldFinder.autofillableFields.isNotEmpty()) {
-            for (field in fieldFinder.autofillableFields) {
-                dataSetBuilder.setValue(field.first, AutofillValue.forText(""))
-            }
-        }
-
-        return dataSetBuilder.build()
-    }
-
-    /**
-     * Create a dataset for the "vault locked" option.
-     * @param fieldFinder The field finder
-     * @return The dataset
-     */
-    private fun createVaultLockedDataset(fieldFinder: FieldFinder): Dataset {
-        // Create presentation for the "vault locked" option
-        val presentation = RemoteViews(packageName, R.layout.autofill_dataset_item_logo)
-        presentation.setTextViewText(
-            R.id.text,
-            getString(R.string.autofill_vault_locked),
-        )
-
-        val dataSetBuilder = Dataset.Builder(presentation)
-
-        // Add a click listener to open AliasVault app
-        val intent = Intent(this@AutofillService, MainActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            putExtra("OPEN_CREDENTIALS", true)
-        }
-        val pendingIntent = PendingIntent.getActivity(
-            this@AutofillService,
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
-        dataSetBuilder.setAuthentication(pendingIntent.intentSender)
-
-        // Add a placeholder value to both username and password fields to satisfy the requirement that at least one value must be set
-        if (fieldFinder.autofillableFields.isNotEmpty()) {
-            for (field in fieldFinder.autofillableFields) {
-                dataSetBuilder.setValue(field.first, AutofillValue.forText(""))
-            }
-        }
-
-        return dataSetBuilder.build()
+        return FillResponse.Builder()
+            .setAuthentication(autofillIds, pendingIntent.intentSender, presentation)
+            .build()
     }
 
     /**

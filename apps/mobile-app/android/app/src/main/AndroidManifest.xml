@@ -41,14 +41,14 @@
     <activity
         android:name=".credentialprovider.PasskeyAuthenticationActivity"
         android:exported="false"
-        android:theme="@style/PasskeyRegistrationTheme"
+        android:theme="@style/Theme.App.Overlay"
         android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|density" />
 
     <!-- Passkey Registration Activity -->
     <activity
         android:name=".credentialprovider.PasskeyRegistrationActivity"
         android:exported="false"
-        android:theme="@style/PasskeyRegistrationTheme"
+        android:theme="@style/Theme.App.Overlay"
         android:windowSoftInputMode="adjustResize"
         android:fitsSystemWindows="true"
         android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|density" />
@@ -57,14 +57,14 @@
     <activity
         android:name=".pinunlock.PinUnlockActivity"
         android:exported="false"
-        android:theme="@style/PasskeyRegistrationTheme"
+        android:theme="@style/Theme.App.Overlay"
         android:screenOrientation="portrait" />
 
     <!-- Password Unlock Activity -->
     <activity
         android:name=".passwordunlock.PasswordUnlockActivity"
         android:exported="false"
-        android:theme="@style/PasskeyRegistrationTheme"
+        android:theme="@style/Theme.App.Overlay"
         android:screenOrientation="portrait"
         android:windowSoftInputMode="adjustPan" />
 
@@ -81,6 +81,14 @@
         android:exported="false"
         android:excludeFromRecents="true"
         android:theme="@style/Theme.App.NoDisplay" />
+
+    <!-- Autofill Unlock Activity (launched via FillResponse.setAuthentication when the vault is locked) -->
+    <activity
+        android:name=".autofill.AutofillUnlockActivity"
+        android:exported="false"
+        android:excludeFromRecents="true"
+        android:theme="@style/Theme.App.Overlay"
+        android:screenOrientation="portrait" />
 
     <activity android:name=".MainActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode" android:launchMode="singleTask" android:windowSoftInputMode="adjustResize" android:theme="@style/Theme.App.SplashScreen" android:exported="true" android:screenOrientation="portrait">
       <intent-filter>
