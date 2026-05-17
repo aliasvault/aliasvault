@@ -1,0 +1,2 @@
+- Automatically copy 2FA TOTP code to clipboard during autofill
+- Improve "link new URL to credential" flow

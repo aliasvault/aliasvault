@@ -1,0 +1,2 @@
+- Improve form field detection for autofill
+- Improve browser extension startup stability

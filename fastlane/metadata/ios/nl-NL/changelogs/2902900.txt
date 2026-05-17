@@ -1,0 +1,2 @@
+- Kopieer automatisch 2FA TOTP code naar klembord tijdens autofill
+- Verbeterde "link URL to credential" flow
