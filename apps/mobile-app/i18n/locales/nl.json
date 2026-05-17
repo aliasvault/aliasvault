@@ -155,7 +155,7 @@
     },
     "advancedOptions": "Geavanceerde opties",
     "copyTotpOnFill": "TOTP-code kopiëren bij automatisch invullen",
-    "copyTotpOnFillDescription": "Wanneer je een inloggegeven automatisch met 2FA invult, kopieer je de TOTP-code automatisch naar het klembord, zodat je deze in het volgende veld kunt plakken.",
+    "copyTotpOnFillDescription": "Wanneer je autofill gebruikt met een credential voorzien van een 2FA code, wordt de 2FA-code automatisch naar het klembord gekopieerd, zodat je deze handmatig in het volgende veld kunt plakken.",
     "vaultUnlock": "Vault ontgrendelmethode",
     "autoLock": "Automatisch vergrendelen",
     "clipboardClear": "Klembord wissen",
