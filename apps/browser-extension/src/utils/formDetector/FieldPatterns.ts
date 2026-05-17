@@ -77,7 +77,10 @@ export const EnglishFieldPatterns: FieldPatterns = {
   lastName: { include: ['lastname', 'last-name', 'last_name', 'lname', 'surname', 'family-name'] },
   email: { include: ['email', 'mail', 'emailaddress'] },
   emailConfirm: { include: ['confirm', 'verification', 'repeat', 'retype', 'verify', 'email2'] },
-  password: { include: ['password', 'pwd', 'pass'] },
+  password: {
+    include: ['password', 'pwd', 'pass'],
+    exclude: ['otp', 'totp', 'tfa', '2fa', 'mfa', 'twofa', 'authenticator', 'one-time', 'onetime', 'verification-code', 'verificationcode', 'two-factor', 'second-factor', 'auth-code', 'security-code', 'six-digit']
+  },
   birthdate: { include: ['birthdate', 'birth-date', 'dob', 'date-of-birth'] },
   gender: { include: ['gender', 'sex'] },
   birthDateDay: { include: ['-day', 'birthdate_d', 'birthdayday', '_day', 'day'] },

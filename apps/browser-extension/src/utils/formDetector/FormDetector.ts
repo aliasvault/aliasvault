@@ -720,7 +720,14 @@ export class FormDetector {
         }
       }
 
+      // If email type is explicitly requested, prefer actual <input type="email">
       if (types.includes('email') && type === 'email') {
+        matches.push({ input: input as HTMLInputElement, score: -1 });
+        continue;
+      }
+
+      // If password type is explicitly requested, prefer actual <input type="password">
+      if (types.includes('password') && type === 'password') {
         matches.push({ input: input as HTMLInputElement, score: -1 });
         continue;
       }
@@ -1372,7 +1379,7 @@ export class FormDetector {
    * Find a TOTP/2FA input field in the form.
    * Uses pattern matching and heuristics specific to TOTP fields.
    */
-  private findTotpField(form: HTMLFormElement | null): HTMLInputElement | null {
+  private findTotpField(form: HTMLFormElement | null, excludeElements: HTMLInputElement[] = []): HTMLInputElement | null {
     // Check if this is an email verification form (not TOTP/2FA)
     if (this.isEmailVerificationForm()) {
       return null;
@@ -1382,7 +1389,8 @@ export class FormDetector {
     const candidates = this.findAllInputFields(
       form,
       CombinedFieldPatterns.totp,
-      ['text', 'number']
+      ['text', 'number', 'password'],
+      excludeElements
     );
 
     // Filter out parent-child duplicates
@@ -1607,6 +1615,11 @@ export class FormDetector {
     if (passwordFields.confirm) {
       detectedFields.push(passwordFields.confirm);
     }
+    
+    const totpField = this.findTotpField(wrapper as HTMLFormElement | null, detectedFields);
+    if (totpField) {
+      detectedFields.push(totpField);
+    }
 
     const usernameField = this.findInputField(wrapper as HTMLFormElement | null, CombinedFieldPatterns.username, ['text'], detectedFields, checkVisibility);
     if (usernameField) {
@@ -1655,11 +1668,6 @@ export class FormDetector {
     const genderField = this.findGenderField(wrapper as HTMLFormElement | null, detectedFields);
     if (genderField.field) {
       detectedFields.push(genderField.field as HTMLInputElement);
-    }
-
-    const totpField = this.findTotpField(wrapper as HTMLFormElement | null);
-    if (totpField) {
-      detectedFields.push(totpField);
     }
 
     return {

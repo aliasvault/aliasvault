@@ -259,4 +259,96 @@ describe('FormDetector English tests', () => {
     });
   });
 
+  /*
+   * Regression: a field declared as <input type="password"> must be detected
+   * as a password field even when its id/name/placeholder don't include the
+   * strings "password"/"pwd"/"pass" (e.g. intranet forms using "pin",
+   * "loginPin", etc.). The HTML standard type attribute is an unambiguous
+   * signal that should be respected.
+   */
+  describe('English login form with type="password" but no password keyword in id/name', () => {
+    const htmlFile = 'en-login-form-typed-password.html';
+
+    testField(FormField.Username, 'loginUser', htmlFile);
+    testField(FormField.Password, 'loginPin', htmlFile);
+
+    it('should detect the form as a login form', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+      const formDetector = new FormDetector(document);
+      expect(formDetector.containsLoginForm()).toBe(true);
+    });
+
+    it('should trigger autofill when clicking the type="password" field', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const pinInput = document.getElementById('loginPin');
+      const formDetector = new FormDetector(document, pinInput as HTMLElement);
+
+      expect(formDetector.isAutofillTriggerableField()).toBe(true);
+    });
+
+    it('should expose the type="password" field as the primary password field', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const pinInput = document.getElementById('loginPin');
+      const formDetector = new FormDetector(document, pinInput as HTMLElement);
+      const form = formDetector.getForm();
+
+      expect(form).toBeTruthy();
+      expect(form?.passwordField).toBeTruthy();
+      expect(form?.passwordField?.id).toBe('loginPin');
+      expect(form?.passwordField?.type).toBe('password');
+      expect(form?.passwordConfirmField).toBeFalsy();
+    });
+  });
+
+  /*
+   * Counterpart to the test above: when type="password" is (mis)used to mask
+   * an OTP/2FA input, the password detector must NOT classify it as a
+   * credential password (otherwise the master password would be autofilled
+   * into a TOTP field), and the TOTP detector should pick it up so the
+   * user still gets a meaningful autofill experience.
+   */
+  describe('English form with type="password" masked TOTP input', () => {
+    const htmlFile = 'en-totp-masked-as-password.html';
+
+    it('should NOT classify the type="password" OTP field as a credential password', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const otpInput = document.getElementById('otp');
+      const formDetector = new FormDetector(document, otpInput as HTMLElement);
+      const form = formDetector.getForm();
+
+      expect(form?.passwordField).toBeFalsy();
+      expect(form?.passwordConfirmField).toBeFalsy();
+    });
+
+    it('should classify the type="password" OTP field as a TOTP field', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const otpInput = document.getElementById('otp');
+      const formDetector = new FormDetector(document, otpInput as HTMLElement);
+      const form = formDetector.getForm();
+
+      expect(form?.totpField).toBeTruthy();
+      expect(form?.totpField?.id).toBe('otp');
+      expect(form?.totpField?.type).toBe('password');
+    });
+
+    it('should trigger autofill when clicking the masked OTP field', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const otpInput = document.getElementById('otp');
+      const formDetector = new FormDetector(document, otpInput as HTMLElement);
+
+      expect(formDetector.isAutofillTriggerableField()).toBe(true);
+    });
+  });
+
 });
