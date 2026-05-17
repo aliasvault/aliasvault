@@ -1,0 +1,3 @@
+- Kopieer automatisch 2FA TOTP code naar klembord tijdens autofill
+- Vault ontgrendelen tijdens autofill werkt nu via overlay
+- Verbeterde "link URL to credential" flow

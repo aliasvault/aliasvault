@@ -1,0 +1,3 @@
+- Automatically copy 2FA TOTP code to clipboard during autofill
+- Make vault unlock during autofill work via overlay instead of opening full app
+- Improve "link new URL to credential" flow
