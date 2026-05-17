@@ -58,16 +58,63 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
-    <comment>Section title for 2FA codes</comment>
+  <!-- Page title -->
+  <data name="PageTitle" xml:space="preserve">
+    <value>Create a new AliasVault account</value>
+    <comment>Main registration page title</comment>
   </data>
-  <data name="NoTotpCodesMessage" xml:space="preserve">
-    <value>No two-factor authenticator codes available</value>
-    <comment>Message shown when no TOTP codes are configured</comment>
+  <!-- Form labels -->
+  <data name="UsernameOrEmailLabel" xml:space="preserve">
+    <value>Your username or email</value>
+    <comment>Label for username/email input field</comment>
   </data>
-  <data name="CopiedMessage" xml:space="preserve">
-    <value>Tersalin!</value>
-    <comment>Feedback message when TOTP code is copied to clipboard</comment>
+  <data name="PasswordLabel" xml:space="preserve">
+    <value>Your password</value>
+    <comment>Label for password input field</comment>
+  </data>
+  <data name="ConfirmPasswordLabel" xml:space="preserve">
+    <value>Confirm password</value>
+    <comment>Label for password confirmation input field</comment>
+  </data>
+  <!-- Terms and conditions -->
+  <data name="AcceptTermsLabel" xml:space="preserve">
+    <value>I accept the</value>
+    <comment>Text before terms and conditions link</comment>
+  </data>
+  <data name="TermsAndConditionsLink" xml:space="preserve">
+    <value>Terms and Conditions</value>
+    <comment>Link text for terms and conditions</comment>
+  </data>
+  <!-- Buttons -->
+  <data name="CreateAccountButton" xml:space="preserve">
+    <value>Create account</value>
+    <comment>Create account button text</comment>
+  </data>
+  <!-- Links -->
+  <data name="AlreadyRegisteredText" xml:space="preserve">
+    <value>Already registered?</value>
+    <comment>Text before login link</comment>
+  </data>
+  <data name="LoginHereLink" xml:space="preserve">
+    <value>Login here</value>
+    <comment>Link text for login page</comment>
+  </data>
+  <!-- Loading and status messages -->
+  <data name="CreatingAccountMessage" xml:space="preserve">
+    <value>Creating account...</value>
+    <comment>Loading message during account creation</comment>
+  </data>
+  <data name="RegistrationErrorMessage" xml:space="preserve">
+    <value>An error occurred during registration.</value>
+    <comment>Generic registration error message</comment>
+  </data>
+  <!-- Placeholders -->
+  <data name="UsernamePlaceholder" xml:space="preserve">
+    <value>name / name@company.com</value>
+    <comment>Placeholder text for username input</comment>
+  </data>
+  <data name="PasswordPlaceholder" xml:space="preserve">
+    <value>••••••••</value>
+    <comment>Placeholder text for password input</comment>
   </data>
 </root>

@@ -25,51 +25,51 @@
     <comment>Main navigation link for vault section</comment>
   </data>
   <data name="EmailsNav">
-    <value>E-mails</value>
+    <value>Emails</value>
     <comment>Main navigation link for emails section</comment>
   </data>
   <!-- Settings menu items -->
   <data name="GeneralSettingsNav">
-    <value>Algemene instellingen</value>
+    <value>General settings</value>
     <comment>Navigation link for general settings</comment>
   </data>
   <data name="SecuritySettingsNav">
-    <value>Beveiligingsinstellingen</value>
+    <value>Security settings</value>
     <comment>Navigation link for security settings</comment>
   </data>
   <data name="StorageInsightsNav">
-    <value>Opslaggebruik</value>
+    <value>Storage insights</value>
     <comment>Navigation link for vault storage insights page</comment>
   </data>
   <data name="ImportExportNav">
-    <value>Importeren / Exporteren</value>
+    <value>Import / Export</value>
     <comment>Navigation link for import/export settings</comment>
   </data>
   <data name="ExtensionsAppsNav">
-    <value>Extensies &amp; Apps</value>
+    <value>Extensions &amp; Apps</value>
     <comment>Navigation link for extensions and apps settings</comment>
   </data>
   <!-- Menu actions -->
   <data name="EnableLightMode">
-    <value>Wissel naar lichte thema</value>
+    <value>Switch to light mode</value>
     <comment>Button text for switching to light theme</comment>
   </data>
   <data name="EnableDarkMode">
-    <value>Wissel naar donker thema</value>
+    <value>Switch to dark mode</value>
     <comment>Button text for switching to dark theme</comment>
   </data>
   <data name="LogOut">
-    <value>Uitloggen</value>
+    <value>Log out</value>
     <comment>Button text for logging out</comment>
   </data>
   <!-- Accessibility labels -->
   <data name="OpenMenuLabel">
-    <value>Menu openen</value>
+    <value>Open menu</value>
     <comment>Screen reader label for mobile menu button</comment>
   </data>
   <!-- Status labels -->
   <data name="NewLabel">
-    <value>NIEUW</value>
+    <value>NEW</value>
     <comment>Label for new features or menu items</comment>
   </data>
   <data name="BetaLabel">

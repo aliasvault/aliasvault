@@ -58,16 +58,48 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
-    <comment>Section title for 2FA codes</comment>
+  <data name="UpgradeVaultTitle" xml:space="preserve">
+    <value>Upgrade Vault</value>
+    <comment>Title for vault upgrade process</comment>
   </data>
-  <data name="NoTotpCodesMessage" xml:space="preserve">
-    <value>No two-factor authenticator codes available</value>
-    <comment>Message shown when no TOTP codes are configured</comment>
+  <data name="UpgradeDescription" xml:space="preserve">
+    <value>AliasVault has been updated and your vault needs to be upgraded. This should only take a few seconds.</value>
+    <comment>Description of vault upgrade process</comment>
   </data>
-  <data name="CopiedMessage" xml:space="preserve">
-    <value>Tersalin!</value>
-    <comment>Feedback message when TOTP code is copied to clipboard</comment>
+  <data name="VersionInformationTitle" xml:space="preserve">
+    <value>Version Information</value>
+    <comment>Title for version information section</comment>
+  </data>
+  <data name="UpgradeRequiredDescription" xml:space="preserve">
+    <value>An upgrade is required to support the following changes: {0}</value>
+    <comment>Description of upgrade requirements with changes placeholder</comment>
+  </data>
+  <data name="NoDescriptionAvailable" xml:space="preserve">
+    <value>No description available for this version.</value>
+    <comment>Fallback text when version description is not available</comment>
+  </data>
+  <data name="YourVaultLabel" xml:space="preserve">
+    <value>Your vault version:</value>
+    <comment>Label for current vault version</comment>
+  </data>
+  <data name="NewVersionLabel" xml:space="preserve">
+    <value>New available version:</value>
+    <comment>Label for new vault version</comment>
+  </data>
+  <data name="StartUpgradeButton" xml:space="preserve">
+    <value>Start upgrade process</value>
+    <comment>Button text to start the upgrade process</comment>
+  </data>
+  <data name="UpgradeSuccessMessage" xml:space="preserve">
+    <value>Vault upgrade successful.</value>
+    <comment>Success message after successful vault upgrade</comment>
+  </data>
+  <data name="UpgradeSuccessButSaveFailedError" xml:space="preserve">
+    <value>Database upgrade successful but failed to save to server. Please try again or contact support.</value>
+    <comment>Error message when upgrade succeeds but save fails</comment>
+  </data>
+  <data name="UpgradeFailedError" xml:space="preserve">
+    <value>Database upgrade failed. Please try again or contact support.</value>
+    <comment>Error message when upgrade fails</comment>
   </data>
 </root>

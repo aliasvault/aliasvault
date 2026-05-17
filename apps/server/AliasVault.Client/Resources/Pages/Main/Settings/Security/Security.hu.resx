@@ -58,16 +58,20 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
-    <comment>Section title for 2FA codes</comment>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Security settings</value>
+    <comment>Title for the security settings page</comment>
   </data>
-  <data name="NoTotpCodesMessage" xml:space="preserve">
-    <value>No two-factor authenticator codes available</value>
-    <comment>Message shown when no TOTP codes are configured</comment>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Configure security settings.</value>
+    <comment>Description for the security settings page</comment>
   </data>
-  <data name="CopiedMessage" xml:space="preserve">
-    <value>Tersalin!</value>
-    <comment>Feedback message when TOTP code is copied to clipboard</comment>
+  <data name="RefreshButton" xml:space="preserve">
+    <value>Refresh</value>
+    <comment>Refresh button text</comment>
+  </data>
+  <data name="BreadcrumbTitle" xml:space="preserve">
+    <value>Security settings</value>
+    <comment>Breadcrumb title for security settings</comment>
   </data>
 </root>

@@ -58,16 +58,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
-    <comment>Section title for 2FA codes</comment>
+  <data name="Alias" xml:space="preserve">
+    <value>Alias</value>
+    <comment>Label for alias mode toggle</comment>
   </data>
-  <data name="NoTotpCodesMessage" xml:space="preserve">
-    <value>No two-factor authenticator codes available</value>
-    <comment>Message shown when no TOTP codes are configured</comment>
+  <data name="PrivateEmailTitle" xml:space="preserve">
+    <value>Private Email</value>
+    <comment>Title for private email domains section</comment>
   </data>
-  <data name="CopiedMessage" xml:space="preserve">
-    <value>Tersalin!</value>
-    <comment>Feedback message when TOTP code is copied to clipboard</comment>
+  <data name="PrivateEmailDescription" xml:space="preserve">
+    <value>E2E encrypted, fully private.</value>
+    <comment>Description of private email domains</comment>
+  </data>
+  <data name="PublicEmailTitle" xml:space="preserve">
+    <value>Public Temp Email Providers</value>
+    <comment>Title for public email domains section</comment>
+  </data>
+  <data name="PublicEmailDescription" xml:space="preserve">
+    <value>Anonymous but limited privacy. Email content is readable by anyone that knows the address.</value>
+    <comment>Description of public email domains</comment>
+  </data>
+  <data name="PrivateEmailAliasVaultServer" xml:space="preserve">
+    <value>AliasVault server</value>
+    <comment>Subtitle for private email domains section</comment>
   </data>
 </root>

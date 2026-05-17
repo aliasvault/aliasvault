@@ -58,16 +58,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
-    <comment>Section title for 2FA codes</comment>
+  <data name="LoggingOutTitle" xml:space="preserve">
+    <value>Logging out</value>
+    <comment>Title shown during logout process</comment>
   </data>
-  <data name="NoTotpCodesMessage" xml:space="preserve">
-    <value>No two-factor authenticator codes available</value>
-    <comment>Message shown when no TOTP codes are configured</comment>
-  </data>
-  <data name="CopiedMessage" xml:space="preserve">
-    <value>Tersalin!</value>
-    <comment>Feedback message when TOTP code is copied to clipboard</comment>
+  <data name="LoggingOutDescription" xml:space="preserve">
+    <value>Securely unloading your data and logging you out. Please wait.</value>
+    <comment>Description shown during logout process</comment>
   </data>
 </root>

@@ -58,16 +58,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
-    <comment>Section title for 2FA codes</comment>
+  <data name="MainTitle" xml:space="preserve">
+    <value>Password &amp; (Email) Alias Manager</value>
+    <comment>Main title of the application</comment>
   </data>
-  <data name="NoTotpCodesMessage" xml:space="preserve">
-    <value>No two-factor authenticator codes available</value>
-    <comment>Message shown when no TOTP codes are configured</comment>
+  <data name="TaglineText" xml:space="preserve">
+    <value>Your Privacy. Protected.</value>
+    <comment>Tagline emphasizing privacy protection</comment>
   </data>
-  <data name="CopiedMessage" xml:space="preserve">
-    <value>Tersalin!</value>
-    <comment>Feedback message when TOTP code is copied to clipboard</comment>
+  <data name="CreateNewVaultButton" xml:space="preserve">
+    <value>Create new vault</value>
+    <comment>Button text for creating a new vault</comment>
+  </data>
+  <data name="LoginExistingAccountButton" xml:space="preserve">
+    <value>Log in with existing account</value>
+    <comment>Button text for logging in with existing account</comment>
+  </data>
+  <data name="HttpsWarningTitle" xml:space="preserve">
+    <value>HTTPS Required</value>
+    <comment>Title for HTTPS warning banner</comment>
+  </data>
+  <data name="HttpsWarningMessage" xml:space="preserve">
+    <value>Browsers only allow secure crypto operations via HTTPS, except for localhost. Login/registration won't work over HTTP with the current hostname. Please switch to HTTPS.</value>
+    <comment>Message explaining why HTTPS is required</comment>
   </data>
 </root>

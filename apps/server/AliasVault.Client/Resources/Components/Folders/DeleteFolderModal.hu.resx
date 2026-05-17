@@ -58,16 +58,32 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
-    <comment>Section title for 2FA codes</comment>
+  <data name="DeleteFolderTitle" xml:space="preserve">
+    <value>Delete Folder</value>
+    <comment>Title for delete folder modal</comment>
   </data>
-  <data name="NoTotpCodesMessage" xml:space="preserve">
-    <value>No two-factor authenticator codes available</value>
-    <comment>Message shown when no TOTP codes are configured</comment>
+  <data name="DeleteFolderDescription" xml:space="preserve">
+    <value>How would you like to delete the folder "{0}"?</value>
+    <comment>Description for delete folder modal. {0} is the folder name.</comment>
   </data>
-  <data name="CopiedMessage" xml:space="preserve">
-    <value>Tersalin!</value>
-    <comment>Feedback message when TOTP code is copied to clipboard</comment>
+  <data name="DeleteFolderOnlyTitle" xml:space="preserve">
+    <value>Delete folder only</value>
+    <comment>Title for delete folder only option</comment>
+  </data>
+  <data name="DeleteFolderOnlyDescription" xml:space="preserve">
+    <value>Items will be moved to the parent folder</value>
+    <comment>Description for delete folder only option</comment>
+  </data>
+  <data name="DeleteFolderAndContentsTitle" xml:space="preserve">
+    <value>Delete folder and contents</value>
+    <comment>Title for delete folder and contents option</comment>
+  </data>
+  <data name="DeleteFolderAndContentsDescription" xml:space="preserve">
+    <value>Move {0} item(s) to trash</value>
+    <comment>Description for delete folder and contents option. {0} is item count.</comment>
+  </data>
+  <data name="CancelButton" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Cancel button text</comment>
   </data>
 </root>

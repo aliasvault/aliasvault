@@ -58,16 +58,20 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
-    <comment>Section title for 2FA codes</comment>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Log in using Mobile App</value>
+    <comment>Page title for mobile unlock feature</comment>
   </data>
-  <data name="NoTotpCodesMessage" xml:space="preserve">
-    <value>No two-factor authenticator codes available</value>
-    <comment>Message shown when no TOTP codes are configured</comment>
+  <data name="UnlockTitle" xml:space="preserve">
+    <value>Unlock using Mobile App</value>
+    <comment>Modal title for mobile unlock feature</comment>
   </data>
-  <data name="CopiedMessage" xml:space="preserve">
-    <value>Tersalin!</value>
-    <comment>Feedback message when TOTP code is copied to clipboard</comment>
+  <data name="ScanQrCodeDescription" xml:space="preserve">
+    <value>Scan this QR code with your AliasVault mobile app to login.</value>
+    <comment>Description instructing user to scan QR code</comment>
+  </data>
+  <data name="ScanQrCodeToUnlock" xml:space="preserve">
+    <value>Scan this QR code with your AliasVault mobile app to unlock your vault.</value>
+    <comment>Description instructing user to scan QR code to unlock</comment>
   </data>
 </root>

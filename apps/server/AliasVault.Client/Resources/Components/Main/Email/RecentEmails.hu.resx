@@ -58,16 +58,36 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
-    <comment>Section title for 2FA codes</comment>
+  <data name="EmailSectionTitle" xml:space="preserve">
+    <value>Email</value>
+    <comment>Section title for email panel</comment>
   </data>
-  <data name="NoTotpCodesMessage" xml:space="preserve">
-    <value>No two-factor authenticator codes available</value>
-    <comment>Message shown when no TOTP codes are configured</comment>
+  <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
+    <value>Auto-refresh enabled</value>
+    <comment>Tooltip for auto-refresh indicator</comment>
   </data>
-  <data name="CopiedMessage" xml:space="preserve">
-    <value>Tersalin!</value>
-    <comment>Feedback message when TOTP code is copied to clipboard</comment>
+  <data name="SubjectColumn" xml:space="preserve">
+    <value>Subject</value>
+    <comment>Table column header for email subject</comment>
+  </data>
+  <data name="DateColumn" xml:space="preserve">
+    <value>Date</value>
+    <comment>Table column header for email date</comment>
+  </data>
+  <data name="NoEmailsReceivedMessage" xml:space="preserve">
+    <value>No emails received (yet).</value>
+    <comment>Message when no emails are available</comment>
+  </data>
+  <data name="EmailAddressInUseError" xml:space="preserve">
+    <value>The current chosen email address is already in use. Please change the email address by editing this credential.</value>
+    <comment>Error message when email address is already in use</comment>
+  </data>
+  <data name="EmailLoadError" xml:space="preserve">
+    <value>An error occurred while trying to load the emails. Please try to edit and save the credential entry to synchronize the database, then try again.</value>
+    <comment>Error message when email loading fails</comment>
+  </data>
+  <data name="LoadMoreButton" xml:space="preserve">
+    <value>Load more</value>
+    <comment>Button text to load more emails</comment>
   </data>
 </root>
