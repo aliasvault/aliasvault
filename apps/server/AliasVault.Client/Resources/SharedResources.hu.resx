@@ -119,109 +119,109 @@
   </resheader>
   <!-- Common UI elements -->
   <data name="Save" xml:space="preserve">
-    <value>Save</value>
+    <value>Mentés</value>
     <comment>Button text for saving changes</comment>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Cancel</value>
+    <value>Mégse</value>
     <comment>Button text for canceling an action</comment>
   </data>
   <data name="Generate" xml:space="preserve">
-    <value>Generate</value>
+    <value>Generálás</value>
     <comment>Button tooltip for generating a random value</comment>
   </data>
   <data name="Delete" xml:space="preserve">
-    <value>Delete</value>
+    <value>Törlés</value>
     <comment>Button text for deleting an item</comment>
   </data>
   <data name="Edit" xml:space="preserve">
-    <value>Edit</value>
+    <value>Szerkesztés</value>
     <comment>Button text for editing an item</comment>
   </data>
   <data name="Show" xml:space="preserve">
-    <value>Show</value>
+    <value>Megjelenítés</value>
     <comment>Button text for showing content</comment>
   </data>
   <data name="Hide" xml:space="preserve">
-    <value>Hide</value>
+    <value>Elrejtés</value>
     <comment>Button text for hiding content</comment>
   </data>
   <data name="Close" xml:space="preserve">
-    <value>Close</value>
+    <value>Bezár</value>
     <comment>Button text for closing a dialog or modal</comment>
   </data>
   <data name="Back" xml:space="preserve">
-    <value>Back</value>
+    <value>Vissza</value>
     <comment>Button text for going back</comment>
   </data>
   <data name="Next" xml:space="preserve">
-    <value>Next</value>
+    <value>Következő</value>
     <comment>Button text for proceeding to the next step</comment>
   </data>
   <data name="Loading" xml:space="preserve">
-    <value>Loading...</value>
+    <value>Betöltés...</value>
     <comment>Loading message displayed during async operations</comment>
   </data>
   <data name="Yes" xml:space="preserve">
-    <value>Yes</value>
+    <value>Igen</value>
     <comment>Confirmation button text</comment>
   </data>
   <data name="No" xml:space="preserve">
-    <value>No</value>
+    <value>Nem</value>
     <comment>Rejection button text</comment>
   </data>
   <data name="Ok" xml:space="preserve">
-    <value>OK</value>
+    <value>Rendben</value>
     <comment>OK button text</comment>
   </data>
   <data name="Continue" xml:space="preserve">
-    <value>Continue</value>
+    <value>Folytatás</value>
     <comment>Button text to continue with an action</comment>
   </data>
   <data name="Confirm" xml:space="preserve">
-    <value>Confirm</value>
+    <value>Megerősítés</value>
     <comment>Button text to confirm an action</comment>
   </data>
   <data name="Refresh" xml:space="preserve">
-    <value>Refresh</value>
+    <value>Frissítés</value>
     <comment>Button text to refresh content</comment>
   </data>
   <!-- Common form elements -->
   <data name="Email" xml:space="preserve">
-    <value>Email</value>
+    <value>E-mail</value>
     <comment>Label for email input field</comment>
   </data>
   <data name="Password" xml:space="preserve">
-    <value>Password</value>
+    <value>Jelszó</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="Username" xml:space="preserve">
-    <value>Username</value>
+    <value>Felhasználónév</value>
     <comment>Label for username input field</comment>
   </data>
   <data name="Name" xml:space="preserve">
-    <value>Name</value>
+    <value>Név</value>
     <comment>Label for name input field</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Description</value>
+    <value>Leírás</value>
     <comment>Label for description input field</comment>
   </data>
   <data name="Title" xml:space="preserve">
-    <value>Title</value>
+    <value>Cím</value>
     <comment>Label for title input field</comment>
   </data>
   <data name="Website" xml:space="preserve">
-    <value>Website</value>
+    <value>Weblap</value>
     <comment>Label for website input field</comment>
   </data>
   <data name="Search" xml:space="preserve">
-    <value>Search</value>
+    <value>Keresés</value>
     <comment>Label for search input field</comment>
   </data>
   <!-- Common error messages -->
   <data name="ErrorGeneric" xml:space="preserve">
-    <value>An error occurred. Please try again.</value>
+    <value>Hiba lépett fel. Próbálkozzon újra.</value>
     <comment>Generic error message</comment>
   </data>
   <data name="ErrorUnknown" xml:space="preserve">
