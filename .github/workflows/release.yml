@@ -205,7 +205,7 @@ jobs:
 
       - name: Upload install.sh to release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: install.sh
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -292,10 +292,10 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v4
@@ -306,7 +306,7 @@ jobs:
 
       - name: Extract metadata for Postgres image
         id: postgres-meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         env:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
         with:
@@ -324,7 +324,7 @@ jobs:
 
       - name: Extract metadata for API image
         id: api-meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         env:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
         with:
@@ -342,7 +342,7 @@ jobs:
 
       - name: Extract metadata for Client image
         id: client-meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         env:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
         with:
@@ -360,7 +360,7 @@ jobs:
 
       - name: Extract metadata for Admin image
         id: admin-meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         env:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
         with:
@@ -378,7 +378,7 @@ jobs:
 
       - name: Extract metadata for Reverse Proxy image
         id: reverse-proxy-meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         env:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
         with:
@@ -396,7 +396,7 @@ jobs:
 
       - name: Extract metadata for SMTP image
         id: smtp-meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         env:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
         with:
@@ -414,7 +414,7 @@ jobs:
 
       - name: Extract metadata for TaskRunner image
         id: task-runner-meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         env:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
         with:
@@ -432,7 +432,7 @@ jobs:
 
       - name: Extract metadata for InstallCLI image
         id: installcli-meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         env:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
         with:
@@ -450,7 +450,7 @@ jobs:
 
 
       - name: Build and push Postgres image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: apps/server/Databases/AliasServerDb/Dockerfile
@@ -461,7 +461,7 @@ jobs:
           annotations: ${{ steps.postgres-meta.outputs.annotations }}
 
       - name: Build and push API image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: apps/server/AliasVault.Api/Dockerfile
@@ -472,7 +472,7 @@ jobs:
           annotations: ${{ steps.api-meta.outputs.annotations }}
 
       - name: Build and push Client image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: apps/server/AliasVault.Client/Dockerfile
@@ -483,7 +483,7 @@ jobs:
           annotations: ${{ steps.client-meta.outputs.annotations }}
 
       - name: Build and push Admin image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: apps/server/AliasVault.Admin/Dockerfile
@@ -494,7 +494,7 @@ jobs:
           annotations: ${{ steps.admin-meta.outputs.annotations }}
 
       - name: Build and push Reverse Proxy image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: apps/server/Dockerfile
@@ -505,7 +505,7 @@ jobs:
           annotations: ${{ steps.reverse-proxy-meta.outputs.annotations }}
 
       - name: Build and push SMTP image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: apps/server/Services/AliasVault.SmtpService/Dockerfile
@@ -516,7 +516,7 @@ jobs:
           annotations: ${{ steps.smtp-meta.outputs.annotations }}
 
       - name: Build and push TaskRunner image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: apps/server/Services/AliasVault.TaskRunner/Dockerfile
@@ -527,7 +527,7 @@ jobs:
           annotations: ${{ steps.task-runner-meta.outputs.annotations }}
 
       - name: Build and push InstallCli image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: apps/server/Utilities/AliasVault.InstallCli/Dockerfile
@@ -551,10 +551,10 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v4
@@ -571,7 +571,7 @@ jobs:
 
       - name: Extract metadata for all-in-one image
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         env:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
         with:
@@ -590,7 +590,7 @@ jobs:
             org.opencontainers.image.description=Self-contained AliasVault server including web app, with all services bundled using s6-overlay. Single container solution for easy deployment (see docs.aliasvault.net).
 
       - name: Build and push all-in-one image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: dockerfiles/all-in-one/Dockerfile
@@ -611,7 +611,7 @@ jobs:
 
     steps:
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v4

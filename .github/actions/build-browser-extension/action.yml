@@ -13,7 +13,7 @@ runs:
   using: "composite"
   steps:
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: '20'
         cache: 'npm'
@@ -90,7 +90,7 @@ runs:
       working-directory: apps/browser-extension
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: aliasvault-${{ env.VERSION }}-${{ inputs.browser }}
         path: apps/browser-extension/dist/${{ inputs.browser }}-unpacked
@@ -105,7 +105,7 @@ runs:
 
     - name: Upload Firefox sources artifact
       if: ${{ inputs.browser == 'firefox' }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: aliasvault-${{ env.VERSION }}-browser-extension-sources
         path: apps/browser-extension/dist/sources-unpacked
@@ -120,7 +120,7 @@ runs:
 
     - name: Upload to GitHub Release
       if: ${{ inputs.upload_to_release == 'true' }}
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v3
       with:
         files: |
           apps/browser-extension/dist/aliasvault-${{ env.VERSION }}-${{ inputs.browser }}.zip
@@ -129,7 +129,7 @@ runs:
 
     - name: Upload Firefox sources to Release
       if: ${{ inputs.upload_to_release == 'true' && inputs.browser == 'firefox' }}
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v3
       with:
         files: apps/browser-extension/dist/aliasvault-${{ env.VERSION }}-browser-extension-sources.zip
       env:
