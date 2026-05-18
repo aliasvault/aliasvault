@@ -129,7 +129,7 @@ body {
 }
 
 .av-service-details {
-  font-size: 0.85em;
+  font-size: 12px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -396,6 +396,8 @@ body {
   padding: 16px 24px;
   transition: transform 0.2s ease, opacity 0.2s ease;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .av-create-popup.show {
@@ -529,9 +531,9 @@ body {
 
 .av-create-popup-field-group label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 8px;
   color: #eee;
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 500;
 }
 
@@ -598,8 +600,8 @@ body {
 
 .av-create-popup-error-text {
   color: #ef4444;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
+  font-size: 14px;
+  margin-top: 4px;
   margin-left: 5px;
 }
 
@@ -1013,7 +1015,7 @@ body {
 }
 
 .av-password-length-header label {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 500;
   color: #9ca3af;
   margin: 0;
@@ -1026,7 +1028,7 @@ body {
 }
 
 .av-password-length-value {
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #e5e7eb;
   font-family: 'Courier New', monospace;
   min-width: 24px;
