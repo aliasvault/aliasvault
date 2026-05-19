@@ -13,6 +13,7 @@ using System.IO.Compression;
 using AliasClientDb;
 using AliasClientDb.Models;
 using AliasVault.ImportExport;
+using AliasVault.ImportExport.Exceptions;
 using AliasVault.ImportExport.Importers;
 using AliasVault.ImportExport.Models;
 using AliasVault.UnitTests.Common;
@@ -2080,7 +2081,7 @@ public class ImportExportTests
 
         // Act
         var importer = new BitwardenZipImporter();
-        var importedCredentials = await importer.ImportFromArchiveAsync(zipBytes);
+        var importedCredentials = (await importer.ImportFromArchiveAsync(zipBytes)).Credentials;
 
         // Assert
         Assert.That(importedCredentials, Has.Count.EqualTo(5));
@@ -2249,7 +2250,7 @@ public class ImportExportTests
 
         // Act
         var importer = new BitwardenZipImporter();
-        var importedCredentials = await importer.ImportFromArchiveAsync(zipBytes);
+        var importedCredentials = (await importer.ImportFromArchiveAsync(zipBytes)).Credentials;
 
         // Assert - exactly one attachment with the real filename and content,
         // and no phantom empty-filename entry from the directory entries.
@@ -2267,6 +2268,137 @@ public class ImportExportTests
     }
 
     /// <summary>
+    /// A non-ZIP byte stream surfaces a stage=Archive ImportException so the UI can show
+    /// the user "this isn't a valid archive" instead of a generic message.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public Task BitwardenZipImporterCorruptArchiveThrowsArchiveStageException()
+    {
+        // "Not a zip file at all" — opening this as a ZipArchive should throw InvalidDataException,
+        // which BaseArchiveImporter must catch and re-wrap as ImportException(Archive).
+        var corruptBytes = System.Text.Encoding.UTF8.GetBytes("definitely not a zip");
+
+        var importer = new BitwardenZipImporter();
+        var ex = Assert.ThrowsAsync<ImportException>(async () =>
+            await importer.ImportFromArchiveAsync(corruptBytes));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ex!.Stage, Is.EqualTo(ImportStage.Archive));
+            Assert.That(ex.Message, Does.Contain("not a valid ZIP archive"));
+        });
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// A ZIP that opens but doesn't contain data.json surfaces a stage=Parse ImportException
+    /// naming the missing entry. Gives the user a concrete diagnostic instead of "an error occurred".
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task BitwardenZipImporterMissingManifestThrowsParseStageException()
+    {
+        byte[] zipBytes;
+        using (var ms = new MemoryStream())
+        {
+            using (new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                // Empty archive — no data.json
+            }
+
+            zipBytes = ms.ToArray();
+        }
+
+        var importer = new BitwardenZipImporter();
+        var ex = Assert.ThrowsAsync<ImportException>(async () =>
+            await importer.ImportFromArchiveAsync(zipBytes));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ex!.Stage, Is.EqualTo(ImportStage.Parse));
+            Assert.That(ex.Message, Does.Contain("data.json"));
+            Assert.That(ex.Message, Does.Contain("not found"));
+        });
+
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// A ZIP whose data.json is malformed surfaces a stage=Parse ImportException carrying the JSONPath,
+    /// line, and byte position from the underlying JsonException. The precise diagnostic users need to
+    /// share when reporting an import failure.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task BitwardenZipImporterMalformedJsonReportsPathAndPosition()
+    {
+        byte[] zipBytes;
+        using (var ms = new MemoryStream())
+        {
+            using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                var dataEntry = archive.CreateEntry("data.json");
+                using var writer = new StreamWriter(dataEntry.Open());
+
+                // Valid up to "items": then truncated mid-object — JsonSerializer will throw with a
+                // populated Path / LineNumber / BytePositionInLine.
+                await writer.WriteAsync("{\"encrypted\":false,\"folders\":[],\"items\":[{");
+            }
+
+            zipBytes = ms.ToArray();
+        }
+
+        var importer = new BitwardenZipImporter();
+        var ex = Assert.ThrowsAsync<ImportException>(async () =>
+            await importer.ImportFromArchiveAsync(zipBytes));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ex!.Stage, Is.EqualTo(ImportStage.Parse));
+            Assert.That(ex.Message, Does.Contain("data.json"));
+            Assert.That(ex.Message, Does.Contain("Failed to parse"));
+            Assert.That(ex.InnerException, Is.TypeOf<System.Text.Json.JsonException>());
+        });
+    }
+
+    /// <summary>
+    /// Encrypted Bitwarden exports raise a stage=Parse ImportException with the actionable message
+    /// "export as unencrypted" so the user knows how to fix their export.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task BitwardenZipImporterEncryptedExportReportsClearError()
+    {
+        byte[] zipBytes;
+        using (var ms = new MemoryStream())
+        {
+            using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                var dataEntry = archive.CreateEntry("data.json");
+                using var writer = new StreamWriter(dataEntry.Open());
+                await writer.WriteAsync("{\"encrypted\":true,\"folders\":[],\"items\":[]}");
+            }
+
+            zipBytes = ms.ToArray();
+        }
+
+        var importer = new BitwardenZipImporter();
+        var ex = Assert.ThrowsAsync<ImportException>(async () =>
+            await importer.ImportFromArchiveAsync(zipBytes));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ex!.Stage, Is.EqualTo(ImportStage.Parse));
+            Assert.That(ex.Message, Does.Contain("Encrypted Bitwarden"));
+            Assert.That(ex.Message, Does.Contain("unencrypted"));
+        });
+
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
     /// Test case for importing credentials from 1Password .1pux export format.
     /// </summary>
     /// <returns>Async task.</returns>
@@ -2278,7 +2410,7 @@ public class ImportExportTests
 
         // Act
         var importer = new OnePassword1puxImporter();
-        var importedCredentials = await importer.ImportFromArchiveAsync(zipBytes);
+        var importedCredentials = (await importer.ImportFromArchiveAsync(zipBytes)).Credentials;
 
         // Assert
         Assert.That(importedCredentials, Has.Count.EqualTo(6));
@@ -2405,7 +2537,7 @@ public class ImportExportTests
 
         // Act
         var importer = new ProtonPassZipImporter();
-        var importedCredentials = await importer.ImportFromArchiveAsync(zipBytes);
+        var importedCredentials = (await importer.ImportFromArchiveAsync(zipBytes)).Credentials;
 
         // Assert
         Assert.That(importedCredentials, Has.Count.EqualTo(7));

@@ -8,6 +8,8 @@
 namespace AliasVault.ImportExport.Importers;
 
 using System.IO.Compression;
+using System.Text.Json;
+using AliasVault.ImportExport.Exceptions;
 using AliasVault.ImportExport.Models;
 using AliasVault.ImportExport.Models.Imports;
 
@@ -16,35 +18,32 @@ using AliasVault.ImportExport.Models.Imports;
 /// </summary>
 public class OnePassword1puxImporter : BaseArchiveImporter
 {
+    private static readonly JsonSerializerOptions ItemDeserializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+    };
+
     /// <inheritdoc/>
     protected override string? GetAttachmentPathPattern() => "files/";
 
     /// <inheritdoc/>
-    protected override async Task<List<ImportedCredential>> ProcessArchiveAsync(
-        ZipArchive archive,
-        Dictionary<string, byte[]> attachmentMap,
-        Dictionary<string, byte[]> logoMap)
+    protected override async Task<List<ImportedCredential>> ProcessArchiveAsync(ZipArchive archive, Dictionary<string, byte[]> attachmentMap, Dictionary<string, byte[]> logoMap, List<ImportFailure> failures)
     {
-        // Read export attributes (optional, for validation)
-        var attributes = await ReadJsonFromArchiveAsync<OnePassword1puxAttributes>(archive, "export.attributes");
+        var attributes = await TryReadJsonFromArchiveAsync<OnePassword1puxAttributes>(archive, "export.attributes");
         if (attributes != null && attributes.Version != 3)
         {
-            throw new InvalidOperationException($"Unsupported 1Password export version: {attributes.Version}. Expected version 3.");
+            throw new ImportException(ImportStage.Parse, $"Unsupported 1Password export version: {attributes.Version}. Expected version 3.");
         }
 
-        // Read the main export data
-        var exportData = await ReadJsonFromArchiveAsync<OnePassword1puxData>(archive, "export.data");
-        if (exportData == null)
-        {
-            throw new InvalidOperationException("Invalid 1Password .1pux file: export.data not found or could not be parsed");
-        }
-
+        // Read the main export data.
         var credentials = new List<ImportedCredential>();
+        var exportData = await ReadJsonFromArchiveAsync<OnePassword1puxData>(archive, "export.data");
 
         // Determine which vault should be promoted to root (if any)
         var rootVaultName = DetermineRootVault(exportData);
 
         // Process all accounts and vaults
+        var itemIndex = 0;
         foreach (var account in exportData.Accounts)
         {
             foreach (var vault in account.Vaults)
@@ -56,15 +55,64 @@ public class OnePassword1puxImporter : BaseArchiveImporter
                     ? null
                     : vaultName;
 
-                foreach (var item in vault.Items)
+                foreach (var itemElement in vault.Items)
                 {
-                    var credential = ConvertOnePasswordItemToCredential(item, folderPath, attachmentMap);
-                    credentials.Add(credential);
+                    OnePasswordItem? item = null;
+                    try
+                    {
+                        item = itemElement.Deserialize<OnePasswordItem>(ItemDeserializerOptions);
+                        if (item == null)
+                        {
+                            failures.Add(new ImportFailure
+                            {
+                                Index = itemIndex,
+                                ItemTitle = TryGetItemTitle(itemElement),
+                                ExceptionType = nameof(JsonException),
+                                Message = "Item JSON deserialized to null",
+                            });
+                            continue;
+                        }
+
+                        var credential = ConvertOnePasswordItemToCredential(item, folderPath, attachmentMap);
+                        credentials.Add(credential);
+                    }
+                    catch (Exception ex)
+                    {
+                        failures.Add(BuildItemFailure(itemIndex, item?.Overview?.Title ?? TryGetItemTitle(itemElement), ex));
+                    }
+                    finally
+                    {
+                        itemIndex++;
+                    }
                 }
             }
         }
 
         return credentials;
+    }
+
+    /// <summary>
+    /// Best-effort extraction of an item's title directly from the raw JSON, so failures can still
+    /// be attributed to a recognisable item even when typed deserialization throws.
+    /// </summary>
+    private static string? TryGetItemTitle(JsonElement itemElement)
+    {
+        if (itemElement.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        if (!itemElement.TryGetProperty("overview", out var overview) || overview.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        if (!overview.TryGetProperty("title", out var title) || title.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        return title.GetString();
     }
 
     /// <summary>
@@ -129,16 +177,10 @@ public class OnePassword1puxImporter : BaseArchiveImporter
             FolderPath = vaultName,
         };
 
-        // Set timestamps
-        if (item.CreatedAt.HasValue)
-        {
-            credential.CreatedAt = DateTimeOffset.FromUnixTimeSeconds(item.CreatedAt.Value).UtcDateTime;
-        }
-
-        if (item.UpdatedAt.HasValue)
-        {
-            credential.UpdatedAt = DateTimeOffset.FromUnixTimeSeconds(item.UpdatedAt.Value).UtcDateTime;
-        }
+        // Set timestamps — TryFromUnixTimeSeconds returns null for out-of-range / corrupt values
+        // rather than throwing, so a junk timestamp on a single item doesn't fail the whole item.
+        credential.CreatedAt = BaseImporter.TryFromUnixTimeSeconds(item.CreatedAt);
+        credential.UpdatedAt = BaseImporter.TryFromUnixTimeSeconds(item.UpdatedAt);
 
         // Extract URLs
         if (item.Overview?.Urls != null && item.Overview.Urls.Count > 0)
@@ -330,11 +372,7 @@ public class OnePassword1puxImporter : BaseArchiveImporter
             case "birth date":
             case "birthdate":
             case "date of birth":
-                if (field.Value?.Date.HasValue == true)
-                {
-                    credential.Alias.BirthDate = DateTimeOffset.FromUnixTimeSeconds(field.Value.Date.Value).UtcDateTime;
-                }
-
+                credential.Alias.BirthDate = BaseImporter.TryFromUnixTimeSeconds(field.Value?.Date);
                 break;
         }
     }

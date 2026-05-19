@@ -551,13 +551,37 @@ public static class BaseImporter
 
     /// <summary>
     /// Formats a Unix timestamp as a date string in ISO 8601 format (yyyy-MM-dd).
+    /// Returns null when the timestamp falls outside the supported range so a corrupt value
+    /// in a single field doesn't crash the importer.
     /// </summary>
     /// <param name="unixTimestamp">The Unix timestamp (seconds since epoch).</param>
-    /// <returns>The formatted date string.</returns>
-    public static string FormatUnixTimestampAsDate(long unixTimestamp)
+    /// <returns>The formatted date string, or null when the value is out of range.</returns>
+    public static string? FormatUnixTimestampAsDate(long unixTimestamp)
     {
-        var date = DateTimeOffset.FromUnixTimeSeconds(unixTimestamp).UtcDateTime;
-        return date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var date = TryFromUnixTimeSeconds(unixTimestamp);
+        return date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>
+    /// Safely converts a Unix-seconds timestamp to a UTC DateTime.
+    /// </summary>
+    /// <param name="unixTimestamp">The Unix timestamp (seconds since epoch).</param>
+    /// <returns>The converted DateTime, or null when out of range.</returns>
+    public static DateTime? TryFromUnixTimeSeconds(long? unixTimestamp)
+    {
+        if (!unixTimestamp.HasValue)
+        {
+            return null;
+        }
+
+        try
+        {
+            return DateTimeOffset.FromUnixTimeSeconds(unixTimestamp.Value).UtcDateTime;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return null;
+        }
     }
 
     /// <summary>

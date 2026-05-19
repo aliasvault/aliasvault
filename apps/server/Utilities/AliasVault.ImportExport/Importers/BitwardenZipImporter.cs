@@ -8,6 +8,8 @@
 namespace AliasVault.ImportExport.Importers;
 
 using System.IO.Compression;
+using System.Text.Json;
+using AliasVault.ImportExport.Exceptions;
 using AliasVault.ImportExport.Models;
 using AliasVault.ImportExport.Models.Imports;
 
@@ -16,6 +18,11 @@ using AliasVault.ImportExport.Models.Imports;
 /// </summary>
 public class BitwardenZipImporter : BaseArchiveImporter
 {
+    private static readonly JsonSerializerOptions ItemDeserializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+    };
+
     /// <inheritdoc/>
     protected override string? GetAttachmentPathPattern() => "attachments/";
 
@@ -23,14 +30,11 @@ public class BitwardenZipImporter : BaseArchiveImporter
     protected override async Task<List<ImportedCredential>> ProcessArchiveAsync(
         ZipArchive archive,
         Dictionary<string, byte[]> attachmentMap,
-        Dictionary<string, byte[]> logoMap)
+        Dictionary<string, byte[]> logoMap,
+        List<ImportFailure> failures)
     {
-        // Extract the main JSON manifest
+        // Extract the main JSON manifest.
         var exportData = await ReadJsonFromArchiveAsync<BitwardenJsonExport>(archive, "data.json");
-        if (exportData == null)
-        {
-            throw new InvalidOperationException("Invalid Bitwarden ZIP file: data.json not found or could not be parsed");
-        }
 
         // Validate the export
         ValidateExport(exportData);
@@ -40,25 +44,66 @@ public class BitwardenZipImporter : BaseArchiveImporter
 
         var credentials = new List<ImportedCredential>();
 
-        foreach (var item in exportData.Items)
+        for (var i = 0; i < exportData.Items.Count; i++)
         {
-            var credential = ConvertBitwardenItemToCredential(item, folderLookup, attachmentMap);
-            credentials.Add(credential);
+            var itemElement = exportData.Items[i];
+            BitwardenItem? item = null;
+            try
+            {
+                item = itemElement.Deserialize<BitwardenItem>(ItemDeserializerOptions);
+                if (item == null)
+                {
+                    failures.Add(new ImportFailure
+                    {
+                        Index = i,
+                        ItemTitle = TryGetItemName(itemElement),
+                        ExceptionType = nameof(JsonException),
+                        Message = "Item JSON deserialized to null",
+                    });
+                    continue;
+                }
+
+                var credential = ConvertBitwardenItemToCredential(item, folderLookup, attachmentMap);
+                credentials.Add(credential);
+            }
+            catch (Exception ex)
+            {
+                failures.Add(BuildItemFailure(i, item?.Name ?? TryGetItemName(itemElement), ex));
+            }
         }
 
         return credentials;
     }
 
     /// <summary>
+    /// Best-effort extraction of an item's name directly from the raw JSON, so failures can still
+    /// be attributed to a recognisable item even when typed deserialization throws.
+    /// </summary>
+    private static string? TryGetItemName(JsonElement itemElement)
+    {
+        if (itemElement.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        if (!itemElement.TryGetProperty("name", out var name) || name.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        return name.GetString();
+    }
+
+    /// <summary>
     /// Validates the Bitwarden export data.
     /// </summary>
     /// <param name="exportData">The export data to validate.</param>
-    /// <exception cref="InvalidOperationException">Thrown when the export is encrypted or invalid.</exception>
+    /// <exception cref="ImportException">Thrown when the export is encrypted or invalid.</exception>
     private static void ValidateExport(BitwardenJsonExport exportData)
     {
         if (exportData.Encrypted)
         {
-            throw new InvalidOperationException("Encrypted Bitwarden exports are not supported. Please export as unencrypted.");
+            throw new ImportException(ImportStage.Parse, "Encrypted Bitwarden exports are not supported. Please export as unencrypted.");
         }
     }
 

@@ -7,6 +7,7 @@
 
 namespace AliasVault.ImportExport.Models.Imports;
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 /// <summary>
@@ -117,10 +118,10 @@ public class OnePasswordVault
     public OnePasswordVaultAttrs? Attrs { get; set; }
 
     /// <summary>
-    /// Gets or sets the list of items.
+    /// Gets or sets the list of items as raw JSON elements.
     /// </summary>
     [JsonPropertyName("items")]
-    public List<OnePasswordItem> Items { get; set; } = new();
+    public List<JsonElement> Items { get; set; } = new();
 }
 
 /// <summary>
@@ -566,11 +567,9 @@ public class OnePasswordEmailValue
     [JsonPropertyName("email_address")]
     public string? EmailAddress { get; set; }
 
-    /// <summary>
-    /// Gets or sets the provider.
-    /// </summary>
-    [JsonPropertyName("provider")]
-    public string? Provider { get; set; }
+    // Note: 1Password also emits a "provider" sub-field here for masked-email integration metadata
+    // we don't read it (anymore) as the type varies between exports (string vs object) which can
+    // break JSON deserialization.
 }
 
 /// <summary>
