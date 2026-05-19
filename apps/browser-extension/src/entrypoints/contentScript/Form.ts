@@ -352,6 +352,8 @@ export function injectIcon(input: HTMLInputElement, container: HTMLElement, fiel
       actualInput.removeEventListener('keydown', handleKeyPress);
       window.removeEventListener('scroll', updateIconPosition, true);
       window.removeEventListener('resize', updateIconPosition);
+      mutationObserver.disconnect();
+      resizeObserver.disconnect();
 
       // Remove overlay container if it's empty
       if (!overlayContainer.children.length) {
@@ -372,6 +374,54 @@ export function injectIcon(input: HTMLInputElement, container: HTMLElement, fiel
 
   actualInput.addEventListener('blur', handleBlur);
   actualInput.addEventListener('keydown', handleKeyPress);
+
+  /**
+   * Listen for visibility changes to the field.
+   */
+  const isFieldVisible = () : boolean => {
+    if (!actualInput.isConnected) {
+      return false;
+    }
+    const rect = actualInput.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+      return false;
+    }
+    const style = window.getComputedStyle(actualInput);
+    if (style.display === 'none' || style.visibility === 'hidden') {
+      return false;
+    }
+    return true;
+  };
+
+  let visibilityCheckScheduled = false;
+
+  /**
+   * Schedule a visibility check for the field.
+   */
+  const scheduleVisibilityCheck = () : void => {
+    if (visibilityCheckScheduled) {
+      return;
+    }
+    visibilityCheckScheduled = true;
+    requestAnimationFrame(() => {
+      visibilityCheckScheduled = false;
+      if (!isFieldVisible()) {
+        removeExistingPopup(container);
+        handleBlur();
+      }
+    });
+  };
+
+  const mutationObserver = new MutationObserver(scheduleVisibilityCheck);
+  mutationObserver.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['style', 'class', 'hidden'],
+  });
+
+  const resizeObserver = new ResizeObserver(scheduleVisibilityCheck);
+  resizeObserver.observe(actualInput);
 }
 
 /**
