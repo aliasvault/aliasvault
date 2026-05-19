@@ -20,7 +20,7 @@ using Microsoft.EntityFrameworkCore;
 /// Service class for Folder operations.
 /// All mutations use background sync to avoid blocking the UI.
 /// </summary>
-public sealed class FolderService(DbService dbService)
+public sealed class FolderService(DbService dbService, ItemService itemService)
 {
     /// <summary>
     /// Get all folders with item counts.
@@ -145,6 +145,9 @@ public sealed class FolderService(DbService dbService)
         await context.SaveChangesAsync();
         dbService.SaveDatabaseInBackground();
 
+        // Cached ItemListEntry rows carry the folder name for the "show folder path" badge during search, so drop the cache.
+        itemService.InvalidateListCache();
+
         return true;
     }
 
@@ -156,6 +159,8 @@ public sealed class FolderService(DbService dbService)
     /// <returns>True if folder was found and deleted.</returns>
     public async Task<bool> DeleteAsync(Guid folderId)
     {
+        // Items inside the folder get their FolderId reparented, so the cached list is stale.
+        itemService.InvalidateListCache();
         var context = await dbService.GetDbContextAsync();
 
         var folder = await context.Folders
@@ -209,6 +214,8 @@ public sealed class FolderService(DbService dbService)
     /// <returns>True if folder was found and deleted.</returns>
     public async Task<bool> DeleteWithContentsAsync(Guid folderId)
     {
+        // Items inside the folder tree are moved to trash, so the cached list is stale.
+        itemService.InvalidateListCache();
         var context = await dbService.GetDbContextAsync();
 
         var folder = await context.Folders

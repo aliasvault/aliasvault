@@ -10,6 +10,7 @@
 // otherwise a lot of SA1200 checks will fail due to it not fully supporting GlobalUsings at time of writing.
 
 global using AliasVault.Client.Main.Models;
+global using AliasVault.Client.Main.Utilities;
 global using AliasVault.Client.Services;
 global using AliasVault.Client.Services.Auth;
 global using AliasVault.Client.Services.JsInterop;

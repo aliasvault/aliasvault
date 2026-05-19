@@ -8,7 +8,6 @@
 @using AliasVault.Client.Main.Components.Items
 @using AliasClientDb.Models
 @using AliasVault.Client.Main.Components.Folders
-@using AliasVault.Client.Main.Utilities
 @using AliasClientDb
 @using Microsoft.Extensions.Localization
 @implements IAsyncDisposable
@@ -275,7 +274,7 @@ else
                 }
                 @foreach (var item in FilteredAndSortedItems)
                 {
-                    <ItemCard Obj="@item" ShowFolderPath="@IsSearching" />
+                    <ItemCard @key="item.Id" Obj="@item" ShowFolderPath="@IsSearching" />
                 }
             </div>
         }
@@ -365,7 +364,7 @@ else
         Id = f.Id,
         Name = f.Name,
         ParentFolderId = f.ParentFolderId,
-        Weight = f.Weight
+        Weight = f.Weight,
     }).ToList();
 
     /// <summary>
@@ -1075,7 +1074,7 @@ else
 
         if (firstRender)
         {
-            await LoadItemsAsync();
+            // Add JS interop reference for the infinite-scroll observer.
             _dotNetRef = DotNetObjectReference.Create(this);
         }
 
