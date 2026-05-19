@@ -32,6 +32,18 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     public const string DefaultServiceUrl = "https://";
 
     /// <summary>
+    /// Cached result of <see cref="GetListAsync"/>. ItemService is scoped (one instance per session),
+    /// so this cache survives Blazor page navigation and improves performance.
+    /// </summary>
+    private List<ItemListEntry>? _cachedList;
+
+    /// <summary>
+    /// DbContext reference captured when the cache was last populated. If a different instance is returned by
+    /// <see cref="DbService.GetDbContextAsync"/>, the vault was reloaded and the cache is stale.
+    /// </summary>
+    private object? _cachedListContext;
+
+    /// <summary>
     /// Generates a random password for an item using the specified settings.
     /// </summary>
     /// <param name="settings">PasswordSettings model.</param>
@@ -156,6 +168,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     /// <returns>Guid of inserted entry.</returns>
     public async Task<Guid> InsertEntryAsync(Item item, bool saveToDb = true, bool extractFavicon = true)
     {
+        InvalidateListCache();
         var context = await dbService.GetDbContextAsync();
 
         // Try to extract favicon from service URL
@@ -250,6 +263,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     /// <returns>Guid of updated entry.</returns>
     public async Task<Guid> UpdateEntryAsync(Item item)
     {
+        InvalidateListCache();
         var context = await dbService.GetDbContextAsync();
 
         // Try to extract favicon from service URL
@@ -367,12 +381,19 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     }
 
     /// <summary>
-    /// Get list with all item entries for display.
+    /// Get list with all item entries for display. Cached: subsequent calls return the same list until a mutation
+    /// or vault reload invalidates it. Pages that opt into freshness should call <see cref="InvalidateListCache"/> first.
     /// </summary>
     /// <returns>List of ItemListEntry objects.</returns>
     public async Task<List<ItemListEntry>?> GetListAsync()
     {
         var context = await dbService.GetDbContextAsync();
+
+        // Auto-invalidate when the underlying DbContext was replaced (e.g. after a server-side vault reload).
+        if (_cachedList is not null && ReferenceEquals(_cachedListContext, context))
+        {
+            return _cachedList;
+        }
 
         // Retrieve all items from client DB.
         var items = await context.Items
@@ -388,11 +409,11 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
             .ToListAsync();
 
         // Map to ItemListEntry with proper boolean logic
-        return items.Select(x => new ItemListEntry
+        var list = items.Select(x => new ItemListEntry
         {
             Id = x.Id,
             ItemType = x.ItemType ?? AliasClientDb.Models.ItemType.Login,
-            Logo = x.Logo?.FileData,
+            LogoDataUri = LogoConverter.ToDataUri(x.Logo?.FileData),
             Service = x.Name,
             Username = GetFieldValue(x, FieldKey.LoginUsername),
             Email = GetFieldValue(x, FieldKey.LoginEmail),
@@ -410,6 +431,20 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
             FolderId = x.FolderId,
             FolderName = x.Folder?.Name,
         }).ToList();
+
+        _cachedList = list;
+        _cachedListContext = context;
+        return list;
+    }
+
+    /// <summary>
+    /// Drop the cached list returned by <see cref="GetListAsync"/>. Call from any code path that mutates items
+    /// outside of this service (e.g. <c>FolderService</c> folder-delete operations that move or tombstone items).
+    /// </summary>
+    public void InvalidateListCache()
+    {
+        _cachedList = null;
+        _cachedListContext = null;
     }
 
     /// <summary>
@@ -419,6 +454,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     /// <returns>Bool which indicates if deletion and saving database was successful.</returns>
     public async Task<bool> TrashItemAsync(Guid id)
     {
+        InvalidateListCache();
         var context = await dbService.GetDbContextAsync();
 
         var item = await context.Items
@@ -443,6 +479,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     /// <returns>Task that completes after local mutation.</returns>
     public async Task TrashItemInBackgroundAsync(Guid id)
     {
+        InvalidateListCache();
         var context = await dbService.GetDbContextAsync();
 
         var item = await context.Items
@@ -468,6 +505,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     /// <returns>Bool which indicates if restoration was successful.</returns>
     public async Task<bool> RestoreItemAsync(Guid id)
     {
+        InvalidateListCache();
         var context = await dbService.GetDbContextAsync();
 
         var item = await context.Items
@@ -496,6 +534,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     /// <returns>True if item was found and restored locally, false if not found.</returns>
     public async Task<bool> RestoreItemInBackgroundAsync(Guid id)
     {
+        InvalidateListCache();
         var context = await dbService.GetDbContextAsync();
 
         var item = await context.Items
@@ -546,6 +585,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     /// <returns>Bool which indicates if deletion was successful.</returns>
     public async Task<bool> PermanentlyDeleteItemAsync(Guid id)
     {
+        InvalidateListCache();
         var context = await dbService.GetDbContextAsync();
 
         var item = await context.Items
@@ -611,6 +651,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     /// <returns>Task that completes after local mutation.</returns>
     public async Task PermanentlyDeleteItemInBackgroundAsync(Guid id)
     {
+        InvalidateListCache();
         var context = await dbService.GetDbContextAsync();
 
         var item = await context.Items
@@ -678,6 +719,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     /// <returns>True if successful, false otherwise.</returns>
     public async Task<bool> HardDeleteAllItemsAsync()
     {
+        InvalidateListCache();
         var context = await dbService.GetDbContextAsync();
 
         // Bulk delete each table directly via SQL to bypass the change tracker.
@@ -718,6 +760,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     /// <returns>A value indicating whether the deletion was successful.</returns>
     public async Task<bool> DeletePasskeyAsync(Guid passkeyId)
     {
+        InvalidateListCache();
         var context = await dbService.GetDbContextAsync();
         var passkey = await context.Passkeys.FirstOrDefaultAsync(p => p.Id == passkeyId);
 

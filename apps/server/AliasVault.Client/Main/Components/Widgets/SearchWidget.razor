@@ -71,7 +71,7 @@
                                 @onclick="() => SelectResult(result)">
                                 <ItemIcon
                                     ItemType="@result.ItemType"
-                                    Logo="@result.Logo?.FileData"
+                                    LogoDataUri="@LogoConverter.ToDataUri(result.Logo?.FileData)"
                                     CardNumber="@ItemService.GetFieldValue(result, FieldKey.CardNumber)"
                                     AltText="@(result.Name ?? string.Empty)"
                                     SizeClass="w-6 h-6" />

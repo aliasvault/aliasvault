@@ -56,7 +56,7 @@ else
                                         <div class="flex items-center gap-2">
                                             <ItemIcon
                                                 ItemType="@(item.ItemType ?? ItemType.Login)"
-                                                Logo="@item.Logo?.FileData"
+                                                LogoDataUri="@LogoConverter.ToDataUri(item.Logo?.FileData)"
                                                 CardNumber="@ItemService.GetFieldValue(item, FieldKey.CardNumber)"
                                                 SizeClass="w-6 h-6" />
                                             <span data-item-name class="font-medium text-gray-900 dark:text-white truncate">

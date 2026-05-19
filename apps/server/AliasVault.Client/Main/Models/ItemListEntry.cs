@@ -25,9 +25,9 @@ public sealed class ItemListEntry
     public string ItemType { get; set; } = "Login";
 
     /// <summary>
-    /// Gets or sets the Logo (favicon) bytes.
+    /// Gets or sets the pre-computed logo data URI used directly as an img src value.
     /// </summary>
-    public byte[]? Logo { get; set; }
+    public string? LogoDataUri { get; set; }
 
     /// <summary>
     /// Gets or sets the Service name.

@@ -42,7 +42,7 @@ else
                 <div class="items-center flex space-x-4">
                     <ItemIcon
                         ItemType="@(Item.ItemType ?? ItemType.Login)"
-                        Logo="@Item.Logo?.FileData"
+                        LogoDataUri="@LogoConverter.ToDataUri(Item.Logo?.FileData)"
                         CardNumber="@GetCardNumber()"
                         AltText="@(Item.Name ?? "Item")"
                         SizeClass="w-14 h-14" />
