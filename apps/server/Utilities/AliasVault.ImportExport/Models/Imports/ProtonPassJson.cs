@@ -7,6 +7,7 @@
 
 namespace AliasVault.ImportExport.Models.Imports;
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 /// <summary>
@@ -64,10 +65,10 @@ public class ProtonPassVault
     public ProtonPassDisplay? Display { get; set; }
 
     /// <summary>
-    /// Gets or sets the items in this vault.
+    /// Gets or sets the items in this vault as raw JSON elements.
     /// </summary>
     [JsonPropertyName("items")]
-    public List<ProtonPassItem> Items { get; set; } = new();
+    public List<JsonElement> Items { get; set; } = new();
 }
 
 /// <summary>

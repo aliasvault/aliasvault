@@ -8,6 +8,8 @@
 namespace AliasVault.ImportExport.Importers;
 
 using System.IO.Compression;
+using System.Text.Json;
+using AliasVault.ImportExport.Exceptions;
 using AliasVault.ImportExport.Models;
 using AliasVault.ImportExport.Models.Imports;
 
@@ -26,6 +28,11 @@ public class ProtonPassZipImporter : BaseArchiveImporter
     /// </summary>
     private const string DefaultVaultName = "Personal";
 
+    private static readonly JsonSerializerOptions ItemDeserializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+    };
+
     /// <inheritdoc/>
     protected override string? GetAttachmentPathPattern() => FilesPath;
 
@@ -33,51 +40,104 @@ public class ProtonPassZipImporter : BaseArchiveImporter
     protected override async Task<List<ImportedCredential>> ProcessArchiveAsync(
         ZipArchive archive,
         Dictionary<string, byte[]> attachmentMap,
-        Dictionary<string, byte[]> logoMap)
+        Dictionary<string, byte[]> logoMap,
+        List<ImportFailure> failures)
     {
         // Reject encrypted exports up-front with a clear message.
         if (archive.GetEntry(EncryptedDataPath) != null)
         {
-            throw new InvalidOperationException("Encrypted Proton Pass exports (data.pgp) are not supported.");
+            throw new ImportException(ImportStage.Parse, "Encrypted Proton Pass exports (data.pgp) are not supported.");
         }
 
+        // Items are kept as raw JsonElements and deserialized one-by-one below so that a single
+        // malformed item (unexpected sub-object shape, new field type, etc.) doesn't abort the import.
         var exportData = await ReadJsonFromArchiveAsync<ProtonPassJsonExport>(archive, DataJsonPath);
-        if (exportData == null)
-        {
-            throw new InvalidOperationException("Invalid Proton Pass ZIP file: \"Proton Pass/data.json\" not found or could not be parsed.");
-        }
 
         if (exportData.Encrypted)
         {
-            throw new InvalidOperationException("Encrypted Proton Pass exports are not supported. Please export without a password.");
+            throw new ImportException(ImportStage.Parse, "Encrypted Proton Pass exports are not supported. Please export without a password.");
         }
 
         var rootVaultId = DetermineRootVaultId(exportData);
 
         var credentials = new List<ImportedCredential>();
 
+        var itemIndex = 0;
         foreach (var (vaultId, vault) in exportData.Vaults)
         {
             var folderPath = vaultId == rootVaultId ? null : vault.Name;
 
-            foreach (var item in vault.Items)
+            foreach (var itemElement in vault.Items)
             {
-                // Skip trashed items. State == 2 is "trashed"; other values (null/0/1) are treated
-                // as active since older envelope versions may omit the field entirely.
-                if (item.State == 2)
+                ProtonPassItem? item = null;
+                try
                 {
-                    continue;
-                }
+                    item = itemElement.Deserialize<ProtonPassItem>(ItemDeserializerOptions);
+                    if (item == null)
+                    {
+                        failures.Add(new ImportFailure
+                        {
+                            Index = itemIndex,
+                            ItemTitle = TryGetItemName(itemElement),
+                            ExceptionType = nameof(JsonException),
+                            Message = "Item JSON deserialized to null",
+                        });
+                        continue;
+                    }
 
-                var credential = ConvertItemToCredential(item, folderPath, attachmentMap);
-                if (credential != null)
+                    // Skip trashed items. State == 2 is "trashed"; other values (null/0/1) are treated
+                    // as active since older envelope versions may omit the field entirely.
+                    if (item.State == 2)
+                    {
+                        continue;
+                    }
+
+                    var credential = ConvertItemToCredential(item, folderPath, attachmentMap);
+                    if (credential != null)
+                    {
+                        credentials.Add(credential);
+                    }
+                }
+                catch (Exception ex)
                 {
-                    credentials.Add(credential);
+                    failures.Add(BuildItemFailure(itemIndex, item?.Data?.Metadata?.Name ?? TryGetItemName(itemElement), ex));
+                }
+                finally
+                {
+                    itemIndex++;
                 }
             }
         }
 
         return credentials;
+    }
+
+    /// <summary>
+    /// Extracts the item name from the JSON element.
+    /// </summary>
+    private static string? TryGetItemName(JsonElement itemElement)
+    {
+        if (itemElement.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        if (!itemElement.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        if (!data.TryGetProperty("metadata", out var metadata) || metadata.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        if (!metadata.TryGetProperty("name", out var name) || name.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        return name.GetString();
     }
 
     /// <summary>
@@ -120,15 +180,8 @@ public class ProtonPassZipImporter : BaseArchiveImporter
             FolderPath = folderPath,
         };
 
-        if (item.CreateTime.HasValue)
-        {
-            credential.CreatedAt = DateTimeOffset.FromUnixTimeSeconds(item.CreateTime.Value).UtcDateTime;
-        }
-
-        if (item.ModifyTime.HasValue)
-        {
-            credential.UpdatedAt = DateTimeOffset.FromUnixTimeSeconds(item.ModifyTime.Value).UtcDateTime;
-        }
+        credential.CreatedAt = BaseImporter.TryFromUnixTimeSeconds(item.CreateTime);
+        credential.UpdatedAt = BaseImporter.TryFromUnixTimeSeconds(item.ModifyTime);
 
         credential.ItemType = MapItemType(item.Data.Type);
 

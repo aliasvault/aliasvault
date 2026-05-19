@@ -30,7 +30,7 @@
     /// <param name="filename">The name of the uploaded file.</param>
     /// <param name="fileBytes">The file content as bytes.</param>
     /// <returns>A list of ImportedCredential objects.</returns>
-    private async Task<List<ImportedCredential>> ProcessFile(string filename, byte[] fileBytes)
+    private async Task<ImportFileResult> ProcessFile(string filename, byte[] fileBytes)
     {
         try
         {

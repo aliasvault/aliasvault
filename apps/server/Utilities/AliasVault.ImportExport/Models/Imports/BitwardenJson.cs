@@ -7,6 +7,7 @@
 
 namespace AliasVault.ImportExport.Models.Imports;
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 /// <summary>
@@ -27,10 +28,10 @@ public class BitwardenJsonExport
     public List<BitwardenFolder> Folders { get; set; } = new();
 
     /// <summary>
-    /// Gets or sets the list of items.
+    /// Gets or sets the list of items as raw JSON elements.
     /// </summary>
     [JsonPropertyName("items")]
-    public List<BitwardenItem> Items { get; set; } = new();
+    public List<JsonElement> Items { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the list of collections (organization exports).
