@@ -199,11 +199,13 @@
       "15seconds": "15 秒",
       "30seconds": "30 秒",
       "1minute": "1 分钟",
+      "5minutes": "5 minutes",
       "15minutes": "15 分钟",
       "30minutes": "30 分钟",
       "1hour": "1 小时",
       "4hours": "4 小时",
-      "8hours": "8 小时"
+      "8hours": "8 小时",
+      "24hours": "24 hours"
     },
     "language": "语言",
     "languageSystemMessage": "要更改应用语言，请在设备设置中配置AliasVault的首选语言。",
