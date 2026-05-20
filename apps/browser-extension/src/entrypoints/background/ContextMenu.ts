@@ -1,11 +1,28 @@
 import { type Browser } from '@wxt-dev/browser';
 import { sendMessage } from 'webext-bridge/background';
 
+import { POPUP_TYPES, type PopupType, isPopupType } from '@/utils/autofill/PopupTypes';
 import { PasswordGenerator } from '@/utils/dist/core/password-generator';
 
 import { t } from '@/i18n/StandaloneI18n';
 
 import { browser } from "#imports";
+
+const MENU_ID_PREFIX = 'aliasvault-activate-form-';
+
+/** Context-menu item id for a popup type. */
+function menuIdForPopupType(type: PopupType): string {
+  return `${MENU_ID_PREFIX}${type}`;
+}
+
+/** Reverse lookup: context-menu item id -> popup type. */
+function popupTypeForMenuId(menuId: string | number): PopupType | undefined {
+  if (typeof menuId !== 'string' || !menuId.startsWith(MENU_ID_PREFIX)) {
+    return undefined;
+  }
+  const candidate = menuId.slice(MENU_ID_PREFIX.length);
+  return isPopupType(candidate) ? candidate : undefined;
+}
 
 /*
  * Register the click listener once at module load (top-level scope).
@@ -48,8 +65,9 @@ export async function setupContextMenus() : Promise<void> {
     console.error('Failed to remove existing context menus:', error);
   }
 
-  const [activateFormTitle, generatePasswordTitle] = await Promise.all([
-    t('content.autofillWithAliasVault'),
+  const popupEntries = Object.entries(POPUP_TYPES) as [PopupType, typeof POPUP_TYPES[PopupType]][];
+  const [popupTitles, generatePasswordTitle] = await Promise.all([
+    Promise.all(popupEntries.map(([, config]) => t(config.titleKey))),
     t('content.generateRandomPassword'),
   ]);
 
@@ -62,12 +80,12 @@ export async function setupContextMenus() : Promise<void> {
     });
 
     await Promise.all([
-      createContextMenu({
-        id: "aliasvault-activate-form",
+      ...popupEntries.map(([type], i) => createContextMenu({
+        id: menuIdForPopupType(type),
         parentId: "aliasvault-root",
-        title: activateFormTitle,
+        title: popupTitles[i],
         contexts: ["editable"],
-      }),
+      })),
       createContextMenu({
         id: "aliasvault-separator",
         parentId: "aliasvault-root",
@@ -106,7 +124,12 @@ export function handleContextMenuClick(info: Browser.contextMenus.OnClickData, t
         });
       });
     }
-  } else if (info.menuItemId === "aliasvault-activate-form" && tab?.id) {
+  } else if (tab?.id) {
+    const popupType = popupTypeForMenuId(info.menuItemId);
+    if (!popupType) {
+      return;
+    }
+
     // First get the active element's identifier
     browser.scripting.executeScript({
       target: { tabId: tab.id },
@@ -115,7 +138,7 @@ export function handleContextMenuClick(info: Browser.contextMenus.OnClickData, t
       const elementIdentifier = results[0]?.result;
       if (elementIdentifier) {
         // Send message to content script with proper tab targeting
-        sendMessage('OPEN_AUTOFILL_POPUP', { elementIdentifier }, `content-script@${tab.id}`);
+        sendMessage('OPEN_AUTOFILL_POPUP', { elementIdentifier, popupType }, `content-script@${tab.id}`);
       }
     });
   }
