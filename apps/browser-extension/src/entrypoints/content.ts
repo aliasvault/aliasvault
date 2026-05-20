@@ -10,8 +10,8 @@ import { openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeReq
 import { showSavePrompt, showAddUrlPrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState, restoreAddUrlPromptFromState } from '@/entrypoints/contentScript/SavePrompt';
 import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
 
+import { DEFAULT_POPUP_TYPE, isPopupType, popupTypeForFieldType, POPUP_TYPES, type PopupType } from '@/utils/autofill/PopupTypes';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
-import { DetectedFieldType } from '@/utils/formDetector/types/FormFields';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { LoginDetector } from '@/utils/loginDetector';
 import type { CapturedLogin, LastAutofilledCredential } from '@/utils/loginDetector';
@@ -23,6 +23,29 @@ import { defineContentScript, createShadowRootUi, storage } from '#imports';
 
 /** Global login detector instance */
 let loginDetector: LoginDetector | null = null;
+
+/**
+ * Content-side runtime for each popup type: how to open the popup and whether
+ * its feature toggle is enabled. Keyed by the shared {@link PopupType} so the
+ * compiler enforces that every popup type has an opener + toggle wired up.
+ *
+ * Add a new entry here when adding a new popup type to {@link POPUP_TYPES}.
+ */
+const POPUP_RUNTIME: Record<PopupType, {
+  open: (input: HTMLInputElement, container: HTMLElement) => void;
+  enabled: () => Promise<boolean>;
+}> = {
+  credentials: {
+    open: openAutofillPopup,
+    /** Resolves true when the user has the credential autofill popup enabled. */
+    enabled: () => LocalPreferencesService.getGlobalAutofillPopupEnabled(),
+  },
+  totp: {
+    open: openTotpPopup,
+    /** Resolves true when the user has the TOTP autofill popup enabled. */
+    enabled: () => LocalPreferencesService.getTotpAutofillEnabled(),
+  },
+};
 
 /**
  * Handle save login request from the save prompt.
@@ -520,7 +543,8 @@ export default defineContentScript({
             }
 
             // Check if we should show autofill UI for this field type
-            if (!await shouldShowAutofillUi(detectedFieldType)) {
+            const popupType = popupTypeForFieldType(detectedFieldType);
+            if (!await POPUP_RUNTIME[popupType].enabled()) {
               return;
             }
 
@@ -531,7 +555,7 @@ export default defineContentScript({
 
             // Only show popup if debounce time has passed
             if (popupDebounceTimeHasPassed()) {
-              await showPopupWithAuthCheck(inputElement, container, detectedFieldType);
+              await showPopupWithAuthCheck(inputElement, container, popupType);
             }
           }
         };
@@ -561,15 +585,25 @@ export default defineContentScript({
         void checkAndRestorePersistedSavePrompt(container);
 
         // Listen for messages from the background script
-        onMessage('OPEN_AUTOFILL_POPUP', async (message: { data: { elementIdentifier: string } }) : Promise<messageBoolResponse> => {
+        onMessage('OPEN_AUTOFILL_POPUP', async (message: { data: { elementIdentifier: string; popupType?: string } }) : Promise<messageBoolResponse> => {
           const { data } = message;
-          const { elementIdentifier } = data;
+          const { elementIdentifier, popupType } = data;
 
           if (!elementIdentifier) {
             return { success: false, error: 'No element identifier provided' };
           }
 
           const target = document.getElementById(elementIdentifier) ?? document.getElementsByName(elementIdentifier)[0];
+
+          if (isPopupType(popupType)) {
+            const { isValid, inputElement } = validateInputField(target);
+            if (!isValid || !inputElement) {
+              return { success: false, error: 'Invalid input element' };
+            }
+            injectIcon(inputElement, container, POPUP_TYPES[popupType].fieldType);
+            await showPopupWithAuthCheck(inputElement, container, popupType, true);
+            return { success: true };
+          }
 
           await showPopupForElement(target, true);
 
@@ -598,23 +632,6 @@ export default defineContentScript({
         }
 
         /**
-         * Check if we should show autofill UI (icon/popup) for a given field type.
-         * Checks the appropriate toggle setting based on field type.
-         *
-         * @param fieldType - The detected field type
-         * @returns True if we should show UI for this field type, false otherwise
-         */
-        async function shouldShowAutofillUi(fieldType: DetectedFieldType | null): Promise<boolean> {
-          // For TOTP fields, check TOTP autofill toggle
-          if (fieldType === DetectedFieldType.Totp) {
-            return await LocalPreferencesService.getTotpAutofillEnabled();
-          }
-
-          // For credential fields, check credential autofill toggle
-          return await LocalPreferencesService.getGlobalAutofillPopupEnabled();
-        }
-
-        /**
          * Show popup for element.
          */
         async function showPopupForElement(element: Element, forceShow: boolean = false) : Promise<void> {
@@ -630,6 +647,7 @@ export default defineContentScript({
           }
 
           const detectedFieldType = formDetector.getDetectedFieldType();
+          const popupType = popupTypeForFieldType(detectedFieldType);
 
           /**
            * By default we check if the site allows autofill and if the field is autofill-triggerable
@@ -638,13 +656,13 @@ export default defineContentScript({
           const canShowPopup = forceShow || (await isSiteAllowed() && formDetector.isAutofillTriggerableField());
 
           if (canShowPopup) {
-            // Check field-type-specific settings (credential vs TOTP toggles)
-            if (!await shouldShowAutofillUi(detectedFieldType)) {
+            // Check the per-popup-type feature toggle (credential vs TOTP, etc.)
+            if (!await POPUP_RUNTIME[popupType].enabled()) {
               return;
             }
 
             injectIcon(inputElement, container, detectedFieldType ?? undefined);
-            await showPopupWithAuthCheck(inputElement, container, detectedFieldType ?? undefined);
+            await showPopupWithAuthCheck(inputElement, container, popupType);
           }
         }
 
@@ -652,9 +670,10 @@ export default defineContentScript({
          * Show popup with auth check.
          * @param inputElement - The input element to show the popup for.
          * @param container - The container element.
-         * @param fieldType - The detected field type (optional, defaults to regular autofill).
+         * @param popupType - Which popup to open (defaults to credentials).
+         * @param forceShow - When true, bypass the popup's feature toggle (e.g. for explicit context menu actions).
          */
-        async function showPopupWithAuthCheck(inputElement: HTMLInputElement, container: HTMLElement, fieldType?: DetectedFieldType) : Promise<void> {
+        async function showPopupWithAuthCheck(inputElement: HTMLInputElement, container: HTMLElement, popupType: PopupType = DEFAULT_POPUP_TYPE, forceShow: boolean = false) : Promise<void> {
           try {
             // Check auth status and pending migrations in a single call
             const { sendMessage } = await import('webext-bridge/content-script');
@@ -691,21 +710,19 @@ export default defineContentScript({
               return;
             }
 
-            // Show appropriate popup based on field type
-            if (fieldType === DetectedFieldType.Totp) {
-              // Check if TOTP autofill is enabled
-              const totpAutofillEnabled = await LocalPreferencesService.getTotpAutofillEnabled();
-              if (totpAutofillEnabled) {
-                openTotpPopup(inputElement, container);
-              }
-              // If disabled, don't show any popup (user can rely on clipboard auto-copy)
-            } else {
-              openAutofillPopup(inputElement, container);
+            /*
+             * Dispatch via the popup runtime registry. Feature toggle is re-checked
+             * here for defensive consistency; explicit context menu actions bypass it via forceShow.
+             */
+            const runtime = POPUP_RUNTIME[popupType];
+            if (forceShow || await runtime.enabled()) {
+              runtime.open(inputElement, container);
             }
+            // If disabled, don't show any popup (user can rely on clipboard auto-copy for TOTP)
           } catch (error) {
             console.error('[AliasVault] Error checking vault status:', error);
             // Fall back to normal autofill popup if check fails
-            openAutofillPopup(inputElement, container);
+            POPUP_RUNTIME[DEFAULT_POPUP_TYPE].open(inputElement, container);
           }
         }
       },
