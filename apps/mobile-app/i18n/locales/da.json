@@ -199,11 +199,13 @@
       "15seconds": "15 sekunder",
       "30seconds": "30 sekunder",
       "1minute": "1 minut",
+      "5minutes": "5 minutes",
       "15minutes": "15 minutter",
       "30minutes": "30 minutter",
       "1hour": "1 time",
       "4hours": "4 timer",
-      "8hours": "8 timer"
+      "8hours": "8 timer",
+      "24hours": "24 hours"
     },
     "language": "Sprog",
     "languageSystemMessage": "For at ændre app-sproget skal du konfigurere det foretrukne sprog for AliasVault i din enheds indstillinger.",
