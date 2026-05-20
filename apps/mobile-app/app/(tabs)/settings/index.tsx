@@ -55,10 +55,14 @@ export default function SettingsScreen() : React.ReactNode {
 
         if (autoLockTimeout === 5) {
           display = t('settings.autoLockOptions.5seconds');
+        } else if (autoLockTimeout === 15) {
+          display = t('settings.autoLockOptions.15seconds');
         } else if (autoLockTimeout === 30) {
           display = t('settings.autoLockOptions.30seconds');
         } else if (autoLockTimeout === 60) {
           display = t('settings.autoLockOptions.1minute');
+        } else if (autoLockTimeout === 300) {
+          display = t('settings.autoLockOptions.5minutes');
         } else if (autoLockTimeout === 900) {
           display = t('settings.autoLockOptions.15minutes');
         } else if (autoLockTimeout === 1800) {
@@ -69,6 +73,8 @@ export default function SettingsScreen() : React.ReactNode {
           display = t('settings.autoLockOptions.4hours');
         } else if (autoLockTimeout === 28800) {
           display = t('settings.autoLockOptions.8hours');
+        } else if (autoLockTimeout === 86400) {
+          display = t('settings.autoLockOptions.24hours');
         }
 
         setAutoLockDisplay(display);

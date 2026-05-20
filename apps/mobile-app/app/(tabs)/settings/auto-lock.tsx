@@ -36,11 +36,13 @@ export default function AutoLockScreen() : React.ReactNode {
     { label: t('settings.autoLockOptions.15seconds'), value: 15 },
     { label: t('settings.autoLockOptions.30seconds'), value: 30 },
     { label: t('settings.autoLockOptions.1minute'), value: 60 },
+    { label: t('settings.autoLockOptions.5minutes'), value: 300 },
     { label: t('settings.autoLockOptions.15minutes'), value: 900 },
     { label: t('settings.autoLockOptions.30minutes'), value: 1800 },
     { label: t('settings.autoLockOptions.1hour'), value: 3600 },
     { label: t('settings.autoLockOptions.4hours'), value: 14400 },
     { label: t('settings.autoLockOptions.8hours'), value: 28800 },
+    { label: t('settings.autoLockOptions.24hours'), value: 86400 },
   ];
 
   const styles = StyleSheet.create({
