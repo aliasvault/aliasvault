@@ -65,67 +65,67 @@
       "incorrectPassword": "Hibás jelszó. Próbálkozzon újra.",
       "enterPassword": "Kérem adja meg a jelszavát",
       "serverError": "Az AliasVault szerverek nem elérhetőek. Kérem próbálkozzon később, vagy keresse fel az ügyfélszolgálatot ha a probléma továbbra is fent áll.",
-      "serverErrorSelfHosted": "Could not reach the API. For self-hosted instances, please verify the API endpoint is reachable by navigating to it in a browser: it should display 'OK'.",
-      "networkError": "Network request failed. Please check your internet connection and try again.",
-      "networkErrorSelfHosted": "Network request failed. Check your network connection and server availability. For self-hosted instances, please ensure you have a valid SSL certificate installed. Self-signed certificates are not supported on mobile devices for security reasons.",
-      "sessionExpired": "Your session has expired. Please login again.",
-      "httpError": "HTTP error: {{status}}"
+      "serverErrorSelfHosted": "Az API nem elérhető. A saját szerveren hosztolás esetén igazolja vissza az API végpont elérést a böngészőn keresztül: 'OK'-nak kell megjelennie.",
+      "networkError": "A hálózati kérés sikertelen. Ellenőrizze internet kapcsolatát, és próbálkozzon újra.",
+      "networkErrorSelfHosted": "A hálózati kérés sikertelen. Ellenőrizze hálózati kapcsolatát és a szerver elérhetőséget. Saját szerver hosztolása esetén győződjön meg, hogy telepített fel érvényes SSL tanúsítványt. Saját aláírású tanúsítványok nem támogatottak a mobileszközön biztonsági okokból.",
+      "sessionExpired": "Munkaszakasza lejárt. Jelentkezzen be újra.",
+      "httpError": "HTTP hiba: {{status}}"
     },
-    "confirmLogout": "Are you sure you want to logout? You need to login again with your master password to access your vault.",
-    "noAccountYet": "No account yet?",
-    "createNewVault": "Create new vault",
-    "connectingTo": "Connecting to",
-    "loggedInAs": "Logged in as"
+    "confirmLogout": "Biztosan ki akar jelentkezni? Újra bejelentkezés esetén a mester jelszavával kell belépnie széfjébe.",
+    "noAccountYet": "Nincs még fiókja?",
+    "createNewVault": "Új széf létrehozása",
+    "connectingTo": "Csatlakozás a következőhöz:",
+    "loggedInAs": "Bejelentkezve mint"
   },
   "logout": {
-    "unsyncedChangesTitle": "Unsynced Changes",
-    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
-    "logoutAnyway": "Log out anyway"
+    "unsyncedChangesTitle": "Nem szinkronizált változások",
+    "unsyncedChangesWarning": "Vannak még nem szinkronizált változtatásai, mely elvesznek a kijelentkezéssel. Biztosan folytatni kívánja?",
+    "logoutAnyway": "Kijelentkezés mindenképp"
   },
   "vault": {
-    "syncingVault": "Syncing vault",
-    "uploadingVaultToServer": "Uploading vault to server",
-    "savingChangesToVault": "Saving changes to vault",
-    "checkingForVaultUpdates": "Checking for vault updates",
-    "executingOperation": "Executing operation...",
-    "checkingVaultUpdates": "Checking vault updates",
-    "syncingUpdatedVault": "Syncing updated vault",
-    "mergingVault": "Merging vault changes",
-    "uploadingChanges": "Uploading changes",
+    "syncingVault": "Széf szinkronizálása",
+    "uploadingVaultToServer": "Széf feltöltése a szerverre",
+    "savingChangesToVault": "Változások mentése a széfbe",
+    "checkingForVaultUpdates": "Széf frissülések ellenőrzése",
+    "executingOperation": "Művelet végrehajtása...",
+    "checkingVaultUpdates": "Széf frissülések ellenőrzése",
+    "syncingUpdatedVault": "Frissült széf szinkronizálása",
+    "mergingVault": "Széf módosítások egyesítése",
+    "uploadingChanges": "Módosítások feltöltése",
     "errors": {
-      "failedToGetEncryptedDatabase": "Failed to get encrypted database",
-      "usernameNotFound": "Username not found",
-      "vaultOutdated": "Your vault is outdated. Please login on the AliasVault website and follow the steps.",
-      "failedToSyncVault": "Failed to sync vault",
-      "versionNotSupported": "This version of the AliasVault mobile app is not supported by the server anymore. Please update your app to the latest version.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
-      "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
-      "passwordChanged": "Your password has changed since the last time you logged in. Please login again for security reasons.",
-      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online."
+      "failedToGetEncryptedDatabase": "Adatbázis titkosítása sikertelen",
+      "usernameNotFound": "Felhasználónév nem található",
+      "vaultOutdated": "A széfje túl régi. Lépjen be az AliasVault weboldalra és kövesse a lépéseket.",
+      "failedToSyncVault": "Sikertelen széf szinkronizálás",
+      "versionNotSupported": "A szerver már nem támogatja ezt a mobil app verziót. Frissítse applikációját a legfrissebb verzióra.",
+      "serverVersionNotSupported": "A mobil app használatához frissítenie kell a szervert. Lépjen kapcsolatba az ügyfélszolgálattal ha segítségre van szüksége.",
+      "appOutdated": "Nem tudja használni ezt (az újabb) széf verziót mert mobil applikációja túl régi. Frissítse az AliasVault applikációt a folytatáshoz.",
+      "passwordChanged": "A jelszava megváltozott a legutóbbi bejelentkezés óta. Jelentkezzen be újra biztonsági okokból.",
+      "passwordChangeRequiresOnline": "A jelszó változtatás internet kapcsolat szükséges. Próbálja újra ha már online."
     }
   },
   "passkeys": {
-    "passkey": "Passkey",
-    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential.",
-    "passkeyMarkedForDeletion": "Passkey marked for deletion",
-    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
+    "passkey": "Azonosítókulcs",
+    "helpText": "Az azonosítókulcsok a weboldalon kerülnek létrehozásra. Nem szerkeszthetőek kézzel. Ha azonosítókulcsot kíván eltávolítani, ki tudja törölni ebből a bejegyzésből.",
+    "passkeyMarkedForDeletion": "Azonosítókulcs törlésre kijelölve",
+    "passkeyWillBeDeleted": "A azonosítókulcs akkor kerül törlésre, ha a bejegyzést menti."
   },
   "totp": {
-    "addCode": "Add 2FA Code",
-    "nameOptional": "Name (optional)",
-    "secretKey": "Secret Key",
-    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
-    "saveToViewCode": "Save to view code",
-    "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "addCode": "2FA kód hozzáadása",
+    "nameOptional": "Név (nem kötelező)",
+    "secretKey": "Titkos kulcs",
+    "instructions": "Adja meg a weboldal által megjelenített titkos kulcsot a két faktoros hitelesítőjébe.",
+    "saveToViewCode": "Mentse le a kód megtekintéséhez",
+    "scanQrCode": "QR kód beolvasása",
+    "enterManually": "Adjon meg egy beállítási kulcsot",
     "errors": {
-      "invalidSecretKey": "Invalid secret key format.",
-      "scanFailed": "Failed to scan QR code. Please try again."
+      "invalidSecretKey": "Hibás titkos kulcs formátum.",
+      "scanFailed": "QR kód beolvasása sikertelen. Próbálja meg újra."
     }
   },
   "settings": {
-    "title": "Settings",
-    "autofill": "Autofill & Passkeys",
+    "title": "Beállítások",
+    "autofill": "Auto-kitöltés & Azonosítókulcs",
     "iosAutofillSettings": {
       "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
       "passkeyNotice": "Passkeys are created through iOS. To store them in AliasVault, ensure Autofill below is enabled.",
@@ -136,10 +136,10 @@
       "step4": "4. Enable \"AliasVault\"",
       "step5": "5. Disable other password providers (e.g. \"iCloud Passwords\") to avoid conflicts",
       "openIosSettings": "Open iOS Settings",
-      "alreadyConfigured": "I already configured it"
+      "alreadyConfigured": "Már beállítottam"
     },
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ Experimental Feature",
+      "warningTitle": "⚠️ Kísérleti funkció",
       "warningDescription": "Autofill and passkey support for Android is currently in an experimental state.",
       "warningLink": "Read more about it here",
       "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in Android. Follow the instructions below to enable it.",
