@@ -125,17 +125,17 @@
   },
   "settings": {
     "title": "Beállítások",
-    "autofill": "Auto-kitöltés & Azonosítókulcs",
+    "autofill": "Kitöltés & Azonosítókulcsok",
     "iosAutofillSettings": {
       "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
       "passkeyNotice": "Passkeys are created through iOS. To store them in AliasVault, ensure Autofill below is enabled.",
-      "howToEnable": "How to enable Autofill & Passkeys:",
-      "step1": "1. Open iOS Settings via the button below",
-      "step2": "2. Go to \"General\"",
-      "step3": "3. Tap \"AutoFill & Passwords\"",
-      "step4": "4. Enable \"AliasVault\"",
-      "step5": "5. Disable other password providers (e.g. \"iCloud Passwords\") to avoid conflicts",
-      "openIosSettings": "Open iOS Settings",
+      "howToEnable": "Hogyan kapcsolható be a Kitöltés & Azonosítókulcsok:",
+      "step1": "1. Nyissa meg az iOS Beállításokat a lenti gombbal",
+      "step2": "2. Menjen \"Általános\" részbe",
+      "step3": "3. Koppintson a \"Kitöltések & Jelszavak\" opcióra",
+      "step4": "4. \"AliasVault\" bekapcsolása",
+      "step5": "5. Minden más szolgáltató kikapcsolása (pl.: \"iCloud Jelszavak\") az összeütközések elkerülésére",
+      "openIosSettings": "iOS beállítások megnyitása",
       "alreadyConfigured": "Már beállítottam"
     },
     "androidAutofillSettings": {
