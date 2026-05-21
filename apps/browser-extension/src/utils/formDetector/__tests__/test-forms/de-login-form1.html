@@ -1,0 +1,47 @@
+<html>
+  <body>
+    <form id="login-form">
+      <div data-aura-rendered-by="786:0">
+        <div class="slds-form-element__control" data-aura-rendered-by="787:0">
+          <label for="username" class="slds-form-element__label" data-aura-rendered-by="788:0">Benutzername:</label>
+          <lightning-input data-aura-rendered-by="790:0" class="slds-form-element">
+            <lightning-primitive-input-simple exportparts="input-text, input-container, input, required, label" variant="standard">
+              <div part="input-text">
+                <label class="slds-form-element__label slds-no-flex" for="input-17" part="label">
+                  <slot name="label-end">
+                    <slot name="label-end" slot="label-end"></slot>
+                  </slot>
+                </label>
+                <div class="slds-form-element__control slds-grow" part="input-container" type="text">
+                  <input class="slds-input" part="input" autocomplete="off" id="input-17" placeholder="" type="text" aria-describedby="help-message-17" data-av-autocomplete="on">
+                </div>
+              </div>
+              <div class="slds-form-element__help slds-m-left_none" id="help-message-17" data-help-message="" part="help-text" aria-live="polite"></div>
+            </lightning-primitive-input-simple>
+          </lightning-input>
+        </div>
+        <div class="slds-form-element__control" data-aura-rendered-by="795:0">
+          <label for="password" class="slds-form-element__label" data-aura-rendered-by="796:0">Kennwort:</label>
+          <lightning-input data-aura-rendered-by="798:0" class="slds-form-element">
+            <lightning-primitive-input-simple exportparts="input-text, input-container, input, required, label" variant="standard">
+              <div part="input-text" populated="">
+                <label class="slds-form-element__label slds-no-flex" for="input-18" part="label">
+                  <slot name="label-end">
+                    <slot name="label-end" slot="label-end"></slot>
+                  </slot>
+                </label>
+                <div class="slds-form-element__control slds-grow" part="input-container" type="password">
+                  <input class="slds-input" part="input" id="input-18" placeholder="" type="password" aria-describedby="help-message-18" autocomplete="off" data-av-field-type="password" data-av-autocomplete="off" aria-invalid="false">
+                </div>
+              </div>
+              <div class="slds-form-element__help slds-m-left_none" id="help-message-18" data-help-message="" part="help-text" aria-live="polite"></div>
+            </lightning-primitive-input-simple>
+          </lightning-input>
+        </div>
+        <div class="form-group buttonBoxEcare">
+          <button type="button" class="form-button">Anmelden</button>
+        </div>
+      </div>
+    </form>
+  </body>
+</html>

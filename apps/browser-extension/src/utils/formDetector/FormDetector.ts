@@ -853,16 +853,30 @@ export class FormDetector {
 
       // Check for parent label and table cell structure
       let currentElement: HTMLElement | null = input;
-      for (let depth = 0; depth < 5 && currentElement; depth++) {
+      for (let depth = 0; depth < 7 && currentElement; depth++) {
         // Stop if we have too many child elements (near body)
         if (currentElement.children.length > 15) {
           break;
         }
 
-        // Check for label - search both parent and child elements
-        const childLabel = currentElement.querySelector('label');
-        if (childLabel) {
-          attributesToCheck.push(childLabel.textContent?.toLowerCase() ?? '');
+        /*
+         * Check for label - search both parent and child elements.
+         * Prefer the first label with non-empty text content; some component
+         * frameworks (e.g. Salesforce LWC, Lightning) nest an empty
+         * slot-only <label for="..."> next to the input while the visible
+         * label sits higher up in the wrapper.
+         */
+        const childLabels = currentElement.querySelectorAll('label');
+        let labelTextFound: string | null = null;
+        for (const lbl of Array.from(childLabels)) {
+          const text = lbl.textContent?.trim() ?? '';
+          if (text.length > 0) {
+            labelTextFound = text.toLowerCase();
+            break;
+          }
+        }
+        if (labelTextFound !== null) {
+          attributesToCheck.push(labelTextFound);
           break;
         }
 
