@@ -199,13 +199,13 @@
       "15seconds": "15 Sekunden",
       "30seconds": "30 Sekunden",
       "1minute": "1 Minute",
-      "5minutes": "5 minutes",
+      "5minutes": "5 Minuten",
       "15minutes": "15 Minuten",
       "30minutes": "30 Minuten",
       "1hour": "1 Stunde",
       "4hours": "4 Stunden",
       "8hours": "8 Stunden",
-      "24hours": "24 hours"
+      "24hours": "24 Stunden"
     },
     "language": "Sprache",
     "languageSystemMessage": "Um die App-Sprache zu ändern, stelle die bevorzugte Sprache für AliasVault in Deinen Geräteeinstellungen ein.",
