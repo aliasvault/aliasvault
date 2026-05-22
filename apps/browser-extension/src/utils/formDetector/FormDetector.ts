@@ -232,8 +232,7 @@ export class FormDetector {
      * But NOT within another word: "research" (re-search), "birthdate" (date)
      */
     const wordBoundaryPattern = new RegExp(
-      `(^|[\\s\\-_]|(?<=[a-z])(?=[A-Z]))${pattern}($|[\\s\\-_]|(?<=[a-z])(?=[A-Z]))`,
-      'i'
+      `(^|[\\s\\-_]|(?<=[a-z])(?=[A-Z]))${pattern}($|[\\s\\-_]|(?<=[a-z])(?=[A-Z]))`
     );
 
     return wordBoundaryPattern.test(text);
@@ -721,13 +720,13 @@ export class FormDetector {
       }
 
       // If email type is explicitly requested, prefer actual <input type="email">
-      if (types.includes('email') && type === 'email') {
+      if (entry === CombinedFieldPatterns.email && types.includes('email') && type === 'email') {
         matches.push({ input: input as HTMLInputElement, score: -1 });
         continue;
       }
 
       // If password type is explicitly requested, prefer actual <input type="password">
-      if (types.includes('password') && type === 'password') {
+      if (entry === CombinedFieldPatterns.password && types.includes('password') && type === 'password') {
         matches.push({ input: input as HTMLInputElement, score: -1 });
         continue;
       }

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<body>
+<div id="LaPageX">
+
+<div class="page-login page-externe">
+
+    <form class="main-externe-form" name="FormLogin" method="post" action="/login?Etape=2&amp;Login=1">
+
+      <input type="hidden" name="NomLogin" value="test">
+      <input type="hidden" name="IDEcoleOpenID" value="{{ IDEcoleOpenID }}">
+      <input type="hidden" name="OrdiPrive" value="O">
+      <div class="main-externe-entete flex flex-center-y bold">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 82 100" class="inline-svg inlined-svg" role="img">
+ <path d="m73.562 43.443h-0.29782v-11.311c0-17.718-14.395-32.132-32.065-32.132h-1.2906c-17.373 0.6006-30.775 15.516-30.775 33.033v10.41h-0.69492c-4.7651 0-8.4383 3.8038-8.4383 8.5085v39.54c0 4.8048 3.7724 8.5085 8.4383 8.5085h65.123c4.7651 0 8.4383-3.8038 8.4383-8.5085v-39.439c0-4.8048-3.7724-8.6086-8.4383-8.6086zm-26.308 38.238c0.09927 1.001-0.59564 1.9019-1.5884 1.9019h-9.5303c-0.99274 0-1.6877-0.9009-1.5884-1.9019l1.8862-9.009c-1.6877-1.6016-2.8789-3.9039-2.4818-6.5065 0.39709-3.003 2.9782-5.5055 6.0557-5.9059h0.89346c3.8717 0 7.0484 3.2032 7.0484 7.1071 0 2.2022-0.99274 4.2042-2.5811 5.5055zm11.913-38.238h-36.036v-10.711c0-9.4094 6.8499-17.818 16.281-18.719 0.59564 0 1.1913-0.1001 1.6877-0.1001 9.9274 0 18.068 8.1081 18.068 18.218z" stroke-width=".99686"></path>
+</svg>
+        <div>Mot de passe</div>
+      </div>
+
+      <div class="img-perso flex">
+
+                  <p>Vous n'avez pas encore choisi d'image personnelle, alors vous devrez le faire une fois votre branchement complété. Si vous avez déjà fait ce choix, ce site n'est peut-être pas authentique. N'entrez pas votre mot de passe et communiquez avec nous.</p>
+              </div>
+
+
+      <div class="usager-hint">test</div>
+
+      <input type="password" class="mot-passe txt" name="MotPasse" placeholder="Mot de passe" maxlength="49" autocomplete="off" tabindex="1" autofocus="" id="MotPasse">
+      <label class="label-checkbox"><input type="checkbox" name="OrdiPrive" value="O" checked="checked" tabindex="2"><span>J'utilise un ordinateur privé</span></label>
+
+              <p>En continuant, vous acceptez les <a class="conditions">Conditions d'utilisation et la politique de protection des renseignements personnels</a>.</p>
+
+      <div tabindex="2" id="busyBtn" class="poursuivre btn"> <i id="busy" class="TmpHide busy"></i> Accéder</div>
+
+      <div class="bottom flex flex-space-between">
+        <div tabindex="3" class="retour clickable"><span class="lien">Retour</span></div>
+        <div tabindex="4" class="aide clickable"><span class="lien">Oubli du mot de passe?</span></div>
+      </div>
+    <input type="hidden" name="csrfToken" value="test-csrf-token"></form>
+
+</div>
+
+
+
+
+
+
+
+</div>
+</body>
+</html>
