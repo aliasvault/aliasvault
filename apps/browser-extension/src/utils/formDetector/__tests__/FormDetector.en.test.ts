@@ -100,6 +100,21 @@ describe('FormDetector English tests', () => {
     testField(FormField.Username, 'spi_tmp', htmlFile);
   });
 
+  describe('French login form 2 detection (Plurilogic password page)', () => {
+    const htmlFile = 'fr-login-form2.html';
+
+    testField(FormField.Password, 'MotPasse', htmlFile);
+
+    it('should not misclassify the password field as TOTP', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+      const focusedElement = document.getElementById('MotPasse');
+      const formDetector = new FormDetector(document, focusedElement);
+      const result = formDetector.getForm();
+      expect(result?.totpField).toBeNull();
+    });
+  });
+
   describe('English passwordless signup form 1 detection', () => {
     const htmlFile = 'en-signup-passwordless-1.html';
 
