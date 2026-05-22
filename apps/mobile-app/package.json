@@ -31,7 +31,7 @@
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
     "@types/jsrsasign": "^10.5.15",
-    "expo": "^53.0.22",
+    "expo": "^56.0.3",
     "expo-blur": "~14.1.5",
     "expo-clipboard": "~7.1.5",
     "expo-constants": "~17.1.7",
