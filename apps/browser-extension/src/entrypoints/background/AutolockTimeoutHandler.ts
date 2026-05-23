@@ -31,7 +31,7 @@ async function lockVaultDueToInactivity(): Promise<void> {
   }
 
   try {
-    handleLockVault();
+    await handleLockVault();
     console.info('[AUTO_LOCK] Vault locked due to inactivity');
   } catch (error) {
     console.error('[AUTO_LOCK] Error locking vault:', error);

@@ -35,6 +35,8 @@ import { hasErrorCode, getErrorMessage, extractErrorCode, AppErrorCode } from '@
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
+import { vaultStateEvents } from '@/events/VaultStateEvents';
+
 /**
  * Unlock mode type
  */
@@ -172,6 +174,15 @@ const Unlock: React.FC = () => {
     };
   }, [setHeaderButtons, t]);
 
+  /*
+   * Cross-window unlock sync: reload when another window unlocks/logs in.
+   */
+  useEffect(() => {
+    return vaultStateEvents.onVaultUnlocked(() => {
+      window.location.reload();
+    });
+  }, []);
+
   /**
    * Keep input focused for PIN mode
    */
@@ -308,7 +319,11 @@ const Unlock: React.FC = () => {
       await LocalPreferencesService.resetPasswordUnlockFailedAttempts();
       setPasswordFailedAttempts(0);
 
-      // Navigate to reinitialize which will call syncVault to sync with server
+      /*
+       * Navigate to reinitialize which will call syncVault to sync with server.
+       * Other windows will pick up the encryption-key storage event via
+       * vaultStateEvents.onVaultUnlocked and reload themselves.
+       */
       navigate('/reinitialize', { replace: true });
     } catch (err) {
       // Check if it's a version incompatibility error
@@ -414,7 +429,11 @@ const Unlock: React.FC = () => {
       // Clear dismiss until
       await LocalPreferencesService.setVaultLockedDismissUntil(0);
 
-      // Navigate to reinitialize which will call syncVault to sync with server
+      /*
+       * Navigate to reinitialize which will call syncVault to sync with server.
+       * Other windows will pick up the encryption-key storage event via
+       * vaultStateEvents.onVaultUnlocked and reload themselves.
+       */
       navigate('/reinitialize', { replace: true });
       hideLoading();
     } catch (err: unknown) {
@@ -559,7 +578,11 @@ const Unlock: React.FC = () => {
       await LocalPreferencesService.resetPasswordUnlockFailedAttempts();
       setPasswordFailedAttempts(0);
 
-      // Navigate to reinitialize which will call syncVault to sync with server
+      /*
+       * Navigate to reinitialize which will call syncVault to sync with server.
+       * Other windows will pick up the encryption-key storage event via
+       * vaultStateEvents.onVaultUnlocked and reload themselves.
+       */
       navigate('/reinitialize', { replace: true });
     } catch (err) {
       // Check if it's a version incompatibility error

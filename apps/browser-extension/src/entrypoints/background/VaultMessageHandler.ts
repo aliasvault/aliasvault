@@ -265,9 +265,13 @@ export async function handleGetVault(
  * Lock the vault by clearing only session data.
  * This preserves local vault data so user can unlock again without server.
  */
-export function handleLockVault(): messageBoolResponse {
-  // Clear session-only data (locks the vault)
-  storage.removeItems([
+export async function handleLockVault(): Promise<messageBoolResponse> {
+  /*
+   * Clear session-only data (locks the vault). Must be awaited so callers can
+   * safely navigate away — otherwise the popup can race past the removal while
+   * `session:encryptionKey` is still set, leaving stale state in storage watchers.
+   */
+  await storage.removeItems([
     'session:encryptionKey',
     'session:persistedFormValues',
   ]);

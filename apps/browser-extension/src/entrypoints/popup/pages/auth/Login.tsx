@@ -25,6 +25,8 @@ import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCodes';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
+import { vaultStateEvents } from '@/events/VaultStateEvents';
+
 import { storage } from '#imports';
 
 /** Track if username prefill has been attempted (only do it once on mount) */
@@ -180,6 +182,9 @@ const Login: React.FC = () => {
      * 1. Call syncVault() to check version compatibility
      * 2. Handle pending migrations via onUpgradeRequired callback
      * 3. Navigate to appropriate page
+     *
+     * Other windows on /login or /unlock pick up the encryption-key storage
+     * event via vaultStateEvents.onVaultUnlocked and reload themselves.
      */
     navigate('/reinitialize', { replace: true });
 
@@ -256,6 +261,15 @@ const Login: React.FC = () => {
       setHeaderButtons(null);
     };
   }, [setHeaderButtons]);
+
+  /*
+   * Cross-window login sync: reload when another window unlocks/logs in.
+   */
+  useEffect(() => {
+    return vaultStateEvents.onVaultUnlocked(() => {
+      window.location.reload();
+    });
+  }, []);
 
   /**
    * Handle submit
