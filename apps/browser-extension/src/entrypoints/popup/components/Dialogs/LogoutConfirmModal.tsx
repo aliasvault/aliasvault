@@ -90,6 +90,7 @@ const LogoutConfirmModal: React.FC<ILogoutConfirmModalProps> = ({
             {t('common.cancel')}
           </button>
           <button
+            id="logout-confirm-button"
             onClick={onConfirm}
             className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
           >
@@ -124,6 +125,7 @@ const LogoutConfirmModal: React.FC<ILogoutConfirmModalProps> = ({
           {t('common.cancel')}
         </button>
         <button
+          id="logout-confirm-button"
           onClick={onConfirm}
           className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
         >

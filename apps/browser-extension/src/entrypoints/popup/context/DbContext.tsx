@@ -7,7 +7,7 @@ import { getItemWithFallback } from '@/utils/StorageUtility';
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 
-import { vaultStateEvents } from '@/events/VaultStateEvents';
+import { markOwnEncryptionKey, vaultStateEvents } from '@/events/VaultStateEvents';
 
 import { storage } from '#imports';
 
@@ -360,6 +360,11 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * Store encryption key in background worker.
    */
   const storeEncryptionKey = useCallback(async (encryptionKey: string) : Promise<void> => {
+    /*
+     * Mark as our own write BEFORE sending, so the cross-window watcher
+     * ignores the storage event triggered by this same flow.
+     */
+    markOwnEncryptionKey(encryptionKey);
     await sendMessage('STORE_ENCRYPTION_KEY', encryptionKey, 'background');
   }, []);
 

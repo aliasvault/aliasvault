@@ -110,6 +110,18 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFullyInitialized, isLoggedIn, dbAvailable, location.pathname]);
 
+  /*
+   * If another window has logged in or unlocked the vault,
+   * reload the page to reinitialize the app.
+   */
+  useEffect(() => {
+    if (isFullyInitialized && isLoggedIn && dbAvailable && (location.pathname === '/login' || location.pathname === '/unlock')) {
+      console.info('[NavigationContext] cross-window session active — leaving auth page', { from: location.pathname });
+      navigate('/reinitialize', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFullyInitialized, isLoggedIn, dbAvailable, location.pathname]);
+
   // Return the context value
   const contextValue = useMemo(() => ({
     storeCurrentPage,
