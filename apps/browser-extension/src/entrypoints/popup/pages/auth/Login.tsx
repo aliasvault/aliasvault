@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { sendMessage } from 'webext-bridge/popup';
 
-import type { TwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
 import Button from '@/entrypoints/popup/components/Button';
 import MobileUnlockModal from '@/entrypoints/popup/components/Dialogs/MobileUnlockModal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
@@ -21,6 +19,7 @@ import { AppInfo } from '@/utils/AppInfo';
 import { SrpAuthService } from '@/utils/auth/SrpAuthService';
 import type { VaultResponse, LoginResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCodes';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
@@ -103,7 +102,7 @@ const Login: React.FC = () => {
               publicEmailDomainList: vaultResponse.vault.publicEmailDomainList,
               privateEmailDomainList: vaultResponse.vault.privateEmailDomainList,
               hiddenPrivateEmailDomainList: vaultResponse.vault.hiddenPrivateEmailDomainList,
-            }, 'background');
+            });
 
             await dbContext.loadDatabase(decryptedExisting);
             return;
@@ -125,13 +124,13 @@ const Login: React.FC = () => {
     await sendMessage('STORE_ENCRYPTED_VAULT', {
       vaultBlob: vaultResponse.vault.blob,
       serverRevision: vaultResponse.vault.currentRevisionNumber,
-    }, 'background');
+    });
 
     await sendMessage('STORE_VAULT_METADATA', {
       publicEmailDomainList: vaultResponse.vault.publicEmailDomainList,
       privateEmailDomainList: vaultResponse.vault.privateEmailDomainList,
       hiddenPrivateEmailDomainList: vaultResponse.vault.hiddenPrivateEmailDomainList,
-    }, 'background');
+    });
 
     // Decrypt and load the vault into memory
     const decryptedVault = await EncryptionUtility.symmetricDecrypt(vaultToLoad, encryptionKey);
@@ -212,7 +211,7 @@ const Login: React.FC = () => {
        */
       if (!twoFactorStateRestoreAttempted) {
         twoFactorStateRestoreAttempted = true;
-        const savedState = await sendMessage('GET_TWO_FACTOR_STATE', null, 'background') as TwoFactorState | null;
+        const savedState = await sendMessage('GET_TWO_FACTOR_STATE');
         if (savedState) {
           // Restore the 2FA state
           setCredentials({ username: savedState.username, password: '' });
@@ -324,7 +323,7 @@ const Login: React.FC = () => {
           passwordHashString,
           passwordHashBase64,
           rememberMe,
-        }, 'background');
+        });
 
         // Show app.
         hideLoading();
@@ -393,7 +392,7 @@ const Login: React.FC = () => {
       }
 
       // Clear any persisted 2FA state since login is successful
-      await sendMessage('CLEAR_TWO_FACTOR_STATE', null, 'background');
+      await sendMessage('CLEAR_TWO_FACTOR_STATE');
 
       // Handle successful authentication
       await handleSuccessfulAuth(
@@ -517,7 +516,7 @@ const Login: React.FC = () => {
               type="button"
               onClick={async () => {
                 // Clear persisted 2FA state
-                await sendMessage('CLEAR_TWO_FACTOR_STATE', null, 'background');
+                await sendMessage('CLEAR_TWO_FACTOR_STATE');
                 // Reset the form
                 setCredentials({
                   username: '',

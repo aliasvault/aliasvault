@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { sendMessage } from 'webext-bridge/popup';
 
-import type { FullVaultSyncResult } from '@/entrypoints/background/VaultMessageHandler';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
+
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 /**
  * Minimum time (ms) to show the syncing indicator.
@@ -82,7 +82,7 @@ const ServerSyncIndicator: React.FC = () => {
     }
 
     try {
-      const result = await sendMessage('FULL_VAULT_SYNC', {}, 'background') as FullVaultSyncResult;
+      const result = await sendMessage('FULL_VAULT_SYNC');
 
       // Handle logout requirement
       if (result.requiresLogout) {

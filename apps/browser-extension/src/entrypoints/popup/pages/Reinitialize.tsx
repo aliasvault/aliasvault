@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { sendMessage } from 'webext-bridge/popup';
 
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
@@ -8,6 +7,8 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import useCurrentTabMatching from '@/entrypoints/popup/hooks/useCurrentTabMatching';
 import { consumePendingRedirectUrl } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
+
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { storage } from '#imports';
 
@@ -141,7 +142,7 @@ const Reinitialize: React.FC = () => {
       storage.removeItem(LAST_VISITED_PAGE_KEY),
       storage.removeItem(LAST_VISITED_TIME_KEY),
       storage.removeItem(NAVIGATION_HISTORY_KEY),
-      sendMessage('CLEAR_PERSISTED_FORM_VALUES', null, 'background'),
+      sendMessage('CLEAR_PERSISTED_FORM_VALUES'),
     ]);
 
     // Save current tab URL for future tab-switch detection

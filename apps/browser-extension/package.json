@@ -34,6 +34,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^5.1.1",
     "@types/dompurify": "^3.0.5",
+    "@webext-core/messaging": "^3.0.1",
     "argon2-browser": "^1.18.0",
     "buffer": "^6.0.3",
     "dompurify": "^3.4.0",
@@ -49,7 +50,6 @@
     "secure-remote-password": "github:LinusU/secure-remote-password#73e5f732b6ca0cdbdc19da1a0c5f48cdbad2cbf0",
     "sql.js": "^1.12.0",
     "vitest": "^3.0.8",
-    "webext-bridge": "^6.0.1",
     "yup": "^1.6.1"
   },
   "devDependencies": {

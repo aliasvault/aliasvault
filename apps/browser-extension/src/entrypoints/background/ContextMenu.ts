@@ -1,8 +1,8 @@
 import { type Browser } from '@wxt-dev/browser';
-import { sendMessage } from 'webext-bridge/background';
 
 import { POPUP_TYPES, type PopupType, isPopupType } from '@/utils/autofill/PopupTypes';
 import { PasswordGenerator } from '@/utils/dist/core/password-generator';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { t } from '@/i18n/StandaloneI18n';
 
@@ -138,7 +138,7 @@ export function handleContextMenuClick(info: Browser.contextMenus.OnClickData, t
       const elementIdentifier = results[0]?.result;
       if (elementIdentifier) {
         // Send message to content script with proper tab targeting
-        sendMessage('OPEN_AUTOFILL_POPUP', { elementIdentifier, popupType }, `content-script@${tab.id}`);
+        sendMessage('OPEN_AUTOFILL_POPUP', { elementIdentifier, popupType }, tab.id);
       }
     });
   }

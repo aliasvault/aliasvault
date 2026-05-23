@@ -1,5 +1,3 @@
-import { sendMessage } from 'webext-bridge/content-script';
-
 import { openAutofillPopup, openTotpPopup, removeExistingPopup } from '@/entrypoints/contentScript/Popup';
 
 import { LOGO_MARK_SVG } from '@/utils/constants/logo';
@@ -10,6 +8,7 @@ import { FormFiller } from '@/utils/formDetector/FormFiller';
 import { DetectedFieldType } from '@/utils/formDetector/types/FormFields';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import type { LastAutofilledCredential } from '@/utils/loginDetector';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 import { SqliteClient } from '@/utils/SqliteClient';
 
@@ -102,7 +101,7 @@ export async function fillItem(item: Item, input: HTMLInputElement): Promise<voi
   hidePopupFor(300);
 
   // Reset auto-lock timer when autofilling
-  sendMessage('RESET_AUTO_LOCK_TIMER', {}, 'background').catch(() => {
+  sendMessage('RESET_AUTO_LOCK_TIMER').catch(() => {
     // Ignore errors as background script might not be ready
   });
 
@@ -137,12 +136,12 @@ export async function fillItem(item: Item, input: HTMLInputElement): Promise<voi
     faviconUrl: faviconUrl ?? undefined,
   };
 
-  sendMessage('STORE_LAST_AUTOFILLED', lastAutofilled, 'background').catch(() => {
+  sendMessage('STORE_LAST_AUTOFILLED', lastAutofilled).catch(() => {
     // Ignore errors as background script might not be ready
   });
 
   // Store recently selected item for smart autofill prioritization
-  sendMessage('SET_RECENTLY_SELECTED', { itemId: item.Id, domain: window.location.hostname }, 'background').catch(() => {
+  sendMessage('SET_RECENTLY_SELECTED', { itemId: item.Id, domain: window.location.hostname }).catch(() => {
     // Ignore errors as background script might not be ready
   });
 
@@ -151,18 +150,14 @@ export async function fillItem(item: Item, input: HTMLInputElement): Promise<voi
   if (autoCopyTotpEnabled) {
     try {
       // Generate TOTP code via background
-      const response = await sendMessage('GENERATE_TOTP_CODE', { itemId: item.Id }, 'background') as {
-        success: boolean;
-        code?: string;
-        error?: string;
-      };
+      const response = await sendMessage('GENERATE_TOTP_CODE', { itemId: item.Id });
 
       if (response.success && response.code) {
         // Copy TOTP code to clipboard
         await navigator.clipboard.writeText(response.code);
 
         // Notify background script that clipboard was copied to start countdown
-        sendMessage('CLIPBOARD_COPIED', { value: response.code }, 'background').catch(() => {
+        sendMessage('CLIPBOARD_COPIED').catch(() => {
           // Ignore errors as background script might not be ready
         });
       }
@@ -436,16 +431,12 @@ export async function fillTotpCode(itemId: string, input: HTMLInputElement): Pro
   hidePopupFor(300);
 
   // Reset auto-lock timer when autofilling
-  sendMessage('RESET_AUTO_LOCK_TIMER', {}, 'background').catch(() => {
+  sendMessage('RESET_AUTO_LOCK_TIMER').catch(() => {
     // Ignore errors as background script might not be ready
   });
 
   // Generate TOTP code via background
-  const response = await sendMessage('GENERATE_TOTP_CODE', { itemId }, 'background') as {
-    success: boolean;
-    code?: string;
-    error?: string;
-  };
+  const response = await sendMessage('GENERATE_TOTP_CODE', { itemId });
 
   if (!response.success || !response.code) {
     console.error('Failed to generate TOTP code:', response.error);
@@ -459,7 +450,7 @@ export async function fillTotpCode(itemId: string, input: HTMLInputElement): Pro
   triggerInputEvents(input);
 
   // Store recently selected item for smart autofill prioritization
-  sendMessage('SET_RECENTLY_SELECTED', { itemId, domain: window.location.hostname }, 'background').catch(() => {
+  sendMessage('SET_RECENTLY_SELECTED', { itemId, domain: window.location.hostname }).catch(() => {
     // Ignore errors as background script might not be ready
   });
 }

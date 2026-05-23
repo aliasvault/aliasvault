@@ -1,5 +1,4 @@
 import * as OTPAuth from 'otpauth';
-import { sendMessage } from 'webext-bridge/content-script';
 
 import { fillItem, fillTotpCode } from '@/entrypoints/contentScript/Form';
 
@@ -10,14 +9,11 @@ import { ItemTypes, FieldKey, createSystemField } from '@/utils/dist/core/models
 import { CreatePasswordGenerator, PasswordGenerator, PasswordSettings } from '@/utils/dist/core/password-generator';
 import { getAllFaviconLinks } from '@/utils/favicon';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/passwordLengthSlider';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
-import { IdentitySettingsResponse } from '@/utils/types/messaging/IdentitySettingsResponse';
-import { ItemsResponse } from '@/utils/types/messaging/ItemsResponse';
-import { PasswordSettingsResponse } from '@/utils/types/messaging/PasswordSettingsResponse';
-import { StringResponse } from '@/utils/types/messaging/StringResponse';
 
 import { t } from '@/i18n/StandaloneI18n';
 
@@ -138,7 +134,7 @@ export function openAutofillPopup(input: HTMLInputElement, container: HTMLElemen
       pageTitle: document.title,
       matchingMode: matchingMode,
       includeRecentlySelected: true // Enable for multi-step login autofill
-    }, 'background') as ItemsResponse;
+    });
 
     if (response.success) {
       await createAutofillPopup(input, response.items, container, response.recentlySelectedId);
@@ -187,7 +183,7 @@ export function openTotpPopup(input: HTMLInputElement, container: HTMLElement, f
       currentUrl: window.location.href,
       pageTitle: document.title,
       matchingMode: matchingMode
-    }, 'background') as ItemsResponse;
+    });
 
     if (response.success) {
       await createTotpPopup(input, response.items, container, response.recentlySelectedId);
@@ -265,7 +261,7 @@ async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefine
       // Search in TOTP items only
       const response = await sendMessage('SEARCH_ITEMS_WITH_TOTP', {
         searchTerm: searchTerm
-      }, 'background') as ItemsResponse;
+      });
 
       if (response.success && response.items) {
         // Search results don't carry prioritization, so don't highlight any item
@@ -425,11 +421,7 @@ function updateTotpPopupContent(items: Item[], itemList: HTMLElement | null, inp
   // Fetch TOTP secrets and create items with live codes
   (async (): Promise<void> => {
     const itemIds = items.map(item => item.Id);
-    const secretsResponse = await sendMessage('GET_TOTP_SECRETS', { itemIds }, 'background') as {
-      success: boolean;
-      secrets?: Record<string, string>;
-      error?: string;
-    };
+    const secretsResponse = await sendMessage('GET_TOTP_SECRETS', { itemIds });
 
     const secrets = secretsResponse.success && secretsResponse.secrets ? secretsResponse.secrets : {};
     const hasSecrets = Object.keys(secrets).length > 0;
@@ -611,7 +603,7 @@ function createTotpItem(
 
   addReliableClickHandler(popoutIcon, (e) => {
     e.stopPropagation();
-    sendMessage('OPEN_POPUP_WITH_ITEM', { itemId: item.Id }, 'background');
+    sendMessage('OPEN_POPUP_WITH_ITEM', { itemId: item.Id });
     removeExistingPopup(rootContainer);
   });
 
@@ -843,10 +835,10 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
 
     try {
       // Sync with api to ensure we have the latest vault.
-      await sendMessage('SYNC_VAULT', {}, 'background');
+      await sendMessage('SYNC_VAULT');
 
       // Retrieve default email domain from background
-      const response = await sendMessage('GET_DEFAULT_EMAIL_DOMAIN', {}, 'background') as StringResponse;
+      const response = await sendMessage('GET_DEFAULT_EMAIL_DOMAIN');
       const domain = response.value;
 
       let newItem: Item;
@@ -883,12 +875,12 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
         };
       } else {
         // Generate new random identity using identity generator.
-        const identitySettings = await sendMessage('GET_DEFAULT_IDENTITY_SETTINGS', {}, 'background') as IdentitySettingsResponse;
+        const identitySettings = await sendMessage('GET_DEFAULT_IDENTITY_SETTINGS');
         const identityGenerator = CreateIdentityGenerator(identitySettings.settings?.language ?? 'en');
         const identity = identityGenerator.generateRandomIdentity(identitySettings.settings?.gender);
 
         // Get password settings from background
-        const passwordSettingsResponse = await sendMessage('GET_PASSWORD_SETTINGS', {}, 'background') as PasswordSettingsResponse;
+        const passwordSettingsResponse = await sendMessage('GET_PASSWORD_SETTINGS');
 
         // Initialize password generator with the retrieved settings
         const passwordGenerator = CreatePasswordGenerator(passwordSettingsResponse.settings ?? {
@@ -931,7 +923,7 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
       // Create item in background.
       const createResponse = await sendMessage('CREATE_ITEM', {
         item: JSON.parse(JSON.stringify(newItem))
-      }, 'background') as { success: boolean; error?: string };
+      });
 
       // Check if item creation succeeded
       if (!createResponse.success) {
@@ -1096,7 +1088,7 @@ export async function createVaultLockedPopup(input: HTMLInputElement, rootContai
    * Handle unlock click.
    */
   const handleUnlockClick = () : void => {
-    sendMessage('OPEN_POPUP', {}, 'background');
+    sendMessage('OPEN_POPUP');
     removeExistingPopup(rootContainer);
   }
 
@@ -1209,7 +1201,7 @@ async function handleSearchInput(searchInput: HTMLInputElement, initialItems: It
     // Search in full vault with search term
     const response = await sendMessage('GET_SEARCH_ITEMS', {
       searchTerm: searchTerm
-    }, 'background') as ItemsResponse;
+    });
 
     if (response.success && response.items) {
       // Search results don't carry prioritization, so don't highlight any item
@@ -1340,7 +1332,7 @@ function createItemList(items: Item[], input: HTMLInputElement, rootContainer: H
       // Handle popout click with security validation
       addReliableClickHandler(popoutIcon, (e) => {
         e.stopPropagation(); // Prevent item fill
-        sendMessage('OPEN_POPUP_WITH_ITEM', { itemId: item.Id }, 'background');
+        sendMessage('OPEN_POPUP_WITH_ITEM', { itemId: item.Id });
         removeExistingPopup(rootContainer);
       });
 
@@ -1709,7 +1701,7 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
         sendMessage('OPEN_POPUP_CREATE_CREDENTIAL', {
           serviceName: serviceName || encodedServiceInfo.serviceName,
           currentUrl: encodedServiceInfo.currentUrl
-        }, 'background');
+        });
         closePopup(null);
       });
 
@@ -1790,8 +1782,7 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
         UseNonAmbiguousChars: true
       };
 
-      sendMessage('GET_PASSWORD_SETTINGS', {}, 'background').then((response) => {
-        const passwordSettingsResponse = response as PasswordSettingsResponse;
+      sendMessage('GET_PASSWORD_SETTINGS').then((passwordSettingsResponse) => {
         currentPasswordSettings = passwordSettingsResponse.settings ?? currentPasswordSettings;
         passwordGenerator = CreatePasswordGenerator(currentPasswordSettings);
 
@@ -2427,7 +2418,7 @@ async function resizeImage(imageData: Uint8Array, contentType: string, targetWid
  */
 export async function dismissVaultLockedPopup(): Promise<void> {
   // First check if user is logged in or not.
-  const authStatus = await sendMessage('CHECK_AUTH_STATUS', {}, 'background') as { isLoggedIn: boolean, isVaultLocked: boolean };
+  const authStatus = await sendMessage('CHECK_AUTH_STATUS');
 
   if (authStatus.isLoggedIn) {
     // User is logged in - dismiss for 4 hours
@@ -2527,7 +2518,7 @@ export async function createUpgradeRequiredPopup(input: HTMLInputElement, rootCo
    * Handle upgrade click.
    */
   const handleUpgradeClick = () : void => {
-    sendMessage('OPEN_POPUP', {}, 'background');
+    sendMessage('OPEN_POPUP');
     removeExistingPopup(rootContainer);
   }
 

@@ -2,8 +2,6 @@
  * Background script entry point - handles messages from the content script
  */
 
-import { onMessage, sendMessage } from "webext-bridge/background";
-
 import { handleResetAutoLockTimer, handlePopupHeartbeat, handleSetAutoLockTimeout, initializeAutoLockAlarm, handleAutoLockAlarm } from '@/entrypoints/background/AutolockTimeoutHandler';
 import { handleClipboardCopied, handleCancelClipboardClear, handleGetClipboardClearTimeout, handleSetClipboardClearTimeout, handleGetClipboardCountdownState } from '@/entrypoints/background/ClipboardClearHandler';
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
@@ -13,10 +11,8 @@ import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePr
 import { handleStoreTwoFactorState, handleGetTwoFactorState, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
 import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleCreateItem, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleGetServerRevision, handleCheckSyncStatus, handleFullVaultSync, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleSetLoginSaveEnabled, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode, handleSetRecentlySelected, handleGetRecentlySelected } from '@/entrypoints/background/VaultMessageHandler';
 
-import { EncryptionKeyDerivationParams } from "@/utils/dist/core/models/metadata";
-import type { LoginResponse } from "@/utils/dist/core/models/webapi";
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
-import type { SavePromptPersistedState, LastAutofilledCredential } from "@/utils/loginDetector";
+import { onMessage, sendMessage } from "@/utils/messaging/ExtensionMessaging";
 
 import { defineBackground, browser } from '#imports';
 
@@ -60,34 +56,34 @@ export default defineBackground({
         });
         const elementIdentifier = results[0]?.result;
         if (elementIdentifier) {
-          sendMessage('OPEN_AUTOFILL_POPUP', { elementIdentifier }, `content-script@${tab.id}`);
+          sendMessage('OPEN_AUTOFILL_POPUP', { elementIdentifier }, tab.id);
         }
       } catch (error) {
         console.error('Error handling show-autofill-popup command:', error);
       }
     });
 
-    // Listen for messages using webext-bridge
+    // Listen for messages via @webext-core/messaging
     onMessage('CHECK_AUTH_STATUS', () => handleCheckAuthStatus());
 
     onMessage('GET_ENCRYPTION_KEY', () => handleGetEncryptionKey());
     onMessage('GET_ENCRYPTION_KEY_DERIVATION_PARAMS', () => handleGetEncryptionKeyDerivationParams());
     onMessage('GET_VAULT', () => handleGetVault());
-    onMessage('GET_FILTERED_ITEMS', ({ data }) => handleGetFilteredItems(data as { currentUrl: string, pageTitle: string, matchingMode?: string, includeRecentlySelected?: boolean }));
-    onMessage('GET_SEARCH_ITEMS', ({ data }) => handleGetSearchItems(data as { searchTerm: string }));
+    onMessage('GET_FILTERED_ITEMS', ({ data }) => handleGetFilteredItems(data));
+    onMessage('GET_SEARCH_ITEMS', ({ data }) => handleGetSearchItems(data));
 
     onMessage('GET_DEFAULT_EMAIL_DOMAIN', () => handleGetDefaultEmailDomain());
     onMessage('GET_DEFAULT_IDENTITY_SETTINGS', () => handleGetDefaultIdentitySettings());
     onMessage('GET_PASSWORD_SETTINGS', () => handleGetPasswordSettings());
 
-    onMessage('STORE_VAULT_METADATA', ({ data }) => handleStoreVaultMetadata(data as { publicEmailDomainList?: string[]; privateEmailDomainList?: string[]; hiddenPrivateEmailDomainList?: string[] }));
-    onMessage('STORE_ENCRYPTION_KEY', ({ data }) => handleStoreEncryptionKey(data as string));
-    onMessage('STORE_ENCRYPTION_KEY_DERIVATION_PARAMS', ({ data }) => handleStoreEncryptionKeyDerivationParams(data as EncryptionKeyDerivationParams));
+    onMessage('STORE_VAULT_METADATA', ({ data }) => handleStoreVaultMetadata(data));
+    onMessage('STORE_ENCRYPTION_KEY', ({ data }) => handleStoreEncryptionKey(data));
+    onMessage('STORE_ENCRYPTION_KEY_DERIVATION_PARAMS', ({ data }) => handleStoreEncryptionKeyDerivationParams(data));
 
     onMessage('GET_ENCRYPTED_VAULT', () => handleGetEncryptedVault());
-    onMessage('STORE_ENCRYPTED_VAULT', ({ data }) => handleStoreEncryptedVault(data as { vaultBlob: string; markDirty?: boolean; serverRevision?: number; expectedMutationSeq?: number }));
+    onMessage('STORE_ENCRYPTED_VAULT', ({ data }) => handleStoreEncryptedVault(data));
     onMessage('GET_SYNC_STATE', () => handleGetSyncState());
-    onMessage('MARK_VAULT_CLEAN', ({ data }) => handleMarkVaultClean(data as { mutationSeqAtStart: number; newServerRevision: number }));
+    onMessage('MARK_VAULT_CLEAN', ({ data }) => handleMarkVaultClean(data));
     onMessage('GET_SERVER_REVISION', () => handleGetServerRevision());
 
     onMessage('CREATE_ITEM', ({ data }) => handleCreateItem(data));
@@ -109,35 +105,35 @@ export default defineBackground({
     onMessage('CLEAR_PERSISTED_FORM_VALUES', () => handleClearPersistedFormValues());
 
     // Remember login save messages
-    onMessage('CHECK_LOGIN_DUPLICATE', ({ data }) => handleCheckLoginDuplicate(data as { domain: string; username: string }));
-    onMessage('SAVE_LOGIN_CREDENTIAL', ({ data }) => handleSaveLoginCredential(data as { serviceName: string; username: string; password: string; url: string; domain: string; logoBase64?: string }));
-    onMessage('ADD_URL_TO_CREDENTIAL', ({ data }) => handleAddUrlToCredential(data as { itemId: string; url: string }));
-    onMessage('IS_URL_LINKED_TO_CREDENTIAL', ({ data }) => handleIsUrlLinkedToCredential(data as { itemId: string; url: string }));
+    onMessage('CHECK_LOGIN_DUPLICATE', ({ data }) => handleCheckLoginDuplicate(data));
+    onMessage('SAVE_LOGIN_CREDENTIAL', ({ data }) => handleSaveLoginCredential(data));
+    onMessage('ADD_URL_TO_CREDENTIAL', ({ data }) => handleAddUrlToCredential(data));
+    onMessage('IS_URL_LINKED_TO_CREDENTIAL', ({ data }) => handleIsUrlLinkedToCredential(data));
     onMessage('GET_LOGIN_SAVE_SETTINGS', () => handleGetLoginSaveSettings());
-    onMessage('SET_LOGIN_SAVE_ENABLED', ({ data }) => handleSetLoginSaveEnabled(data as boolean));
+    onMessage('SET_LOGIN_SAVE_ENABLED', ({ data }) => handleSetLoginSaveEnabled(data));
 
     // TOTP autofill messages
-    onMessage('GET_ITEMS_WITH_TOTP', ({ data }) => handleGetItemsWithTotp(data as { currentUrl: string, pageTitle: string, matchingMode?: string }));
-    onMessage('SEARCH_ITEMS_WITH_TOTP', ({ data }) => handleSearchItemsWithTotp(data as { searchTerm: string }));
-    onMessage('GET_TOTP_SECRETS', ({ data }) => handleGetTotpSecrets(data as { itemIds: string[] }));
-    onMessage('GENERATE_TOTP_CODE', ({ data }) => handleGenerateTotpCode(data as { itemId: string }));
+    onMessage('GET_ITEMS_WITH_TOTP', ({ data }) => handleGetItemsWithTotp(data));
+    onMessage('SEARCH_ITEMS_WITH_TOTP', ({ data }) => handleSearchItemsWithTotp(data));
+    onMessage('GET_TOTP_SECRETS', ({ data }) => handleGetTotpSecrets(data));
+    onMessage('GENERATE_TOTP_CODE', ({ data }) => handleGenerateTotpCode(data));
 
     // Track recently selected items for autofill prioritization
-    onMessage('SET_RECENTLY_SELECTED', ({ data }) => handleSetRecentlySelected(data as { itemId: string; domain: string }));
-    onMessage('GET_RECENTLY_SELECTED', ({ data }) => handleGetRecentlySelected(data as { domain: string }));
+    onMessage('SET_RECENTLY_SELECTED', ({ data }) => handleSetRecentlySelected(data));
+    onMessage('GET_RECENTLY_SELECTED', ({ data }) => handleGetRecentlySelected(data));
 
     // Remember login save state (for surviving page navigation)
-    onMessage('STORE_SAVE_PROMPT_STATE', ({ data, sender }) => handleStoreSavePromptState({ tabId: sender.tabId!, state: data as SavePromptPersistedState }));
-    onMessage('GET_SAVE_PROMPT_STATE', ({ sender }) => handleGetSavePromptState({ tabId: sender.tabId! }));
-    onMessage('CLEAR_SAVE_PROMPT_STATE', ({ sender }) => handleClearSavePromptState({ tabId: sender.tabId! }));
+    onMessage('STORE_SAVE_PROMPT_STATE', ({ data, sender }) => handleStoreSavePromptState({ tabId: sender.tab!.id!, state: data }));
+    onMessage('GET_SAVE_PROMPT_STATE', ({ sender }) => handleGetSavePromptState({ tabId: sender.tab!.id! }));
+    onMessage('CLEAR_SAVE_PROMPT_STATE', ({ sender }) => handleClearSavePromptState({ tabId: sender.tab!.id! }));
 
     // Track last autofilled credential (for "Add URL to existing credential" prompt)
-    onMessage('STORE_LAST_AUTOFILLED', ({ data, sender }) => handleStoreLastAutofilled({ tabId: sender.tabId!, credential: data as LastAutofilledCredential }));
-    onMessage('GET_LAST_AUTOFILLED', ({ data, sender }) => handleGetLastAutofilled({ tabId: sender.tabId!, ...(data as { domain?: string; username?: string }) }));
-    onMessage('CLEAR_LAST_AUTOFILLED', ({ sender }) => handleClearLastAutofilled({ tabId: sender.tabId! }));
+    onMessage('STORE_LAST_AUTOFILLED', ({ data, sender }) => handleStoreLastAutofilled({ tabId: sender.tab!.id!, credential: data }));
+    onMessage('GET_LAST_AUTOFILLED', ({ data, sender }) => handleGetLastAutofilled({ tabId: sender.tab!.id!, ...data }));
+    onMessage('CLEAR_LAST_AUTOFILLED', ({ sender }) => handleClearLastAutofilled({ tabId: sender.tab!.id! }));
 
     // Two-factor authentication state persistence
-    onMessage('STORE_TWO_FACTOR_STATE', ({ data }) => handleStoreTwoFactorState(data as { username: string; loginResponse: LoginResponse; passwordHashString: string; passwordHashBase64: string; rememberMe: boolean }));
+    onMessage('STORE_TWO_FACTOR_STATE', ({ data }) => handleStoreTwoFactorState(data));
     onMessage('GET_TWO_FACTOR_STATE', () => handleGetTwoFactorState());
     onMessage('CLEAR_TWO_FACTOR_STATE', () => handleClearTwoFactorState());
 
@@ -145,12 +141,12 @@ export default defineBackground({
     onMessage('CLIPBOARD_COPIED', () => handleClipboardCopied());
     onMessage('CANCEL_CLIPBOARD_CLEAR', () => handleCancelClipboardClear());
     onMessage('GET_CLIPBOARD_CLEAR_TIMEOUT', () => handleGetClipboardClearTimeout());
-    onMessage('SET_CLIPBOARD_CLEAR_TIMEOUT', ({ data }) => handleSetClipboardClearTimeout(data as number));
+    onMessage('SET_CLIPBOARD_CLEAR_TIMEOUT', ({ data }) => handleSetClipboardClearTimeout(data));
     onMessage('GET_CLIPBOARD_COUNTDOWN_STATE', () => handleGetClipboardCountdownState());
 
     // Auto-lock management messages
     onMessage('RESET_AUTO_LOCK_TIMER', () => handleResetAutoLockTimer());
-    onMessage('SET_AUTO_LOCK_TIMEOUT', ({ data }) => handleSetAutoLockTimeout(data as number));
+    onMessage('SET_AUTO_LOCK_TIMEOUT', ({ data }) => handleSetAutoLockTimeout(data));
     onMessage('POPUP_HEARTBEAT', () => handlePopupHeartbeat());
 
     // Handle clipboard copied from context menu

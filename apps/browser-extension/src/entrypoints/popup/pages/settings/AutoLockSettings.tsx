@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { sendMessage } from 'webext-bridge/popup';
 
 import HelpModal from '@/entrypoints/popup/components/Dialogs/HelpModal';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 /**
  * Auto-lock settings page component.
@@ -36,7 +36,7 @@ const AutoLockSettings: React.FC = () => {
   const setAutoLockTimeoutSetting = async (timeout: number) : Promise<void> => {
     setAutoLockTimeout(timeout);
     await LocalPreferencesService.setAutoLockTimeout(timeout);
-    await sendMessage('SET_AUTO_LOCK_TIMEOUT', timeout, 'background');
+    await sendMessage('SET_AUTO_LOCK_TIMEOUT', timeout);
   };
 
   return (

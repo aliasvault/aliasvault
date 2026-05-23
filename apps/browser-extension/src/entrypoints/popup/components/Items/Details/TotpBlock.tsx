@@ -1,11 +1,11 @@
 import  * as OTPAuth from 'otpauth';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { sendMessage } from 'webext-bridge/popup';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import type { TotpCode } from '@/utils/dist/core/models/vault';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 /**
  * Formats a TOTP code as "XXX XXX" with a space in the middle for better readability.
@@ -84,7 +84,7 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId }) => {
       setCopiedId(id);
       
       // Notify background script that clipboard was copied
-      await sendMessage('CLIPBOARD_COPIED', { value: code }, 'background');
+      await sendMessage('CLIPBOARD_COPIED');
 
       // Reset copied state after 2 seconds
       setTimeout(() => {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { sendMessage } from 'webext-bridge/popup';
+
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 /**
  * Generic form persistence hook for saving and restoring form state.
@@ -110,7 +111,7 @@ const useFormPersistence = <T>({
       data: formData,
     };
 
-    await sendMessage('PERSIST_FORM_VALUES', JSON.stringify(persistedData), 'background');
+    await sendMessage('PERSIST_FORM_VALUES', JSON.stringify(persistedData));
   }, [formId, formData, isLoading]);
 
   /**
@@ -126,7 +127,7 @@ const useFormPersistence = <T>({
       return false;
     }
 
-    const persistedData = await sendMessage('GET_PERSISTED_FORM_VALUES', null, 'background') as string | null;
+    const persistedData = await sendMessage('GET_PERSISTED_FORM_VALUES') as string | null;
 
     try {
       if (!persistedData) {
@@ -160,7 +161,7 @@ const useFormPersistence = <T>({
    * Clear persisted form values from storage.
    */
   const clearPersistedValues = useCallback(async (): Promise<void> => {
-    await sendMessage('CLEAR_PERSISTED_FORM_VALUES', null, 'background');
+    await sendMessage('CLEAR_PERSISTED_FORM_VALUES');
   }, []);
 
   /**

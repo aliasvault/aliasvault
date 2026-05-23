@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
-import { sendMessage } from 'webext-bridge/popup';
 
 import Button from '@/entrypoints/popup/components/Button';
 import PasskeyBypassDialog from '@/entrypoints/popup/components/Dialogs/PasskeyBypassDialog';
@@ -11,6 +10,7 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { PasskeyAuthenticator } from '@/utils/passkey/PasskeyAuthenticator';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type { GetRequest, PasskeyGetCredentialResponse, PendingPasskeyGetRequest, StoredPasskeyRecord } from '@/utils/passkey/types';
@@ -54,7 +54,7 @@ const PasskeyAuthenticate: React.FC = () => {
       if (requestId) {
         try {
           // Fetch the full request data from background
-          const data = await sendMessage('GET_REQUEST_DATA', { requestId }, 'background') as unknown as PendingPasskeyGetRequest;
+          const data = await sendMessage('GET_REQUEST_DATA', { requestId }) as unknown as PendingPasskeyGetRequest;
 
           if (data && data.type === 'get') {
             setRequest(data);
@@ -289,7 +289,7 @@ const PasskeyAuthenticate: React.FC = () => {
       await sendMessage('PASSKEY_POPUP_RESPONSE', {
         requestId: request.requestId,
         credential
-      }, 'background');
+      });
     } catch (error) {
       console.error('PasskeyAuthenticate: Error during authentication', error);
       setLoading(false);
@@ -331,7 +331,7 @@ const PasskeyAuthenticate: React.FC = () => {
     await sendMessage('PASSKEY_POPUP_RESPONSE', {
       requestId: request.requestId,
       fallback: true
-    }, 'background');
+    });
   };
 
   /**
@@ -349,7 +349,7 @@ const PasskeyAuthenticate: React.FC = () => {
     await sendMessage('PASSKEY_POPUP_RESPONSE', {
       requestId: request.requestId,
       cancelled: true
-    }, 'background');
+    });
   };
 
   if (!request) {

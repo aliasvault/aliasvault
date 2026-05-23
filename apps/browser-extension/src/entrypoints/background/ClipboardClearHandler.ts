@@ -1,6 +1,5 @@
-import { sendMessage } from 'webext-bridge/background';
-
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 let clipboardClearTimer: NodeJS.Timeout | null = null;
 let countdownInterval: NodeJS.Timeout | null = null;
@@ -107,7 +106,7 @@ export async function handleClipboardCopied() : Promise<void> {
   remainingTime = timeout;
 
   // Send initial countdown immediately with ID
-  sendMessage('CLIPBOARD_COUNTDOWN', { remaining: remainingTime, total: timeout, id: thisCountdownId }, 'popup').catch(() => {});
+  sendMessage('CLIPBOARD_COUNTDOWN', { remaining: remainingTime, total: timeout, id: thisCountdownId }).catch(() => {});
 
   // Send countdown updates to popup every 100ms for smooth animation
   let elapsed = 0;
@@ -122,7 +121,7 @@ export async function handleClipboardCopied() : Promise<void> {
 
     elapsed += 0.1;
     remainingTime = Math.max(0, timeout - elapsed);
-    sendMessage('CLIPBOARD_COUNTDOWN', { remaining: remainingTime, total: timeout, id: thisCountdownId }, 'popup').catch(() => {});
+    sendMessage('CLIPBOARD_COUNTDOWN', { remaining: remainingTime, total: timeout, id: thisCountdownId }).catch(() => {});
 
     if (elapsed >= timeout && countdownInterval) {
       clearInterval(countdownInterval);
@@ -148,7 +147,7 @@ export async function handleClipboardCopied() : Promise<void> {
       countdownStartTime = 0;
       totalCountdownTime = 0;
 
-      sendMessage('CLIPBOARD_CLEARED', {}, 'popup').catch(() => {});
+      sendMessage('CLIPBOARD_CLEARED', {}).catch(() => {});
     } catch (error) {
       console.error('[CLIPBOARD] Error during clipboard clear:', error);
 
@@ -161,7 +160,7 @@ export async function handleClipboardCopied() : Promise<void> {
       currentCountdownId = 0;
       countdownStartTime = 0;
       totalCountdownTime = 0;
-      sendMessage('CLIPBOARD_CLEARED', {}, 'popup').catch(() => {});
+      sendMessage('CLIPBOARD_CLEARED', {}).catch(() => {});
     }
   }, timeout * 1000);
 }
@@ -178,7 +177,7 @@ export function handleCancelClipboardClear(): void {
     clearInterval(countdownInterval);
     countdownInterval = null;
   }
-  sendMessage('CLIPBOARD_COUNTDOWN_CANCELLED', {}, 'popup').catch(() => {});
+  sendMessage('CLIPBOARD_COUNTDOWN_CANCELLED', {}).catch(() => {});
 }
 
 /**

@@ -3,8 +3,6 @@
  */
 
 import '@/entrypoints/contentScript/style.css';
-import { onMessage, sendMessage } from "webext-bridge/content-script";
-
 import { injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
 import { openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
 import { showSavePrompt, showAddUrlPrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState, restoreAddUrlPromptFromState } from '@/entrypoints/contentScript/SavePrompt';
@@ -14,8 +12,8 @@ import { DEFAULT_POPUP_TYPE, isPopupType, popupTypeForFieldType, POPUP_TYPES, ty
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { LoginDetector } from '@/utils/loginDetector';
-import type { CapturedLogin, LastAutofilledCredential } from '@/utils/loginDetector';
-import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
+import type { CapturedLogin } from '@/utils/loginDetector';
+import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { t } from '@/i18n/StandaloneI18n';
 
@@ -62,14 +60,14 @@ async function handleSaveLogin(login: CapturedLogin, serviceName: string): Promi
       url: login.url,
       domain: login.domain,
       faviconUrl: login.faviconUrl,
-    }, 'background') as { success: boolean; itemId?: string; error?: string };
+    });
 
     if (!response.success) {
       console.error('[AliasVault] Failed to save login:', response.error);
     }
 
     // Clear the last autofilled state after save
-    await sendMessage('CLEAR_LAST_AUTOFILLED', {}, 'background');
+    await sendMessage('CLEAR_LAST_AUTOFILLED');
   } catch (error) {
     console.error('[AliasVault] Error saving login:', error);
   }
@@ -97,7 +95,7 @@ async function handleNeverSaveForDomain(domain: string): Promise<void> {
  */
 async function handleSavePromptDismiss(): Promise<void> {
   // Clear the last autofilled state on dismiss
-  await sendMessage('CLEAR_LAST_AUTOFILLED', {}, 'background');
+  await sendMessage('CLEAR_LAST_AUTOFILLED');
 }
 
 /**
@@ -110,14 +108,14 @@ async function handleAddUrlToCredential(itemId: string, url: string): Promise<vo
     const response = await sendMessage('ADD_URL_TO_CREDENTIAL', {
       itemId,
       url,
-    }, 'background') as { success: boolean; error?: string };
+    });
 
     if (!response.success) {
       console.error('[AliasVault] Failed to add URL to credential:', response.error);
     }
 
     // Clear the last autofilled state after successful add
-    await sendMessage('CLEAR_LAST_AUTOFILLED', {}, 'background');
+    await sendMessage('CLEAR_LAST_AUTOFILLED');
   } catch (error) {
     console.error('[AliasVault] Error adding URL to credential:', error);
   }
@@ -129,11 +127,7 @@ async function handleAddUrlToCredential(itemId: string, url: string): Promise<vo
  */
 async function isLoginSaveEnabled(): Promise<boolean> {
   try {
-    const response = await sendMessage('GET_LOGIN_SAVE_SETTINGS', {}, 'background') as {
-      success: boolean;
-      enabled: boolean;
-      autoDismissSeconds: number;
-    };
+    const response = await sendMessage('GET_LOGIN_SAVE_SETTINGS');
     return response.success && response.enabled;
   } catch {
     return false;
@@ -165,7 +159,7 @@ async function isLoginDuplicate(domain: string, username: string): Promise<boole
     const response = await sendMessage('CHECK_LOGIN_DUPLICATE', {
       domain,
       username,
-    }, 'background') as { success: boolean; isDuplicate: boolean };
+    });
     return response.success && response.isDuplicate;
   } catch {
     return false;
@@ -206,10 +200,7 @@ async function checkAndRestoreSavePromptEarly(ctx: Parameters<typeof createShado
 
     // Check if vault is still unlocked
     try {
-      const authStatus = await sendMessage('CHECK_AUTH_STATUS', {}, 'background') as {
-        isLoggedIn: boolean;
-        isVaultLocked: boolean;
-      };
+      const authStatus = await sendMessage('CHECK_AUTH_STATUS');
       if (!authStatus.isLoggedIn || authStatus.isVaultLocked) {
         return;
       }
@@ -299,10 +290,7 @@ async function checkAndRestorePersistedSavePrompt(container: HTMLElement): Promi
 
     // Check if vault is still unlocked
     try {
-      const authStatus = await sendMessage('CHECK_AUTH_STATUS', {}, 'background') as {
-        isLoggedIn: boolean;
-        isVaultLocked: boolean;
-      };
+      const authStatus = await sendMessage('CHECK_AUTH_STATUS');
       if (!authStatus.isLoggedIn || authStatus.isVaultLocked) {
         return;
       }
@@ -359,10 +347,7 @@ function initializeLoginDetector(container: HTMLElement): void {
 
     // Check if vault is locked
     try {
-      const authStatus = await sendMessage('CHECK_AUTH_STATUS', {}, 'background') as {
-        isLoggedIn: boolean;
-        isVaultLocked: boolean;
-      };
+      const authStatus = await sendMessage('CHECK_AUTH_STATUS');
       if (!authStatus.isLoggedIn || authStatus.isVaultLocked) {
         return;
       }
@@ -389,10 +374,7 @@ function initializeLoginDetector(container: HTMLElement): void {
     // Get auto-dismiss settings
     let autoDismissMs = 15000;
     try {
-      const settings = await sendMessage('GET_LOGIN_SAVE_SETTINGS', {}, 'background') as {
-        success: boolean;
-        autoDismissSeconds: number;
-      };
+      const settings = await sendMessage('GET_LOGIN_SAVE_SETTINGS');
       if (settings.success) {
         autoDismissMs = settings.autoDismissSeconds * 1000;
       }
@@ -408,7 +390,7 @@ function initializeLoginDetector(container: HTMLElement): void {
       const lastAutofilledResponse = await sendMessage('GET_LAST_AUTOFILLED', {
         domain: login.domain,
         username: login.username,
-      }, 'background') as { success: boolean; credential: LastAutofilledCredential | null };
+      });
 
       if (lastAutofilledResponse.success && lastAutofilledResponse.credential) {
         /*
@@ -417,7 +399,7 @@ function initializeLoginDetector(container: HTMLElement): void {
         const linkCheck = await sendMessage('IS_URL_LINKED_TO_CREDENTIAL', {
           itemId: lastAutofilledResponse.credential.itemId,
           url: login.url,
-        }, 'background') as { linked: boolean };
+        });
 
         if (!linkCheck.linked) {
           // Current URL is not linked to the existing credential, show the prompt.
@@ -585,8 +567,7 @@ export default defineContentScript({
         void checkAndRestorePersistedSavePrompt(container);
 
         // Listen for messages from the background script
-        onMessage('OPEN_AUTOFILL_POPUP', async (message: { data: { elementIdentifier: string; popupType?: string } }) : Promise<messageBoolResponse> => {
-          const { data } = message;
+        onMessage('OPEN_AUTOFILL_POPUP', async ({ data }) => {
           const { elementIdentifier, popupType } = data;
 
           if (!elementIdentifier) {
@@ -676,13 +657,7 @@ export default defineContentScript({
         async function showPopupWithAuthCheck(inputElement: HTMLInputElement, container: HTMLElement, popupType: PopupType = DEFAULT_POPUP_TYPE, forceShow: boolean = false) : Promise<void> {
           try {
             // Check auth status and pending migrations in a single call
-            const { sendMessage } = await import('webext-bridge/content-script');
-            const authStatus = await sendMessage('CHECK_AUTH_STATUS', {}, 'background') as {
-              isLoggedIn: boolean,
-              isVaultLocked: boolean,
-              hasPendingMigrations: boolean,
-              error?: string
-            };
+            const authStatus = await sendMessage('CHECK_AUTH_STATUS');
 
             if (authStatus.isVaultLocked) {
               // Check if the user has dismissed the vault locked popup

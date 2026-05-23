@@ -3,10 +3,9 @@
  * Displays a non-intrusive banner at the top of the page when credentials are detected.
  */
 
-import { sendMessage } from 'webext-bridge/content-script';
-
 import { getLogoMarkSvg } from '@/utils/constants/logo';
 import type { CapturedLogin, SavePromptOptions, SavePromptPersistedState, AddUrlPromptOptions, LastAutofilledCredential } from '@/utils/loginDetector';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { t } from '@/i18n/StandaloneI18n';
 
@@ -735,7 +734,7 @@ async function persistSavePromptState(): Promise<void> {
   };
 
   try {
-    await sendMessage('STORE_SAVE_PROMPT_STATE', state, 'background');
+    await sendMessage('STORE_SAVE_PROMPT_STATE', state);
   } catch (error) {
     console.error('[AliasVault] Error persisting save prompt state:', error);
   }
@@ -756,10 +755,7 @@ function handleBeforeUnload(): void {
  */
 export async function getPersistedSavePromptState(): Promise<SavePromptPersistedState | null> {
   try {
-    const response = await sendMessage('GET_SAVE_PROMPT_STATE', {}, 'background') as {
-      success: boolean;
-      state: SavePromptPersistedState | null;
-    };
+    const response = await sendMessage('GET_SAVE_PROMPT_STATE');
 
     if (!response.success || !response.state) {
       return null;
@@ -802,7 +798,7 @@ export async function getPersistedSavePromptState(): Promise<SavePromptPersisted
  */
 export async function clearPersistedSavePromptState(): Promise<void> {
   try {
-    await sendMessage('CLEAR_SAVE_PROMPT_STATE', {}, 'background');
+    await sendMessage('CLEAR_SAVE_PROMPT_STATE');
   } catch (error) {
     console.error('[AliasVault] Error clearing persisted save prompt state:', error);
   }

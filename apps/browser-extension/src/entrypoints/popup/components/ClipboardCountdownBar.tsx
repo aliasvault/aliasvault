@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { onMessage, sendMessage } from 'webext-bridge/popup';
+
+import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { CountdownBar, ICountdownBarHandle } from './CountdownBar';
 
@@ -31,8 +32,7 @@ export const ClipboardCountdownBar: React.FC = () => {
 
   useEffect(() => {
     // Request current countdown state on mount
-    sendMessage('GET_CLIPBOARD_COUNTDOWN_STATE', {}, 'background').then((state) => {
-      const countdownState = state as { remaining: number; total: number; id: number } | null;
+    sendMessage('GET_CLIPBOARD_COUNTDOWN_STATE').then((countdownState) => {
       if (countdownState && countdownState.remaining > 0) {
         currentCountdownIdRef.current = countdownState.id;
         setIsVisible(true);
@@ -47,7 +47,7 @@ export const ClipboardCountdownBar: React.FC = () => {
 
     // Listen for countdown updates from background script
     const unsubscribe = onMessage('CLIPBOARD_COUNTDOWN', ({ data }) => {
-      const { remaining, total, id } = data as { remaining: number; total: number; id: number };
+      const { remaining, total, id } = data;
       setIsVisible(remaining > 0);
 
       // Check if this is a new countdown (different ID)

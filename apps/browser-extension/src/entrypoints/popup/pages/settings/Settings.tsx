@@ -1,7 +1,6 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { sendMessage } from 'webext-bridge/popup';
 
 import LogoutConfirmModal from '@/entrypoints/popup/components/Dialogs/LogoutConfirmModal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
@@ -17,6 +16,7 @@ import { useApiUrl } from '@/entrypoints/popup/utils/ApiUrlUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { AppInfo } from '@/utils/AppInfo';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { browser, storage } from "#imports";
 
@@ -138,7 +138,7 @@ const Settings: React.FC = () => {
    * Handle lock vault.
    */
   const handleLock = async () : Promise<void> => {
-    await sendMessage('LOCK_VAULT', {}, 'background');
+    await sendMessage('LOCK_VAULT');
 
     // Navigate to unlock page
     navigate('/unlock');
