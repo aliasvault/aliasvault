@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
+import { AUTH_FLOW_PATHS } from '@/entrypoints/popup/utils/routes';
 
 import { storage } from '#imports';
 
@@ -45,11 +46,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const storeCurrentPage = useCallback(async (): Promise<void> => {
     // Pages that are not allowed to be stored as these are auth conditional pages or dedicated popup pages.
     const notAllowedPaths = [
-      '/',
-      '/reinitialize',
-      '/login',
-      '/unlock',
-      '/unlock-success',
+      ...AUTH_FLOW_PATHS,
       '/auth-settings',
       '/upgrade',
       '/passkeys/create',
@@ -100,6 +97,18 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFullyInitialized, isLoggedIn]);
+
+  /*
+   * Redirect to /unlock when the vault becomes unavailable from another window
+   * (e.g. lock triggered in the main popup while the popout is open). Reinitialize
+   * handles the initial-load case, so skip the auth-flow paths.
+   */
+  useEffect(() => {
+    if (isFullyInitialized && isLoggedIn && !dbAvailable && !AUTH_FLOW_PATHS.includes(location.pathname)) {
+      navigate('/unlock', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFullyInitialized, isLoggedIn, dbAvailable, location.pathname]);
 
   // Return the context value
   const contextValue = useMemo(() => ({

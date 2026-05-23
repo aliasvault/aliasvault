@@ -34,9 +34,9 @@ const AutoLockSettings: React.FC = () => {
    * Set auto-lock timeout.
    */
   const setAutoLockTimeoutSetting = async (timeout: number) : Promise<void> => {
+    setAutoLockTimeout(timeout);
     await LocalPreferencesService.setAutoLockTimeout(timeout);
     await sendMessage('SET_AUTO_LOCK_TIMEOUT', timeout, 'background');
-    setAutoLockTimeout(timeout);
   };
 
   return (

@@ -7,6 +7,8 @@ import { getItemWithFallback } from '@/utils/StorageUtility';
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 
+import { vaultStateEvents } from '@/events/VaultStateEvents';
+
 import { storage } from '#imports';
 
 /**
@@ -210,6 +212,14 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const clearSyncError = useCallback(async (): Promise<void> => {
     setSyncError(null);
     await storage.removeItem('local:lastSyncError');
+  }, []);
+
+  // Reflect locks from other windows.
+  useEffect(() => {
+    return vaultStateEvents.onVaultLocked(() => {
+      setSqliteClient(null);
+      setDbAvailable(false);
+    });
   }, []);
 
   /**

@@ -196,7 +196,7 @@ export class TestClient {
    * Navigate to the settings tab.
    */
   async goToSettings(): Promise<this> {
-    await this.popup.getByRole('button', { name: 'Settings' }).click();
+    await this.popup.locator('button#nav-settings').click();
     await waitForSettingsPage(this.popup);
     return this;
   }
@@ -457,7 +457,7 @@ export class TestClient {
    */
   async unlockVault(password: string): Promise<this> {
     await this.popup.fill('input#password', password);
-    await this.popup.click('button:has-text("Unlock")');
+    await this.popup.click('button[type="submit"]:has-text("Unlock")');
     await waitForVaultReady(this.popup, Timeouts.LONG);
     return this;
   }

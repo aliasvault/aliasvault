@@ -5,6 +5,7 @@ import { useAuth } from '@/entrypoints/popup/context/AuthContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
 import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
+import { vaultStateEvents } from '@/events/VaultStateEvents';
 
 type AppContextType = {
   isLoggedIn: boolean;
@@ -90,6 +91,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
+
+  // Reflect logouts from other windows.
+  useEffect(() => {
+    return vaultStateEvents.onLoggedOut(() => {
+      setIsLoggedIn(false);
+    });
+  }, []);
 
   const contextValue = useMemo(() => ({
     // Pass through auth state
