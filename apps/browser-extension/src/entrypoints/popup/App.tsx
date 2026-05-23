@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { sendMessage } from 'webext-bridge/popup';
 
 import DefaultLayout from '@/entrypoints/popup/components/Layout/DefaultLayout';
 import Header from '@/entrypoints/popup/components/Layout/Header';
@@ -36,6 +35,8 @@ import LanguageSettings from '@/entrypoints/popup/pages/settings/LanguageSetting
 import PasskeySettings from '@/entrypoints/popup/pages/settings/PasskeySettings';
 import Settings from '@/entrypoints/popup/pages/settings/Settings';
 import VaultUnlockSettings from '@/entrypoints/popup/pages/settings/VaultUnlockSettings';
+
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
@@ -219,13 +220,13 @@ const App: React.FC = () => {
    */
   useEffect(() => {
     // Send initial heartbeat
-    sendMessage('POPUP_HEARTBEAT', {}, 'background').catch(() => {
+    sendMessage('POPUP_HEARTBEAT').catch(() => {
       // Ignore errors as background script might not be ready
     });
 
     // Set up heartbeat interval
     const heartbeatInterval = setInterval(() => {
-      sendMessage('POPUP_HEARTBEAT', {}, 'background').catch(() => {
+      sendMessage('POPUP_HEARTBEAT').catch(() => {
         // Ignore errors as background script might not be ready
       });
     }, 5000); // Send heartbeat every 5 seconds

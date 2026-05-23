@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { sendMessage } from 'webext-bridge/popup';
 
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 /**
  * Clipboard settings page component.
@@ -34,7 +34,7 @@ const ClipboardSettings: React.FC = () => {
    */
   const setClipboardClearTimeout = async (timeout: number) : Promise<void> => {
     await LocalPreferencesService.setClipboardClearTimeout(timeout);
-    await sendMessage('SET_CLIPBOARD_CLEAR_TIMEOUT', timeout, 'background');
+    await sendMessage('SET_CLIPBOARD_CLEAR_TIMEOUT', timeout);
     setClipboardTimeout(timeout);
   };
 

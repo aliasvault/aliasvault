@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { sendMessage } from 'webext-bridge/popup';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
+
+import { storage } from '#imports';
 
 interface ILogoutConfirmModalProps {
   isOpen: boolean;
@@ -23,33 +24,40 @@ const LogoutConfirmModal: React.FC<ILogoutConfirmModalProps> = ({
   const [isDirty, setIsDirty] = useState<boolean | null>(null);
 
   /**
-   * Check if the vault has unsynced changes when the modal opens.
-   */
-  const checkSyncState = useCallback(async (): Promise<void> => {
-    try {
-      const syncState = await sendMessage('GET_SYNC_STATE', {}, 'background') as {
-        isDirty: boolean;
-        mutationSequence: number;
-        serverRevision: number;
-      };
-      setIsDirty(syncState.isDirty);
-    } catch (error) {
-      console.error('Failed to check sync state:', error);
-      // Default to showing the simple logout confirmation on error
-      setIsDirty(false);
-    }
-  }, []);
-
-  /**
-   * Check sync state when modal opens.
+   * Check sync state every time the modal opens. The dirty flag lives in
+   * local storage, so a direct read is equivalent to (and faster than) a
+   * round-trip through the background script. The cancellation flag prevents
+   * a stale response from overwriting state if the modal is closed and
+   * reopened before this read resolves.
    */
   useEffect(() => {
-    if (isOpen) {
-      // Reset state when modal opens
+    if (!isOpen) {
       setIsDirty(null);
-      checkSyncState();
+      return;
     }
-  }, [isOpen, checkSyncState]);
+
+    let cancelled = false;
+    setIsDirty(null);
+
+    (async () : Promise<void> => {
+      try {
+        const dirty = await storage.getItem('local:isDirty') as boolean | null;
+        if (!cancelled) {
+          setIsDirty(dirty ?? false);
+        }
+      } catch (error) {
+        console.error('Failed to check sync state:', error);
+        if (!cancelled) {
+          // Default to showing the simple logout confirmation on error
+          setIsDirty(false);
+        }
+      }
+    })();
+
+    return () : void => {
+      cancelled = true;
+    };
+  }, [isOpen]);
 
   // Don't render anything if not open or still loading
   if (!isOpen || isDirty === null) {

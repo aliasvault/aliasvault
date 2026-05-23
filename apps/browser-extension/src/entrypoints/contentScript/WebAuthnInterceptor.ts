@@ -4,9 +4,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { sendMessage } from 'webext-bridge/content-script';
-
-import type { WebAuthnSettingsResponse } from '@/utils/passkey/types';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { browser } from '#imports';
 
@@ -126,7 +124,7 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
       const result = await sendMessage('WEBAUTHN_CREATE', {
         publicKey,
         origin
-      }, 'background');
+      });
 
       // Track if user cancelled to enable cooldown
       if (result && typeof result === 'object' && (result as any).cancelled) {
@@ -215,7 +213,7 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
         publicKey,
         origin,
         isAutomaticRequest
-      }, 'background');
+      });
 
       // Track if user cancelled to enable cooldown
       if (result && typeof result === 'object' && (result as any).cancelled) {
@@ -263,7 +261,7 @@ export async function isWebAuthnInterceptionEnabled(): Promise<boolean> {
   try {
     const response = await sendMessage('GET_WEBAUTHN_SETTINGS', {
       url: window.location.href
-    }, 'background') as unknown as WebAuthnSettingsResponse;
+    });
     return response.enabled ?? false;
   } catch {
     return false;

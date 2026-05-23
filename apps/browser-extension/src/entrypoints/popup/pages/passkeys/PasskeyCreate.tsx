@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
-import { sendMessage } from 'webext-bridge/popup';
 
 import Alert from '@/entrypoints/popup/components/Alert';
 import Button from '@/entrypoints/popup/components/Button';
@@ -17,6 +16,7 @@ import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 import type { Item, Passkey } from '@/utils/dist/core/models/vault';
 import { FieldKey, ItemTypes, getFieldValue, createSystemField } from '@/utils/dist/core/models/vault';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { PasskeyAuthenticator } from '@/utils/passkey/PasskeyAuthenticator';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type { CreateRequest, PasskeyCreateCredentialResponse, PendingPasskeyCreateRequest } from '@/utils/passkey/types';
@@ -68,7 +68,7 @@ const PasskeyCreate: React.FC = () => {
       if (requestId) {
         try {
           // Fetch the full request data from background
-          const data = await sendMessage('GET_REQUEST_DATA', { requestId }, 'background') as unknown as PendingPasskeyCreateRequest;
+          const data = await sendMessage('GET_REQUEST_DATA', { requestId }) as unknown as PendingPasskeyCreateRequest;
           if (data && data.type === 'create') {
             setRequest(data);
 
@@ -465,7 +465,7 @@ const PasskeyCreate: React.FC = () => {
       await sendMessage('PASSKEY_POPUP_RESPONSE', {
         requestId: request.requestId,
         credential: flattenedCredential
-      }, 'background');
+      });
 
       setLocalLoading(false);
     } catch (error) {
@@ -508,7 +508,7 @@ const PasskeyCreate: React.FC = () => {
     await sendMessage('PASSKEY_POPUP_RESPONSE', {
       requestId: request.requestId,
       fallback: true
-    }, 'background');
+    });
   };
 
   /**
@@ -526,7 +526,7 @@ const PasskeyCreate: React.FC = () => {
     await sendMessage('PASSKEY_POPUP_RESPONSE', {
       requestId: request.requestId,
       cancelled: true
-    }, 'background');
+    });
   };
 
   if (!request) {

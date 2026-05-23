@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { sendMessage } from 'webext-bridge/popup';
 
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import SqliteClient from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
@@ -254,7 +254,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       let response: messageVaultResponse;
       try {
         response = await Promise.race([
-          sendMessage('GET_VAULT', {}, 'background') as Promise<messageVaultResponse>,
+          sendMessage('GET_VAULT'),
           timeoutPromise,
         ]);
       } finally {
@@ -365,14 +365,14 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
      * ignores the storage event triggered by this same flow.
      */
     markOwnEncryptionKey(encryptionKey);
-    await sendMessage('STORE_ENCRYPTION_KEY', encryptionKey, 'background');
+    await sendMessage('STORE_ENCRYPTION_KEY', encryptionKey);
   }, []);
 
   /**
    * Store encryption key derivation params in background worker.
    */
   const storeEncryptionKeyDerivationParams = useCallback(async (params: EncryptionKeyDerivationParams) : Promise<void> => {
-    await sendMessage('STORE_ENCRYPTION_KEY_DERIVATION_PARAMS', params, 'background');
+    await sendMessage('STORE_ENCRYPTION_KEY_DERIVATION_PARAMS', params);
   }, []);
 
   /**

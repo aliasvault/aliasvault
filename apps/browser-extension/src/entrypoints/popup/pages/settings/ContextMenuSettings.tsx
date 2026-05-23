@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { sendMessage } from 'webext-bridge/popup';
 
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 /**
  * Context menu settings page component.
@@ -35,7 +35,7 @@ const ContextMenuSettings: React.FC = () => {
     const newContextMenuEnabled = !isContextMenuEnabled;
 
     await LocalPreferencesService.setGlobalContextMenuEnabled(newContextMenuEnabled);
-    await sendMessage('TOGGLE_CONTEXT_MENU', { enabled: newContextMenuEnabled }, 'background');
+    await sendMessage('TOGGLE_CONTEXT_MENU', { enabled: newContextMenuEnabled });
 
     setIsContextMenuEnabled(newContextMenuEnabled);
   };

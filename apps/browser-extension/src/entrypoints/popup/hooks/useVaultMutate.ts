@@ -1,10 +1,9 @@
 import { useCallback, useRef } from 'react';
-import { sendMessage } from 'webext-bridge/popup';
 
-import type { FullVaultSyncResult } from '@/entrypoints/background/VaultMessageHandler';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 /**
  * Hook to execute a vault mutation.
@@ -38,7 +37,7 @@ export function useVaultMutate(): {
 
     // Export and encrypt the updated vault
     const base64Vault = dbContext.sqliteClient!.exportToBase64();
-    const encryptionKey = await sendMessage('GET_ENCRYPTION_KEY', {}, 'background') as string;
+    const encryptionKey = await sendMessage('GET_ENCRYPTION_KEY') as string;
     const encryptedVaultBlob = await EncryptionUtility.symmetricEncrypt(
       base64Vault,
       encryptionKey
@@ -48,7 +47,7 @@ export function useVaultMutate(): {
     await sendMessage('STORE_ENCRYPTED_VAULT', {
       vaultBlob: encryptedVaultBlob,
       markDirty: true
-    }, 'background');
+    });
 
     // Refresh the sync state in React
     await dbContext.refreshSyncState();
@@ -73,12 +72,7 @@ export function useVaultMutate(): {
          * Get sync state from background - includes both isDirty flag
          * and isSyncInProgress status from the background script
          */
-        const syncState = await sendMessage('GET_SYNC_STATE', {}, 'background') as {
-          isDirty: boolean;
-          isSyncInProgress: boolean;
-          mutationSequence: number;
-          serverRevision: number;
-        };
+        const syncState = await sendMessage('GET_SYNC_STATE');
 
         /*
          * Only clear uploading indicator when:
@@ -125,8 +119,7 @@ export function useVaultMutate(): {
      *
      * After sending message, we start polling to detect completion.
      */
-    void sendMessage('FULL_VAULT_SYNC', {}, 'background').then(async (result) => {
-      const syncResult = result as FullVaultSyncResult;
+    void sendMessage('FULL_VAULT_SYNC').then(async (syncResult) => {
       if (!syncResult.success && (syncResult.error || syncResult.errorKey)) {
         /*
          * Permanent failure (e.g. HTTP 413 vault too large). Stop polling and clear the upload

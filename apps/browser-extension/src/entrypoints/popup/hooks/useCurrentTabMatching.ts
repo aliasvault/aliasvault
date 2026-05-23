@@ -1,9 +1,8 @@
 import { useCallback } from 'react';
-import { sendMessage } from 'webext-bridge/popup';
 
 import type { Item } from '@/utils/dist/core/models/vault';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
-import type { ItemsResponse } from '@/utils/types/messaging/ItemsResponse';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { browser } from '#imports';
 
@@ -62,7 +61,7 @@ const useCurrentTabMatching = (): {
         pageTitle: activeTab.title || '',
         matchingMode: matchingMode
         // includeRecentlySelected defaults to false (recently selected is for autofill only)
-      }, 'background') as ItemsResponse;
+      });
 
       if (!response.success || !response.items) {
         return null;

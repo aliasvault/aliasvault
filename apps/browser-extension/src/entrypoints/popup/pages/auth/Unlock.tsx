@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { sendMessage } from 'webext-bridge/popup';
 
 import AlertMessage from '@/entrypoints/popup/components/AlertMessage';
 import Button from '@/entrypoints/popup/components/Button';
@@ -20,8 +19,8 @@ import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 
 import { SrpAuthService } from '@/utils/auth/SrpAuthService';
-import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import {
   getPinLength,
   isPinEnabled,
@@ -269,7 +268,7 @@ const Unlock: React.FC = () => {
         });
       } else {
         // Offline mode: use stored encryption params to derive key
-        const storedParams = await sendMessage('GET_ENCRYPTION_KEY_DERIVATION_PARAMS', {}, 'background') as EncryptionKeyDerivationParams | null;
+        const storedParams = await sendMessage('GET_ENCRYPTION_KEY_DERIVATION_PARAMS');
 
         if (!storedParams) {
           // No stored params - can't unlock offline without having logged in before

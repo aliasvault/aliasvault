@@ -43,7 +43,7 @@ test.describe.serial('11. Cross-Window State Sync', () => {
 
   test('11.2 logout in popup propagates to expanded popout', async ({ context, extensionId, testUser }) => {
     // Main popup is on /unlock from 11.1; bring it back to the vault.
-    await client.popup.reload();
+    await client.popup.bringToFront();
     await client.unlockVault(testUser.password);
 
     const popout = await context.newPage();
@@ -51,7 +51,7 @@ test.describe.serial('11. Cross-Window State Sync', () => {
     await waitForVaultReady(popout, Timeouts.LONG);
 
     // Logout from the main popup: settings → logout → confirm modal.
-    await client.popup.reload();
+    await client.popup.bringToFront();
     await client.goToSettings();
     await client.popup.locator('button#logout-button').click();
     await client.popup.locator('button#logout-confirm-button').click();
@@ -64,7 +64,7 @@ test.describe.serial('11. Cross-Window State Sync', () => {
 
   test('11.3 unlock in popup propagates to expanded popout', async ({ context, extensionId, apiUrl, testUser }) => {
     // After 11.2 the popup is on /login; sign back in and lock so both windows start on /unlock.
-    await client.popup.reload();
+    await client.popup.bringToFront();
     await client.login(apiUrl, testUser.username, testUser.password);
     await client.lockVault();
 
@@ -77,7 +77,6 @@ test.describe.serial('11. Cross-Window State Sync', () => {
     // Unlock from the main popup. The popout should observe the encryption key
     // appearing in session storage and load the now-decrypted vault.
     console.log('reload popup');
-    await client.popup.reload();
     await client.popup.bringToFront();
     await client.unlockVault(testUser.password);
     console.log('unlock vault');
@@ -94,7 +93,6 @@ test.describe.serial('11. Cross-Window State Sync', () => {
 
   test('11.4 login in popup propagates to expanded popout', async ({ context, extensionId, apiUrl, testUser }) => {
     // Reach a clean logged-out state in the main popup.
-    await client.popup.reload();
     await client.goToSettings();
     await client.popup.locator('button#logout-button').click();
     await client.popup.locator('button#logout-confirm-button').click();
@@ -106,7 +104,6 @@ test.describe.serial('11. Cross-Window State Sync', () => {
 
     // Log in from the main popup. The popout should observe the access token
     // and encryption key appearing and route itself to the unlocked vault.
-    await client.popup.reload();
     await client.popup.bringToFront();
     await client.login(apiUrl, testUser.username, testUser.password);
 

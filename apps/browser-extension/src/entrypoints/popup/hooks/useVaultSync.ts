@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { sendMessage } from 'webext-bridge/popup';
 
-import type { FullVaultSyncResult, SyncStatusCheckResult } from '@/entrypoints/background/VaultMessageHandler';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
+
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 type VaultSyncOptions = {
   onSuccess?: (hasNewVault: boolean) => void;
@@ -52,7 +52,7 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
        * Quick check if sync is needed, this tells us if server has newer vault
        * or if we have local changes to upload, so we can show the appropriate indicator in UI.
        */
-      const statusCheck = await sendMessage('CHECK_SYNC_STATUS', {}, 'background') as SyncStatusCheckResult;
+      const statusCheck = await sendMessage('CHECK_SYNC_STATUS');
 
       // Handle logout requirement from status check
       if (statusCheck.requiresLogout) {
@@ -69,7 +69,7 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
       }
 
       // Delegate to background script for full sync orchestration
-      const result = await sendMessage('FULL_VAULT_SYNC', {}, 'background') as FullVaultSyncResult;
+      const result = await sendMessage('FULL_VAULT_SYNC');
 
       // Handle logout requirement
       if (result.requiresLogout) {

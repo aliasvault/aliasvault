@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
-import { sendMessage } from 'webext-bridge/popup';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { removeAndDisablePin } from '@/utils/PinUnlockService';
 
 import { storage } from '#imports';
@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    */
   const clearAuthForced = useCallback(async (errorMessage?: string) : Promise<void> => {
     // Clear session data (tokens + ephemeral data) - vault data is preserved for recovery
-    await sendMessage('CLEAR_SESSION', {}, 'background');
+    await sendMessage('CLEAR_SESSION');
 
     // Clear in-memory database reference
     dbContext?.clearDatabase();
@@ -109,7 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await clearAuthForced(errorMessage);
 
     // Additionally clear vault data and username (forced logout preserves these for recovery)
-    await sendMessage('CLEAR_VAULT_DATA', {}, 'background');
+    await sendMessage('CLEAR_VAULT_DATA');
 
     setUsername(null);
   }, [clearAuthForced]);
