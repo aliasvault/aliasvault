@@ -238,6 +238,7 @@ const Settings: React.FC = () => {
                 </div>
                 <div className="flex gap-2">
                   <button
+                    id="lock-button"
                     onClick={handleLock}
                     title={t('settings.lock')}
                     className="p-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-md transition-colors"
@@ -258,6 +259,7 @@ const Settings: React.FC = () => {
                     </svg>
                   </button>
                   <button
+                    id="logout-button"
                     onClick={handleLogoutClick}
                     title={t('common.logout')}
                     className="p-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 rounded-md transition-colors"

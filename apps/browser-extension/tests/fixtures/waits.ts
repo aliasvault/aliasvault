@@ -139,7 +139,7 @@ export async function waitForCredentialSaved(
  * @param timeout - Timeout in milliseconds
  */
 export async function waitForSettingsPage(popup: Page, timeout: number = Timeouts.SHORT): Promise<void> {
-  await popup.locator('button[title="Lock"]').waitFor({ state: 'visible', timeout });
+  await popup.locator('button#lock-button').waitFor({ state: 'visible', timeout });
 }
 
 /**

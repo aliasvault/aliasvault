@@ -106,10 +106,16 @@ export function generateTestUsername(): string {
 }
 
 /**
- * Generates a random test password.
+ * Fixed test password so a developer can manually log in to a test user
+ * during a paused/inspected e2e run.
+ */
+export const TEST_PASSWORD = 'TestPass_e2e_dev!';
+
+/**
+ * Returns the deterministic test password.
  */
 export function generateTestPassword(): string {
-  return `TestPass_${Math.random().toString(36).substring(2, 15)}!`;
+  return TEST_PASSWORD;
 }
 
 /**
