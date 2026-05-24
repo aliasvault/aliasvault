@@ -283,9 +283,8 @@ class WebApiService(private val context: Context) {
 
             // Read response body
             val responseBody = try {
-                // Check if response is binary (octet-stream)
-                val contentType = connection.getHeaderField("Content-Type") ?: ""
-                val isBinary = contentType.contains("application/octet-stream", ignoreCase = true)
+                val acceptHeader = headers.entries.firstOrNull { it.key.equals("Accept", ignoreCase = true) }?.value ?: ""
+                val isBinary = acceptHeader.contains("application/octet-stream", ignoreCase = true)
 
                 if (statusCode in 200..299) {
                     if (isBinary) {
