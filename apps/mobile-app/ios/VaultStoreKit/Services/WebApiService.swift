@@ -246,9 +246,8 @@ public class WebApiService {
             }
         }
 
-        // Check if response is binary (octet-stream)
-        let contentType = responseHeaders["Content-Type"] ?? ""
-        let isBinary = contentType.lowercased().contains("application/octet-stream")
+        let acceptHeader = headers.first { $0.key.caseInsensitiveCompare("Accept") == .orderedSame }?.value ?? ""
+        let isBinary = acceptHeader.lowercased().contains("application/octet-stream")
 
         // Parse response body
         let responseBody: String

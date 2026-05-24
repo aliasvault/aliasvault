@@ -131,8 +131,9 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
             return NotFound("Attachment not found.");
         }
 
-        // Return the encrypted bytes
-        return File(attachment.Bytes, attachment.MimeType, attachment.Filename);
+        // Return the encrypted bytes as opaque binary. The original MIME type would be
+        // misleading since the payload is AES ciphertext, not a renderable file.
+        return File(attachment.Bytes, "application/octet-stream", attachment.Filename);
     }
 
     /// <summary>
