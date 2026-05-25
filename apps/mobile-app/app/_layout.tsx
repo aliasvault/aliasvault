@@ -1,5 +1,5 @@
 import { useFonts } from 'expo-font';
-import { Href, DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter } from 'expo-router';
+import { Href, DarkTheme, DefaultTheme, Stack, ThemeProvider, usePathname, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, Platform } from 'react-native';
@@ -32,14 +32,29 @@ function RootLayoutNav() : React.ReactNode {
   const colorScheme = useColorScheme();
   const colors = useColors();
   const router = useRouter();
+  const pathname = usePathname();
   const navigation = useNavigation();
 
   const [bootComplete, setBootComplete] = useState(false);
   const hasBooted = useRef(false);
+  const splashHidden = useRef(false);
   const pendingActionPath = useRef<string | null>(null);
 
   useEffect(() => {
-    console.log('RootLayoutNav');
+    /*
+     * Keep the native splash visible until we're navigating to a real destination route.
+     */
+    if (splashHidden.current || !bootComplete || !pathname) {
+      return;
+    }
+    if (pathname === '/') {
+      return;
+    }
+    splashHidden.current = true;
+    SplashScreen.hideAsync();
+  }, [bootComplete, pathname]);
+
+  useEffect(() => {
     /**
      * Initialize the app by redirecting to the initialize page.
      */
@@ -51,15 +66,10 @@ function RootLayoutNav() : React.ReactNode {
       // Install the react-native-quick-crypto library which is used by the EncryptionUtility
       install();
 
-      // Initialize i18n and wait for it to be ready
-      await initI18n();
-
-      console.log('bootComplete', bootComplete);
+      // Run i18n init and deep link lookup in parallel
+      const [, initialUrl] = await Promise.all([initI18n(), Linking.getInitialURL()]);
 
       hasBooted.current = true;
-
-      // Check if we have a pending deep link and pass it to initialize
-      const initialUrl = await Linking.getInitialURL();
       if (initialUrl) {
         const path = initialUrl
           .replace('net.aliasvault.app://', '')
@@ -78,8 +88,6 @@ function RootLayoutNav() : React.ReactNode {
         }
       }
 
-      console.log('setBootComplete', true);
-
       setBootComplete(true);
     };
 
@@ -87,30 +95,25 @@ function RootLayoutNav() : React.ReactNode {
   }, [navigation, router]);
 
   useEffect(() => {
-    /**
-     * Redirect to a explicit target page if we have one (in case of non-happy path).
+    /*
+     * If a deep-link action path was captured during boot, jump straight to it.
+     * Otherwise let index.tsx handle the redirect to /initialize so we don't
+     * fire a redundant navigation that races the <Redirect>.
      */
-    const redirect = async () : Promise<void> => {
-      if (!bootComplete) {
-        return;
-      }
+    if (!bootComplete || !pendingActionPath.current) {
+      return;
+    }
 
-      if (pendingActionPath.current) {
-        router.replace(`/${pendingActionPath.current}` as Href);
-        return;
-      }
-
-      router.replace('/initialize');
-    };
-
-    redirect();
+    router.replace(`/${pendingActionPath.current}` as Href);
   }, [bootComplete, router]);
 
   const styles = StyleSheet.create({
     container: {
       alignItems: 'center',
       flex: 1,
-      justifyContent: 'center',
+      justifyContent: 'flex-start',
+      paddingHorizontal: 20,
+      paddingTop: '40%',
     },
   });
 
@@ -180,12 +183,6 @@ export default function RootLayout() : React.ReactNode {
   const [loaded] = useFonts({
     SpaceMono: SpaceMono,
   });
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
 
   if (!loaded) {
     return null;

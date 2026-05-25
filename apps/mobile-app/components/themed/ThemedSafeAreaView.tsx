@@ -1,4 +1,5 @@
-import { SafeAreaView, StyleProp, ViewStyle } from 'react-native';
+import { StyleProp, ViewStyle } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useColors } from '@/hooks/useColorScheme';
 
