@@ -720,7 +720,7 @@ const ItemsList: React.FC = () => {
     }
   }, [currentFolderId, dbContext, navigate]);
 
-  const { activeKind, activeIndex, itemIdFor, folderIdFor, activeDescendantId, listboxId } = useListKeyboardNav({
+  const { activeKind, activeIndex, itemIdFor, folderIdFor, activeDescendantId } = useListKeyboardNav({
     folderCount: folders.length,
     itemCount: sortedItems.length,
     searchInputRef,
@@ -996,7 +996,7 @@ const ItemsList: React.FC = () => {
             placeholder={`${t('content.searchVault')}`}
             autoFocus
             role="combobox"
-            aria-controls={listboxId}
+            aria-controls="items-list"
             aria-expanded={sortedItems.length > 0 || folders.length > 0}
             aria-activedescendant={activeDescendantId}
             aria-autocomplete="list"
@@ -1152,7 +1152,7 @@ const ItemsList: React.FC = () => {
 
           {/* Items */}
           {sortedItems.length > 0 && (
-            <ul id={listboxId} role="listbox" className="space-y-2">
+            <ul id="items-list" role="listbox" className="space-y-2">
               {sortedItems.map((item, index) => (
                 <ItemCard
                   key={item.Id}
