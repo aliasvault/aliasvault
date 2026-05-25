@@ -22,8 +22,8 @@ fi
 
 # Extract version information from build.gradle
 echo "📱 Extracting version information from build.gradle..."
-VERSION_CODE=$(grep -E '^\s*versionCode\s+' "$BUILD_GRADLE" | sed -E 's/.*versionCode\s+([0-9]+).*/\1/')
-VERSION_NAME=$(grep -E '^\s*versionName\s+' "$BUILD_GRADLE" | sed -E 's/.*versionName\s+"([^"]+)".*/\1/')
+VERSION_CODE=$(grep -E '^[[:space:]]*versionCode[[:space:]]+' "$BUILD_GRADLE" | sed -E 's/.*versionCode[[:space:]]+([0-9]+).*/\1/')
+VERSION_NAME=$(grep -E '^[[:space:]]*versionName[[:space:]]+' "$BUILD_GRADLE" | sed -E 's/.*versionName[[:space:]]+"([^"]+)".*/\1/')
 
 if [ -z "$VERSION_CODE" ] || [ -z "$VERSION_NAME" ]; then
   echo "❌ Error: Could not extract version information from build.gradle"

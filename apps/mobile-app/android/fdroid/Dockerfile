@@ -7,11 +7,15 @@ USER root
 RUN apt-get update && apt-get install -y \
     wget \
     unzip \
-    openjdk-17-jdk-headless \
     && rm -rf /var/lib/apt/lists/*
 
-# Pin JDK 17 so Gradle's toolchain detector always finds it
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+# Install Temurin JDK 17
+RUN mkdir -p /opt/jdk-17 && \
+    wget -q https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.13%2B11/OpenJDK17U-jdk_x64_linux_hotspot_17.0.13_11.tar.gz -O /tmp/jdk17.tar.gz && \
+    tar -xzf /tmp/jdk17.tar.gz -C /opt/jdk-17 --strip-components=1 && \
+    rm /tmp/jdk17.tar.gz
+
+ENV JAVA_HOME=/opt/jdk-17
 ENV PATH=$JAVA_HOME/bin:$PATH
 
 # Set Android SDK environment variables
