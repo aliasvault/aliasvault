@@ -41,7 +41,7 @@ export default defineConfig({
       web_accessible_resources: [{
         resources: [
           "webauthn.js",
-          "src/sql-wasm.wasm",
+          "src/sql-wasm-browser.wasm",
           "src/argon2.wasm",
           "src/aliasvault_core_bg.wasm"
         ],
@@ -61,7 +61,7 @@ export default defineConfig({
             dest: 'src'
           },
           {
-            src: 'node_modules/sql.js/dist/sql-wasm.wasm',
+            src: 'node_modules/sql.js/dist/sql-wasm-browser.wasm',
             dest: 'src'
           },
           {
