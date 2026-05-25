@@ -7,7 +7,12 @@ USER root
 RUN apt-get update && apt-get install -y \
     wget \
     unzip \
+    openjdk-17-jdk-headless \
     && rm -rf /var/lib/apt/lists/*
+
+# Pin JDK 17 so Gradle's toolchain detector always finds it
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV PATH=$JAVA_HOME/bin:$PATH
 
 # Set Android SDK environment variables
 ENV ANDROID_SDK_ROOT=/opt/android-sdk
