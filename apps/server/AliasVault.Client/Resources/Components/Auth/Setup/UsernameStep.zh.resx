@@ -21,15 +21,15 @@
   </xsd:schema>
   <!-- Assistant messages -->
   <data name="GreatNowLetsSetupUsername">
-    <value>太好了！现在，让我们为AliasVault设置您的用户名。</value>
+    <value>太棒了！现在让我们设置您的 AliasVault 用户名。</value>
     <comment>Assistant message about setting up username</comment>
   </data>
   <data name="EnterUsernameInstructions">
-    <value>请输入您想使用的用户名。可以是您的邮箱地址或任何您喜欢的独特名称。</value>
+    <value>请输入您想使用的用户名，可以是您的邮箱地址或任何您喜欢的独特名称。</value>
     <comment>Instructions for entering username</comment>
   </data>
   <data name="RememberUsernameNote">
-    <value>记住：这是您以后登录时要使用的，所以确保是您能记住的内容！</value>
+    <value>记住：这是您以后登录时要使用的用户名，所以确保是您能记住的内容！</value>
     <comment>Important note about remembering username</comment>
   </data>
   <!-- Form labels -->
@@ -38,7 +38,7 @@
     <comment>Label for username input field</comment>
   </data>
   <data name="UsernamePlaceholder">
-    <value>输入您想要的用户名或邮件</value>
+    <value>输入您想使用的用户名或邮件</value>
     <comment>Placeholder text for username input</comment>
   </data>
   <!-- Validation messages -->
@@ -55,7 +55,7 @@
     <comment>Error message when username is empty</comment>
   </data>
   <data name="ServerCommunicationError">
-    <value>与AliasVault服务器通信时发生错误。</value>
+    <value>与 AliasVault 服务器通信时发生错误。</value>
     <comment>Error message for server communication issues</comment>
   </data>
   <!-- Alt text -->
