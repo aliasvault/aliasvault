@@ -3,7 +3,6 @@ import { Buffer } from 'buffer';
 import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import { useLocalSearchParams, useRouter, useNavigation, Stack } from 'expo-router';
-import * as Sharing from 'expo-sharing';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, ActivityIndicator, useColorScheme, Linking, Text, TextInput, Platform } from 'react-native';
@@ -15,6 +14,7 @@ import type { Email } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import emitter from '@/utils/EventEmitter';
 
+import { useAttachmentViewer } from '@/hooks/useAttachmentViewer';
 import { useColors } from '@/hooks/useColorScheme';
 
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -37,6 +37,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
   const webApi = useWebApi();
   const colors = useColors();
   const { t } = useTranslation();
+  const { openAttachment, viewerElement } = useAttachmentViewer();
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState<Email | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -171,17 +172,15 @@ export default function EmailDetailsScreen() : React.ReactNode {
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(tempFile, {
-          mimeType: attachment.mimeType || 'application/octet-stream',
-          dialogTitle: attachment.filename,
+      try {
+        await openAttachment({
+          filePath: tempFile,
+          fileName: attachment.filename,
+          mimeType: attachment.mimeType,
         });
-      } else {
-        setError('Sharing is not available on this device');
+      } finally {
+        await FileSystem.deleteAsync(tempFile, { idempotent: true });
       }
-
-      // Cleanup after sharing completes
-      await FileSystem.deleteAsync(tempFile);
     } catch (err) {
       console.error('handleDownloadAttachment error', err);
       setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
@@ -547,6 +546,8 @@ export default function EmailDetailsScreen() : React.ReactNode {
           </View>
         )}
       </ThemedView>
+
+      {viewerElement}
 
       <ConfirmDialog
         isVisible={showDeleteConfirm}
