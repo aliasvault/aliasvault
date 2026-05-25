@@ -125,7 +125,8 @@ export interface Spec extends TurboModule {
   // Authenticate user with biometric or PIN. If title/subtitle are null/empty, defaults to "Unlock Vault" context.
   // allowedMethods: Optional array of allowed methods ('biometric', 'pin', 'password'). If null/empty, all enabled methods are allowed.
   // buttonText: Optional custom text for the unlock/confirm button. If null/empty, defaults to "Unlock".
-  authenticateUser(title: string | null, subtitle: string | null, allowedMethods: string[] | null, buttonText: string | null): Promise<boolean>;
+  // recentUnlockGraceSeconds: If > 0, skip the prompt when a successful biometric or PIN unlock happened within this many seconds ago. Pass 0 to always prompt.
+  authenticateUser(title: string | null, subtitle: string | null, allowedMethods: string[] | null, buttonText: string | null, recentUnlockGraceSeconds: number): Promise<boolean>;
 
   // QR code scanner
   // Scan a QR code and return the scanned data. Returns null if cancelled or failed.

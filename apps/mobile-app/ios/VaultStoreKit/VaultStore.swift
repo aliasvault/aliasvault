@@ -33,6 +33,15 @@ public class VaultStore {
     /// The encryption key for the vault.
     internal var encryptionKey: Data?
 
+    /// Last successful biometric/PIN auth operation.
+    private var lastSuccessfulAuthAt: TimeInterval?
+
+    /// Lock for accessing the last successful auth operation.
+    private let authRecencyLock = NSLock()
+
+    /// Maximum window of time for which a recent-auth grace can be honored, regardless of caller input.
+    private static let maxAuthRecencyWindowSeconds: Double = 15.0
+
     /// The key derivation parameters used to derive the encryption key from the password.
     internal var keyDerivationParams: String?
 
@@ -55,6 +64,34 @@ public class VaultStore {
     /// Whether the vault is currently unlocked
     public var isVaultUnlocked: Bool {
         return encryptionKey != nil
+    }
+
+    // MARK: - Authentication Recency
+
+    /// Mark successful authorization call to be used for future recency checks.
+    internal func markSuccessfulAuth() {
+        authRecencyLock.lock()
+        lastSuccessfulAuthAt = ProcessInfo.processInfo.systemUptime
+        authRecencyLock.unlock()
+    }
+
+    /// Invalidate the recency timestamp. Must be called whenever the encryption key is cleared
+    /// (lock, sign-out, auto-lock) so the grace window cannot outlive the unlocked state.
+    internal func clearLastSuccessfulAuth() {
+        authRecencyLock.lock()
+        lastSuccessfulAuthAt = nil
+        authRecencyLock.unlock()
+    }
+
+    /// Check if we're within the recency window for last successful auth attempt.
+    public func wasRecentlyAuthenticated(_ maxRecencySeconds: Double) -> Bool {
+        guard maxRecencySeconds > 0 else { return false }
+        let effectiveWindow = min(maxRecencySeconds, Self.maxAuthRecencyWindowSeconds)
+        authRecencyLock.lock()
+        let last = lastSuccessfulAuthAt
+        authRecencyLock.unlock()
+        guard let last = last else { return false }
+        return ProcessInfo.processInfo.systemUptime - last < effectiveWindow
     }
 
     /// Exclude the entire shared app group container from iCloud and iTunes backups.
@@ -107,6 +144,7 @@ public class VaultStore {
     // MARK: - Background/Foreground Handling
     @objc private func appDidEnterBackground() {
         print("App entered background, starting auto-lock timer with \(autoLockTimeout) seconds")
+        clearLastSuccessfulAuth()
         if self.autoLockTimeout > 0 {
             self.clearCacheTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval(self.autoLockTimeout), repeats: false) { [weak self] _ in
                 print("Auto-lock timer fired, clearing cache")

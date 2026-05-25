@@ -111,16 +111,18 @@ export class VaultUnlockHelper {
    * @param subtitle Authentication prompt subtitle
    * @param allowedMethods Optional array of allowed auth methods ('biometric', 'pin', 'password'). If null, all enabled methods are allowed.
    * @param buttonText Optional custom text for the unlock/confirm button. If null, defaults to "Unlock".
+   * @param recentUnlockGraceSeconds If > 0, skip the prompt when the last biometric/PIN unlock was within this many seconds.
    * @returns Promise<boolean> indicating if authentication succeeded
    */
   static async authenticateForAction(
     title: string,
     subtitle: string,
     allowedMethods: string[] | null = null,
-    buttonText: string | null = null
+    buttonText: string | null = null,
+    recentUnlockGraceSeconds: number = 0
   ): Promise<boolean> {
     try {
-      const authenticated = await NativeVaultManager.authenticateUser(title, subtitle, allowedMethods, buttonText);
+      const authenticated = await NativeVaultManager.authenticateUser(title, subtitle, allowedMethods, buttonText, recentUnlockGraceSeconds);
       return authenticated;
     } catch (error) {
       console.error('Authentication error:', error);

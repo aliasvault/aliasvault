@@ -109,6 +109,7 @@ extension VaultStore {
 
             // Reset failed attempts on success
             try storePinFailedAttemptsInKeychain(0)
+            markSuccessfulAuth()
 
             // Return the decrypted vault encryption key as base64
             return decryptedKey.base64EncodedString()

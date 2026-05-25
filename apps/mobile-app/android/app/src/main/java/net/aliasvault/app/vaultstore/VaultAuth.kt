@@ -11,6 +11,7 @@ import java.util.TimerTask
 class VaultAuth(
     private val storageProvider: StorageProvider,
     private val onClearCache: () -> Unit,
+    private val onBackground: () -> Unit = {},
 ) {
     companion object {
         private const val TAG = "VaultAuth"
@@ -64,6 +65,10 @@ class VaultAuth(
     fun onAppBackgrounded() {
         val timeout = getAutoLockTimeout()
         Log.d(TAG, "App entered background, starting auto-lock timer with ${timeout}s")
+
+        // Always drop the recency grace on backgrounding so it can't be honored on resume,
+        // independent of whether the auto-lock timer is scheduled (timeout == 0 disables it).
+        onBackground()
 
         // Cancel any existing timer
         clearCacheTimer?.cancel()
