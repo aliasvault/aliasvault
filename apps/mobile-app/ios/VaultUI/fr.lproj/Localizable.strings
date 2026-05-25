@@ -26,7 +26,7 @@
 "select_text_to_insert_message" = "Sélectionnez le texte à insérer dans le champ de saisie ciblé";
 "choose_username_message" = "Ce site Web peut nécessiter votre nom d'utilisateur ou votre adresse e-mail pour vous connecter";
 "username_prefix" = "Nom d'utilisateur: ";
-"email_prefix" = "E-mail: ";
+"email_prefix" = "E-mail : ";
 "password" = "Mot de passe";
 "items_load_error" = "Impossible de charger les éléments. Veuillez ouvrir l'application AliasVault pour vérifier les mises à jour.";
 "no_item_selected" = "Aucune entrée sélectionnée.";
@@ -72,7 +72,7 @@
 "merge_passkey_explanation" = "Ceci va ajouter une clé d'accès à votre élément existant. Votre mot de passe et d'autres données seront préservées.";
 
 /* PIN Unlock */
-"unlock_vault" = "Déverrouiller le coffre";
+"unlock_vault" = "Déverrouiller le coffre-fort";
 "enter_pin_to_unlock_vault" = "Entrez votre code PIN pour déverrouiller votre coffre";
 "pin_locked_max_attempts" = "Le code PIN est verrouillé après trop de tentatives échouées";
 "pin_incorrect_attempts_remaining" = "Code PIN incorrect, %d tentatives restantes";
