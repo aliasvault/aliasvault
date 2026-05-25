@@ -199,11 +199,13 @@
       "15seconds": "15 שניות",
       "30seconds": "30 שניות",
       "1minute": "דקה",
+      "5minutes": "5 minutes",
       "15minutes": "15 דקות",
       "30minutes": "30 דקות",
       "1hour": "שעה",
       "4hours": "4 שעות",
-      "8hours": "8 שעות"
+      "8hours": "8 שעות",
+      "24hours": "24 hours"
     },
     "language": "שפה",
     "languageSystemMessage": "כדי לשנות את שפת היישומון, יש להגדיר את השפה המועדפת עבור AliasVault בהגדרות המכשיר שלך.",

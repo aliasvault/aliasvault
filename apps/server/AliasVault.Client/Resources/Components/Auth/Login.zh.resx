@@ -115,7 +115,7 @@
     <comment>Link text for logging in with recovery code</comment>
   </data>
   <data name="LoginWithAuthenticatorLink" xml:space="preserve">
-    <value>使用验证码登录。</value>
+    <value>使用验证其代码登录。</value>
     <comment>Link text for logging in with authenticator</comment>
   </data>
   <data name="MobileDeviceLink" xml:space="preserve">
@@ -124,7 +124,7 @@
   </data>
   <!-- Descriptions and help text -->
   <data name="TwoFactorAuthenticationDescription" xml:space="preserve">
-    <value>您的登录受身份验证器应用保护。请在下方输入您的身份验证器代码。</value>
+    <value>您的登录信息受身份验证器保护，请在下方输入您的身份验证器代码。</value>
     <comment>Description for 2FA step</comment>
   </data>
   <data name="RecoveryCodeDescription" xml:space="preserve">
@@ -136,11 +136,11 @@
     <comment>Text before registration link</comment>
   </data>
   <data name="DontHaveAuthenticatorText" xml:space="preserve">
-    <value>无权访问您的身份验证器设备？</value>
+    <value>无法访问您的身份验证器？</value>
     <comment>Question text about not having access to authenticator</comment>
   </data>
   <data name="RegainedAccessText" xml:space="preserve">
-    <value>重新访问您的身份验证器设备？</value>
+    <value>又可以访问您的身份验证器了？</value>
     <comment>Question text about regaining access to authenticator</comment>
   </data>
   <!-- Loading and status messages -->
@@ -149,16 +149,16 @@
     <comment>Loading message during login process</comment>
   </data>
   <data name="VerifyingTwoFactorCodeMessage" xml:space="preserve">
-    <value>正在验证两步验证（2FA）…</value>
+    <value>正在验证两步验证（2FA）代码……</value>
     <comment>Loading message during 2FA verification</comment>
   </data>
   <data name="VerifyingRecoveryCodeMessage" xml:space="preserve">
-    <value>验证恢复码中…</value>
+    <value>正在验证恢复码……</value>
     <comment>Loading message during recovery code verification</comment>
   </data>
   <!-- Error messages -->
   <data name="LoginErrorMessage" xml:space="preserve">
-    <value>处理登录请求时发生错误。请（稍后）再试一次。</value>
+    <value>处理登录请求时发生错误，请稍后重试。</value>
     <comment>Generic login error message</comment>
   </data>
   <data name="LoginRequestErrorMessage" xml:space="preserve">

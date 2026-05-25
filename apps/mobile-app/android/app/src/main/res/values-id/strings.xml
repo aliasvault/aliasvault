@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">AliasVault AutoFill</string>
-  <string name="aliasvault_icon">AliasVault icon</string>
-  <string name="common_close">Close</string>
-  <string name="common_next">Next</string>
-  <string name="common_cancel">Cancel</string>
-  <string name="common_back">Back</string>
-  <string name="unknown_error">An unknown error occurred</string>
-  <string name="autofill_failed_to_retrieve">Failed to retrieve, open app</string>
-  <string name="autofill_no_match_found">No match found</string>
-  <string name="autofill_open_app">Open app</string>
-  <string name="autofill_vault_locked">Vault locked</string>
+  <string name="autofill_service_description" translatable="true">AliasVault isi otomatis</string>
+  <string name="aliasvault_icon">Ikon AliasVault</string>
+  <string name="common_close">Tutup</string>
+  <string name="common_next">Berikutnya</string>
+  <string name="common_cancel">Batal</string>
+  <string name="common_back">Kembali</string>
+  <string name="unknown_error">Terjadi kesalahan yang tidak diketahui</string>
+  <string name="autofill_failed_to_retrieve">Gagal mengambil, buka aplikasi</string>
+  <string name="autofill_no_match_found">Tidak ada kecocokan ditemukan</string>
+  <string name="autofill_open_app">Buka aplikasi</string>
+  <string name="autofill_vault_locked">Brankas ditutup</string>
   <string name="biometric_store_key_title">Store Encryption Key</string>
-  <string name="biometric_store_key_subtitle">Authenticate to securely store your encryption key in the Android Keystore. This enables secure access to your vault.</string>
+  <string name="biometric_store_key_subtitle">Lakukan autentikasi untuk menyimpan kunci enkripsi Anda dengan aman di Android Keystore. Ini memungkinkan akses aman ke brankas Anda.</string>
   <string name="biometric_unlock_vault_title">Unlock Vault</string>
   <string name="biometric_unlock_vault_subtitle">Authenticate to access your vault</string>
-  <string name="passkey_registration_title">Create Passkey</string>
-  <string name="create_passkey_title">Create New Passkey</string>
+  <string name="passkey_registration_title">Buat Passkey</string>
+  <string name="create_passkey_title">Buat Passkey baru</string>
   <string name="create_passkey_subtitle">Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.</string>
   <string name="replace_passkey">Replace Passkey</string>
   <string name="passkey_display_name_label">Passkey Name</string>

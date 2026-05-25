@@ -63,7 +63,7 @@
     <comment>Title for delete folder modal</comment>
   </data>
   <data name="DeleteFolderDescription" xml:space="preserve">
-    <value>Comment voulez-vous supprimer le dossier "{0} " ?</value>
+    <value>Souhaitez-vous supprimer le dossier "{0} " ?</value>
     <comment>Description for delete folder modal. {0} is the folder name.</comment>
   </data>
   <data name="DeleteFolderOnlyTitle" xml:space="preserve">

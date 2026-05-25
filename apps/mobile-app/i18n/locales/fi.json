@@ -199,11 +199,13 @@
       "15seconds": "15 sekuntia",
       "30seconds": "30 sekuntia",
       "1minute": "1 minuutti",
+      "5minutes": "5 minutes",
       "15minutes": "15 minuuttia",
       "30minutes": "30 minuuttia",
       "1hour": "1 tunti",
       "4hours": "4 tuntia",
-      "8hours": "8 tuntia"
+      "8hours": "8 tuntia",
+      "24hours": "24 hours"
     },
     "language": "Kieli",
     "languageSystemMessage": "Jos haluat vaihtaa sovelluksen kieltä, määritä AliasVaultin ensisijainen kieli laitteesi asetuksissa.",

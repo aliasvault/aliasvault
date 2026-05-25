@@ -199,11 +199,13 @@
       "15seconds": "15 secunde",
       "30seconds": "30 secunde",
       "1minute": "1 minut",
+      "5minutes": "5 minute",
       "15minutes": "15 minute",
       "30minutes": "30 minute",
       "1hour": "1 oră",
       "4hours": "4 ore",
-      "8hours": "8 ore"
+      "8hours": "8 ore",
+      "24hours": "24 ore"
     },
     "language": "Limbă",
     "languageSystemMessage": "Pentru a schimba limba aplicației, configurează limba preferată pentru AliasVault în setările dispozitivului.",

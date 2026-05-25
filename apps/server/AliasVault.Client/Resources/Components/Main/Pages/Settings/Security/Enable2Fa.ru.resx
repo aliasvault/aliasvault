@@ -73,7 +73,7 @@
   </data>
   <!-- Page description -->
   <data name="PageDescription" xml:space="preserve">
-    <value>Включите двухфакторную аутентификацию, чтобы повысить безопасность ваших хранилищ.</value>
+    <value>Включите двухфакторную аутентификацию, чтобы повысить безопасность своего хранилища.</value>
     <comment>Description text explaining 2FA setup</comment>
   </data>
   <!-- Setup instructions -->

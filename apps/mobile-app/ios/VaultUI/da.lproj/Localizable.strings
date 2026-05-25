@@ -40,7 +40,7 @@
 "username_copied" = "Brugernavn kopieret";
 "password_copied" = "Adgangskode kopieret";
 "email_copied" = "E-mail kopieret";
-"totp_code_copied" = "TOTP code copied";
+"totp_code_copied" = "TOTP kode kopieret";
 "totp_code" = "TOTP Kode";
 
 /* Search bar */

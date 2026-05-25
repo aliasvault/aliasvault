@@ -199,11 +199,13 @@
       "15seconds": "15 saniye",
       "30seconds": "30 saniye",
       "1minute": "1 dakika",
+      "5minutes": "5 minutes",
       "15minutes": "15 dakika",
       "30minutes": "30 dakika",
       "1hour": "1 saat",
       "4hours": "4 saat",
-      "8hours": "8 saat"
+      "8hours": "8 saat",
+      "24hours": "24 hours"
     },
     "language": "Dil",
     "languageSystemMessage": "Uygulama dilini değiştirmek için, cihaz ayarlarınızdan AliasVault için tercih edilen dili yapılandırın.",
