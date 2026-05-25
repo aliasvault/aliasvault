@@ -13,6 +13,8 @@ type ItemCardProps = {
   showFolderPath?: boolean;
   searchTerm?: string;
   currentFolderPath?: string[] | null;
+  isActive?: boolean;
+  optionId?: string;
 };
 
 /**
@@ -22,7 +24,7 @@ type ItemCardProps = {
  * It allows the user to navigate to the item details page when clicked.
  *
  */
-const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searchTerm = '', currentFolderPath = null }) => {
+const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searchTerm = '', currentFolderPath = null, isActive = false, optionId }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -101,14 +103,18 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
   };
 
   return (
-    <li>
+    <li id={optionId} role="option" aria-selected={isActive}>
       <button
         onClick={() => {
           // Build URL with search query parameter if present
           const url = searchTerm ? `/items/${item.Id}?returnSearch=${encodeURIComponent(searchTerm)}` : `/items/${item.Id}`;
           navigate(url);
         }}
-        className="w-full p-2 border dark:border-gray-600 rounded flex items-center bg-white dark:bg-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className={`w-full p-2 border rounded flex items-center bg-white dark:bg-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+          isActive
+            ? 'border-blue-500 dark:border-blue-400 ring-2 ring-blue-500/40'
+            : 'border-gray-200 dark:border-gray-600'
+        }`}
       >
         <div className="w-8 h-8 mr-2 flex-shrink-0">
           <ItemIcon item={item} className="w-8 h-8" />

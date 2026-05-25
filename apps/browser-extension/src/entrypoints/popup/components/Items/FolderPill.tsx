@@ -9,6 +9,8 @@ type FolderWithCount = {
 interface IFolderPillProps {
   folder: FolderWithCount;
   onClick: () => void;
+  isActive?: boolean;
+  optionId?: string;
 }
 
 /**
@@ -17,11 +19,18 @@ interface IFolderPillProps {
  * Displays a folder as a compact pill/tag that can be clicked to navigate into.
  * Designed to be displayed inline with other folder pills.
  */
-const FolderPill: React.FC<IFolderPillProps> = ({ folder, onClick }) => {
+const FolderPill: React.FC<IFolderPillProps> = ({ folder, onClick, isActive = false, optionId }) => {
   return (
     <button
+      id={optionId}
+      role="option"
+      aria-selected={isActive}
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-600/50 border border-gray-200 dark:border-gray-600 rounded-full text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500/50"
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-600/50 rounded-full text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500/50 border ${
+        isActive
+          ? 'border-orange-500 dark:border-orange-400 ring-2 ring-orange-500/40'
+          : 'border-gray-200 dark:border-gray-600'
+      }`}
     >
       <svg
         className="w-3.5 h-3.5 text-orange-500 dark:text-orange-400 flex-shrink-0"

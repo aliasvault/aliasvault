@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 
@@ -85,6 +85,41 @@ const Header: React.FC<HeaderProps> = ({
       navigate(-1);
     }
   }, [navigate, searchParams, location.pathname]);
+
+  /**
+   * Keyboard navigation:
+   *  - ArrowLeft → back action when focus isn't in a text input.
+   */
+  useEffect(() => {
+    if (!currentRoute?.showBackButton) {
+      return;
+    }
+    /**
+     * Document keydown listener that fires the back action on plain ArrowLeft.
+     */
+    const handler = (e: KeyboardEvent): void => {
+      if (e.defaultPrevented) {
+        return;
+      }
+      if (e.key !== 'ArrowLeft' || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
+        return;
+      }
+      const target = e.target;
+      if (target instanceof HTMLElement) {
+        if (target.isContentEditable) {
+          return;
+        }
+        const tag = target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+          return;
+        }
+      }
+      e.preventDefault();
+      handleBack();
+    };
+    document.addEventListener('keydown', handler);
+    return (): void => document.removeEventListener('keydown', handler);
+  }, [currentRoute?.showBackButton, handleBack]);
 
   /**
    * Handle settings.
