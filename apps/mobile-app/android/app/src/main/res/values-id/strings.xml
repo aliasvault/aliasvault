@@ -13,7 +13,7 @@
   <string name="autofill_open_app">Open app</string>
   <string name="autofill_vault_locked">Vault locked</string>
   <string name="biometric_store_key_title">Store Encryption Key</string>
-  <string name="biometric_store_key_subtitle">Authenticate to securely store your encryption key in the Android Keystore. This enables secure access to your vault.</string>
+  <string name="biometric_store_key_subtitle">Lakukan otentikasi untuk menyimpan kunci enkripsi Anda dengan aman di Android Keystore. Ini memungkinkan akses aman ke brankas Anda.</string>
   <string name="biometric_unlock_vault_title">Unlock Vault</string>
   <string name="biometric_unlock_vault_subtitle">Authenticate to access your vault</string>
   <string name="passkey_registration_title">Create Passkey</string>
