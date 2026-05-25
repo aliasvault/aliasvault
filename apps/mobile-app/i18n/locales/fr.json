@@ -564,7 +564,7 @@
     "date": "Date :",
     "from": "De :",
     "to": "À :",
-    "attachments": "Pieces jointes",
+    "attachments": "Pièces jointes",
     "deleteEmail": "Supprimer l'e-mail",
     "deleteEmailConfirm": "Êtes-vous sûr de vouloir supprimer cet e-mail ? Cette action est permanente et ne peut pas être annulée.",
     "emailNotFound": "E-mail introuvable",
@@ -643,7 +643,7 @@
       "attemptingToUnlockMessage": "Tentative de déverrouillage."
     },
     "vaultError": {
-      "title": "Erreur du coffre",
+      "title": "Erreur du coffre-fort",
       "description": "Une erreur est survenue lors du chargement de votre coffre. Si le problème persiste, veuillez contacter le support.",
       "showDetails": "Afficher les détails de l'erreur",
       "hideDetails": "Masquer les détails de l'erreur",
