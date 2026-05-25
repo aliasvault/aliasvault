@@ -105,7 +105,7 @@
     }
   },
   "passkeys": {
-    "passkey": "Clé d'identification",
+    "passkey": "Clé d'accès",
     "helpText": "Les clés d'accès sont créées sur le site Web lorsque vous y êtes invité. Elles ne peuvent pas être modifiées manuellement. Pour supprimer cette clé, vous pouvez la supprimer de cet identifiant.",
     "passkeyMarkedForDeletion": "Clé d'accès marquée pour suppression",
     "passkeyWillBeDeleted": "Cette clé d'accès sera supprimée lorsque vous enregistrerez cet identifiant."
