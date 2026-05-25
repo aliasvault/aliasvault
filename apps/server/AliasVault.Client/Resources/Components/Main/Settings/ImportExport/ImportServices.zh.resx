@@ -60,7 +60,7 @@
   </resheader>
   <!-- 1Password -->
   <data name="OnePasswordDescription" xml:space="preserve">
-    <value>从您的1Password密码库导入密码</value>
+    <value>从您的 1Password 密码库导入密码</value>
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
@@ -68,7 +68,7 @@
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
-    <value>导出文件后，您可以在下方上传。</value>
+    <value>您可以在下方上传导出的文件。</value>
     <comment>1Password export instructions part 2</comment>
   </data>
   <!-- Bitwarden -->
@@ -81,7 +81,7 @@
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
-    <value>导出文件后，您可以在下方上传。</value>
+    <value>您可以在下方上传导出的文件。</value>
     <comment>Bitwarden export instructions part 2</comment>
   </data>
   <!-- LastPass -->
@@ -94,7 +94,7 @@
     <comment>LastPass export instructions part 1</comment>
   </data>
   <data name="LastPassInstructionsPart2" xml:space="preserve">
-    <value>导出文件后，您可以在下方上传。</value>
+    <value>您可以在下方上传导出的文件。</value>
     <comment>LastPass export instructions part 2</comment>
   </data>
   <!-- Chrome -->
