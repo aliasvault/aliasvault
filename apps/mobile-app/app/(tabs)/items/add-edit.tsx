@@ -1,9 +1,9 @@
 import { Buffer } from 'buffer';
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { usePreventRemove, NavigationAction } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { usePreventRemove, type NavigationAction } from 'expo-router/react-navigation';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Keyboard, Platform, ScrollView, KeyboardAvoidingView, TouchableOpacity } from 'react-native';

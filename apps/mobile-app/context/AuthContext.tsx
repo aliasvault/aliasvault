@@ -1,7 +1,6 @@
 import { Buffer } from 'buffer';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { NavigationContainerRef, ParamListBase } from '@react-navigation/native';
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import type { AuthMethod } from '@/utils/AppUnlockUtility';
@@ -12,7 +11,6 @@ import NativeVaultManager from '@/specs/NativeVaultManager';
 import i18n from '@/i18n';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 
-export const navigationRef = React.createRef<NavigationContainerRef<ParamListBase>>();
 export type { AuthMethod } from '@/utils/AppUnlockUtility';
 
 type AuthContextType = {

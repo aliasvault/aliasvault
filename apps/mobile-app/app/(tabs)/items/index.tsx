@@ -1,6 +1,5 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useNavigation } from '@react-navigation/native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, Platform, Animated, TextInput, TouchableOpacity, View, RefreshControl } from 'react-native';

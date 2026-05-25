@@ -1,6 +1,5 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack, useRouter } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, Platform } from 'react-native';
@@ -39,6 +38,7 @@ function RootLayoutNav() : React.ReactNode {
   const hasBooted = useRef(false);
 
   useEffect(() => {
+    console.log('RootLayoutNav');
     /**
      * Initialize the app by redirecting to the initialize page.
      */
@@ -53,6 +53,8 @@ function RootLayoutNav() : React.ReactNode {
       // Initialize i18n and wait for it to be ready
       await initI18n();
 
+      console.log('bootComplete', bootComplete);
+
       hasBooted.current = true;
 
       // Check if we have a pending deep link and pass it to initialize
@@ -65,6 +67,8 @@ function RootLayoutNav() : React.ReactNode {
 
         navigation.setReturnUrl({ path });
       }
+
+      console.log('setBootComplete', true);
 
       setBootComplete(true);
     };

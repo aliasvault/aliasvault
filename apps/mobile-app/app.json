@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "aliasvault",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "platforms": [
       "ios",
       "android",
@@ -15,30 +14,14 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "net.aliasvault.app",
-      "splash": {
-        "image": "./assets/images/adaptive-icon.png",
-        "imageWidth": 200,
-        "resizeMode": "contain",
-        "backgroundColor": "#ffffff"
-      }
+      "bundleIdentifier": "net.aliasvault.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
       },
-      "package": "net.aliasvault.app",
-      "splash": {
-        "image": "./assets/images/adaptive-icon.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#ffffff",
-        "dark": {
-          "image": "./assets/images/adaptive-icon.png",
-          "resizeMode": "contain",
-          "backgroundColor": "#202020"
-        }
-      }
+      "package": "net.aliasvault.app"
     },
     "web": {
       "bundler": "metro",
@@ -56,7 +39,21 @@
           }
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/adaptive-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff",
+          "dark": {
+            "image": "./assets/images/adaptive-icon.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#202020"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
