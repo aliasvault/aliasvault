@@ -1,6 +1,6 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack, useRouter } from 'expo-router';
+import { Href, Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, Platform } from 'react-native';
@@ -37,6 +37,7 @@ function RootLayoutNav() : React.ReactNode {
 
   const [bootComplete, setBootComplete] = useState(false);
   const hasBooted = useRef(false);
+  const pendingActionPath = useRef<string | null>(null);
 
   useEffect(() => {
     /**
@@ -63,7 +64,16 @@ function RootLayoutNav() : React.ReactNode {
           .replace('aliasvault://', '')
           .replace('exp+aliasvault://', '');
 
-        navigation.setReturnUrl({ path });
+        /*
+         * Action URLs (open/...) are owned by the /open/[...path] route (ActionHandler).
+         * We route there explicitly in the redirect effect below instead of going via
+         * the NavigationContext. This prevents double navigation after vault unlock.
+         */
+        if (path.startsWith('open/')) {
+          pendingActionPath.current = path;
+        } else {
+          navigation.setReturnUrl({ path });
+        }
       }
 
       setBootComplete(true);
@@ -78,6 +88,11 @@ function RootLayoutNav() : React.ReactNode {
      */
     const redirect = async () : Promise<void> => {
       if (!bootComplete) {
+        return;
+      }
+
+      if (pendingActionPath.current) {
+        router.replace(`/${pendingActionPath.current}` as Href);
         return;
       }
 
