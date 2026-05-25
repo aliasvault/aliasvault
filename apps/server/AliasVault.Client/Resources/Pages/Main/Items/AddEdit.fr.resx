@@ -51,7 +51,7 @@
   </data>
   <!-- Section headers -->
   <data name="ServiceSectionHeader">
-    <value>Elément</value>
+    <value>Élément</value>
     <comment>Header for the item information section</comment>
   </data>
   <data name="LoginDetailsSectionHeader">
