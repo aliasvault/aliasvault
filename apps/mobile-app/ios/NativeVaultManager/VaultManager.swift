@@ -1054,8 +1054,14 @@ public class VaultManager: NSObject {
                          subtitle: String?,
                          allowedMethods: [String]?,
                          buttonText: String?,
+                         recentUnlockGraceSeconds: Double,
                          resolver resolve: @escaping RCTPromiseResolveBlock,
                          rejecter reject: @escaping RCTPromiseRejectBlock) {
+        if vaultStore.wasRecentlyAuthenticated(recentUnlockGraceSeconds) {
+            resolve(true)
+            return
+        }
+
         // Get enabled authentication methods
         let authMethods = vaultStore.getAuthMethods()
         let pinEnabled = vaultStore.isPinEnabled()

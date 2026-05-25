@@ -71,6 +71,7 @@ extension VaultStore {
     /// This forces getEncryptionKey() to fetch from keychain on next access.
     public func clearEncryptionKeyFromMemory() {
         self.encryptionKey = nil
+        clearLastSuccessfulAuth()
         print("Cleared encryption key from memory")
     }
 
@@ -415,6 +416,7 @@ extension VaultStore {
             }
         }
 
+        markSuccessfulAuth()
         return keyData
     }
 }

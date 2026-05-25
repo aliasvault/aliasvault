@@ -1,5 +1,6 @@
 package net.aliasvault.app.vaultstore
 
+import android.os.SystemClock
 import android.util.Log
 import io.requery.android.database.sqlite.SQLiteDatabase
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -48,6 +49,11 @@ class VaultStore(
         private const val BASE64_BLOB_PREFIX = "av-base64-to-blob:"
 
         /**
+         * Hard cap on how long a recent-auth grace will be honored, regardless of caller input.
+         */
+        private const val MAX_AUTH_RECENCY_WINDOW_SECONDS: Double = 15.0
+
+        /**
          * Get the instance of the vault store.
          * @param keystoreProvider The keystore provider
          * @param storageProvider The storage provider
@@ -73,13 +79,51 @@ class VaultStore(
         }
     }
 
+    // region Authentication Recency
+
+    /** Last successful biometric/PIN auth. */
+    @Volatile
+    private var lastSuccessfulAuthAtMs: Long? = null
+
+    /** Mark successful authorization call to be used for future recency checks. */
+    internal fun markSuccessfulAuth() {
+        lastSuccessfulAuthAtMs = SystemClock.elapsedRealtime()
+    }
+
+    /**
+     * Invalidate the recency timestamp. Must be called whenever the encryption key is cleared
+     * (lock, sign-out, auto-lock) so the grace window cannot outlive the unlocked state.
+     */
+    internal fun clearLastSuccessfulAuth() {
+        lastSuccessfulAuthAtMs = null
+    }
+
+    /**
+     * Check if we're within the recency window for last successful auth attempt.
+     */
+    internal fun wasRecentlyAuthenticated(maxRecencySeconds: Double): Boolean {
+        if (maxRecencySeconds <= 0.0) return false
+        val effectiveWindow = minOf(maxRecencySeconds, MAX_AUTH_RECENCY_WINDOW_SECONDS)
+        val last = lastSuccessfulAuthAtMs ?: return false
+        return SystemClock.elapsedRealtime() - last < (effectiveWindow * 1000).toLong()
+    }
+
+    // endregion
+
     // region Composed Components
 
     private val crypto = VaultCrypto(keystoreProvider, storageProvider)
     internal val database = VaultDatabase(storageProvider, crypto)
     private val itemRepository = net.aliasvault.app.vaultstore.repositories.ItemRepository(database)
     internal val metadata = VaultMetadataManager(storageProvider)
-    private val auth = VaultAuth(storageProvider) { cache.clearCache() }
+    private val auth = VaultAuth(
+        storageProvider,
+        onClearCache = {
+            cache.clearCache()
+            clearLastSuccessfulAuth()
+        },
+        onBackground = { clearLastSuccessfulAuth() },
+    )
     private val sync = VaultSync(database, metadata, crypto, storageProvider, itemRepository)
     private val mutate = VaultMutate(database, itemRepository, metadata, crypto, auth, storageProvider)
     private val cache = VaultCache(crypto, database, keystoreProvider, storageProvider)
@@ -142,6 +186,7 @@ class VaultStore(
      */
     fun clearEncryptionKeyFromMemory() {
         crypto.clearEncryptionKeyFromMemory()
+        clearLastSuccessfulAuth()
     }
 
     /**
@@ -256,7 +301,12 @@ class VaultStore(
      * Unlock the vault.
      */
     fun unlockVault() {
+        // A nil-to-non-nil transition means the keystore just released the key after biometric.
+        val hadKeyInMemory = encryptionKey != null
         database.unlockVault(auth.getAuthMethods())
+        if (!hadKeyInMemory && encryptionKey != null) {
+            markSuccessfulAuth()
+        }
     }
 
     /**
@@ -867,6 +917,7 @@ class VaultStore(
      */
     fun clearCache() {
         cache.clearCache()
+        clearLastSuccessfulAuth()
     }
 
     /**
@@ -877,6 +928,7 @@ class VaultStore(
      */
     fun clearSession() {
         cache.clearSession()
+        clearLastSuccessfulAuth()
     }
 
     /**
@@ -886,6 +938,7 @@ class VaultStore(
      */
     fun clearVault() {
         cache.clearVault()
+        clearLastSuccessfulAuth()
     }
 
     // endregion
@@ -926,7 +979,9 @@ class VaultStore(
      */
     @Throws(Exception::class)
     fun unlockWithPin(pinValue: String): String {
-        return pin.unlockWithPin(pinValue)
+        val key = pin.unlockWithPin(pinValue)
+        markSuccessfulAuth()
+        return key
     }
 
     /**

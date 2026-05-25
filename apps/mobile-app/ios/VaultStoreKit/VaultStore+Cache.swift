@@ -9,6 +9,7 @@ extension VaultStore {
         print("Clearing cache - removing encryption key and decrypted database from memory")
         self.encryptionKey = nil
         self.dbConnection = nil
+        clearLastSuccessfulAuth()
     }
 
     /// Clear session data only (for forced logout).
@@ -21,6 +22,7 @@ extension VaultStore {
         // Clear in-memory data only
         self.encryptionKey = nil
         self.dbConnection = nil
+        clearLastSuccessfulAuth()
 
         // Clear biometric-protected key from keychain (user will need to re-authenticate)
         do {
@@ -79,6 +81,7 @@ extension VaultStore {
         self.enabledAuthMethods = []
         self.autoLockTimeout = VaultConstants.defaultAutoLockTimeout
         self.keyDerivationParams = nil
+        clearLastSuccessfulAuth()
     }
 
     /// Set the auto-lock timeout - the number of seconds after which the vault will be locked automatically
