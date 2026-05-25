@@ -25,7 +25,7 @@
     <comment>Title for adding a new item</comment>
   </data>
   <data name="EditItemTitle">
-    <value>Editer l'élément</value>
+    <value>Éditer l'élément</value>
     <comment>Title for editing an existing item</comment>
   </data>
   <data name="AddItemDescription">
@@ -42,7 +42,7 @@
     <comment>Breadcrumb text for viewing an item</comment>
   </data>
   <data name="EditItemBreadcrumb">
-    <value>Editer l'élément</value>
+    <value>Éditer l'élément</value>
     <comment>Breadcrumb text for editing an item</comment>
   </data>
   <data name="AddNewItemBreadcrumb">
