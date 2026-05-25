@@ -13,11 +13,11 @@
   <string name="autofill_open_app">Buka aplikasi</string>
   <string name="autofill_vault_locked">Brankas ditutup</string>
   <string name="biometric_store_key_title">Store Encryption Key</string>
-  <string name="biometric_store_key_subtitle">Lakukan otentikasi untuk menyimpan kunci enkripsi Anda dengan aman di Android Keystore. Ini memungkinkan akses aman ke brankas Anda.</string>
+  <string name="biometric_store_key_subtitle">Lakukan autentikasi untuk menyimpan kunci enkripsi Anda dengan aman di Android Keystore. Ini memungkinkan akses aman ke brankas Anda.</string>
   <string name="biometric_unlock_vault_title">Unlock Vault</string>
   <string name="biometric_unlock_vault_subtitle">Authenticate to access your vault</string>
-  <string name="passkey_registration_title">Create Passkey</string>
-  <string name="create_passkey_title">Create New Passkey</string>
+  <string name="passkey_registration_title">Buat Passkey</string>
+  <string name="create_passkey_title">Buat Passkey baru</string>
   <string name="create_passkey_subtitle">Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.</string>
   <string name="replace_passkey">Replace Passkey</string>
   <string name="passkey_display_name_label">Passkey Name</string>
