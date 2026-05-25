@@ -18,7 +18,6 @@ interface IUseListKeyboardNavReturn {
   itemIdFor: (index: number) => string;
   folderIdFor: (index: number) => string;
   activeDescendantId: string | undefined;
-  listboxId: string;
 }
 
 const ID_PREFIX = 'kb-nav';
@@ -204,6 +203,5 @@ export const useListKeyboardNav = (params: IUseListKeyboardNavParams): IUseListK
     itemIdFor,
     folderIdFor,
     activeDescendantId,
-    listboxId: `${ID_PREFIX}-listbox`,
   };
 };
