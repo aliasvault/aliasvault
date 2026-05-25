@@ -291,10 +291,19 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
     section: {
       paddingTop: 16,
     },
+    attachmentIcon: {
+      flexShrink: 0,
+      marginLeft: 6,
+    },
     subject: {
       color: colors.text,
+      flexShrink: 1,
       fontSize: 16,
       fontWeight: 'bold',
+    },
+    subjectRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
     },
     title: {
       color: colors.text,
@@ -389,9 +398,19 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
             }
           }}
         >
-          <ThemedText style={styles.subject} numberOfLines={1}>
-            {mail.subject}
-          </ThemedText>
+          <View style={styles.subjectRow}>
+            <ThemedText style={styles.subject} numberOfLines={1}>
+              {mail.subject}
+            </ThemedText>
+            {mail.hasAttachments && (
+              <MaterialIcons
+                name="attach-file"
+                size={16}
+                color={colors.textMuted}
+                style={styles.attachmentIcon}
+              />
+            )}
+          </View>
           <ThemedText style={styles.date}>
             {new Date(mail.dateSystem).toLocaleDateString()}
           </ThemedText>

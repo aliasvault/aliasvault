@@ -73,7 +73,8 @@
     "react-native-toast-message": "^2.2.1",
     "react-native-webview": "13.13.5",
     "sanitize-html": "^2.17.0",
-    "yup": "^1.6.1"
+    "yup": "^1.6.1",
+    "expo-intent-launcher": "~12.1.5"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
