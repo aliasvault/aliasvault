@@ -298,17 +298,17 @@
       },
       "deleteAccount": {
         "headerText": "删除您的账户将立即且永久删除所有数据。",
-        "warningText": "警告：此操作无法撤销。所有数据将被永久删除。",
+        "warningText": "警告：此操作无法撤销，您的所有数据将被永久删除。",
         "finalWarning": "最终警告：输入您的密码以永久删除账户。",
         "warningVaults": "所有加密密码库（包括您所有的凭据）将被永久删除",
         "warningAliases": "您的邮件别名将成为无主状态，且不能被其他用户认领",
-        "warningRecovery": "账户删除后无法恢复",
-        "irreversibleWarning": "账户删除是不可逆的，无法撤销。点击下方按钮将立即且永久删除您的账户。",
-        "enterUsername": "输入用户名继续",
+        "warningRecovery": "您的帐户在删除后将无法被恢复",
+        "irreversibleWarning": "账户删除操作不可逆且无法被撤销，点击下方按钮将立即且永久删除您的账户。",
+        "enterUsername": "输入您的用户名以继续",
         "password": "密码",
         "enterPassword": "输入密码",
         "deleteAccount": "删除账户",
-        "confirmationMessage": "您确定要删除账户吗？此操作无法撤销。",
+        "confirmationMessage": "您确定要删除您的账户吗？此操作无法被撤销。",
         "usernameDoesNotMatch": "用户名不匹配",
         "verifyingPassword": "验证密码中…",
         "currentPasswordIncorrect": "当前密码不正确",
@@ -316,7 +316,7 @@
         "verifyingWithServer": "与服务器验证中",
         "deletingAccount": "删除账户中",
         "accountDeleted": "账户已成功删除",
-        "failedToDelete": "删除账户失败。请重试。"
+        "failedToDelete": "删除账户失败，请重试。"
       }
     },
     "qrScanner": {
@@ -591,15 +591,15 @@
   "apiErrors": {
     "CLAIM_DOES_NOT_MATCH_USER": "当前选择的邮箱地址已被使用。请通过编辑此凭据来更改邮箱地址。",
     "CLAIM_DOES_NOT_EXIST": "尝试加载邮件时出错。请尝试编辑并保存凭据条目以同步数据库，然后重试。",
-    "UNKNOWN_ERROR": "发生未知错误。请重试。",
-    "ACCOUNT_LOCKED": "由于多次尝试失败，账户已暂时锁定。请稍后重试。",
+    "UNKNOWN_ERROR": "发生未知错误，请重试。",
+    "ACCOUNT_LOCKED": "由于多次尝试失败，账户已暂时锁定，请稍后重试。",
     "ACCOUNT_BLOCKED": "您的账户已被停用。若您认为此操作有误，请联系支持人员。",
     "USER_NOT_FOUND": "用户名或密码无效，请重试。",
-    "INVALID_AUTHENTICATOR_CODE": "验证码无效，请重试。",
+    "INVALID_AUTHENTICATOR_CODE": "身份验证器代码无效，请重试。",
     "INVALID_RECOVERY_CODE": "恢复码无效，请重试。",
     "REFRESH_TOKEN_REQUIRED": "刷新令牌为必填项。",
     "INVALID_REFRESH_TOKEN": "刷新令牌无效。",
-    "PUBLIC_REGISTRATION_DISABLED": "当前服务器已禁用新账户注册。请联系管理员。",
+    "PUBLIC_REGISTRATION_DISABLED": "当前服务器已禁止新账户注册，请联系该服务器的管理员。",
     "USERNAME_REQUIRED": "用户名为必填项。",
     "USERNAME_ALREADY_IN_USE": "用户名已被使用。",
     "USERNAME_AVAILABLE": "用户名可用。",
@@ -607,10 +607,10 @@
     "PASSWORD_MISMATCH": "提供的密码与您的当前密码不匹配。",
     "ACCOUNT_SUCCESSFULLY_DELETED": "账户已成功删除。",
     "USERNAME_EMPTY_OR_WHITESPACE": "用户名不能为空或仅含空格。",
-    "USERNAME_TOO_SHORT": "用户名过短：至少需要3个字符。",
-    "USERNAME_TOO_LONG": "用户名过长：不能超过40个字符。",
+    "USERNAME_TOO_SHORT": "用户名过短：至少需要 3 个字符。",
+    "USERNAME_TOO_LONG": "用户名过长：不能超过 40 个字符。",
     "USERNAME_INVALID_EMAIL": "邮箱地址无效。",
-    "USERNAME_INVALID_CHARACTERS": "用户名无效，只能包含字母或数字。",
+    "USERNAME_INVALID_CHARACTERS": "用户名无效，用户名只能包含字母或数字。",
     "VAULT_NOT_UP_TO_DATE": "您的密码库不是最新的。请同步您的密码库后重试。",
     "INTERNAL_SERVER_ERROR": "服务器内部错误。",
     "VAULT_ERROR": "本地密码库不是最新的。请刷新页面同步密码库后重试。"
@@ -625,8 +625,8 @@
   },
   "app": {
     "status": {
-      "unlockingVault": "解锁密码库",
-      "decryptingVault": "解密密码库"
+      "unlockingVault": "正在解锁密码库",
+      "decryptingVault": "正在解密密码库"
     },
     "navigation": {
       "login": "登录",
@@ -666,7 +666,7 @@
   },
   "upgrade": {
     "title": "升级密码库",
-    "subtitle": "AliasVault已更新，您的密码库需要升级。这只需几分钟时间。",
+    "subtitle": "AliasVault 已更新，您的密码库需要升级，这只需几秒钟时间。",
     "versionInformation": "版本信息",
     "yourVault": "您的密码库版本：",
     "newVersion": "新可用版本：",
@@ -679,12 +679,12 @@
     "status": {
       "preparingUpgrade": "正在准备升级…",
       "vaultAlreadyUpToDate": "当前密码库数据已是最新",
-      "applyingDatabaseMigrations": "应用数据库迁移…",
-      "applyingMigration": "应用迁移 {{current}} / {{total}}…",
+      "applyingDatabaseMigrations": "正在迁移应用数据库……",
+      "applyingMigration": "正在迁移 {{current}} / {{total}}……",
       "committingChanges": "正在提交更改…"
     },
     "alerts": {
-      "unableToGetVersionInfo": "无法获取版本信息。请重试。",
+      "unableToGetVersionInfo": "无法获取版本信息，请重试。",
       "selfHostedServer": "自托管服务器",
       "selfHostedWarning": "如果您使用的是自托管服务器，请确保同时更新您的自托管实例，否则网页客户端将无法登录。",
       "continueUpgrade": "继续升级",
