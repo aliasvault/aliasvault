@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
@@ -16,6 +16,7 @@ import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
+import { useListKeyboardNav } from '@/entrypoints/popup/hooks/useListKeyboardNav';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
@@ -123,6 +124,7 @@ const ItemsList: React.FC = () => {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showFolders, setShowFolders] = useState(true);
   const { setIsInitialLoading } = useLoading();
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   // Load showFolders preference from storage on mount
   useEffect(() => {
@@ -671,6 +673,63 @@ const ItemsList: React.FC = () => {
    */
   const hasItemsInFoldersOnly = items.length > 0 && items.every((item: Item) => item.FolderId !== null);
 
+  /**
+   * Open the Nth item in the current sorted list (ArrowRight on an item).
+   */
+  const handleActivateItem = useCallback((index: number): void => {
+    const item = sortedItems[index];
+    if (!item) {
+      return;
+    }
+    const url = searchTerm ? `/items/${item.Id}?returnSearch=${encodeURIComponent(searchTerm)}` : `/items/${item.Id}`;
+    navigate(url);
+  }, [sortedItems, searchTerm, navigate]);
+
+  /**
+   * Enter the Nth folder (ArrowRight on a folder pill).
+   */
+  const handleActivateFolder = useCallback((index: number): void => {
+    const folder = folders[index];
+    if (!folder) {
+      return;
+    }
+    handleFolderClick(folder.id, folder.name);
+  }, [folders, handleFolderClick]);
+
+  /**
+   * Clear the search input (ArrowUp inside the search field with text).
+   */
+  const handleClearSearch = useCallback((): void => {
+    setSearchTerm('');
+  }, []);
+
+  /**
+   * Go up one folder (ArrowLeft).
+   */
+  const handleGoBack = useCallback((): void => {
+    if (!currentFolderId || !dbContext?.sqliteClient) {
+      return;
+    }
+    const allFolders = dbContext.sqliteClient.folders.getAll();
+    const current = allFolders.find((f: Folder) => f.Id === currentFolderId);
+    const parentFolderId = current?.ParentFolderId ?? null;
+    if (parentFolderId) {
+      navigate(`/items/folder/${parentFolderId}`);
+    } else {
+      navigate('/items');
+    }
+  }, [currentFolderId, dbContext, navigate]);
+
+  const { activeKind, activeIndex, itemIdFor, folderIdFor, activeDescendantId } = useListKeyboardNav({
+    folderCount: folders.length,
+    itemCount: sortedItems.length,
+    searchInputRef,
+    onActivateFolder: handleActivateFolder,
+    onActivateItem: handleActivateItem,
+    onGoBack: handleGoBack,
+    onClearSearch: handleClearSearch,
+  });
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -930,11 +989,17 @@ const ItemsList: React.FC = () => {
       {items.length > 0 ? (
         <div className="mb-4">
           <input
+            ref={searchInputRef}
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder={`${t('content.searchVault')}`}
             autoFocus
+            role="combobox"
+            aria-controls="items-list"
+            aria-expanded={sortedItems.length > 0 || folders.length > 0}
+            aria-activedescendant={activeDescendantId}
+            aria-autocomplete="list"
             className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
@@ -1010,12 +1075,14 @@ const ItemsList: React.FC = () => {
         <>
           {/* Folders as inline pills - only render wrapper if there are folders OR if we can create subfolders */}
           {(folders.length > 0 || canCreateSubfolder) && (
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              {folders.map(folder => (
+            <div className="flex flex-wrap items-center gap-2 mb-4" role="listbox" aria-label={t('items.title')}>
+              {folders.map((folder, index) => (
                 <FolderPill
                   key={folder.id}
                   folder={folder}
                   onClick={() => handleFolderClick(folder.id, folder.name)}
+                  isActive={activeKind === 'folder' && activeIndex === index}
+                  optionId={folderIdFor(index)}
                 />
               ))}
               {canCreateSubfolder && (
@@ -1045,12 +1112,14 @@ const ItemsList: React.FC = () => {
           {/* Inside folder: always show subfolders and create button */}
           {/* Only render wrapper if there are folders OR if we can create subfolders */}
           {!searchTerm && (currentFolderId || showFolders) && (folders.length > 0 || canCreateSubfolder) && (
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              {folders.map(folder => (
+            <div className="flex flex-wrap items-center gap-2 mb-4" role="listbox" aria-label={t('items.title')}>
+              {folders.map((folder, index) => (
                 <FolderPill
                   key={folder.id}
                   folder={folder}
                   onClick={() => handleFolderClick(folder.id, folder.name)}
+                  isActive={activeKind === 'folder' && activeIndex === index}
+                  optionId={folderIdFor(index)}
                 />
               ))}
               {canCreateSubfolder && (
@@ -1083,14 +1152,16 @@ const ItemsList: React.FC = () => {
 
           {/* Items */}
           {sortedItems.length > 0 && (
-            <ul id="items-list" className="space-y-2">
-              {sortedItems.map(item => (
+            <ul id="items-list" role="listbox" className="space-y-2">
+              {sortedItems.map((item, index) => (
                 <ItemCard
                   key={item.Id}
                   item={item}
                   showFolderPath={!!searchTerm && !!item.FolderPath}
                   searchTerm={searchTerm}
                   currentFolderPath={currentFolderPath}
+                  isActive={activeKind === 'item' && activeIndex === index}
+                  optionId={itemIdFor(index)}
                 />
               ))}
             </ul>

@@ -50,6 +50,7 @@ Builds:
       - apps/mobile-app/node_modules/react-native-svg/android/build.gradle
     scandelete:
       - apps/mobile-app/node_modules/
+      - apps/server/Tests/AliasVault.UnitTests/TestData/Exports/
     build:
       - cd ../..
       - $$rustup$$/rustup-init.sh -y --default-toolchain stable -t aarch64-linux-android

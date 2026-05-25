@@ -105,7 +105,7 @@
     }
   },
   "passkeys": {
-    "passkey": "Clé d'identification",
+    "passkey": "Clé d'accès",
     "helpText": "Les clés d'accès sont créées sur le site Web lorsque vous y êtes invité. Elles ne peuvent pas être modifiées manuellement. Pour supprimer cette clé, vous pouvez la supprimer de cet identifiant.",
     "passkeyMarkedForDeletion": "Clé d'accès marquée pour suppression",
     "passkeyWillBeDeleted": "Cette clé d'accès sera supprimée lorsque vous enregistrerez cet identifiant."
@@ -199,11 +199,13 @@
       "15seconds": "15 secondes",
       "30seconds": "30 secondes",
       "1minute": "1 minute",
+      "5minutes": "5 minutes",
       "15minutes": "15 minutes",
       "30minutes": "30 minutes",
       "1hour": "1 heure",
       "4hours": "4 heures",
-      "8hours": "8 heures"
+      "8hours": "8 heures",
+      "24hours": "24 heures"
     },
     "language": "Langue",
     "languageSystemMessage": "Pour modifier la langue de l'application, configurez la langue préférée pour AliasVault dans les paramètres de votre appareil.",
@@ -393,7 +395,7 @@
     "itemCreated": "Élément créé",
     "itemCreatedMessage": "Votre nouvel élément a été ajouté à votre coffre et est prêt à être utilisé.",
     "emailPreview": "Aperçu de l'e-mail",
-    "untitled": "Untitled",
+    "untitled": "Indéfini",
     "name": "Nom",
     "url": "URL",
     "itemName": "Nom",

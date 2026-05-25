@@ -2,6 +2,12 @@
 source /etc/profile.d/bsenv.sh
 export GRADLE_USER_HOME=$home_vagrant/.gradle
 
+# Pin JDK 17 for Gradle's toolchain detector
+export JAVA_HOME=/opt/jdk-17
+export PATH=$JAVA_HOME/bin:$PATH
+mkdir -p $GRADLE_USER_HOME
+echo "org.gradle.java.installations.paths=$JAVA_HOME" >> $GRADLE_USER_HOME/gradle.properties
+
 # Set up environment for fdroid (no sudo needed, we're already vagrant user)
 export PATH=$fdroidserver:$PATH
 export PYTHONPATH=$fdroidserver:$fdroidserver/examples

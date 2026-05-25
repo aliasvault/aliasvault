@@ -63,7 +63,7 @@
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Les codes de récupération ci-dessous sont utilisés pour accéder à votre compte en cas de perte d'accès à votre appareil d'authentification. Prenez une photo ou notez-les et conservez-les dans un endroit sécurisé. Ne les partagez avec personne.</value>
+    <value>Les codes de récupération ci-dessous sont utilisés pour accéder à votre compte en cas de perte d'accès à votre appareil d'authentification. Prenez-les en photo ou notez-les et conservez-les dans un endroit sécurisé. Ne les partagez avec personne.</value>
     <comment>Description of recovery codes</comment>
   </data>
   <data name="WarningTitle" xml:space="preserve">

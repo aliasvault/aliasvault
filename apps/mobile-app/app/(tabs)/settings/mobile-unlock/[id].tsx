@@ -158,12 +158,13 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
     setIsProcessing(true);
 
     try {
-      /*
-       * Mobile unlock is a security-sensitive operation that requires re-authentication.
-       */
+      // Re-auth user for mobile login confirm if user has not authenticated within the last 10 seconds.
       const authenticated = await VaultUnlockHelper.authenticateForAction(
         t('settings.qrScanner.mobileLogin.confirmTitle'),
-        t('settings.qrScanner.mobileLogin.confirmSubtitle')
+        t('settings.qrScanner.mobileLogin.confirmSubtitle'),
+        null,
+        null,
+        10
       );
 
       if (!authenticated) {

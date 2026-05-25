@@ -16,12 +16,11 @@ services:
       - ./scripts/build.sh:/build.sh:Z
       # Bind the outputs directory to capture APK build output
       - ./outputs:/outputs:rw
-    # Increase memory limits for Gradle builds
     shm_size: '2gb'
-    mem_limit: 12g
-    memswap_limit: 12g
+    mem_limit: 24g
+    memswap_limit: 24g
     cpus: 4
     environment:
-      - GRADLE_OPTS=-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError
-      - JAVA_OPTS=-Xmx4g -XX:MaxMetaspaceSize=1g
+      - GRADLE_OPTS=-Xmx4g -XX:MaxMetaspaceSize=2g -XX:+HeapDumpOnOutOfMemoryError
+      - JAVA_OPTS=-Xmx4g -XX:MaxMetaspaceSize=2g
     restart: "no"

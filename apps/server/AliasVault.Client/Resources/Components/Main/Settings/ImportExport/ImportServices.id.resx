@@ -60,7 +60,7 @@
   </resheader>
   <!-- 1Password -->
   <data name="OnePasswordDescription" xml:space="preserve">
-    <value>Import passwords from your 1Password vault</value>
+    <value>Impor kata sandi dari brankas 1Password Anda</value>
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">

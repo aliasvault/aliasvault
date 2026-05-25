@@ -180,12 +180,10 @@ test.describe.serial('8. Credential Matcher Integration', () => {
 
     // Verify the autofill popup is visible
     const popupVisible = await isAutofillPopupVisible(testPage);
-    console.log('Autofill popup visible on example.com:', popupVisible);
     expect(popupVisible).toBe(true);
 
     // Get credentials shown in the popup
     const credentials = await getAutofillPopupCredentials(testPage);
-    console.log('Credentials matched for example.com:', credentials);
 
     // Should match the Example Site Login
     expect(credentials).toContain('Example Site Login');
@@ -216,12 +214,10 @@ test.describe.serial('8. Credential Matcher Integration', () => {
 
     // Verify the autofill popup is visible
     const popupVisible = await isAutofillPopupVisible(testPage);
-    console.log('Autofill popup visible on another-example.com:', popupVisible);
     expect(popupVisible).toBe(true);
 
     // Get credentials shown in the popup
     const credentials = await getAutofillPopupCredentials(testPage);
-    console.log('Credentials matched for another-example.com:', credentials);
 
     // Should match only Another Site Login
     expect(credentials).toContain('Another Site Login');

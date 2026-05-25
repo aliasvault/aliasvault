@@ -1600,9 +1600,21 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-    override fun authenticateUser(title: String?, subtitle: String?, allowedMethods: ReadableArray?, buttonText: String?, promise: Promise) {
+    override fun authenticateUser(
+        title: String?,
+        subtitle: String?,
+        allowedMethods: ReadableArray?,
+        buttonText: String?,
+        recentUnlockGraceSeconds: Double,
+        promise: Promise,
+    ) {
         CoroutineScope(Dispatchers.Main).launch {
             try {
+                if (vaultStore.wasRecentlyAuthenticated(recentUnlockGraceSeconds)) {
+                    promise.resolve(true)
+                    return@launch
+                }
+
                 // Get enabled authentication methods
                 val authMethods = vaultStore.getAuthMethods()
 

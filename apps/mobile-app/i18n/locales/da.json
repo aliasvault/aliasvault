@@ -154,8 +154,8 @@
       "showSearchTextDescription": "Inkluder den tekst, AliasVault modtager fra Android, som den bruger til at søge efter matchende loginoplysninger"
     },
     "advancedOptions": "Avancerede indstillinger",
-    "copyTotpOnFill": "Copy TOTP code on autofill",
-    "copyTotpOnFillDescription": "When you autofill a credential with 2FA, automatically copy its TOTP code to the clipboard so you can paste it into the next field.",
+    "copyTotpOnFill": "Kopier TOTP kode ved autofyld",
+    "copyTotpOnFillDescription": "Når du automatisk udfylder legitimationsoplysninger med 2FA, kopieres dens TOTP-kode automatisk til klippebordet, så du kan indsætte den i det næste felt.",
     "vaultUnlock": "Metode til oplåsning af boks",
     "autoLock": "Tidsafbrydelse for autolås",
     "clipboardClear": "Ryd udklipsholder",
@@ -199,11 +199,13 @@
       "15seconds": "15 sekunder",
       "30seconds": "30 sekunder",
       "1minute": "1 minut",
+      "5minutes": "5 minutter",
       "15minutes": "15 minutter",
       "30minutes": "30 minutter",
       "1hour": "1 time",
       "4hours": "4 timer",
-      "8hours": "8 timer"
+      "8hours": "8 timer",
+      "24hours": "24 timer"
     },
     "language": "Sprog",
     "languageSystemMessage": "For at ændre app-sproget skal du konfigurere det foretrukne sprog for AliasVault i din enheds indstillinger.",

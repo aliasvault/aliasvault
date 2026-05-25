@@ -5,6 +5,11 @@ When you run the local setup, it automatically pulls the latest `main` branch fr
 
 ## Run local F-Droid build against latest main branch
 
+1. Navigate to this folder from root
+```bash
+cd apps/mobile-app/android/fdroid
+```
+
 1. Build and run the F-Droid docker container
 ```bash
 ./run.sh
