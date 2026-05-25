@@ -400,7 +400,7 @@
     "clipboardSettings": "剪贴板设置",
     "contextMenuSettings": "上下文菜单设置",
     "passkeySettings": "通行密钥设置",
-    "contextMenuDescription": "右键点击输入字段即可访问 AliasVault 选项",
+    "contextMenuDescription": "右键点击文本输入框即可访问 AliasVault 选项",
     "selectLanguage": "选择语言",
     "serverConfiguration": "服务器配置",
     "serverConfigurationDescription": "为自托管实例配置 AliasVault 服务器 URL",
@@ -521,22 +521,22 @@
   },
   "upgrade": {
     "title": "升级密码库",
-    "subtitle": "AliasVault已更新，您的密码库需要升级，仅需数秒。",
+    "subtitle": "AliasVault 已更新，您的密码库需要升级，这只需要几秒钟时间。",
     "versionInformation": "版本信息",
     "yourVault": "您的密码库版本：",
     "newVersion": "新可用版本：",
-    "upgrade": "升级密码库",
+    "upgrade": "更新密码库",
     "upgrading": "升级中…",
     "whatsNew": "新功能",
     "whatsNewDescription": "需要升级才能支持以下更改：",
     "noDescriptionAvailable": "此版本无可用说明。",
     "alerts": {
-      "unableToGetVersionInfo": "无法获取版本信息。请重试。",
+      "unableToGetVersionInfo": "无法获取版本信息，请重试。",
       "selfHostedServer": "自托管服务器",
       "selfHostedWarning": "如果您使用的是自托管服务器，请确保同时更新您的自托管实例，否则将无法登录网页客户端。",
       "continueUpgrade": "继续升级",
       "upgradeFailed": "升级失败",
-      "failedToApplyMigration": "应用迁移失败（{{current}} / {{total}}）"
+      "failedToApplyMigration": "迁移失败（{{current}} / {{total}}）"
     }
   },
   "logout": {
