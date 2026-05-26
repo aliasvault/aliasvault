@@ -13,6 +13,8 @@ import type { Email, MailboxEmail } from '@/utils/dist/core/models/webapi';
  * - RSA-OAEP asymmetric encryption/decryption
  */
 class EncryptionUtility {
+  private static rsaPrivateKeyCache = new Map<string, Promise<CryptoKey>>();
+
   /**
    * Derives a key from a password using Argon2Id
    */
@@ -190,31 +192,71 @@ class EncryptionUtility {
    */
   public static async decryptWithPrivateKey(ciphertext: string, privateKey: string): Promise<Uint8Array> {
     try {
-      const privateKeyObj = await crypto.subtle.importKey(
-        "jwk",
-        JSON.parse(privateKey),
-        {
-          name: "RSA-OAEP",
-          hash: "SHA-256",
-        },
-        true,
-        ["decrypt"]
-      );
+      const privateKeyObj = await EncryptionUtility.importPrivateKey(privateKey);
 
-      const cipherBuffer = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
-      const plaintextBuffer = await crypto.subtle.decrypt(
-        {
-          name: "RSA-OAEP",
-        },
-        privateKeyObj,
-        cipherBuffer
-      );
-
-      return new Uint8Array(plaintextBuffer);
+      return await EncryptionUtility.decryptWithPrivateKeyObject(ciphertext, privateKeyObj);
     } catch (error) {
       console.error('RSA decryption failed:', error);
       throw new Error(`Failed to decrypt: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
+  }
+
+  /**
+   * Decrypts data using RSA-OAEP asymmetric encryption with a CryptoKey private key.
+   */
+  public static async decryptWithPrivateKeyObject(ciphertext: string, privateKey: CryptoKey): Promise<Uint8Array> {
+    const cipherBuffer = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
+    const plaintextBuffer = await crypto.subtle.decrypt(
+      {
+        name: "RSA-OAEP",
+      },
+      privateKey,
+      cipherBuffer
+    );
+
+    return new Uint8Array(plaintextBuffer);
+  }
+
+  /**
+   * Clears cached RSA private keys when the in-memory vault is locked or reset.
+   */
+  public static clearRsaPrivateKeyCache(): void {
+    EncryptionUtility.rsaPrivateKeyCache.clear();
+  }
+
+  /**
+   * Imports an RSA-OAEP private key as non-extractable.
+   */
+  private static async importPrivateKey(privateKey: string): Promise<CryptoKey> {
+    return await crypto.subtle.importKey(
+      "jwk",
+      JSON.parse(privateKey),
+      {
+        name: "RSA-OAEP",
+        hash: "SHA-256",
+      },
+      false,
+      ["decrypt"]
+    );
+  }
+
+  /**
+   * Returns the cached non-extractable private key matching an email encryption public key.
+   */
+  private static async getPrivateKeyObject(encryptionKey: EncryptionKey): Promise<CryptoKey> {
+    const cachedPrivateKey = EncryptionUtility.rsaPrivateKeyCache.get(encryptionKey.PublicKey);
+
+    if (cachedPrivateKey) {
+      return await cachedPrivateKey;
+    }
+
+    const privateKey = EncryptionUtility.importPrivateKey(encryptionKey.PrivateKey).catch(error => {
+      EncryptionUtility.rsaPrivateKeyCache.delete(encryptionKey.PublicKey);
+      throw error;
+    });
+
+    EncryptionUtility.rsaPrivateKeyCache.set(encryptionKey.PublicKey, privateKey);
+    return await privateKey;
   }
 
   /**
@@ -232,9 +274,10 @@ class EncryptionUtility {
       }
 
       // Decrypt symmetric key with asymmetric private key
-      const symmetricKey = await EncryptionUtility.decryptWithPrivateKey(
+      const privateKey = await EncryptionUtility.getPrivateKeyObject(encryptionKey);
+      const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(
         email.encryptedSymmetricKey,
-        encryptionKey.PrivateKey
+        privateKey
       );
       const symmetricKeyBase64 = Buffer.from(symmetricKey).toString('base64');
 
@@ -276,9 +319,10 @@ class EncryptionUtility {
         }
 
         // Decrypt symmetric key with asymmetric private key
-        const symmetricKey = await EncryptionUtility.decryptWithPrivateKey(
+        const privateKey = await EncryptionUtility.getPrivateKeyObject(encryptionKey);
+        const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(
           email.encryptedSymmetricKey,
-          encryptionKey.PrivateKey
+          privateKey
         );
 
         const symmetricKeyBase64 = Buffer.from(symmetricKey).toString('base64');
@@ -319,9 +363,10 @@ class EncryptionUtility {
       }
 
       // Decrypt the symmetric key using private key (returns raw bytes)
-      const symmetricKey = await EncryptionUtility.decryptWithPrivateKey(
+      const privateKey = await EncryptionUtility.getPrivateKeyObject(encryptionKey);
+      const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(
         email.encryptedSymmetricKey,
-        encryptionKey.PrivateKey
+        privateKey
       );
 
       // Convert symmetric key to base64 string if symmetricDecrypt expects it

@@ -163,6 +163,7 @@ export const AuthProvider: React.FC<{
     // Clear auth tokens and session in native layer (preserves vault data)
     await NativeVaultManager.clearAuthTokens();
     await NativeVaultManager.clearSession();
+    EncryptionUtility.clearRsaPrivateKeyCache();
 
     // Clear from AsyncStorage (for backward compatibility)
     // TODO: Remove AsyncStorage cleanup in future version 0.25.0+

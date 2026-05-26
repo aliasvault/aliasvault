@@ -3,6 +3,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { AppState } from 'react-native';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
+import EncryptionUtility from '@/utils/EncryptionUtility';
 
 type NavigationContextType = {
   /**
@@ -190,6 +191,8 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             // Check if vault is unlocked.
             const isUnlocked = await isVaultUnlocked();
             if (!isUnlocked) {
+              EncryptionUtility.clearRsaPrivateKeyCache();
+
               // Get current full URL including query params
               const currentRoute = lastRouteRef.current;
               if (currentRoute?.path) {
