@@ -83,7 +83,7 @@
   </data>
   <!-- Status message -->
   <data name="StatusMessage" xml:space="preserve">
-    <value>L'authentification à deux facteurs est actuellement activée. Désactivez-la pour pouvoir accéder à votre coffre uniquement avec votre mot de passe.</value>
+    <value>L'authentification à deux facteurs est actuellement activée. Désactivez-la pour pouvoir accéder à votre coffre-fort uniquement avec votre mot de passe.</value>
     <comment>Status message explaining current 2FA state</comment>
   </data>
   <!-- Button text -->
