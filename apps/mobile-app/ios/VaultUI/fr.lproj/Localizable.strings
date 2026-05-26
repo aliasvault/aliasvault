@@ -41,14 +41,14 @@
 "password_copied" = "Mot de passe copié";
 "email_copied" = "E-mail copié";
 "totp_code_copied" = "Code TOTP copié";
-"totp_code" = "Code TOTP";
+"totp_code" = "Code à usage unique";
 
 /* Search bar */
 "search_items" = "Rechercher des éléments...";
 
 /* Passkey registration */
 "create_passkey_title" = "Créer une nouvelle clé d'accès";
-"create_passkey_subtitle" = "Enregistrez une nouvelle clé d'accès pour ce site Web. Elle sera stockée de manière sécurisée dans votre coffre et automatiquement synchronisée entre vos appareils avec AliasVault.";
+"create_passkey_subtitle" = "Enregistrez une nouvelle clé d'accès pour ce site Web. Elle sera stockée de manière sécurisée dans votre coffre-fort et automatiquement synchronisée entre vos appareils avec AliasVault.";
 "create_passkey_button_confirm" = "Créer clé d'accès";
 
 /* Passkey provider */
@@ -64,7 +64,7 @@
 "select_passkey_to_replace" = "Ou, remplacer une clé d'accès existante";
 "replace_passkey" = "Remplacer la clé d'accès";
 "replace_passkey_explanation" = "Cela remplacera la clé d'accès existante par une nouvelle. Veuillez noter que votre ancienne clé d'accès sera écrasée et ne sera plus accessible. Si vous souhaitez créer une clé d'accès séparée, revenez à l'écran précédent.";
-"create_passkey_explanation" = "Cela crée une nouvelle clé d'accès et la stocke dans votre coffre. Elle sera automatiquement synchronisée sur tous vos appareils qui utilisent AliasVault.";
+"create_passkey_explanation" = "Cela crée une nouvelle clé d'accès et la stocke dans votre coffre-fort. Elle sera automatiquement synchronisée sur tous vos appareils qui utilisent AliasVault.";
 
 /* Passkey merge with existing item */
 "passkey_add_to_existing" = "Ou, ajouter la clé d'accès à un élément existant";
@@ -73,7 +73,7 @@
 
 /* PIN Unlock */
 "unlock_vault" = "Déverrouiller le coffre-fort";
-"enter_pin_to_unlock_vault" = "Entrez votre code PIN pour déverrouiller votre coffre";
+"enter_pin_to_unlock_vault" = "Entrez votre code PIN pour déverrouiller votre coffre-fort";
 "pin_locked_max_attempts" = "Le code PIN est verrouillé après trop de tentatives échouées";
 "pin_incorrect_attempts_remaining" = "Code PIN incorrect, %d tentatives restantes";
 
@@ -86,7 +86,7 @@
 
 /* PIN Setup */
 "pin_setup_title" = "Configurer le code PIN";
-"pin_setup_subtitle" = "Choisissez un code PIN pour déverrouiller votre coffre";
+"pin_setup_subtitle" = "Choisissez un code PIN pour déverrouiller votre coffre-fort";
 "pin_confirm_title" = "Confirmer le code PIN";
 "pin_confirm_subtitle" = "Entrez à nouveau votre code PIN pour confirmer";
 "pin_mismatch" = "Les codes PIN ne correspondent pas. Veuillez réessayer.";
