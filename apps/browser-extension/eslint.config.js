@@ -25,7 +25,7 @@ export default [
                 ecmaVersion: "latest",
                 sourceType: "module",
                 project: "./tsconfig.json",
-                tsconfigRootDir: ".",
+                tsconfigRootDir: import.meta.dirname,
             },
         },
         plugins: {
