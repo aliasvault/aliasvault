@@ -184,19 +184,19 @@
     "importWebNote": "Ahhoz, hogy más jelszókezelőkből tudjon importálni, be kell jelentkeznie a webes felületre. Az importálás sajnos jelenleg még csak a weben érhető el.",
     "exportSectionTitle": "Exportálás",
     "exportSectionDescription": "Exportálja széfét egy CSV fájlba. Biztonsági mentésként is használhatja, vagy importálhatja más jelszókezelőkbe is.",
-    "exportCsvButton": "Export vault to CSV file",
-    "exporting": "Exporting...",
-    "exportConfirmTitle": "Export Vault",
-    "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
+    "exportCsvButton": "Széf exportálása CSV fájlba",
+    "exporting": "Exportálás...",
+    "exportConfirmTitle": "Széf exportálása",
+    "exportWarning": "Figyelem: Ha egy kódolatlan szöveg formátumba exportálja széfjét, adatai könnyen védtelenné válhatnak. Csak kizárólag megbízható eszközökön végezze ezt el, és bizonyosodjon meg arról, hogy:\n\n• Biztonságos helyre menti az exportot\n• Törölje a fájlt, ha már nincs rá szükség\n• Sose ossza meg az exportált fájlt másokkal\n\nBiztosan folytatni akarja az exportálást?",
     "passwordConfirm": {
-      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+      "exportDescription": "Biztonsági okokból kérem adja meg a mester jelszót az exportálás engedélyezéséhez."
     },
     "security": "Biztonság",
     "appVersion": "App verzió {{version}} ({{url}})",
     "autoLockOptions": {
-      "never": "Never",
-      "5seconds": "5 seconds",
-      "15seconds": "15 seconds",
+      "never": "Soha",
+      "5seconds": "5 másodperc",
+      "15seconds": "15 másodperc",
       "30seconds": "30 másodperc",
       "1minute": "1 perc",
       "5minutes": "5 perc",
@@ -208,10 +208,10 @@
       "24hours": "24 óra"
     },
     "language": "Nyelv",
-    "languageSystemMessage": "To change the app language, configure the preferred language for AliasVault in your device settings.",
-    "openSettings": "Open Settings",
+    "languageSystemMessage": "Az app nyelvváltáshoz az eszköz beállításokban változtassa meg az AliasVault nyelvét.",
+    "openSettings": "Beállítások megnyitása",
     "vaultUnlockSettings": {
-      "description": "Choose how you want to unlock your vault.",
+      "description": "Válassza ki, hogy akarja feloldani széfjét.",
       "biometrics": "Biometria",
       "faceId": "Arc ID",
       "touchId": "Érintés ID",
@@ -219,16 +219,16 @@
       "biometricEnabled": "{{biometric}} sikeresen aktiválva",
       "biometricNotAvailable": "{{biometric}} nem elérhető",
       "biometricDisabledMessage": "{{biometric}} kikapcsolásra kerüt az AliasVault-ban. Ha használni akarja, kapcsolja be az eszközén a beállításokban.",
-      "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
-      "biometricUnavailableHelp": "{{biometric}} is not available. Tap to open settings and/or go to your device settings to enable and configure it.",
-      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
-      "pin": "PIN Code",
-      "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
-      "pinEnabled": "PIN unlock enabled successfully",
-      "pinDisabled": "PIN unlock has been disabled",
-      "passwordHelp": "Re-enter your full master password to unlock your vault. This is always enabled as fallback option.",
-      "keystoreIOS": "iOS Keychain",
-      "keystoreAndroid": "Android Keystore"
+      "biometricHelp": "A {{keystore}} által biztosított biometria használata a széf feloldáshoz.",
+      "biometricUnavailableHelp": "A {{biometric}} nem elérhető. Koppintson a beállításhoz, vagy kézileg menjen be a készülék mbeállítások közé.",
+      "featureRequiresPasscode": "Ehhez a funkcióhoz eszközén be kell kapcsolnia a képernyőzárat.",
+      "pin": "PIN kód",
+      "pinDescription": "Használjon egy egyéni pin kódot, hogy széfét gyorsabban fel tudja oldani.",
+      "pinEnabled": "PIN kódos feloldás sikeresen bekapcsolva",
+      "pinDisabled": "PIN kódos feloldás kikapcsolva",
+      "passwordHelp": "Írja be újra az egész mester jelszavát, hogy feloldja a széfjét. Ez mindig megmarad, mint tartalék belépési mód.",
+      "keystoreIOS": "iOS kulcskarika",
+      "keystoreAndroid": "Android kulcstár"
     },
     "autoLockSettings": {
       "description": "Choose how long the app can stay in the background before requiring re-authentication. You'll need to use Face ID or enter your password to unlock the vault again."
