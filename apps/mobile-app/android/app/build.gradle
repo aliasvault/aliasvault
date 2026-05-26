@@ -187,6 +187,9 @@ dependencies {
     // Add biometric dependency for credential management
     implementation("androidx.biometric:biometric:1.1.0")
 
+    // Add androidx.autofill for inline suggestion (keyboard) support
+    implementation("androidx.autofill:autofill:1.1.0")
+
     // Add Credential Manager dependencies for passkey support (Android 14+)
     implementation("androidx.credentials:credentials:1.6.0-beta02")
 
