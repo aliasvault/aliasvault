@@ -79,7 +79,7 @@
     <comment>Label for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationLanguageDescription">
-    <value>Set the default language that will be used when generating new identities.</value>
+    <value>Állítsa be a személyiség generáláshoz preferált alap nyelvet.</value>
     <comment>Description for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationGenderLabel">
@@ -87,7 +87,7 @@
     <comment>Label for alias generation gender setting</comment>
   </data>
   <data name="AliasGenerationGenderDescription">
-    <value>Set the default gender preference for generating new identities.</value>
+    <value>Állítsa be a személyiség generáláshoz preferált alap nemet.</value>
     <comment>Description for alias generation gender setting</comment>
   </data>
   <data name="RandomOption">
@@ -107,7 +107,7 @@
     <comment>Label for alias generation age range setting</comment>
   </data>
   <data name="AliasGenerationAgeRangeDescription">
-    <value>Set the default age range for generating new identities. This affects the birthdate assigned to the generated identity.</value>
+    <value>Állítsa be a személyiség generáláshoz használt alap kor intervallumot. Ez hatással lesz a születési időre.</value>
     <comment>Description for alias generation age range setting</comment>
   </data>
   <!-- Clipboard Settings Section -->
