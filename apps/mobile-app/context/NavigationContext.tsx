@@ -21,6 +21,19 @@ type NavigationContextType = {
    * Handles return URLs and default navigation to credentials tab.
    */
   navigateAfterUnlock: () => void;
+
+  /**
+   * Whether the root layout has finished its cold-boot interception. Routes
+   * that handle deep links (e.g. /open/[...path]) must wait for this to be
+   * true before acting, otherwise they race the boot detour to /initialize.
+   */
+  bootHandled: boolean;
+
+  /**
+   * Mark cold-boot interception as complete. Called by the root layout once
+   * the initial URL has been inspected and any redirect dispatched.
+   */
+  markBootHandled: () => void;
 }
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
@@ -33,6 +46,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const pathname = usePathname();
   const params = useGlobalSearchParams();
   const [returnUrl, setReturnUrl] = useState<{ path: string; params?: Record<string, string> } | null>(null);
+  const [bootHandled, setBootHandled] = useState(false);
   const appState = useRef(AppState.currentState);
   const lastRouteRef = useRef<{ path: string, params?: object }>({ path: pathname, params });
 
@@ -202,11 +216,17 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     };
   }, [isVaultUnlocked, pathname, router]);
 
+  const markBootHandled = useCallback((): void => {
+    setBootHandled(true);
+  }, []);
+
   const contextValue = useMemo(() => ({
     returnUrl,
     setReturnUrl,
     navigateAfterUnlock,
-  }), [returnUrl, navigateAfterUnlock]);
+    bootHandled,
+    markBootHandled,
+  }), [returnUrl, navigateAfterUnlock, bootHandled, markBootHandled]);
 
   return (
     <NavigationContext.Provider value={contextValue}>
