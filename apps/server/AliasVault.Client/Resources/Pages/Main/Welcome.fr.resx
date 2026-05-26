@@ -42,7 +42,7 @@
   </data>
   <!-- Welcome step content -->
   <data name="WelcomeMessage">
-    <value>Votre coffre a été créé avec succès ! Protégez votre vie privée en ligne en créant des alias uniques pour chaque service auquel vous vous inscrivez. Apprenons comment AliasVault fonctionne, puis créons vos premiers alias sécurisés.</value>
+    <value>Votre coffre-fort a été créé avec succès ! Protégez votre vie privée en ligne en créant des alias uniques pour chaque service auquel vous vous inscrivez. Apprenez comment AliasVault fonctionne, puis créez vos premiers alias sécurisés.</value>
     <comment>Welcome message on the first tutorial step</comment>
   </data>
   <!-- How it works step content -->
@@ -72,7 +72,7 @@
     <comment>Title for master password tip</comment>
   </data>
   <data name="MasterPasswordTipContent">
-    <value>Votre mot de passe principal est requis pour déchiffrer votre coffre. Ne le partagez jamais avec quelqu'un et stockez-le dans un endroit sécurisé. Attention : Si vous perdez votre mot de passe principal, vos données ne peuvent pas être récupérées - même pas par notre équipe.</value>
+    <value>Votre mot de passe principal est requis pour déchiffrer votre coffre-fort. Ne le partagez jamais avec quelqu'un et stockez-le dans un endroit sécurisé. Attention : Si vous perdez votre mot de passe principal, vos données ne peuvent pas être récupérées - même pas par notre équipe.</value>
     <comment>Content for master password tip</comment>
   </data>
   <data name="TwoFactorTipTitle">
@@ -80,7 +80,7 @@
     <comment>Title for two-factor authentication tip</comment>
   </data>
   <data name="TwoFactorTipContent">
-    <value>L'authentification à deux facteurs ajoute une couche supplémentaire de sécurité à votre compte. Il vous faut entrer un code depuis votre application d'authentification ou fournir un code de récupération avant que votre coffre chiffré ne soit accessible.</value>
+    <value>L'authentification à deux facteurs ajoute une couche supplémentaire de sécurité à votre compte. Il vous faut entrer un code depuis votre application d'authentification ou fournir un code de récupération avant que votre coffre-fort chiffré ne soit accessible.</value>
     <comment>Content for two-factor authentication tip</comment>
   </data>
   <data name="ExtensionsAppsTipTitle">
