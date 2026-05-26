@@ -74,7 +74,7 @@ If you run into any issues, feel free to join our [Discord](https://discord.gg/D
 
 ### 4.3 Supported versions
 
-At this time during the public beta, we only support the **latest major and minor** release. Currentlt we are on **0.x**, so in practice that means the **latest minor** only. We do not accept pull requests and/or backports that target older release lines.
+At this time during the public beta, we only support the **latest major and minor** release. Currently we are on **0.x**, so in practice that means the **latest minor** only. We do not accept pull requests and/or backports that target older release lines.
 
 ## 5. License and Contributions
 
