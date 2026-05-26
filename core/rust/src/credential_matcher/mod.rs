@@ -20,6 +20,11 @@ pub use domain::{extract_domain, extract_domain_with_port, extract_root_domain, 
 use domain::{domains_match, is_app_package_name};
 use stop_words::STOP_WORDS;
 
+/// Default per-priority cap on returned matches when the caller does not
+/// supply `max_results`. Chosen as a balance between dropdown usability
+/// (scrollable but not overwhelming) and inline-strip needs.
+pub const DEFAULT_MAX_RESULTS: usize = 10;
+
 /// Matching mode for credential filtering.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
@@ -60,12 +65,17 @@ pub struct CredentialMatcherInput {
     /// All domain matches will be treated equally regardless of port.
     #[serde(default)]
     pub ignore_port: bool,
+    /// Per-priority cap on returned matches. Defaults to [`DEFAULT_MAX_RESULTS`]
+    /// (10) when omitted by the caller.
+    #[serde(default)]
+    pub max_results: Option<usize>,
 }
 
 /// Output from credential filtering.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CredentialMatcherOutput {
-    /// IDs of matched credentials (max 3), in priority order
+    /// IDs of matched credentials, in priority order. Capped at
+    /// `input.max_results` (defaults to [`DEFAULT_MAX_RESULTS`]).
     pub matched_ids: Vec<String>,
     /// Which priority level matched (1-4, or 0 if no match)
     pub matched_priority: u8,
@@ -84,7 +94,8 @@ struct CredentialWithPriority {
 /// * `input` - CredentialMatcherInput containing credentials and search context
 ///
 /// # Returns
-/// CredentialMatcherOutput with filtered credentials (max 3)
+/// CredentialMatcherOutput with filtered credentials (capped per
+/// `input.max_results`, defaulting to [`DEFAULT_MAX_RESULTS`])
 pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOutput {
     let CredentialMatcherInput {
         credentials,
@@ -92,7 +103,9 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
         page_title,
         matching_mode,
         ignore_port,
+        max_results,
     } = input;
+    let max_results = max_results.unwrap_or(DEFAULT_MAX_RESULTS);
 
     // Early return for empty URL
     if current_url.is_empty() {
@@ -116,7 +129,7 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
                     .any(|url| !url.is_empty() && url == &current_url)
             })
             .map(|cred| cred.id.clone())
-            .take(3)
+            .take(max_results)
             .collect();
 
         // EARLY RETURN if matches found
@@ -229,7 +242,7 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
                     .filter(|c| c.priority == best_priority)
                     .collect();
 
-                // Sort by priority, deduplicate by ID, take first 3
+                // Sort by priority, deduplicate by ID, cap at max_results
                 let mut sorted = filtered_by_priority;
                 sorted.sort_by_key(|c| c.priority);
                 let mut seen_ids: HashSet<String> = HashSet::new();
@@ -237,7 +250,7 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
                     .into_iter()
                     .filter(|c| seen_ids.insert(c.credential.id.clone()))
                     .map(|c| c.credential.id)
-                    .take(3)
+                    .take(max_results)
                     .collect();
 
                 return CredentialMatcherOutput {
@@ -282,7 +295,7 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
                         }
                     })
                     .map(|cred| cred.id.clone())
-                    .take(3)
+                    .take(max_results)
                     .collect();
 
                 if !domain_word_match_ids.is_empty() {
@@ -334,7 +347,7 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
                     }
                 })
                 .map(|cred| cred.id.clone())
-                .take(3)
+                .take(max_results)
                 .collect();
 
             // Return matches from Priority 3 if any found
@@ -370,7 +383,7 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
                 }
             })
             .map(|cred| cred.id.clone())
-            .take(3)
+            .take(max_results)
             .collect();
 
         if !text_match_ids.is_empty() {
