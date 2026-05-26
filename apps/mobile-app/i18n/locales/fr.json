@@ -370,7 +370,7 @@
     }
   },
   "fieldLabels": {
-    "login.username": "Username",
+    "login.username": "Nom d'utilisateur",
     "login.password": "Mot de passe",
     "login.email": "Email",
     "login.url": "URL",
@@ -508,7 +508,7 @@
       "copyUsername": "Copier le nom d'utilisateur",
       "copyEmail": "Copier l'e-mail",
       "copyPassword": "Copier le mot de passe",
-      "copyTotpCode": "Copier le code TOTP"
+      "copyTotpCode": "Copier le code à usage unique"
     },
     "urlContextMenu": {
       "title": "Options de l'URL",
@@ -548,7 +548,7 @@
       "daysRemaining": "{{count}} jour restant",
       "daysRemaining_plural": "{{count}} jours restants",
       "expiringSoon": "Expirant bientôt",
-      "confirmDeleteTitle": "Supprimer définitivement?",
+      "confirmDeleteTitle": "Supprimer définitivement ?",
       "confirmDeleteMessage": "Cet élément sera définitivement supprimé et ne pourra pas être récupéré.",
       "confirmEmptyAllTitle": "Vider récemment supprimé ?",
       "confirmEmptyAllMessage": "Les {{count}} éléments seront définitivement supprimés et ne pourront pas être récupérés.",
@@ -577,7 +577,7 @@
       "justNow": "à l'instant",
       "minutesAgo_single": "Il y a {{count}} minute",
       "minutesAgo_plural": "Il y a {{count}} minutes",
-      "hoursAgo_single": "Il y a {{count}} heure",
+      "hoursAgo_single": "Il y a {{count}} heures",
       "hoursAgo_plural": "Il y a {{count}} heures",
       "yesterday": "hier"
     }
