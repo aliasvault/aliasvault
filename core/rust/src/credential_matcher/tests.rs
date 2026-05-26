@@ -69,6 +69,7 @@ fn filter(credentials: Vec<Credential>, current_url: &str, page_title: &str) -> 
         page_title: page_title.to_string(),
         matching_mode: AutofillMatchingMode::Default,
         ignore_port: false,
+        max_results: None,
     };
     let output = filter_credentials(input);
 
@@ -376,6 +377,7 @@ fn test_json_roundtrip() {
         page_title: String::new(),
         matching_mode: AutofillMatchingMode::Default,
         ignore_port: false,
+        max_results: None,
     };
 
     let json = serde_json::to_string(&input).unwrap();
@@ -397,21 +399,37 @@ fn test_empty_url() {
     assert_eq!(matches.len(), 0);
 }
 
-/// Test max 3 results returned
+/// Test that the default cap (DEFAULT_MAX_RESULTS = 10) bounds the output.
+/// Twelve candidates → exactly 10 returned.
 #[test]
-fn test_max_three_results() {
-    let credentials = vec![
-        create_test_credential("Site 1", "example.com", ""),
-        create_test_credential("Site 2", "sub1.example.com", ""),
-        create_test_credential("Site 3", "sub2.example.com", ""),
-        create_test_credential("Site 4", "sub3.example.com", ""),
-        create_test_credential("Site 5", "sub4.example.com", ""),
-    ];
+fn test_default_max_results_caps_at_ten() {
+    let credentials: Vec<Credential> = (1..=12)
+        .map(|i| create_test_credential(&format!("Site {i}"), &format!("sub{i}.example.com"), ""))
+        .collect();
 
     let matches = filter(credentials, "https://example.com", "");
 
-    // Should return max 3 results
-    assert!(matches.len() <= 3);
+    assert_eq!(matches.len(), 10, "Default cap should be DEFAULT_MAX_RESULTS (10)");
+}
+
+/// Test that an explicit `max_results` override is honoured.
+#[test]
+fn test_max_results_override() {
+    let credentials: Vec<Credential> = (1..=8)
+        .map(|i| create_test_credential(&format!("Site {i}"), &format!("sub{i}.example.com"), ""))
+        .collect();
+
+    let input = CredentialMatcherInput {
+        credentials,
+        current_url: "https://example.com".to_string(),
+        page_title: String::new(),
+        matching_mode: AutofillMatchingMode::Default,
+        ignore_port: false,
+        max_results: Some(2),
+    };
+    let output = filter_credentials(input);
+
+    assert_eq!(output.matched_ids.len(), 2, "Explicit max_results=2 should cap output");
 }
 
 /// [#23] - E2E test scenario: credentials with URLs should only match their specific domains
@@ -506,6 +524,7 @@ fn test_multi_url_exact_match_priority() {
         page_title: String::new(),
         matching_mode: AutofillMatchingMode::Default,
         ignore_port: false,
+        max_results: None,
     };
     let output = filter_credentials(input);
 
@@ -771,6 +790,7 @@ fn filter_ignore_port(credentials: Vec<Credential>, current_url: &str, page_titl
         page_title: page_title.to_string(),
         matching_mode: AutofillMatchingMode::Default,
         ignore_port: true,
+        max_results: None,
     };
     let output = filter_credentials(input);
 
@@ -862,10 +882,9 @@ fn test_ignore_port_ip_with_multiple_ports_and_no_port() {
     // Visiting 192.168.1.10 (no port) should match ALL 4 credentials
     // because we ignore port differences entirely
     let android_matches = filter_ignore_port(credentials.clone(), "https://192.168.1.10", "");
-    assert_eq!(android_matches.len(), 3, "With ignore_port, should match all 4 credentials (max 3 returned)");
+    assert_eq!(android_matches.len(), 4, "With ignore_port, should match all 4 credentials");
 
-    // Note: max 3 results are returned, but all 4 would match if limit was higher
-    // Let's verify with a smaller set that all match
+    // Sanity-check with a smaller set that all match
     let small_credentials = vec![
         create_test_credential("Service on 5000", "https://192.168.1.10:5000", "admin@5000"),
         create_test_credential("Service no port", "https://192.168.1.10", "admin@noport"),
@@ -910,9 +929,9 @@ fn test_localhost_matching_with_ports() {
     assert_eq!(matches_no_port.len(), 1, "Should only return localhost without port match");
     assert_eq!(matches_no_port[0].item_name.as_deref(), Some("Local No Port"));
 
-    // Visiting localhost with a port not in credentials should show domain matches (up to 3)
+    // Visiting localhost with a port not in credentials should show all domain matches
     let matches_unknown_port = filter(credentials.clone(), "http://localhost:5000", "");
-    assert_eq!(matches_unknown_port.len(), 3, "Should return domain matches when no exact port match");
+    assert_eq!(matches_unknown_port.len(), 4, "Should return all domain matches when no exact port match");
 }
 
 /// [#42] - Localhost matching - exact URL stored
