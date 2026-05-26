@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
+import ItemFilterDropdown from '@/entrypoints/popup/components/Items/ItemFilterDropdown';
 import ItemIcon from '@/entrypoints/popup/components/Items/ItemIcon';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
-import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
 import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
 import type { Item } from '@/utils/dist/core/models/vault';
+import type { ItemFilterType } from '@/utils/itemFilters';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
@@ -33,6 +35,7 @@ const getDaysRemaining = (deletedAt: string, retentionDays: number = TRASH_RETEN
  */
 const RecentlyDeleted: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const dbContext = useDb();
   const { executeVaultMutationAsync } = useVaultMutate();
   const { setHeaderButtons } = useHeaderButtons();
@@ -147,10 +150,16 @@ const RecentlyDeleted: React.FC = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <PageTitle className="flex items-baseline gap-1.5">
-          {t('recentlyDeleted.title')}
-          <span className="text-sm text-gray-500 dark:text-gray-400">({items.length})</span>
-        </PageTitle>
+        <ItemFilterDropdown
+          title={t('recentlyDeleted.title')}
+          count={items.length}
+          activeFilter="deleted"
+          recentlyDeletedCount={items.length}
+          onSelectFilter={(filter: ItemFilterType) => {
+            navigate(`/items?filter=${encodeURIComponent(filter)}`);
+          }}
+          onSelectRecentlyDeleted={() => {/* already on this page */}}
+        />
         {items.length > 0 && (
           <button
             onClick={() => setShowConfirmEmptyAll(true)}

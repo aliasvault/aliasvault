@@ -9,6 +9,7 @@ import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import FolderPill from '@/entrypoints/popup/components/Items/FolderPill';
 import ItemCard from '@/entrypoints/popup/components/Items/ItemCard';
+import ItemFilterDropdown from '@/entrypoints/popup/components/Items/ItemFilterDropdown';
 import { ITEM_TYPE_OPTIONS } from '@/entrypoints/popup/components/Items/ItemTypeSelector';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import ReloadButton from '@/entrypoints/popup/components/ReloadButton';
@@ -114,7 +115,6 @@ const ItemsList: React.FC = () => {
     const urlFilter = searchParams.get('filter');
     return urlFilter ? parseItemFilterType(urlFilter) : getStoredFilter();
   });
-  const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [showDeleteFolderModal, setShowDeleteFolderModal] = useState(false);
   const [showEditFolderModal, setShowEditFolderModal] = useState(false);
@@ -744,29 +744,24 @@ const ItemsList: React.FC = () => {
       <FolderBreadcrumb folderId={currentFolderId} />
 
       <div className="flex justify-between items-center gap-2 mb-4">
-        <div className="relative min-w-0 flex-1 flex items-center gap-2">
-          <button
-            onClick={() => setShowFilterMenu(!showFilterMenu)}
-            className="flex items-center gap-1 text-gray-900 dark:text-white text-xl hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none min-w-0"
-          >
-            <h2 className="flex items-baseline gap-1.5 min-w-0 overflow-hidden">
-              <span className="truncate">{getFilterTitle()}</span>
-              <span className="text-sm text-gray-500 dark:text-gray-400 shrink-0">
-                ({filteredItems.length})
-              </span>
-            </h2>
-            <svg
-              className="w-4 h-4 mt-1 shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
+        <div className="min-w-0 flex-1 flex items-center gap-2">
+          <ItemFilterDropdown
+            title={getFilterTitle()}
+            count={filteredItems.length}
+            activeFilter={filterType}
+            recentlyDeletedCount={recentlyDeletedCount}
+            showFoldersToggle={!currentFolderId}
+            showFolders={showFolders}
+            onToggleShowFolders={(next) => {
+              setShowFolders(next);
+              LocalPreferencesService.setShowFolders(next);
+            }}
+            onSelectFilter={(newFilter) => {
+              setItemFilterType(newFilter);
+              storeFilter(newFilter);
+            }}
+            onSelectRecentlyDeleted={() => navigate('/items/deleted')}
+          />
           {/* Edit and Delete buttons when inside a folder */}
           {currentFolderId && (
             <div className="flex items-center gap-1 shrink-0">
@@ -790,142 +785,6 @@ const ItemsList: React.FC = () => {
                 </svg>
               </button>
             </div>
-          )}
-          {showFilterMenu && (
-            <>
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => {
-                  setShowFilterMenu(false);
-                }}
-              />
-              <div className="absolute left-0 top-full mt-1 w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl ring-1 ring-black/5 dark:ring-white/10 z-20">
-                <div className="py-1">
-                  {/* All items filter with show folders toggle (only show toggle on root view) */}
-                  <div className="relative">
-                    <button
-                      onClick={() => {
-                        const newFilter = 'all';
-                        setItemFilterType(newFilter);
-                        storeFilter(newFilter);
-                        setShowFilterMenu(false);
-                      }}
-                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                        filterType === 'all' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
-                      }`}
-                    >
-                      {t('items.title')}
-                    </button>
-                    {!currentFolderId && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const newValue = !showFolders;
-                          setShowFolders(newValue);
-                          LocalPreferencesService.setShowFolders(newValue);
-                          setShowFilterMenu(false);
-                        }}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
-                      >
-                        <span>{t('items.filters.folders')}</span>
-                        <svg
-                          className={`w-5 h-5 ${showFolders ? 'text-orange-500 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500'}`}
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <rect x="3" y="3" width="18" height="18" rx="2" />
-                          {showFolders && (
-                            <polyline points="7 12 10 15 17 8" />
-                          )}
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                  <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
-                  {/* Item type filters - dynamically generated from ItemTypes */}
-                  {ITEM_TYPE_OPTIONS.map((option) => (
-                    <button
-                      key={option.type}
-                      onClick={() => {
-                        const newFilter = option.type;
-                        setItemFilterType(newFilter);
-                        storeFilter(newFilter);
-                        setShowFilterMenu(false);
-                      }}
-                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 ${
-                        filterType === option.type ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
-                      }`}
-                    >
-                      <span className={filterType === option.type ? 'text-orange-500 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500'}>
-                        {option.iconSvg}
-                      </span>
-                      {t(option.titleKey)}
-                    </button>
-                  ))}
-                  <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
-                  {/* Passkeys filter */}
-                  <button
-                    onClick={() => {
-                      const newFilter = 'passkeys';
-                      setItemFilterType(newFilter);
-                      storeFilter(newFilter);
-                      setShowFilterMenu(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                      filterType === 'passkeys' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    {t('items.filters.passkeys')}
-                  </button>
-                  {/* Attachments filter */}
-                  <button
-                    onClick={() => {
-                      const newFilter = 'attachments';
-                      setItemFilterType(newFilter);
-                      storeFilter(newFilter);
-                      setShowFilterMenu(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                      filterType === 'attachments' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    {t('common.attachments')}
-                  </button>
-                  {/* TOTP filter */}
-                  <button
-                    onClick={() => {
-                      const newFilter = 'totp';
-                      setItemFilterType(newFilter);
-                      storeFilter(newFilter);
-                      setShowFilterMenu(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                      filterType === 'totp' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    {t('items.filters.totp')}
-                  </button>
-                  <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
-                  {/* Recently deleted link */}
-                  <button
-                    onClick={() => {
-                      setShowFilterMenu(false);
-                      navigate('/items/deleted');
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center justify-between"
-                  >
-                    <span>{t('recentlyDeleted.title')}</span>
-                    {recentlyDeletedCount > 0 && (
-                      <span className="text-gray-400 dark:text-gray-500">
-                        {recentlyDeletedCount}
-                      </span>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </>
           )}
         </div>
         <div className="flex items-center gap-1">
