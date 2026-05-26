@@ -101,5 +101,11 @@
   "overrides": {
     "react-dom": "19.2.3"
   },
+  "expo": {
+    "autolinking": {
+      "exclude": ["@react-native-masked-view/masked-view"],
+      "buildFromSource": [".*"]
+    }
+  },
   "private": true
 }
