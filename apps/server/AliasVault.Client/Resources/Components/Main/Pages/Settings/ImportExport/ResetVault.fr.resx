@@ -127,7 +127,7 @@
     <comment>Reset vault password incorrect error</comment>
   </data>
   <data name="ResetVaultProgressMessage" xml:space="preserve">
-    <value>Réinitialisation du coffre-fort ...</value>
+    <value>Réinitialisation du coffre-fort...</value>
     <comment>Reset vault progress message</comment>
   </data>
   <data name="ResetVaultSuccessMessage" xml:space="preserve">
