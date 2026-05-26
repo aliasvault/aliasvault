@@ -26,6 +26,7 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { FolderModal } from '@/components/folders/FolderModal';
 import { FolderPill, type FolderWithCount } from '@/components/folders/FolderPill';
 import { ItemCard } from '@/components/items/ItemCard';
+import { ItemFilterMenu } from '@/components/items/ItemFilterMenu';
 import { SortMenu } from '@/components/items/SortMenu';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -586,88 +587,6 @@ export default function ItemsScreen(): React.ReactNode {
       fontSize: 20,
       lineHeight: 28,
     },
-    // Filter menu styles
-    filterMenuOverlay: {
-      backgroundColor: colors.accentBackground,
-      borderColor: colors.accentBorder,
-      borderRadius: 8,
-      borderWidth: 1,
-      elevation: 8,
-      left: 14,
-      overflow: 'hidden',
-      position: 'absolute',
-      right: 14,
-      shadowColor: colors.black,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.25,
-      shadowRadius: 4,
-      top: Platform.OS === 'ios' ? insets.top + 112 : 8,
-      zIndex: 1001,
-    },
-    filterMenuBackdrop: {
-      bottom: 0,
-      left: 0,
-      position: 'absolute',
-      right: 0,
-      top: 0,
-      zIndex: 1000,
-    },
-    filterMenuItem: {
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-    },
-    filterMenuItemWithIcon: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: 8,
-    },
-    filterMenuItemIcon: {
-      width: 18,
-    },
-    filterMenuItemActive: {
-      backgroundColor: colors.primary + '20',
-    },
-    filterMenuItemText: {
-      color: colors.text,
-      fontSize: 14,
-    },
-    filterMenuItemTextActive: {
-      color: colors.primary,
-      fontWeight: '600',
-    },
-    filterMenuSeparator: {
-      backgroundColor: colors.accentBorder,
-      height: 1,
-      marginVertical: 4,
-    },
-    filterMenuItemWithBadge: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      width: '100%',
-    },
-    filterMenuItemWithToggle: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    filterMenuItemLabel: {
-      flex: 1,
-    },
-    filterMenuItemToggle: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: 6,
-      padding: 4,
-    },
-    filterMenuToggleHint: {
-      color: colors.textMuted,
-      fontSize: 12,
-    },
-    filterMenuItemBadge: {
-      color: colors.textMuted,
-      fontSize: 14,
-    },
     // Folder pills styles
     folderPillsContainer: {
       flexDirection: 'row',
@@ -803,183 +722,6 @@ export default function ItemsScreen(): React.ReactNode {
       fontSize: 24,
     },
   });
-
-  /**
-   * Render the filter menu as an absolute overlay.
-   */
-  const renderFilterOverlay = (): React.ReactNode => {
-    if (!showFilterMenu) {
-      return null;
-    }
-
-    return (
-      <>
-        {/* Backdrop to close menu when tapping outside */}
-        <TouchableOpacity
-          style={styles.filterMenuBackdrop}
-          activeOpacity={1}
-          onPress={() => setShowFilterMenu(false)}
-        />
-        {/* Menu content */}
-        <ThemedView style={styles.filterMenuOverlay}>
-          {/* Items filter with include folders toggle */}
-          <View
-            style={[
-              styles.filterMenuItem,
-              styles.filterMenuItemWithToggle,
-              filterType === 'all' && styles.filterMenuItemActive
-            ]}
-          >
-            <TouchableOpacity
-              style={styles.filterMenuItemLabel}
-              onPress={() => {
-                setFilterType('all');
-                setShowFilterMenu(false);
-              }}
-            >
-              <ThemedText style={[
-                styles.filterMenuItemText,
-                filterType === 'all' && styles.filterMenuItemTextActive
-              ]}>
-                {t('items.filters.all')}
-              </ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.filterMenuItemToggle}
-              onPress={() => {
-                const newValue = !showFolderItems;
-                setShowFolderItems(newValue);
-                LocalPreferencesService.setShowFolders(newValue);
-                setShowFilterMenu(false);
-              }}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <ThemedText style={styles.filterMenuToggleHint}>
-                {t('items.filters.showFolders')}
-              </ThemedText>
-              <MaterialIcons
-                name={showFolderItems ? 'check-box' : 'check-box-outline-blank'}
-                size={20}
-                color={showFolderItems ? colors.primary : colors.textMuted}
-              />
-            </TouchableOpacity>
-          </View>
-
-          <ThemedView style={styles.filterMenuSeparator} />
-
-          {/* Item type filters */}
-          {ITEM_TYPE_OPTIONS.map((option) => (
-            <TouchableOpacity
-              key={option.type}
-              style={[
-                styles.filterMenuItem,
-                styles.filterMenuItemWithIcon,
-                filterType === option.type && styles.filterMenuItemActive
-              ]}
-              onPress={() => {
-                setFilterType(option.type);
-                setShowFilterMenu(false);
-              }}
-            >
-              <MaterialIcons
-                name={option.iconName}
-                size={18}
-                color={filterType === option.type ? colors.primary : colors.textMuted}
-                style={styles.filterMenuItemIcon}
-              />
-              <ThemedText style={[
-                styles.filterMenuItemText,
-                filterType === option.type && styles.filterMenuItemTextActive
-              ]}>
-                {t(option.titleKey)}
-              </ThemedText>
-            </TouchableOpacity>
-          ))}
-
-          <ThemedView style={styles.filterMenuSeparator} />
-
-          {/* Passkeys filter */}
-          <TouchableOpacity
-            style={[
-              styles.filterMenuItem,
-              filterType === 'passkeys' && styles.filterMenuItemActive
-            ]}
-            onPress={() => {
-              setFilterType('passkeys');
-              setShowFilterMenu(false);
-            }}
-          >
-            <ThemedText style={[
-              styles.filterMenuItemText,
-              filterType === 'passkeys' && styles.filterMenuItemTextActive
-            ]}>
-              {t('items.filters.passkeys')}
-            </ThemedText>
-          </TouchableOpacity>
-
-          {/* Attachments filter */}
-          <TouchableOpacity
-            style={[
-              styles.filterMenuItem,
-              filterType === 'attachments' && styles.filterMenuItemActive
-            ]}
-            onPress={() => {
-              setFilterType('attachments');
-              setShowFilterMenu(false);
-            }}
-          >
-            <ThemedText style={[
-              styles.filterMenuItemText,
-              filterType === 'attachments' && styles.filterMenuItemTextActive
-            ]}>
-              {t('common.attachments')}
-            </ThemedText>
-          </TouchableOpacity>
-
-          {/* TOTP filter */}
-          <TouchableOpacity
-            style={[
-              styles.filterMenuItem,
-              filterType === 'totp' && styles.filterMenuItemActive
-            ]}
-            onPress={() => {
-              setFilterType('totp');
-              setShowFilterMenu(false);
-            }}
-          >
-            <ThemedText style={[
-              styles.filterMenuItemText,
-              filterType === 'totp' && styles.filterMenuItemTextActive
-            ]}>
-              {t('items.filters.totp')}
-            </ThemedText>
-          </TouchableOpacity>
-
-          <ThemedView style={styles.filterMenuSeparator} />
-
-          {/* Recently deleted */}
-          <TouchableOpacity
-            style={styles.filterMenuItem}
-            onPress={() => {
-              setShowFilterMenu(false);
-              router.push('/(tabs)/items/deleted');
-            }}
-          >
-            <View style={styles.filterMenuItemWithBadge}>
-              <ThemedText style={styles.filterMenuItemText}>
-                {t('items.recentlyDeleted.title')}
-              </ThemedText>
-              {recentlyDeletedCount > 0 && (
-                <ThemedText style={styles.filterMenuItemBadge}>
-                  {recentlyDeletedCount}
-                </ThemedText>
-              )}
-            </View>
-          </TouchableOpacity>
-        </ThemedView>
-      </>
-    );
-  };
 
   /**
    * Render the list header with filter button, folders, and search.
@@ -1229,7 +971,20 @@ export default function ItemsScreen(): React.ReactNode {
       </ThemedView>
 
       {/* Filter menu overlay */}
-      {renderFilterOverlay()}
+      <ItemFilterMenu
+        visible={showFilterMenu}
+        activeFilter={filterType}
+        recentlyDeletedCount={recentlyDeletedCount}
+        showFoldersToggle
+        showFolders={showFolderItems}
+        onClose={() => setShowFilterMenu(false)}
+        onSelectFilter={(filter) => setFilterType(filter)}
+        onSelectRecentlyDeleted={() => router.push('/(tabs)/items/deleted')}
+        onToggleShowFolders={(next) => {
+          setShowFolderItems(next);
+          LocalPreferencesService.setShowFolders(next);
+        }}
+      />
 
       {/* Sort menu overlay */}
       <SortMenu
