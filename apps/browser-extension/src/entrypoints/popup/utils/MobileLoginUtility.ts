@@ -14,7 +14,7 @@ export class MobileLoginUtility {
   private webApi: WebApiService;
   private pollingInterval: NodeJS.Timeout | null = null;
   private requestId: string | null = null;
-  private privateKey: string | null = null;
+  private privateKey: CryptoKey | null = null;
   private publicKeyHash: string | null = null;
 
   /**
@@ -46,12 +46,11 @@ export class MobileLoginUtility {
    */
   public async initiate(): Promise<{ requestId: string; publicKeyHash: string }> {
     try {
-      // Generate RSA key pair
-      const keyPair = await EncryptionUtility.generateRsaKeyPair();
-      this.privateKey = keyPair.privateKey;
+      const { publicKeyJwk, privateKey } = await EncryptionUtility.generateRsaKeyPairNonExtractable();
+      this.privateKey = privateKey;
 
       // Compute hash of public key for QR code binding
-      this.publicKeyHash = await this.computePublicKeyHash(keyPair.publicKey);
+      this.publicKeyHash = await this.computePublicKeyHash(publicKeyJwk);
 
       // Send public key to server (no auth required)
       const response = await this.webApi.rawFetch('auth/mobile-login/initiate', {
@@ -60,7 +59,7 @@ export class MobileLoginUtility {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          clientPublicKey: keyPair.publicKey,
+          clientPublicKey: publicKeyJwk,
         }),
       });
 
@@ -116,7 +115,6 @@ export class MobileLoginUtility {
           if (response.status === 404) {
             // Request expired or not found
             this.stopPolling();
-            this.privateKey = null;
             this.requestId = null;
             onError(MobileLoginErrorCode.TIMEOUT);
             return;
@@ -127,23 +125,22 @@ export class MobileLoginUtility {
         const data = await response.json() as MobileLoginPollResponse;
 
         if (data.fulfilled && data.encryptedSymmetricKey) {
-          // Stop polling
+          // Capture key locally; stopPolling() nulls the field.
+          const privateKey = this.privateKey!;
           this.stopPolling();
 
           // Decrypt the encrypted decryption key with RSA private key
-          const decryptionKeyBytes = await EncryptionUtility.decryptWithPrivateKey(data.encryptedDecryptionKey!, this.privateKey!);
+          const decryptionKeyBytes = await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedDecryptionKey!, privateKey);
           const decryptionKey = Buffer.from(decryptionKeyBytes).toString('base64');
 
           // Decrypt the other encrypted fields with the symmetric key
-          const symmetricKeyBytes = await EncryptionUtility.decryptWithPrivateKey(data.encryptedSymmetricKey, this.privateKey!);
+          const symmetricKeyBytes = await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedSymmetricKey, privateKey);
           const symmetricKey = Buffer.from(symmetricKeyBytes).toString('base64');
 
           const token = await EncryptionUtility.symmetricDecrypt(data.encryptedToken!, symmetricKey);
           const refreshToken = await EncryptionUtility.symmetricDecrypt(data.encryptedRefreshToken!, symmetricKey);
           const username = await EncryptionUtility.symmetricDecrypt(data.encryptedUsername!, symmetricKey);
 
-          // Clear sensitive data
-          this.privateKey = null;
           this.requestId = null;
 
           // Call /login endpoint with username to get salt and encryption settings
@@ -181,7 +178,6 @@ export class MobileLoginUtility {
         }
       } catch {
         this.stopPolling();
-        this.privateKey = null;
         this.requestId = null;
         onError(MobileLoginErrorCode.GENERIC);
       }
@@ -194,7 +190,6 @@ export class MobileLoginUtility {
     setTimeout(() => {
       if (this.pollingInterval) {
         this.stopPolling();
-        this.privateKey = null;
         this.requestId = null;
         onError(MobileLoginErrorCode.TIMEOUT);
       }
@@ -202,13 +197,14 @@ export class MobileLoginUtility {
   }
 
   /**
-   * Stops polling the server
+   * Stops polling the server and drops the private key reference.
    */
   public stopPolling(): void {
     if (this.pollingInterval) {
       clearInterval(this.pollingInterval);
       this.pollingInterval = null;
     }
+    this.privateKey = null;
   }
 
   /**
@@ -216,7 +212,6 @@ export class MobileLoginUtility {
    */
   public cleanup(): void {
     this.stopPolling();
-    this.privateKey = null;
     this.requestId = null;
     this.publicKeyHash = null;
   }

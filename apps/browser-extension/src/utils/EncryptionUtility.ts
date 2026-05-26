@@ -154,11 +154,6 @@ export class EncryptionUtility {
    * Generates a new RSA key pair for asymmetric encryption
    */
   public static async generateRsaKeyPair(): Promise<{ publicKey: string, privateKey: string }> {
-    /**
-     * TODO: this method is currently unused. When we enable the browser extension to actually generate keys,
-     * check if the key pair is generated in the correct format where private key is in expected JWK format
-     * that the WASM app already outputs.
-     */
     const keyPair = await crypto.subtle.generateKey(
       {
         name: "RSA-OAEP",
@@ -176,6 +171,30 @@ export class EncryptionUtility {
     return {
       publicKey: JSON.stringify(publicKey),
       privateKey: JSON.stringify(privateKey)
+    };
+  }
+
+  /**
+   * Generates a new RSA key pair with a non-extractable private key
+   * Private key stays inside WebCrypto and public key is returned as JWK string for transport
+   */
+  public static async generateRsaKeyPairNonExtractable(): Promise<{ publicKeyJwk: string, privateKey: CryptoKey }> {
+    const keyPair = await crypto.subtle.generateKey(
+      {
+        name: "RSA-OAEP",
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([1, 0, 1]),
+        hash: "SHA-256",
+      },
+      false,
+      ["encrypt", "decrypt"]
+    );
+
+    const publicKey = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+
+    return {
+      publicKeyJwk: JSON.stringify(publicKey),
+      privateKey: keyPair.privateKey,
     };
   }
 
@@ -207,7 +226,7 @@ export class EncryptionUtility {
   }
 
   /**
-   * Decrypts data using RSA-OAEP asymmetric encryption with a private key
+   * Decrypts data using RSA-OAEP asymmetric encryption with a JWK private key
    */
   public static async decryptWithPrivateKey(ciphertext: string, privateKey: string): Promise<Uint8Array> {
     try {
@@ -218,24 +237,31 @@ export class EncryptionUtility {
           name: "RSA-OAEP",
           hash: "SHA-256",
         },
-        true,
+        false,
         ["decrypt"]
       );
 
-      const cipherBuffer = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
-      const plaintextBuffer = await crypto.subtle.decrypt(
-        {
-          name: "RSA-OAEP",
-        },
-        privateKeyObj,
-        cipherBuffer
-      );
-
-      return new Uint8Array(plaintextBuffer);
+      return await EncryptionUtility.decryptWithPrivateKeyObject(ciphertext, privateKeyObj);
     } catch (error) {
       console.error('RSA decryption failed:', error);
       throw new Error(`Failed to decrypt: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
+  }
+
+  /**
+   * Decrypts data using RSA-OAEP asymmetric encryption with a CryptoKey private key.
+   */
+  public static async decryptWithPrivateKeyObject(ciphertext: string, privateKey: CryptoKey): Promise<Uint8Array> {
+    const cipherBuffer = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
+    const plaintextBuffer = await crypto.subtle.decrypt(
+      {
+        name: "RSA-OAEP",
+      },
+      privateKey,
+      cipherBuffer
+    );
+
+    return new Uint8Array(plaintextBuffer);
   }
 
   /**
