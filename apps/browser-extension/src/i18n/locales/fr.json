@@ -70,7 +70,7 @@
     "hideDetails": "Masquer les détails",
     "copyToClipboard": "Copier dans le presse-papiers",
     "loadingEmails": "Chargement des emails...",
-    "loadingTotpCodes": "Chargement des codes TOTP...",
+    "loadingTotpCodes": "Chargement des codes à usage unique...",
     "attachments": "Pièces jointes",
     "loadingAttachments": "Chargement des pièces jointes...",
     "settings": "Réglages",
@@ -93,8 +93,8 @@
     "offline": "Hors ligne",
     "offlineMode": "Fonctionnement en mode hors ligne",
     "pendingSync": "Synchronisation...",
-    "mergingVaultChanges": "Fusion des modifications du coffre-fort ...",
-    "uploadingVault": "Envoi du coffre-fort ...",
+    "mergingVaultChanges": "Fusion des modifications du coffre-fort...",
+    "uploadingVault": "Envoi du coffre-fort...",
     "errors": {
       "serverNotAvailable": "Le serveur d'AliasVault n'est pas disponible. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
       "clientVersionNotSupported": "Cette version de l'extension de navigateur AliasVault n'est plus prise en charge par le serveur. Veuillez mettre à jour votre extension de navigateur à la dernière version.",
@@ -173,13 +173,13 @@
     "passwordCopiedToClipboard": "Mot de passe copié dans le presse-papiers",
     "openAliasVaultToUpgrade": "Ouvrez AliasVault pour améliorer",
     "vaultUpgradeRequired": "Mise à niveau du coffre-fort requise.",
-    "dismissPopup": "Fermer",
+    "dismissPopup": "Fermer le pop-up",
     "noTotpItemsFound": "Aucun code 2FA correspondant",
     "close": "Fermer",
     "savePrompt": {
-      "title": "Enregistrer dans AliasVault?",
+      "title": "Enregistrer dans AliasVault ?",
       "neverForThisSite": "Jamais pour ce site",
-      "addUrlTitle": "Ajouter l'URL à l'identifiant?"
+      "addUrlTitle": "Ajouter l'URL à l'identifiant ?"
     }
   },
   "items": {
@@ -281,7 +281,7 @@
   },
   "fieldLabels": {
     "login.url": "URL du site",
-    "login.username": "Username",
+    "login.username": "Nom d'utilisateur",
     "login.password": "Mot de passe",
     "alias.first_name": "Prénom",
     "alias.last_name": "Nom",
@@ -303,7 +303,7 @@
     "secretKey": "Clé secrète",
     "saveToViewCode": "Enregistrer pour afficher le code",
     "defaultName": "Authentificateur",
-    "deleteTotpCodeTitle": "Supprimer le code 2FA",
+    "deleteTotpCodeTitle": "Supprimer le code d'authentification à deux facteurs",
     "deleteTotpCodeConfirmation": "Êtes-vous sûr de vouloir supprimer le code 2FA \"{{name}} \" ?",
     "errors": {
       "invalidSecretKey": "Format de clé secrète invalide."
@@ -333,7 +333,7 @@
       "justNow": "maintenant",
       "minutesAgo_single": "Il y a {{count}} minute",
       "minutesAgo_plural": "Il y a {{count}} minutes",
-      "hoursAgo_single": "Il y a {{count}} heure",
+      "hoursAgo_single": "Il y a {{count}} heures",
       "hoursAgo_plural": "Il y a {{count}} heures",
       "yesterday": "hier"
     },
@@ -436,7 +436,7 @@
     "credentialAutofill": "Remplissage automatique des identifiants",
     "credentialAutofillDescription": "Afficher la popup de saisie automatique lorsque les champs nom d'utilisateur/mot de passe sont détectés",
     "totpAutofill": "Remplissage automatique du code 2FA",
-    "totpAutofillDescription": "Afficher la popup de saisie automatique lorsque des champs de code 2FA sont détectés",
+    "totpAutofillDescription": "Afficher le popup de saisie automatique lorsque des champs de code 2FA sont détectés",
     "autoCopyTotpOnAutofill": "Copie automatique du code 2FA dans le presse-papiers",
     "autoCopyTotpOnAutofillDescription": "Copier automatiquement le premier code 2FA dans le presse-papiers après le remplissage automatique des identifiants",
     "loginSave": {
@@ -514,7 +514,7 @@
     "daysRemaining_one": "{{count}} jour restant",
     "daysRemaining_other": "{{count}} jours restants",
     "expiringSoon": "Expirant bientôt",
-    "confirmDeleteTitle": "Supprimer définitivement?",
+    "confirmDeleteTitle": "Supprimer définitivement ?",
     "confirmDeleteMessage": "Cet élément sera définitivement supprimé et ne pourra pas être récupéré.",
     "confirmEmptyAllTitle": "Vider récemment supprimé ?",
     "confirmEmptyAllMessage": "Tous les {{count}} éléments seront définitivement supprimés et ne pourront pas être récupérés."
