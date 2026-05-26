@@ -12,7 +12,7 @@ import type { Item, ItemType } from '@/utils/dist/core/models/vault';
 import { getFieldValue, FieldKey, ItemTypes } from '@/utils/dist/core/models/vault';
 import emitter from '@/utils/EventEmitter';
 import { HapticsUtility } from '@/utils/HapticsUtility';
-import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@/utils/itemFilters';
+import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@/utils/ItemFilters';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
 import { useColors } from '@/hooks/useColorScheme';

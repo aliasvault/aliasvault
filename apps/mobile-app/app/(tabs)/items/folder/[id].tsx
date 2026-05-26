@@ -11,9 +11,9 @@ import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsReposi
 import type { Item, ItemType } from '@/utils/dist/core/models/vault';
 import { getFieldValue, FieldKey, ItemTypes } from '@/utils/dist/core/models/vault';
 import emitter from '@/utils/EventEmitter';
-import { canHaveSubfolders, getRecursiveItemCount } from '@/utils/folderUtils';
+import { canHaveSubfolders, getRecursiveItemCount } from '@/utils/FolderUtils';
 import { HapticsUtility } from '@/utils/HapticsUtility';
-import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@/utils/itemFilters';
+import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@/utils/ItemFilters';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
 import { useColors } from '@/hooks/useColorScheme';
