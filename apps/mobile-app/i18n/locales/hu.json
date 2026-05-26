@@ -231,36 +231,36 @@
       "keystoreAndroid": "Android kulcstár"
     },
     "autoLockSettings": {
-      "description": "Choose how long the app can stay in the background before requiring re-authentication. You'll need to use Face ID or enter your password to unlock the vault again."
+      "description": "Válassza ki mennyi ideig lehet az alkalmazás a háttérben, mielőtt újra lezáródna. Újra Arc ID vagy jelszó használata szükséges a feloldáshoz."
     },
     "identityGeneratorSettings": {
-      "description": "Configure the default language and gender preference for generating new identities.",
-      "languageSection": "Language",
-      "languageDescription": "Set the language that will be used when generating new identities.",
-      "genderSection": "Gender",
-      "genderDescription": "Set the gender preference for generating new identities.",
-      "ageRangeSection": "Age Range",
-      "ageRangeDescription": "Set the age range for generating new identities.",
+      "description": "Állítsa be a kívánt alap nyelvet és nemet a személyazonosággok generálásához.",
+      "languageSection": "Nyelv",
+      "languageDescription": "Állítsa be a személyazonosság generáláshoz használt nyelvet.",
+      "genderSection": "Neme",
+      "genderDescription": "Állítsa be a személyazonosság generáláshoz használt nemet.",
+      "ageRangeSection": "Kor intervallum",
+      "ageRangeDescription": "Állítsa be a személyiség generáláshoz használt kor intervallumot.",
       "genderOptions": {
-        "random": "Random",
-        "male": "Male",
-        "female": "Female"
+        "random": "Véletlenszerű",
+        "male": "Férfi",
+        "female": "Nő"
       }
     },
     "passwordGeneratorSettings": {
       "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
-      "preview": "Preview"
+      "preview": "Előnézet"
     },
     "securitySettings": {
-      "title": "Security",
+      "title": "Biztonság",
       "description": "Manage your account and vault security settings.",
       "changeMasterPassword": "Change Master Password",
-      "activeSessionsTitle": "Active Sessions",
+      "activeSessionsTitle": "Aktív munkamenetek",
       "recentAuthLogs": "Recent Auth Logs",
       "deleteAccountTitle": "Fiók Törlése",
       "changePassword": {
         "headerText": "Changing your master password also changes the vault encryption keys. It is advised to periodically change your master password to keep your vaults secure.",
-        "currentPassword": "Current Password",
+        "currentPassword": "Jelenlegi jelszó",
         "newPassword": "New Password",
         "confirmNewPassword": "Confirm New Password",
         "enterCurrentPassword": "Enter current password",
@@ -289,11 +289,11 @@
       "authLogs": {
         "headerText": "Below you can find an overview of recent login attempts to your account.",
         "noLogs": "No auth logs found",
-        "success": "Success",
-        "failed": "Failed",
-        "time": "Time",
-        "ipAddress": "IP Address",
-        "client": "Client",
+        "success": "Sikeres",
+        "failed": "Sikertelen",
+        "time": "Idő",
+        "ipAddress": "IP cím",
+        "client": "Kliens",
         "failedToLoad": "Failed to load auth logs"
       },
       "deleteAccount": {
