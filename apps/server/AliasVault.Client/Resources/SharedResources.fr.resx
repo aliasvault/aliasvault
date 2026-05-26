@@ -229,11 +229,11 @@
     <comment>Generic unknown error message</comment>
   </data>
   <data name="VaultTooLargeError" xml:space="preserve">
-    <value>Le coffre est trop grand pour que le serveur l'accepte. Essayez de supprimer certains éléments ou pièces jointes pour réduire la taille et réessayez.</value>
+    <value>Le coffre-fort est trop grand pour que le serveur l'accepte. Essayez de supprimer certains éléments ou pièces jointes pour réduire la taille et réessayez.</value>
     <comment>Shown when the server rejects a vault upload with HTTP 413 because the encrypted vault exceeds the configured upload size limit</comment>
   </data>
   <data name="VaultSaveError" xml:space="preserve">
-    <value>Impossible d'enregistrer les modifications dans le coffre. Veuillez réessayer.</value>
+    <value>Impossible d'enregistrer les modifications dans le coffre-fort. Veuillez réessayer.</value>
     <comment>Generic error shown when a vault save / sync to the server fails for an unexpected reason</comment>
   </data>
   <data name="ErrorValidation" xml:space="preserve">
@@ -325,7 +325,7 @@
     <comment>Notes section heading</comment>
   </data>
   <data name="SyncVaultData" xml:space="preserve">
-    <value>Synchroniser les données du coffre</value>
+    <value>Synchroniser les données du coffre-fort</value>
     <comment>Tooltip text for sync vault data button</comment>
   </data>
   <data name="SyncingChanges" xml:space="preserve">
@@ -333,7 +333,7 @@
     <comment>Status text when background sync is in progress</comment>
   </data>
   <data name="LoadingVault" xml:space="preserve">
-    <value>Chargement du coffre...</value>
+    <value>Chargement du coffre-fort ...</value>
     <comment>Status text when vault is being loaded</comment>
   </data>
 </root>
