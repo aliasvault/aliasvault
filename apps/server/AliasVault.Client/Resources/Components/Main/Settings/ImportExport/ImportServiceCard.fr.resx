@@ -148,7 +148,7 @@ Note: le processus d'importation peut prendre un court moment.</value>
     <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
   </data>
   <data name="SavingCredentials" xml:space="preserve">
-    <value>Enregistrement des identifiants dans le coffre-fort ... {0} / {1}</value>
+    <value>Enregistrement des identifiants dans le coffre-fort... {0} / {1}</value>
     <comment>Progress text during credential save. {0} is current progress, {1} is total</comment>
   </data>
   <data name="SyncingVault" xml:space="preserve">
