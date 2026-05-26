@@ -748,41 +748,48 @@ export default function AddEditItemScreen(): React.ReactNode {
   }, []);
 
   /**
+   * Show the 2FA section and auto-open add modal if no codes exist.
+   */
+  const handle2FAAdd = useCallback((): void => {
+    setShow2FA(true);
+    // Auto-open the add modal if there are no TOTP codes yet
+    if (totpCodes.filter(tc => !tc.IsDeleted).length === 0) {
+      // Defer to next tick to ensure the section is rendered first
+      setTimeout(() => {
+        totpShowAddFormRef.current?.();
+      }, 100);
+    }
+  }, [totpCodes]);
+
+  /**
+   * Show the attachments section.
+   */
+  const handleAttachmentsAdd = useCallback((): void => {
+    setShowAttachments(true);
+  }, []);
+
+  /**
    * Optional sections for AddFieldMenu.
    */
   const optionalSections = useMemo((): OptionalSection[] => {
     const sections: OptionalSection[] = [];
     // 2FA - only for types with login fields
     if (hasLoginFields) {
+      // eslint-disable-next-line react-hooks/refs -- handle2FAAdd accesses totpShowAddFormRef only inside a setTimeout callback (event handler context), not during render
       sections.push({
         key: '2fa',
         isVisible: show2FA,
-        /**
-         * Show the 2FA section and auto-open add modal if no codes exist
-         */
-        onAdd: () => {
-          setShow2FA(true);
-          // Auto-open the add modal if there are no TOTP codes yet
-          if (totpCodes.filter(tc => !tc.IsDeleted).length === 0) {
-            // Defer to next tick to ensure the section is rendered first
-            setTimeout(() => {
-              totpShowAddFormRef.current?.();
-            }, 100);
-          }
-        }
+        onAdd: handle2FAAdd,
       });
     }
     // Attachments - always available
     sections.push({
       key: 'attachments',
       isVisible: showAttachments,
-      /**
-       * Show the attachments section
-       */
-      onAdd: () => setShowAttachments(true)
+      onAdd: handleAttachmentsAdd,
     });
     return sections;
-  }, [hasLoginFields, show2FA, showAttachments, totpCodes]);
+  }, [hasLoginFields, show2FA, showAttachments, handle2FAAdd, handleAttachmentsAdd]);
 
   /**
    * Submit the form.

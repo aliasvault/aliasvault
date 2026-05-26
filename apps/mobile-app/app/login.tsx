@@ -41,17 +41,31 @@ export default function LoginScreen() : React.ReactNode {
   const { showAlert, showDialog } = useDialog();
 
   // Animation values for entrance effects
-  const logoScale = useRef(new Animated.Value(0.3)).current;
-  const logoOpacity = useRef(new Animated.Value(0)).current;
-  const titleTranslateY = useRef(new Animated.Value(20)).current;
-  const titleOpacity = useRef(new Animated.Value(0)).current;
-  const formOpacity = useRef(new Animated.Value(0)).current;
-  const formTranslateY = useRef(new Animated.Value(30)).current;
+  const [logoScale] = useState(() => new Animated.Value(0.3));
+  const [logoOpacity] = useState(() => new Animated.Value(0));
+  const [titleTranslateY] = useState(() => new Animated.Value(20));
+  const [titleOpacity] = useState(() => new Animated.Value(0));
+  const [formOpacity] = useState(() => new Animated.Value(0));
+  const [formTranslateY] = useState(() => new Animated.Value(30));
 
   const { loadApiUrl, getDisplayUrl } = useApiUrl();
 
   // Track if username prefill has been attempted (only do it once on mount)
   const usernamePrefillAttemptedRef = useRef(false);
+
+  const [credentials, setCredentials] = useState({
+    username: '',
+    password: '',
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [twoFactorRequired, setTwoFactorRequired] = useState(false);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [initiateLoginResponse, setInitiateLoginResponse] = useState<LoginResponse | null>(null);
+  const [passwordHashString, setPasswordHashString] = useState<string | null>(null);
+  const [passwordHashBase64, setPasswordHashBase64] = useState<string | null>(null);
+  const [loginStatus, setLoginStatus] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     /* Staggered entrance animations - Logo: scale up with spring + fade in */
@@ -132,20 +146,6 @@ export default function LoginScreen() : React.ReactNode {
   useFocusEffect(() => {
     loadApiUrl();
   });
-
-  const [credentials, setCredentials] = useState({
-    username: '',
-    password: '',
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [twoFactorRequired, setTwoFactorRequired] = useState(false);
-  const [twoFactorCode, setTwoFactorCode] = useState('');
-  const [initiateLoginResponse, setInitiateLoginResponse] = useState<LoginResponse | null>(null);
-  const [passwordHashString, setPasswordHashString] = useState<string | null>(null);
-  const [passwordHashBase64, setPasswordHashBase64] = useState<string | null>(null);
-  const [loginStatus, setLoginStatus] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
 
   const authContext = useApp();
   const dbContext = useDb();

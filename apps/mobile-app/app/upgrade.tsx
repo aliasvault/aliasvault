@@ -36,19 +36,14 @@ export default function UpgradeScreen() : React.ReactNode {
   const [isLoading, setIsLoading] = useState(false);
   const [currentVersion, setCurrentVersion] = useState<VaultVersion | null>(null);
   const [latestVersion, setLatestVersion] = useState<VaultVersion | null>(null);
-  const [upgradeStatus, setUpgradeStatus] = useState('');
   const colors = useColors();
   const { t } = useTranslation();
+  const [upgradeStatus, setUpgradeStatus] = useState(() => t('upgrade.status.preparingUpgrade'));
   const { executeVaultMutation, isLoading: isVaultMutationLoading, syncStatus } = useVaultMutate();
   const { syncVault } = useVaultSync();
   const { showAlert, showConfirm } = useDialog();
 
   const [isSyncingOnLoad, setIsSyncingOnLoad] = useState(true);
-
-  // Initialize upgrade status with translation
-  useEffect(() => {
-    setUpgradeStatus(t('upgrade.status.preparingUpgrade'));
-  }, [t]);
 
   /**
    * Load version information from the database.

@@ -103,6 +103,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
   }, [dbContext, id, webApi, t]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loadEmail is async; setState only fires after data is fetched
     loadEmail();
   }, [id, loadEmail]);
 

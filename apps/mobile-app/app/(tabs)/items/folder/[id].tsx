@@ -316,6 +316,7 @@ export default function FolderViewScreen(): React.ReactNode {
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing loading state with async data fetch on auth/db readiness
     setIsLoadingItems(true);
     loadItems();
   }, [isAuthenticated, isDatabaseAvailable, loadItems, setIsLoadingItems]);

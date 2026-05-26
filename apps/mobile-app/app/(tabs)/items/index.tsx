@@ -65,7 +65,7 @@ export default function ItemsScreen(): React.ReactNode {
   const { t } = useTranslation();
   const colors = useColors();
   const navigate = useNavigationDebounce();
-  const scrollY = useRef(new Animated.Value(0)).current;
+  const [scrollY] = useState(() => new Animated.Value(0));
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const flatListRef = useRef<Animated.FlatList<Item | null>>(null);
@@ -112,6 +112,7 @@ export default function ItemsScreen(): React.ReactNode {
   useEffect(() => {
     if (itemUrl) {
       const decodedUrl = decodeURIComponent(itemUrl);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing search query with external deep-link parameter
       setSearchQuery(decodedUrl);
     }
   }, [itemUrl]);
@@ -429,6 +430,7 @@ export default function ItemsScreen(): React.ReactNode {
     }
 
     setIsLoadingItems(true);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loadItems is async; setState only fires after data is fetched
     loadItems();
   }, [isAuthenticated, isDatabaseAvailable, loadItems, setIsLoadingItems]);
 

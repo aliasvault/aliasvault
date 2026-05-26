@@ -31,7 +31,7 @@ export default function EmailsScreen() : React.ReactNode {
   const webApi = useWebApi();
   const colors = useColors();
   const navigation = useNavigation();
-  const scrollY = useRef(new Animated.Value(0)).current;
+  const [scrollY] = useState(() => new Animated.Value(0));
   const scrollViewRef = useRef<ScrollView>(null);
   const [error, setError] = useState<string | null>(null);
   const [emails, setEmails] = useState<MailboxEmail[]>([]);
@@ -113,7 +113,7 @@ export default function EmailsScreen() : React.ReactNode {
    * Load more emails (next page).
    */
   const loadMoreEmails = useCallback(async () : Promise<void> => {
-    if (isLoadingMore || !dbContext?.sqliteClient || dbContext.isOffline) {
+    if (isLoadingMore || !dbContext.sqliteClient || dbContext.isOffline) {
       return;
     }
 
@@ -151,7 +151,7 @@ export default function EmailsScreen() : React.ReactNode {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoadingMore, dbContext?.sqliteClient, dbContext.isOffline, webApi, currentPage, PAGE_SIZE, t]);
+  }, [isLoadingMore, dbContext.sqliteClient, dbContext.isOffline, webApi, currentPage, PAGE_SIZE, t]);
 
   useEffect(() => {
     const unsubscribeFocus = navigation.addListener('focus', () => {
@@ -189,6 +189,7 @@ export default function EmailsScreen() : React.ReactNode {
    * Load emails on mount.
    */
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loadEmails is async; setState only fires after data is fetched
     loadEmails();
   }, [loadEmails]);
 
