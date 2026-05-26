@@ -83,7 +83,7 @@
     <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Le déverrouillage par clé d'accès du coffre est bien activé. La prochaine fois que votre coffre sera verrouillé, vous pourrez le déverrouiller avec votre clé d'accès créée.</value>
+    <value>Le déverrouillage par clé d'accès du coffre-fort est bien activé. La prochaine fois que votre coffre sera verrouillé, vous pourrez le déverrouiller avec votre clé d'accès créée.</value>
     <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
