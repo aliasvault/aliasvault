@@ -139,7 +139,7 @@
   </data>
   <!-- Loading and status messages -->
   <data name="SavingVaultMessage">
-    <value>Sauvegarde du coffre...</value>
+    <value>Sauvegarde du coffre-fort...</value>
     <comment>Loading message when saving vault</comment>
   </data>
   <!-- Error messages -->
