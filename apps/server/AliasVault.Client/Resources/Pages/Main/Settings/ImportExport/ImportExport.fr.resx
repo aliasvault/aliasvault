@@ -63,7 +63,7 @@
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Sur cette page, vous pouvez importer et exporter votre coffre.</value>
+    <value>Sur cette page, vous pouvez importer et exporter votre coffre-fort.</value>
     <comment>Page description</comment>
   </data>
   <data name="ImportSectionTitle" xml:space="preserve">
@@ -79,7 +79,7 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Exportez votre coffre pour déplacer vos identifiants entre les serveurs AliasVault ou vers un autre gestionnaire de mots de passe.</value>
+    <value>Exportez votre coffre-fort pour déplacer vos identifiants entre les serveurs AliasVault ou vers un autre gestionnaire de mots de passe.</value>
     <comment>Export section description</comment>
   </data>
   <data name="RecommendedLabel" xml:space="preserve">
@@ -87,19 +87,19 @@
     <comment>Label for recommended option</comment>
   </data>
   <data name="ExportAvexTitle" xml:space="preserve">
-    <value>Export complet du coffre chiffré</value>
+    <value>Export complet du coffre-fort chiffré</value>
     <comment>Title for encrypted export option</comment>
   </data>
   <data name="ExportAvexDescription" xml:space="preserve">
-    <value>Sauvegarde protégée par mot de passe de votre coffre entier. Inclut tous les éléments, mots de passe et pièces jointes. Utilisez comme sauvegarde manuelle et/ou pour restaurer vers un autre serveur AliasVault.</value>
+    <value>Sauvegarde protégée par mot de passe de votre coffre-fort entier. Inclut tous les éléments, mots de passe et pièces jointes. Utilisez comme sauvegarde manuelle et/ou pour restaurer vers un autre serveur AliasVault.</value>
     <comment>Description for encrypted export option</comment>
   </data>
   <data name="ExportAvuxTitle" xml:space="preserve">
-    <value>Export complet du coffre non chiffré</value>
+    <value>Export complet du coffre-fort non chiffré</value>
     <comment>Title for unencrypted full export option</comment>
   </data>
   <data name="ExportAvuxDescription" xml:space="preserve">
-    <value>Exportation complète du coffre en tant qu'archive compatible ZIP non chiffrée. Inclut tous les éléments, clés et pièces jointes.</value>
+    <value>Exportation complète du coffre-fort en tant qu'archive compatible ZIP non chiffrée. Inclut tous les éléments, clés et pièces jointes.</value>
     <comment>Description for unencrypted full export option</comment>
   </data>
   <data name="ExportCsvTitle" xml:space="preserve">
@@ -115,11 +115,11 @@
     <comment>Button to export as CSV</comment>
   </data>
   <data name="ExportAvuxButton" xml:space="preserve">
-    <value>Exporter le coffre non chiffré (.avux)</value>
+    <value>Exporter le coffre-fort non chiffré (.avux)</value>
     <comment>Button to export full vault as .avux archive</comment>
   </data>
   <data name="ExportingVaultMessage" xml:space="preserve">
-    <value>Export du coffre...</value>
+    <value>Export du coffre-fort ...</value>
     <comment>Message shown while exporting vault</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
@@ -165,11 +165,11 @@
     <comment>Generic error message for password verification failure</comment>
   </data>
   <data name="ExportAvexButton" xml:space="preserve">
-    <value>Exporter le coffre non chiffré (.avux)</value>
+    <value>Exporter le coffre-fort non chiffré (.avex)</value>
     <comment>Button to export encrypted vault as .avex archive</comment>
   </data>
   <data name="ExportEncryptedWarningMessage" xml:space="preserve">
-    <value>Ceci va créer une exportation chiffrée de votre coffre entier. Vous devrez fournir un mot de passe pour chiffrer le fichier d'exportation.
+    <value>Ceci va créer une exportation chiffrée de votre coffre-fort entier. Vous devrez fournir un mot de passe pour chiffrer le fichier d'exportation.
 
 Êtes-vous sûr de vouloir continuer ?</value>
     <comment>Warning message for encrypted export confirmation</comment>
@@ -183,7 +183,7 @@
     <comment>Description for export password modal with security warning</comment>
   </data>
   <data name="ExportSuccessMessage" xml:space="preserve">
-    <value>Votre coffre a été exporté avec succès.</value>
+    <value>Votre coffre-fort a été exporté avec succès.</value>
     <comment>Success message after vault export completes</comment>
   </data>
 </root>
