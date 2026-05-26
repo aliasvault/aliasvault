@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.autofill.AutofillId
 import android.view.autofill.AutofillValue
 import android.widget.RemoteViews
+import android.widget.inline.InlinePresentationSpec
 import net.aliasvault.app.R
 import net.aliasvault.app.autofill.AutofillFillActivity
 import net.aliasvault.app.autofill.models.FieldType
@@ -33,6 +34,7 @@ object AutofillDatasetBuilder {
         fields: List<Pair<AutofillId, FieldType>>,
         item: Item,
         copyTotpOnSelect: Boolean,
+        inlineSpec: InlinePresentationSpec? = null,
     ): Dataset {
         val presentation = RemoteViews(context.packageName, R.layout.autofill_dataset_item_icon)
         val builder = Dataset.Builder(presentation)
@@ -64,6 +66,28 @@ object AutofillDatasetBuilder {
             presentation.setImageViewBitmap(R.id.icon, bitmap)
         }
 
+        if (inlineSpec != null) {
+            val itemDeepLink = "aliasvault://items/${item.id.toString().uppercase()}"
+            val attribIntent = InlinePresentationHelper.attributionPendingIntent(
+                context = context,
+                deepLinkUri = itemDeepLink,
+                requestCode = item.id.hashCode(),
+            )
+            val inline = InlinePresentationHelper.buildCredentialPresentation(
+                context = context,
+                spec = inlineSpec,
+                content = InlinePresentationHelper.CredentialContent(
+                    title = item.name.orEmpty(),
+                    subtitle = applyResult.labelSuffix,
+                    icon = bitmap,
+                ),
+                attributionIntent = attribIntent,
+            )
+            if (inline != null) {
+                builder.setInlinePresentation(inline)
+            }
+        }
+
         val autofillIds = fields.map { it.first }.toTypedArray()
         val fieldTypeOrdinals = IntArray(fields.size) { i -> fields[i].second.ordinal }
         val authIntent = Intent(context, AutofillFillActivity::class.java).apply {
@@ -92,14 +116,20 @@ object AutofillDatasetBuilder {
         context: Context,
         fields: List<Pair<AutofillId, FieldType>>,
         appInfo: String?,
+        inlineSpec: InlinePresentationSpec? = null,
     ): Dataset {
+        val label = context.getString(R.string.autofill_no_match_found)
         val presentation = RemoteViews(context.packageName, R.layout.autofill_dataset_item_logo)
-        presentation.setTextViewText(
-            R.id.text,
-            context.getString(R.string.autofill_no_match_found),
-        )
+        presentation.setTextViewText(R.id.text, label)
 
         val dataSetBuilder = Dataset.Builder(presentation)
+
+        if (inlineSpec != null) {
+            val inline = InlinePresentationHelper.buildActionPresentation(context, inlineSpec, label)
+            if (inline != null) {
+                dataSetBuilder.setInlinePresentation(inline)
+            }
+        }
 
         val encodedUrl = appInfo?.let { URLEncoder.encode(it, "UTF-8") } ?: ""
         val deepLinkUrl = "aliasvault://items/autofill-open-app?itemUrl=$encodedUrl"

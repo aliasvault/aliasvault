@@ -11,6 +11,7 @@ package net.aliasvault.app.autofill
 import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.Typeface
+import android.os.Build
 import android.os.CancellationSignal
 import android.service.autofill.AutofillService
 import android.service.autofill.Dataset
@@ -27,6 +28,7 @@ import android.widget.RemoteViews
 import net.aliasvault.app.R
 import net.aliasvault.app.autofill.utils.AutofillDatasetBuilder
 import net.aliasvault.app.autofill.utils.FieldFinder
+import net.aliasvault.app.autofill.utils.InlinePresentationHelper
 import net.aliasvault.app.autofill.utils.RustItemMatcher
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.interfaces.ItemOperationCallback
@@ -78,7 +80,8 @@ class AutofillService : AutofillService() {
                 safeCallback()
                 return
             }
-            launchActivityForAutofill(fieldFinder) { response -> safeCallback(response) }
+            val inlinePool = buildInlinePool(request)
+            launchActivityForAutofill(fieldFinder, inlinePool) { response -> safeCallback(response) }
         } catch (e: Exception) {
             Log.e(TAG, "Unexpected error in onFillRequest", e)
             // Provide a simple fallback response to prevent white flash
@@ -96,12 +99,13 @@ class AutofillService : AutofillService() {
                 // Add debug dataset if enabled in settings
                 val sharedPreferences = getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
                 val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
+                val fallbackPool = buildInlinePool(request)
                 if (showSearchText) {
-                    responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                    responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown", fallbackPool))
                 }
 
                 // Add failed to retrieve dataset
-                responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder))
+                responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder, fallbackPool))
 
                 safeCallback(responseBuilder.build())
             } catch (fallbackError: Exception) {
@@ -121,7 +125,11 @@ class AutofillService : AutofillService() {
         callback.onSuccess()
     }
 
-    private fun launchActivityForAutofill(fieldFinder: FieldFinder, callback: (FillResponse?) -> Unit) {
+    private fun launchActivityForAutofill(
+        fieldFinder: FieldFinder,
+        inlinePool: InlinePresentationHelper.SpecPool,
+        callback: (FillResponse?) -> Unit,
+    ) {
         // Get the app/website information from assist structure.
         val appInfo = fieldFinder.getAppInfo()
 
@@ -175,7 +183,7 @@ class AutofillService : AutofillService() {
                             val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
                             val copyTotpOnFill = sharedPreferences.getBoolean("autofill_copy_totp_on_fill", true)
                             if (showSearchText) {
-                                responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                                responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown", inlinePool))
                             }
 
                             // If there are no results, return "no matches" placeholder option.
@@ -189,6 +197,7 @@ class AutofillService : AutofillService() {
                                         this@AutofillService,
                                         fieldFinder.autofillableFields,
                                         appInfo,
+                                        inlinePool.next(),
                                     ),
                                 )
                             } else {
@@ -199,13 +208,14 @@ class AutofillService : AutofillService() {
                                         fields = fieldFinder.autofillableFields,
                                         item = item,
                                         copyTotpOnSelect = copyTotpOnFill && item.hasTotp,
+                                        inlineSpec = inlinePool.next(),
                                     )
                                     responseBuilder.addDataset(dataset)
                                 }
 
                                 // Add "Open app" option at the bottom (when search text is not shown and there are matches)
                                 if (!showSearchText) {
-                                    responseBuilder.addDataset(createOpenAppDataset(fieldFinder))
+                                    responseBuilder.addDataset(createOpenAppDataset(fieldFinder, inlinePool))
                                 }
                             }
 
@@ -217,9 +227,9 @@ class AutofillService : AutofillService() {
                             val sharedPreferences = getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
                             val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
                             if (showSearchText) {
-                                responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                                responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown", inlinePool))
                             }
-                            responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder))
+                            responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder, inlinePool))
                             callback(responseBuilder.build())
                         }
                     }
@@ -231,9 +241,9 @@ class AutofillService : AutofillService() {
                         val sharedPreferences = getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
                         val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
                         if (showSearchText) {
-                            responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                            responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown", inlinePool))
                         }
-                        responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder))
+                        responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder, inlinePool))
                         callback(responseBuilder.build())
                     }
                 })
@@ -244,13 +254,17 @@ class AutofillService : AutofillService() {
         }
 
         Log.d(TAG, "Vault is locked, requiring authentication before fill")
-        callback(buildLockedFillResponse(fieldFinder, appInfo))
+        callback(buildLockedFillResponse(fieldFinder, appInfo, inlinePool))
     }
 
     /**
      * Build a [FillResponse] whose only entry is a "Vault locked" row.
      */
-    private fun buildLockedFillResponse(fieldFinder: FieldFinder, appInfo: String?): FillResponse {
+    private fun buildLockedFillResponse(
+        fieldFinder: FieldFinder,
+        appInfo: String?,
+        inlinePool: InlinePresentationHelper.SpecPool,
+    ): FillResponse {
         val autofillIds = fieldFinder.autofillableFields.map { it.first }.toTypedArray()
         val fieldTypeOrdinals = IntArray(fieldFinder.autofillableFields.size) { i ->
             fieldFinder.autofillableFields[i].second.ordinal
@@ -268,28 +282,59 @@ class AutofillService : AutofillService() {
             PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_CANCEL_CURRENT,
         )
 
+        val lockedLabel = getString(R.string.autofill_vault_locked)
         val presentation = RemoteViews(packageName, R.layout.autofill_dataset_item_logo)
-        presentation.setTextViewText(R.id.text, getString(R.string.autofill_vault_locked))
+        presentation.setTextViewText(R.id.text, lockedLabel)
 
-        return FillResponse.Builder()
+        val responseBuilder = FillResponse.Builder()
+        val inlineSpec = inlinePool.next()
+        if (inlineSpec != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val inline = InlinePresentationHelper.buildActionPresentation(this, inlineSpec, lockedLabel)
+            if (inline != null) {
+                val presentations = android.service.autofill.Presentations.Builder()
+                    .setMenuPresentation(presentation)
+                    .setInlinePresentation(inline)
+                    .build()
+                responseBuilder.setAuthentication(autofillIds, pendingIntent.intentSender, presentations)
+                return responseBuilder.build()
+            }
+        }
+        return responseBuilder
             .setAuthentication(autofillIds, pendingIntent.intentSender, presentation)
             .build()
     }
 
     /**
+     * Creates inline suggestion pool, showing password suggestions in supported keyboards.
+     */
+    private fun buildInlinePool(request: FillRequest): InlinePresentationHelper.SpecPool {
+        val inlineRequest = request.inlineSuggestionsRequest
+            ?: return InlinePresentationHelper.SpecPool(emptyList(), 0)
+        return InlinePresentationHelper.SpecPool(
+            specs = inlineRequest.inlinePresentationSpecs,
+            maxCount = inlineRequest.maxSuggestionCount,
+        )
+    }
+
+    /**
      * Create a dataset for the "failed to retrieve" option.
      * @param fieldFinder The field finder
+     * @param inlinePool Keyboard chip slots. If a slot is still free, this row
+     *   also shows as an inline suggestion in the IME; otherwise it appears
+     *   in the dropdown only.
      * @return The dataset
      */
-    private fun createFailedToRetrieveDataset(fieldFinder: FieldFinder): Dataset {
+    private fun createFailedToRetrieveDataset(
+        fieldFinder: FieldFinder,
+        inlinePool: InlinePresentationHelper.SpecPool,
+    ): Dataset {
         // Create presentation for the "failed to retrieve" option
+        val label = getString(R.string.autofill_failed_to_retrieve)
         val presentation = RemoteViews(packageName, R.layout.autofill_dataset_item_logo)
-        presentation.setTextViewText(
-            R.id.text,
-            getString(R.string.autofill_failed_to_retrieve),
-        )
+        presentation.setTextViewText(R.id.text, label)
 
         val dataSetBuilder = Dataset.Builder(presentation)
+        addInlineIfAvailable(dataSetBuilder, inlinePool, label)
 
         // Create deep link URL
         val deepLinkUrl = "aliasvault://reinitialize"
@@ -321,9 +366,16 @@ class AutofillService : AutofillService() {
      * Create a debug dataset showing what string we're searching for, clickable to open the app.
      * @param fieldFinder The field finder
      * @param searchText The text being searched for
+     * @param inlinePool Keyboard chip slots. If a slot is still free, this row
+     *   also shows as an inline suggestion in the IME; otherwise it appears
+     *   in the dropdown only.
      * @return The dataset
      */
-    private fun createSearchDebugDataset(fieldFinder: FieldFinder, searchText: String): Dataset {
+    private fun createSearchDebugDataset(
+        fieldFinder: FieldFinder,
+        searchText: String,
+        inlinePool: InlinePresentationHelper.SpecPool,
+    ): Dataset {
         // Create presentation for the debug option (with search icon)
         val presentation = RemoteViews(packageName, R.layout.autofill_dataset_item_icon)
 
@@ -335,6 +387,7 @@ class AutofillService : AutofillService() {
         presentation.setImageViewResource(R.id.icon, R.drawable.ic_search)
 
         val dataSetBuilder = Dataset.Builder(presentation)
+        addInlineIfAvailable(dataSetBuilder, inlinePool, searchText)
 
         // Get the app/website information to use as item URL
         val appInfo = fieldFinder.getAppInfo()
@@ -369,17 +422,22 @@ class AutofillService : AutofillService() {
     /**
      * Create a dataset for the "open app" option.
      * @param fieldFinder The field finder
+     * @param inlinePool Keyboard chip slots. If a slot is still free, this row
+     *   also shows as an inline suggestion in the IME; otherwise it appears
+     *   in the dropdown only.
      * @return The dataset
      */
-    private fun createOpenAppDataset(fieldFinder: FieldFinder): Dataset {
+    private fun createOpenAppDataset(
+        fieldFinder: FieldFinder,
+        inlinePool: InlinePresentationHelper.SpecPool,
+    ): Dataset {
         // Create presentation for the "open app" option with AliasVault logo
+        val label = getString(R.string.autofill_open_app)
         val presentation = RemoteViews(packageName, R.layout.autofill_dataset_item_logo)
-        presentation.setTextViewText(
-            R.id.text,
-            getString(R.string.autofill_open_app),
-        )
+        presentation.setTextViewText(R.id.text, label)
 
         val dataSetBuilder = Dataset.Builder(presentation)
+        addInlineIfAvailable(dataSetBuilder, inlinePool, label)
 
         // Open the action picker so the user can choose between linking this app
         // to an existing credential or creating a new one.
@@ -408,5 +466,19 @@ class AutofillService : AutofillService() {
         }
 
         return dataSetBuilder.build()
+    }
+
+    /**
+     * Also render this row as an inline keyboard chip if the IME has a free
+     * slot.
+     */
+    private fun addInlineIfAvailable(
+        dataSetBuilder: Dataset.Builder,
+        inlinePool: InlinePresentationHelper.SpecPool,
+        label: String,
+    ) {
+        val spec = inlinePool.next() ?: return
+        val inline = InlinePresentationHelper.buildActionPresentation(this, spec, label) ?: return
+        dataSetBuilder.setInlinePresentation(inline)
     }
 }
