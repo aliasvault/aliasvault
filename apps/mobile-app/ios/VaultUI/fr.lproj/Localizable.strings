@@ -25,7 +25,7 @@
 "choose_username" = "Choisissez un nom d'utilisateur";
 "select_text_to_insert_message" = "Sélectionnez le texte à insérer dans le champ de saisie ciblé";
 "choose_username_message" = "Ce site Web peut nécessiter votre nom d'utilisateur ou votre adresse e-mail pour vous connecter";
-"username_prefix" = "Nom d'utilisateur: ";
+"username_prefix" = "Nom d'utilisateur : ";
 "email_prefix" = "E-mail : ";
 "password" = "Mot de passe";
 "items_load_error" = "Impossible de charger les éléments. Veuillez ouvrir l'application AliasVault pour vérifier les mises à jour.";
@@ -35,12 +35,12 @@
 "copy_username" = "Copier le nom d'utilisateur";
 "copy_password" = "Copier le mot de passe";
 "copy_email" = "Copier l'e-mail";
-"copy_totp_code" = "Copier le code TOTP";
+"copy_totp_code" = "Copier le code à usage unique";
 "view_details" = "Voir les détails";
 "username_copied" = "Nom d'utilisateur copié";
 "password_copied" = "Mot de passe copié";
 "email_copied" = "E-mail copié";
-"totp_code_copied" = "Code TOTP copié";
+"totp_code_copied" = "Code à usage unique copié";
 "totp_code" = "Code à usage unique";
 
 /* Search bar */
