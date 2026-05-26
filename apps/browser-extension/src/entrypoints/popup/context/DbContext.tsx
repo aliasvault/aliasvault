@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
+import EncryptionUtility from '@/utils/EncryptionUtility';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import SqliteClient from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
@@ -217,6 +218,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   // Reflect locks from other windows.
   useEffect(() => {
     return vaultStateEvents.onVaultLocked(() => {
+      EncryptionUtility.clearRsaPrivateKeyCache();
       setSqliteClient(null);
       setDbAvailable(false);
     });
@@ -379,6 +381,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * Clear database and remove from background worker, called when logging out.
    */
   const clearDatabase = useCallback(() : void => {
+    EncryptionUtility.clearRsaPrivateKeyCache();
     setSqliteClient(null);
     setDbInitialized(false);
     setDbAvailable(false);
