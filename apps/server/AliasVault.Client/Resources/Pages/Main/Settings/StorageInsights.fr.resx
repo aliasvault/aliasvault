@@ -144,7 +144,7 @@
     <comment>Button to re-fetch favicons for every item with a URL</comment>
   </data>
   <data name="DeleteAllLogosConfirmTitle">
-    <value>Supprimer tous les logos?</value>
+    <value>Supprimer tous les logos ?</value>
     <comment>Confirmation modal title for delete-all-logos</comment>
   </data>
   <data name="DeleteAllLogosConfirmMessage">
