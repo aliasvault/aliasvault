@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="UpgradeVaultTitle" xml:space="preserve">
-    <value>Mettre à niveau le coffre</value>
+    <value>Mettre à niveau le coffre-fort</value>
     <comment>Title for vault upgrade process</comment>
   </data>
   <data name="UpgradeDescription" xml:space="preserve">
-    <value>AliasVault a mis à jour et votre coffre doit être mis à niveau. Cela ne devrait prendre que quelques secondes.</value>
+    <value>AliasVault a mis à jour et votre coffre-fort doit être mis à niveau. Cela ne devrait prendre que quelques secondes.</value>
     <comment>Description of vault upgrade process</comment>
   </data>
   <data name="VersionInformationTitle" xml:space="preserve">
