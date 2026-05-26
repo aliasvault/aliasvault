@@ -35,6 +35,7 @@ Builds:
       - rustup@1.27.1
     scanignore:
       - apps/mobile-app/android/build.gradle
+      - apps/mobile-app/node_modules/hermes-compiler/hermesc/linux64-bin/hermesc
       - apps/mobile-app/node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle
       - apps/mobile-app/node_modules/@react-native-async-storage/async-storage/android/build.gradle
       - apps/mobile-app/node_modules/react-native-safe-area-context/android/build.gradle
