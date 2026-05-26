@@ -171,7 +171,7 @@
     <value>Erreur interne du serveur</value>
   </data>
   <data name="VAULT_ERROR" xml:space="preserve">
-    <value>Le coffre local n'est pas à jour. Veuillez synchroniser votre coffre en rafraîchissant la page et réessayez.</value>
+    <value>Le coffre-fort local n'est pas à jour. Veuillez synchroniser votre coffre en rafraîchissant la page et réessayez.</value>
   </data>
   <data name="UNKNOWN_ERROR" xml:space="preserve">
     <value>Une erreur inconnue s'est produite. Merci de réessayer.</value>
@@ -183,7 +183,7 @@
     <value>Code de récupération invalide. Veuillez réessayer.</value>
   </data>
   <data name="VAULT_NOT_UP_TO_DATE" xml:space="preserve">
-    <value>Votre coffre n'est pas à jour. Veuillez synchroniser votre coffre et réessayer.</value>
+    <value>Votre coffre-fort n'est pas à jour. Veuillez synchroniser votre coffre et réessayer.</value>
   </data>
   <data name="ACCOUNT_LOCKED" xml:space="preserve">
     <value>Vous avez entré un mot de passe incorrect trop de fois et votre compte a été bloqué. Vous pouvez réessayer dans 30 minutes.</value>
