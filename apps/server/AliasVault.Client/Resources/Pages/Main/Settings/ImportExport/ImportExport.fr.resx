@@ -119,7 +119,7 @@
     <comment>Button to export full vault as .avux archive</comment>
   </data>
   <data name="ExportingVaultMessage" xml:space="preserve">
-    <value>Export du coffre-fort ...</value>
+    <value>Export du coffre-fort...</value>
     <comment>Message shown while exporting vault</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
@@ -141,7 +141,7 @@
     <comment>Reset vault section title</comment>
   </data>
   <data name="ResetVaultSectionDescription" xml:space="preserve">
-    <value>Cette option vous permet de vider complètement votre coffre tout en conservant vos alias de compte et de courriel. Utilisez ceci si vous voulez commencer à nouveau après l'importation de données depuis un autre gestionnaire de mots de passe ou si vous voulez effacer tous les identifiants existants pour recommencer.</value>
+    <value>Cette option vous permet de vider complètement votre coffre-fort tout en conservant vos alias de compte et de courriel. Utilisez ceci si vous voulez commencer à nouveau après l'importation de données depuis un autre gestionnaire de mots de passe ou si vous voulez effacer tous les identifiants existants pour recommencer.</value>
     <comment>Reset vault section description</comment>
   </data>
   <data name="ExportPasswordConfirmTitle" xml:space="preserve">
