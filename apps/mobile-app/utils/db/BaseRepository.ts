@@ -1,4 +1,4 @@
-import * as dateFormatter from '@/utils/dateFormatter';
+import * as dateFormatter from '@/utils/DateFormatter';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
 

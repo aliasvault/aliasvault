@@ -202,11 +202,12 @@ export default function DeleteAccountScreen(): React.ReactNode {
   };
 
   /**
-   * Renders a warning item with a bullet point
+   * Renders a warning item with a bullet point.
+   * Called inline (not as a JSX component) to avoid creating a new component on every render.
    * @param text - The warning text to display
-   * @returns A React component
+   * @returns The warning item JSX
    */
-  const WarningItem = ({ text }: { text: string }): React.ReactNode => (
+  const renderWarningItem = (text: string): React.ReactNode => (
     <View style={styles.warningItem}>
       <ThemedText style={styles.warningIcon}>•</ThemedText>
       <ThemedText style={styles.warningItemText}>{text}</ThemedText>
@@ -236,9 +237,9 @@ export default function DeleteAccountScreen(): React.ReactNode {
                   <ThemedText style={styles.warningText}>
                     {t('settings.securitySettings.deleteAccount.warningText')}
                   </ThemedText>
-                  <WarningItem text={t('settings.securitySettings.deleteAccount.warningVaults')} />
-                  <WarningItem text={t('settings.securitySettings.deleteAccount.warningAliases')} />
-                  <WarningItem text={t('settings.securitySettings.deleteAccount.warningRecovery')} />
+                  {renderWarningItem(t('settings.securitySettings.deleteAccount.warningVaults'))}
+                  {renderWarningItem(t('settings.securitySettings.deleteAccount.warningAliases'))}
+                  {renderWarningItem(t('settings.securitySettings.deleteAccount.warningRecovery'))}
                   <View style={styles.inputContainer}>
                     <ThemedText style={styles.label}>{t('settings.securitySettings.deleteAccount.enterUsername')}</ThemedText>
                     <ThemedTextInput
@@ -259,7 +260,7 @@ export default function DeleteAccountScreen(): React.ReactNode {
                   <ThemedText style={styles.warningText}>
                     {t('settings.securitySettings.deleteAccount.finalWarning')}
                   </ThemedText>
-                  <WarningItem text={t('settings.securitySettings.deleteAccount.irreversibleWarning')} />
+                  {renderWarningItem(t('settings.securitySettings.deleteAccount.irreversibleWarning'))}
                   <View style={styles.inputContainer}>
                     <ThemedText style={styles.label}>{t('settings.securitySettings.deleteAccount.password')}</ThemedText>
                     <ThemedTextInput

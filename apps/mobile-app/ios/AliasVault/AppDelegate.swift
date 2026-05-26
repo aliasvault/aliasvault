@@ -2,14 +2,15 @@ import UIKit
 import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
+internal import Expo
 import VaultStoreKit
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
   var window: UIWindow?
 
-  var reactNativeDelegate: ReactNativeDelegate?
-  var reactNativeFactory: RCTReactNativeFactory?
+  private var reactNativeDelegate: ReactNativeDelegate?
+  private var reactNativeFactory: ExpoReactNativeFactory?
 
   func application(
     _ application: UIApplication,
@@ -28,7 +29,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     #endif
 
     let delegate = ReactNativeDelegate()
-    let factory = RCTReactNativeFactory(delegate: delegate)
+    let factory = ExpoReactNativeFactory(delegate: delegate)
     delegate.dependencyProvider = RCTAppDependencyProvider()
 
     reactNativeDelegate = delegate
@@ -137,7 +138,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   }
 }
 
-class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
+private class ReactNativeDelegate: ExpoReactNativeFactoryDelegate {
   override func sourceURL(for bridge: RCTBridge) -> URL? {
     self.bundleURL()
   }

@@ -39,13 +39,13 @@
     "buffer": "^6.0.3",
     "dompurify": "^3.4.0",
     "globals": "^16.0.0",
-    "i18next": "^25.3.1",
+    "i18next": "^26.2.0",
     "otpauth": "^9.3.6",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.57.0",
-    "react-i18next": "^15.6.0",
+    "react-i18next": "^17.0.8",
     "react-router-dom": "^7.12.0",
     "secure-remote-password": "github:LinusU/secure-remote-password#73e5f732b6ca0cdbdc19da1a0c5f48cdbad2cbf0",
     "sql.js": "^1.12.0",
@@ -77,10 +77,10 @@
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.1.0",
     "jsdom": "^26.0.0",
-    "postcss": "^8.5.10",
+    "postcss": "^8.5.15",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.6.3",
-    "vite-plugin-static-copy": "^2.3.2",
-    "wxt": "^0.20.11"
+    "vite-plugin-static-copy": "^3.4.0",
+    "wxt": "^0.20.26"
   }
 }

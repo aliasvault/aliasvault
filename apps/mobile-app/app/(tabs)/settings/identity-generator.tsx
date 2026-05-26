@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 
@@ -29,8 +29,8 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
   const [language, setLanguage] = useState<string>('en');
   const [gender, setGender] = useState<string>('random');
   const [ageRange, setAgeRange] = useState<string>('random');
-  const [languageOptions, setLanguageOptions] = useState<ILanguageOption[]>([]);
-  const [ageRangeOptions, setAgeRangeOptions] = useState<IAgeRangeOption[]>([]);
+  const [languageOptions] = useState<ILanguageOption[]>(() => getAvailableLanguages());
+  const [ageRangeOptions] = useState<IAgeRangeOption[]>(() => getAvailableAgeRanges());
 
   // Store pending changes and initial values (language is managed in subview)
   const pendingChanges = useRef<{ gender?: string; ageRange?: string }>({});
@@ -41,14 +41,6 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
     { label: t('settings.identityGeneratorSettings.genderOptions.male'), value: 'male' },
     { label: t('settings.identityGeneratorSettings.genderOptions.female'), value: 'female' }
   ];
-
-  // Load available languages and age ranges on mount
-  useEffect(() => {
-    const languages = getAvailableLanguages();
-    const ranges = getAvailableAgeRanges();
-    setLanguageOptions(languages);
-    setAgeRangeOptions(ranges);
-  }, []);
 
   useFocusEffect(
     useCallback(() => {

@@ -117,6 +117,7 @@ export default function AuthLogsScreen() : React.ReactNode {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loadLogs is async; setState only fires after data is fetched
     loadLogs();
   }, [loadLogs]);
 

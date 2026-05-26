@@ -1,6 +1,5 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useNavigation } from '@react-navigation/native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Platform, View, Text, TextInput, TouchableOpacity, RefreshControl, FlatList } from 'react-native';
@@ -12,9 +11,9 @@ import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsReposi
 import type { Item, ItemType } from '@/utils/dist/core/models/vault';
 import { getFieldValue, FieldKey, ItemTypes } from '@/utils/dist/core/models/vault';
 import emitter from '@/utils/EventEmitter';
-import { canHaveSubfolders, getRecursiveItemCount } from '@/utils/folderUtils';
+import { canHaveSubfolders, getRecursiveItemCount } from '@/utils/FolderUtils';
 import { HapticsUtility } from '@/utils/HapticsUtility';
-import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@/utils/itemFilters';
+import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@/utils/ItemFilters';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -317,6 +316,7 @@ export default function FolderViewScreen(): React.ReactNode {
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing loading state with async data fetch on auth/db readiness
     setIsLoadingItems(true);
     loadItems();
   }, [isAuthenticated, isDatabaseAvailable, loadItems, setIsLoadingItems]);

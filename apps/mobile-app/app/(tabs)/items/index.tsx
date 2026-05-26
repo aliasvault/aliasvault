@@ -1,6 +1,5 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useNavigation } from '@react-navigation/native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, Platform, Animated, TextInput, TouchableOpacity, View, RefreshControl } from 'react-native';
@@ -13,7 +12,7 @@ import type { Item, ItemType } from '@/utils/dist/core/models/vault';
 import { getFieldValue, FieldKey, ItemTypes } from '@/utils/dist/core/models/vault';
 import emitter from '@/utils/EventEmitter';
 import { HapticsUtility } from '@/utils/HapticsUtility';
-import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@/utils/itemFilters';
+import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@/utils/ItemFilters';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -66,7 +65,7 @@ export default function ItemsScreen(): React.ReactNode {
   const { t } = useTranslation();
   const colors = useColors();
   const navigate = useNavigationDebounce();
-  const scrollY = useRef(new Animated.Value(0)).current;
+  const [scrollY] = useState(() => new Animated.Value(0));
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const flatListRef = useRef<Animated.FlatList<Item | null>>(null);
@@ -113,6 +112,7 @@ export default function ItemsScreen(): React.ReactNode {
   useEffect(() => {
     if (itemUrl) {
       const decodedUrl = decodeURIComponent(itemUrl);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing search query with external deep-link parameter
       setSearchQuery(decodedUrl);
     }
   }, [itemUrl]);
@@ -430,6 +430,7 @@ export default function ItemsScreen(): React.ReactNode {
     }
 
     setIsLoadingItems(true);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loadItems is async; setState only fires after data is fetched
     loadItems();
   }, [isAuthenticated, isDatabaseAvailable, loadItems, setIsLoadingItems]);
 

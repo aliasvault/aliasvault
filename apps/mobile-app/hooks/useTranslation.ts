@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import { useTranslation as useReactI18nextTranslation } from 'react-i18next';
 
 /**
@@ -5,11 +6,11 @@ import { useTranslation as useReactI18nextTranslation } from 'react-i18next';
  * @returns Translation utilities
  */
 export const useTranslation = (): {
-  t: (key: string, options?: object) => string;
+  t: TFunction;
   currentLanguage: string;
 } => {
   const { t, i18n } = useReactI18nextTranslation();
-  
+
   return {
     t,
     currentLanguage: i18n.language,

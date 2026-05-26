@@ -7,7 +7,7 @@ import { View, TextInput, TextInputProps, StyleSheet, Platform, TouchableOpacity
 import type { PasswordSettings } from '@/utils/dist/core/models/vault';
 import { CreatePasswordGenerator } from '@/utils/dist/core/password-generator';
 import { HapticsUtility } from '@/utils/HapticsUtility';
-import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/passwordLengthSlider';
+import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/PasswordLengthSlider';
 
 import { useColors } from '@/hooks/useColorScheme';
 

@@ -1,11 +1,28 @@
 import { Href, useRouter, useLocalSearchParams, useGlobalSearchParams } from 'expo-router';
 import { useEffect, useRef } from 'react';
+import { StyleSheet, View } from 'react-native';
 
+import {
+  ResolvedTarget,
+  openActionRequiresVaultUnlock,
+  resolveOpenAction,
+} from '@/utils/DeepLinkResolver';
+
+import LoadingIndicator from '@/components/LoadingIndicator';
+import { ThemedView } from '@/components/themed/ThemedView';
 import { useNavigation } from '@/context/NavigationContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
-// Declare __DEV__ global for TypeScript (provided by React Native runtime)
-declare const __DEV__: boolean;
+/**
+ * Build an Href from a ResolvedTarget, appending any params as a query string.
+ */
+function buildHref(target: ResolvedTarget): Href {
+  if (!target.params || Object.keys(target.params).length === 0) {
+    return target.path as Href;
+  }
+  const qs = new URLSearchParams(target.params).toString();
+  return `${target.path}?${qs}` as Href;
+}
 
 /**
  * Action-based deep link handler for special actions triggered from outside the app.
@@ -16,17 +33,16 @@ declare const __DEV__: boolean;
  * - mobile-unlock/[requestId] - Mobile device unlock via QR code
  * - __debug__/set-offline/[true|false] - (DEV only) Toggle offline mode for E2E testing
  * - __debug__/set-api-url/[encoded-url] - (DEV only) Set API URL for E2E testing
- * - __debug__/set-server-revision/[number] - (DEV only) Set local server revision for RPO testing
  *
- * This route exists to handle deep links that Expo Router processes before our
- * Linking.addEventListener can intercept them. It provides proper navigation
- * flow for each action type.
+ * The action→path mapping lives in `utils/DeepLinkResolver` and is shared
+ * with the root layout's cold-boot interceptor; this component only handles
+ * the warm-start dispatch (vault-unlocked check, debug side effects).
  */
-export default function ActionHandler() : null {
+export default function ActionHandler() : React.ReactNode {
   const router = useRouter();
   const params = useGlobalSearchParams();
   const localParams = useLocalSearchParams();
-  const { setReturnUrl } = useNavigation();
+  const { setReturnUrl, bootHandled } = useNavigation();
   const hasNavigated = useRef<boolean>(false);
 
   useEffect(() => {
@@ -34,139 +50,87 @@ export default function ActionHandler() : null {
       return;
     }
 
-    // Get the path segments (first segment is the action)
+    /*
+     * Cold-boot: the root _layout already intercepts the initial URL, resolves the
+     * deep-link target itself, and redirects through /initialize. So when not booted
+     * yet, we stop executing here and trust the root layout to handle the deep link.
+     */
+    if (!bootHandled) {
+      hasNavigated.current = true;
+      return;
+    }
+
     const pathSegments = (params.path || localParams.path) as string[] | string | undefined;
     const pathArray = Array.isArray(pathSegments) ? pathSegments : pathSegments ? [pathSegments] : [];
 
     if (pathArray.length === 0) {
-      // No action specified, go to items
       router.replace('/(tabs)/items');
       hasNavigated.current = true;
       return;
     }
 
-    const [action, ...actionParams] = pathArray;
+    // Collect query/route params other than `path` itself for the resolver.
+    const queryParams: Record<string, string> = {};
+    for (const [key, value] of Object.entries(params)) {
+      if (key !== 'path' && typeof value === 'string') {
+        queryParams[key] = value;
+      }
+    }
 
-    // Handle different action types
-    switch (action) {
-      case 'mobile-unlock': {
-        // Mobile unlock action: $/mobile-unlock/[requestId]
-        const requestId = actionParams[0];
-        if (!requestId) {
-          console.error('[ActionHandler] mobile-unlock requires requestId');
-          router.replace('/(tabs)/settings');
-          hasNavigated.current = true;
-          return;
-        }
+    /*
+     * Claim the effect synchronously so a re-run can't double-dispatch while
+     * we're awaiting resolveOpenAction (which awaits debug side effects).
+     */
+    hasNavigated.current = true;
 
+    (async (): Promise<void> => {
+      const target = await resolveOpenAction(pathArray, queryParams);
+      if (!target) {
+        console.warn('[ActionHandler] Unknown or invalid action:', pathArray.join('/'));
+        router.replace('/(tabs)/items');
+        return;
+      }
+
+      if (openActionRequiresVaultUnlock(pathArray)) {
         /*
-         * Check if vault is unlocked. If the app was opened via deep link while auto-locked,
-         * the vault will be locked. In this case, redirect to /reinitialize first to unlock
-         * the vault, then forward to the mobile-unlock URL.
+         * Vault must be unlocked before the target screen makes sense. If the
+         * app was opened (e.g.) via deep link while auto-locked, detour through
+         * /reinitialize first and forward to the target via setReturnUrl.
          */
-        NativeVaultManager.isVaultUnlocked().then((isUnlocked: boolean) => {
-          if (hasNavigated.current) {
-            // Already navigated, skip
+        try {
+          const isUnlocked = await NativeVaultManager.isVaultUnlocked();
+          if (!isUnlocked) {
+            setReturnUrl(target);
+            router.replace('/reinitialize');
             return;
           }
-
-          if (!isUnlocked) {
-            // Set return URL to forward to mobile-unlock after reinitialize completes
-            setReturnUrl({
-              path: `/(tabs)/settings/mobile-unlock/${requestId}`,
-              params: params.pk ? { pk: params.pk as string } : undefined,
-            });
-            router.replace('/reinitialize');
-          } else {
-            // Vault is unlocked, navigate directly to mobile-unlock
-            router.replace(`/(tabs)/settings/mobile-unlock/${requestId}` as Href);
-          }
-          hasNavigated.current = true;
-        }).catch(() => {
-          // Error checking vault status, try navigating anyway
-          router.replace(`/(tabs)/settings/mobile-unlock/${requestId}` as Href);
-          hasNavigated.current = true;
-        });
-        break;
+        } catch {
+          // Error checking vault status, fall through and try navigating anyway.
+        }
       }
 
-      /**
-       * ----------------------------------------------------------------------------
-       * Debug actions for E2E testing (only works in dev mode)
-       * ----------------------------------------------------------------------------
-       */
-      case '__debug__': {
-        if (!__DEV__) {
-          console.warn('[ActionHandler] Debug actions only available in development');
-          router.replace('/(tabs)/items');
-          hasNavigated.current = true;
-          return;
-        }
+      router.replace(buildHref(target));
+    })();
+  }, [params, localParams, router, hasNavigated, setReturnUrl, bootHandled]);
 
-        const [debugAction, ...debugParams] = actionParams;
-
-        switch (debugAction) {
-          case 'set-offline': {
-            // Set offline mode: aliasvault://open/__debug__/set-offline/true
-            const isOffline = debugParams[0] === 'true';
-            console.debug('[ActionHandler] Setting offline mode:', isOffline);
-            NativeVaultManager.setOfflineMode(isOffline)
-              .then(() => {
-                console.debug('[ActionHandler] Offline mode set to:', isOffline);
-              })
-              .catch((error: Error) => {
-                console.error('[ActionHandler] Failed to set offline mode:', error);
-              });
-            router.replace('/(tabs)/items');
-            hasNavigated.current = true;
-            break;
-          }
-
-          case 'set-api-url': {
-            /*
-             * Set API URL: aliasvault://open/__debug__/set-api-url/http%3A%2F%2Flocalhost%3A5092
-             * Note: If slashes in URL aren't encoded, they become separate path segments
-             * So we join all remaining params with '/' to reconstruct the URL
-             */
-            if (debugParams.length === 0) {
-              console.error('[ActionHandler] set-api-url requires URL parameter');
-              router.replace('/(tabs)/items');
-              hasNavigated.current = true;
-              return;
-            }
-            // Join params back together (handles both encoded and unencoded slashes)
-            const joinedUrl = debugParams.join('/');
-            const url = decodeURIComponent(joinedUrl);
-            console.debug('[ActionHandler] Setting API URL:', url);
-            NativeVaultManager.setApiUrl(url)
-              .then(() => {
-                console.debug('[ActionHandler] API URL set to:', url);
-              })
-              .catch((error: Error) => {
-                console.error('[ActionHandler] Failed to set API URL:', error);
-              });
-            router.replace('/(tabs)/items');
-            hasNavigated.current = true;
-            break;
-          }
-
-          default:
-            console.warn('[ActionHandler] Unknown debug action:', debugAction);
-            router.replace('/(tabs)/items');
-            hasNavigated.current = true;
-            break;
-        }
-        break;
-      }
-
-      default:
-        // Unknown action, log and go to items
-        console.warn('[ActionHandler] Unknown action:', action);
-        router.replace('/(tabs)/items');
-        hasNavigated.current = true;
-        break;
-    }
-  }, [params, localParams, router, hasNavigated, setReturnUrl]);
-
-  return null;
+  /*
+   * Render loading view while the navigation action is being executed.
+   */
+  return (
+    <ThemedView style={styles.container}>
+      <View>
+        <LoadingIndicator />
+      </View>
+    </ThemedView>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'flex-start',
+    paddingHorizontal: 20,
+    paddingTop: '40%',
+  },
+});

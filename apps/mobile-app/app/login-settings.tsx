@@ -98,6 +98,7 @@ export default function SettingsScreen() : React.ReactNode {
   }, [DEFAULT_OPTIONS]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loadStoredSettings is async; setState only fires after data is fetched
     loadStoredSettings();
   }, [loadStoredSettings]);
 

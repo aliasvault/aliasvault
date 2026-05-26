@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 
@@ -28,17 +28,11 @@ export default function IdentityGeneratorLanguageScreen(): React.ReactNode {
   const { executeVaultMutation } = useVaultMutate();
 
   const [language, setLanguage] = useState<string>('en');
-  const [languageOptions, setLanguageOptions] = useState<ILanguageOption[]>([]);
+  const [languageOptions] = useState<ILanguageOption[]>(() => getAvailableLanguages());
 
   // Store pending changes and initial values
   const pendingChanges = useRef<{ language?: string }>({});
   const initialValue = useRef<string>('en');
-
-  // Load available languages on mount
-  useEffect(() => {
-    const languages = getAvailableLanguages();
-    setLanguageOptions(languages);
-  }, []);
 
   useFocusEffect(
     useCallback(() => {

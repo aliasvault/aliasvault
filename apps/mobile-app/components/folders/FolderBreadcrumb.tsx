@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-import { getFolderIdPath, getFolderPath } from '@/utils/folderUtils';
+import { getFolderIdPath, getFolderPath } from '@/utils/FolderUtils';
 import { useColors } from '@/hooks/useColorScheme';
 import { useDb } from '@/context/DbContext';
 

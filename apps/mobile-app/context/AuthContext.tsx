@@ -1,7 +1,6 @@
 import { Buffer } from 'buffer';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { NavigationContainerRef, ParamListBase } from '@react-navigation/native';
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import type { AuthMethod } from '@/utils/AppUnlockUtility';
@@ -12,7 +11,6 @@ import NativeVaultManager from '@/specs/NativeVaultManager';
 import i18n from '@/i18n';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 
-export const navigationRef = React.createRef<NavigationContainerRef<ParamListBase>>();
 export type { AuthMethod } from '@/utils/AppUnlockUtility';
 
 type AuthContextType = {
@@ -79,18 +77,23 @@ export const AuthProvider: React.FC<{
    * @returns object containing whether the user is logged in and enabled auth methods
    */
   const initializeAuth = useCallback(async (): Promise<{ isLoggedIn: boolean; enabledAuthMethods: AuthMethod[] }> => {
-    // Sync legacy config to native layer (can be removed in future version 0.25.0+)
-    // IMPORTANT: We must await this to ensure migration completes before checking auth status
-    await syncLegacyConfigToNative();
+    let accessToken = await NativeVaultManager.getAccessToken();
+    let username = await NativeVaultManager.getUsername();
 
-    const accessToken = await NativeVaultManager.getAccessToken();
-    const username = await NativeVaultManager.getUsername();
+    if (!accessToken || !username) {
+    /** 
+     * TODO: Remove syncLegacyConfigToNative entirely in version 0.25.0+ once enough
+     * time has passed that all active users have migrated off AsyncStorage.
+     */
+      await syncLegacyConfigToNative();
+      // Re-read in case the migration moved data into native
+      accessToken = await NativeVaultManager.getAccessToken();
+      username = await NativeVaultManager.getUsername();
+    }
 
-    // Update local React state
     let isAuthenticated = false;
     let methods: AuthMethod[] = ['password'];
 
-    // Check if user is logged in (has both access token and username)
     if (accessToken && username) {
       setUsername(username);
       setIsLoggedIn(true);

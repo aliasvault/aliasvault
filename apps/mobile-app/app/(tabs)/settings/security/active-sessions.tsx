@@ -144,6 +144,7 @@ export default function ActiveSessionsScreen() : React.ReactNode {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loadSessions is async; setState only fires after data is fetched
     loadSessions();
   }, [loadSessions]);
 

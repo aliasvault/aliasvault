@@ -37,7 +37,7 @@ export default function SettingsScreen() : React.ReactNode {
   const { logoutUserInitiated } = useLogout();
   const { loadApiUrl, getDisplayUrl } = useApiUrl();
   const navigate = useNavigationDebounce();
-  const scrollY = useRef(new Animated.Value(0)).current;
+  const [scrollY] = useState(() => new Animated.Value(0));
   const scrollViewRef = useRef<ScrollView>(null);
   const [autoLockDisplay, setAutoLockDisplay] = useState<string>('');
   const [clipboardClearDisplay, setClipboardClearDisplay] = useState<string>('');
