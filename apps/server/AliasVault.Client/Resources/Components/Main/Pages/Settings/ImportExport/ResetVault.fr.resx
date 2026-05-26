@@ -75,11 +75,11 @@
     <comment>Reset vault please note prefix</comment>
   </data>
   <data name="ResetVaultItemsDeletedNote" xml:space="preserve">
-    <value>Tous les éléments chiffrés de votre coffre seront définitivement supprimés</value>
+    <value>Tous les éléments chiffrés de votre coffre-fort seront définitivement supprimés</value>
     <comment>Reset vault note about items being deleted</comment>
   </data>
   <data name="ResetVaultEmailAliasesKeptNote" xml:space="preserve">
-    <value>Vos alias de messagerie seront conservés et pourront être réutilisés après la réinitialisation de votre coffre</value>
+    <value>Vos alias de messagerie seront conservés et pourront être réutilisés après la réinitialisation de votre coffre-fort</value>
     <comment>Reset vault note about email aliases being kept</comment>
   </data>
   <data name="ResetVaultSettingsKeptNote" xml:space="preserve">
@@ -95,7 +95,7 @@
     <comment>Reset vault username confirmation label</comment>
   </data>
   <data name="ResetVaultContinueButton" xml:space="preserve">
-    <value>Continuer avec la réinitialisation du coffre</value>
+    <value>Continuer avec la réinitialisation du coffre-fort</value>
     <comment>Reset vault continue button</comment>
   </data>
   <data name="ResetVaultFinalWarning" xml:space="preserve">
@@ -111,7 +111,7 @@
     <comment>Reset vault password confirmation label</comment>
   </data>
   <data name="ResetVaultConfirmButton" xml:space="preserve">
-    <value>Réinitialiser mon coffre</value>
+    <value>Réinitialiser mon coffre-fort</value>
     <comment>Reset vault final confirmation button</comment>
   </data>
   <data name="ResetVaultUsernameRequired" xml:space="preserve">
@@ -127,15 +127,15 @@
     <comment>Reset vault password incorrect error</comment>
   </data>
   <data name="ResetVaultProgressMessage" xml:space="preserve">
-    <value>Réinitialisation du coffre...</value>
+    <value>Réinitialisation du coffre-fort ...</value>
     <comment>Reset vault progress message</comment>
   </data>
   <data name="ResetVaultSuccessMessage" xml:space="preserve">
-    <value>Votre coffre a été réinitialisé avec succès. Tous les éléments ont été supprimés et vous pouvez maintenant recommencer.</value>
+    <value>Votre coffre-fort a été réinitialisé avec succès. Tous les éléments ont été supprimés et vous pouvez maintenant recommencer.</value>
     <comment>Reset vault success message</comment>
   </data>
   <data name="ResetVaultErrorMessage" xml:space="preserve">
-    <value>Une erreur s'est produite lors de la réinitialisation de votre coffre. Veuillez réessayer.</value>
+    <value>Une erreur s'est produite lors de la réinitialisation de votre coffre-fort. Veuillez réessayer.</value>
     <comment>Reset vault error message</comment>
   </data>
 </root>
