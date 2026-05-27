@@ -174,7 +174,7 @@
     "openAliasVaultToUpgrade": "Ouvrez AliasVault pour améliorer",
     "vaultUpgradeRequired": "Mise à niveau du coffre-fort requise.",
     "dismissPopup": "Fermer le pop-up",
-    "noTotpItemsFound": "Aucun code 2FA correspondant",
+    "noTotpItemsFound": "Aucun code d'authentification à double facteur correspondant",
     "close": "Fermer",
     "savePrompt": {
       "title": "Enregistrer dans AliasVault ?",
@@ -331,7 +331,7 @@
     "loadMore": "Charger plus ({{count}} restants)",
     "dateFormat": {
       "justNow": "maintenant",
-      "minutesAgo_single": "Il y a {{count}} minute",
+      "minutesAgo_single": "Il y a {{count}} minutes",
       "minutesAgo_plural": "Il y a {{count}} minutes",
       "hoursAgo_single": "Il y a {{count}} heures",
       "hoursAgo_plural": "Il y a {{count}} heures",
@@ -437,7 +437,7 @@
     "credentialAutofillDescription": "Afficher la popup de saisie automatique lorsque les champs nom d'utilisateur/mot de passe sont détectés",
     "totpAutofill": "Remplissage automatique du code 2FA",
     "totpAutofillDescription": "Afficher le popup de saisie automatique lorsque des champs de code 2FA sont détectés",
-    "autoCopyTotpOnAutofill": "Copie automatique du code 2FA dans le presse-papiers",
+    "autoCopyTotpOnAutofill": "Copie automatique du code à authentification à deux facteurs dans le presse-papiers",
     "autoCopyTotpOnAutofillDescription": "Copier automatiquement le premier code 2FA dans le presse-papiers après le remplissage automatique des identifiants",
     "loginSave": {
       "title": "Enregistrer l'invite de connexion",
