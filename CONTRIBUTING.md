@@ -84,6 +84,7 @@ AliasVault is licensed under the GNU Affero General Public License v3.0 (AGPLv3)
 2. You have the legal right to grant this license (e.g., you are the author, or have permission)
 3. You understand that your contribution will be made public under the AGPLv3 terms
 4. You are not expected to provide support or warranties for your contribution
+5. We do not accept commits generated or authored by LLMs or agents. Every commit must be personally authored, reviewed, tested, fully understood, and signed off by the contributor submitting it.
 
 ✅ There is no Contributor License Agreement (CLA) required. We believe in a balanced open source model where all contributors are treated equally under the terms of the AGPLv3.
 
