@@ -16,6 +16,7 @@
     Description="@Localizer["PageDescription"]">
 </PageHeader>
 
+<PageContent>
 @if (IsLoading)
 {
     <div class="p-4 mb-4 mx-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
@@ -159,6 +160,7 @@ else
         </div>
     </div>
 }
+</PageContent>
 
 @code {
     // Approximate per-row SQLite overhead in bytes. SQLite uses 4 KiB pages by default;

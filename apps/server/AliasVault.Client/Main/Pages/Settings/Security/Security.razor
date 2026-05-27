@@ -14,12 +14,14 @@
     </CustomActions>
 </PageHeader>
 
-<PasswordChangeSection OnStatusChanged="LoadData" />
-<TwoFactorAuthenticationSection @ref="TwoFactorSection" OnStatusChanged="LoadData" />
-<QuickVaultUnlockSection @ref="QuickVaultUnlockSection" OnStatusChanged="LoadData" />
-<ActiveSessionsSection @ref="SessionsSection" OnSessionsChanged="LoadData" />
-<RecentAuthLogsSection @ref="RecentAuthLogsSection" OnSessionsChanged="LoadData" />
-<DeleteAccountSection />
+<PageContent>
+    <PasswordChangeSection OnStatusChanged="LoadData" />
+    <TwoFactorAuthenticationSection @ref="TwoFactorSection" OnStatusChanged="LoadData" />
+    <QuickVaultUnlockSection @ref="QuickVaultUnlockSection" OnStatusChanged="LoadData" />
+    <ActiveSessionsSection @ref="SessionsSection" OnSessionsChanged="LoadData" />
+    <RecentAuthLogsSection @ref="RecentAuthLogsSection" OnSessionsChanged="LoadData" />
+    <DeleteAccountSection />
+</PageContent>
 
 @code {
     private IStringLocalizer Localizer => LocalizerFactory.Create("Pages.Main.Settings.Security.Security", "AliasVault.Client");

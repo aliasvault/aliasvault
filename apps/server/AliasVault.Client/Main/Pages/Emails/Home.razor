@@ -36,6 +36,7 @@
     </CustomActions>
 </PageHeader>
 
+<PageContent>
 @if (IsLoading)
 {
     <div class="px-4">
@@ -179,6 +180,7 @@ else
         </div>
     </div>
 }
+</PageContent>
 
 @code {
     private IStringLocalizer Localizer => LocalizerFactory.Create("Pages.Main.Emails.Home", "AliasVault.Client");
