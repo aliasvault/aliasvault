@@ -28,6 +28,7 @@
 }
 else
 {
+    <PageContent>
     <EditForm @ref="EditFormRef" Model="Obj" OnValidSubmit="SaveAlias">
         <DataAnnotationsValidator />
         <div class="grid grid-cols-1 px-4 pt-6 md:grid-cols-2 lg:grid-cols-3 md:gap-4 dark:bg-gray-900">
@@ -400,6 +401,7 @@ else
         <ConfirmButton OnClick="TriggerFormSubmit">@Localizer["SaveItemButton"]</ConfirmButton>
         <CancelButton OnClick="Cancel">@SharedLocalizer["Cancel"]</CancelButton>
     </StickyActionBar>
+    </PageContent>
 }
 
 @code {

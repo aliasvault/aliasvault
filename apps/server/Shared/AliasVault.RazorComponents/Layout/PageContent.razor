@@ -1,0 +1,19 @@
+<div class="min-h-[350px] @Class">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// Gets or sets the content rendered inside the page body wrapper.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets additional CSS classes appended to the wrapper. Use this to apply
+    /// the page's own padding/margin (e.g. "px-4 mb-4") while the wrapper guarantees a
+    /// minimum height so header dropdowns and popovers don't get clipped on short pages.
+    /// </summary>
+    [Parameter]
+    public string Class { get; set; } = string.Empty;
+}

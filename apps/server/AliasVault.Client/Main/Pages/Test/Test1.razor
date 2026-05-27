@@ -10,14 +10,16 @@
     Description="Test webapi call 1">
 </PageHeader>
 
-@if (IsLoading)
-{
-    <LoadingIndicator />
-}
-else
-{
-    <p>Test 1 OK.</p>
-}
+<PageContent Class="px-4">
+    @if (IsLoading)
+    {
+        <LoadingIndicator />
+    }
+    else
+    {
+        <p>Test 1 OK.</p>
+    }
+</PageContent>
 
 @code {
     private bool IsLoading { get; set; } = true;
