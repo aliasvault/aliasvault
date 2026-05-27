@@ -497,7 +497,7 @@
       "usernameCopied": "Nom d'utilisateur copié dans le presse-papiers",
       "emailCopied": "E-mail copié dans le presse-papiers",
       "passwordCopied": "Mot de passe copié dans le presse-papiers",
-      "totpCodeCopied": "Code TOTP copié dans le presse-papiers",
+      "totpCodeCopied": "Code à usage unique copié dans le presse-papiers",
       "urlCopied": "URL copiée dans le presse-papier"
     },
     "createNewAliasFor": "Créer un nouvel alias pour",
@@ -575,7 +575,7 @@
     "loadMore": "Charger plus ({{count}} restants)",
     "time": {
       "justNow": "à l'instant",
-      "minutesAgo_single": "Il y a {{count}} minute",
+      "minutesAgo_single": "Il y a {{count}} minutes",
       "minutesAgo_plural": "Il y a {{count}} minutes",
       "hoursAgo_single": "Il y a {{count}} heures",
       "hoursAgo_plural": "Il y a {{count}} heures",
