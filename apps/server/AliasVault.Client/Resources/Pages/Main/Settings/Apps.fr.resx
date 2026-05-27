@@ -51,7 +51,7 @@
   </data>
   <!-- Mobile Apps Section -->
   <data name="MobileAppsTitle">
-    <value>Applications Mobiles</value>
+    <value>Applications mobiles</value>
     <comment>Title for mobile apps section</comment>
   </data>
   <data name="MobileAppsDescription">
