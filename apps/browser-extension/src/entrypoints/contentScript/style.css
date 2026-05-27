@@ -376,8 +376,11 @@ body {
   background: rgba(0, 0, 0, 0.5);
   z-index: 2147483647;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  overflow-y: auto;
+  padding: 8px 0;
+  box-sizing: border-box;
 }
 
 .av-create-popup {
@@ -391,13 +394,18 @@ body {
               0 20px 25px -5px rgba(0, 0, 0, 0.1);
   width: 400px;
   max-width: 90vw;
+  max-height: calc(100vh - 16px);
+  margin: auto;
+  overflow-y: auto;
   transform: scale(0.95);
   opacity: 0;
   padding: 16px 24px;
+  box-sizing: border-box;
   transition: transform 0.2s ease, opacity 0.2s ease;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 14px;
   line-height: 1.4;
+  scrollbar-width: thin;
 }
 
 .av-create-popup.show {

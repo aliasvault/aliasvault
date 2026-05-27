@@ -664,6 +664,43 @@ export function createBasePopup(input: HTMLInputElement, rootContainer: HTMLElem
   // Append popup to the root container
   rootContainer.appendChild(popup);
 
+  /*
+   * Some websites embed the login form inside an iframe. We constrain the popup to 
+   * the (i)frame viewport so it doesn't get clipped inside small iframes.
+   * Instead, this will allow the popup to scroll internally if needed.
+   */
+  requestAnimationFrame(() => {
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    const margin = 8;
+    const spaceBelow = viewportHeight - inputRect.bottom - margin;
+    const spaceAbove = inputRect.top - margin;
+
+    let availableHeight = spaceBelow;
+    if (spaceBelow < 160 && spaceAbove > spaceBelow) {
+      // Flip above the input
+      const popupHeight = popup.offsetHeight;
+      const constrainedHeight = Math.min(popupHeight, spaceAbove);
+      const newTop = useFixedPositioning
+        ? inputRect.top - constrainedHeight - 4
+        : inputRect.top - rootContainerRect.top - constrainedHeight - 4;
+      popup.style.top = `${newTop}px`;
+      availableHeight = spaceAbove;
+    }
+
+    popup.style.maxHeight = `${Math.max(80, availableHeight)}px`;
+    popup.style.overflowY = 'auto';
+
+    // Clamp horizontally so the popup stays inside the viewport
+    const popupWidth = popup.offsetWidth;
+    if (inputRect.left + popupWidth > viewportWidth - margin) {
+      const newLeft = Math.max(margin, viewportWidth - popupWidth - margin);
+      popup.style.left = useFixedPositioning
+        ? `${newLeft}px`
+        : `${newLeft - rootContainerRect.left}px`;
+    }
+  });
+
   return popup;
 }
 
