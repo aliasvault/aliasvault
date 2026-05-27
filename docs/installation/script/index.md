@@ -55,7 +55,9 @@ chmod +x install.sh
 ---
 
 ## 2. TLS/SSL configuration
-The default installation will create a self-signed TLS/SSL certificate and configure Nginx to use it. This is sufficient for local deployments using only the web-app, however the mobile apps (iOS and Android) require a valid (external) SSL certificate to be able to connect.
+The default installation will create a self-signed TLS/SSL certificate and configure Nginx to use it. This is sufficient for local deployments using only the web app, however the mobile apps (iOS and Android) require a **publicly trusted** SSL certificate to be able to connect.
+
+**Note:** mobile apps enforce SSL certificate validation at the OS level with no "Proceed anyway" option, so the certificate must be issued by a publicly recognized CA (e.g. Let's Encrypt): self-signed certificates or ones manually added to the device keystore will not work. If the web app and browser extension connect but the mobile app does not, check the validity of your SSL cert first.
 
 To generate a valid external TLS/SSL certificate for AliasVault, you can use Let's Encrypt via a built-in helper tool. In order to make this work you will need the following:
 

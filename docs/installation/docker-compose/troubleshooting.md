@@ -160,6 +160,10 @@ docker compose restart
 
 4. You can now log in to the admin panel (`/admin`) with the new password.
 
+### 5. Mobile app cannot connect, but web app and browser extension work
+
+The mobile apps enforce certificate trust at the OS level and reject certificates that browsers would accept with a warning. The certificate served by your reverse proxy must be issued by a publicly recognized CA: self-signed certificates, internal CAs, or ones manually added to the device keystore will not work.
+
 ---
 
 ## Other Issues

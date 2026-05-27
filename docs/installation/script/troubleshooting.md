@@ -94,7 +94,11 @@ docker compose logs reverse-proxy
 ./install.sh restart
 ```
 
-### 3. No emails being received
+### 3. Mobile app cannot connect, but web app and browser extension work
+
+The mobile apps enforce certificate trust at the OS level and reject certificates that browsers would accept with a warning. The certificate must be issued by a publicly recognized CA: self-signed certificates or ones manually added to the device keystore will not work.
+
+### 4. No emails being received
 If you are not receiving emails on your aliases, check the following:
 - Verify DNS records are correctly configured
 - Ensure ports 25 and 587 are accessible

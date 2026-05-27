@@ -82,9 +82,11 @@ services:
 ## 2. SSL/TLS configuration
 To use AliasVault securely, HTTPS is required in the following situations:
 - When accessing the web app from any address other than `localhost` (due to browser security restrictions)
-- When using the mobile apps, which require the API URL to have a valid TLS certificate; otherwise, the app will not connect
+- When using the mobile apps, which require the API URL to be served with a **publicly trusted** TLS certificate; otherwise, the app will not connect
 
 You must set up and configure your own TLS/SSL infrastructure (such as Traefik, Nginx, HAProxy, or Cloudflare Tunnel) to make the AliasVault container accessible over HTTPS with a valid SSL/TLS certificate. For example: `https://aliasvault.yourdomain.com`.
+
+**Note:** the mobile apps enforce SSL certificate validation at the OS level with no "Proceed anyway" option. If the web app and browser extension work but the mobile app does not: check the validity of your SSL cert: it must be issued by a publicly recognized CA (e.g. Let's Encrypt). Self-signed certificates, internal CAs, or ones manually added to the device keystore will not work.
 
 ---
 
