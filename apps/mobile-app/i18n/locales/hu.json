@@ -248,15 +248,15 @@
       }
     },
     "passwordGeneratorSettings": {
-      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
+      "description": "Állítsa be az alapkonfigurációt az új jelszó generáláshoz. Ezeket a beállításokat fogja a rendszer használni, kivétel ha külön módosítja egyes bejegyzéseknél.",
       "preview": "Előnézet"
     },
     "securitySettings": {
       "title": "Biztonság",
-      "description": "Manage your account and vault security settings.",
-      "changeMasterPassword": "Change Master Password",
+      "description": "Kezelje a fiókját, és széf biztonsági beállításait.",
+      "changeMasterPassword": "Mester jelszó módosítása",
       "activeSessionsTitle": "Aktív munkamenetek",
-      "recentAuthLogs": "Recent Auth Logs",
+      "recentAuthLogs": "Legfrissebb hitelesítések naplója",
       "deleteAccountTitle": "Fiók Törlése",
       "changePassword": {
         "headerText": "Changing your master password also changes the vault encryption keys. It is advised to periodically change your master password to keep your vaults secure.",
