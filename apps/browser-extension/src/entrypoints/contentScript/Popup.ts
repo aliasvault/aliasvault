@@ -814,7 +814,8 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
   const hideFor1HourText = await t('content.hideFor1Hour');
   const hidePermanentlyText = await t('content.hidePermanently');
   const noMatchesText = await t('content.noMatchesFound');
-  const creatingText = await t('content.creatingNewAlias');
+  const creatingAliasText = await t('content.creatingNewAlias');
+  const creatingCredentialText = await t('content.creatingNewCredential');
   const failedText = await t('content.failedToCreateIdentity');
 
   const popup = createBasePopup(input, rootContainer);
@@ -868,7 +869,7 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
       return;
     }
 
-    const loadingPopup = createLoadingPopup(input, creatingText, rootContainer);
+    const loadingPopup = createLoadingPopup(input, `${result.isCustomCredential ? creatingCredentialText : creatingAliasText}...`, rootContainer);
 
     try {
       // Sync with api to ensure we have the latest vault.
