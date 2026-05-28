@@ -294,17 +294,17 @@
         "time": "Idő",
         "ipAddress": "IP cím",
         "client": "Kliens",
-        "failedToLoad": "Failed to load auth logs"
+        "failedToLoad": "A hitelesítési naplók nem tölthetőek be"
       },
       "deleteAccount": {
-        "headerText": "Deleting your account will immediately and permanently delete all of your data.",
-        "warningText": "Warning: This action cannot be undone. All your data will be permanently deleted.",
-        "finalWarning": "Final warning: Enter your password to permanently delete your account.",
-        "warningVaults": "All encrypted vaults which includes all of your credentials will be permanently deleted",
-        "warningAliases": "Your email aliases will be orphaned and cannot be claimed by other users",
-        "warningRecovery": "Your account cannot be recovered after deletion",
-        "irreversibleWarning": "Account deletion is irreversible and cannot be undone. Pressing the button below will delete your account immediately and permanently.",
-        "enterUsername": "Enter your username to continue",
+        "headerText": "Fiókjának törlése azonnal és véglegesen törli minden adatát.",
+        "warningText": "Figyelem: Ez a művelet nem visszafordítható. Minden adata véglegesen törlésre kerül.",
+        "finalWarning": "Utolsó figyelmeztetés: Adja meg jelszavát fiókja végleges törléséhez.",
+        "warningVaults": "Minden bejegyzése ami a titkosított széfekben található véglegesen törlésre kerül",
+        "warningAliases": "Az email alias-ai leválasztásra kerülnek, és nem lesznek elérhetőek a többiek számára",
+        "warningRecovery": "A fiókja nem állítható vissza törlést követően",
+        "irreversibleWarning": "A fiók törlés nem visszafordítható, és nem lehet semmissé tenni. A lenti gomb megnyomásával fiókja azonnali és véglegesen törlésre kerül.",
+        "enterUsername": "Adja meg felhasználó nevét a folytatáshoz",
         "password": "Jelszó",
         "enterPassword": "Jelszó megadása",
         "deleteAccount": "Fiók törlése",
@@ -321,9 +321,9 @@
     },
     "qrScanner": {
       "title": "QR kód olvasó",
-      "scanningMessage": "Scan AliasVault QR code",
+      "scanningMessage": "AliasVault QR kód beolvasása",
       "mobileLogin": {
-        "confirmTitle": "Confirm Login Request",
+        "confirmTitle": "Bejelentkezési kérelem jóváhagyása",
         "confirmSubtitle": "Re-authenticate to approve login on another device.",
         "confirmMessage": "You are about to log in on a remote device with your account. This other device will have full access to your vault. Only proceed if you trust this device.",
         "successDescription": "The remote device has been successfully logged in.",
