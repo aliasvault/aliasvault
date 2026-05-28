@@ -144,7 +144,7 @@
       "warningLink": "En savoir plus à ce sujet ici",
       "headerText": "Vous pouvez configurer AliasVault pour fournir le mot de passe natif et la fonctionnalité de saisie automatique du mot de passe dans Android. Suivez les instructions ci-dessous pour l'activer.",
       "passkeyNotice": "Les mots de passe sont créés via le gestionnaire d'identifiants Android (Android 14+). Pour les stocker dans AliasVault, assurez-vous que le remplissage automatique ci-dessous est activé.",
-      "howToEnable": "Comment activer le remplissage automatique et les clés d'accès:",
+      "howToEnable": "Comment activer le remplissage automatique et les clés d'accès :",
       "step1": "1. Ouvrez les paramètres Android via le bouton ci-dessous, et changez le \"service préféré de saisie automatique\" par \"AliasVault\"",
       "openAutofillSettings": "Ouvrir les paramètres de remplissage automatique",
       "buttonTip": "Si le bouton ci-dessus ne fonctionne pas, il peut être bloqué en raison des paramètres de sécurité. Vous pouvez manuellement aller dans Réglages Android → Gestion Générale → Mots de passe et saisie automatique.",
@@ -155,7 +155,7 @@
     },
     "advancedOptions": "Options avancées",
     "copyTotpOnFill": "Copier le code à usage unique lors de la saisie automatique",
-    "copyTotpOnFillDescription": "Lorsque vous remplissez automatiquement un mot de passe avec 2FA, copiez automatiquement son code TOTP dans le presse-papiers afin de pouvoir le coller dans le champ suivant.",
+    "copyTotpOnFillDescription": "Lorsque vous remplissez automatiquement un mot de passe avec 2FA, copiez automatiquement son code à usage unique dans le presse-papiers afin de pouvoir le coller dans le champ suivant.",
     "vaultUnlock": "Méthode de déverrouillage du coffre-fort",
     "autoLock": "Délai de verrouillage automatique",
     "clipboardClear": "Effacer le presse-papiers",
@@ -423,7 +423,7 @@
     "noMatchingItems": "Aucun élément ne correspond au filtre sélectionné.",
     "noMatchingItemsSearch": "Aucun élément correspondant à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Aucun élément {{filter}} correspondant à \"{{search}}\"",
-    "noItemsFound": "Aucun élément trouvé. Créez en un pour commencer. Astuce : vous pouvez également vous connecter à l'application Web AliasVault pour importer les identifiants depuis d'autres gestionnaires de mots de passe.",
+    "noItemsFound": "Aucun élément trouvé. Créez-en un pour commencer. Astuce : vous pouvez également vous connecter à l'application Web AliasVault pour importer les identifiants depuis d'autres gestionnaires de mots de passe.",
     "allItemsInFolders": "Tous vos éléments sont organisés dans des dossiers. Appuyez sur un dossier ci-dessus pour voir vos identifiants, ou utilisez la recherche pour trouver des éléments spécifiques.",
     "clearSearch": "Effacer la recherche",
     "clearFilter": "Effacer le filtre",
@@ -460,7 +460,7 @@
       "title": "Lien vers l'identifiant existant",
       "intro": "Sélectionnez un identifiant existant dans votre coffre-fort pour le lier à \"{{target}}\".",
       "confirmTitle": "Lier l'identifiant?",
-      "confirmMessage": "Êtes-vous sûr de vouloir lier «{{url}}» à cet identifiant?"
+      "confirmMessage": "Êtes-vous sûr de vouloir lier «{{url}}» à cet identifiant ?"
     },
     "autofillUrlAdded": {
       "title": "Identifiant lié",
@@ -545,7 +545,7 @@
       "restore": "Restaurer",
       "deletePermanently": "Supprimer définitivement",
       "emptyAll": "Tout vider",
-      "daysRemaining": "{{count}} jour restant",
+      "daysRemaining": "{{count}} jours restants",
       "daysRemaining_plural": "{{count}} jours restants",
       "expiringSoon": "Expirant bientôt",
       "confirmDeleteTitle": "Supprimer définitivement ?",
@@ -610,7 +610,7 @@
     "USERNAME_TOO_SHORT": "Le nom d'utilisateur est trop court : il doit comporter au moins 3 caractères.",
     "USERNAME_TOO_LONG": "Le nom d'utilisateur est trop long : il ne peut pas dépasser 40 caractères.",
     "USERNAME_INVALID_EMAIL": "Adresse e-mail invalide.",
-    "USERNAME_INVALID_CHARACTERS": "Le nom d'utilisateur est invalide, il ne peut contenir que des lettres ou des chiffres.",
+    "USERNAME_INVALID_CHARACTERS": "Le nom d'utilisateur est invalide : il ne peut contenir que des lettres ou des chiffres.",
     "VAULT_NOT_UP_TO_DATE": "Votre coffre-fort n'est pas à jour. Veuillez synchroniser votre coffre-fort et réessayer.",
     "INTERNAL_SERVER_ERROR": "Erreur interne du serveur.",
     "VAULT_ERROR": "Le coffre-fort local n'est pas à jour. Veuillez synchroniser votre coffre-fort en rafraîchissant la page et réessayez."
