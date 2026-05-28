@@ -102,7 +102,7 @@
       "serverVersionNotSupported": "Le serveur d'AliasVault doit être mis à jour vers une version plus récente afin d'utiliser cette extension de navigateur. Veuillez contacter le support si vous avez besoin d'aide.",
       "serverVersionTooOld": "Le serveur AliasVault doit être mis à jour vers une version plus récente pour pouvoir utiliser cette fonctionnalité. Veuillez contacter l'administrateur du serveur si vous avez besoin d'aide.",
       "unknownError": "Une erreur inconnue s'est produite",
-      "unknownErrorTryAgain": "Une erreur inconnue s'est produite. Merci de réessayer.",
+      "unknownErrorTryAgain": "Une erreur inconnue s'est produite. Veuillez réessayer plus tard.",
       "vaultNotAvailable": "Coffre-fort non disponible",
       "vaultIsLocked": "Le coffre-fort est verrouillé",
       "passwordChanged": "Votre mot de passe a changé depuis la dernière fois que vous vous êtes connecté. Veuillez vous reconnecter pour des raisons de sécurité.",
@@ -135,7 +135,7 @@
       "USERNAME_TOO_SHORT": "Le nom d'utilisateur est trop court : il doit comporter au moins 3 caractères.",
       "USERNAME_TOO_LONG": "Le nom d'utilisateur est trop long : il ne peut pas contenir plus de 40 caractères.",
       "USERNAME_INVALID_EMAIL": "Adresse e-mail invalide.",
-      "USERNAME_INVALID_CHARACTERS": "Le nom d'utilisateur n'est pas valide, il ne peut contenir que des lettres ou des chiffres.",
+      "USERNAME_INVALID_CHARACTERS": "Le nom d'utilisateur est invalide : il ne peut contenir que des lettres ou des chiffres.",
       "VAULT_NOT_UP_TO_DATE": "Votre coffre-fort n'est pas à jour. Veuillez synchroniser votre coffre et réessayer.",
       "INTERNAL_SERVER_ERROR": "Erreur interne du serveur.",
       "VAULT_ERROR": "Le coffre-fort local n'est pas à jour. Veuillez synchroniser votre coffre en rafraîchissant la page et réessayez."
@@ -163,7 +163,7 @@
     "randomIdentityDescriptionDropdown": "Identité aléatoire avec email aléatoire",
     "manualCredentialDescription": "Spécifiez votre propre adresse email et nom d'utilisateur.",
     "manualCredentialDescriptionDropdown": "Identifiant et mot de passe manuels",
-    "failedToCreateIdentity": "Échec de la création de l'identité. Veuillez réessayer.",
+    "failedToCreateIdentity": "Échec de la création de l'identité. Veuillez réessayer plus tard.",
     "enterEmailAndOrUsername": "Entrez l'adresse email et/ou le nom d'utilisateur",
     "autofillWithAliasVault": "Saisie automatique du nom d'utilisateur/mot de passe",
     "autofillTotp": "Remplissage automatique 2FA",
@@ -225,7 +225,7 @@
       "alphabetical": "Alphabétique (A-Z)"
     },
     "deleteItemTitle": "Supprimer l'élement",
-    "deleteItemConfirm": "Êtes-vous certain de vouloir supprimer cet élément?",
+    "deleteItemConfirm": "Êtes-vous certain de vouloir supprimer cet élément ?",
     "viewHistory": "Voir l'historique",
     "history": "Historique",
     "noHistoryAvailable": "Pas d'historique disponible",
@@ -304,7 +304,7 @@
     "saveToViewCode": "Enregistrer pour afficher le code",
     "defaultName": "Authentificateur",
     "deleteTotpCodeTitle": "Supprimer le code d'authentification à deux facteurs",
-    "deleteTotpCodeConfirmation": "Êtes-vous sûr de vouloir supprimer le code 2FA \"{{name}} \" ?",
+    "deleteTotpCodeConfirmation": "Êtes-vous sûr de vouloir supprimer le code d'authentification à double facteurs \"{{name}} \" ?",
     "errors": {
       "invalidSecretKey": "Format de clé secrète invalide."
     }
@@ -434,8 +434,8 @@
       }
     },
     "credentialAutofill": "Remplissage automatique des identifiants",
-    "credentialAutofillDescription": "Afficher la popup de saisie automatique lorsque les champs nom d'utilisateur/mot de passe sont détectés",
-    "totpAutofill": "Remplissage automatique du code 2FA",
+    "credentialAutofillDescription": "Afficher un popup de saisie automatique lorsque les champs nom d'utilisateur/mot de passe sont détectés",
+    "totpAutofill": "Remplissage automatique du code d'authentification à deux facteurs",
     "totpAutofillDescription": "Afficher le popup de saisie automatique lorsque des champs de code 2FA sont détectés",
     "autoCopyTotpOnAutofill": "Copie automatique du code à authentification à deux facteurs dans le presse-papiers",
     "autoCopyTotpOnAutofillDescription": "Copier automatiquement le premier code 2FA dans le presse-papiers après le remplissage automatique des identifiants",
@@ -511,7 +511,7 @@
     "restore": "Restaurer",
     "deletePermanently": "Supprimer définitivement",
     "emptyAll": "Vider tout",
-    "daysRemaining_one": "{{count}} jour restant",
+    "daysRemaining_one": "{{count}} jours restants",
     "daysRemaining_other": "{{count}} jours restants",
     "expiringSoon": "Expirant bientôt",
     "confirmDeleteTitle": "Supprimer définitivement ?",
