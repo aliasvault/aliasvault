@@ -107,7 +107,7 @@
     <comment>Title for CSV export option</comment>
   </data>
   <data name="ExportCsvDescription" xml:space="preserve">
-    <value>Export de base pour l'importation dans d'autres gestionnaires de mots de passe. N'inclut pas les mots de passe ou les pièces jointes.</value>
+    <value>Export de base pour l'importation dans d'autres gestionnaires de mots de passe. N'inclut pas les clés d'accès ou les pièces jointes.</value>
     <comment>Description for CSV export option</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
