@@ -107,7 +107,7 @@
     <comment>Error message for incorrect password</comment>
   </data>
   <data name="SessionTimedOutError" xml:space="preserve">
-    <value>Votre session a expiré. Veuillez vous reconnecter</value>
+    <value>Votre session a expiré. Veuillez vous reconnecter.</value>
     <comment>Error message for session timeout</comment>
   </data>
   <data name="ConnectionFailedError" xml:space="preserve">
