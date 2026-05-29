@@ -65,7 +65,7 @@ else
 
         <ServerValidationErrors @ref="_serverValidationErrors" />
 
-        <EditForm Model="_unlockModel" OnValidSubmit="UnlockSubmit" class="mt-4 space-y-6">
+        <EditForm Model="_unlockModel" OnValidSubmit="UnlockSubmit" class="mt-4 space-y-6" av-enable="true" av-suppress-save="true">
             <DataAnnotationsValidator/>
             <div>
                 <label asp-for="Input.Password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@Localizer["YourPasswordLabel"]</label>
