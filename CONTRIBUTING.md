@@ -1,6 +1,6 @@
 # Contributing to AliasVault
 
-Thanks for your interest in contributing to the AliasVault project! There are a lot of ways to help out.
+Thanks for your interest in contributing to the AliasVault project! There are plenty of ways to help out.
 
 ## Table of Contents
 
@@ -8,7 +8,7 @@ Thanks for your interest in contributing to the AliasVault project! There are a 
 2. [Contributing to Translations](#2-contributing-to-translations)
 3. [Contributing to the Documentation](#3-contributing-to-the-documentation)
 4. [Contributing to the Main Codebase](#4-contributing-to-the-main-codebase)
-   - [4.1 Get in contact](#41-get-in-contact)
+   - [4.1 Pull requests](#41-pull-requests)
    - [4.2 Set up your local development environment](#42-set-up-your-local-development-environment)
    - [4.3 Supported versions](#43-supported-versions)
 5. [License and Contributions](#5-license-and-contributions)
@@ -56,12 +56,23 @@ To make changes to the AliasVault documentation please make a PR that directly e
 
 ## 4. Contributing to the Main Codebase
 
-### 4.1 Get in contact
-If you're planning to work on a new feature or improvement for AliasVault, we strongly encourage you to get in touch with us first. This ensures that your proposed changes align with the project's direction and increases the likelihood of your work being accepted into the official repository. You can reach us through:
+AliasVault is open to outside contributions in the form of ideas, feature requests but also pull requests. Please read the guidelines below.
 
-- Opening an issue on GitHub to discuss your proposed changes
-- Reaching out via Discord or email
-- Contacting the maintainers directly
+### 4.1 Pull requests
+
+Pull requests generally fall into one of two categories:
+
+#### 4.1.1 Technical improvements
+Bug fixes, refactors, performance improvements, tests and documentation fixes are more than welcome. Before starting work, please do make sure a GitHub issue exists for what you're planning so we can briefly discuss the merit. We may already have other ideas about how to approach it, or be working on it already internally. Follow the existing patterns established in the codebase, and make sure your changes pass the linting style checks and tests. This will give your PR the best chance of being reviewed and merged.
+
+> For security related issues: please **do not** open a public PR or issue for a suspected vulnerability. Report it privately as described in [SECURITY.md](SECURITY.md) so it can be handled reponsibly.
+
+#### 4.1.2 Feature additions and UX changes
+Anything that alters how AliasVault works and/or looks is something we handle carefully. Up front, please know that it's highly unlikely we'll accept pull requests for visual changes, new strings, new settings, or really anything that changes the user experience. Please talk to us first if you're planning something like this. There are cases where we may accept it, but in most situations we probably won’t.
+
+We care strongly about how AliasVault looks and behaves across all platforms (web app, browser extension, mobile), and getting this right is genuinely hard. That's why UI and UX changes are most likely to be done internally by the core maintainers, and why a no on your PR isn't meant personally.
+
+That said, we genuinely appreciate your ideas and proposals for UI/UX improvements. Please feel free to open a GitHub feature request issue (or reach out via [Discord](https://discord.gg/DsaXMTEtpF) or [email](mailto:contact@support.aliasvault.net)) describing the problem you're trying to solve, ideally with mockups where applicable. Or, if there's already an issue for it, add your thoughts in the comments.
 
 ### 4.2 Set up your local development environment
 You can find instructions on how to get your local development environment setup for the different parts of the AliasVault codebase here:
