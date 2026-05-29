@@ -33,16 +33,20 @@ let loginDetector: LoginDetector | null = null;
 const POPUP_RUNTIME: Record<PopupType, {
   open: (input: HTMLInputElement, container: HTMLElement) => void;
   enabled: () => Promise<boolean>;
+  /** Background message used to ask whether any stored entry would fill this field type. */
+  matchMessage: 'GET_FILTERED_ITEMS' | 'GET_ITEMS_WITH_TOTP';
 }> = {
   credentials: {
     open: openAutofillPopup,
     /** Resolves true when the user has the credential autofill popup enabled. */
     enabled: () => LocalPreferencesService.getGlobalAutofillPopupEnabled(),
+    matchMessage: 'GET_FILTERED_ITEMS',
   },
   totp: {
     open: openTotpPopup,
     /** Resolves true when the user has the TOTP autofill popup enabled. */
     enabled: () => LocalPreferencesService.getTotpAutofillEnabled(),
+    matchMessage: 'GET_ITEMS_WITH_TOTP',
   },
 };
 
@@ -500,15 +504,6 @@ export default defineContentScript({
             return;
           }
 
-          /*
-           * Honour av-suppress-save: skip the popup (and therefore the icon) entirely when there is
-           * no stored credential that matches this URL, so we don't invite the user to "create new"
-           * on pages where storing the credential isn't desired by default (e.g. AliasVault's own web login form).
-           */
-          if (isAvSuppressSave(e.target as Element) && !await hasMatchingCredentialForCurrentUrl()) {
-            return;
-          }
-
           const { isValid, inputElement } = validateInputField(e.target as Element);
           if (isValid && inputElement) {
             /**
@@ -540,6 +535,17 @@ export default defineContentScript({
             // Check if we should show autofill UI for this field type
             const popupType = popupTypeForFieldType(detectedFieldType);
             if (!await POPUP_RUNTIME[popupType].enabled()) {
+              return;
+            }
+
+            /*
+             * Honour av-suppress-save: skip the popup (and the icon) when there is no stored entry
+             * that would actually fill this specific field — credentials for the credentials popup,
+             * TOTP-enabled credentials for the TOTP popup — so we don't invite the user to
+             * "create new" on pages where storing isn't desired by default (e.g. AliasVault's own
+             * login / unlock / Enable 2FA forms).
+             */
+            if (isAvSuppressSave(inputElement) && !await hasMatchForCurrentUrl(popupType)) {
               return;
             }
 
@@ -605,18 +611,19 @@ export default defineContentScript({
         });
 
         /**
-         * Check whether at least one stored credential matches the current URL.
-         * Used by av-suppress-save pages to decide whether the autofill popup should appear at all.
-         * Returns false when the vault is locked or when no matches exist.
+         * Check whether at least one stored entry would actually fill the current field for the
+         * given popup type. Credentials popup looks at any URL-matched credential; TOTP popup
+         * additionally requires the credential to have a stored TOTP secret. Returns false when
+         * the vault is locked or when no matches exist — that's what av-suppress-save pages use
+         * to decide whether the popup should appear at all.
          */
-        async function hasMatchingCredentialForCurrentUrl(): Promise<boolean> {
+        async function hasMatchForCurrentUrl(popupType: PopupType): Promise<boolean> {
           try {
             const matchingMode = await LocalPreferencesService.getAutofillMatchingMode();
-            const response = await sendMessage('GET_FILTERED_ITEMS', {
+            const response = await sendMessage(POPUP_RUNTIME[popupType].matchMessage, {
               currentUrl: window.location.href,
               pageTitle: document.title,
               matchingMode,
-              includeRecentlySelected: false,
             });
             return response.success && (response.items?.length ?? 0) > 0;
           } catch {
@@ -660,16 +667,17 @@ export default defineContentScript({
             return;
           }
 
-          /*
-           * av-suppress-save respects forceShow (e.g. explicit OPEN_AUTOFILL_POPUP from context menu)
-           * but otherwise hides the popup unless a matching credential is already stored.
-           */
-          if (!forceShow && isAvSuppressSave(inputElement) && !await hasMatchingCredentialForCurrentUrl()) {
-            return;
-          }
-
           const detectedFieldType = formDetector.getDetectedFieldType();
           const popupType = popupTypeForFieldType(detectedFieldType);
+
+          /*
+           * av-suppress-save respects forceShow (e.g. explicit OPEN_AUTOFILL_POPUP from context menu)
+           * but otherwise hides the popup unless a stored entry actually matches this field type
+           * (credential for the credentials popup, credential-with-TOTP for the TOTP popup).
+           */
+          if (!forceShow && isAvSuppressSave(inputElement) && !await hasMatchForCurrentUrl(popupType)) {
+            return;
+          }
 
           /**
            * By default we check if the site allows autofill and if the field is autofill-triggerable
