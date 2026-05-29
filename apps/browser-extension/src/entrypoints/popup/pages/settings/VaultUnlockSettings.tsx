@@ -110,6 +110,8 @@ const VaultUnlockSettings: React.FC = () => {
       return;
     }
 
+    setShowPinSetup(false);
+
     try {
       showLoading();
 
@@ -127,7 +129,6 @@ const VaultUnlockSettings: React.FC = () => {
       await setupPin(newPin, encryptionKey);
 
       setPinEnabled(true);
-      setShowPinSetup(false);
       setPinSetupStep(1);
       setNewPin('');
       setConfirmPin('');
