@@ -208,7 +208,7 @@
       "24hours": "24 小时"
     },
     "language": "语言",
-    "languageSystemMessage": "要更改应用语言，请在设备设置中配置AliasVault的首选语言。",
+    "languageSystemMessage": "要更改应用语言，请在设备设置中配置 AliasVault 的首选语言。",
     "openSettings": "打开设置",
     "vaultUnlockSettings": {
       "description": "选择您想要的密码库解锁方式。",
