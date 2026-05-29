@@ -97,12 +97,21 @@ const useFormPersistence = <T>({
   // Track if we've already restored to avoid duplicate restores
   const hasRestored = useRef(false);
 
+  /*
+   * Allow persisting to be frozen after clearPersistedValues is called
+   * to avoid race conditions with the clear operation.
+   */
+  const isFrozenRef = useRef(false);
+
+  // Track in-flight persist messages so we can stop them before clear
+  const inFlightPersists = useRef<Set<Promise<unknown>>>(new Set());
+
   /**
    * Persist the current form values to encrypted storage.
    */
   const persistFormValues = useCallback(async (): Promise<void> => {
-    if (isLoading) {
-      // Do not persist values if the form is still loading
+    if (isLoading || isFrozenRef.current) {
+      // Do not persist values if the form is still loading or has been cleared
       return;
     }
 
@@ -111,7 +120,13 @@ const useFormPersistence = <T>({
       data: formData,
     };
 
-    await sendMessage('PERSIST_FORM_VALUES', JSON.stringify(persistedData));
+    const promise = sendMessage('PERSIST_FORM_VALUES', JSON.stringify(persistedData));
+    inFlightPersists.current.add(promise);
+    try {
+      await promise;
+    } finally {
+      inFlightPersists.current.delete(promise);
+    }
   }, [formId, formData, isLoading]);
 
   /**
@@ -158,9 +173,13 @@ const useFormPersistence = <T>({
   }, [formId, onRestore, skipRestore]);
 
   /**
-   * Clear persisted form values from storage.
+   * Clear persisted form values from storage and freeze further persists.
    */
   const clearPersistedValues = useCallback(async (): Promise<void> => {
+    isFrozenRef.current = true;
+    if (inFlightPersists.current.size > 0) {
+      await Promise.allSettled(Array.from(inFlightPersists.current));
+    }
     await sendMessage('CLEAR_PERSISTED_FORM_VALUES');
   }, []);
 
