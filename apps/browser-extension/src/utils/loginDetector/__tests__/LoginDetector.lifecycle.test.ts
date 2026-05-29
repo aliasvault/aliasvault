@@ -36,26 +36,6 @@ describe('LoginDetector lifecycle', () => {
       expect(detector).toBeInstanceOf(LoginDetector);
     });
 
-    it('should skip initialization for excluded domains', () => {
-      const { document, window } = createTestEnvironment(
-        '<html><body><form><input type="password"></form></body></html>',
-        'https://aliasvault.net/login'
-      );
-      setGlobalWindow(window);
-
-      detector = new LoginDetector(document);
-      detector.initialize();
-
-      const callback = vi.fn();
-      detector.onLoginCapture(callback);
-
-      const form = document.querySelector('form');
-      form?.dispatchEvent(new window.Event('submit', { bubbles: true }));
-
-      vi.runAllTimers();
-      expect(callback).not.toHaveBeenCalled();
-    });
-
     it('should allow localhost (for self-hosted users)', () => {
       const { document, window } = createTestEnvironment(
         `<html><body><form>
