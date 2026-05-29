@@ -1,3 +1,4 @@
+import { isAvAutofillAllowed, isAvSuppressSave } from '@/utils/autofill/Autofill';
 import { extractFaviconUrlSimple } from '@/utils/favicon';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 
@@ -30,11 +31,6 @@ export class LoginDetector {
   private captureDebounceTimer: number | null = null;
   private lastCapturedLogin: CapturedLogin | null = null;
 
-  /** Domains to exclude from login detection (only AliasVault itself) */
-  private static readonly EXCLUDED_DOMAINS = [
-    'aliasvault.net',
-  ];
-
   /**
    * Creates a new LoginDetector instance.
    * @param document - The document to monitor for login form submissions.
@@ -49,11 +45,6 @@ export class LoginDetector {
    */
   public initialize(): void {
     if (this.isInitialized) {
-      return;
-    }
-
-    // Check if we should skip this page
-    if (this.shouldSkipPage()) {
       return;
     }
 
@@ -100,28 +91,6 @@ export class LoginDetector {
   public onLoginCapture(callback: LoginCaptureCallback): () => void {
     this.callbacks.add(callback);
     return () => this.callbacks.delete(callback);
-  }
-
-  /**
-   * Check if the current page should be skipped for login detection.
-   */
-  private shouldSkipPage(): boolean {
-    const hostname = window.location.hostname.toLowerCase();
-
-    // Check excluded domains
-    for (const domain of LoginDetector.EXCLUDED_DOMAINS) {
-      if (hostname === domain || hostname.endsWith(`.${domain}`)) {
-        return true;
-      }
-    }
-
-    // Check if av-disable attribute is set on body or html element
-    const avDisable = (this.document.body?.getAttribute('av-disable') ?? this.document.documentElement.getAttribute('av-disable')) === 'true';
-    if (avDisable) {
-      return true;
-    }
-
-    return false;
   }
 
   /**
@@ -207,6 +176,18 @@ export class LoginDetector {
    */
   private monitorForm(form: HTMLFormElement): void {
     if (this.monitoredForms.has(form)) {
+      return;
+    }
+
+    if (!isAvAutofillAllowed(form)) {
+      return;
+    }
+
+    /*
+     * Pages with av-suppress-save="true" want autofill for matching credentials but should never
+     * prompt the user to save what they just typed — skip submission monitoring entirely.
+     */
+    if (isAvSuppressSave(form)) {
       return;
     }
 

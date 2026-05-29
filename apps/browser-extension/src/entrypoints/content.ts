@@ -8,6 +8,7 @@ import { openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeReq
 import { showSavePrompt, showAddUrlPrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState, restoreAddUrlPromptFromState } from '@/entrypoints/contentScript/SavePrompt';
 import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
 
+import { isAvAutofillAllowed, isAvSuppressSave } from '@/utils/autofill/Autofill';
 import { DEFAULT_POPUP_TYPE, isPopupType, popupTypeForFieldType, POPUP_TYPES, type PopupType } from '@/utils/autofill/PopupTypes';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -490,9 +491,21 @@ export default defineContentScript({
             return;
           }
 
-          // Check if element itself, html or body has av-disable attribute like av-disable="true"
-          const avDisable = ((e.target as HTMLElement).getAttribute('av-disable') ?? document.body?.getAttribute('av-disable') ?? document.documentElement.getAttribute('av-disable')) === 'true';
-          if (avDisable) {
+          /*
+           * Honour av-disable / av-enable opt-in markers. The nearest ancestor wins, so a host page
+           * can globally disable autofill via av-disable="true" on <body> while still opting specific
+           * subtrees back in with av-enable="true".
+           */
+          if (!isAvAutofillAllowed(e.target as Element)) {
+            return;
+          }
+
+          /*
+           * Honour av-suppress-save: skip the popup (and therefore the icon) entirely when there is
+           * no stored credential that matches this URL, so we don't invite the user to "create new"
+           * on pages where storing the credential isn't desired by default (e.g. AliasVault's own web login form).
+           */
+          if (isAvSuppressSave(e.target as Element) && !await hasMatchingCredentialForCurrentUrl()) {
             return;
           }
 
@@ -592,6 +605,26 @@ export default defineContentScript({
         });
 
         /**
+         * Check whether at least one stored credential matches the current URL.
+         * Used by av-suppress-save pages to decide whether the autofill popup should appear at all.
+         * Returns false when the vault is locked or when no matches exist.
+         */
+        async function hasMatchingCredentialForCurrentUrl(): Promise<boolean> {
+          try {
+            const matchingMode = await LocalPreferencesService.getAutofillMatchingMode();
+            const response = await sendMessage('GET_FILTERED_ITEMS', {
+              currentUrl: window.location.href,
+              pageTitle: document.title,
+              matchingMode,
+              includeRecentlySelected: false,
+            });
+            return response.success && (response.items?.length ?? 0) > 0;
+          } catch {
+            return false;
+          }
+        }
+
+        /**
          * Check if autofill is disabled for the current site (site-specific settings only).
          * @returns True if site allows autofill, false if site has disabled it
          */
@@ -624,6 +657,14 @@ export default defineContentScript({
 
           const formDetector = new FormDetector(document, inputElement);
           if (!formDetector.containsLoginForm()) {
+            return;
+          }
+
+          /*
+           * av-suppress-save respects forceShow (e.g. explicit OPEN_AUTOFILL_POPUP from context menu)
+           * but otherwise hides the popup unless a matching credential is already stored.
+           */
+          if (!forceShow && isAvSuppressSave(inputElement) && !await hasMatchingCredentialForCurrentUrl()) {
             return;
           }
 
