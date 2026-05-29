@@ -1,6 +1,6 @@
 import type { Item, ItemField, Attachment, TotpCode, FieldHistory } from '@/utils/dist/core/models/vault';
 import { FieldKey, MAX_FIELD_HISTORY_RECORDS } from '@/utils/dist/core/models/vault';
-import { getFolderPath } from '@/utils/folderUtils';
+import { getFolderPath } from '@/utils/FolderUtils';
 
 import { BaseRepository, type IDatabaseClient } from '../BaseRepository';
 import { FieldMapper, type FieldRow } from '../mappers/FieldMapper';

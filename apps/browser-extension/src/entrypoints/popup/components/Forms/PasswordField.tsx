@@ -6,7 +6,7 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import type { PasswordSettings } from '@/utils/dist/core/models/vault';
 import { CreatePasswordGenerator } from '@/utils/dist/core/password-generator';
-import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/passwordLengthSlider';
+import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/PasswordLengthSlider';
 
 interface IPasswordFieldProps {
   id: string;

@@ -25,8 +25,8 @@ import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 import type { Folder } from '@/utils/db/repositories/FolderRepository';
 import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
 import type { Item } from '@/utils/dist/core/models/vault';
-import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount } from '@/utils/folderUtils';
-import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@/utils/itemFilters';
+import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount } from '@/utils/FolderUtils';
+import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@/utils/ItemFilters';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';

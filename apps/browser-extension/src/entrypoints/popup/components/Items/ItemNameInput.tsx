@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { buildFolderTree, getFolderIdPath, type FolderTreeNode } from '@/utils/folderUtils';
+import { buildFolderTree, getFolderIdPath, type FolderTreeNode } from '@/utils/FolderUtils';
 
 type Folder = {
   Id: string;

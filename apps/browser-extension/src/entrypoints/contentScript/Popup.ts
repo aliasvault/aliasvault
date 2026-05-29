@@ -10,7 +10,7 @@ import { CreatePasswordGenerator, PasswordGenerator, PasswordSettings } from '@/
 import { getAllFaviconLinks } from '@/utils/favicon';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/passwordLengthSlider';
+import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/PasswordLengthSlider';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';

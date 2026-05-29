@@ -12,7 +12,7 @@ import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
 import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
 import type { Item } from '@/utils/dist/core/models/vault';
-import type { ItemFilterType } from '@/utils/itemFilters';
+import type { ItemFilterType } from '@/utils/ItemFilters';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 

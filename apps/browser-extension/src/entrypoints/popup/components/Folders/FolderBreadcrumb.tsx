@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useNavigationHistory } from '@/entrypoints/popup/hooks/useNavigationHistory';
 
-import { getFolderPath, getFolderIdPath } from '@/utils/folderUtils';
+import { getFolderPath, getFolderIdPath } from '@/utils/FolderUtils';
 
 type Breadcrumb = {
   name: string;

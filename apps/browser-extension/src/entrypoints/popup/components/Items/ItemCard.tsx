@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import type { Item } from '@/utils/dist/core/models/vault';
 import { FieldKey } from '@/utils/dist/core/models/vault';
-import { truncateFolderPath } from '@/utils/folderUtils';
+import { truncateFolderPath } from '@/utils/FolderUtils';
 
 import ItemIcon from './ItemIcon';
 
