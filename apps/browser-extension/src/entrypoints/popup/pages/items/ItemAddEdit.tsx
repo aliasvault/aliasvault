@@ -750,7 +750,7 @@ const ItemAddEdit: React.FC = () => {
       });
 
       // Clear persisted form values after successful save
-      void clearPersistedValues();
+      await clearPersistedValues();
 
       /*
        * Navigate after save:
