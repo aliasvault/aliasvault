@@ -168,6 +168,7 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
         working-directory: apps/browser-extension
+        timeout-minutes: 10
 
       - name: Build and run E2E tests with retry
         uses: nick-fields/retry@v4
