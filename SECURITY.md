@@ -1,6 +1,10 @@
 # Security Policy
 
-Security is very important to us. We truly appreciate the security community and responsible researchers who report issues, your findings help us improve AliasVault for everyone.
+**Important**: please report any potential security issues to the email below rather than opening public issues.
+
+--
+
+Security is very important to us. We truly appreciate the security community and responsible researchers who report issues, your findings help us improve AliasVault for everyone. 
 
 We investigate all reported issues and work with researchers on responsible disclosure. Certain vulnerabilities, especially those impacting confidentiality, integrity, authentication, or core protection mechanisms, may qualify for a CVE (Common Vulnerabilities and Exposures) identifier. Others may still result in fixes or defense-in-depth improvements.
 
