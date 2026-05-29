@@ -36,7 +36,7 @@ else
                 </p>
                 <div class="text-lg font-mono text-center bg-gray-100 dark:bg-gray-700 p-3 rounded border dark:text-gray-200" id="authenticator-secret">@Secret</div>
 
-                <EditForm Model="@VerifyModel" OnValidSubmit="@VerifySetup" class="space-y-4">
+                <EditForm Model="@VerifyModel" OnValidSubmit="@VerifySetup" class="space-y-4" av-enable="true" av-suppress-save="true">
                     <div>
                         <InputText id="verificationCode" @bind-Value="VerifyModel.Code"
                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
