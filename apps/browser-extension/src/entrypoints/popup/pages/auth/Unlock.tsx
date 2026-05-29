@@ -37,12 +37,13 @@ import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResul
 import { vaultStateEvents } from '@/events/VaultStateEvents';
 
 /**
- * Unlock mode type
+ * Concrete unlock screens the page can render. Mobile-app unlock is shown
+ * as a modal on top of one of these screens, not as its own mode.
  */
 type UnlockMode = 'pin' | 'password';
 
 /**
- * Unified unlock page that handles both PIN and password unlock
+ * Unified unlock page that handles PIN, password, and mobile-app unlock.
  */
 const Unlock: React.FC = () => {
   const { t } = useTranslation();
@@ -78,7 +79,7 @@ const Unlock: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { showLoading, hideLoading, setIsInitialLoading } = useLoading();
 
-  // Mobile unlock state
+  // Mobile-unlock modal state
   const [showMobileUnlockModal, setShowMobileUnlockModal] = useState(false);
 
   // Logout confirmation state
@@ -128,28 +129,37 @@ const Unlock: React.FC = () => {
      * Initialize unlock page - check status and PIN availability
      */
     const initialize = async (): Promise<void> => {
-      // First check PIN availability and set initial mode
-      const [pinEnabled, pinLength] = await Promise.all([
+      const [pinEnabled, pinLength, lastUsed, storedAttempts] = await Promise.all([
         isPinEnabled(),
         getPinLength(),
+        LocalPreferencesService.getLastUsedUnlockMethod(),
+        LocalPreferencesService.getPasswordUnlockFailedAttempts(),
       ]);
 
       setPinAvailable(pinEnabled);
       setPinLength(pinLength || 6);
-
-      // Default to PIN mode if available, otherwise password
-      if (pinEnabled) {
-        setUnlockMode('pin');
-      } else {
-        setUnlockMode('password');
-      }
-
-      // Load password failed attempts counter
-      const storedAttempts = await LocalPreferencesService.getPasswordUnlockFailedAttempts();
       setPasswordFailedAttempts(storedAttempts);
 
-      // Then check API status
-      await checkStatus();
+      // Check API status to know if mobile-unlock is reachable (it needs the server).
+      const statusResult = await checkStatus();
+      const mobileAvailable = statusResult.online;
+
+      /*
+       * Pick the initial screen from the last-used method, falling back to
+       * PIN-if-enabled, else password. If the user last unlocked with mobile,
+       * auto-open the QR modal over the base screen.
+       */
+      const baseScreen: UnlockMode = pinEnabled ? 'pin' : 'password';
+      if (lastUsed === 'pin' && pinEnabled) {
+        setUnlockMode('pin');
+      } else if (lastUsed === 'password') {
+        setUnlockMode('password');
+      } else {
+        setUnlockMode(baseScreen);
+      }
+      if (lastUsed === 'mobile' && mobileAvailable) {
+        setShowMobileUnlockModal(true);
+      }
     };
 
     initialize();
@@ -316,6 +326,7 @@ const Unlock: React.FC = () => {
       // Reset PIN and password failed attempts on successful unlock
       await resetFailedAttempts();
       await LocalPreferencesService.resetPasswordUnlockFailedAttempts();
+      await LocalPreferencesService.setLastUsedUnlockMethod('password');
       setPasswordFailedAttempts(0);
 
       /*
@@ -427,6 +438,7 @@ const Unlock: React.FC = () => {
 
       // Clear dismiss until
       await LocalPreferencesService.setVaultLockedDismissUntil(0);
+      await LocalPreferencesService.setLastUsedUnlockMethod('pin');
 
       /*
        * Navigate to reinitialize which will call syncVault to sync with server.
@@ -575,6 +587,7 @@ const Unlock: React.FC = () => {
       // Reset PIN and password failed attempts on successful unlock
       await resetFailedAttempts();
       await LocalPreferencesService.resetPasswordUnlockFailedAttempts();
+      await LocalPreferencesService.setLastUsedUnlockMethod('mobile');
       setPasswordFailedAttempts(0);
 
       /*
@@ -708,12 +721,24 @@ const Unlock: React.FC = () => {
           </div>
 
           {/* Use Password Button */}
-          <div className="mt-4">
-            <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-              <button type="button" onClick={switchToPassword} className="text-primary-600 hover:text-primary-700 dark:text-primary-500 dark:hover:text-primary-400 hover:underline font-medium">{t('auth.useMasterPassword')}</button>
-            </div>
+          <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+            <button type="button" onClick={switchToPassword} className="text-primary-600 hover:text-primary-700 dark:text-primary-500 dark:hover:text-primary-400 hover:underline font-medium">{t('auth.useMasterPassword')}</button>
           </div>
         </div>
+
+        <MobileUnlockModal
+          isOpen={showMobileUnlockModal}
+          onClose={() => setShowMobileUnlockModal(false)}
+          onSuccess={handleMobileUnlockSuccess}
+          webApi={webApi}
+          mode="unlock"
+        />
+
+        <LogoutConfirmModal
+          isOpen={showLogoutConfirm}
+          onClose={() => setShowLogoutConfirm(false)}
+          onConfirm={handleLogout}
+        />
       </div>
     );
   }
@@ -767,7 +792,7 @@ const Unlock: React.FC = () => {
             {t('auth.unlockVault')}
           </Button>
 
-          {/* Mobile Unlock Button - only show when server is online */}
+          {/* Mobile Unlock Button (only shown when server is online as it requires the server) */}
           {!dbContext.isOffline && (
             <button
               type="button"
@@ -785,15 +810,14 @@ const Unlock: React.FC = () => {
             {t('auth.switchAccounts')} <button type="button" onClick={handleLogoutClick} className="text-primary-600 hover:text-primary-700 dark:text-primary-500 dark:hover:text-primary-400 hover:underline font-medium">{t('common.logout')}</button>
           </div>
         </form>
+
+        {pinAvailable && (
+          <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+            <button type="button" onClick={switchToPin} className="text-primary-600 hover:text-primary-700 dark:text-primary-500 dark:hover:text-primary-400 hover:underline font-medium">{t('auth.unlockWithPin')}</button>
+          </div>
+        )}
       </div>
 
-      {pinAvailable && (
-        <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-          <button type="button" onClick={switchToPin} className="text-primary-600 hover:text-primary-700 dark:text-primary-500 dark:hover:text-primary-400 hover:underline font-medium">{t('auth.unlockWithPin')}</button>
-        </div>
-      )}
-
-      {/* Mobile Unlock Modal */}
       <MobileUnlockModal
         isOpen={showMobileUnlockModal}
         onClose={() => setShowMobileUnlockModal(false)}
@@ -802,7 +826,6 @@ const Unlock: React.FC = () => {
         mode="unlock"
       />
 
-      {/* Logout Confirmation Modal */}
       <LogoutConfirmModal
         isOpen={showLogoutConfirm}
         onClose={() => setShowLogoutConfirm(false)}

@@ -2,6 +2,11 @@ import { AutofillMatchingMode } from '@/utils/RustCore';
 
 import { storage } from '#imports';
 
+/**
+ * Concrete unlock methods that can be used to unlock the vault.
+ */
+export type UnlockMethod = 'password' | 'pin' | 'mobile';
+
 /*
  * Storage keys for local preferences.
  * These are defined inline since they're only used by this service.
@@ -36,6 +41,9 @@ const KEYS = {
   // UI preferences
   SHOW_FOLDERS: 'local:aliasvault_show_folders',
   AUTO_CLOSE_UNLOCK_POPUP: 'local:aliasvault_auto_close_unlock_popup',
+
+  // Unlock screen behavior
+  LAST_USED_UNLOCK_METHOD: 'local:aliasvault_last_used_unlock_method',
 
   // Login save feature
   LOGIN_SAVE_ENABLED: 'local:loginSaveEnabled',
@@ -85,6 +93,31 @@ export const LocalPreferencesService = {
    */
   async setAutoCloseUnlockPopup(enabled: boolean): Promise<void> {
     await storage.setItem(KEYS.AUTO_CLOSE_UNLOCK_POPUP, enabled);
+  },
+
+  /*
+   * ============================================
+   * Unlock screen behavior
+   * ============================================
+   */
+
+  /**
+   * Get the last-used unlock method (recorded after a successful unlock).
+   * @returns The last-used method, or null if none has been recorded yet.
+   */
+  async getLastUsedUnlockMethod(): Promise<UnlockMethod | null> {
+    const value = await storage.getItem(KEYS.LAST_USED_UNLOCK_METHOD) as UnlockMethod | null;
+    if (value === 'password' || value === 'pin' || value === 'mobile') {
+      return value;
+    }
+    return null;
+  },
+
+  /**
+   * Set the last-used unlock method.
+   */
+  async setLastUsedUnlockMethod(method: UnlockMethod): Promise<void> {
+    await storage.setItem(KEYS.LAST_USED_UNLOCK_METHOD, method);
   },
 
   /**
