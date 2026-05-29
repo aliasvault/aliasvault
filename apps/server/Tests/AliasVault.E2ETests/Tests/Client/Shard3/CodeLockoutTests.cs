@@ -51,16 +51,17 @@ public class CodeLockoutTests : TwoFactorAuthBase
         // Fill in wrong code 11 times. After 11 times, the account should be locked.
         // Note: the actual lockout happens on the 10th wrong attempt, but the lockout message is only displayed
         // on the next attempt, so we need to try 11 times to see the lockout message.
+        var twoFactorSubmitButton = Page.Locator("form[name='login-with-2fa'] button[type='submit']");
         for (var i = 0; i < 11; i++)
         {
             await Page.Locator("input[id='two-factor-code']").FillAsync("000000");
+            await twoFactorSubmitButton.ClickAsync();
 
             if (i == 10)
             {
                 break;
             }
 
-            // Form should auto-submit after entering the code.
             await WaitForUrlAsync("user/login**", "Invalid authenticator code.");
 
             // Clear the input field for the next attempt.
