@@ -60,7 +60,7 @@ public class TwoFactorAuthTests : TwoFactorAuthBase
         var totpField = await WaitForAndGetElement("input[id='two-factor-code']");
         await totpField.FillAsync(totpCode);
 
-        var twoFactorSubmitButton = Page.Locator("form[name='login-with-2fa'] button[type='submit']");
+        var twoFactorSubmitButton = Page.Locator("button[type='submit']");
         await twoFactorSubmitButton.ClickAsync();
 
         // Check if we get redirected to the index page.
