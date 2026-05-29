@@ -56,11 +56,12 @@ public class TwoFactorAuthTests : TwoFactorAuthBase
         var prompt = await Page.TextContentAsync("label:has-text('Authenticator code')");
         Assert.That(prompt, Does.Contain("Authenticator code"), "No 2FA code prompt displayed.");
 
-        // Fill in the 2FA code.
+        // Fill in the 2FA code and submit the form.
         var totpField = await WaitForAndGetElement("input[id='two-factor-code']");
         await totpField.FillAsync(totpCode);
 
-        // Form should auto-submit after filling in the 6-digit code.
+        var twoFactorSubmitButton = Page.Locator("form[name='login-with-2fa'] button[type='submit']");
+        await twoFactorSubmitButton.ClickAsync();
 
         // Check if we get redirected to the index page.
         await WaitForUrlAsync("welcome**", WelcomeMessage);
