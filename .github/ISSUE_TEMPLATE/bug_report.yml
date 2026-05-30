@@ -33,10 +33,7 @@ body:
       description: Which platform are you experiencing this issue on?
       options:
         - Web App (Browser)
-        - Browser Extension - Chrome
-        - Browser Extension - Firefox
-        - Browser Extension - Edge
-        - Browser Extension - Safari
+        - Browser Extension
         - Mobile App - iOS
         - Mobile App - Android
         - Server/API
@@ -89,22 +86,11 @@ body:
   - type: textarea
     id: description
     attributes:
-      label: Bug Description
-      description: A clear and concise description of what the bug is
+      label: What happened?
+      description: Describe what went wrong and what you expected to happen instead
       placeholder: |
-        Describe what went wrong. For example:
-        "When I try to save a new alias, the app crashes..."
-    validations:
-      required: true
-
-  - type: textarea
-    id: expected-behavior
-    attributes:
-      label: Expected Behavior
-      description: What did you expect to happen?
-      placeholder: |
-        Describe what you expected to happen instead. For example:
-        "The alias should be saved successfully and appear in my vault..."
+        What happened: "When I try to save a new alias, the app crashes..."
+        What I expected: "The alias should be saved and appear in my vault..."
     validations:
       required: true
 
