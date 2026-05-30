@@ -86,6 +86,13 @@ describe('FormDetector English tests', () => {
     testField(FormField.Email, 'account_name_text_field', htmlFile);
   });
 
+  describe('English login form 5 detection (Tailwind, no form wrapper, placeholder-only labels)', () => {
+    const htmlFile = 'en-login-form5.html';
+
+    testField(FormField.Username, 'username-input', htmlFile);
+    testField(FormField.Password, 'password-input', htmlFile);
+  });
+
   describe('English registration form 8 detection (Roblox-style birthdate)', () => {
     const htmlFile = 'en-registration-form8.html';
 
