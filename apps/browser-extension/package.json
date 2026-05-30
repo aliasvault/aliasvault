@@ -53,7 +53,7 @@
     "yup": "^1.6.1"
   },
   "devDependencies": {
-    "@playwright/test": "^1.57.0",
+    "@playwright/test": "^1.60.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/chrome": "^0.0.280",
     "@types/jsdom": "^21.1.7",
