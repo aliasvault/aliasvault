@@ -1,0 +1,19 @@
+<!--
+Login form using Tailwind/utility classes with no <form> wrapper, no <label>s,
+and inputs identified primarily by placeholder, name and data-testid.
+The username input only has `placeholder="johnny"` and `name="username"` for
+hints, and the password input is `type="password"` with no name or id.
+-->
+<div class="p-4 mx-auto flex flex-col gap-3 justify-between max-w-[30rem] min-w-80 w-full bg-slate-50 dark:bg-neutral-800 rounded-xl shadow-md border border-sky-100 dark:border-neutral-700" data-testid="login-form">
+    <p class="text-3xl text-black dark:text-white text-center font-extralight">Enter your credentials</p>
+    <div data-orientation="horizontal" role="none" class="shrink-0 bg-border h-[1px] w-full"></div>
+    <div>
+        <p class="text-sm text-black dark:text-white w-fit font-semibold mb-1">Username</p>
+        <input id="username-input" class="w-full rounded-md p-2 border-neutral-content border-solid border outline-none focus:border-primary duration-100 bg-base-100" placeholder="johnny" data-testid="username-input" type="text" value="" name="username" autocomplete="off">
+    </div>
+    <div class="w-full">
+        <p class="text-sm text-black dark:text-white w-fit font-semibold mb-1">Password</p>
+        <input id="password-input" class="w-full rounded-md p-2 border-neutral-content border-solid border outline-none focus:border-primary duration-100 bg-base-100" placeholder="••••••••••••••" data-testid="password-input" type="password" value="" autocomplete="off">
+    </div>
+    <button class="inline-flex items-center focus:outline-none outline-none justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background duration-150 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 select-none bg-accent text-white hover:bg-accent/90 border border-violet-400 px-4 py-2 w-full" type="submit" data-testid="submit-login-button">Login</button>
+</div>

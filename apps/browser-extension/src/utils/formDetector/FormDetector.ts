@@ -246,12 +246,17 @@ export class FormDetector {
    * @returns True if the field matches exclusion patterns and should be excluded from autofill.
    */
   private matchesExclusionPatterns(input: HTMLInputElement): boolean {
-    // Collect all text attributes to check
+    /*
+     * Collect text attributes to check. The `class` attribute is intentionally
+     * excluded: utility-CSS frameworks (Tailwind, DaisyUI, etc.) routinely emit
+     * tokens like `duration-100`, `outline-none`, `bg-base-100` whose
+     * word-boundary parts collide with generic exclusion words ("duration",
+     * "access", "settings", ...).
+     */
     const attributesToCheck = [
       input.id,
       input.getAttribute('name'),
       input.getAttribute('placeholder'),
-      input.getAttribute('class'),
       input.getAttribute('aria-label')
     ]
       .map(a => a?.toLowerCase() ?? '')
