@@ -341,7 +341,7 @@
     <comment>Email format switcher: HTML view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatPlain" xml:space="preserve">
-    <value>Text</value>
+    <value>Szöveg</value>
     <comment>Email format switcher: plain text view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatSource" xml:space="preserve">
