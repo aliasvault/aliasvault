@@ -318,16 +318,16 @@
     "openExpandedWindow": "Open Expanded Window"
   },
   "emails": {
-    "title": "Emails",
+    "title": "Email",
     "deleteEmailTitle": "Delete Email",
     "deleteEmailConfirm": "Are you sure you want to permanently delete this email?",
     "from": "From",
     "to": "To",
-    "date": "Date",
+    "date": "Tanggal",
     "emailContent": "Email content",
     "emailNotFound": "Email not found",
     "formatHtml": "HTML",
-    "formatPlain": "Text",
+    "formatPlain": "Teks",
     "formatSource": "Source",
     "formatSwitchTitle": "Switch email format",
     "item": "Item",
@@ -429,7 +429,7 @@
       "description": "Configure the default language and gender preference for generating new identities.",
       "languageSection": "Language",
       "languageDescription": "Set the language that will be used when generating new identities.",
-      "genderSection": "Gender",
+      "genderSection": "Jenis kelamin",
       "genderDescription": "Set the gender preference for generating new identities.",
       "ageRangeSection": "Age Range",
       "ageRangeDescription": "Set the age range for generating new identities.",
@@ -490,13 +490,13 @@
       "noPasskeysFound": "No passkeys found for this site"
     },
     "create": {
-      "title": "Create Passkey",
+      "title": "Buat Passkey",
       "createFor": "Create a new passkey for",
       "titleLabel": "Title",
       "titlePlaceholder": "Enter a name for this passkey",
-      "createButton": "Create Passkey",
+      "createButton": "Buat Passkey",
       "selectPasskeyToReplace": "Select a passkey to replace:",
-      "createNewPasskey": "Create New Passkey",
+      "createNewPasskey": "Buat Passkey baru",
       "replacingPasskey": "Replacing passkey: {{displayName}}",
       "confirmReplace": "Confirm Replace",
       "selectExistingLogin": "Add to existing login:",
@@ -554,6 +554,6 @@
     "offline": "Offline",
     "tapToRetry": "Tap to retry sync",
     "syncErrorTitle": "Sync Failed",
-    "syncErrorDismiss": "Dismiss"
+    "syncErrorDismiss": "Abaikan"
   }
 }
