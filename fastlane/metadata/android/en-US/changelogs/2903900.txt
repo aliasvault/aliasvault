@@ -1,0 +1,7 @@
+- Autofill suggestions now show up in keyboard instead of in a popup
+- Autofill now shows up to 10 matches instead of 3
+- Improve mobile QR login via native camera app
+- Improve passkey compatibility with native apps
+- Add more auto-lock timeout options
+- Make email attachments open in default viewer app instead of prompting download
+- Add email format switcher

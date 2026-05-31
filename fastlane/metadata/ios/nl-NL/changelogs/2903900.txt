@@ -1,0 +1,4 @@
+- Mobiele QR-login via de native camera-app verbeterd
+- Meer opties toegevoegd voor automatische vergrendeling
+- E-mailbijlagen openen nu in de standaard viewer-app (waar mogelijk)
+- E-mail format switch toegevoegd

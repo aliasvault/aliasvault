@@ -1,0 +1,6 @@
+- Autofill now shows up to 10 matches instead of 3
+- Last unlock method (e.g. mobile QR unlock) is now auto-remembered
+- Add "autofill 2FA" right-click context menu option
+- Add email format switcher
+- Add arrow-based keyboard navigation
+- Fix bugs
