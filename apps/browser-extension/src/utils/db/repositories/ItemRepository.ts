@@ -160,6 +160,19 @@ export class ItemRepository extends BaseRepository {
   }
 
   /**
+   * Find the item (id + name) associated with a given email address, if any.
+   * @param email - The full email address (local@domain) to look up
+   * @returns Object with Id and Name, or null when no active item uses this address
+   */
+  public findIdByEmail(email: string): { Id: string; Name: string | null } | null {
+    const results = this.client.executeQuery<{ Id: string; Name: string | null }>(
+      ItemQueries.GET_ITEM_BY_EMAIL,
+      [FieldKey.LoginEmail, email]
+    );
+    return results.length > 0 ? results[0] : null;
+  }
+
+  /**
    * Create a new item with field-based structure.
    * @param item The item object to insert
    * @param attachments Optional attachments to associate with the item

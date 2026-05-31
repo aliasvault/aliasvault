@@ -231,6 +231,20 @@ export class ItemQueries {
       AND i.DeletedAt IS NULL`;
 
   /**
+   * Look up an item (id + name) by an email address stored in any of its login email fields.
+   */
+  public static readonly GET_ITEM_BY_EMAIL = `
+    SELECT i.Id as Id, i.Name as Name
+    FROM FieldValues fv
+    INNER JOIN Items i ON fv.ItemId = i.Id
+    WHERE fv.FieldKey = ?
+      AND fv.Value = ?
+      AND fv.IsDeleted = 0
+      AND i.IsDeleted = 0
+      AND i.DeletedAt IS NULL
+    LIMIT 1`;
+
+  /**
    * Get item-level fields for change detection during updates.
    */
   public static readonly GET_ITEM_FIELDS = `

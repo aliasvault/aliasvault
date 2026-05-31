@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 
 import Modal from '@/entrypoints/popup/components/Dialogs/Modal';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
@@ -34,9 +34,9 @@ const EmailDetails: React.FC = (): React.ReactElement => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showMetadata, setShowMetadata] = useState(false);
   const [viewMode, setViewMode] = useState<'html' | 'plain' | 'source'>('html');
+  const [credential, setCredential] = useState<{ id: string; name: string } | null>(null);
   const { setIsInitialLoading } = useLoading();
   const { setHeaderButtons } = useHeaderButtons();
-  const [headerButtonsConfigured, setHeaderButtonsConfigured] = useState(false);
 
   useEffect(() => {
     // For popup windows, ensure we have proper history state for navigation
@@ -89,6 +89,54 @@ const EmailDetails: React.FC = (): React.ReactElement => {
 
     loadEmail();
   }, [id, dbContext?.sqliteClient, dbContext.isOffline, t, webApi, setIsLoading, setIsInitialLoading]);
+
+  /*
+   * Resolve the credential (item) that owns the recipient address for this email so we can
+   * surface a deep link to it from the metadata panel, mirroring the web app's behaviour.
+   */
+  useEffect(() => {
+    if (!email || !dbContext?.sqliteClient) {
+      setCredential(null);
+      return;
+    }
+
+    const address = `${email.toLocal}@${email.toDomain}`;
+    const match = dbContext.sqliteClient.items.findIdByEmail(address);
+    setCredential(match ? { id: match.Id, name: match.Name ?? address } : null);
+  }, [email, dbContext?.sqliteClient]);
+
+  // Available view modes for the cycle button — only formats the server actually provided.
+  const availableModes = useMemo<Array<'html' | 'plain' | 'source'>>(() => {
+    if (!email) {
+      return [];
+    }
+    const modes: Array<'html' | 'plain' | 'source'> = [];
+    if (email.messageHtml) {
+      modes.push('html');
+    }
+    if (email.messagePlain) {
+      modes.push('plain');
+    }
+    if (email.messageSource) {
+      modes.push('source');
+    }
+    return modes;
+  }, [email]);
+
+  const formatLabels = useMemo<Record<'html' | 'plain' | 'source', string>>(() => ({
+    html: t('emails.formatHtml'),
+    plain: t('emails.formatPlain'),
+    source: t('emails.formatSource'),
+  }), [t]);
+
+  const cycleViewMode = useCallback(() => {
+    if (availableModes.length <= 1) {
+      return;
+    }
+    const idx = availableModes.indexOf(viewMode);
+    const next = availableModes[(idx + 1) % availableModes.length];
+    setViewMode(next);
+  }, [availableModes, viewMode]);
 
   /**
    * Handle deleting an email.
@@ -159,33 +207,41 @@ const EmailDetails: React.FC = (): React.ReactElement => {
     }
   };
 
-  // Set header buttons on mount and clear on unmount
+  /*
+   * Set header buttons whenever the available formats or active view mode change so the
+   * format-cycle button label stays in sync. Mirrors the web app's header layout.
+   */
   useEffect((): (() => void) => {
-    // Only set the header buttons once on mount.
-    if (!headerButtonsConfigured) {
-      const headerButtonsJSX = (
-        <div className="flex items-center gap-2">
-          {!PopoutUtility.isPopup() && (
-            <HeaderButton
-              onClick={openInNewPopup}
-              title={t('common.openInNewWindow')}
-              iconType={HeaderIconType.EXPAND}
-            />
-          )}
+    const headerButtonsJSX = (
+      <div className="flex items-center gap-2">
+        {availableModes.length > 1 && (
+          <button
+            onClick={cycleViewMode}
+            title={t('emails.formatSwitchTitle')}
+            className="h-9 px-2 rounded-lg inline-flex items-center text-xs font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            {formatLabels[viewMode]}
+          </button>
+        )}
+        {!PopoutUtility.isPopup() && (
           <HeaderButton
-            onClick={() => setShowDeleteModal(true)}
-            title={t('emails.deleteEmailTitle')}
-            iconType={HeaderIconType.DELETE}
-            variant="danger"
+            onClick={openInNewPopup}
+            title={t('common.openInNewWindow')}
+            iconType={HeaderIconType.EXPAND}
           />
-        </div>
-      );
+        )}
+        <HeaderButton
+          onClick={() => setShowDeleteModal(true)}
+          title={t('emails.deleteEmailTitle')}
+          iconType={HeaderIconType.DELETE}
+          variant="danger"
+        />
+      </div>
+    );
 
-      setHeaderButtons(headerButtonsJSX);
-      setHeaderButtonsConfigured(true);
-    }
+    setHeaderButtons(headerButtonsJSX);
     return () => {};
-  }, [setHeaderButtons, headerButtonsConfigured, openInNewPopup, t]);
+  }, [setHeaderButtons, openInNewPopup, t, availableModes, viewMode, cycleViewMode, formatLabels]);
 
   // Clear header buttons on unmount
   useEffect((): (() => void) => {
@@ -227,16 +283,19 @@ const EmailDetails: React.FC = (): React.ReactElement => {
       <div>
         {/* Header */}
         <div>
-          <div className="flex justify-between items-start">
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-gray-900 dark:text-white">{email.subject}</h1>
+          <div className="flex justify-between items-start gap-2">
+            <div className="flex items-start gap-2 min-w-0">
+              {/* Subject is truncated by default; expanding the (i) panel lets the full subject
+                  wrap so users can read or copy long subjects without losing context. */}
+              <h1 className={`text-lg font-bold text-gray-900 dark:text-white ${showMetadata ? 'break-words' : 'truncate'}`}>{email.subject}</h1>
               <button
                 onClick={() => setShowMetadata(!showMetadata)}
-                className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className={`p-1 rounded-full transition-colors flex-shrink-0 ${showMetadata ? 'bg-gray-200 dark:bg-gray-700 text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                 title={showMetadata ? t('common.hideDetails') : t('common.showDetails')}
+                aria-expanded={showMetadata}
               >
                 <svg
-                  className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${showMetadata ? 'rotate-180' : ''}`}
+                  className="w-4 h-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -256,36 +315,23 @@ const EmailDetails: React.FC = (): React.ReactElement => {
               <p><span className="font-bold">{t('emails.from')}</span> <span title={email.fromLocal + "@" + email.fromDomain}>{email.fromDisplay}</span></p>
               <p><span className="font-bold">{t('emails.to')}</span> <span title={email.toLocal + "@" + email.toDomain}>{email.toLocal}@{email.toDomain}</span></p>
               <p><span className="font-bold">{t('emails.date')}</span> {new Date(email.dateSystem).toLocaleString()}</p>
+              {credential && (
+                <p>
+                  <span className="font-bold">{t('emails.item')}</span>{' '}
+                  <Link
+                    to={`/items/${credential.id}`}
+                    className="text-primary-600 hover:underline dark:text-primary-400"
+                  >
+                    {credential.name}
+                  </Link>
+                </p>
+              )}
             </div>
           )}
         </div>
 
-        {/* Format Switcher */}
-        <div className="flex gap-1 mt-4 mb-2">
-          <button
-            onClick={() => setViewMode('html')}
-            className={viewMode === 'html' ? 'px-3 py-1 text-sm font-medium rounded-md bg-blue-500 text-white' : 'px-3 py-1 text-sm font-medium rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}
-            disabled={!email.messageHtml}
-          >
-            HTML
-          </button>
-          <button
-            onClick={() => setViewMode('plain')}
-            className={viewMode === 'plain' ? 'px-3 py-1 text-sm font-medium rounded-md bg-blue-500 text-white' : 'px-3 py-1 text-sm font-medium rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}
-            disabled={!email.messagePlain}
-          >
-            Plain
-          </button>
-          <button
-            onClick={() => setViewMode('source')}
-            className={viewMode === 'source' ? 'px-3 py-1 text-sm font-medium rounded-md bg-blue-500 text-white' : 'px-3 py-1 text-sm font-medium rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}
-          >
-            Source
-          </button>
-        </div>
-
-        {/* Email Body */}
-        <div className="bg-white">
+        {/* Email Body — always rendered on a white background with dark text so contrast doesn't break in dark mode. */}
+        <div className="bg-white mt-4">
           {viewMode === 'html' && email.messageHtml ? (
             <iframe
               srcDoc={ConversionUtility.sanitizeAndPrepareEmailHtml(email.messageHtml)}
@@ -294,15 +340,15 @@ const EmailDetails: React.FC = (): React.ReactElement => {
               sandbox="allow-popups allow-popups-to-escape-sandbox"
             />
           ) : viewMode === 'plain' ? (
-            <pre className="whitespace-pre-wrap text-gray-800 dark:text-gray-200 p-3 font-sans">
+            <pre className="whitespace-pre-wrap text-gray-800 p-3 font-sans">
               {email.messagePlain ?? t('emails.emailNotFound')}
             </pre>
           ) : viewMode === 'source' ? (
-            <pre className="whitespace-pre-wrap text-gray-800 dark:text-gray-200 p-3 font-mono text-xs leading-relaxed">
-              {email.messageHtml ?? t('emails.emailNotFound')}
+            <pre className="whitespace-pre-wrap text-gray-800 p-3 font-mono text-xs leading-relaxed">
+              {email.messageSource ?? t('emails.emailNotFound')}
             </pre>
           ) : (
-            <pre className="whitespace-pre-wrap text-gray-800 dark:text-gray-200 p-3">
+            <pre className="whitespace-pre-wrap text-gray-800 p-3">
               {email.messagePlain}
             </pre>
           )}
