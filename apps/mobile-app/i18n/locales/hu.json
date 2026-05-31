@@ -467,10 +467,10 @@
       "message": "Autofill should now offer this credential the next time you open the app."
     },
     "filters": {
-      "all": "Items",
+      "all": "Elemek",
       "showFolders": "Folders",
       "passkeys": "Passkeys",
-      "attachments": "Attachments",
+      "attachments": "Csatolmányok",
       "totp": "2FA Codes"
     },
     "sort": {
@@ -480,8 +480,8 @@
       "alphabetical": "Alphabetical (A-Z)"
     },
     "totpCode": "TOTP Code",
-    "attachments": "Attachments",
-    "deleteAttachment": "Delete",
+    "attachments": "Csatolmányok",
+    "deleteAttachment": "Törlés",
     "fileSavedTo": "File saved to",
     "previewNotSupported": "Preview not supported",
     "downloadToView": "Download the file to view it",
@@ -558,22 +558,22 @@
     }
   },
   "emails": {
-    "title": "Emails",
+    "title": "E-mailek",
     "emailDetails": "Email Details",
     "subject": "Subject:",
-    "date": "Date:",
+    "date": "Dátum:",
     "from": "From:",
     "to": "To:",
-    "attachments": "Attachments",
+    "attachments": "Csatolmányok",
     "deleteEmail": "Delete Email",
     "deleteEmailConfirm": "Are you sure you want to delete this email? This action is permanent and cannot be undone.",
     "emailNotFound": "Email not found",
     "formatHtml": "HTML",
-    "formatPlain": "Text",
+    "formatPlain": "Szöveg",
     "formatSource": "Source",
     "formatSwitchTitle": "Switch email format",
     "sizeKB": "KB",
-    "offlineMessage": "You are offline. Please connect to the internet to load your emails.",
+    "offlineMessage": "Jelenleg offline. Kapcsolódjon az internethez az e-mailek betöltéséhez.",
     "emptyMessage": "You have not received any emails at your private email addresses yet. When you receive a new email, it will appear here.",
     "loadMore": "Load More ({{count}} remaining)",
     "time": {
@@ -586,7 +586,7 @@
     }
   },
   "validation": {
-    "required": "This field is required",
+    "required": "Ez a mező kötelező",
     "serviceNameRequired": "Service name is required",
     "invalidDateFormat": "Date must be in YYYY-MM-DD format",
     "invalidEmailFormat": "Invalid email format"
@@ -594,7 +594,7 @@
   "apiErrors": {
     "CLAIM_DOES_NOT_MATCH_USER": "The current chosen email address is already in use. Please change the email address by editing this credential.",
     "CLAIM_DOES_NOT_EXIST": "An error occurred while trying to load the emails. Please try to edit and save the credential entry to synchronize the database, then try again.",
-    "UNKNOWN_ERROR": "An unknown error occurred. Please try again.",
+    "UNKNOWN_ERROR": "Egy ismeretlen hiba lépett fel. Próbálkozzon újra.",
     "ACCOUNT_LOCKED": "Account temporarily locked due to too many failed attempts. Please try again later.",
     "ACCOUNT_BLOCKED": "Your account has been disabled. If you believe this is a mistake, please contact support.",
     "USER_NOT_FOUND": "Invalid username or password. Please try again.",
@@ -603,7 +603,7 @@
     "REFRESH_TOKEN_REQUIRED": "Refresh token is required.",
     "INVALID_REFRESH_TOKEN": "Invalid refresh token.",
     "PUBLIC_REGISTRATION_DISABLED": "New account registration is currently disabled on this server. Please contact the administrator.",
-    "USERNAME_REQUIRED": "Username is required.",
+    "USERNAME_REQUIRED": "Felhasználónév szükséges.",
     "USERNAME_ALREADY_IN_USE": "Username is already in use.",
     "USERNAME_AVAILABLE": "Username is available.",
     "USERNAME_MISMATCH": "Username does not match the current user.",
@@ -632,7 +632,7 @@
       "decryptingVault": "Decrypting vault"
     },
     "navigation": {
-      "login": "Login",
+      "login": "Belépés",
       "loginSettings": "Login Settings"
     },
     "notFound": {
@@ -675,7 +675,7 @@
     "newVersion": "New available version:",
     "upgrade": "Upgrade",
     "upgrading": "Upgrading...",
-    "logout": "Logout",
+    "logout": "Kijelentkezés",
     "whatsNew": "What's New",
     "whatsNewDescription": "An upgrade is required to support the following changes:",
     "noDescriptionAvailable": "No description available for this version.",
