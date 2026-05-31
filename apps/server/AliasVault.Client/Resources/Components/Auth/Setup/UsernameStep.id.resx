@@ -47,11 +47,11 @@
     <comment>Message shown while validating username</comment>
   </data>
   <data name="UsernameAvailableMessage">
-    <value>Username is available!</value>
+    <value>Username tersedia!</value>
     <comment>Message shown when username is available</comment>
   </data>
   <data name="UsernameRequiredError">
-    <value>Username is required.</value>
+    <value>Username diperlukan.</value>
     <comment>Error message when username is empty</comment>
   </data>
   <data name="ServerCommunicationError">
