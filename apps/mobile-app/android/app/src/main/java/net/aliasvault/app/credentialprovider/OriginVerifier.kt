@@ -35,7 +35,7 @@ class OriginVerifier {
          */
         // BEGIN_GENERATED: passkeys-allowlist
         // Source: https://www.gstatic.com/gpm-passkeys-privileged-apps/apps.json
-        // Last refreshed: 2026-05-26
+        // Last refreshed: 2026-05-31
         private val PRIVILEGED_ALLOWLIST_JSON = """
         {
           "apps": [
@@ -686,11 +686,27 @@ class OriginVerifier {
                 "signatures": [
                   {
                     "build": "release",
+                    "cert_fingerprint_sha256": "B2:9A:A0:BB:DC:9F:D9:DE:F5:5D:C5:6E:A7:D7:45:76:D5:84:6C:BC:F5:E5:AB:D3:05:E2:D9:31:9E:4F:42:AE"
+                  },
+                  {
+                    "build": "release",
                     "cert_fingerprint_sha256": "AF:F8:A7:49:CF:0E:7D:75:44:65:D0:FB:FA:7B:8D:0C:64:5E:22:5C:10:C6:E2:32:AD:A0:D9:74:88:36:B8:E5"
                   },
                   {
                     "build": "release",
                     "cert_fingerprint_sha256": "A8:FE:A4:CA:FB:93:32:DA:26:B8:E6:81:08:17:C1:DA:90:A5:03:0E:35:A6:0A:79:E0:6C:90:97:AA:C6:A4:42"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "android",
+              "info": {
+                "package_name": "com.oplus.credential",
+                "signatures": [
+                  {
+                    "build": "release",
+                    "cert_fingerprint_sha256": "E4:98:02:40:95:84:CE:53:15:2A:90:00:82:0A:51:E4:FA:8A:72:3B:7B:CC:26:3E:33:52:40:AC:F1:00:BF:9E"
                   }
                 ]
               }
