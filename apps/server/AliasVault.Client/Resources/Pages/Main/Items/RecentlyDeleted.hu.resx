@@ -60,7 +60,7 @@
   </resheader>
   <!-- Page Header -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Recently Deleted</value>
+    <value>Nemrégiben törölt</value>
     <comment>Page title for recently deleted items</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
@@ -81,7 +81,7 @@
     <comment>Description when no deleted items exist</comment>
   </data>
   <data name="Untitled" xml:space="preserve">
-    <value>Untitled</value>
+    <value>Névtelen</value>
     <comment>Fallback name for items without a name</comment>
   </data>
   <!-- Days Remaining -->
@@ -90,12 +90,12 @@
     <comment>Text showing how many days until permanent deletion</comment>
   </data>
   <data name="ExpiringSoon" xml:space="preserve">
-    <value>Expiring soon</value>
+    <value>Hamarosan lejár</value>
     <comment>Text shown when item will be deleted within 24 hours</comment>
   </data>
   <!-- Actions -->
   <data name="Restore" xml:space="preserve">
-    <value>Restore</value>
+    <value>Visszaállítás</value>
     <comment>Button text to restore a deleted item</comment>
   </data>
   <data name="EmptyAll" xml:space="preserve">
