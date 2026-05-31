@@ -67,7 +67,7 @@
     <comment>Email recipient field label</comment>
   </data>
   <data name="DateLabel" xml:space="preserve">
-    <value>Date:</value>
+    <value>Tanggal:</value>
     <comment>Email date field label</comment>
   </data>
   <data name="ActionsLabel" xml:space="preserve">
@@ -75,15 +75,15 @@
     <comment>Email actions section label</comment>
   </data>
   <data name="DeleteButton" xml:space="preserve">
-    <value>Delete</value>
+    <value>Hapus</value>
     <comment>Delete email button text</comment>
   </data>
   <data name="AttachmentsLabel" xml:space="preserve">
-    <value>Attachments:</value>
+    <value>Lampiran:</value>
     <comment>Email attachments section header</comment>
   </data>
   <data name="CloseButton" xml:space="preserve">
-    <value>Close</value>
+    <value>Tutup</value>
     <comment>Close modal button text</comment>
   </data>
   <data name="DeleteEmailTitle" xml:space="preserve">
