@@ -569,7 +569,7 @@
     "deleteEmailConfirm": "Вы уверены, что хотите удалить это письмо? Это действие является окончательным и не может быть отменено.",
     "emailNotFound": "Адрес электронной почты не найден",
     "formatHtml": "HTML",
-    "formatPlain": "Text",
+    "formatPlain": "Текст",
     "formatSource": "Source",
     "formatSwitchTitle": "Switch email format",
     "sizeKB": "КБ",
