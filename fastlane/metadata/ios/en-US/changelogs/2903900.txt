@@ -1,0 +1,4 @@
+- Improve mobile QR login via native camera app
+- Add more auto-lock timeout options
+- Make email attachments open in default viewer app instead of prompting download
+- Add email format switcher

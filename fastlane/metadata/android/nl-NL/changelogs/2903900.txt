@@ -1,0 +1,7 @@
+- Autofill-suggesties worden nu weergegeven in het toetsenbord in plaats van in een pop-up
+- Autofill toont nu maximaal 10 matches in plaats van 3
+- Mobiele QR-login via de native camera-app verbeterd
+- Compatibiliteit van passkeys met native apps verbeterd
+- Meer opties toegevoegd voor automatische vergrendeling
+- E-mailbijlagen openen nu in de standaard viewer-app
+- E-mail format switch toegevoegd
