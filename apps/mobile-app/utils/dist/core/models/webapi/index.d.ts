@@ -194,6 +194,8 @@ type Email = {
     messageHtml: string;
     /** The plain text body of the email message */
     messagePlain: string;
+    /** The raw RFC 822 source of the email message */
+    messageSource: string;
     /** The ID of the email */
     id: number;
     /** The subject of the email */

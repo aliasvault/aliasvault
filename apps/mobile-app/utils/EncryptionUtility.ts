@@ -296,6 +296,9 @@ class EncryptionUtility {
       if (email.messagePlain) {
         decryptedEmail.messagePlain = await EncryptionUtility.symmetricDecrypt(email.messagePlain, symmetricKeyBase64);
       }
+      if (email.messageSource) {
+        decryptedEmail.messageSource = await EncryptionUtility.symmetricDecrypt(email.messageSource, symmetricKeyBase64);
+      }
 
       return decryptedEmail;
     } catch (err) {
