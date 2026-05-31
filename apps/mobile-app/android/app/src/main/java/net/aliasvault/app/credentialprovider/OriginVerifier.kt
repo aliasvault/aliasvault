@@ -1059,7 +1059,7 @@ class OriginVerifier {
 
     /**
      * Verify that a native app is authorized for the given RP ID via Asset Links.
-     * Fetches /.well-known/assetlinks.json and checks for get_login_creds permission.
+     * Fetches /.well-known/assetlinks.json and checks for get_login_creds or handle_all_urls permission.
      */
     private fun verifyAssetLinks(rpId: String, packageName: String, certHashes: List<String>): AssetLinksResult {
         return try {
@@ -1117,10 +1117,11 @@ class OriginVerifier {
         if (target.optString("namespace") != "android_app") return false
         if (target.optString("package_name") != packageName) return false
 
-        val hasGetLoginCreds = (0 until relation.length()).any { j ->
-            relation.getString(j) == "delegate_permission/common.get_login_creds"
+        val hasCredentialRelation = (0 until relation.length()).any { j ->
+            val rel = relation.getString(j)
+            rel == "delegate_permission/common.get_login_creds" || rel == "delegate_permission/common.handle_all_urls"
         }
-        if (!hasGetLoginCreds) return false
+        if (!hasCredentialRelation) return false
 
         val fingerprints = target.optJSONArray("sha256_cert_fingerprints") ?: return false
         return (0 until fingerprints.length()).any { j ->
