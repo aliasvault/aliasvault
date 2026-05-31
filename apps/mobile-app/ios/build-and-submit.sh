@@ -11,9 +11,7 @@ CONFIG="Release"
 ARCHIVE_PATH="$SCRIPT_DIR/build/${SCHEME}.xcarchive"
 EXPORT_DIR="$SCRIPT_DIR/build/export"
 EXPORT_PLIST="$SCRIPT_DIR/exportOptions.plist"
-
-# Put the fastlane API key in the home directory
-API_KEY_PATH="$HOME/APPSTORE_CONNECT_FASTLANE.json"
+API_KEY_PATH="$HOME/.aliasvault/appstore-connect.json"
 
 # ------------------------------------------
 # Build core libraries if needed
