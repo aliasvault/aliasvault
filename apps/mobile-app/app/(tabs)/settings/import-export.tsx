@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
+import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
@@ -302,32 +302,32 @@ export default function ImportExportScreen(): React.ReactNode {
       const csvContent = await itemsToCsv(items);
 
       const filename = `aliasvault-export-${dateStr}.csv`;
-      const downloadsDir = FileSystem.documentDirectory + 'Exports/';
-      const filePath = downloadsDir + filename;
-
-      // Ensure Exports directory exists
-      const dirInfo = await FileSystem.getInfoAsync(downloadsDir);
-      if (!dirInfo.exists) {
-        await FileSystem.makeDirectoryAsync(downloadsDir, { intermediates: true });
+      const downloadsDir = new Directory(Paths.document, 'Exports');
+      if (!downloadsDir.exists) {
+        downloadsDir.create({ intermediates: true });
       }
 
-      // Write CSV file
-      await FileSystem.writeAsStringAsync(filePath, csvContent, {
-        encoding: FileSystem.EncodingType.UTF8,
-      });
+      const file = new File(downloadsDir, filename);
+      if (file.exists) {
+        file.delete();
+      }
+      file.create();
+      file.write(csvContent);
 
       // Share the file using the system share dialog
       const canShare = await Sharing.isAvailableAsync();
       if (canShare) {
-        await Sharing.shareAsync(filePath, {
+        await Sharing.shareAsync(file.uri, {
           dialogTitle: filename,
           mimeType: 'text/csv',
         });
 
         // Clean up the temporary file after sharing
-        setTimeout(async () => {
+        setTimeout(() => {
           try {
-            await FileSystem.deleteAsync(filePath, { idempotent: true });
+            if (file.exists) {
+              file.delete();
+            }
           } catch (error) {
             console.error('Error cleaning up export file:', error);
           }

@@ -1,4 +1,4 @@
-import * as FileSystem from 'expo-file-system';
+import { File } from 'expo-file-system';
 import * as IntentLauncher from 'expo-intent-launcher';
 import * as Sharing from 'expo-sharing';
 import React, { useCallback, useRef, useState } from 'react';
@@ -88,7 +88,7 @@ export const useAttachmentViewer = (): {
 
     if (Platform.OS === 'android') {
       try {
-        const contentUri = await FileSystem.getContentUriAsync(filePath);
+        const contentUri = new File(filePath).contentUri;
         await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
           data: contentUri,
           flags: 1, // FLAG_GRANT_READ_URI_PERMISSION

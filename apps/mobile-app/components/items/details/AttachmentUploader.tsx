@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
@@ -47,32 +47,23 @@ export const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
       for (const file of result.assets) {
         if (file.uri) {
           try {
-            let fileUri = file.uri;
+            let sourceFile = new File(file.uri);
+            let tempFile: File | null = null;
 
             /*
              * If the URI is a content:// URI and copyToCacheDirectory didn't work,
              * try to copy it to a readable location
              */
-            if (fileUri.startsWith('content://')) {
-              const tempUri = `${FileSystem.cacheDirectory}${file.name}`;
-              await FileSystem.copyAsync({
-                from: fileUri,
-                to: tempUri,
-              });
-              fileUri = tempUri;
+            if (file.uri.startsWith('content://')) {
+              tempFile = new File(Paths.cache, file.name);
+              if (tempFile.exists) {
+                tempFile.delete();
+              }
+              await sourceFile.copy(tempFile);
+              sourceFile = tempFile;
             }
 
-            // Read file as base64 string using FileSystem
-            const base64Data = await FileSystem.readAsStringAsync(fileUri, {
-              encoding: FileSystem.EncodingType.Base64,
-            });
-
-            // Convert base64 to Uint8Array
-            const binaryString = atob(base64Data);
-            const byteArray = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-              byteArray[i] = binaryString.charCodeAt(i);
-            }
+            const byteArray = await sourceFile.bytes();
 
             const attachment: Attachment = {
               Id: crypto.randomUUID(),
@@ -87,9 +78,9 @@ export const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
             newAttachments.push(attachment);
 
             // Clean up temporary file if we created one
-            if (fileUri !== file.uri) {
+            if (tempFile?.exists) {
               try {
-                await FileSystem.deleteAsync(fileUri);
+                tempFile.delete();
               } catch (cleanupError) {
                 console.warn('Failed to cleanup temporary file:', cleanupError);
               }
