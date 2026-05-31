@@ -105,8 +105,7 @@ public class CredentialTests : ClientPlaywrightTest
         Assert.That(pageContent, Does.Contain(serviceNameBefore), "Created item service name does not appear on login page.");
 
         // Click the edit button.
-        var editButton = Page.Locator("text=Edit").First;
-        await editButton.ClickAsync();
+        await ClickItemEditButtonAsync();
         await WaitForUrlAsync("edit", "Save Item");
 
         var serviceNameAfter = "Item service after";

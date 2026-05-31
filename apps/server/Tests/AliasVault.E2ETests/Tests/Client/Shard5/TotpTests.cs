@@ -89,8 +89,8 @@ public class TotpTests : ClientPlaywrightTest
         var pageContent = await Page.TextContentAsync("body");
         Assert.That(pageContent, Does.Contain("TOTP to Delete"), "TOTP code was not added successfully");
 
-        // Open the edit page again by clicking the button that contains the text "Edit"
-        await Page.ClickAsync("text=Edit");
+        // Open the edit page again by clicking the edit button
+        await ClickItemEditButtonAsync();
         await WaitForUrlAsync("items/**/edit", "Edit the existing item");
 
         // Click the delete button for the TOTP code

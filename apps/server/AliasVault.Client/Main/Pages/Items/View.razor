@@ -27,9 +27,9 @@ else
                 Text="@Localizer["EditButtonDesktop"]"
                 Href="@($"/items/{Id}/edit")"
                 Color="primary" />
-            <button type="button" @onclick="OpenDeleteModal" class="space-x-3 @ButtonStyles.BaseClasses @ButtonStyles.GetColorClasses("danger")">
-                <span class="hidden md:inline ms-1">@Localizer["DeleteButtonMobile"]</span>
-                <span class="md:hidden">@Localizer["DeleteButtonDesktop"]</span>
+            <button type="button" @onclick="OpenDeleteModal" class="@ButtonStyles.BaseClasses @ButtonStyles.GetColorClasses("danger")">
+                <span class="md:hidden">@Localizer["DeleteButtonMobile"]</span>
+                <span class="hidden md:inline">@Localizer["DeleteButtonDesktop"]</span>
             </button>
         </CustomActions>
     </PageHeader>

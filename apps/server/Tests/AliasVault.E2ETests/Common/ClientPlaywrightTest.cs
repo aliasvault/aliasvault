@@ -336,7 +336,7 @@ public abstract class ClientPlaywrightTest : PlaywrightTest
 
         // Wait for the item details page to load.
         await WaitForUrlAsync("items/**", "Edit");
-        await Page.ClickAsync("text=Edit");
+        await ClickItemEditButtonAsync();
 
         // Wait for the edit item page to load.
         await WaitForUrlAsync("items/**/edit", "Edit the existing item");
@@ -401,7 +401,7 @@ public abstract class ClientPlaywrightTest : PlaywrightTest
 
         // Wait for the item details page to load.
         await WaitForUrlAsync("items/**", "Delete");
-        await Page.ClickAsync("text=Delete");
+        await ClickItemDeleteButtonAsync();
 
         // Wait for the delete confirmation modal to appear on the item view page.
         await Page.GetByText("Are you sure you want to delete this item?", new PageGetByTextOptions { Exact = false })
@@ -433,6 +433,28 @@ public abstract class ClientPlaywrightTest : PlaywrightTest
         await addFieldButton.ClickAsync();
         var fieldOption = Page.Locator($"button:has-text('{fieldName}')").First;
         await fieldOption.ClickAsync();
+    }
+
+    /// <summary>
+    /// Click the Edit button in the action area of the item view page. Resilient to the
+    /// responsive label change between "Edit" (mobile) and "Edit Item" (desktop).
+    /// </summary>
+    /// <returns>Async task.</returns>
+    protected async Task ClickItemEditButtonAsync()
+    {
+        var editButton = Page.Locator("a[href$='/edit']").First;
+        await editButton.ClickAsync();
+    }
+
+    /// <summary>
+    /// Click the Delete button in the action area of the item view page. Resilient to the
+    /// responsive label change between "Delete" (mobile) and "Delete Item" (desktop).
+    /// </summary>
+    /// <returns>Async task.</returns>
+    protected async Task ClickItemDeleteButtonAsync()
+    {
+        var deleteButton = Page.Locator("button:has-text('Delete')").First;
+        await deleteButton.ClickAsync();
     }
 
     /// <summary>

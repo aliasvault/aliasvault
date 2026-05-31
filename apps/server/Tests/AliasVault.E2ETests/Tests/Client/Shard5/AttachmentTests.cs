@@ -200,7 +200,7 @@ public class AttachmentTests : ClientPlaywrightTest
         Assert.That(pageContent, Does.Contain("TestAttachment.txt"), "Uploaded attachment name does not appear on alias page.");
 
         // Click the edit button
-        await Page.ClickAsync("text=Edit");
+        await ClickItemEditButtonAsync();
         await WaitForUrlAsync("items/**/edit", "Edit the existing item");
 
         // Find and click the delete button for the attachment
@@ -306,7 +306,7 @@ public class AttachmentTests : ClientPlaywrightTest
             });
 
         // Edit the credential
-        await Page.ClickAsync("text=Edit");
+        await ClickItemEditButtonAsync();
         await WaitForUrlAsync("items/**/edit", "Edit the existing item");
 
         // Add the attachments section via the + menu
@@ -488,7 +488,7 @@ public class AttachmentTests : ClientPlaywrightTest
         Assert.That(pageContent, Does.Contain("TestAttachmentCancel.txt"), "Uploaded attachment name does not appear on view page.");
 
         // Click the edit button
-        await Page.ClickAsync("text=Edit");
+        await ClickItemEditButtonAsync();
         await WaitForUrlAsync("items/**/edit", "Edit the existing item");
 
         // Verify attachment appears on edit page
@@ -518,7 +518,7 @@ public class AttachmentTests : ClientPlaywrightTest
         Assert.That(pageContent, Does.Contain("TestAttachmentCancel.txt"), "Attachment was deleted despite canceling the edit. Deletions should only persist on save.");
 
         // Edit the item again to double-check the attachment is still there
-        await Page.ClickAsync("text=Edit");
+        await ClickItemEditButtonAsync();
         await WaitForUrlAsync("items/**/edit", "Edit the existing item");
 
         // Verify attachment still appears on edit page

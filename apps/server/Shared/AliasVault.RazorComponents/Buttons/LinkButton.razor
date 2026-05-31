@@ -1,7 +1,7 @@
-<a href="@Href" class="space-x-3 @GetButtonClasses()">
+<a href="@Href" class="@GetButtonClasses()">
     @if (SmallText.Length > 0) {
-        <span class="hidden md:inline ms-1">@SmallText</span>
-        <span class="md:hidden">@Text</span>
+        <span class="md:hidden">@SmallText</span>
+        <span class="hidden md:inline">@Text</span>
     }
     else {
         @Text
