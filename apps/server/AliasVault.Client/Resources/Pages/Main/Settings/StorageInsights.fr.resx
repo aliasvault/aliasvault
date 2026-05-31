@@ -21,11 +21,11 @@
   </xsd:schema>
   <!-- Page title and description -->
   <data name="PageTitle">
-    <value>Aperçu du stockage du coffre</value>
+    <value>Aperçu du stockage du coffre-fort</value>
     <comment>Page title for vault storage insights</comment>
   </data>
   <data name="PageDescription">
-    <value>Voir une estimation de la taille de votre coffre. Pour de meilleures performances de synchronisation, il est conseillé de garder la taille de votre coffre petit et de supprimer les éléments dont vous n'avez plus besoin.</value>
+    <value>Voir une estimation de la taille de votre coffre-fort. Pour de meilleures performances de synchronisation, il est conseillé de garder la taille de votre coffre petit et de supprimer les éléments dont vous n'avez plus besoin.</value>
     <comment>Page description for vault storage insights</comment>
   </data>
   <data name="BreadcrumbTitle">
@@ -34,7 +34,7 @@
   </data>
   <!-- Estimated total -->
   <data name="EstimatedTotalTitle">
-    <value>Taille estimée du coffre</value>
+    <value>Taille estimée du coffre-fort</value>
     <comment>Title for the estimated total vault size card</comment>
   </data>
   <data name="EstimatedTotalDescription">
@@ -144,19 +144,19 @@
     <comment>Button to re-fetch favicons for every item with a URL</comment>
   </data>
   <data name="DeleteAllLogosConfirmTitle">
-    <value>Supprimer tous les logos?</value>
+    <value>Supprimer tous les logos ?</value>
     <comment>Confirmation modal title for delete-all-logos</comment>
   </data>
   <data name="DeleteAllLogosConfirmMessage">
-    <value>Cela supprime chaque logo stocké de votre coffre et efface le logo sur chaque identifiant. Vous pouvez le télécharger à nouveau à tout moment. Continuer ?</value>
+    <value>Cela supprime chaque logo stocké de votre coffre-fort et efface le logo sur chaque identifiant. Vous pouvez le télécharger à nouveau à tout moment. Continuer ?</value>
     <comment>Confirmation modal body for delete-all-logos</comment>
   </data>
   <data name="RedownloadAllLogosConfirmTitle">
-    <value>Re-télécharger tous les logos?</value>
+    <value>Re-télécharger tous les logos ?</value>
     <comment>Confirmation modal title for redownload-all-logos</comment>
   </data>
   <data name="RedownloadAllLogosConfirmMessage">
-    <value>Cela récupère à nouveau le favicon pour chaque identifiant ayant une URL de site web, en remplaçant le logo existant. Selon la taille de votre coffre, cela peut prendre un certain temps. Continuer ?</value>
+    <value>Cela récupère à nouveau le favicon pour chaque identifiant ayant une URL de site web, en remplaçant le logo existant. Selon la taille de votre coffre-fort, cela peut prendre un certain temps. Continuer ?</value>
     <comment>Confirmation modal body for redownload-all-logos</comment>
   </data>
 </root>

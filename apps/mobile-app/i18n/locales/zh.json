@@ -208,7 +208,7 @@
       "24hours": "24 小时"
     },
     "language": "语言",
-    "languageSystemMessage": "要更改应用语言，请在设备设置中配置AliasVault的首选语言。",
+    "languageSystemMessage": "要更改应用语言，请在设备设置中配置 AliasVault 的首选语言。",
     "openSettings": "打开设置",
     "vaultUnlockSettings": {
       "description": "选择您想要的密码库解锁方式。",
@@ -568,7 +568,10 @@
     "deleteEmail": "删除邮件",
     "deleteEmailConfirm": "您确定要删除此邮件吗？此操作是永久性的，无法撤销。",
     "emailNotFound": "未找到邮件",
-    "noPlainText": "此电子邮件不包含任何纯文本。",
+    "formatHtml": "HTML",
+    "formatPlain": "文本",
+    "formatSource": "源",
+    "formatSwitchTitle": "切换邮件格式",
     "sizeKB": "KB",
     "offlineMessage": "您处于离线状态，请连接互联网以加载邮件。",
     "emptyMessage": "您的私人邮箱地址尚未收到任何邮件。当您收到新邮件时，会显示在这里。",

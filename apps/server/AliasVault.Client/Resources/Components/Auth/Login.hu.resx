@@ -64,7 +64,7 @@
     <comment>Main login page title</comment>
   </data>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
+    <value>Kétlépcsős hitelesítés</value>
     <comment>Title for 2FA step</comment>
   </data>
   <data name="RecoveryCodeVerificationTitle" xml:space="preserve">
@@ -98,7 +98,7 @@
   </data>
   <!-- Buttons -->
   <data name="LoginButton" xml:space="preserve">
-    <value>Log in</value>
+    <value>Bejelentkezés</value>
     <comment>Login button text</comment>
   </data>
   <!-- Links -->
@@ -107,7 +107,7 @@
     <comment>Link text for password recovery</comment>
   </data>
   <data name="CreateNewVaultLink" xml:space="preserve">
-    <value>Create new vault</value>
+    <value>Új széf létrehozása</value>
     <comment>Link text for creating a new vault</comment>
   </data>
   <data name="LoginWithRecoveryCodeLink" xml:space="preserve">
@@ -132,7 +132,7 @@
     <comment>Description for recovery code step</comment>
   </data>
   <data name="NoAccountYetText" xml:space="preserve">
-    <value>No account yet?</value>
+    <value>Nincs még fiókja?</value>
     <comment>Text before registration link</comment>
   </data>
   <data name="DontHaveAuthenticatorText" xml:space="preserve">
@@ -145,7 +145,7 @@
   </data>
   <!-- Loading and status messages -->
   <data name="LoggingInMessage" xml:space="preserve">
-    <value>Logging in...</value>
+    <value>Bejelentkezik...</value>
     <comment>Loading message during login process</comment>
   </data>
   <data name="VerifyingTwoFactorCodeMessage" xml:space="preserve">
@@ -167,7 +167,7 @@
   </data>
   <!-- Placeholders -->
   <data name="UsernamePlaceholder" xml:space="preserve">
-    <value>name / name@company.com</value>
+    <value>név / név@cégnév.hu</value>
     <comment>Placeholder text for username input</comment>
   </data>
   <data name="PasswordPlaceholder" xml:space="preserve">

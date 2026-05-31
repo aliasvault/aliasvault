@@ -86,7 +86,7 @@
     <comment>Header for note section</comment>
   </data>
   <data name="VaultsDeletedNote" xml:space="preserve">
-    <value>Tous les coffres cryptés qui incluent tous vos identifiants seront définitivement supprimés</value>
+    <value>Tous les coffres-fort cryptés qui incluent tous vos identifiants seront définitivement supprimés</value>
     <comment>Note about vault deletion</comment>
   </data>
   <data name="EmailAliasesOrphanedNote" xml:space="preserve">

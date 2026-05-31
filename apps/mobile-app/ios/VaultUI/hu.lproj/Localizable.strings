@@ -1,13 +1,13 @@
 /* English localization strings for VaultUI */
-"error" = "Error";
-"cancel" = "Cancel";
-"back" = "Back";
-"next" = "Next";
-"edit" = "Edit";
-"website" = "Website";
-"username" = "Username";
-"title" = "Title";
-"unknown_error" = "An unknown error occurred";
+"error" = "Hiba";
+"cancel" = "Mégse";
+"back" = "Vissza";
+"next" = "Következő";
+"edit" = "Szerkesztés";
+"website" = "Weblap";
+"username" = "Felhasználónév";
+"title" = "Cím";
+"unknown_error" = "Ismeretlen hiba lépett fel";
 
 "loading_items" = "Loading items...";
 "no_items_found" = "No items found";
@@ -25,17 +25,17 @@
 "choose_username" = "Choose Username";
 "select_text_to_insert_message" = "Select the text to insert into the focused input field";
 "choose_username_message" = "This website may require either your username or your email address to log in";
-"username_prefix" = "Username: ";
-"email_prefix" = "Email: ";
-"password" = "Password";
+"username_prefix" = "Felhasználónév: ";
+"email_prefix" = "E-mail: ";
+"password" = "Jelszó";
 "items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
 "no_item_selected" = "No item selected.";
 
 /* Context menu strings */
-"copy_username" = "Copy Username";
-"copy_password" = "Copy Password";
-"copy_email" = "Copy Email";
-"copy_totp_code" = "Copy TOTP Code";
+"copy_username" = "Felhasználónév másolása";
+"copy_password" = "Jelszó másolása";
+"copy_email" = "E-mail másolása";
+"copy_totp_code" = "TOTP kód másolása";
 "view_details" = "View Details";
 "username_copied" = "Username copied";
 "password_copied" = "Password copied";
@@ -52,7 +52,7 @@
 "create_passkey_button_confirm" = "Create Passkey";
 
 /* Passkey provider */
-"passkey" = "Passkey";
+"passkey" = "Azonosítókulcs";
 "loading_passkeys" = "Loading passkeys...";
 "no_passkeys_found" = "No passkeys found";
 "no_passkeys_match" = "No existing passkeys match your search";
@@ -72,7 +72,7 @@
 "merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
 
 /* PIN Unlock */
-"unlock_vault" = "Unlock Vault";
+"unlock_vault" = "Széf feloldása";
 "enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
 "pin_locked_max_attempts" = "PIN locked after too many failed attempts";
 "pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
@@ -80,7 +80,7 @@
 /* Password Unlock */
 "enter_password_to_unlock" = "Enter your master password";
 "unlock" = "Unlock";
-"incorrect_password" = "Incorrect password. Please try again.";
+"incorrect_password" = "Hibás jelszó. Próbálkozzon újra.";
 "attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
 "max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
 

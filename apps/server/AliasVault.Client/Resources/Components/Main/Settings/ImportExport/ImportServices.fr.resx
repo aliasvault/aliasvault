@@ -60,7 +60,7 @@
   </resheader>
   <!-- 1Password -->
   <data name="OnePasswordDescription" xml:space="preserve">
-    <value>Importer les mots de passe depuis votre coffre 1Password</value>
+    <value>Importer les mots de passe depuis votre coffre-fort 1Password</value>
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
@@ -73,11 +73,11 @@
   </data>
   <!-- Bitwarden -->
   <data name="BitwardenDescription" xml:space="preserve">
-    <value>Importer les mots de passe depuis votre coffre Bitwarden</value>
+    <value>Importer les mots de passe depuis votre coffre-fort Bitwarden</value>
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>Afin d'importer votre coffre Bitwarden, vous devez l'exporter. Vous pouvez le faire en vous connectant à votre compte Bitwarden, en allant dans le menu 'Outils' et en sélectionnant 'Exporter le coffre'.</value>
+    <value>Afin d'importer votre coffre-fort Bitwarden, vous devez l'exporter. Vous pouvez le faire en vous connectant à votre compte Bitwarden, en allant dans le menu 'Outils' et en sélectionnant 'Exporter le coffre'.</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
@@ -86,7 +86,7 @@
   </data>
   <!-- LastPass -->
   <data name="LastPassDescription" xml:space="preserve">
-    <value>Importer des mots de passe depuis votre coffre LastPass</value>
+    <value>Importer des mots de passe depuis votre coffre-fort LastPass</value>
     <comment>Description for LastPass import service</comment>
   </data>
   <data name="LastPassInstructionsPart1" xml:space="preserve">
@@ -116,7 +116,7 @@
     <comment>Description for KeePass import service</comment>
   </data>
   <data name="KeePassInstructionsPart1" xml:space="preserve">
-    <value>Afin d'importer votre coffre KeePass, vous devez l'exporter en tant que fichier CSV. Vous pouvez le faire en vous rendant dans le menu 'Fichier' et en sélectionnant 'Exporter' (vers CSV).</value>
+    <value>Afin d'importer votre coffre-fort KeePass, vous devez l'exporter en tant que fichier CSV. Vous pouvez le faire en vous rendant dans le menu 'Fichier' et en sélectionnant 'Exporter' (vers CSV).</value>
     <comment>KeePass export instructions part 1</comment>
   </data>
   <data name="KeePassInstructionsPart2" xml:space="preserve">
@@ -184,7 +184,7 @@
     <comment>Description for KeePassXC import service</comment>
   </data>
   <data name="KeePassXCInstructionsPart1" xml:space="preserve">
-    <value>Afin d'importer votre coffre KeePassXC, vous devez l'exporter sous forme de fichier CSV. Vous pouvez le faire en allant dans le menu 'Base de données' et en sélectionnant 'Exporter' (fichier CSV).</value>
+    <value>Afin d'importer votre coffre-fort KeePassXC, vous devez l'exporter sous forme de fichier CSV. Vous pouvez le faire en allant dans le menu 'Base de données' et en sélectionnant 'Exporter' (fichier CSV).</value>
     <comment>KeePassXC export instructions part 1</comment>
   </data>
   <data name="KeePassXCInstructionsPart2" xml:space="preserve">
@@ -210,7 +210,7 @@
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
-    <value>Afin d'importer votre coffre Proton Pass, vous devez l'exporter. Vous pouvez le faire dans l'extension du navigateur Proton Pass en allant dans 'Paramètres' > 'Exporter'.</value>
+    <value>Afin d'importer votre coffre-fort Proton Pass, vous devez l'exporter. Vous pouvez le faire dans l'extension du navigateur Proton Pass en allant dans 'Paramètres' > 'Exporter'.</value>
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">
@@ -223,7 +223,7 @@
     <comment>Description for Strongbox import service</comment>
   </data>
   <data name="StrongboxInstructionsPart1" xml:space="preserve">
-    <value>Afin d'importer votre coffre Strongbox, vous devez l'exporter en tant que fichier CSV. Vous pouvez le faire en allant dans le menu 'Fichier' et en sélectionnant 'Exporter la base de données' (vers CSV).</value>
+    <value>Afin d'importer votre coffre-fort Strongbox, vous devez l'exporter en tant que fichier CSV. Vous pouvez le faire en allant dans le menu 'Fichier' et en sélectionnant 'Exporter la base de données' (vers CSV).</value>
     <comment>Strongbox export instructions part 1</comment>
   </data>
   <data name="StrongboxInstructionsPart2" xml:space="preserve">

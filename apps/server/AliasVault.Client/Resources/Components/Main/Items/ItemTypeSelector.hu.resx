@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Type names -->
   <data name="TypeLogin">
-    <value>Login</value>
+    <value>Belépés</value>
     <comment>Login item type name</comment>
   </data>
   <data name="TypeAlias">
@@ -29,7 +29,7 @@
     <comment>Alias item type name</comment>
   </data>
   <data name="TypeCreditCard">
-    <value>Credit Card</value>
+    <value>Bankkártya</value>
     <comment>Credit Card item type name</comment>
   </data>
   <data name="TypeNote">
@@ -38,11 +38,11 @@
   </data>
   <!-- Status text -->
   <data name="Creating">
-    <value>Creating</value>
+    <value>Létrehozás</value>
     <comment>Status text when creating a new item</comment>
   </data>
   <data name="Editing">
-    <value>Editing</value>
+    <value>Szerkesztés</value>
     <comment>Status text when editing an existing item</comment>
   </data>
   <!-- Buttons -->

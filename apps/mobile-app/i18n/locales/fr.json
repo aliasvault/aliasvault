@@ -32,7 +32,7 @@
     "errors": {
       "unknownError": "Une erreur inconnue s'est produite.",
       "unknownErrorTryAgain": "Une erreur inconnue s'est produite. Merci de réessayer.",
-      "vaultTooLarge": "Le coffre est trop grand pour que le serveur l'accepte. Essayez de supprimer certains éléments ou pièces jointes pour réduire la taille et réessayez.",
+      "vaultTooLarge": "Le coffre-fort est trop grand pour que le serveur l'accepte. Essayez de supprimer certains éléments ou pièces jointes pour réduire la taille et réessayez.",
       "serverVersionTooOld": "Le serveur AliasVault doit être mis à jour vers une version plus récente pour pouvoir utiliser cette fonctionnalité. Veuillez contacter l'administrateur du serveur si vous avez besoin d'aide."
     }
   },
@@ -45,10 +45,10 @@
     "unlocking": "Déverrouillage...",
     "loggingIn": "Connexion en cours",
     "validatingCredentials": "Validation des identifiants",
-    "syncingVault": "Synchronisation du coffre",
+    "syncingVault": "Synchronisation du coffre-fort",
     "verifyingAuthCode": "Vérification du code d'authentification",
     "verify": "Vérifier",
-    "unlockVault": "Déverrouiller le coffre",
+    "unlockVault": "Déverrouiller le coffre-fort",
     "unlockWithBiometric": "Déverrouiller avec {{biometric}}",
     "unlockWithPin": "Déverrouiller avec un code PIN",
     "unlockWithPassword": "Déverrouiller avec le mot de passe",
@@ -57,7 +57,7 @@
     "usernamePlaceholder": "nom / nom@entreprise.com",
     "passwordPlaceholder": "Saisissez votre mot de passe",
     "enableBiometric": "Activer {{biometric}}?",
-    "biometricPrompt": "Voulez-vous utiliser {{biometric}} pour déverrouiller votre coffre ?",
+    "biometricPrompt": "Voulez-vous utiliser {{biometric}} pour déverrouiller votre coffre-fort ?",
     "authCodeNote": "Remarque : si vous n'avez pas accès à votre appareil d'authentification, vous pouvez réinitialiser votre authentification 2FA avec un code de récupération en vous connectant via le site web.",
     "errors": {
       "credentialsRequired": "Le nom d'utilisateur et le mot de passe sont requis",
@@ -71,7 +71,7 @@
       "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
       "httpError": "Erreur HTTP : {{status}}"
     },
-    "confirmLogout": "Êtes-vous sûr de vouloir vous déconnecter ? Vous devez vous reconnecter avec votre mot de passe maître pour accéder à votre coffre.",
+    "confirmLogout": "Êtes-vous sûr de vouloir vous déconnecter ? Vous devez vous reconnecter avec votre mot de passe maître pour accéder à votre coffre-fort.",
     "noAccountYet": "Pas encore de compte ?",
     "createNewVault": "Créer un nouveau coffre-fort",
     "connectingTo": "Connexion à",
@@ -83,23 +83,23 @@
     "logoutAnyway": "Se déconnecter quand même"
   },
   "vault": {
-    "syncingVault": "Synchronisation du coffre",
-    "uploadingVaultToServer": "Envoi du coffre sur le serveur",
-    "savingChangesToVault": "Enregistrement des modifications dans le coffre",
-    "checkingForVaultUpdates": "Vérification des mises à jour du coffre",
+    "syncingVault": "Synchronisation du coffre-fort",
+    "uploadingVaultToServer": "Envoi du coffre-fort sur le serveur",
+    "savingChangesToVault": "Enregistrement des modifications dans le coffre-fort",
+    "checkingForVaultUpdates": "Vérification des mises à jour du coffre-fort",
     "executingOperation": "Exécution de l'opération...",
-    "checkingVaultUpdates": "Vérification des mises à jour du coffre",
-    "syncingUpdatedVault": "Synchronisation du coffre mis à jour",
-    "mergingVault": "Fusion des modifications du coffre",
+    "checkingVaultUpdates": "Vérification des mises à jour du coffre-fort",
+    "syncingUpdatedVault": "Synchronisation du coffre-fort mis à jour",
+    "mergingVault": "Fusion des modifications du coffre-fort",
     "uploadingChanges": "Envoi des modifications",
     "errors": {
       "failedToGetEncryptedDatabase": "Impossible d'obtenir la base de données chiffrée",
       "usernameNotFound": "Identifiant non trouvé",
-      "vaultOutdated": "Votre coffre est obsolète. Veuillez vous connecter sur le site AliasVault et suivre les étapes.",
+      "vaultOutdated": "Votre coffre-fort est obsolète. Veuillez vous connecter sur le site AliasVault et suivre les étapes.",
       "failedToSyncVault": "Échec de la synchronisation du coffre",
       "versionNotSupported": "Cette version de l'application mobile AliasVault n'est plus prise en charge par le serveur. Veuillez mettre à jour votre application vers la dernière version.",
       "serverVersionNotSupported": "Le serveur AliasVault doit être mis à jour vers une version plus récente afin d'utiliser cette application mobile. Veuillez contacter le support si vous avez besoin d'aide.",
-      "appOutdated": "Cette application est obsolète et ne peut pas être utilisée pour accéder à cette (nouvelle) version du coffre. Veuillez mettre à jour l'application AliasVault pour continuer.",
+      "appOutdated": "Cette application est obsolète et ne peut pas être utilisée pour accéder à cette (nouvelle) version du coffre-fort. Veuillez mettre à jour l'application AliasVault pour continuer.",
       "passwordChanged": "Votre mot de passe a changé depuis la dernière fois que vous vous êtes connecté. Veuillez vous reconnecter pour des raisons de sécurité.",
       "passwordChangeRequiresOnline": "Le changement de mot de passe nécessite une connexion internet. Veuillez réessayer une fois connecté."
     }
@@ -144,7 +144,7 @@
       "warningLink": "En savoir plus à ce sujet ici",
       "headerText": "Vous pouvez configurer AliasVault pour fournir le mot de passe natif et la fonctionnalité de saisie automatique du mot de passe dans Android. Suivez les instructions ci-dessous pour l'activer.",
       "passkeyNotice": "Les mots de passe sont créés via le gestionnaire d'identifiants Android (Android 14+). Pour les stocker dans AliasVault, assurez-vous que le remplissage automatique ci-dessous est activé.",
-      "howToEnable": "Comment activer le remplissage automatique et les clés d'accès:",
+      "howToEnable": "Comment activer le remplissage automatique et les clés d'accès :",
       "step1": "1. Ouvrez les paramètres Android via le bouton ci-dessous, et changez le \"service préféré de saisie automatique\" par \"AliasVault\"",
       "openAutofillSettings": "Ouvrir les paramètres de remplissage automatique",
       "buttonTip": "Si le bouton ci-dessus ne fonctionne pas, il peut être bloqué en raison des paramètres de sécurité. Vous pouvez manuellement aller dans Réglages Android → Gestion Générale → Mots de passe et saisie automatique.",
@@ -154,8 +154,8 @@
       "showSearchTextDescription": "Inclure le texte que AliasVault reçoit d'Android qu'il utilise pour rechercher un identifiant correspondant"
     },
     "advancedOptions": "Options avancées",
-    "copyTotpOnFill": "Copier le code TOTP lors de la saisie automatique",
-    "copyTotpOnFillDescription": "Lorsque vous remplissez automatiquement un mot de passe avec 2FA, copiez automatiquement son code TOTP dans le presse-papiers afin de pouvoir le coller dans le champ suivant.",
+    "copyTotpOnFill": "Copier le code à usage unique lors de la saisie automatique",
+    "copyTotpOnFillDescription": "Lorsque vous remplissez automatiquement un mot de passe avec 2FA, copiez automatiquement son code à usage unique dans le presse-papiers afin de pouvoir le coller dans le champ suivant.",
     "vaultUnlock": "Méthode de déverrouillage du coffre-fort",
     "autoLock": "Délai de verrouillage automatique",
     "clipboardClear": "Effacer le presse-papiers",
@@ -183,10 +183,10 @@
     "importSectionDescription": "Importez vos mots de passe depuis d'autres gestionnaires de mots de passe ou depuis un précédent export AliasVault.",
     "importWebNote": "Pour importer des informations d’identification à partir des gestionnaires de mots de passe existants, veuillez vous connecter à l’application Web. La fonction d’importation n’est actuellement disponible que sur la version web.",
     "exportSectionTitle": "Exporter",
-    "exportSectionDescription": "Exporter les données de votre coffre vers un fichier CSV. Ce fichier peut être utilisé comme une sauvegarde et peut également être importé dans d'autres gestionnaires de mots de passe.",
-    "exportCsvButton": "Exporter le coffre vers un fichier CSV",
+    "exportSectionDescription": "Exporter les données de votre coffre-fort vers un fichier CSV. Ce fichier peut être utilisé comme une sauvegarde et peut également être importé dans d'autres gestionnaires de mots de passe.",
+    "exportCsvButton": "Exporter le coffre-fort vers un fichier CSV",
     "exporting": "Exportation en cours...",
-    "exportConfirmTitle": "Exporter le coffre",
+    "exportConfirmTitle": "Exporter le coffre-fort",
     "exportWarning": "Attention : L'exportation de votre coffre-fort vers un fichier non chiffré exposera tous vos mots de passe et informations sensibles en texte clair. Effectuez cette opération uniquement sur un appareil de confiance et veillez à : \n• Stocker le fichier exporté dans un emplacement sécurisé \n• Supprimer le fichier dès que vous n'en avez plus besoin \n• Ne jamais partager le fichier exporté avec d'autres personnes \n\nÊtes-vous sûr de vouloir poursuivre l'exportation ?",
     "passwordConfirm": {
       "exportDescription": "Pour des raisons de sécurité, veuillez entrer votre mot de passe maître pour confirmer l'exportation."
@@ -219,14 +219,14 @@
       "biometricEnabled": "{{biometric}} est désormais activé avec succès",
       "biometricNotAvailable": "{{biometric}} non disponible",
       "biometricDisabledMessage": "{{biometric}} est désactivé pour AliasVault. Pour l'utiliser, veuillez d'abord l'activer dans les paramètres de votre appareil.",
-      "biometricHelp": "Utilisez la biométrie pour déverrouiller votre coffre, qui est sécurisé par l’ {{keystore}}.",
+      "biometricHelp": "Utilisez la biométrie pour déverrouiller votre coffre-fort, qui est sécurisé par l’ {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} n'est pas disponible. Appuyez pour ouvrir les paramètres et/ou allez dans les paramètres de votre appareil pour l'activer et le configurer.",
       "featureRequiresPasscode": "Cette fonctionnalité nécessite un code d'accès pour être activée sur votre appareil.",
       "pin": "Code PIN",
-      "pinDescription": "Utilisez un code PIN personnalisé pour déverrouiller votre coffre plus rapidement.",
+      "pinDescription": "Utilisez un code PIN personnalisé pour déverrouiller votre coffre-fort plus rapidement.",
       "pinEnabled": "Déverrouillage par code PIN activé avec succès",
       "pinDisabled": "Déverrouillage par code PIN désactivé",
-      "passwordHelp": "Saisissez à nouveau votre mot de passe maître complet pour déverrouiller votre coffre. Ceci est toujours activé comme option de repli.",
+      "passwordHelp": "Saisissez à nouveau votre mot de passe maître complet pour déverrouiller votre coffre-fort. Ceci est toujours activé comme option de repli.",
       "keystoreIOS": "Trousseau iOS",
       "keystoreAndroid": "KeyStore Android"
     },
@@ -259,7 +259,7 @@
       "recentAuthLogs": "Journaux d'authentification récents",
       "deleteAccountTitle": "Supprimer le compte",
       "changePassword": {
-        "headerText": "La modification de votre mot de passe maître modifie également les clés de chiffrement du coffre. Il est conseillé de modifier périodiquement votre mot de passe maître pour garder vos coffres sécurisés.",
+        "headerText": "La modification de votre mot de passe maître modifie également les clés de chiffrement du coffre-fort. Il est conseillé de modifier périodiquement votre mot de passe maître pour garder vos coffres sécurisés.",
         "currentPassword": "Mot de passe actuel",
         "newPassword": "Nouveau mot de passe",
         "confirmNewPassword": "Confirmez votre nouveau mot de passe",
@@ -300,7 +300,7 @@
         "headerText": "La suppression de votre compte supprimera immédiatement et définitivement toutes vos données.",
         "warningText": "Attention : cette action est irréversible. Toutes vos données seront définitivement supprimées.",
         "finalWarning": "Dernier avertissement : Entrez votre mot de passe pour supprimer définitivement votre compte.",
-        "warningVaults": "Tous les coffres cryptés qui incluent tous vos identifiants seront définitivement supprimés",
+        "warningVaults": "Tous les coffres-fort cryptés qui incluent tous vos identifiants seront définitivement supprimés",
         "warningAliases": "Vos alias d'email seront orphelins et ne pourront pas être réclamés par d'autres utilisateurs",
         "warningRecovery": "Votre compte ne peut pas être récupéré après suppression",
         "irreversibleWarning": "La suppression du compte est irréversible et ne peut pas être annulée. Appuyer sur le bouton ci-dessous supprimera votre compte immédiatement et définitivement.",
@@ -325,7 +325,7 @@
       "mobileLogin": {
         "confirmTitle": "Confirmer la demande de connexion",
         "confirmSubtitle": "Se ré-authentifier pour approuver la connexion sur un autre appareil.",
-        "confirmMessage": "Vous êtes sur le point de vous connecter sur un appareil distant avec votre compte. Cet autre appareil aura un accès complet à votre coffre. Ne procédez que si vous faites confiance à cet appareil.",
+        "confirmMessage": "Vous êtes sur le point de vous connecter sur un appareil distant avec votre compte. Cet autre appareil aura un accès complet à votre coffre-fort. Ne procédez que si vous faites confiance à cet appareil.",
         "successDescription": "L'appareil distant a été connecté avec succès.",
         "requestExpired": "Cette demande de connexion a expiré. Veuillez générer un nouveau code QR."
       }
@@ -370,7 +370,7 @@
     }
   },
   "fieldLabels": {
-    "login.username": "Username",
+    "login.username": "Nom d'utilisateur",
     "login.password": "Mot de passe",
     "login.email": "Email",
     "login.url": "URL",
@@ -393,7 +393,7 @@
     "deleteItem": "Supprimer l'élement",
     "itemDetails": "Informations détaillées",
     "itemCreated": "Élément créé",
-    "itemCreatedMessage": "Votre nouvel élément a été ajouté à votre coffre et est prêt à être utilisé.",
+    "itemCreatedMessage": "Votre nouvel élément a été ajouté à votre coffre-fort et est prêt à être utilisé.",
     "emailPreview": "Aperçu de l'e-mail",
     "untitled": "Indéfini",
     "name": "Nom",
@@ -423,7 +423,7 @@
     "noMatchingItems": "Aucun élément ne correspond au filtre sélectionné.",
     "noMatchingItemsSearch": "Aucun élément correspondant à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Aucun élément {{filter}} correspondant à \"{{search}}\"",
-    "noItemsFound": "Aucun élément trouvé. Créez en un pour commencer. Astuce : vous pouvez également vous connecter à l'application Web AliasVault pour importer les identifiants depuis d'autres gestionnaires de mots de passe.",
+    "noItemsFound": "Aucun élément trouvé. Créez-en un pour commencer. Astuce : vous pouvez également vous connecter à l'application Web AliasVault pour importer les identifiants depuis d'autres gestionnaires de mots de passe.",
     "allItemsInFolders": "Tous vos éléments sont organisés dans des dossiers. Appuyez sur un dossier ci-dessus pour voir vos identifiants, ou utilisez la recherche pour trouver des éléments spécifiques.",
     "clearSearch": "Effacer la recherche",
     "clearFilter": "Effacer le filtre",
@@ -442,25 +442,25 @@
     "includeSpecialChars": "Caractères spéciaux (!@#)",
     "avoidAmbiguousChars": "Éviter les caractères ambigus",
     "errorLoadingItems": "Erreur lors du chargement des éléments",
-    "vaultSyncFailed": "Échec de la synchronisation du coffre",
-    "vaultSyncedSuccessfully": "Le coffre a été synchronisé avec succès",
-    "vaultUpToDate": "Le coffre est à jour",
-    "offlineMessage": "Vous êtes déconnecté. Veuillez vous connecter à internet pour synchroniser votre coffre.",
+    "vaultSyncFailed": "Échec de la synchronisation du coffre-fort",
+    "vaultSyncedSuccessfully": "Le coffre-fort a été synchronisé avec succès",
+    "vaultUpToDate": "Le coffre-fort est à jour",
+    "offlineMessage": "Vous êtes déconnecté. Veuillez vous connecter à internet pour synchroniser votre coffre-fort.",
     "switchBackToOriginalApp": "Revenir à l'application originale pour continuer.",
     "autofillOpenApp": {
       "title": "Demande de saisie automatique",
       "description": "Choisissez une action pour l'application ou le site Web qui a demandé la saisie automatique.",
       "appOrUrlLabel": "Application ou URL",
       "findExistingTitle": "Lien vers l'identifiant existant",
-      "findExistingDescription": "Sélectionnez un identifiant existant dans votre coffre pour le lier à l'adresse ci-dessus.",
+      "findExistingDescription": "Sélectionnez un identifiant existant dans votre coffre-fort pour le lier à l'adresse ci-dessus.",
       "createNewTitle": "Créer un nouvel identifiant",
-      "createNewDescription": "Ajouter un nouvel identifiant à votre coffre pour cette application ou cette URL."
+      "createNewDescription": "Ajouter un nouvel identifiant à votre coffre-fort pour cette application ou cette URL."
     },
     "autofillLinkExisting": {
       "title": "Lien vers l'identifiant existant",
-      "intro": "Sélectionnez un identifiant existant dans votre coffre pour le lier à \"{{target}}\".",
+      "intro": "Sélectionnez un identifiant existant dans votre coffre-fort pour le lier à \"{{target}}\".",
       "confirmTitle": "Lier l'identifiant?",
-      "confirmMessage": "Êtes-vous sûr de vouloir lier «{{url}}» à cet identifiant?"
+      "confirmMessage": "Êtes-vous sûr de vouloir lier «{{url}}» à cet identifiant ?"
     },
     "autofillUrlAdded": {
       "title": "Identifiant lié",
@@ -497,7 +497,7 @@
       "usernameCopied": "Nom d'utilisateur copié dans le presse-papiers",
       "emailCopied": "E-mail copié dans le presse-papiers",
       "passwordCopied": "Mot de passe copié dans le presse-papiers",
-      "totpCodeCopied": "Code TOTP copié dans le presse-papiers",
+      "totpCodeCopied": "Code à usage unique copié dans le presse-papiers",
       "urlCopied": "URL copiée dans le presse-papier"
     },
     "createNewAliasFor": "Créer un nouvel alias pour",
@@ -508,7 +508,7 @@
       "copyUsername": "Copier le nom d'utilisateur",
       "copyEmail": "Copier l'e-mail",
       "copyPassword": "Copier le mot de passe",
-      "copyTotpCode": "Copier le code TOTP"
+      "copyTotpCode": "Copier le code à usage unique"
     },
     "urlContextMenu": {
       "title": "Options de l'URL",
@@ -545,10 +545,10 @@
       "restore": "Restaurer",
       "deletePermanently": "Supprimer définitivement",
       "emptyAll": "Tout vider",
-      "daysRemaining": "{{count}} jour restant",
+      "daysRemaining": "{{count}} jours restants",
       "daysRemaining_plural": "{{count}} jours restants",
       "expiringSoon": "Expirant bientôt",
-      "confirmDeleteTitle": "Supprimer définitivement?",
+      "confirmDeleteTitle": "Supprimer définitivement ?",
       "confirmDeleteMessage": "Cet élément sera définitivement supprimé et ne pourra pas être récupéré.",
       "confirmEmptyAllTitle": "Vider récemment supprimé ?",
       "confirmEmptyAllMessage": "Les {{count}} éléments seront définitivement supprimés et ne pourront pas être récupérés.",
@@ -564,20 +564,23 @@
     "date": "Date :",
     "from": "De :",
     "to": "À :",
-    "attachments": "Pieces jointes",
+    "attachments": "Pièces jointes",
     "deleteEmail": "Supprimer l'e-mail",
     "deleteEmailConfirm": "Êtes-vous sûr de vouloir supprimer cet e-mail ? Cette action est permanente et ne peut pas être annulée.",
     "emailNotFound": "E-mail introuvable",
-    "noPlainText": "Cet e-mail ne contient pas de texte brut.",
+    "formatHtml": "HTML",
+    "formatPlain": "Texte",
+    "formatSource": "Source",
+    "formatSwitchTitle": "Changer le format de l'e-mail",
     "sizeKB": "KO",
     "offlineMessage": "Vous êtes déconnecté. Veuillez vous connecter à internet pour charger vos e-mails.",
     "emptyMessage": "Vous n'avez pas encore reçu d'e-mails sur vos adresses e-mail privées. Quand vous recevez un nouvel e-mail, il apparaîtra ici.",
     "loadMore": "Charger plus ({{count}} restants)",
     "time": {
       "justNow": "à l'instant",
-      "minutesAgo_single": "Il y a {{count}} minute",
+      "minutesAgo_single": "Il y a {{count}} minutes",
       "minutesAgo_plural": "Il y a {{count}} minutes",
-      "hoursAgo_single": "Il y a {{count}} heure",
+      "hoursAgo_single": "Il y a {{count}} heures",
       "hoursAgo_plural": "Il y a {{count}} heures",
       "yesterday": "hier"
     }
@@ -610,7 +613,7 @@
     "USERNAME_TOO_SHORT": "Le nom d'utilisateur est trop court : il doit comporter au moins 3 caractères.",
     "USERNAME_TOO_LONG": "Le nom d'utilisateur est trop long : il ne peut pas dépasser 40 caractères.",
     "USERNAME_INVALID_EMAIL": "Adresse e-mail invalide.",
-    "USERNAME_INVALID_CHARACTERS": "Le nom d'utilisateur est invalide, il ne peut contenir que des lettres ou des chiffres.",
+    "USERNAME_INVALID_CHARACTERS": "Le nom d'utilisateur est invalide : il ne peut contenir que des lettres ou des chiffres.",
     "VAULT_NOT_UP_TO_DATE": "Votre coffre-fort n'est pas à jour. Veuillez synchroniser votre coffre-fort et réessayer.",
     "INTERNAL_SERVER_ERROR": "Erreur interne du serveur.",
     "VAULT_ERROR": "Le coffre-fort local n'est pas à jour. Veuillez synchroniser votre coffre-fort en rafraîchissant la page et réessayez."
@@ -625,8 +628,8 @@
   },
   "app": {
     "status": {
-      "unlockingVault": "Déverrouillage du coffre",
-      "decryptingVault": "Décryptage du coffre"
+      "unlockingVault": "Déverrouillage du coffre-fort",
+      "decryptingVault": "Décryptage du coffre-fort"
     },
     "navigation": {
       "login": "Se connecter",
@@ -643,8 +646,8 @@
       "attemptingToUnlockMessage": "Tentative de déverrouillage."
     },
     "vaultError": {
-      "title": "Erreur du coffre",
-      "description": "Une erreur est survenue lors du chargement de votre coffre. Si le problème persiste, veuillez contacter le support.",
+      "title": "Erreur du coffre-fort",
+      "description": "Une erreur est survenue lors du chargement de votre coffre-fort. Si le problème persiste, veuillez contacter le support.",
       "showDetails": "Afficher les détails de l'erreur",
       "hideDetails": "Masquer les détails de l'erreur",
       "copyErrorDetails": "Copier les détails de l’erreur"
@@ -665,10 +668,10 @@
     }
   },
   "upgrade": {
-    "title": "Mettre à niveau le coffre",
-    "subtitle": "AliasVault a été mis à jour et votre coffre doit être mis à niveau. Cela ne devrait prendre que quelques secondes.",
+    "title": "Mettre à niveau le coffre-fort",
+    "subtitle": "AliasVault a été mis à jour et votre coffre-fort doit être mis à niveau. Cela ne devrait prendre que quelques secondes.",
     "versionInformation": "Informations de version",
-    "yourVault": "Version de votre coffre:",
+    "yourVault": "Version de votre coffre-fort :",
     "newVersion": "Nouvelle version disponible :",
     "upgrade": "Mettre à jour",
     "upgrading": "Mise à jour...",
@@ -678,7 +681,7 @@
     "noDescriptionAvailable": "Aucune description disponible pour cette version.",
     "status": {
       "preparingUpgrade": "Préparation de la mise à jour...",
-      "vaultAlreadyUpToDate": "Le coffre est déjà à jour",
+      "vaultAlreadyUpToDate": "Le coffre-fort est déjà à jour",
       "applyingDatabaseMigrations": "Application des migrations de base de données...",
       "applyingMigration": "Application de la migration {{current}} sur {{total}}...",
       "committingChanges": "Application des modifications..."

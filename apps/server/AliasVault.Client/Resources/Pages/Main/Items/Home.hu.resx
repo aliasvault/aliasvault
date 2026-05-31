@@ -60,7 +60,7 @@
   </resheader>
   <!-- Page Header -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Vault</value>
+    <value>Széf</value>
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
@@ -68,7 +68,7 @@
     <comment>Page description text</comment>
   </data>
   <data name="Items" xml:space="preserve">
-    <value>Items</value>
+    <value>Elemek</value>
     <comment>Items label used in breadcrumb navigation</comment>
   </data>
   <!-- Settings Dropdown -->
@@ -122,7 +122,7 @@
     <comment>Text describing button location</comment>
   </data>
   <data name="OrText" xml:space="preserve">
-    <value>or</value>
+    <value>vagy</value>
     <comment>Separator text between options</comment>
   </data>
   <data name="ImportItemsText" xml:space="preserve">
@@ -144,7 +144,7 @@
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
-    <value>Items</value>
+    <value>Elemek</value>
     <comment>Filter option to show all items</comment>
   </data>
   <data name="ShowFoldersOption" xml:space="preserve">
@@ -164,7 +164,7 @@
     <comment>Filter option to show only username/passwords</comment>
   </data>
   <data name="FilterAttachmentsOption" xml:space="preserve">
-    <value>Attachments</value>
+    <value>Csatolmányok</value>
     <comment>Filter option to show only items with attachments</comment>
   </data>
   <data name="FilterTotpOption" xml:space="preserve">
@@ -172,12 +172,12 @@
     <comment>Filter option to show only items with TOTP codes</comment>
   </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
-    <value>Recently Deleted</value>
+    <value>Nemrégiben törölt</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
   <data name="NoItemsFound" xml:space="preserve">
-    <value>No items match the selected filter.</value>
+    <value>Egyetlen elem sem felel meg a kiválasztott szűrőnek.</value>
     <comment>Empty state message when no items match the filter</comment>
   </data>
   <data name="EmptyFolderMessage" xml:space="preserve">
@@ -190,19 +190,19 @@
   </data>
   <!-- Folder Management -->
   <data name="NewFolder" xml:space="preserve">
-    <value>New Folder</value>
+    <value>Új mappa</value>
     <comment>Button text for creating a new folder</comment>
   </data>
   <data name="EditFolder" xml:space="preserve">
-    <value>Edit Folder</value>
+    <value>Mappa szerkesztése</value>
     <comment>Button text for editing a folder</comment>
   </data>
   <data name="DeleteFolder" xml:space="preserve">
-    <value>Delete Folder</value>
+    <value>Mappa törlése</value>
     <comment>Button text for deleting a folder</comment>
   </data>
   <data name="BackToRoot" xml:space="preserve">
-    <value>Back</value>
+    <value>Vissza</value>
     <comment>Button text for navigating back to root</comment>
   </data>
   <data name="FailedToCreateFolder" xml:space="preserve">
@@ -220,7 +220,7 @@
   </data>
   <!-- Clear Filter -->
   <data name="ClearFilter" xml:space="preserve">
-    <value>Clear filter</value>
+    <value>Szűrő törlése</value>
     <comment>Button text for clearing the active filter</comment>
   </data>
   <data name="FilteringBy" xml:space="preserve">

@@ -47,7 +47,7 @@
     <comment>Title for the counts/overview section</comment>
   </data>
   <data name="ItemCountLabel">
-    <value>Items</value>
+    <value>Elemek</value>
     <comment>Label for total item count card</comment>
   </data>
   <data name="ItemsWithAttachmentsLabel">
@@ -72,7 +72,7 @@
     <comment>Legend label for credential data slice</comment>
   </data>
   <data name="BreakdownAttachmentsLabel">
-    <value>Attachments</value>
+    <value>Csatolmányok</value>
     <comment>Legend label for attachments slice</comment>
   </data>
   <data name="BreakdownLogosLabel">

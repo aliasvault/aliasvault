@@ -67,19 +67,11 @@
     <comment>Email recipient field label</comment>
   </data>
   <data name="DateLabel" xml:space="preserve">
-    <value>Date:</value>
+    <value>Dátum:</value>
     <comment>Email date field label</comment>
   </data>
-  <data name="ItemLabel" xml:space="preserve">
-    <value>Item:</value>
-    <comment>Email item field label</comment>
-  </data>
-  <data name="NoneValue" xml:space="preserve">
-    <value>None</value>
-    <comment>No item assigned value</comment>
-  </data>
   <data name="AttachmentsLabel" xml:space="preserve">
-    <value>Attachments:</value>
+    <value>Csatolmányok:</value>
     <comment>Email attachments section header</comment>
   </data>
   <data name="SelectEmailMessage" xml:space="preserve">

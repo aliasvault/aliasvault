@@ -25,126 +25,126 @@
     <comment>Option to add 2FA section</comment>
   </data>
   <data name="Attachments">
-    <value>Attachments</value>
+    <value>Csatolmányok</value>
     <comment>Option to add attachments section</comment>
   </data>
   <data name="AddCustomField">
-    <value>Add Custom Field</value>
+    <value>Egyedi mező hozzáadása</value>
     <comment>Option to add a custom field</comment>
   </data>
   <!-- Field labels -->
   <data name="FieldLoginUsername">
-    <value>Username</value>
+    <value>Felhasználónév</value>
     <comment>Username field label</comment>
   </data>
   <data name="FieldLoginPassword">
-    <value>Password</value>
+    <value>Jelszó</value>
     <comment>Password field label</comment>
   </data>
   <data name="FieldLoginEmail">
-    <value>Email</value>
+    <value>E-mail</value>
     <comment>Email field label</comment>
   </data>
   <data name="FieldLoginUrl">
-    <value>URL</value>
+    <value>Webcím</value>
     <comment>URL field label</comment>
   </data>
   <data name="FieldAliasFirstName">
-    <value>First Name</value>
+    <value>Keresztnév</value>
     <comment>First name field label</comment>
   </data>
   <data name="FieldAliasLastName">
-    <value>Last Name</value>
+    <value>Vezetéknév</value>
     <comment>Last name field label</comment>
   </data>
   <data name="FieldAliasGender">
-    <value>Gender</value>
+    <value>Neme</value>
     <comment>Gender field label</comment>
   </data>
   <data name="FieldAliasBirthdate">
-    <value>Birth Date</value>
+    <value>Születési dátum</value>
     <comment>Birth date field label</comment>
   </data>
   <data name="FieldCardNumber">
-    <value>Card Number</value>
+    <value>Kártya szám</value>
     <comment>Card number field label</comment>
   </data>
   <data name="FieldCardCardholderName">
-    <value>Cardholder Name</value>
+    <value>Kártyatulajdonos neve</value>
     <comment>Cardholder name field label</comment>
   </data>
   <data name="FieldCardExpiryMonth">
-    <value>Expiry Month</value>
+    <value>Lejárat hónapja</value>
     <comment>Expiry month field label</comment>
   </data>
   <data name="FieldCardExpiryYear">
-    <value>Expiry Year</value>
+    <value>Lejárat éve</value>
     <comment>Expiry year field label</comment>
   </data>
   <data name="FieldCardCvv">
-    <value>CVV</value>
+    <value>CVC kód</value>
     <comment>CVV field label</comment>
   </data>
   <data name="FieldCardPin">
-    <value>PIN</value>
+    <value>PIN kód</value>
     <comment>PIN field label</comment>
   </data>
   <data name="FieldNotesContent">
-    <value>Notes</value>
+    <value>Megjegyzések</value>
     <comment>Notes field label</comment>
   </data>
   <!-- Custom field modal -->
   <data name="FieldLabel">
-    <value>Field Label</value>
+    <value>Mező cím</value>
     <comment>Label for field label input</comment>
   </data>
   <data name="EnterFieldName">
-    <value>Enter field name</value>
+    <value>Adja meg a mező nevét</value>
     <comment>Placeholder for field name input</comment>
   </data>
   <data name="FieldType">
-    <value>Field Type</value>
+    <value>Mező típus</value>
     <comment>Label for field type selector</comment>
   </data>
   <data name="FieldTypeText">
-    <value>Text</value>
+    <value>Szöveg</value>
     <comment>Text field type option</comment>
   </data>
   <data name="FieldTypeHidden">
-    <value>Hidden</value>
+    <value>Rejtett</value>
     <comment>Hidden field type option</comment>
   </data>
   <data name="FieldTypeEmail">
-    <value>Email</value>
+    <value>E-mail</value>
     <comment>Email field type option</comment>
   </data>
   <data name="FieldTypeUrl">
-    <value>URL</value>
+    <value>Webcím</value>
     <comment>URL field type option</comment>
   </data>
   <data name="FieldTypePhone">
-    <value>Phone</value>
+    <value>Telefon</value>
     <comment>Phone field type option</comment>
   </data>
   <data name="FieldTypeNumber">
-    <value>Number</value>
+    <value>Szám</value>
     <comment>Number field type option</comment>
   </data>
   <data name="FieldTypeDate">
-    <value>Date</value>
+    <value>Dátum</value>
     <comment>Date field type option</comment>
   </data>
   <data name="FieldTypeTextArea">
-    <value>Text Area</value>
+    <value>Szövegterület</value>
     <comment>Text area field type option</comment>
   </data>
   <!-- Buttons -->
   <data name="Add">
-    <value>Add</value>
+    <value>Hozzáadás</value>
     <comment>Add button text</comment>
   </data>
   <data name="Cancel">
-    <value>Cancel</value>
+    <value>Mégse</value>
     <comment>Cancel button text</comment>
   </data>
   <!-- Default field label -->

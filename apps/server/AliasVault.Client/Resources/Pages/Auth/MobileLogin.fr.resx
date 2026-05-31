@@ -71,7 +71,7 @@
     <comment>Description instructing user to scan QR code</comment>
   </data>
   <data name="ScanQrCodeToUnlock" xml:space="preserve">
-    <value>Scannez ce code QR avec votre application mobile AliasVault pour déverrouiller votre coffre.</value>
+    <value>Scannez ce code QR avec votre application mobile AliasVault pour déverrouiller votre coffre-fort.</value>
     <comment>Description instructing user to scan QR code to unlock</comment>
   </data>
 </root>

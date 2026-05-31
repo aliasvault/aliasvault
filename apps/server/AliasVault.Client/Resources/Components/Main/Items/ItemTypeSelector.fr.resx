@@ -47,7 +47,7 @@
   </data>
   <!-- Buttons -->
   <data name="RegenerateAlias">
-    <value>Régénérer l'alias</value>
+    <value>Récréer l'alias</value>
     <comment>Tooltip for regenerate alias button</comment>
   </data>
 </root>

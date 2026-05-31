@@ -1,13 +1,13 @@
 /* English localization strings for VaultUI */
-"error" = "Error";
-"cancel" = "Cancel";
-"back" = "Back";
-"next" = "Next";
-"edit" = "Edit";
+"error" = "Kesalahan";
+"cancel" = "Batal";
+"back" = "Kembali";
+"next" = "Berikutnya";
+"edit" = "Ubah";
 "website" = "Website";
 "username" = "Username";
 "title" = "Title";
-"unknown_error" = "An unknown error occurred";
+"unknown_error" = "Terjadi kesalahan yang tidak diketahui";
 
 "loading_items" = "Loading items...";
 "no_items_found" = "No items found";
@@ -26,8 +26,8 @@
 "select_text_to_insert_message" = "Select the text to insert into the focused input field";
 "choose_username_message" = "This website may require either your username or your email address to log in";
 "username_prefix" = "Username: ";
-"email_prefix" = "Email: ";
-"password" = "Password";
+"email_prefix" = "E-mail: ";
+"password" = "Kata sandi";
 "items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
 "no_item_selected" = "No item selected.";
 
@@ -47,9 +47,9 @@
 "search_items" = "Search items...";
 
 /* Passkey registration */
-"create_passkey_title" = "Create New Passkey";
+"create_passkey_title" = "Buat Passkey baru";
 "create_passkey_subtitle" = "Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.";
-"create_passkey_button_confirm" = "Create Passkey";
+"create_passkey_button_confirm" = "Buat Passkey";
 
 /* Passkey provider */
 "passkey" = "Passkey";
@@ -60,7 +60,7 @@
 "passkeys_load_error" = "Failed to load passkeys. Please open the AliasVault app to check for updates.";
 
 /* Passkey replacement */
-"create_new_passkey" = "Create New Passkey";
+"create_new_passkey" = "Buat Passkey baru";
 "select_passkey_to_replace" = "Or, replace an existing passkey";
 "replace_passkey" = "Replace Passkey";
 "replace_passkey_explanation" = "This will replace the existing passkey with a new one. Please be aware that your old passkey will be overwritten and no longer accessible. If you wish to create a separate passkey instead, go back to the previous screen.";
@@ -73,16 +73,16 @@
 
 /* PIN Unlock */
 "unlock_vault" = "Unlock Vault";
-"enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
+"enter_pin_to_unlock_vault" = "Masukkan pin untuk membuka vault";
 "pin_locked_max_attempts" = "PIN locked after too many failed attempts";
 "pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
 
 /* Password Unlock */
 "enter_password_to_unlock" = "Enter your master password";
-"unlock" = "Unlock";
-"incorrect_password" = "Incorrect password. Please try again.";
+"unlock" = "Buka";
+"incorrect_password" = "Kata sandi salah. Silakan coba lagi.";
 "attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
-"max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
+"max_attempts_reached" = "Terlalu banyak percobaan untuk membuka. Kamu di-logout dengan alasan keamanan";
 
 /* PIN Setup */
 "pin_setup_title" = "Setup PIN";

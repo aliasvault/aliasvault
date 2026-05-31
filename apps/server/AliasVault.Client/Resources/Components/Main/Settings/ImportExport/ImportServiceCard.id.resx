@@ -71,15 +71,15 @@
     <comment>Text for file upload instruction. {0} is placeholder for service name</comment>
   </data>
   <data name="CancelButton" xml:space="preserve">
-    <value>Cancel</value>
+    <value>Batal</value>
     <comment>Cancel button text</comment>
   </data>
   <data name="BackButton" xml:space="preserve">
-    <value>Back</value>
+    <value>Kembali</value>
     <comment>Back button text</comment>
   </data>
   <data name="NextButton" xml:space="preserve">
-    <value>Next</value>
+    <value>Berikutnya</value>
     <comment>Next button text</comment>
   </data>
   <data name="ImportButton" xml:space="preserve">
@@ -123,7 +123,7 @@
     <comment>Column header for username in credential preview table</comment>
   </data>
   <data name="PasswordColumn" xml:space="preserve">
-    <value>Password</value>
+    <value>Kata sandi</value>
     <comment>Column header for password in credential preview table</comment>
   </data>
   <data name="MoreCredentials" xml:space="preserve">
@@ -199,7 +199,7 @@
     <comment>Progress text during decryption</comment>
   </data>
   <data name="IncorrectPasswordError" xml:space="preserve">
-    <value>Incorrect password. Please try again.</value>
+    <value>Kata sandi salah. Silakan coba lagi.</value>
     <comment>Error message for incorrect decryption password</comment>
   </data>
   <data name="DecryptionErrorGeneric" xml:space="preserve">
@@ -219,11 +219,11 @@
     <comment>Button label to copy the error diagnostic block to the clipboard</comment>
   </data>
   <data name="ImportErrorShowDetailsButton" xml:space="preserve">
-    <value>Show details</value>
+    <value>Tampilkan rincian</value>
     <comment>Button label that reveals the error diagnostic block in an inline read-only textarea</comment>
   </data>
   <data name="ImportErrorHideDetailsButton" xml:space="preserve">
-    <value>Hide details</value>
+    <value>Sembunyikan rincian</value>
     <comment>Button label that hides the error diagnostic block again (shown when the block is currently expanded)</comment>
   </data>
   <data name="ImportPartialFailureWarning" xml:space="preserve">

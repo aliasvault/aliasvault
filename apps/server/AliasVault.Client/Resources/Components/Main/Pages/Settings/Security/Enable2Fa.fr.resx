@@ -73,7 +73,7 @@
   </data>
   <!-- Page description -->
   <data name="PageDescription" xml:space="preserve">
-    <value>Activez l'authentification à deux facteurs pour augmenter la sécurité de vos coffres.</value>
+    <value>Activez l'authentification à deux facteurs pour augmenter la sécurité de vos coffres-fort.</value>
     <comment>Description text explaining 2FA setup</comment>
   </data>
   <!-- Setup instructions -->

@@ -25,7 +25,7 @@
     <comment>Option to add 2FA section</comment>
   </data>
   <data name="Attachments">
-    <value>Attachments</value>
+    <value>Lampiran</value>
     <comment>Option to add attachments section</comment>
   </data>
   <data name="AddCustomField">
@@ -38,11 +38,11 @@
     <comment>Username field label</comment>
   </data>
   <data name="FieldLoginPassword">
-    <value>Password</value>
+    <value>Kata sandi</value>
     <comment>Password field label</comment>
   </data>
   <data name="FieldLoginEmail">
-    <value>Email</value>
+    <value>E-mail</value>
     <comment>Email field label</comment>
   </data>
   <data name="FieldLoginUrl">
@@ -50,15 +50,15 @@
     <comment>URL field label</comment>
   </data>
   <data name="FieldAliasFirstName">
-    <value>First Name</value>
+    <value>Nama Depan</value>
     <comment>First name field label</comment>
   </data>
   <data name="FieldAliasLastName">
-    <value>Last Name</value>
+    <value>Nama Belakang</value>
     <comment>Last name field label</comment>
   </data>
   <data name="FieldAliasGender">
-    <value>Gender</value>
+    <value>Jenis kelamin</value>
     <comment>Gender field label</comment>
   </data>
   <data name="FieldAliasBirthdate">
@@ -66,19 +66,19 @@
     <comment>Birth date field label</comment>
   </data>
   <data name="FieldCardNumber">
-    <value>Card Number</value>
+    <value>Nomor kartu</value>
     <comment>Card number field label</comment>
   </data>
   <data name="FieldCardCardholderName">
-    <value>Cardholder Name</value>
+    <value>Nama Pemilik Kartu</value>
     <comment>Cardholder name field label</comment>
   </data>
   <data name="FieldCardExpiryMonth">
-    <value>Expiry Month</value>
+    <value>Bulan Kedaluwarsa</value>
     <comment>Expiry month field label</comment>
   </data>
   <data name="FieldCardExpiryYear">
-    <value>Expiry Year</value>
+    <value>Tahun Kedaluwarsa</value>
     <comment>Expiry year field label</comment>
   </data>
   <data name="FieldCardCvv">
@@ -90,24 +90,24 @@
     <comment>PIN field label</comment>
   </data>
   <data name="FieldNotesContent">
-    <value>Notes</value>
+    <value>Catatan</value>
     <comment>Notes field label</comment>
   </data>
   <!-- Custom field modal -->
   <data name="FieldLabel">
-    <value>Field Label</value>
+    <value>Bidang Label</value>
     <comment>Label for field label input</comment>
   </data>
   <data name="EnterFieldName">
-    <value>Enter field name</value>
+    <value>Masukkan nama field</value>
     <comment>Placeholder for field name input</comment>
   </data>
   <data name="FieldType">
-    <value>Field Type</value>
+    <value>Tipe Field</value>
     <comment>Label for field type selector</comment>
   </data>
   <data name="FieldTypeText">
-    <value>Text</value>
+    <value>Teks</value>
     <comment>Text field type option</comment>
   </data>
   <data name="FieldTypeHidden">
@@ -115,7 +115,7 @@
     <comment>Hidden field type option</comment>
   </data>
   <data name="FieldTypeEmail">
-    <value>Email</value>
+    <value>E-mail</value>
     <comment>Email field type option</comment>
   </data>
   <data name="FieldTypeUrl">
@@ -123,28 +123,28 @@
     <comment>URL field type option</comment>
   </data>
   <data name="FieldTypePhone">
-    <value>Phone</value>
+    <value>Telepon</value>
     <comment>Phone field type option</comment>
   </data>
   <data name="FieldTypeNumber">
-    <value>Number</value>
+    <value>Nomor</value>
     <comment>Number field type option</comment>
   </data>
   <data name="FieldTypeDate">
-    <value>Date</value>
+    <value>Tanggal</value>
     <comment>Date field type option</comment>
   </data>
   <data name="FieldTypeTextArea">
-    <value>Text Area</value>
+    <value>Area teks</value>
     <comment>Text area field type option</comment>
   </data>
   <!-- Buttons -->
   <data name="Add">
-    <value>Add</value>
+    <value>Tambah</value>
     <comment>Add button text</comment>
   </data>
   <data name="Cancel">
-    <value>Cancel</value>
+    <value>Batal</value>
     <comment>Cancel button text</comment>
   </data>
   <!-- Default field label -->

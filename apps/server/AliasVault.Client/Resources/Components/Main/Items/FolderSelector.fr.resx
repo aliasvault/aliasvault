@@ -28,7 +28,7 @@
     <comment>Title of the folder selection modal</comment>
   </data>
   <data name="NoFoldersAvailable">
-    <value>Aucun dossier disponible. Créez un dossier à partir de la page d'accueil du coffre.</value>
+    <value>Aucun dossier disponible. Créez un dossier à partir de la page d'accueil du coffre-fort.</value>
     <comment>Message shown when no folders exist</comment>
   </data>
   <data name="MaxDepth">

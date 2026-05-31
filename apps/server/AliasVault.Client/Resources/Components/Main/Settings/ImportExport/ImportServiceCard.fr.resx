@@ -148,11 +148,11 @@ Note: le processus d'importation peut prendre un court moment.</value>
     <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
   </data>
   <data name="SavingCredentials" xml:space="preserve">
-    <value>Enregistrement des identifiants dans le coffre... {0} / {1}</value>
+    <value>Enregistrement des identifiants dans le coffre-fort... {0} / {1}</value>
     <comment>Progress text during credential save. {0} is current progress, {1} is total</comment>
   </data>
   <data name="SyncingVault" xml:space="preserve">
-    <value>Synchronisation du coffre vers le serveur...</value>
+    <value>Synchronisation du coffre-fort vers le serveur...</value>
     <comment>Progress text when syncing vault to server after import</comment>
   </data>
   <data name="ImportSuccessMessage" xml:space="preserve">
@@ -188,7 +188,7 @@ Note: le processus d'importation peut prendre un court moment.</value>
     <comment>Label for decryption password input</comment>
   </data>
   <data name="DecryptionPasswordHint" xml:space="preserve">
-    <value>C'est le mot de passe que vous avez défini lors de la création de l'exportation chiffrée (fichier .avex), pas votre mot de passe maître du coffre.</value>
+    <value>C'est le mot de passe que vous avez défini lors de la création de l'exportation chiffrée (fichier .avex), pas votre mot de passe maître du coffre-fort.</value>
     <comment>Hint explaining what password is needed</comment>
   </data>
   <data name="DecryptAndContinueButton" xml:space="preserve">

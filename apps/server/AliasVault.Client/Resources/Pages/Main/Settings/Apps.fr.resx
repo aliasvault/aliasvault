@@ -25,7 +25,7 @@
     <comment>Page title for extensions and apps</comment>
   </data>
   <data name="PageDescription">
-    <value>Installez l'extension de navigateur et l'application mobile pour accéder à votre coffre depuis tous vos appareils et remplir automatiquement les identifiants sur les sites Web.</value>
+    <value>Installez l'extension de navigateur et l'application mobile pour accéder à votre coffre-fort depuis tous vos appareils et remplir automatiquement les identifiants sur les sites Web.</value>
     <comment>Page description for extensions and apps</comment>
   </data>
   <data name="BreadcrumbTitle">
@@ -51,7 +51,7 @@
   </data>
   <!-- Mobile Apps Section -->
   <data name="MobileAppsTitle">
-    <value>Applications Mobiles</value>
+    <value>Applications mobiles</value>
     <comment>Title for mobile apps section</comment>
   </data>
   <data name="MobileAppsDescription">

@@ -75,7 +75,7 @@
     <comment>Tip about keyboard shortcut for home</comment>
   </data>
   <data name="TipLockShortcut" xml:space="preserve">
-    <value>Astuce : Utilisez le raccourci clavier g+l (go lock) pour verrouiller le coffre.</value>
+    <value>Astuce : Utilisez le raccourci clavier g+l (go lock) pour verrouiller le coffre-fort.</value>
     <comment>Tip about keyboard shortcut for locking vault</comment>
   </data>
 </root>

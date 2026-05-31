@@ -60,11 +60,11 @@
   </resheader>
   <!-- Page titles -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Log in to AliasVault</value>
+    <value>Masuk ke AliasVault</value>
     <comment>Main login page title</comment>
   </data>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
+    <value>Autentikasi dua langkah</value>
     <comment>Title for 2FA step</comment>
   </data>
   <data name="RecoveryCodeVerificationTitle" xml:space="preserve">
@@ -89,7 +89,7 @@
     <comment>Label for recovery code input field</comment>
   </data>
   <data name="RememberMeLabel" xml:space="preserve">
-    <value>Remember me</value>
+    <value>Ingat saya</value>
     <comment>Label for remember me checkbox</comment>
   </data>
   <data name="RememberMachineLabel" xml:space="preserve">
@@ -98,7 +98,7 @@
   </data>
   <!-- Buttons -->
   <data name="LoginButton" xml:space="preserve">
-    <value>Log in</value>
+    <value>Masuk</value>
     <comment>Login button text</comment>
   </data>
   <!-- Links -->
@@ -107,7 +107,7 @@
     <comment>Link text for password recovery</comment>
   </data>
   <data name="CreateNewVaultLink" xml:space="preserve">
-    <value>Create new vault</value>
+    <value>Buat vault baru</value>
     <comment>Link text for creating a new vault</comment>
   </data>
   <data name="LoginWithRecoveryCodeLink" xml:space="preserve">
@@ -119,7 +119,7 @@
     <comment>Link text for logging in with authenticator</comment>
   </data>
   <data name="MobileDeviceLink" xml:space="preserve">
-    <value>Log in using Mobile App</value>
+    <value>Masuk menggunakan aplikasi mobile</value>
     <comment>Link text for mobile device login</comment>
   </data>
   <!-- Descriptions and help text -->
@@ -132,7 +132,7 @@
     <comment>Description for recovery code step</comment>
   </data>
   <data name="NoAccountYetText" xml:space="preserve">
-    <value>No account yet?</value>
+    <value>Belum mempunyai akun?</value>
     <comment>Text before registration link</comment>
   </data>
   <data name="DontHaveAuthenticatorText" xml:space="preserve">
@@ -167,7 +167,7 @@
   </data>
   <!-- Placeholders -->
   <data name="UsernamePlaceholder" xml:space="preserve">
-    <value>name / name@company.com</value>
+    <value>nama / nama@perusahaan.com</value>
     <comment>Placeholder text for username input</comment>
   </data>
   <data name="PasswordPlaceholder" xml:space="preserve">

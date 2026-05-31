@@ -21,11 +21,11 @@
   </xsd:schema>
   <!-- Main navigation links -->
   <data name="VaultNav">
-    <value>Vault</value>
+    <value>Széf</value>
     <comment>Main navigation link for vault section</comment>
   </data>
   <data name="EmailsNav">
-    <value>Emails</value>
+    <value>E-mailek</value>
     <comment>Main navigation link for emails section</comment>
   </data>
   <!-- Settings menu items -->
@@ -42,7 +42,7 @@
     <comment>Navigation link for vault storage insights page</comment>
   </data>
   <data name="ImportExportNav">
-    <value>Import / Export</value>
+    <value>Importálás / Exportálás</value>
     <comment>Navigation link for import/export settings</comment>
   </data>
   <data name="ExtensionsAppsNav">

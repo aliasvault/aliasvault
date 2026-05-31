@@ -229,11 +229,11 @@
     <comment>Generic unknown error message</comment>
   </data>
   <data name="VaultTooLargeError" xml:space="preserve">
-    <value>Le coffre est trop grand pour que le serveur l'accepte. Essayez de supprimer certains éléments ou pièces jointes pour réduire la taille et réessayez.</value>
+    <value>Le coffre-fort est trop grand pour que le serveur l'accepte. Essayez de supprimer certains éléments ou pièces jointes pour réduire la taille et réessayez.</value>
     <comment>Shown when the server rejects a vault upload with HTTP 413 because the encrypted vault exceeds the configured upload size limit</comment>
   </data>
   <data name="VaultSaveError" xml:space="preserve">
-    <value>Impossible d'enregistrer les modifications dans le coffre. Veuillez réessayer.</value>
+    <value>Impossible d'enregistrer les modifications dans le coffre-fort. Veuillez réessayer.</value>
     <comment>Generic error shown when a vault save / sync to the server fails for an unexpected reason</comment>
   </data>
   <data name="ErrorValidation" xml:space="preserve">
@@ -325,7 +325,7 @@
     <comment>Notes section heading</comment>
   </data>
   <data name="SyncVaultData" xml:space="preserve">
-    <value>Synchroniser les données du coffre</value>
+    <value>Synchroniser les données du coffre-fort</value>
     <comment>Tooltip text for sync vault data button</comment>
   </data>
   <data name="SyncingChanges" xml:space="preserve">
@@ -335,5 +335,29 @@
   <data name="LoadingVault" xml:space="preserve">
     <value>Chargement du coffre...</value>
     <comment>Status text when vault is being loaded</comment>
+  </data>
+  <data name="EmailFormatHtml" xml:space="preserve">
+    <value>HTML</value>
+    <comment>Email format switcher: HTML view button. Shared between email modal and email page.</comment>
+  </data>
+  <data name="EmailFormatPlain" xml:space="preserve">
+    <value>Texte</value>
+    <comment>Email format switcher: plain text view button. Shared between email modal and email page.</comment>
+  </data>
+  <data name="EmailFormatSource" xml:space="preserve">
+    <value>Source</value>
+    <comment>Email format switcher: raw HTML source view button. Shared between email modal and email page.</comment>
+  </data>
+  <data name="EmailFormatSwitchTitle" xml:space="preserve">
+    <value>Changer le format de l'e-mail</value>
+    <comment>Tooltip for the cycle button that switches between HTML / Text / Source views. Shared between email modal and email page.</comment>
+  </data>
+  <data name="EmailItemLabel" xml:space="preserve">
+    <value>Élément :</value>
+    <comment>Label for the credential/item row in the email header. Shared between email modal and email page.</comment>
+  </data>
+  <data name="EmailItemNone" xml:space="preserve">
+    <value>Aucun</value>
+    <comment>Shown next to the Item label when an email is not linked to any credential. Shared between email modal and email page.</comment>
   </data>
 </root>

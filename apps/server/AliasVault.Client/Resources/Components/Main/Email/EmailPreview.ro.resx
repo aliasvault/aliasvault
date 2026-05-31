@@ -70,14 +70,6 @@
     <value>Dată:</value>
     <comment>Email date field label</comment>
   </data>
-  <data name="ItemLabel" xml:space="preserve">
-    <value>Element:</value>
-    <comment>Email item field label</comment>
-  </data>
-  <data name="NoneValue" xml:space="preserve">
-    <value>Niciunul</value>
-    <comment>No item assigned value</comment>
-  </data>
   <data name="AttachmentsLabel" xml:space="preserve">
     <value>Atașamente:</value>
     <comment>Email attachments section header</comment>
