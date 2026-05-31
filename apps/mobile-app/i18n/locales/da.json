@@ -569,7 +569,7 @@
     "deleteEmailConfirm": "Er du sikker på, at du vil slette denne e-mail? Denne handling er permanent og kan ikke fortrydes.",
     "emailNotFound": "E-mail ikke fundet",
     "formatHtml": "HTML",
-    "formatPlain": "Text",
+    "formatPlain": "Tekst",
     "formatSource": "Source",
     "formatSwitchTitle": "Switch email format",
     "sizeKB": "KB",
