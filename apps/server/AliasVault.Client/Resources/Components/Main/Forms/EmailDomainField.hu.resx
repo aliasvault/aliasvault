@@ -63,23 +63,23 @@
     <comment>Label for alias mode toggle</comment>
   </data>
   <data name="PrivateEmailTitle" xml:space="preserve">
-    <value>Private Email</value>
+    <value>Privát e-mail</value>
     <comment>Title for private email domains section</comment>
   </data>
   <data name="PrivateEmailDescription" xml:space="preserve">
-    <value>E2E encrypted, fully private.</value>
+    <value>E2E kódolású, teljesen bizalmas.</value>
     <comment>Description of private email domains</comment>
   </data>
   <data name="PublicEmailTitle" xml:space="preserve">
-    <value>Public Temp Email Providers</value>
+    <value>Publikus ideiglenes e-mail fiók szolgáltatók</value>
     <comment>Title for public email domains section</comment>
   </data>
   <data name="PublicEmailDescription" xml:space="preserve">
-    <value>Anonymous but limited privacy. Email content is readable by anyone that knows the address.</value>
+    <value>Anonim de limitáltan bizalmas. Tartalma olvasható bárki számára aki ismeri az e-mail címét.</value>
     <comment>Description of public email domains</comment>
   </data>
   <data name="PrivateEmailAliasVaultServer" xml:space="preserve">
-    <value>AliasVault server</value>
+    <value>AliasVault szerver</value>
     <comment>Subtitle for private email domains section</comment>
   </data>
 </root>
