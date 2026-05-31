@@ -341,15 +341,15 @@
     <comment>Email format switcher: HTML view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatPlain" xml:space="preserve">
-    <value>Text</value>
+    <value>Tekst</value>
     <comment>Email format switcher: plain text view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatSource" xml:space="preserve">
-    <value>Source</value>
+    <value>Bron</value>
     <comment>Email format switcher: raw HTML source view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatSwitchTitle" xml:space="preserve">
-    <value>Switch email format</value>
+    <value>Wissel van e-mailformaat</value>
     <comment>Tooltip for the cycle button that switches between HTML / Text / Source views. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailItemLabel" xml:space="preserve">
@@ -357,7 +357,7 @@
     <comment>Label for the credential/item row in the email header. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailItemNone" xml:space="preserve">
-    <value>None</value>
+    <value>Geen</value>
     <comment>Shown next to the Item label when an email is not linked to any credential. Shared between email modal and email page.</comment>
   </data>
 </root>
