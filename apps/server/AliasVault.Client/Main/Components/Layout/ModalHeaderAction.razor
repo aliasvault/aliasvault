@@ -1,0 +1,48 @@
+@*
+    A single action button rendered in the action cluster of a modal header.
+*@
+
+<button type="button" @onclick="OnClick" title="@Title" class="@ButtonClass">
+    @ChildContent
+</button>
+
+@code {
+    /// <summary>
+    /// Visual variant of the button. Default = neutral gray, Danger = red.
+    /// </summary>
+    public enum ActionVariant
+    {
+        Default,
+        Danger,
+    }
+
+    /// <summary>
+    /// Button content (icon SVG or short text).
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Tooltip / accessible label.
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>
+    /// Click handler.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    /// <summary>
+    /// Visual variant.
+    /// </summary>
+    [Parameter]
+    public ActionVariant Variant { get; set; } = ActionVariant.Default;
+
+    private string ButtonClass => Variant switch
+    {
+        ActionVariant.Danger => "inline-flex items-center justify-center h-9 min-w-[2.25rem] px-2 rounded text-sm font-medium text-red-500 hover:text-red-600 hover:bg-gray-100 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-gray-700",
+        _ => "inline-flex items-center justify-center h-9 min-w-[2.25rem] px-2 rounded text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700",
+    };
+}
