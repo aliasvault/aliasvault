@@ -73,7 +73,7 @@
   </data>
   <!-- Required field validation messages -->
   <data name="UsernameRequired" xml:space="preserve">
-    <value>Username is required</value>
+    <value>Username diperlukan</value>
     <comment>Error message when username is required</comment>
   </data>
   <data name="PasswordRequired" xml:space="preserve">
@@ -89,7 +89,7 @@
     <comment>Error message when service name is required</comment>
   </data>
   <data name="FieldRequired" xml:space="preserve">
-    <value>This field is required</value>
+    <value>Bagian ini perlu diisi</value>
     <comment>Generic error message when a field is required</comment>
   </data>
   <!-- Terms and conditions -->
