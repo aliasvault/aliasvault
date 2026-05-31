@@ -63,11 +63,11 @@
     <comment>Page title for the sync page</comment>
   </data>
   <data name="SwitchAccountsText" xml:space="preserve">
-    <value>Switch accounts?</value>
+    <value>Ganti akun?</value>
     <comment>Text before logout link</comment>
   </data>
   <data name="LogoutLink" xml:space="preserve">
-    <value>Logout</value>
+    <value>Keluar</value>
     <comment>Link text for logout</comment>
   </data>
 </root>
