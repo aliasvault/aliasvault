@@ -3,7 +3,7 @@ import { Buffer } from 'buffer';
 import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import { useLocalSearchParams, useRouter, useNavigation, Stack } from 'expo-router';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, ActivityIndicator, useColorScheme, Linking, Text, TextInput, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
@@ -42,7 +42,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
   const [email, setEmail] = useState<Email | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMetadataMaximized, setMetadataMaximized] = useState(false);
-  const [isHtmlView, setHtmlView] = useState(true);
+  const [viewMode, setViewMode] = useState<'html' | 'plain' | 'source'>('html');
   const isDarkMode = useColorScheme() === 'dark';
   const [associatedItem, setAssociatedItem] = useState<Item | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -80,11 +80,13 @@ export default function EmailDetailsScreen() : React.ReactNode {
         setAssociatedItem(item);
       }
 
-      // Set initial view mode based on content
+      // Set initial view mode based on content — prefer HTML, fall back to plain, then source.
       if (decryptedEmail.messageHtml && decryptedEmail.messageHtml.length > 0) {
-        setHtmlView(true);
-      } else {
-        setHtmlView(false);
+        setViewMode('html');
+      } else if (decryptedEmail.messagePlain) {
+        setViewMode('plain');
+      } else if (decryptedEmail.messageSource) {
+        setViewMode('source');
       }
     } catch (err) {
       /*
@@ -197,31 +199,65 @@ export default function EmailDetailsScreen() : React.ReactNode {
     }
   };
 
+  // Only offer formats the server actually provided. Source comes from the raw MessageSource column.
+  const availableModes = useMemo<Array<'html' | 'plain' | 'source'>>(() => {
+    if (!email) {
+      return [];
+    }
+    const modes: Array<'html' | 'plain' | 'source'> = [];
+    if (email.messageHtml) {
+      modes.push('html');
+    }
+    if (email.messagePlain) {
+      modes.push('plain');
+    }
+    if (email.messageSource) {
+      modes.push('source');
+    }
+    return modes;
+  }, [email]);
+
+  const formatLabels = useMemo<Record<'html' | 'plain' | 'source', string>>(() => ({
+    html: t('emails.formatHtml'),
+    plain: t('emails.formatPlain'),
+    source: t('emails.formatSource'),
+  }), [t]);
+
+  const cycleViewMode = useCallback((): void => {
+    if (availableModes.length <= 1) {
+      return;
+    }
+    const idx = availableModes.indexOf(viewMode);
+    const next = availableModes[(idx + 1) % availableModes.length];
+    setViewMode(next);
+  }, [availableModes, viewMode]);
+
   const styles = StyleSheet.create({
     attachment: {
       alignItems: 'center',
       backgroundColor: colors.accentBackground,
-      borderRadius: 8,
+      borderRadius: 6,
       flexDirection: 'row',
-      marginBottom: 8,
-      padding: 12,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
     },
     attachmentName: {
       color: colors.textMuted,
-      fontSize: 14,
-      marginLeft: 8,
+      fontSize: 13,
+      marginLeft: 6,
     },
     attachments: {
       borderTopColor: colors.accentBorder,
       borderTopWidth: 1,
-      padding: 16,
-      paddingBottom: 100,
+      gap: 4,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
     },
     attachmentsTitle: {
       color: colors.text,
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginBottom: 12,
+      fontSize: 13,
+      fontWeight: '600',
+      marginBottom: 6,
     },
     centerContainer: {
       alignItems: 'center',
@@ -254,7 +290,12 @@ export default function EmailDetailsScreen() : React.ReactNode {
       paddingRight: Platform.OS === 'ios' ? 0 : 10,
     },
     headerRightContainer: {
+      alignItems: 'center',
       flexDirection: 'row',
+    },
+    headerRightFormatLabel: {
+      fontSize: 14,
+      fontWeight: '600',
     },
     metadataContainer: {
       padding: 2,
@@ -314,6 +355,10 @@ export default function EmailDetailsScreen() : React.ReactNode {
       fontSize: 15,
       padding: 16,
     },
+    sourceText: {
+      fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+      fontSize: 12,
+    },
     subject: {
       color: colors.text,
       fontSize: 14,
@@ -351,18 +396,19 @@ export default function EmailDetailsScreen() : React.ReactNode {
        */
       headerRight: () => (
         <View style={styles.headerRightContainer}>
-          <RobustPressable
-            onPress={() => setHtmlView(!isHtmlView)}
-            style={styles.headerRightButton}
-            pressRetentionOffset={5}
-            hitSlop={5}
-          >
-            <Ionicons
-              name={isHtmlView ? 'text-outline' : 'document-outline'}
-              size={Platform.OS === 'android' ? 24 : 22}
-              color={colors.primary}
-            />
-          </RobustPressable>
+          {availableModes.length > 1 && (
+            <RobustPressable
+              onPress={cycleViewMode}
+              style={styles.headerRightButton}
+              accessibilityLabel={t('emails.formatSwitchTitle')}
+              pressRetentionOffset={5}
+              hitSlop={5}
+            >
+              <Text style={[styles.headerRightFormatLabel, { color: colors.primary }]}>
+                {formatLabels[viewMode]}
+              </Text>
+            </RobustPressable>
+          )}
           <RobustPressable
             onPress={handleDelete}
             style={[styles.headerRightButton, styles.headerRightButtonDelete]}
@@ -378,7 +424,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
         </View>
       ),
     });
-  }, [isHtmlView, navigation, handleDelete, colors.primary, styles.headerRightButton, styles.headerRightButtonDelete, styles.headerRightContainer]);
+  }, [navigation, handleDelete, colors.primary, styles.headerRightButton, styles.headerRightButtonDelete, styles.headerRightContainer, styles.headerRightFormatLabel, availableModes, cycleViewMode, formatLabels, viewMode, t]);
 
   if (isLoading) {
     return (
@@ -487,7 +533,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
   }
 
   let emailView = null;
-  if (isHtmlView && email.messageHtml) {
+  if (viewMode === 'html' && email.messageHtml) {
     // Sanitize HTML
     const sanitizedHtml = ConversionUtility.sanitizeHtmlForEmailViewing(email.messageHtml);
     emailView = (
@@ -505,20 +551,24 @@ export default function EmailDetailsScreen() : React.ReactNode {
       />
     );
   } else {
+    const isSource = viewMode === 'source';
+    const text = (isSource ? email.messageSource : email.messagePlain) ?? '';
+    const textStyle = [
+      styles.plainText,
+      isDarkMode ? styles.textDark : styles.textLight,
+      isSource ? styles.sourceText : null,
+    ];
     emailView = Platform.OS === 'ios' ? (
       <TextInput
         multiline
         editable={false}
         selectTextOnFocus={true}
-        style={[styles.plainText, isDarkMode ? styles.textDark : styles.textLight]}
-        value={email.messagePlain || t('emails.noPlainText')}
+        style={textStyle}
+        value={text}
       />
     ) : (
-      <Text
-        selectable
-        style={[styles.plainText, isDarkMode ? styles.textDark : styles.textLight]}
-      >
-        {email.messagePlain || t('emails.noPlainText')}
+      <Text selectable style={textStyle}>
+        {text}
       </Text>
     );
   }
