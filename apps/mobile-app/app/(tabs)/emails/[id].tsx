@@ -1,11 +1,10 @@
-import { Buffer } from 'buffer';
-
 import { Ionicons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 import { useLocalSearchParams, useRouter, useNavigation, Stack } from 'expo-router';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, ActivityIndicator, useColorScheme, Linking, Text, TextInput, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
 import ConversionUtility from '@/utils/ConversionUtility';
@@ -38,6 +37,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
   const { openAttachment, viewerElement } = useAttachmentViewer();
+  const insets = useSafeAreaInsets();
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState<Email | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -168,21 +168,23 @@ export default function EmailDetailsScreen() : React.ReactNode {
         return;
       }
 
-      // Convert decrypted bytes to base64 for FileSystem.writeAsStringAsync
-      const base64Data = Buffer.from(decryptedBytes).toString('base64');
-      const tempFile = `${FileSystem.cacheDirectory}${attachment.filename}`;
-      await FileSystem.writeAsStringAsync(tempFile, base64Data, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      const tempFile = new File(Paths.cache, attachment.filename);
+      if (tempFile.exists) {
+        tempFile.delete();
+      }
+      tempFile.create();
+      tempFile.write(decryptedBytes);
 
       try {
         await openAttachment({
-          filePath: tempFile,
+          filePath: tempFile.uri,
           fileName: attachment.filename,
           mimeType: attachment.mimeType,
         });
       } finally {
-        await FileSystem.deleteAsync(tempFile, { idempotent: true });
+        if (tempFile.exists) {
+          tempFile.delete();
+        }
       }
     } catch (err) {
       console.error('handleDownloadAttachment error', err);
@@ -250,8 +252,9 @@ export default function EmailDetailsScreen() : React.ReactNode {
       borderTopColor: colors.accentBorder,
       borderTopWidth: 1,
       gap: 4,
+      paddingBottom: Platform.OS === 'ios' ? insets.bottom + 60 : 8,
       paddingHorizontal: 12,
-      paddingVertical: 8,
+      paddingTop: 8,
     },
     attachmentsTitle: {
       color: colors.text,
@@ -351,6 +354,8 @@ export default function EmailDetailsScreen() : React.ReactNode {
       paddingTop: 4,
     },
     plainText: {
+      backgroundColor: '#ffffff',
+      color: '#000000',
       flex: 1,
       fontSize: 15,
       padding: 16,
@@ -358,6 +363,10 @@ export default function EmailDetailsScreen() : React.ReactNode {
     sourceText: {
       fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
       fontSize: 12,
+    },
+    textContainer: {
+      backgroundColor: '#ffffff',
+      flex: 1,
     },
     subject: {
       color: colors.text,
@@ -370,12 +379,6 @@ export default function EmailDetailsScreen() : React.ReactNode {
       paddingLeft: 5,
       paddingTop: 8,
       width: '90%',
-    },
-    textDark: {
-      color: colors.text,
-    },
-    textLight: {
-      color: colors.text,
     },
     topBox: {
       alignSelf: 'flex-start',
@@ -555,21 +558,24 @@ export default function EmailDetailsScreen() : React.ReactNode {
     const text = (isSource ? email.messageSource : email.messagePlain) ?? '';
     const textStyle = [
       styles.plainText,
-      isDarkMode ? styles.textDark : styles.textLight,
       isSource ? styles.sourceText : null,
     ];
-    emailView = Platform.OS === 'ios' ? (
-      <TextInput
-        multiline
-        editable={false}
-        selectTextOnFocus={true}
-        style={textStyle}
-        value={text}
-      />
-    ) : (
-      <Text selectable style={textStyle}>
-        {text}
-      </Text>
+    emailView = (
+      <View style={styles.textContainer}>
+        {Platform.OS === 'ios' ? (
+          <TextInput
+            multiline
+            editable={false}
+            selectTextOnFocus={true}
+            style={textStyle}
+            value={text}
+          />
+        ) : (
+          <Text selectable style={textStyle}>
+            {text}
+          </Text>
+        )}
+      </View>
     );
   }
 

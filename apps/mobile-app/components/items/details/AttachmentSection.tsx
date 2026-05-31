@@ -1,7 +1,5 @@
-import { Buffer } from 'buffer';
-
 import { MaterialIcons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
+import { Directory, File, Paths } from 'expo-file-system';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
@@ -39,33 +37,24 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
     try {
       // Sanitize filename
       const sanitizedFilename = attachment.Filename.replace(/[/\\]/g, '_');
-      const downloadsDir = FileSystem.documentDirectory + 'Downloads/';
-      const filePath = downloadsDir + sanitizedFilename;
-
-      // Ensure Downloads directory exists
-      const dirInfo = await FileSystem.getInfoAsync(downloadsDir);
-      if (!dirInfo.exists) {
-        await FileSystem.makeDirectoryAsync(downloadsDir, { intermediates: true });
+      const downloadsDir = new Directory(Paths.document, 'Downloads');
+      if (!downloadsDir.exists) {
+        downloadsDir.create({ intermediates: true });
       }
 
-      // Always recreate file to ensure fresh data
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
-      if (fileInfo.exists) {
-        await FileSystem.deleteAsync(filePath);
+      const file = new File(downloadsDir, sanitizedFilename);
+      if (file.exists) {
+        file.delete();
       }
+      file.create();
 
       if (typeof attachment.Blob === 'string') {
-        await FileSystem.writeAsStringAsync(filePath, attachment.Blob, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
+        file.write(attachment.Blob, { encoding: 'base64' });
       } else {
-        const base64Data = Buffer.from(attachment.Blob as unknown as string, 'base64');
-        await FileSystem.writeAsStringAsync(filePath, base64Data.toString(), {
-          encoding: FileSystem.EncodingType.Base64,
-        });
+        file.write(attachment.Blob as unknown as Uint8Array);
       }
 
-      await openAttachment({ filePath, fileName: sanitizedFilename });
+      await openAttachment({ filePath: file.uri, fileName: sanitizedFilename });
     } catch (error) {
       console.error('Error handling attachment:', error);
       showAlert('Error', 'Failed to process attachment');

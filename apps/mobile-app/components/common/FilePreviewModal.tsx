@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
+import { File } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -58,11 +58,11 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
   /**
    * Get file size formatted string.
    */
-  const getFileSize = useCallback(async (): Promise<void> => {
+  const getFileSize = useCallback((): void => {
     try {
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
-      if (fileInfo.exists && 'size' in fileInfo) {
-        const size = fileInfo.size;
+      const file = new File(filePath);
+      if (file.exists) {
+        const size = file.size;
         if (size < 1024) {
           setFileSize(`${size} B`);
         } else if (size < 1024 * 1024) {
@@ -82,7 +82,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
   const loadTextFile = useCallback(async (): Promise<void> => {
     try {
       setLoading(true);
-      const content = await FileSystem.readAsStringAsync(filePath);
+      const content = await new File(filePath).text();
       setFileContent(content);
     } catch (error) {
       console.error('Error reading text file:', error);
