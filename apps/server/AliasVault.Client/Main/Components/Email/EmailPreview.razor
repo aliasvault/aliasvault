@@ -28,11 +28,21 @@
                         <span>@Email.Subject</span>
                     }
                 </h2>
-                <button @onclick="ShowDeleteConfirmation" id="delete-email" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                </button>
+                <div class="flex items-center gap-2">
+                    @if (GetAvailableModes().Count > 1)
+                    {
+                        <button @onclick="CycleViewMode"
+                                title="@SharedLocalizer["EmailFormatSwitchTitle"]"
+                                class="text-xs font-medium px-2 py-1 rounded text-gray-600 hover:text-gray-800 hover:bg-gray-200 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-600">
+                            @CurrentFormatLabel
+                        </button>
+                    }
+                    <button @onclick="ShowDeleteConfirmation" id="delete-email" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
             <!-- 2-column layout for email details -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-300">
@@ -44,7 +54,7 @@
                     <p><span class="font-medium">@Localizer["DateLabel"]</span> @Email.DateSystem</p>
                     @if (!string.IsNullOrEmpty(CredentialName) && CredentialId != Guid.Empty)
                     {
-                        <p><span class="font-medium">@Localizer["ItemLabel"]</span>
+                        <p><span class="font-medium">@SharedLocalizer["EmailItemLabel"]</span>
                             <button @onclick="@(() => OnCredentialClick.InvokeAsync(CredentialId))"
                                     class="text-blue-600 hover:underline dark:text-blue-400 cursor-pointer">
                                 @CredentialName
@@ -53,7 +63,7 @@
                     }
                     else
                     {
-                        <p><span class="font-medium">@Localizer["ItemLabel"]</span> <span class="text-gray-400 dark:text-gray-500">@Localizer["NoneValue"]</span></p>
+                        <p><span class="font-medium">@SharedLocalizer["EmailItemLabel"]</span> <span class="text-gray-400 dark:text-gray-500">@SharedLocalizer["EmailItemNone"]</span></p>
                     }
                 </div>
             </div>
@@ -145,6 +155,11 @@
     /// </summary>
     [Parameter]
     public EventCallback<Guid> OnCredentialClick { get; set; }
+
+    /// <summary>
+    /// The currently selected view mode.
+    /// </summary>
+    private EmailViewMode _viewMode = EmailViewMode.Html;
 
     /// <summary>
     /// The message body to display
@@ -266,24 +281,123 @@
 
         if (Email != null)
         {
-            // Check if there is HTML content, if not, then set default viewtype to plain
-            if (Email.MessageHtml is not null && !string.IsNullOrWhiteSpace(Email.MessageHtml))
+            // Pick an initial view mode based on what content is available.
+            if (!string.IsNullOrWhiteSpace(Email.MessageHtml))
             {
-                // HTML is available, sanitize and prepare for display
-                EmailBody = ConversionUtility.SanitizeAndPrepareEmailHtml(Email.MessageHtml);
+                SetViewMode(EmailViewMode.Html);
             }
-            else if (Email.MessagePlain is not null)
+            else if (Email.MessagePlain != null)
             {
-                // No HTML but plain text is available
-                // Escape HTML entities and wrap in pre tag to preserve formatting
-                var escapedText = System.Net.WebUtility.HtmlEncode(Email.MessagePlain);
-                EmailBody = $"<pre style='font-family: system-ui, -apple-system, sans-serif; white-space: pre-wrap; word-wrap: break-word; margin: 0;'>{escapedText}</pre>";
+                SetViewMode(EmailViewMode.Plain);
             }
             else
             {
-                // No HTML and no plain text available
                 EmailBody = Localizer["NoEmailBody"];
             }
+        }
+    }
+
+    /// <summary>
+    /// Returns the list of view modes that have content for the current email,
+    /// in display order (HTML, Plain, Source).
+    /// </summary>
+    private List<EmailViewMode> GetAvailableModes()
+    {
+        var modes = new List<EmailViewMode>();
+        if (Email != null && !string.IsNullOrWhiteSpace(Email.MessageHtml))
+        {
+            modes.Add(EmailViewMode.Html);
+        }
+
+        if (Email?.MessagePlain != null)
+        {
+            modes.Add(EmailViewMode.Plain);
+        }
+
+        // Source shows the raw RFC 822 message captured by the SMTP service. Only offer it when
+        // the server actually provided one — we never synthesise the source ourselves.
+        if (!string.IsNullOrWhiteSpace(Email?.MessageSource))
+        {
+            modes.Add(EmailViewMode.Source);
+        }
+        return modes;
+    }
+
+    /// <summary>
+    /// Label for the currently active view mode, used as the cycle button caption.
+    /// </summary>
+    private string CurrentFormatLabel => _viewMode switch
+    {
+        EmailViewMode.Html => SharedLocalizer["EmailFormatHtml"],
+        EmailViewMode.Plain => SharedLocalizer["EmailFormatPlain"],
+        EmailViewMode.Source => SharedLocalizer["EmailFormatSource"],
+        _ => string.Empty,
+    };
+
+    /// <summary>
+    /// Cycle to the next available view mode.
+    /// </summary>
+    private void CycleViewMode()
+    {
+        var modes = GetAvailableModes();
+        if (modes.Count <= 1)
+        {
+            return;
+        }
+
+        var currentIndex = modes.IndexOf(_viewMode);
+        var nextIndex = (currentIndex + 1) % modes.Count;
+        SetViewMode(modes[nextIndex]);
+    }
+
+    /// <summary>
+    /// Sets the email body based on the selected view mode.
+    /// </summary>
+    private void SetViewMode(EmailViewMode mode)
+    {
+        _viewMode = mode;
+        if (Email == null)
+        {
+            return;
+        }
+
+        switch (mode)
+        {
+            case EmailViewMode.Html:
+                if (!string.IsNullOrWhiteSpace(Email.MessageHtml))
+                {
+                    EmailBody = ConversionUtility.SanitizeAndPrepareEmailHtml(Email.MessageHtml);
+                }
+                else
+                {
+                    EmailBody = Localizer["NoEmailBody"];
+                }
+
+                break;
+            case EmailViewMode.Plain:
+                if (Email.MessagePlain != null)
+                {
+                    var escapedText = System.Net.WebUtility.HtmlEncode(Email.MessagePlain);
+                    EmailBody = $"<pre style='font-family: system-ui, -apple-system, sans-serif; white-space: pre-wrap; word-wrap: break-word; margin: 0;'>{escapedText}</pre>";
+                }
+                else
+                {
+                    EmailBody = Localizer["NoEmailBody"];
+                }
+
+                break;
+            case EmailViewMode.Source:
+                if (!string.IsNullOrWhiteSpace(Email.MessageSource))
+                {
+                    var escapedSource = System.Net.WebUtility.HtmlEncode(Email.MessageSource);
+                    EmailBody = $"<pre style='font-family: monospace; white-space: pre-wrap; word-wrap: break-word; margin: 0; font-size: 12px; line-height: 1.4;'>{escapedSource}</pre>";
+                }
+                else
+                {
+                    EmailBody = Localizer["NoEmailBody"];
+                }
+
+                break;
         }
     }
 

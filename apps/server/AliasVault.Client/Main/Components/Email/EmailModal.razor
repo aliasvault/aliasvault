@@ -3,6 +3,8 @@
 @using AliasVault.Shared.Core;
 @using AliasVault.Client.Main.Components.Layout
 @using AliasVault.RazorComponents.Services
+@using AliasClientDb.Models
+@using Microsoft.EntityFrameworkCore
 @using Microsoft.Extensions.Localization
 @inject JsInteropService JsInteropService
 @inject GlobalNotificationService GlobalNotificationService
@@ -11,65 +13,81 @@
 @inject HttpClient HttpClient
 @inject ConfirmModalService ConfirmModalService
 @inject IStringLocalizerFactory LocalizerFactory
+@inject DbService DbService
+@inject NavigationManager NavigationManager
 
-<ClickOutsideHandler OnClose="OnClose" ContentId="emailModal">
+<ClickOutsideHandler OnClose="OnClose" ContentId="emailModal,confirm-modal">
     <ModalWrapper OnEnter="Close">
-        <div id="emailModal" class="relative bg-white w-3/4 flex flex-col rounded-lg shadow-xl max-h-[90vh] border-2 border-gray-300 dark:border-gray-400">
+        <div id="emailModal" class="relative bg-white dark:bg-gray-800 w-3/4 flex flex-col rounded-lg shadow-xl max-h-[90vh] border border-gray-200 dark:border-gray-700">
             <!-- Header -->
-            <div class="p-4 border-b">
-                <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-2xl font-bold text-gray-900">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between gap-3 mb-3">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 truncate min-w-0">
                         @if (IsSpamOk)
                         {
-                            <a target="_blank" href="https://spamok.com/@(Email!.ToLocal)/@(Email!.Id)">@Email.Subject</a>
+                            <a target="_blank" href="https://spamok.com/@(Email!.ToLocal)/@(Email!.Id)" class="hover:underline">@Email.Subject</a>
                         }
                         else
                         {
                             <span>@Email?.Subject</span>
                         }
                     </h2>
-                    <button @onclick="Close" class="text-gray-400 hover:text-gray-500">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                        @if (GetAvailableModes().Count > 1)
+                        {
+                            <ModalHeaderAction OnClick="CycleViewMode" Title="@SharedLocalizer["EmailFormatSwitchTitle"]">
+                                @CurrentFormatLabel
+                            </ModalHeaderAction>
+                        }
+                        <ModalHeaderAction OnClick="ShowDeleteConfirmation" Title="@Localizer["DeleteButton"]" Variant="ModalHeaderAction.ActionVariant.Danger">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                        </ModalHeaderAction>
+                        <ModalHeaderAction OnClick="Close" Title="@SharedLocalizer["Close"]">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </ModalHeaderAction>
+                    </div>
                 </div>
-                <!-- 2-column layout for email details -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-500 dark:text-gray-400">
+                <!-- 2-column on desktop; on mobile the columns stack and flow as one continuous list. The second column gets mt-1 on mobile so the gap between Date/Item and From/To matches the space-y-1 used within each block. -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 text-sm text-gray-500 dark:text-gray-400">
                     <div class="space-y-1">
                         <p>@Localizer["FromLabel"] @(Email?.FromLocal)@@@(Email?.FromDomain)</p>
                         <p>@Localizer["ToLabel"] @(Email?.ToLocal)@@@(Email?.ToDomain)</p>
                     </div>
-                    <div class="space-y-1">
+                    <div class="space-y-1 mt-1 sm:mt-0">
                         <p>@Localizer["DateLabel"] @Email?.DateSystem</p>
-                        <p>@Localizer["ActionsLabel"] <button @onclick="ShowDeleteConfirmation" class="text-red-500 hover:text-red-700 text-sm">@Localizer["DeleteButton"]</button></p>
+                        @if (ShowItemLink)
+                        {
+                            @if (!string.IsNullOrEmpty(_credentialName) && _credentialId != Guid.Empty)
+                            {
+                                <p>
+                                    <span class="font-medium">@SharedLocalizer["EmailItemLabel"]</span>
+                                    <button @onclick="NavigateToCredential"
+                                            class="text-blue-600 hover:underline dark:text-blue-400 cursor-pointer">
+                                        @_credentialName
+                                    </button>
+                                </p>
+                            }
+                            else
+                            {
+                                <p>
+                                    <span class="font-medium">@SharedLocalizer["EmailItemLabel"]</span>
+                                    <span class="text-gray-400 dark:text-gray-500">@SharedLocalizer["EmailItemNone"]</span>
+                                </p>
+                            }
+                        }
                     </div>
                 </div>
-            </div>
-
-            <!-- Format Switcher -->
-            <div class="px-4 py-2 border-b flex gap-1 bg-gray-50 dark:bg-gray-800">
-                <button @onclick="() => SetViewMode(EmailViewMode.Html)"
-                        class="@(_viewMode == EmailViewMode.Html ? "px-3 py-1 text-sm font-medium rounded-md bg-blue-500 text-white" : "px-3 py-1 text-sm font-medium rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700")"
-                        disabled="@(string.IsNullOrWhiteSpace(Email?.MessageHtml))">
-                    HTML
-                </button>
-                <button @onclick="() => SetViewMode(EmailViewMode.Plain)"
-                        class="@(_viewMode == EmailViewMode.Plain ? "px-3 py-1 text-sm font-medium rounded-md bg-blue-500 text-white" : "px-3 py-1 text-sm font-medium rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700")"
-                        disabled="@(Email?.MessagePlain == null)">
-                    Plain
-                </button>
-                <button @onclick="() => SetViewMode(EmailViewMode.Source)"
-                        class="@(_viewMode == EmailViewMode.Source ? "px-3 py-1 text-sm font-medium rounded-md bg-blue-500 text-white" : "px-3 py-1 text-sm font-medium rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700")">
-                    Source
-                </button>
             </div>
 
             <!-- Scrollable Content -->
             <div class="flex-1 overflow-y-auto p-4">
                 <div class="text-gray-700 dark:text-gray-300">
                     <div>
-                        <iframe class="w-full overscroll-y-auto" style="height:500px;" srcdoc="@EmailBody" sandbox="allow-popups allow-popups-to-escape-sandbox">
+                        <iframe class="w-full overscroll-y-auto bg-white rounded" style="height:500px;" srcdoc="@EmailBody" sandbox="allow-popups allow-popups-to-escape-sandbox">
                         </iframe>
                     </div>
                 </div>
@@ -86,7 +104,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
                                         </svg>
                                         <button @onclick="() => DownloadAttachment(attachment)"
-                                                class="text-primary hover:underline text-sm truncate attachment-link">
+                                                class="text-primary-600 hover:underline text-sm truncate dark:text-primary-400 attachment-link">
                                             (@(Math.Ceiling((double)attachment.Filesize / 1024)) KB) @attachment.Filename
                                         </button>
                                     </div>
@@ -94,9 +112,6 @@
                             </div>
                         </div>
                     }
-                </div>
-                <div class="mt-6 flex justify-end space-x-4">
-                    <button id="close-email-modal" @onclick="Close" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">@Localizer["CloseButton"]</button>
                 </div>
             </div>
         </div>
@@ -133,9 +148,23 @@
     public EventCallback<int> OnEmailDeleted { get; set; }
 
     /// <summary>
-    /// The available email view modes.
+    /// When true, render the "Item:" row that links back to the associated credential. Defaults to false because
+    /// when this modal is opened from an item-detail page the context is already clear. Callers that surface the
+    /// modal from a cross-item list (e.g. the mobile emails page) should pass true; the modal then resolves and
+    /// navigates to the credential itself based on the email's to-address.
     /// </summary>
-    private enum EmailViewMode { Html, Plain, Source }
+    [Parameter]
+    public bool ShowItemLink { get; set; }
+
+    /// <summary>
+    /// Resolved credential ID for the email's to-address (only populated when ShowItemLink is true).
+    /// </summary>
+    private Guid _credentialId;
+
+    /// <summary>
+    /// Resolved credential name for the email's to-address (only populated when ShowItemLink is true).
+    /// </summary>
+    private string _credentialName = string.Empty;
 
     /// <summary>
     /// The currently selected view mode.
@@ -266,6 +295,62 @@
     }
 
     /// <summary>
+    /// Returns the list of view modes that have content for the current email,
+    /// in display order (HTML, Plain, Source).
+    /// </summary>
+    private List<EmailViewMode> GetAvailableModes()
+    {
+        var modes = new List<EmailViewMode>();
+        var hasHtml = !string.IsNullOrWhiteSpace(Email?.MessageHtml);
+        var hasPlain = Email?.MessagePlain != null;
+        var hasSource = !string.IsNullOrWhiteSpace(Email?.MessageSource);
+        if (hasHtml)
+        {
+            modes.Add(EmailViewMode.Html);
+        }
+
+        // Text is only offered when the server actually provided a plain-text part.
+        if (hasPlain)
+        {
+            modes.Add(EmailViewMode.Plain);
+        }
+
+        // Source is always offered whenever there's any content.
+        if (hasSource)
+        {
+            modes.Add(EmailViewMode.Source);
+        }
+        return modes;
+    }
+
+    /// <summary>
+    /// Label for the currently active view mode, used as the cycle button caption.
+    /// </summary>
+    private string CurrentFormatLabel => _viewMode switch
+    {
+        EmailViewMode.Html => SharedLocalizer["EmailFormatHtml"],
+        EmailViewMode.Plain => SharedLocalizer["EmailFormatPlain"],
+        EmailViewMode.Source => SharedLocalizer["EmailFormatSource"],
+        _ => string.Empty,
+    };
+
+    /// <summary>
+    /// Cycle to the next available view mode.
+    /// </summary>
+    private void CycleViewMode()
+    {
+        var modes = GetAvailableModes();
+        if (modes.Count <= 1)
+        {
+            return;
+        }
+
+        var currentIndex = modes.IndexOf(_viewMode);
+        var nextIndex = (currentIndex + 1) % modes.Count;
+        SetViewMode(modes[nextIndex]);
+    }
+
+    /// <summary>
     /// Sets the email body based on the selected view mode.
     /// </summary>
     private void SetViewMode(EmailViewMode mode)
@@ -302,10 +387,10 @@
 
                 break;
             case EmailViewMode.Source:
-                if (!string.IsNullOrWhiteSpace(Email.MessageHtml))
+                if (!string.IsNullOrWhiteSpace(Email.MessageSource))
                 {
-                    var escapedHtml = System.Net.WebUtility.HtmlEncode(Email.MessageHtml);
-                    EmailBody = $"<pre style='font-family: monospace; white-space: pre-wrap; word-wrap: break-word; margin: 0; font-size: 12px; line-height: 1.4;'>{escapedHtml}</pre>";
+                    var escapedSource = System.Net.WebUtility.HtmlEncode(Email.MessageSource);
+                    EmailBody = $"<pre style='font-family: monospace; white-space: pre-wrap; word-wrap: break-word; margin: 0; font-size: 12px; line-height: 1.4;'>{escapedSource}</pre>";
                 }
                 else
                 {
@@ -337,6 +422,51 @@
                 EmailBody = Localizer["NoEmailBody"];
             }
         }
+
+        // Resolve the credential linked to this email's to-address when the caller asks for the
+        // Item row. SpamOK emails aren't backed by a local vault item so the lookup is skipped.
+        if (ShowItemLink && !IsSpamOk && Email != null)
+        {
+            await ResolveLinkedCredential();
+        }
+    }
+
+    /// <summary>
+    /// Look up the credential in the local vault whose login email matches this email's to-address.
+    /// </summary>
+    private async Task ResolveLinkedCredential()
+    {
+        if (Email == null)
+        {
+            return;
+        }
+
+        var toEmail = (Email.ToLocal + "@" + Email.ToDomain).ToLower();
+        var context = await DbService.GetDbContextAsync();
+        var item = await context.Items
+            .Where(x => !x.IsDeleted && x.DeletedAt == null)
+            .Where(x => x.FieldValues.Any(fv => fv.FieldKey == FieldKey.LoginEmail && fv.Value != null && fv.Value.ToLower() == toEmail && !fv.IsDeleted))
+            .Select(x => new { x.Id, x.Name })
+            .FirstOrDefaultAsync();
+
+        if (item != null)
+        {
+            _credentialId = item.Id;
+            _credentialName = item.Name ?? string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Navigate to the linked credential's detail page.
+    /// </summary>
+    private void NavigateToCredential()
+    {
+        if (_credentialId == Guid.Empty)
+        {
+            return;
+        }
+
+        NavigationManager.NavigateTo($"/items/{_credentialId}");
     }
 
     /// <summary>

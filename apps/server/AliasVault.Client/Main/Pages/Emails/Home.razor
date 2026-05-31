@@ -20,7 +20,7 @@
 
 @if (EmailModalVisible)
 {
-    <EmailModal Email="EmailModalEmail" IsSpamOk="false" OnClose="CloseEmailModal" OnEmailDeleted="HandleEmailDeletedFromModal" />
+    <EmailModal Email="EmailModalEmail" IsSpamOk="false" OnClose="CloseEmailModal" OnEmailDeleted="HandleEmailDeletedFromModal" ShowItemLink="true" />
 }
 
 <PageHeader
@@ -171,8 +171,8 @@ else
                             Email="SelectedEmail"
                             IsSpamOk="false"
                             OnEmailDeleted="HandleEmailDeleted"
-                            CredentialId="@GetSelectedEmailCredentialId()"
-                            CredentialName="@GetSelectedEmailCredentialName()"
+                            CredentialId="@GetCredentialIdForEmail(SelectedEmailId)"
+                            CredentialName="@GetCredentialNameForEmail(SelectedEmailId)"
                             OnCredentialClick="NavigateToCredential" />
                     </div>
                 </div>
@@ -713,25 +713,19 @@ else
     }
 
     /// <summary>
-    /// Get the credential ID for the currently selected email.
+    /// Get the credential ID for the email with the given id, or Guid.Empty if not found.
     /// </summary>
-    private Guid GetSelectedEmailCredentialId()
+    private Guid GetCredentialIdForEmail(int? emailId)
     {
-        if (SelectedEmailId == null) return Guid.Empty;
-
-        var selectedEmailListItem = EmailList.FirstOrDefault(e => e.Id == SelectedEmailId);
-        return selectedEmailListItem?.CredentialId ?? Guid.Empty;
+        return emailId is null ? Guid.Empty : EmailList.FirstOrDefault(e => e.Id == emailId)?.CredentialId ?? Guid.Empty;
     }
 
     /// <summary>
-    /// Get the credential name for the currently selected email.
+    /// Get the credential name for the email with the given id, or an empty string if not found.
     /// </summary>
-    private string GetSelectedEmailCredentialName()
+    private string GetCredentialNameForEmail(int? emailId)
     {
-        if (SelectedEmailId == null) return string.Empty;
-
-        var selectedEmailListItem = EmailList.FirstOrDefault(e => e.Id == SelectedEmailId);
-        return selectedEmailListItem?.CredentialName ?? string.Empty;
+        return emailId is null ? string.Empty : EmailList.FirstOrDefault(e => e.Id == emailId)?.CredentialName ?? string.Empty;
     }
 
     /// <summary>
