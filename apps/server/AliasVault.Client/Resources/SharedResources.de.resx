@@ -353,11 +353,11 @@
     <comment>Tooltip for the cycle button that switches between HTML / Text / Source views. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailItemLabel" xml:space="preserve">
-    <value>Item:</value>
+    <value>Element:</value>
     <comment>Label for the credential/item row in the email header. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailItemNone" xml:space="preserve">
-    <value>None</value>
+    <value>Keine</value>
     <comment>Shown next to the Item label when an email is not linked to any credential. Shared between email modal and email page.</comment>
   </data>
 </root>
