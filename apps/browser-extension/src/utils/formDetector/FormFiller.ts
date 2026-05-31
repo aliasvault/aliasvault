@@ -326,27 +326,22 @@ export class FormFiller {
 
     if (this.form.emailField && (credential.Alias?.Email !== undefined || credential.Username !== undefined) && securityResults.get(this.form.emailField) !== false) {
       if (credential.Alias?.Email) {
-        this.setElementValue(this.form.emailField, credential.Alias.Email);
-        this.triggerInputEvents(this.form.emailField);
+        await this.fillTextFieldWithTyping(this.form.emailField, credential.Alias.Email);
       } else if (credential.Username && !this.form.usernameField) {
         /*
          * If current form has no username field AND the credential has a username
          * then we can assume the username should be used as the email.
-         */
-
-        /*
+         *
          * This applies to the usecase where the AliasVault credential was imported
          * from a previous password manager that only had username/password fields
          * or where the user manually created a credential with only a username/password.
          */
-        this.setElementValue(this.form.emailField, credential.Username);
-        this.triggerInputEvents(this.form.emailField);
+        await this.fillTextFieldWithTyping(this.form.emailField, credential.Username);
       }
     }
 
     if (this.form.emailConfirmField && credential.Alias?.Email && securityResults.get(this.form.emailConfirmField) !== false) {
-      this.setElementValue(this.form.emailConfirmField, credential.Alias.Email);
-      this.triggerInputEvents(this.form.emailConfirmField);
+      await this.fillTextFieldWithTyping(this.form.emailConfirmField, credential.Alias.Email);
     }
 
     if (this.form.fullNameField && credential.Alias?.FirstName && credential.Alias?.LastName) {
