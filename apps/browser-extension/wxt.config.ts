@@ -46,7 +46,14 @@ export default defineConfig({
           "src/aliasvault_core_bg.wasm"
         ],
         matches: ["<all_urls>"]
-      }]
+      }],
+      ...(browser === 'firefox' ? {
+        browser_specific_settings: {
+          gecko: {
+            id: "{a06e3383-fc5f-431d-8405-1c54c2f85971}"
+          }
+        }
+      } : {})
     };
   },
   modules: ['@wxt-dev/module-react'],
