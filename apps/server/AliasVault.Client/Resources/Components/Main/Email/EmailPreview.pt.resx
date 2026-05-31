@@ -70,14 +70,6 @@
     <value>Data:</value>
     <comment>Email date field label</comment>
   </data>
-  <data name="ItemLabel" xml:space="preserve">
-    <value>Item:</value>
-    <comment>Email item field label</comment>
-  </data>
-  <data name="NoneValue" xml:space="preserve">
-    <value>Nenhum</value>
-    <comment>No item assigned value</comment>
-  </data>
   <data name="AttachmentsLabel" xml:space="preserve">
     <value>Anexos:</value>
     <comment>Email attachments section header</comment>
