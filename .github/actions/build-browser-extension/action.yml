@@ -4,10 +4,10 @@ inputs:
   browser:
     description: "Target browser to build for (chrome, firefox, edge)"
     required: true
-  upload_to_release:
-    description: "Whether to upload the resulting zip to GitHub Release"
+  release_tag:
+    description: "If set, upload the resulting zip(s) to the existing GitHub Release at this tag (draft or published). Fails if no such release exists."
     required: false
-    default: "false"
+    default: ""
 
 runs:
   using: "composite"
@@ -119,18 +119,24 @@ runs:
       shell: bash
 
     - name: Upload to GitHub Release
-      if: ${{ inputs.upload_to_release == 'true' }}
-      uses: softprops/action-gh-release@v3
-      with:
-        files: |
-          apps/browser-extension/dist/aliasvault-${{ env.VERSION }}-${{ inputs.browser }}.zip
+      if: ${{ inputs.release_tag != '' }}
+      shell: bash
       env:
-        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ env.GITHUB_TOKEN }}
+        RELEASE_TAG: ${{ inputs.release_tag }}
+        BROWSER: ${{ inputs.browser }}
+      run: |
+        if ! gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+          echo "❌ No release exists at tag '$RELEASE_TAG'."
+          echo "Create a draft release first, e.g.:"
+          echo "  gh release create $RELEASE_TAG --draft --title $RELEASE_TAG --notes ''"
+          exit 1
+        fi
 
-    - name: Upload Firefox sources to Release
-      if: ${{ inputs.upload_to_release == 'true' && inputs.browser == 'firefox' }}
-      uses: softprops/action-gh-release@v3
-      with:
-        files: apps/browser-extension/dist/aliasvault-${{ env.VERSION }}-browser-extension-sources.zip
-      env:
-        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+        FILES=("apps/browser-extension/dist/aliasvault-${VERSION}-${BROWSER}.zip")
+        if [ "$BROWSER" = "firefox" ]; then
+          FILES+=("apps/browser-extension/dist/aliasvault-${VERSION}-browser-extension-sources.zip")
+        fi
+
+        echo "Uploading ${#FILES[@]} file(s) to release $RELEASE_TAG..."
+        gh release upload "$RELEASE_TAG" "${FILES[@]}" --clobber --repo "$GITHUB_REPOSITORY"

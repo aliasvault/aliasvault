@@ -72,6 +72,10 @@ jobs:
       multi_container_exists: ${{ steps.check-images.outputs.multi_container_exists }}
       browser_extension_version_matches: ${{ steps.check-app-versions.outputs.browser_extension_matches }}
       mobile_app_version_matches: ${{ steps.check-app-versions.outputs.mobile_app_matches }}
+      chrome_extension_asset_exists: ${{ steps.check-release-assets.outputs.chrome_extension_asset_exists }}
+      firefox_extension_assets_exist: ${{ steps.check-release-assets.outputs.firefox_extension_assets_exist }}
+      edge_extension_asset_exists: ${{ steps.check-release-assets.outputs.edge_extension_asset_exists }}
+      android_apk_asset_exists: ${{ steps.check-release-assets.outputs.android_apk_asset_exists }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -193,6 +197,67 @@ jobs:
             echo "mobile_app_matches=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Check if release assets already exist
+        id: check-release-assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.detect.outputs.version }}"
+          if [ -z "$VERSION" ]; then
+            echo "chrome_extension_asset_exists=false" >> $GITHUB_OUTPUT
+            echo "firefox_extension_assets_exist=false" >> $GITHUB_OUTPUT
+            echo "edge_extension_asset_exists=false" >> $GITHUB_OUTPUT
+            echo "android_apk_asset_exists=false" >> $GITHUB_OUTPUT
+            echo "No version specified, asset existence checks skipped"
+            exit 0
+          fi
+
+          # List assets on existing release (draft or published). Empty if release does not exist.
+          ASSETS=$(gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' 2>/dev/null || true)
+          if [ -z "$ASSETS" ]; then
+            echo "No release found at tag $VERSION (or release has no assets)"
+          fi
+
+          has_asset() {
+            echo "$ASSETS" | grep -Fxq "$1"
+          }
+
+          # Chrome
+          if has_asset "aliasvault-${VERSION}-chrome.zip"; then
+            echo "✅ Chrome extension asset exists on release $VERSION"
+            echo "chrome_extension_asset_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Chrome extension asset missing"
+            echo "chrome_extension_asset_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Firefox (must have both the extension zip and the sources zip)
+          if has_asset "aliasvault-${VERSION}-firefox.zip" && has_asset "aliasvault-${VERSION}-browser-extension-sources.zip"; then
+            echo "✅ Firefox extension + sources assets exist on release $VERSION"
+            echo "firefox_extension_assets_exist=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Firefox extension and/or sources asset missing"
+            echo "firefox_extension_assets_exist=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Edge
+          if has_asset "aliasvault-${VERSION}-edge.zip"; then
+            echo "✅ Edge extension asset exists on release $VERSION"
+            echo "edge_extension_asset_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Edge extension asset missing"
+            echo "edge_extension_asset_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Android APK
+          if has_asset "aliasvault-${VERSION}-android.apk"; then
+            echo "✅ Android APK asset exists on release $VERSION"
+            echo "android_apk_asset_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Android APK asset missing"
+            echo "android_apk_asset_exists=false" >> $GITHUB_OUTPUT
+          fi
+
   upload-install-script:
     needs: [valid-release, detect-version]
     if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success')
@@ -212,8 +277,12 @@ jobs:
 
   build-chrome-extension:
     needs: [valid-release, detect-version]
-    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_browser_extensions) && needs.detect-version.outputs.browser_extension_version_matches == 'true'
+    # Skip on release events when the asset already exists (prep run already attached it).
+    # On workflow_dispatch the build always runs when the flag is set, and re-uploads with --clobber.
+    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_browser_extensions) && needs.detect-version.outputs.browser_extension_version_matches == 'true' && (github.event_name != 'release' || needs.detect-version.outputs.chrome_extension_asset_exists != 'true')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -222,14 +291,16 @@ jobs:
         uses: ./.github/actions/build-browser-extension
         with:
           browser: chrome
-          upload_to_release: ${{ github.event_name == 'release' }}
+          release_tag: ${{ needs.detect-version.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-firefox-extension:
     needs: [valid-release, detect-version]
-    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_browser_extensions) && needs.detect-version.outputs.browser_extension_version_matches == 'true'
+    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_browser_extensions) && needs.detect-version.outputs.browser_extension_version_matches == 'true' && (github.event_name != 'release' || needs.detect-version.outputs.firefox_extension_assets_exist != 'true')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -238,14 +309,16 @@ jobs:
         uses: ./.github/actions/build-browser-extension
         with:
           browser: firefox
-          upload_to_release: ${{ github.event_name == 'release' }}
+          release_tag: ${{ needs.detect-version.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-edge-extension:
     needs: [valid-release, detect-version]
-    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_browser_extensions) && needs.detect-version.outputs.browser_extension_version_matches == 'true'
+    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_browser_extensions) && needs.detect-version.outputs.browser_extension_version_matches == 'true' && (github.event_name != 'release' || needs.detect-version.outputs.edge_extension_asset_exists != 'true')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -254,14 +327,16 @@ jobs:
         uses: ./.github/actions/build-browser-extension
         with:
           browser: edge
-          upload_to_release: ${{ github.event_name == 'release' }}
+          release_tag: ${{ needs.detect-version.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-android-release:
     needs: [valid-release, detect-version]
-    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_mobile_apps) && needs.detect-version.outputs.mobile_app_version_matches == 'true'
+    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_mobile_apps) && needs.detect-version.outputs.mobile_app_version_matches == 'true' && (github.event_name != 'release' || needs.detect-version.outputs.android_apk_asset_exists != 'true')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -270,7 +345,7 @@ jobs:
         uses: ./.github/actions/build-android-app
         with:
           signed: true
-          upload_to_release: ${{ github.event_name == 'release' }}
+          release_tag: ${{ needs.detect-version.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}

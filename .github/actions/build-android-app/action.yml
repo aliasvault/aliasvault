@@ -9,10 +9,10 @@ inputs:
     description: "Whether to sign the Android build"
     required: false
     default: "false"
-  upload_to_release:
-    description: "Whether to upload the APK to GitHub Release"
+  release_tag:
+    description: "If set, upload the resulting APK to the existing GitHub Release at this tag (draft or published). Requires signed=true. Fails if no such release exists."
     required: false
-    default: "false"
+    default: ""
 
 runs:
   using: "composite"
@@ -186,11 +186,21 @@ runs:
         retention-days: 14
 
     - name: Upload APK to release
-      if: ${{ inputs.upload_to_release == 'true' }}
-      uses: softprops/action-gh-release@v3
-      with:
-        files: apps/mobile-app/android/app/build/outputs/apk/release/aliasvault-${{ env.VERSION }}-android.apk
+      if: ${{ inputs.release_tag != '' && inputs.signed == 'true' }}
+      shell: bash
       env:
-        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ env.GITHUB_TOKEN }}
+        RELEASE_TAG: ${{ inputs.release_tag }}
+      run: |
+        if ! gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+          echo "❌ No release exists at tag '$RELEASE_TAG'."
+          echo "Create a draft release first, e.g.:"
+          echo "  gh release create $RELEASE_TAG --draft --title $RELEASE_TAG --notes ''"
+          exit 1
+        fi
+
+        APK="apps/mobile-app/android/app/build/outputs/apk/release/aliasvault-${VERSION}-android.apk"
+        echo "Uploading $APK to release $RELEASE_TAG..."
+        gh release upload "$RELEASE_TAG" "$APK" --clobber --repo "$GITHUB_REPOSITORY"
 
 
