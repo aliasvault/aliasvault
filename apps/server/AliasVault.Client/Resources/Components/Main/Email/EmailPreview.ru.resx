@@ -70,14 +70,6 @@
     <value>Дата:</value>
     <comment>Email date field label</comment>
   </data>
-  <data name="ItemLabel" xml:space="preserve">
-    <value>Запись:</value>
-    <comment>Email item field label</comment>
-  </data>
-  <data name="NoneValue" xml:space="preserve">
-    <value>Ничего</value>
-    <comment>No item assigned value</comment>
-  </data>
   <data name="AttachmentsLabel" xml:space="preserve">
     <value>Вложения:</value>
     <comment>Email attachments section header</comment>
