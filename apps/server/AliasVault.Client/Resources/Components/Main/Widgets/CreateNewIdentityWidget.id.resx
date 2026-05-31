@@ -71,11 +71,11 @@
     <comment>Title of the create new alias popup</comment>
   </data>
   <data name="NameLabel" xml:space="preserve">
-    <value>Name</value>
+    <value>Nama</value>
     <comment>Label for name field</comment>
   </data>
   <data name="WebsiteUrlLabel" xml:space="preserve">
-    <value>Website URL</value>
+    <value>URL situs web</value>
     <comment>Label for website URL field</comment>
   </data>
   <data name="NamePlaceholderLogin" xml:space="preserve">
@@ -95,7 +95,7 @@
     <comment>Placeholder text for note name field</comment>
   </data>
   <data name="CreateButton" xml:space="preserve">
-    <value>Create</value>
+    <value>Buat</value>
     <comment>Create button text</comment>
   </data>
   <data name="ContinueButton" xml:space="preserve">
@@ -115,7 +115,7 @@
     <comment>Title for creating a new note item</comment>
   </data>
   <data name="TypeLogin" xml:space="preserve">
-    <value>Login</value>
+    <value>Masuk</value>
     <comment>Login item type label</comment>
   </data>
   <data name="TypeAlias" xml:space="preserve">
@@ -131,7 +131,7 @@
     <comment>Note item type label</comment>
   </data>
   <data name="CreatingNewAliasMessage" xml:space="preserve">
-    <value>Creating new alias...</value>
+    <value>Buat vault baru...</value>
     <comment>Loading message while creating alias</comment>
   </data>
   <data name="CreateItemErrorMessage" xml:space="preserve">
