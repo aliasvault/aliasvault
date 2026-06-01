@@ -18,7 +18,7 @@
     ],
     "license": "AGPL-3.0",
     "dependencies": {
-        "vitest": "^3.0.8"
+        "vitest": "^4.1.8"
     },
     "devDependencies": {
         "@types/chrome": "^0.0.280",
@@ -29,7 +29,7 @@
         "@types/sql.js": "^1.4.9",
         "@typescript-eslint/eslint-plugin": "^8.21.0",
         "@typescript-eslint/parser": "^8.21.0",
-        "@vitest/coverage-v8": "^3.0.8",
+        "@vitest/coverage-v8": "^4.1.8",
         "eslint": "^9.19.0",
         "eslint-plugin-import": "^2.31.0",
         "eslint-plugin-jsdoc": "^50.6.3",
