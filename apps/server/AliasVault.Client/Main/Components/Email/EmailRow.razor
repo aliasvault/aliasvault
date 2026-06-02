@@ -2,7 +2,7 @@
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizerFactory LocalizerFactory
 
-<li class="@($"hover:bg-gray-50 dark:hover:bg-gray-600 transition duration-150 ease-in-out cursor-pointer {(IsSelected ? "bg-primary-50 dark:bg-primary-900/30 border-l-4 border-primary-500" : "")}")">
+<li class="@($"transition duration-150 ease-in-out cursor-pointer {(IsSelected ? "bg-primary-50 dark:bg-primary-900/30 border-l-4 border-primary-500 hover:bg-primary-200 dark:hover:bg-primary-900/50" : "hover:bg-gray-100 dark:hover:bg-gray-600")}")">
     <div @onclick="@(() => OnEmailClick.InvokeAsync(Email.Id))" class="p-4 flex justify-start items-start">
         <div class="mr-4 flex-shrink-0">
             <SenderInitials SenderName="@Email.FromName" SenderEmail="@Email.FromEmail" />
@@ -68,4 +68,25 @@
     /// </summary>
     [Parameter]
     public bool IsNewEmail { get; set; }
+
+    private MailListViewModel? _renderedEmail;
+    private bool _renderedIsSelected;
+    private bool _renderedIsNewEmail;
+
+    /// <summary>
+    /// Only re-render when this row's own inputs change.
+    /// </summary>
+    /// <returns>True when a re-render is required.</returns>
+    protected override bool ShouldRender()
+    {
+        if (ReferenceEquals(_renderedEmail, Email) && _renderedIsSelected == IsSelected && _renderedIsNewEmail == IsNewEmail)
+        {
+            return false;
+        }
+
+        _renderedEmail = Email;
+        _renderedIsSelected = IsSelected;
+        _renderedIsNewEmail = IsNewEmail;
+        return true;
+    }
 }

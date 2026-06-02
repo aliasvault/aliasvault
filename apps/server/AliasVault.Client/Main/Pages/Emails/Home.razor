@@ -13,6 +13,7 @@
 @inject HttpClient HttpClient
 @inject ILogger<Home> Logger
 @inject MinDurationLoadingService LoadingService
+@inject ItemService ItemService
 @using Microsoft.Extensions.Localization
 @implements IAsyncDisposable
 
@@ -303,21 +304,20 @@ else
                 var mailbox = await response.Content.ReadFromJsonAsync<MailboxBulkResponse>();
                 if (mailbox?.Mails != null)
                 {
-                    var context = await DbService.GetDbContextAsync();
-                    var credentialLookup = await context.Items
-                        .Include(x => x.FieldValues)
-                        .Where(x => !x.IsDeleted && x.DeletedAt == null)
-                        .Where(x => x.FieldValues.Any(fv => fv.FieldKey == AliasClientDb.Models.FieldKey.LoginEmail && fv.Value != null && !fv.IsDeleted))
-                        .Select(x => new {
-                            x.Id,
-                            x.Name,
-                            Email = x.FieldValues.FirstOrDefault(fv => fv.FieldKey == AliasClientDb.Models.FieldKey.LoginEmail && !fv.IsDeleted)!.Value!.ToLower()
-                        })
-                        .GroupBy(x => x.Email)
-                        .ToDictionaryAsync(
-                            g => g.Key,
-                            g => new { Id = g.First().Id, ServiceName = g.First().Name ?? "Unknown" }
-                        );
+                    var credentialLookup = new Dictionary<string, (Guid Id, string ServiceName)>();
+                    foreach (var item in await ItemService.GetListAsync() ?? [])
+                    {
+                        if (string.IsNullOrEmpty(item.Email))
+                        {
+                            continue;
+                        }
+
+                        var emailKey = item.Email.ToLower();
+                        if (!credentialLookup.ContainsKey(emailKey))
+                        {
+                            credentialLookup[emailKey] = (item.Id, item.Service ?? "Unknown");
+                        }
+                    }
 
                     List<MailboxEmailApiModel> decryptedEmailList;
                     try
@@ -336,7 +336,7 @@ else
                         var toEmail = email.ToLocal + "@" + email.ToDomain;
                         var credentialInfo = credentialLookup.TryGetValue(toEmail.ToLower(), out var info)
                             ? info
-                            : new { Id = Guid.Empty, ServiceName = "Unknown" };
+                            : (Id: Guid.Empty, ServiceName: "Unknown");
 
                         return new MailListViewModel
                         {
@@ -633,7 +633,11 @@ else
         // Remove new email mark when email is clicked
         NewEmailIds.Remove(emailId);
 
+        // Highlight the clicked row immediately.
         SelectedEmailId = emailId;
+        StateHasChanged();
+        await Task.Delay(1);
+
         await LoadSelectedEmailForPreview(emailId);
     }
 
