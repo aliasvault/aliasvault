@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using SkiaSharp;
@@ -26,6 +26,57 @@ public static class FaviconExtractor
     private static readonly int[] _resizeWidths = [96, 64, 48, 32];
     private static readonly int[] _jpegFallbackQualities = [80, 65, 50];
     private static readonly string[] _allowedSchemes = ["http", "https"];
+
+    // Formats every AliasVault client (web, browser extension, mobile) can render safely.
+    // Anything else is re-encoded to one of these or rejected.
+    private static readonly ImageFormatSignature[] _clientSafeFormats =
+    [
+        ImageFormatSignature.Ico,
+        ImageFormatSignature.Png,
+        ImageFormatSignature.Jpeg,
+        ImageFormatSignature.Gif,
+        ImageFormatSignature.Webp,
+        ImageFormatSignature.Svg,
+    ];
+
+    /// <summary>
+    /// Image formats that can be identified from a file's leading magic bytes.
+    /// </summary>
+    internal enum ImageFormatSignature
+    {
+        /// <summary>Format could not be identified.</summary>
+        Unknown,
+
+        /// <summary>Windows icon (ICO).</summary>
+        Ico,
+
+        /// <summary>PNG.</summary>
+        Png,
+
+        /// <summary>JPEG.</summary>
+        Jpeg,
+
+        /// <summary>GIF.</summary>
+        Gif,
+
+        /// <summary>WebP.</summary>
+        Webp,
+
+        /// <summary>BMP (Windows bitmap).</summary>
+        Bmp,
+
+        /// <summary>TIFF.</summary>
+        Tiff,
+
+        /// <summary>HEIF/HEIC.</summary>
+        Heif,
+
+        /// <summary>AVIF.</summary>
+        Avif,
+
+        /// <summary>SVG (XML vector format).</summary>
+        Svg,
+    }
 
     /// <summary>
     /// Extracts the favicon from a URL with enhanced browser like behavior.
@@ -81,6 +132,77 @@ public static class FaviconExtractor
         }
 
         return await Task.WhenAll(tasks);
+    }
+
+    /// <summary>
+    /// Detects an image's format from its leading magic bytes.
+    /// </summary>
+    /// <param name="bytes">The raw image bytes.</param>
+    /// <returns>The detected <see cref="ImageFormatSignature"/>, or <see cref="ImageFormatSignature.Unknown"/> if unrecognized.</returns>
+    internal static ImageFormatSignature DetectImageFormat(byte[] bytes)
+    {
+        // ICO: 00 00 01 00
+        if (bytes.Length >= 4 && bytes[0] == 0x00 && bytes[1] == 0x00 && bytes[2] == 0x01 && bytes[3] == 0x00)
+        {
+            return ImageFormatSignature.Ico;
+        }
+
+        // PNG: 89 50 4E 47
+        if (bytes.Length >= 4 && bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47)
+        {
+            return ImageFormatSignature.Png;
+        }
+
+        // JPEG: FF D8 FF
+        if (bytes.Length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF)
+        {
+            return ImageFormatSignature.Jpeg;
+        }
+
+        // GIF: "GIF"
+        if (bytes.Length >= 3 && bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46)
+        {
+            return ImageFormatSignature.Gif;
+        }
+
+        // BMP: "BM"
+        if (bytes.Length >= 2 && bytes[0] == 0x42 && bytes[1] == 0x4D)
+        {
+            return ImageFormatSignature.Bmp;
+        }
+
+        // TIFF: "II*\0" (little-endian) or "MM\0*" (big-endian)
+        if (bytes.Length >= 4 &&
+            ((bytes[0] == 0x49 && bytes[1] == 0x49 && bytes[2] == 0x2A && bytes[3] == 0x00) ||
+             (bytes[0] == 0x4D && bytes[1] == 0x4D && bytes[2] == 0x00 && bytes[3] == 0x2A)))
+        {
+            return ImageFormatSignature.Tiff;
+        }
+
+        // WEBP: "RIFF" .... "WEBP"
+        if (bytes.Length >= 12 &&
+            bytes[0] == 0x52 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x46 &&
+            bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50)
+        {
+            return ImageFormatSignature.Webp;
+        }
+
+        // ISO-BMFF container (HEIC/HEIF/AVIF): bytes 4-7 == "ftyp", brand at bytes 8-11.
+        if (bytes.Length >= 12 && bytes[4] == 0x66 && bytes[5] == 0x74 && bytes[6] == 0x79 && bytes[7] == 0x70)
+        {
+            var brand = Encoding.ASCII.GetString(bytes, 8, 4);
+            return brand.StartsWith("avif", StringComparison.Ordinal) || brand.StartsWith("avis", StringComparison.Ordinal)
+                ? ImageFormatSignature.Avif
+                : ImageFormatSignature.Heif;
+        }
+
+        // SVG: text-based vector format.
+        if (LooksLikeSvg(bytes))
+        {
+            return ImageFormatSignature.Svg;
+        }
+
+        return ImageFormatSignature.Unknown;
     }
 
     private static async Task<byte[]?> SafeGetFaviconAsync(string url)
@@ -223,13 +345,22 @@ public static class FaviconExtractor
                 return null;
             }
 
-            // If image is too large, attempt to resize/re-encode it down under the cap.
-            if (imageBytes.Length > MaxSizeBytes)
+            // Don't rely on the HTTP Content-Type header: sniff the real format from the file's
+            // magic bytes. Servers frequently mislabel favicons (e.g. a PNG served as image/x-icon),
+            // and some serve formats clients can't safely render.
+            var format = DetectImageFormat(imageBytes);
+
+            if (_clientSafeFormats.Contains(format))
             {
-                return ResizeImage(imageBytes, contentType);
+                // Recognized, client-safe format: keep as-is, only shrinking if it exceeds the cap.
+                return imageBytes.Length > MaxSizeBytes ? ResizeImage(imageBytes, format) : imageBytes;
             }
 
-            return imageBytes;
+            // Recognized-but-unsafe (HEIC/HEIF/AVIF/BMP/TIFF) or unknown: normalize to PNG/JPEG via
+            // SkiaSharp so clients only ever receive a safe format. If it can't be decoded server-side
+            // (e.g. no HEIC codec available) or isn't a real image, reject it rather than store
+            // something a client might fail to render.
+            return ReencodeWithinCap(imageBytes);
         }
         catch
         {
@@ -411,22 +542,50 @@ public static class FaviconExtractor
     }
 
     /// <summary>
-    /// Iteratively shrinks the image until it fits in the size cap. Tries
-    /// progressively smaller widths in PNG (lossless after downscale handles most cases), then
-    /// falls back to JPEG at decreasing quality if PNG at the smallest width is still too large.
+    /// Checks whether the bytes look like an SVG by inspecting a short text prefix for an XML or
+    /// SVG opening tag.
+    /// </summary>
+    /// <param name="bytes">The raw image bytes.</param>
+    /// <returns>True if the content appears to be SVG/XML.</returns>
+    private static bool LooksLikeSvg(byte[] bytes)
+    {
+        var prefixLength = Math.Min(bytes.Length, 256);
+        if (prefixLength == 0)
+        {
+            return false;
+        }
+
+        var prefix = Encoding.UTF8.GetString(bytes, 0, prefixLength).TrimStart('\uFEFF', ' ', '\t', '\r', '\n').ToLowerInvariant();
+        return prefix.Contains("<svg") || prefix.StartsWith("<?xml", StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Resizes a recognized, client-safe image down under the size cap. SVG is a vector/text format
+    /// that can't be usefully raster-resized here, so oversized SVGs are rejected.
     /// </summary>
     /// <param name="imageBytes">The image bytes to resize.</param>
-    /// <param name="contentType">The content type of the image.</param>
+    /// <param name="format">The sniffed image format.</param>
     /// <returns>The resized image bytes, or null if it could not be brought under the size cap.</returns>
-    private static byte[]? ResizeImage(byte[] imageBytes, string contentType)
+    private static byte[]? ResizeImage(byte[] imageBytes, ImageFormatSignature format)
     {
-        // SVG is a text format; we can't usefully raster-resize it here. Caller already rejects
-        // anything over the cap, so just bail and let it return null.
-        if (contentType == "image/svg+xml")
+        if (format == ImageFormatSignature.Svg)
         {
             return null;
         }
 
+        return ReencodeWithinCap(imageBytes);
+    }
+
+    /// <summary>
+    /// Decodes arbitrary image bytes and re-encodes them to a client-safe raster format (PNG, with
+    /// a JPEG fallback) that fits under the size cap. Used both to shrink oversized images and to
+    /// normalize formats clients can't render. Returns null if the bytes can't be decoded
+    /// server-side (e.g. no HEIC codec) or can't be brought under the cap.
+    /// </summary>
+    /// <param name="imageBytes">The raw image bytes to decode and re-encode.</param>
+    /// <returns>The re-encoded image bytes, or null on failure.</returns>
+    private static byte[]? ReencodeWithinCap(byte[] imageBytes)
+    {
         try
         {
             using var original = SKBitmap.Decode(imageBytes);
