@@ -2,6 +2,7 @@
 @using AliasVault.Admin.Main.Pages.Users.View.Components
 @using AliasVault.Admin.Main.Models
 @using AliasVault.Admin.Services
+@using AliasVault.Auth
 @using Microsoft.EntityFrameworkCore
 @inherits MainBase
 @inject StatisticsService StatisticsService
@@ -642,6 +643,9 @@ Do you want to proceed with the restoration?")) {
     /// </summary>
     private async Task ChangeUsername()
     {
+        // Normalize to lowercase and trim to match how usernames are stored at registration.
+        NewUsername = UsernameHelper.NormalizeUsername(NewUsername);
+
         if (string.IsNullOrWhiteSpace(NewUsername))
         {
             UsernameValidationError = "Username cannot be empty.";

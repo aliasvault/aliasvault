@@ -145,7 +145,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         // If they do not match reject the request. This is important because it's
         // possible that a user has logged in with a different username than the one
         // that is being used to update the vault (e.g. if working with multiple tabs).
-        if (user.UserName != model.Username)
+        if (!string.Equals(user.UserName, model.Username, StringComparison.OrdinalIgnoreCase))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USERNAME_MISMATCH, 400));
         }
@@ -233,7 +233,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         // If they do not match reject the request. This is important because it's
         // possible that a user has logged in with a different username than the one
         // that is being used to update the vault (e.g. if working with multiple tabs).
-        if (model.Username != user.UserName)
+        if (!string.Equals(user.UserName, model.Username, StringComparison.OrdinalIgnoreCase))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USERNAME_MISMATCH, 400));
         }

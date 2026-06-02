@@ -458,7 +458,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         var user = new AliasVaultUser
         {
-            UserName = model.Username,
+            UserName = UsernameHelper.NormalizeUsername(model.Username),
             SrpIdentity = srpIdentity,
             CreatedAt = timeProvider.UtcNow,
             UpdatedAt = timeProvider.UtcNow,
@@ -551,7 +551,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.USERNAME_REQUIRED, 400));
         }
 
-        var normalizedUsername = NormalizeUsername(model.Username);
+        var normalizedUsername = UsernameHelper.NormalizeUsername(model.Username);
         var existingUser = await userManager.FindByNameAsync(normalizedUsername);
 
         if (existingUser != null)
@@ -586,7 +586,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Verify the username matches the current user.
-        if (user.UserName != model.Username)
+        if (!string.Equals(user.UserName, model.Username, StringComparison.OrdinalIgnoreCase))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USERNAME_MISMATCH, 400));
         }
@@ -826,7 +826,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Verify the username matches the current user.
-        if (user.UserName != model.Username)
+        if (!string.Equals(user.UserName, model.Username, StringComparison.OrdinalIgnoreCase))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USERNAME_MISMATCH, 400));
         }
@@ -848,16 +848,6 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         await context.SaveChangesAsync();
 
         return Ok(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_SUCCESSFULLY_DELETED, 200));
-    }
-
-    /// <summary>
-    /// Normalizes a username by trimming and lowercasing it.
-    /// </summary>
-    /// <param name="username">The username to normalize.</param>
-    /// <returns>The normalized username.</returns>
-    private static string NormalizeUsername(string username)
-    {
-        return username.ToLowerInvariant().Trim();
     }
 
     /// <summary>
