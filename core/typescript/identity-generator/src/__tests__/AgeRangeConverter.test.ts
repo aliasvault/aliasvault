@@ -18,21 +18,14 @@ describe('AgeRangeConverter', () => {
 
   // Mock Date to ensure consistent test results
   const MOCK_CURRENT_YEAR = 2025;
-  let originalDate: DateConstructor;
 
   beforeEach(() => {
-    originalDate = global.Date;
-    const mockDate = new Date(`${MOCK_CURRENT_YEAR}-01-01T00:00:00.000Z`);
-    vi.spyOn(global, 'Date').mockImplementation((...args) => {
-      if (args.length === 0) {
-        return mockDate;
-      }
-      return new originalDate(...args as []);
-    }) as unknown as DateConstructor;
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(`${MOCK_CURRENT_YEAR}-01-01T00:00:00.000Z`));
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   describe('convertAgeRangeToBirthdateOptions', () => {
