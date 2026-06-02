@@ -204,6 +204,11 @@ dependencies {
     // Add vector drawable support for SVG
     implementation("com.caverock:androidsvg-aar:1.4")
 
+    // Required by Fresco (React Native's image pipeline) to read EXIF orientation
+    // when decoding raster logos. When not present, decoding certain images can throw NoClassDefFoundError.
+    // Do NOT remove: it has no direct code reference here, so it can look unused.
+    implementation("androidx.exifinterface:exifinterface:1.4.2")
+
     // Add Argon2 library for password key derivation
     implementation("com.lambdapioneer.argon2kt:argon2kt:1.6.0")
 
