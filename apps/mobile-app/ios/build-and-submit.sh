@@ -188,10 +188,41 @@ echo "✅ No duplicate found. Proceeding with deliver..."
 REPO_ROOT="$SCRIPT_DIR/../../.."
 METADATA_PATH="$REPO_ROOT/fastlane/metadata/ios"
 
+# ------------------------------------------
+# Prefill the App Store "What's New in This Version" release notes.
+#
+# We keep release notes per build at <locale>/changelogs/<build>.txt (mirroring
+# the Android/supply layout), but deliver expects them at <locale>/release_notes.txt.
+# So we materialize a temporary metadata dir containing only the release notes for
+# this build, and point deliver at it. Everything else (name, description,
+# screenshots) stays managed in App Store Connect and is left untouched.
+# ------------------------------------------
+TMP_METADATA_DIR=$(mktemp -d)
+trap 'rm -rf "$TMP_METADATA_DIR"' EXIT
+
+RELEASE_NOTES_FOUND=false
+for LOCALE_DIR in "$METADATA_PATH"/*/; do
+  LOCALE=$(basename "$LOCALE_DIR")
+  CHANGELOG_FILE="$LOCALE_DIR/changelogs/${BUILD}.txt"
+  if [ -f "$CHANGELOG_FILE" ]; then
+    mkdir -p "$TMP_METADATA_DIR/$LOCALE"
+    cp "$CHANGELOG_FILE" "$TMP_METADATA_DIR/$LOCALE/release_notes.txt"
+    RELEASE_NOTES_FOUND=true
+  fi
+done
+
+if [ "$RELEASE_NOTES_FOUND" = true ]; then
+  echo "📝 Prefilling 'What's New in This Version' from changelogs/${BUILD}.txt"
+  DELIVER_METADATA_ARGS=(--metadata_path "$TMP_METADATA_DIR" --app_version "$VERSION" --force)
+else
+  echo "⚠️  No changelog found for build ${BUILD}; uploading without release notes."
+  echo "    Add one at: $METADATA_PATH/en-US/changelogs/${BUILD}.txt"
+  DELIVER_METADATA_ARGS=(--skip_metadata)
+fi
+
 fastlane deliver \
   --ipa "$IPA_PATH" \
   --skip_screenshots \
-  --skip_metadata \
-  --metadata_path "$METADATA_PATH" \
+  "${DELIVER_METADATA_ARGS[@]}" \
   --api_key_path "$API_KEY_PATH" \
   --run_precheck_before_submit=false

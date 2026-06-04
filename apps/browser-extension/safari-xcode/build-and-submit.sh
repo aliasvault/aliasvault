@@ -194,10 +194,42 @@ echo "✅ Proceeding with upload..."
 REPO_ROOT="$SCRIPT_DIR/../../.."
 METADATA_PATH="$REPO_ROOT/fastlane/metadata/browser-extension"
 
+# ------------------------------------------
+# Prefill the App Store "What's New in This Version" release notes.
+#
+# We keep release notes per version at <locale>/changelogs/<version>.txt, but
+# deliver expects them at <locale>/release_notes.txt. So we materialize a
+# temporary metadata dir containing only the release notes for this version, and
+# point deliver at it. Everything else (name, description, screenshots) stays
+# managed in App Store Connect and is left untouched.
+# ------------------------------------------
+TMP_METADATA_DIR=$(mktemp -d)
+
+RELEASE_NOTES_FOUND=false
+for LOCALE_DIR in "$METADATA_PATH"/*/; do
+  LOCALE=$(basename "$LOCALE_DIR")
+  CHANGELOG_FILE="$LOCALE_DIR/changelogs/${VERSION}.txt"
+  if [ -f "$CHANGELOG_FILE" ]; then
+    mkdir -p "$TMP_METADATA_DIR/$LOCALE"
+    cp "$CHANGELOG_FILE" "$TMP_METADATA_DIR/$LOCALE/release_notes.txt"
+    RELEASE_NOTES_FOUND=true
+  fi
+done
+
+if [ "$RELEASE_NOTES_FOUND" = true ]; then
+  echo "📝 Prefilling 'What's New in This Version' from changelogs/${VERSION}.txt"
+  DELIVER_METADATA_ARGS=(--metadata_path "$TMP_METADATA_DIR" --app_version "$VERSION" --force)
+else
+  echo "⚠️  No changelog found for version ${VERSION}; uploading without release notes."
+  echo "    Add one at: $METADATA_PATH/en-US/changelogs/${VERSION}.txt"
+  DELIVER_METADATA_ARGS=(--skip_metadata)
+fi
+
 fastlane deliver \
   --pkg "$PKG_PATH" \
   --skip_screenshots \
-  --skip_metadata \
-  --metadata_path "$METADATA_PATH" \
+  "${DELIVER_METADATA_ARGS[@]}" \
   --api_key_path "$API_KEY_PATH" \
   --run_precheck_before_submit false
+
+rm -rf "$TMP_METADATA_DIR"
