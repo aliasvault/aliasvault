@@ -7,7 +7,7 @@
 
 namespace AliasVault.E2ETests.Tests.Client.Shard4;
 
-using AliasVault.Auth;
+using AliasVault.Auth.IpAddress;
 using AliasVault.Shared.Core;
 using AliasVault.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
