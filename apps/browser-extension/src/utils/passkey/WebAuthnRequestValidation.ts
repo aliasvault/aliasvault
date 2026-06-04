@@ -3,7 +3,7 @@ import type { WebAuthnCreateEventDetail, WebAuthnGetEventDetail } from '@/utils/
 type WebAuthnRequestType = 'create' | 'get';
 type WebAuthnBridgeDetail = WebAuthnCreateEventDetail | WebAuthnGetEventDetail;
 
-type WebAuthnBridgeRequest = {
+export type WebAuthnBridgeRequest = {
   origin?: unknown;
   publicKey?: unknown;
 };
@@ -24,6 +24,9 @@ function normalizeWebAuthnHost(value: string | undefined): string | null {
   return normalized;
 }
 
+/**
+ * Type guard that narrows an unknown value to a non-null object.
+ */
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
