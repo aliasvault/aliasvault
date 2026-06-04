@@ -58,6 +58,11 @@ public enum AuthFailureReason
     RegistrationRateLimitExceeded = 8,
 
     /// <summary>
+    /// Indicates that the attempt was blocked because the originating IP address is on the blocklist.
+    /// </summary>
+    IpBlocked = 9,
+
+    /// <summary>
     /// Indicates that the failure reason was unknown.
     /// </summary>
     Unknown = 99,

@@ -37,6 +37,11 @@ public class AliasVaultUser : IdentityUser
     public bool Blocked { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the user is marked as shadow-blocked.
+    /// </summary>
+    public bool ShadowBlocked { get; set; }
+
+    /// <summary>
     /// Gets or sets updated timestamp.
     /// </summary>
     public DateTime UpdatedAt { get; set; }

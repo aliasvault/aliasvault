@@ -143,6 +143,11 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<MobileLoginRequest> MobileLoginRequests { get; set; }
 
     /// <summary>
+    /// Gets or sets the BlockedIpRanges DbSet.
+    /// </summary>
+    public DbSet<BlockedIpRange> BlockedIpRanges { get; set; }
+
+    /// <summary>
     /// Sets up the connection string if it is not already configured.
     /// </summary>
     /// <param name="optionsBuilder">DbContextOptionsBuilder instance.</param>
