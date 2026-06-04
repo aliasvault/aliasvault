@@ -9,7 +9,7 @@ namespace AliasVault.Admin.Services;
 
 using AliasServerDb;
 using AliasVault.Admin.Main.Models;
-using AliasVault.Auth;
+using AliasVault.Auth.IpAddress;
 using AliasVault.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 

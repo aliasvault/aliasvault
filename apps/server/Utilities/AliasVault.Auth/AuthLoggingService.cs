@@ -8,6 +8,7 @@
 namespace AliasVault.Auth;
 
 using AliasServerDb;
+using AliasVault.Auth.IpAddress;
 using AliasVault.Shared.Models.Configuration;
 using AliasVault.Shared.Models.Enums;
 using Microsoft.AspNetCore.Http;
@@ -35,7 +36,7 @@ public class AuthLoggingService(IServiceProvider serviceProvider, IHttpContextAc
         var clientHeader = httpContext?.Request.Headers["X-AliasVault-Client"].FirstOrDefault();
 
         var config = scope.ServiceProvider.GetRequiredService<SharedConfig>();
-        var ipAddress = IpAddressUtility.GetIpFromContext(httpContext, config.IpLoggingEnabled);
+        var ipAddress = IpAddressUtility.GetAnonymizedIpFromContext(httpContext, config.IpLoggingEnabled);
 
         var authAttempt = new AuthLog
         {
@@ -81,7 +82,7 @@ public class AuthLoggingService(IServiceProvider serviceProvider, IHttpContextAc
         var clientHeader = httpContext?.Request.Headers["X-AliasVault-Client"].FirstOrDefault();
 
         var config = httpContext?.RequestServices.GetService<SharedConfig>();
-        var ipAddress = IpAddressUtility.GetIpFromContext(httpContext, config?.IpLoggingEnabled == true);
+        var ipAddress = IpAddressUtility.GetAnonymizedIpFromContext(httpContext, config?.IpLoggingEnabled == true);
 
         var authAttempt = new AuthLog
         {
