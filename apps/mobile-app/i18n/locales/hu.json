@@ -449,17 +449,17 @@
     "switchBackToOriginalApp": "Váltson át az eredeti app-ra a folytatáshoz.",
     "autofillOpenApp": {
       "title": "Kitöltési kérelem",
-      "description": "Choose an action for the app or website that requested autofill.",
-      "appOrUrlLabel": "App or URL",
-      "findExistingTitle": "Link to existing credential",
-      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
-      "createNewTitle": "Create new credential",
-      "createNewDescription": "Add a new credential to your vault for this app or URL."
+      "description": "A kitöltést kedvezményező app vagy weboldal részére válassza ki a megfelelő műveletet.",
+      "appOrUrlLabel": "App vagy URL",
+      "findExistingTitle": "Meglevő bejegyzéshez csatolás",
+      "findExistingDescription": "Válasszon ki egy már meglevő bejegyzést, majd csatolja hozzá a fenti címet.",
+      "createNewTitle": "Új bejegyzés létrehozása",
+      "createNewDescription": "Ehhez az app-hoz vagy címhez rendeljen új bejegyzést."
     },
     "autofillLinkExisting": {
-      "title": "Link to existing credential",
-      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
-      "confirmTitle": "Link to credential?",
+      "title": "Meglevő bejegyzéshez csatolás",
+      "intro": "Válasszon ki egy már meglevő bejegyzést, majd csatolja a(z) \"{{target}}\" címhez.",
+      "confirmTitle": "Bejegyzéshez csatolás?",
       "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
     },
     "autofillUrlAdded": {
