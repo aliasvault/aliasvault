@@ -153,11 +153,8 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
             return (null, Unauthorized("Not authenticated."));
         }
 
-        // Shadow-blocked: a shadow-blocked account or blocked IP behaves as if the email does not exist.
-        if (user.ShadowBlocked || await ipBlockListService.IsBlockedForEmailsAsync(IpAddressUtility.GetRawIpAddressFromContext(HttpContext)))
-        {
-            return (null, NotFound());
-        }
+        // Shadow-block: when active, emails received after the block took effect behave as if they do not exist.
+        var shadowCutoff = await ipBlockListService.GetEmailShadowBlockCutoffAsync(user, IpAddressUtility.GetRawIpAddressFromContext(HttpContext));
 
         // Retrieve email from database.
         var email = await context.Emails
@@ -167,6 +164,12 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
         if (email is null)
         {
             return (null, NotFound("Email not found."));
+        }
+
+        // Hide emails received after a shadow-block took effect.
+        if (shadowCutoff is not null && email.DateSystem > shadowCutoff.Value)
+        {
+            return (null, NotFound());
         }
 
         // See if this user has a valid claim to the email address.
