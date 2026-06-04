@@ -148,4 +148,9 @@ public enum ApiErrorCode
     /// Registration rate limit exceeded for this IP address.
     /// </summary>
     REGISTRATION_RATE_LIMIT_EXCEEDED,
+
+    /// <summary>
+    /// Generic user account registration failure.
+    /// </summary>
+    REGISTRATION_FAILED,
 }
