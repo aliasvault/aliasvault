@@ -16,6 +16,7 @@ using AliasVault.Api;
 using AliasVault.Api.Jwt;
 using AliasVault.Api.Services;
 using AliasVault.Auth;
+using AliasVault.Auth.IpAddress;
 using AliasVault.Cryptography.Server;
 using AliasVault.Logging;
 using AliasVault.Shared.Models.Configuration;
@@ -85,6 +86,7 @@ builder.Services.AddScoped<TimeValidationJwtBearerEvents>();
 builder.Services.AddScoped<AuthLoggingService>();
 builder.Services.AddScoped<ServerSettingsService>();
 builder.Services.AddScoped<RegistrationRateLimitService>();
+builder.Services.AddScoped<IpBlockListService>();
 builder.Services.AddSingleton<FaviconRateLimitService>();
 builder.Services.AddHttpContextAccessor();
 

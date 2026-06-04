@@ -20,6 +20,7 @@ using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.PasswordChange;
 using AliasVault.Shared.Models.WebApi.Vault;
 using AliasVault.Shared.Providers.Time;
+using AliasVault.Shared.Server.Services;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -36,8 +37,9 @@ using Microsoft.Extensions.Caching.Memory;
 /// <param name="authLoggingService">AuthLoggingService instance.</param>
 /// <param name="cache">IMemoryCache instance.</param>
 /// <param name="config">Config instance.</param>
+/// <param name="settingsService">ServerSettingsService instance.</param>
 [ApiVersion("1")]
-public class VaultController(ILogger<VaultController> logger, IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, ITimeProvider timeProvider, AuthLoggingService authLoggingService, IMemoryCache cache, Config config) : AuthenticatedRequestController(userManager)
+public class VaultController(ILogger<VaultController> logger, IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, ITimeProvider timeProvider, AuthLoggingService authLoggingService, IMemoryCache cache, Config config, ServerSettingsService settingsService) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Default retention policy for vaults.
@@ -373,6 +375,13 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         // Get list of supported private domains from config
         var supportedPrivateDomains = config.PrivateEmailDomains;
 
+        // Determine the new-account alias creation limit (abuse mitigation). When enabled, accounts younger than
+        // NewAccountAliasLimitDays may not have more than MaxAliasesForNewAccounts active aliases. Both 0 = disabled.
+        var settings = await settingsService.GetAllSettingsAsync();
+        var aliasLimitActive = settings.NewAccountAliasLimitDays > 0 && settings.MaxAliasesForNewAccounts > 0 && user.CreatedAt > timeProvider.UtcNow.AddDays(-settings.NewAccountAliasLimitDays);
+        var activeAliasCount = userOwnedEmailClaims.Count(x => !x.Disabled);
+        var aliasLimitLogged = false;
+
         // Register new email addresses.
         foreach (var email in newEmailAddresses)
         {
@@ -421,6 +430,19 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                 continue;
             }
 
+            // Enforce the new-account alias creation limit: once the account is at its cap, silently skip creating
+            // additional aliases (logged once so the limit being hit is visible for audits).
+            if (aliasLimitActive && activeAliasCount >= settings.MaxAliasesForNewAccounts)
+            {
+                if (!aliasLimitLogged)
+                {
+                    logger.LogWarning("{User} reached the new-account alias limit of {Limit}; skipping creation of additional aliases.", user.UserName, settings.MaxAliasesForNewAccounts);
+                    aliasLimitLogged = true;
+                }
+
+                continue;
+            }
+
             // If we get to this point, the email address is new and not claimed by another user, so we can add it.
             try
             {
@@ -433,6 +455,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                         CreatedAt = timeProvider.UtcNow,
                         UpdatedAt = timeProvider.UtcNow,
                     });
+                activeAliasCount++;
             }
             catch (DbUpdateException ex)
             {

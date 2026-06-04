@@ -9,6 +9,7 @@ namespace AliasVault.Api.Controllers.Email;
 
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
+using AliasVault.Auth.IpAddress;
 using AliasVault.Shared.Models.Spamok;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
@@ -21,8 +22,9 @@ using Microsoft.EntityFrameworkCore;
 /// <param name="logger">ILogger instance.</param>
 /// <param name="dbContextFactory">DbContext instance.</param>
 /// <param name="userManager">UserManager instance.</param>
+/// <param name="ipBlockListService">IpBlockListService used to shadow-block email retrieval from blocked IPs.</param>
 [ApiVersion("1")]
-public class EmailController(ILogger<VaultController> logger, IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager) : AuthenticatedRequestController(userManager)
+public class EmailController(ILogger<VaultController> logger, IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IpBlockListService ipBlockListService) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Get the email with the specified ID.
@@ -149,6 +151,12 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
         if (user is null)
         {
             return (null, Unauthorized("Not authenticated."));
+        }
+
+        // Shadow-blocked: a shadow-blocked account or blocked IP behaves as if the email does not exist.
+        if (user.ShadowBlocked || await ipBlockListService.IsBlockedForEmailsAsync(IpAddressUtility.GetRawIpAddressFromContext(HttpContext)))
+        {
+            return (null, NotFound());
         }
 
         // Retrieve email from database.
