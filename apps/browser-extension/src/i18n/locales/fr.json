@@ -102,7 +102,7 @@
       "serverVersionNotSupported": "Le serveur d'AliasVault doit être mis à jour vers une version plus récente afin d'utiliser cette extension de navigateur. Veuillez contacter le support si vous avez besoin d'aide.",
       "serverVersionTooOld": "Le serveur AliasVault doit être mis à jour vers une version plus récente pour pouvoir utiliser cette fonctionnalité. Veuillez contacter l'administrateur du serveur si vous avez besoin d'aide.",
       "unknownError": "Une erreur inconnue s'est produite",
-      "unknownErrorTryAgain": "Une erreur inconnue s'est produite. Veuillez réessayer plus tard.",
+      "unknownErrorTryAgain": "Une erreur inconnue s'est produite. Merci de réessayer.",
       "vaultNotAvailable": "Coffre-fort non disponible",
       "vaultIsLocked": "Le coffre-fort est verrouillé",
       "passwordChanged": "Votre mot de passe a changé depuis la dernière fois que vous vous êtes connecté. Veuillez vous reconnecter pour des raisons de sécurité.",

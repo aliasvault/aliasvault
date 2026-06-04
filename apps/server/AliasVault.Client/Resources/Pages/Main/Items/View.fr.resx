@@ -96,7 +96,7 @@
     <comment>Breadcrumb text for view item page</comment>
   </data>
   <data name="ItemNotFoundError">
-    <value>Cet élément n'existe plus. Veuillez réessayer.</value>
+    <value>Cet élément n'existe pas/plus. Veuillez réessayer.</value>
     <comment>Error message when item is not found</comment>
   </data>
   <data name="PasskeySectionHeader">
