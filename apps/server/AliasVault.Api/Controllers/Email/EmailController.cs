@@ -154,7 +154,7 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
         }
 
         // Shadow-block: when active, emails received after the block took effect behave as if they do not exist.
-        var shadowCutoff = await ipBlockListService.GetEmailShadowBlockCutoffAsync(user, IpAddressUtility.GetRawIpAddressFromContext(HttpContext));
+        var shadowCutoff = await ipBlockListService.GetShadowBlockCutoffAsync(user, IpAddressUtility.GetRawIpAddressFromContext(HttpContext));
 
         // Retrieve email from database.
         var email = await context.Emails
