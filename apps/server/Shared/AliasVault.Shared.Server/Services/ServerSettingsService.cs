@@ -180,6 +180,16 @@ public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory
             model.MobileLoginLogRetentionDays = mobileLoginDays;
         }
 
+        if (int.TryParse(settings.GetValueOrDefault("NewAccountAliasLimitDays"), out var newAccountAliasLimitDays))
+        {
+            model.NewAccountAliasLimitDays = newAccountAliasLimitDays;
+        }
+
+        if (int.TryParse(settings.GetValueOrDefault("MaxAliasesForNewAccounts"), out var maxAliasesForNewAccounts))
+        {
+            model.MaxAliasesForNewAccounts = maxAliasesForNewAccounts;
+        }
+
         return model;
     }
 
@@ -203,5 +213,7 @@ public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory
         await SetSettingAsync("RefreshTokenLifetimeLong", model.RefreshTokenLifetimeLong.ToString());
         await SetSettingAsync("MaxRegistrationsPerIpPer24Hours", model.MaxRegistrationsPerIpPer24Hours.ToString());
         await SetSettingAsync("MobileLoginLogRetentionDays", model.MobileLoginLogRetentionDays.ToString());
+        await SetSettingAsync("NewAccountAliasLimitDays", model.NewAccountAliasLimitDays.ToString());
+        await SetSettingAsync("MaxAliasesForNewAccounts", model.MaxAliasesForNewAccounts.ToString());
     }
 }
