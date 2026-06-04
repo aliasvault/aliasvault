@@ -163,6 +163,10 @@ else
                                         <td class="px-4 py-3">
                                             <div class="flex items-center space-x-2">
                                                 <StatusPill Enabled="@(!User.Blocked)" TextTrue="Active" TextFalse="Blocked" />
+                                                @if (User.Blocked && User.BlockedAt is not null)
+                                                {
+                                                    <span class="text-sm text-gray-500 dark:text-gray-400">since @User.BlockedAt.Value.ToString("yyyy-MM-dd HH:mm") UTC</span>
+                                                }
                                                 <Button Color="@(User.Blocked ? "success" : "danger")" OnClick="ToggleBlockStatus">
                                                     @(User.Blocked ? "Unblock User" : "Block User")
                                                 </Button>
@@ -545,6 +549,16 @@ Do you want to proceed with the restoration?")) {
         if (User != null)
         {
             User.Blocked = !User.Blocked;
+
+            // Record when the block was activated; clear the trace again when the user is unblocked.
+            if (User.Blocked)
+            {
+                User.BlockedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                User.BlockedAt = null;
+            }
 
             // If user is unblocked by the admin, also reset any lockout status, which can be
             // automatically triggered by the system when user has entered an incorrect password too many times.

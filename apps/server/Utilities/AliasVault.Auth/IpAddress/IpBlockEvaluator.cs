@@ -50,6 +50,41 @@ public static class IpBlockEvaluator
     }
 
     /// <summary>
+    /// Returns the earliest blocked created at among all ranges that both cover the given action
+    /// and contain the given address. Used for time-windowed shadow-blocking.
+    /// </summary>
+    /// <param name="ranges">The candidate blocklist ranges.</param>
+    /// <param name="address">The IP address to evaluate.</param>
+    /// <param name="action">The action to evaluate.</param>
+    /// <returns>The earliest matching block creation time, or null when no range matches.</returns>
+    public static DateTime? GetEarliestMatchingBlockTime(IEnumerable<BlockedIpRange> ranges, IPAddress? address, IpBlockAction action)
+    {
+        if (address is null)
+        {
+            return null;
+        }
+
+        DateTime? earliest = null;
+        foreach (var range in ranges)
+        {
+            if (!HasFlag(range, action))
+            {
+                continue;
+            }
+
+            if (IpRangeUtility.TryParse(range.IpRange, out var network) && IpRangeUtility.Contains(network, address))
+            {
+                if (earliest is null || range.CreatedAt < earliest)
+                {
+                    earliest = range.CreatedAt;
+                }
+            }
+        }
+
+        return earliest;
+    }
+
+    /// <summary>
     /// Returns whether the range covers the given action.
     /// </summary>
     /// <param name="range">The blocklist range.</param>
