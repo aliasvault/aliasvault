@@ -133,6 +133,61 @@ public class IpBlockEvaluatorTests
         Assert.That(IpBlockEvaluator.IsBlocked([], IPAddress.Parse("1.2.3.4"), IpBlockAction.Shadow), Is.False);
     }
 
+    /// <summary>
+    /// Tests that the earliest matching shadow block time is null when no shadow range contains the address.
+    /// </summary>
+    [Test]
+    public void GetEarliestMatchingBlockTime_NoMatch_ReturnsNull()
+    {
+        var ranges = new List<BlockedIpRange> { ShadowRange("1.2.3.0/24", new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)) };
+
+        Assert.That(IpBlockEvaluator.GetEarliestMatchingBlockTime(ranges, IPAddress.Parse("9.9.9.9"), IpBlockAction.Shadow), Is.Null);
+    }
+
+    /// <summary>
+    /// Tests that a containing range without the shadow flag is ignored when computing the cutoff.
+    /// </summary>
+    [Test]
+    public void GetEarliestMatchingBlockTime_OnlyConsidersActionFlag()
+    {
+        var ranges = new List<BlockedIpRange> { Range("1.2.3.0/24", registration: true, login: false, emails: false) };
+        ranges[0].CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        Assert.That(IpBlockEvaluator.GetEarliestMatchingBlockTime(ranges, IPAddress.Parse("1.2.3.5"), IpBlockAction.Shadow), Is.Null);
+    }
+
+    /// <summary>
+    /// Tests that the earliest CreatedAt is returned across overlapping shadow ranges, ignoring non-containing ones
+    /// even when they are older.
+    /// </summary>
+    [Test]
+    public void GetEarliestMatchingBlockTime_ReturnsEarliestContainingRange()
+    {
+        var early = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var late = new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Utc);
+        var ranges = new List<BlockedIpRange>
+        {
+            ShadowRange("1.2.3.0/24", late),
+            ShadowRange("1.2.0.0/16", early),
+
+            // Older, but does not contain the address; must be ignored.
+            ShadowRange("9.9.9.0/24", new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc)),
+        };
+
+        Assert.That(IpBlockEvaluator.GetEarliestMatchingBlockTime(ranges, IPAddress.Parse("1.2.3.4"), IpBlockAction.Shadow), Is.EqualTo(early));
+    }
+
+    /// <summary>
+    /// Tests that a null address yields a null cutoff.
+    /// </summary>
+    [Test]
+    public void GetEarliestMatchingBlockTime_NullAddress_ReturnsNull()
+    {
+        var ranges = new List<BlockedIpRange> { ShadowRange("0.0.0.0/0", new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)) };
+
+        Assert.That(IpBlockEvaluator.GetEarliestMatchingBlockTime(ranges, null, IpBlockAction.Shadow), Is.Null);
+    }
+
     private static BlockedIpRange Range(string cidr, bool registration, bool login, bool emails) => new()
     {
         IpRange = cidr,
@@ -140,5 +195,13 @@ public class IpBlockEvaluatorTests
         BlockLogin = login,
         BlockShadow = emails,
         Enabled = true,
+    };
+
+    private static BlockedIpRange ShadowRange(string cidr, DateTime createdAt) => new()
+    {
+        IpRange = cidr,
+        BlockShadow = true,
+        Enabled = true,
+        CreatedAt = createdAt,
     };
 }
