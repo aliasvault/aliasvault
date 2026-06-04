@@ -436,7 +436,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             {
                 if (!aliasLimitLogged)
                 {
-                    logger.LogWarning("{User} reached the new-account alias limit of {Limit}; skipping creation of additional aliases.", user.UserName, settings.MaxAliasesForNewAccounts);
+                    logger.LogWarning("{User} reached the new-account alias limit of {Limit}. Skipping creation of additional aliases.", user.UserName, settings.MaxAliasesForNewAccounts);
                     aliasLimitLogged = true;
                 }
 
