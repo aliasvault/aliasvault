@@ -12,12 +12,24 @@ namespace AliasServerDb.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<DateTime>(
+                name: "BlockedAt",
+                table: "AliasVaultUsers",
+                type: "timestamp with time zone",
+                nullable: true);
+
             migrationBuilder.AddColumn<bool>(
                 name: "ShadowBlocked",
                 table: "AliasVaultUsers",
                 type: "boolean",
                 nullable: false,
                 defaultValue: false);
+
+            migrationBuilder.AddColumn<DateTime>(
+                name: "ShadowBlockedAt",
+                table: "AliasVaultUsers",
+                type: "timestamp with time zone",
+                nullable: true);
 
             migrationBuilder.CreateTable(
                 name: "BlockedIpRanges",
@@ -59,7 +71,15 @@ namespace AliasServerDb.Migrations
                 name: "BlockedIpRanges");
 
             migrationBuilder.DropColumn(
+                name: "BlockedAt",
+                table: "AliasVaultUsers");
+
+            migrationBuilder.DropColumn(
                 name: "ShadowBlocked",
+                table: "AliasVaultUsers");
+
+            migrationBuilder.DropColumn(
+                name: "ShadowBlockedAt",
                 table: "AliasVaultUsers");
         }
     }

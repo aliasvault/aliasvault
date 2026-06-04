@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AliasServerDb.Migrations
 {
     [DbContext(typeof(AliasServerDbContext))]
-    [Migration("20260604174903_AddIpBlocklistAndShadowBlock")]
+    [Migration("20260604183059_AddIpBlocklistAndShadowBlock")]
     partial class AddIpBlocklistAndShadowBlock
     {
         /// <inheritdoc />
@@ -132,6 +132,9 @@ namespace AliasServerDb.Migrations
                     b.Property<bool>("Blocked")
                         .HasColumnType("boolean");
 
+                    b.Property<DateTime?>("BlockedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("ConcurrencyStamp")
                         .HasColumnType("text");
 
@@ -185,6 +188,9 @@ namespace AliasServerDb.Migrations
 
                     b.Property<bool>("ShadowBlocked")
                         .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("ShadowBlockedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("SrpIdentity")
                         .HasMaxLength(255)

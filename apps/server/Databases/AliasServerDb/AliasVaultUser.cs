@@ -37,9 +37,22 @@ public class AliasVaultUser : IdentityUser
     public bool Blocked { get; set; }
 
     /// <summary>
+    /// Gets or sets the UTC timestamp when the user was last blocked. Null when the user has never been blocked.
+    /// Kept as a small trace of when the block was activated.
+    /// </summary>
+    public DateTime? BlockedAt { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the user is marked as shadow-blocked.
     /// </summary>
     public bool ShadowBlocked { get; set; }
+
+    /// <summary>
+    /// Gets or sets the UTC timestamp when the user was shadow-blocked. Used to only hide emails received after the
+    /// block occurred. Null when the user has never been shadow-blocked (in which case all emails are hidden while
+    /// ShadowBlocked is true, as a conservative fallback).
+    /// </summary>
+    public DateTime? ShadowBlockedAt { get; set; }
 
     /// <summary>
     /// Gets or sets updated timestamp.
