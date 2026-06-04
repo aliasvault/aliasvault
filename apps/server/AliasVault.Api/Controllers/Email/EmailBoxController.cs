@@ -23,7 +23,7 @@ using Microsoft.EntityFrameworkCore;
 /// </summary>
 /// <param name="dbContextFactory">DbContext instance.</param>
 /// <param name="userManager">UserManager instance.</param>
-/// <param name="ipBlockListService">IpBlockListService used to shadow-ban email retrieval from blocked IPs.</param>
+/// <param name="ipBlockListService">IpBlockListService used to shadow-block email retrieval from blocked IPs.</param>
 [ApiVersion("1")]
 public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IpBlockListService ipBlockListService) : AuthenticatedRequestController(userManager)
 {
@@ -43,11 +43,8 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             return Unauthorized("Not authenticated.");
         }
 
-        // Shadow-blocked: a shadow-blocked account or blocked IP gets an empty mailbox rather than an explicit error.
-        if (await IsEmailRetrievalShadowBlockedAsync(user))
-        {
-            return Ok(new MailboxApiModel { Address = to, Subscribed = false, Mails = [] });
-        }
+        // Shadow-block: when active, only emails received before the block took effect are visible.
+        var shadowCutoff = await ipBlockListService.GetShadowBlockCutoffAsync(user, IpAddressUtility.GetRawIpAddressFromContext(HttpContext));
 
         var sanitizedEmail = to.Trim().ToLower();
 
@@ -79,9 +76,14 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             });
         }
 
-        // Retrieve emails from database.
-        List<MailboxEmailApiModel> emails = await context.Emails.AsNoTracking()
-            .Where(x => x.To == sanitizedEmail)
+        // Retrieve emails from database (excluding any received after a shadow-block took effect).
+        var emailQuery = context.Emails.AsNoTracking().Where(x => x.To == sanitizedEmail);
+        if (shadowCutoff is not null)
+        {
+            emailQuery = emailQuery.Where(x => x.DateSystem <= shadowCutoff.Value);
+        }
+
+        List<MailboxEmailApiModel> emails = await emailQuery
             .Select(x => new MailboxEmailApiModel()
             {
                 Id = x.Id,
@@ -128,18 +130,8 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             return Unauthorized("Not authenticated.");
         }
 
-        // Shadow-blocked: a shadow-blocked account or blocked IP gets an empty result rather than an explicit error.
-        if (await IsEmailRetrievalShadowBlockedAsync(user))
-        {
-            return Ok(new MailboxBulkResponse
-            {
-                Addresses = [],
-                Mails = [],
-                PageSize = Math.Min(model.PageSize, 50),
-                CurrentPage = model.Page,
-                TotalRecords = 0,
-            });
-        }
+        // Shadow-block: when active, only emails received before the block took effect are visible.
+        var shadowCutoff = await ipBlockListService.GetShadowBlockCutoffAsync(user, IpAddressUtility.GetRawIpAddressFromContext(HttpContext));
 
         // Sanitize input.
         model.Addresses = model.Addresses.Select(x => x.Trim().ToLower()).ToList();
@@ -154,6 +146,11 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         var query = context.Emails
             .AsNoTracking()
             .Where(email => validAddresses.Contains(email.To));
+
+        if (shadowCutoff is not null)
+        {
+            query = query.Where(email => email.DateSystem <= shadowCutoff.Value);
+        }
 
         // Get all emails for the valid addresses.
         var rows = await query
@@ -196,13 +193,4 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
 
         return Ok(returnValue);
     }
-
-    /// <summary>
-    /// Determines whether email retrieval for the current request should be shadow-blocked, either because the
-    /// account is shadow-blocked or because the request originates from a shadow-blocked IP range.
-    /// </summary>
-    /// <param name="user">The authenticated user.</param>
-    /// <returns>True if email retrieval should return an empty result.</returns>
-    private async Task<bool> IsEmailRetrievalShadowBlockedAsync(AliasVaultUser user)
-        => user.ShadowBlocked || await ipBlockListService.IsBlockedForEmailsAsync(IpAddressUtility.GetRawIpAddressFromContext(HttpContext));
 }
