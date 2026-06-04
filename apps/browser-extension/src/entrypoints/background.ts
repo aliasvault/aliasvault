@@ -14,6 +14,7 @@ import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSessi
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { onMessage, sendMessage } from "@/utils/messaging/ExtensionMessaging";
 import { validateWebAuthnRequest } from '@/utils/passkey/WebAuthnRequestValidation';
+import type { WebAuthnBridgeRequest } from '@/utils/passkey/WebAuthnRequestValidation';
 
 import { defineBackground, browser } from '#imports';
 
@@ -30,6 +31,10 @@ type TrustedWebAuthnSenderContext = {
   host: string;
 };
 
+/**
+ * Resolve a trusted origin and host context from the message sender, returning null when the
+ * sender is not a secure (https or localhost) web origin.
+ */
 function getTrustedWebAuthnSenderContext(sender: WebAuthnMessageSender): TrustedWebAuthnSenderContext | null {
   const senderOrigin = typeof sender.origin === 'string' && sender.origin !== 'null'
     ? sender.origin
@@ -55,7 +60,11 @@ function getTrustedWebAuthnSenderContext(sender: WebAuthnMessageSender): Trusted
   }
 }
 
-function handleValidatedWebAuthnCreate(data: any, sender: WebAuthnMessageSender): Promise<any> | { fallback: true } {
+/**
+ * Validate a WebAuthn create request against the sender's trusted origin before forwarding it to
+ * the passkey create flow, falling back when validation fails.
+ */
+function handleValidatedWebAuthnCreate(data: WebAuthnBridgeRequest, sender: WebAuthnMessageSender): Promise<unknown> | { fallback: true } {
   const senderContext = getTrustedWebAuthnSenderContext(sender);
   if (!senderContext || !validateWebAuthnRequest('create', data, senderContext.origin, senderContext.host)) {
     return { fallback: true };
@@ -67,7 +76,11 @@ function handleValidatedWebAuthnCreate(data: any, sender: WebAuthnMessageSender)
   });
 }
 
-function handleValidatedWebAuthnGet(data: any, sender: WebAuthnMessageSender): Promise<any> | { fallback: true } {
+/**
+ * Validate a WebAuthn get request against the sender's trusted origin before forwarding it to
+ * the passkey get flow, falling back when validation fails.
+ */
+function handleValidatedWebAuthnGet(data: WebAuthnBridgeRequest, sender: WebAuthnMessageSender): Promise<unknown> | { fallback: true } {
   const senderContext = getTrustedWebAuthnSenderContext(sender);
   if (!senderContext || !validateWebAuthnRequest('get', data, senderContext.origin, senderContext.host)) {
     return { fallback: true };
