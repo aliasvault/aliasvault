@@ -5,6 +5,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import type { WebAuthnCreateEventDetail, WebAuthnGetEventDetail } from '@/utils/passkey/webauthn.types';
+import {
+  cloneWebAuthnEventDetail,
+  validateWebAuthnEventDetail
+} from '@/utils/passkey/WebAuthnRequestValidation';
 
 import { browser } from '#imports';
 
@@ -65,7 +70,8 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
 
   // Listen for WebAuthn create events from the page
   window.addEventListener('aliasvault:webauthn:create', async (event: any) => {
-    const { requestId, publicKey, origin } = event.detail;
+    const detail = cloneWebAuthnEventDetail<WebAuthnCreateEventDetail>(event.detail);
+    const requestId = typeof detail?.requestId === 'string' ? detail.requestId : undefined;
 
     /**
      * Helper to dispatch event with Firefox compatibility
@@ -93,6 +99,16 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
     };
 
     try {
+      if (!validateWebAuthnEventDetail('create', detail, window.location.origin, window.location.hostname)) {
+        dispatchResponse({
+          requestId,
+          fallback: true
+        });
+        return;
+      }
+
+      const { publicKey, origin } = detail;
+
       /**
        * Note: We don't block create (registration) requests based on page readiness.
        * Registration is always user-initiated (button click), so it's never spurious.
@@ -146,7 +162,8 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
 
   // Listen for WebAuthn get events from the page
   window.addEventListener('aliasvault:webauthn:get', async (event: any) => {
-    const { requestId, publicKey, origin } = event.detail;
+    const detail = cloneWebAuthnEventDetail<WebAuthnGetEventDetail>(event.detail);
+    const requestId = typeof detail?.requestId === 'string' ? detail.requestId : undefined;
 
     /**
      * Helper to dispatch event with Firefox compatibility
@@ -174,6 +191,16 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
     };
 
     try {
+      if (!validateWebAuthnEventDetail('get', detail, window.location.origin, window.location.hostname)) {
+        dispatchResponse({
+          requestId,
+          fallback: true
+        });
+        return;
+      }
+
+      const { publicKey, origin } = detail;
+
       // Block requests if page isn't ready (prevents prefetch/autocomplete popups)
       if (!isPageReadyForWebAuthn()) {
         dispatchResponse({

@@ -13,8 +13,71 @@ import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSessi
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { onMessage, sendMessage } from "@/utils/messaging/ExtensionMessaging";
+import { validateWebAuthnRequest } from '@/utils/passkey/WebAuthnRequestValidation';
 
 import { defineBackground, browser } from '#imports';
+
+type WebAuthnMessageSender = {
+  origin?: string;
+  url?: string;
+  tab?: {
+    url?: string;
+  };
+};
+
+type TrustedWebAuthnSenderContext = {
+  origin: string;
+  host: string;
+};
+
+function getTrustedWebAuthnSenderContext(sender: WebAuthnMessageSender): TrustedWebAuthnSenderContext | null {
+  const senderOrigin = typeof sender.origin === 'string' && sender.origin !== 'null'
+    ? sender.origin
+    : undefined;
+  const senderUrl = senderOrigin ?? sender.url ?? sender.tab?.url;
+
+  if (!senderUrl) {
+    return null;
+  }
+
+  try {
+    const url = new URL(senderUrl);
+    if (url.protocol !== 'https:' && !(url.protocol === 'http:' && url.hostname === 'localhost')) {
+      return null;
+    }
+
+    return {
+      origin: url.origin,
+      host: url.hostname,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function handleValidatedWebAuthnCreate(data: any, sender: WebAuthnMessageSender): Promise<any> | { fallback: true } {
+  const senderContext = getTrustedWebAuthnSenderContext(sender);
+  if (!senderContext || !validateWebAuthnRequest('create', data, senderContext.origin, senderContext.host)) {
+    return { fallback: true };
+  }
+
+  return handleWebAuthnCreate({
+    ...data,
+    origin: senderContext.origin,
+  });
+}
+
+function handleValidatedWebAuthnGet(data: any, sender: WebAuthnMessageSender): Promise<any> | { fallback: true } {
+  const senderContext = getTrustedWebAuthnSenderContext(sender);
+  if (!senderContext || !validateWebAuthnRequest('get', data, senderContext.origin, senderContext.host)) {
+    return { fallback: true };
+  }
+
+  return handleWebAuthnGet({
+    ...data,
+    origin: senderContext.origin,
+  });
+}
 
 /*
  * Register alarm listener at top-level scope.
@@ -154,8 +217,8 @@ export default defineBackground({
 
     // Passkey/WebAuthn management messages
     onMessage('GET_WEBAUTHN_SETTINGS', ({ data }) => handleGetWebAuthnSettings(data));
-    onMessage('WEBAUTHN_CREATE', ({ data }) => handleWebAuthnCreate(data));
-    onMessage('WEBAUTHN_GET', ({ data }) => handleWebAuthnGet(data));
+    onMessage('WEBAUTHN_CREATE', ({ data, sender }) => handleValidatedWebAuthnCreate(data, sender));
+    onMessage('WEBAUTHN_GET', ({ data, sender }) => handleValidatedWebAuthnGet(data, sender));
     onMessage('PASSKEY_POPUP_RESPONSE', ({ data }) => handlePasskeyPopupResponse(data));
     onMessage('GET_REQUEST_DATA', ({ data }) => handleGetRequestData(data));
 
