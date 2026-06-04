@@ -8,7 +8,7 @@ MOBILE_APP_DIR="$SCRIPT_DIR/.."
 METADATA_PATH="$REPO_ROOT/fastlane/metadata/android"
 
 PACKAGE_NAME="net.aliasvault.app"
-TRACK="internal"
+# Track is selected interactively below (internal testing, or closed testing: "test" or "release")
 # Play Console service account key location (kept outside the repo for safety)
 JSON_KEY_PATH="$HOME/.aliasvault/playstore.json"
 
@@ -45,7 +45,7 @@ AAB_RENAMED="$AAB_OUTPUT_DIR/aliasvault-${VERSION}-android.aab"
 
 echo ""
 echo "What do you want to do?"
-echo "  1) Build AAB and submit to Play Console ($TRACK track)"
+echo "  1) Build AAB and submit to Play Console (internal or closed testing)"
 echo "  2) Build AAB only (no submit)"
 echo "  3) Build APK only (for direct install / sideload)"
 echo ""
@@ -72,6 +72,22 @@ if [[ $CHOICE == "1" ]]; then
     echo "Place the JSON key in the proper location and try again."
     exit 1
   fi
+
+  # Select track
+  echo "Which track do you want to upload to?"
+  echo "  1) internal (internal testing — default)"
+  echo "  2) test     (closed testing — fallback if internal is taken)"
+  echo "  3) release  (closed testing — for preparing a release)"
+  echo ""
+  read -p "Enter track choice (1, 2, or 3) [1]: " -r TRACK_CHOICE
+  TRACK_CHOICE=${TRACK_CHOICE:-1}
+  echo ""
+  case $TRACK_CHOICE in
+    1) TRACK="internal" ;;
+    2) TRACK="test" ;;
+    3) TRACK="release" ;;
+    *) echo "❌ Invalid track choice. Please enter 1, 2, or 3."; exit 1 ;;
+  esac
 fi
 
 # ------------------------------------------
