@@ -9,6 +9,7 @@ namespace AliasVault.Api.Controllers.Email;
 
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
+using AliasVault.Auth.IpAddress;
 using AliasVault.Shared.Models.Spamok;
 using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.Email;
@@ -22,8 +23,9 @@ using Microsoft.EntityFrameworkCore;
 /// </summary>
 /// <param name="dbContextFactory">DbContext instance.</param>
 /// <param name="userManager">UserManager instance.</param>
+/// <param name="ipBlockListService">IpBlockListService used to shadow-ban email retrieval from blocked IPs.</param>
 [ApiVersion("1")]
-public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager) : AuthenticatedRequestController(userManager)
+public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IpBlockListService ipBlockListService) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Returns a list of emails for the provided email address.
@@ -39,6 +41,12 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         if (user is null)
         {
             return Unauthorized("Not authenticated.");
+        }
+
+        // Shadow-blocked: a shadow-blocked account or blocked IP gets an empty mailbox rather than an explicit error.
+        if (await IsEmailRetrievalShadowBlockedAsync(user))
+        {
+            return Ok(new MailboxApiModel { Address = to, Subscribed = false, Mails = [] });
         }
 
         var sanitizedEmail = to.Trim().ToLower();
@@ -120,6 +128,19 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             return Unauthorized("Not authenticated.");
         }
 
+        // Shadow-blocked: a shadow-blocked account or blocked IP gets an empty result rather than an explicit error.
+        if (await IsEmailRetrievalShadowBlockedAsync(user))
+        {
+            return Ok(new MailboxBulkResponse
+            {
+                Addresses = [],
+                Mails = [],
+                PageSize = Math.Min(model.PageSize, 50),
+                CurrentPage = model.Page,
+                TotalRecords = 0,
+            });
+        }
+
         // Sanitize input.
         model.Addresses = model.Addresses.Select(x => x.Trim().ToLower()).ToList();
         model.PageSize = Math.Min(model.PageSize, 50);
@@ -175,4 +196,13 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
 
         return Ok(returnValue);
     }
+
+    /// <summary>
+    /// Determines whether email retrieval for the current request should be shadow-blocked, either because the
+    /// account is shadow-blocked or because the request originates from a shadow-blocked IP range.
+    /// </summary>
+    /// <param name="user">The authenticated user.</param>
+    /// <returns>True if email retrieval should return an empty result.</returns>
+    private async Task<bool> IsEmailRetrievalShadowBlockedAsync(AliasVaultUser user)
+        => user.ShadowBlocked || await ipBlockListService.IsBlockedForEmailsAsync(IpAddressUtility.GetRawIpAddressFromContext(HttpContext));
 }
