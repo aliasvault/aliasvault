@@ -129,7 +129,7 @@
     <value>此服务器目前已禁用新账户注册，请联系管理员。</value>
   </data>
   <data name="REGISTRATION_FAILED" xml:space="preserve">
-    <value>Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.</value>
+    <value>无法创建账户，请稍后再试。如果问题仍然存在，请联系支持人员。</value>
   </data>
   <data name="USER_NOT_FOUND" xml:space="preserve">
     <value>用户名或密码无效，请重试。</value>
