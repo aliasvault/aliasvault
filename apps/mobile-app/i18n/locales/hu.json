@@ -550,7 +550,7 @@
       "expiringSoon": "Hamarosan lejár",
       "confirmDeleteTitle": "Véglegesen törli?",
       "confirmDeleteMessage": "Ez az elem végleges törlésre kerül, és nem állítható helyre.",
-      "confirmEmptyAllTitle": "Empty Recently Deleted?",
+      "confirmEmptyAllTitle": "Legújabban eltávolítottak törlése?",
       "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
       "itemRestored": "Item restored",
       "itemDeleted": "Item permanently deleted",
