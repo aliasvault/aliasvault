@@ -460,49 +460,49 @@
       "title": "Meglevő bejegyzéshez csatolás",
       "intro": "Válasszon ki egy már meglevő bejegyzést, majd csatolja a(z) \"{{target}}\" címhez.",
       "confirmTitle": "Bejegyzéshez csatolás?",
-      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+      "confirmMessage": "Biztosan hozzá akarja társítani a bejegyzéshez a \"{{url}}\" címet?"
     },
     "autofillUrlAdded": {
-      "title": "Credential linked",
-      "message": "Autofill should now offer this credential the next time you open the app."
+      "title": "Bejegyzés hozzátársítva",
+      "message": "A következő alkalommal már kitöltésre kerülnek az app rubrikái."
     },
     "filters": {
       "all": "Elemek",
-      "showFolders": "Folders",
-      "passkeys": "Passkeys",
+      "showFolders": "Mappák",
+      "passkeys": "Azonosítókulcsok",
       "attachments": "Csatolmányok",
-      "totp": "2FA Codes"
+      "totp": "2FA kódok"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Rendezés",
+      "oldestFirst": "Legrégebbi először",
+      "newestFirst": "Legújabb először",
+      "alphabetical": "Betűrendben (A-Z)"
     },
-    "totpCode": "TOTP Code",
+    "totpCode": "TOTP kód",
     "attachments": "Csatolmányok",
     "deleteAttachment": "Törlés",
-    "fileSavedTo": "File saved to",
-    "previewNotSupported": "Preview not supported",
-    "downloadToView": "Download the file to view it",
+    "fileSavedTo": "Fájl elmentve ide",
+    "previewNotSupported": "Előnézet nem támogatott",
+    "downloadToView": "Letöltés a megtekintéshez",
     "unsavedChanges": {
-      "title": "Discard Changes?",
-      "message": "You have unsaved changes. Are you sure you want to discard them?",
-      "discard": "Discard"
+      "title": "Módosítások elvetése?",
+      "message": "A legutóbbi változások nem kerültek mentésre. Biztosan el akarja vetni őket?",
+      "discard": "Elvetés"
     },
     "toasts": {
-      "itemUpdated": "Item updated successfully",
-      "itemCreated": "Item created successfully",
-      "itemDeleted": "Item deleted successfully",
-      "usernameCopied": "Username copied to clipboard",
-      "emailCopied": "Email copied to clipboard",
-      "passwordCopied": "Password copied to clipboard",
-      "totpCodeCopied": "TOTP code copied to clipboard",
-      "urlCopied": "URL copied to clipboard"
+      "itemUpdated": "Elem sikeresen frissítve",
+      "itemCreated": "Elem sikeresen létrehozva",
+      "itemDeleted": "Elem sikeresen törölve",
+      "usernameCopied": "Felhasználónév a vágólapra másolva",
+      "emailCopied": "E-mail cím a vágólapra másolva",
+      "passwordCopied": "Jelszó a vágólapra másolva",
+      "totpCodeCopied": "TOTP kód a vágólapra másolva",
+      "urlCopied": "Hivatkozás a vágólapra másolva"
     },
-    "createNewAliasFor": "Create new alias for",
+    "createNewAliasFor": "Új alias létrehozása ehhez",
     "contextMenu": {
-      "title": "Item Options",
+      "title": "Elem opciók",
       "edit": "Szerkesztés",
       "delete": "Törlés",
       "copyUsername": "Felhasználónév másolása",
@@ -549,7 +549,7 @@
       "daysRemaining_plural": "{{count}} nap van hátra",
       "expiringSoon": "Hamarosan lejár",
       "confirmDeleteTitle": "Véglegesen törli?",
-      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+      "confirmDeleteMessage": "Ez az elem végleges törlésre kerül, és nem állítható helyre.",
       "confirmEmptyAllTitle": "Empty Recently Deleted?",
       "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
       "itemRestored": "Item restored",
