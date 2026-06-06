@@ -129,7 +129,7 @@
     <value>Die Registrierung eines neuen Kontos ist auf diesem Server derzeit deaktiviert. Bitte kontaktiere den Administrator.</value>
   </data>
   <data name="REGISTRATION_FAILED" xml:space="preserve">
-    <value>Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.</value>
+    <value>Das Konto konnte nicht erstellt werden. Bitte versuche es in ein paar Minuten erneut. Wenn dieses Problem weiterhin besteht, kontaktiere bitte den Support.</value>
   </data>
   <data name="USER_NOT_FOUND" xml:space="preserve">
     <value>Ungültiger Benutzername oder Passwort. Bitte versuche es erneut.</value>
