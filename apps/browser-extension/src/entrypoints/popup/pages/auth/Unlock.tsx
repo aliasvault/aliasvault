@@ -8,6 +8,7 @@ import LogoutConfirmModal from '@/entrypoints/popup/components/Dialogs/LogoutCon
 import MobileUnlockModal from '@/entrypoints/popup/components/Dialogs/MobileUnlockModal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIcon, HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import UsernameAvatar from '@/entrypoints/popup/components/Unlock/UsernameAvatar';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
@@ -59,6 +60,7 @@ const Unlock: React.FC = () => {
   // Unlock mode state
   const [unlockMode, setUnlockMode] = useState<UnlockMode>('password');
   const [pinAvailable, setPinAvailable] = useState<boolean>(false);
+  const [isInitializing, setIsInitializing] = useState<boolean>(true);
 
   // Password unlock state
   const [password, setPassword] = useState('');
@@ -140,14 +142,12 @@ const Unlock: React.FC = () => {
       setPinLength(pinLength || 6);
       setPasswordFailedAttempts(storedAttempts);
 
-      // Check API status to know if mobile-unlock is reachable (it needs the server).
-      const statusResult = await checkStatus();
-      const mobileAvailable = statusResult.online;
-
       /*
        * Pick the initial screen from the last-used method, falling back to
-       * PIN-if-enabled, else password. If the user last unlocked with mobile,
-       * auto-open the QR modal over the base screen.
+       * PIN-if-enabled, else password. This is done before the (potentially
+       * slow) status check so the correct unlock UI is in place by the time the
+       * loading spinner is dismissed - otherwise the password screen flashes
+       * briefly before switching to PIN.
        */
       const baseScreen: UnlockMode = pinEnabled ? 'pin' : 'password';
       if (lastUsed === 'pin' && pinEnabled) {
@@ -157,6 +157,13 @@ const Unlock: React.FC = () => {
       } else {
         setUnlockMode(baseScreen);
       }
+      setIsInitializing(false);
+
+      // Check API status to know if mobile-unlock is reachable (it needs the server).
+      const statusResult = await checkStatus();
+      const mobileAvailable = statusResult.online;
+
+      // If the user last unlocked with mobile, auto-open the QR modal over the base screen.
       if (lastUsed === 'mobile' && mobileAvailable) {
         setShowMobileUnlockModal(true);
       }
@@ -639,6 +646,19 @@ const Unlock: React.FC = () => {
       }`}
     />
   ));
+
+  /*
+   * While the available unlock methods are still being resolved, show a loading
+   * spinner instead of defaulting to the password screen. This prevents the
+   * password UI from flashing before switching to PIN.
+   */
+  if (isInitializing) {
+    return (
+      <div className="flex flex-col items-center justify-center p-4 min-h-[200px]">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   // Render PIN unlock UI
   if (unlockMode === 'pin') {
