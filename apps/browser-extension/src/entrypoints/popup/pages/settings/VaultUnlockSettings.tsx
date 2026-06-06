@@ -8,6 +8,7 @@ import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import {
   isPinEnabled,
   setupPin,
@@ -127,6 +128,13 @@ const VaultUnlockSettings: React.FC = () => {
 
       /* Setup PIN with the encryption key */
       await setupPin(newPin, encryptionKey);
+
+      /*
+       * Mark PIN as the last-used unlock method so the unlock screen defaults to
+       * the PIN prompt next time. Otherwise a previous password unlock would keep
+       * the password screen as the default even though the user just enabled PIN.
+       */
+      await LocalPreferencesService.setLastUsedUnlockMethod('pin');
 
       setPinEnabled(true);
       setPinSetupStep(1);
