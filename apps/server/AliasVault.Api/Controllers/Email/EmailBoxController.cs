@@ -17,6 +17,8 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using NpgsqlTypes;
 
 /// <summary>
 /// Email controller for retrieving emailboxes from the database.
@@ -143,51 +145,73 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             .Select(claim => claim.Address)
             .ToListAsync();
 
-        var query = context.Emails
-            .AsNoTracking()
-            .Where(email => validAddresses.Contains(email.To));
+        var page = Math.Max(model.Page, 1);
+
+        // Fetch the newest emails for each address individually via a LATERAL join. This lets
+        // PostgreSQL use the (To, DateSystem) index to read only the top rows per address.
+        var cutoffClause = shadowCutoff is null ? string.Empty : @" AND e2.""DateSystem"" <= @cutoff";
+        var pageSql = $@"
+            SELECT e.*
+            FROM unnest(@addresses) AS addr(email)
+            CROSS JOIN LATERAL (
+                SELECT * FROM ""Emails"" AS e2
+                WHERE e2.""To"" = addr.email{cutoffClause}
+                ORDER BY e2.""DateSystem"" DESC
+                LIMIT @limit
+            ) AS e";
+
+        List<NpgsqlParameter> parameters =
+        [
+            new("addresses", validAddresses.ToArray()),
+            new("limit", page * model.PageSize),
+        ];
 
         if (shadowCutoff is not null)
         {
-            query = query.Where(email => email.DateSystem <= shadowCutoff.Value);
+            parameters.Add(new NpgsqlParameter("cutoff", NpgsqlDbType.TimestampTz) { Value = DateTime.SpecifyKind(shadowCutoff.Value, DateTimeKind.Utc) });
         }
 
-        // Get all emails for the valid addresses.
-        var rows = await query
+        // Merge the per-address results, order them globally and take the requested page.
+        var mails = await context.Emails
+            .FromSqlRaw(pageSql, parameters.ToArray())
+            .AsNoTracking()
             .OrderByDescending(x => x.DateSystem)
-            .Skip((model.Page - 1) * model.PageSize)
+            .Skip((page - 1) * model.PageSize)
             .Take(model.PageSize)
-            .Select(x => new
+            .Select(x => new MailboxEmailApiModel
             {
-                TotalRecords = query.Count(),
-                Mail = new MailboxEmailApiModel
-                {
-                    Id = x.Id,
-                    Subject = x.Subject,
-                    FromDisplay = x.From,
-                    FromDomain = x.FromDomain,
-                    FromLocal = x.FromLocal,
-                    ToDomain = x.ToDomain,
-                    ToLocal = x.ToLocal,
-                    Date = DateTime.SpecifyKind(x.Date, DateTimeKind.Utc),
-                    DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
-                    SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
-                    MessagePreview = x.MessagePreview ?? string.Empty,
-                    EncryptedSymmetricKey = x.EncryptedSymmetricKey,
-                    EncryptionKey = x.EncryptionKey.PublicKey,
-                    HasAttachments = x.Attachments.Any(),
-                },
+                Id = x.Id,
+                Subject = x.Subject,
+                FromDisplay = x.From,
+                FromDomain = x.FromDomain,
+                FromLocal = x.FromLocal,
+                ToDomain = x.ToDomain,
+                ToLocal = x.ToLocal,
+                Date = DateTime.SpecifyKind(x.Date, DateTimeKind.Utc),
+                DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
+                SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
+                MessagePreview = x.MessagePreview ?? string.Empty,
+                EncryptedSymmetricKey = x.EncryptedSymmetricKey,
+                EncryptionKey = x.EncryptionKey.PublicKey,
+                HasAttachments = x.Attachments.Any(),
             })
             .ToListAsync();
 
-        var totalRecords = rows.Count > 0 ? rows[0].TotalRecords : 0;
+        // Total count for pagination
+        var countQuery = context.Emails.Where(email => validAddresses.Contains(email.To));
+        if (shadowCutoff is not null)
+        {
+            countQuery = countQuery.Where(email => email.DateSystem <= shadowCutoff.Value);
+        }
+
+        var totalRecords = await countQuery.CountAsync();
 
         MailboxBulkResponse returnValue = new()
         {
             Addresses = validAddresses,
-            Mails = rows.Select(r => r.Mail).ToList(),
+            Mails = mails,
             PageSize = model.PageSize,
-            CurrentPage = model.Page,
+            CurrentPage = page,
             TotalRecords = totalRecords,
         };
 
