@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.credentials.CreatePublicKeyCredentialRequest
@@ -17,6 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.aliasvault.app.R
 import net.aliasvault.app.credentialprovider.models.PasskeyRegistrationViewModel
+import net.aliasvault.app.utils.ErrorScreenView
 import net.aliasvault.app.utils.Helpers
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
@@ -226,7 +226,7 @@ class PasskeyRegistrationActivity : FragmentActivity() {
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error verifying origin", e)
-                showError("Error verifying application: ${e.message}")
+                showError("Error verifying application: ${e.message}", ErrorScreenView.buildDiagnosticDetail(this@PasskeyRegistrationActivity, e))
             }
         }
     }
@@ -303,40 +303,12 @@ class PasskeyRegistrationActivity : FragmentActivity() {
     }
 
     /**
-     * Show error message in the loading view and display a close button.
-     * Hides the loading indicator and shows the error state.
+     * Show error message in the loading view and display a close button,
+     * optionally exposing a collapsed "Show details" toggle with the
+     * copy-pasteable [detail]. Delegates to the shared [ErrorScreenView].
      */
-    private fun showError(message: String) {
+    private fun showError(message: String, detail: String? = null) {
         Log.d(TAG, "showError called with message: $message")
-        runOnUiThread {
-            try {
-                // Hide loading indicator
-                val loadingIndicator = findViewById<View>(R.id.loadingIndicator)
-                loadingIndicator?.visibility = View.GONE
-                Log.d(TAG, "Loading indicator hidden")
-
-                // Show error container
-                val errorContainer = findViewById<View>(R.id.errorContainer)
-                errorContainer?.visibility = View.VISIBLE
-                Log.d(TAG, "Error container shown")
-
-                // Set error message
-                val errorMessageView = findViewById<TextView>(R.id.errorMessage)
-                errorMessageView?.text = message
-                Log.d(TAG, "Error message set: $message")
-
-                // Setup close button
-                val closeButton = findViewById<com.google.android.material.button.MaterialButton>(R.id.closeButton)
-                closeButton?.setOnClickListener {
-                    Log.d(TAG, "Close button clicked")
-                    finish()
-                }
-                Log.d(TAG, "Close button listener set")
-            } catch (e: Exception) {
-                Log.e(TAG, "Error in showError", e)
-                // Fallback: just finish the activity
-                finish()
-            }
-        }
+        ErrorScreenView.show(this, message, detail) { finish() }
     }
 }
