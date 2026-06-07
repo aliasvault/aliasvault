@@ -129,7 +129,7 @@
     <value>Înregistrarea de conturi noi este momentan dezactivată pe acest server. Contactează administratorul.</value>
   </data>
   <data name="REGISTRATION_FAILED" xml:space="preserve">
-    <value>Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.</value>
+    <value>Nu s-a putut crea contul. Încercați din nou peste câteva minute. Dacă problema persistă, contactați serviciul de asistență.</value>
   </data>
   <data name="USER_NOT_FOUND" xml:space="preserve">
     <value>Utilizator sau parolă invalidă. Încearcă din nou.</value>
