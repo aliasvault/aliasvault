@@ -8,7 +8,6 @@ import android.util.Log
 import android.view.View
 import android.view.autofill.AutofillId
 import android.view.autofill.AutofillManager
-import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
@@ -19,6 +18,7 @@ import net.aliasvault.app.autofill.models.FieldType
 import net.aliasvault.app.autofill.utils.AutofillDatasetBuilder
 import net.aliasvault.app.autofill.utils.RustItemMatcher
 import net.aliasvault.app.credentialprovider.UnlockCoordinator
+import net.aliasvault.app.utils.ErrorScreenView
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
@@ -97,7 +97,7 @@ class AutofillUnlockActivity : FragmentActivity() {
             if (findViewById<View>(R.id.errorContainer) == null) {
                 setContentView(R.layout.activity_loading)
             }
-            showError("An error occurred: ${e.message}")
+            showError("An error occurred: ${e.message}", buildErrorDetail(e))
         }
     }
 
@@ -126,7 +126,7 @@ class AutofillUnlockActivity : FragmentActivity() {
                 finish()
             } catch (e: Exception) {
                 Log.e(TAG, "Error building post-unlock fill response", e)
-                showError("Failed to load credentials")
+                showError("Failed to load credentials", buildErrorDetail(e))
             }
         }
     }
@@ -199,21 +199,21 @@ class AutofillUnlockActivity : FragmentActivity() {
     }
 
     /**
-     * Show an inline error with a Close button. Mirrors the pattern used by
-     * other unlock-driven activities.
+     * Show an inline error with a Close button, optionally exposing a collapsed
+     * "Show details" toggle with the copy-pasteable [detail]. Delegates to the
+     * shared [ErrorScreenView] used by the other native error screens.
      */
-    private fun showError(message: String) {
-        runOnUiThread {
-            try {
-                findViewById<View>(R.id.loadingIndicator)?.visibility = View.GONE
-                findViewById<View>(R.id.errorContainer)?.visibility = View.VISIBLE
-                findViewById<TextView>(R.id.errorMessage)?.text = message
-                findViewById<com.google.android.material.button.MaterialButton>(R.id.closeButton)
-                    ?.setOnClickListener { cancelAndFinish() }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error showing error UI", e)
-                cancelAndFinish()
-            }
-        }
+    private fun showError(message: String, detail: String? = null) {
+        ErrorScreenView.show(this, message, detail) { cancelAndFinish() }
+    }
+
+    /**
+     * Build the diagnostic detail for a failure, adding the autofill-specific
+     * context (target app and detected field count) to the shared device/app
+     * info and stack trace.
+     */
+    private fun buildErrorDetail(e: Throwable): String {
+        val extra = "App: ${appInfo ?: "unknown"}, fields=${if (::fields.isInitialized) fields.size else 0}"
+        return ErrorScreenView.buildDiagnosticDetail(this, e, extra)
     }
 }

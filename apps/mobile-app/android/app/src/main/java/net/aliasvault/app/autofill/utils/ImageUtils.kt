@@ -26,12 +26,53 @@ object ImageUtils {
         return try {
             when (detectMimeType(bytes)) {
                 "image/svg+xml" -> svgToBitmap(bytes)
-                else -> BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                else -> decodeSampledRaster(bytes)
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error converting bytes to bitmap", e)
             null
         }
+    }
+
+    /**
+     * Decode a raster image (PNG/JPEG/ICO) downsampled to roughly the autofill
+     * icon size.
+     */
+    private fun decodeSampledRaster(bytes: ByteArray): Bitmap? {
+        val density = Resources.getSystem().displayMetrics.density
+        val maxSizePx = (TARGET_SIZE_DP * density).toInt().coerceAtLeast(1)
+
+        // First pass: read the source dimensions without allocating the bitmap.
+        val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, boundsOptions)
+        val srcWidth = boundsOptions.outWidth
+        val srcHeight = boundsOptions.outHeight
+        if (srcWidth <= 0 || srcHeight <= 0) {
+            // Bounds unavailable (e.g. some ICO files) - fall back to a plain decode.
+            return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        }
+
+        // Second pass: decode at the largest power-of-two sample that stays at or
+        // above the target size, then scale the remainder down precisely.
+        var sampleSize = 1
+        while (srcWidth / (sampleSize * 2) >= maxSizePx && srcHeight / (sampleSize * 2) >= maxSizePx) {
+            sampleSize *= 2
+        }
+        val decodeOptions = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+        val decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, decodeOptions) ?: return null
+
+        val largestDim = maxOf(decoded.width, decoded.height)
+        if (largestDim <= maxSizePx) {
+            return decoded
+        }
+        val scale = maxSizePx.toFloat() / largestDim
+        val scaledWidth = (decoded.width * scale).toInt().coerceAtLeast(1)
+        val scaledHeight = (decoded.height * scale).toInt().coerceAtLeast(1)
+        val scaled = Bitmap.createScaledBitmap(decoded, scaledWidth, scaledHeight, true)
+        if (scaled != decoded) {
+            decoded.recycle()
+        }
+        return scaled
     }
 
     /**

@@ -3,6 +3,7 @@ package net.aliasvault.app.autofill.utils
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.service.autofill.Dataset
 import android.util.Log
 import android.view.autofill.AutofillId
@@ -52,19 +53,7 @@ object AutofillDatasetBuilder {
         }
         presentation.setTextViewText(R.id.text, displayValue)
 
-        val logoBytes = item.logo
-        val bitmap = if (logoBytes != null) {
-            ImageUtils.bytesToBitmap(logoBytes)
-        } else {
-            ItemTypeIcon.getIcon(
-                context = context,
-                itemType = ItemTypeIcon.ItemType.LOGIN,
-                size = 96,
-            )
-        }
-        if (bitmap != null) {
-            presentation.setImageViewBitmap(R.id.icon, bitmap)
-        }
+        val bitmap = buildLogoBitmap(context, item, presentation)
 
         if (inlineSpec != null) {
             val itemDeepLink = "aliasvault://items/${item.id.toString().uppercase()}"
@@ -105,6 +94,32 @@ object AutofillDatasetBuilder {
         builder.setAuthentication(pendingIntent.intentSender)
 
         return builder.build()
+    }
+
+    /**
+     * Resolve the row icon and apply it to [presentation], returning the bitmap
+     * so it can be reused for the inline presentation.
+     */
+    private fun buildLogoBitmap(context: Context, item: Item, presentation: RemoteViews): Bitmap? {
+        return try {
+            val logoBytes = item.logo
+            val bitmap = if (logoBytes != null) {
+                ImageUtils.bytesToBitmap(logoBytes)
+            } else {
+                ItemTypeIcon.getIcon(
+                    context = context,
+                    itemType = ItemTypeIcon.ItemType.LOGIN,
+                    size = 96,
+                )
+            }
+            if (bitmap != null) {
+                presentation.setImageViewBitmap(R.id.icon, bitmap)
+            }
+            bitmap
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to render logo for '${item.name}' - showing credential without it", e)
+            null
+        }
     }
 
     /**
