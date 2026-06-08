@@ -1,0 +1,30 @@
+@using System.Diagnostics.CodeAnalysis
+@using Microsoft.AspNetCore.Components.Forms
+@inherits InputBase<string?>
+
+@* A drop-in replacement for Blazor's built-in <InputText> that updates the bound value on the `oninput` event
+   instead of `onchange`. The built-in component only commits the value on blur, which means programmatically filled
+   values (e.g. password-manager autofill) that never receive a blur are not bound, which can result in a
+   a "required" validation error on submit. *@
+<input @attributes="AdditionalAttributes"
+       class="@CssClass"
+       value="@CurrentValueAsString"
+       @oninput="OnInput" />
+
+@code {
+    /// <summary>
+    /// Commits the new value to the EditContext on every input event so autofilled values are captured immediately.
+    /// </summary>
+    private void OnInput(ChangeEventArgs e)
+    {
+        CurrentValueAsString = e.Value?.ToString();
+    }
+
+    /// <inheritdoc />
+    protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        result = value;
+        validationErrorMessage = null;
+        return true;
+    }
+}

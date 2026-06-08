@@ -55,12 +55,12 @@
                     <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">@Localizer["TotpInstructions"]</p>
                     <div class="mb-4">
                         <label for="totp-name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@Localizer["NameOptionalLabel"]</label>
-                        <InputText id="totp-name" @bind-Value="NewTotpCode.Name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
+                        <InputTextOnInput id="totp-name" @bind-Value="NewTotpCode.Name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
                         <ValidationMessage For="@(() => NewTotpCode.Name)" class="text-red-600 dark:text-red-400 text-sm mt-1" />
                     </div>
                     <div class="mb-4">
                         <label for="totp-secret" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@Localizer["SecretKeyLabel"]</label>
-                        <InputText id="totp-secret" @bind-Value="NewTotpCode.SecretKey" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="@Localizer["SecretKeyPlaceholder"]" />
+                        <InputTextOnInput id="totp-secret" @bind-Value="NewTotpCode.SecretKey" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="@Localizer["SecretKeyPlaceholder"]" />
                         <ValidationMessage For="@(() => NewTotpCode.SecretKey)" class="text-red-600 dark:text-red-400 text-sm mt-1" />
                     </div>
                     <div class="flex justify-end">
