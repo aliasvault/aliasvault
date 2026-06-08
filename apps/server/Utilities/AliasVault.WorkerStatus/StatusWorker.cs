@@ -65,20 +65,20 @@ public class StatusWorker(ILogger<StatusWorker> logger, Func<IWorkerStatusDbCont
 
                 await Task.Delay(5000, stoppingToken);
             }
-            catch (TaskCanceledException)
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
-                // Expected when the service is stopped - exit the loop gracefully.
+                // Genuine host shutdown, exit the loop gracefully.
                 break;
             }
             catch (Exception e)
             {
+                // Any other exception including database cancellations/timeouts should not break the loop but instead log the error
+                // and let the restart logic below retry the worker.
                 logger.LogError(e, "StatusWorker exception");
                 await Task.Delay(5000, stoppingToken);
             }
         }
 
-        // Service is hard stopping: not in software but on OS level.
-        // Mark the service as stopped.
         try
         {
             using var dbContext = createDbContext();
