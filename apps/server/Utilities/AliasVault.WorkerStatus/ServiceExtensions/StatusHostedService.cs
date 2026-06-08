@@ -58,14 +58,16 @@ public class StatusHostedService<T>(ILogger<StatusHostedService<T>> logger, Glob
                 // Start the inner while loop with the second cancellationToken.
                 await ExecuteInnerAsync(stoppingToken);
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException ex) when (stoppingToken.IsCancellationRequested)
             {
-                // Expected so we only log information.
+                // Genuine host shutdown, exit the loop gracefully.
                 logger.LogInformation(ex, "StatusHostedService<{ServiceType}> is stopping due to a cancellation request.", typeof(T).Name);
                 break;
             }
             catch (Exception ex)
             {
+                // Any other exception should not break the loop but instead log the error
+                // and let the restart logic below retry the worker.
                 logger.LogError(ex, "An error occurred in StatusHostedService<{ServiceType}>", typeof(T).Name);
             }
             finally
