@@ -1,5 +1,5 @@
 #!/bin/bash
-# @version 20260501
+# @version 20260608
 
 # Repository information used for downloading files and images from GitHub
 REPO_OWNER="aliasvault"
@@ -3085,8 +3085,6 @@ handle_db_import() {
         printf "  ./install.sh db-import < backup.sql                 # Import plain SQL\n"
         printf "  ./install.sh db-import --dev < backup.sql.gz        # Import to dev database\n"
         printf "\n"
-        printf "Note: Import uses a temp file for format detection. For large imports,\n"
-        printf "      ensure you have enough disk space (backup size + decompressed size).\n"
         exit 1
     fi
 
@@ -3139,68 +3137,83 @@ handle_db_import() {
         DOCKER_CMD="docker compose exec -T postgres"
     fi
 
-    # Create a temporary file to store the input
-    temp_file=$(mktemp)
+    # Peek only the first bytes of the stream for format detection.
+    header_file=$(mktemp)
     # Set up trap to ensure temp file cleanup on exit, then call global cleanup
-    trap 'rm -f "$temp_file"; cleanup_and_exit' INT TERM
-    trap 'rm -f "$temp_file"' EXIT
+    trap 'rm -f "$header_file"; cleanup_and_exit' INT TERM
+    trap 'rm -f "$header_file"' EXIT
 
-    cat <&3 > "$temp_file"  # Read from fd 3 instead of stdin
-    exec 3<&-  # Close fd 3
+    # Read exactly N bytes off fd 3 for detection.
+    dd bs=1 count=8192 <&3 of="$header_file" 2>/dev/null
 
-    # Get input filesize
-    if [ -f "$temp_file" ]; then
-        import_filesize=$(wc -c < "$temp_file")
-        import_filesize_mb=$(awk "BEGIN {printf \"%.2f\", $import_filesize/1024/1024}")
-        printf "${CYAN}> Input file size: ${import_filesize_mb} MB${NC}\n"
+    # Best-effort input size: only available when stdin is a regular file (e.g. `< backup.sql.gz`).
+    input_size=$(stat -L -c %s "/proc/self/fd/3" 2>/dev/null || stat -f %z "/dev/fd/3" 2>/dev/null || echo "")
+    if [ -n "$input_size" ] && [ "$input_size" -gt 0 ] 2>/dev/null; then
+        input_size_mb=$(awk "BEGIN {printf \"%.2f\", $input_size/1024/1024}")
+        printf "${CYAN}> Input file size: ${input_size_mb} MB${NC}\n"
     fi
 
-    # Detect file format
+    # Detect file format from the header bytes only.
     is_gzipped=false
+    magic=$(od -An -tx1 -N2 "$header_file" 2>/dev/null | tr -d ' \n')
 
-    if gzip -t "$temp_file" 2>/dev/null; then
+    if [ "$magic" = "1f8b" ]; then
         is_gzipped=true
         printf "${CYAN}> Detected gzipped SQL backup${NC}\n"
+    elif head -n 10 "$header_file" | grep -qE '(^--|^CREATE |^INSERT |^ALTER |^DROP |^\\\\connect|^SET |^COMMENT |^GRANT |^REVOKE )'; then
+        printf "${CYAN}> Detected plain SQL backup${NC}\n"
     else
-        # Check if it looks like SQL (basic validation)
-        if head -n 10 "$temp_file" | grep -qE '(^--|^CREATE |^INSERT |^ALTER |^DROP |^\\\\connect|^SET |^COMMENT |^GRANT |^REVOKE )'; then
-            printf "${CYAN}> Detected plain SQL backup${NC}\n"
-        else
-            printf "${RED}Error: Input is neither a valid gzip file nor a SQL file${NC}\n"
-            exit 1
-        fi
+        printf "${RED}Error: Input is neither a valid gzip file nor a SQL file${NC}\n"
+        printf "${RED}       (first bytes: ${magic:-<empty>})${NC}\n"
+        exit 1
     fi
 
-    # Start timing
-    import_start_time=$(date +%s)
+    # Decompress on the fly only when needed; plain SQL passes straight through.
+    if [ "$is_gzipped" = true ]; then
+        decompress() { gunzip -c; }
+    else
+        decompress() { cat; }
+    fi
 
-    if [ "$VERBOSE" = true ]; then
-        $DOCKER_CMD psql -U aliasvault postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'aliasvault' AND pid <> pg_backend_pid();" && \
-        $DOCKER_CMD psql -U aliasvault postgres -c "DROP DATABASE IF EXISTS aliasvault;" && \
-        $DOCKER_CMD psql -U aliasvault postgres -c "CREATE DATABASE aliasvault OWNER aliasvault;" && \
-        if [ "$is_gzipped" = true ]; then
-            gunzip -c "$temp_file" | $DOCKER_CMD psql -U aliasvault aliasvault
+    # Live progress bar (bytes/throughput/ETA) when `pv` is available.
+    if command -v pv >/dev/null 2>&1; then
+        if [ -n "$input_size" ] && [ "$input_size" -gt 0 ] 2>/dev/null; then
+            progress() { pv -s "$input_size"; }
         else
-            cat "$temp_file" | $DOCKER_CMD psql -U aliasvault aliasvault
+            progress() { pv; }
         fi
     else
-        $DOCKER_CMD psql -U aliasvault postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'aliasvault' AND pid <> pg_backend_pid();" > /dev/null 2>&1 && \
-        $DOCKER_CMD psql -U aliasvault postgres -c "DROP DATABASE IF EXISTS aliasvault;" > /dev/null 2>&1 && \
-        $DOCKER_CMD psql -U aliasvault postgres -c "CREATE DATABASE aliasvault OWNER aliasvault;" > /dev/null 2>&1 && \
-        if [ "$is_gzipped" = true ]; then
-            gunzip -c "$temp_file" | $DOCKER_CMD psql -U aliasvault aliasvault > /dev/null 2>&1
-        else
-            cat "$temp_file" | $DOCKER_CMD psql -U aliasvault aliasvault > /dev/null 2>&1
-        fi
+        progress() { cat; }
+    fi
+
+    # Reassemble the full stream.
+    import_start_time=$(date +%s)
+    set -o pipefail
+
+    printf "${CYAN}> Importing data into the database. This can take several minutes for large backups, please wait...${NC}\n"
+
+    # The setup commands MUST read from /dev/null.
+    if [ "$VERBOSE" = true ]; then
+        $DOCKER_CMD psql -U aliasvault postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'aliasvault' AND pid <> pg_backend_pid();" < /dev/null && \
+        $DOCKER_CMD psql -U aliasvault postgres -c "DROP DATABASE IF EXISTS aliasvault;" < /dev/null && \
+        $DOCKER_CMD psql -U aliasvault postgres -c "CREATE DATABASE aliasvault OWNER aliasvault;" < /dev/null && \
+        { cat "$header_file"; cat <&3; } | progress | decompress | $DOCKER_CMD psql -U aliasvault aliasvault
+    else
+        $DOCKER_CMD psql -U aliasvault postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'aliasvault' AND pid <> pg_backend_pid();" < /dev/null > /dev/null 2>&1 && \
+        $DOCKER_CMD psql -U aliasvault postgres -c "DROP DATABASE IF EXISTS aliasvault;" < /dev/null > /dev/null 2>&1 && \
+        $DOCKER_CMD psql -U aliasvault postgres -c "CREATE DATABASE aliasvault OWNER aliasvault;" < /dev/null > /dev/null 2>&1 && \
+        { cat "$header_file"; cat <&3; } | progress | decompress | $DOCKER_CMD psql -U aliasvault aliasvault > /dev/null 2>&1
     fi
 
     import_status=$?
+    set +o pipefail
+    exec 3<&-  # Close fd 3
 
     # End timing
     import_end_time=$(date +%s)
     import_duration=$((import_end_time - import_start_time))
 
-    rm "$temp_file"
+    rm -f "$header_file"
 
     if [ $import_status -eq 0 ]; then
         printf "${GREEN}> Database imported successfully.${NC}\n"
