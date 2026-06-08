@@ -38,7 +38,7 @@ else
 
                 <EditForm Model="@VerifyModel" OnValidSubmit="@VerifySetup" class="space-y-4" av-enable="true" av-suppress-save="true">
                     <div>
-                        <InputText id="verificationCode" @bind-Value="VerifyModel.Code"
+                        <InputTextOnInput id="verificationCode" @bind-Value="VerifyModel.Code"
                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                                    placeholder="@Localizer["VerificationCodePlaceholder"]"
                                    autocomplete="one-time-code"/>
