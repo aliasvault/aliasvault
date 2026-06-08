@@ -7,6 +7,10 @@
   <string name="common_next">Suivant</string>
   <string name="common_cancel">Annuler</string>
   <string name="common_back">Retour</string>
+  <string name="common_show_details">Show details</string>
+  <string name="common_hide_details">Hide details</string>
+  <string name="common_copy">Copy</string>
+  <string name="common_copied_to_clipboard">Copied to clipboard</string>
   <string name="unknown_error">Une erreur inconnue s\'est produite</string>
   <string name="autofill_failed_to_retrieve">Échec de la récupération, ouvrez l\'application</string>
   <string name="autofill_no_match_found">Aucune correspondance trouvée</string>
