@@ -11,6 +11,7 @@ using System.Net.Sockets;
 using System.Text;
 using AliasServerDb;
 using AliasVault.Cryptography.Server;
+using AliasVault.IntegrationTests.SmtpServer.Helpers;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.EntityFrameworkCore;

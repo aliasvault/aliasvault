@@ -5,7 +5,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.IntegrationTests.TaskRunner;
+namespace AliasVault.IntegrationTests.TaskRunner.Helpers;
 
 using AliasVault.Shared.Server.Services;
 using AliasVault.TaskRunner.Tasks;

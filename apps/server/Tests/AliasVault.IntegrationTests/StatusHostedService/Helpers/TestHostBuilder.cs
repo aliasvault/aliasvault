@@ -4,7 +4,7 @@
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
 // -----------------------------------------------------------------------
-namespace AliasVault.IntegrationTests.StatusHostedService;
+namespace AliasVault.IntegrationTests.StatusHostedService.Helpers;
 
 using System.Reflection;
 using AliasServerDb;
