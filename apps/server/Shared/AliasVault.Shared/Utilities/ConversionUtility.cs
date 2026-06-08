@@ -7,8 +7,8 @@
 
 namespace AliasVault.Shared.Utilities;
 
+using AngleSharp.Dom;
 using Ganss.Xss;
-using HtmlAgilityPack;
 
 /// <summary>
 /// Class which contains various helper methods for data conversion.
@@ -16,11 +16,9 @@ using HtmlAgilityPack;
 public static class ConversionUtility
 {
     /// <summary>
-    /// Lazy-initialized HTML sanitizer instance configured for safe email viewing.
-    /// Removes all script tags, event handlers, and other XSS vectors while preserving
-    /// safe HTML for email display.
+    /// Factory that creates and configures an <see cref="HtmlSanitizer"/> instance for safe email viewing.
     /// </summary>
-    private static readonly Lazy<HtmlSanitizer> EmailSanitizer = new(() =>
+    private static readonly Func<HtmlSanitizer> CreateEmailSanitizer = () =>
     {
         var sanitizer = new HtmlSanitizer();
 
@@ -111,6 +109,36 @@ public static class ConversionUtility
         sanitizer.AllowedTags.Remove("applet");
 
         return sanitizer;
+    };
+
+    /// <summary>
+    /// Lazy-initialized HTML sanitizer instance configured for safe email viewing.
+    /// Removes all script tags, event handlers, and other XSS vectors while preserving
+    /// safe HTML for email display.
+    /// </summary>
+    private static readonly Lazy<HtmlSanitizer> EmailSanitizer = new(CreateEmailSanitizer);
+
+    /// <summary>
+    /// Lazy-initialized HTML sanitizer that, in addition to sanitizing, rewrites anchor tags to
+    /// open in a new tab. This is done as part of the single sanitize pass (via <see cref="HtmlSanitizer.PostProcessNode"/>)
+    /// so that displaying an email only requires parsing the (potentially large) HTML once instead of twice.
+    /// </summary>
+    private static readonly Lazy<HtmlSanitizer> EmailViewSanitizer = new(() =>
+    {
+        var sanitizer = CreateEmailSanitizer();
+        sanitizer.PostProcessNode += (_, e) =>
+        {
+            if (e.Node is IElement element && element.NodeName.Equals("A", StringComparison.OrdinalIgnoreCase) && element.HasAttribute("href"))
+            {
+                element.SetAttribute("target", "_blank");
+
+                var relValues = new HashSet<string>((element.GetAttribute("rel") ?? string.Empty).Split(' ', StringSplitOptions.RemoveEmptyEntries), StringComparer.OrdinalIgnoreCase);
+                relValues.Add("noopener");
+                relValues.Add("noreferrer");
+                element.SetAttribute("rel", string.Join(" ", relValues));
+            }
+        };
+        return sanitizer;
     });
 
     /// <summary>
@@ -158,68 +186,16 @@ public static class ConversionUtility
             return html;
         }
 
-        // First sanitize to remove XSS vectors
-        var sanitizedHtml = SanitizeHtmlForEmailViewing(html);
-
-        // Then convert anchor tags to open in new tab
-        return ConvertAnchorTagsToOpenInNewTab(sanitizedHtml);
-    }
-
-    /// <summary>
-    /// Convert all anchor tags to open in a new tab.
-    /// </summary>
-    /// <param name="html">HTML input.</param>
-    /// <returns>HTML with all anchor tags converted to open in a new tab when clicked on.</returns>
-    /// <remarks>
-    /// Note: same implementation exists in browser extension Typescript version in ConversionUtility.ts.
-    /// </remarks>
-    public static string ConvertAnchorTagsToOpenInNewTab(string html)
-    {
         try
         {
-            var doc = new HtmlDocument();
-            doc.LoadHtml(html);
-
-            var anchors = doc.DocumentNode.SelectNodes("//a[@href]");
-            if (anchors != null)
-            {
-                foreach (var anchor in anchors)
-                {
-                    var targetAttr = anchor.Attributes["target"];
-                    if (targetAttr == null)
-                    {
-                        anchor.SetAttributeValue("target", "_blank");
-                    }
-                    else if (targetAttr.Value != "_blank")
-                    {
-                        targetAttr.Value = "_blank";
-                    }
-
-                    // Add rel="noopener noreferrer" for security
-                    var relAttr = anchor.Attributes["rel"];
-                    if (relAttr == null)
-                    {
-                        anchor.SetAttributeValue("rel", "noopener noreferrer");
-                    }
-                    else if (!relAttr.Value.Contains("noopener") || !relAttr.Value.Contains("noreferrer"))
-                    {
-                        var relValues = new HashSet<string>(relAttr.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries));
-                        relValues.Add("noopener");
-                        relValues.Add("noreferrer");
-                        anchor.SetAttributeValue("rel", string.Join(" ", relValues));
-                    }
-                }
-            }
-
-            return doc.DocumentNode.OuterHtml;
+            // Sanitize and rewrite anchor tags to open in a new tab in a single parse pass.
+            return EmailViewSanitizer.Value.Sanitize(html);
         }
         catch (Exception ex)
         {
-            // Log the exception
-            Console.WriteLine($"Error in ConvertAnchorTagsToOpenInNewTab: {ex.Message}");
-
-            // Return the original HTML if an error occurs
-            return html;
+            // Log the exception and return empty string to prevent potential XSS.
+            Console.WriteLine($"Error in SanitizeAndPrepareEmailHtml: {ex.Message}");
+            return string.Empty;
         }
     }
 }

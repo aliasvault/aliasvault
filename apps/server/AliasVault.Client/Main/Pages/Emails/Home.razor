@@ -168,13 +168,20 @@ else
 
                     <!-- Right Panel - Email Preview -->
                     <div class="w-3/4">
-                        <EmailPreview
-                            Email="SelectedEmail"
-                            IsSpamOk="false"
-                            OnEmailDeleted="HandleEmailDeleted"
-                            CredentialId="@GetCredentialIdForEmail(SelectedEmailId)"
-                            CredentialName="@GetCredentialNameForEmail(SelectedEmailId)"
-                            OnCredentialClick="NavigateToCredential" />
+                        @if (IsPreviewLoading)
+                        {
+                            <EmailPreviewSkeleton />
+                        }
+                        else
+                        {
+                            <EmailPreview
+                                Email="SelectedEmail"
+                                IsSpamOk="false"
+                                OnEmailDeleted="HandleEmailDeleted"
+                                CredentialId="@GetCredentialIdForEmail(SelectedEmailId)"
+                                CredentialName="@GetCredentialNameForEmail(SelectedEmailId)"
+                                OnCredentialClick="NavigateToCredential" />
+                        }
                     </div>
                 </div>
             }
@@ -195,6 +202,8 @@ else
     private EmailApiModel EmailModalEmail { get; set; } = new();
     private int? SelectedEmailId { get; set; }
     private EmailApiModel? SelectedEmail { get; set; }
+    private bool IsPreviewLoading { get; set; }
+    private int _previewLoadSequence;
     private bool IsLoadingMore { get; set; }
     private bool HasMoreEmails => TotalRecords > EmailList.Count;
 
@@ -635,8 +644,6 @@ else
 
         // Highlight the clicked row immediately.
         SelectedEmailId = emailId;
-        StateHasChanged();
-        await Task.Delay(1);
 
         await LoadSelectedEmailForPreview(emailId);
     }
@@ -646,9 +653,23 @@ else
     /// </summary>
     private async Task LoadSelectedEmailForPreview(int emailId)
     {
+        var sequence = ++_previewLoadSequence;
+
+        // Show a loading placeholder immediately and yield so the browser can paint the skeleton
+        // before any heavy synchronous work (decrypt/sanitize) blocks the single Blazor WASM thread.
+        SelectedEmail = null;
+        IsPreviewLoading = true;
+        StateHasChanged();
+        await Task.Delay(1);
+
         try
         {
             EmailApiModel? mail = await HttpClient.GetFromJsonAsync<EmailApiModel>($"v1/Email/{emailId}");
+            if (sequence != _previewLoadSequence)
+            {
+                return;
+            }
+
             if (mail != null)
             {
                 // Decrypt the email content locally.
@@ -659,14 +680,26 @@ else
                     mail = await EmailService.DecryptEmail(mail);
                 }
 
+                if (sequence != _previewLoadSequence)
+                {
+                    return;
+                }
+
                 SelectedEmail = mail;
-                StateHasChanged();
             }
         }
         catch (Exception ex)
         {
             GlobalNotificationService.AddErrorMessage(string.Format(Localizer["LoadEmailsFailedMessage"], ex.Message), true);
             Logger.LogError(ex, "An error occurred while loading email for preview");
+        }
+        finally
+        {
+            if (sequence == _previewLoadSequence)
+            {
+                IsPreviewLoading = false;
+                StateHasChanged();
+            }
         }
     }
 

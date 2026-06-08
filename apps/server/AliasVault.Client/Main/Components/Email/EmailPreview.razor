@@ -167,6 +167,11 @@
     private string EmailBody = string.Empty;
 
     /// <summary>
+    /// The id of the email whose body is currently rendered.
+    /// </summary>
+    private int? _renderedEmailId;
+
+    /// <summary>
     /// Show confirmation modal before deleting email.
     /// </summary>
     private async Task ShowDeleteConfirmation()
@@ -279,6 +284,14 @@
     {
         await base.OnParametersSetAsync();
 
+        // Only (re)compute the rendered body when the email actually changes.
+        if (Email?.Id == _renderedEmailId)
+        {
+            return;
+        }
+
+        _renderedEmailId = Email?.Id;
+
         if (Email != null)
         {
             // Pick an initial view mode based on what content is available.
@@ -294,6 +307,10 @@
             {
                 EmailBody = Localizer["NoEmailBody"];
             }
+        }
+        else
+        {
+            EmailBody = string.Empty;
         }
     }
 
