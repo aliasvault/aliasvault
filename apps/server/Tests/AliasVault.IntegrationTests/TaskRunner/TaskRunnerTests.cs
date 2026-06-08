@@ -8,6 +8,7 @@
 namespace AliasVault.IntegrationTests.TaskRunner;
 
 using AliasServerDb;
+using AliasVault.IntegrationTests.TaskRunner.Helpers;
 using AliasVault.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;

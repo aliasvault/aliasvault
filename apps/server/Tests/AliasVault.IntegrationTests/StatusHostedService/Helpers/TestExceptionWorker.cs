@@ -5,7 +5,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.IntegrationTests.StatusHostedService;
+namespace AliasVault.IntegrationTests.StatusHostedService.Helpers;
 
 using Microsoft.Extensions.Hosting;
 

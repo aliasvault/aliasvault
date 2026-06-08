@@ -8,7 +8,7 @@
 namespace AliasVault.E2ETests.Tests.Client.Shard1;
 
 using System.Text;
-using AliasVault.IntegrationTests.SmtpServer;
+using AliasVault.IntegrationTests.SmtpServer.Helpers;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.EntityFrameworkCore;

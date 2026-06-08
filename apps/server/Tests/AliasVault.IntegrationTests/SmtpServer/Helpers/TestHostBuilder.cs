@@ -5,7 +5,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace AliasVault.IntegrationTests.SmtpServer;
+namespace AliasVault.IntegrationTests.SmtpServer.Helpers;
 
 using System.Data.Common;
 using System.Net;

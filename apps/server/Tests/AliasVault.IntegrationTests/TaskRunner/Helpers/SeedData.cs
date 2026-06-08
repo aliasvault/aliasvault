@@ -5,7 +5,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.IntegrationTests.TaskRunner;
+namespace AliasVault.IntegrationTests.TaskRunner.Helpers;
 
 using AliasServerDb;
 using AliasVault.Shared.Models.Enums;

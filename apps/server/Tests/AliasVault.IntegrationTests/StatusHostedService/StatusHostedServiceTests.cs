@@ -7,6 +7,7 @@
 
 namespace AliasVault.IntegrationTests.StatusHostedService;
 
+using AliasVault.IntegrationTests.StatusHostedService.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 
