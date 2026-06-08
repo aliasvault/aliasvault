@@ -376,10 +376,13 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         var supportedPrivateDomains = config.PrivateEmailDomains;
 
         // Determine the new-account alias creation limit (abuse mitigation). When enabled, accounts younger than
-        // NewAccountAliasLimitDays may not have more than MaxAliasesForNewAccounts active aliases. Both 0 = disabled.
+        // NewAccountAliasLimitDays may not create more than MaxAliasesForNewAccounts aliases in total. We count every
+        // alias the account has ever claimed (including disabled ones), because abusers spin up many throw-away aliases
+        // and disable them after a single use; only counting active aliases would let them bypass the cap entirely.
+        // Both 0 = disabled.
         var settings = await settingsService.GetAllSettingsAsync();
         var aliasLimitActive = settings.NewAccountAliasLimitDays > 0 && settings.MaxAliasesForNewAccounts > 0 && user.CreatedAt > timeProvider.UtcNow.AddDays(-settings.NewAccountAliasLimitDays);
-        var activeAliasCount = userOwnedEmailClaims.Count(x => !x.Disabled);
+        var ownedAliasCount = userOwnedEmailClaims.Count;
         var aliasLimitLogged = false;
 
         // Register new email addresses.
@@ -432,7 +435,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
 
             // Enforce the new-account alias creation limit: once the account is at its cap, silently skip creating
             // additional aliases (logged once so the limit being hit is visible for audits).
-            if (aliasLimitActive && activeAliasCount >= settings.MaxAliasesForNewAccounts)
+            if (aliasLimitActive && ownedAliasCount >= settings.MaxAliasesForNewAccounts)
             {
                 if (!aliasLimitLogged)
                 {
@@ -455,7 +458,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                         CreatedAt = timeProvider.UtcNow,
                         UpdatedAt = timeProvider.UtcNow,
                     });
-                activeAliasCount++;
+                ownedAliasCount++;
             }
             catch (DbUpdateException ex)
             {

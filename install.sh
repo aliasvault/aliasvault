@@ -3025,19 +3025,23 @@ handle_db_export() {
     export_start_time=$(date +%s)
 
     if [ "$PARALLEL_JOBS" -gt 0 ]; then
-        # Use pigz for parallel compression
-        # Use nice (lowest CPU priority) and ionice (lowest I/O priority) to minimize impact
+        # pigz for parallel compression, at lowest CPU/IO priority..
         printf "${CYAN}> Exporting ${DB_TYPE} database with parallel=${PARALLEL_JOBS} compression...${NC}\n" >&2
-        $DOCKER_CMD bash -c "
-            ionice -c 3 nice -n 19 pg_dump -U aliasvault aliasvault | ionice -c 3 nice -n 19 pigz -1 -p ${PARALLEL_JOBS} 2>/dev/null || \
-            nice -n 19 pg_dump -U aliasvault aliasvault | nice -n 19 pigz -1 -p ${PARALLEL_JOBS}
-        " 2>/dev/null
+        if $DOCKER_CMD sh -c 'command -v ionice' >/dev/null 2>&1; then
+            IO_PREFIX="ionice -c 3 "
+        else
+            IO_PREFIX=""
+        fi
+        $DOCKER_CMD bash -c "set -o pipefail; ${IO_PREFIX}nice -n 19 pg_dump -U aliasvault aliasvault | ${IO_PREFIX}nice -n 19 pigz -1 -p ${PARALLEL_JOBS}"
+        export_status=$?
     else
         # Standard gzip
         printf "${CYAN}> Exporting ${DB_TYPE} database...${NC}\n" >&2
+        set -o pipefail
         $DOCKER_CMD nice -n 19 pg_dump -U aliasvault aliasvault | gzip -1
+        export_status=$?
+        set +o pipefail
     fi
-    export_status=$?
 
     # End timing
     export_end_time=$(date +%s)
@@ -3186,13 +3190,13 @@ handle_db_import() {
         progress() { cat; }
     fi
 
-    # Reassemble the full stream.
     import_start_time=$(date +%s)
     set -o pipefail
 
     printf "${CYAN}> Importing data into the database. This can take several minutes for large backups, please wait...${NC}\n"
 
-    # The setup commands MUST read from /dev/null.
+    # Setup commands read /dev/null: docker exec -T would otherwise drain the shared-offset stdin stream.
+    # The pipeline then reassembles the peeked header with the rest of fd 3 and streams it into psql.
     if [ "$VERBOSE" = true ]; then
         $DOCKER_CMD psql -U aliasvault postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'aliasvault' AND pid <> pg_backend_pid();" < /dev/null && \
         $DOCKER_CMD psql -U aliasvault postgres -c "DROP DATABASE IF EXISTS aliasvault;" < /dev/null && \
