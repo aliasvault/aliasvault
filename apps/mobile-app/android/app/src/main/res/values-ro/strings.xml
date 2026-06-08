@@ -7,6 +7,10 @@
   <string name="common_next">Înainte</string>
   <string name="common_cancel">Anulează</string>
   <string name="common_back">Înapoi</string>
+  <string name="common_show_details">Afișează detaliile</string>
+  <string name="common_hide_details">Ascunde detaliile</string>
+  <string name="common_copy">Copiază</string>
+  <string name="common_copied_to_clipboard">Copiat în clipboard</string>
   <string name="unknown_error">A apărut o eroare necunoscută</string>
   <string name="autofill_failed_to_retrieve">Preluare eșuată, deschide aplicația</string>
   <string name="autofill_no_match_found">Nicio potrivire găsită</string>

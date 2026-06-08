@@ -128,6 +128,9 @@
   <data name="PUBLIC_REGISTRATION_DISABLED" xml:space="preserve">
     <value>Регистрация новых аккаунтов на этом сервере отключена. Пожалуйста, свяжитесь с администратором.</value>
   </data>
+  <data name="REGISTRATION_FAILED" xml:space="preserve">
+    <value>Не удалось создать учетную запись. Повторите попытку через несколько минут. Если проблема сохранится, обратитесь в службу поддержки.</value>
+  </data>
   <data name="USER_NOT_FOUND" xml:space="preserve">
     <value>Неверное имя пользователя или пароль. Попробуйте снова.</value>
   </data>

@@ -7,6 +7,10 @@
   <string name="common_next">Volgende</string>
   <string name="common_cancel">Annuleren</string>
   <string name="common_back">Terug</string>
+  <string name="common_show_details">Toon details</string>
+  <string name="common_hide_details">Verberg details</string>
+  <string name="common_copy">Kopiëren</string>
+  <string name="common_copied_to_clipboard">Gekopieerd naar klembord</string>
   <string name="unknown_error">Er is een onbekende fout opgetreden</string>
   <string name="autofill_failed_to_retrieve">Ophalen mislukt, open app</string>
   <string name="autofill_no_match_found">Geen resultaten gevonden</string>
