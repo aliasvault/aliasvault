@@ -199,7 +199,7 @@ else
     private int TotalRecords { get; set; }
     private bool EmailModalVisible { get; set; }
     private bool NoEmailClaims { get; set; }
-    private EmailApiModel EmailModalEmail { get; set; } = new();
+    private EmailApiModel? EmailModalEmail { get; set; }
     private int? SelectedEmailId { get; set; }
     private EmailApiModel? SelectedEmail { get; set; }
     private bool IsPreviewLoading { get; set; }
@@ -600,6 +600,13 @@ else
         // Remove new email mark when email is clicked
         NewEmailIds.Remove(emailId);
 
+        // Render the modal shell with skeleton loaders immediately and yield so it paints before the decrypt/sanitize work.
+        // This improves the perceived loading time of the email body (UX).
+        EmailModalEmail = null;
+        EmailModalVisible = true;
+        StateHasChanged();
+        await Task.Delay(1);
+
         EmailApiModel? mail = await HttpClient.GetFromJsonAsync<EmailApiModel>($"v1/Email/{emailId}");
         if (mail != null)
         {
@@ -612,7 +619,12 @@ else
             }
 
             EmailModalEmail = mail;
-            EmailModalVisible = true;
+            StateHasChanged();
+        }
+        else
+        {
+            // Nothing to show — close the modal again.
+            EmailModalVisible = false;
             StateHasChanged();
         }
     }
@@ -656,7 +668,7 @@ else
         var sequence = ++_previewLoadSequence;
 
         // Show a loading placeholder immediately and yield so the browser can paint the skeleton
-        // before any heavy synchronous work (decrypt/sanitize) blocks the single Blazor WASM thread.
+        // before any synchronous work (decrypt/sanitize). This improves the perceived loading time of the email body (UX).
         SelectedEmail = null;
         IsPreviewLoading = true;
         StateHasChanged();
