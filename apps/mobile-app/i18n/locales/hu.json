@@ -661,37 +661,37 @@
       "version": "{{version}} verzió",
       "advancedSettings": "Haladó beállítások",
       "customProxyHeaders": "Egyedi proxy header-ök",
-      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
-      "headerName": "Header name",
-      "headerNamePlaceholder": "X-Custom-Header",
-      "headerValue": "Header value"
+      "customProxyHeadersDescription": "Adja meg a HTTP header-öket, amelyek küldésre kerülnek az AliasVault szerver felé a kérések során. Olyan saját üzemeltetésű saját fordított proxy esetén használható amely egyedi header-öket ellenőriz (pl. Pangolin, Cloudflare Access).",
+      "headerName": "Header név",
+      "headerNamePlaceholder": "X-Egyedi-Header",
+      "headerValue": "Header érték"
     }
   },
   "upgrade": {
-    "title": "Upgrade Vault",
-    "subtitle": "AliasVault has updated and your vault needs to be upgraded. This should only take a few seconds.",
-    "versionInformation": "Version Information",
-    "yourVault": "Your vault version:",
-    "newVersion": "New available version:",
-    "upgrade": "Upgrade",
-    "upgrading": "Upgrading...",
+    "title": "Széf frissítése",
+    "subtitle": "Az AliasVault frissült, ezért a széfet is frissíteni kell. Ez csak pár másodpercig tart.",
+    "versionInformation": "Verzió információ",
+    "yourVault": "A széf verziója:",
+    "newVersion": "Legújabb elérhető verzió:",
+    "upgrade": "Frissítés",
+    "upgrading": "Frissítés...",
     "logout": "Kijelentkezés",
-    "whatsNew": "What's New",
-    "whatsNewDescription": "An upgrade is required to support the following changes:",
-    "noDescriptionAvailable": "No description available for this version.",
+    "whatsNew": "Újdonságok",
+    "whatsNewDescription": "Frissítés szükséges a következő változások támogatása érdekében:",
+    "noDescriptionAvailable": "Nem elérhető leírás ehhez a verzióhoz.",
     "status": {
-      "preparingUpgrade": "Preparing upgrade...",
-      "vaultAlreadyUpToDate": "Vault is already up to date",
-      "applyingDatabaseMigrations": "Applying database migrations...",
-      "applyingMigration": "Applying migration {{current}} of {{total}}...",
-      "committingChanges": "Committing changes..."
+      "preparingUpgrade": "Frissítés előkészítése...",
+      "vaultAlreadyUpToDate": "A széf már naprakész",
+      "applyingDatabaseMigrations": "Adatbázis migrációk alkalmazása...",
+      "applyingMigration": "{{current}} migráció alkalmazva a {{total}}-ból...",
+      "committingChanges": "Változások alkalmazása..."
     },
     "alerts": {
-      "unableToGetVersionInfo": "Unable to get version information. Please try again.",
-      "selfHostedServer": "Self-Hosted Server",
-      "selfHostedWarning": "If you're using a self-hosted server, make sure to also update your self-hosted instance as otherwise logging in to the web client will stop working.",
-      "continueUpgrade": "Continue Upgrade",
-      "upgradeFailed": "Upgrade Failed",
+      "unableToGetVersionInfo": "Sikertelen verzió lekérés. Próbálja meg újra.",
+      "selfHostedServer": "Saját üzemeltetésű szerver",
+      "selfHostedWarning": "Ha saját üzemetetésű szervere van, bizonyosodjon meg, hogy naprakész szervert használ, mert máskülönben a web kliensbe való belépés nem fog működni.",
+      "continueUpgrade": "Frissítés folytatása",
+      "upgradeFailed": "Sikertelen frissítés",
       "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})"
     }
   }
