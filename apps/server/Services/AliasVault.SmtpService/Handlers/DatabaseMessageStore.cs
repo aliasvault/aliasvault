@@ -198,8 +198,8 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
                 // Remove all "-" or "=" characters if there are 3 or more in a row
                 plainToPlainText = Regex.Replace(plainToPlainText, @"-{3,}|\={3,}", string.Empty, RegexOptions.NonBacktracking);
 
-                // Remove any non-printable characters
-                plainToPlainText = Regex.Replace(plainToPlainText, @"[^\u0020-\u007E]", string.Empty, RegexOptions.NonBacktracking);
+                // Remove control characters while preserving printable Unicode such as accented letters and emoji.
+                plainToPlainText = Regex.Replace(plainToPlainText, @"\p{Cc}", string.Empty, RegexOptions.NonBacktracking);
 
                 // Replace multiple spaces with a single space
                 plainToPlainText = Regex.Replace(plainToPlainText, @"\s+", " ", RegexOptions.NonBacktracking);
@@ -224,8 +224,8 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
                 // Remove all "-" or "=" characters if there are 3 or more in a row
                 htmlToPlainText = Regex.Replace(htmlToPlainText, @"-{3,}|\={3,}", string.Empty, RegexOptions.NonBacktracking);
 
-                // Remove any non-printable characters
-                htmlToPlainText = Regex.Replace(htmlToPlainText, @"[^\u0020-\u007E]", string.Empty, RegexOptions.NonBacktracking);
+                // Remove control characters while preserving printable Unicode such as accented letters and emoji.
+                htmlToPlainText = Regex.Replace(htmlToPlainText, @"\p{Cc}", string.Empty, RegexOptions.NonBacktracking);
 
                 // Replace multiple spaces with a single space
                 htmlToPlainText = Regex.Replace(htmlToPlainText, @"\s+", " ", RegexOptions.NonBacktracking);
