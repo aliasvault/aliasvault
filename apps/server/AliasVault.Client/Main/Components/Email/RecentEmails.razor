@@ -155,7 +155,7 @@
     private List<MailboxEmailApiModel> MailboxEmails { get; set; } = new();
     private List<MailboxEmailApiModel> DisplayedEmails { get; set; } = new();
     private bool ShowComponent { get; set; } = false;
-    private EmailApiModel Email { get; set; } = new();
+    private EmailApiModel? Email { get; set; }
     private bool EmailModalVisible { get; set; }
     private string Error { get; set; } = string.Empty;
     private bool IsLoading => LoadingService.IsLoading("recentemails");
@@ -402,6 +402,13 @@
     /// </summary>
     private async Task ShowSpamOkEmailInModal(string emailPrefix, int emailId)
     {
+        // Render the modal shell with skeleton loaders immediately and yield so it paints before the
+        // email is fetched and (inside the modal) sanitized. This improves the perceived loading time of the email body (UX).
+        Email = null;
+        EmailModalVisible = true;
+        StateHasChanged();
+        await Task.Delay(1);
+
         var client = HttpClientFactory.CreateClient("EmailClient");
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.spamok.com/v2/Email/{emailPrefix}/{emailId}");
         request.Headers.Add("X-Asdasd-Platform-Id", "av-web");
@@ -414,10 +421,14 @@
             if (mail != null)
             {
                 Email = mail;
-                EmailModalVisible = true;
                 StateHasChanged();
+                return;
             }
         }
+
+        // Nothing to show — close the modal again.
+        EmailModalVisible = false;
+        StateHasChanged();
     }
 
     /// <summary>
@@ -509,6 +520,13 @@
     /// </summary>
     private async Task ShowAliasVaultEmailInModal(int emailId)
     {
+        // Render the modal shell with skeleton loaders immediately and yield so it paints before the decrypt/sanitize work.
+        // This improves the perceived loading time of the email body (UX).
+        Email = null;
+        EmailModalVisible = true;
+        StateHasChanged();
+        await Task.Delay(1);
+
         EmailApiModel? mail = await HttpClient.GetFromJsonAsync<EmailApiModel>($"v1/Email/{emailId}");
         if (mail != null)
         {
@@ -521,7 +539,12 @@
             }
 
             Email = mail;
-            EmailModalVisible = true;
+            StateHasChanged();
+        }
+        else
+        {
+            // Nothing to show — close the modal again.
+            EmailModalVisible = false;
             StateHasChanged();
         }
     }

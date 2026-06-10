@@ -23,13 +23,19 @@
             <div class="p-4 border-b border-gray-200 dark:border-gray-700">
                 <div class="flex items-center justify-between gap-3 mb-3">
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 truncate min-w-0">
-                        @if (IsSpamOk)
+                        @if (Email == null)
+                        {
+                            <SkeletonBase Height="28" AdditionalClasses="w-3/4">
+                                <div class="w-full h-full bg-gray-300 dark:bg-gray-600 rounded"></div>
+                            </SkeletonBase>
+                        }
+                        else if (IsSpamOk)
                         {
                             <a target="_blank" href="https://spamok.com/@(Email!.ToLocal)/@(Email!.Id)" class="hover:underline">@Email.Subject</a>
                         }
                         else
                         {
-                            <span>@Email?.Subject</span>
+                            <span>@Email.Subject</span>
                         }
                     </h2>
                     <div class="flex items-center gap-1 flex-shrink-0">
@@ -39,11 +45,14 @@
                                 @CurrentFormatLabel
                             </ModalHeaderAction>
                         }
-                        <ModalHeaderAction OnClick="ShowDeleteConfirmation" Title="@Localizer["DeleteButton"]" Variant="ModalHeaderAction.ActionVariant.Danger">
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                        </ModalHeaderAction>
+                        @if (Email != null)
+                        {
+                            <ModalHeaderAction OnClick="ShowDeleteConfirmation" Title="@Localizer["DeleteButton"]" Variant="ModalHeaderAction.ActionVariant.Danger">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </ModalHeaderAction>
+                        }
                         <ModalHeaderAction OnClick="Close" Title="@SharedLocalizer["Close"]">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -53,12 +62,33 @@
                 </div>
                 <!-- 2-column on desktop; on mobile the columns stack and flow as one continuous list. The second column gets mt-1 on mobile so the gap between Date/Item and From/To matches the space-y-1 used within each block. -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 text-sm text-gray-500 dark:text-gray-400">
+                    @if (Email == null)
+                    {
+                        <div class="space-y-2">
+                            <SkeletonBase Height="16" AdditionalClasses="w-1/2">
+                                <div class="w-full h-full bg-gray-300 dark:bg-gray-600 rounded"></div>
+                            </SkeletonBase>
+                            <SkeletonBase Height="16" AdditionalClasses="w-1/2">
+                                <div class="w-full h-full bg-gray-300 dark:bg-gray-600 rounded"></div>
+                            </SkeletonBase>
+                        </div>
+                        <div class="space-y-2 mt-2 sm:mt-0">
+                            <SkeletonBase Height="16" AdditionalClasses="w-1/3">
+                                <div class="w-full h-full bg-gray-300 dark:bg-gray-600 rounded"></div>
+                            </SkeletonBase>
+                            <SkeletonBase Height="16" AdditionalClasses="w-1/4">
+                                <div class="w-full h-full bg-gray-300 dark:bg-gray-600 rounded"></div>
+                            </SkeletonBase>
+                        </div>
+                    }
+                    else
+                    {
                     <div class="space-y-1">
-                        <p>@Localizer["FromLabel"] @(Email?.FromLocal)@@@(Email?.FromDomain)</p>
-                        <p>@Localizer["ToLabel"] @(Email?.ToLocal)@@@(Email?.ToDomain)</p>
+                        <p>@Localizer["FromLabel"] @(Email.FromLocal)@@@(Email.FromDomain)</p>
+                        <p>@Localizer["ToLabel"] @(Email.ToLocal)@@@(Email.ToDomain)</p>
                     </div>
                     <div class="space-y-1 mt-1 sm:mt-0">
-                        <p>@Localizer["DateLabel"] @Email?.DateSystem</p>
+                        <p>@Localizer["DateLabel"] @Email.DateSystem</p>
                         @if (ShowItemLink)
                         {
                             @if (!string.IsNullOrEmpty(_credentialName) && _credentialId != Guid.Empty)
@@ -80,16 +110,41 @@
                             }
                         }
                     </div>
+                    }
                 </div>
             </div>
 
             <!-- Scrollable Content -->
             <div class="flex-1 overflow-y-auto p-4">
                 <div class="text-gray-700 dark:text-gray-300">
-                    <div>
-                        <iframe class="w-full overscroll-y-auto bg-white rounded" style="height:500px;" srcdoc="@EmailBody" sandbox="allow-popups allow-popups-to-escape-sandbox">
-                        </iframe>
-                    </div>
+                    @if (Email == null || _isBodyLoading)
+                    {
+                        <!-- Body skeleton: shown while the email loads and while the (synchronous, potentially heavy) HTML sanitize runs. -->
+                        <div class="space-y-3" style="height:500px;">
+                            <SkeletonBase Height="16" AdditionalClasses="w-11/12">
+                                <div class="w-full h-full bg-gray-300 dark:bg-gray-600 rounded"></div>
+                            </SkeletonBase>
+                            <SkeletonBase Height="16" AdditionalClasses="w-full">
+                                <div class="w-full h-full bg-gray-300 dark:bg-gray-600 rounded"></div>
+                            </SkeletonBase>
+                            <SkeletonBase Height="16" AdditionalClasses="w-10/12">
+                                <div class="w-full h-full bg-gray-300 dark:bg-gray-600 rounded"></div>
+                            </SkeletonBase>
+                            <SkeletonBase Height="16" AdditionalClasses="w-5/6">
+                                <div class="w-full h-full bg-gray-300 dark:bg-gray-600 rounded"></div>
+                            </SkeletonBase>
+                            <SkeletonBase Height="16" AdditionalClasses="w-2/3">
+                                <div class="w-full h-full bg-gray-300 dark:bg-gray-600 rounded"></div>
+                            </SkeletonBase>
+                        </div>
+                    }
+                    else
+                    {
+                        <div>
+                            <iframe class="w-full overscroll-y-auto bg-white rounded" style="height:500px;" srcdoc="@EmailBody" sandbox="allow-popups allow-popups-to-escape-sandbox">
+                            </iframe>
+                        </div>
+                    }
                 </div>
                 <div class="mt-4">
                     @if (Email?.Attachments?.Any() == true)
@@ -175,6 +230,21 @@
     /// The message body to display
     /// </summary>
     private string EmailBody = string.Empty;
+
+    /// <summary>
+    /// The id of the email whose body is currently rendered. Used to (re)compute the body only when the email changes.
+    /// </summary>
+    private int? _renderedEmailId;
+
+    /// <summary>
+    /// True while the email body is being prepared (sanitized) so the skeleton is shown instead of the iframe.
+    /// </summary>
+    private bool _isBodyLoading;
+
+    /// <summary>
+    /// Monotonic counter used to discard stale body-load work when the email changes mid-flight.
+    /// </summary>
+    private int _bodyLoadSequence;
 
     /// <summary>
     /// Show confirmation modal before deleting email.
@@ -402,32 +472,70 @@
     }
 
     /// <inheritdoc />
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        await base.OnInitializedAsync();
+        await base.OnParametersSetAsync();
 
-        // Determine initial view mode and email body
-        if (Email != null)
+        // Only (re)compute the rendered body when the email actually changes. The caller renders this modal
+        // immediately (with a null Email) so the shell paints right away, then supplies the decrypted email.
+        if (Email?.Id == _renderedEmailId)
         {
-            if (!string.IsNullOrWhiteSpace(Email.MessageHtml))
-            {
-                SetViewMode(EmailViewMode.Html);
-            }
-            else if (Email.MessagePlain != null)
-            {
-                SetViewMode(EmailViewMode.Plain);
-            }
-            else
-            {
-                EmailBody = Localizer["NoEmailBody"];
-            }
+            return;
         }
+
+        var sequence = ++_bodyLoadSequence;
+        _renderedEmailId = Email?.Id;
+        EmailBody = string.Empty;
+        _credentialId = Guid.Empty;
+        _credentialName = string.Empty;
+
+        if (Email == null)
+        {
+            return;
+        }
+
+        // Show the body skeleton and yield so the browser can paint it before the sanitize pass.
+        // This improves the perceived loading time of the email body (UX).
+        _isBodyLoading = true;
+        StateHasChanged();
+        await Task.Delay(1);
+
+        if (sequence != _bodyLoadSequence)
+        {
+            return;
+        }
+
+        // Determine initial view mode and email body.
+        if (!string.IsNullOrWhiteSpace(Email.MessageHtml))
+        {
+            SetViewMode(EmailViewMode.Html);
+        }
+        else if (Email.MessagePlain != null)
+        {
+            SetViewMode(EmailViewMode.Plain);
+        }
+        else
+        {
+            EmailBody = Localizer["NoEmailBody"];
+        }
+
+        if (sequence != _bodyLoadSequence)
+        {
+            return;
+        }
+
+        _isBodyLoading = false;
+        StateHasChanged();
 
         // Resolve the credential linked to this email's to-address when the caller asks for the
         // Item row. SpamOK emails aren't backed by a local vault item so the lookup is skipped.
-        if (ShowItemLink && !IsSpamOk && Email != null)
+        if (ShowItemLink && !IsSpamOk)
         {
             await ResolveLinkedCredential();
+            if (sequence == _bodyLoadSequence)
+            {
+                StateHasChanged();
+            }
         }
     }
 
