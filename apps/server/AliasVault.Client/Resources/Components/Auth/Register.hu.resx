@@ -105,7 +105,7 @@
     <comment>Loading message during account creation</comment>
   </data>
   <data name="RegistrationErrorMessage" xml:space="preserve">
-    <value>An error occurred during registration.</value>
+    <value>Hiba lépett fel a regisztráció során.</value>
     <comment>Generic registration error message</comment>
   </data>
   <!-- Placeholders -->
