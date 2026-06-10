@@ -174,6 +174,23 @@ if [[ ! $REPLY =~ ^([Yy]([Ee][Ss])?|[Yy])$ ]]; then
 fi
 
 # ------------------------------------------
+# Prepare changelogs (strip trailing newlines)
+# ------------------------------------------
+#
+# The changelog files end with a trailing newline on purpose (for clean git diffs). 
+# But Play Console renders that trailing newline as blank space under the release notes. 
+# Upload from a temp copy of the metadata tree whose changelog files have their trailing whitespace stripped.
+
+TMP_METADATA_ROOT=$(mktemp -d)
+trap 'rm -rf "$TMP_METADATA_ROOT"' EXIT
+SUPPLY_METADATA_PATH="$TMP_METADATA_ROOT/android"
+cp -R "$METADATA_PATH" "$SUPPLY_METADATA_PATH"
+
+while IFS= read -r changelog; do
+  perl -i -0777 -pe 's/\s+\z//' "$changelog"
+done < <(find "$SUPPLY_METADATA_PATH" -path '*/changelogs/*.txt')
+
+# ------------------------------------------
 # Upload via fastlane supply
 # ------------------------------------------
 #
@@ -185,7 +202,7 @@ fastlane supply \
   --package_name "$PACKAGE_NAME" \
   --aab "$AAB_RENAMED" \
   --track "$TRACK" \
-  --metadata_path "$METADATA_PATH" \
+  --metadata_path "$SUPPLY_METADATA_PATH" \
   --json_key "$JSON_KEY_PATH" \
   --skip_upload_apk true \
   --skip_upload_metadata true \
