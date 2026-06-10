@@ -361,6 +361,49 @@ jobs:
     permissions:
       contents: read
       packages: write
+    strategy:
+      # Don't cancel the other images if one fails.
+      fail-fast: false
+      # Cap at 2 concurrent runner slots: the heavy Client build (~55 min: Rust→WASM +
+      # wasm-tools + WASM publish) holds one slot while the remaining light images cycle
+      # through the second slot (~35-45 min total). This frees up the rest of the CI worker
+      # pool for other workflows.
+      max-parallel: 2
+      matrix:
+        # Client is listed first so it claims a slot immediately and runs alongside the rest of the images.
+        include:
+          - image: client
+            dockerfile: apps/server/AliasVault.Client/Dockerfile
+            title: AliasVault Client
+            description: Blazor WebAssembly client UI for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
+          - image: postgres
+            dockerfile: apps/server/Databases/AliasServerDb/Dockerfile
+            title: AliasVault PostgreSQL
+            description: PostgreSQL database for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
+          - image: api
+            dockerfile: apps/server/AliasVault.Api/Dockerfile
+            title: AliasVault API
+            description: REST API backend for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
+          - image: admin
+            dockerfile: apps/server/AliasVault.Admin/Dockerfile
+            title: AliasVault Admin
+            description: Admin portal for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
+          - image: reverse-proxy
+            dockerfile: apps/server/Dockerfile
+            title: AliasVault Reverse Proxy
+            description: Nginx reverse proxy for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
+          - image: smtp
+            dockerfile: apps/server/Services/AliasVault.SmtpService/Dockerfile
+            title: AliasVault SMTP Service
+            description: SMTP service for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
+          - image: task-runner
+            dockerfile: apps/server/Services/AliasVault.TaskRunner/Dockerfile
+            title: AliasVault TaskRunner
+            description: Background task runner for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
+          - image: installcli
+            dockerfile: apps/server/Utilities/AliasVault.InstallCli/Dockerfile
+            title: AliasVault Install CLI
+            description: Installation and configuration CLI for AliasVault. Used by install.sh for setup and configuration, not deployed as part of the application stack
 
     steps:
       - name: Checkout repository
@@ -379,238 +422,34 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata for Postgres image
-        id: postgres-meta
+      - name: Extract metadata
+        id: meta
         uses: docker/metadata-action@v6
         env:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
         with:
-          images: ghcr.io/aliasvault/postgres
+          images: ghcr.io/aliasvault/${{ matrix.image }}
           tags: |
             type=raw,value=${{ needs.detect-version.outputs.version }},enable=${{ needs.detect-version.outputs.version != '' }}
             type=raw,value=latest,enable=${{ needs.detect-version.outputs.tag_latest == 'true' }}
             type=ref,event=branch,enable=${{ needs.detect-version.outputs.version == '' }}
             type=raw,value={{branch}}-{{sha}},enable=${{ needs.detect-version.outputs.version == '' }}
           labels: |
-            org.opencontainers.image.title=AliasVault PostgreSQL
-            org.opencontainers.image.description=PostgreSQL database for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
+            org.opencontainers.image.title=${{ matrix.title }}
+            org.opencontainers.image.description=${{ matrix.description }}
           annotations: |
-            org.opencontainers.image.description=PostgreSQL database for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
+            org.opencontainers.image.description=${{ matrix.description }}
 
-      - name: Extract metadata for API image
-        id: api-meta
-        uses: docker/metadata-action@v6
-        env:
-          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
-        with:
-          images: ghcr.io/aliasvault/api
-          tags: |
-            type=raw,value=${{ needs.detect-version.outputs.version }},enable=${{ needs.detect-version.outputs.version != '' }}
-            type=raw,value=latest,enable=${{ needs.detect-version.outputs.tag_latest == 'true' }}
-            type=ref,event=branch,enable=${{ needs.detect-version.outputs.version == '' }}
-            type=raw,value={{branch}}-{{sha}},enable=${{ needs.detect-version.outputs.version == '' }}
-          labels: |
-            org.opencontainers.image.title=AliasVault API
-            org.opencontainers.image.description=REST API backend for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
-          annotations: |
-            org.opencontainers.image.description=REST API backend for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
-
-      - name: Extract metadata for Client image
-        id: client-meta
-        uses: docker/metadata-action@v6
-        env:
-          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
-        with:
-          images: ghcr.io/aliasvault/client
-          tags: |
-            type=raw,value=${{ needs.detect-version.outputs.version }},enable=${{ needs.detect-version.outputs.version != '' }}
-            type=raw,value=latest,enable=${{ needs.detect-version.outputs.tag_latest == 'true' }}
-            type=ref,event=branch,enable=${{ needs.detect-version.outputs.version == '' }}
-            type=raw,value={{branch}}-{{sha}},enable=${{ needs.detect-version.outputs.version == '' }}
-          labels: |
-            org.opencontainers.image.title=AliasVault Client
-            org.opencontainers.image.description=Blazor WebAssembly client UI for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
-          annotations: |
-            org.opencontainers.image.description=Blazor WebAssembly client UI for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
-
-      - name: Extract metadata for Admin image
-        id: admin-meta
-        uses: docker/metadata-action@v6
-        env:
-          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
-        with:
-          images: ghcr.io/aliasvault/admin
-          tags: |
-            type=raw,value=${{ needs.detect-version.outputs.version }},enable=${{ needs.detect-version.outputs.version != '' }}
-            type=raw,value=latest,enable=${{ needs.detect-version.outputs.tag_latest == 'true' }}
-            type=ref,event=branch,enable=${{ needs.detect-version.outputs.version == '' }}
-            type=raw,value={{branch}}-{{sha}},enable=${{ needs.detect-version.outputs.version == '' }}
-          labels: |
-            org.opencontainers.image.title=AliasVault Admin
-            org.opencontainers.image.description=Admin portal for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
-          annotations: |
-            org.opencontainers.image.description=Admin portal for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
-
-      - name: Extract metadata for Reverse Proxy image
-        id: reverse-proxy-meta
-        uses: docker/metadata-action@v6
-        env:
-          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
-        with:
-          images: ghcr.io/aliasvault/reverse-proxy
-          tags: |
-            type=raw,value=${{ needs.detect-version.outputs.version }},enable=${{ needs.detect-version.outputs.version != '' }}
-            type=raw,value=latest,enable=${{ needs.detect-version.outputs.tag_latest == 'true' }}
-            type=ref,event=branch,enable=${{ needs.detect-version.outputs.version == '' }}
-            type=raw,value={{branch}}-{{sha}},enable=${{ needs.detect-version.outputs.version == '' }}
-          labels: |
-            org.opencontainers.image.title=AliasVault Reverse Proxy
-            org.opencontainers.image.description=Nginx reverse proxy for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
-          annotations: |
-            org.opencontainers.image.description=Nginx reverse proxy for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
-
-      - name: Extract metadata for SMTP image
-        id: smtp-meta
-        uses: docker/metadata-action@v6
-        env:
-          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
-        with:
-          images: ghcr.io/aliasvault/smtp
-          tags: |
-            type=raw,value=${{ needs.detect-version.outputs.version }},enable=${{ needs.detect-version.outputs.version != '' }}
-            type=raw,value=latest,enable=${{ needs.detect-version.outputs.tag_latest == 'true' }}
-            type=ref,event=branch,enable=${{ needs.detect-version.outputs.version == '' }}
-            type=raw,value={{branch}}-{{sha}},enable=${{ needs.detect-version.outputs.version == '' }}
-          labels: |
-            org.opencontainers.image.title=AliasVault SMTP Service
-            org.opencontainers.image.description=SMTP service for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
-          annotations: |
-            org.opencontainers.image.description=SMTP service for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
-
-      - name: Extract metadata for TaskRunner image
-        id: task-runner-meta
-        uses: docker/metadata-action@v6
-        env:
-          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
-        with:
-          images: ghcr.io/aliasvault/task-runner
-          tags: |
-            type=raw,value=${{ needs.detect-version.outputs.version }},enable=${{ needs.detect-version.outputs.version != '' }}
-            type=raw,value=latest,enable=${{ needs.detect-version.outputs.tag_latest == 'true' }}
-            type=ref,event=branch,enable=${{ needs.detect-version.outputs.version == '' }}
-            type=raw,value={{branch}}-{{sha}},enable=${{ needs.detect-version.outputs.version == '' }}
-          labels: |
-            org.opencontainers.image.title=AliasVault TaskRunner
-            org.opencontainers.image.description=Background task runner for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
-          annotations: |
-            org.opencontainers.image.description=Background task runner for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
-
-      - name: Extract metadata for InstallCLI image
-        id: installcli-meta
-        uses: docker/metadata-action@v6
-        env:
-          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
-        with:
-          images: ghcr.io/aliasvault/installcli
-          tags: |
-            type=raw,value=${{ needs.detect-version.outputs.version }},enable=${{ needs.detect-version.outputs.version != '' }}
-            type=raw,value=latest,enable=${{ needs.detect-version.outputs.tag_latest == 'true' }}
-            type=ref,event=branch,enable=${{ needs.detect-version.outputs.version == '' }}
-            type=raw,value={{branch}}-{{sha}},enable=${{ needs.detect-version.outputs.version == '' }}
-          labels: |
-            org.opencontainers.image.title=AliasVault Install CLI
-            org.opencontainers.image.description=Installation and configuration CLI for AliasVault. Used by install.sh for setup and configuration, not deployed as part of the application stack
-          annotations: |
-            org.opencontainers.image.description=Installation and configuration CLI for AliasVault. Used by install.sh for setup and configuration, not deployed as part of the application stack
-
-
-      - name: Build and push Postgres image
+      - name: Build and push image
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: apps/server/Databases/AliasServerDb/Dockerfile
+          file: ${{ matrix.dockerfile }}
           platforms: linux/amd64,linux/arm64/v8
           push: true
-          tags: ${{ steps.postgres-meta.outputs.tags }}
-          labels: ${{ steps.postgres-meta.outputs.labels }}
-          annotations: ${{ steps.postgres-meta.outputs.annotations }}
-
-      - name: Build and push API image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: apps/server/AliasVault.Api/Dockerfile
-          platforms: linux/amd64,linux/arm64/v8
-          push: true
-          tags: ${{ steps.api-meta.outputs.tags }}
-          labels: ${{ steps.api-meta.outputs.labels }}
-          annotations: ${{ steps.api-meta.outputs.annotations }}
-
-      - name: Build and push Client image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: apps/server/AliasVault.Client/Dockerfile
-          platforms: linux/amd64,linux/arm64/v8
-          push: true
-          tags: ${{ steps.client-meta.outputs.tags }}
-          labels: ${{ steps.client-meta.outputs.labels }}
-          annotations: ${{ steps.client-meta.outputs.annotations }}
-
-      - name: Build and push Admin image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: apps/server/AliasVault.Admin/Dockerfile
-          platforms: linux/amd64,linux/arm64/v8
-          push: true
-          tags: ${{ steps.admin-meta.outputs.tags }}
-          labels: ${{ steps.admin-meta.outputs.labels }}
-          annotations: ${{ steps.admin-meta.outputs.annotations }}
-
-      - name: Build and push Reverse Proxy image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: apps/server/Dockerfile
-          platforms: linux/amd64,linux/arm64/v8
-          push: true
-          tags: ${{ steps.reverse-proxy-meta.outputs.tags }}
-          labels: ${{ steps.reverse-proxy-meta.outputs.labels }}
-          annotations: ${{ steps.reverse-proxy-meta.outputs.annotations }}
-
-      - name: Build and push SMTP image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: apps/server/Services/AliasVault.SmtpService/Dockerfile
-          platforms: linux/amd64,linux/arm64/v8
-          push: true
-          tags: ${{ steps.smtp-meta.outputs.tags }}
-          labels: ${{ steps.smtp-meta.outputs.labels }}
-          annotations: ${{ steps.smtp-meta.outputs.annotations }}
-
-      - name: Build and push TaskRunner image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: apps/server/Services/AliasVault.TaskRunner/Dockerfile
-          platforms: linux/amd64,linux/arm64/v8
-          push: true
-          tags: ${{ steps.task-runner-meta.outputs.tags }}
-          labels: ${{ steps.task-runner-meta.outputs.labels }}
-          annotations: ${{ steps.task-runner-meta.outputs.annotations }}
-
-      - name: Build and push InstallCli image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: apps/server/Utilities/AliasVault.InstallCli/Dockerfile
-          platforms: linux/amd64,linux/arm64/v8
-          push: true
-          tags: ${{ steps.installcli-meta.outputs.tags }}
-          labels: ${{ steps.installcli-meta.outputs.labels }}
-          annotations: ${{ steps.installcli-meta.outputs.annotations }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
 
   build-and-push-docker-all-in-one:
     needs: [valid-release, detect-version]
