@@ -302,6 +302,36 @@ public class SmtpServerTests
     }
 
     /// <summary>
+    /// Tests that non-ASCII printable characters (e.g. accented letters) are preserved in the generated message preview.
+    /// Regression test for a bug where the preview extraction stripped all non-ASCII characters (e.g. "répondre" became "rpondre").
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task SingleEmailNonAsciiPreviewPlain()
+    {
+        // Arrange
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress("Test Sender", "sender@example.com"));
+        message.To.Add(new MailboxAddress("Test Recipient", "claimed@example.tld"));
+        message.Subject = "Test Email with accents.";
+        const string textBody = "Veuillez répondre à cet e-mail. Voici quelques caractères accentués: éàçüñ.";
+        message.Body = new BodyBuilder { TextBody = textBody }.ToMessageBody();
+        await SendMessageToSmtpServer(message);
+
+        // Check if the email is in the database.
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.FirstAsync();
+
+        // Decrypt the email and verify the accented characters survived into the preview.
+        processedEmail = EmailEncryption.DecryptEmail(processedEmail, PrivateKey);
+        Assert.Multiple(() =>
+        {
+            Assert.That(processedEmail, Is.Not.Null);
+            Assert.That(processedEmail.MessagePreview, Does.Contain("répondre"));
+            Assert.That(processedEmail.MessagePreview, Is.EqualTo(textBody));
+        });
+    }
+
+    /// <summary>
     /// Tests sending a single email in plain format to the SMTP server to check if it is processed correctly.
     /// </summary>
     /// <returns>Task.</returns>
