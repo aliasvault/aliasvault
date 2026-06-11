@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="Vault.cs" company="aliasvault">
+// <copyright file="VaultManifest.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
@@ -8,34 +8,65 @@ namespace AliasServerDb;
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
-/// Vault object.
+/// A single revision of a vault manifest. Each save inserts a new row. All rows sharing a <see cref="ManifestId"/>
+/// are revisions of the same logical manifest (e.g. main vault or shared folder).
 /// </summary>
-public class Vault
+public class VaultManifest
 {
     /// <summary>
-    /// Gets or sets Login ID.
+    /// Gets or sets the per-revision primary key. Unique to this single revision.
     /// </summary>
     [Key]
-    public Guid Id { get; set; }
+    public Guid RevisionId { get; set; }
 
     /// <summary>
-    /// Gets or sets user ID foreign key.
+    /// Gets or sets the stable identifier of the logical manifest this row is a revision of. Constant across every
+    /// revision of the same manifest.
+    /// </summary>
+    public Guid ManifestId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the manifest kind.
+    /// </summary>
+    public required VaultManifestCategory Category { get; set; }
+
+    /// <summary>
+    /// Gets or sets the ID of the owning user.
     /// </summary>
     [StringLength(255)]
-    public string UserId { get; set; } = null!;
+    public string OwnerUserId { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets foreign key to the AliasVaultUser object.
     /// </summary>
-    [ForeignKey("UserId")]
+    [ForeignKey("OwnerUserId")]
     public virtual AliasVaultUser User { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the encrypted vault blob.
+    /// Gets or sets the encrypted vault blob (only used by legacy sqlite-blob format). Not used anymore in new format.
     /// </summary>
     public required string VaultBlob { get; set; }
+
+    /// <summary>
+    /// Gets or sets the storage format identifier: "sqlite-blob" (legacy v1) or "manifest-v1" (v2).
+    /// </summary>
+    [StringLength(20)]
+    public required string StorageFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the encrypted manifest blob (AES-GCM ciphertext, base64-encoded).
+    /// </summary>
+    public string? ManifestBlob { get; set; }
+
+    /// <summary>
+    /// Gets or sets the SHA-256 (hex) of the encrypted manifest ciphertext. Stored for storage-layer integrity
+    /// verification (the client sends this on upload and we return it on download; client verifies before decrypt).
+    /// </summary>
+    [StringLength(64)]
+    public string? ManifestCiphertextHash { get; set; }
 
     /// <summary>
     /// Gets or sets the vault data model version.
@@ -45,10 +76,7 @@ public class Vault
 
     /// <summary>
     /// Gets or sets the revision number of the vault.
-    /// This number is incremented with each change to the vault and is used for
-    /// managing concurrency and merging during the synchronization process.
-    /// It helps in detecting conflicts and ensuring data consistency if multiple clients
-    /// update a previous version of the vault simultaneously.
+    /// This number is incremented with each change to the vault manifest.
     /// </summary>
     [Required]
     public required long RevisionNumber { get; set; }
@@ -59,9 +87,9 @@ public class Vault
     public int FileSize { get; set; }
 
     /// <summary>
-    /// Gets or sets the salt used for SRP authentication. Note: the login credentials are stored with the vault because
-    /// the vault itself is encrypted with the same key derived from the user's password. So the password the user
-    /// uses to log in to AliasVault needs to be the same as the vault to keep everything in-sync in case of vault
+    /// Gets or sets the salt used for SRP authentication. Note: the login credentials are stored with the vault manifest
+    /// because the vault manifest is encrypted with the same key derived from the user's password. So the password the user
+    /// uses to log in to AliasVault needs to be the same as the vault manifest to keep everything in-sync in case of vault
     /// backup restores.
     /// </summary>
     [StringLength(100)]
@@ -69,7 +97,7 @@ public class Vault
 
     /// <summary>
     /// Gets or sets the verifier used for SRP authentication. Note: the login credentials are stored with the vault
-    /// because the vault itself is encrypted with the same key derived from the user's password. So the password the
+    /// manifest because the vault manifest is encrypted with the same key derived from the user's password. So the password the
     /// user uses to log in to AliasVault needs to be the same as the vault to keep everything in-sync in case of vault
     /// backup restores.
     /// </summary>

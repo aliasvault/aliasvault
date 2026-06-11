@@ -83,9 +83,9 @@ public class AliasVaultUser : IdentityUser
     public int EmailsReceived { get; set; } = 0;
 
     /// <summary>
-    /// Gets or sets the collection of vaults.
+    /// Gets or sets the collection of vault manifest revisions owned by this user (across all manifests and kinds).
     /// </summary>
-    public virtual ICollection<Vault> Vaults { get; set; } = [];
+    public virtual ICollection<VaultManifest> VaultManifests { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the collection of EmailClaims.

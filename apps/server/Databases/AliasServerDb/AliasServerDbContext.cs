@@ -93,9 +93,10 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<AdminRole> AdminRoles { get; set; }
 
     /// <summary>
-    /// Gets or sets the Vaults DbSet.
+    /// Gets or sets the VaultManifests DbSet. Each row is one revision of a manifest; rows sharing a ManifestId are
+    /// revisions of the same logical manifest (the user's main vault, or an R2 shared folder).
     /// </summary>
-    public DbSet<Vault> Vaults { get; set; }
+    public DbSet<VaultManifest> VaultManifests { get; set; }
 
     /// <summary>
     /// Gets or sets the Emails DbSet.
@@ -146,6 +147,21 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     /// Gets or sets the BlockedIpRanges DbSet.
     /// </summary>
     public DbSet<BlockedIpRange> BlockedIpRanges { get; set; }
+
+    /// <summary>
+    /// Gets or sets the VaultDataBuckets DbSet. These represent separately-syncable per-user, per-kind sync buckets. Separate from main manifest.
+    /// </summary>
+    public DbSet<VaultDataBucket> VaultDataBuckets { get; set; }
+
+    /// <summary>
+    /// Gets or sets the VaultBlobObjects DbSet. These represent encrypted blobs referenced by one or more vault revisions.
+    /// </summary>
+    public DbSet<VaultBlobObject> VaultBlobObjects { get; set; }
+
+    /// <summary>
+    /// Gets or sets the VaultBlobReferences DbSet. These represent references from vaults to encrypted blobs.
+    /// </summary>
+    public DbSet<VaultBlobReference> VaultBlobReferences { get; set; }
 
     /// <summary>
     /// Sets up the connection string if it is not already configured.
@@ -249,12 +265,18 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             builder.HasIndex(e => e.Application);
         });
 
-        // Configure Vault - AliasVaultUser relationship
-        modelBuilder.Entity<Vault>()
-            .HasOne(l => l.User)
-            .WithMany(c => c.Vaults)
-            .HasForeignKey(l => l.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+        // Configure VaultManifest - AliasVaultUser relationship + manifest-lineage indexing.
+        modelBuilder.Entity<VaultManifest>(builder =>
+        {
+            builder.HasOne(l => l.User)
+                .WithMany(c => c.VaultManifests)
+                .HasForeignKey(l => l.OwnerUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            builder.Property(e => e.Category).HasConversion<string>().HasMaxLength(20);
+
+            // Revisions of one logical manifest share a ManifestId; index supports "latest revision of a manifest".
+            builder.HasIndex(e => new { e.ManifestId, e.RevisionNumber });
+        });
 
         // Configure UserEmailClaim - AliasVaultUser relationship
         // Note: when a user is deleted the email claims user FK's should be set to NULL
@@ -285,5 +307,38 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             .WithMany()
             .HasForeignKey(m => m.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure VaultDataBucket - Id PK with a revision history per (UserId, Kind).
+        modelBuilder.Entity<VaultDataBucket>(builder =>
+        {
+            builder.HasKey(e => e.RevisionId);
+            builder.Property(e => e.Category).HasConversion<string>().HasMaxLength(50);
+            builder.HasIndex(e => new { e.OwnerUserId, e.Category, e.RevisionNumber }).IsUnique();
+            builder.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.OwnerUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure VaultBlobObject - composite key (Hash, UserId).
+        modelBuilder.Entity<VaultBlobObject>(builder =>
+        {
+            builder.HasKey(e => new { e.Hash, e.OwnerUserId });
+            builder.HasIndex(e => new { e.OwnerUserId, e.Category });
+            builder.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.OwnerUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure VaultBlobReference - composite key (VaultId, BlobHash).
+        modelBuilder.Entity<VaultBlobReference>(builder =>
+        {
+            builder.HasKey(e => new { e.ManifestRevisionId, e.BlobHash });
+            builder.HasOne(e => e.ManifestRevision)
+                .WithMany()
+                .HasForeignKey(e => e.ManifestRevisionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }
