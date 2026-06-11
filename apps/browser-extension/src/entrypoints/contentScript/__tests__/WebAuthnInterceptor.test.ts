@@ -8,7 +8,87 @@ import {
   validateWebAuthnRequest
 } from '@/utils/passkey/WebAuthnRequestValidation';
 
+import { isSameOriginWithAncestors } from '../WebAuthnInterceptor';
+
+type TestFrame = {
+  location: {
+    origin: string;
+  };
+  parent: TestFrame;
+};
+
+/**
+ * Create a minimal same-window/cross-window parent chain for ancestor checks.
+ */
+const createFrameChain = (origins: string[]): Window => {
+  const topFrame: TestFrame = {
+    location: {
+      origin: origins[origins.length - 1],
+    },
+    parent: undefined as unknown as TestFrame,
+  };
+  topFrame.parent = topFrame;
+
+  let frame = topFrame;
+  for (let index = origins.length - 2; index >= 0; index--) {
+    frame = {
+      location: {
+        origin: origins[index],
+      },
+      parent: frame,
+    };
+  }
+
+  return frame as unknown as Window;
+};
+
+/**
+ * Create a frame whose parent behaves like a browser cross-origin ancestor.
+ */
+const createFrameWithInaccessibleParent = (): Window => {
+  const inaccessibleParent: TestFrame = {
+    /**
+     * Simulate the DOMException thrown when reading a cross-origin location.
+     */
+    get location(): { origin: string } {
+      throw new Error('Permission denied');
+    },
+    parent: undefined as unknown as TestFrame,
+  };
+  inaccessibleParent.parent = inaccessibleParent;
+
+  return {
+    location: {
+      origin: 'https://login.example.com',
+    },
+    parent: inaccessibleParent,
+  } as unknown as Window;
+};
+
 describe('WebAuthnInterceptor request validation', () => {
+  it('allows WebAuthn interception in a top-level frame', () => {
+    expect(isSameOriginWithAncestors(createFrameChain(['https://login.example.com']))).toBe(true);
+  });
+
+  it('allows WebAuthn interception in same-origin nested frames', () => {
+    expect(isSameOriginWithAncestors(createFrameChain([
+      'https://login.example.com',
+      'https://login.example.com',
+      'https://login.example.com',
+    ]))).toBe(true);
+  });
+
+  it('rejects WebAuthn interception in cross-origin ancestor frames', () => {
+    expect(isSameOriginWithAncestors(createFrameChain([
+      'https://login.example.com',
+      'https://attacker.example.com',
+    ]))).toBe(false);
+  });
+
+  it('rejects WebAuthn interception when an ancestor origin cannot be read', () => {
+    expect(isSameOriginWithAncestors(createFrameWithInaccessibleParent())).toBe(false);
+  });
+
   it('allows exact RP ID matches', () => {
     expect(isRpIdAllowedForHost('example.com', 'example.com')).toBe(true);
   });

@@ -17,6 +17,8 @@ import { SqliteClient } from '@/utils/SqliteClient';
 
 import { t } from '@/i18n/StandaloneI18n';
 
+import { getCurrentAutofillFrameUrl } from './AutofillFrameUrl';
+
 /**
  * WeakMap to store event listeners for popup containers
  */
@@ -104,6 +106,22 @@ const createSuggestedNameSpan = (name: string): HTMLElement => {
 };
 
 /**
+ * Check if an outside-click event originated from AliasVault UI controls.
+ * Shadow DOM events retarget to the host, so use the composed path instead of
+ * only checking event.target.
+ */
+function isClickInsidePopupUi(event: MouseEvent, popup: Element, input: HTMLInputElement): boolean {
+  const eventPath = event.composedPath();
+
+  return eventPath.includes(popup) ||
+    eventPath.includes(input) ||
+    eventPath.some((pathTarget) => (
+      pathTarget instanceof Element &&
+      pathTarget.closest('.av-input-icon') !== null
+    ));
+}
+
+/**
  * Open (or refresh) the autofill popup including check if vault is locked.
  * @param input - The input element that triggered the popup
  * @param container - The container element
@@ -126,11 +144,18 @@ export function openAutofillPopup(input: HTMLInputElement, container: HTMLElemen
   document.addEventListener('keydown', handleEnterKey);
 
   (async () : Promise<void> => {
+    const currentUrl = getCurrentAutofillFrameUrl();
+    if (!currentUrl) {
+      removeExistingPopup(container);
+      document.removeEventListener('keydown', handleEnterKey);
+      return;
+    }
+
     // Load autofill matching mode setting to send to background for filtering
     const matchingMode = await LocalPreferencesService.getAutofillMatchingMode();
 
     const response = await sendMessage('GET_FILTERED_ITEMS', {
-      currentUrl: window.location.href,
+      currentUrl,
       pageTitle: document.title,
       matchingMode: matchingMode,
       includeRecentlySelected: true // Enable for multi-step login autofill
@@ -177,10 +202,17 @@ export function openTotpPopup(input: HTMLInputElement, container: HTMLElement, f
   document.addEventListener('keydown', handleEnterKey);
 
   (async () : Promise<void> => {
+    const currentUrl = getCurrentAutofillFrameUrl();
+    if (!currentUrl) {
+      removeExistingPopup(container);
+      document.removeEventListener('keydown', handleEnterKey);
+      return;
+    }
+
     const matchingMode = await LocalPreferencesService.getAutofillMatchingMode();
 
     const response = await sendMessage('GET_ITEMS_WITH_TOTP', {
-      currentUrl: window.location.href,
+      currentUrl,
       pageTitle: document.title,
       matchingMode: matchingMode
     });
@@ -364,19 +396,14 @@ async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefine
    */
   const handleClickOutside = (event: MouseEvent) : void => {
     const popupElement = rootContainer.querySelector('#aliasvault-credential-popup');
-    const target = event.target as Node;
-    const targetElement = event.target as HTMLElement;
     // If popup doesn't exist, remove the listener
     if (!popupElement) {
       document.removeEventListener('mousedown', handleClickOutside);
       return;
     }
 
-    // Check if the click is on the AliasVault icon
-    const isIconClick = targetElement.closest('.av-input-icon') !== null;
-
-    // Check if the click is outside the popup and outside the shadow UI
-    if (popupElement && !popupElement.contains(target) && !input.contains(target) && !isIconClick && targetElement.tagName !== 'ALIASVAULT-UI') {
+    // Check if the click is outside the popup and outside the input/icon UI.
+    if (!isClickInsidePopupUi(event, popupElement, input)) {
       removeExistingPopup(rootContainer);
     }
   };
@@ -1096,19 +1123,14 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
    */
   const handleClickOutside = (event: MouseEvent) : void => {
     const popup = rootContainer.querySelector('#aliasvault-credential-popup');
-    const target = event.target as Node;
-    const targetElement = event.target as HTMLElement;
     // If popup doesn't exist, remove the listener
     if (!popup) {
       document.removeEventListener('mousedown', handleClickOutside);
       return;
     }
 
-    // Check if the click is on the AliasVault icon
-    const isIconClick = targetElement.closest('.av-input-icon') !== null;
-
-    // Check if the click is outside the popup and outside the shadow UI
-    if (popup && !popup.contains(target) && !input.contains(target) && !isIconClick && targetElement.tagName !== 'ALIASVAULT-UI') {
+    // Check if the click is outside the popup and outside the input/icon UI.
+    if (!isClickInsidePopupUi(event, popup, input)) {
       removeExistingPopup(rootContainer);
     }
   };
@@ -1192,14 +1214,8 @@ export async function createVaultLockedPopup(input: HTMLInputElement, rootContai
    * Add event listener to document to close popup when clicking outside.
    */
   const handleClickOutside = (event: MouseEvent): void => {
-    const target = event.target as Node;
-    const targetElement = event.target as HTMLElement;
-
-    // Check if the click is on the AliasVault icon
-    const isIconClick = targetElement.closest('.av-input-icon') !== null;
-
-    // Check if the click is outside the popup and outside the shadow UI
-    if (popup && !popup.contains(target) && !input.contains(target) && !isIconClick && targetElement.tagName !== 'ALIASVAULT-UI') {
+    // Check if the click is outside the popup and outside the input/icon UI.
+    if (!isClickInsidePopupUi(event, popup, input)) {
       removeExistingPopup(rootContainer);
       document.removeEventListener('mousedown', handleClickOutside);
     }
@@ -2619,14 +2635,8 @@ export async function createUpgradeRequiredPopup(input: HTMLInputElement, rootCo
    * Add event listener to document to close popup when clicking outside.
    */
   const handleClickOutside = (event: MouseEvent): void => {
-    const target = event.target as Node;
-    const targetElement = event.target as HTMLElement;
-
-    // Check if the click is on the AliasVault icon
-    const isIconClick = targetElement.closest('.av-input-icon') !== null;
-
-    // Check if the click is outside the popup and outside the shadow UI
-    if (popup && !popup.contains(target) && !input.contains(target) && !isIconClick && targetElement.tagName !== 'ALIASVAULT-UI') {
+    // Check if the click is outside the popup and outside the input/icon UI.
+    if (!isClickInsidePopupUi(event, popup, input)) {
       removeExistingPopup(rootContainer);
       document.removeEventListener('mousedown', handleClickOutside);
     }
