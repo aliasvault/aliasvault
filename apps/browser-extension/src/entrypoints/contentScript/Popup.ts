@@ -17,6 +17,8 @@ import { SqliteClient } from '@/utils/SqliteClient';
 
 import { t } from '@/i18n/StandaloneI18n';
 
+import { getCurrentAutofillFrameUrl } from './AutofillFrameUrl';
+
 /**
  * WeakMap to store event listeners for popup containers
  */
@@ -126,11 +128,18 @@ export function openAutofillPopup(input: HTMLInputElement, container: HTMLElemen
   document.addEventListener('keydown', handleEnterKey);
 
   (async () : Promise<void> => {
+    const currentUrl = getCurrentAutofillFrameUrl();
+    if (!currentUrl) {
+      removeExistingPopup(container);
+      document.removeEventListener('keydown', handleEnterKey);
+      return;
+    }
+
     // Load autofill matching mode setting to send to background for filtering
     const matchingMode = await LocalPreferencesService.getAutofillMatchingMode();
 
     const response = await sendMessage('GET_FILTERED_ITEMS', {
-      currentUrl: window.location.href,
+      currentUrl,
       pageTitle: document.title,
       matchingMode: matchingMode,
       includeRecentlySelected: true // Enable for multi-step login autofill
@@ -177,10 +186,17 @@ export function openTotpPopup(input: HTMLInputElement, container: HTMLElement, f
   document.addEventListener('keydown', handleEnterKey);
 
   (async () : Promise<void> => {
+    const currentUrl = getCurrentAutofillFrameUrl();
+    if (!currentUrl) {
+      removeExistingPopup(container);
+      document.removeEventListener('keydown', handleEnterKey);
+      return;
+    }
+
     const matchingMode = await LocalPreferencesService.getAutofillMatchingMode();
 
     const response = await sendMessage('GET_ITEMS_WITH_TOTP', {
-      currentUrl: window.location.href,
+      currentUrl,
       pageTitle: document.title,
       matchingMode: matchingMode
     });

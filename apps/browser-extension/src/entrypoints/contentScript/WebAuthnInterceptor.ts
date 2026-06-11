@@ -58,6 +58,29 @@ function isPageReadyForWebAuthn(): boolean {
 }
 
 /**
+ * Check whether a frame has the same origin as every ancestor frame.
+ * Cross-origin iframe WebAuthn requires browser-level Permissions Policy checks,
+ * so AliasVault must fall back to native WebAuthn when any ancestor differs.
+ */
+export function isSameOriginWithAncestors(currentWindow: Window = window): boolean {
+  let frame: Window = currentWindow;
+  const expectedOrigin = currentWindow.location.origin;
+
+  while (frame !== frame.parent) {
+    try {
+      if (frame.parent.location.origin !== expectedOrigin) {
+        return false;
+      }
+      frame = frame.parent;
+    } catch {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
  * Initialize the WebAuthn interceptor
  */
 export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
@@ -99,6 +122,14 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
     };
 
     try {
+      if (!isSameOriginWithAncestors()) {
+        dispatchResponse({
+          requestId,
+          fallback: true
+        });
+        return;
+      }
+
       if (!validateWebAuthnEventDetail('create', detail, window.location.origin, window.location.hostname)) {
         dispatchResponse({
           requestId,
@@ -191,6 +222,14 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
     };
 
     try {
+      if (!isSameOriginWithAncestors()) {
+        dispatchResponse({
+          requestId,
+          fallback: true
+        });
+        return;
+      }
+
       if (!validateWebAuthnEventDetail('get', detail, window.location.origin, window.location.hostname)) {
         dispatchResponse({
           requestId,
