@@ -18,7 +18,7 @@ using AliasVault.Api.Vault.RetentionRules;
 /// </summary>
 public class GeneralRetentionTests
 {
-    private List<Vault> testVaults;
+    private List<VaultManifest> testVaults;
     private DateTime now;
 
     /// <summary>
@@ -30,15 +30,15 @@ public class GeneralRetentionTests
         now = new DateTime(2023, 6, 1, 12, 0, 0); // Set a fixed "now" date for testing: June 1, 2023, 12:00 PM
         testVaults =
         [
-            new Vault { Version = "1.1.0", UpdatedAt = new DateTime(2023, 5, 31, 12, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 9 },
-            new Vault { Version = "1.1.0", UpdatedAt = new DateTime(2023, 5, 31, 4, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 8 },
-            new Vault { Version = "1.1.0", UpdatedAt = new DateTime(2023, 5, 30, 12, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 7 }, // 2 days ago
-            new Vault { Version = "1.1.0", UpdatedAt = new DateTime(2023, 5, 29, 12, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 6 }, // 3 days ago
-            new Vault { Version = "1.0.3", UpdatedAt = new DateTime(2023, 5, 28, 12, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 5 }, // 4 days ago
-            new Vault { Version = "1.0.3", UpdatedAt = new DateTime(2023, 5, 18, 12, 0, 0), Salt = "def", Verifier = "def", VaultBlob = string.Empty, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 4 }, // 2 weeks ago
-            new Vault { Version = "1.0.3", UpdatedAt = new DateTime(2023, 5, 11, 12, 0, 0), Salt = "def", Verifier = "def", VaultBlob = string.Empty, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 3 }, // 3 weeks ago
-            new Vault { Version = "1.0.2", UpdatedAt = new DateTime(2023, 5, 1, 12, 0, 0), Salt = "def", Verifier = "def", VaultBlob = string.Empty, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 2 }, // 1 month ago
-            new Vault { Version = "1.0.1", UpdatedAt = new DateTime(2023, 4, 1, 12, 0, 0), Salt = "ghi", Verifier = "ghi", VaultBlob = string.Empty, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 1 }, // 2 months ago
+            new VaultManifest { Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main, Version = "1.1.0", UpdatedAt = new DateTime(2023, 5, 31, 12, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 9 },
+            new VaultManifest { Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main, Version = "1.1.0", UpdatedAt = new DateTime(2023, 5, 31, 4, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 8 },
+            new VaultManifest { Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main, Version = "1.1.0", UpdatedAt = new DateTime(2023, 5, 30, 12, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 7 }, // 2 days ago
+            new VaultManifest { Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main, Version = "1.1.0", UpdatedAt = new DateTime(2023, 5, 29, 12, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 6 }, // 3 days ago
+            new VaultManifest { Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main, Version = "1.0.3", UpdatedAt = new DateTime(2023, 5, 28, 12, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 5 }, // 4 days ago
+            new VaultManifest { Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main, Version = "1.0.3", UpdatedAt = new DateTime(2023, 5, 18, 12, 0, 0), Salt = "def", Verifier = "def", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 4 }, // 2 weeks ago
+            new VaultManifest { Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main, Version = "1.0.3", UpdatedAt = new DateTime(2023, 5, 11, 12, 0, 0), Salt = "def", Verifier = "def", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 3 }, // 3 weeks ago
+            new VaultManifest { Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main, Version = "1.0.2", UpdatedAt = new DateTime(2023, 5, 1, 12, 0, 0), Salt = "def", Verifier = "def", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 2 }, // 1 month ago
+            new VaultManifest { Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main, Version = "1.0.1", UpdatedAt = new DateTime(2023, 4, 1, 12, 0, 0), Salt = "ghi", Verifier = "ghi", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 1 }, // 2 months ago
         ];
     }
 
@@ -185,7 +185,7 @@ public class GeneralRetentionTests
         var vaultsToDelete = VaultRetentionManager.ApplyRetention(retentionPolicy, testVaults, DateTime.UtcNow).ToList();
 
         // Remove the vaults from the list of test vaults that are expected to be kept
-        var vaultsToKeep = new List<Vault>(testVaults);
+        var vaultsToKeep = new List<VaultManifest>(testVaults);
         vaultsToKeep.RemoveAll(v => vaultsToDelete.Contains(v));
 
         Assert.Multiple(() =>
@@ -215,9 +215,11 @@ public class GeneralRetentionTests
 
         // New vault created now.
         var now = DateTime.Now;
-        var newVault = new Vault
+        var newVault = new VaultManifest
         {
+            Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main,
             VaultBlob = string.Empty,
+            StorageFormat = "sqlite-blob",
             Version = string.Empty,
             Salt = string.Empty,
             Verifier = string.Empty,
@@ -233,7 +235,7 @@ public class GeneralRetentionTests
         var vaultsToDelete = VaultRetentionManager.ApplyRetention(retentionPolicy, testVaults, DateTime.UtcNow, newVault).ToList();
 
         // Remove the vaults from the list of test vaults that are expected to be kept
-        var vaultsToKeep = new List<Vault>(testVaults);
+        var vaultsToKeep = new List<VaultManifest>(testVaults);
         vaultsToKeep.RemoveAll(v => vaultsToDelete.Contains(v));
 
         Assert.Multiple(() =>
@@ -259,7 +261,7 @@ public class GeneralRetentionTests
         var vaultsToDelete = VaultRetentionManager.ApplyRetention(retentionPolicy, testVaults, DateTime.UtcNow).ToList();
 
         // Remove the vaults from the list of test vaults that are expected to be kept
-        var vaultsToKeep = new List<Vault>(testVaults);
+        var vaultsToKeep = new List<VaultManifest>(testVaults);
         vaultsToKeep.RemoveAll(v => vaultsToDelete.Contains(v));
 
         Assert.Multiple(() =>

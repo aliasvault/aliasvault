@@ -156,9 +156,9 @@ else
 
         // Get vault statistics for all related users (from their latest vault)
         var userIds = users.Select(u => u.Id).ToList();
-        var vaultStats = await dbContext.Vaults
-            .Where(v => userIds.Contains(v.UserId))
-            .GroupBy(v => v.UserId)
+        var vaultStats = await dbContext.VaultManifests
+            .Where(v => userIds.Contains(v.OwnerUserId))
+            .GroupBy(v => v.OwnerUserId)
             .Select(g => new
             {
                 UserId = g.Key,

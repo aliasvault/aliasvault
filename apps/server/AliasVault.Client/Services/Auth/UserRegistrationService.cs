@@ -12,7 +12,7 @@ using System.Text.Json;
 using AliasVault.Client.Services.JsInterop.RustCore;
 using AliasVault.Client.Utilities;
 using AliasVault.Cryptography.Client;
-using AliasVault.Shared.Models.WebApi.Auth;
+using AliasVault.Shared.Models.WebApi.V1.Auth;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Localization;
 

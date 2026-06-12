@@ -137,13 +137,13 @@ public class StatisticsService
         await using var context = await _contextFactory.CreateDbContextAsync();
 
         // Get total count
-        var totalCount = await context.Vaults
-            .GroupBy(v => v.UserId)
+        var totalCount = await context.VaultManifests
+            .GroupBy(v => v.OwnerUserId)
             .CountAsync();
 
         // Get paginated data
-        var topUsers = await context.Vaults
-            .GroupBy(v => v.UserId)
+        var topUsers = await context.VaultManifests
+            .GroupBy(v => v.OwnerUserId)
             .Select(g => new
             {
                 UserId = g.Key,
@@ -272,13 +272,13 @@ public class StatisticsService
         await using var context = await _contextFactory.CreateDbContextAsync();
 
         // Get total count - using latest vault for each user
-        var totalCount = await context.Vaults
-            .GroupBy(v => v.UserId)
+        var totalCount = await context.VaultManifests
+            .GroupBy(v => v.OwnerUserId)
             .CountAsync();
 
         // Get paginated data - using latest vault version for each user
-        var topUsers = await context.Vaults
-            .GroupBy(v => v.UserId)
+        var topUsers = await context.VaultManifests
+            .GroupBy(v => v.OwnerUserId)
             .Select(g => new
             {
                 UserId = g.Key,
@@ -318,8 +318,8 @@ public class StatisticsService
         var cutoffDate = DateTime.UtcNow.AddHours(-72);
 
         // Get latest vault for this user to get credential and email claim counts
-        var latestVault = await context.Vaults
-            .Where(v => v.UserId == userId)
+        var latestVault = await context.VaultManifests
+            .Where(v => v.OwnerUserId == userId)
             .OrderByDescending(v => v.RevisionNumber)
             .FirstOrDefaultAsync();
 
@@ -345,8 +345,8 @@ public class StatisticsService
 
         // Get recent statistics (last 72 hours) - this is approximated since we don't have creation timestamps on individual credentials
         // For recent credentials and email claims, we'll use vault versions created in the last 72h as a proxy
-        var recentVaultVersions = await context.Vaults
-            .Where(v => v.UserId == userId && v.CreatedAt >= cutoffDate)
+        var recentVaultVersions = await context.VaultManifests
+            .Where(v => v.OwnerUserId == userId && v.CreatedAt >= cutoffDate)
             .ToListAsync();
 
         if (recentVaultVersions.Count > 0)

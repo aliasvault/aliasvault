@@ -59,14 +59,14 @@ public class DbPersistTests : ClientPlaywrightTest
         // Assert that the vault revision number is 2 in the server database.
         // Account registration will create a new vault with revision number 1, first item save will increment to 2.
         // Note: for this we expect the previous test to have run first and created a first item.
-        var firstUpdateVault = await ApiDbContext.Vaults.OrderByDescending(x => x.RevisionNumber).FirstAsync();
+        var firstUpdateVault = await ApiDbContext.VaultManifests.OrderByDescending(x => x.RevisionNumber).FirstAsync();
         Assert.That(firstUpdateVault.RevisionNumber, Is.EqualTo(2), "Vault revision number is not at 2 after creating the first item in a new vault.");
 
         // Create a new item which will trigger a vault save to the server.
         await CreateItemEntry();
 
         // Assert that the vault revision number is now 3 in the server database.
-        var secondUpdateVault = await ApiDbContext.Vaults.OrderByDescending(x => x.RevisionNumber).FirstAsync();
+        var secondUpdateVault = await ApiDbContext.VaultManifests.OrderByDescending(x => x.RevisionNumber).FirstAsync();
         Assert.That(secondUpdateVault.RevisionNumber, Is.EqualTo(3), "Vault revision number is not 3 after the second item save.");
     }
 }

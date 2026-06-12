@@ -124,15 +124,15 @@ public class TestVaultGeneratorTests : BrowserExtensionPlaywrightTest
 
         // Get the user's vault from the database
         var user = await ApiDbContext.AliasVaultUsers
-            .Include(u => u.Vaults)
+            .Include(u => u.VaultManifests)
             .FirstOrDefaultAsync(u => u.UserName == TestUserUsername);
 
-        if (user == null || !user.Vaults.Any())
+        if (user == null || !user.VaultManifests.Any())
         {
             throw new Exception("Could not find user or vault in database");
         }
 
-        var vault = user.Vaults.OrderByDescending(x => x.RevisionNumber).First();
+        var vault = user.VaultManifests.OrderByDescending(x => x.RevisionNumber).First();
 
         var outputDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
         var vaultOutputDir = Path.Combine(outputDir, "output");

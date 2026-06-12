@@ -303,7 +303,7 @@ else
     private AliasVaultUser? User { get; set; } = new();
     private int TwoFactorKeysCount { get; set; }
     private List<AliasVaultUserRefreshToken> RefreshTokenList { get; set; } = [];
-    private List<Vault> VaultList { get; set; } = [];
+    private List<VaultManifest> VaultList { get; set; } = [];
     private List<AuthLog> AuthLogList { get; set; } = [];
     private UserUsageStatistics? UserUsageStats { get; set; }
     private bool IsEditingEmailLimits { get; set; }
@@ -383,9 +383,12 @@ else
             .ToListAsync();
 
         // Load all vaults for this user (do not load the actual file content for performance reasons).
-        VaultList = await dbContext.Vaults.Where(x => x.UserId == User.Id).Select(x => new Vault
+        VaultList = await dbContext.VaultManifests.Where(x => x.OwnerUserId == User.Id).Select(x => new VaultManifest
             {
-                Id = x.Id,
+                RevisionId = x.RevisionId,
+                ManifestId = x.ManifestId,
+                Category = x.Category,
+                StorageFormat = x.StorageFormat,
                 Version = x.Version,
                 RevisionNumber = x.RevisionNumber,
                 FileSize = x.FileSize,
@@ -502,7 +505,7 @@ else
     /// Handles the action of making a vault the current one.
     /// </summary>
     /// <param name="vault">The vault to make current.</param>
-    private async Task MakeCurrentAsync(Vault vault)
+    private async Task MakeCurrentAsync(VaultManifest vault)
     {
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
         if (await ConfirmModalService.ShowConfirmation(
@@ -516,7 +519,7 @@ Important notes:
 
 Do you want to proceed with the restoration?")) {
             // Load vault
-            var currentVault = await dbContext.Vaults.FindAsync(vault.Id);
+            var currentVault = await dbContext.VaultManifests.FindAsync(vault.RevisionId);
             if (currentVault == null)
             {
                 return;

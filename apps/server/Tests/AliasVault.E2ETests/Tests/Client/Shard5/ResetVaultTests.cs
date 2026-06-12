@@ -74,7 +74,7 @@ public class ResetVaultTests : ClientPlaywrightTest
         await WaitForUrlAsync("items", "successfully reset");
 
         // Check API that the latest vault has no items.
-        var latestVault = await ApiDbContext.Vaults.Where(x => x.User.UserName == TestUserUsername).OrderByDescending(x => x.CreatedAt).FirstAsync();
+        var latestVault = await ApiDbContext.VaultManifests.Where(x => x.User.UserName == TestUserUsername).OrderByDescending(x => x.CreatedAt).FirstAsync();
         Assert.That(latestVault.CredentialsCount, Is.EqualTo(0), "Latest vault should have no items after reset.");
 
         // Create a new item entry.
@@ -87,7 +87,7 @@ public class ResetVaultTests : ClientPlaywrightTest
         });
 
         // Check that the now latest vault has one item, and only one active claimed alias.
-        latestVault = await ApiDbContext.Vaults.Where(x => x.User.UserName == TestUserUsername).OrderByDescending(x => x.CreatedAt).FirstAsync();
+        latestVault = await ApiDbContext.VaultManifests.Where(x => x.User.UserName == TestUserUsername).OrderByDescending(x => x.CreatedAt).FirstAsync();
         Assert.Multiple(() =>
         {
             Assert.That(latestVault.CredentialsCount, Is.EqualTo(1), "Latest vault should have one item after reset.");

@@ -20,5 +20,5 @@ public interface IRetentionRule
     /// <param name="vaults">List of existing vaults to apply the retention rule to.</param>
     /// <param name="now">Current DateTime.</param>
     /// <returns>Vaults that should be kept according to the retention rule.</returns>
-    IEnumerable<Vault> ApplyRule(List<Vault> vaults, DateTime now);
+    IEnumerable<VaultManifest> ApplyRule(List<VaultManifest> vaults, DateTime now);
 }

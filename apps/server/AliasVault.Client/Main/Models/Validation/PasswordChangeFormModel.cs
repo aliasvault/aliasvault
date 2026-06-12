@@ -11,7 +11,7 @@ using System.ComponentModel.DataAnnotations;
 using AliasVault.Client.Main.Constants;
 using AliasVault.Client.Resources;
 using AliasVault.Shared.Models.Validation;
-using AliasVault.Shared.Models.WebApi.PasswordChange;
+using AliasVault.Shared.Models.WebApi.V1.PasswordChange;
 
 /// <summary>
 /// Password change form model with validation.

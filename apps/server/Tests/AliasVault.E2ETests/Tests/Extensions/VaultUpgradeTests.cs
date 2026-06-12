@@ -51,11 +51,13 @@ public class VaultUpgradeTests : BrowserExtensionPlaywrightTest
         await ApiDbContext.SaveChangesAsync();
 
         // Insert static 1.0.0 vault into the database for the current user.
-        ApiDbContext.Vaults.Add(
-            new Vault
+        ApiDbContext.VaultManifests.Add(
+            new VaultManifest
             {
-                Id = Guid.NewGuid(),
-                UserId = ApiDbContext.AliasVaultUsers.First().Id,
+                RevisionId = Guid.NewGuid(),
+                Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main,
+                OwnerUserId = ApiDbContext.AliasVaultUsers.First().Id,
+                StorageFormat = "sqlite-blob",
                 Version = "1.0.0",
                 RevisionNumber = 2,
                 CreatedAt = DateTime.UtcNow,

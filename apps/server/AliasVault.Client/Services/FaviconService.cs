@@ -15,7 +15,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using AliasVault.Shared.Models.WebApi.Favicon;
+using AliasVault.Shared.Models.WebApi.V1.Favicon;
 
 /// <summary>
 /// Wraps calls to the server-side favicon API. Centralizes the single-URL and batched

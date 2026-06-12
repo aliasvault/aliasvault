@@ -52,10 +52,12 @@ public class UserManagementTests : AdminPlaywrightTest
         _testUserId = testUser.Id;
 
         // Create a vault for the test user (required by the Users list page)
-        var testVault = new Vault
+        var testVault = new VaultManifest
         {
-            Id = Guid.NewGuid(),
-            UserId = _testUserId,
+            RevisionId = Guid.NewGuid(),
+            Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main,
+            OwnerUserId = _testUserId,
+            StorageFormat = "sqlite-blob",
             Version = "1.0.0",
             RevisionNumber = 1,
             FileSize = 1024,
@@ -71,7 +73,7 @@ public class UserManagementTests : AdminPlaywrightTest
             Client = "test-client",
         };
 
-        DbContext.Vaults.Add(testVault);
+        DbContext.VaultManifests.Add(testVault);
         await DbContext.SaveChangesAsync();
     }
 

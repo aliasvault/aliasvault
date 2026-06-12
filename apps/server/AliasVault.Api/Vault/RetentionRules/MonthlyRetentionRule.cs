@@ -20,7 +20,7 @@ public class MonthlyRetentionRule : IRetentionRule
     public int MonthsToKeep { get; init; }
 
     /// <inheritdoc cref="IRetentionRule.ApplyRule"/>
-    public IEnumerable<Vault> ApplyRule(List<Vault> vaults, DateTime now)
+    public IEnumerable<VaultManifest> ApplyRule(List<VaultManifest> vaults, DateTime now)
     {
         return vaults
             .GroupBy(x => x.UpdatedAt.Month)

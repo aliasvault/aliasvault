@@ -46,8 +46,8 @@ public class DbSyncTests : ClientPlaywrightTest
         await SimulateClient(baselineVault, async () =>
         {
             // Re-add client1 vault to simulate conflict when this second client updates the same vault.
-            client1Vault.Id = Guid.NewGuid();
-            ApiDbContext.Vaults.Add(client1Vault);
+            client1Vault.RevisionId = Guid.NewGuid();
+            ApiDbContext.VaultManifests.Add(client1Vault);
             await ApiDbContext.SaveChangesAsync();
 
             await NavigateUsingBlazorRouter("items");
@@ -97,8 +97,8 @@ public class DbSyncTests : ClientPlaywrightTest
         var client2Vault = await SimulateClient(baselineVault, async () =>
         {
             // Re-add client1 vault to simulate conflict when this second client updates the same vault.
-            client1Vault.Id = Guid.NewGuid();
-            ApiDbContext.Vaults.Add(client1Vault);
+            client1Vault.RevisionId = Guid.NewGuid();
+            ApiDbContext.VaultManifests.Add(client1Vault);
             await ApiDbContext.SaveChangesAsync();
 
             await UpdateItemEntry("PropTestBaseline3", new Dictionary<string, string> { { "service-name", "PropTestMutate3" }, { "username", "propmutate3" }, { "email", "propemailmutate3@example.tld" } });
@@ -108,8 +108,8 @@ public class DbSyncTests : ClientPlaywrightTest
         await SimulateClient(client1Vault, async () =>
         {
             // Re-add client2 vault to simulate conflict when this third client updates the same vault.
-            client2Vault.Id = Guid.NewGuid();
-            ApiDbContext.Vaults.Add(client2Vault);
+            client2Vault.RevisionId = Guid.NewGuid();
+            ApiDbContext.VaultManifests.Add(client2Vault);
             await ApiDbContext.SaveChangesAsync();
 
             // Update username to test that field-level merge works correctly.
@@ -192,8 +192,8 @@ public class DbSyncTests : ClientPlaywrightTest
         await SimulateClient(baselineVault, async () =>
         {
             // Re-add client1 vault to simulate conflict when this second client updates the same vault.
-            client1Vault.Id = Guid.NewGuid();
-            ApiDbContext.Vaults.Add(client1Vault);
+            client1Vault.RevisionId = Guid.NewGuid();
+            ApiDbContext.VaultManifests.Add(client1Vault);
             await ApiDbContext.SaveChangesAsync();
 
             await NavigateUsingBlazorRouter("items");
@@ -215,11 +215,11 @@ public class DbSyncTests : ClientPlaywrightTest
     /// </summary>
     /// <param name="clientActions">Optional client actions to execute after creating the baseline vault.</param>
     /// <returns>The baseline vault.</returns>
-    private async Task<AliasServerDb.Vault> CreateBaselineVault(Func<Task> clientActions)
+    private async Task<AliasServerDb.VaultManifest> CreateBaselineVault(Func<Task> clientActions)
     {
         ApiTimeProvider.AdvanceBy(TimeSpan.FromSeconds(1));
         await clientActions();
-        return await ApiDbContext.Vaults.OrderByDescending(x => x.RevisionNumber).FirstAsync();
+        return await ApiDbContext.VaultManifests.OrderByDescending(x => x.RevisionNumber).FirstAsync();
     }
 
     /// <summary>
@@ -228,15 +228,15 @@ public class DbSyncTests : ClientPlaywrightTest
     /// <param name="baselineVault">The baseline vault to add back.</param>
     /// <param name="clientActions">Optional client actions to execute after simulating the client.</param>
     /// <returns>The baseline vault.</returns>
-    private async Task<AliasServerDb.Vault> SimulateClient(AliasServerDb.Vault baselineVault, Func<Task> clientActions)
+    private async Task<AliasServerDb.VaultManifest> SimulateClient(AliasServerDb.VaultManifest baselineVault, Func<Task> clientActions)
     {
         ApiTimeProvider.AdvanceBy(TimeSpan.FromSeconds(1));
 
         // Remove all vaults and add the baseline vault back.
-        ApiDbContext.Vaults.RemoveRange(ApiDbContext.Vaults);
+        ApiDbContext.VaultManifests.RemoveRange(ApiDbContext.VaultManifests);
         await ApiDbContext.SaveChangesAsync();
-        baselineVault.Id = Guid.NewGuid();
-        ApiDbContext.Vaults.Add(baselineVault);
+        baselineVault.RevisionId = Guid.NewGuid();
+        ApiDbContext.VaultManifests.Add(baselineVault);
         await ApiDbContext.SaveChangesAsync();
 
         // Simulate new client.
@@ -246,6 +246,6 @@ public class DbSyncTests : ClientPlaywrightTest
 
         // Execute custom client actions.
         await clientActions();
-        return await ApiDbContext.Vaults.OrderByDescending(x => x.RevisionNumber).FirstAsync();
+        return await ApiDbContext.VaultManifests.OrderByDescending(x => x.RevisionNumber).FirstAsync();
     }
 }

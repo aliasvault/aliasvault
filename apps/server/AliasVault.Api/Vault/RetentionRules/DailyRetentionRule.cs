@@ -20,7 +20,7 @@ public class DailyRetentionRule : IRetentionRule
     public int DaysToKeep { get; init; }
 
    /// <inheritdoc cref="IRetentionRule.ApplyRule"/>
-    public IEnumerable<Vault> ApplyRule(List<Vault> vaults, DateTime now)
+    public IEnumerable<VaultManifest> ApplyRule(List<VaultManifest> vaults, DateTime now)
     {
         // For the specified amount of days, take last vault per day.
         return vaults

@@ -4,7 +4,7 @@
     @foreach (var entry in SortedVaultList)
     {
         <SortableTableRow>
-            <SortableTableColumn IsPrimary="true">@entry.Id</SortableTableColumn>
+            <SortableTableColumn IsPrimary="true">@entry.RevisionId</SortableTableColumn>
             <SortableTableColumn>@entry.CreatedAt.ToString("yyyy-MM-dd HH:mm")</SortableTableColumn>
             <SortableTableColumn>@Math.Round((double)entry.FileSize / 1024, 1) MB</SortableTableColumn>
             <SortableTableColumn>@entry.Version</SortableTableColumn>
@@ -38,20 +38,20 @@
     /// Gets or sets the list of vaults to display.
     /// </summary>
     [Parameter]
-    public List<Vault> VaultList { get; set; } = [];
+    public List<VaultManifest> VaultList { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the event callback to make a vault current.
     /// </summary>
     [Parameter]
-    public EventCallback<Vault> OnMakeCurrent { get; set; }
+    public EventCallback<VaultManifest> OnMakeCurrent { get; set; }
 
     private string SortColumn { get; set; } = "RevisionNumber";
     private SortDirection SortDirection { get; set; } = SortDirection.Descending;
-    private Vault? _previousEntry;
+    private VaultManifest? _previousEntry;
 
     private readonly List<TableColumn> _vaultTableColumns = [
-        new TableColumn { Title = "ID", PropertyName = "Id" },
+        new TableColumn { Title = "ID", PropertyName = "RevisionId" },
         new TableColumn { Title = "Created", PropertyName = "CreatedAt" },
         new TableColumn { Title = "Filesize", PropertyName = "FileSize" },
         new TableColumn { Title = "DB version", PropertyName = "Version" },
@@ -63,9 +63,9 @@
         new TableColumn { Title = "Actions", Sortable = false },
     ];
 
-    private IEnumerable<Vault> SortedVaultList => SortList(VaultList, SortColumn, SortDirection);
+    private IEnumerable<VaultManifest> SortedVaultList => SortList(VaultList, SortColumn, SortDirection);
 
-    private Vault? LatestVault => VaultList.MaxBy(v => v.RevisionNumber);
+    private VaultManifest? LatestVault => VaultList.MaxBy(v => v.RevisionNumber);
 
     private void HandleSortChanged((string column, SortDirection direction) sort)
     {
@@ -74,11 +74,11 @@
         StateHasChanged();
     }
 
-    private static IEnumerable<Vault> SortList(List<Vault> vaults, string sortColumn, SortDirection sortDirection)
+    private static IEnumerable<VaultManifest> SortList(List<VaultManifest> vaults, string sortColumn, SortDirection sortDirection)
     {
         return sortColumn switch
         {
-            "Id" => SortableTable.SortListByProperty(vaults, v => v.Id, sortDirection),
+            "RevisionId" => SortableTable.SortListByProperty(vaults, v => v.RevisionId, sortDirection),
             "CreatedAt" => SortableTable.SortListByProperty(vaults, v => v.CreatedAt, sortDirection),
             "UpdatedAt" => SortableTable.SortListByProperty(vaults, v => v.UpdatedAt, sortDirection),
             "FileSize" => SortableTable.SortListByProperty(vaults, v => v.FileSize, sortDirection),
@@ -94,7 +94,7 @@
     /// <summary>
     /// Checks if the password has changed between the current and previous vault entry based on revision number..
     /// </summary>
-    private static bool HasPasswordChanged(Vault current, IEnumerable<Vault> vaultList)
+    private static bool HasPasswordChanged(VaultManifest current, IEnumerable<VaultManifest> vaultList)
     {
         // Get the previous vault entry to compare to based on revision number.
         var previousEntry = vaultList.FirstOrDefault(v => v.RevisionNumber == current.RevisionNumber - 1);
@@ -108,7 +108,7 @@
         return current.Salt != previousEntry.Salt || current.Verifier != previousEntry.Verifier;
     }
 
-    private async Task MakeCurrentAsync(Vault vault)
+    private async Task MakeCurrentAsync(VaultManifest vault)
     {
         await OnMakeCurrent.InvokeAsync(vault);
     }

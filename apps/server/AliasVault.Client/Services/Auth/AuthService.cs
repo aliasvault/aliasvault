@@ -11,7 +11,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using AliasVault.Client.Services.Auth.Enums;
 using AliasVault.Cryptography.Client;
-using AliasVault.Shared.Models.WebApi.Auth;
+using AliasVault.Shared.Models.WebApi.V1.Auth;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 

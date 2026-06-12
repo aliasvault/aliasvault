@@ -73,7 +73,7 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         });
 
         // Get the current vault revision from the database (should be 3)
-        var vaultBeforeRollback = await ApiDbContext.Vaults
+        var vaultBeforeRollback = await ApiDbContext.VaultManifests
             .OrderByDescending(v => v.RevisionNumber)
             .FirstOrDefaultAsync();
 
@@ -84,7 +84,7 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         Assert.That(revisionBeforeRollback, Is.GreaterThanOrEqualTo(3), "Should have at least 3 revisions");
 
         // SIMULATE SERVER DATA LOSS: Delete the last 2 vault revisions from the server database
-        var revisionsToDelete = await ApiDbContext.Vaults
+        var revisionsToDelete = await ApiDbContext.VaultManifests
             .Where(v => v.RevisionNumber > revisionBeforeRollback - 2)
             .OrderByDescending(v => v.RevisionNumber)
             .Take(2)
@@ -93,13 +93,13 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         foreach (var revision in revisionsToDelete)
         {
             Console.WriteLine($"Deleting vault revision: {revision.RevisionNumber}");
-            ApiDbContext.Vaults.Remove(revision);
+            ApiDbContext.VaultManifests.Remove(revision);
         }
 
         await ApiDbContext.SaveChangesAsync();
 
         // Verify the server now has a lower revision
-        var vaultAfterRollback = await ApiDbContext.Vaults
+        var vaultAfterRollback = await ApiDbContext.VaultManifests
             .OrderByDescending(v => v.RevisionNumber)
             .FirstOrDefaultAsync();
 
@@ -117,7 +117,7 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         await Task.Delay(2000);
 
         // Verify the server now has the recovered vault with a new revision number
-        var vaultAfterRecovery = await ApiDbContext.Vaults
+        var vaultAfterRecovery = await ApiDbContext.VaultManifests
             .OrderByDescending(v => v.RevisionNumber)
             .FirstOrDefaultAsync();
 
@@ -169,7 +169,7 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         await CreateCredentialInExtension(extensionPopup, serviceName2);
 
         // 2. Record client's vault revision before rollback
-        var vaultBeforeRollback = await ApiDbContext.Vaults
+        var vaultBeforeRollback = await ApiDbContext.VaultManifests
             .OrderByDescending(v => v.RevisionNumber)
             .FirstOrDefaultAsync();
 
@@ -178,10 +178,10 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         Console.WriteLine($"Client vault revision before rollback: {clientRevision}");
 
         // 3. Simulate server data loss by deleting latest vault revision
-        ApiDbContext.Vaults.Remove(vaultBeforeRollback);
+        ApiDbContext.VaultManifests.Remove(vaultBeforeRollback);
         await ApiDbContext.SaveChangesAsync();
 
-        var serverRevisionAfterRollback = (await ApiDbContext.Vaults
+        var serverRevisionAfterRollback = (await ApiDbContext.VaultManifests
             .OrderByDescending(v => v.RevisionNumber)
             .FirstOrDefaultAsync())?.RevisionNumber ?? 0;
         Console.WriteLine($"Server vault revision after rollback: {serverRevisionAfterRollback}");
@@ -213,7 +213,7 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         await Task.Delay(3000); // Wait for sync to complete
 
         // 9. Verify server recovered
-        var recoveredVault = await ApiDbContext.Vaults
+        var recoveredVault = await ApiDbContext.VaultManifests
             .OrderByDescending(v => v.RevisionNumber)
             .FirstOrDefaultAsync();
 
@@ -258,7 +258,7 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         var extensionPopup = await LoginToExtension();
 
         // 2. Get initial vault revision from server
-        var initialVault = await ApiDbContext.Vaults
+        var initialVault = await ApiDbContext.VaultManifests
             .OrderByDescending(v => v.RevisionNumber)
             .FirstOrDefaultAsync();
         var initialRevision = initialVault?.RevisionNumber ?? 0;
@@ -286,7 +286,7 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         Console.WriteLine("Credential created locally while offline - vault is now dirty");
 
         // 5. Verify server revision hasn't changed
-        var vaultAfterOfflineCreate = await ApiDbContext.Vaults
+        var vaultAfterOfflineCreate = await ApiDbContext.VaultManifests
             .OrderByDescending(v => v.RevisionNumber)
             .FirstOrDefaultAsync();
         Assert.That(
@@ -322,7 +322,7 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         await Task.Delay(2000);
 
         // 12. Verify vault was uploaded to server
-        var recoveredVault = await ApiDbContext.Vaults
+        var recoveredVault = await ApiDbContext.VaultManifests
             .OrderByDescending(v => v.RevisionNumber)
             .FirstOrDefaultAsync();
 

@@ -19,7 +19,7 @@ using AliasVault.Client.Services.JsInterop.Models;
 using AliasVault.Client.Services.JsInterop.RustCore;
 using AliasVault.Client.Utilities;
 using AliasVault.Shared.Models.Enums;
-using AliasVault.Shared.Models.WebApi.Vault;
+using AliasVault.Shared.Models.WebApi.V1.Vault;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;

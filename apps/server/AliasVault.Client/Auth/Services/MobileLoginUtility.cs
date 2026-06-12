@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 using AliasVault.Client.Auth.Models;
 using AliasVault.Client.Services.JsInterop;
 using AliasVault.Client.Utilities;
-using AliasVault.Shared.Models.WebApi.Auth;
+using AliasVault.Shared.Models.WebApi.V1.Auth;
 using Microsoft.Extensions.Logging;
 
 /// <summary>

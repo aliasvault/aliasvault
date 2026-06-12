@@ -27,18 +27,18 @@ public static class VaultRetentionManager
     /// <param name="now">DateTime which represents current time.</param>
     /// <param name="newVault">New encrypted vault to be added that is also taken into account for calculating retention policy.</param>
     /// <returns>List of vaults to delete according to the retention policies.</returns>
-    public static List<Vault> ApplyRetention(RetentionPolicy retentionPolicy, List<Vault> existingVaults, DateTime now, Vault? newVault = null)
+    public static List<VaultManifest> ApplyRetention(RetentionPolicy retentionPolicy, List<VaultManifest> existingVaults, DateTime now, VaultManifest? newVault = null)
     {
         // Add the new vault to the list of existing vaults if provided
         if (newVault is not null)
         {
-            existingVaults = new List<Vault>(existingVaults) { newVault };
+            existingVaults = new List<VaultManifest>(existingVaults) { newVault };
         }
 
         // Sort vaults by UpdatedAt in descending order
         existingVaults = existingVaults.OrderByDescending(v => v.UpdatedAt).ToList();
 
-        var vaultsToKeep = new HashSet<Vault>();
+        var vaultsToKeep = new HashSet<VaultManifest>();
 
         // Process retention rules
         foreach (var rule in retentionPolicy.Rules)

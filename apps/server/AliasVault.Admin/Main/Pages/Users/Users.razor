@@ -199,7 +199,7 @@ else
                     u.TwoFactorEnabled,
                     u.Blocked,
                     u.LastActivityDate,
-                    Vaults = u.Vaults.Select(v => new
+                    Vaults = u.VaultManifests.Select(v => new
                     {
                         v.FileSize,
                         v.CreatedAt,
@@ -342,13 +342,13 @@ else
                 break;
             case "VaultCount":
                 query = SortDirection == SortDirection.Ascending
-                    ? query.OrderBy(x => x.Vaults.Count)
-                    : query.OrderByDescending(x => x.Vaults.Count);
+                    ? query.OrderBy(x => x.VaultManifests.Count)
+                    : query.OrderByDescending(x => x.VaultManifests.Count);
                 break;
             case "CredentialCount":
                 query = SortDirection == SortDirection.Ascending
-                    ? query.OrderBy(x => x.Vaults.OrderByDescending(x => x.RevisionNumber).First().CredentialsCount)
-                    : query.OrderByDescending(x => x.Vaults.OrderByDescending(x => x.RevisionNumber).First().CredentialsCount);
+                    ? query.OrderBy(x => x.VaultManifests.OrderByDescending(x => x.RevisionNumber).First().CredentialsCount)
+                    : query.OrderByDescending(x => x.VaultManifests.OrderByDescending(x => x.RevisionNumber).First().CredentialsCount);
                 break;
             case "EmailClaimCount":
                 query = SortDirection == SortDirection.Ascending
@@ -357,8 +357,8 @@ else
                 break;
             case "VaultStorageInKb":
                 query = SortDirection == SortDirection.Ascending
-                    ? query.OrderBy(x => x.Vaults.Sum(v => v.FileSize))
-                    : query.OrderByDescending(x => x.Vaults.Sum(v => v.FileSize));
+                    ? query.OrderBy(x => x.VaultManifests.Sum(v => v.FileSize))
+                    : query.OrderByDescending(x => x.VaultManifests.Sum(v => v.FileSize));
                 break;
             case "LastActivityDate":
                 query = SortDirection == SortDirection.Ascending

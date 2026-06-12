@@ -100,8 +100,8 @@ public class TestController(
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
         // Get the newest revisions to delete
-        var revisionsToDelete = await context.Vaults
-            .Where(v => v.UserId == user.Id)
+        var revisionsToDelete = await context.VaultManifests
+            .Where(v => v.OwnerUserId == user.Id)
             .OrderByDescending(v => v.RevisionNumber)
             .Take(count)
             .ToListAsync();
@@ -112,7 +112,7 @@ public class TestController(
         }
 
         // Delete the revisions
-        context.Vaults.RemoveRange(revisionsToDelete);
+        context.VaultManifests.RemoveRange(revisionsToDelete);
         var deletedCount = await context.SaveChangesAsync();
 
         return Ok(new
@@ -144,8 +144,8 @@ public class TestController(
 
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        var revisions = await context.Vaults
-            .Where(v => v.UserId == user.Id)
+        var revisions = await context.VaultManifests
+            .Where(v => v.OwnerUserId == user.Id)
             .OrderByDescending(v => v.RevisionNumber)
             .Select(v => new
             {
@@ -268,8 +268,8 @@ public class TestController(
             return NotFound($"User '{username}' not found");
         }
 
-        var revisions = await context.Vaults
-            .Where(v => v.UserId == user.Id)
+        var revisions = await context.VaultManifests
+            .Where(v => v.OwnerUserId == user.Id)
             .OrderByDescending(v => v.RevisionNumber)
             .Select(v => new
             {
@@ -320,8 +320,8 @@ public class TestController(
         }
 
         // Get the newest revisions to delete
-        var revisionsToDelete = await context.Vaults
-            .Where(v => v.UserId == user.Id)
+        var revisionsToDelete = await context.VaultManifests
+            .Where(v => v.OwnerUserId == user.Id)
             .OrderByDescending(v => v.RevisionNumber)
             .Take(count)
             .ToListAsync();
@@ -332,7 +332,7 @@ public class TestController(
         }
 
         // Delete the revisions
-        context.Vaults.RemoveRange(revisionsToDelete);
+        context.VaultManifests.RemoveRange(revisionsToDelete);
         await context.SaveChangesAsync();
 
         return Ok(new
