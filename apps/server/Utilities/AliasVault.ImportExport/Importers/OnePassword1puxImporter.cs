@@ -9,6 +9,7 @@ namespace AliasVault.ImportExport.Importers;
 
 using System.IO.Compression;
 using System.Text.Json;
+using AliasClientDb.Models;
 using AliasVault.ImportExport.Exceptions;
 using AliasVault.ImportExport.Models;
 using AliasVault.ImportExport.Models.Imports;
@@ -325,12 +326,18 @@ public class OnePassword1puxImporter : BaseArchiveImporter
                     ExtractCreditCardField(credential, field);
                 }
 
-                // Add other fields as custom fields
+                // Add other fields as custom fields. A concealed value (no plain string content)
+                // indicates a hidden field; everything else defaults to a plain text field.
                 var fieldValue = GetFieldValueAsString(field.Value);
                 if (!string.IsNullOrWhiteSpace(fieldValue))
                 {
-                    credential.CustomFields ??= new Dictionary<string, string>();
-                    credential.CustomFields[field.Title] = fieldValue;
+                    var isConcealed = string.IsNullOrWhiteSpace(field.Value.String)
+                        && !string.IsNullOrWhiteSpace(field.Value.Concealed);
+                    BaseImporter.AddCustomField(
+                        credential,
+                        field.Title,
+                        fieldValue,
+                        isConcealed ? FieldType.Hidden : FieldType.Text);
                 }
             }
         }

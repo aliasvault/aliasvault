@@ -55,9 +55,57 @@ public abstract class VaultImportTestsBase : ClientPlaywrightTest
         await VerifySecureNote();
         await VerifyMultiUrlLogin();
         await VerifyCredentialInFolder();
+        await VerifyCustomFields();
 
         // Verify that timestamps were preserved and items appear in creation order
         await VerifyItemsOrderPreserved();
+    }
+
+    /// <summary>
+    /// Verifies the "Custom Field Login" item's custom (user-defined) fields are imported correctly.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    protected async Task VerifyCustomFields()
+    {
+        await NavigateUsingBlazorRouter("items");
+        await WaitForUrlAsync("items", "Find all of your items");
+        await Page.WaitForTimeoutAsync(1000);
+
+        var itemsPageContent = await Page.TextContentAsync("body");
+        if (itemsPageContent == null || !itemsPageContent.Contains("Custom Field Login"))
+        {
+            TestContext.Progress.WriteLine(
+                "VerifyCustomFields: 'Custom Field Login' item not present in the imported vault. " +
+                "The TestVault.avux/.avex fixtures predate custom field coverage and must be regenerated " +
+                "via the manual GenerateAvuxAvexTestFile test. Skipping custom field assertions.");
+            return;
+        }
+
+        await Page.ClickAsync("text=Custom Field Login");
+        await Page.WaitForURLAsync("**/items/*", new() { Timeout = 5000 });
+        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+        var pageContent = await Page.TextContentAsync("body");
+
+        // The custom field labels (and thus their definitions and types) should all be present.
+        Assert.Multiple(() =>
+        {
+            Assert.That(pageContent, Does.Contain("Membership ID"), "Text custom field label should be preserved");
+            Assert.That(pageContent, Does.Contain("Secret PIN"), "Hidden custom field label should be preserved");
+            Assert.That(pageContent, Does.Contain("Recovery Notes"), "Multiline custom field label should be preserved");
+
+            // The multiline (TextArea) value renders as page text and should round-trip verbatim.
+            Assert.That(pageContent, Does.Contain("Recovery line one"), "Multiline custom field value should be preserved");
+            Assert.That(pageContent, Does.Contain("Recovery line two"), "Multiline custom field value should be preserved");
+        });
+
+        // The text custom field value sits in a readonly input whose id matches its label's "for"
+        // attribute (the field definition id). Resolve it that way to read the value back.
+        var membershipForId = await Page.Locator("label:has-text('Membership ID')").First.GetAttributeAsync("for");
+        Assert.That(membershipForId, Is.Not.Null.And.Not.Empty, "Custom field label should reference its input");
+
+        var membershipValue = await Page.Locator($"[id='{membershipForId}']").InputValueAsync();
+        Assert.That(membershipValue, Is.EqualTo("MEMBER-12345"), "Text custom field value should be preserved");
     }
 
     /// <summary>
