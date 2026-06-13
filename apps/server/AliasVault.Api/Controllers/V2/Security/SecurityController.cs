@@ -5,7 +5,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Api.Controllers.V1.Security;
+namespace AliasVault.Api.Controllers.V2.Security;
 
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
@@ -21,7 +21,7 @@ using Microsoft.EntityFrameworkCore;
 /// </summary>
 /// <param name="dbContextFactory">AliasServerDbContext instance.</param>
 /// <param name="userManager">UserManager instance.</param>
-[ApiVersion("1")]
+[ApiVersion("2")]
 public class SecurityController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager) : AuthenticatedRequestController(userManager)
 {
     /// <summary>

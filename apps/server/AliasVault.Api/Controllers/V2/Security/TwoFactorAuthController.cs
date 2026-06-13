@@ -5,7 +5,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Api.Controllers.V1.Security;
+namespace AliasVault.Api.Controllers.V2.Security;
 
 using System.Text.Encodings.Web;
 using AliasServerDb;
@@ -24,7 +24,7 @@ using Microsoft.EntityFrameworkCore;
 /// <param name="urlEncoder">UrlEncoder instance.</param>
 /// <param name="authLoggingService">AuthLoggingService instance. This is used to log auth attempts to the database.</param>
 /// <param name="userManager">UserManager instance.</param>
-[ApiVersion("1")]
+[ApiVersion("2")]
 public class TwoFactorAuthController(IDbContextFactory<AliasServerDbContext> dbContextFactory, UrlEncoder urlEncoder, AuthLoggingService authLoggingService, UserManager<AliasVaultUser> userManager) : AuthenticatedRequestController(userManager)
 {
     /// <summary>

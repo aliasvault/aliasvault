@@ -12,10 +12,11 @@
  * These endpoints are only available in DEBUG builds.
  */
 
-namespace AliasVault.Api.Controllers.Tests;
+namespace AliasVault.Api.Controllers.V2.Tests;
 
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
+using AliasVault.Api.Controllers.Tests;
 using AliasVault.Shared.Server.Services;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
@@ -33,7 +34,7 @@ using Microsoft.EntityFrameworkCore;
 /// <param name="environment">IWebHostEnvironment instance.</param>
 /// <param name="dbContextFactory">DbContext factory instance.</param>
 /// <param name="serverSettingsService">ServerSettingsService instance.</param>
-[ApiVersion("1")]
+[ApiVersion("2")]
 public class TestController(
     UserManager<AliasVaultUser> userManager,
     IWebHostEnvironment environment,
