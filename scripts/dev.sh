@@ -103,11 +103,10 @@ EXPO_PORT=$((   BLOCK_BASE + 4 ))
 # remember. Offsets 5..8 are left free as spare slots inside the block.
 DB_PORT=$((     BLOCK_BASE + 9 ))
 
-if [ "$AV_INSTANCE" = "0" ]; then
-  DB_PROJECT="aliasvault-dev"
-else
-  DB_PROJECT="aliasvault-dev-$AV_INSTANCE"
-fi
+# Always one dev DB container, named 'aliasvault-dev'. AV_INSTANCE only shifts
+# the published port (above), not the container identity — so install.sh and any
+# other tooling can find it by a single, stable project name.
+DB_PROJECT="aliasvault-dev"
 DB_COMPOSE="$ROOT_DIR/dockerfiles/docker-compose.dev.yml"
 CONN_STR="Host=localhost;Port=$DB_PORT;Database=aliasvault;Username=aliasvault;Password=password;Maximum Pool Size=20;Minimum Pool Size=1"
 

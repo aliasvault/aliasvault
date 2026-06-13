@@ -2833,6 +2833,8 @@ set_deployment_mode() {
 }
 
 # Function to handle database export
+DEV_COMPOSE="docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev"
+
 handle_db_export() {
     printf "${YELLOW}+++ Exporting Database +++${NC}\n" >&2
 
@@ -2856,18 +2858,18 @@ handle_db_export() {
     # Determine docker compose command based on dev/prod
     if [ "$DEV_DB" = true ]; then
         # Check if dev containers are running
-        if ! docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev ps postgres-dev --quiet 2>/dev/null | grep -q .; then
+        if ! $DEV_COMPOSE ps postgres-dev --quiet 2>/dev/null | grep -q .; then
             printf "${RED}Error: Development database container is not running. Start it first with: ./scripts/dev.sh db-start${NC}\n" >&2
             exit 1
         fi
 
         # Check if postgres-dev container is healthy
-        if ! docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev ps postgres-dev | grep -q "healthy"; then
+        if ! $DEV_COMPOSE ps postgres-dev | grep -q "healthy"; then
             printf "${RED}Error: Development PostgreSQL container is not healthy. Please check the logs.${NC}\n" >&2
             exit 1
         fi
 
-        DOCKER_CMD="docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev exec -T postgres-dev"
+        DOCKER_CMD="$DEV_COMPOSE exec -T postgres-dev"
         DB_TYPE="development"
     else
         # Production database export logic
@@ -2948,7 +2950,7 @@ handle_db_import() {
 
     # Check if containers are running
     if [ "$DEV_DB" = true ]; then
-        if ! docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev ps postgres-dev | grep -q "healthy"; then
+        if ! $DEV_COMPOSE ps postgres-dev | grep -q "healthy"; then
             printf "${RED}Error: Development PostgreSQL container is not healthy. Start it first with: ./scripts/dev.sh db-start${NC}\n"
             exit 1
         fi
@@ -3001,9 +3003,10 @@ handle_db_import() {
     fi
     printf "database...${NC}\n"
 
-    # Determine docker compose command based on dev/prod
+    # Determine docker compose command based on dev/prod ($DEV_COMPOSE was
+    # resolved during the health check above for the active dev instance).
     if [ "$DEV_DB" = true ]; then
-        DOCKER_CMD="docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev exec -T postgres-dev"
+        DOCKER_CMD="$DEV_COMPOSE exec -T postgres-dev"
     else
         DOCKER_CMD="docker compose exec -T postgres"
     fi
