@@ -154,7 +154,7 @@ jobs:
             sleep 2
           done
         env:
-          ConnectionStrings__AliasServerDbContext: "Host=localhost;Port=5433;Database=aliasdb_e2e_extension;Username=aliasvault;Password=password"
+          ConnectionStrings__AliasServerDbContext: "Host=localhost;Port=5109;Database=aliasdb_e2e_extension;Username=aliasvault;Password=password"
           JWT_KEY: "12345678901234567890123456789012"
           DATA_PROTECTION_CERT_PASS: "Development"
           PUBLIC_REGISTRATION_ENABLED: "true"

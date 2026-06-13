@@ -79,7 +79,7 @@ public class AbstractTestHostBuilder : IAsyncDisposable
             // Create a connection to 'postgres' database to drop the test database
             using var conn =
                 new NpgsqlConnection(
-                    "Host=localhost;Port=5433;Database=postgres;Username=aliasvault;Password=password");
+                    "Host=localhost;Port=5109;Database=postgres;Username=aliasvault;Password=password");
             await conn.OpenAsync();
 
             // First terminate existing connections
@@ -141,7 +141,7 @@ public class AbstractTestHostBuilder : IAsyncDisposable
         // Create a connection to 'postgres' database to ensure the test database exists
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-        using (var conn = new NpgsqlConnection("Host=localhost;Port=5433;Database=postgres;Username=aliasvault;Password=password"))
+        using (var conn = new NpgsqlConnection("Host=localhost;Port=5109;Database=postgres;Username=aliasvault;Password=password"))
         {
             conn.Open();
             using (var cmd = conn.CreateCommand())
@@ -154,7 +154,7 @@ public class AbstractTestHostBuilder : IAsyncDisposable
         }
 
         // Create a connection to the new test database
-        var dbConnection = new NpgsqlConnection($"Host=localhost;Port=5433;Database={_tempDbName};Username=aliasvault;Password=password");
+        var dbConnection = new NpgsqlConnection($"Host=localhost;Port=5109;Database={_tempDbName};Username=aliasvault;Password=password");
 
         var builder = Host.CreateDefaultBuilder()
             .ConfigureServices((context, services) =>
