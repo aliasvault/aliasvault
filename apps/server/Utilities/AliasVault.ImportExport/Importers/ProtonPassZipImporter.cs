@@ -413,7 +413,8 @@ public class ProtonPassZipImporter : BaseArchiveImporter
                 continue;
             }
 
-            // Proton Pass marks concealed fields with type "hidden"; everything else is plain text.
+            // Proton Pass custom fields can have type "hidden" for concealed fields.
+            // Other known types include "text", "totp", and "date".
             BaseImporter.AddCustomField(
                 credential,
                 field.FieldName,
