@@ -250,14 +250,19 @@ public class BitwardenZipImporter : BaseArchiveImporter
             }
 
             // For all other types (Text, Hidden, Boolean), add to custom fields if value exists.
-            // Bitwarden field type 1 is "Hidden"; everything else maps to a plain text field.
+            // Bitwarden field types:
+            // 0 = Text (plaintext)
+            // 1 = Hidden (password/sensitive)
+            // 2 = Boolean (true/false)
+            // 3 = Linked (reference to another field - not supported, skipped)
             if (!string.IsNullOrWhiteSpace(field.Value))
             {
+                var fieldType = field.Type == 1 ? FieldTypeKind.Hidden : FieldTypeKind.Text;
                 BaseImporter.AddCustomField(
                     credential,
                     field.Name,
                     field.Value,
-                    field.Type == 1 ? FieldTypeKind.Hidden : FieldTypeKind.Text);
+                    fieldType);
             }
         }
     }
