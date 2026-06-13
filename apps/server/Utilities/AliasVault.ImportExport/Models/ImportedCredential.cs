@@ -104,8 +104,7 @@ public class ImportedCredential
     public List<ImportedAttachment>? Attachments { get; set; }
 
     /// <summary>
-    /// Gets or sets custom field definitions for this credential.
-    /// Key is the field label, value is the field value.
+    /// Gets or sets the custom (user-defined) field values for this credential.
     /// </summary>
-    public Dictionary<string, string>? CustomFields { get; set; }
+    public List<ImportedCustomField>? CustomFieldValues { get; set; }
 }

@@ -9,6 +9,7 @@ namespace AliasVault.ImportExport.Importers;
 
 using System.IO.Compression;
 using System.Text.Json;
+using AliasClientDb.Models;
 using AliasVault.ImportExport.Exceptions;
 using AliasVault.ImportExport.Models;
 using AliasVault.ImportExport.Models.Imports;
@@ -412,21 +413,13 @@ public class ProtonPassZipImporter : BaseArchiveImporter
                 continue;
             }
 
-            AddCustomField(credential, field.FieldName, value);
+            // Proton Pass marks concealed fields with type "hidden"; everything else is plain text.
+            BaseImporter.AddCustomField(
+                credential,
+                field.FieldName,
+                value,
+                type == "hidden" ? FieldType.Hidden : FieldType.Text);
         }
-    }
-
-    /// <summary>
-    /// Adds a key/value pair to the credential's CustomFields dictionary,
-    /// initialising it if necessary.
-    /// </summary>
-    /// <param name="credential">The credential to modify.</param>
-    /// <param name="name">The custom field name.</param>
-    /// <param name="value">The custom field value.</param>
-    private static void AddCustomField(ImportedCredential credential, string name, string value)
-    {
-        credential.CustomFields ??= new Dictionary<string, string>();
-        credential.CustomFields[name] = value;
     }
 
     /// <summary>

@@ -458,6 +458,44 @@ public abstract class ClientPlaywrightTest : PlaywrightTest
     }
 
     /// <summary>
+    /// Adds a custom (user-defined) field to the current item add/edit form via the "+" menu,
+    /// then fills in its value. Exercises the custom field modal (label + type) and the resulting
+    /// editor input.
+    /// </summary>
+    /// <param name="label">The custom field label (e.g. "Membership ID").</param>
+    /// <param name="fieldType">The custom field type as stored in the model (e.g. "Text", "Hidden", "TextArea").</param>
+    /// <param name="value">The value to fill into the custom field.</param>
+    /// <returns>Async task.</returns>
+    protected async Task AddCustomFieldAsync(string label, string fieldType, string value)
+    {
+        // Open the add-field menu and choose "Add Custom Field".
+        var addFieldButton = Page.Locator("button.w-full.border-dashed").First;
+        await addFieldButton.ClickAsync();
+        await Page.ClickAsync("button:has-text('Add Custom Field')");
+
+        // Fill in the custom field modal (label + type).
+        await Page.WaitForSelectorAsync("input#custom-field-label-input", new() { State = WaitForSelectorState.Visible });
+        await Page.FillAsync("input#custom-field-label-input", label);
+
+        // The type dropdown is uniquely identified by its options (e.g. it contains a "Hidden" option).
+        await Page.Locator("select:has(option[value='Hidden'])").SelectOptionAsync(fieldType);
+
+        // Confirm the modal (the confirm button text is exactly "Add").
+        await Page.Locator("button:text-is('Add')").ClickAsync();
+
+        // The newly added field is appended to the custom fields list with a dynamic id of the
+        // form "custom-{tempId}"; fill the most recently added input/textarea.
+        if (fieldType == "TextArea")
+        {
+            await Page.Locator("textarea[id^='custom-']").Last.FillAsync(value);
+        }
+        else
+        {
+            await Page.Locator("input[id^='custom-']").Last.FillAsync(value);
+        }
+    }
+
+    /// <summary>
     /// Login (again) as current user.
     /// </summary>
     /// <param name="rememberMe">Whether the remember me option should be checked.</param>

@@ -315,7 +315,27 @@ public class TestVaultGeneratorTests : BrowserExtensionPlaywrightTest
                 await Page.FillAsync("input#service-url-2", "https://admin.example.com");
             });
 
-        // 7. Create a folder and a credential in it
+        // 7. Create a login credential with custom (user-defined) fields of different types.
+        await CreateItemEntry(
+            new Dictionary<string, string>
+            {
+                { "service-name", "Custom Field Login" },
+                { "username", "customfielduser" },
+                { "password", "customfieldpass" },
+            },
+            async () =>
+            {
+                // Plain text custom field.
+                await AddCustomFieldAsync("Membership ID", "Text", "MEMBER-12345");
+
+                // Hidden custom field (value is masked in the UI).
+                await AddCustomFieldAsync("Secret PIN", "Hidden", "9876");
+
+                // Multiline custom field.
+                await AddCustomFieldAsync("Recovery Notes", "TextArea", "Recovery line one\nRecovery line two");
+            });
+
+        // 8. Create a folder and a credential in it
         await Page.BringToFrontAsync();
         await NavigateUsingBlazorRouter("items");
         await WaitForUrlAsync("items", "Find all of your items");
@@ -367,6 +387,7 @@ public class TestVaultGeneratorTests : BrowserExtensionPlaywrightTest
             "Test Credit Card",
             "Test Secure Note",
             "Multi-URL Login",
+            "Custom Field Login",
         };
 
         foreach (var itemName in expectedItems)
@@ -475,7 +496,8 @@ public class TestVaultGeneratorTests : BrowserExtensionPlaywrightTest
         Console.WriteLine("4. Test Credit Card - credit card entry with all fields");
         Console.WriteLine("5. Test Secure Note - secure note item");
         Console.WriteLine("6. Multi-URL Login - credential with multiple URLs");
-        Console.WriteLine("7. Credential in Folder - credential organized in 'Test Folder'");
+        Console.WriteLine("7. Custom Field Login - credential with text, hidden and multiline custom fields");
+        Console.WriteLine("8. Credential in Folder - credential organized in 'Test Folder'");
         Console.WriteLine("\nFiles saved to:");
         Console.WriteLine($"  - Output directory (.avux): {avuxFilePath}");
         Console.WriteLine($"  - Output directory (.avex): {avexFilePath}");
