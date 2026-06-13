@@ -254,7 +254,7 @@ public static class VaultImportService
                         DefinitionId = definition.Id,
                         Label = definition.Label,
                         Value = fieldValue.Value,
-                        FieldType = definition.FieldType,
+                        FieldType = AliasClientDb.Models.FieldTypeKindExtensions.ToFieldTypeKind(definition.FieldType),
                         IsMultiValue = definition.IsMultiValue,
                         IsHidden = definition.IsHidden,
                         EnableHistory = definition.EnableHistory,
