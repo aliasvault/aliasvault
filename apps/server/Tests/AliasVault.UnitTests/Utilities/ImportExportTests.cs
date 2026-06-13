@@ -1635,6 +1635,28 @@ public class ImportExportTests
     }
 
     /// <summary>
+    /// Helper method to add a custom (user-defined) field value to an item, referencing a field definition.
+    /// </summary>
+    /// <param name="item">The item to add the field value to.</param>
+    /// <param name="definition">The custom field definition the value belongs to.</param>
+    /// <param name="value">The field value.</param>
+    private static void AddCustomFieldValue(Item item, FieldDefinition definition, string value)
+    {
+        item.FieldValues.Add(new FieldValue
+        {
+            Id = Guid.NewGuid(),
+            ItemId = item.Id,
+            FieldDefinition = definition,
+            FieldDefinitionId = definition.Id,
+            FieldKey = null,
+            Value = value,
+            Weight = 0,
+            CreatedAt = item.CreatedAt,
+            UpdatedAt = item.UpdatedAt,
+        });
+    }
+
+    /// <summary>
     /// Test case for exporting vault data to .avux format and verifying structure.
     /// </summary>
     /// <returns>Async task.</returns>
@@ -1850,6 +1872,103 @@ public class ImportExportTests
             Assert.That(imported.Alias?.FirstName, Is.EqualTo("John"));
             Assert.That(imported.Alias?.LastName, Is.EqualTo("Doe"));
             Assert.That(imported.TwoFactorSecret, Is.EqualTo("JBSWY3DPEHPK3PXP"));
+        });
+    }
+
+    /// <summary>
+    /// Test case verifying that custom (user-defined) fields are exported and imported correctly
+    /// during a .avux export and import.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task AvuxRoundTripPreservesCustomFields()
+    {
+        // Arrange - an item with two custom fields: a plain text one and a hidden secret one.
+        var item = CreateTestItem("Custom Field Item", ItemType.Login, new Dictionary<string, string>
+        {
+            { FieldKey.LoginUsername, "customuser" },
+        });
+
+        var textFieldDef = new FieldDefinition
+        {
+            Id = Guid.NewGuid(),
+            Label = "Security Question",
+            FieldType = "Text",
+            IsHidden = false,
+            Weight = 3,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        };
+        var hiddenFieldDef = new FieldDefinition
+        {
+            Id = Guid.NewGuid(),
+            Label = "Recovery Code",
+            FieldType = "Password",
+            IsHidden = true,
+            Weight = 5,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        };
+
+        AddCustomFieldValue(item, textFieldDef, "My first pet");
+        AddCustomFieldValue(item, hiddenFieldDef, "super-secret-recovery");
+
+        var fieldDefinitions = new List<FieldDefinition> { textFieldDef, hiddenFieldDef };
+
+        // Export
+        var avuxBytes = await VaultExportService.ExportToAvuxAsync(
+            new List<Item> { item },
+            new List<Folder>(),
+            new List<Tag>(),
+            new List<ItemTag>(),
+            fieldDefinitions,
+            new List<Logo>(),
+            "test@example.com");
+
+        // Import
+        var importedCredentials = await VaultImportService.ImportFromAvuxAsync(avuxBytes);
+
+        // Assert - custom field values survive the import with their full metadata.
+        Assert.That(importedCredentials, Has.Count.EqualTo(1));
+        var imported = importedCredentials[0];
+        Assert.That(imported.CustomFieldValues, Is.Not.Null);
+        Assert.That(imported.CustomFieldValues, Has.Count.EqualTo(2));
+
+        var textField = imported.CustomFieldValues!.First(f => f.Label == "Security Question");
+        Assert.Multiple(() =>
+        {
+            Assert.That(textField.Value, Is.EqualTo("My first pet"));
+            Assert.That(textField.FieldType, Is.EqualTo(FieldTypeKind.Text));
+            Assert.That(textField.IsHidden, Is.False);
+            Assert.That(textField.Weight, Is.EqualTo(3));
+        });
+
+        var hiddenField = imported.CustomFieldValues!.First(f => f.Label == "Recovery Code");
+        Assert.Multiple(() =>
+        {
+            Assert.That(hiddenField.Value, Is.EqualTo("super-secret-recovery"));
+            Assert.That(hiddenField.FieldType, Is.EqualTo(FieldTypeKind.Password));
+            Assert.That(hiddenField.IsHidden, Is.True);
+            Assert.That(hiddenField.Weight, Is.EqualTo(5));
+        });
+
+        // Assert - converting the imported credentials to vault items recreates the custom
+        // FieldDefinitions and their FieldValues (this is the path that previously dropped them).
+        var convertedItems = BaseImporter.ConvertToItem(importedCredentials);
+        var convertedItem = convertedItems.Single();
+
+        var customFieldValues = convertedItem.FieldValues
+            .Where(fv => fv.FieldKey == null && fv.FieldDefinition != null)
+            .ToList();
+        Assert.That(customFieldValues, Has.Count.EqualTo(2));
+
+        var recoveryValue = customFieldValues.First(fv => fv.FieldDefinition!.Label == "Recovery Code");
+        Assert.Multiple(() =>
+        {
+            Assert.That(recoveryValue.Value, Is.EqualTo("super-secret-recovery"));
+            Assert.That(recoveryValue.FieldDefinition!.FieldType, Is.EqualTo("Password"));
+            Assert.That(recoveryValue.FieldDefinition.IsHidden, Is.True);
+            Assert.That(recoveryValue.FieldDefinition.Weight, Is.EqualTo(5));
         });
     }
 
@@ -2101,11 +2220,20 @@ public class ImportExportTests
 
             // Verify custom fields (all types: Text=0, Hidden=1, Boolean=2)
             // Linked fields (type 3) are skipped during import
-            Assert.That(loginItem.CustomFields, Is.Not.Null);
-            Assert.That(loginItem.CustomFields, Has.Count.EqualTo(3));
-            Assert.That(loginItem.CustomFields!["Security Question"], Is.EqualTo("My first pet")); // Type 0: Text
-            Assert.That(loginItem.CustomFields["API Key"], Is.EqualTo("sk_test_123456789")); // Type 1: Hidden
-            Assert.That(loginItem.CustomFields["Two Factor Enabled"], Is.EqualTo("true")); // Type 2: Boolean
+            Assert.That(loginItem.CustomFieldValues, Is.Not.Null);
+            Assert.That(loginItem.CustomFieldValues, Has.Count.EqualTo(3));
+
+            var securityQuestion = loginItem.CustomFieldValues!.First(f => f.Label == "Security Question");
+            Assert.That(securityQuestion.Value, Is.EqualTo("My first pet")); // Type 0: Text
+            Assert.That(securityQuestion.FieldType, Is.EqualTo(FieldTypeKind.Text));
+
+            var apiKey = loginItem.CustomFieldValues!.First(f => f.Label == "API Key");
+            Assert.That(apiKey.Value, Is.EqualTo("sk_test_123456789")); // Type 1: Hidden
+            Assert.That(apiKey.FieldType, Is.EqualTo(FieldTypeKind.Hidden));
+
+            var twoFactorEnabled = loginItem.CustomFieldValues!.First(f => f.Label == "Two Factor Enabled");
+            Assert.That(twoFactorEnabled.Value, Is.EqualTo("true")); // Type 2: Boolean
+            Assert.That(twoFactorEnabled.FieldType, Is.EqualTo(FieldTypeKind.Text));
 
             // Notes should remain unchanged (linked fields are skipped, not added to notes)
             Assert.That(loginItem.Notes, Is.EqualTo("This is a test login item"));
@@ -2406,7 +2534,7 @@ public class ImportExportTests
     public async Task ImportCredentialsFromOnePassword1pux()
     {
         // Arrange
-        var zipBytes = await ResourceReaderUtility.ReadEmbeddedResourceBytesAsync("AliasVault.UnitTests.TestData.Exports.test_export.1pux");
+        var zipBytes = await ResourceReaderUtility.ReadEmbeddedResourceBytesAsync("AliasVault.UnitTests.TestData.Exports.1password_8.1pux");
 
         // Act
         var importer = new OnePassword1puxImporter();
@@ -2431,8 +2559,9 @@ public class ImportExportTests
             Assert.That(loginItem.Tags, Has.Count.EqualTo(2));
             Assert.That(loginItem.Tags, Does.Contain("work"));
             Assert.That(loginItem.Tags, Does.Contain("important"));
-            Assert.That(loginItem.CustomFields, Is.Not.Null);
-            Assert.That(loginItem.CustomFields!["Recovery Email"], Is.EqualTo("recovery@example.com"));
+            Assert.That(loginItem.CustomFieldValues, Is.Not.Null);
+            var recoveryEmail = loginItem.CustomFieldValues!.First(f => f.Label == "Recovery Email");
+            Assert.That(recoveryEmail.Value, Is.EqualTo("recovery@example.com"));
         });
 
         // Verify created/updated timestamps are converted from Unix time

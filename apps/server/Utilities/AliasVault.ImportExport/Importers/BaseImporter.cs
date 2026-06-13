@@ -162,6 +162,31 @@ public static class BaseImporter
     }
 
     /// <summary>
+    /// Adds a custom (user-defined) field value to the credential.
+    /// </summary>
+    /// <param name="credential">The credential to add the custom field to.</param>
+    /// <param name="label">The field label (display name).</param>
+    /// <param name="value">The field value.</param>
+    /// <param name="fieldType">The field type. Defaults to <see cref="FieldTypeKind.Text"/>.</param>
+    public static void AddCustomField(ImportedCredential credential, string? label, string? value, FieldTypeKind fieldType = FieldTypeKind.Text)
+    {
+        if (string.IsNullOrWhiteSpace(label) || string.IsNullOrWhiteSpace(value))
+        {
+            return;
+        }
+
+        credential.CustomFieldValues ??= new List<ImportedCustomField>();
+        credential.CustomFieldValues.Add(new ImportedCustomField
+        {
+            DefinitionId = Guid.NewGuid(),
+            Label = label,
+            Value = value,
+            FieldType = fieldType,
+            IsHidden = fieldType is FieldTypeKind.Hidden or FieldTypeKind.Password,
+        });
+    }
+
+    /// <summary>
     /// Converts a list of imported credentials to a list of AliasVault Items.
     /// </summary>
     /// <param name="importedCredentials">The list of imported credentials.</param>
@@ -293,32 +318,35 @@ public static class BaseImporter
                 }
             }
 
-            // Add custom fields if present
-            if (importedCredential.CustomFields != null)
+            // Add custom (user-defined) field values if present.
+            if (importedCredential.CustomFieldValues != null)
             {
-                foreach (var customField in importedCredential.CustomFields)
+                var definitionsBySourceId = new Dictionary<Guid, FieldDefinition>();
+                foreach (var customField in importedCredential.CustomFieldValues)
                 {
                     if (string.IsNullOrWhiteSpace(customField.Value))
                     {
                         continue;
                     }
 
-                    // Create a FieldDefinition for this custom field
-                    var fieldDefinition = new FieldDefinition
+                    if (!definitionsBySourceId.TryGetValue(customField.DefinitionId, out var fieldDefinition))
                     {
-                        Id = Guid.NewGuid(),
-                        Label = customField.Key,
-                        FieldType = "Text", // Default to Text type for all custom fields
-                        IsMultiValue = false,
-                        IsHidden = false,
-                        EnableHistory = false,
-                        Weight = 0,
-                        ApplicableToTypes = null, // Applicable to all types
-                        CreatedAt = createdAt,
-                        UpdatedAt = updatedAt,
-                    };
+                        fieldDefinition = new FieldDefinition
+                        {
+                            Id = Guid.NewGuid(),
+                            Label = customField.Label,
+                            FieldType = customField.FieldType.ToFieldTypeString(),
+                            IsMultiValue = customField.IsMultiValue,
+                            IsHidden = customField.IsHidden,
+                            EnableHistory = customField.EnableHistory,
+                            Weight = customField.Weight,
+                            ApplicableToTypes = customField.ApplicableToTypes,
+                            CreatedAt = createdAt,
+                            UpdatedAt = updatedAt,
+                        };
+                        definitionsBySourceId[customField.DefinitionId] = fieldDefinition;
+                    }
 
-                    // Create a FieldValue that references this definition
                     item.FieldValues.Add(new FieldValue
                     {
                         Id = Guid.NewGuid(),
@@ -327,7 +355,7 @@ public static class BaseImporter
                         FieldDefinitionId = fieldDefinition.Id,
                         FieldKey = null, // Custom fields don't use FieldKey
                         Value = customField.Value,
-                        Weight = 0,
+                        Weight = customField.ValueWeight,
                         CreatedAt = createdAt,
                         UpdatedAt = updatedAt,
                     });

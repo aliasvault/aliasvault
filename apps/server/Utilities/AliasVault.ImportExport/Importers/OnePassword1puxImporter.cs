@@ -9,6 +9,7 @@ namespace AliasVault.ImportExport.Importers;
 
 using System.IO.Compression;
 using System.Text.Json;
+using AliasClientDb.Models;
 using AliasVault.ImportExport.Exceptions;
 using AliasVault.ImportExport.Models;
 using AliasVault.ImportExport.Models.Imports;
@@ -325,12 +326,15 @@ public class OnePassword1puxImporter : BaseArchiveImporter
                     ExtractCreditCardField(credential, field);
                 }
 
-                // Add other fields as custom fields
-                var fieldValue = GetFieldValueAsString(field.Value);
-                if (!string.IsNullOrWhiteSpace(fieldValue))
+                // Add other fields as custom fields.
+                var resolved = ResolveFieldValue(field.Value);
+                if (!string.IsNullOrWhiteSpace(resolved.Value))
                 {
-                    credential.CustomFields ??= new Dictionary<string, string>();
-                    credential.CustomFields[field.Title] = fieldValue;
+                    BaseImporter.AddCustomField(
+                        credential,
+                        field.Title,
+                        resolved.Value,
+                        resolved.FieldType);
                 }
             }
         }
@@ -455,63 +459,75 @@ public class OnePassword1puxImporter : BaseArchiveImporter
     }
 
     /// <summary>
+    /// Resolves a 1Password field value to both its string value representation and the matching field type.
+    /// </summary>
+    /// <param name="fieldValue">The field value object.</param>
+    /// <returns>The resolved value and its AliasVault field type. The value is null when empty.</returns>
+    private static ResolvedFieldValue ResolveFieldValue(OnePasswordFieldValue fieldValue)
+    {
+        if (!string.IsNullOrWhiteSpace(fieldValue.String))
+        {
+            return new ResolvedFieldValue(fieldValue.String, FieldTypeKind.Text);
+        }
+
+        if (!string.IsNullOrWhiteSpace(fieldValue.Concealed))
+        {
+            return new ResolvedFieldValue(fieldValue.Concealed, FieldTypeKind.Hidden);
+        }
+
+        if (!string.IsNullOrWhiteSpace(fieldValue.Url))
+        {
+            return new ResolvedFieldValue(fieldValue.Url, FieldTypeKind.URL);
+        }
+
+        if (!string.IsNullOrWhiteSpace(fieldValue.CreditCardNumber))
+        {
+            return new ResolvedFieldValue(fieldValue.CreditCardNumber, FieldTypeKind.Text);
+        }
+
+        if (!string.IsNullOrWhiteSpace(fieldValue.Menu))
+        {
+            return new ResolvedFieldValue(fieldValue.Menu, FieldTypeKind.Text);
+        }
+
+        if (!string.IsNullOrWhiteSpace(fieldValue.Phone))
+        {
+            return new ResolvedFieldValue(fieldValue.Phone, FieldTypeKind.Phone);
+        }
+
+        if (fieldValue.Email?.EmailAddress != null)
+        {
+            return new ResolvedFieldValue(fieldValue.Email.EmailAddress, FieldTypeKind.Email);
+        }
+
+        if (fieldValue.Address != null)
+        {
+            return new ResolvedFieldValue(FormatAddress(fieldValue.Address), FieldTypeKind.Text);
+        }
+
+        if (fieldValue.Date.HasValue)
+        {
+            // FormatUnixTimestampAsDate emits an ISO yyyy-MM-dd string, which the Date field renders as-is.
+            return new ResolvedFieldValue(BaseImporter.FormatUnixTimestampAsDate(fieldValue.Date.Value), FieldTypeKind.Date);
+        }
+
+        if (fieldValue.MonthYear.HasValue)
+        {
+            // MonthYear is only a yyyy-MM partial date, so keep it as plain text rather than a Date field.
+            return new ResolvedFieldValue(BaseImporter.FormatMonthYear(fieldValue.MonthYear.Value), FieldTypeKind.Text);
+        }
+
+        return new ResolvedFieldValue(null, FieldTypeKind.Text);
+    }
+
+    /// <summary>
     /// Gets a field value as a string.
     /// </summary>
     /// <param name="fieldValue">The field value object.</param>
     /// <returns>The value as a string, or null if empty.</returns>
     private static string? GetFieldValueAsString(OnePasswordFieldValue fieldValue)
     {
-        if (!string.IsNullOrWhiteSpace(fieldValue.String))
-        {
-            return fieldValue.String;
-        }
-
-        if (!string.IsNullOrWhiteSpace(fieldValue.Concealed))
-        {
-            return fieldValue.Concealed;
-        }
-
-        if (!string.IsNullOrWhiteSpace(fieldValue.Url))
-        {
-            return fieldValue.Url;
-        }
-
-        if (!string.IsNullOrWhiteSpace(fieldValue.CreditCardNumber))
-        {
-            return fieldValue.CreditCardNumber;
-        }
-
-        if (!string.IsNullOrWhiteSpace(fieldValue.Menu))
-        {
-            return fieldValue.Menu;
-        }
-
-        if (!string.IsNullOrWhiteSpace(fieldValue.Phone))
-        {
-            return fieldValue.Phone;
-        }
-
-        if (fieldValue.Email?.EmailAddress != null)
-        {
-            return fieldValue.Email.EmailAddress;
-        }
-
-        if (fieldValue.Address != null)
-        {
-            return FormatAddress(fieldValue.Address);
-        }
-
-        if (fieldValue.Date.HasValue)
-        {
-            return BaseImporter.FormatUnixTimestampAsDate(fieldValue.Date.Value);
-        }
-
-        if (fieldValue.MonthYear.HasValue)
-        {
-            return BaseImporter.FormatMonthYear(fieldValue.MonthYear.Value);
-        }
-
-        return null;
+        return ResolveFieldValue(fieldValue).Value;
     }
 
     /// <summary>
@@ -629,4 +645,11 @@ public class OnePassword1puxImporter : BaseArchiveImporter
             Blob = fileData,
         });
     }
+
+    /// <summary>
+    /// A 1Password field value resolved to its string value representation and matching field type.
+    /// </summary>
+    /// <param name="Value">The value as a string, or null when the field is empty.</param>
+    /// <param name="FieldType">The field type the value maps to.</param>
+    private readonly record struct ResolvedFieldValue(string? Value, FieldTypeKind FieldType);
 }
