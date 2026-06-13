@@ -31,12 +31,9 @@ public class ImportedCustomField
     public string? Value { get; set; }
 
     /// <summary>
-    /// Gets or sets the field type. Use the canonical constants from
-    /// <see cref="AliasClientDb.Models.FieldType"/> (Text, Password, Hidden, Email, URL, Date, etc.)
-    /// rather than raw strings, so a renamed/removed field type breaks compilation at the call site.
-    /// Stored as a string to match the vault data model and the .avux export format.
+    /// Gets or sets the field type.
     /// </summary>
-    public string FieldType { get; set; } = AliasClientDb.Models.FieldType.Text;
+    public AliasClientDb.Models.FieldTypeKind FieldType { get; set; } = AliasClientDb.Models.FieldTypeKind.Text;
 
     /// <summary>
     /// Gets or sets a value indicating whether this field supports multiple values.

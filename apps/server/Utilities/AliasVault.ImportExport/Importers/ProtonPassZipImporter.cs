@@ -418,7 +418,7 @@ public class ProtonPassZipImporter : BaseArchiveImporter
                 credential,
                 field.FieldName,
                 value,
-                type == "hidden" ? FieldType.Hidden : FieldType.Text);
+                type == "hidden" ? FieldTypeKind.Hidden : FieldTypeKind.Text);
         }
     }
 

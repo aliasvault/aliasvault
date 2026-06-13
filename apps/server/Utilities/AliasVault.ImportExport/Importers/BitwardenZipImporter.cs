@@ -257,7 +257,7 @@ public class BitwardenZipImporter : BaseArchiveImporter
                     credential,
                     field.Name,
                     field.Value,
-                    field.Type == 1 ? FieldType.Hidden : FieldType.Text);
+                    field.Type == 1 ? FieldTypeKind.Hidden : FieldTypeKind.Text);
             }
         }
     }

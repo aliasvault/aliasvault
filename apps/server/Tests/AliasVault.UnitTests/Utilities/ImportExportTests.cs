@@ -1938,7 +1938,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(textField.Value, Is.EqualTo("My first pet"));
-            Assert.That(textField.FieldType, Is.EqualTo("Text"));
+            Assert.That(textField.FieldType, Is.EqualTo(FieldTypeKind.Text));
             Assert.That(textField.IsHidden, Is.False);
             Assert.That(textField.Weight, Is.EqualTo(3));
         });
@@ -1947,7 +1947,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(hiddenField.Value, Is.EqualTo("super-secret-recovery"));
-            Assert.That(hiddenField.FieldType, Is.EqualTo("Password"));
+            Assert.That(hiddenField.FieldType, Is.EqualTo(FieldTypeKind.Password));
             Assert.That(hiddenField.IsHidden, Is.True);
             Assert.That(hiddenField.Weight, Is.EqualTo(5));
         });
@@ -2225,15 +2225,15 @@ public class ImportExportTests
 
             var securityQuestion = loginItem.CustomFieldValues!.First(f => f.Label == "Security Question");
             Assert.That(securityQuestion.Value, Is.EqualTo("My first pet")); // Type 0: Text
-            Assert.That(securityQuestion.FieldType, Is.EqualTo("Text"));
+            Assert.That(securityQuestion.FieldType, Is.EqualTo(FieldTypeKind.Text));
 
             var apiKey = loginItem.CustomFieldValues!.First(f => f.Label == "API Key");
             Assert.That(apiKey.Value, Is.EqualTo("sk_test_123456789")); // Type 1: Hidden
-            Assert.That(apiKey.FieldType, Is.EqualTo("Hidden"));
+            Assert.That(apiKey.FieldType, Is.EqualTo(FieldTypeKind.Hidden));
 
             var twoFactorEnabled = loginItem.CustomFieldValues!.First(f => f.Label == "Two Factor Enabled");
             Assert.That(twoFactorEnabled.Value, Is.EqualTo("true")); // Type 2: Boolean
-            Assert.That(twoFactorEnabled.FieldType, Is.EqualTo("Text"));
+            Assert.That(twoFactorEnabled.FieldType, Is.EqualTo(FieldTypeKind.Text));
 
             // Notes should remain unchanged (linked fields are skipped, not added to notes)
             Assert.That(loginItem.Notes, Is.EqualTo("This is a test login item"));

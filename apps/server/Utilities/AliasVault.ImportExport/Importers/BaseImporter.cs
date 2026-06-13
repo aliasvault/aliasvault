@@ -167,15 +167,13 @@ public static class BaseImporter
     /// <param name="credential">The credential to add the custom field to.</param>
     /// <param name="label">The field label (display name).</param>
     /// <param name="value">The field value.</param>
-    /// <param name="fieldType">The field type.</param>
-    public static void AddCustomField(ImportedCredential credential, string? label, string? value, string fieldType = FieldType.Text)
+    /// <param name="fieldType">The field type. Defaults to <see cref="FieldTypeKind.Text"/>.</param>
+    public static void AddCustomField(ImportedCredential credential, string? label, string? value, FieldTypeKind fieldType = FieldTypeKind.Text)
     {
         if (string.IsNullOrWhiteSpace(label) || string.IsNullOrWhiteSpace(value))
         {
             return;
         }
-
-        var resolvedType = string.IsNullOrWhiteSpace(fieldType) ? FieldType.Text : fieldType;
 
         credential.CustomFieldValues ??= new List<ImportedCustomField>();
         credential.CustomFieldValues.Add(new ImportedCustomField
@@ -183,8 +181,8 @@ public static class BaseImporter
             DefinitionId = Guid.NewGuid(),
             Label = label,
             Value = value,
-            FieldType = resolvedType,
-            IsHidden = resolvedType is FieldType.Hidden or FieldType.Password,
+            FieldType = fieldType,
+            IsHidden = fieldType is FieldTypeKind.Hidden or FieldTypeKind.Password,
         });
     }
 
@@ -337,7 +335,7 @@ public static class BaseImporter
                         {
                             Id = Guid.NewGuid(),
                             Label = customField.Label,
-                            FieldType = string.IsNullOrWhiteSpace(customField.FieldType) ? FieldType.Text : customField.FieldType,
+                            FieldType = customField.FieldType.ToFieldTypeString(),
                             IsMultiValue = customField.IsMultiValue,
                             IsHidden = customField.IsHidden,
                             EnableHistory = customField.EnableHistory,
