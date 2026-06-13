@@ -23,7 +23,7 @@ The iOS app has two test targets:
 - iOS Simulator configured
 - Node.js 20+
 - CocoaPods dependencies installed (`cd apps/mobile-app && npx pod-install`)
-- For UI tests: connect to your local API dev instance (by default `http://localhost:5100` when started via `./scripts/dev.sh api`, or `http://localhost:5092` when running the API project directly)
+- For UI tests: connect to your local API dev instance (by default `http://localhost:5100`)
 
 ## Running Tests
 
@@ -97,11 +97,10 @@ xcodebuild test \
 
 #### With Custom API URL (for UI tests)
 
-Point `API_URL` at your API dev instance (by default `5100` when started via
-`./scripts/dev.sh api`, or `5092` when running the API project directly):
+Point `API_URL` at your API dev instance (by default `5100`):
 
 ```bash
-API_URL="http://your-server:5092" xcodebuild test \
+API_URL="http://your-server:5100" xcodebuild test \
   -workspace AliasVault.xcworkspace \
   -scheme AliasVault \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \

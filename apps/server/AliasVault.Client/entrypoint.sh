@@ -29,7 +29,7 @@ fi
 
 # Remove the default API URL as it's only used for local dev/debugging.
 # The app will use a relative URL instead (base url + "/api/" which is the default for the Docker setup).
-sed -i "s|\"ApiUrl\": \"http://localhost:5092\",||g" /usr/share/nginx/html/appsettings.json
+sed -i "s|\"ApiUrl\": \"http://localhost:5100\",||g" /usr/share/nginx/html/appsettings.json
 
 # Handle empty PRIVATE_EMAIL_DOMAINS by defaulting to empty array
 if [ -z "$PRIVATE_EMAIL_DOMAINS" ]; then

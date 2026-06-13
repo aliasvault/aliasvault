@@ -9,7 +9,7 @@ object TestConfiguration {
      * Can be overridden by setting the API_URL instrumentation argument.
      */
     val apiUrl: String
-        get() = System.getProperty("API_URL") ?: "http://10.0.2.2:5092"
+        get() = System.getProperty("API_URL") ?: "http://10.0.2.2:5100"
 
     /**
      * Generate a unique name for test items.

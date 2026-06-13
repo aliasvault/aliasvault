@@ -13,7 +13,7 @@
         "commandName": "Project",
         "dotnetRunMessages": true,
         "launchBrowser": true,
-        "applicationUrl": "http://localhost:5216",
+        "applicationUrl": "http://localhost:5102",
         "environmentVariables": {
           "ASPNETCORE_ENVIRONMENT": "Development",
           "ADMIN_PASSWORD_HASH": "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag==",
@@ -26,7 +26,7 @@
         "commandName": "Project",
         "dotnetRunMessages": true,
         "launchBrowser": true,
-        "applicationUrl": "https://localhost:7025;http://localhost:5216",
+        "applicationUrl": "https://localhost:7025;http://localhost:5102",
         "environmentVariables": {
           "ASPNETCORE_ENVIRONMENT": "Development",
           "ADMIN_PASSWORD_HASH": "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag==",

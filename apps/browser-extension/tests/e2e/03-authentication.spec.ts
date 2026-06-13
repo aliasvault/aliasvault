@@ -2,7 +2,7 @@
  * Category 3: Authentication Flow (Requires API)
  *
  * These tests verify login/authentication works correctly.
- * They require an API server to be running at localhost:5092.
+ * They require an API server to be running at localhost:5100.
  */
 import { test, expect, TestClient } from '../fixtures';
 

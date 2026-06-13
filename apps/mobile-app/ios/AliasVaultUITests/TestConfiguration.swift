@@ -4,7 +4,7 @@ import Foundation
 enum TestConfiguration {
     /// API URL for testing (defaults to local development server)
     static var apiUrl: String {
-        return ProcessInfo.processInfo.environment["API_URL"] ?? "http://localhost:5092"
+        return ProcessInfo.processInfo.environment["API_URL"] ?? "http://localhost:5100"
     }
 
     /// Generate a unique name for test items
