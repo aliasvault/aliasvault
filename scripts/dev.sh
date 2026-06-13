@@ -6,16 +6,9 @@
 # setup: every service runs from source on a single, consistent set of ports,
 # so the apps always know where to find each other.
 #
-# Each invocation starts exactly one app/service. To run several at once,
-# launch multiple instances (e.g. the VS Code tasks fan out one call per app).
-#
-# Config defaults live in this script; per-machine overrides go in the
-# (gitignored) ./dev.env.local, which is created from a template on first run.
-#
 # Usage:
 #   ./scripts/dev.sh                 # interactive menu (pick an app)
 #   ./scripts/dev.sh <app>           # start one app: api | client | admin | smtp | taskrunner | ext | mobile
-#   ./scripts/dev.sh db              # toggle the dev database (start if stopped, else stop)
 #   ./scripts/dev.sh db-start        # start (only) the dev database
 #   ./scripts/dev.sh db-stop         # stop & remove this instance's dev database
 #   ./scripts/dev.sh ports           # print the resolved port map and exit
@@ -38,13 +31,13 @@ info()  { printf "%s==>%s %s\n" "$CYAN" "$NC" "$1"; }
 warn()  { printf "%s!  %s%s\n" "$YELLOW" "$1" "$NC"; }
 die()   { printf "%sError:%s %s\n" "$RED" "$NC" "$1" >&2; exit 1; }
 
-LOCAL_ENV="$ROOT_DIR/dev.env.local"
+LOCAL_ENV="$ROOT_DIR/dev.env"
 
 # --- Config defaults -----------------------------------------------------------
 DEFAULT_BASE_PORT=5100 # first port of the block; every service counts up from here
 DEFAULT_PORT_STRIDE=10 # how far apart consecutive instances are spaced
 
-# Write the dev.env.local template, with AV_INSTANCE pinned to the given value.
+# Write the dev.env template, with AV_INSTANCE pinned to the given value.
 seed_local_env() {
   cat > "$LOCAL_ENV" <<ENV
 # ----------------------------------------------------------------------------
@@ -73,10 +66,10 @@ ENV
 }
 
 # --- Load port config ----------------------------------------------------------
-# First run: create a dev.env.local set to instance 0.
+# First run: create a dev.env set to instance 0.
 if [ ! -f "$LOCAL_ENV" ]; then
   seed_local_env 0
-  info "Created dev.env.local (instance 0). Bump AV_INSTANCE there if the default ports are in use."
+  info "Created dev.env (instance 0). Bump AV_INSTANCE there if the default ports are in use."
 fi
 
 # shellcheck disable=SC1091
@@ -84,11 +77,11 @@ set -a
 . "$LOCAL_ENV"
 set +a
 
-# Precedence: dev.env.local > built-in defaults.
+# Precedence: dev.env > built-in defaults.
 AV_INSTANCE="${AV_INSTANCE:-0}"
 AV_BASE_PORT="${AV_BASE_PORT:-$DEFAULT_BASE_PORT}"
 AV_PORT_STRIDE="${AV_PORT_STRIDE:-$DEFAULT_PORT_STRIDE}"
-# Default true for pre-existing dev.env.local files that predate this setting.
+# Default true for pre-existing dev.env files that predate this setting.
 AV_USE_DEBUG_ENCRYPTION_KEY="${AV_USE_DEBUG_ENCRYPTION_KEY:-true}"
 case "$AV_INSTANCE" in (*[!0-9]*|"") die "AV_INSTANCE must be a non-negative integer (got '$AV_INSTANCE').";; esac
 case "$AV_USE_DEBUG_ENCRYPTION_KEY" in true|false) ;; (*) die "AV_USE_DEBUG_ENCRYPTION_KEY must be 'true' or 'false' (got '$AV_USE_DEBUG_ENCRYPTION_KEY').";; esac

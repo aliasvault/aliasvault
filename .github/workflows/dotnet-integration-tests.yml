@@ -42,7 +42,7 @@ jobs:
       run: dotnet build
 
     - name: Start dev database
-      run: ./install.sh configure-dev-db start
+      run: ./scripts/dev.sh db-start
 
     - name: Run integration tests
       working-directory: apps/server

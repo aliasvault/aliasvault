@@ -1,5 +1,5 @@
 #!/bin/bash
-# @version 20260608
+# @version 20260613
 
 # Repository information used for downloading files and images from GitHub
 REPO_OWNER="aliasvault"
@@ -69,16 +69,12 @@ show_usage() {
     printf "  update                    Update AliasVault including install.sh script to the latest version\n"
     printf "  update-installer          Update install.sh script if newer version is available\n"
     printf "\n"
-    printf "  db-export                 Export database to file\n"
-    printf "  db-import                 Import database from file\n"
-    printf "\n"
-    printf "  configure-dev-db          Enable/disable development database (for local development only)\n"
+    printf "  db-export                 Export database to file (run for usage and options)\n"
+    printf "  db-import                 Import database from file (run for usage and options)\n"
     printf "\n"
     printf "Options:\n"
     printf "  --verbose                Show detailed output\n"
     printf "  -y, --yes                Automatic yes to prompts\n"
-    printf "  --dev                    Target development database for db import/export operations\n"
-    printf "  --parallel=N             Use pigz with N threads for faster compression (db-export only, max: 32)\n"
     printf "\n"
 }
 
@@ -99,7 +95,7 @@ print_logo() {
 # Canonical command list (primary forms only, no aliases). Used by
 # suggest_commands to render "Did you mean..." prefix matches when the user
 # enters an unknown command. Keep sorted so suggestions appear in stable order.
-KNOWN_COMMANDS="build configure-admin-access configure-dev-db configure-email configure-hostname configure-ip-logging configure-registration configure-ssl configure-trusted-proxies db-export db-import install migrate-db reset-admin-password restart start stop uninstall update update-installer"
+KNOWN_COMMANDS="build configure-admin-access configure-email configure-hostname configure-ip-logging configure-registration configure-ssl configure-trusted-proxies db-export db-import install migrate-db reset-admin-password restart start stop uninstall update update-installer"
 
 # Print "Did you mean ..." suggestions for any known command that has the user's
 # input as a prefix. Returns 0 if at least one match was found, 1 otherwise.
@@ -222,15 +218,6 @@ parse_args() {
         update-installer|cs)
             COMMAND="update-installer"
             shift
-            ;;
-        configure-dev-db|dev-db)
-            COMMAND="configure-dev-db"
-            shift
-            # Check for direct option argument
-            if [ $# -gt 0 ] && [[ ! "$1" =~ ^- ]]; then
-                COMMAND_ARG="$1"
-                shift
-            fi
             ;;
         migrate-db|migrate)
             COMMAND="migrate-db"
@@ -945,7 +932,7 @@ main() {
                 exit 1
             fi
             ;;
-        "install"|"build"|"update"|"configure-dev-db")
+        "install"|"build"|"update")
             # Full dependency check for operations that require Docker
             if ! check_dependencies; then
                 exit 1
@@ -1028,9 +1015,6 @@ main() {
         "update-installer")
             check_install_script_update
             exit $?
-            ;;
-        "configure-dev-db")
-            configure_dev_database
             ;;
         "db-export")
             handle_db_export
@@ -2838,124 +2822,6 @@ handle_install_version() {
     print_install_success_message
 }
 
-# Function to handle development database configuration
-configure_dev_database() {
-    printf "${YELLOW}+++ Development Database Configuration +++${NC}\n"
-    printf "\n"
-
-    if [ ! -f "dockerfiles/docker-compose.dev.yml" ]; then
-        printf "${RED}> The dockerfiles/docker-compose.dev.yml file is missing. This file is required to start the development database. Please checkout the full GitHub repository and try again.${NC}\n"
-        return 1
-    fi
-
-    # Check if direct option was provided
-    if [ -n "$COMMAND_ARG" ]; then
-        case $COMMAND_ARG in
-            1|start)
-                if docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev ps --status running 2>/dev/null | grep -q postgres-dev; then
-                    printf "${YELLOW}> Development database is already running.${NC}\n"
-                else
-                    printf "${CYAN}> Starting development database...${NC}\n"
-                    docker compose -p aliasvault-dev -f dockerfiles/docker-compose.dev.yml up -d --wait --wait-timeout 60
-                    printf "${GREEN}> Development database started successfully.${NC}\n"
-                fi
-                print_dev_db_details
-                return
-                ;;
-            0|stop)
-                if ! docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev ps --status running 2>/dev/null | grep -q postgres-dev; then
-                    printf "${YELLOW}> Development database is already stopped.${NC}\n"
-                else
-                    printf "${CYAN}> Stopping development database...${NC}\n"
-                    docker compose -p aliasvault-dev -f dockerfiles/docker-compose.dev.yml down
-                    printf "${GREEN}> Development database stopped successfully.${NC}\n"
-                fi
-                return
-                ;;
-        esac
-    fi
-
-    # Check current status
-    if docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev ps --status running 2>/dev/null | grep -q postgres-dev; then
-        DEV_DB_STATUS="running"
-    else
-        DEV_DB_STATUS="stopped"
-    fi
-
-    printf "${CYAN}About Development Database:${NC}\n"
-    printf "A separate PostgreSQL instance for development purposes that:\n"
-    printf "  - Runs on port 5433 (to avoid conflicts)\n"
-    printf "  - Uses simple credentials (password: 'password')\n"
-    printf "  - Stores data separately from production\n"
-    printf "\n"
-    printf "${CYAN}Current Status:${NC}\n"
-    if [ "$DEV_DB_STATUS" = "running" ]; then
-        printf "Development Database: ${GREEN}Running${NC}\n"
-    else
-        printf "Development Database: ${YELLOW}Stopped${NC}\n"
-    fi
-    printf "\n"
-    printf "Options:\n"
-    printf "1) Start development database\n"
-    printf "2) Stop development database\n"
-    printf "3) View connection details\n"
-    printf "4) Cancel\n"
-    printf "\n"
-
-    read -p "Select an option [1-4]: " dev_db_option
-
-    case $dev_db_option in
-        1)
-            if [ "$DEV_DB_STATUS" = "running" ]; then
-                printf "${YELLOW}> Development database is already running.${NC}\n"
-            else
-                printf "${CYAN}> Starting development database...${NC}\n"
-                docker compose -p aliasvault-dev -f dockerfiles/docker-compose.dev.yml up -d --wait --wait-timeout 60
-                printf "${GREEN}> Development database started successfully.${NC}\n"
-            fi
-            print_dev_db_details
-            ;;
-        2)
-            if [ "$DEV_DB_STATUS" = "stopped" ]; then
-                printf "${YELLOW}> Development database is already stopped.${NC}\n"
-            else
-                printf "${CYAN}> Stopping development database...${NC}\n"
-                docker compose -p aliasvault-dev -f dockerfiles/docker-compose.dev.yml down
-                printf "${GREEN}> Development database stopped successfully.${NC}\n"
-            fi
-            ;;
-        3)
-            print_dev_db_details
-            ;;
-        4)
-            printf "${YELLOW}Configuration cancelled.${NC}\n"
-            exit 0
-            ;;
-        *)
-            printf "${RED}Invalid option selected.${NC}\n"
-            exit 1
-            ;;
-    esac
-}
-
-# Function to print development database connection details
-print_dev_db_details() {
-    printf "\n"
-    printf "${MAGENTA}=========================================================${NC}\n"
-    printf "\n"
-    printf "${CYAN}Development Database Connection Details:${NC}\n"
-    printf "Host: localhost\n"
-    printf "Port: 5433\n"
-    printf "Database: aliasvault\n"
-    printf "Username: aliasvault\n"
-    printf "Password: password\n"
-    printf "\n"
-    printf "Connection string:\n"
-    printf "Host=localhost;Port=5433;Database=aliasvault;Username=aliasvault;Password=password\n"
-    printf "\n"
-    printf "${MAGENTA}=========================================================${NC}\n"
-}
-
 # Function to set deployment mode in .env
 set_deployment_mode() {
     local mode=$1
@@ -2975,7 +2841,7 @@ handle_db_export() {
         printf "Usage: ./install.sh db-export [OPTIONS] > backup.sql.gz\n" >&2
         printf "\n" >&2
         printf "Options:\n" >&2
-        printf "  --dev                Export from development database\n" >&2
+        printf "  --dev                Export from the development database (default: production)\n" >&2
         printf "  --parallel=N         Use pigz with N threads for faster compression (max: 32)\n" >&2
         printf "\n" >&2
         printf "Examples:\n" >&2
@@ -2991,7 +2857,7 @@ handle_db_export() {
     if [ "$DEV_DB" = true ]; then
         # Check if dev containers are running
         if ! docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev ps postgres-dev --quiet 2>/dev/null | grep -q .; then
-            printf "${RED}Error: Development database container is not running. Start it first with: ./install.sh configure-dev-db${NC}\n" >&2
+            printf "${RED}Error: Development database container is not running. Start it first with: ./scripts/dev.sh db-start${NC}\n" >&2
             exit 1
         fi
 
@@ -3064,10 +2930,26 @@ handle_db_import() {
 
     printf "${YELLOW}+++ Importing Database +++${NC}\n"
 
+    # Show usage when there's no piped input before any container checks so `db-import`
+    # with no input always explains itself.
+    if [ -t 3 ]; then
+        printf "Usage: ./install.sh db-import [OPTIONS] < backup_file\n"
+        printf "\n"
+        printf "Options:\n"
+        printf "  --dev      Import into the development database (default: production)\n"
+        printf "\n"
+        printf "Examples:\n"
+        printf "  ./install.sh db-import < backup.sql.gz              # Import gzipped SQL\n"
+        printf "  ./install.sh db-import < backup.sql                 # Import plain SQL\n"
+        printf "  ./install.sh db-import --dev < backup.sql.gz        # Import into dev database\n"
+        printf "\n"
+        exit 1
+    fi
+
     # Check if containers are running
     if [ "$DEV_DB" = true ]; then
         if ! docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev ps postgres-dev | grep -q "healthy"; then
-            printf "${RED}Error: Development PostgreSQL container is not healthy.${NC}\n"
+            printf "${RED}Error: Development PostgreSQL container is not healthy. Start it first with: ./scripts/dev.sh db-start${NC}\n"
             exit 1
         fi
     else
@@ -3075,21 +2957,6 @@ handle_db_import() {
             printf "${RED}Error: PostgreSQL container is not healthy.${NC}\n"
             exit 1
         fi
-    fi
-
-    # Check if we're getting input from a pipe (check fd 3 instead of stdin now)
-    if [ -t 3 ]; then
-        printf "Usage: ./install.sh db-import [OPTIONS] < backup_file\n"
-        printf "\n"
-        printf "Options:\n"
-        printf "  --dev      Import to development database\n"
-        printf "\n"
-        printf "Examples:\n"
-        printf "  ./install.sh db-import < backup.sql.gz              # Import gzipped SQL\n"
-        printf "  ./install.sh db-import < backup.sql                 # Import plain SQL\n"
-        printf "  ./install.sh db-import --dev < backup.sql.gz        # Import to dev database\n"
-        printf "\n"
-        exit 1
     fi
 
     printf "${RED}Warning: This will DELETE ALL EXISTING DATA in the "

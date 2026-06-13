@@ -158,12 +158,12 @@ If you encounter database connection issues:
 
 2. **Port Conflicts**
    - Run `./scripts/dev.sh ports` to see the ports in use (defaults: API `5100`, database `5109`)
-   - If those ports are taken, bump `AV_INSTANCE` in `dev.env.local` to shift the whole block
+   - If those ports are taken, bump `AV_INSTANCE` in `dev.env` to shift the whole block
 
 ## Additional Notes
 
 - Keep your .NET SDK and Docker up to date
-- The development database runs on port 5109 by default (configurable via `dev.env.local`)
+- The development database runs on port 5109 by default (configurable via `dev.env`)
 - Use the debug encryption key in development for easier testing
 - Store sensitive data in environment variables or user secrets
 

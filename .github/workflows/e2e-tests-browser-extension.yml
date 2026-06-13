@@ -71,7 +71,7 @@ jobs:
           npm run build:chrome
 
       - name: Start dev database
-        run: ./install.sh configure-dev-db start
+        run: ./scripts/dev.sh db-start
 
       - name: Ensure browsers are installed
         working-directory: apps/server
@@ -137,7 +137,7 @@ jobs:
         run: dotnet build AliasVault.Api
 
       - name: Start dev database
-        run: ./install.sh configure-dev-db start
+        run: ./scripts/dev.sh db-start
 
       - name: Start API server
         working-directory: apps/server/AliasVault.Api
