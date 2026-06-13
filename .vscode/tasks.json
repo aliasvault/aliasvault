@@ -4,71 +4,85 @@
         {
             "label": "Build and watch API",
             "type": "shell",
-            "command": "dotnet watch",
-            "args": [],
+            "command": "./scripts/dev.sh",
+            "args": ["api"],
             "problemMatcher": [],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
             "options": {
-                "cwd": "${workspaceFolder}/apps/server/AliasVault.Api"
+                "cwd": "${workspaceFolder}"
             }
         },
         {
             "label": "Build and watch Client",
             "type": "shell",
-            "command": "dotnet watch",
-            "args": [],
+            "command": "./scripts/dev.sh",
+            "args": ["client"],
             "problemMatcher": [],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
             "options": {
-                "cwd": "${workspaceFolder}/apps/server/AliasVault.Client"
+                "cwd": "${workspaceFolder}"
             }
         },
         {
             "label": "Build and watch Admin",
             "type": "shell",
-            "command": "dotnet watch",
-            "args": [],
+            "command": "./scripts/dev.sh",
+            "args": ["admin"],
             "problemMatcher": [],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
             "options": {
-                "cwd": "${workspaceFolder}/apps/server/AliasVault.Admin"
+                "cwd": "${workspaceFolder}"
             }
         },
         {
             "label": "Build and watch SMTP Service",
             "type": "shell",
-            "command": "dotnet watch",
-            "args": [],
+            "command": "./scripts/dev.sh",
+            "args": ["smtp"],
             "problemMatcher": [],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
             "options": {
-                "cwd": "${workspaceFolder}/apps/server/Services/AliasVault.SmtpService"
+                "cwd": "${workspaceFolder}"
             }
         },
         {
             "label": "Build and watch TaskRunner",
             "type": "shell",
-            "command": "dotnet watch",
-            "args": [],
+            "command": "./scripts/dev.sh",
+            "args": ["taskrunner"],
             "problemMatcher": [],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
             "options": {
-                "cwd": "${workspaceFolder}/apps/server/Services/AliasVault.TaskRunner"
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "label": "Start dev database",
+            "type": "shell",
+            "command": "./scripts/dev.sh",
+            "args": ["db"],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
             }
         },
         {
@@ -129,15 +143,15 @@
         {
             "label": "Run Browser Extension (Chrome Dev)",
             "type": "shell",
-            "command": "npm",
-            "args": ["run", "dev:chrome"],
+            "command": "./scripts/dev.sh",
+            "args": ["ext"],
             "problemMatcher": [],
-            "options": {
-                "cwd": "${workspaceFolder}/apps/browser-extension"
-            },
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
             }
         },
         {
@@ -223,6 +237,6 @@
                 "isDefault": true
             },
             "dependsOn": []
-        },
+        }
     ]
 }
