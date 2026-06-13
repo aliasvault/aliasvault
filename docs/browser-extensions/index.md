@@ -15,6 +15,7 @@ You can use the AliasVault browser extension to:
 - Generate new aliases for any website on the registration form itself
 - Access received emails on all of your aliases
 - View your aliases and identities
+- Select multiple items in the list to bulk-delete them or move them to a folder
 
 The AliasVault browser extensions work with both the official cloud hosted version of AliasVault but also the self-hosted version.
 

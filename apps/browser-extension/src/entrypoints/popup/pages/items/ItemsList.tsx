@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
+import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
 import DeleteFolderModal from '@/entrypoints/popup/components/Folders/DeleteFolderModal';
 import FolderBreadcrumb from '@/entrypoints/popup/components/Folders/FolderBreadcrumb';
 import FolderModal from '@/entrypoints/popup/components/Folders/FolderModal';
@@ -11,6 +12,7 @@ import FolderPill from '@/entrypoints/popup/components/Items/FolderPill';
 import ItemCard from '@/entrypoints/popup/components/Items/ItemCard';
 import ItemFilterDropdown from '@/entrypoints/popup/components/Items/ItemFilterDropdown';
 import { ITEM_TYPE_OPTIONS } from '@/entrypoints/popup/components/Items/ItemTypeSelector';
+import MoveToFolderModal from '@/entrypoints/popup/components/Items/MoveToFolderModal';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import ReloadButton from '@/entrypoints/popup/components/ReloadButton';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
@@ -123,6 +125,11 @@ const ItemsList: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<CredentialSortOrder>('OldestFirst');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showFolders, setShowFolders] = useState(true);
+  // --- Bulk-selection state ---
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [showMoveToFolderModal, setShowMoveToFolderModal] = useState(false);
   const { setIsInitialLoading } = useLoading();
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -197,6 +204,38 @@ const ItemsList: React.FC = () => {
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state, location.pathname, navigate]);
+
+  // --- Bulk-selection handlers ---
+  /**
+   * Exit selection mode and clear any selected ids.
+   */
+  const exitSelectionMode = useCallback((): void => {
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+  }, []);
+
+  /**
+   * Enter selection mode (clears any previous selection).
+   */
+  const enterSelectionMode = useCallback((): void => {
+    setSelectedIds(new Set());
+    setSelectionMode(true);
+  }, []);
+
+  /**
+   * Toggle selection for a single item id.
+   */
+  const handleToggleSelect = useCallback((itemId: string): void => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(itemId)) {
+        next.delete(itemId);
+      } else {
+        next.add(itemId);
+      }
+      return next;
+    });
+  }, []);
 
   /**
    * Handle add new item.
@@ -639,6 +678,104 @@ const ItemsList: React.FC = () => {
 
   const folders = getFoldersWithCounts();
 
+  // --- Bulk-selection derived state and bulk action handlers ---
+
+  /**
+   * Ids of items currently visible (post-filter, post-sort). Used to scope
+   * "select all" / "deselect all" to what the user actually sees, and to
+   * prune selected ids that have scrolled out of view.
+   */
+  const visibleItemIds = useMemo(() => sortedItems.map(i => i.Id), [sortedItems]);
+
+  /**
+   * Prune any selected ids that are no longer in the visible list — this
+   * prevents accidentally acting on items that became hidden after a filter
+   * change or folder navigation.
+   */
+  useEffect(() => {
+    if (!selectionMode) {
+      return;
+    }
+    setSelectedIds(prev => {
+      if (prev.size === 0) {
+        return prev;
+      }
+      const visibleSet = new Set(visibleItemIds);
+      let changed = false;
+      const next = new Set<string>();
+      prev.forEach(id => {
+        if (visibleSet.has(id)) {
+          next.add(id);
+        } else {
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [visibleItemIds, selectionMode]);
+
+  const selectedCount = selectedIds.size;
+  const allVisibleSelected = visibleItemIds.length > 0 && visibleItemIds.every(id => selectedIds.has(id));
+
+  /**
+   * Toggle select-all over the currently visible items.
+   */
+  const handleToggleSelectAll = useCallback((): void => {
+    if (allVisibleSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(visibleItemIds));
+    }
+  }, [allVisibleSelected, visibleItemIds]);
+
+  /**
+   * Bulk trash all selected items (soft delete). All trash calls run inside a
+   * single vault mutation so the encrypted vault is exported and synced once.
+   */
+  const handleBulkDelete = useCallback(async (): Promise<void> => {
+    if (!dbContext?.sqliteClient || selectedIds.size === 0) {
+      setShowBulkDeleteConfirm(false);
+      return;
+    }
+    const idsToDelete = Array.from(selectedIds);
+    await executeVaultMutationAsync(async () => {
+      for (const id of idsToDelete) {
+        await dbContext.sqliteClient!.items.trash(id);
+      }
+    });
+    // Refresh items + recently-deleted count and exit selection mode.
+    const results = dbContext.sqliteClient!.items.getAll();
+    setItems(results);
+    setRecentlyDeletedCount(dbContext.sqliteClient!.items.getRecentlyDeletedCount());
+    setShowBulkDeleteConfirm(false);
+    exitSelectionMode();
+  }, [dbContext, selectedIds, executeVaultMutationAsync, exitSelectionMode]);
+
+  /**
+   * Bulk move all selected items into the given folder (or `null` for root).
+   * All move calls run inside a single vault mutation.
+   */
+  const handleBulkMoveToFolder = useCallback(async (targetFolderId: string | null): Promise<void> => {
+    if (!dbContext?.sqliteClient || selectedIds.size === 0) {
+      return;
+    }
+    const idsToMove = Array.from(selectedIds);
+    await executeVaultMutationAsync(async () => {
+      for (const id of idsToMove) {
+        await dbContext.sqliteClient!.folders.moveItem(id, targetFolderId);
+      }
+    });
+    const results = dbContext.sqliteClient!.items.getAll();
+    setItems(results);
+    exitSelectionMode();
+  }, [dbContext, selectedIds, executeVaultMutationAsync, exitSelectionMode]);
+
+  // Exit selection mode automatically when the user navigates between folders.
+  useEffect(() => {
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+  }, [currentFolderId]);
+
   /**
    * Calculate total item count including items in current folder and all child folders.
    * Used for the delete folder modal to show accurate count.
@@ -841,6 +978,23 @@ const ItemsList: React.FC = () => {
               </>
             )}
           </div>
+          {items.length > 0 && (
+            <button
+              onClick={() => (selectionMode ? exitSelectionMode() : enterSelectionMode())}
+              title={selectionMode ? t('items.cancelSelection') : t('items.select')}
+              aria-pressed={selectionMode}
+              className={`p-1.5 rounded-lg transition-colors ${
+                selectionMode
+                  ? 'text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50'
+                  : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <polyline points="9 12 11 14 15 10" />
+              </svg>
+            </button>
+          )}
           <ReloadButton onClick={syncVaultAndRefresh} />
         </div>
       </div>
@@ -1009,9 +1163,67 @@ const ItemsList: React.FC = () => {
             </div>
           )}
 
+          {/* Bulk-selection toolbar — shown above the items list while in selection mode. */}
+          {selectionMode && sortedItems.length > 0 && (
+            <div className="flex items-center justify-between gap-2 mb-3 px-3 py-2 rounded-lg border border-orange-200 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20 sticky top-0 z-10">
+              <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={allVisibleSelected}
+                  onChange={handleToggleSelectAll}
+                  aria-label={allVisibleSelected ? t('items.deselectAll') : t('items.selectAll')}
+                  className="w-4 h-4 rounded border-gray-300 dark:border-gray-500 text-orange-500 focus:ring-orange-500"
+                />
+                <span>
+                  {selectedCount > 0
+                    ? t('items.itemsSelected', { count: selectedCount })
+                    : t('items.selectAll')}
+                </span>
+              </label>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setShowMoveToFolderModal(true)}
+                  disabled={selectedCount === 0}
+                  title={t('items.bulkMoveToFolder')}
+                  className="inline-flex items-center gap-1 px-2 py-1.5 text-xs rounded-md text-gray-700 dark:text-gray-200 hover:bg-orange-100 dark:hover:bg-orange-900/40 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                  <span className="hidden sm:inline">{t('items.bulkMoveToFolder')}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowBulkDeleteConfirm(true)}
+                  disabled={selectedCount === 0}
+                  title={t('items.bulkDelete')}
+                  className="inline-flex items-center gap-1 px-2 py-1.5 text-xs rounded-md text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <polyline points="3 6 5 6 21 6" strokeLinecap="round" strokeLinejoin="round" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  </svg>
+                  <span className="hidden sm:inline">{t('items.bulkDelete')}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={exitSelectionMode}
+                  title={t('items.cancelSelection')}
+                  className="inline-flex items-center px-2 py-1.5 text-xs rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Items */}
           {sortedItems.length > 0 && (
-            <ul id="items-list" role="listbox" className="space-y-2">
+            <ul id="items-list" role="listbox" aria-multiselectable={selectionMode || undefined} className="space-y-2">
               {sortedItems.map((item, index) => (
                 <ItemCard
                   key={item.Id}
@@ -1021,6 +1233,9 @@ const ItemsList: React.FC = () => {
                   currentFolderPath={currentFolderPath}
                   isActive={activeKind === 'item' && activeIndex === index}
                   optionId={itemIdFor(index)}
+                  selectionMode={selectionMode}
+                  isSelected={selectedIds.has(item.Id)}
+                  onToggleSelect={handleToggleSelect}
                 />
               ))}
             </ul>
@@ -1092,6 +1307,25 @@ const ItemsList: React.FC = () => {
         onDeleteFolderOnly={handleDeleteFolderOnly}
         onDeleteFolderAndContents={handleDeleteFolderAndContents}
         itemCount={totalItemCountInFolderTree}
+      />
+
+      {/* Bulk delete confirmation */}
+      <ConfirmDeleteModal
+        isOpen={showBulkDeleteConfirm}
+        onClose={() => setShowBulkDeleteConfirm(false)}
+        onConfirm={handleBulkDelete}
+        title={t('items.bulkDeleteTitle', { count: selectedCount })}
+        message={t('items.bulkDeleteConfirm', { count: selectedCount })}
+        confirmText={t('items.bulkDelete')}
+      />
+
+      {/* Bulk move-to-folder picker */}
+      <MoveToFolderModal
+        isOpen={showMoveToFolderModal}
+        onClose={() => setShowMoveToFolderModal(false)}
+        folders={dbContext?.sqliteClient?.folders.getAll() ?? []}
+        itemCount={selectedCount}
+        onMove={handleBulkMoveToFolder}
       />
     </div>
   );

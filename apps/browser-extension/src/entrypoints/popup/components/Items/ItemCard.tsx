@@ -15,6 +15,12 @@ type ItemCardProps = {
   currentFolderPath?: string[] | null;
   isActive?: boolean;
   optionId?: string;
+  /** When true, render a checkbox and clicking the card toggles selection instead of navigating. */
+  selectionMode?: boolean;
+  /** Whether this item is currently selected (only meaningful when `selectionMode` is true). */
+  isSelected?: boolean;
+  /** Called when the user toggles the selection state of this item. */
+  onToggleSelect?: (itemId: string) => void;
 };
 
 /**
@@ -23,8 +29,20 @@ type ItemCardProps = {
  * This component displays an item card with a name, logo, and fields.
  * It allows the user to navigate to the item details page when clicked.
  *
+ * When `selectionMode` is enabled, the card displays a checkbox and clicking the
+ * card toggles selection (via `onToggleSelect`) instead of navigating.
  */
-const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searchTerm = '', currentFolderPath = null, isActive = false, optionId }) => {
+const ItemCard: React.FC<ItemCardProps> = ({
+  item,
+  showFolderPath = false,
+  searchTerm = '',
+  currentFolderPath = null,
+  isActive = false,
+  optionId,
+  selectionMode = false,
+  isSelected = false,
+  onToggleSelect,
+}) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -103,19 +121,48 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
   };
 
   return (
-    <li id={optionId} role="option" aria-selected={isActive}>
+    <li id={optionId} role="option" aria-selected={selectionMode ? isSelected : isActive}>
       <button
+        type="button"
         onClick={() => {
+          if (selectionMode) {
+            onToggleSelect?.(item.Id);
+            return;
+          }
           // Build URL with search query parameter if present
           const url = searchTerm ? `/items/${item.Id}?returnSearch=${encodeURIComponent(searchTerm)}` : `/items/${item.Id}`;
           navigate(url);
         }}
+        aria-label={
+          selectionMode
+            ? (isSelected ? t('items.deselectAll') : t('items.select')) + ': ' + (item.Name || t('items.untitled'))
+            : undefined
+        }
         className={`w-full p-2 border rounded flex items-center bg-white dark:bg-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-          isActive
-            ? 'border-blue-500 dark:border-blue-400 ring-2 ring-blue-500/40'
-            : 'border-gray-200 dark:border-gray-600'
+          selectionMode && isSelected
+            ? 'border-orange-500 dark:border-orange-400 ring-2 ring-orange-500/30 bg-orange-50 dark:bg-orange-900/10'
+            : isActive
+              ? 'border-blue-500 dark:border-blue-400 ring-2 ring-blue-500/40'
+              : 'border-gray-200 dark:border-gray-600'
         }`}
       >
+        {selectionMode && (
+          <div className="mr-2 flex-shrink-0 flex items-center justify-center" aria-hidden="true">
+            <span
+              className={`inline-flex items-center justify-center w-5 h-5 rounded border transition-colors ${
+                isSelected
+                  ? 'bg-orange-500 border-orange-500 text-white'
+                  : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-500'
+              }`}
+            >
+              {isSelected && (
+                <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              )}
+            </span>
+          </div>
+        )}
         <div className="w-8 h-8 mr-2 flex-shrink-0">
           <ItemIcon item={item} className="w-8 h-8" />
         </div>
