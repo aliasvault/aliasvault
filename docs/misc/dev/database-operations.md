@@ -15,20 +15,12 @@ The `install.sh` script contains helper methods that makes it easy to export and
 
 ### Export database
 ```bash
-# Export from normal database container (port 5432, production)
 ./install.sh db-export > aliasvault-db-export.sql.gz
-
-# Export from dev database container (port 5433, development)
-./install.sh db-export --dev > aliasvault-db-export.sql.gz
 ```
 
 ### Import database
 ```bash
-# Import to normal database container (port 5432, production)
 ./install.sh db-import < aliasvault-db-export.sql.gz
-
-# Import to dev database container (port 5433, development)
-./install.sh db-import --dev < aliasvault-db-export.sql.gz
 ```
 
 > Tip: you can also use the optional parameters `--yes` (to skip confirmation prompt) and `--verbose` (to get more output on what the operation is doing).
