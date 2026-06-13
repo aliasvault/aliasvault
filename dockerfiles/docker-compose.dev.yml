@@ -5,8 +5,8 @@ services:
       dockerfile: apps/server/Databases/AliasServerDb/Dockerfile
     image: aliasvault-postgres-dev
     ports:
-      # Overridable via env var (scripts/dev.sh), but defaults to 5433.
-      - "${AV_DB_PORT:-5433}:5432"
+      # Overridable via env var (scripts/dev.sh), but defaults to 5109.
+      - "${AV_DB_PORT:-5109}:5432"
     volumes:
       - "../database/postgres-dev:/var/lib/postgresql/data:rw"
       - ../apps/server/Databases/AliasServerDb/postgresql.conf:/etc/postgresql/postgresql.conf
