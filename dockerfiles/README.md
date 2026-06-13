@@ -15,11 +15,11 @@ This build is primarily intended for platforms with **limited management** such 
 Used to locally build Docker images from source instead of retrieving pre-built images from GitHub Container Registry. Automatically used when running `./install.sh build`.
 
 ### `docker-compose.dev.yml`
-Contains containers for aiding in local development of AliasVault. Provides a separate PostgreSQL instance for development on port 5433, managed via `./install.sh configure-dev-db`.
+Contains containers for aiding in local development of AliasVault. Provides a separate PostgreSQL instance for development (port 5109 by default), managed via `./scripts/dev.sh`.
 
 ## Usage
 
 - **Standard deployment**: `./install.sh install` (uses multi-container setup and ../docker-compose.yml)
 - **Build from source**: `./install.sh build` (uses docker-compose.build.yml)
-- **Development database**: `./install.sh configure-dev-db start`
+- **Development database**: `./scripts/dev.sh db-start` (and `db-stop`)
 - **Single container**: Deploy with `docker-compose.all-in-one.yml`
