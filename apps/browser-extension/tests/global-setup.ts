@@ -9,7 +9,7 @@ import { isApiAvailable } from './helpers/test-api';
 /**
  * Default API URL for local development.
  */
-const DEFAULT_API_URL = process.env.ALIASVAULT_API_URL || 'http://localhost:5092';
+const DEFAULT_API_URL = process.env.ALIASVAULT_API_URL || 'http://localhost:5100';
 
 /**
  * Set a server setting via the DEBUG-only test controller.

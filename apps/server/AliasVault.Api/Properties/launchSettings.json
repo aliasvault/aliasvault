@@ -15,7 +15,7 @@
         "MAX_UPLOAD_SIZE_MB": "100"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "http://0.0.0.0:5092"
+      "applicationUrl": "http://0.0.0.0:5100"
     },
     "https": {
       "commandName": "Project",

@@ -124,7 +124,7 @@ jobs:
           # Wait for API to be ready
           echo "Waiting for API to start..."
           for i in {1..30}; do
-            if curl -s http://localhost:5092/v1/ > /dev/null 2>&1; then
+            if curl -s http://localhost:5100/v1/ > /dev/null 2>&1; then
               echo "API is ready!"
               break
             fi
@@ -139,7 +139,7 @@ jobs:
           ADMIN_PASSWORD_HASH: "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag=="
           ADMIN_PASSWORD_GENERATED: "2024-01-01T00:00:00Z"
           # Bind to all interfaces (IPv4 and IPv6)
-          ASPNETCORE_URLS: "http://0.0.0.0:5092"
+          ASPNETCORE_URLS: "http://0.0.0.0:5100"
 
       - name: Enable KVM
         run: |
@@ -204,7 +204,7 @@ jobs:
             adb shell input keyevent 82  # Unlock screen
 
             # Set up port forwarding so emulator can reach host's API server and Metro bundler
-            adb reverse tcp:5092 tcp:5092  # API server
+            adb reverse tcp:5100 tcp:5100  # API server
             adb reverse tcp:8081 tcp:8081  # Metro bundler
 
             # Build and install the debug APK
@@ -212,9 +212,9 @@ jobs:
             adb install -r app/build/outputs/apk/debug/app-debug.apk
 
             # Run the instrumented tests
-            ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.API_URL=http://10.0.2.2:5092 --stacktrace
+            ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.API_URL=http://10.0.2.2:5100 --stacktrace
         env:
-          API_URL: "http://10.0.2.2:5092"
+          API_URL: "http://10.0.2.2:5100"
           ANDROID_NDK_HOME: ${{ env.ANDROID_SDK_ROOT }}/ndk/26.1.10909125
 
       - name: Upload test results

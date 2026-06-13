@@ -2,7 +2,7 @@
  * Category 4: Create Credential (Requires API + Authentication)
  *
  * These tests verify credential creation functionality after login.
- * They require an API server to be running at localhost:5092.
+ * They require an API server to be running at localhost:5100.
  */
 import { test, expect, TestClient } from '../fixtures';
 
