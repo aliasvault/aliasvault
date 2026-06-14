@@ -72,7 +72,6 @@ export type WebAuthnGetRequest = {
     allowCredentials?: Array<{ id: string }>;
   };
   origin: string;
-  isAutomaticRequest?: boolean;
 };
 
 /**
@@ -80,6 +79,35 @@ export type WebAuthnGetRequest = {
  */
 export type WebAuthnSettingsResponse = {
   enabled: boolean;
+};
+
+/**
+ * Display info for a passkey offered in the inline conditional-autofill dropdown.
+ */
+export type ConditionalPasskeyOption = {
+  id: string;
+  itemId: string;
+  serviceName: string;
+  username: string;
+  logo: number[] | null;
+};
+
+/**
+ * Response for GET_MATCHING_PASSKEYS: the passkeys available for an rpId.
+ */
+export type MatchingPasskeysResponse = {
+  success: boolean;
+  locked: boolean;
+  passkeys: ConditionalPasskeyOption[];
+};
+
+/**
+ * Response for WEBAUTHN_GET_ASSERTION: the signed assertion or an error.
+ */
+export type WebAuthnAssertionResponse = {
+  success: boolean;
+  credential?: PasskeyGetCredentialResponse;
+  error?: string;
 };
 
 /**
