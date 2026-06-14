@@ -362,33 +362,48 @@ export default defineUnlistedScript(() => {
         })),
         extensions: serializedExtensions
       },
-      origin: window.location.origin
+      origin: window.location.origin,
+      mediation: options.mediation
     };
     const event = new CustomEvent<WebAuthnGetEventDetail>('aliasvault:webauthn:get', {
       detail: eventDetail
     });
     window.dispatchEvent(event);
 
-    // Wait for response
+    // Wait for response to our injected event
     return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        cleanup();
-        // Timeout - fall back to native
-        originalGet(options).then(resolve).catch(reject);
-      }, 30000);
+      let timeout: ReturnType<typeof setTimeout> | undefined;
+
+      // Set up timeout handling for modal requests (not "conditional" mediation)
+      if (options.mediation === 'conditional') {
+        // If this is a conditional mediation request, do NOT set a timeout.
+        // The request should remain pending until the user interacts or navigates away.
+        timeout = undefined;
+      } else {
+        // For normal modal (non-conditional) requests, set a 30-second timeout.
+        // When user didn't select a passkey within 30 seconds, fall back to native.
+        timeout = setTimeout(() => {
+          cleanup();
+          // On timeout, fall back to the native implementation.
+          originalGet(options).then(resolve).catch(reject);
+        }, 30000);
+      }
 
       /**
-       * cleanup
+       * Removes listeners and clears timeout if it was set.
        */
       function cleanup() : void {
-        clearTimeout(timeout);
+        if (timeout !== undefined) {
+          clearTimeout(timeout);
+        }
         window.removeEventListener('aliasvault:webauthn:get:response', handler as EventListener);
       }
 
       /**
-       * handler
+       * Handles the response event from the content script.
        */
       function handler(e: CustomEvent<WebAuthnGetResponseDetail>) : void {
+        // Only handle responses matching this requestId
         if (e.detail.requestId !== requestId) {
           return;
         }
@@ -396,9 +411,10 @@ export default defineUnlistedScript(() => {
         cleanup();
 
         if (e.detail.fallback) {
-          // User chose to use native implementation
+          // User or system fell back to native credentials.get
           originalGet(options).then(resolve).catch(reject);
         } else if (e.detail.error) {
+          // An error occurred in our extension, reject the promise with the error
           reject(new Error(e.detail.error));
         } else if (e.detail.credential) {
           // Create a proper credential object with required methods
