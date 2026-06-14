@@ -1,5 +1,5 @@
 #!/bin/bash
-# @version 20260613
+# @version 20260614
 
 # Repository information used for downloading files and images from GitHub
 REPO_OWNER="aliasvault"
@@ -123,6 +123,7 @@ parse_args() {
     COMMAND_ARG=""
     DEV_DB=false
     PARALLEL_JOBS=0         # 0 = use standard gzip, >0 = use pigz with N threads
+    LOCK_WAIT_TIMEOUT=120   # db-export: seconds pg_dump waits for a table lock before failing (0 = wait forever)
 
     if [ $# -eq 0 ]; then
         show_usage
@@ -264,6 +265,14 @@ parse_args() {
                 PARALLEL_JOBS="${1#*=}"
                 if ! [[ "$PARALLEL_JOBS" =~ ^[0-9]+$ ]] || [ "$PARALLEL_JOBS" -lt 1 ] || [ "$PARALLEL_JOBS" -gt 32 ]; then
                     echo "Error: Invalid --parallel value '$PARALLEL_JOBS'. Must be a number between 1 and 32"
+                    exit 1
+                fi
+                shift
+                ;;
+            --lock-timeout=*)
+                LOCK_WAIT_TIMEOUT="${1#*=}"
+                if ! [[ "$LOCK_WAIT_TIMEOUT" =~ ^[0-9]+$ ]]; then
+                    echo "Error: Invalid --lock-timeout value '$LOCK_WAIT_TIMEOUT'. Must be a number of seconds (0 = wait forever)"
                     exit 1
                 fi
                 shift
@@ -2845,6 +2854,8 @@ handle_db_export() {
         printf "Options:\n" >&2
         printf "  --dev                Export from the development database (default: production)\n" >&2
         printf "  --parallel=N         Use pigz with N threads for faster compression (max: 32)\n" >&2
+        printf "  --lock-timeout=N     Seconds pg_dump waits for a table lock before failing (default: 120, 0 = wait forever)\n" >&2
+        printf "  --verbose            Print per-object progress from pg_dump (useful to diagnose a stall)\n" >&2
         printf "\n" >&2
         printf "Examples:\n" >&2
         printf "  ./install.sh db-export > backup.sql.gz              # Standard compression\n" >&2
@@ -2889,6 +2900,17 @@ handle_db_export() {
 
     # Stream export directly to stdout (no temp files)
 
+    # By default pg_dump waits indefinitely for the shared table locks it needs.
+    # Add support for controlling the timeout.
+    PG_DUMP_ARGS="-U aliasvault aliasvault"
+    if [ "$LOCK_WAIT_TIMEOUT" -gt 0 ] 2>/dev/null; then
+        PG_DUMP_ARGS="--lock-wait-timeout=$((LOCK_WAIT_TIMEOUT * 1000)) $PG_DUMP_ARGS"
+    fi
+    if [ "$VERBOSE" = true ]; then
+        # --verbose makes pg_dump report each object to stderr so a stall is visible.
+        PG_DUMP_ARGS="--verbose $PG_DUMP_ARGS"
+    fi
+
     # Start timing
     export_start_time=$(date +%s)
 
@@ -2900,13 +2922,13 @@ handle_db_export() {
         else
             IO_PREFIX=""
         fi
-        $DOCKER_CMD bash -c "set -o pipefail; ${IO_PREFIX}nice -n 19 pg_dump -U aliasvault aliasvault | ${IO_PREFIX}nice -n 19 pigz -1 -p ${PARALLEL_JOBS}"
+        $DOCKER_CMD bash -c "set -o pipefail; ${IO_PREFIX}nice -n 19 pg_dump ${PG_DUMP_ARGS} | ${IO_PREFIX}nice -n 19 pigz -1 -p ${PARALLEL_JOBS}"
         export_status=$?
     else
         # Standard gzip
         printf "${CYAN}> Exporting ${DB_TYPE} database...${NC}\n" >&2
         set -o pipefail
-        $DOCKER_CMD nice -n 19 pg_dump -U aliasvault aliasvault | gzip -1
+        $DOCKER_CMD nice -n 19 pg_dump ${PG_DUMP_ARGS} | gzip -1
         export_status=$?
         set +o pipefail
     fi
@@ -2919,7 +2941,7 @@ handle_db_export() {
         printf "${GREEN}> Database exported successfully.${NC}\n" >&2
         printf "${CYAN}> Export duration: ${export_duration}s${NC}\n" >&2
     else
-        printf "${RED}> Failed to export database.${NC}\n" >&2
+        printf "${RED}> Failed to export database (exit status ${export_status}).${NC}\n" >&2
         exit 1
     fi
 }
@@ -2939,11 +2961,16 @@ handle_db_import() {
         printf "\n"
         printf "Options:\n"
         printf "  --dev      Import into the development database (default: production)\n"
+        printf "  --verbose  Show per-statement psql output as the backup is restored\n"
+        printf "  -y, --yes  Skip the confirmation prompt\n"
         printf "\n"
         printf "Examples:\n"
         printf "  ./install.sh db-import < backup.sql.gz              # Import gzipped SQL\n"
         printf "  ./install.sh db-import < backup.sql                 # Import plain SQL\n"
         printf "  ./install.sh db-import --dev < backup.sql.gz        # Import into dev database\n"
+        printf "  ./install.sh db-import --verbose < backup.sql.gz    # Import with detailed output\n"
+        printf "\n"
+        printf "A live progress bar (bytes/throughput/ETA) is shown when 'pv' is installed.\n"
         printf "\n"
         exit 1
     fi
@@ -3101,7 +3128,11 @@ handle_db_import() {
             fi
         fi
     else
-        printf "${RED}> Import failed. Please check that your backup file is valid.${NC}\n"
+        printf "${RED}> Import failed (exit status ${import_status}). Please check that your backup file is valid.${NC}\n"
+        if [ "$VERBOSE" != true ]; then
+            printf "${YELLOW}> Re-run with --verbose to see the psql output and the exact statement that failed:${NC}\n"
+            printf "${CYAN}>   ./install.sh db-import --verbose < your-backup.sql.gz${NC}\n"
+        fi
         exit 1
     fi
 }
