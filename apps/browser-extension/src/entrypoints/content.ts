@@ -3,6 +3,7 @@
  */
 
 import '@/entrypoints/contentScript/style.css';
+import { CONDITIONAL_PASSKEYS_UPDATED_EVENT } from '@/entrypoints/contentScript/ConditionalPasskey';
 import { injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
 import { openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
 import { showSavePrompt, showAddUrlPrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState, restoreAddUrlPromptFromState } from '@/entrypoints/contentScript/SavePrompt';
@@ -563,6 +564,21 @@ export default defineContentScript({
 
         // Listen for input field focus in the main document
         document.addEventListener('focusin', handleFocusIn);
+
+        /*
+         * A conditional passkey request can arrive after the page initially loaded (e.g. an
+         * autofocused login field). When passkeys become available, re-open the popup for
+         * the focused field so they appear immediately.
+         */
+        window.addEventListener(CONDITIONAL_PASSKEYS_UPDATED_EVENT, () => {
+          if (ctx.isInvalid) {
+            return;
+          }
+          const activeElement = document.activeElement;
+          if (activeElement) {
+            void showPopupForElement(activeElement);
+          }
+        });
 
         // Check if currently something is focused, if so, apply check for that element
         const currentFocusedElement = document.activeElement;
