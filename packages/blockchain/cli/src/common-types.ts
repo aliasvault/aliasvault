@@ -16,9 +16,9 @@
 import { Counter, type CounterPrivateState } from '@aliasvault/contract';
 import type { MidnightProviders } from '@midnight-ntwrk/midnight-js-types';
 import type { DeployedContract, FoundContract } from '@midnight-ntwrk/midnight-js-contracts';
-import type { ImpureCircuitId } from '@midnight-ntwrk/compact-js';
+import type { ProvableCircuitId } from '@midnight-ntwrk/compact-js';
 
-export type CounterCircuits = ImpureCircuitId<Counter.Contract<CounterPrivateState>>;
+export type CounterCircuits = ProvableCircuitId<Counter.Contract<CounterPrivateState>>;
 
 export const CounterPrivateStateId = 'counterPrivateState';
 

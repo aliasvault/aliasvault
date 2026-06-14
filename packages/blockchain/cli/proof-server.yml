@@ -1,6 +1,6 @@
 services:
   proof-server:
-    image: 'midnightntwrk/proof-server:7.0.0'
+    image: 'midnightntwrk/proof-server:8.0.3'
     command: ['midnight-proof-server -v']
     ports:
       - '6300:6300'

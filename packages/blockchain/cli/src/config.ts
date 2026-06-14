@@ -21,47 +21,47 @@ export const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const safeTimestamp = () => new Date().toISOString().replace(/:/g, '-');
 
 export const contractConfig = {
-  privateStateStoreName: 'counter-private-state',
-  zkConfigPath: path.resolve(currentDir, '..', '..', 'contract', 'src', 'managed', 'counter'),
+    privateStateStoreName: 'counter-private-state',
+    zkConfigPath: path.resolve(currentDir, '..', '..', 'contract', 'src', 'managed', 'counter'),
 };
 
 export interface Config {
-  readonly logDir: string;
-  readonly indexer: string;
-  readonly indexerWS: string;
-  readonly node: string;
-  readonly proofServer: string;
+    readonly logDir: string;
+    readonly indexer: string;
+    readonly indexerWS: string;
+    readonly node: string;
+    readonly proofServer: string;
 }
 
 export class StandaloneConfig implements Config {
-  logDir = path.resolve(currentDir, '..', 'logs', 'standalone', `${safeTimestamp()}.log`);
-  indexer = 'http://127.0.0.1:8088/api/v3/graphql';
-  indexerWS = 'ws://127.0.0.1:8088/api/v3/graphql/ws';
-  node = 'http://127.0.0.1:9944';
-  proofServer = 'http://127.0.0.1:6300';
-  constructor() {
-    setNetworkId('undeployed');
-  }
+    logDir = path.resolve(currentDir, '..', 'logs', 'standalone', `${safeTimestamp()}.log`);
+    indexer = 'http://127.0.0.1:8088/api/v4/graphql';
+    indexerWS = 'ws://127.0.0.1:8088/api/v4/graphql/ws';
+    node = 'http://127.0.0.1:9944';
+    proofServer = 'http://127.0.0.1:6300';
+    constructor() {
+        setNetworkId('undeployed');
+    }
 }
 
 export class PreviewConfig implements Config {
-  logDir = path.resolve(currentDir, '..', 'logs', 'preview', `${safeTimestamp()}.log`);
-  indexer = 'https://indexer.preview.midnight.network/api/v3/graphql';
-  indexerWS = 'wss://indexer.preview.midnight.network/api/v3/graphql/ws';
-  node = 'https://rpc.preview.midnight.network';
-  proofServer = 'http://127.0.0.1:6300';
-  constructor() {
-    setNetworkId('preview');
-  }
+    logDir = path.resolve(currentDir, '..', 'logs', 'preview', `${safeTimestamp()}.log`);
+    indexer = 'https://indexer.preview.midnight.network/api/v4/graphql';
+    indexerWS = 'wss://indexer.preview.midnight.network/api/v4/graphql/ws';
+    node = 'https://rpc.preview.midnight.network';
+    proofServer = 'http://127.0.0.1:6300';
+    constructor() {
+        setNetworkId('preview');
+    }
 }
 
 export class PreprodConfig implements Config {
-  logDir = path.resolve(currentDir, '..', 'logs', 'preprod', `${safeTimestamp()}.log`);
-  indexer = 'https://indexer.preprod.midnight.network/api/v3/graphql';
-  indexerWS = 'wss://indexer.preprod.midnight.network/api/v3/graphql/ws';
-  node = 'https://rpc.preprod.midnight.network';
-  proofServer = 'http://127.0.0.1:6300';
-  constructor() {
-    setNetworkId('preprod');
-  }
+    logDir = path.resolve(currentDir, '..', 'logs', 'preprod', `${safeTimestamp()}.log`);
+    indexer = 'https://indexer.preprod.midnight.network/api/v4/graphql';
+    indexerWS = 'wss://indexer.preprod.midnight.network/api/v4/graphql/ws';
+    node = 'https://rpc.preprod.midnight.network';
+    proofServer = 'http://127.0.0.1:6300';
+    constructor() {
+        setNetworkId('preprod');
+    }
 }

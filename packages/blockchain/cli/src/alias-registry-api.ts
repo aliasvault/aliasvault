@@ -5,61 +5,67 @@ import { type Logger } from 'pino';
 import { CompiledContract } from '@midnight-ntwrk/compact-js';
 import { assertIsContractAddress } from '@midnight-ntwrk/midnight-js-utils';
 import {
-  type AliasRegistryProviders,
-  type DeployedAliasRegistryContract,
-  AliasRegistryPrivateStateId,
+    type AliasRegistryProviders,
+    type DeployedAliasRegistryContract,
+    AliasRegistryPrivateStateId,
 } from './alias-registry-types';
 import path from 'node:path';
 import { currentDir } from './config';
 
 let logger: Logger;
 
-export const aliasRegistryZkConfigPath = path.resolve(currentDir, '..', '..', 'contract', 'src', 'managed', 'alias-registry');
+export const aliasRegistryZkConfigPath = path.resolve(
+    currentDir,
+    '..',
+    '..',
+    'contract',
+    'src',
+    'managed',
+    'alias-registry',
+);
 
 const aliasRegistryCompiledContract = CompiledContract.make('alias-registry', AliasRegistry.Contract).pipe(
-  CompiledContract.withWitnesses(aliasRegistryWitnesses),
-  CompiledContract.withCompiledFileAssets(aliasRegistryZkConfigPath),
+    CompiledContract.withWitnesses(aliasRegistryWitnesses),
+    CompiledContract.withCompiledFileAssets(aliasRegistryZkConfigPath),
 );
 
 export const initAliasRegistryLogger = (l: Logger): void => {
-  logger = l;
+    logger = l;
 };
 
 export const deployAliasRegistry = async (
-  providers: AliasRegistryProviders,
-  secretKey: Uint8Array,
+    providers: AliasRegistryProviders,
+    secretKey: Uint8Array,
 ): Promise<DeployedAliasRegistryContract> => {
-  logger.info('Deploying AliasRegistry contract...');
-  const contract = await deployContract(providers, {
-    compiledContract: aliasRegistryCompiledContract,
-    privateStateId: AliasRegistryPrivateStateId,
-    initialPrivateState: createAliasRegistryPrivateState(secretKey),
-  });
-  logger.info(`AliasRegistry deployed at address: ${contract.deployTxData.public.contractAddress}`);
-  return contract;
+    logger.info('Deploying AliasRegistry contract...');
+    const contract = await deployContract(providers, {
+        compiledContract: aliasRegistryCompiledContract,
+        privateStateId: AliasRegistryPrivateStateId,
+        initialPrivateState: createAliasRegistryPrivateState(secretKey),
+    });
+    logger.info(`AliasRegistry deployed at address: ${contract.deployTxData.public.contractAddress}`);
+    return contract;
 };
 
 export const getAliasRegistryLedgerState = async (
-  providers: AliasRegistryProviders,
-  contractAddress: ContractAddress,
+    providers: AliasRegistryProviders,
+    contractAddress: ContractAddress,
 ): Promise<{
-  totalClaimCount: bigint;
-  aliasOwnersEmpty: boolean;
-  aliasOwnersSize: bigint;
+    totalClaimCount: bigint;
+    aliasOwnersEmpty: boolean;
+    aliasOwnersSize: bigint;
 } | null> => {
-  assertIsContractAddress(contractAddress);
-  logger.info('Checking AliasRegistry ledger state...');
-  const state = await providers.publicDataProvider
-    .queryContractState(contractAddress)
-    .then((contractState) => {
-      if (contractState == null) return null;
-      const ledgerState = AliasRegistry.ledger(contractState.data);
-      return {
-        totalClaimCount: ledgerState.totalClaimCount,
-        aliasOwnersEmpty: ledgerState.aliasOwners.isEmpty(),
-        aliasOwnersSize: ledgerState.aliasOwners.size(),
-      };
+    assertIsContractAddress(contractAddress);
+    logger.info('Checking AliasRegistry ledger state...');
+    const state = await providers.publicDataProvider.queryContractState(contractAddress).then((contractState) => {
+        if (contractState == null) return null;
+        const ledgerState = AliasRegistry.ledger(contractState.data);
+        return {
+            totalClaimCount: ledgerState.totalClaimCount,
+            aliasOwnersEmpty: ledgerState.aliasOwners.isEmpty(),
+            aliasOwnersSize: ledgerState.aliasOwners.size(),
+        };
     });
-  logger.info(`AliasRegistry state: totalClaimCount=${state?.totalClaimCount ?? 'N/A'}`);
-  return state;
+    logger.info(`AliasRegistry state: totalClaimCount=${state?.totalClaimCount ?? 'N/A'}`);
+    return state;
 };
