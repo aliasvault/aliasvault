@@ -259,3 +259,52 @@ jobs:
             echo "Invalid reset-admin-password output"
             exit 1
           fi
+
+      - name: Test database export / import round-trip
+        run: |
+          echo "🔧 Testing db-export / db-import round-trip..."
+
+          # Export the running database.
+          if ! ./install.sh db-export > /tmp/backup.sql.gz; then
+            echo "❌ db-export failed"
+            docker compose logs postgres
+            exit 1
+          fi
+          if [ ! -s /tmp/backup.sql.gz ]; then
+            echo "❌ db-export produced an empty (0-byte) backup file"
+            docker compose logs postgres
+            exit 1
+          fi
+          echo "✅ db-export produced a non-empty backup ($(du -h /tmp/backup.sql.gz | cut -f1))"
+
+          # Verify the gzip stream is valid and contains a recognizable pg_dump header.
+          if ! gunzip -c /tmp/backup.sql.gz | head -n 30 | grep -q "PostgreSQL database dump"; then
+            echo "❌ Backup does not look like a valid pg_dump output"
+            gunzip -c /tmp/backup.sql.gz | head -n 30
+            exit 1
+          fi
+          echo "✅ Backup contains a valid pg_dump header"
+
+          # Import it back (drops and recreates the database). -y skips the confirmation prompt.
+          if ! ./install.sh db-import -y < /tmp/backup.sql.gz; then
+            echo "❌ db-import failed"
+            docker compose logs postgres
+            exit 1
+          fi
+          echo "✅ db-import completed successfully"
+
+      - name: Verify services are healthy after db-import
+        uses: nick-fields/retry@v4
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          command: |
+            sleep 15
+            http_code=$(curl -k -s -o /dev/null -w "%{http_code}" https://localhost:443/api)
+            if [ "$http_code" -ne 200 ]; then
+              echo "❌ API endpoint failed with HTTP $http_code after db-import"
+              docker compose logs api
+              docker compose logs postgres
+              exit 1
+            fi
+            echo "✅ API endpoint healthy after db-import round-trip"
