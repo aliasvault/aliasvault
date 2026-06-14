@@ -376,12 +376,16 @@ export default defineUnlistedScript(() => {
 
       // Set up timeout handling for modal requests (not "conditional" mediation)
       if (options.mediation === 'conditional') {
-        // If this is a conditional mediation request, do NOT set a timeout.
-        // The request should remain pending until the user interacts or navigates away.
+        /*
+         * If this is a conditional mediation request, do NOT set a timeout.
+         * The request should remain pending until the user interacts or navigates away.
+         */
         timeout = undefined;
       } else {
-        // For normal modal (non-conditional) requests, set a 30-second timeout.
-        // When user didn't select a passkey within 30 seconds, fall back to native.
+        /*
+         * For normal modal (non-conditional) requests, set a 30-second timeout.
+         * When user didn't select a passkey within 30 seconds, fall back to native.
+         */
         timeout = setTimeout(() => {
           cleanup();
           // On timeout, fall back to the native implementation.
