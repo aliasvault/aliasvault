@@ -18,7 +18,7 @@ Follow the steps in the checklist below to prepare a new release.
 # Release preparation checklist
 
 ## Bump versions
-All clients and server apps contain a version definition that needs to be updated with every release. This version is used for communication between components to ensure they are compatible with eachother. Versions are also used for official publication on the app stores.
+All clients and server apps contain a version definition that needs to be updated with every release. This version is used for communication between components to ensure they are compatible with each other. Versions are also used for official publication on the app stores.
 
 For bumping the version for all projects in one go, you can use the interactive script located in:
 ```bash
@@ -37,7 +37,7 @@ When a new version of the mobile apps and/or browser extensions is released, wri
     > Filename should equal the semver of the release (e.g. `0.20.0`).
 
 ## Update documentation
-- [ ] Update /docs instructions for any relevant changes to functionality or self-host installaton process
+- [ ] Update /docs instructions for any relevant changes to functionality or self-host installation process
 - [ ] Update README screenshots if applicable
 - [ ] Update README current/upcoming features
 

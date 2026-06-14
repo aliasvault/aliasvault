@@ -2319,14 +2319,14 @@ configure_letsencrypt() {
     # Check if hostname is localhost
     if [ "$CURRENT_HOSTNAME" = "localhost" ]; then
         printf "${RED}Error: Let's Encrypt certificates cannot be issued for 'localhost'.${NC}\n"
-        printf "${YELLOW}Please configure a valid publically resolvable domain name (e.g. mydomain.com) before setting up Let's Encrypt.${NC}\n"
+        printf "${YELLOW}Please configure a valid publicly resolvable domain name (e.g. mydomain.com) before setting up Let's Encrypt.${NC}\n"
         exit 1
     fi
 
     # Check if hostname is a valid domain
     if ! [[ "$CURRENT_HOSTNAME" =~ \.[a-zA-Z]{2,}$ ]]; then
         printf "${RED}Error: Invalid hostname '${CURRENT_HOSTNAME}'.${NC}\n"
-        printf "${YELLOW}Please configure a valid publically resolvable domain name (e.g. mydomain.com) before setting up Let's Encrypt.${NC}\n"
+        printf "${YELLOW}Please configure a valid publicly resolvable domain name (e.g. mydomain.com) before setting up Let's Encrypt.${NC}\n"
         exit 1
     fi
 
