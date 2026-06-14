@@ -80,6 +80,7 @@ export type WebAuthnGetEventDetail = {
     };
   };
   origin: string;
+  mediation?: CredentialMediationRequirement;
 };
 
 export type WebAuthnCreateResponseDetail = {
