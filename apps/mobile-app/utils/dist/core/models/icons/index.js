@@ -78,5 +78,3 @@ function getAllIconKeys() {
 }
 
 export { ItemTypeIconSvgs, getAllIconKeys, getItemTypeIconSvg };
-//# sourceMappingURL=index.js.map
-//# sourceMappingURL=index.js.map
