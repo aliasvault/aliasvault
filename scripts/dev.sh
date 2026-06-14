@@ -248,8 +248,7 @@ start_ext() {
     "Dev server  http://localhost:$EXT_PORT" \
     "API         http://localhost:$API_HTTP"
   cd "$ROOT_DIR/apps/browser-extension"
-  VITE_DEFAULT_API_URL="http://localhost:$API_HTTP" \
-    npm run dev:chrome -- --port "$EXT_PORT"
+  npm run dev:chrome -- --port "$EXT_PORT"
 }
 
 start_mobile() {
