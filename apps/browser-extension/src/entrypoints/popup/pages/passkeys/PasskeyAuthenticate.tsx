@@ -11,9 +11,9 @@ import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedi
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { PasskeyAuthenticator } from '@/utils/passkey/PasskeyAuthenticator';
+import { buildPasskeyAssertion } from '@/utils/passkey/PasskeyAssertionService';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
-import type { GetRequest, PasskeyGetCredentialResponse, PendingPasskeyGetRequest, StoredPasskeyRecord } from '@/utils/passkey/types';
+import type { PendingPasskeyGetRequest } from '@/utils/passkey/types';
 import { extractDomain } from '@/utils/RustCore';
 
 /**
@@ -144,143 +144,8 @@ const PasskeyAuthenticate: React.FC = () => {
     setError(null);
 
     try {
-      // Get the stored passkey from vault
-      const storedPasskey = dbContext.sqliteClient.passkeys.getById(passkeyId);
-      if (!storedPasskey) {
-        throw new Error(t('common.errors.unknownError'));
-      }
-
-      // Parse the stored keys
-      const publicKey = JSON.parse(storedPasskey.PublicKey) as JsonWebKey;
-      const privateKey = JSON.parse(storedPasskey.PrivateKey) as JsonWebKey;
-
-      // Extract PRF secret from PrfKey if available
-      let prfSecret: string | undefined;
-
-      if (storedPasskey.PrfKey) {
-        try {
-          // Convert PrfKey bytes to base64url string
-          prfSecret = PasskeyHelper.bytesToBase64url(storedPasskey.PrfKey);
-        } catch (e) {
-          console.warn('Failed to convert PrfKey to base64url', e);
-        }
-      }
-
-      /**
-       * Build the stored record for the provider
-       * Convert UserHandle from byte array to base64 string for serialization
-       */
-      let userIdBase64: string | null = null;
-      if (storedPasskey.UserHandle) {
-        try {
-          const userHandleBytes = storedPasskey.UserHandle instanceof Uint8Array ? storedPasskey.UserHandle : new Uint8Array(storedPasskey.UserHandle);
-          userIdBase64 = PasskeyHelper.bytesToBase64url(userHandleBytes);
-        } catch (e) {
-          console.warn('Failed to convert UserHandle to base64', e);
-        }
-      }
-
-      const storedRecord: StoredPasskeyRecord = {
-        rpId: storedPasskey.RpId,
-        credentialId: PasskeyHelper.guidToBase64url(storedPasskey.Id),
-        publicKey,
-        privateKey,
-        userId: userIdBase64,
-        userName: storedPasskey.Username ?? undefined,
-        userDisplayName: storedPasskey.ServiceName ?? undefined,
-        prfSecret
-      };
-
-      // Build the GetRequest
-      const getRequest: GetRequest = {
-        origin: request.origin,
-        requestId: request.requestId,
-        publicKey: {
-          rpId: request.publicKey.rpId,
-          challenge: request.publicKey.challenge,
-          userVerification: request.publicKey.userVerification
-        }
-      };
-
-      // Extract PRF inputs if requested
-      let prfInputs: { first: ArrayBuffer | Uint8Array; second?: ArrayBuffer | Uint8Array } | undefined;
-      if (request.publicKey.extensions?.prf?.eval) {
-        // Handle numeric object format (serialized Uint8Array through events)
-        const firstInput = request.publicKey.extensions.prf.eval.first;
-        let firstBytes: Uint8Array;
-
-        if (typeof firstInput === 'object' && firstInput !== null && !Array.isArray(firstInput)) {
-          // Numeric object format: {0: 68, 1: 204, ...}
-          const keys = Object.keys(firstInput).map(Number).sort((a, b) => a - b);
-          firstBytes = new Uint8Array(keys.length);
-          for (let i = 0; i < keys.length; i++) {
-            firstBytes[i] = (firstInput as unknown as Record<string, number>)[i];
-          }
-        } else if (typeof firstInput === 'string') {
-          // Base64 string format
-          const firstDecoded = atob(firstInput);
-          firstBytes = new Uint8Array(firstDecoded.length);
-          for (let i = 0; i < firstDecoded.length; i++) {
-            firstBytes[i] = firstDecoded.charCodeAt(i);
-          }
-        } else {
-          throw new Error('Unknown PRF input format');
-        }
-
-        prfInputs = { first: firstBytes };
-
-        if (request.publicKey.extensions.prf.eval.second) {
-          const secondInput = request.publicKey.extensions.prf.eval.second;
-          let secondBytes: Uint8Array;
-
-          if (typeof secondInput === 'object' && secondInput !== null && !Array.isArray(secondInput)) {
-            const keys = Object.keys(secondInput).map(Number).sort((a, b) => a - b);
-            secondBytes = new Uint8Array(keys.length);
-            for (let i = 0; i < keys.length; i++) {
-              secondBytes[i] = (secondInput as unknown as Record<string, number>)[i];
-            }
-          } else if (typeof secondInput === 'string') {
-            const secondDecoded = atob(secondInput);
-            secondBytes = new Uint8Array(secondDecoded.length);
-            for (let i = 0; i < secondDecoded.length; i++) {
-              secondBytes[i] = secondDecoded.charCodeAt(i);
-            }
-          } else {
-            console.error('[PasskeyAuth] Unknown PRF second input type:', typeof secondInput);
-            throw new Error('Unknown PRF second input format');
-          }
-
-          prfInputs.second = secondBytes;
-        }
-      }
-
-      // Get the assertion using the static method
-      const assertion = await PasskeyAuthenticator.getAssertion(getRequest, storedRecord, {
-        uvPerformed: true, // TODO: implement explicit user verification check
-        includeBEBS: true, // Backup eligible/state - defaults to true
-        prfInputs
-      });
-
-      // Convert PRF results to base64 for transport
-      let prfResults: { first: string; second?: string } | undefined;
-      if (assertion.prfResults) {
-        prfResults = {
-          first: PasskeyHelper.arrayBufferToBase64(assertion.prfResults.first)
-        };
-        if (assertion.prfResults.second) {
-          prfResults.second = PasskeyHelper.arrayBufferToBase64(assertion.prfResults.second);
-        }
-      }
-
-      const credential: PasskeyGetCredentialResponse = {
-        id: assertion.id,
-        rawId: assertion.rawId,
-        clientDataJSON: assertion.clientDataJSON,
-        authenticatorData: assertion.authenticatorData,
-        signature: assertion.signature,
-        userHandle: assertion.userHandle,
-        prfResults
-      };
+      // Build the assertion from the selected passkey using the shared service.
+      const credential = await buildPasskeyAssertion(dbContext.sqliteClient, request, passkeyId);
 
       /*
        * Send response back
