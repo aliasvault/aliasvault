@@ -278,9 +278,10 @@ jobs:
           echo "✅ db-export produced a non-empty backup ($(du -h /tmp/backup.sql.gz | cut -f1))"
 
           # Verify the gzip stream is valid and contains a recognizable pg_dump header.
-          if ! gunzip -c /tmp/backup.sql.gz | head -n 30 | grep -q "PostgreSQL database dump"; then
+          dump=$(gunzip -c /tmp/backup.sql.gz)
+          if ! printf '%s\n' "$dump" | head -n 30 | grep -q "PostgreSQL database dump"; then
             echo "❌ Backup does not look like a valid pg_dump output"
-            gunzip -c /tmp/backup.sql.gz | head -n 30
+            printf '%s\n' "$dump" | head -n 30
             exit 1
           fi
           echo "✅ Backup contains a valid pg_dump header"
