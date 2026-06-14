@@ -444,5 +444,3 @@ function createCustomField(options) {
 var MAX_FIELD_HISTORY_RECORDS = 10;
 
 export { FieldCategories, FieldKey, FieldTypes, ItemTypes, MAX_FIELD_HISTORY_RECORDS, SystemFieldRegistry, createCustomField, createSystemField, fieldAppliesToType, getAllSystemFieldKeys, getDefaultFieldsForItemType, getFieldConfigForType, getFieldValue, getFieldValues, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, groupFields, groupFieldsByCategory, hasField, isFieldShownByDefault, isSystemField, isSystemFieldPrefix, itemToCredential };
-//# sourceMappingURL=index.js.map
-//# sourceMappingURL=index.js.map

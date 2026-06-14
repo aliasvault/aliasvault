@@ -19,5 +19,3 @@ var AuthEventType = /* @__PURE__ */ ((AuthEventType2) => {
 })(AuthEventType || {});
 
 export { AuthEventType };
-//# sourceMappingURL=index.js.map
-//# sourceMappingURL=index.js.map
