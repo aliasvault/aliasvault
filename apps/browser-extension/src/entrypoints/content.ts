@@ -3,7 +3,7 @@
  */
 
 import '@/entrypoints/contentScript/style.css';
-import { CONDITIONAL_PASSKEYS_UPDATED_EVENT } from '@/entrypoints/contentScript/ConditionalPasskey';
+import { CONDITIONAL_PASSKEYS_UPDATED_EVENT, hasPendingConditionalRequest, refreshConditionalPasskeyOptions } from '@/entrypoints/contentScript/ConditionalPasskey';
 import { injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
 import { openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
 import { showSavePrompt, showAddUrlPrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState, restoreAddUrlPromptFromState } from '@/entrypoints/contentScript/SavePrompt';
@@ -580,6 +580,14 @@ export default defineContentScript({
           }
         });
 
+        // When the tab becomes visible, re-query any pending conditional passkey requests
+        document.addEventListener('visibilitychange', () => {
+          if (ctx.isInvalid || document.hidden || !hasPendingConditionalRequest()) {
+            return;
+          }
+          void refreshConditionalPasskeyOptions();
+        });
+
         // Check if currently something is focused, if so, apply check for that element
         const currentFocusedElement = document.activeElement;
         if (currentFocusedElement) {
@@ -624,6 +632,14 @@ export default defineContentScript({
           await showPopupForElement(target, true);
 
           return { success: true };
+        });
+
+        // When the vault is unlocked, re-query any pending conditional passkey requests
+        onMessage('VAULT_UNLOCKED', async () => {
+          if (ctx.isInvalid || !hasPendingConditionalRequest()) {
+            return;
+          }
+          await refreshConditionalPasskeyOptions();
         });
 
         /**

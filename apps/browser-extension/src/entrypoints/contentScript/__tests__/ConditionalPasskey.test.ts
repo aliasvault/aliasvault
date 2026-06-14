@@ -10,9 +10,11 @@ vi.mock('@/utils/messaging/ExtensionMessaging', () => ({ sendMessage: sendMessag
 import {
   CONDITIONAL_PASSKEYS_UPDATED_EVENT,
   clearConditionalPasskeyRequest,
+  clearConditionalPasskeyRequestIfMatches,
   completeConditionalWithPasskey,
   getConditionalPasskeyOptions,
   hasPendingConditionalRequest,
+  refreshConditionalPasskeyOptions,
   registerConditionalPasskeyRequest
 } from '../ConditionalPasskey';
 
@@ -22,8 +24,11 @@ const OPTIONS: ConditionalPasskeyOption[] = [
 
 /**
  * Build a pending conditional request with a spy `respond` callback.
+ *
+ * @param respond - Spy used to assert the page promise is settled.
+ * @param passkeys - Passkeys parked with the request (empty mirrors a locked-vault request).
  */
-function buildRequest(respond = vi.fn()): {
+function buildRequest(respond = vi.fn(), passkeys: ConditionalPasskeyOption[] = OPTIONS): {
   request: Parameters<typeof registerConditionalPasskeyRequest>[0];
   respond: ReturnType<typeof vi.fn>;
 } {
@@ -32,7 +37,8 @@ function buildRequest(respond = vi.fn()): {
       requestId: 'req-1',
       origin: 'https://example.com',
       publicKey: { challenge: 'Y2hhbGxlbmdl' },
-      passkeys: OPTIONS,
+      rpId: 'example.com',
+      passkeys,
       respond
     },
     respond
@@ -62,6 +68,71 @@ describe('ConditionalPasskey bridge', () => {
     expect(listener).toHaveBeenCalledTimes(1);
 
     window.removeEventListener(CONDITIONAL_PASSKEYS_UPDATED_EVENT, listener);
+  });
+
+  it('parks a request silently when no passkeys are available yet (locked vault)', () => {
+    const listener = vi.fn();
+    window.addEventListener(CONDITIONAL_PASSKEYS_UPDATED_EVENT, listener);
+
+    const { request } = buildRequest(vi.fn(), []);
+    registerConditionalPasskeyRequest(request);
+
+    // Request is parked (kept pending) but nothing is announced because there are no options.
+    expect(hasPendingConditionalRequest()).toBe(true);
+    expect(getConditionalPasskeyOptions()).toEqual([]);
+    expect(listener).not.toHaveBeenCalled();
+
+    window.removeEventListener(CONDITIONAL_PASSKEYS_UPDATED_EVENT, listener);
+  });
+
+  it('surfaces passkeys for a parked request when the vault is later unlocked', async () => {
+    const listener = vi.fn();
+    window.addEventListener(CONDITIONAL_PASSKEYS_UPDATED_EVENT, listener);
+
+    // Parked while the vault was locked: no options, no announcement.
+    const { request } = buildRequest(vi.fn(), []);
+    registerConditionalPasskeyRequest(request);
+
+    // Vault unlocked: re-query now returns matching passkeys.
+    sendMessageMock.mockResolvedValue({ success: true, locked: false, passkeys: OPTIONS });
+
+    const found = await refreshConditionalPasskeyOptions();
+
+    expect(found).toBe(true);
+    expect(sendMessageMock).toHaveBeenCalledWith('GET_MATCHING_PASSKEYS', {
+      rpId: 'example.com',
+      allowCredentialIds: undefined
+    });
+    expect(getConditionalPasskeyOptions()).toEqual(OPTIONS);
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    window.removeEventListener(CONDITIONAL_PASSKEYS_UPDATED_EVENT, listener);
+  });
+
+  it('keeps the request parked without announcing when a re-query finds nothing', async () => {
+    const listener = vi.fn();
+    window.addEventListener(CONDITIONAL_PASSKEYS_UPDATED_EVENT, listener);
+
+    const { request } = buildRequest(vi.fn(), []);
+    registerConditionalPasskeyRequest(request);
+
+    sendMessageMock.mockResolvedValue({ success: true, locked: true, passkeys: [] });
+
+    const found = await refreshConditionalPasskeyOptions();
+
+    expect(found).toBe(false);
+    expect(hasPendingConditionalRequest()).toBe(true);
+    expect(getConditionalPasskeyOptions()).toEqual([]);
+    expect(listener).not.toHaveBeenCalled();
+
+    window.removeEventListener(CONDITIONAL_PASSKEYS_UPDATED_EVENT, listener);
+  });
+
+  it('does not re-query when there is no parked request', async () => {
+    const found = await refreshConditionalPasskeyOptions();
+
+    expect(found).toBe(false);
+    expect(sendMessageMock).not.toHaveBeenCalled();
   });
 
   it('completes a request by signing in the background and resolving the page', async () => {
@@ -102,6 +173,34 @@ describe('ConditionalPasskey bridge', () => {
 
     expect(result).toBe(false);
     expect(sendMessageMock).not.toHaveBeenCalled();
+  });
+
+  it('clears a pending request by id when it matches (page aborted the request)', () => {
+    const listener = vi.fn();
+    window.addEventListener(CONDITIONAL_PASSKEYS_UPDATED_EVENT, listener);
+
+    const { request, respond } = buildRequest();
+    registerConditionalPasskeyRequest(request);
+
+    const cleared = clearConditionalPasskeyRequestIfMatches('req-1');
+
+    expect(cleared).toBe(true);
+    expect(hasPendingConditionalRequest()).toBe(false);
+    expect(respond).not.toHaveBeenCalled();
+    // A dropdown was showing options, so the UI is asked to re-render (and drop them).
+    expect(listener).toHaveBeenCalledTimes(2); // once on register, once on clear
+
+    window.removeEventListener(CONDITIONAL_PASSKEYS_UPDATED_EVENT, listener);
+  });
+
+  it('does not clear a pending request when the aborted id is for an older request', () => {
+    const { request } = buildRequest();
+    registerConditionalPasskeyRequest(request);
+
+    const cleared = clearConditionalPasskeyRequestIfMatches('some-older-id');
+
+    expect(cleared).toBe(false);
+    expect(hasPendingConditionalRequest()).toBe(true);
   });
 
   it('clears a pending request without responding', () => {

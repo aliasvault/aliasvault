@@ -373,6 +373,7 @@ export default defineUnlistedScript(() => {
     // Wait for response to our injected event
     return new Promise((resolve, reject) => {
       let timeout: ReturnType<typeof setTimeout> | undefined;
+      const abortSignal = options.signal;
 
       // Set up timeout handling for modal requests (not "conditional" mediation)
       if (options.mediation === 'conditional') {
@@ -401,6 +402,20 @@ export default defineUnlistedScript(() => {
           clearTimeout(timeout);
         }
         window.removeEventListener('aliasvault:webauthn:get:response', handler as EventListener);
+        if (abortSignal) {
+          abortSignal.removeEventListener('abort', onAbort);
+        }
+      }
+
+      /**
+       * Handles the abort event from the content script.
+       */
+      function onAbort() : void {
+        cleanup();
+        window.dispatchEvent(new CustomEvent('aliasvault:webauthn:get:abort', {
+          detail: { requestId }
+        }));
+        reject(new DOMException('The operation was aborted.', 'AbortError'));
       }
 
       /**
@@ -526,6 +541,15 @@ export default defineUnlistedScript(() => {
       }
 
       window.addEventListener('aliasvault:webauthn:get:response', handler as EventListener);
+
+      // If the page already aborted, settle immediately; otherwise listen for a later abort.
+      if (abortSignal) {
+        if (abortSignal.aborted) {
+          onAbort();
+          return;
+        }
+        abortSignal.addEventListener('abort', onAbort);
+      }
     });
   };
 

@@ -32,6 +32,8 @@ type PendingConditionalRequest = {
   requestId: string;
   origin: string;
   publicKey: WebAuthnGetEventDetail['publicKey'];
+  rpId: string;
+  allowCredentialIds?: string[];
   passkeys: ConditionalPasskeyOption[];
   respond: (detail: ConditionalResponseDetail) => void;
 };
@@ -50,11 +52,44 @@ export const CONDITIONAL_PASSKEYS_UPDATED_EVENT = 'aliasvault:conditional-passke
 let pendingRequest: PendingConditionalRequest | null = null;
 
 /**
- * Park a conditional `get()` request and announce that passkeys are available to offer.
+ * Park a conditional `get()` request.
+ * 
+ * When passkeys are found, the event is dispatched to the page to update the autofill dropdown.
  */
 export function registerConditionalPasskeyRequest(request: PendingConditionalRequest): void {
   pendingRequest = request;
-  window.dispatchEvent(new CustomEvent(CONDITIONAL_PASSKEYS_UPDATED_EVENT));
+  if (request.passkeys.length > 0) {
+    window.dispatchEvent(new CustomEvent(CONDITIONAL_PASSKEYS_UPDATED_EVENT));
+  }
+}
+
+/**
+ * Re-query the background for passkeys matching the parked conditional request.
+ * 
+ * @returns true when passkeys were found and the parked request now has options to offer.
+ */
+export async function refreshConditionalPasskeyOptions(): Promise<boolean> {
+  const request = pendingRequest;
+  if (!request) {
+    return false;
+  }
+
+  const matching = await sendMessage('GET_MATCHING_PASSKEYS', {
+    rpId: request.rpId,
+    allowCredentialIds: request.allowCredentialIds
+  });
+
+  if (pendingRequest !== request) {
+    return false;
+  }
+
+  if (matching.success && !matching.locked && matching.passkeys.length > 0) {
+    request.passkeys = matching.passkeys;
+    window.dispatchEvent(new CustomEvent(CONDITIONAL_PASSKEYS_UPDATED_EVENT));
+    return true;
+  }
+
+  return false;
 }
 
 /**
@@ -76,6 +111,25 @@ export function hasPendingConditionalRequest(): boolean {
  */
 export function clearConditionalPasskeyRequest(): void {
   pendingRequest = null;
+}
+
+/**
+ * Clear a pending conditional request if it matches the given id.
+ *
+ * @param requestId - The id of the aborted conditional request.
+ * @returns true when the matching request was cleared.
+ */
+export function clearConditionalPasskeyRequestIfMatches(requestId: string): boolean {
+  if (pendingRequest?.requestId !== requestId) {
+    return false;
+  }
+
+  const hadOptions = pendingRequest.passkeys.length > 0;
+  pendingRequest = null;
+  if (hadOptions) {
+    window.dispatchEvent(new CustomEvent(CONDITIONAL_PASSKEYS_UPDATED_EVENT));
+  }
+  return true;
 }
 
 /**

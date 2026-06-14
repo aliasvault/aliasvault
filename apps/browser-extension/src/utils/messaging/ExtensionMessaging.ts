@@ -101,6 +101,7 @@ export interface IExtensionMessageProtocol {
   SYNC_VAULT(): BoolResponse;
   TOGGLE_CONTEXT_MENU(data: any): BoolResponse;
   UPLOAD_VAULT(): VaultUploadResponse;
+  VAULT_UNLOCKED(): void;
   WEBAUTHN_CREATE(data: any): any;
   WEBAUTHN_GET(data: any): any;
   WEBAUTHN_GET_ASSERTION(data: { passkeyId: string; origin: string; publicKey: WebAuthnPublicKeyGetPayload }): WebAuthnAssertionResponse;

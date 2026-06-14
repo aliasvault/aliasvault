@@ -93,6 +93,12 @@ export async function buildPasskeyAssertion(
     throw new Error(`Passkey not found for id ${passkeyId}`);
   }
 
+  // Bind the selected passkey to the requested relying party.  
+  const requestedRpId = request.publicKey.rpId ?? new URL(request.origin).hostname;
+  if (storedPasskey.RpId !== requestedRpId) {
+    throw new Error('Passkey RpId does not match the requested relying party');
+  }
+
   // Parse the stored EC key pair (stored as JWK JSON strings).
   const publicKey = JSON.parse(storedPasskey.PublicKey) as JsonWebKey;
   const privateKey = JSON.parse(storedPasskey.PrivateKey) as JsonWebKey;

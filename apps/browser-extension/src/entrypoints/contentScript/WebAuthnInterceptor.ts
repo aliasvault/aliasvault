@@ -11,7 +11,7 @@ import {
   validateWebAuthnEventDetail
 } from '@/utils/passkey/WebAuthnRequestValidation';
 
-import { registerConditionalPasskeyRequest } from './ConditionalPasskey';
+import { clearConditionalPasskeyRequestIfMatches, registerConditionalPasskeyRequest } from './ConditionalPasskey';
 
 import { browser } from '#imports';
 
@@ -248,30 +248,33 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
        * dropdown.
        */
       if (detail.mediation === 'conditional') {
-        // Don't query the vault for hidden/prefetch tabs, leave the request pending.
-        if (document.hidden || document.visibilityState === 'hidden') {
-          return;
-        }
-
         const rpId = publicKey.rpId || new URL(origin).hostname;
         const allowCredentialIds = publicKey.allowCredentials?.map((cred) => cred.id);
 
-        const matching = await sendMessage('GET_MATCHING_PASSKEYS', { rpId, allowCredentialIds });
-        if (matching.success && !matching.locked && matching.passkeys.length > 0) {
-          registerConditionalPasskeyRequest({
-            requestId: requestId as string,
-            origin,
-            publicKey,
-            passkeys: matching.passkeys,
-            respond: dispatchResponse
-          });
-        }
+        // Don't query the vault for hidden/prefetch tabs, leave the request pending.
+        const hidden = document.hidden || document.visibilityState === 'hidden';
+
+        const matching = hidden
+          ? null
+          : await sendMessage('GET_MATCHING_PASSKEYS', { rpId, allowCredentialIds });
+        const passkeys = (matching && matching.success && !matching.locked && matching.passkeys.length > 0)
+          ? matching.passkeys
+          : [];
 
         /*
-         * No match / locked / error: leave the request pending without falling back. The
-         * dropdown resolves a registered request on passkey selection; an unregistered one
-         * stays pending until the user acts or navigates away.
+         * Always park the request, even when the vault is locked or nothing matches right now.
+         * This so when the vault is unlocked and passkeys are available, they are immediately offered.
          */
+        registerConditionalPasskeyRequest({
+          requestId: requestId as string,
+          origin,
+          publicKey,
+          rpId,
+          allowCredentialIds,
+          passkeys,
+          respond: dispatchResponse
+        });
+
         return;
       }
 
@@ -316,6 +319,17 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
         requestId,
         error: error.message
       });
+    }
+  });
+
+  /*
+   * The page aborted a conditional get() (typically to re-arm it with a fresh challenge). Drop
+   * our parked request for that id.
+   */
+  window.addEventListener('aliasvault:webauthn:get:abort', (event: any) => {
+    const abortedId = event?.detail?.requestId;
+    if (typeof abortedId === 'string') {
+      clearConditionalPasskeyRequestIfMatches(abortedId);
     }
   });
 
