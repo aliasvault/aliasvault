@@ -1124,8 +1124,8 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
    * When passkeys are offered, show the pill nav and the passkey section.
    */
   if (passkeySection) {
-    const credentialsText = await t('content.credentials');
-    const passkeysText = await t('content.passkeys');
+    const credentialsText = await t('common.credentials');
+    const passkeysText = await t('common.passkeys');
     const credentialsLabel = items.length > 0 ? `${credentialsText} (${items.length})` : credentialsText;
     const passkeysLabel = `${passkeysText} (${passkeySection.count})`;
 
