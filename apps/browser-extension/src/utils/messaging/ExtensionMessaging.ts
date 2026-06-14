@@ -12,7 +12,7 @@ import type { SyncStatusCheckResult, FullVaultSyncResult } from '@/entrypoints/b
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import type { LoginResponse } from '@/utils/dist/core/models/webapi';
 import type { SavePromptPersistedState, LastAutofilledCredential } from '@/utils/loginDetector';
-import type { PendingPasskeyRequest, WebAuthnSettingsResponse } from '@/utils/passkey/types';
+import type { PendingPasskeyRequest, WebAuthnSettingsResponse, WebAuthnPublicKeyGetPayload, MatchingPasskeysResponse, WebAuthnAssertionResponse } from '@/utils/passkey/types';
 import type { BoolResponse } from '@/utils/types/messaging/BoolResponse';
 import type { DuplicateCheckResponse } from '@/utils/types/messaging/DuplicateCheckResponse';
 import type { IdentitySettingsResponse } from '@/utils/types/messaging/IdentitySettingsResponse';
@@ -61,6 +61,7 @@ export interface IExtensionMessageProtocol {
   GET_ITEMS_WITH_TOTP(data: { currentUrl: string; pageTitle: string; matchingMode?: string }): ItemsResponse;
   GET_LAST_AUTOFILLED(data: { domain?: string; username?: string }): { success: boolean; credential: LastAutofilledCredential | null };
   GET_LOGIN_SAVE_SETTINGS(): { success: boolean; enabled: boolean; autoDismissSeconds: number; error?: string };
+  GET_MATCHING_PASSKEYS(data: { rpId: string; allowCredentialIds?: string[] }): MatchingPasskeysResponse;
   GET_PASSWORD_SETTINGS(): PasswordSettingsResponse;
   GET_PERSISTED_FORM_VALUES(): any | null;
   GET_RECENTLY_SELECTED(data: { domain: string }): { success: boolean; itemId?: string | null };
@@ -102,6 +103,7 @@ export interface IExtensionMessageProtocol {
   UPLOAD_VAULT(): VaultUploadResponse;
   WEBAUTHN_CREATE(data: any): any;
   WEBAUTHN_GET(data: any): any;
+  WEBAUTHN_GET_ASSERTION(data: { passkeyId: string; origin: string; publicKey: WebAuthnPublicKeyGetPayload }): WebAuthnAssertionResponse;
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
