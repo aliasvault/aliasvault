@@ -82,6 +82,28 @@ function withTrustedWebAuthnSender<T, U>(
 }
 
 /**
+ * Notify content scripts in all tabs that the vault was unlocked, so any conditional passkey
+ * request parked while the vault was locked can re-query and surface its passkeys.
+ */
+async function broadcastVaultUnlocked(): Promise<void> {
+  try {
+    const tabs = await browser.tabs.query({});
+    await Promise.all(tabs.map(async (tab) => {
+      if (tab.id === undefined) {
+        return;
+      }
+      try {
+        await sendMessage('VAULT_UNLOCKED', undefined, tab.id);
+      } catch {
+        // No receiving content script in this tab — ignore.
+      }
+    }));
+  } catch {
+    // tabs.query can fail in rare contexts — best-effort, ignore.
+  }
+}
+
+/**
  * Validate a WebAuthn create request against the sender's trusted origin, then forward it to the
  * passkey create flow. Falls back when the sender is untrusted or validation fails.
  */
@@ -201,7 +223,17 @@ export default defineBackground({
     onMessage('GET_PASSWORD_SETTINGS', () => handleGetPasswordSettings());
 
     onMessage('STORE_VAULT_METADATA', ({ data }) => handleStoreVaultMetadata(data));
-    onMessage('STORE_ENCRYPTION_KEY', ({ data }) => handleStoreEncryptionKey(data));
+    onMessage('STORE_ENCRYPTION_KEY', async ({ data }) => {
+      const result = await handleStoreEncryptionKey(data);
+      /*
+       * Storing the encryption key means the vault just became unlocked; let content scripts
+       * re-query any conditional passkey requests they parked while the vault was locked.
+       */
+      if (result.success) {
+        void broadcastVaultUnlocked();
+      }
+      return result;
+    });
     onMessage('STORE_ENCRYPTION_KEY_DERIVATION_PARAMS', ({ data }) => handleStoreEncryptionKeyDerivationParams(data));
 
     onMessage('GET_ENCRYPTED_VAULT', () => handleGetEncryptedVault());
