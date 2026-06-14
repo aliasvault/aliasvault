@@ -5,7 +5,7 @@
 import { handleResetAutoLockTimer, handlePopupHeartbeat, handleSetAutoLockTimeout, initializeAutoLockAlarm, handleAutoLockAlarm } from '@/entrypoints/background/AutolockTimeoutHandler';
 import { handleClipboardCopied, handleCancelClipboardClear, handleGetClipboardClearTimeout, handleSetClipboardClearTimeout, handleGetClipboardCountdownState } from '@/entrypoints/background/ClipboardClearHandler';
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
-import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData } from '@/entrypoints/background/PasskeyHandler';
+import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData, handleGetMatchingPasskeys, handleWebAuthnGetAssertion } from '@/entrypoints/background/PasskeyHandler';
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
 import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState, handleStoreLastAutofilled, handleGetLastAutofilled, handleClearLastAutofilled } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleStoreTwoFactorState, handleGetTwoFactorState, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
@@ -13,7 +13,8 @@ import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSessi
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { onMessage, sendMessage } from "@/utils/messaging/ExtensionMessaging";
-import { validateWebAuthnRequest } from '@/utils/passkey/WebAuthnRequestValidation';
+import type { MatchingPasskeysResponse, WebAuthnAssertionResponse, WebAuthnPublicKeyGetPayload } from '@/utils/passkey/types';
+import { isRpIdAllowedForHost, validateWebAuthnRequest } from '@/utils/passkey/WebAuthnRequestValidation';
 import type { WebAuthnBridgeRequest } from '@/utils/passkey/WebAuthnRequestValidation';
 
 import { defineBackground, browser } from '#imports';
@@ -61,35 +62,82 @@ function getTrustedWebAuthnSenderContext(sender: WebAuthnMessageSender): Trusted
 }
 
 /**
- * Validate a WebAuthn create request against the sender's trusted origin before forwarding it to
- * the passkey create flow, falling back when validation fails.
+ * Resolve a trusted sender context and run a per-message validation check before invoking the
+ * handler. Returns `onInvalid` when the sender is not a trusted web origin or validation fails,
+ * so each WebAuthn message keeps its own validation rule and fallback shape while sharing the
+ * trust resolution and guard plumbing.
  */
-function handleValidatedWebAuthnCreate(data: WebAuthnBridgeRequest, sender: WebAuthnMessageSender): Promise<unknown> | { fallback: true } {
+function withTrustedWebAuthnSender<T, U>(
+  sender: WebAuthnMessageSender,
+  validate: (context: TrustedWebAuthnSenderContext) => boolean,
+  handle: (context: TrustedWebAuthnSenderContext) => T,
+  onInvalid: U
+): T | U {
   const senderContext = getTrustedWebAuthnSenderContext(sender);
-  if (!senderContext || !validateWebAuthnRequest('create', data, senderContext.origin, senderContext.host)) {
-    return { fallback: true };
+  if (!senderContext || !validate(senderContext)) {
+    return onInvalid;
   }
 
-  return handleWebAuthnCreate({
-    ...data,
-    origin: senderContext.origin,
-  });
+  return handle(senderContext);
 }
 
 /**
- * Validate a WebAuthn get request against the sender's trusted origin before forwarding it to
- * the passkey get flow, falling back when validation fails.
+ * Validate a WebAuthn create request against the sender's trusted origin, then forward it to the
+ * passkey create flow. Falls back when the sender is untrusted or validation fails.
+ */
+function handleValidatedWebAuthnCreate(data: WebAuthnBridgeRequest, sender: WebAuthnMessageSender): Promise<unknown> | { fallback: true } {
+  return withTrustedWebAuthnSender(
+    sender,
+    (ctx) => validateWebAuthnRequest('create', data, ctx.origin, ctx.host),
+    (ctx) => handleWebAuthnCreate({ ...data, origin: ctx.origin }),
+    { fallback: true }
+  );
+}
+
+/**
+ * Validate a WebAuthn get request against the sender's trusted origin, then forward it to the
+ * passkey get flow. Falls back when the sender is untrusted or validation fails.
  */
 function handleValidatedWebAuthnGet(data: WebAuthnBridgeRequest, sender: WebAuthnMessageSender): Promise<unknown> | { fallback: true } {
-  const senderContext = getTrustedWebAuthnSenderContext(sender);
-  if (!senderContext || !validateWebAuthnRequest('get', data, senderContext.origin, senderContext.host)) {
-    return { fallback: true };
-  }
+  return withTrustedWebAuthnSender(
+    sender,
+    (ctx) => validateWebAuthnRequest('get', data, ctx.origin, ctx.host),
+    (ctx) => handleWebAuthnGet({ ...data, origin: ctx.origin }),
+    { fallback: true }
+  );
+}
 
-  return handleWebAuthnGet({
-    ...data,
-    origin: senderContext.origin,
-  });
+/**
+ * Validate a request for the passkeys stored at an rpId against the sender's trusted host, then
+ * return the matching passkeys for the inline conditional-autofill dropdown. This only exposes
+ * passkeys for an rpId the requesting page is allowed to assert for.
+ */
+function handleValidatedGetMatchingPasskeys(
+  data: { rpId: string; allowCredentialIds?: string[] },
+  sender: WebAuthnMessageSender
+): Promise<MatchingPasskeysResponse> | MatchingPasskeysResponse {
+  return withTrustedWebAuthnSender(
+    sender,
+    (ctx) => typeof data?.rpId === 'string' && isRpIdAllowedForHost(data.rpId, ctx.host),
+    () => handleGetMatchingPasskeys(data),
+    { success: false, locked: false, passkeys: [] }
+  );
+}
+
+/**
+ * Validate an inline passkey assertion request against the sender's trusted origin, then sign.
+ * The trusted origin is embedded in the signed client data.
+ */
+function handleValidatedWebAuthnGetAssertion(
+  data: { passkeyId: string; origin: string; publicKey: WebAuthnPublicKeyGetPayload },
+  sender: WebAuthnMessageSender
+): Promise<WebAuthnAssertionResponse> | WebAuthnAssertionResponse {
+  return withTrustedWebAuthnSender(
+    sender,
+    (ctx) => typeof data?.passkeyId === 'string' && validateWebAuthnRequest('get', data, ctx.origin, ctx.host),
+    (ctx) => handleWebAuthnGetAssertion({ ...data, origin: ctx.origin }),
+    { success: false, error: 'Invalid request' }
+  );
 }
 
 /*
@@ -228,12 +276,20 @@ export default defineBackground({
     // Handle clipboard copied from context menu
     onMessage('CLIPBOARD_COPIED_FROM_CONTEXT', () => handleClipboardCopied());
 
-    // Passkey/WebAuthn management messages
+    // Passkey/WebAuthn settings
     onMessage('GET_WEBAUTHN_SETTINGS', ({ data }) => handleGetWebAuthnSettings(data));
+
+    // WebAuthn ceremony bridge (navigator.credentials.create/get interception)
     onMessage('WEBAUTHN_CREATE', ({ data, sender }) => handleValidatedWebAuthnCreate(data, sender));
     onMessage('WEBAUTHN_GET', ({ data, sender }) => handleValidatedWebAuthnGet(data, sender));
-    onMessage('PASSKEY_POPUP_RESPONSE', ({ data }) => handlePasskeyPopupResponse(data));
+    onMessage('WEBAUTHN_GET_ASSERTION', ({ data, sender }) => handleValidatedWebAuthnGetAssertion(data, sender));
+
+    // Inline conditional passkey autofill
+    onMessage('GET_MATCHING_PASSKEYS', ({ data, sender }) => handleValidatedGetMatchingPasskeys(data, sender));
+
+    // Passkey popup request/response flow
     onMessage('GET_REQUEST_DATA', ({ data }) => handleGetRequestData(data));
+    onMessage('PASSKEY_POPUP_RESPONSE', ({ data }) => handlePasskeyPopupResponse(data));
 
     /*
      * Async setup (context menus, alarm restoration) runs in a fire-and-forget
