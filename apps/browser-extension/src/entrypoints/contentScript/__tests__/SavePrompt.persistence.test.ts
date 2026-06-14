@@ -8,7 +8,7 @@ import type { CapturedLogin, SavePromptPersistedState } from '@/utils/loginDetec
  */
 let mockBackgroundState: SavePromptPersistedState | null = null;
 
-vi.mock('webext-bridge/content-script', () => ({
+vi.mock('@/utils/messaging/ExtensionMessaging', () => ({
   /**
    * Mock sendMessage function.
    */
