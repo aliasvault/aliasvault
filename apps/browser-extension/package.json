@@ -17,7 +17,7 @@
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:build": "npm run build:chrome && playwright test",
+    "test:e2e:build": "node scripts/run-e2e.mjs",
     "lint": "eslint src",
     "lint:custom": "eslint",
     "lint:fix": "eslint src --fix",
