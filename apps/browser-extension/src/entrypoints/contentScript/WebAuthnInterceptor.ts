@@ -11,6 +11,8 @@ import {
   validateWebAuthnEventDetail
 } from '@/utils/passkey/WebAuthnRequestValidation';
 
+import { registerConditionalPasskeyRequest } from './ConditionalPasskey';
+
 import { browser } from '#imports';
 
 // Firefox-specific global function for cloning objects into page context
@@ -27,14 +29,6 @@ let interceptorInitialized = false;
  */
 let lastCancelledTimestamp = 0;
 const CANCEL_COOLDOWN_MS = 500; // 500ms cooldown after a recent cancellation
-
-/**
- * Track when the page finished loading to detect automatic vs user-initiated requests.
- * Some websites (like Nintendo, Amazon) automatically trigger passkey requests on page load.
- * We should filter these if no matching credentials exist.
- */
-let pageLoadTime = 0;
-const AUTO_REQUEST_THRESHOLD_MS = 1000; // Requests within 1 second of page load are considered "automatic"
 
 /**
  * Check if page is ready for WebAuthn interactions.
@@ -87,9 +81,6 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
   if (interceptorInitialized) {
     return;
   }
-
-  // Track page load time for detecting automatic requests
-  pageLoadTime = Date.now();
 
   // Listen for WebAuthn create events from the page
   window.addEventListener('aliasvault:webauthn:create', async (event: any) => {
@@ -240,7 +231,51 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
 
       const { publicKey, origin } = detail;
 
-      // Block requests if page isn't ready (prevents prefetch/autocomplete popups)
+      // Check if passkey provider is enabled
+      const enabled = await isWebAuthnInterceptionEnabled();
+      if (!enabled) {
+        // If disabled, signal fallback to native browser implementation
+        dispatchResponse({
+          requestId,
+          fallback: true
+        });
+        return;
+      }
+
+      /*
+       * Conditional mediation is passive passkey autofill. Rather than opening a modal, ask
+       * the background for matching passkeys and, if we have any, offer them in the autofill
+       * dropdown.
+       */
+      if (detail.mediation === 'conditional') {
+        // Don't query the vault for hidden/prefetch tabs, leave the request pending.
+        if (document.hidden || document.visibilityState === 'hidden') {
+          return;
+        }
+
+        const rpId = publicKey.rpId || new URL(origin).hostname;
+        const allowCredentialIds = publicKey.allowCredentials?.map((cred) => cred.id);
+
+        const matching = await sendMessage('GET_MATCHING_PASSKEYS', { rpId, allowCredentialIds });
+        if (matching.success && !matching.locked && matching.passkeys.length > 0) {
+          registerConditionalPasskeyRequest({
+            requestId: requestId as string,
+            origin,
+            publicKey,
+            passkeys: matching.passkeys,
+            respond: dispatchResponse
+          });
+        }
+
+        /*
+         * No match / locked / error: leave the request pending without falling back. The
+         * dropdown resolves a registered request on passkey selection; an unregistered one
+         * stays pending until the user acts or navigates away.
+         */
+        return;
+      }
+
+      // Block modal requests if page isn't ready (prevents prefetch/autocomplete popups)
       if (!isPageReadyForWebAuthn()) {
         dispatchResponse({
           requestId,
@@ -260,25 +295,10 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
         return;
       }
 
-      // Check if passkey provider is enabled
-      const enabled = await isWebAuthnInterceptionEnabled();
-      if (!enabled) {
-        // If disabled, signal fallback to native browser implementation
-        dispatchResponse({
-          requestId,
-          fallback: true
-        });
-        return;
-      }
-
-      // Detect if this is an automatic request (within 2 seconds of page load)
-      const isAutomaticRequest = (Date.now() - pageLoadTime) < AUTO_REQUEST_THRESHOLD_MS;
-
-      // Send to background script to handle
+      // Send to background script to handle (opens the passkey modal popup)
       const result = await sendMessage('WEBAUTHN_GET', {
         publicKey,
-        origin,
-        isAutomaticRequest
+        origin
       });
 
       // Track if user cancelled to enable cooldown
