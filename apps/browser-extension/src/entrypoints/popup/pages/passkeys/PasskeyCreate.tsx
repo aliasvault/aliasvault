@@ -470,7 +470,22 @@ const PasskeyCreate: React.FC = () => {
       setLocalLoading(false);
     } catch (error) {
       console.error('PasskeyCreate: Error creating passkey', error);
-      setError(t('common.errors.unknownError'));
+
+      /*
+       * Always clear the loading overlay; otherwise it stays up and hides the error,
+       * making the popup look like it hangs after pressing "Create".
+       */
+      setLocalLoading(false);
+
+      /*
+       * Surface an actionable message when the RP requested a key algorithm we don't
+       * support (e.g. EdDSA-only).
+       */
+      if (error instanceof Error && error.message.includes('No supported algorithm')) {
+        setError(t('passkeys.create.unsupportedAlgorithm'));
+      } else {
+        setError(t('common.errors.unknownError'));
+      }
     }
   };
 
