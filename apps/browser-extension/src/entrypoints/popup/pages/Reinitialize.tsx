@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
@@ -30,6 +30,7 @@ type NavigationHistoryEntry = {
  */
 const Reinitialize: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { setIsInitialLoading } = useLoading();
   const { syncVault } = useVaultSync();
   const { matchCurrentTab } = useCurrentTabMatching();
@@ -154,6 +155,49 @@ const Reinitialize: React.FC = () => {
     await navigateWithUrlMatching(matchResult);
   }, [navigate, matchCurrentTab, getMatchedPath, navigateWithUrlMatching]);
 
+  /**
+   * Run sync in background. If server has newer vault, useVaultSync will:
+   * 1. Download and merge (if needed)
+   * 2. Call dbContext.loadDatabase() which updates sqliteClient
+   * 3. ItemsList reacts to sqliteClient changes and auto-refreshes
+   *
+   * Note: onSuccess triggers refreshSyncState to ensure any UI components
+   * watching sync state will re-render with the updated vault data.
+   */
+  const runBackgroundSync = useCallback((): void => {
+    if (hasInitialized.current) {
+      return;
+    }
+    hasInitialized.current = true;
+
+    syncVault({
+      /**
+       * Handle successful sync - refresh sync state to trigger UI updates.
+       * @param _hasNewVault Whether a new vault was downloaded
+       */
+      onSuccess: async (_hasNewVault) => {
+        await refreshSyncState();
+      },
+      /**
+       * Handle upgrade required - redirect to upgrade page.
+       */
+      onUpgradeRequired: () => {
+        navigate('/upgrade', { replace: true });
+      },
+      /**
+       * Handle sync errors silently - user already has local vault.
+       * @param error Error message
+       */
+      onError: (error) => {
+        console.error('Background vault sync error:', error);
+      }
+    });
+  }, [syncVault, refreshSyncState, navigate]);
+
+  /**
+   * Note: by depending on `location.key`, this effect re-runs navigation logic if `/reinitialize` is visited again
+   * without remounting (e.g. after unlock or login). This prevents the user from getting stuck on a blank page.
+   */
   useEffect(() => {
     /**
      * Handle initialization and redirect logic
@@ -163,14 +207,9 @@ const Reinitialize: React.FC = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const inlineUnlock = urlParams.get('mode') === 'inline_unlock';
 
-      // Check for pending redirect URL in storage (set by useVaultLockRedirect hook)
-      const pendingRedirectUrl = await consumePendingRedirectUrl();
-
       if (!isFullyInitialized) {
         return;
       }
-      // Prevent multiple vault syncs (only run sync once)
-      const shouldRunSync = !hasInitialized.current;
 
       if (requiresAuth) {
         setIsInitialLoading(false);
@@ -181,72 +220,42 @@ const Reinitialize: React.FC = () => {
         } else if (!dbAvailable) {
           navigate('/unlock', { replace: true });
         }
-      } else if (shouldRunSync) {
-        // Only perform vault sync once during initialization
-        hasInitialized.current = true;
+        return;
+      }
 
-        // Check for pending migrations before navigating
-        if (await hasPendingMigrations()) {
-          setIsInitialLoading(false);
-          navigate('/upgrade', { replace: true });
-          return;
-        }
-
-        /*
-         * Navigate immediately using local vault - don't block on sync.
-         * This ensures the UI is responsive even if server is slow.
-         */
+      // Check for pending migrations before navigating
+      if (await hasPendingMigrations()) {
         setIsInitialLoading(false);
-        if (inlineUnlock) {
-          navigate('/unlock-success', { replace: true });
-        } else if (pendingRedirectUrl) {
+        navigate('/upgrade', { replace: true });
+        return;
+      }
+
+      /**
+       * Navigate immediately using local vault without waiting for sync. 
+       * This ensures the UI is responsive even if server is slow to respond.
+       * All branches below are idempotent so this can safely run more than once (see the `location.key` note above).
+       */
+      setIsInitialLoading(false);
+      if (inlineUnlock) {
+        navigate('/unlock-success', { replace: true });
+      } else {
+        // Check for pending redirect URL in storage (set by useVaultLockRedirect hook)
+        const pendingRedirectUrl = await consumePendingRedirectUrl();
+        if (pendingRedirectUrl) {
           navigate(pendingRedirectUrl, { replace: true });
         } else {
           await restoreLastPage();
         }
-
-        /*
-         * Run sync in background. If server has newer vault, useVaultSync will:
-         * 1. Download and merge (if needed)
-         * 2. Call dbContext.loadDatabase() which updates sqliteClient
-         * 3. ItemsList reacts to sqliteClient changes and auto-refreshes
-         *
-         * Note: onSuccess triggers refreshSyncState to ensure any UI components
-         * watching sync state will re-render with the updated vault data.
-         */
-        syncVault({
-          /**
-           * Handle successful sync - refresh sync state to trigger UI updates.
-           * @param _hasNewVault Whether a new vault was downloaded
-           */
-          onSuccess: async (_hasNewVault) => {
-            await refreshSyncState();
-          },
-          /**
-           * Handle upgrade required - redirect to upgrade page.
-           */
-          onUpgradeRequired: () => {
-            navigate('/upgrade', { replace: true });
-          },
-          /**
-           * Handle sync errors silently - user already has local vault.
-           * @param error Error message
-           */
-          onError: (error) => {
-            console.error('Background vault sync error:', error);
-          }
-        });
-      } else {
-        // User is logged in and db is available, navigate to appropriate page
-        setIsInitialLoading(false);
-        restoreLastPage();
       }
+
+      // Run the background sync once.
+      runBackgroundSync();
     };
 
     handleInitialization();
-  }, [isFullyInitialized, requiresAuth, isLoggedIn, dbAvailable, navigate, setIsInitialLoading, syncVault, restoreLastPage, refreshSyncState, hasPendingMigrations]);
+  }, [isFullyInitialized, requiresAuth, isLoggedIn, dbAvailable, location.key, navigate, setIsInitialLoading, restoreLastPage, hasPendingMigrations, runBackgroundSync]);
 
-  // This component doesn't render anything visible - it just handles initialization
+  // This component doesn't render anything visible, it only handles initialization logic.
   return null;
 };
 
