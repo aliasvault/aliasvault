@@ -288,6 +288,9 @@ class PasskeyFormFragment : Fragment() {
             val prfInputs = extractPrfInputs(requestObj)
             val enablePrf = prfInputs != null
 
+            // Pick the credential algorithm from the RP's pubKeyCredParams
+            val algorithm = selectAlgorithm(requestObj)
+
             // Create the passkey using PasskeyAuthenticator
             val passkeyResult = PasskeyAuthenticator.createPasskey(
                 credentialId = credentialId,
@@ -298,6 +301,7 @@ class PasskeyFormFragment : Fragment() {
                 uvPerformed = true,
                 enablePrf = enablePrf,
                 prfInputs = prfInputs,
+                algorithm = algorithm,
             )
 
             // Create Passkey model object
@@ -480,6 +484,9 @@ class PasskeyFormFragment : Fragment() {
             val prfInputs = extractPrfInputs(requestObj)
             val enablePrf = prfInputs != null
 
+            // Pick the credential algorithm from the RP's pubKeyCredParams
+            val algorithm = selectAlgorithm(requestObj)
+
             // Create the new passkey using PasskeyAuthenticator
             val passkeyResult = PasskeyAuthenticator.createPasskey(
                 credentialId = credentialId,
@@ -490,6 +497,7 @@ class PasskeyFormFragment : Fragment() {
                 uvPerformed = true,
                 enablePrf = enablePrf,
                 prfInputs = prfInputs,
+                algorithm = algorithm,
             )
 
             // Create new Passkey model object
@@ -676,6 +684,9 @@ class PasskeyFormFragment : Fragment() {
             val prfInputs = extractPrfInputs(requestObj)
             val enablePrf = prfInputs != null
 
+            // Pick the credential algorithm from the RP's pubKeyCredParams
+            val algorithm = selectAlgorithm(requestObj)
+
             // Create the passkey using PasskeyAuthenticator
             val passkeyResult = PasskeyAuthenticator.createPasskey(
                 credentialId = credentialId,
@@ -686,6 +697,7 @@ class PasskeyFormFragment : Fragment() {
                 uvPerformed = true,
                 enablePrf = enablePrf,
                 prfInputs = prfInputs,
+                algorithm = algorithm,
             )
 
             // Create Passkey model object
@@ -816,6 +828,24 @@ class PasskeyFormFragment : Fragment() {
                 showError(getString(R.string.passkey_creation_failed) + ": ${e.message}")
             }
         }
+    }
+
+    /**
+     * Pick the credential algorithm from the RP's pubKeyCredParams.
+     * Honors the RP's preference order; defaults to ES256 when absent.
+     */
+    private fun selectAlgorithm(requestObj: JSONObject): Int {
+        val params = requestObj.optJSONArray("pubKeyCredParams")
+        val algs = mutableListOf<Int>()
+        if (params != null) {
+            for (i in 0 until params.length()) {
+                val entry = params.optJSONObject(i) ?: continue
+                if (entry.has("alg")) {
+                    algs.add(entry.getInt("alg"))
+                }
+            }
+        }
+        return PasskeyAuthenticator.pickSupportedAlgorithm(algs)
     }
 
     /**
