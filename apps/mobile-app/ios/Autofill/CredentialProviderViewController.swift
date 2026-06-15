@@ -398,7 +398,8 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
                 clientDataHash: params.clientDataHash,
                 vaultStore: vaultStore,
                 enablePrf: params.enablePrf,
-                prfInputs: params.prfInputs
+                prfInputs: params.prfInputs,
+                algorithm: params.algorithm
             )
             return
         }
