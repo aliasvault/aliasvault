@@ -264,22 +264,87 @@ describe('PasskeyAuthenticator', () => {
       expect(result.stored.publicKey.crv).toBe('P-256');
     });
 
-    it('should throw error when ES256 is not supported', async () => {
+    it('should throw error when no supported algorithm is offered', async () => {
       const createRequest: CreateRequest = {
         origin: 'https://example.com',
         publicKey: {
           challenge: 'test-challenge',
           pubKeyCredParams: [
-            { type: 'public-key', alg: -8 }, // EdDSA
-            { type: 'public-key', alg: -257 } // RS256
+            { type: 'public-key', alg: -8 } // EdDSA - not supported
           ]
         }
       };
 
       const credentialIdBytes = crypto.getRandomValues(new Uint8Array(16));
       await expect(PasskeyAuthenticator.createPasskey(credentialIdBytes, createRequest)).rejects.toThrow(
-        'No supported algorithm (ES256) in pubKeyCredParams'
+        'No supported algorithm (ES256, RS256) in pubKeyCredParams'
       );
+    });
+
+    it('should create an RS256 passkey when only RS256 is offered', async () => {
+      const createRequest: CreateRequest = {
+        origin: 'https://example.com',
+        publicKey: {
+          challenge: 'test-challenge',
+          pubKeyCredParams: [{ type: 'public-key', alg: -257 }]
+        }
+      };
+
+      const credentialIdBytes = crypto.getRandomValues(new Uint8Array(16));
+      const result = await PasskeyAuthenticator.createPasskey(credentialIdBytes, createRequest);
+
+      expect(result.credential).toBeDefined();
+      expect(result.stored.publicKey.kty).toBe('RSA');
+      expect(result.stored.publicKey.n).toBeDefined();
+    });
+
+    it('should prefer the algorithm in the RP order (ES256 before RS256)', async () => {
+      const createRequest: CreateRequest = {
+        origin: 'https://example.com',
+        publicKey: {
+          challenge: 'test-challenge',
+          pubKeyCredParams: [
+            { type: 'public-key', alg: -7 }, // ES256 first
+            { type: 'public-key', alg: -257 } // RS256 fallback
+          ]
+        }
+      };
+
+      const credentialIdBytes = crypto.getRandomValues(new Uint8Array(16));
+      const result = await PasskeyAuthenticator.createPasskey(credentialIdBytes, createRequest);
+
+      expect(result.stored.publicKey.kty).toBe('EC');
+      expect(result.stored.publicKey.crv).toBe('P-256');
+    });
+
+    it('should create a valid RS256 assertion that round-trips', async () => {
+      const createRequest: CreateRequest = {
+        origin: 'https://example.com',
+        publicKey: {
+          rp: { id: 'example.com', name: 'Example' },
+          user: { id: 'user-1', name: 'testuser', displayName: 'Test User' },
+          challenge: 'create-challenge',
+          pubKeyCredParams: [{ type: 'public-key', alg: -257 }]
+        }
+      };
+
+      const credentialIdBytes = crypto.getRandomValues(new Uint8Array(16));
+      const createResult = await PasskeyAuthenticator.createPasskey(credentialIdBytes, createRequest);
+
+      const getRequest: GetRequest = {
+        origin: 'https://example.com',
+        publicKey: {
+          rpId: 'example.com',
+          challenge: 'auth-challenge',
+          userVerification: 'preferred'
+        }
+      };
+
+      const assertion = await PasskeyAuthenticator.getAssertion(getRequest, createResult.stored);
+
+      expect(assertion.signature).toBeDefined();
+      // RS256 signatures are raw PKCS#1 v1.5 (256 bytes for a 2048-bit key), not DER-wrapped.
+      expect(fromBase64url(assertion.signature).length).toBe(256);
     });
 
     it('should set UV flag when userVerification is required', async () => {
