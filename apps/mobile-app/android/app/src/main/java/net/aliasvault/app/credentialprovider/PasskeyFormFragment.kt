@@ -840,7 +840,7 @@ class PasskeyFormFragment : Fragment() {
         if (params != null) {
             for (i in 0 until params.length()) {
                 val entry = params.optJSONObject(i) ?: continue
-                if (entry.has("alg")) {
+                if (entry.optString("type") == "public-key" && entry.has("alg")) {
                     algs.add(entry.getInt("alg"))
                 }
             }

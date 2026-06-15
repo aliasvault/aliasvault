@@ -232,7 +232,7 @@ object PasskeyAuthenticator {
 
         // 7. The signature is already in the form the RP expects:
         // ECDSA output is DER-encoded, RSA output is raw PKCS#1 v1.5. Both are what WebAuthn expects.
-        val derSignature = signature.sign()
+        val signatureBytes = signature.sign()
 
         // 8. Evaluate PRF if requested
         var prfResults: PrfResults? = null
@@ -245,7 +245,7 @@ object PasskeyAuthenticator {
         return PasskeyAssertionResult(
             credentialId = credentialId,
             authenticatorData = authenticatorData,
-            signature = derSignature,
+            signature = signatureBytes,
             userHandle = userId,
             prfResults = prfResults,
         )
