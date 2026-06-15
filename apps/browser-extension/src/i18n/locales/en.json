@@ -503,7 +503,8 @@
       "selectExistingLogin": "Add to existing login:",
       "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
       "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey"
+      "attachPasskey": "Add Passkey",
+      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
     "settings": {
       "passkeyProvider": "Passkey Provider",
