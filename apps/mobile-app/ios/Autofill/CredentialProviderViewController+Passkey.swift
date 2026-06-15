@@ -186,6 +186,12 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
             prfInputs = extractPrfInputs(from: extensionInput)
         }
 
+        // Pick the credential algorithm from the RP's requested algorithms,
+        // honoring RP preference order. Falls back to ES256 if none/unsupported.
+        let requestedAlgorithms = passkeyRequest.supportedAlgorithms.map { $0.rawValue }
+        let algorithm = (try? PasskeyAuthenticator.pickSupportedAlgorithm(requestedAlgorithms))
+            ?? PasskeyAuthenticator.algES256
+
         // Store parameters for use in viewWillAppear
         // Vault unlock and UI display will happen in viewWillAppear
         self.passkeyRegistrationParams = PasskeyRegistrationParams(
@@ -195,7 +201,8 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
             userId: userId,
             clientDataHash: clientDataHash,
             enablePrf: prfEnabled,
-            prfInputs: prfInputs
+            prfInputs: prfInputs,
+            algorithm: algorithm
         )
     }
 
@@ -210,7 +217,8 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
         clientDataHash: Data,
         vaultStore: VaultStore,
         enablePrf: Bool = false,
-        prfInputs: PrfInputs? = nil
+        prfInputs: PrfInputs? = nil,
+        algorithm: Int = PasskeyAuthenticator.algES256
     ) {
         // Store parameters for closure capture
         let capturedRpId = rpId
@@ -221,6 +229,7 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
         let capturedVaultStore = vaultStore
         let capturedEnablePrf = enablePrf
         let capturedPrfInputs = prfInputs
+        let capturedAlgorithm = algorithm
 
         // Query for existing passkeys with this rpId and userName
         var existingPasskeys: [PasskeyWithCredentialInfo] = []
@@ -287,7 +296,8 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                     vaultStore: capturedVaultStore,
                     viewModel: viewModel,
                     enablePrf: capturedEnablePrf,
-                    prfInputs: capturedPrfInputs
+                    prfInputs: capturedPrfInputs,
+                    algorithm: capturedAlgorithm
                 )
             },
             cancelHandler: { [weak self] in
@@ -338,7 +348,8 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
         vaultStore: VaultStore,
         viewModel: PasskeyRegistrationViewModel,
         enablePrf: Bool = false,
-        prfInputs: PrfInputs? = nil
+        prfInputs: PrfInputs? = nil,
+        algorithm: Int = PasskeyAuthenticator.algES256
     ) {
         // Create a Task to handle async operations
         Task {
@@ -384,7 +395,8 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                     userDisplayName: userDisplayName,
                     uvPerformed: true,
                     enablePrf: enablePrf,
-                    prfInputs: prfInputs
+                    prfInputs: prfInputs,
+                    algorithm: algorithm
                 )
 
                 // Create a Passkey model object with correct parentItemId
