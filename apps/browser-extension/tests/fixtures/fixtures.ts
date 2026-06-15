@@ -16,7 +16,7 @@ const EXTENSION_PATH = path.join(__dirname, '..', '..', 'dist', 'chrome-mv3');
 /**
  * Default API URL for local development.
  */
-const DEFAULT_API_URL = process.env.ALIASVAULT_API_URL || 'http://localhost:5092';
+const DEFAULT_API_URL = process.env.ALIASVAULT_API_URL || 'http://localhost:5100';
 
 /**
  * Test-scoped fixtures (created per test file/describe block).

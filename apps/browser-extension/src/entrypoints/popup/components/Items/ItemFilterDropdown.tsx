@@ -159,7 +159,7 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({
                 onClick={() => handleSelectFilter('passkeys')}
                 className={itemRowClass(activeFilter === 'passkeys')}
               >
-                {t('items.filters.passkeys')}
+                {t('common.passkeys')}
               </button>
               <button
                 onClick={() => handleSelectFilter('attachments')}

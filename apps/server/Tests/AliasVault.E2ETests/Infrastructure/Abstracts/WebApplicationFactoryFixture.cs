@@ -96,7 +96,7 @@ public abstract class WebApplicationFactoryFixture<TEntryPoint> : WebApplication
         if (!string.IsNullOrEmpty(_tempDbName))
         {
             // Create a connection to 'postgres' database to drop the test database
-            using var conn = new NpgsqlConnection("Host=localhost;Port=5433;Database=postgres;Username=aliasvault;Password=password");
+            using var conn = new NpgsqlConnection("Host=localhost;Port=5109;Database=postgres;Username=aliasvault;Password=password");
             await conn.OpenAsync();
 
             // First terminate existing connections
@@ -178,7 +178,7 @@ public abstract class WebApplicationFactoryFixture<TEntryPoint> : WebApplication
     /// </summary>
     private void SetEnvironmentVariables()
     {
-        Environment.SetEnvironmentVariable("ConnectionStrings__AliasServerDbContext", "Host=localhost;Port=5433;Database=" + _tempDbName + ";Username=aliasvault;Password=password");
+        Environment.SetEnvironmentVariable("ConnectionStrings__AliasServerDbContext", "Host=localhost;Port=5109;Database=" + _tempDbName + ";Username=aliasvault;Password=password");
         Environment.SetEnvironmentVariable("JWT_KEY", "12345678901234567890123456789012");
         Environment.SetEnvironmentVariable("DATA_PROTECTION_CERT_PASS", "Development");
         Environment.SetEnvironmentVariable("PUBLIC_REGISTRATION_ENABLED", "true");

@@ -349,7 +349,7 @@ async function uploadInitialVault(
 /**
  * Registers a new test user via the API using SRP protocol and initializes their vault.
  *
- * @param apiBaseUrl - The base URL of the API (e.g., 'http://localhost:5092')
+ * @param apiBaseUrl - The base URL of the API (e.g., 'http://localhost:5100')
  * @param username - The username for the new account
  * @param password - The password for the new account
  * @returns The token model on success

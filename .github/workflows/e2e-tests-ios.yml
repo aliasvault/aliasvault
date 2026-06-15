@@ -135,7 +135,7 @@ jobs:
           # Wait for API to be ready
           echo "Waiting for API to start..."
           for i in {1..30}; do
-            if curl -s http://localhost:5092/v1/ > /dev/null 2>&1; then
+            if curl -s http://localhost:5100/v1/ > /dev/null 2>&1; then
               echo "API is ready!"
               break
             fi
@@ -150,7 +150,7 @@ jobs:
           ADMIN_PASSWORD_HASH: "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag=="
           ADMIN_PASSWORD_GENERATED: "2024-01-01T00:00:00Z"
           # Bind to all interfaces (IPv4 and IPv6)
-          ASPNETCORE_URLS: "http://0.0.0.0:5092"
+          ASPNETCORE_URLS: "http://0.0.0.0:5100"
 
       - name: Boot iOS Simulator
         run: |
@@ -243,7 +243,7 @@ jobs:
             DEVELOPMENT_TEAM="" \
             IDEFileSystemSynchronizedGroupsAreEnabled=NO
         env:
-          API_URL: "http://localhost:5092"
+          API_URL: "http://localhost:5100"
           IDEFileSystemSynchronizedGroupsAreEnabled: NO
 
       - name: Extract attachments from xcresult

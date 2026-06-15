@@ -48,7 +48,7 @@ enum TestUserRegistration {
 
     /// API URL for testing (defaults to local development server)
     static var apiUrl: String {
-        return ProcessInfo.processInfo.environment["API_URL"] ?? "http://localhost:5092"
+        return ProcessInfo.processInfo.environment["API_URL"] ?? "http://localhost:5100"
     }
 
     // MARK: - Username/Password Generation

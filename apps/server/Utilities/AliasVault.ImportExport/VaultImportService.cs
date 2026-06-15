@@ -133,6 +133,7 @@ public static class VaultImportService
     {
         var credentials = new List<ImportedCredential>();
         var folderMap = BuildFolderPathMap(manifest.Folders);
+        var fieldDefinitionsById = manifest.FieldDefinitions.ToDictionary(fd => fd.Id);
 
         foreach (var item in manifest.Items)
         {
@@ -156,7 +157,7 @@ public static class VaultImportService
             }
 
             // Extract field values
-            ExtractFieldValues(credential, item.FieldValues);
+            ExtractFieldValues(credential, item.FieldValues, fieldDefinitionsById);
 
             // Add TOTP codes
             if (item.TotpCodes.Count > 0)
@@ -234,13 +235,35 @@ public static class VaultImportService
     /// <summary>
     /// Extracts field values from the AvuxItem and populates the ImportedCredential.
     /// </summary>
-    private static void ExtractFieldValues(ImportedCredential credential, List<AvuxFieldValue> fieldValues)
+    /// <param name="credential">The credential to populate.</param>
+    /// <param name="fieldValues">The field values from the AvuxItem.</param>
+    /// <param name="fieldDefinitionsById">Lookup of custom field definitions keyed by their ID.</param>
+    private static void ExtractFieldValues(ImportedCredential credential, List<AvuxFieldValue> fieldValues, Dictionary<Guid, AvuxFieldDefinition> fieldDefinitionsById)
     {
         foreach (var fieldValue in fieldValues)
         {
             if (string.IsNullOrEmpty(fieldValue.FieldKey))
             {
-                // Custom field - will be handled separately
+                // Custom fields are imported as ImportedCustomField objects.
+                if (fieldValue.FieldDefinitionId.HasValue
+                    && fieldDefinitionsById.TryGetValue(fieldValue.FieldDefinitionId.Value, out var definition))
+                {
+                    credential.CustomFieldValues ??= new List<ImportedCustomField>();
+                    credential.CustomFieldValues.Add(new ImportedCustomField
+                    {
+                        DefinitionId = definition.Id,
+                        Label = definition.Label,
+                        Value = fieldValue.Value,
+                        FieldType = AliasClientDb.Models.FieldTypeKindExtensions.ToFieldTypeKind(definition.FieldType),
+                        IsMultiValue = definition.IsMultiValue,
+                        IsHidden = definition.IsHidden,
+                        EnableHistory = definition.EnableHistory,
+                        Weight = definition.Weight,
+                        ValueWeight = fieldValue.Weight,
+                        ApplicableToTypes = definition.ApplicableToTypes,
+                    });
+                }
+
                 continue;
             }
 

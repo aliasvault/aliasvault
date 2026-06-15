@@ -42,7 +42,7 @@ BUILD SUCCESSFUL in 30m 25s
 2025-11-03 16:40:56,157 INFO: Successfully built version 0.99.0-test1 of net.aliasvault.app from 97d8d4d15df88cd759b62489368e857291a27078
 ```
 
-This is the important part to know whether the build was succesful:
+This is the important part to know whether the build was successful:
 > BUILD SUCCESSFUL in 30m 25s
 
 Other warnings can be ignored as they are most likely about versions not matching, but that is to be expected as we have hardcoded the version to 0.1.0 while the actual version extracted from the Android build.gradle file will be different.

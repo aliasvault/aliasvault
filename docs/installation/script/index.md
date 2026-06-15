@@ -212,7 +212,7 @@ Disabling public registration means the ability to create new accounts in the Al
 
 ## 5. Configure IP logging
 
-By default, AliasVault is configured to log (anonymized) IP addressses for all authentication attempts. This is used to monitor and combat potential abuse. However for privacy reasons the last octet of the IP address is anonymized, e.g. the IP address `127.0.0.1` is logged as `127.0.0.xxx`. This is to prevent an IP address directly being linked to an individual person or household.
+By default, AliasVault is configured to log (anonymized) IP addresses for all authentication attempts. This is used to monitor and combat potential abuse. However for privacy reasons the last octet of the IP address is anonymized, e.g. the IP address `127.0.0.1` is logged as `127.0.0.xxx`. This is to prevent an IP address directly being linked to an individual person or household.
 
 If you want to entirely disable IP logging, you can do so by running the install script with the `configure-ip-logging` option and then choosing option 2.
 

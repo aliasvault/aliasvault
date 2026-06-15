@@ -3,11 +3,10 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { handleGetEncryptionKey } from '@/entrypoints/background/VaultMessageHandler';
+import { createVaultSqliteClient, handleGetEncryptionKey } from '@/entrypoints/background/VaultMessageHandler';
 
-import type { PasskeyWithItem } from '@/utils/db/mappers/PasskeyMapper';
-import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { buildPasskeyAssertion } from '@/utils/passkey/PasskeyAssertionService';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type {
   PasskeyPopupResponse,
@@ -18,12 +17,14 @@ import type {
   PendingPasskeyGetRequest,
   WebAuthnSettingsResponse,
   WebAuthnCreationPayload,
-  WebAuthnPublicKeyGetPayload
+  WebAuthnPublicKeyGetPayload,
+  ConditionalPasskeyOption,
+  MatchingPasskeysResponse,
+  WebAuthnAssertionResponse
 } from '@/utils/passkey/types';
 import { extractDomain } from '@/utils/RustCore';
-import { SqliteClient } from '@/utils/SqliteClient';
 
-import { browser, storage } from '#imports';
+import { browser } from '#imports';
 
 // Pending popup requests
 const pendingRequests = new Map<string, {
@@ -126,28 +127,8 @@ export async function handleWebAuthnCreate(data: any): Promise<any> {
  * Note: Passkey retrieval is now handled in the popup via SqliteClient
  */
 export async function handleWebAuthnGet(data: any): Promise<any> {
-  const { publicKey, origin, isAutomaticRequest } = data as WebAuthnGetRequest;
+  const { publicKey, origin } = data as WebAuthnGetRequest;
   const requestId = Math.random().toString(36).substr(2, 9);
-
-  /*
-   * If this is an automatic request (within 2 seconds of page load), check if we have matching credentials
-   * before opening the popup. This prevents AliasVault from blocking other password managers when we
-   * don't have the passkey they need.
-   */
-  if (isAutomaticRequest) {
-    try {
-      // Check if we have any matching passkeys in storage
-      const hasMatchingPasskeys = await checkForMatchingPasskeys(publicKey, origin);
-
-      if (!hasMatchingPasskeys) {
-        // No matching passkeys - don't intercept, let other password managers handle it
-        return { fallback: true };
-      }
-    } catch (error) {
-      console.error('Error checking for matching passkeys:', error);
-      // On error, fall back to showing the popup (better UX than silently failing)
-    }
-  }
 
   // Store request data temporarily (to avoid URL length limits)
   const requestData: PendingPasskeyGetRequest = {
@@ -201,62 +182,72 @@ export async function handleWebAuthnGet(data: any): Promise<any> {
 }
 
 /**
- * Check if we have any matching passkeys for the given request.
- * This is used to determine if we should intercept automatic passkey requests.
+ * Get the passkeys stored for a relying party, for the inline conditional-autofill dropdown.
  */
-async function checkForMatchingPasskeys(publicKey: any, origin: string): Promise<boolean> {
+export async function handleGetMatchingPasskeys(
+  data: { rpId: string; allowCredentialIds?: string[] }
+): Promise<MatchingPasskeysResponse> {
+  const { rpId, allowCredentialIds } = data;
+
+  // If the vault is locked we cannot read passkeys; tell the caller so it can fall back.
+  const encryptionKey = await handleGetEncryptionKey();
+  if (!encryptionKey) {
+    return { success: true, locked: true, passkeys: [] };
+  }
+
   try {
-    // Check if vault is unlocked
-    const encryptedVault = await storage.getItem('local:encryptedVault') as string;
-    const encryptionKey = await handleGetEncryptionKey();
+    const sqliteClient = await createVaultSqliteClient();
+    let passkeys = sqliteClient.passkeys.getByRpId(rpId);
 
-    if (!encryptedVault || !encryptionKey) {
-      /*
-       * Vault is locked - we can't check for passkeys
-       * In this case, we return false to avoid intercepting
-       */
-      return false;
-    }
-
-    // Decrypt and load the vault
-    const decryptedVault = await EncryptionUtility.symmetricDecrypt(
-      encryptedVault,
-      encryptionKey
-    );
-    const sqliteClient = new SqliteClient();
-    await sqliteClient.initializeFromBase64(decryptedVault);
-
-    // Get the rpId from the request or derive from origin
-    const rpId = publicKey.rpId || new URL(origin).hostname;
-
-    // Get passkeys for this rpId
-    const passkeys = sqliteClient.passkeys.getByRpId(rpId);
-
-    // If allowCredentials is specified, filter by those specific credentials
-    if (publicKey.allowCredentials && publicKey.allowCredentials.length > 0) {
-      // Convert the RP's base64url credential IDs to GUIDs for comparison
+    // If the RP restricts to specific credentials, keep only those we actually hold.
+    if (allowCredentialIds && allowCredentialIds.length > 0) {
       const allowedGuids = new Set(
-        publicKey.allowCredentials.map((c: any) => {
-          try {
-            return PasskeyHelper.base64urlToGuid(c.id);
-          } catch (e) {
-            console.warn('Failed to convert credential ID to GUID:', c.id, e);
-            return null;
-          }
-        }).filter((id: string | null): id is string => id !== null)
+        allowCredentialIds
+          .map((id) => {
+            try {
+              return PasskeyHelper.base64urlToGuid(id);
+            } catch {
+              return null;
+            }
+          })
+          .filter((id): id is string => id !== null)
       );
-
-      // Check if we have any of the allowed credentials
-      const matchingPasskeys = passkeys.filter((pk: PasskeyWithItem) => allowedGuids.has(pk.Id));
-      return matchingPasskeys.length > 0;
+      passkeys = passkeys.filter((pk) => allowedGuids.has(pk.Id));
     }
 
-    // No allowCredentials specified - just check if we have any passkeys for this rpId
-    return passkeys.length > 0;
+    const options: ConditionalPasskeyOption[] = passkeys.map((pk) => {
+      const item = sqliteClient.items.getById(pk.ItemId);
+      return {
+        id: pk.Id,
+        itemId: pk.ItemId,
+        serviceName: pk.ServiceName ?? pk.DisplayName,
+        username: pk.Username ?? '',
+        logo: item?.Logo ? Array.from(item.Logo) : null
+      };
+    });
+
+    return { success: true, locked: false, passkeys: options };
   } catch (error) {
-    console.error('Error in checkForMatchingPasskeys:', error);
-    // On error, return false to avoid intercepting
-    return false;
+    console.error('Error getting matching passkeys:', error);
+    return { success: false, locked: false, passkeys: [] };
+  }
+}
+
+/**
+ * Build a WebAuthn assertion for a passkey the user picked in the inline dropdown.
+ */
+export async function handleWebAuthnGetAssertion(
+  data: { passkeyId: string; origin: string; publicKey: WebAuthnPublicKeyGetPayload }
+): Promise<WebAuthnAssertionResponse> {
+  const { passkeyId, origin, publicKey } = data;
+
+  try {
+    const sqliteClient = await createVaultSqliteClient();
+    const credential = await buildPasskeyAssertion(sqliteClient, { origin, publicKey }, passkeyId);
+    return { success: true, credential };
+  } catch (error) {
+    console.error('Error building passkey assertion:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
 

@@ -9,6 +9,7 @@ namespace AliasVault.ImportExport.Importers;
 
 using System.IO.Compression;
 using System.Text.Json;
+using AliasClientDb.Models;
 using AliasVault.ImportExport.Exceptions;
 using AliasVault.ImportExport.Models;
 using AliasVault.ImportExport.Models.Imports;
@@ -248,11 +249,20 @@ public class BitwardenZipImporter : BaseArchiveImporter
                 continue;
             }
 
-            // For all other types (Text, Hidden, Boolean), add to custom fields if value exists
+            // For all other types (Text, Hidden, Boolean), add to custom fields if value exists.
+            // Bitwarden field types:
+            // 0 = Text (plaintext)
+            // 1 = Hidden (password/sensitive)
+            // 2 = Boolean (true/false)
+            // 3 = Linked (reference to another field - not supported, skipped)
             if (!string.IsNullOrWhiteSpace(field.Value))
             {
-                credential.CustomFields ??= new Dictionary<string, string>();
-                credential.CustomFields[field.Name] = field.Value;
+                var fieldType = field.Type == 1 ? FieldTypeKind.Hidden : FieldTypeKind.Text;
+                BaseImporter.AddCustomField(
+                    credential,
+                    field.Name,
+                    field.Value,
+                    fieldType);
             }
         }
     }

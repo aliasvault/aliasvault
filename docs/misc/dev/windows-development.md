@@ -63,11 +63,12 @@ This guide will help you set up AliasVault for development on Windows using WSL 
 
 3. **Setup Development Database**
    - Open a new WSL terminal in the AliasVault directory
-   - Run the development database setup:
+   - `./scripts/dev.sh` is the single entry point for local development: it starts
+     the dev database and runs the apps from source on a consistent, preconfigured
+     set of ports. Start the database with:
      ```bash
-     ./install.sh configure-dev-db
+     ./scripts/dev.sh db-start
      ```
-   - Select option 1 to start the development database
    - Verify the database is running:
      ```bash
      docker ps | grep postgres-dev
@@ -77,6 +78,9 @@ This guide will help you set up AliasVault for development on Windows using WSL 
    - Open the solution in Visual Studio 2022
    - Set WebApi as the startup project
    - Press F5 to run in debug mode
+   - Alternatively, run the apps from WSL with `./scripts/dev.sh` (one app per
+     terminal, e.g. `./scripts/dev.sh api`); `./scripts/dev.sh ports` shows the
+     ports each app uses
 
 ## Troubleshooting
 
@@ -103,8 +107,8 @@ If the WebApi fails to start due to database connection issues:
 
 4. **Restart Development Database**
    ```bash
-   ./install.sh configure-dev-db
-   # Select option 2 to stop, then option 1 to start again
+   ./scripts/dev.sh db-stop
+   ./scripts/dev.sh db-start
    ```
 
 ### WSL Issues

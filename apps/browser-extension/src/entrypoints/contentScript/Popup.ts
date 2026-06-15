@@ -5,7 +5,7 @@ import { fillItem, fillTotpCode } from '@/entrypoints/contentScript/Form';
 import { CreateIdentityGenerator, IdentityHelperUtils } from '@/utils/dist/core/identity-generator';
 import { ItemTypeIconSvgs } from '@/utils/dist/core/models/icons';
 import type { Item, ItemField } from '@/utils/dist/core/models/vault';
-import { ItemTypes, FieldKey, createSystemField } from '@/utils/dist/core/models/vault';
+import { ItemTypes, FieldKey, createSystemField, getFieldValue } from '@/utils/dist/core/models/vault';
 import { CreatePasswordGenerator, PasswordGenerator, PasswordSettings } from '@/utils/dist/core/password-generator';
 import { getAllFaviconLinks } from '@/utils/favicon';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -16,6 +16,9 @@ import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetecti
 import { SqliteClient } from '@/utils/SqliteClient';
 
 import { t } from '@/i18n/StandaloneI18n';
+
+import { getCurrentAutofillFrameUrl } from './AutofillFrameUrl';
+import { completeConditionalWithPasskey, getConditionalPasskeyOptions, hasPendingConditionalRequest } from './ConditionalPasskey';
 
 /**
  * WeakMap to store event listeners for popup containers
@@ -104,6 +107,28 @@ const createSuggestedNameSpan = (name: string): HTMLElement => {
 };
 
 /**
+ * Check if an outside-click event originated from AliasVault UI controls.
+ */
+function isClickInsidePopupUi(event: MouseEvent, popup: Element, input: HTMLInputElement): boolean {
+  const eventPath = event.composedPath();
+
+  if (eventPath.includes(popup) || eventPath.includes(input)) {
+    return true;
+  }
+
+  if (eventPath.some((pathTarget) => pathTarget instanceof Element && pathTarget.closest('.av-input-icon') !== null)) {
+    return true;
+  }
+
+  const rootNode = popup.getRootNode();
+  if (rootNode instanceof ShadowRoot && (event.target === rootNode.host || eventPath.includes(rootNode.host))) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Open (or refresh) the autofill popup including check if vault is locked.
  * @param input - The input element that triggered the popup
  * @param container - The container element
@@ -126,11 +151,18 @@ export function openAutofillPopup(input: HTMLInputElement, container: HTMLElemen
   document.addEventListener('keydown', handleEnterKey);
 
   (async () : Promise<void> => {
+    const currentUrl = getCurrentAutofillFrameUrl();
+    if (!currentUrl) {
+      removeExistingPopup(container);
+      document.removeEventListener('keydown', handleEnterKey);
+      return;
+    }
+
     // Load autofill matching mode setting to send to background for filtering
     const matchingMode = await LocalPreferencesService.getAutofillMatchingMode();
 
     const response = await sendMessage('GET_FILTERED_ITEMS', {
-      currentUrl: window.location.href,
+      currentUrl,
       pageTitle: document.title,
       matchingMode: matchingMode,
       includeRecentlySelected: true // Enable for multi-step login autofill
@@ -177,10 +209,17 @@ export function openTotpPopup(input: HTMLInputElement, container: HTMLElement, f
   document.addEventListener('keydown', handleEnterKey);
 
   (async () : Promise<void> => {
+    const currentUrl = getCurrentAutofillFrameUrl();
+    if (!currentUrl) {
+      removeExistingPopup(container);
+      document.removeEventListener('keydown', handleEnterKey);
+      return;
+    }
+
     const matchingMode = await LocalPreferencesService.getAutofillMatchingMode();
 
     const response = await sendMessage('GET_ITEMS_WITH_TOTP', {
-      currentUrl: window.location.href,
+      currentUrl,
       pageTitle: document.title,
       matchingMode: matchingMode
     });
@@ -364,19 +403,14 @@ async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefine
    */
   const handleClickOutside = (event: MouseEvent) : void => {
     const popupElement = rootContainer.querySelector('#aliasvault-credential-popup');
-    const target = event.target as Node;
-    const targetElement = event.target as HTMLElement;
     // If popup doesn't exist, remove the listener
     if (!popupElement) {
       document.removeEventListener('mousedown', handleClickOutside);
       return;
     }
 
-    // Check if the click is on the AliasVault icon
-    const isIconClick = targetElement.closest('.av-input-icon') !== null;
-
-    // Check if the click is outside the popup and outside the shadow UI
-    if (popupElement && !popupElement.contains(target) && !input.contains(target) && !isIconClick && targetElement.tagName !== 'ALIASVAULT-UI') {
+    // Check if the click is outside the popup and outside the input/icon UI.
+    if (!isClickInsidePopupUi(event, popupElement, input)) {
       removeExistingPopup(rootContainer);
     }
   };
@@ -516,15 +550,7 @@ function createTotpItem(
   const itemInfo = document.createElement('div');
   itemInfo.className = 'av-credential-info';
 
-  const logoSrc = SqliteClient.imgSrcFromBytes(item.Logo);
-  const logoContainer = document.createElement('div');
-  logoContainer.className = 'av-credential-logo';
-  if (logoSrc) {
-    logoContainer.innerHTML = `<img src="${logoSrc}" alt="" style="width:100%;height:100%;">`;
-  } else {
-    logoContainer.innerHTML = ItemTypeIconSvgs.Placeholder;
-  }
-  itemInfo.appendChild(logoContainer);
+  itemInfo.appendChild(createLogoContainer(item.Logo));
 
   const itemTextContainer = document.createElement('div');
   itemTextContainer.className = 'av-credential-text';
@@ -590,25 +616,8 @@ function createTotpItem(
     codeElements.set(item.Id, { codeSpan, pieChart });
   }
 
-  // Add popout icon
-  const popoutIcon = document.createElement('div');
-  popoutIcon.className = 'av-popout-icon';
-  popoutIcon.innerHTML = `
-      <svg class="av-icon" viewBox="0 0 24 24">
-        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-        <polyline points="15 3 21 3 21 9"></polyline>
-        <line x1="10" y1="14" x2="21" y2="3"></line>
-      </svg>
-    `;
-
-  addReliableClickHandler(popoutIcon, (e) => {
-    e.stopPropagation();
-    sendMessage('OPEN_POPUP_WITH_ITEM', { itemId: item.Id });
-    removeExistingPopup(rootContainer);
-  });
-
   itemElement.appendChild(itemInfo);
-  itemElement.appendChild(popoutIcon);
+  itemElement.appendChild(createPopoutIcon(item.Id, rootContainer));
 
   // Handle click to fill TOTP code
   addReliableClickHandler(itemInfo, async () => {
@@ -805,6 +814,16 @@ export function removeExistingPopup(container: HTMLElement) : void {
 }
 
 /**
+ * Whether an item is usable for autofill: it must carry at least a username, email, or
+ * password. Items with none of these (e.g. a note-only entry) can't fill a login form, so
+ * showing them as a credential match is just noise.
+ */
+function hasFillableLoginField(item: Item): boolean {
+  return [FieldKey.LoginUsername, FieldKey.LoginEmail, FieldKey.LoginPassword]
+    .some((key) => (getFieldValue(item, key) ?? '').trim() !== '');
+}
+
+/**
  * Create auto-fill popup
  */
 export async function createAutofillPopup(input: HTMLInputElement, items: Item[] | undefined, rootContainer: HTMLElement, recentlySelectedId?: string | null) : Promise<void> {
@@ -820,6 +839,13 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
 
   const popup = createBasePopup(input, rootContainer);
 
+  /*
+   * Conditional passkey autofill: when a page has a pending conditional get() request and we
+   * hold matching passkeys, the popup gains a persistent pill nav switching between a passkey
+   * view and the credential view.
+   */
+  const passkeySection = await createPasskeySection(rootContainer);
+
   // Create credential list container with ID
   const credentialList = document.createElement('div');
   credentialList.id = 'aliasvault-credential-list';
@@ -830,6 +856,9 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
   if (!items) {
     items = [];
   }
+
+  // Drop entries that have nothing to fill (no username/email/password) - they're not useful matches.
+  items = items.filter(hasFillableLoginField);
 
   await updatePopupContent(items, credentialList, input, rootContainer, noMatchesText, recentlySelectedId);
 
@@ -1091,24 +1120,85 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
   actionContainer.appendChild(closeButton);
   popup.appendChild(actionContainer);
 
+  /*
+   * When passkeys are offered, show the pill nav and the passkey section.
+   */
+  if (passkeySection) {
+    const credentialsText = await t('common.credentials');
+    const passkeysText = await t('common.passkeys');
+    const credentialsLabel = items.length > 0 ? `${credentialsText} (${items.length})` : credentialsText;
+    const passkeysLabel = `${passkeysText} (${passkeySection.count})`;
+
+    // Build the segmented pill nav and pin it to the very top of the popup.
+    const pillNav = document.createElement('div');
+    pillNav.className = 'av-pill-nav';
+    const passkeysPill = createViewSwitchPill(passkeysLabel);
+    const credentialsPill = createViewSwitchPill(credentialsLabel);
+    pillNav.appendChild(passkeysPill);
+    pillNav.appendChild(credentialsPill);
+    popup.insertBefore(pillNav, popup.firstChild);
+
+    // The passkey hint + list sit directly under the nav, above the credential list.
+    popup.insertBefore(passkeySection.hint, credentialList);
+    popup.insertBefore(passkeySection.list, credentialList);
+
+    const whenPasskeysShown = [passkeySection.hint, passkeySection.list];
+    const whenCredentialsShown = [credentialList, divider, actionContainer];
+    let showingPasskeys = true;
+
+    /**
+     * Apply the current view: highlight the active pill and show only that view's elements.
+     */
+    const applyView = (): void => {
+      passkeysPill.classList.toggle('av-pill-active', showingPasskeys);
+      credentialsPill.classList.toggle('av-pill-active', !showingPasskeys);
+      whenPasskeysShown.forEach((element) => {
+        element.style.display = showingPasskeys ? '' : 'none';
+      });
+      whenCredentialsShown.forEach((element) => {
+        element.style.display = showingPasskeys ? 'none' : '';
+      });
+      if (!showingPasskeys) {
+        // Focus the search field so the user can immediately filter the revealed list.
+        searchInput.focus();
+      }
+    };
+
+    /**
+     * Add click handlers to the pill nav so clicking it selects its view (passkeys or credentials).
+     */
+    const wirePill = (pill: HTMLElement, selectsPasskeys: boolean): void => {
+      pill.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+      pill.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showingPasskeys = selectsPasskeys;
+        applyView();
+      });
+    };
+    wirePill(passkeysPill, true);
+    wirePill(credentialsPill, false);
+
+    // Default to the passkey view: if the user has a passkey, that's the likely choice.
+    applyView();
+  }
+
   /**
    * Handle clicking outside the popup.
    */
   const handleClickOutside = (event: MouseEvent) : void => {
     const popup = rootContainer.querySelector('#aliasvault-credential-popup');
-    const target = event.target as Node;
-    const targetElement = event.target as HTMLElement;
     // If popup doesn't exist, remove the listener
     if (!popup) {
       document.removeEventListener('mousedown', handleClickOutside);
       return;
     }
 
-    // Check if the click is on the AliasVault icon
-    const isIconClick = targetElement.closest('.av-input-icon') !== null;
-
-    // Check if the click is outside the popup and outside the shadow UI
-    if (popup && !popup.contains(target) && !input.contains(target) && !isIconClick && targetElement.tagName !== 'ALIASVAULT-UI') {
+    // Check if the click is outside the popup and outside the input/icon UI.
+    if (!isClickInsidePopupUi(event, popup, input)) {
       removeExistingPopup(rootContainer);
     }
   };
@@ -1192,14 +1282,8 @@ export async function createVaultLockedPopup(input: HTMLInputElement, rootContai
    * Add event listener to document to close popup when clicking outside.
    */
   const handleClickOutside = (event: MouseEvent): void => {
-    const target = event.target as Node;
-    const targetElement = event.target as HTMLElement;
-
-    // Check if the click is on the AliasVault icon
-    const isIconClick = targetElement.closest('.av-input-icon') !== null;
-
-    // Check if the click is outside the popup and outside the shadow UI
-    if (popup && !popup.contains(target) && !input.contains(target) && !isIconClick && targetElement.tagName !== 'ALIASVAULT-UI') {
+    // Check if the click is outside the popup and outside the input/icon UI.
+    if (!isClickInsidePopupUi(event, popup, input)) {
       removeExistingPopup(rootContainer);
       document.removeEventListener('mousedown', handleClickOutside);
     }
@@ -1243,12 +1327,182 @@ async function handleSearchInput(searchInput: HTMLInputElement, initialItems: It
 
     if (response.success && response.items) {
       // Search results don't carry prioritization, so don't highlight any item
-      await updatePopupContent(response.items, itemList, input, rootContainer, noMatchesText);
+      const fillableItems = response.items.filter(hasFillableLoginField);
+      await updatePopupContent(fillableItems, itemList, input, rootContainer, noMatchesText);
     } else {
       // On error, fallback to showing initial filtered items
       await updatePopupContent(initialItems, itemList, input, rootContainer, noMatchesText, recentlySelectedId);
     }
   }
+}
+
+/**
+ * Build small passkey badge icon shown next to a service name to mark that the entry is (or has) a passkey.
+ */
+function createPasskeyBadgeIcon(): SVGSVGElement {
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('class', 'av-passkey-icon');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '2');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('aria-label', 'Has passkey');
+  svg.style.width = '14px';
+  svg.style.height = '14px';
+  svg.style.flexShrink = '0';
+  svg.style.opacity = '0.7';
+
+  const path = document.createElementNS(svgNS, 'path');
+  path.setAttribute('d', 'M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4');
+  svg.appendChild(path);
+
+  return svg;
+}
+
+/**
+ * Build logo box for a credential/passkey/TOTP row: the item's favicon when present, otherwise the generic placeholder icon.
+ */
+function createLogoContainer(logo: Uint8Array | number[] | undefined): HTMLElement {
+  const logoContainer = document.createElement('div');
+  logoContainer.className = 'av-credential-logo';
+
+  const logoSrc = SqliteClient.imgSrcFromBytes(logo);
+  if (logoSrc) {
+    logoContainer.innerHTML = `<img src="${logoSrc}" alt="" style="width:100%;height:100%;">`;
+  } else {
+    logoContainer.innerHTML = ItemTypeIconSvgs.Placeholder;
+  }
+
+  return logoContainer;
+}
+
+/**
+ * Build popout icon shown at the trailing edge of a row, which opens the underlying item in the full extension popup.
+ */
+function createPopoutIcon(itemId: string, rootContainer: HTMLElement): HTMLElement {
+  const popoutIcon = document.createElement('div');
+  popoutIcon.className = 'av-popout-icon';
+  popoutIcon.innerHTML = `
+      <svg class="av-icon" viewBox="0 0 24 24">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+        <polyline points="15 3 21 3 21 9"></polyline>
+        <line x1="10" y1="14" x2="21" y2="3"></line>
+      </svg>
+    `;
+
+  addReliableClickHandler(popoutIcon, (e) => {
+    e.stopPropagation(); // Don't trigger the row's primary action.
+    sendMessage('OPEN_POPUP_WITH_ITEM', { itemId });
+    removeExistingPopup(rootContainer);
+  });
+
+  return popoutIcon;
+}
+
+/**
+ * Build passkey side of the autofill popup: a short hint line that makes the passkey view 
+ * recognisably different from the credential view, the scrollable list of passkey sign-in rows, 
+ * and the passkey count (for the pill-nav label).
+ */
+async function createPasskeySection(rootContainer: HTMLElement): Promise<{ hint: HTMLElement; list: HTMLElement; count: number } | null> {
+  if (!hasPendingConditionalRequest()) {
+    return null;
+  }
+
+  const options = getConditionalPasskeyOptions();
+  if (options.length === 0) {
+    return null;
+  }
+
+  /*
+   * Hint line (passkey icon + instruction) shown above the list so the passkey view reads
+   * clearly differently from the credential view when switching between the two pills.
+   */
+  const hint = document.createElement('div');
+  hint.className = 'av-passkey-hint';
+  hint.appendChild(createPasskeyBadgeIcon());
+  const hintText = document.createElement('span');
+  hintText.textContent = await t('content.loginWithPasskey');
+  hint.appendChild(hintText);
+
+  /*
+   * Reuse the credential-list scroll styling but cap the height so at most ~3 passkeys are
+   * visible before the list scrolls, leaving room for the view-switch toggle below.
+   */
+  const list = document.createElement('div');
+  list.className = 'av-credential-list av-passkey-list';
+
+  options.forEach((option) => {
+    const itemElement = document.createElement('div');
+    itemElement.className = 'av-credential-item';
+
+    const itemInfo = document.createElement('div');
+    itemInfo.className = 'av-credential-info';
+
+    // Show the credential's favicon (matching the normal rows), falling back to a placeholder.
+    itemInfo.appendChild(createLogoContainer(option.logo ?? undefined));
+
+    const textContainer = document.createElement('div');
+    textContainer.className = 'av-credential-text';
+
+    // Service name with a passkey badge so the row is recognisable as a passkey sign-in.
+    const serviceName = document.createElement('div');
+    serviceName.className = 'av-service-name';
+    const serviceNameContainer = document.createElement('div');
+    serviceNameContainer.style.display = 'flex';
+    serviceNameContainer.style.alignItems = 'center';
+    serviceNameContainer.style.gap = '4px';
+    const serviceNameText = document.createElement('span');
+    serviceNameText.textContent = option.serviceName;
+    serviceNameContainer.appendChild(serviceNameText);
+    serviceNameContainer.appendChild(createPasskeyBadgeIcon());
+    serviceName.appendChild(serviceNameContainer);
+    textContainer.appendChild(serviceName);
+
+    if (option.username) {
+      const details = document.createElement('div');
+      details.className = 'av-service-details';
+      details.textContent = option.username;
+      textContainer.appendChild(details);
+    }
+
+    itemInfo.appendChild(textContainer);
+    itemElement.appendChild(itemInfo);
+
+    // Popout icon opens the underlying credential in the full extension popup.
+    itemElement.appendChild(createPopoutIcon(option.itemId, rootContainer));
+
+    addReliableClickHandler(itemInfo, () => {
+      // Explicit user action - keep the vault from auto-locking mid-assertion.
+      sendMessage('RESET_AUTO_LOCK_TIMER').catch(() => {
+        // Ignore: background may be asleep.
+      });
+      void completeConditionalWithPasskey(option.id);
+      removeExistingPopup(rootContainer);
+    });
+
+    list.appendChild(itemElement);
+  });
+
+  return { hint, list, count: options.length };
+}
+
+/**
+ * Build a single segment button for the passkey/credentials pill nav shown at the top of the
+ * autofill popup when conditional passkeys are offered (e.g. "Passkeys (2)" or
+ * "Credentials (3)"). The caller marks the active segment via the `av-pill-active` class.
+ *
+ * @param label - The segment text, including the match count.
+ */
+function createViewSwitchPill(label: string): HTMLButtonElement {
+  const pill = document.createElement('button');
+  pill.type = 'button';
+  pill.className = 'av-pill';
+  pill.textContent = label;
+  return pill;
 }
 
 /**
@@ -1269,15 +1523,7 @@ function createItemList(items: Item[], input: HTMLInputElement, rootContainer: H
       const itemInfo = document.createElement('div');
       itemInfo.className = 'av-credential-info';
 
-      const logoSrc = SqliteClient.imgSrcFromBytes(item.Logo);
-      const logoContainer = document.createElement('div');
-      logoContainer.className = 'av-credential-logo';
-      if (logoSrc) {
-        logoContainer.innerHTML = `<img src="${logoSrc}" alt="" style="width:100%;height:100%;">`;
-      } else {
-        logoContainer.innerHTML = ItemTypeIconSvgs.Placeholder;
-      }
-      itemInfo.appendChild(logoContainer);
+      itemInfo.appendChild(createLogoContainer(item.Logo));
       const itemTextContainer = document.createElement('div');
       itemTextContainer.className = 'av-credential-text';
 
@@ -1299,30 +1545,7 @@ function createItemList(items: Item[], input: HTMLInputElement, rootContainer: H
       if (recentlySelectedId != null && item.Id === recentlySelectedId) {
         serviceNameContainer.appendChild(createRecentlySelectedIcon());
       }
-
-      // Add passkey indicator if item has a passkey
-      if (item.HasPasskey) {
-        const passkeyIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        passkeyIcon.setAttribute('class', 'av-passkey-icon');
-        passkeyIcon.setAttribute('viewBox', '0 0 24 24');
-        passkeyIcon.setAttribute('fill', 'none');
-        passkeyIcon.setAttribute('stroke', 'currentColor');
-        passkeyIcon.setAttribute('stroke-width', '2');
-        passkeyIcon.setAttribute('stroke-linecap', 'round');
-        passkeyIcon.setAttribute('stroke-linejoin', 'round');
-        passkeyIcon.setAttribute('aria-label', 'Has passkey');
-        passkeyIcon.style.width = '14px';
-        passkeyIcon.style.height = '14px';
-        passkeyIcon.style.flexShrink = '0';
-        passkeyIcon.style.opacity = '0.7';
-
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', 'M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4');
-
-        passkeyIcon.appendChild(path);
-        serviceNameContainer.appendChild(passkeyIcon);
-      }
-
+      
       serviceName.appendChild(serviceNameContainer);
 
       // Details container (secondary text) - extract from fields
@@ -1356,26 +1579,8 @@ function createItemList(items: Item[], input: HTMLInputElement, rootContainer: H
       itemTextContainer.appendChild(detailsContainer);
       itemInfo.appendChild(itemTextContainer);
 
-      // Add popout icon
-      const popoutIcon = document.createElement('div');
-      popoutIcon.className = 'av-popout-icon';
-      popoutIcon.innerHTML = `
-          <svg class="av-icon" viewBox="0 0 24 24">
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-            <polyline points="15 3 21 3 21 9"></polyline>
-            <line x1="10" y1="14" x2="21" y2="3"></line>
-          </svg>
-        `;
-
-      // Handle popout click with security validation
-      addReliableClickHandler(popoutIcon, (e) => {
-        e.stopPropagation(); // Prevent item fill
-        sendMessage('OPEN_POPUP_WITH_ITEM', { itemId: item.Id });
-        removeExistingPopup(rootContainer);
-      });
-
       itemElement.appendChild(itemInfo);
-      itemElement.appendChild(popoutIcon);
+      itemElement.appendChild(createPopoutIcon(item.Id, rootContainer));
 
       // Update click handler to only trigger on itemInfo with security validation
       addReliableClickHandler(itemInfo, () => {
@@ -2619,14 +2824,8 @@ export async function createUpgradeRequiredPopup(input: HTMLInputElement, rootCo
    * Add event listener to document to close popup when clicking outside.
    */
   const handleClickOutside = (event: MouseEvent): void => {
-    const target = event.target as Node;
-    const targetElement = event.target as HTMLElement;
-
-    // Check if the click is on the AliasVault icon
-    const isIconClick = targetElement.closest('.av-input-icon') !== null;
-
-    // Check if the click is outside the popup and outside the shadow UI
-    if (popup && !popup.contains(target) && !input.contains(target) && !isIconClick && targetElement.tagName !== 'ALIASVAULT-UI') {
+    // Check if the click is outside the popup and outside the input/icon UI.
+    if (!isClickInsidePopupUi(event, popup, input)) {
       removeExistingPopup(rootContainer);
       document.removeEventListener('mousedown', handleClickOutside);
     }

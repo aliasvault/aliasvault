@@ -853,8 +853,9 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
 /**
  * Create a new sqlite client for the stored vault.
  * Uses a cache to avoid repeated decryption and initialization for read operations.
+ * Throws when the vault is missing or locked.
  */
-async function createVaultSqliteClient() : Promise<SqliteClient> {
+export async function createVaultSqliteClient() : Promise<SqliteClient> {
   // Read from local: storage for persistent vault access
   const encryptedVault = await storage.getItem('local:encryptedVault') as string;
   const encryptionKey = await handleGetEncryptionKey();

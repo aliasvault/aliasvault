@@ -456,7 +456,7 @@ const ItemsList: React.FC = () => {
   const getFilterTitle = () : string => {
     switch (filterType) {
       case 'passkeys':
-        return t('items.filters.passkeys');
+        return t('common.passkeys');
       case 'attachments':
         return t('common.attachments');
       case 'totp':

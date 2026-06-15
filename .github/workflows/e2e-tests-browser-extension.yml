@@ -71,7 +71,7 @@ jobs:
           npm run build:chrome
 
       - name: Start dev database
-        run: ./install.sh configure-dev-db start
+        run: ./scripts/dev.sh db-start
 
       - name: Ensure browsers are installed
         working-directory: apps/server
@@ -137,7 +137,7 @@ jobs:
         run: dotnet build AliasVault.Api
 
       - name: Start dev database
-        run: ./install.sh configure-dev-db start
+        run: ./scripts/dev.sh db-start
 
       - name: Start API server
         working-directory: apps/server/AliasVault.Api
@@ -146,7 +146,7 @@ jobs:
           # Wait for API to be ready
           echo "Waiting for API to start..."
           for i in {1..30}; do
-            if curl -s http://localhost:5092/v1/Auth/status > /dev/null 2>&1; then
+            if curl -s http://localhost:5100/v1/Auth/status > /dev/null 2>&1; then
               echo "API is ready!"
               break
             fi
@@ -154,7 +154,7 @@ jobs:
             sleep 2
           done
         env:
-          ConnectionStrings__AliasServerDbContext: "Host=localhost;Port=5433;Database=aliasdb_e2e_extension;Username=aliasvault;Password=password"
+          ConnectionStrings__AliasServerDbContext: "Host=localhost;Port=5109;Database=aliasdb_e2e_extension;Username=aliasvault;Password=password"
           JWT_KEY: "12345678901234567890123456789012"
           DATA_PROTECTION_CERT_PASS: "Development"
           PUBLIC_REGISTRATION_ENABLED: "true"
@@ -177,7 +177,7 @@ jobs:
           max_attempts: 3
           command: cd apps/browser-extension && xvfb-run --auto-servernum npm run test:e2e:build
         env:
-          ALIASVAULT_API_URL: "http://localhost:5092"
+          ALIASVAULT_API_URL: "http://localhost:5100"
 
       - name: Upload Playwright report
         if: always()

@@ -11,6 +11,8 @@ import {
   validateWebAuthnEventDetail
 } from '@/utils/passkey/WebAuthnRequestValidation';
 
+import { clearConditionalPasskeyRequestIfMatches, registerConditionalPasskeyRequest } from './ConditionalPasskey';
+
 import { browser } from '#imports';
 
 // Firefox-specific global function for cloning objects into page context
@@ -27,14 +29,6 @@ let interceptorInitialized = false;
  */
 let lastCancelledTimestamp = 0;
 const CANCEL_COOLDOWN_MS = 500; // 500ms cooldown after a recent cancellation
-
-/**
- * Track when the page finished loading to detect automatic vs user-initiated requests.
- * Some websites (like Nintendo, Amazon) automatically trigger passkey requests on page load.
- * We should filter these if no matching credentials exist.
- */
-let pageLoadTime = 0;
-const AUTO_REQUEST_THRESHOLD_MS = 1000; // Requests within 1 second of page load are considered "automatic"
 
 /**
  * Check if page is ready for WebAuthn interactions.
@@ -58,15 +52,35 @@ function isPageReadyForWebAuthn(): boolean {
 }
 
 /**
+ * Check whether a frame has the same origin as every ancestor frame.
+ * Cross-origin iframe WebAuthn requires browser-level Permissions Policy checks,
+ * so AliasVault must fall back to native WebAuthn when any ancestor differs.
+ */
+export function isSameOriginWithAncestors(currentWindow: Window = window): boolean {
+  let frame: Window = currentWindow;
+  const expectedOrigin = currentWindow.location.origin;
+
+  while (frame !== frame.parent) {
+    try {
+      if (frame.parent.location.origin !== expectedOrigin) {
+        return false;
+      }
+      frame = frame.parent;
+    } catch {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
  * Initialize the WebAuthn interceptor
  */
 export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
   if (interceptorInitialized) {
     return;
   }
-
-  // Track page load time for detecting automatic requests
-  pageLoadTime = Date.now();
 
   // Listen for WebAuthn create events from the page
   window.addEventListener('aliasvault:webauthn:create', async (event: any) => {
@@ -99,6 +113,14 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
     };
 
     try {
+      if (!isSameOriginWithAncestors()) {
+        dispatchResponse({
+          requestId,
+          fallback: true
+        });
+        return;
+      }
+
       if (!validateWebAuthnEventDetail('create', detail, window.location.origin, window.location.hostname)) {
         dispatchResponse({
           requestId,
@@ -191,6 +213,14 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
     };
 
     try {
+      if (!isSameOriginWithAncestors()) {
+        dispatchResponse({
+          requestId,
+          fallback: true
+        });
+        return;
+      }
+
       if (!validateWebAuthnEventDetail('get', detail, window.location.origin, window.location.hostname)) {
         dispatchResponse({
           requestId,
@@ -201,7 +231,54 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
 
       const { publicKey, origin } = detail;
 
-      // Block requests if page isn't ready (prevents prefetch/autocomplete popups)
+      // Check if passkey provider is enabled
+      const enabled = await isWebAuthnInterceptionEnabled();
+      if (!enabled) {
+        // If disabled, signal fallback to native browser implementation
+        dispatchResponse({
+          requestId,
+          fallback: true
+        });
+        return;
+      }
+
+      /*
+       * Conditional mediation is passive passkey autofill. Rather than opening a modal, ask
+       * the background for matching passkeys and, if we have any, offer them in the autofill
+       * dropdown.
+       */
+      if (detail.mediation === 'conditional') {
+        const rpId = publicKey.rpId || new URL(origin).hostname;
+        const allowCredentialIds = publicKey.allowCredentials?.map((cred) => cred.id);
+
+        // Don't query the vault for hidden/prefetch tabs, leave the request pending.
+        const hidden = document.hidden || document.visibilityState === 'hidden';
+
+        const matching = hidden
+          ? null
+          : await sendMessage('GET_MATCHING_PASSKEYS', { rpId, allowCredentialIds });
+        const passkeys = (matching && matching.success && !matching.locked && matching.passkeys.length > 0)
+          ? matching.passkeys
+          : [];
+
+        /*
+         * Always park the request, even when the vault is locked or nothing matches right now.
+         * This so when the vault is unlocked and passkeys are available, they are immediately offered.
+         */
+        registerConditionalPasskeyRequest({
+          requestId: requestId as string,
+          origin,
+          publicKey,
+          rpId,
+          allowCredentialIds,
+          passkeys,
+          respond: dispatchResponse
+        });
+
+        return;
+      }
+
+      // Block modal requests if page isn't ready (prevents prefetch/autocomplete popups)
       if (!isPageReadyForWebAuthn()) {
         dispatchResponse({
           requestId,
@@ -221,25 +298,10 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
         return;
       }
 
-      // Check if passkey provider is enabled
-      const enabled = await isWebAuthnInterceptionEnabled();
-      if (!enabled) {
-        // If disabled, signal fallback to native browser implementation
-        dispatchResponse({
-          requestId,
-          fallback: true
-        });
-        return;
-      }
-
-      // Detect if this is an automatic request (within 2 seconds of page load)
-      const isAutomaticRequest = (Date.now() - pageLoadTime) < AUTO_REQUEST_THRESHOLD_MS;
-
-      // Send to background script to handle
+      // Send to background script to handle (opens the passkey modal popup)
       const result = await sendMessage('WEBAUTHN_GET', {
         publicKey,
-        origin,
-        isAutomaticRequest
+        origin
       });
 
       // Track if user cancelled to enable cooldown
@@ -257,6 +319,17 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
         requestId,
         error: error.message
       });
+    }
+  });
+
+  /*
+   * The page aborted a conditional get() (typically to re-arm it with a fresh challenge). Drop
+   * our parked request for that id.
+   */
+  window.addEventListener('aliasvault:webauthn:get:abort', (event: any) => {
+    const abortedId = event?.detail?.requestId;
+    if (typeof abortedId === 'string') {
+      clearConditionalPasskeyRequestIfMatches(abortedId);
     }
   });
 

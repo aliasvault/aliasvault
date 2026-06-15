@@ -322,7 +322,7 @@ export class SrpAuthService {
   /**
    * Registers a new user via the API.
    *
-   * @param apiBaseUrl - The base URL of the API (e.g., 'http://localhost:5092')
+   * @param apiBaseUrl - The base URL of the API (e.g., 'http://localhost:5100')
    * @param username - The username for the new account
    * @param password - The password for the new account
    * @returns Registration result with token on success

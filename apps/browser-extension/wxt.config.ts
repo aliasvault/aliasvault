@@ -1,5 +1,33 @@
 import { defineConfig } from 'wxt';
+import type { Plugin } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+
+/**
+ * Forces emitted JS chunks to ASCII-only output.
+ *
+ * Safari before 18.4 could decode extension resources using the system text
+ * encoding instead of UTF-8, corrupting bundled non-ASCII strings. Content
+ * scripts are classic scripts, so we escape non-ASCII characters regardless of
+ * bundler to keep extension JS portable.
+ * 
+ * @see https://github.com/aliasvault/aliasvault/issues/2162
+ */
+function asciiOnlyJsPlugin(): Plugin {
+  return {
+    name: 'aliasvault:ascii-only-js',
+    generateBundle(_options, bundle): void {
+      for (const file of Object.values(bundle)) {
+        if (file.type !== 'chunk' || !file.fileName.endsWith('.js')) {
+          continue;
+        }
+
+        file.code = file.code.replace(/[^\u0000-\u007f]/g, (ch) =>
+          `\\u${ch.charCodeAt(0).toString(16).padStart(4, '0')}`
+        );
+      }
+    },
+  };
+}
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -61,6 +89,7 @@ export default defineConfig({
   outDir: 'dist',
   vite: () => ({
     plugins: [
+      asciiOnlyJsPlugin(),
       viteStaticCopy({
         targets: [
           {

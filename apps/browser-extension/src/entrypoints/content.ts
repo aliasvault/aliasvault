@@ -3,6 +3,7 @@
  */
 
 import '@/entrypoints/contentScript/style.css';
+import { CONDITIONAL_PASSKEYS_UPDATED_EVENT, hasPendingConditionalRequest, refreshConditionalPasskeyOptions } from '@/entrypoints/contentScript/ConditionalPasskey';
 import { injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
 import { openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
 import { showSavePrompt, showAddUrlPrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState, restoreAddUrlPromptFromState } from '@/entrypoints/contentScript/SavePrompt';
@@ -564,6 +565,29 @@ export default defineContentScript({
         // Listen for input field focus in the main document
         document.addEventListener('focusin', handleFocusIn);
 
+        /*
+         * A conditional passkey request can arrive after the page initially loaded (e.g. an
+         * autofocused login field). When passkeys become available, re-open the popup for
+         * the focused field so they appear immediately.
+         */
+        window.addEventListener(CONDITIONAL_PASSKEYS_UPDATED_EVENT, () => {
+          if (ctx.isInvalid) {
+            return;
+          }
+          const activeElement = document.activeElement;
+          if (activeElement) {
+            void showPopupForElement(activeElement);
+          }
+        });
+
+        // When the tab becomes visible, re-query any pending conditional passkey requests
+        document.addEventListener('visibilitychange', () => {
+          if (ctx.isInvalid || document.hidden || !hasPendingConditionalRequest()) {
+            return;
+          }
+          void refreshConditionalPasskeyOptions();
+        });
+
         // Check if currently something is focused, if so, apply check for that element
         const currentFocusedElement = document.activeElement;
         if (currentFocusedElement) {
@@ -608,6 +632,14 @@ export default defineContentScript({
           await showPopupForElement(target, true);
 
           return { success: true };
+        });
+
+        // When the vault is unlocked, re-query any pending conditional passkey requests
+        onMessage('VAULT_UNLOCKED', async () => {
+          if (ctx.isInvalid || !hasPendingConditionalRequest()) {
+            return;
+          }
+          await refreshConditionalPasskeyOptions();
         });
 
         /**

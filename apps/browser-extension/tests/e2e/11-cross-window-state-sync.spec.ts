@@ -72,23 +72,17 @@ test.describe.serial('11. Cross-Window State Sync', () => {
     await popout.goto(`chrome-extension://${extensionId}/popup.html?expanded=true`);
     await waitForUnlockPage(popout, Timeouts.MEDIUM);
 
-    console.log('wait for popout to be ready');
-
     // Unlock from the main popup. The popout should observe the encryption key
     // appearing in session storage and load the now-decrypted vault.
-    console.log('reload popup');
-    await client.popup.bringToFront();
+    await client.popup.bringToFront(); 
     await client.unlockVault(testUser.password);
-    console.log('unlock vault');
 
     // Bring popout to the front
     await popout.bringToFront();
 
     await waitForVaultReady(popout, Timeouts.LONG);
-    console.log('wait for vault to be ready');
 
     await popout.close();
-    console.log('close popout');
   });
 
   test('11.4 login in popup propagates to expanded popout', async ({ context, extensionId, apiUrl, testUser }) => {

@@ -46,9 +46,14 @@ This guide will help you set up AliasVault for development on Linux or MacOS sys
    dotnet ef
    ```
 
-3. **Install dev database**
+3. **Start the dev database**
+
+   `./scripts/dev.sh` is the single entry point for local development: it starts
+   the dev database and runs the apps from source on a consistent, preconfigured
+   set of ports (so the apps always find each other). Run it without arguments
+   for an interactive menu, or use a subcommand directly:
    ```bash
-   ./install.sh configure-dev-db
+   ./scripts/dev.sh db-start   # start the dev database (db-stop to stop it)
    ```
 
 4. **Run Tailwind CSS compiler**
@@ -72,10 +77,14 @@ This guide will help you set up AliasVault for development on Linux or MacOS sys
    ```
 
 6. **Configure Development Settings**
-   Create `wwwroot/appsettings.Development.json` in the Client project:
+
+   When you start the client via `./scripts/dev.sh client`, this file is generated
+   automatically with the correct `ApiUrl` for your ports — you can skip this step.
+   Only create `wwwroot/appsettings.Development.json` in the Client project manually
+   if you run the client some other way:
    ```json
    {
-       "ApiUrl": "http://localhost:5092",
+       "ApiUrl": "http://localhost:5100",
        "PrivateEmailDomains": ["example.tld"],
        "SupportEmail": "support@example.tld",
        "UseDebugEncryptionKey": "true",
@@ -102,19 +111,21 @@ This guide will help you set up AliasVault for development on Linux or MacOS sys
 
 ## Running the Application
 
-1. **Start the Development Database**
-   ```bash
-   ./install.sh configure-dev-db
-   ```
+Use `./scripts/dev.sh` for everything — it starts the dev database and runs each
+app from source on its preconfigured port. Each invocation starts one app, so open
+a terminal per app (or use the VS Code tasks, which fan out one call per app):
 
-2. **Run the Application**
-   ```bash
-   # Using dotnet CLI
-   cd apps/server/AliasVault.Api
-   dotnet run
+```bash
+./scripts/dev.sh db-start   # start the dev database first
+./scripts/dev.sh api        # then the API
+./scripts/dev.sh client     # the Blazor client (writes its dev appsettings for you)
+./scripts/dev.sh admin      # the admin web app
+./scripts/dev.sh            # no argument → interactive menu
+./scripts/dev.sh ports      # print the resolved port map
+```
 
-   # Or using your preferred IDE (VS Code, Rider, etc.)
-   ```
+You can still run an individual project directly from your IDE (VS Code, Rider, etc.)
+if you prefer; `./scripts/dev.sh ports` shows which ports it expects.
 
 ## Troubleshooting
 
@@ -133,7 +144,8 @@ If you encounter database connection issues:
 
 3. **Restart Database**
    ```bash
-   ./install.sh configure-dev-db
+   ./scripts/dev.sh db-stop
+   ./scripts/dev.sh db-start
    ```
 
 ### Common Issues
@@ -145,13 +157,13 @@ If you encounter database connection issues:
    ```
 
 2. **Port Conflicts**
-   - Check if port 5433 is available for the development database
-   - Check if port 5092 is available for the API
+   - Run `./scripts/dev.sh ports` to see the ports in use (defaults: API `5100`, database `5109`)
+   - If those ports are taken, bump `AV_INSTANCE` in `dev.env` to shift the whole block
 
 ## Additional Notes
 
 - Keep your .NET SDK and Docker up to date
-- The development database runs on port 5433 to avoid conflicts
+- The development database runs on port 5109 by default (configurable via `dev.env`)
 - Use the debug encryption key in development for easier testing
 - Store sensitive data in environment variables or user secrets
 
