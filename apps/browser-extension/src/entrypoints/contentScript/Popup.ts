@@ -1545,12 +1545,7 @@ function createItemList(items: Item[], input: HTMLInputElement, rootContainer: H
       if (recentlySelectedId != null && item.Id === recentlySelectedId) {
         serviceNameContainer.appendChild(createRecentlySelectedIcon());
       }
-
-      // Add passkey indicator if item has a passkey
-      if (item.HasPasskey) {
-        serviceNameContainer.appendChild(createPasskeyBadgeIcon());
-      }
-
+      
       serviceName.appendChild(serviceNameContainer);
 
       // Details container (secondary text) - extract from fields
