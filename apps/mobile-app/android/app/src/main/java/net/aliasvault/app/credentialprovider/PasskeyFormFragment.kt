@@ -379,7 +379,7 @@ class PasskeyFormFragment : Fragment() {
                             },
                         )
                         put("publicKey", Helpers.bytesToBase64url(passkeyResult.publicKeyDER))
-                        put("publicKeyAlgorithm", -7)
+                        put("publicKeyAlgorithm", algorithm)
                     },
                 )
 
@@ -573,7 +573,7 @@ class PasskeyFormFragment : Fragment() {
                             },
                         )
                         put("publicKey", Helpers.bytesToBase64url(passkeyResult.publicKeyDER))
-                        put("publicKeyAlgorithm", -7)
+                        put("publicKeyAlgorithm", algorithm)
                     },
                 )
 
@@ -772,7 +772,7 @@ class PasskeyFormFragment : Fragment() {
                             },
                         )
                         put("publicKey", Helpers.bytesToBase64url(passkeyResult.publicKeyDER))
-                        put("publicKeyAlgorithm", -7)
+                        put("publicKeyAlgorithm", algorithm)
                     },
                 )
 
