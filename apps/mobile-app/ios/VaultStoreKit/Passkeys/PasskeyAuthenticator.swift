@@ -336,150 +336,6 @@ public class PasskeyAuthenticator {
         return kty
     }
 
-    // MARK: - RSA Key Management (RS256)
-
-    /**
-     * Generate an RSA-2048 key pair (returns the private SecKey).
-     */
-    private static func generateRsaKey() throws -> SecKey {
-        let attributes: [String: Any] = [
-            kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
-            kSecAttrKeySizeInBits as String: 2048
-        ]
-        var error: Unmanaged<CFError>?
-        guard let key = SecKeyCreateRandomKey(attributes as CFDictionary, &error) else {
-            throw PasskeyError.keyGenerationFailed
-        }
-        return key
-    }
-
-    /**
-     * Extract (modulus, exponent) from an RSA private key's public component.
-     * SecKeyCopyExternalRepresentation of an RSA public key is PKCS#1
-     * RSAPublicKey ::= SEQUENCE { modulus INTEGER, publicExponent INTEGER }.
-     */
-    private static func rsaModulusAndExponent(privateKey: SecKey) throws -> (n: Data, e: Data) {
-        guard let publicKey = SecKeyCopyPublicKey(privateKey) else {
-            throw PasskeyError.invalidPublicKey
-        }
-        var error: Unmanaged<CFError>?
-        guard let der = SecKeyCopyExternalRepresentation(publicKey, &error) as Data? else {
-            throw PasskeyError.invalidPublicKey
-        }
-        let ints = try parseDerIntegerSequence(der)
-        guard ints.count == 2 else { throw PasskeyError.invalidPublicKey }
-        return (ints[0], ints[1])
-    }
-
-    /**
-     * Export RSA public key as JWK: {kty: "RSA", n, e}.
-     */
-    private static func exportRsaPublicKeyAsJWK(privateKey: SecKey) throws -> Data {
-        let (n, e) = try rsaModulusAndExponent(privateKey: privateKey)
-        let jwk: [String: Any] = [
-            "kty": "RSA",
-            "n": n.base64URLEncodedString(),
-            "e": e.base64URLEncodedString()
-        ]
-        return try JSONSerialization.data(withJSONObject: jwk)
-    }
-
-    /**
-     * Export RSA private key as JWK: {kty: "RSA", n, e, d, p, q, dp, dq, qi}.
-     * SecKeyCopyExternalRepresentation of an RSA private key is PKCS#1
-     * RSAPrivateKey ::= SEQUENCE { version, modulus, publicExponent, privateExponent,
-     *   prime1, prime2, exponent1, exponent2, coefficient } (9 INTEGERs).
-     */
-    private static func exportRsaPrivateKeyAsJWK(privateKey: SecKey) throws -> Data {
-        var error: Unmanaged<CFError>?
-        guard let der = SecKeyCopyExternalRepresentation(privateKey, &error) as Data? else {
-            throw PasskeyError.invalidPrivateKey
-        }
-        let ints = try parseDerIntegerSequence(der)
-        guard ints.count >= 9 else { throw PasskeyError.invalidPrivateKey }
-        let jwk: [String: Any] = [
-            "kty": "RSA",
-            "n": ints[1].base64URLEncodedString(),
-            "e": ints[2].base64URLEncodedString(),
-            "d": ints[3].base64URLEncodedString(),
-            "p": ints[4].base64URLEncodedString(),
-            "q": ints[5].base64URLEncodedString(),
-            "dp": ints[6].base64URLEncodedString(),
-            "dq": ints[7].base64URLEncodedString(),
-            "qi": ints[8].base64URLEncodedString()
-        ]
-        return try JSONSerialization.data(withJSONObject: jwk)
-    }
-
-    /**
-     * Import an RSA private key from JWK and sign data with RS256
-     * (RSASSA-PKCS1-v1.5 over SHA-256). The ".message" variant hashes the
-     * input internally, matching how P256.signature(for:) hashes its input.
-     */
-    private static func signRsa(jwkData: Data, dataToSign: Data) throws -> Data {
-        let key = try importRsaPrivateKeyFromJWK(jwkData: jwkData)
-        var error: Unmanaged<CFError>?
-        guard let sig = SecKeyCreateSignature(
-            key,
-            .rsaSignatureMessagePKCS1v15SHA256,
-            dataToSign as CFData,
-            &error
-        ) as Data? else {
-            throw PasskeyError.invalidSignature
-        }
-        return sig
-    }
-
-    /**
-     * Build a PKCS#1 RSAPrivateKey from a JWK and import it as a SecKey.
-     */
-    private static func importRsaPrivateKeyFromJWK(jwkData: Data) throws -> SecKey {
-        guard let jwk = try JSONSerialization.jsonObject(with: jwkData) as? [String: Any],
-              let nB64 = jwk["n"] as? String,
-              let eB64 = jwk["e"] as? String,
-              let dB64 = jwk["d"] as? String,
-              let pB64 = jwk["p"] as? String,
-              let qB64 = jwk["q"] as? String,
-              let dpB64 = jwk["dp"] as? String,
-              let dqB64 = jwk["dq"] as? String,
-              let qiB64 = jwk["qi"] as? String else {
-            throw PasskeyError.invalidJWK
-        }
-
-        let n = try Data(base64URLEncoded: nB64)
-        let e = try Data(base64URLEncoded: eB64)
-        let d = try Data(base64URLEncoded: dB64)
-        let p = try Data(base64URLEncoded: pB64)
-        let q = try Data(base64URLEncoded: qB64)
-        let dp = try Data(base64URLEncoded: dpB64)
-        let dq = try Data(base64URLEncoded: dqB64)
-        let qi = try Data(base64URLEncoded: qiB64)
-
-        // PKCS#1 RSAPrivateKey DER (version 0, two-prime)
-        let der = derSequence([
-            derInteger(Data([0x00])),  // version
-            derInteger(n),
-            derInteger(e),
-            derInteger(d),
-            derInteger(p),
-            derInteger(q),
-            derInteger(dp),
-            derInteger(dq),
-            derInteger(qi)
-        ])
-
-        let attributes: [String: Any] = [
-            kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
-            kSecAttrKeyClass as String: kSecAttrKeyClassPrivate,
-            kSecAttrKeySizeInBits as String: n.count * 8
-        ]
-        var error: Unmanaged<CFError>?
-        guard let key = SecKeyCreateWithData(der as CFData, attributes as CFDictionary, &error) else {
-            throw PasskeyError.invalidPrivateKey
-        }
-        return key
-    }
-
     // MARK: - CBOR Encoding
 
     /**
@@ -541,6 +397,7 @@ public class PasskeyAuthenticator {
      * CBOR map: {1: 3 (kty: RSA), 3: -257 (alg: RS256), -1: n (modulus), -2: e (exponent)}
      */
     private static func buildCoseRsaRs256(privateKey: SecKey) throws -> Data {
+        // swiftlint:disable:next identifier_name - n/e are the standard RSA modulus/exponent names (RFC 8230)
         let (n, e) = try rsaModulusAndExponent(privateKey: privateKey)
 
         var cbor = Data()
@@ -795,6 +652,160 @@ public class PasskeyAuthenticator {
         let hmac = HMAC<SHA256>.authenticationCode(for: hashedSalt, using: key)
 
         return Data(hmac)
+    }
+}
+
+// MARK: - RSA Key Management (RS256)
+
+/*
+ * RSA helpers live in an extension to keep the main type body within SwiftLint's
+ * type_body_length limit. Same-file `private` access keeps them callable from the class.
+ */
+extension PasskeyAuthenticator {
+
+    /**
+     * Generate an RSA-2048 key pair (returns the private SecKey).
+     */
+    private static func generateRsaKey() throws -> SecKey {
+        let attributes: [String: Any] = [
+            kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
+            kSecAttrKeySizeInBits as String: 2048
+        ]
+        var error: Unmanaged<CFError>?
+        guard let key = SecKeyCreateRandomKey(attributes as CFDictionary, &error) else {
+            throw PasskeyError.keyGenerationFailed
+        }
+        return key
+    }
+
+    /**
+     * Extract (modulus, exponent) from an RSA private key's public component.
+     * SecKeyCopyExternalRepresentation of an RSA public key is PKCS#1
+     * RSAPublicKey ::= SEQUENCE { modulus INTEGER, publicExponent INTEGER }.
+     */
+    private static func rsaModulusAndExponent(privateKey: SecKey) throws -> (n: Data, e: Data) {
+        guard let publicKey = SecKeyCopyPublicKey(privateKey) else {
+            throw PasskeyError.invalidPublicKey
+        }
+        var error: Unmanaged<CFError>?
+        guard let der = SecKeyCopyExternalRepresentation(publicKey, &error) as Data? else {
+            throw PasskeyError.invalidPublicKey
+        }
+        let ints = try parseDerIntegerSequence(der)
+        guard ints.count == 2 else { throw PasskeyError.invalidPublicKey }
+        return (ints[0], ints[1])
+    }
+
+    /**
+     * Export RSA public key as JWK: {kty: "RSA", n, e}.
+     */
+    private static func exportRsaPublicKeyAsJWK(privateKey: SecKey) throws -> Data {
+        // swiftlint:disable:next identifier_name - n/e are the standard RSA modulus/exponent names (RFC 8230)
+        let (n, e) = try rsaModulusAndExponent(privateKey: privateKey)
+        let jwk: [String: Any] = [
+            "kty": "RSA",
+            "n": n.base64URLEncodedString(),
+            "e": e.base64URLEncodedString()
+        ]
+        return try JSONSerialization.data(withJSONObject: jwk)
+    }
+
+    /**
+     * Export RSA private key as JWK: {kty: "RSA", n, e, d, p, q, dp, dq, qi}.
+     * SecKeyCopyExternalRepresentation of an RSA private key is PKCS#1
+     * RSAPrivateKey ::= SEQUENCE { version, modulus, publicExponent, privateExponent,
+     *   prime1, prime2, exponent1, exponent2, coefficient } (9 INTEGERs).
+     */
+    private static func exportRsaPrivateKeyAsJWK(privateKey: SecKey) throws -> Data {
+        var error: Unmanaged<CFError>?
+        guard let der = SecKeyCopyExternalRepresentation(privateKey, &error) as Data? else {
+            throw PasskeyError.invalidPrivateKey
+        }
+        let ints = try parseDerIntegerSequence(der)
+        guard ints.count >= 9 else { throw PasskeyError.invalidPrivateKey }
+        let jwk: [String: Any] = [
+            "kty": "RSA",
+            "n": ints[1].base64URLEncodedString(),
+            "e": ints[2].base64URLEncodedString(),
+            "d": ints[3].base64URLEncodedString(),
+            "p": ints[4].base64URLEncodedString(),
+            "q": ints[5].base64URLEncodedString(),
+            "dp": ints[6].base64URLEncodedString(),
+            "dq": ints[7].base64URLEncodedString(),
+            "qi": ints[8].base64URLEncodedString()
+        ]
+        return try JSONSerialization.data(withJSONObject: jwk)
+    }
+
+    /**
+     * Import an RSA private key from JWK and sign data with RS256
+     * (RSASSA-PKCS1-v1.5 over SHA-256). The ".message" variant hashes the
+     * input internally, matching how P256.signature(for:) hashes its input.
+     */
+    private static func signRsa(jwkData: Data, dataToSign: Data) throws -> Data {
+        let key = try importRsaPrivateKeyFromJWK(jwkData: jwkData)
+        var error: Unmanaged<CFError>?
+        guard let sig = SecKeyCreateSignature(
+            key,
+            .rsaSignatureMessagePKCS1v15SHA256,
+            dataToSign as CFData,
+            &error
+        ) as Data? else {
+            throw PasskeyError.invalidSignature
+        }
+        return sig
+    }
+
+    /**
+     * Build a PKCS#1 RSAPrivateKey from a JWK and import it as a SecKey.
+     */
+    private static func importRsaPrivateKeyFromJWK(jwkData: Data) throws -> SecKey {
+        guard let jwk = try JSONSerialization.jsonObject(with: jwkData) as? [String: Any],
+              let nB64 = jwk["n"] as? String,
+              let eB64 = jwk["e"] as? String,
+              let dB64 = jwk["d"] as? String,
+              let pB64 = jwk["p"] as? String,
+              let qB64 = jwk["q"] as? String,
+              let dpB64 = jwk["dp"] as? String,
+              let dqB64 = jwk["dq"] as? String,
+              let qiB64 = jwk["qi"] as? String else {
+            throw PasskeyError.invalidJWK
+        }
+
+        // swiftlint:disable identifier_name - n/e/d/p/q/dp/dq/qi are the standard RSA/JWK component names (RFC 7518)
+        let n = try Data(base64URLEncoded: nB64)
+        let e = try Data(base64URLEncoded: eB64)
+        let d = try Data(base64URLEncoded: dB64)
+        let p = try Data(base64URLEncoded: pB64)
+        let q = try Data(base64URLEncoded: qB64)
+        let dp = try Data(base64URLEncoded: dpB64)
+        let dq = try Data(base64URLEncoded: dqB64)
+        let qi = try Data(base64URLEncoded: qiB64)
+        // swiftlint:enable identifier_name
+
+        // PKCS#1 RSAPrivateKey DER (version 0, two-prime)
+        let der = derSequence([
+            derInteger(Data([0x00])),  // version
+            derInteger(n),
+            derInteger(e),
+            derInteger(d),
+            derInteger(p),
+            derInteger(q),
+            derInteger(dp),
+            derInteger(dq),
+            derInteger(qi)
+        ])
+
+        let attributes: [String: Any] = [
+            kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
+            kSecAttrKeyClass as String: kSecAttrKeyClassPrivate,
+            kSecAttrKeySizeInBits as String: n.count * 8
+        ]
+        var error: Unmanaged<CFError>?
+        guard let key = SecKeyCreateWithData(der as CFData, attributes as CFDictionary, &error) else {
+            throw PasskeyError.invalidPrivateKey
+        }
+        return key
     }
 }
 
