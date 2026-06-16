@@ -393,13 +393,28 @@ const ItemAddEdit: React.FC = () => {
       return;
     }
 
-    try {
-      const result = dbContext.sqliteClient.items.getById(id);
-      if (result) {
+    /**
+     * Initialize edit mode: load the saved item from the database, then overlay
+     * any unsaved draft that was persisted when the popup was closed mid-edit.
+     */
+    const initializeEditMode = async (): Promise<void> => {
+      const sqliteClient = dbContext?.sqliteClient;
+      if (!sqliteClient) {
+        return;
+      }
+
+      try {
+        const result = sqliteClient.items.getById(id);
+        if (!result) {
+          console.error('Item not found');
+          navigate('/items');
+          return;
+        }
+
         setItem(result);
 
         // Load folders
-        const allFolders = dbContext.sqliteClient.folders.getAll();
+        const allFolders = sqliteClient.folders.getAll();
         setFolders(allFolders);
 
         // Initialize field values from existing fields
@@ -431,7 +446,7 @@ const ItemAddEdit: React.FC = () => {
         setInitiallyVisibleFields(fieldsWithValues);
 
         // Load TOTP codes for this item
-        const itemTotpCodes = dbContext.sqliteClient.settings.getTotpCodesForItem(id);
+        const itemTotpCodes = sqliteClient.settings.getTotpCodesForItem(id);
         setTotpCodes(itemTotpCodes);
         setOriginalTotpCodeIds(itemTotpCodes.map((tc) => tc.Id));
         if (itemTotpCodes.length > 0) {
@@ -439,24 +454,32 @@ const ItemAddEdit: React.FC = () => {
         }
 
         // Load attachments for this item
-        const itemAttachments = dbContext.sqliteClient.settings.getAttachmentsForItem(id);
+        const itemAttachments = sqliteClient.settings.getAttachmentsForItem(id);
         setAttachments(itemAttachments);
         setOriginalAttachmentIds(itemAttachments.map((a) => a.Id));
         if (itemAttachments.length > 0) {
           setShowAttachments(true);
         }
 
+        // Restore any unsaved draft for this item that was persisted when the popup closed mid-edit.
+        const skipFormRestore = await LocalPreferencesService.getSkipFormRestore();
+        if (skipFormRestore) {
+          // Clear the flag after using it
+          await LocalPreferencesService.setSkipFormRestore(false);
+        } else {
+          await loadPersistedValues();
+        }
+
         setLocalLoading(false);
         setIsInitialLoading(false);
-      } else {
-        console.error('Item not found');
-        navigate('/items');
+      } catch (err) {
+        console.error('Error loading item:', err);
+        setLocalLoading(false);
+        setIsInitialLoading(false);
       }
-    } catch (err) {
-      console.error('Error loading item:', err);
-      setLocalLoading(false);
-      setIsInitialLoading(false);
-    }
+    };
+
+    void initializeEditMode();
   }, [dbContext?.sqliteClient, id, isEditMode, itemTypeParam, itemNameParam, folderIdParam, navigate, setIsInitialLoading, detectService, loadPersistedValues]);
 
   /**
