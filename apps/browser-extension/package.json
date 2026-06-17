@@ -37,7 +37,7 @@
     "@webext-core/messaging": "^3.0.1",
     "argon2-browser": "^1.18.0",
     "buffer": "^6.0.3",
-    "dompurify": "^3.4.0",
+    "dompurify": "^3.4.9",
     "globals": "^16.0.0",
     "i18next": "^26.2.0",
     "otpauth": "^9.3.6",
