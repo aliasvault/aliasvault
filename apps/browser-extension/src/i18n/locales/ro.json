@@ -149,7 +149,7 @@
     "creatingNewAlias": "Se creează aliasul nou",
     "creatingNewCredential": "Crearea de noi date de autentificare",
     "noMatchesFound": "Nicio potrivire găsită",
-    "loginWithPasskey": "Login with passkey",
+    "loginWithPasskey": "Autentificare cu passkey",
     "searchVault": "Caută în seif...",
     "enterServiceName": "Introdu numele serviciului",
     "enterEmailAddress": "Introdu adresa de e-mail",
@@ -505,7 +505,7 @@
       "selectExistingLoginDescription": "Atașează acest passkey unor date de autentificare existente pentru acest site.",
       "attachingToCredential": "Se adaugă passkey-ul la: {{serviceName}}",
       "attachPasskey": "Adaugă Passkey",
-      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
+      "unsupportedAlgorithm": "Acest site web necesită un tip de passkey pe care AliasVault nu îl acceptă."
     },
     "settings": {
       "passkeyProvider": "Furnizor Passkey",
