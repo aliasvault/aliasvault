@@ -1,0 +1,224 @@
+/**
+ * AliasVault documentation theme.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  /* Brand orange — used for links, buttons, accents. */
+  --ifm-color-primary: #d68338;
+  --ifm-color-primary-dark: #c5762f;
+  --ifm-color-primary-darker: #b8702f;
+  --ifm-color-primary-darkest: #9a5d26;
+  --ifm-color-primary-light: #f49541;
+  --ifm-color-primary-lighter: #f6a752;
+  --ifm-color-primary-lightest: #f8b963;
+
+  --ifm-font-family-base: 'Inter', ui-sans-serif, system-ui, -apple-system,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji';
+  --ifm-font-family-monospace: ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  --ifm-code-font-size: 92%;
+  --ifm-heading-font-weight: 700;
+  --ifm-font-weight-semibold: 600;
+  --ifm-navbar-link-hover-color: var(--ifm-color-primary);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.08);
+
+  /* Roomier chrome — the previous theme felt cramped at the edges. */
+  --ifm-navbar-height: 4.5rem;
+  --ifm-navbar-padding-horizontal: 1.5rem;
+  --ifm-spacing-horizontal: 1.75rem;
+  --ifm-container-width-xl: 1440px;
+
+  /* Generous, rounded sidebar items. */
+  --ifm-menu-link-padding-vertical: 0.55rem;
+  --ifm-menu-link-padding-horizontal: 0.85rem;
+  --ifm-menu-color-background-active: rgba(244, 149, 65, 0.12);
+  --ifm-menu-color-background-hover: rgba(244, 149, 65, 0.08);
+
+  /* Light surfaces from the marketing site. */
+  --ifm-background-color: #ffffff;
+  --ifm-background-surface-color: #fcfcfc;
+  --ifm-navbar-background-color: rgba(255, 255, 255, 0.85);
+  --ifm-footer-background-color: #f7f8fb;
+  --ifm-color-content-secondary: #788293;
+  --ifm-toc-border-color: #e3e8ef;
+  --ifm-table-border-color: #e3e8ef;
+  --av-card-bg: #ffffff;
+  --av-border: #e3e8ef;
+}
+
+/* Dark mode — warm near-black surfaces matching the website. */
+[data-theme='dark'] {
+  --ifm-color-primary: #f49541;
+  --ifm-color-primary-dark: #f2882a;
+  --ifm-color-primary-darker: #d68338;
+  --ifm-color-primary-darkest: #b8702f;
+  --ifm-color-primary-light: #f6a752;
+  --ifm-color-primary-lighter: #f8b963;
+  --ifm-color-primary-lightest: #fbcb74;
+
+  --ifm-background-color: #121723; /* website body (dark:bg-black) */
+  --ifm-background-surface-color: #1d2430; /* website `dark` */
+  --ifm-navbar-background-color: rgba(23, 28, 40, 0.85); /* bg-color-dark */
+  --ifm-footer-background-color: #0e131d;
+  --ifm-color-content: #d8dce6;
+  --ifm-color-content-secondary: #959cb1; /* body-color-dark */
+  --ifm-toc-border-color: #2a313f;
+  --ifm-table-border-color: #2a313f;
+  --ifm-menu-color-background-active: rgba(244, 149, 65, 0.14);
+  --ifm-menu-color-background-hover: rgba(244, 149, 65, 0.1);
+  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.07);
+
+  --av-card-bg: #1d2430;
+  --av-border: #2a313f;
+}
+
+/* ---------------------------------------------------------------- Navbar -- */
+
+.navbar {
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--av-border);
+  box-shadow: none;
+}
+
+.navbar__title {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.navbar__logo {
+  height: 2rem;
+}
+
+.navbar__link {
+  font-weight: 500;
+}
+
+/* GitHub / external link icon spacing stays tidy. */
+.navbar__items--right > :last-child {
+  margin-right: 0.25rem;
+}
+
+/* --------------------------------------------------------------- Sidebar -- */
+
+.theme-doc-sidebar-container {
+  border-right: 1px solid var(--av-border);
+}
+
+[data-theme='dark'] .menu {
+  background-color: var(--ifm-background-color);
+}
+
+/* Breathing room around the menu and rounded, app-like items. */
+.menu {
+  padding: 1rem 0.75rem !important;
+  font-weight: 500;
+}
+
+.menu__list .menu__list {
+  padding-left: 0.5rem;
+}
+
+.menu__link {
+  border-radius: 8px;
+  line-height: 1.4;
+}
+
+.menu__link--active:not(.menu__link--sublist) {
+  font-weight: 600;
+}
+
+.menu__caret {
+  border-radius: 8px;
+}
+
+/* --------------------------------------------------------------- Content -- */
+
+/* Comfortable reading column with real margins, instead of full-bleed. */
+.theme-doc-markdown {
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 1440px) {
+  .theme-doc-markdown {
+    max-width: 920px;
+  }
+}
+
+.markdown h1:first-child {
+  font-size: 2.4rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
+}
+
+.markdown h2 {
+  letter-spacing: -0.01em;
+  margin-top: 2.25rem;
+}
+
+/* Right-hand table of contents. */
+.table-of-contents {
+  font-size: 0.82rem;
+}
+
+.table-of-contents__link--active {
+  font-weight: 600;
+}
+
+/* ----------------------------------------------------------------- Cards -- */
+
+.card {
+  background: var(--av-card-bg);
+  border: 1px solid var(--av-border);
+}
+
+/* ---------------------------------------------------------------- Buttons -- */
+
+/* Pill-shaped buttons, matching the website's rounded CTAs. */
+.button {
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+.button--primary {
+  --ifm-button-border-color: transparent;
+  box-shadow: 0px 5px 20px rgba(244, 149, 65, 0.25);
+}
+
+.button--primary:hover {
+  background-color: var(--ifm-color-primary-dark);
+}
+
+.button--secondary.button--outline {
+  border-color: var(--av-border);
+}
+
+/* ----------------------------------------------------------------- Footer -- */
+
+.footer {
+  border-top: 1px solid var(--av-border);
+}
+
+.footer__title {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+/* --------------------------------------------------------------- Tables --- */
+
+.markdown table {
+  border-radius: 10px;
+  overflow: hidden;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.markdown table thead tr {
+  border-bottom: none;
+}
