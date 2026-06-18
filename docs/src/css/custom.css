@@ -275,13 +275,14 @@ article:not(:has(> nav.theme-doc-breadcrumbs)) > .theme-doc-markdown {
   transform: translateY(-50%) rotate(90deg);
 }
 
-/* Answer area: muted body text sitting directly under the header bar, with no
- * divider line or top-margin gap (header's own padding provides separation). */
+/* Answer area sits directly under the header bar, with no divider line or
+ * top-margin gap (header's own padding provides separation). Uses the regular
+ * body text color so it stays easy to read. */
 .theme-doc-markdown details > div {
   margin-top: 0;
   padding: 0 1.5rem 1.25rem;
   border-top: none;
-  color: var(--ifm-color-content-secondary);
+  color: var(--ifm-color-content);
 }
 
 .theme-doc-markdown details > div > :last-child {

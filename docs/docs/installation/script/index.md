@@ -1,5 +1,5 @@
 ---
-sidebar_position: 1
+sidebar_position: 0
 sidebar_label: "Overview"
 ---
 # Self-host using Install Script (multi-container)
