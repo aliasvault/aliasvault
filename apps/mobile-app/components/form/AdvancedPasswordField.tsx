@@ -274,7 +274,6 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
       flexDirection: 'row',
       justifyContent: 'space-between',
       marginBottom: 20,
-      marginTop: 10,
     },
     modalTitle: {
       color: colors.text,
