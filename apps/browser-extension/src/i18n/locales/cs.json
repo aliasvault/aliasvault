@@ -76,6 +76,7 @@
     "settings": "Settings",
     "recentEmails": "Recent emails",
     "credentials": "Credentials",
+    "passkeys": "Passkeys",
     "customFields": "Custom Fields",
     "twoFactorAuthentication": "Two-factor authentication",
     "alias": "Alias",
@@ -148,6 +149,7 @@
     "creatingNewAlias": "Creating new alias",
     "creatingNewCredential": "Creating new credential",
     "noMatchesFound": "No matches found",
+    "loginWithPasskey": "Login with passkey",
     "searchVault": "Search vault...",
     "enterServiceName": "Enter service name",
     "enterEmailAddress": "Enter email address",
@@ -216,7 +218,6 @@
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
       "folders": "Folders",
-      "passkeys": "Passkeys",
       "totp": "2FA Codes"
     },
     "sort": {
@@ -259,6 +260,7 @@
     "fieldType": "Field Type",
     "fieldTypes": {
       "text": "Text",
+      "password": "Password",
       "hidden": "Hidden (masked text)",
       "email": "Email",
       "url": "URL",
@@ -502,7 +504,8 @@
       "selectExistingLogin": "Add to existing login:",
       "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
       "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey"
+      "attachPasskey": "Add Passkey",
+      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
     "settings": {
       "passkeyProvider": "Passkey Provider",
