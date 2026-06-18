@@ -1,5 +1,5 @@
 ---
-sidebar_position: 2
+sidebar_position: 0
 sidebar_label: "Overview"
 ---
 # Self-host using Docker Compose (single container)
