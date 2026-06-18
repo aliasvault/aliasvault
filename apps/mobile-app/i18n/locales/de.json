@@ -360,6 +360,7 @@
     "enterFieldName": "Feldnamen eingeben",
     "fieldTypes": {
       "text": "Text",
+      "password": "Passwort",
       "hidden": "Versteckt",
       "email": "E-Mail",
       "url": "URL",
