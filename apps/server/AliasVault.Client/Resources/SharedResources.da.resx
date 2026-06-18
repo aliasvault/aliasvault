@@ -345,11 +345,11 @@
     <comment>Email format switcher: plain text view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatSource" xml:space="preserve">
-    <value>Source</value>
+    <value>Kilde</value>
     <comment>Email format switcher: raw HTML source view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatSwitchTitle" xml:space="preserve">
-    <value>Switch email format</value>
+    <value>Skift e-mail format</value>
     <comment>Tooltip for the cycle button that switches between HTML / Text / Source views. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailItemLabel" xml:space="preserve">
