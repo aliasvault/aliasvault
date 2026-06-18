@@ -15,7 +15,7 @@
 "create_new_item" = "Create New Item";
 "open_aliasvault" = "Open AliasVault";
 "untitled_credential" = "this credential";
-"link_url_prompt_title" = "Link to credential?";
+"link_url_prompt_title" = "Bejegyzéshez csatolás?";
 "link_url_prompt_message" = "Add \"{{url}}\" to {{name}} so AliasVault recognises this app or website next time?";
 "link_url_prompt_link_action" = "Link and fill";
 "link_url_prompt_skip_action" = "Just fill";
@@ -41,7 +41,7 @@
 "password_copied" = "Password copied";
 "email_copied" = "Email copied";
 "totp_code_copied" = "TOTP code copied";
-"totp_code" = "TOTP Code";
+"totp_code" = "TOTP kód";
 
 /* Search bar */
 "search_items" = "Search items...";
@@ -78,7 +78,7 @@
 "pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
 
 /* Password Unlock */
-"enter_password_to_unlock" = "Enter your master password";
+"enter_password_to_unlock" = "Adja meg mester jelszavát";
 "unlock" = "Unlock";
 "incorrect_password" = "Hibás jelszó. Próbálkozzon újra.";
 "attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
