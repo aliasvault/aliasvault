@@ -54,6 +54,7 @@ const config: Config = {
 
   plugins: [
     [
+      // Redirects old jekyll pages to the new docusaurus pages, as well as handling redirects for future moved pages.
       '@docusaurus/plugin-client-redirects',
       {
         redirects: [
@@ -93,7 +94,92 @@ const config: Config = {
               '/installation/update/v0.23.0.html',
             ],
           },
+          // private-vs-public-email moved from /misc into /installation.
+          {
+            to: '/installation/private-vs-public-email',
+            from: [
+              '/misc/private-vs-public-email',
+              '/misc/private-vs-public-email.html',
+            ],
+          },
+          // The /misc landing and dev/release docs were removed; point any
+          // stale links at the closest surviving pages.
+          {
+            to: '/',
+            from: ['/misc', '/misc.html'],
+          },
+          {
+            to: '/contributing/development/',
+            from: [
+              '/misc/dev/release',
+              '/misc/dev/release.html',
+              '/misc/dev/release/git-versioning-strategy',
+              '/misc/dev/release/git-versioning-strategy.html',
+              '/misc/dev/release/manual-versioning',
+              '/misc/dev/release/manual-versioning.html',
+              '/misc/dev/release/release-checklist',
+              '/misc/dev/release/release-checklist.html',
+            ],
+          },
+          // The Linux/macOS and Windows dev pages were merged into a single
+          // "development-setup" page.
+          {
+            to: '/contributing/development/development-setup',
+            from: [
+              '/contributing/development/linux-macos-development',
+              '/misc/dev/linux-macos-development',
+              '/misc/dev/linux-macos-development.html',
+              '/contributing/development/windows-development',
+              '/misc/dev/windows-development',
+              '/misc/dev/windows-development.html',
+            ],
+          },
+          // Dev database operations is covered by the self-host install docs.
+          {
+            to: '/installation/script/advanced/database',
+            from: [
+              '/contributing/development/database-operations',
+              '/misc/dev/database-operations',
+              '/misc/dev/database-operations.html',
+            ],
+          },
+          {
+            to: '/contributing/development/',
+            from: [
+              '/contributing/development/add-new-language',
+              '/misc/dev/add-new-language',
+              '/misc/dev/add-new-language.html',
+              '/contributing/development/upgrade-ef-client-model',
+              '/misc/dev/upgrade-ef-client-model',
+              '/misc/dev/upgrade-ef-client-model.html',
+              '/contributing/development/upgrade-ef-server-model',
+              '/misc/dev/upgrade-ef-server-model',
+              '/misc/dev/upgrade-ef-server-model.html',
+            ],
+          },
         ],
+        // Sections that moved keep their old URLs working. Each entry maps a
+        // new path prefix back to where it used to live:
+        //   - /misc/dev/* tree            → /contributing/development/*
+        //   - /browser-extensions/*       → /installation/browser-extensions/*
+        //   - /mobile-apps/*              → /installation/mobile-apps/*
+        createRedirects(existingPath) {
+          const moves: [string, string][] = [
+            ['/contributing/development', '/misc/dev'],
+            ['/installation/browser-extensions', '/browser-extensions'],
+            ['/installation/mobile-apps', '/mobile-apps'],
+          ];
+          for (const [newPrefix, oldPrefix] of moves) {
+            if (existingPath.startsWith(newPrefix)) {
+              const oldPath = existingPath.replace(newPrefix, oldPrefix);
+              // Directory/index routes end with "/"; don't append ".html" there.
+              return oldPath.endsWith('/')
+                ? [oldPath]
+                : [oldPath, `${oldPath}.html`];
+            }
+          }
+          return undefined;
+        },
       },
     ],
   ],
@@ -129,9 +215,27 @@ const config: Config = {
       items: [
         {
           type: 'docSidebar',
-          sidebarId: 'docsSidebar',
+          sidebarId: 'installSidebar',
           position: 'left',
-          label: 'Documentation',
+          label: 'Self-host Install',
+        },
+        {
+          type: 'doc',
+          docId: 'architecture',
+          position: 'left',
+          label: 'Architecture',
+        },
+        {
+          type: 'docSidebar',
+          sidebarId: 'contributingSidebar',
+          position: 'left',
+          label: 'Contributing',
+        },
+        {
+          type: 'doc',
+          docId: 'contact',
+          position: 'left',
+          label: 'Help',
         },
         {
           href: 'https://aliasvault.net',
@@ -152,8 +256,8 @@ const config: Config = {
           title: 'Docs',
           items: [
             {label: 'Self-host Install', to: '/installation/'},
-            {label: 'Browser Extensions', to: '/browser-extensions/'},
-            {label: 'Mobile Apps', to: '/mobile-apps/'},
+            {label: 'Browser Extensions', to: '/installation/browser-extensions/'},
+            {label: 'Mobile Apps', to: '/installation/mobile-apps/'},
             {label: 'Architecture', to: '/architecture/'},
           ],
         },

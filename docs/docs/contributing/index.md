@@ -1,5 +1,5 @@
 ---
-sidebar_position: 8
+sidebar_position: 1
 ---
 # Contributing to AliasVault
 
@@ -54,6 +54,10 @@ Help improve our documentation:
 - Improve translations
 
 ### 💻 Code Contributions
-Check the [CONTRIBUTING.md](https://github.com/aliasvault/aliasvault/blob/main/CONTRIBUTING.md) for guidelines.
+
+See the [Development](development/index.md) guide for setting up a local
+environment and working on the apps, and the
+[CONTRIBUTING.md](https://github.com/aliasvault/aliasvault/blob/main/CONTRIBUTING.md)
+for contribution guidelines.
 
 **Thank you for making AliasVault better!** 🙏
