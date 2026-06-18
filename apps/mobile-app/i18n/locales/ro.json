@@ -360,6 +360,7 @@
     "enterFieldName": "Introdu numele câmpului",
     "fieldTypes": {
       "text": "Text",
+      "password": "Parolă",
       "hidden": "Ascuns",
       "email": "E-mail",
       "url": "URL",
