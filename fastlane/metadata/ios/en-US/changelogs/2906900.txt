@@ -1,0 +1,2 @@
+- Add new custom field type: password
+- Add support for RS-256 passkey algorithm
