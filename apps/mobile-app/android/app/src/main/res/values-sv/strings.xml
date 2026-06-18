@@ -7,10 +7,10 @@
   <string name="common_next">Nästa</string>
   <string name="common_cancel">Avbryt</string>
   <string name="common_back">Tillbaka</string>
-  <string name="common_show_details">Show details</string>
-  <string name="common_hide_details">Hide details</string>
+  <string name="common_show_details">Visa detaljer</string>
+  <string name="common_hide_details">Dölj detaljer</string>
   <string name="common_copy">Copy</string>
-  <string name="common_copied_to_clipboard">Copied to clipboard</string>
+  <string name="common_copied_to_clipboard">Kopierat till urklipp</string>
   <string name="unknown_error">Ett okänt fel har inträffat</string>
   <string name="autofill_failed_to_retrieve">Det gick inte att hämta, öppna app</string>
   <string name="autofill_no_match_found">No match found</string>
