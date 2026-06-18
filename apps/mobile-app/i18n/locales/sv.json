@@ -360,6 +360,7 @@
     "enterFieldName": "Ange fältets namn",
     "fieldTypes": {
       "text": "Text",
+      "password": "Lösenord",
       "hidden": "Dold",
       "email": "E-post",
       "url": "Webbadress",
