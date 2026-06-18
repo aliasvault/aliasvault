@@ -1,4 +1,3 @@
-import { MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import React, { useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
@@ -100,51 +99,26 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
     container: {
       backgroundColor: colors.accentBackground,
       borderRadius: 8,
-    },
-    contentContainer: {
-      flex: 1,
-    },
-    dragHandle: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingLeft: 4,
-      paddingRight: 0,
-      paddingVertical: 12,
+      padding: 8,
     },
     labelContainer: {
       marginBottom: 4,
-    },
-    outerContainer: {
-      flexDirection: 'row',
-      padding: 8,
-      paddingRight: 4,
     },
   });
 
   return (
     <View style={styles.container}>
-      <View style={styles.outerContainer}>
-        {/* Field content */}
-        <View style={styles.contentContainer}>
-          {/* Label row */}
-          <View style={styles.labelContainer}>
-            <EditableFieldLabel
-              label={field.label}
-              onLabelChange={onLabelChange}
-              onDelete={onDelete}
-            />
-          </View>
-          {/* Input field */}
-          {renderFieldInput()}
-        </View>
-        {/* Drag handle on right side */}
-        <View
-          style={styles.dragHandle}
-          onTouchStart={drag}
-        >
-          <MaterialIcons name="drag-indicator" size={20} color={colors.textMuted} />
-        </View>
+      {/* Label row with inline, right-aligned drag handle */}
+      <View style={styles.labelContainer}>
+        <EditableFieldLabel
+          label={field.label}
+          onLabelChange={onLabelChange}
+          onDelete={onDelete}
+          drag={drag}
+        />
       </View>
+      {/* Input field */}
+      {renderFieldInput()}
     </View>
   );
 };
