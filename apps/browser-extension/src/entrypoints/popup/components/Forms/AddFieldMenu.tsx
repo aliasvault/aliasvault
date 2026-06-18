@@ -323,6 +323,7 @@ const AddFieldMenu: React.FC<AddFieldMenuProps> = ({
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
             >
               <option value="Text">{t('itemTypes.fieldTypes.text')}</option>
+              <option value="Password">{t('itemTypes.fieldTypes.password')}</option>
               <option value="Hidden">{t('itemTypes.fieldTypes.hidden')}</option>
               <option value="Email">{t('itemTypes.fieldTypes.email')}</option>
               <option value="URL">{t('itemTypes.fieldTypes.url')}</option>

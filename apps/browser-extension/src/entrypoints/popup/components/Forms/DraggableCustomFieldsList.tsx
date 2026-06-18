@@ -23,6 +23,7 @@ import { FieldTypes } from '@/utils/dist/core/models/vault';
 import EditableFieldLabel from './EditableFieldLabel';
 import { FormInput } from './FormInput';
 import HiddenField from './HiddenField';
+import PasswordField from './PasswordField';
 
 /**
  * Custom field definition type
@@ -85,7 +86,18 @@ const SortableCustomField: React.FC<ISortableCustomFieldProps> = ({
       );
     }
 
-    if (field.isHidden || field.fieldType === FieldTypes.Hidden || field.fieldType === FieldTypes.Password) {
+    if (field.fieldType === FieldTypes.Password) {
+      return (
+        <PasswordField
+          id={field.tempId}
+          label=""
+          value={value}
+          onChange={onValueChange}
+        />
+      );
+    }
+
+    if (field.isHidden || field.fieldType === FieldTypes.Hidden) {
       return (
         <HiddenField
           id={field.tempId}
