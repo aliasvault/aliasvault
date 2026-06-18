@@ -76,6 +76,7 @@
     "settings": "Configuración",
     "recentEmails": "Correos recientes",
     "credentials": "Credenciales",
+    "passkeys": "Llaves de acceso",
     "customFields": "Campos Personalizados",
     "twoFactorAuthentication": "Autenticación de doble factor",
     "alias": "Alias",
@@ -148,6 +149,7 @@
     "creatingNewAlias": "Creando nuevo alias",
     "creatingNewCredential": "Creando nueva credencial",
     "noMatchesFound": "No se han encontrado resultados",
+    "loginWithPasskey": "Login with passkey",
     "searchVault": "Buscar bóveda...",
     "enterServiceName": "Introduzca el nombre del servicio",
     "enterEmailAddress": "Introduzca la dirección de correo electrónico",
@@ -216,7 +218,6 @@
     "deleteFolderAndItemsDescription": "{{count}} elemento(s) serán movidos a Borrados Recientemente.",
     "filters": {
       "folders": "Carpetas",
-      "passkeys": "Llaves de acceso",
       "totp": "Códigos 2FA"
     },
     "sort": {
@@ -259,6 +260,7 @@
     "fieldType": "Tipo de campo",
     "fieldTypes": {
       "text": "Texto",
+      "password": "Contraseña",
       "hidden": "Oculto (texto enmascarado)",
       "email": "Correo",
       "url": "URL",
@@ -502,7 +504,8 @@
       "selectExistingLogin": "Añadir al inicio de sesión existente:",
       "selectExistingLoginDescription": "Adjuntar esta llave a una credencial de inicio de sesión existente para este sitio.",
       "attachingToCredential": "Añadiendo llave a: {{serviceName}}",
-      "attachPasskey": "Añadir llave de acceso"
+      "attachPasskey": "Añadir llave de acceso",
+      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
     "settings": {
       "passkeyProvider": "Proveedor de llave de acceso",
