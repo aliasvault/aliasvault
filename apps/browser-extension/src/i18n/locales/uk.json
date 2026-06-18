@@ -76,6 +76,7 @@
     "settings": "Налаштування",
     "recentEmails": "Останні електронні листи",
     "credentials": "Облікові дані",
+    "passkeys": "Ключі доступу",
     "customFields": "Custom Fields",
     "twoFactorAuthentication": "Двофакторна автентифікація",
     "alias": "Псевдонім",
@@ -148,6 +149,7 @@
     "creatingNewAlias": "Створення нового псевдоніму",
     "creatingNewCredential": "Creating new credential",
     "noMatchesFound": "Збігів не знайдено",
+    "loginWithPasskey": "Login with passkey",
     "searchVault": "Пошук сховища...",
     "enterServiceName": "Введіть назву служби",
     "enterEmailAddress": "Введіть електронну адресу",
@@ -216,7 +218,6 @@
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
       "folders": "Folders",
-      "passkeys": "Ключі доступу",
       "totp": "2FA Codes"
     },
     "sort": {
@@ -259,6 +260,7 @@
     "fieldType": "Field Type",
     "fieldTypes": {
       "text": "Text",
+      "password": "Пароль",
       "hidden": "Hidden (masked text)",
       "email": "Електронна пошта",
       "url": "URL",
@@ -502,7 +504,8 @@
       "selectExistingLogin": "Add to existing login:",
       "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
       "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey"
+      "attachPasskey": "Add Passkey",
+      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
     "settings": {
       "passkeyProvider": "Passkey Provider",
