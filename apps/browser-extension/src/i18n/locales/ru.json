@@ -76,6 +76,7 @@
     "settings": "Настройки",
     "recentEmails": "Последние письма",
     "credentials": "Учетные записи",
+    "passkeys": "Ключи доступа",
     "customFields": "Пользовательские поля",
     "twoFactorAuthentication": "Двухфакторная аутентификация",
     "alias": "Псевдоним",
@@ -148,6 +149,7 @@
     "creatingNewAlias": "Создание нового псевдонима",
     "creatingNewCredential": "Создание новой записи",
     "noMatchesFound": "Совпадений не найдено",
+    "loginWithPasskey": "Login with passkey",
     "searchVault": "Поиск хранилища...",
     "enterServiceName": "Введите имя сервиса",
     "enterEmailAddress": "Введите адрес электронной почты",
@@ -216,7 +218,6 @@
     "deleteFolderAndItemsDescription": "{{count}} объект(ов) будет перемещено в раздел «Недавно удалённые».",
     "filters": {
       "folders": "Папки",
-      "passkeys": "Ключи доступа",
       "totp": "2FA-коды"
     },
     "sort": {
@@ -259,6 +260,7 @@
     "fieldType": "Тип поля",
     "fieldTypes": {
       "text": "Текст",
+      "password": "Пароль",
       "hidden": "Скрыто (маскированный текст)",
       "email": "Почта",
       "url": "URL",
@@ -502,7 +504,8 @@
       "selectExistingLogin": "Привязать к логину:",
       "selectExistingLoginDescription": "Привяжите этот ключ доступа к существующей учетной записи для этого сайта.",
       "attachingToCredential": "Добавление ключа доступа для: {{serviceName}}",
-      "attachPasskey": "Добавить ключ доступа"
+      "attachPasskey": "Добавить ключ доступа",
+      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
     "settings": {
       "passkeyProvider": "Провайдер ключей доступа",
