@@ -360,6 +360,7 @@
     "enterFieldName": "Indtast feltnavn",
     "fieldTypes": {
       "text": "Tekst",
+      "password": "Adgangskode",
       "hidden": "Skjult",
       "email": "E-mail",
       "url": "URL",
@@ -570,8 +571,8 @@
     "emailNotFound": "E-mail ikke fundet",
     "formatHtml": "HTML",
     "formatPlain": "Tekst",
-    "formatSource": "Source",
-    "formatSwitchTitle": "Switch email format",
+    "formatSource": "Kilde",
+    "formatSwitchTitle": "Skift e-mail format",
     "sizeKB": "KB",
     "offlineMessage": "Du er offline. Opret venligst forbindelse til internettet for at indlæse dine e-mails.",
     "emptyMessage": "Du har ikke modtaget nogen e-mails på dine private e-mailadresser endnu. Når du modtager en ny e-mail, vil den blive vist her.",
