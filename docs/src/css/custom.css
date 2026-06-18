@@ -430,15 +430,15 @@ html[class*='docs-doc-id-installation/index'] .theme-doc-markdown {
 
 /* The CTA pill is a <span>, not the link itself, so its :hover never fires —
  * the whole card is the anchor. Drive the pill's hover look from the card so it
- * still reacts when you point anywhere on the card. */
-.av-install-card:hover .button--primary {
-  background-color: var(--ifm-color-primary-dark);
-}
-
+ * still reacts when you point anywhere on the card: both cards use the subtle
+ * outline button by default and fill with brand orange on hover. */
 .av-install-card:hover .button--secondary.button--outline {
   background-color: var(--ifm-color-primary);
   border-color: var(--ifm-color-primary);
-  color: #fff;
+  /* Same value Infima's own `.button--outline:hover` uses, so card-hover reads
+   * identically to a direct button mouseover (white in light mode, dark in dark
+   * mode) instead of leaving the default dark border-color text. */
+  color: var(--ifm-font-color-base-inverse);
 }
 
 /* ------------------------------------------------ Clickable action cards -- */
