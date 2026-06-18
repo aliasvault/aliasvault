@@ -238,7 +238,7 @@ const config: Config = {
           type: 'doc',
           docId: 'contact',
           position: 'left',
-          label: 'Help',
+          label: 'Contact',
         },
         {
           href: 'https://aliasvault.net',
@@ -272,7 +272,7 @@ const config: Config = {
               href: 'https://github.com/aliasvault/aliasvault',
             },
             {label: 'Contributing', to: '/contributing/'},
-            {label: 'Help & Support', to: '/contact/'},
+            {label: 'Contact', to: '/contact/'},
           ],
         },
         {
