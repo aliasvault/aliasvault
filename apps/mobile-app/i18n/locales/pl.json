@@ -360,6 +360,7 @@
     "enterFieldName": "Wprowadź nazwę pola",
     "fieldTypes": {
       "text": "Tekst",
+      "password": "Hasło",
       "hidden": "Ukryte",
       "email": "Skrzynka odbiorcza",
       "url": "adres URL",
