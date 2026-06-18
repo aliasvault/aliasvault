@@ -10,6 +10,8 @@ type EditableFieldLabelProps = {
   label: string;
   onLabelChange: (newLabel: string) => void;
   onDelete?: () => void;
+  /** When provided, shows a right-aligned drag handle on the label line that starts reordering. */
+  drag?: () => void;
 }
 
 /**
@@ -19,7 +21,8 @@ type EditableFieldLabelProps = {
 export const EditableFieldLabel: React.FC<EditableFieldLabelProps> = ({
   label,
   onLabelChange,
-  onDelete
+  onDelete,
+  drag
 }) => {
   const colors = useColors();
   const [isEditing, setIsEditing] = useState(false);
@@ -68,6 +71,10 @@ export const EditableFieldLabel: React.FC<EditableFieldLabelProps> = ({
     },
     deleteButton: {
       marginLeft: 4,
+    },
+    dragHandle: {
+      marginLeft: 'auto',
+      padding: 2,
     },
     editButton: {
       marginLeft: 4,
@@ -150,6 +157,15 @@ export const EditableFieldLabel: React.FC<EditableFieldLabelProps> = ({
           underlayColor={colors.accentBackground}
         >
           <MaterialIcons name="delete" size={14} color={colors.destructive} />
+        </TouchableHighlight>
+      )}
+      {drag && (
+        <TouchableHighlight
+          style={[styles.actionButton, styles.dragHandle]}
+          onPressIn={drag}
+          underlayColor={colors.accentBackground}
+        >
+          <MaterialIcons name="drag-indicator" size={18} color={colors.textMuted} />
         </TouchableHighlight>
       )}
     </View>
