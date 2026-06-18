@@ -148,11 +148,11 @@
     <comment>Filter option to show all items</comment>
   </data>
   <data name="ShowFoldersOption" xml:space="preserve">
-    <value>Folders</value>
+    <value>Mappák</value>
     <comment>Toggle option to show or hide folder structure</comment>
   </data>
   <data name="FilterPasskeysOption" xml:space="preserve">
-    <value>Passkeys</value>
+    <value>Azonosítókulcsok</value>
     <comment>Filter option to show only passkeys</comment>
   </data>
   <data name="FilterAliasesOption" xml:space="preserve">
@@ -168,7 +168,7 @@
     <comment>Filter option to show only items with attachments</comment>
   </data>
   <data name="FilterTotpOption" xml:space="preserve">
-    <value>2FA Codes</value>
+    <value>2FA kódok</value>
     <comment>Filter option to show only items with TOTP codes</comment>
   </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
