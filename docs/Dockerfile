@@ -1,8 +1,13 @@
-FROM jekyll/jekyll:4.2.2
-
-WORKDIR /srv/jekyll
+# Build the Docusaurus static site, then serve it with nginx.
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
 COPY . .
-RUN chown -R jekyll:jekyll /srv/jekyll
+RUN npm run build
 
-# Install the theme and dependencies
-RUN bundle install
+FROM nginx:alpine
+COPY --from=build /app/build /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
