@@ -149,7 +149,7 @@
     "creatingNewAlias": "Neuen Alias erstellen",
     "creatingNewCredential": "Neue Anmeldeinformationen erstellen",
     "noMatchesFound": "Keine Treffer gefunden",
-    "loginWithPasskey": "Login with passkey",
+    "loginWithPasskey": "Mit Passkey anmelden",
     "searchVault": "Tresor durchsuchen...",
     "enterServiceName": "Name des Dienstes eingeben",
     "enterEmailAddress": "E-Mail-Adresse eingeben",
@@ -505,7 +505,7 @@
       "selectExistingLoginDescription": "Diesen Passkey zu bestehenden Anmeldedaten für diese Webseite hinzufügen.",
       "attachingToCredential": "Passkey zu {{serviceName}} hinzufügen",
       "attachPasskey": "Passkey hinzufügen",
-      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
+      "unsupportedAlgorithm": "Diese Website benötigt einen Passkey-Typ, den AliasVault nicht unterstützt."
     },
     "settings": {
       "passkeyProvider": "Passkey-Anbieter",
