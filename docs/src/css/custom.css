@@ -217,11 +217,226 @@ article:not(:has(> nav.theme-doc-breadcrumbs)) > .theme-doc-markdown {
   font-weight: 600;
 }
 
+/* --------------------------------------------- Self-host Install layout -- */
+
+/* The install-method chooser page (/installation) hides its on-page ToC via
+ * `hide_table_of_contents` frontmatter so the two side-by-side method cards get
+ * the full width. Docusaurus then renders the content at full column width, but
+ * our default 860px reading cap would still pinch it — so widen the reading
+ * column for just this page (scoped via the route class on <html>). */
+html[class*='docs-doc-id-installation/index'] .theme-doc-markdown {
+  max-width: 1100px;
+}
+
 /* ----------------------------------------------------------------- Cards -- */
 
 .card {
   background: var(--av-card-bg);
   border: 1px solid var(--av-border);
+}
+
+/* ------------------------------------------------ Install-method chooser -- */
+
+/* Two side-by-side "pick a path" cards at the top of the install guide.
+ * Collapses to a single column on narrow screens. */
+.av-install-choice {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  margin: 2rem 0 1rem;
+}
+
+@media (max-width: 768px) {
+  .av-install-choice {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Each card is a self-contained panel with the body and the CTA pinned to the
+ * bottom, so both cards line up regardless of copy length. */
+/* The whole card is an <a>, so reset link styling and let the body text read
+ * normally. */
+.av-install-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem;
+  border: 1px solid var(--av-border);
+  border-radius: 14px;
+  background: var(--av-card-bg);
+  color: var(--ifm-color-content);
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.av-install-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 5px 24px rgba(244, 149, 65, 0.12);
+  color: var(--ifm-color-content);
+  text-decoration: none;
+}
+
+/* The recommended option gets a subtle primary-tinted border to draw the eye. */
+.av-install-card--featured {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 5px 24px rgba(244, 149, 65, 0.12);
+}
+
+.av-install-card__emoji {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 0.85rem;
+}
+
+.av-install-card__title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.6rem;
+}
+
+.av-install-card__badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ifm-color-primary);
+  background: rgba(244, 149, 65, 0.12);
+  border-radius: 9999px;
+  padding: 0.2rem 0.6rem;
+}
+
+.av-install-card__tagline {
+  color: var(--ifm-color-content-secondary);
+  margin-bottom: 1.1rem;
+}
+
+.av-install-card__list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+}
+
+.av-install-card__list li {
+  position: relative;
+  padding-left: 1.6rem;
+  margin-bottom: 0.55rem;
+  line-height: 1.45;
+}
+
+.av-install-card__list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--ifm-color-primary);
+  font-weight: 700;
+}
+
+/* Push the CTA to the bottom edge so both cards' buttons align. */
+.av-install-card__cta {
+  margin-top: auto;
+}
+
+/* inline-flex + centering keeps the label optically centered in the pill. */
+.av-install-card__cta .button {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The markdown link text gets wrapped in a <p>, whose default bottom margin
+ * sits inside the pill and pushes the label toward the top. Zero it so the
+ * text is truly centered. */
+.av-install-card__cta .button p {
+  margin: 0;
+}
+
+/* The CTA pill is a <span>, not the link itself, so its :hover never fires —
+ * the whole card is the anchor. Drive the pill's hover look from the card so it
+ * still reacts when you point anywhere on the card. */
+.av-install-card:hover .button--primary {
+  background-color: var(--ifm-color-primary-dark);
+}
+
+.av-install-card:hover .button--secondary.button--outline {
+  border-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+}
+
+/* ------------------------------------------------ Clickable action cards -- */
+
+/* A responsive grid of "pick a task" cards where the *entire* card is one
+ * clickable link (used on the Contributing page). Collapses to one column on
+ * narrow screens. */
+.av-action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin: 2rem 0 1rem;
+}
+
+/* The whole card is an <a>. Reset link styling so the body text reads normally,
+ * and lift + tint the border on hover to signal it's clickable. */
+.av-action-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  border: 1px solid var(--av-border);
+  border-radius: 14px;
+  background: var(--av-card-bg);
+  color: var(--ifm-color-content);
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.av-action-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 5px 24px rgba(244, 149, 65, 0.12);
+  color: var(--ifm-color-content);
+  text-decoration: none;
+}
+
+.av-action-card__emoji {
+  font-size: 1.85rem;
+  line-height: 1;
+  margin-bottom: 0.85rem;
+}
+
+.av-action-card__title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: var(--ifm-heading-color);
+}
+
+.av-action-card__desc {
+  color: var(--ifm-color-content-secondary);
+  margin: 0 0 1.25rem;
+  line-height: 1.5;
+}
+
+/* The CTA is pinned to the bottom so cards with different copy lengths line up.
+ * The arrow nudges right on hover for a little affordance. */
+.av-action-card__cta {
+  margin-top: auto;
+  font-weight: 600;
+  color: var(--ifm-color-primary);
+}
+
+.av-action-card__cta::after {
+  content: ' →';
+  transition: margin-left 0.15s ease;
+}
+
+.av-action-card:hover .av-action-card__cta::after {
+  margin-left: 0.25rem;
 }
 
 /* ----------------------------------------------------- Collapsibles / FAQ -- */

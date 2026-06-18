@@ -1,0 +1,88 @@
+---
+sidebar_position: 1
+hide_table_of_contents: true
+---
+# Self-host Install
+
+AliasVault is self-hosted with Docker. There are two ways to install it — pick
+based on **how much you want managed for you** versus how much you want to fit
+into infrastructure you already run.
+
+<div className="av-install-choice">
+  <a className="av-install-card av-install-card--featured" href="./script">
+    <div className="av-install-card__emoji">🚀</div>
+    <div className="av-install-card__title">
+      Install Script
+      <span className="av-install-card__badge">Recommended</span>
+    </div>
+    <p className="av-install-card__tagline">
+      A fully managed setup. One script spins up every container, gets HTTPS for
+      you, and gives you CLI helpers for updates and maintenance.
+    </p>
+    <ul className="av-install-card__list">
+      <li>Automatic HTTPS via Let&apos;s Encrypt</li>
+      <li>Guided updates &amp; migrations</li>
+      <li>Production-ready defaults</li>
+    </ul>
+    <p className="av-install-card__tagline">
+      <strong>Best for:</strong> a fresh VM or VPS dedicated to AliasVault.
+    </p>
+    <div className="av-install-card__cta">
+      <span className="button button--primary button--lg">
+        Install with the script →
+      </span>
+    </div>
+  </a>
+
+  <a className="av-install-card" href="./docker-compose">
+    <div className="av-install-card__emoji">🛠️</div>
+    <div className="av-install-card__title">Docker Compose</div>
+    <p className="av-install-card__tagline">
+      A single all-in-one container you drop into your existing Docker stack.
+      You bring your own reverse proxy and TLS, and keep full control.
+    </p>
+    <ul className="av-install-card__list">
+      <li>Fits Portainer, Unraid, Synology &amp; other homelab tools</li>
+      <li>Bring your own TLS (Traefik, Nginx, HAProxy, Caddy…)</li>
+      <li>Updates via <code>docker pull</code> (occasional manual migrations)</li>
+    </ul>
+    <p className="av-install-card__tagline">
+      <strong>Best for:</strong> a NAS or homelab that already runs a reverse proxy and/or other Docker containers.
+    </p>
+    <div className="av-install-card__cta">
+      <span className="button button--secondary button--outline button--lg">
+        Install with Docker →
+      </span>
+    </div>
+  </a>
+</div>
+
+## Differences
+
+The two methods install the same version AliasVault: they differ mainly in how TLS, updates, and the surrounding setup is handled.
+
+|                  | 🚀 Install Script         | 🛠️ Docker Compose            |
+|------------------|---------------------------|------------------------------|
+| **TLS/SSL**      | Automatic (Let's Encrypt) | Bring your own reverse proxy |
+| **Updates**      | Guided via `install.sh`   | Manual `docker pull`         |
+| **Containers**   | Multiple (one per service)| Single all-in-one image      |
+| **Best for**     | Dedicated VM / VPS        | Existing homelab / NAS       |
+| **Build from source** | Supported            | Pre-built image only         |
+
+:::tip
+Not sure yet? You can switch later. Both methods use the same Docker bind-mount directories (/database, /certificates, /logs, /secrets), so migration is straightforward. 
+Stop or uninstall one method, then follow the installation steps for the other. Your data is preserved.
+:::
+
+## Frequently Asked Questions {#faq}
+
+### What are the system requirements?
+**Minimum:**
+- 64-bit Linux OS (Ubuntu or RHEL-based recommended)
+- 1 vCPU, 1 GB RAM, 16 GB disk
+- Docker CE (≥ 20.10) and Docker Compose (≥ 2.0)
+
+**Network:**
+- Ports 80 and 443 available
+- Optional: ports 25 and 587 for private email domains
+
