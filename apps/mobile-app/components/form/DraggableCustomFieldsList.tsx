@@ -12,6 +12,7 @@ import { HapticsUtility } from '@/utils/HapticsUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
 
+import { AdvancedPasswordField } from './AdvancedPasswordField';
 import { EditableFieldLabel } from './EditableFieldLabel';
 import { FormField } from './FormField';
 import { HiddenField } from './HiddenField';
@@ -66,7 +67,17 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
       );
     }
 
-    if (field.isHidden || field.fieldType === FieldTypes.Hidden || field.fieldType === FieldTypes.Password) {
+    if (field.fieldType === FieldTypes.Password) {
+      return (
+        <AdvancedPasswordField
+          value={value}
+          onChangeText={onValueChange}
+          label=""
+        />
+      );
+    }
+
+    if (field.isHidden || field.fieldType === FieldTypes.Hidden) {
       return (
         <HiddenField
           value={value}

@@ -260,6 +260,7 @@
     "fieldType": "Field Type",
     "fieldTypes": {
       "text": "Text",
+      "password": "Password",
       "hidden": "Hidden (masked text)",
       "email": "Email",
       "url": "URL",
