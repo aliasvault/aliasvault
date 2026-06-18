@@ -1,5 +1,5 @@
 ---
-sidebar_position: 2
+sidebar_position: 1
 ---
 # Self-host Install
 
@@ -45,9 +45,8 @@ If you prefer manual setup and **have existing SSL infrastructure**, use the all
 
 ## Frequently Asked Questions
 
-<details style="margin-bottom: 10px;">
-<summary style="background-color: #4a5568; color: #ffffff; padding: 10px; border-radius: 5px; cursor: pointer;">What's the difference between multi-container and single container?</summary>
-<div style="background-color: #2d3748; color: #ffffff; padding: 15px; border-left: 3px solid #4299e1;" markdown="1">
+<details>
+<summary>What's the difference between multi-container and single container?</summary>
 
 | **Multi-container (Installer Script)** | **Single container (Manual Setup)** |
 |----------------------------------------|-------------------------------------|
@@ -56,43 +55,35 @@ If you prefer manual setup and **have existing SSL infrastructure**, use the all
 | Uses docker-compose for orchestration | Lower resource overhead |
 | Better for production deployments | Better for home labs and personal use |
 
-</div>
 </details>
 
-<details style="margin-bottom: 10px;">
-<summary style="background-color: #4a5568; color: #ffffff; padding: 10px; border-radius: 5px; cursor: pointer;">Do I need to handle SSL/TLS certificates myself?</summary>
-<div style="background-color: #2d3748; color: #ffffff; padding: 15px; border-left: 3px solid #4299e1;" markdown="1">
+<details>
+<summary>Do I need to handle SSL/TLS certificates myself?</summary>
 
 - **Installer Script**: No, it includes automatic Let's Encrypt certificates
 - **Manual Setup**: Yes, you need your own reverse proxy for HTTPS
 
-</div>
 </details>
 
-<details style="margin-bottom: 10px;">
-<summary style="background-color: #4a5568; color: #ffffff; padding: 10px; border-radius: 5px; cursor: pointer;">How do updates work?</summary>
-<div style="background-color: #2d3748; color: #ffffff; padding: 15px; border-left: 3px solid #4299e1;" markdown="1">
+<details>
+<summary>How do updates work?</summary>
 
 | Method | Update Process |
 |--------|---------------|
 | **Installer Script** | Run `./install.sh update` for automated updates and migrations |
 | **Manual Setup** | Use `docker pull` to get the latest image; manual migrations may be required |
 
-</div>
 </details>
 
-<details style="margin-bottom: 10px;">
-<summary style="background-color: #4a5568; color: #ffffff; padding: 10px; border-radius: 5px; cursor: pointer;">Can I migrate between installation methods?</summary>
-<div style="background-color: #2d3748; color: #ffffff; padding: 15px; border-left: 3px solid #4299e1;" markdown="1">
+<details>
+<summary>Can I migrate between installation methods?</summary>
 
 Yes! Both methods use the same bind mount directories (`/database`, `/certificates`, `/logs`, `/secrets`), making migration straightforward. Simply stop/uninstall via one method and follow the installation steps for the other - your data will be preserved.
 
-</div>
 </details>
 
-<details style="margin-bottom: 10px;">
-<summary style="background-color: #4a5568; color: #ffffff; padding: 10px; border-radius: 5px; cursor: pointer;">What are the system requirements?</summary>
-<div style="background-color: #2d3748; color: #ffffff; padding: 15px; border-left: 3px solid #4299e1;" markdown="1">
+<details>
+<summary>What are the system requirements?</summary>
 
 **Minimum requirements:**
 - 64-bit Linux OS (Ubuntu or RHEL-based recommended)
@@ -103,15 +94,12 @@ Yes! Both methods use the same bind mount directories (`/database`, `/certificat
 - Ports 80 and 443 available
 - Optional: Ports 25 and 587 for private email domains
 
-</div>
 </details>
 
-<details style="margin-bottom: 10px;">
-<summary style="background-color: #4a5568; color: #ffffff; padding: 10px; border-radius: 5px; cursor: pointer;">Can I build from source?</summary>
-<div style="background-color: #2d3748; color: #ffffff; padding: 15px; border-left: 3px solid #4299e1;" markdown="1">
+<details>
+<summary>Can I build from source?</summary>
 
 - **Installer Script**: Yes, optional build from source is supported
 - **Manual Setup**: No, uses pre-built container images only
 
-</div>
 </details>

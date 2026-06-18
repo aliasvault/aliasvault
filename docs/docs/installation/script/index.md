@@ -1,5 +1,6 @@
 ---
 sidebar_position: 1
+sidebar_label: "Overview"
 ---
 # Self-host using Install Script (multi-container)
 The following guide will walk you through the steps to install AliasVault on your own server using the AliasVault installer script: `install.sh`. This script will pull pre-built Docker Images and do all the configuration for you while using `docker compose` in the background.
@@ -68,7 +69,7 @@ and then in the prompt choose option 2.
 AliasVault includes a built-in email server that allows you to generate email aliases on-the-fly for every website you use, and receive + read the emails straight in AliasVault.
 
 :::note
-If you skip this step, AliasVault will default to use public email domains offered by SpamOK. While this still works for creating aliases, it has privacy limitations. For complete privacy and control, we recommend setting up your own domain. [Learn more about the differences between private and public email domains](../../misc/private-vs-public-email.md).
+If you skip this step, AliasVault will default to use public email domains offered by SpamOK. While this still works for creating aliases, it has privacy limitations. For complete privacy and control, we recommend setting up your own domain. [Learn more about the differences between private and public email domains](../private-vs-public-email.md).
 :::
 
 ### Requirements

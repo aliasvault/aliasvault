@@ -1,5 +1,6 @@
 ---
 sidebar_position: 2
+sidebar_label: "Overview"
 ---
 # Self-host using Docker Compose (single container)
 The following guide will walk you through the steps to install AliasVault via the All-In-One Docker container. This container uses `s6-overlay` to combine all AliasVault's services into one image for convenience. The only downside compared to the `install.sh` installer is that this version does NOT come with SSL/TLS support, so you'll have to make the container available through your own SSL/TLS proxy.
@@ -80,7 +81,7 @@ AliasVault includes a built-in email server that allows you to generate email al
 
 :::note
 If you skip this step, AliasVault will default to use public email domains offered by SpamOK. While this still works for creating aliases, it has privacy limitations. For complete privacy and control, we recommend setting up your own domain.
-[Learn more about the differences between private and public email domains](../../misc/private-vs-public-email.md).
+[Learn more about the differences between private and public email domains](../private-vs-public-email.md).
 :::
 
 ### Requirements

@@ -48,10 +48,20 @@
   --ifm-table-border-color: #e3e8ef;
   --av-card-bg: #ffffff;
   --av-border: #e3e8ef;
+  --av-sidebar-bg: #f7f8fb; /* subtle contrast against the white content column */
+  --av-menu-expanded-bg: rgba(20, 30, 50, 0.05); /* open category header fill */
+
+  /* Collapsible / FAQ header bar tints (matching the marketing accordion). */
+  --av-collapsible-header-hover: #f4f5f8;
+  --av-collapsible-header-open: #f0f2f9;
 }
 
-/* Dark mode — warm near-black surfaces matching the website. */
-[data-theme='dark'] {
+/* Dark mode — dark-blue surfaces matching the marketing website.
+ * Selector is `html[data-theme='dark']` (not just `[data-theme='dark']`) to
+ * match Infima's own specificity — otherwise Infima's `html[data-theme='dark']`
+ * defaults (e.g. --ifm-background-color: #1b1b1d) win and the content area
+ * stays neutral near-black instead of the brand dark blue (#121723). */
+html[data-theme='dark'] {
   --ifm-color-primary: #f49541;
   --ifm-color-primary-dark: #f2882a;
   --ifm-color-primary-darker: #d68338;
@@ -62,7 +72,7 @@
 
   --ifm-background-color: #121723; /* website body (dark:bg-black) */
   --ifm-background-surface-color: #1d2430; /* website `dark` */
-  --ifm-navbar-background-color: rgba(23, 28, 40, 0.85); /* bg-color-dark */
+  --ifm-navbar-background-color: rgba(33, 41, 54, 0.85); /* web app header #212936 */
   --ifm-footer-background-color: #0e131d;
   --ifm-color-content: #d8dce6;
   --ifm-color-content-secondary: #959cb1; /* body-color-dark */
@@ -74,6 +84,11 @@
 
   --av-card-bg: #1d2430;
   --av-border: #2a313f;
+  --av-sidebar-bg: #212936; /* raised panel matching the web app header/sidebar */
+  --av-menu-expanded-bg: rgba(255, 255, 255, 0.05); /* open category header fill */
+
+  --av-collapsible-header-hover: rgba(255, 255, 255, 0.03);
+  --av-collapsible-header-open: rgba(255, 255, 255, 0.05);
 }
 
 /* ---------------------------------------------------------------- Navbar -- */
@@ -90,8 +105,10 @@
   font-size: 1.1rem;
 }
 
+/* The logo SVG includes the "AliasVault" wordmark, so its height drives the
+ * whole brand size (there is no separate navbar title text). */
 .navbar__logo {
-  height: 2rem;
+  height: 2.75rem;
 }
 
 .navbar__link {
@@ -105,12 +122,15 @@
 
 /* --------------------------------------------------------------- Sidebar -- */
 
+/* Sidebar sits on a slightly raised surface so it reads as a distinct panel
+ * against the content column. */
 .theme-doc-sidebar-container {
   border-right: 1px solid var(--av-border);
+  background-color: var(--av-sidebar-bg);
 }
 
-[data-theme='dark'] .menu {
-  background-color: var(--ifm-background-color);
+.menu {
+  background-color: var(--av-sidebar-bg);
 }
 
 /* Breathing room around the menu and rounded, app-like items. */
@@ -119,8 +139,18 @@
   font-weight: 500;
 }
 
+/* Nested items get a vertical guide line + indent so an expanded category's
+ * children read as a group, clearly distinct from the next top-level item. */
 .menu__list .menu__list {
+  margin-left: 1rem;
   padding-left: 0.5rem;
+  border-left: 1px solid var(--av-border);
+}
+
+/* A touch more breathing room above each top-level category separates one
+ * collapsed/expanded group from the next. */
+.menu > .menu__list > .menu__list-item:not(:first-child) {
+  margin-top: 0.15rem;
 }
 
 .menu__link {
@@ -136,7 +166,23 @@
   border-radius: 8px;
 }
 
+/* An expanded category's header keeps a persistent tint (distinct from the
+ * flat closed items) so it's obvious which group is currently open. */
+.menu__list-item:not(.menu__list-item--collapsed) > .menu__link--sublist {
+  background-color: var(--av-menu-expanded-bg);
+}
+
 /* --------------------------------------------------------------- Content -- */
+
+/* Standalone doc pages (Architecture, Help & Support) have no sidebar, so
+ * Docusaurus renders no breadcrumb nav above the article. On the sidebar
+ * sections the breadcrumb adds ~2.5rem of vertical space before the H1 (its
+ * own row height plus a 0.8rem bottom margin); without it the heading sits
+ * tight against the navbar. Re-create that top spacing when the article has
+ * no breadcrumb so every page starts with the same breathing room. */
+article:not(:has(> nav.theme-doc-breadcrumbs)) > .theme-doc-markdown {
+  margin-top: 2.5rem;
+}
 
 /* Comfortable reading column with real margins, instead of full-bleed. */
 .theme-doc-markdown {
@@ -176,6 +222,90 @@
 .card {
   background: var(--av-card-bg);
   border: 1px solid var(--av-border);
+}
+
+/* ----------------------------------------------------- Collapsibles / FAQ -- */
+
+/* Native <details> styled like the marketing FAQ accordion: a bordered card
+ * with a tinted header bar, a chevron on the right, and a divider above the
+ * muted answer text. Docusaurus ships <details> as `details.alert.alert--info`
+ * (a blue info box), so we neutralise that here. Scoped to doc content. */
+.theme-doc-markdown details {
+  --docusaurus-details-decoration-color: var(--av-border);
+  margin-bottom: 1rem;
+  padding: 0;
+  border: 1px solid var(--av-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--av-card-bg);
+  box-shadow: none;
+}
+
+.theme-doc-markdown details > summary {
+  margin: 0;
+  padding: 1rem 3rem 1rem 1.5rem;
+  font-weight: 600;
+  font-size: 1.02rem;
+  color: var(--ifm-heading-color);
+  background-color: transparent;
+  transition: background-color 150ms ease;
+}
+
+.theme-doc-markdown details > summary:hover {
+  background-color: var(--av-collapsible-header-hover);
+}
+
+.theme-doc-markdown details[open] > summary {
+  background-color: var(--av-collapsible-header-open);
+}
+
+/* Move the disclosure arrow to the right edge and enlarge it slightly. */
+.theme-doc-markdown details > summary::before {
+  left: auto;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%) rotate(0deg);
+  transform-origin: center;
+  border-width: 0.4rem;
+  border-color: transparent transparent transparent var(--ifm-color-content-secondary);
+}
+
+.theme-doc-markdown details[open] > summary::before,
+.theme-doc-markdown details[data-collapsed='false'] > summary::before {
+  transform: translateY(-50%) rotate(90deg);
+}
+
+/* Answer area: muted body text sitting directly under the header bar, with no
+ * divider line or top-margin gap (header's own padding provides separation). */
+.theme-doc-markdown details > div {
+  margin-top: 0;
+  padding: 0 1.5rem 1.25rem;
+  border-top: none;
+  color: var(--ifm-color-content-secondary);
+}
+
+.theme-doc-markdown details > div > :last-child {
+  margin-bottom: 0;
+}
+
+/* ------------------------------------------------------------ Admonitions -- */
+
+/* Brand the informational admonitions (:::info / :::note) with the AliasVault
+ * orange instead of Docusaurus' default blue/grey, matching the marketing
+ * site's callouts (border-primary + faint primary fill). `.theme-admonition`
+ * keeps this off the FAQ <details>, which share the `alert--info` class. */
+.theme-admonition.alert--info,
+.theme-admonition.alert--secondary {
+  --ifm-alert-border-color: var(--ifm-color-primary);
+  --ifm-alert-background-color: rgba(244, 149, 65, 0.1);
+  --ifm-alert-background-color-highlight: rgba(244, 149, 65, 0.15);
+  --ifm-alert-foreground-color: var(--ifm-color-content);
+}
+
+[data-theme='dark'] .theme-admonition.alert--info,
+[data-theme='dark'] .theme-admonition.alert--secondary {
+  --ifm-alert-background-color: rgba(244, 149, 65, 0.06);
+  --ifm-alert-background-color-highlight: rgba(244, 149, 65, 0.1);
 }
 
 /* ---------------------------------------------------------------- Buttons -- */

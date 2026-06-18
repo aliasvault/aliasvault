@@ -56,9 +56,76 @@
   border-color: var(--ifm-color-primary);
 }
 
+/* When a card is itself a link (e.g. the Explore the docs cards), keep the
+   regular text styling rather than the default link color/underline. */
+a.featureCard,
+a.featureCard:hover {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
 .featureEmoji {
   font-size: 2rem;
   margin-bottom: 0.75rem;
+}
+
+/* Generic content section. */
+.section {
+  padding: 4rem 0;
+}
+
+.sectionAlt {
+  background: var(--ifm-background-surface-color);
+  border-top: 1px solid var(--ifm-toc-border-color);
+  border-bottom: 1px solid var(--ifm-toc-border-color);
+}
+
+.sectionTitle {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+.sectionIntro {
+  max-width: 720px;
+  margin: 0 auto 2.5rem;
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--ifm-color-content-secondary);
+}
+
+/* Centered prose column (e.g. the privacy explainer). */
+.prose {
+  max-width: 760px;
+  margin: 0 auto;
+  font-size: 1.05rem;
+  color: var(--ifm-color-content-secondary);
+}
+
+.prose p:last-child {
+  margin-bottom: 0;
+}
+
+/* Two-up content cards (Getting Started / Contribute). */
+.contentCard {
+  height: 100%;
+  padding: 1.75rem;
+  border: 1px solid var(--ifm-toc-border-color);
+  border-radius: 12px;
+  background: var(--ifm-background-surface-color);
+}
+
+.contentCard h3 {
+  margin-top: 0;
+}
+
+.contentCard ul {
+  margin-bottom: 0;
+  padding-left: 1.1rem;
+  color: var(--ifm-color-content-secondary);
 }
 
 .cta {
