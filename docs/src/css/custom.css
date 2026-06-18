@@ -120,6 +120,78 @@ html[data-theme='dark'] {
   margin-right: 0.25rem;
 }
 
+/* Website / Discord / GitHub render as icons in the top bar instead of text.
+ * Each modifier class supplies the glyph via the --av-icon mask; the icon is
+ * tinted with the navbar link color so it tracks light/dark mode and hover.
+ * Scoped to `.navbar__link` (the desktop bar) — in the mobile slide-in menu
+ * these are `.menu__link` and keep their text label (with the icon alongside,
+ * see below). */
+.navbar__link.navbar__icon-link {
+  font-size: 0; /* hide the text label; the glyph comes from ::before */
+  display: flex;
+  align-items: center;
+}
+
+.navbar__link.navbar__icon-link::before {
+  content: '';
+  display: inline-block;
+  width: 1.4rem;
+  height: 1.4rem;
+  background-color: var(--ifm-navbar-link-color);
+  -webkit-mask: var(--av-icon) center / contain no-repeat;
+  mask: var(--av-icon) center / contain no-repeat;
+  transition: background-color 0.15s ease;
+}
+
+.navbar__link.navbar__icon-link:hover::before {
+  background-color: var(--ifm-navbar-link-hover-color);
+}
+
+/* Docusaurus appends an external-link arrow to off-site links; drop it on the
+ * icon-only desktop links. */
+.navbar__link.navbar__icon-link svg {
+  display: none;
+}
+
+/* In the mobile slide-in menu the links keep their text label, with the same
+ * glyph shown alongside it. */
+.menu__link.navbar__icon-link::before {
+  content: '';
+  display: inline-block;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-right: 0.55rem;
+  vertical-align: -0.2rem;
+  background-color: currentColor;
+  -webkit-mask: var(--av-icon) center / contain no-repeat;
+  mask: var(--av-icon) center / contain no-repeat;
+}
+
+.navbar__icon-link--website {
+  --av-icon: url('/assets/img/icons/website.svg');
+}
+.navbar__icon-link--discord {
+  --av-icon: url('/assets/img/icons/discord.svg');
+}
+.navbar__icon-link--github {
+  --av-icon: url('/assets/img/icons/github.svg');
+}
+
+/* Collapse to the hamburger menu earlier than Infima's default 996px. With six
+ * navbar items (four left + Website/GitHub) plus the wide wordmark logo, the
+ * inline links get cramped between ~996px and ~1150px — "Self-host Install"
+ * wraps onto two lines. Switching to the mobile slide-in menu sooner avoids
+ * that. The slide-in sidebar is always rendered and toggled by JS, so only the
+ * toggle/inline-item visibility needs raising. */
+@media (max-width: 1150px) {
+  .navbar__toggle {
+    display: inherit;
+  }
+  .navbar__item {
+    display: none;
+  }
+}
+
 /* --------------------------------------------------------------- Sidebar -- */
 
 /* Sidebar sits on a slightly raised surface so it reads as a distinct panel
@@ -364,8 +436,9 @@ html[class*='docs-doc-id-installation/index'] .theme-doc-markdown {
 }
 
 .av-install-card:hover .button--secondary.button--outline {
+  background-color: var(--ifm-color-primary);
   border-color: var(--ifm-color-primary);
-  color: var(--ifm-color-primary);
+  color: #fff;
 }
 
 /* ------------------------------------------------ Clickable action cards -- */
