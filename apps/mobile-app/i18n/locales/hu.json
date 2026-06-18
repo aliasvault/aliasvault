@@ -308,7 +308,7 @@
         "password": "Jelszó",
         "enterPassword": "Jelszó megadása",
         "deleteAccount": "Fiók törlése",
-        "confirmationMessage": "Teljesen biztos abban, hogy törölni akarja fiókját? Ez a művelet nem visszafordítható.",
+        "confirmationMessage": "Teljesen biztos abban, hogy törölni akarja fiókját? Ez a művelet nem visszavonható.",
         "usernameDoesNotMatch": "Felhasználónév nem egyezik",
         "verifyingPassword": "Jelszó ellenőrzése...",
         "currentPasswordIncorrect": "A jelenlegi jelszó helytelen",
@@ -360,6 +360,7 @@
     "enterFieldName": "Adja meg a mező nevét",
     "fieldTypes": {
       "text": "Szöveg",
+      "password": "Jelszó",
       "hidden": "Rejtett",
       "email": "E-mail",
       "url": "Webcím",
@@ -692,7 +693,7 @@
       "selfHostedWarning": "Ha saját üzemetetésű szervere van, bizonyosodjon meg, hogy naprakész szervert használ, mert máskülönben a web kliensbe való belépés nem fog működni.",
       "continueUpgrade": "Frissítés folytatása",
       "upgradeFailed": "Sikertelen frissítés",
-      "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})"
+      "failedToApplyMigration": "Migráció alkalmazása sikertelen ({{current}} a {{total}}-ból)"
     }
   }
 }
