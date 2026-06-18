@@ -76,6 +76,7 @@
     "settings": "Asetukset",
     "recentEmails": "Viimeaikaiset sähköpostit",
     "credentials": "Tunnistetiedot",
+    "passkeys": "Sala-avaimet",
     "customFields": "Räätälöidyt kentät",
     "twoFactorAuthentication": "Kaksivaiheinen tunnistautuminen",
     "alias": "Alias",
@@ -148,6 +149,7 @@
     "creatingNewAlias": "Luodaan uutta aliasta",
     "creatingNewCredential": "Creating new credential",
     "noMatchesFound": "Osumia ei löytynyt",
+    "loginWithPasskey": "Login with passkey",
     "searchVault": "Etsi holvi...",
     "enterServiceName": "Syötä palvelun nimi",
     "enterEmailAddress": "Syötä sähköpostiosoite",
@@ -216,7 +218,6 @@
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
       "folders": "Folders",
-      "passkeys": "Sala-avaimet",
       "totp": "2FA Codes"
     },
     "sort": {
@@ -259,6 +260,7 @@
     "fieldType": "Kentän tyyppi",
     "fieldTypes": {
       "text": "Teksti",
+      "password": "Salasana",
       "hidden": "Hidden (masked text)",
       "email": "Sähköposti",
       "url": "URL",
@@ -502,7 +504,8 @@
       "selectExistingLogin": "Add to existing login:",
       "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
       "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey"
+      "attachPasskey": "Add Passkey",
+      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
     "settings": {
       "passkeyProvider": "Todennusavaimen toimittaja",

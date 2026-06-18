@@ -76,6 +76,7 @@
     "settings": "Configurações",
     "recentEmails": "E-mails recentes",
     "credentials": "Credenciais",
+    "passkeys": "Passkeys",
     "customFields": "Campos Personalizados",
     "twoFactorAuthentication": "Autenticação de dois fatores",
     "alias": "Alias",
@@ -148,6 +149,7 @@
     "creatingNewAlias": "Criando novo alias",
     "creatingNewCredential": "Creating new credential",
     "noMatchesFound": "Nenhum resultado encontrado",
+    "loginWithPasskey": "Login with passkey",
     "searchVault": "Pesquisar cofre...",
     "enterServiceName": "Digite o nome do serviço",
     "enterEmailAddress": "Digite o endereço de e-mail",
@@ -216,7 +218,6 @@
     "deleteFolderAndItemsDescription": "{{count}} item(s) será(ão) movido(s) para Recentemente Excluídos.",
     "filters": {
       "folders": "Pastas",
-      "passkeys": "Passkeys",
       "totp": "Códigos de 2FA"
     },
     "sort": {
@@ -259,6 +260,7 @@
     "fieldType": "Tipo do Campo",
     "fieldTypes": {
       "text": "Texto",
+      "password": "Senha",
       "hidden": "Escondido (texto mascarado)",
       "email": "E-mail",
       "url": "URL",
@@ -502,7 +504,8 @@
       "selectExistingLogin": "Adicionar à login existente:",
       "selectExistingLoginDescription": "Adicionar este passkey em uma credencial de login para este site.",
       "attachingToCredential": "Adicionando passkey em: {{serviceName}}",
-      "attachPasskey": "Adicionar Passkey"
+      "attachPasskey": "Adicionar Passkey",
+      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
     "settings": {
       "passkeyProvider": "Provedor de Passkey",

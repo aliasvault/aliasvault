@@ -76,6 +76,7 @@
     "settings": "הגדרות",
     "recentEmails": "הודעות דוא״ל אחרונות",
     "credentials": "פרטי גישה",
+    "passkeys": "Passkeys",
     "customFields": "Custom Fields",
     "twoFactorAuthentication": "אימות דו־שלבי",
     "alias": "כינוי",
@@ -148,6 +149,7 @@
     "creatingNewAlias": "נוצר כינוי חדש",
     "creatingNewCredential": "Creating new credential",
     "noMatchesFound": "לא נמצאו תוצאות",
+    "loginWithPasskey": "Login with passkey",
     "searchVault": "חיפוש בכספת…",
     "enterServiceName": "נא למלא את שם השירות",
     "enterEmailAddress": "נא למלא כתובת דוא״ל",
@@ -216,7 +218,6 @@
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
       "folders": "Folders",
-      "passkeys": "Passkeys",
       "totp": "2FA Codes"
     },
     "sort": {
@@ -259,6 +260,7 @@
     "fieldType": "Field Type",
     "fieldTypes": {
       "text": "Text",
+      "password": "סיסמה",
       "hidden": "Hidden (masked text)",
       "email": "דוא״ל",
       "url": "URL",
@@ -502,7 +504,8 @@
       "selectExistingLogin": "Add to existing login:",
       "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
       "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey"
+      "attachPasskey": "Add Passkey",
+      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
     "settings": {
       "passkeyProvider": "Passkey Provider",

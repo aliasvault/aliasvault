@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Assistant messages -->
   <data name="GreatNowLetsSetupUsername">
-    <value>Great! Now, let's set up your username for AliasVault.</value>
+    <value>Kitűnő! Most állítsa be felhasználónevét az AliasVault-hoz.</value>
     <comment>Assistant message about setting up username</comment>
   </data>
   <data name="EnterUsernameInstructions">
@@ -29,7 +29,7 @@
     <comment>Instructions for entering username</comment>
   </data>
   <data name="RememberUsernameNote">
-    <value>Remember: This is what you'll use to log in later, so make sure it's something you'll remember!</value>
+    <value>Figyelem: Később ezzel fog bejelentkezni, ezért úgy válassza meg, hogy biztosan emlékezzen rá!</value>
     <comment>Important note about remembering username</comment>
   </data>
   <!-- Form labels -->
@@ -38,16 +38,16 @@
     <comment>Label for username input field</comment>
   </data>
   <data name="UsernamePlaceholder">
-    <value>Enter your desired username or email</value>
+    <value>Adja meg a kívánt felhasználónevet és e-mailt</value>
     <comment>Placeholder text for username input</comment>
   </data>
   <!-- Validation messages -->
   <data name="ValidatingUsernameMessage">
-    <value>Validating username...</value>
+    <value>Felhasználónév ellenőrzése...</value>
     <comment>Message shown while validating username</comment>
   </data>
   <data name="UsernameAvailableMessage">
-    <value>Username is available!</value>
+    <value>Felhasználónév rendelkezésre áll!</value>
     <comment>Message shown when username is available</comment>
   </data>
   <data name="UsernameRequiredError">
@@ -55,12 +55,12 @@
     <comment>Error message when username is empty</comment>
   </data>
   <data name="ServerCommunicationError">
-    <value>An error occurred during communication with the AliasVault server.</value>
+    <value>Hiba lépett fel az AliasVault szerverrel való kommunikáció során.</value>
     <comment>Error message for server communication issues</comment>
   </data>
   <!-- Alt text -->
   <data name="AssistantAvatarAlt">
-    <value>AliasVault Assistant</value>
+    <value>AliasVault asszisztens</value>
     <comment>Alt text for assistant avatar image</comment>
   </data>
 </root>

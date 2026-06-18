@@ -76,6 +76,7 @@
     "settings": "Inställningar",
     "recentEmails": "Senaste e-postmeddelanden",
     "credentials": "Inloggningsuppgifter",
+    "passkeys": "Passkeys",
     "customFields": "Anpassade fält",
     "twoFactorAuthentication": "Tvåfaktorsautentisering",
     "alias": "Alias",
@@ -148,6 +149,7 @@
     "creatingNewAlias": "Skapar nytt alias",
     "creatingNewCredential": "Creating new credential",
     "noMatchesFound": "Inga träffar hittades",
+    "loginWithPasskey": "Login with passkey",
     "searchVault": "Sök i valvet...",
     "enterServiceName": "Ange tjänstens namn",
     "enterEmailAddress": "Ange e-postadress",
@@ -216,7 +218,6 @@
     "deleteFolderAndItemsDescription": "{{count}} objekt kommer att flyttas till Nyligen borttagen.",
     "filters": {
       "folders": "Mappar",
-      "passkeys": "Passkeys",
       "totp": "2FA-Koder"
     },
     "sort": {
@@ -259,6 +260,7 @@
     "fieldType": "Fälttyp",
     "fieldTypes": {
       "text": "Text",
+      "password": "Lösenord",
       "hidden": "Dold (maskerad text)",
       "email": "E-post",
       "url": "Webbadress",
@@ -502,7 +504,8 @@
       "selectExistingLogin": "Lägg till i befintlig inloggning:",
       "selectExistingLoginDescription": "Bifoga denna passkey till en befintlig inloggningsuppgift för den här webbplatsen.",
       "attachingToCredential": "Lägger till passkey till: {{serviceName}}",
-      "attachPasskey": "Lägg till Passkey"
+      "attachPasskey": "Lägg till Passkey",
+      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
     "settings": {
       "passkeyProvider": "Passkey-leverantör",

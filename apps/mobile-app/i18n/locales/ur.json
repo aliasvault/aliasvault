@@ -360,6 +360,7 @@
     "enterFieldName": "Enter field name",
     "fieldTypes": {
       "text": "Text",
+      "password": "پاس ورڈ",
       "hidden": "Hidden",
       "email": "ای میل",
       "url": "URL",

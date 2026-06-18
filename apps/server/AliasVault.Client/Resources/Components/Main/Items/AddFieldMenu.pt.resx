@@ -110,6 +110,10 @@
     <value>Texto</value>
     <comment>Text field type option</comment>
   </data>
+  <data name="FieldTypePassword">
+    <value>Senha</value>
+    <comment>Password field type option</comment>
+  </data>
   <data name="FieldTypeHidden">
     <value>Escondido</value>
     <comment>Hidden field type option</comment>

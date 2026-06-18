@@ -79,7 +79,7 @@
     <comment>Error message when folder name is empty</comment>
   </data>
   <data name="CreateButton" xml:space="preserve">
-    <value>Create</value>
+    <value>Létrehozás</value>
     <comment>Create button text</comment>
   </data>
   <data name="SaveButton" xml:space="preserve">

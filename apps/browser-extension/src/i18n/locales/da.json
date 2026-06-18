@@ -76,6 +76,7 @@
     "settings": "Indstillinger",
     "recentEmails": "Seneste e-mails",
     "credentials": "Logonoplysninger",
+    "passkeys": "Passkeys",
     "customFields": "Brugerdefinerede felter",
     "twoFactorAuthentication": "To-faktor autentificering",
     "alias": "Alias",
@@ -148,6 +149,7 @@
     "creatingNewAlias": "Opret nyt alias",
     "creatingNewCredential": "Opret nye legitimationsoplysninger",
     "noMatchesFound": "Ingen match fundet",
+    "loginWithPasskey": "Login with passkey",
     "searchVault": "Søg i boks...",
     "enterServiceName": "Indtast tjenestenavn",
     "enterEmailAddress": "Indtast e-mailadresse",
@@ -216,7 +218,6 @@
     "deleteFolderAndItemsDescription": "{{count}} element(er) vil blive flyttet til Senest Slettede.",
     "filters": {
       "folders": "Mapper",
-      "passkeys": "Passkeys",
       "totp": "2FA Koder"
     },
     "sort": {
@@ -259,6 +260,7 @@
     "fieldType": "Felttype",
     "fieldTypes": {
       "text": "Tekst",
+      "password": "Adgangskode",
       "hidden": "Skjult (maskeret tekst)",
       "email": "E-mail",
       "url": "URL",
@@ -328,8 +330,8 @@
     "emailNotFound": "E-mail blev ikke fundet",
     "formatHtml": "HTML",
     "formatPlain": "Tekst",
-    "formatSource": "Source",
-    "formatSwitchTitle": "Switch email format",
+    "formatSource": "Kilde",
+    "formatSwitchTitle": "Skift e-mail format",
     "item": "Element",
     "noEmails": "Ingen e-mails fundet",
     "noEmailsDescription": "Du har endnu ikke modtaget nogen e-mails på dine private e-mailadresser. Når du modtager en ny e-mail, vil den blive vist her.",
@@ -502,7 +504,8 @@
       "selectExistingLogin": "Tilføj til eksisterende login:",
       "selectExistingLoginDescription": "Forbind denne passkey til en eksisterende logonoplysning for dette websted.",
       "attachingToCredential": "Tilføjer passkey til: {{serviceName}}",
-      "attachPasskey": "Tilføj passkey"
+      "attachPasskey": "Tilføj passkey",
+      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
     "settings": {
       "passkeyProvider": "Passkey-udbyder",

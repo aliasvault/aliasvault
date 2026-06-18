@@ -110,6 +110,10 @@
     <value>文本</value>
     <comment>Text field type option</comment>
   </data>
+  <data name="FieldTypePassword">
+    <value>密码</value>
+    <comment>Password field type option</comment>
+  </data>
   <data name="FieldTypeHidden">
     <value>隐藏</value>
     <comment>Hidden field type option</comment>

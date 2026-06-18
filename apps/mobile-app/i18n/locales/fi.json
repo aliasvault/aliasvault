@@ -360,6 +360,7 @@
     "enterFieldName": "Anna kentän nimi",
     "fieldTypes": {
       "text": "Teksti",
+      "password": "Salasana:",
       "hidden": "Piilotettu",
       "email": "Sähköposti",
       "url": "URL",

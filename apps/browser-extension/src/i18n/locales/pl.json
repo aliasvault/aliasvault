@@ -76,6 +76,7 @@
     "settings": "Ustawienia",
     "recentEmails": "Ostatnie wiadomości e-mail",
     "credentials": "Dane logowania",
+    "passkeys": "Klucze dostępu",
     "customFields": "Pola niestandardowe",
     "twoFactorAuthentication": "Weryfikacja dwuetapowa (2FA)",
     "alias": "Alias",
@@ -148,6 +149,7 @@
     "creatingNewAlias": "Tworzenie nowego aliasu",
     "creatingNewCredential": "Creating new credential",
     "noMatchesFound": "Nie znaleziono żadnych wyników",
+    "loginWithPasskey": "Login with passkey",
     "searchVault": "Przeszukaj sejf...",
     "enterServiceName": "Wprowadź nazwę usługi",
     "enterEmailAddress": "Wprowadź adres e-mail",
@@ -216,7 +218,6 @@
     "deleteFolderAndItemsDescription": "{{count}} element(ów) zostaną przeniesione do Ostatnio usunięte.",
     "filters": {
       "folders": "Foldery",
-      "passkeys": "Klucze dostępu",
       "totp": "Kody 2FA"
     },
     "sort": {
@@ -259,6 +260,7 @@
     "fieldType": "Typ pola",
     "fieldTypes": {
       "text": "Tekst",
+      "password": "Hasło",
       "hidden": "Ukryty (zamaskowany tekst)",
       "email": "Skrzynka odbiorcza",
       "url": "adres URL",
@@ -502,7 +504,8 @@
       "selectExistingLogin": "Dodaj do istniejącego loginu:",
       "selectExistingLoginDescription": "Dołącz ten klucz dostępu do istniejącego logowania dla tej witryny.",
       "attachingToCredential": "Dodawanie klucza dostępu do: {{serviceName}}",
-      "attachPasskey": "Dodaj klucz dostępu"
+      "attachPasskey": "Dodaj klucz dostępu",
+      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
     "settings": {
       "passkeyProvider": "Dostawca klucza dostępu",

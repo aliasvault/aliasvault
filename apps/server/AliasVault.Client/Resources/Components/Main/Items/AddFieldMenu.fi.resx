@@ -110,6 +110,10 @@
     <value>Teksti</value>
     <comment>Text field type option</comment>
   </data>
+  <data name="FieldTypePassword">
+    <value>Salasana:</value>
+    <comment>Password field type option</comment>
+  </data>
   <data name="FieldTypeHidden">
     <value>Piilotettu</value>
     <comment>Hidden field type option</comment>

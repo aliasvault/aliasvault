@@ -360,6 +360,7 @@
     "enterFieldName": "Enter field name",
     "fieldTypes": {
       "text": "Text",
+      "password": "Contrasenya",
       "hidden": "Hidden",
       "email": "Correu electrònic",
       "url": "URL",

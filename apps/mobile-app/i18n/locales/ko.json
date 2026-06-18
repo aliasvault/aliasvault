@@ -360,6 +360,7 @@
     "enterFieldName": "Enter field name",
     "fieldTypes": {
       "text": "Text",
+      "password": "Password",
       "hidden": "Hidden",
       "email": "Email",
       "url": "URL",

@@ -60,7 +60,7 @@
   </resheader>
   <!-- Page Header -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Recently Deleted</value>
+    <value>Baru-baru ini dihapus</value>
     <comment>Page title for recently deleted items</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
@@ -90,12 +90,12 @@
     <comment>Text showing how many days until permanent deletion</comment>
   </data>
   <data name="ExpiringSoon" xml:space="preserve">
-    <value>Expiring soon</value>
+    <value>Segera kedaluwarsa</value>
     <comment>Text shown when item will be deleted within 24 hours</comment>
   </data>
   <!-- Actions -->
   <data name="Restore" xml:space="preserve">
-    <value>Restore</value>
+    <value>Pulihkan</value>
     <comment>Button text to restore a deleted item</comment>
   </data>
   <data name="EmptyAll" xml:space="preserve">

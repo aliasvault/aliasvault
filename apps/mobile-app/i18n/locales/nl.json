@@ -360,6 +360,7 @@
     "enterFieldName": "Voer de veldnaam in",
     "fieldTypes": {
       "text": "Tekst",
+      "password": "Wachtwoord",
       "hidden": "Verborgen",
       "email": "E-mail",
       "url": "URL",

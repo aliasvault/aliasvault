@@ -79,7 +79,7 @@
     <comment>Description for password unlock form</comment>
   </data>
   <data name="YourPasswordLabel" xml:space="preserve">
-    <value>Your password</value>
+    <value>Jelszava</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="UnlockButton" xml:space="preserve">
@@ -95,7 +95,7 @@
     <comment>Link text for logout</comment>
   </data>
   <data name="UnlockingVaultMessage" xml:space="preserve">
-    <value>Unlocking vault...</value>
+    <value>Széf feloldása...</value>
     <comment>Loading message while unlocking vault</comment>
   </data>
   <data name="UnlockRequestError" xml:space="preserve">
@@ -119,7 +119,7 @@
     <comment>Error message when WebAuthn is not supported</comment>
   </data>
   <data name="GenericUnlockError" xml:space="preserve">
-    <value>An error occurred while processing the login request. Try again (later).</value>
+    <value>Hiba lépett fel a belépés feldolgozása közben. Próbálja meg újra (később).</value>
     <comment>Generic error message for unlock failures</comment>
   </data>
   <data name="UnlockWithMobileButton" xml:space="preserve">

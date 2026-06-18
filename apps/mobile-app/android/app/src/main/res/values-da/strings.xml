@@ -7,10 +7,10 @@
   <string name="common_next">Næste</string>
   <string name="common_cancel">Annuller</string>
   <string name="common_back">Tilbage</string>
-  <string name="common_show_details">Show details</string>
-  <string name="common_hide_details">Hide details</string>
-  <string name="common_copy">Copy</string>
-  <string name="common_copied_to_clipboard">Copied to clipboard</string>
+  <string name="common_show_details">Vis detaljer</string>
+  <string name="common_hide_details">Skjul detaljer</string>
+  <string name="common_copy">Kopier</string>
+  <string name="common_copied_to_clipboard">Kopieret til udklipsholder</string>
   <string name="unknown_error">En ukendt fejl opstod</string>
   <string name="autofill_failed_to_retrieve">Kunne ikke hente, åben app</string>
   <string name="autofill_no_match_found">Ingen match fundet</string>

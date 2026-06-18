@@ -16,7 +16,7 @@
     "masterPassword": "Mot de passe principal",
     "unlockVault": "Déverrouiller",
     "unlockWithPin": "Déverrouiller avec un code PIN",
-    "enterPinToUnlock": "Entrez votre code PIN pour déverrouiller votre coffre-fort",
+    "enterPinToUnlock": "Saisir votre code NIP pour déverrouiller votre coffre-fort",
     "useMasterPassword": "Utiliser le mot de passe principal",
     "unlockTitle": "Déverrouiller votre coffre-fort",
     "logoutConfirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
@@ -76,6 +76,7 @@
     "settings": "Réglages",
     "recentEmails": "Emails récents",
     "credentials": "Identifiants",
+    "passkeys": "Clés d'accès",
     "customFields": "Champs Personnalisés",
     "twoFactorAuthentication": "Authentification à double facteur",
     "alias": "Alias",
@@ -148,6 +149,7 @@
     "creatingNewAlias": "Création d'un nouvel alias",
     "creatingNewCredential": "Création d'un nouvel identifiant",
     "noMatchesFound": "Aucun résultat trouvé",
+    "loginWithPasskey": "Se connecter avec une clé d'accès",
     "searchVault": "Rechercher élément...",
     "enterServiceName": "Entrez le nom du service",
     "enterEmailAddress": "Entrer l'adresse email",
@@ -216,7 +218,6 @@
     "deleteFolderAndItemsDescription": "{{count}} élément(s) vont être déplacés vers Récemment supprimés.",
     "filters": {
       "folders": "Dossiers",
-      "passkeys": "Clés d'accès",
       "totp": "Codes 2FA"
     },
     "sort": {
@@ -259,6 +260,7 @@
     "fieldType": "Type de champ",
     "fieldTypes": {
       "text": "Texte",
+      "password": "Mot de passe",
       "hidden": "Caché (texte masqué)",
       "email": "Email",
       "url": "URL",
@@ -502,7 +504,8 @@
       "selectExistingLogin": "Ajouter à l'identifiant existant :",
       "selectExistingLoginDescription": "Joindre cette clé d'accès à un identifiant de connexion existant pour ce site.",
       "attachingToCredential": "Ajout de la clé d'accès à : {{serviceName}}",
-      "attachPasskey": "Ajouter une clé d'accès"
+      "attachPasskey": "Ajouter une clé d'accès",
+      "unsupportedAlgorithm": "Ce site Web nécessite un type de clé d'accès que AliasVault ne prend pas en charge."
     },
     "settings": {
       "passkeyProvider": "Fournisseur de clés d'accès",

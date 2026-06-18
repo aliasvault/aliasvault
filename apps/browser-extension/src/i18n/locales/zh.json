@@ -76,6 +76,7 @@
     "settings": "设置",
     "recentEmails": "近期邮件",
     "credentials": "凭据",
+    "passkeys": "通行密钥",
     "customFields": "自定义字段",
     "twoFactorAuthentication": "两步验证（2FA）",
     "alias": "别名",
@@ -148,6 +149,7 @@
     "creatingNewAlias": "正在创建新别名",
     "creatingNewCredential": "正在创建新凭据",
     "noMatchesFound": "未找到匹配项",
+    "loginWithPasskey": "使用通行密钥登录",
     "searchVault": "搜索密码库…",
     "enterServiceName": "输入服务名称",
     "enterEmailAddress": "输入邮箱地址",
@@ -216,7 +218,6 @@
     "deleteFolderAndItemsDescription": "{{count}} 个项目将被移至“近期删除”。",
     "filters": {
       "folders": "文件夹",
-      "passkeys": "通行密钥",
       "totp": "两步验证码"
     },
     "sort": {
@@ -259,6 +260,7 @@
     "fieldType": "字段类型",
     "fieldTypes": {
       "text": "文本",
+      "password": "密码",
       "hidden": "隐藏（已遮挡文本）",
       "email": "邮箱",
       "url": "URL",
@@ -502,7 +504,8 @@
       "selectExistingLogin": "添加到现有登录：",
       "selectExistingLoginDescription": "将此通行密钥附加到此站点的现有登录凭据中。",
       "attachingToCredential": "正在将通行密钥添加到：{{serviceName}}",
-      "attachPasskey": "添加通行密钥"
+      "attachPasskey": "添加通行密钥",
+      "unsupportedAlgorithm": "该网站需要 AliasVault 不支持的通行密钥类型。"
     },
     "settings": {
       "passkeyProvider": "通行密钥提供程序",

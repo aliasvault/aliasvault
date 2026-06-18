@@ -59,15 +59,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NoLogoText" xml:space="preserve">
-    <value>No logo</value>
+    <value>Nincs logó</value>
     <comment>Text shown when service logo is not available</comment>
   </data>
   <data name="ImportFromServiceTitle" xml:space="preserve">
-    <value>Import from {0}</value>
+    <value>Improtálás {0}-ból</value>
     <comment>Modal title for importing from a service. {0} is placeholder for service name</comment>
   </data>
   <data name="UploadExportFileText" xml:space="preserve">
-    <value>Upload your {0} export file:</value>
+    <value>{0} export fájl feltöltése:</value>
     <comment>Text for file upload instruction. {0} is placeholder for service name</comment>
   </data>
   <data name="CancelButton" xml:space="preserve">
@@ -87,35 +87,35 @@
     <comment>Import button text</comment>
   </data>
   <data name="ImportFoldersLabel" xml:space="preserve">
-    <value>Import folders</value>
+    <value>Mappák importálása</value>
     <comment>Checkbox label for importing folder structure from the source password manager</comment>
   </data>
   <data name="FoldersDetected" xml:space="preserve">
-    <value>{0} folder(s) detected</value>
+    <value>{0} mappa észlelve</value>
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
   </data>
   <data name="ImportAttachmentsLabel" xml:space="preserve">
-    <value>Import detected attachments</value>
+    <value>Észlelt csatolmányok importálása</value>
     <comment>Checkbox label for importing file attachments detected in the source export</comment>
   </data>
   <data name="AttachmentsDetected" xml:space="preserve">
-    <value>{0} attachment(s), {1}</value>
+    <value>{0} csatolmány, {1}</value>
     <comment>Info text showing number of attachments detected and their total size. {0} is the count, {1} is the human-readable size (e.g. "3.9 MB")</comment>
   </data>
   <data name="DuplicateCredentialsWarning" xml:space="preserve">
-    <value>{0} duplicate credential(s) were found and will not be imported.</value>
+    <value>A rendszer {0} dupla bejegyzést talált, és importálja azokat.</value>
     <comment>Warning text when duplicate credentials are detected. {0} is the count</comment>
   </data>
   <data name="NoNewCredentials" xml:space="preserve">
-    <value>No new credentials were found to import.</value>
+    <value>Nincs új importálható bejegyzés.</value>
     <comment>Warning text when no new credentials are available for import</comment>
   </data>
   <data name="PreviewInstructions" xml:space="preserve">
-    <value>Check if the following detected credentials look correct before continuing:</value>
+    <value>Ellenőrizze a következő észlelt bejegyzéseket a folytatás előtt:</value>
     <comment>Instructions shown before the credential preview table</comment>
   </data>
   <data name="ServiceColumn" xml:space="preserve">
-    <value>Service</value>
+    <value>Szolgáltatás</value>
     <comment>Column header for service name in credential preview table</comment>
   </data>
   <data name="UsernameColumn" xml:space="preserve">
@@ -127,75 +127,75 @@
     <comment>Column header for password in credential preview table</comment>
   </data>
   <data name="MoreCredentials" xml:space="preserve">
-    <value>... and {0} more credentials</value>
+    <value>... további {0} bejegyzés</value>
     <comment>Text showing additional credentials not displayed. {0} is the count</comment>
   </data>
   <data name="ExtractFaviconsLabel" xml:space="preserve">
-    <value>Extract favicons for services with URLs</value>
+    <value>Hivatkozással rendelkező bejegyzések ikonjainak letöltése</value>
     <comment>Checkbox label for favicon extraction option</comment>
   </data>
   <data name="ConfirmImportText" xml:space="preserve">
-    <value>Are you sure you want to import ({0}) credentials? Note: the import process can take a short while.</value>
+    <value>Biztosan importálni akar ({0}) bejegyzést? Figyelem: az importálási folyamat eltarthat egy ideig.</value>
     <comment>Confirmation text before importing. {0} is the credential count</comment>
   </data>
   <data name="FaviconExtractionNote" xml:space="preserve">
-    <value>Note: Favicon extraction is enabled. This process can take several minutes depending on the number of credentials with URLs. Please keep the page open.</value>
+    <value>Megjegyzés: Az ikonok letöltése be van kapcsolva. Ez a folyamat több percig is eltarthat a weboldallal ellátott bejegyzések mennyiségétől függően. Kérem hagyja az oldalt nyitva.</value>
     <comment>Warning note about favicon extraction duration</comment>
   </data>
   <data name="ExtractingFavicons" xml:space="preserve">
-    <value>Extracting favicons... {0} / {1}</value>
+    <value>Ikonok letöltése... {0} / {1}</value>
     <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
   </data>
   <data name="SavingCredentials" xml:space="preserve">
-    <value>Saving credentials to vault... {0} / {1}</value>
+    <value>Bejegyzések mentése a széfbe... {0} / {1}</value>
     <comment>Progress text during credential save. {0} is current progress, {1} is total</comment>
   </data>
   <data name="SyncingVault" xml:space="preserve">
-    <value>Syncing vault to server...</value>
+    <value>Széf szinkronizálása a szerverrel...</value>
     <comment>Progress text when syncing vault to server after import</comment>
   </data>
   <data name="ImportSuccessMessage" xml:space="preserve">
-    <value>Successfully imported {0} credentials.</value>
+    <value>{0} sikeresen importálásra került.</value>
     <comment>Success message after import completes. {0} is the credential count</comment>
   </data>
   <data name="ImportErrorGeneric" xml:space="preserve">
-    <value>An error occurred during import. Please try again.</value>
+    <value>Egy hiba lépett fel az importálás során. Kérem próbálja újra.</value>
     <comment>Generic error message when import fails</comment>
   </data>
   <data name="ImportErrorInvalidFile" xml:space="preserve">
-    <value>Please select a valid export file to import.</value>
+    <value>Válasszon ki egy megfelelő export fájlt az importáláshoz.</value>
     <comment>Error message when invalid file is selected</comment>
   </data>
   <data name="ImportErrorZipFile" xml:space="preserve">
-    <value>Please unzip the export file before importing. See the instructions below for more information.</value>
+    <value>Kérem tömörítse ki az export zip fájlt importálás előtt. További információkért tekintse meg a lenti utasításokat.</value>
     <comment>Error message when user tries to import a zip file</comment>
   </data>
   <data name="ImportErrorUnsupportedFormat" xml:space="preserve">
-    <value>Unsupported file format. Supported formats: {0}</value>
+    <value>Nem támogatott fájl formátum. Támogatott formátumok: {0}</value>
     <comment>Error message when user selects an unsupported file format. {0} is the list of supported extensions</comment>
   </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
-    <value>File size exceeds {0}MB limit.</value>
+    <value>A fájl mérete nagyobb a megengedett {0}MB-nál.</value>
     <comment>Error message when file is too large. {0} is the maximum allowed size in megabytes</comment>
   </data>
   <data name="EncryptedFilePasswordPrompt" xml:space="preserve">
-    <value>This file is encrypted. Please enter the password you used when creating the export.</value>
+    <value>A fájl titkosított. Adja meg a jelszót, amit az exportálásnál használt.</value>
     <comment>Prompt for encrypted file password</comment>
   </data>
   <data name="DecryptionPasswordLabel" xml:space="preserve">
-    <value>Decryption Password</value>
+    <value>Dekódoló jelszó</value>
     <comment>Label for decryption password input</comment>
   </data>
   <data name="DecryptionPasswordHint" xml:space="preserve">
-    <value>This is the password you set when creating the encrypted export (.avex file), not your vault master password.</value>
+    <value>Ez az a jelszó, amit megad a titkosított (.avex fájl) export létrehozásnál, nem pedig a mester jelszava.</value>
     <comment>Hint explaining what password is needed</comment>
   </data>
   <data name="DecryptAndContinueButton" xml:space="preserve">
-    <value>Decrypt and Continue</value>
+    <value>Dekódolás és folytatás</value>
     <comment>Button text for decryption</comment>
   </data>
   <data name="DecryptingFile" xml:space="preserve">
-    <value>Decrypting file...</value>
+    <value>Fájl dekódolása...</value>
     <comment>Progress text during decryption</comment>
   </data>
   <data name="IncorrectPasswordError" xml:space="preserve">
@@ -203,31 +203,31 @@
     <comment>Error message for incorrect decryption password</comment>
   </data>
   <data name="DecryptionErrorGeneric" xml:space="preserve">
-    <value>Failed to decrypt the file. Please check that the file is not corrupted and try again.</value>
+    <value>A fájl dekódolása sikertelen. Kérem ellenőrizze, hogy hibás e a fájl, és próbálja újra.</value>
     <comment>Generic error message for decryption failure</comment>
   </data>
   <data name="supportedFormats" xml:space="preserve">
-    <value>Supported formats</value>
+    <value>Támogatott formátumok</value>
     <comment>Label for supported file formats</comment>
   </data>
   <data name="ImportErrorDetailsIntro" xml:space="preserve">
-    <value>Please copy the details below and share them when reporting this issue.</value>
+    <value>Kérem másolja ki a lenti értékeket, és ossza meg ezeket a hiba bejelentésnél.</value>
     <comment>Intro line shown above the copyable error diagnostic block when an import fails</comment>
   </data>
   <data name="ImportErrorCopyDetailsButton" xml:space="preserve">
-    <value>Copy details</value>
+    <value>Részletek másolása</value>
     <comment>Button label to copy the error diagnostic block to the clipboard</comment>
   </data>
   <data name="ImportErrorShowDetailsButton" xml:space="preserve">
-    <value>Show details</value>
+    <value>Részletek megjelenítése</value>
     <comment>Button label that reveals the error diagnostic block in an inline read-only textarea</comment>
   </data>
   <data name="ImportErrorHideDetailsButton" xml:space="preserve">
-    <value>Hide details</value>
+    <value>Részletek elrejtése</value>
     <comment>Button label that hides the error diagnostic block again (shown when the block is currently expanded)</comment>
   </data>
   <data name="ImportPartialFailureWarning" xml:space="preserve">
-    <value>{0} item(s) could not be parsed and will be skipped.</value>
+    <value>{0} elemet nem lehetett elemezni, ezért átugrásra kerülnek.</value>
     <comment>Warning shown in the preview step when some items failed to parse. {0} is the count of failed items</comment>
   </data>
 </root>

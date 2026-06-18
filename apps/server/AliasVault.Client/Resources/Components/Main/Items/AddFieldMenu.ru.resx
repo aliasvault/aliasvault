@@ -110,6 +110,10 @@
     <value>Текст</value>
     <comment>Text field type option</comment>
   </data>
+  <data name="FieldTypePassword">
+    <value>Пароль</value>
+    <comment>Password field type option</comment>
+  </data>
   <data name="FieldTypeHidden">
     <value>Скрытое</value>
     <comment>Hidden field type option</comment>

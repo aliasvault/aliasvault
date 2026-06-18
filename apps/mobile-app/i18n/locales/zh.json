@@ -360,6 +360,7 @@
     "enterFieldName": "输入字段名称",
     "fieldTypes": {
       "text": "文本",
+      "password": "密码",
       "hidden": "隐藏",
       "email": "邮箱",
       "url": "URL",

@@ -145,7 +145,7 @@
   </data>
   <!-- Loading and status messages -->
   <data name="LoggingInMessage" xml:space="preserve">
-    <value>Logging in...</value>
+    <value>Sedang login...</value>
     <comment>Loading message during login process</comment>
   </data>
   <data name="VerifyingTwoFactorCodeMessage" xml:space="preserve">

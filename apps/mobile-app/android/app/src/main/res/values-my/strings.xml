@@ -10,7 +10,7 @@
   <string name="common_show_details">Show details</string>
   <string name="common_hide_details">Hide details</string>
   <string name="common_copy">Copy</string>
-  <string name="common_copied_to_clipboard">Copied to clipboard</string>
+  <string name="common_copied_to_clipboard">ကလစ်ဘုတ်သို့ ကူးယူခဲ့ပြီး</string>
   <string name="unknown_error">An unknown error occurred</string>
   <string name="autofill_failed_to_retrieve">Failed to retrieve, open app</string>
   <string name="autofill_no_match_found">No match found</string>
