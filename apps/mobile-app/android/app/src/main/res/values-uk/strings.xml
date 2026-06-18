@@ -7,10 +7,10 @@
   <string name="common_next">Далі</string>
   <string name="common_cancel">Скасувати</string>
   <string name="common_back">Назад</string>
-  <string name="common_show_details">Show details</string>
-  <string name="common_hide_details">Hide details</string>
+  <string name="common_show_details">Показати подробиці</string>
+  <string name="common_hide_details">Приховати подробиці</string>
   <string name="common_copy">Copy</string>
-  <string name="common_copied_to_clipboard">Copied to clipboard</string>
+  <string name="common_copied_to_clipboard">Скопійовано до буфера обміну</string>
   <string name="unknown_error">Сталася невідома помилка</string>
   <string name="autofill_failed_to_retrieve">Не вдалося отримати, відкрийте додаток</string>
   <string name="autofill_no_match_found">No match found</string>
