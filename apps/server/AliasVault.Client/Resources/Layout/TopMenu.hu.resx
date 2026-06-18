@@ -30,11 +30,11 @@
   </data>
   <!-- Settings menu items -->
   <data name="GeneralSettingsNav">
-    <value>General settings</value>
+    <value>Általános beállítások</value>
     <comment>Navigation link for general settings</comment>
   </data>
   <data name="SecuritySettingsNav">
-    <value>Security settings</value>
+    <value>Biztonsági beállítások</value>
     <comment>Navigation link for security settings</comment>
   </data>
   <data name="StorageInsightsNav">
