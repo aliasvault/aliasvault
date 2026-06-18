@@ -2503,8 +2503,7 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
         if (target.classList.contains('av-suggested-name')) {
           const name = target.dataset.name;
           if (name) {
-          // Update input with clicked name. Only fill the service name (title);
-          // the username must not be derived from the title.
+            // Update the service name input
             inputServiceName.value = name;
 
             // Update the suggested names section
