@@ -6,7 +6,7 @@
 "edit" = "Ubah";
 "website" = "Website";
 "username" = "Username";
-"title" = "Title";
+"title" = "Judul";
 "unknown_error" = "Terjadi kesalahan yang tidak diketahui";
 
 "loading_items" = "Loading items...";
@@ -68,11 +68,11 @@
 
 /* Passkey merge with existing item */
 "passkey_add_to_existing" = "Or, add passkey to an existing item";
-"add_passkey" = "Add Passkey";
+"add_passkey" = "Tambah Passkey";
 "merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
 
 /* PIN Unlock */
-"unlock_vault" = "Unlock Vault";
+"unlock_vault" = "Buka Brankas";
 "enter_pin_to_unlock_vault" = "Masukkan pin untuk membuka vault";
 "pin_locked_max_attempts" = "PIN locked after too many failed attempts";
 "pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
@@ -87,6 +87,6 @@
 /* PIN Setup */
 "pin_setup_title" = "Setup PIN";
 "pin_setup_subtitle" = "Choose a PIN to unlock your vault";
-"pin_confirm_title" = "Confirm PIN";
+"pin_confirm_title" = "Konfirmasi PIN";
 "pin_confirm_subtitle" = "Re-enter your PIN to confirm";
 "pin_mismatch" = "PINs do not match. Please try again.";
