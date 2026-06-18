@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Page title and description -->
   <data name="PageTitle">
-    <value>General settings</value>
+    <value>Általános beállítások</value>
     <comment>Page title for general settings</comment>
   </data>
   <data name="PageDescription">
@@ -29,7 +29,7 @@
     <comment>Page description for general settings</comment>
   </data>
   <data name="BreadcrumbTitle">
-    <value>General settings</value>
+    <value>Általános beállítások</value>
     <comment>Breadcrumb title for general settings</comment>
   </data>
   <!-- Email Settings Section -->
