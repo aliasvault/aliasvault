@@ -76,6 +76,7 @@
     "settings": "Setări",
     "recentEmails": "E-mailuri recente",
     "credentials": "Date de autentificare",
+    "passkeys": "Passkeys",
     "customFields": "Câmpuri personalizate",
     "twoFactorAuthentication": "Autentificare cu doi factori",
     "alias": "Alias",
@@ -148,6 +149,7 @@
     "creatingNewAlias": "Se creează aliasul nou",
     "creatingNewCredential": "Crearea de noi date de autentificare",
     "noMatchesFound": "Nicio potrivire găsită",
+    "loginWithPasskey": "Login with passkey",
     "searchVault": "Caută în seif...",
     "enterServiceName": "Introdu numele serviciului",
     "enterEmailAddress": "Introdu adresa de e-mail",
@@ -216,7 +218,6 @@
     "deleteFolderAndItemsDescription": "{{count}} element(e) vor fi mutate la Șterse Recent.",
     "filters": {
       "folders": "Dosare",
-      "passkeys": "Passkeys",
       "totp": "Coduri 2FA"
     },
     "sort": {
@@ -259,6 +260,7 @@
     "fieldType": "Tip câmp",
     "fieldTypes": {
       "text": "Text",
+      "password": "Parolă",
       "hidden": "Ascuns (text mascat)",
       "email": "E-mail",
       "url": "URL",
@@ -502,7 +504,8 @@
       "selectExistingLogin": "Adaugă la o autentificare existentă:",
       "selectExistingLoginDescription": "Atașează acest passkey unor date de autentificare existente pentru acest site.",
       "attachingToCredential": "Se adaugă passkey-ul la: {{serviceName}}",
-      "attachPasskey": "Adaugă Passkey"
+      "attachPasskey": "Adaugă Passkey",
+      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
     "settings": {
       "passkeyProvider": "Furnizor Passkey",
