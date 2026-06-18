@@ -50,7 +50,7 @@ To generate a valid external TLS/SSL certificate for AliasVault, you can use Let
 - Port 80 and 443 on your server must be open and accessible from the internet
 - A registered domain name with an A record pointing to your server's public IP address (e.g. mydomain.com)
 
-### Enable Let's Encrypt SSL
+### 2.1 Enable Let's Encrypt SSL
 
 1. Run the install script with the `configure-ssl` option
 ```bash
@@ -58,7 +58,7 @@ To generate a valid external TLS/SSL certificate for AliasVault, you can use Let
 ```
 2. Follow the prompts to configure Let's Encrypt.
 
-### Reverting to self-signed TLS/SSL
+### 2.2 Reverting to self-signed TLS/SSL
 If at any point you would like to revert to the self-signed TLS/SSL certificate, run the install script again with the `configure-ssl` option
 and then in the prompt choose option 2.
 
@@ -69,10 +69,10 @@ and then in the prompt choose option 2.
 AliasVault includes a built-in email server that allows you to generate email aliases on-the-fly for every website you use, and receive + read the emails straight in AliasVault.
 
 :::note
-If you skip this step, AliasVault will default to use public email domains offered by SpamOK. While this still works for creating aliases, it has privacy limitations. For complete privacy and control, we recommend setting up your own domain. [Learn more about the differences between private and public email domains](../private-vs-public-email.md).
+If you skip this step, AliasVault will default to use public email domains offered by SpamOK. While this still works for creating aliases, it has privacy limitations. For complete privacy and control, we recommend setting up your own domain. [Learn more about the differences between private and public email domains](../docs/private-vs-public-email).
 :::
 
-### Requirements
+### 3.1 Requirements
 - A **public IPv4 address** with ports 25 and 587 forwarded to your AliasVault server
 - Open ports **25** and **587** on your server firewall for email SMTP traffic (*NOTE: some residential IP's block this, check with your ISP*).
 
@@ -90,7 +90,7 @@ telnet <your-server-public-ip> 587
 
 If successful, you'll see a connection establishment message. Press Ctrl+C to exit the telnet session.
 
-### DNS configuration
+### 3.2 DNS configuration
 Choose your configuration: primary domain vs subdomain. AliasVault can be configured under:
 
 - **A primary (top-level) domain**
@@ -143,7 +143,7 @@ This keeps the email configuration of your primary domain (`example.com`) comple
 
 ---
 
-### AliasVault server email domain configuration
+### 3.3 AliasVault server email domain configuration
 After setting up your DNS, continue with configuring AliasVault to let it know which email domains it should support.
 
 1. Run the email configuration script:
@@ -167,7 +167,7 @@ Important: DNS propagation can take up to 24-48 hours. During this time, email d
 
 If you encounter any issues, feel free to join the [Discord chat](https://discord.gg/DsaXMTEtpF) to get help from other users and maintainers.
 
-### Optional: SMTP TLS (STARTTLS)
+### 3.4 Optional: SMTP TLS (STARTTLS)
 
 By default, SMTP TLS is disabled. This does NOT significantly impact email deliverability: most email providers will still deliver to your server. However, if you want to enable TLS for SMTP connections:
 
@@ -217,11 +217,11 @@ Disabling IP logging means the ability to monitor and track abusive users on you
 
 ## 6. Troubleshooting
 
-### Verbose output
+### 6.1 Verbose output
 If you need more detailed output from the install script, you can run it with the `--verbose` option. This will print more information to the console.
 ```bash
 ./install.sh install --verbose
 ```
 
-### Troubleshooting guide
+### 6.2 Troubleshooting guide
 For more detailed troubleshooting information, please refer to the [troubleshooting guide](./troubleshooting.md).

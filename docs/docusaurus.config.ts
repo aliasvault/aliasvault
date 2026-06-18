@@ -94,10 +94,13 @@ const config: Config = {
               '/installation/update/v0.23.0.html',
             ],
           },
-          // private-vs-public-email moved from /misc into /installation.
+          // private-vs-public-email moved from /misc into /installation, then
+          // again under the /installation/docs/ category.
           {
-            to: '/installation/private-vs-public-email',
+            to: '/installation/docs/private-vs-public-email',
             from: [
+              '/installation/private-vs-public-email',
+              '/installation/private-vs-public-email.html',
               '/misc/private-vs-public-email',
               '/misc/private-vs-public-email.html',
             ],

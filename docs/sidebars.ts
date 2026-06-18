@@ -37,7 +37,11 @@ const sidebars: SidebarsConfig = {
         },
       ],
     },
-    'installation/private-vs-public-email',
+    {
+      type: 'category',
+      label: 'Docs',
+      items: ['installation/docs/private-vs-public-email'],
+    },
     {
       type: 'category',
       label: 'Browser Extensions',

@@ -81,10 +81,10 @@ AliasVault includes a built-in email server that allows you to generate email al
 
 :::note
 If you skip this step, AliasVault will default to use public email domains offered by SpamOK. While this still works for creating aliases, it has privacy limitations. For complete privacy and control, we recommend setting up your own domain.
-[Learn more about the differences between private and public email domains](../private-vs-public-email.md).
+[Learn more about the differences between private and public email domains](../docs/private-vs-public-email).
 :::
 
-### Requirements
+### 3.1 Requirements
 - A **public IPv4 address** with ports 25 and 587 forwarded to your AliasVault server
 - Open ports **25** and **587** on your server firewall for email SMTP traffic (*NOTE: some residential IP's block this, check with your ISP*).
 
@@ -100,7 +100,7 @@ telnet <your-server-public-ip> 25
 telnet <your-server-public-ip> 587
 ```
 
-### DNS configuration
+### 3.2 DNS configuration
 Choose your configuration: primary domain vs subdomain. AliasVault can be configured under:
 
 - **A primary (top-level) domain**
@@ -153,7 +153,7 @@ This keeps the email configuration of your primary domain (`example.com`) comple
 
 ---
 
-### AliasVault server email domain configuration
+### 3.3 AliasVault server email domain configuration
 After setting up your DNS, you have to configure AliasVault to let it know which email domains it should support. Update the `docker-compose.yml` file:
 
 ```bash
@@ -178,7 +178,7 @@ Important: DNS propagation can take up to 24-48 hours. During this time, email d
 
 If you encounter any issues, feel free to join the [Discord chat](https://discord.gg/DsaXMTEtpF) to get help from other users and maintainers.
 
-### Optional: SMTP advertised hostname
+### 3.4 Optional: SMTP advertised hostname
 
 When you expose SMTP (ports 25 and 587), remote clients see a **hostname** in the SMTP **banner** and **EHLO** responses. This value defaults to `aliasvault` which works fine for general email deliverability, but some diagnostic tools may check that this name is consistent with **reverse DNS (PTR)** with your email MX record.
 
@@ -193,7 +193,7 @@ If you wish to set this value, update the `docker-compose.yml` file:
 
 Restart the container after changing this value.
 
-### Optional: SMTP TLS (STARTTLS)
+### 3.5 Optional: SMTP TLS (STARTTLS)
 
 By default, SMTP TLS is disabled (`SMTP_TLS_ENABLED: "false"`). This does NOT significantly impact email deliverability: most email providers will still deliver to your server. However, if you want to enable TLS for SMTP connections:
 

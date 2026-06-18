@@ -5,6 +5,7 @@ sidebar_label: "Troubleshooting"
 # Troubleshooting
 
 This guide covers common issues and troubleshooting steps for AliasVault encountered during installation, updates or general maintenance.
+
 ---
 
 ## Check Docker Container Status
