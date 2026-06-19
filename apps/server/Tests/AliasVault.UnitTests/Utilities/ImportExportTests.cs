@@ -234,7 +234,7 @@ public class ImportExportTests
             Assert.That(multiUrlCredential.ServiceName, Is.EqualTo("TutaNota3"));
             Assert.That(multiUrlCredential.ServiceUrls, Has.Count.EqualTo(3));
             Assert.That(multiUrlCredential.ServiceUrls![0], Is.EqualTo("https://www.aliasvault.com"));
-            Assert.That(multiUrlCredential.ServiceUrls[1], Is.EqualTo("https://app.aliasvault.net"));
+            Assert.That(multiUrlCredential.ServiceUrls[1], Is.EqualTo("https://app.aliasvault.com"));
             Assert.That(multiUrlCredential.ServiceUrls[2], Is.EqualTo("https://downloads.aliasvault.com"));
             Assert.That(multiUrlCredential.Username, Is.EqualTo("avtest3@tutamail.com"));
             Assert.That(multiUrlCredential.TwoFactorSecret, Is.EqualTo("otpauth://totp/Test%20name%3Atest%40test.org?secret=PLW4SB3PQ7MKVXY2MXF4NEXS6Y&issuer=Alias%20Vault"));
@@ -247,8 +247,8 @@ public class ImportExportTests
         {
             Assert.That(urlFieldValues, Has.Count.EqualTo(3));
             Assert.That(urlFieldValues[0].Value, Is.EqualTo("https://www.aliasvault.com"));
-            Assert.That(urlFieldValues[1].Value, Is.EqualTo("https://app.aliasvault.net"));
-            Assert.That(urlFieldValues[2].Value, Is.EqualTo("https://downloads.aliasvault.net"));
+            Assert.That(urlFieldValues[1].Value, Is.EqualTo("https://app.aliasvault.com"));
+            Assert.That(urlFieldValues[2].Value, Is.EqualTo("https://downloads.aliasvault.com"));
             Assert.That(urlFieldValues[0].Weight, Is.EqualTo(0));
             Assert.That(urlFieldValues[1].Weight, Is.EqualTo(1));
             Assert.That(urlFieldValues[2].Weight, Is.EqualTo(2));
