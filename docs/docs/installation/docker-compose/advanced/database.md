@@ -2,8 +2,8 @@
 sidebar_position: 4
 sidebar_label: "Database Operations"
 ---
-# Database Operations
-This page explains how to import/export on the AliasVault server database via Docker commands.
+# Database Operations (Docker Compose)
+This page explains how to import/export on the AliasVault server database when installed via the all-in-one Docker container.
 
 ## Database Export
 In order to backup the AliasVault server database (which includes all encrypted user vaults as well), you can use the following command. Run this command from the directory where your AliasVault `docker-compose.yml` is located.
