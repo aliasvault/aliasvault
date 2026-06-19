@@ -100,6 +100,11 @@ html[data-theme='dark'] {
   box-shadow: none;
 }
 
+.navbar.navbar-sidebar--show {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 .navbar__title {
   font-weight: 700;
   font-size: 1.1rem;
@@ -113,6 +118,7 @@ html[data-theme='dark'] {
 
 .navbar__link {
   font-weight: 500;
+  white-space: nowrap;
 }
 
 /* GitHub / external link icon spacing stays tidy. */
@@ -177,13 +183,14 @@ html[data-theme='dark'] {
   --av-icon: url('/assets/img/icons/github.svg');
 }
 
-/* Collapse to the hamburger menu earlier than Infima's default 996px. With six
- * navbar items (four left + Website/GitHub) plus the wide wordmark logo, the
- * inline links get cramped between ~996px and ~1150px — "Self-host Install"
- * wraps onto two lines. Switching to the mobile slide-in menu sooner avoids
- * that. The slide-in sidebar is always rendered and toggled by JS, so only the
- * toggle/inline-item visibility needs raising. */
 @media (max-width: 1150px) {
+  .navbar {
+    --ifm-navbar-padding-horizontal: 1rem;
+    --ifm-navbar-item-padding-horizontal: 0.5rem;
+  }
+}
+
+@media (max-width: 996px) {
   .navbar__toggle {
     display: inherit;
   }
