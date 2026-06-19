@@ -6,13 +6,18 @@ sidebar_label: "Autofill & Passkeys"
 
 This page explains how autofill and passkeys work in the AliasVault Android app.
 
-## Experimental
+## Android Autofill APIs
 
-:::note
-As of writing (October 2025), autofill and passkey support for Android is in an experimental state. If you're having trouble please read the instructions on this page.
-:::
+Android has introduced several autofill mechanisms over the years, including the Autofill Framework, Inline Autofill, and Accessibility-based autofill. Because apps and browsers support these technologies differently, there is no single autofill solution that works consistently across all Android devices and applications.
 
-Android has added multiple autofill APIs throughout the years, which include Accessibility, Native Autofill, and Inline Autofill. These multiple APIs make it hard to offer a universal experience for AliasVault. AliasVault currently supports some but not all of these, so results may vary depending on your device and the app you're using. We're actively working on improving autofill in upcoming releases.
+AliasVault supports the modern Android autofill APIs recommended by Google, but some apps and browsers may not fully support third-party password managers. As a result, autofill behavior can vary depending on your device, Android version, browser, and the app you're using.
+
+### Accessibility Autofill deprecated
+Some password managers still use Accessibility-based autofill as a fallback in situations where standard autofill is unavailable. We have chosen not to implement this approach. Google has increasingly discouraged the use of Accessibility APIs by password managers and recommends using dedicated autofill APIs whenever possible. Building on Accessibility-based autofill could lead to compatibility, policy, or maintenance issues in future Android releases.
+
+For the best experience, we recommend using browsers that support Android's modern Autofill Framework, such as Chrome, Brave, Edge, Vivaldi, or Firefox.
+
+For additional background and technical details, see GitHub issue #2088: https://github.com/aliasvault/aliasvault/issues/2088.
 
 If you're running into any specific issues with your specific device make/model, please read the tips below. If your issue is not mentioned on this page, feel free to raise an issue on [GitHub](https://github.com/aliasvault/aliasvault/issues) or get in contact via [Discord](https://discord.gg/DsaXMTEtpF).
 
