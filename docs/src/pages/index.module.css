@@ -81,6 +81,20 @@ a.featureCard:hover {
   border-bottom: 1px solid var(--ifm-toc-border-color);
 }
 
+/* Inside the surface-colored "Explore the docs" section, the cards share the
+   same background and blend in. Use the base page background so they sit with
+   a subtle contrast against the section. */
+.sectionAlt .featureCard {
+  background: var(--ifm-background-color);
+}
+
+/* In dark mode the base background is quite a bit darker than the section
+   surface, making the cards too high-contrast. Nudge them back toward the
+   section color so the difference stays subtle. */
+html[data-theme='dark'] .sectionAlt .featureCard {
+  background: #181f2b;
+}
+
 .sectionTitle {
   font-size: 2rem;
   font-weight: 800;

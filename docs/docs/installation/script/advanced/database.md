@@ -2,7 +2,7 @@
 sidebar_position: 4
 sidebar_label: "Database Operations"
 ---
-# Database Operations
+# Database Operations (install.sh)
 This page explains how to import/export on the AliasVault server database via the `./install.sh` script.
 
 ## Database Export
