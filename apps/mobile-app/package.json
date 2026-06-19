@@ -99,7 +99,9 @@
     "node": ">=20"
   },
   "overrides": {
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "js-yaml": "4.2.0",
+    "launch-editor": "2.14.1"
   },
   "expo": {
     "autolinking": {
