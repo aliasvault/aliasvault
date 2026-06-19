@@ -61,6 +61,8 @@ jobs:
       - name: Rsync docs to server
         run: |
           rsync -az --delete \
+            --exclude='docker-compose.override.yml' \
+            --exclude='.env' \
             -e "ssh -i ~/.ssh/deploy_key" \
             ./docs/build \
             ./docs/nginx.conf \
