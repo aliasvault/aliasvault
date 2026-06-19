@@ -1,5 +1,5 @@
+# The static `build/` output is intentionally NOT ignored as the Docker image serves it.
 node_modules
-build
 .docusaurus
 .git
 Dockerfile
