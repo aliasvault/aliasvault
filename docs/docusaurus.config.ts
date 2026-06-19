@@ -10,6 +10,12 @@ const config: Config = {
   url: 'https://docs.aliasvault.net',
   baseUrl: '/',
 
+  // Emit every internal link and page output with a trailing slash so the
+  // canonical URL is hit directly. Without this, links like /architecture or
+  // /installation/script resolve to a directory and the server issues a 301 to
+  // add the slash which can remove a custom non 80/443 port from the URL.
+  trailingSlash: true,
+
   organizationName: 'aliasvault',
   projectName: 'aliasvault',
 
