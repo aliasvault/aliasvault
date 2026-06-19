@@ -17,6 +17,8 @@ import type { MatchingPasskeysResponse, WebAuthnAssertionResponse, WebAuthnPubli
 import { isRpIdAllowedForHost, validateWebAuthnRequest } from '@/utils/passkey/WebAuthnRequestValidation';
 import type { WebAuthnBridgeRequest } from '@/utils/passkey/WebAuthnRequestValidation';
 
+import { runStartupMigrations } from '@/migrations';
+
 import { defineBackground, browser } from '#imports';
 
 type WebAuthnMessageSender = {
@@ -329,6 +331,15 @@ export default defineBackground({
      * already synchronous and complete before this runs.
      */
     (async () : Promise<void> => {
+      try {
+        /*
+         * Run one-time startup migrations.
+         */
+        await runStartupMigrations();
+      } catch (error) {
+        console.error('Error running startup migrations:', error);
+      }
+
       try {
         const isContextMenuEnabled = await LocalPreferencesService.getGlobalContextMenuEnabled();
         if (isContextMenuEnabled) {

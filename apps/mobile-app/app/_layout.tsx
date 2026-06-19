@@ -22,6 +22,7 @@ import { DialogProvider } from '@/context/DialogContext';
 import { NavigationProvider, useNavigation } from '@/context/NavigationContext';
 import { WebApiProvider } from '@/context/WebApiContext';
 import { initI18n } from '@/i18n';
+import { runStartupMigrations } from '@/migrations';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -52,11 +53,12 @@ function RootLayoutNav() : React.ReactNode {
 
     /**
      * Initialize i18n and inspect the cold-start deep link in parallel.
+     * One-time startup migrations run here too.
      * If a deep link is detected, set the return URL so after succesful
      * initialization, the app will navigate to the deep link target.
      */
     (async (): Promise<void> => {
-      const [, initialUrl] = await Promise.all([initI18n(), Linking.getInitialURL()]);
+      const [, initialUrl] = await Promise.all([initI18n(), Linking.getInitialURL(), runStartupMigrations()]);
 
       const resolved = await resolveDeepLink(initialUrl);
       if (resolved) {
