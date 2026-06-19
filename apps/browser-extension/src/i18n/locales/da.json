@@ -149,7 +149,7 @@
     "creatingNewAlias": "Opret nyt alias",
     "creatingNewCredential": "Opret nye legitimationsoplysninger",
     "noMatchesFound": "Ingen match fundet",
-    "loginWithPasskey": "Login with passkey",
+    "loginWithPasskey": "Log ind med adgangsnøgle",
     "searchVault": "Søg i boks...",
     "enterServiceName": "Indtast tjenestenavn",
     "enterEmailAddress": "Indtast e-mailadresse",
@@ -505,7 +505,7 @@
       "selectExistingLoginDescription": "Forbind denne passkey til en eksisterende logonoplysning for dette websted.",
       "attachingToCredential": "Tilføjer passkey til: {{serviceName}}",
       "attachPasskey": "Tilføj passkey",
-      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
+      "unsupportedAlgorithm": "Denne hjemmeside kræver en adgangsnøgle, som AliasVault ikke understøtter."
     },
     "settings": {
       "passkeyProvider": "Passkey-udbyder",
