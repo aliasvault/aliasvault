@@ -12,7 +12,7 @@ export default function NotFoundContent({className}: Props): ReactNode {
         <div className="col col--8 col--offset-2">
           <Heading as="h1" className="hero__title">
             <Translate id="theme.NotFound.title">
-              This page slipped behind the vault door
+              Page not found
             </Translate>
           </Heading>
           <p>
@@ -48,7 +48,7 @@ export default function NotFoundContent({className}: Props): ReactNode {
             <Link href="https://github.com/aliasvault/aliasvault/issues">
               GitHub
             </Link>{' '}
-            or reach out via the <Link to="/contact/">help &amp; support</Link>{' '}
+            or reach out via the <Link to="/contact/">contact</Link>{' '}
             page.
           </p>
           <div className="margin-top--lg">
