@@ -7,6 +7,33 @@ const config: Config = {
   tagline: 'A privacy-first password manager with built-in email aliasing',
   favicon: 'assets/img/favicon.png',
 
+  // Load the Inter webfont from the document <head> with preconnect, instead of
+  // a render-blocking `@import` in custom.css. `@import` of a remote stylesheet
+  // serializes requests (CSS -> font CSS -> font files) and delays first paint;
+  // discovering the <link> in the initial HTML + warming the gstatic connection
+  // improves LCP (a Core Web Vitals ranking signal). `display=swap` avoids FOIT.
+  headTags: [
+    {
+      tagName: 'link',
+      attributes: {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossorigin: 'anonymous',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap',
+      },
+    },
+  ],
+
   url: 'https://docs.aliasvault.net',
   baseUrl: '/',
 
@@ -53,6 +80,9 @@ const config: Config = {
         sitemap: {
           changefreq: 'weekly',
           priority: 0.5,
+          // Emit <lastmod> (from git history, via showLastUpdateTime) so
+          // crawlers can tell which pages changed and re-crawl them sooner.
+          lastmod: 'datetime',
         },
       } satisfies Preset.Options,
     ],
