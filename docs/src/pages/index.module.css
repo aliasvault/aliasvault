@@ -128,16 +128,15 @@ a.featureCard:hover {
   color: var(--ifm-color-content-secondary);
 }
 
-.cta {
-  padding: 4rem 0 5rem;
-  text-align: center;
-}
-
 @media (max-width: 996px) {
   .heroTitle {
     font-size: 2.2rem;
   }
   .heroSubtitle {
     font-size: 1.1rem;
+  }
+  /* Cards stack on mobile; add a vertical gap between them. */
+  .twoUpRow > div:not(:last-child) {
+    margin-bottom: 1.5rem;
   }
 }

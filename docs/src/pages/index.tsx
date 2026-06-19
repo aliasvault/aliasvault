@@ -174,7 +174,7 @@ function GettingStartedAndContribute() {
   return (
     <section className={styles.section}>
       <div className="container">
-        <div className="row">
+        <div className={clsx('row', styles.twoUpRow)}>
           <div className="col col--6">
             <div className={styles.contentCard}>
               <Heading as="h3">🚀 Getting Started</Heading>
@@ -224,20 +224,6 @@ export default function Home(): ReactNode {
         <HomepageFeatures />
         <ExploreDocs />
         <GettingStartedAndContribute />
-        <section className={clsx(styles.cta, styles.sectionAlt)}>
-          <div className="container">
-            <Heading as="h2">Ready to get started?</Heading>
-            <p>
-              Spin up your own AliasVault instance with Docker in minutes, then
-              connect the browser extension and mobile apps.
-            </p>
-            <div className={styles.buttons}>
-              <Link className="button button--primary button--lg" to="/installation/">
-                Read the install guide
-              </Link>
-            </div>
-          </div>
-        </section>
       </main>
     </Layout>
   );
