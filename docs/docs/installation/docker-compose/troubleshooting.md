@@ -163,4 +163,4 @@ The mobile apps enforce certificate trust at the OS level and reject certificate
 
 If you encounter any other issues not mentioned here and need help, please join our Discord server or create an issue on the GitHub repository and we will be happy to help you out.
 
-Find all contact information on the contact page of our website: [https://www.aliasvault.net/contact](https://www.aliasvault.net/contact)
+Find all contact information on the contact page of our website: [https://www.aliasvault.com/contact](https://www.aliasvault.com/contact)

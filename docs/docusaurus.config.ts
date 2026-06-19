@@ -34,7 +34,7 @@ const config: Config = {
     },
   ],
 
-  url: 'https://docs.aliasvault.net',
+  url: 'https://docs.aliasvault.com',
   baseUrl: '/',
 
   // Emit every internal link and page output with a trailing slash so the
@@ -277,7 +277,7 @@ const config: Config = {
           label: 'Contact',
         },
         {
-          href: 'https://aliasvault.net',
+          href: 'https://www.aliasvault.com',
           label: 'Website',
           position: 'right',
           className: 'navbar__icon-link navbar__icon-link--website',
@@ -325,7 +325,7 @@ const config: Config = {
         {
           title: 'More',
           items: [
-            {label: 'Website', href: 'https://aliasvault.net'},
+            {label: 'Website', href: 'https://www.aliasvault.com'},
             {
               label: 'Edit these docs',
               href: 'https://github.com/aliasvault/aliasvault/tree/main/docs',
