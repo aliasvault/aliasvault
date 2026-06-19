@@ -2,6 +2,14 @@ import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
+try {
+  process.loadEnvFile();
+} catch {
+  // No `.env` file present; fall back to the ambient environment.
+}
+
+const analyticsScript = process.env.ANALYTICS_SCRIPT;
+
 const config: Config = {
   title: 'AliasVault',
   tagline: 'A privacy-first password manager with built-in email aliasing',
@@ -221,6 +229,20 @@ const config: Config = {
         },
       },
     ],
+    // Inject the analytics <script> verbatim into <head>, but only when
+    // ANALYTICS_SCRIPT is provided (production CI build).
+    ...(analyticsScript
+      ? [
+          function analyticsPlugin() {
+            return {
+              name: 'analytics-script',
+              injectHtmlTags() {
+                return {headTags: analyticsScript};
+              },
+            };
+          },
+        ]
+      : []),
   ],
 
   themes: [

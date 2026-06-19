@@ -46,6 +46,8 @@ jobs:
 
       - name: Build static site
         working-directory: docs
+        env:
+          ANALYTICS_SCRIPT: '<script defer data-domain="docs.aliasvault.com" src="https://plausible.xivi.nl/js/script.js"></script>'
         run: |
           npm ci
           npm run build
