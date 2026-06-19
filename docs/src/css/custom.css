@@ -1,8 +1,9 @@
 /**
  * AliasVault documentation theme.
+ *
+ * The Inter webfont is loaded via `headTags` preconnect + <link> in
+ * docusaurus.config.ts (not an `@import` here) to avoid render-blocking.
  */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
   /* Brand orange — used for links, buttons, accents. */
