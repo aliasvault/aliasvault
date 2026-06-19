@@ -51,7 +51,7 @@ AliasVault also supports history specific first names (per decade). In many coun
 
 2. **Send the files to us:**
    - **Discord**: Join our [community server](https://discord.gg/DsaXMTEtpF) and share in #translations or via private message
-   - **Email**: [contact@support.aliasvault.net](mailto:contact@support.aliasvault.net)
+   - **Email**: [support@aliasvault.com](mailto:support@aliasvault.com)
    - **Crowdin**: If you're already a member of the AliasVault Crowdin project, send a PM with an attachment
 
 After we have received the files, we'll take care of the technical formatting and making it available in the AliasVault apps.
@@ -87,4 +87,4 @@ Want to see what the actual dictionaries look like that AliasVault uses right no
 If you have any questions, feel free to contact us and get in touch:
 
 - Join our [Discord](https://discord.gg/DsaXMTEtpF) - Ask questions in #translations
-- Email us: [contact@support.aliasvault.net](mailto:contact@support.aliasvault.net)
+- Email us: [support@aliasvault.com](mailto:support@aliasvault.com)

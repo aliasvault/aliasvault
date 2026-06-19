@@ -20,7 +20,7 @@ The security architecture diagram below illustrates all encryption and authentic
   <img alt="AliasVault Security Architecture Diagram" src="/assets/diagrams/security-architecture/aliasvault-security-architecture-light.svg">
 </picture>
 
-You can also view the diagram in a browser-friendly HTML format: [AliasVault Security Architecture](https://docs.aliasvault.net/assets/diagrams/security-architecture/aliasvault-security-architecture.html)
+You can also view the diagram in a browser-friendly HTML format: [AliasVault Security Architecture](https://docs.aliasvault.com/assets/diagrams/security-architecture/aliasvault-security-architecture.html)
 
 ## Key Components and Process Flow
 

@@ -20,4 +20,4 @@ Please **do not** open a public GitHub issue for security vulnerabilities. If yo
 
 ## Anything else
 
-For any other questions or feedback, you can reach out through the contact page on the [AliasVault website](https://aliasvault.net/contact).
+For any other questions or feedback, you can reach out through the contact page on the [AliasVault website](https://www.aliasvault.com/contact).

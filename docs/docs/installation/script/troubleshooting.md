@@ -109,4 +109,4 @@ If you have lost your admin password, you can reset it by running the install sc
 ## Other Issues
 If you encounter any other issues not mentioned here and need help, please join our Discord server or create an issue on the GitHub repository and we will be happy to help you out.
 
-Find all contact information on the contact page of our website: [https://www.aliasvault.net/contact](https://www.aliasvault.net/contact)
+Find all contact information on the contact page of our website: [https://www.aliasvault.com/contact](https://www.aliasvault.com/contact)

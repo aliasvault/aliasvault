@@ -69,7 +69,7 @@ The Crowdin project covers translations for all client apps in one place:
 
 Want to add a completely new language to AliasVault?
 
-1. **Contact us first** via [Discord](https://discord.gg/DsaXMTEtpF) or email at [contact@support.aliasvault.net](mailto:contact@support.aliasvault.net)
+1. **Contact us first** via [Discord](https://discord.gg/DsaXMTEtpF) or email at [support@aliasvault.com](mailto:support@aliasvault.com)
 2. We'll add the language to Crowdin
 3. We'll configure it in the codebase
 4. You can start translating!
@@ -81,7 +81,7 @@ Want to add a completely new language to AliasVault?
 ### Questions About Translation?
 
 - **Discord**: Join our [community server](https://discord.gg/DsaXMTEtpF) - Ask in #translations
-- **Email**: [contact@support.aliasvault.net](mailto:contact@support.aliasvault.net)
+- **Email**: [contact@support@aliasvault.com](mailto:support@aliasvault.com)
 - **Crowdin**: Use the discussion feature for specific strings
 
 Thank you for helping make AliasVault accessible to more people!

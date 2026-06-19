@@ -1,6 +1,6 @@
 # AliasVault documentation
 
-The documentation site for AliasVault ([docs.aliasvault.net](https://docs.aliasvault.net)),
+The documentation site for AliasVault ([docs.aliasvault.com](https://docs.aliasvault.com)),
 built with [Docusaurus](https://docusaurus.io/).
 
 ## Run locally (development)
