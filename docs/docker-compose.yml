@@ -1,8 +1,10 @@
 # Docker Compose file for the AliasVault documentation (Docusaurus).
 #
-# Builds the static site and serves it with nginx in production mode.
+# Serves the pre-built static site (`build/`) with nginx. The site has
+# to be built manually with `npm ci && npm run build` first (in CI or manually locally).
 #
-# Usage:
+# Usage (after `npm ci && npm run build`):
+#   npm ci && npm run build
 #   docker compose up -d --build
 #   docker compose down
 #
@@ -11,5 +13,5 @@ services:
     build:
       context: .
     ports:
-      - "4000:80"
+      - "127.0.0.1:5191:80"
     restart: unless-stopped

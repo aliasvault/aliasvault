@@ -5,9 +5,9 @@
   "description": "AliasVault documentation",
   "scripts": {
     "docusaurus": "docusaurus",
-    "start": "docusaurus start",
+    "start": "docusaurus start --port 5190",
     "build": "docusaurus build",
-    "serve": "docusaurus serve",
+    "serve": "docusaurus serve --port 5190",
     "clear": "docusaurus clear",
     "swizzle": "docusaurus swizzle",
     "typecheck": "tsc"
