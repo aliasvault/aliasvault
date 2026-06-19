@@ -3,7 +3,7 @@
     "loginTitle": "Войдите в AliasVault",
     "username": "Имя пользователя или почта",
     "usernamePlaceholder": "имя / имя@company.com",
-    "passwordPlaceholder": "Введите ваш пароль",
+    "passwordPlaceholder": "Введите пароль",
     "rememberMe": "Запомнить меня",
     "loginButton": "Войти",
     "noAccount": "Нет аккаунта?",
@@ -505,7 +505,7 @@
       "selectExistingLoginDescription": "Привяжите этот ключ доступа к существующей учетной записи для этого сайта.",
       "attachingToCredential": "Добавление ключа доступа для: {{serviceName}}",
       "attachPasskey": "Добавить ключ доступа",
-      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
+      "unsupportedAlgorithm": "Этот сайт требует тип ключа доступа (passkey), который AliasVault не поддерживает."
     },
     "settings": {
       "passkeyProvider": "Провайдер ключей доступа",
