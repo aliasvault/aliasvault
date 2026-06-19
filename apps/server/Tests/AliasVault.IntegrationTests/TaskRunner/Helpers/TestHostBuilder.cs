@@ -31,6 +31,7 @@ public class TestHostBuilder : AbstractTestHostBuilder
         builder.ConfigureServices((context, services) =>
         {
             // Add server settings service
+            services.AddMemoryCache();
             services.AddSingleton<ServerSettingsService>();
 
             // Add maintenance tasks

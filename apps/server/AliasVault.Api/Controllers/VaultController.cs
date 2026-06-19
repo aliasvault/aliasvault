@@ -20,6 +20,7 @@ using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.PasswordChange;
 using AliasVault.Shared.Models.WebApi.Vault;
 using AliasVault.Shared.Providers.Time;
+using AliasVault.Shared.Server.Models;
 using AliasVault.Shared.Server.Services;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
@@ -375,13 +376,9 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         // Get list of supported private domains from config
         var supportedPrivateDomains = config.PrivateEmailDomains;
 
-        // Determine the new-account alias creation limit (abuse mitigation). When enabled, accounts younger than
-        // NewAccountAliasLimitDays may not create more than MaxAliasesForNewAccounts aliases in total. We count every
-        // alias the account has ever claimed (including disabled ones), because abusers spin up many throw-away aliases
-        // and disable them after a single use; only counting active aliases would let them bypass the cap entirely.
-        // Both 0 = disabled.
+        // Resolve the alias creation limit. 0 means no limit applies.
         var settings = await settingsService.GetAllSettingsAsync();
-        var aliasLimitActive = settings.NewAccountAliasLimitDays > 0 && settings.MaxAliasesForNewAccounts > 0 && user.CreatedAt > timeProvider.UtcNow.AddDays(-settings.NewAccountAliasLimitDays);
+        var aliasLimit = ResolveAliasLimit(user, settings);
         var ownedAliasCount = userOwnedEmailClaims.Count;
         var aliasLimitLogged = false;
 
@@ -433,13 +430,13 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                 continue;
             }
 
-            // Enforce the new-account alias creation limit: once the account is at its cap, silently skip creating
+            // Enforce the alias creation limit: once the account is at its cap, silently skip creating
             // additional aliases (logged once so the limit being hit is visible for audits).
-            if (aliasLimitActive && ownedAliasCount >= settings.MaxAliasesForNewAccounts)
+            if (aliasLimit > 0 && ownedAliasCount >= aliasLimit)
             {
                 if (!aliasLimitLogged)
                 {
-                    logger.LogWarning("{User} reached the new-account alias limit of {Limit}. Skipping creation of additional aliases.", user.UserName, settings.MaxAliasesForNewAccounts);
+                    logger.LogWarning("{User} reached the alias limit of {Limit}. Skipping creation of additional aliases.", user.UserName, aliasLimit);
                     aliasLimitLogged = true;
                 }
 
@@ -482,6 +479,37 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         }
 
         await context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Resolves the alias creation limit that applies to the given user.
+    /// Priority: the per-user <see cref="AliasVaultUser.MaxAliases"/> takes precedence and, when greater than 0,
+    /// is a hard cap that always applies regardless of account age or the global settings (set it high, e.g.
+    /// 999999, to effectively grant unlimited aliases). When it is 0, any global limit applies.
+    /// </summary>
+    /// <param name="user">The user to resolve the limit for.</param>
+    /// <param name="settings">The current server settings.</param>
+    /// <returns>The maximum number of aliases the user may own, or 0 when no limit applies.</returns>
+    private int ResolveAliasLimit(AliasVaultUser user, ServerSettingsModel settings)
+    {
+        // Per-user cap takes priority and always applies when set.
+        if (user.MaxAliases > 0)
+        {
+            return user.MaxAliases;
+        }
+
+        // Otherwise any global limit applies.
+        var newAccountLimitEnabled = settings.NewAccountAliasLimitDays > 0;
+        if (newAccountLimitEnabled && settings.MaxAliasesForNewAccounts > 0)
+        {
+            var accountIsNew = user.CreatedAt > timeProvider.UtcNow.AddDays(-settings.NewAccountAliasLimitDays);
+            if (accountIsNew)
+            {
+                return settings.MaxAliasesForNewAccounts;
+            }
+        }
+
+        return 0;
     }
 
     /// <summary>
