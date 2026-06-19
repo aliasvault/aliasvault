@@ -5,6 +5,9 @@ sidebar_label: "Architecture"
 # Architecture
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 AliasVault implements zero-knowledge encryption where sensitive user data never leaves the client device in unencrypted form. Below is a detailed explanation of how the system secures user data and communications.
 
 **What is Zero-Knowledge in AliasVault**:
@@ -14,11 +17,13 @@ AliasVault implements zero-knowledge encryption where sensitive user data never 
 ## Diagram
 The security architecture diagram below illustrates all encryption and authentication processes used in AliasVault to secure user data and communications.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="/assets/diagrams/security-architecture/aliasvault-security-architecture-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="/assets/diagrams/security-architecture/aliasvault-security-architecture-light.svg">
-  <img alt="AliasVault Security Architecture Diagram" src="/assets/diagrams/security-architecture/aliasvault-security-architecture-light.svg">
-</picture>
+<ThemedImage
+  alt="AliasVault Security Architecture Diagram"
+  sources={{
+    light: useBaseUrl('/assets/diagrams/security-architecture/aliasvault-security-architecture-light.svg'),
+    dark: useBaseUrl('/assets/diagrams/security-architecture/aliasvault-security-architecture-dark.svg'),
+  }}
+/>
 
 You can also view the diagram in a browser-friendly HTML format: [AliasVault Security Architecture](pathname:///assets/diagrams/security-architecture/aliasvault-security-architecture.html)
 
