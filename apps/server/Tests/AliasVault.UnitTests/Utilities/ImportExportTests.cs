@@ -218,10 +218,10 @@ public class ImportExportTests
             Assert.That(tutaNotaCredential.TwoFactorSecret, Is.EqualTo("otpauth://totp/Strongbox?secret=PLW4SB3PQ7MKVXY2MXF4NEXS6Y&algorithm=SHA1&digits=6&period=30"));
         });
 
-        var aliasVaultCredential = importedCredentials.First(c => c.ServiceName == "Aliasvault.net");
+        var aliasVaultCredential = importedCredentials.First(c => c.ServiceName == "Aliasvault.com");
         Assert.Multiple(() =>
         {
-            Assert.That(aliasVaultCredential.ServiceName, Is.EqualTo("Aliasvault.net"));
+            Assert.That(aliasVaultCredential.ServiceName, Is.EqualTo("Aliasvault.com"));
             Assert.That(aliasVaultCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://www.aliasvault.com"));
             Assert.That(aliasVaultCredential.Username, Is.EqualTo("root"));
             Assert.That(aliasVaultCredential.Password, Is.EqualTo("toor"));

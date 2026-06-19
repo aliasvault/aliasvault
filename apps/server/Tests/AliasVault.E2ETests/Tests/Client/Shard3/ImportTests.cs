@@ -65,7 +65,7 @@ public class ImportTests : ClientPlaywrightTest
         {
             Assert.That(pageContent, Does.Contain("Test"), "Test item not imported at root level");
             Assert.That(pageContent, Does.Not.Contain("TutaNota"), "TutaNota should be in Business folder, not at root");
-            Assert.That(pageContent, Does.Not.Contain("Aliasvault.net"), "Aliasvault.net should be in Business folder, not at root");
+            Assert.That(pageContent, Does.Not.Contain("Aliasvault.com"), "Aliasvault.com should be in Business folder, not at root");
         });
 
         // Verify the Business folder was created.
@@ -84,7 +84,7 @@ public class ImportTests : ClientPlaywrightTest
         {
             Assert.That(folderPageContent, Does.Contain("Item for business folder"), "Item for business folder not imported");
             Assert.That(folderPageContent, Does.Contain("TutaNota"), "TutaNota item not imported in Business folder");
-            Assert.That(folderPageContent, Does.Contain("Aliasvault.net"), "Aliasvault.net item not imported in Business folder");
+            Assert.That(folderPageContent, Does.Contain("Aliasvault.com"), "Aliasvault.com item not imported in Business folder");
         });
 
         // Navigate back to root and test hierarchical folders.
