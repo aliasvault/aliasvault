@@ -83,5 +83,9 @@
     "vite": "^8.0.0",
     "vite-plugin-static-copy": "^3.4.0",
     "wxt": "^0.20.26"
+  },
+  "overrides": {
+    "shell-quote": "1.8.4",
+    "esbuild": "0.28.1"
   }
 }
