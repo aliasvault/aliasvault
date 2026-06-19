@@ -149,7 +149,7 @@
     "creatingNewAlias": "Создание нового псевдонима",
     "creatingNewCredential": "Создание новой записи",
     "noMatchesFound": "Совпадений не найдено",
-    "loginWithPasskey": "Login with passkey",
+    "loginWithPasskey": "Войти с помощью ключа доступа",
     "searchVault": "Поиск хранилища...",
     "enterServiceName": "Введите имя сервиса",
     "enterEmailAddress": "Введите адрес электронной почты",
@@ -505,7 +505,7 @@
       "selectExistingLoginDescription": "Привяжите этот ключ доступа к существующей учетной записи для этого сайта.",
       "attachingToCredential": "Добавление ключа доступа для: {{serviceName}}",
       "attachPasskey": "Добавить ключ доступа",
-      "unsupportedAlgorithm": "Этот сайт требует тип ключа доступа (passkey), который AliasVault не поддерживает."
+      "unsupportedAlgorithm": "Этот сайт требует тип ключа доступа, который AliasVault не поддерживает."
     },
     "settings": {
       "passkeyProvider": "Провайдер ключей доступа",
