@@ -68,7 +68,7 @@ export default function AndroidAutofillScreen() : React.ReactNode {
    * Handle opening the documentation link.
    */
   const handleOpenDocs = () : void => {
-    Linking.openURL('https://docs.aliasvault.net/mobile-apps/android/autofill.html');
+    Linking.openURL('https://docs.aliasvault.com/installation/mobile-apps/android/autofill/');
   };
 
   /**

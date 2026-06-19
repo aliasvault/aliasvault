@@ -15,7 +15,7 @@ public class WebApiService {
     private let customProxyHeadersKey = "customProxyHeaders"
 
     // Default API URL
-    private let defaultApiUrl = "https://app.aliasvault.net/api"
+    private let defaultApiUrl = "https://app.aliasvault.com/api"
 
     /// Shared UserDefaults for communication between main app and extension
     private let userDefaults = UserDefaults(suiteName: VaultConstants.userDefaultsSuite)!

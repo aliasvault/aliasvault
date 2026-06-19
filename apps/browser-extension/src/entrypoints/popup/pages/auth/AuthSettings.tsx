@@ -16,7 +16,7 @@ type ApiOption = {
 };
 
 const DEFAULT_OPTIONS: ApiOption[] = [
-  { label: 'Aliasvault.net', value: AppInfo.DEFAULT_API_URL },
+  { label: 'Aliasvault.com', value: AppInfo.DEFAULT_API_URL },
   { label: 'Self-hosted', value: 'custom' }
 ];
 
