@@ -95,7 +95,7 @@ If you are not receiving emails on your aliases, check the following:
 - Check your server's firewall settings
 - Verify that your ISP/hosting provider allows SMTP traffic
 
-Refer to the [installation guide](./#3-email-server-setup) for more information on how to configure your DNS records and ports.
+Refer to the [installation guide](../#3-email-server-setup) for more information on how to configure your DNS records and ports.
 
 ### 4. Forgot AliasVault Admin Password
 If you have lost your admin password, you can reset it by running the install script with the `reset-admin-password` option. This will generate a new random password and update the .env file with it. After that it will restart the AliasVault containers to apply the changes.

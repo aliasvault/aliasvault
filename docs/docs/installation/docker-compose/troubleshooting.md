@@ -107,7 +107,7 @@ docker compose up -d
 3. Check your server's firewall settings
 4. Verify that your ISP/hosting provider allows SMTP traffic and does not block port 25
 
-Refer to the [installation guide](./#3-email-server-setup) for more information on how to configure your DNS records and ports.
+Refer to the [installation guide](../#3-email-server-setup) for more information on how to configure your DNS records and ports.
 
 ### 3. Admin app not working via your own reverse proxy
 
