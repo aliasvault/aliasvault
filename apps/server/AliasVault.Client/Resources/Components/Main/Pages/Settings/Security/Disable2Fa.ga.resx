@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- Page title and breadcrumbs -->
+  <data name="PageTitle" xml:space="preserve">
+    <value>Disable two-factor authentication</value>
+    <comment>Page title for the disable 2FA page</comment>
+  </data>
+  <data name="BreadcrumbSecuritySettings" xml:space="preserve">
+    <value>Security settings</value>
+    <comment>Breadcrumb text for security settings</comment>
+  </data>
+  <data name="BreadcrumbDisable2Fa" xml:space="preserve">
+    <value>Disable two-factor authentication</value>
+    <comment>Breadcrumb text for disable 2FA</comment>
+  </data>
+  <!-- Page description -->
+  <data name="PageDescription" xml:space="preserve">
+    <value>Disabling two-factor authentication means you will be able to login with only your password.</value>
+    <comment>Description text explaining what disabling 2FA means</comment>
+  </data>
+  <!-- Warning message -->
+  <data name="WarningMessage" xml:space="preserve">
+    <value>Please note: after disabling two-factor authentication any configured authenticator app(s) will stop working. When you want to re-enable two-factor authentication you will have to configure the authenticator app(s) again.</value>
+    <comment>Warning message about the consequences of disabling 2FA</comment>
+  </data>
+  <!-- Status message -->
+  <data name="StatusMessage" xml:space="preserve">
+    <value>Two factor authentication is currently enabled. Disable it in order to be able to access your vault with your password only.</value>
+    <comment>Status message explaining current 2FA state</comment>
+  </data>
+  <!-- Button text -->
+  <data name="ConfirmDisableButton" xml:space="preserve">
+    <value>Confirm Disable Two-Factor Authentication</value>
+    <comment>Button text to confirm disabling 2FA</comment>
+  </data>
+  <!-- Success and error messages -->
+  <data name="TwoFactorDisabledSuccess" xml:space="preserve">
+    <value>Two-factor authentication is now successfully disabled.</value>
+    <comment>Success message when 2FA is disabled</comment>
+  </data>
+  <data name="FailedToDisable2Fa" xml:space="preserve">
+    <value>Failed to disable two-factor authentication.</value>
+    <comment>Error message when 2FA disable fails</comment>
+  </data>
+  <data name="TwoFactorNotEnabled" xml:space="preserve">
+    <value>Two-factor authentication is not enabled.</value>
+    <comment>Error message when 2FA is not enabled</comment>
+  </data>
+</root>
