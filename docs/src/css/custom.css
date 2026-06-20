@@ -337,6 +337,7 @@ html[class*='docs-doc-id-installation/index'] .theme-doc-markdown {
 /* The whole card is an <a>, so reset link styling and let the body text read
  * normally. */
 .av-install-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   padding: 1.75rem;
@@ -357,36 +358,61 @@ html[class*='docs-doc-id-installation/index'] .theme-doc-markdown {
   text-decoration: none;
 }
 
-/* The recommended option gets a subtle primary-tinted border to draw the eye. */
+/* The recommended option gets a primary-tinted border + a slightly stronger
+ * lift so it reads as the default choice. */
 .av-install-card--featured {
   border-color: var(--ifm-color-primary);
   box-shadow: 0 5px 24px rgba(244, 149, 65, 0.12);
 }
 
-.av-install-card__emoji {
-  font-size: 2rem;
-  line-height: 1;
-  margin-bottom: 0.85rem;
+/* Header row: brand-tinted icon tile next to the title + meta line. Mirrors the
+ * marketing site's feature blocks (icon in a soft primary square). */
+.av-install-card__head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+}
+
+.av-install-card__icon {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  color: var(--ifm-color-primary);
+  background: rgba(244, 149, 65, 0.1);
 }
 
 .av-install-card__title {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
   font-size: 1.25rem;
   font-weight: 700;
-  margin: 0 0 0.6rem;
+  margin: 0;
+  line-height: 1.2;
 }
 
+.av-install-card__meta {
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--ifm-color-content-secondary);
+}
+
+/* Pinned to the top-right corner of the featured card. */
 .av-install-card__badge {
-  font-size: 0.68rem;
+  position: absolute;
+  top: 1.1rem;
+  right: 1.1rem;
+  font-size: 0.66rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--ifm-color-primary);
-  background: rgba(244, 149, 65, 0.12);
+  letter-spacing: 0.05em;
+  color: #fff;
+  background: var(--ifm-color-primary);
   border-radius: 9999px;
-  padding: 0.2rem 0.6rem;
+  padding: 0.25rem 0.65rem;
 }
 
 .av-install-card__tagline {
@@ -394,10 +420,22 @@ html[class*='docs-doc-id-installation/index'] .theme-doc-markdown {
   margin-bottom: 1.1rem;
 }
 
+.av-install-card__bestfor {
+  margin: 0 0 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--av-border);
+  font-size: 0.9rem;
+  color: var(--ifm-color-content-secondary);
+}
+
+.av-install-card__bestfor strong {
+  color: var(--ifm-color-content);
+}
+
 .av-install-card__list {
   list-style: none;
   padding: 0;
-  margin: 0 0 1.5rem;
+  margin: 0 0 1.25rem;
 }
 
 .av-install-card__list li {
@@ -447,6 +485,69 @@ html[class*='docs-doc-id-installation/index'] .theme-doc-markdown {
    * identically to a direct button mouseover (white in light mode, dark in dark
    * mode) instead of leaving the default dark border-color text. */
   color: var(--ifm-font-color-base-inverse);
+}
+
+/* ------------------------------------------- Install comparison table -- */
+
+/* Full-width custom comparison table that highlights the recommended column,
+ * replacing Docusaurus' default striped markdown table. The wrapper enables
+ * horizontal scrolling on narrow screens without breaking the rounded frame. */
+.av-compare-wrap {
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  border: 1px solid var(--av-border);
+  border-radius: 14px;
+}
+
+.av-compare {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  display: table; /* override Docusaurus' default `display: block` on tables */
+  font-size: 0.95rem;
+}
+
+.av-compare th,
+.av-compare td {
+  padding: 0.85rem 1.1rem;
+  text-align: left;
+  border: none;
+  border-bottom: 1px solid var(--av-border);
+  vertical-align: top;
+}
+
+.av-compare tbody tr:last-child th,
+.av-compare tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* The header row reads as the structural frame via weight + a heavier bottom
+ * rule, rather than a fill that would echo the gray nav/sidebar and blur the
+ * page together. */
+.av-compare thead th {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ifm-color-content);
+  border-bottom: 2px solid var(--av-border);
+}
+
+/* Row labels stay distinct through bold text + a vertical divider, keeping the
+ * column on the card background instead of a separate tinted block. */
+.av-compare tbody th[scope='row'] {
+  font-weight: 600;
+  color: var(--ifm-color-content);
+  white-space: nowrap;
+  border-right: 1px solid var(--av-border);
+}
+
+.av-compare td {
+  color: var(--ifm-color-content-secondary);
+}
+
+/* Both option columns share the remaining width equally so neither reads as
+ * the "default" — the table presents the two methods side by side, evenly. */
+.av-compare thead th:not(:first-child) {
+  width: 38%;
 }
 
 /* ------------------------------------------------ Clickable action cards -- */
