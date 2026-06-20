@@ -1,0 +1,25 @@
+{
+  "loading": {
+    "title": "AliasVault is loading",
+    "message": "Initializing secure environment. AliasVault prioritizes your privacy by running entirely in your browser. The first load might take a short while.",
+    "refreshText": "If loading seems stuck, you can click the button below to refresh the page.",
+    "refreshButtonText": "Refresh Page"
+  },
+  "errors": {
+    "unhandledError": "An unhandled error has occurred. Please try reloading the page. If the issue persists, please contact support.",
+    "webAssemblyError": "AliasVault requires WebAssembly, which this browser does not support. Try using a more modern browser that supports WebAssembly.",
+    "reloadPageText": "Reload Page"
+  },
+  "quotes": {
+    "security": [
+      "Your identity is your most valuable asset. Protect it like one.",
+      "In the digital world, a strong password is your first line of defense.",
+      "Security is not a product, but a process.",
+      "The weakest link in the security chain is the human element.",
+      "Security is always excessive until it's not enough.",
+      "Trust, but verify - especially online.",
+      "Your data is only as secure as your weakest password.",
+      "The most secure password is the one you can't remember."
+    ]
+  }
+}
