@@ -655,7 +655,6 @@
     },
     "loginSettings": {
       "title": "API-anslutning",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Egenhostad",
       "customApiUrl": "Anpassad API-URL",
       "customApiUrlPlaceholder": "https://min-aliasvault-instans.se/api",
