@@ -655,7 +655,6 @@
     },
     "loginSettings": {
       "title": "API-verbinding",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Self-hosted",
       "customApiUrl": "Aangepaste API URL",
       "customApiUrlPlaceholder": "https://jouw-aliasvault-instantie.nl/api",
