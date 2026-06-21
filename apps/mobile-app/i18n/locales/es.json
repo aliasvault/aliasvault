@@ -655,7 +655,6 @@
     },
     "loginSettings": {
       "title": "Conexión API",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Autoalojado",
       "customApiUrl": "URL de API personalizada",
       "customApiUrlPlaceholder": "https://mi-instancia-Aliasvault.com/api",
