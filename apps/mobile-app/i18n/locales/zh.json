@@ -655,7 +655,6 @@
     },
     "loginSettings": {
       "title": "API 连接",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "自托管",
       "customApiUrl": "自定义 API URL",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
