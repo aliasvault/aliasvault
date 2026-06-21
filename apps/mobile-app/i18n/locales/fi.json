@@ -655,7 +655,6 @@
     },
     "loginSettings": {
       "title": "API-yhteys",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Itseylläpidetty (Self-hosted)",
       "customApiUrl": "Mukautettu API URL-osoite",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
