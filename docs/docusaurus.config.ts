@@ -78,7 +78,7 @@ const config: Config = {
         docs: {
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/aliasvault/aliasvault/tree/main/docs/docs/',
+          editUrl: 'https://github.com/aliasvault/aliasvault/tree/main/docs/',
           showLastUpdateTime: true,
         },
         blog: false,
