@@ -44,7 +44,7 @@ In AliasVault, when creating a new credential AliasVault automatically generates
 - Create a list of common last names (surnames)
 - Optionally: Decade-specific names for more authentic generations
 
-Read the specific instructions on how to contribute here: [Identity Generator Translations](https://docs.aliasvault.net/contributing/identity-generator.html).
+Read the specific instructions on how to contribute here: [Identity Generator Translations](https://docs.aliasvault.com/contributing/identity-generator.html).
 
 ## 3. Contributing to the Documentation
 
@@ -77,7 +77,7 @@ That said, we genuinely appreciate your ideas and proposals for UI/UX improvemen
 ### 4.2 Set up your local development environment
 You can find instructions on how to get your local development environment setup for the different parts of the AliasVault codebase here:
 
-https://docs.aliasvault.net/misc/dev/
+https://docs.aliasvault.com/misc/dev/
 
 > Tip: if the URL above is not available, the raw doc pages can also be found in the `docs` folder in this repository.
 

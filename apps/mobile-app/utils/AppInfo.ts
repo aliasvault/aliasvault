@@ -39,12 +39,12 @@ export class AppInfo {
   /**
    * The default AliasVault client URL.
    */
-  public static readonly DEFAULT_CLIENT_URL = 'https://app.aliasvault.net';
+  public static readonly DEFAULT_CLIENT_URL = 'https://app.aliasvault.com';
 
   /**
    * The default AliasVault web API URL.
    */
-  public static readonly DEFAULT_API_URL = 'https://app.aliasvault.net/api';
+  public static readonly DEFAULT_API_URL = 'https://app.aliasvault.com/api';
 
   /**
    * Prevent instantiation of this utility class

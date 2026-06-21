@@ -59,7 +59,7 @@ Other contributors may review and approve your translations. This helps ensure q
 ## What Gets Translated?
 
 The Crowdin project covers translations for all client apps in one place:
-- Web app (https://app.aliasvault.net)
+- Web app (https://app.aliasvault.com)
 - Browser extension
 - Mobile App (iOS and Android)
 

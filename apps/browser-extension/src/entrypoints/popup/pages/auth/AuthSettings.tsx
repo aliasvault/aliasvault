@@ -16,7 +16,7 @@ type ApiOption = {
 };
 
 const DEFAULT_OPTIONS: ApiOption[] = [
-  { label: 'Aliasvault.net', value: AppInfo.DEFAULT_API_URL },
+  { label: 'AliasVault.com', value: AppInfo.DEFAULT_API_URL },
   { label: 'Self-hosted', value: 'custom' }
 ];
 
@@ -165,7 +165,7 @@ const AuthSettings: React.FC = () => {
       } catch (error: unknown) {
         if (error instanceof Yup.ValidationError) {
           setErrors(prev => ({ ...prev, apiUrl: error.message }));
-          // On error we revert back to the aliasvault.net official hosted instance.
+          // On error we revert back to the aliasvault.com official hosted instance.
           await storage.setItem('local:apiUrl', AppInfo.DEFAULT_API_URL);
           await storage.setItem('local:clientUrl', AppInfo.DEFAULT_CLIENT_URL);
           pendingApiUrlRef.current = null;

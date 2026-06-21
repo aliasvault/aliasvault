@@ -37,7 +37,7 @@ class WebApiService(private val context: Context) {
         private const val REFRESH_TOKEN_KEY = "refreshToken"
         private const val APP_INSTANCE_ID_KEY = "appInstanceId"
         private const val CUSTOM_PROXY_HEADERS_KEY = "customProxyHeaders"
-        private const val DEFAULT_API_URL = "https://app.aliasvault.net/api"
+        private const val DEFAULT_API_URL = "https://app.aliasvault.com/api"
         private const val SHARED_PREFS_NAME = "aliasvault"
     }
 

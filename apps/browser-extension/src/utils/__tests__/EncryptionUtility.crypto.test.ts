@@ -47,6 +47,7 @@ async function createEmail(
   return {
     messageHtml: '',
     messagePlain: '',
+    messageSource: '',
     id: 1,
     subject: '',
     fromDisplay: '',
@@ -78,7 +79,7 @@ async function encryptAttachmentBytes(plaintext: Uint8Array, rawSymmetricKey: st
     ['encrypt']
   );
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintext);
+  const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new Uint8Array(plaintext));
   const encryptedBytes = new Uint8Array(iv.length + ciphertext.byteLength);
   encryptedBytes.set(iv, 0);
   encryptedBytes.set(new Uint8Array(ciphertext), iv.length);
