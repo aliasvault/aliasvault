@@ -655,7 +655,6 @@
     },
     "loginSettings": {
       "title": "חיבור API",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "אירוח עצמי",
       "customApiUrl": "כתובת API מותאמת",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
