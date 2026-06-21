@@ -655,7 +655,6 @@
     },
     "loginSettings": {
       "title": "API з'єднання",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Розміщено на власному хостингу",
       "customApiUrl": "URL-адреса користувацького API",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
