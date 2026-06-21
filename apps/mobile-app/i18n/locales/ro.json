@@ -655,7 +655,6 @@
     },
     "loginSettings": {
       "title": "Conexiune API",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Self-hosted",
       "customApiUrl": "URL API personalizat",
       "customApiUrlPlaceholder": "https://instanta-mea.com/api",
