@@ -655,7 +655,6 @@
     },
     "loginSettings": {
       "title": "Connessione API",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Self-hosted",
       "customApiUrl": "URL API personalizzata",
       "customApiUrlPlaceholder": "https://mia-istanza-aliasvault.com/api",
