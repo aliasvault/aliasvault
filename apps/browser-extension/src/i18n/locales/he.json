@@ -204,6 +204,8 @@
     "folder": "תיקייה",
     "welcomeTitle": "ברוך בואך ל־AliasVault!",
     "welcomeDescription": "כדי להשתמש בהרחבת הדפדפן של AliasVault: יש לנווט לאתר ולהשתמש בחלונית ההשלמה האוטומטית של AliasVault כדי ליצור פרטי גישה חדשים.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items found",
     "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
