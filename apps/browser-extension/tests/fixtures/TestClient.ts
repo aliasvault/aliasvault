@@ -363,7 +363,7 @@ export class TestClient {
    * Verify a credential exists in the vault list.
    */
   async verifyCredentialExists(name: string, timeout: number = Timeouts.MEDIUM): Promise<this> {
-    await expect(this.popup.locator(`text=${name}`)).toBeVisible({ timeout });
+    await expect(this.popup.locator('ul#items-list').getByText(name).first()).toBeVisible({ timeout });
     return this;
   }
 
