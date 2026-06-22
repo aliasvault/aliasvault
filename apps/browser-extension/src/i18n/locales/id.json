@@ -204,6 +204,8 @@
     "folder": "Folder",
     "welcomeTitle": "Selamat datang di AliasVault!",
     "welcomeDescription": "Untuk menggunakan ekstensi browser AliasVault: kunjungi situs web dan gunakan jendela pop-up isi-otomatis AliasVault untuk membuat kredensial baru.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items found",
     "noMatchingItems": "Tidak ada item yang sesuai dengan filter yang dipilih.",
     "noMatchingItemsSearch": "Tidak ada item yang sesuai \"{{search}}\"",
     "noMatchingItemsWithFilter": "Tidak ada {{filter}} items yang sama dengan \"{{search}}\"",
