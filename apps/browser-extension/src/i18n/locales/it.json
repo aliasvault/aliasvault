@@ -204,6 +204,8 @@
     "folder": "Cartella",
     "welcomeTitle": "Benvenuto in AliasVault!",
     "welcomeDescription": "Per usare l'estensione browser AliasVault: naviga su un sito e usa la finestra di compilazione automatica per creare una nuova credenziale.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items found",
     "noMatchingItems": "Nessun elemento corrisponde ai filtri selezionati",
     "noMatchingItemsSearch": "Nessun elemento corrispondente \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nessun elemento {{filter}} corrispondente \"{{search}}\"",
