@@ -91,9 +91,15 @@ export class PasskeyAuthenticator {
       ? PasskeyAuthenticator.buildCoseRsaRs256(pubJwk)
       : PasskeyAuthenticator.buildCoseEc2Es256(pubJwk);
 
-    // 5. Build authenticator flags
+    // 5. Build authenticator flags.
     let flags = 0x41; // UP (bit 0) + AT (bit 6)
-    const uvReq = req.publicKey.authenticatorSelection?.userVerification;
+
+    /*
+     * As in getAssertion, an omitted authenticatorSelection.userVerification defaults to
+     * "preferred" per the WebAuthn spec. Keep registration and assertion symmetric so a
+     * credential registered as verified also asserts as verified.
+     */
+    const uvReq = req.publicKey.authenticatorSelection?.userVerification ?? 'preferred';
     const uvPerformed = !!opts?.uvPerformed;
     if (uvReq === 'required' || (uvReq === 'preferred' && uvPerformed)) {
       flags |= 0x04; // UV (bit 2)
@@ -202,9 +208,15 @@ export class PasskeyAuthenticator {
     const rpId = req.publicKey.rpId || new URL(req.origin).hostname;
     const rpIdHash = new Uint8Array(await crypto.subtle.digest('SHA-256', PasskeyAuthenticator.te(rpId) as BufferSource));
 
-    // 2. Build authenticator flags
+    // 2. Build authenticator flags.
     let flags = 0x01; // UP (bit 0)
-    const uvReq = req.publicKey.userVerification;
+
+    /*
+     * An omitted userVerification defaults to "preferred" per the WebAuthn spec (not
+     * "discouraged"), and this authenticator always performs UV, so set the UV flag for
+     * required/preferred. RPs that registered with UV "required" reject UV=0 assertions.
+     */
+    const uvReq = req.publicKey.userVerification ?? 'preferred';
     const uvPerformed = !!opts?.uvPerformed;
     if (uvReq === 'required' || (uvReq === 'preferred' && uvPerformed)) {
       flags |= 0x04; // UV (bit 2)
