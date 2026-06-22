@@ -204,6 +204,8 @@
     "folder": "Тека",
     "welcomeTitle": "Ласкаво просимо до AliasVult!",
     "welcomeDescription": "Щоб скористатися розширенням браузера AliasVault: перейдіть на вебсайт і скористайтеся спливаючим вікном автозаповнення AliasVault, щоб створити нові облікові дані.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items found",
     "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
