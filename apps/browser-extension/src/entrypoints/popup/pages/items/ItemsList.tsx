@@ -7,6 +7,7 @@ import FolderBreadcrumb from '@/entrypoints/popup/components/Folders/FolderBread
 import FolderModal from '@/entrypoints/popup/components/Folders/FolderModal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+import CurrentSiteSuggestion from '@/entrypoints/popup/components/Items/CurrentSiteSuggestion';
 import FolderPill from '@/entrypoints/popup/components/Items/FolderPill';
 import ItemCard from '@/entrypoints/popup/components/Items/ItemCard';
 import ItemFilterDropdown from '@/entrypoints/popup/components/Items/ItemFilterDropdown';
@@ -864,6 +865,11 @@ const ItemsList: React.FC = () => {
         </div>
       ) : (
         <></>
+      )}
+
+      {/* Current-site suggestion: show a suggestion for the current site's matching item(s) to quickly view/open them. */}
+      {items.length > 0 && !currentFolderId && !searchTerm && filterType === 'all' && (
+        <CurrentSiteSuggestion onSearch={setSearchTerm} />
       )}
 
       {items.length === 0 ? (
