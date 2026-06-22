@@ -204,6 +204,8 @@
     "folder": "Folder",
     "welcomeTitle": "Welcome to AliasVault!",
     "welcomeDescription": "To use the AliasVault browser extension: navigate to a website and use the AliasVault autofill popup to create a new credential.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items found",
     "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
