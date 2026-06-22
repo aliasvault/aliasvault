@@ -204,6 +204,8 @@
     "folder": "Mappa",
     "welcomeTitle": "Welcome to AliasVault!",
     "welcomeDescription": "To use the AliasVault browser extension: navigate to a website and use the AliasVault autofill popup to create a new credential.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items found",
     "noMatchingItems": "Egyetlen elem sem felel meg a kiválasztott szűrőnek.",
     "noMatchingItemsSearch": "Egyetlen elem sem felel meg a \"{{search}}\" szűrőnek",
     "noMatchingItemsWithFilter": "A \"{{search}}\" keresésre egy {{filter}} szűrő sem érvényes",
