@@ -45,47 +45,22 @@ const Reinitialize: React.FC = () => {
   const requiresAuth = isFullyInitialized && (!isLoggedIn || !dbAvailable);
 
   /**
-   * Get the expected navigation path based on URL matching result.
+   * Navigate to the items index when the popup opens with a fresh (non-restored) state.
    */
-  const getMatchedPath = useCallback((matchResult: { items: { Id: string }[]; domain: string } | null): string => {
-    if (matchResult && matchResult.items.length === 1) {
-      return `/items/${matchResult.items[0].Id}`;
-    } else if (matchResult && matchResult.items.length > 1) {
-      /*
-       * For multiple matches, we navigate to /items with search param,
-       * but the saved lastPage won't have the param, so we just check against /items
-       */
-      return '/items';
-    } else {
-      return '/items';
-    }
-  }, []);
-
-  /**
-   * Navigate based on URL matching for the current tab.
-   */
-  const navigateWithUrlMatching = useCallback(async (matchResult: { items: { Id: string }[]; domain: string } | null): Promise<void> => {
-    if (matchResult && matchResult.items.length === 1) {
-      // Single match - navigate to items first, then to the item (for back button support)
-      navigate('/items', { replace: true });
-      navigate(`/items/${matchResult.items[0].Id}`, { replace: false });
-    } else if (matchResult && matchResult.items.length > 1) {
-      // Multiple matches - navigate to items list with domain search to help user find the right one
-      navigate(`/items?search=${encodeURIComponent(matchResult.domain)}`, { replace: true });
-    } else {
-      // No matches or matching failed - navigate to items page without search (don't prefill search when there are no matches)
-      navigate('/items', { replace: true });
-    }
+  const navigateToIndex = useCallback((): void => {
+    navigate('/items', { replace: true });
   }, [navigate]);
 
   /**
    * Restore the last visited page and navigation history if it was visited within the memory duration.
-   * Compares with URL matching result - if user navigated away from matched page, restore their navigation.
+   * Compares with URL matching result: if user navigated away from matched page, restore their navigation.
    */
   const restoreLastPage = useCallback(async (): Promise<void> => {
-    // First, run URL matching to see what we would auto-navigate to
+    /*
+     * Run URL matching so we can detect tab changes (used to decide between
+     * restoring the last page vs. showing a fresh index).
+     */
     const matchResult = await matchCurrentTab();
-    const matchedPath = getMatchedPath(matchResult);
 
     const [lastPage, lastVisitTime, savedHistory, lastTabUrl] = await Promise.all([
       storage.getItem(LAST_VISITED_PAGE_KEY) as Promise<string>,
@@ -102,21 +77,18 @@ const Reinitialize: React.FC = () => {
       const timeSinceLastVisit = Date.now() - lastVisitTime;
       if (timeSinceLastVisit <= PAGE_MEMORY_DURATION) {
         /*
-         * Check if user navigated away from the auto-matched page to a specific different page.
-         * Use fresh URL matching if:
-         * - Tab URL has changed (user switched tabs)
-         * - lastPage matches what URL matching would show AND has no search query (user stayed on auto-matched page)
-         * - lastPage is /items with no search query (default index page - treat as "home" state)
+         * Show a fresh items index if:
+         * - Tab URL has changed (user switched tabs), or
+         * - lastPage is the default index (/items, no search query) - the "home" state.
          *
-         * Restore user's navigation only if they navigated to a specific different page like:
-         * - Settings, add/edit forms, a different item, folder view, search queries, etc.
+         * Otherwise restore the user's navigation, since they had navigated to a
+         * specific page (settings, add/edit forms, a particular item, folder view,
+         * search queries, etc.) that we want to bring them back to.
          */
-        // Check if it's the default index page (no search query or other params)
         const lastHistoryEntry = savedHistory?.[savedHistory.length - 1];
         const hasSearchQuery = lastHistoryEntry?.search && lastHistoryEntry.search.length > 0;
-        const isOnMatchedPage = lastPage === matchedPath && !hasSearchQuery;
         const isOnDefaultIndexPage = lastPage === '/items' && !hasSearchQuery;
-        const shouldUseFreshMatch = hasTabChanged || isOnMatchedPage || isOnDefaultIndexPage;
+        const shouldUseFreshMatch = hasTabChanged || isOnDefaultIndexPage;
 
         if (!shouldUseFreshMatch) {
           // Restore user's navigation since they navigated away from auto-matched page
@@ -151,9 +123,9 @@ const Reinitialize: React.FC = () => {
       await storage.setItem(LAST_TAB_URL_KEY, currentTabUrl);
     }
 
-    // Navigate based on URL matching
-    await navigateWithUrlMatching(matchResult);
-  }, [navigate, matchCurrentTab, getMatchedPath, navigateWithUrlMatching]);
+    // Navigate to the items index: any current-site match is shown as a suggestion there.
+    navigateToIndex();
+  }, [navigate, matchCurrentTab, navigateToIndex]);
 
   /**
    * Run sync in background. If server has newer vault, useVaultSync will:
