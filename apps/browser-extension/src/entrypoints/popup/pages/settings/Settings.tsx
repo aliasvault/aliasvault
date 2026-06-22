@@ -10,7 +10,6 @@ import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
-import { useTheme } from '@/entrypoints/popup/context/ThemeContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useApiUrl } from '@/entrypoints/popup/utils/ApiUrlUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
@@ -25,7 +24,6 @@ import { browser, storage } from "#imports";
  */
 const Settings: React.FC = () => {
   const { t } = useTranslation();
-  const { theme, setTheme } = useTheme();
   const app = useApp();
   const auth = useAuth();
   const webApi = useWebApi();
@@ -85,14 +83,6 @@ const Settings: React.FC = () => {
   useEffect(() => {
     loadSettings();
   }, [loadSettings]);
-
-  /**
-   * Set theme preference.
-   */
-  const setThemePreference = async (newTheme: 'system' | 'light' | 'dark') : Promise<void> => {
-    // Use the ThemeContext to apply the theme
-    setTheme(newTheme);
-  };
 
   /**
    * Open keyboard shortcuts configuration page.
@@ -198,6 +188,13 @@ const Settings: React.FC = () => {
    */
   const navigateToIdentityGeneratorSettings = () : void => {
     navigate('/settings/identity-generator');
+  };
+
+  /**
+   * Navigate to appearance settings.
+   */
+  const navigateToAppearanceSettings = () : void => {
+    navigate('/settings/appearance');
   };
 
   return (
@@ -545,74 +542,79 @@ const Settings: React.FC = () => {
           </div>
         </section>
 
-        {/* Appearance Settings Section */}
+        {/* Appearance & Keyboard Shortcuts Section */}
         <section>
-          <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-3">{t('settings.appearance')}</h3>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <div className="p-4">
-              <div>
-                <p className="font-medium text-gray-900 dark:text-white mb-2">{t('settings.theme')}</p>
-                <div className="flex flex-col space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="theme"
-                      value="system"
-                      checked={theme === 'system'}
-                      onChange={() => setThemePreference('system')}
-                      className="mr-2"
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              {/* Appearance Settings */}
+              <button
+                onClick={navigateToAppearanceSettings}
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <div className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828L9.828 19.071M7 17h.01"
                     />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">{t('settings.useDefault')}</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="theme"
-                      value="light"
-                      checked={theme === 'light'}
-                      onChange={() => setThemePreference('light')}
-                      className="mr-2"
-                    />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">{t('settings.light')}</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="theme"
-                      value="dark"
-                      checked={theme === 'dark'}
-                      onChange={() => setThemePreference('dark')}
-                      className="mr-2"
-                    />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">{t('settings.dark')}</span>
-                  </label>
+                  </svg>
+                  <span className="text-gray-900 dark:text-white text-left">{t('settings.appearance')}</span>
                 </div>
-              </div>
+                <svg
+                  className="w-4 h-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              {/* Keyboard Shortcuts (opens browser settings) */}
+              {import.meta.env.CHROME && (
+                <button
+                  onClick={openKeyboardShortcuts}
+                  className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <div className="flex items-center">
+                    <svg
+                      className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 7h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2zM7 11h.01M11 11h.01M15 11h.01M8 15h8"
+                      />
+                    </svg>
+                    <span className="text-gray-900 dark:text-white text-left">{t('settings.keyboardShortcuts')}</span>
+                  </div>
+                  {/* External-link icon: indicates this opens the browser's own settings */}
+                  <svg
+                    className="w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
         </section>
-
-        {/* Keyboard Shortcuts Section */}
-        {import.meta.env.CHROME && (
-          <section>
-            <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-3">{t('settings.keyboardShortcuts')}</h3>
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-              <div className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{t('settings.configureKeyboardShortcuts')}</p>
-                  </div>
-                  <button
-                    onClick={openKeyboardShortcuts}
-                    className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-md transition-colors"
-                  >
-                    {t('settings.configure')}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
 
         <div className="text-center text-gray-400 dark:text-gray-600">
           {t('settings.versionPrefix')}{AppInfo.VERSION} ({getDisplayUrl()})
