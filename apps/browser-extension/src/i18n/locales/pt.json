@@ -204,6 +204,8 @@
     "folder": "Pasta",
     "welcomeTitle": "Boas-vindas ao AliasVault!",
     "welcomeDescription": "Para utilizar a extensão de navegador do AliasVault: navegue para um site e utilize o pop-up de preenchimento automático do AliasVault para criar uma nova credencial.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items found",
     "noMatchingItems": "Nenhum item corresponde ao filtro selecionado.",
     "noMatchingItemsSearch": "Nenhum item corresponde à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nenhum item com o filtro {{filter}} corresponde à \"{{search}}\"",
