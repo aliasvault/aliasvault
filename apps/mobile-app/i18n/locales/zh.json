@@ -67,11 +67,11 @@
       "serverError": "无法访问 AliasVault 服务器。请稍后重试，若问题依旧，请联系支持人员。",
       "serverErrorSelfHosted": "无法访问 API。对于自托管实例，请在浏览器中导航至 API 端点，验证其是否可访问：它应显示“OK”。",
       "networkError": "网络请求失败，请检查您的互联网连接并重试。",
-      "networkErrorSelfHosted": "网络请求失败。请检查网络连接及服务器可用性。对于自托管实例，请确保已安装有效的SSL证书。出于安全考虑，移动设备不支持自签名证书。",
+      "networkErrorSelfHosted": "网络请求失败。请检查网络连接及服务器可用性。对于自托管实例，请确保已安装有效的 SSL 证书。出于安全考虑，移动设备不支持自签名证书。",
       "sessionExpired": "您的会话已过期，请重新登录。",
       "httpError": "HTTP 错误：{{status}}"
     },
-    "confirmLogout": "确定要退出登录吗？否则需要重新输入主密码才能访问密码库内容。",
+    "confirmLogout": "确定要退出登录吗？您需要使用主密码重新登录才能访问密码库。",
     "noAccountYet": "还没有账号？",
     "createNewVault": "创建新密码库",
     "connectingTo": "正在连接到",
@@ -84,7 +84,7 @@
   },
   "vault": {
     "syncingVault": "正在同步密码库",
-    "uploadingVaultToServer": "正在向服务器上传密码库",
+    "uploadingVaultToServer": "正在将密码库上传到服务器",
     "savingChangesToVault": "正在保存对密码库的更改",
     "checkingForVaultUpdates": "检查密码库更新中",
     "executingOperation": "执行操作中…",
