@@ -35,6 +35,13 @@ import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 const FILTER_STORAGE_KEY = 'items-filter';
 const FILTER_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
 
+/*
+ * Minimum number of vault entries before the current-site suggestion is shown.
+ * With only a handful of entries (e.g. right after onboarding) the whole list is
+ * already visible, so a suggestion just duplicates an entry that's right there.
+ */
+const CURRENT_SITE_SUGGESTION_MIN_ITEMS = 5;
+
 /**
  * Sort order options with their translation keys
  */
@@ -868,7 +875,7 @@ const ItemsList: React.FC = () => {
       )}
 
       {/* Current-site suggestion: show a suggestion for the current site's matching item(s) to quickly view/open them. */}
-      {items.length > 0 && !currentFolderId && !searchTerm && filterType === 'all' && (
+      {items.length > CURRENT_SITE_SUGGESTION_MIN_ITEMS && !currentFolderId && !searchTerm && filterType === 'all' && (
         <CurrentSiteSuggestion onSearch={setSearchTerm} />
       )}
 
