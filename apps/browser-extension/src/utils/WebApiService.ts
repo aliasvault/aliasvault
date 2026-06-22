@@ -12,6 +12,17 @@ import { storage } from '#imports';
 type RequestInit = globalThis.RequestInit;
 
 /**
+ * Total request timeout for lightweight API calls (status checks, auth, etc.). Kept short so the
+ * popup falls back to offline mode quickly when the server is unreachable.
+ */
+const DEFAULT_REQUEST_TIMEOUT_MS = 5000;
+
+/**
+ * Total request timeout for vault download/upload, which can carry a large encrypted blob.
+ */
+const VAULT_TRANSFER_TIMEOUT_MS = 60000;
+
+/**
  * Type for the token response from the API.
  */
 type TokenResponse = {
@@ -123,6 +134,7 @@ export class WebApiService {
     const requestOptions: RequestInit = {
       ...options,
       headers,
+      signal: this.buildTimeoutSignal(endpoint, headers, options.signal),
     };
 
     try {
@@ -136,6 +148,20 @@ export class WebApiService {
         error instanceof Error ? error : undefined
       );
     }
+  }
+
+  /**
+   * Build an AbortSignal that bounds how long a request can run, combined with any caller-supplied
+   * signal.
+   */
+  private buildTimeoutSignal(endpoint: string, headers: Headers, callerSignal?: AbortSignal | null): AbortSignal {
+    const path = endpoint.split('?')[0].replace(/^\/+|\/+$/g, '').toLowerCase();
+    const isLargeTransfer = path === 'vault' ||
+      (headers.get('Accept') ?? '').toLowerCase().includes('application/octet-stream');
+    const timeoutSignal = AbortSignal.timeout(
+      isLargeTransfer ? VAULT_TRANSFER_TIMEOUT_MS : DEFAULT_REQUEST_TIMEOUT_MS
+    );
+    return callerSignal ? AbortSignal.any([callerSignal, timeoutSignal]) : timeoutSignal;
   }
 
   /**

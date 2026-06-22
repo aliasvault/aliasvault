@@ -61,6 +61,18 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
         return false;
       }
 
+      /*
+       * If the lightweight status check already determined the server is unreachable, skip the full
+       * sync to prevent blocking the UI more than necessary.
+       */
+      if (statusCheck.isOffline) {
+        await dbContext.setIsOffline(true);
+        onStatus?.(t('common.offlineMode'));
+        onOffline?.();
+        onSuccess?.(false);
+        return true;
+      }
+
       // Show appropriate indicator based on what sync will do
       if (statusCheck.hasNewerVault) {
         dbContext.setIsSyncing(true);
