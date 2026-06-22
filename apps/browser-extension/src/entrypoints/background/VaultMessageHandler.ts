@@ -349,8 +349,8 @@ export async function handleCreateItem(
     // Add the new item to the vault/database.
     await sqliteClient.items.create(message.item, message.attachments || [], message.totpCodes || []);
 
-    // Upload the new vault to the server.
-    await uploadNewVaultToServer(sqliteClient);
+    // Persist locally and sync in the background (doesn't block when server is offline).
+    await persistLocalVaultMutation(sqliteClient, encryptionKey);
 
     return { success: true };
   } catch (error) {
@@ -848,6 +848,21 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
   }
 
   return response;
+}
+
+/**
+ * Persist a locally-mutated vault and attempt to sync it to the server in the background.
+ *
+ * This is tolerant to server being offline (in which case the vault state will be stored locally for next sync).
+ */
+async function persistLocalVaultMutation(sqliteClient: SqliteClient, encryptionKey: string) : Promise<void> {
+  const updatedVaultData = sqliteClient.exportToBase64();
+  const encryptedVault = await EncryptionUtility.symmetricEncrypt(updatedVaultData, encryptionKey);
+  await handleStoreEncryptedVault({ vaultBlob: encryptedVault, markDirty: true });
+
+  void handleFullVaultSync().catch(error => {
+    console.error('Background sync after local vault mutation failed:', error);
+  });
 }
 
 /**
@@ -1658,8 +1673,8 @@ export async function handleSaveLoginCredential(
     // Add the item to the vault
     await sqliteClient.items.create(newItem, [], []);
 
-    // Upload the updated vault to the server
-    await uploadNewVaultToServer(sqliteClient);
+    // Persist locally and sync in the background (doesn't block when server is offline).
+    await persistLocalVaultMutation(sqliteClient, encryptionKey);
 
     return { success: true, itemId: newItem.Id };
   } catch (error) {
@@ -1728,8 +1743,8 @@ export async function handleAddUrlToCredential(message: { itemId: string; url: s
     // Update the item in the vault
     await sqliteClient.items.update(item, [], [], [], []);
 
-    // Upload the updated vault to the server
-    await uploadNewVaultToServer(sqliteClient);
+    // Persist locally and sync in the background (doesn't block when server is offline).
+    await persistLocalVaultMutation(sqliteClient, encryptionKey);
 
     return { success: true };
   } catch (error) {
