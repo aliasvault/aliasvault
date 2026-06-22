@@ -204,6 +204,8 @@
     "folder": "Mapp",
     "welcomeTitle": "Välkommen till AliasVault!",
     "welcomeDescription": "För att använda webbläsartillägget AliasVault: navigera till en webbplats och använd AliasVault-autofyllrutan för att skapa en ny inloggningsuppgift.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items found",
     "noMatchingItems": "Inga objekt matchar de valda filtren",
     "noMatchingItemsSearch": "Inga objekt matchar \"{{search}}\"",
     "noMatchingItemsWithFilter": "Inga {{filter}} objekt som matchar \"{{search}}\"",
