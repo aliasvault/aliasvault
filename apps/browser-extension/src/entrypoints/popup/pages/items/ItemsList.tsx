@@ -732,6 +732,7 @@ const ItemsList: React.FC = () => {
     folderCount: folders.length,
     itemCount: sortedItems.length,
     searchInputRef,
+    resetKey: currentFolderId,
     onActivateFolder: handleActivateFolder,
     onActivateItem: handleActivateItem,
     onGoBack: handleGoBack,
