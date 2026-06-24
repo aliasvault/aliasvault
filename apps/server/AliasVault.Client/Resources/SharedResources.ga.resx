@@ -119,7 +119,7 @@
   </resheader>
   <!-- Common UI elements -->
   <data name="Save" xml:space="preserve">
-    <value>Save</value>
+    <value>Sábháil</value>
     <comment>Button text for saving changes</comment>
   </data>
   <data name="Cancel" xml:space="preserve">
