@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 /// </summary>
 [Index(nameof(Address), IsUnique = true)]
 [Index(nameof(UserId), nameof(Disabled))]
+[Index(nameof(UserId), nameof(CreatedAt))]
 public class UserEmailClaim
 {
     /// <summary>

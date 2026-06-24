@@ -70,13 +70,6 @@ public class AliasVaultUser : IdentityUser
     public int MaxEmailAgeDays { get; set; } = 0;
 
     /// <summary>
-    /// Gets or sets the per-user alias creation limit. 0 means no per-user limit (global settings may apply).
-    /// A value greater than 0 is a explicit per-user cap that always applies to this account and takes priority
-    /// over any other global limit.
-    /// </summary>
-    public int MaxAliases { get; set; } = 0;
-
-    /// <summary>
     /// Gets or sets the date of the user's last activity (login, API call, etc.).
     /// Updated automatically on successful authentication events.
     /// </summary>

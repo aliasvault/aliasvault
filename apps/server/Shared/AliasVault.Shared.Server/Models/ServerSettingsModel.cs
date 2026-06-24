@@ -84,17 +84,4 @@ public class ServerSettingsModel
     /// Set to 0 to disable IP-based registration rate limiting.
     /// </summary>
     public int MaxRegistrationsPerIpPer24Hours { get; set; } = 5;
-
-    /// <summary>
-    /// Gets or sets the age (in days) below which an account is considered "new" for alias-creation limiting purposes.
-    /// Defaults to 0 (disabled). When 0, or when MaxAliasesForNewAccounts is 0, no new-account alias limit is applied.
-    /// </summary>
-    public int NewAccountAliasLimitDays { get; set; }
-
-    /// <summary>
-    /// Gets or sets the maximum number of active aliases a "new" account (younger than NewAccountAliasLimitDays) may
-    /// have. Defaults to 0 (unlimited). When the limit is reached, additional alias creation is silently skipped
-    /// during vault sync.
-    /// </summary>
-    public int MaxAliasesForNewAccounts { get; set; }
 }

@@ -148,6 +148,11 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<BlockedIpRange> BlockedIpRanges { get; set; }
 
     /// <summary>
+    /// Gets or sets the RateLimits DbSet.
+    /// </summary>
+    public DbSet<RateLimit> RateLimits { get; set; }
+
+    /// <summary>
     /// Sets up the connection string if it is not already configured.
     /// </summary>
     /// <param name="optionsBuilder">DbContextOptionsBuilder instance.</param>
@@ -284,6 +289,13 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             .HasOne(m => m.User)
             .WithMany()
             .HasForeignKey(m => m.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure RateLimit - AliasVaultUser relationship
+        modelBuilder.Entity<RateLimit>()
+            .HasOne(r => r.User)
+            .WithMany()
+            .HasForeignKey(r => r.UserId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
