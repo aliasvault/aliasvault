@@ -11,6 +11,7 @@ using System.ComponentModel.DataAnnotations;
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Helpers;
+using AliasVault.Api.Services;
 using AliasVault.Api.Vault;
 using AliasVault.Api.Vault.RetentionRules;
 using AliasVault.Auth;
@@ -38,9 +39,9 @@ using Microsoft.Extensions.Caching.Memory;
 /// <param name="authLoggingService">AuthLoggingService instance.</param>
 /// <param name="cache">IMemoryCache instance.</param>
 /// <param name="config">Config instance.</param>
-/// <param name="settingsService">ServerSettingsService instance.</param>
+/// <param name="rateLimitService">RateLimitService instance.</param>
 [ApiVersion("1")]
-public class VaultController(ILogger<VaultController> logger, IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, ITimeProvider timeProvider, AuthLoggingService authLoggingService, IMemoryCache cache, Config config, ServerSettingsService settingsService) : AuthenticatedRequestController(userManager)
+public class VaultController(ILogger<VaultController> logger, IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, ITimeProvider timeProvider, AuthLoggingService authLoggingService, IMemoryCache cache, Config config, RateLimitService rateLimitService) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Default retention policy for vaults.
@@ -376,10 +377,30 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         // Get list of supported private domains from config
         var supportedPrivateDomains = config.PrivateEmailDomains;
 
-        // Resolve the alias creation limit. 0 means no limit applies.
-        var settings = await settingsService.GetAllSettingsAsync();
-        var aliasLimit = ResolveAliasLimit(user, settings);
-        var ownedAliasCount = userOwnedEmailClaims.Count;
+        // Resolve the alias creation limits for this user.
+        var rateLimits = await rateLimitService.ResolveAsync(user, RateLimitType.AliasCreation);
+
+        // Calculate the current usage baseline per limit. addedThisSync is then added to each in the loop.
+        var limitUsages = new List<(int MaxCount, int BaseCount)>();
+        foreach (var limit in rateLimits)
+        {
+            int baseCount;
+            if (limit.WindowSeconds == 0)
+            {
+                // Global absolute cap: every claim the user has ever made (including disabled ones).
+                baseCount = userOwnedEmailClaims.Count;
+            }
+            else
+            {
+                // Time-based cap: aliases created within the rolling window (create-then-delete still counts).
+                var windowStart = timeProvider.UtcNow.AddSeconds(-limit.WindowSeconds);
+                baseCount = await context.UserEmailClaims.CountAsync(x => x.UserId == user.Id && x.CreatedAt >= windowStart);
+            }
+
+            limitUsages.Add((limit.MaxCount, baseCount));
+        }
+
+        var addedThisSync = 0;
         var aliasLimitLogged = false;
 
         // Register new email addresses.
@@ -430,13 +451,12 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                 continue;
             }
 
-            // Enforce the alias creation limit: once the account is at its cap, silently skip creating
-            // additional aliases (logged once so the limit being hit is visible for audits).
-            if (aliasLimit > 0 && ownedAliasCount >= aliasLimit)
+            // Once any limit is reached, silently skip creating further aliases (logged once for audits).
+            if (limitUsages.Any(u => u.BaseCount + addedThisSync >= u.MaxCount))
             {
                 if (!aliasLimitLogged)
                 {
-                    logger.LogWarning("{User} reached the alias limit of {Limit}. Skipping creation of additional aliases.", user.UserName, aliasLimit);
+                    logger.LogWarning("{User} exceeded alias creation limit. Skipping creation of additional aliases.", user.UserName);
                     aliasLimitLogged = true;
                 }
 
@@ -455,7 +475,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                         CreatedAt = timeProvider.UtcNow,
                         UpdatedAt = timeProvider.UtcNow,
                     });
-                ownedAliasCount++;
+                addedThisSync++;
             }
             catch (DbUpdateException ex)
             {
@@ -479,37 +499,6 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         }
 
         await context.SaveChangesAsync();
-    }
-
-    /// <summary>
-    /// Resolves the alias creation limit that applies to the given user.
-    /// Priority: the per-user <see cref="AliasVaultUser.MaxAliases"/> takes precedence and, when greater than 0,
-    /// is a hard cap that always applies regardless of account age or the global settings (set it high, e.g.
-    /// 999999, to effectively grant unlimited aliases). When it is 0, any global limit applies.
-    /// </summary>
-    /// <param name="user">The user to resolve the limit for.</param>
-    /// <param name="settings">The current server settings.</param>
-    /// <returns>The maximum number of aliases the user may own, or 0 when no limit applies.</returns>
-    private int ResolveAliasLimit(AliasVaultUser user, ServerSettingsModel settings)
-    {
-        // Per-user cap takes priority and always applies when set.
-        if (user.MaxAliases > 0)
-        {
-            return user.MaxAliases;
-        }
-
-        // Otherwise any global limit applies.
-        var newAccountLimitEnabled = settings.NewAccountAliasLimitDays > 0;
-        if (newAccountLimitEnabled && settings.MaxAliasesForNewAccounts > 0)
-        {
-            var accountIsNew = user.CreatedAt > timeProvider.UtcNow.AddDays(-settings.NewAccountAliasLimitDays);
-            if (accountIsNew)
-            {
-                return settings.MaxAliasesForNewAccounts;
-            }
-        }
-
-        return 0;
     }
 
     /// <summary>
