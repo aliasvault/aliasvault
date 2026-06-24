@@ -198,6 +198,9 @@ html[data-theme='dark'] {
   .navbar__item {
     display: none;
   }
+  .navbar__link.navbar__icon-link {
+    display: none;
+  }
 }
 
 /* --------------------------------------------------------------- Sidebar -- */
