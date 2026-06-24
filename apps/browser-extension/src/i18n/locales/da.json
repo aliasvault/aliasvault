@@ -205,7 +205,7 @@
     "welcomeTitle": "Velkommen til AliasVault!",
     "welcomeDescription": "For at bruge AliasVault-browserudvidelsen: Gå til et websted og brug AliasVault-autofyld-popup'en til at oprette en ny logonoplysning.",
     "currentSiteMatch": "For {{domain}}",
-    "numberOfItemMatchesFound": "{{count}} items found",
+    "numberOfItemMatchesFound": "{{count}} emner fundet",
     "noMatchingItems": "Ingen elementer matcher det valgte filter.",
     "noMatchingItemsSearch": "Ingen elementer matcher \"{{search}}\"",
     "noMatchingItemsWithFilter": "Ingen {{filter}}-elementer matcher \"{{search}}\"",
