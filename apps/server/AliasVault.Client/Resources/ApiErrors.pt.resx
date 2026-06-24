@@ -129,7 +129,7 @@
     <value>Registro de novas contas está atualmente desabilitado neste servidor. Por favor, entre em contato com o administrador.</value>
   </data>
   <data name="REGISTRATION_FAILED" xml:space="preserve">
-    <value>Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.</value>
+    <value>Não foi possível criar a conta. Por favor, tente novamente em alguns minutos. Caso o problema continue, por favor, entre em contato com o suporte.</value>
   </data>
   <data name="USER_NOT_FOUND" xml:space="preserve">
     <value>Nome de usuário ou senha incorretos. Por favor, tente novamente.</value>
