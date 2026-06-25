@@ -233,23 +233,23 @@
     <comment>Shown when the server rejects a vault upload with HTTP 413 because the encrypted vault exceeds the configured upload size limit</comment>
   </data>
   <data name="VaultSaveError" xml:space="preserve">
-    <value>Failed to save changes to the vault. Please try again.</value>
+    <value>Theip ar athruithe a shábháil sa chruinneachán. Déan iarracht arís.</value>
     <comment>Generic error shown when a vault save / sync to the server fails for an unexpected reason</comment>
   </data>
   <data name="ErrorValidation" xml:space="preserve">
-    <value>Please correct the errors below.</value>
+    <value>Ceartaigh na hearráidí thíos le do thoil.</value>
     <comment>Validation error message</comment>
   </data>
   <data name="ErrorRequired" xml:space="preserve">
-    <value>This field is required.</value>
+    <value>Tá an réimse seo riachtanach.</value>
     <comment>Required field validation error</comment>
   </data>
   <data name="ErrorInvalidEmail" xml:space="preserve">
-    <value>Please enter a valid email address.</value>
+    <value>Cuir isteach seoladh ríomhphoist bailí le do thoil.</value>
     <comment>Invalid email validation error</comment>
   </data>
   <data name="ErrorPasswordMismatch" xml:space="preserve">
-    <value>Passwords do not match.</value>
+    <value>Ní hionann na pasfhocail.</value>
     <comment>Password confirmation mismatch error</comment>
   </data>
   <!-- Common status messages -->
@@ -262,78 +262,78 @@
     <comment>Warning status message</comment>
   </data>
   <data name="Error" xml:space="preserve">
-    <value>Error</value>
+    <value>Earráid</value>
     <comment>Error status message</comment>
   </data>
   <data name="Info" xml:space="preserve">
-    <value>Info</value>
+    <value>Eolas</value>
     <comment>Information status message</comment>
   </data>
   <!-- Loading screen messages -->
   <data name="RefreshPageText" xml:space="preserve">
-    <value>If loading seems stuck, you can click the button below to refresh the page.</value>
+    <value>Más cosúil go bhfuil an luchtú i bhfostú, is féidir leat cliceáil ar an gcnaipe thíos chun an leathanach a athnuachan.</value>
     <comment>Text shown above refresh button on loading screen</comment>
   </data>
   <!-- Validation error messages for forms -->
   <data name="ErrorPasswordMinLength" xml:space="preserve">
-    <value>The new password must be at least 10 characters long.</value>
+    <value>Ní mór don phasfhocal nua a bheith 10 gcarachtar ar a laghad.</value>
     <comment>Error message for password minimum length validation</comment>
   </data>
   <data name="ErrorPasswordsDoNotMatch" xml:space="preserve">
-    <value>The new passwords do not match.</value>
+    <value>Ní hionann na pasfhocail nua.</value>
     <comment>Error message when password confirmation doesn't match</comment>
   </data>
   <data name="ErrorPasswordMinLengthGeneric" xml:space="preserve">
-    <value>Password must be at least 10 characters long.</value>
+    <value>Ní mór don phasfhocal a bheith 10 gcarachtar ar a laghad.</value>
     <comment>Generic error message for password minimum length validation</comment>
   </data>
   <data name="ErrorPasswordsDoNotMatchGeneric" xml:space="preserve">
-    <value>Passwords do not match.</value>
+    <value>Ní hionann na pasfhocail.</value>
     <comment>Generic error message when passwords don't match</comment>
   </data>
   <data name="ErrorMustAcceptTerms" xml:space="preserve">
-    <value>You must accept the terms and conditions.</value>
+    <value>Ní mór duit glacadh leis na téarmaí agus coinníollacha.</value>
     <comment>Error message for terms and conditions acceptance</comment>
   </data>
   <data name="ErrorSecretKeyRequired" xml:space="preserve">
-    <value>Secret key is required</value>
+    <value>Tá eochair rúnda ag teastáil</value>
     <comment>Error message when secret key is required</comment>
   </data>
   <data name="ErrorUsernameRequired" xml:space="preserve">
-    <value>Username is required</value>
+    <value>Tá ainm úsáideora ag teastáil</value>
     <comment>Error message when username is required</comment>
   </data>
   <data name="ErrorPasswordRequired" xml:space="preserve">
-    <value>Password is required</value>
+    <value>Tá pasfhocal ag teastáil</value>
     <comment>Error message when password is required</comment>
   </data>
   <!-- General UI text -->
   <data name="Or" xml:space="preserve">
-    <value>or</value>
+    <value>nó</value>
     <comment>Divider text between options</comment>
   </data>
   <data name="LockVault" xml:space="preserve">
-    <value>Lock vault</value>
+    <value>Glasáil cruinneachán</value>
     <comment>Tooltip text for lock vault button</comment>
   </data>
   <data name="Home" xml:space="preserve">
-    <value>Home</value>
+    <value>Baile</value>
     <comment>Home breadcrumb text</comment>
   </data>
   <data name="Notes" xml:space="preserve">
-    <value>Notes</value>
+    <value>Nótaí</value>
     <comment>Notes section heading</comment>
   </data>
   <data name="SyncVaultData" xml:space="preserve">
-    <value>Sync vault data</value>
+    <value>Sioncrónaigh sonraí cruinneacháin</value>
     <comment>Tooltip text for sync vault data button</comment>
   </data>
   <data name="SyncingChanges" xml:space="preserve">
-    <value>Syncing changes...</value>
+    <value>Ag sioncrónú athruithe...</value>
     <comment>Status text when background sync is in progress</comment>
   </data>
   <data name="LoadingVault" xml:space="preserve">
-    <value>Loading vault...</value>
+    <value>Ag lódáil an cruinneachán...</value>
     <comment>Status text when vault is being loaded</comment>
   </data>
   <data name="EmailFormatHtml" xml:space="preserve">
@@ -341,19 +341,19 @@
     <comment>Email format switcher: HTML view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatPlain" xml:space="preserve">
-    <value>Text</value>
+    <value>Téacs</value>
     <comment>Email format switcher: plain text view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatSource" xml:space="preserve">
-    <value>Source</value>
+    <value>Foinse</value>
     <comment>Email format switcher: raw HTML source view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatSwitchTitle" xml:space="preserve">
-    <value>Switch email format</value>
+    <value>Athraigh formáid ríomhphoist</value>
     <comment>Tooltip for the cycle button that switches between HTML / Text / Source views. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailItemLabel" xml:space="preserve">
-    <value>Item:</value>
+    <value>Mír:</value>
     <comment>Label for the credential/item row in the email header. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailItemNone" xml:space="preserve">
