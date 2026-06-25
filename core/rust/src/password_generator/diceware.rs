@@ -13,7 +13,7 @@ const ALPHANUMERIC: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
 
 /// Generate a Diceware passphrase based on the supplied settings.
 pub fn generate<R: RngCore + ?Sized>(settings: &PasswordSettings, rng: &mut R) -> String {
-    let words = wordlists::list(settings.language);
+    let words = wordlists::list(&settings.language);
 
     let chosen: Vec<String> = (0..settings.word_count)
         .map(|_| {

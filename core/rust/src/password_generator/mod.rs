@@ -33,25 +33,6 @@ pub enum GeneratorType {
     Diceware,
 }
 
-/// Wordlist language for Diceware generation.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
-#[serde(rename_all = "PascalCase")]
-pub enum Language {
-    /// English wordlist.
-    #[default]
-    English,
-    /// Dutch wordlist.
-    Dutch,
-    /// German wordlist.
-    German,
-    /// French wordlist.
-    French,
-    /// Spanish wordlist.
-    Spanish,
-    /// Italian wordlist.
-    Italian,
-}
-
 /// Capitalization applied to each Diceware word.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "PascalCase")]
@@ -137,9 +118,10 @@ pub struct PasswordSettings {
     /// Number of words in the passphrase.
     #[serde(default = "default_word_count")]
     pub word_count: u32,
-    /// Wordlist language.
-    #[serde(default)]
-    pub language: Language,
+    /// Wordlist language code (free text, case-insensitive). Unknown codes fall back to
+    /// English, so the TypeScript model and apps never need updating to add a language.
+    #[serde(default = "default_language")]
+    pub language: String,
     /// Capitalization applied to each word.
     #[serde(default)]
     pub capitalization: Capitalization,
@@ -170,6 +152,18 @@ fn default_word_count() -> u32 {
 
 fn default_true() -> bool {
     true
+}
+
+fn default_language() -> String {
+    "English".to_string()
+}
+
+/// List the language codes of all bundled Diceware wordlists (first is the default, English).
+pub fn available_languages() -> Vec<String> {
+    wordlists::available_codes()
+        .into_iter()
+        .map(|c| c.to_string())
+        .collect()
 }
 
 /// Generate a password or passphrase from a JSON-serialized [`PasswordSettings`].
