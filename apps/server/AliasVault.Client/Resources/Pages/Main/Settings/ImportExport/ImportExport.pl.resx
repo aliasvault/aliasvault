@@ -71,7 +71,7 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Select a service to import from.</value>
+    <value>Wybierz usługę z której chcesz zaimportować.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
@@ -83,11 +83,11 @@
     <comment>Export section description</comment>
   </data>
   <data name="RecommendedLabel" xml:space="preserve">
-    <value>Recommended</value>
+    <value>Zalecane</value>
     <comment>Label for recommended option</comment>
   </data>
   <data name="ExportAvexTitle" xml:space="preserve">
-    <value>Encrypted full vault export</value>
+    <value>Zaszyfrowany eksport całego sejfu</value>
     <comment>Title for encrypted export option</comment>
   </data>
   <data name="ExportAvexDescription" xml:space="preserve">
@@ -103,7 +103,7 @@
     <comment>Description for unencrypted full export option</comment>
   </data>
   <data name="ExportCsvTitle" xml:space="preserve">
-    <value>CSV export</value>
+    <value>Eksport CSV</value>
     <comment>Title for CSV export option</comment>
   </data>
   <data name="ExportCsvDescription" xml:space="preserve">
@@ -111,15 +111,15 @@
     <comment>Description for CSV export option</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>Export to CSV</value>
+    <value>Eksport do CSV</value>
     <comment>Button to export as CSV</comment>
   </data>
   <data name="ExportAvuxButton" xml:space="preserve">
-    <value>Export unencrypted vault (.avux)</value>
+    <value>Eksportuj niezaszyfrowany sejf (.avux)</value>
     <comment>Button to export full vault as .avux archive</comment>
   </data>
   <data name="ExportingVaultMessage" xml:space="preserve">
-    <value>Exporting vault...</value>
+    <value>Eksportowanie sejfu...</value>
     <comment>Message shown while exporting vault</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
@@ -165,7 +165,7 @@ Czy na pewno chcesz kontynuować eksport?</value>
     <comment>Generic error message for password verification failure</comment>
   </data>
   <data name="ExportAvexButton" xml:space="preserve">
-    <value>Export encrypted vault (.avex)</value>
+    <value>Eksportuj niezaszyfrowany sejf (.avux)</value>
     <comment>Button to export encrypted vault as .avex archive</comment>
   </data>
   <data name="ExportEncryptedWarningMessage" xml:space="preserve">
@@ -175,7 +175,7 @@ Are you sure you want to continue?</value>
     <comment>Warning message for encrypted export confirmation</comment>
   </data>
   <data name="ExportEncryptedPasswordTitle" xml:space="preserve">
-    <value>Set Export Password</value>
+    <value>Ustaw hasło eksportowania</value>
     <comment>Title for export password modal</comment>
   </data>
   <data name="ExportEncryptedPasswordDescription" xml:space="preserve">
@@ -183,7 +183,7 @@ Are you sure you want to continue?</value>
     <comment>Description for export password modal with security warning</comment>
   </data>
   <data name="ExportSuccessMessage" xml:space="preserve">
-    <value>Your vault has been exported successfully.</value>
+    <value>Twój sejf został pomyślnie wyeksportowany.</value>
     <comment>Success message after vault export completes</comment>
   </data>
 </root>
