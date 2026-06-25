@@ -10,6 +10,7 @@ import type { TwoFactorState } from '@/entrypoints/background/TwoFactorStateHand
 import type { SyncStatusCheckResult, FullVaultSyncResult } from '@/entrypoints/background/VaultMessageHandler';
 
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
+import type { PasswordSettings } from '@/utils/dist/core/models/vault';
 import type { LoginResponse } from '@/utils/dist/core/models/webapi';
 import type { SavePromptPersistedState, LastAutofilledCredential } from '@/utils/loginDetector';
 import type { PendingPasskeyRequest, WebAuthnSettingsResponse, WebAuthnPublicKeyGetPayload, MatchingPasskeysResponse, WebAuthnAssertionResponse } from '@/utils/passkey/types';
@@ -49,6 +50,7 @@ export interface IExtensionMessageProtocol {
   CLIPBOARD_COUNTDOWN_CANCELLED(data: Record<string, never>): void;
   CREATE_ITEM(data: any): BoolResponse;
   FULL_VAULT_SYNC(): FullVaultSyncResult;
+  GENERATE_PASSWORD(data: { settings: PasswordSettings }): { success: boolean; password?: string; error?: string };
   GENERATE_TOTP_CODE(data: { itemId: string }): { success: boolean; code?: string; error?: string };
   GET_CLIPBOARD_CLEAR_TIMEOUT(): number;
   GET_CLIPBOARD_COUNTDOWN_STATE(): { remaining: number; total: number; id: number } | null;
