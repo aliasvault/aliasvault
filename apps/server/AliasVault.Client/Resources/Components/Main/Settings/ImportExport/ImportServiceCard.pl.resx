@@ -95,11 +95,11 @@
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
   </data>
   <data name="ImportAttachmentsLabel" xml:space="preserve">
-    <value>Import detected attachments</value>
+    <value>Import wykrytych załączników</value>
     <comment>Checkbox label for importing file attachments detected in the source export</comment>
   </data>
   <data name="AttachmentsDetected" xml:space="preserve">
-    <value>{0} attachment(s), {1}</value>
+    <value>{0} załącznik(y), {1}</value>
     <comment>Info text showing number of attachments detected and their total size. {0} is the count, {1} is the human-readable size (e.g. "3.9 MB")</comment>
   </data>
   <data name="DuplicateCredentialsWarning" xml:space="preserve">
@@ -171,31 +171,31 @@
     <comment>Error message when user tries to import a zip file</comment>
   </data>
   <data name="ImportErrorUnsupportedFormat" xml:space="preserve">
-    <value>Unsupported file format. Supported formats: {0}</value>
+    <value>Nieobsługiwany format pliku. Obsługiwane formaty: {0}</value>
     <comment>Error message when user selects an unsupported file format. {0} is the list of supported extensions</comment>
   </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
-    <value>File size exceeds {0}MB limit.</value>
+    <value>Rozmiar pliku przekracza limit {0}MB.</value>
     <comment>Error message when file is too large. {0} is the maximum allowed size in megabytes</comment>
   </data>
   <data name="EncryptedFilePasswordPrompt" xml:space="preserve">
-    <value>This file is encrypted. Please enter the password you used when creating the export.</value>
+    <value>Ten plik jest zaszyfrowany. Wprowadź hasło, którego użyłeś podczas tworzenia eksportu.</value>
     <comment>Prompt for encrypted file password</comment>
   </data>
   <data name="DecryptionPasswordLabel" xml:space="preserve">
-    <value>Decryption Password</value>
+    <value>Hasło deszyfrowania</value>
     <comment>Label for decryption password input</comment>
   </data>
   <data name="DecryptionPasswordHint" xml:space="preserve">
-    <value>This is the password you set when creating the encrypted export (.avex file), not your vault master password.</value>
+    <value>To jest hasło ustawione podczas tworzenia zaszyfrowanego eksportu (plik .avex), a nie Twoje hasło główne sejfu.</value>
     <comment>Hint explaining what password is needed</comment>
   </data>
   <data name="DecryptAndContinueButton" xml:space="preserve">
-    <value>Decrypt and Continue</value>
+    <value>Odszyfruj i kontynuuj</value>
     <comment>Button text for decryption</comment>
   </data>
   <data name="DecryptingFile" xml:space="preserve">
-    <value>Decrypting file...</value>
+    <value>Odszyfrowywanie pliku...</value>
     <comment>Progress text during decryption</comment>
   </data>
   <data name="IncorrectPasswordError" xml:space="preserve">
@@ -203,19 +203,19 @@
     <comment>Error message for incorrect decryption password</comment>
   </data>
   <data name="DecryptionErrorGeneric" xml:space="preserve">
-    <value>Failed to decrypt the file. Please check that the file is not corrupted and try again.</value>
+    <value>Nie udało się odszyfrować pliku. Sprawdź, czy plik nie jest uszkodzony i spróbuj ponownie.</value>
     <comment>Generic error message for decryption failure</comment>
   </data>
   <data name="supportedFormats" xml:space="preserve">
-    <value>Supported formats</value>
+    <value>Obsługiwane formaty</value>
     <comment>Label for supported file formats</comment>
   </data>
   <data name="ImportErrorDetailsIntro" xml:space="preserve">
-    <value>Please copy the details below and share them when reporting this issue.</value>
+    <value>Proszę skopiować dane poniżej i udostępnić je podczas zgłaszania tego problemu.</value>
     <comment>Intro line shown above the copyable error diagnostic block when an import fails</comment>
   </data>
   <data name="ImportErrorCopyDetailsButton" xml:space="preserve">
-    <value>Copy details</value>
+    <value>Kopiuj dane</value>
     <comment>Button label to copy the error diagnostic block to the clipboard</comment>
   </data>
   <data name="ImportErrorShowDetailsButton" xml:space="preserve">
@@ -227,7 +227,7 @@
     <comment>Button label that hides the error diagnostic block again (shown when the block is currently expanded)</comment>
   </data>
   <data name="ImportPartialFailureWarning" xml:space="preserve">
-    <value>{0} item(s) could not be parsed and will be skipped.</value>
+    <value>{0} element(ów) nie można przeanalizować i zostaną pominięte.</value>
     <comment>Warning shown in the preview step when some items failed to parse. {0} is the count of failed items</comment>
   </data>
 </root>
