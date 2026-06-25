@@ -4,9 +4,8 @@ import { fillItem, fillTotpCode } from '@/entrypoints/contentScript/Form';
 
 import { CreateIdentityGenerator, IdentityHelperUtils } from '@/utils/dist/core/identity-generator';
 import { ItemTypeIconSvgs } from '@/utils/dist/core/models/icons';
-import type { Item, ItemField } from '@/utils/dist/core/models/vault';
+import type { Item, ItemField, PasswordSettings } from '@/utils/dist/core/models/vault';
 import { ItemTypes, FieldKey, createSystemField, getFieldValue } from '@/utils/dist/core/models/vault';
-import { CreatePasswordGenerator, PasswordGenerator, PasswordSettings } from '@/utils/dist/core/password-generator';
 import { getAllFaviconLinks } from '@/utils/favicon';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
@@ -19,6 +18,15 @@ import { t } from '@/i18n/StandaloneI18n';
 
 import { getCurrentAutofillFrameUrl } from './AutofillFrameUrl';
 import { completeConditionalWithPasskey, getConditionalPasskeyOptions, hasPendingConditionalRequest } from './ConditionalPasskey';
+
+/**
+ * Generate a password from the given settings via the background (which runs the Rust core).
+ * The content script cannot load the WASM core itself, so generation is delegated.
+ */
+const generatePasswordFromSettings = async (settings: PasswordSettings): Promise<string> => {
+  const response = await sendMessage('GENERATE_PASSWORD', { settings });
+  return response.password ?? '';
+};
 
 /**
  * WeakMap to store event listeners for popup containers
@@ -949,16 +957,16 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
         // Get password settings from background
         const passwordSettingsResponse = await sendMessage('GET_PASSWORD_SETTINGS');
 
-        // Initialize password generator with the retrieved settings
-        const passwordGenerator = CreatePasswordGenerator(passwordSettingsResponse.settings ?? {
+        // Generate a password from the retrieved settings via the Rust core (background).
+        const passwordSettings = passwordSettingsResponse.settings ?? {
           Length: 12,
           UseLowercase: true,
           UseUppercase: true,
           UseNumbers: true,
           UseSpecialChars: true,
           UseNonAmbiguousChars: true
-        });
-        const password = passwordGenerator.generateRandomPassword();
+        };
+        const password = await generatePasswordFromSettings(passwordSettings);
 
         // Extract favicon from page and get the bytes
         const faviconBytes = await getFaviconBytes(document);
@@ -2015,7 +2023,6 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
       });
 
       // Get password settings from background
-      let passwordGenerator: PasswordGenerator;
       let currentPasswordSettings: PasswordSettings = {
         Length: 12,
         UseLowercase: true,
@@ -2024,10 +2031,12 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
         UseSpecialChars: true,
         UseNonAmbiguousChars: true
       };
+      // Becomes true once settings have loaded, so generation isn't attempted too early.
+      let passwordSettingsLoaded = false;
 
       sendMessage('GET_PASSWORD_SETTINGS').then((passwordSettingsResponse) => {
         currentPasswordSettings = passwordSettingsResponse.settings ?? currentPasswordSettings;
-        passwordGenerator = CreatePasswordGenerator(currentPasswordSettings);
+        passwordSettingsLoaded = true;
 
         // Update UI with loaded settings
         const lengthSlider = popup.querySelector('#password-length-slider') as HTMLInputElement;
@@ -2036,25 +2045,25 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
         lengthValue.textContent = currentPasswordSettings.Length.toString();
 
         // Generate initial password after settings are loaded
-        generatePassword();
+        void generatePassword();
       });
 
       /**
        * Generate and set password.
        */
-      const generatePassword = () : void => {
-        if (!passwordGenerator) {
+      const generatePassword = async () : Promise<void> => {
+        if (!passwordSettingsLoaded) {
           return;
         }
 
-        passwordPreview.value = passwordGenerator.generateRandomPassword();
+        passwordPreview.value = await generatePasswordFromSettings(currentPasswordSettings);
         passwordPreview.type = 'text';
         passwordPreview.dataset.isGenerated = 'true';
         updateVisibilityIcon(true);
       };
 
       // Handle regenerate button click
-      regenerateBtn.addEventListener('click', generatePassword);
+      regenerateBtn.addEventListener('click', () => void generatePassword());
 
       // Handle password length slider
       const lengthSlider = popup.querySelector('#password-length-slider') as HTMLInputElement;
@@ -2067,10 +2076,7 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
         lengthValue.textContent = newLength.toString();
 
         // Regenerate password with new settings
-        if (passwordGenerator) {
-          passwordGenerator = CreatePasswordGenerator(currentPasswordSettings);
-          generatePassword();
-        }
+        void generatePassword();
       });
 
       // Handle advanced configuration button
@@ -2194,13 +2200,10 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
         /**
          * Update the config preview.
          */
-        const updateConfigPreview = (): void => {
-          if (passwordGenerator) {
-            passwordGenerator = CreatePasswordGenerator(currentPasswordSettings);
-            configPreview.value = passwordGenerator.generateRandomPassword();
-          }
+        const updateConfigPreview = async (): Promise<void> => {
+          configPreview.value = await generatePasswordFromSettings(currentPasswordSettings);
         };
-        updateConfigPreview();
+        void updateConfigPreview();
 
         // Handle toggle buttons
         dialog.querySelectorAll('.av-password-config-toggle').forEach(toggle => {
@@ -2225,7 +2228,7 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
                   toggle.classList.toggle('active', currentPasswordSettings.UseSpecialChars);
                   break;
               }
-              updateConfigPreview();
+              void updateConfigPreview();
             }
           });
         });
@@ -2234,12 +2237,12 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
         const avoidAmbiguousCheckbox = dialog.querySelector('#avoid-ambiguous') as HTMLInputElement;
         avoidAmbiguousCheckbox.addEventListener('change', () => {
           currentPasswordSettings.UseNonAmbiguousChars = avoidAmbiguousCheckbox.checked;
-          updateConfigPreview();
+          void updateConfigPreview();
         });
 
         // Handle refresh button
         const refreshBtn = dialog.querySelector('#config-refresh') as HTMLButtonElement;
-        refreshBtn.addEventListener('click', updateConfigPreview);
+        refreshBtn.addEventListener('click', () => void updateConfigPreview());
 
         // Handle use button
         const useBtn = dialog.querySelector('#config-use-btn') as HTMLButtonElement;
@@ -2248,9 +2251,6 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
           passwordPreview.type = 'text';
           passwordPreview.dataset.isGenerated = 'true';
           updateVisibilityIcon(true);
-
-          // Update main password generator
-          passwordGenerator = CreatePasswordGenerator(currentPasswordSettings);
 
           // Update slider value
           lengthSlider.value = lengthToSlider(currentPasswordSettings.Length).toString();
