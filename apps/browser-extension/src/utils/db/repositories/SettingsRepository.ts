@@ -65,7 +65,13 @@ export class SettingsRepository extends BaseRepository {
       UseUppercase: true,
       UseNumbers: true,
       UseSpecialChars: true,
-      UseNonAmbiguousChars: false
+      UseNonAmbiguousChars: false,
+      Type: 'basic',
+      WordCount: 4,
+      Language: 'English',
+      Capitalization: 'Lowercase',
+      Separator: 'Dash',
+      Salt: 'None'
     };
 
     try {
