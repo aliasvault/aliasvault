@@ -98,7 +98,7 @@
   </data>
   <!-- Buttons -->
   <data name="LoginButton" xml:space="preserve">
-    <value>Log in</value>
+    <value>Logáil isteach</value>
     <comment>Login button text</comment>
   </data>
   <!-- Links -->
@@ -167,7 +167,7 @@
   </data>
   <!-- Placeholders -->
   <data name="UsernamePlaceholder" xml:space="preserve">
-    <value>name / name@company.com</value>
+    <value>ainm / ainm@cuideachta.com</value>
     <comment>Placeholder text for username input</comment>
   </data>
   <data name="PasswordPlaceholder" xml:space="preserve">
