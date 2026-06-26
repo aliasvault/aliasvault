@@ -91,15 +91,15 @@
     <comment>Description for alias generation gender setting</comment>
   </data>
   <data name="RandomOption">
-    <value>Random</value>
+    <value>Randamach</value>
     <comment>Random gender option</comment>
   </data>
   <data name="MaleOption">
-    <value>Male</value>
+    <value>Fireann</value>
     <comment>Male gender option</comment>
   </data>
   <data name="FemaleOption">
-    <value>Female</value>
+    <value>Baineann</value>
     <comment>Female gender option</comment>
   </data>
   <data name="AliasGenerationAgeRangeLabel">
