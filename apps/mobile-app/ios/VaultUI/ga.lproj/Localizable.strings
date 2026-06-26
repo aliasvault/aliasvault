@@ -1,12 +1,12 @@
 /* English localization strings for VaultUI */
-"error" = "Error";
-"cancel" = "Cancel";
-"back" = "Back";
-"next" = "Next";
-"edit" = "Edit";
-"website" = "Website";
-"username" = "Username";
-"title" = "Title";
+"error" = "Earráid";
+"cancel" = "Cealaigh";
+"back" = "Ar ais";
+"next" = "Ar Aghaidh";
+"edit" = "Cuir in Eagar";
+"website" = "Suíomh Gréasáin";
+"username" = "Ainm úsáideora";
+"title" = "Teideal";
 "unknown_error" = "An unknown error occurred";
 
 "loading_items" = "Loading items...";
@@ -27,7 +27,7 @@
 "choose_username_message" = "This website may require either your username or your email address to log in";
 "username_prefix" = "Username: ";
 "email_prefix" = "Email: ";
-"password" = "Password";
+"password" = "Pasfhocal";
 "items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
 "no_item_selected" = "No item selected.";
 
@@ -72,7 +72,7 @@
 "merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
 
 /* PIN Unlock */
-"unlock_vault" = "Unlock Vault";
+"unlock_vault" = "Díghlasáil an Cruinneachán";
 "enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
 "pin_locked_max_attempts" = "PIN locked after too many failed attempts";
 "pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
