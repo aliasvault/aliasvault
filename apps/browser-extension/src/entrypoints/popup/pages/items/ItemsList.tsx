@@ -868,7 +868,7 @@ const ItemsList: React.FC = () => {
             aria-expanded={sortedItems.length > 0 || folders.length > 0}
             aria-activedescendant={activeDescendantId}
             aria-autocomplete="list"
-            className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
           />
         </div>
       ) : (
