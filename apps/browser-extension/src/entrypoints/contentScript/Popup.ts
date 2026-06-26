@@ -1431,10 +1431,7 @@ async function createPasskeySection(rootContainer: HTMLElement): Promise<{ hint:
    */
   const hint = document.createElement('div');
   hint.className = 'av-passkey-hint';
-  hint.appendChild(createPasskeyBadgeIcon());
-  const hintText = document.createElement('span');
-  hintText.textContent = await t('content.loginWithPasskey');
-  hint.appendChild(hintText);
+  hint.textContent = await t('content.loginWithPasskey');
 
   /*
    * Reuse the credential-list scroll styling but cap the height so at most ~3 passkeys are
