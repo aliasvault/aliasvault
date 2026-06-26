@@ -62,6 +62,7 @@
     "openInNewWindow": "Open in new window",
     "enabled": "Enabled",
     "disabled": "Disabled",
+    "none": "None",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "show": "Show",
@@ -241,6 +242,27 @@
     "includeNumbers": "Include numbers",
     "includeSpecialChars": "Include special characters",
     "avoidAmbiguousChars": "Avoid ambiguous characters (o, 0, etc.)",
+    "passwordTypeBasic": "Basic",
+    "passwordTypeDiceware": "Diceware",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "Private Email",
     "privateEmailAliasVaultServer": "AliasVault server",
     "privateEmailDescription": "E2E encrypted, fully private.",

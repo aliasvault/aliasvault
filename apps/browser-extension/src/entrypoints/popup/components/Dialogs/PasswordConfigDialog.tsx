@@ -148,6 +148,12 @@ const PasswordConfigDialog: React.FC<IPasswordConfigDialogProps> = ({
     onClose();
   }, [previewPassword, onSave, onClose]);
 
+  /**
+   * Human label for a Diceware option value (used in button tooltips).
+   */
+  const optionLabel = (group: 'Capitalization' | 'Separator' | 'Salt', value: string): string =>
+    value === 'None' ? t('common.none') : t(`items.diceware${group}Option.${value}`);
+
   return (
     <ModalWrapper
       isOpen={isOpen}
@@ -322,7 +328,7 @@ const PasswordConfigDialog: React.FC<IPasswordConfigDialogProps> = ({
                 type="button"
                 onClick={() => handleSettingChange('Capitalization', cycle(CAPITALIZATION_OPTIONS, settings.Capitalization ?? 'Lowercase'))}
                 className={optionButtonClass((settings.Capitalization ?? 'Lowercase') !== 'Lowercase')}
-                title={`${t('items.capitalization')}: ${t(`items.dicewareCapitalizationOption.${settings.Capitalization ?? 'Lowercase'}`)}`}
+                title={`${optionLabel('Capitalization', settings.Capitalization ?? 'Lowercase')}`}
               >
                 <span className="font-mono text-base">{capitalizationGlyph(settings.Capitalization ?? 'Lowercase')}</span>
               </button>
@@ -332,7 +338,7 @@ const PasswordConfigDialog: React.FC<IPasswordConfigDialogProps> = ({
                 type="button"
                 onClick={() => handleSettingChange('Separator', cycle(SEPARATOR_OPTIONS, settings.Separator ?? 'Dash'))}
                 className={optionButtonClass((settings.Separator ?? 'Dash') !== 'Dash')}
-                title={`${t('items.separator')}: ${t(`items.dicewareSeparatorOption.${settings.Separator ?? 'Dash'}`)}`}
+                title={`${t('items.separator')}: ${optionLabel('Separator', settings.Separator ?? 'Dash')}`}
               >
                 <span className="font-mono text-base">{separatorGlyph(settings.Separator ?? 'Dash')}</span>
               </button>
@@ -342,7 +348,7 @@ const PasswordConfigDialog: React.FC<IPasswordConfigDialogProps> = ({
                 type="button"
                 onClick={() => handleSettingChange('Salt', cycle(SALT_OPTIONS, settings.Salt ?? 'None'))}
                 className={optionButtonClass((settings.Salt ?? 'None') !== 'None')}
-                title={`${t('items.salt')}: ${t(`items.dicewareSaltOption.${settings.Salt ?? 'None'}`)}`}
+                title={`${t('items.salt')}: ${optionLabel('Salt', settings.Salt ?? 'None')}`}
               >
                 <span className="font-mono text-base">{saltGlyph(settings.Salt ?? 'None')}</span>
               </button>
