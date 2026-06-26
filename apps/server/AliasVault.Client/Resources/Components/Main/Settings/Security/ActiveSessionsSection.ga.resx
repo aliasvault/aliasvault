@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Active Sessions</value>
+    <value>Seisiúin Ghníomhacha</value>
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Below is a list of devices where your account is currently logged in or has an active session. You can log out from any of these sessions here.</value>
+    <value>Seo thíos liosta de na gléasanna ina bhfuil do chuntas logáilte isteach faoi láthair nó ina bhfuil seisiún gníomhach. Is féidir leat logáil amach ó aon cheann de na seisiúin seo anseo.</value>
     <comment>Description of active sessions</comment>
   </data>
   <data name="NoSessionsMessage" xml:space="preserve">
@@ -75,11 +75,11 @@
     <comment>Table column header</comment>
   </data>
   <data name="LastActiveColumn" xml:space="preserve">
-    <value>Last active</value>
+    <value>Gníomhach deireanach</value>
     <comment>Table column header</comment>
   </data>
   <data name="ExpiresColumn" xml:space="preserve">
-    <value>Expires</value>
+    <value>Éagaíonn</value>
     <comment>Table column header</comment>
   </data>
   <data name="ActionColumn" xml:space="preserve">
@@ -87,7 +87,7 @@
     <comment>Table column header</comment>
   </data>
   <data name="RevokeButton" xml:space="preserve">
-    <value>Revoke</value>
+    <value>Cúlghairm</value>
     <comment>Button to revoke session</comment>
   </data>
   <data name="RevokeSuccessMessage" xml:space="preserve">
