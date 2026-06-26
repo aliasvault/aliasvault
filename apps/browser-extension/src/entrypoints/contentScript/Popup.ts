@@ -1145,12 +1145,9 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
     pillNav.appendChild(passkeysPill);
     pillNav.appendChild(credentialsPill);
     popup.insertBefore(pillNav, popup.firstChild);
-
-    // The passkey hint + list sit directly under the nav, above the credential list.
-    popup.insertBefore(passkeySection.hint, credentialList);
     popup.insertBefore(passkeySection.list, credentialList);
 
-    const whenPasskeysShown = [passkeySection.hint, passkeySection.list];
+    const whenPasskeysShown = [passkeySection.list];
     const whenCredentialsShown = [credentialList, divider, actionContainer];
     let showingPasskeys = true;
 
@@ -1415,7 +1412,7 @@ function createPopoutIcon(itemId: string, rootContainer: HTMLElement): HTMLEleme
  * recognisably different from the credential view, the scrollable list of passkey sign-in rows, 
  * and the passkey count (for the pill-nav label).
  */
-async function createPasskeySection(rootContainer: HTMLElement): Promise<{ hint: HTMLElement; list: HTMLElement; count: number } | null> {
+async function createPasskeySection(rootContainer: HTMLElement): Promise<{ list: HTMLElement; count: number } | null> {
   if (!hasPendingConditionalRequest()) {
     return null;
   }
@@ -1426,19 +1423,19 @@ async function createPasskeySection(rootContainer: HTMLElement): Promise<{ hint:
   }
 
   /*
-   * Hint line (passkey icon + instruction) shown above the list so the passkey view reads
-   * clearly differently from the credential view when switching between the two pills.
-   */
-  const hint = document.createElement('div');
-  hint.className = 'av-passkey-hint';
-  hint.textContent = await t('content.loginWithPasskey');
-
-  /*
    * Reuse the credential-list scroll styling but cap the height so at most ~3 passkeys are
    * visible before the list scrolls, leaving room for the view-switch toggle below.
    */
   const list = document.createElement('div');
   list.className = 'av-credential-list av-passkey-list';
+
+  /*
+   * Hint caption as the first row inside the scroll area, so it scrolls away with the list.
+   */
+  const hint = document.createElement('div');
+  hint.className = 'av-passkey-hint';
+  hint.textContent = await t('content.loginWithPasskey');
+  list.appendChild(hint);
 
   options.forEach((option) => {
     const itemElement = document.createElement('div');
@@ -1492,7 +1489,7 @@ async function createPasskeySection(rootContainer: HTMLElement): Promise<{ hint:
     list.appendChild(itemElement);
   });
 
-  return { hint, list, count: options.length };
+  return { list, count: options.length };
 }
 
 /**
