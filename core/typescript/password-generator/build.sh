@@ -6,7 +6,6 @@ set -u  # Treat unset variables as errors
 # Define output targets for password-generator
 TARGETS=(
   "../../../apps/mobile-app/utils/dist/core/password-generator"
-  "../../../apps/server/AliasVault.Client/wwwroot/js/dist/core/password-generator"
 )
 
 # Build and distribute password-generator
