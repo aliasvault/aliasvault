@@ -49,4 +49,40 @@ public class PasswordSettings
     /// </summary>
     [JsonPropertyName("UseNonAmbiguousChars")]
     public bool UseNonAmbiguousChars { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets which generator to use ("basic" or "diceware"). Defaults to "basic".
+    /// </summary>
+    [JsonPropertyName("Type")]
+    public string Type { get; set; } = "basic";
+
+    /// <summary>
+    /// Gets or sets the number of words in a Diceware passphrase.
+    /// </summary>
+    [JsonPropertyName("WordCount")]
+    public int WordCount { get; set; } = 4;
+
+    /// <summary>
+    /// Gets or sets the Diceware wordlist language. Unknown languages fall back to English in the Rust core.
+    /// </summary>
+    [JsonPropertyName("Language")]
+    public string Language { get; set; } = "English";
+
+    /// <summary>
+    /// Gets or sets the Diceware capitalization ("None", "TitleCase", "Uppercase", "Lowercase" or "Random").
+    /// </summary>
+    [JsonPropertyName("Capitalization")]
+    public string Capitalization { get; set; } = "Lowercase";
+
+    /// <summary>
+    /// Gets or sets the separator between Diceware words ("None", "Dash", "Space", "Underscore" or "Dot").
+    /// </summary>
+    [JsonPropertyName("Separator")]
+    public string Separator { get; set; } = "Dash";
+
+    /// <summary>
+    /// Gets or sets the optional random salt character for a Diceware passphrase ("None", "Prefix", "Sprinkle" or "Suffix").
+    /// </summary>
+    [JsonPropertyName("Salt")]
+    public string Salt { get; set; } = "None";
 }
