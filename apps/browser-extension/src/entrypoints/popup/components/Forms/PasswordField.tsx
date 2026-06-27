@@ -4,13 +4,10 @@ import { useTranslation } from 'react-i18next';
 import PasswordConfigDialog from '@/entrypoints/popup/components/Dialogs/PasswordConfigDialog';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
+import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT } from '@/utils/dist/core/models/defaults';
 import type { PasswordSettings } from '@/utils/dist/core/models/vault';
 import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/PasswordLengthSlider';
 import * as RustCore from '@/utils/RustCore';
-
-const MIN_WORD_COUNT = 3;
-const MAX_WORD_COUNT = 10;
-const DEFAULT_WORD_COUNT = 5;
 
 interface IPasswordFieldProps {
   id: string;

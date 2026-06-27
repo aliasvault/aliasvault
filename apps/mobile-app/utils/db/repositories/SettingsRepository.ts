@@ -1,4 +1,5 @@
 import type { EncryptionKey, PasswordSettings, TotpCode, Attachment } from '@/utils/dist/core/models/vault';
+import { DEFAULT_PASSWORD_LENGTH } from '@/utils/dist/core/models/defaults';
 
 import { BaseRepository } from '../BaseRepository';
 
@@ -109,7 +110,7 @@ export class SettingsRepository extends BaseRepository {
     const settingsJson = await this.getSetting('PasswordGenerationSettings');
 
     const defaultSettings: PasswordSettings = {
-      Length: 18,
+      Length: DEFAULT_PASSWORD_LENGTH,
       UseLowercase: true,
       UseUppercase: true,
       UseNumbers: true,

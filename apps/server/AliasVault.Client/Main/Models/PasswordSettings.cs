@@ -8,6 +8,7 @@
 namespace AliasVault.Client.Main.Models;
 
 using System.Text.Json.Serialization;
+using AliasClientDb.Models;
 
 /// <summary>
 /// Settings for password generation.
@@ -18,7 +19,7 @@ public class PasswordSettings
     /// Gets or sets the length of the password.
     /// </summary>
     [JsonPropertyName("Length")]
-    public int Length { get; set; } = 18;
+    public int Length { get; set; } = PasswordGeneratorDefaults.DefaultPasswordLength;
 
     /// <summary>
     /// Gets or sets a value indicating whether to use lowercase letters.
@@ -60,7 +61,7 @@ public class PasswordSettings
     /// Gets or sets the number of words in a Diceware passphrase.
     /// </summary>
     [JsonPropertyName("WordCount")]
-    public int WordCount { get; set; } = 4;
+    public int WordCount { get; set; } = PasswordGeneratorDefaults.DefaultWordCount;
 
     /// <summary>
     /// Gets or sets the Diceware wordlist language. Unknown languages fall back to English in the Rust core.

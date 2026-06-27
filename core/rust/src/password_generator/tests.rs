@@ -203,7 +203,7 @@ fn all_wordlists_have_7776_words() {
 fn unknown_language_falls_back_to_english() {
     // Case-insensitive match, and an unknown code must not error.
     assert_eq!(wordlists::list("english"), wordlists::list("English"));
-    assert_eq!(wordlists::list("Klingon"), wordlists::list("English"));
+    assert_eq!(wordlists::list("doesnotexist"), wordlists::list("English"));
     let pw = generate_password(r#"{"Type":"diceware","Language":"Klingon"}"#).unwrap();
     assert!(!pw.is_empty());
 }

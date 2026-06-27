@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 
+import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT } from '@/utils/dist/core/models/defaults';
 import type {
   PasswordSettings,
   PasswordGeneratorType,
@@ -11,11 +12,6 @@ import type {
   DicewareSalt
 } from '@/utils/dist/core/models/vault';
 import * as RustCore from '@/utils/RustCore';
-
-/** Inclusive bounds for the Diceware word-count slider. */
-const MIN_WORD_COUNT = 3;
-const MAX_WORD_COUNT = 10;
-const DEFAULT_WORD_COUNT = 5;
 
 const CAPITALIZATION_OPTIONS: DicewareCapitalization[] = ['Lowercase', 'TitleCase', 'Uppercase'];
 const SEPARATOR_OPTIONS: DicewareSeparator[] = ['Dash', 'Space', 'Underscore', 'Dot', 'None'];

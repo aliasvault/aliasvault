@@ -2,6 +2,7 @@ import { Buffer } from 'buffer';
 
 import type { EncryptionKeyDerivationParams, VaultMetadata } from '@/utils/dist/core/models/metadata';
 import type { EncryptionKey, PasswordSettings } from '@/utils/dist/core/models/vault';
+import { DEFAULT_PASSWORD_LENGTH } from '@/utils/dist/core/models/defaults';
 import { VaultSqlGenerator, VaultVersion, checkVersionCompatibility, extractVersionFromMigrationId } from '@/utils/dist/core/vault';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
@@ -407,7 +408,7 @@ class SqliteClient implements IDatabaseClient {
 
     // Default settings if none found or parsing fails
     const defaultSettings: PasswordSettings = {
-      Length: 18,
+      Length: DEFAULT_PASSWORD_LENGTH,
       UseLowercase: true,
       UseUppercase: true,
       UseNumbers: true,

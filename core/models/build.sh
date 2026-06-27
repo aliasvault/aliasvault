@@ -20,8 +20,11 @@ echo ""
 echo "🔄 Generating platform-specific models (C#, Swift, Kotlin)..."
 node scripts/generate-field-keys.cjs
 
+echo "🔄 Generating password-generator defaults (Rust, C#)..."
+node scripts/generate-password-defaults.cjs
+
 dist_path="dist"
-files_to_copy=("webapi" "vault" "metadata" "icons")
+files_to_copy=("webapi" "vault" "defaults" "metadata" "icons")
 
 for target in "${TARGETS[@]}"; do
   echo "📂 Copying $package_name → $target"

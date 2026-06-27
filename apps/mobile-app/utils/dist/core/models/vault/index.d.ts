@@ -60,7 +60,7 @@ type PasswordSettings = {
      */
     Type?: PasswordGeneratorType;
     /**
-     * Number of words in the passphrase (diceware generator). Defaults to 4.
+     * Number of words in the passphrase (diceware generator).
      */
     WordCount?: number;
     /**
