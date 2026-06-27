@@ -147,8 +147,16 @@ fn default_length() -> u32 {
 }
 
 fn default_word_count() -> u32 {
-    4
+    5
 }
+
+/// Maximum values for the password and passphrase length. The apps cap passwords at 256
+/// characters and passphrases at 10 words; the core enforces the same so we prevent any
+/// excess length or word count to avoid potential issues.
+const MIN_PASSWORD_LENGTH: u32 = 1;
+const MAX_PASSWORD_LENGTH: u32 = 256;
+const MIN_WORD_COUNT: u32 = 1;
+const MAX_WORD_COUNT: u32 = 10;
 
 fn default_true() -> bool {
     true
@@ -177,9 +185,17 @@ pub fn generate_password(settings_json: &str) -> Result<String, VaultError> {
 /// Generate a password or passphrase from already-parsed settings.
 pub fn generate_from_settings(settings: &PasswordSettings) -> String {
     let mut rng = make_rng(settings.seed.as_deref());
+
+    // Limit the maximum values for the password and passphrase length.
+    let mut settings = settings.clone();
+    settings.length = settings
+        .length
+        .clamp(MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH);
+    settings.word_count = settings.word_count.clamp(MIN_WORD_COUNT, MAX_WORD_COUNT);
+
     match settings.generator_type {
-        GeneratorType::Basic => basic::generate(settings, &mut rng),
-        GeneratorType::Diceware => diceware::generate(settings, &mut rng),
+        GeneratorType::Basic => basic::generate(&settings, &mut rng),
+        GeneratorType::Diceware => diceware::generate(&settings, &mut rng),
     }
 }
 

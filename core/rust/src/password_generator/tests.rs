@@ -14,7 +14,7 @@ fn empty_json_uses_defaults() {
     assert_eq!(s.length, 18);
     assert!(s.use_lowercase && s.use_uppercase && s.use_numbers && s.use_special_chars);
     assert!(!s.use_non_ambiguous_chars);
-    assert_eq!(s.word_count, 4);
+    assert_eq!(s.word_count, 5);
     assert_eq!(s.language, "English");
     assert_eq!(s.capitalization, Capitalization::Lowercase);
     assert_eq!(s.separator, Separator::Dash);
@@ -54,6 +54,47 @@ fn basic_only_numbers_yields_only_digits() {
     let json = r#"{"Type":"basic","Length":30,"UseLowercase":false,"UseUppercase":false,"UseNumbers":true,"UseSpecialChars":false}"#;
     let pw = generate_password(json).unwrap();
     assert!(pw.chars().all(|c| c.is_ascii_digit()));
+}
+
+#[test]
+fn basic_short_password_keeps_every_class() {
+    // With all four classes enabled and a short length, the constructed password must still contain one of each class on every run.
+    let json = r#"{"Type":"basic","Length":4,"UseLowercase":true,"UseUppercase":true,"UseNumbers":true,"UseSpecialChars":true}"#;
+    for _ in 0..500 {
+        let pw = generate_password(json).unwrap();
+        assert_eq!(pw.chars().count(), 4);
+        assert!(pw.chars().any(|c| c.is_ascii_lowercase()), "no lowercase in {pw}");
+        assert!(pw.chars().any(|c| c.is_ascii_uppercase()), "no uppercase in {pw}");
+        assert!(pw.chars().any(|c| c.is_ascii_digit()), "no digit in {pw}");
+        assert!(
+            pw.chars().any(|c| "!@#$%^&*()_+-=[]{}|;:,.<>?".contains(c)),
+            "no special char in {pw}"
+        );
+    }
+}
+
+#[test]
+fn basic_length_clamped_to_max() {
+    // Out-of-range lengths are clamped to the supported maximum (256) rather than honoured.
+    let json = r#"{"Type":"basic","Length":100000}"#;
+    let pw = generate_password(json).unwrap();
+    assert_eq!(pw.chars().count(), 256);
+}
+
+#[test]
+fn basic_zero_length_clamped_to_min() {
+    // Length 0 must not yield an empty password; it is clamped up to the minimum of 1.
+    let json = r#"{"Type":"basic","Length":0}"#;
+    let pw = generate_password(json).unwrap();
+    assert_eq!(pw.chars().count(), 1);
+}
+
+#[test]
+fn diceware_word_count_clamped_to_max() {
+    // More than the supported 10 words is clamped down to 10.
+    let json = r#"{"Type":"diceware","WordCount":50,"Separator":"Dash","Salt":"None"}"#;
+    let pw = generate_password(json).unwrap();
+    assert_eq!(pw.split('-').count(), 10);
 }
 
 #[test]
