@@ -243,8 +243,8 @@
     "includeNumbers": "Include numbers",
     "includeSpecialChars": "Include special characters",
     "avoidAmbiguousChars": "Avoid ambiguous characters (o, 0, etc.)",
-    "passwordTypeBasic": "Basic",
-    "passwordTypeDiceware": "Diceware",
+    "passwordTypeBasic": "Password",
+    "passwordTypeDiceware": "Passphrase",
     "wordCount": "Words",
     "dicewareCapitalizationOption": {
       "TitleCase": "Title Case",
