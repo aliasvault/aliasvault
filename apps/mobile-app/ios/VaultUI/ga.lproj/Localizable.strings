@@ -41,7 +41,7 @@
 "password_copied" = "Password copied";
 "email_copied" = "Email copied";
 "totp_code_copied" = "TOTP code copied";
-"totp_code" = "TOTP Code";
+"totp_code" = "Cód TOTP";
 
 /* Search bar */
 "search_items" = "Search items...";
@@ -80,7 +80,7 @@
 /* Password Unlock */
 "enter_password_to_unlock" = "Enter your master password";
 "unlock" = "Unlock";
-"incorrect_password" = "Incorrect password. Please try again.";
+"incorrect_password" = "Pasfhocal mícheart. Déan iarracht arís.";
 "attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
 "max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
 
