@@ -82,7 +82,7 @@
   <string name="password_unlock_subtitle">Enter your master password</string>
   <string name="password_unlock_password_hint">Pasfhocal</string>
   <string name="password_unlock_button">Unlock</string>
-  <string name="password_unlock_incorrect">Incorrect password. Please try again.</string>
+  <string name="password_unlock_incorrect">Pasfhocal mícheart. Déan iarracht arís.</string>
   <string name="password_unlock_error">Failed to verify password</string>
   <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
   <string name="password_unlock_max_attempts_reached">Too many failed unlock attempts. You have been logged out for security reasons.</string>
