@@ -10,7 +10,7 @@ import * as RustCore from '@/utils/RustCore';
 
 const MIN_WORD_COUNT = 3;
 const MAX_WORD_COUNT = 10;
-const DEFAULT_WORD_COUNT = 4;
+const DEFAULT_WORD_COUNT = 5;
 
 interface IPasswordFieldProps {
   id: string;

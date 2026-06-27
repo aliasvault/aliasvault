@@ -67,7 +67,7 @@ export class SettingsRepository extends BaseRepository {
       UseSpecialChars: true,
       UseNonAmbiguousChars: false,
       Type: 'basic',
-      WordCount: 4,
+      WordCount: 5,
       Language: 'English',
       Capitalization: 'Lowercase',
       Separator: 'Dash',

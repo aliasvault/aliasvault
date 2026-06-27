@@ -15,7 +15,7 @@ import * as RustCore from '@/utils/RustCore';
 /** Inclusive bounds for the Diceware word-count slider. */
 const MIN_WORD_COUNT = 3;
 const MAX_WORD_COUNT = 10;
-const DEFAULT_WORD_COUNT = 4;
+const DEFAULT_WORD_COUNT = 5;
 
 const CAPITALIZATION_OPTIONS: DicewareCapitalization[] = ['Lowercase', 'TitleCase', 'Uppercase'];
 const SEPARATOR_OPTIONS: DicewareSeparator[] = ['Dash', 'Space', 'Underscore', 'Dot', 'None'];
@@ -186,7 +186,7 @@ const PasswordConfigDialog: React.FC<IPasswordConfigDialogProps> = ({
               key={mode}
               type="button"
               onClick={() => handleSettingChange('Type', mode)}
-              className={`-mb-px flex-1 border-b-2 px-3 py-3 text-sm font-medium transition-colors ${
+              className={`-mb-px flex-1 border-b-2 px-3 py-4 text-sm font-medium transition-colors ${
                 isActive
                   ? 'border-primary-600 text-primary-600 dark:border-primary-500 dark:text-primary-500'
                   : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
