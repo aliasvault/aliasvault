@@ -330,37 +330,6 @@ export async function handleClearVaultData(): Promise<messageBoolResponse> {
 }
 
 /**
- * Create a new item in the vault.
- * Uses the native Item type with field-based structure.
- */
-export async function handleCreateItem(
-  message: any,
-) : Promise<messageBoolResponse> {
-  const encryptionKey = await handleGetEncryptionKey();
-
-  if (!encryptionKey) {
-    // E-202: Vault is locked
-    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
-  }
-
-  try {
-    const sqliteClient = await createVaultSqliteClient();
-
-    // Add the new item to the vault/database.
-    await sqliteClient.items.create(message.item, message.attachments || [], message.totpCodes || []);
-
-    // Persist locally and sync in the background (doesn't block when server is offline).
-    await persistLocalVaultMutation(sqliteClient, encryptionKey);
-
-    return { success: true };
-  } catch (error) {
-    console.error('Failed to create item:', error);
-    // E-301: Item create failed
-    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_CREATE_FAILED) };
-  }
-}
-
-/**
  * Filter items by URL matching.
  *
  * @param items - The items to filter

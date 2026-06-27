@@ -189,6 +189,7 @@
   "items": {
     "title": "Items",
     "itemName": "Name",
+    "suggestions": "Suggestions",
     "loginCredentials": "Login Credentials",
     "cardInformation": "Card Information",
     "addItem": "Add Item",
