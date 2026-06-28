@@ -230,15 +230,15 @@ window.rustCoreGeneratePassword = async function(settingsJson) {
  */
 window.rustCoreGetDicewareLanguages = async function() {
     if (!await initRustCore()) {
-        return ['English'];
+        return ['en'];
     }
 
     try {
         const languages = wasmModule.getDicewareLanguages();
-        return (languages && languages.length > 0) ? languages : ['English'];
+        return (languages && languages.length > 0) ? languages : ['en'];
     } catch (error) {
         console.error('[RustCore] Get diceware languages failed:', error);
-        return ['English'];
+        return ['en'];
     }
 };
 

@@ -67,7 +67,7 @@ public class PasswordSettings
     /// Gets or sets the Diceware wordlist language. Unknown languages fall back to English in the Rust core.
     /// </summary>
     [JsonPropertyName("Language")]
-    public string Language { get; set; } = "English";
+    public string Language { get; set; } = "en";
 
     /// <summary>
     /// Gets or sets the Diceware capitalization ("None", "TitleCase", "Uppercase", "Lowercase" or "Random").

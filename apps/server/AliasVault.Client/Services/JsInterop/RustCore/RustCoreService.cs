@@ -383,17 +383,17 @@ public class RustCoreService : IAsyncDisposable
     {
         if (!await IsAvailableAsync())
         {
-            return ["English"];
+            return ["en"];
         }
 
         try
         {
             var languages = await jsRuntime.InvokeAsync<string[]>("rustCoreGetDicewareLanguages");
-            return languages is { Length: > 0 } ? languages : ["English"];
+            return languages is { Length: > 0 } ? languages : ["en"];
         }
         catch
         {
-            return ["English"];
+            return ["en"];
         }
     }
 

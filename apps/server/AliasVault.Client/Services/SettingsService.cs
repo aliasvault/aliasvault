@@ -117,7 +117,8 @@ public sealed class SettingsService
                 // Ignore.
             }
 
-            // If no settings are saved, return default settings.
+            // If no settings are saved, return the model defaults (passphrase language defaults to the
+            // English ISO code; the Rust core falls back to English for any unknown code).
             return new PasswordSettings();
         }
     }
