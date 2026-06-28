@@ -10,4 +10,40 @@ var DEFAULT_WORD_COUNT = 5;
 var MIN_WORD_COUNT = 3;
 var MAX_WORD_COUNT = 10;
 
-export { DEFAULT_PASSWORD_LENGTH, DEFAULT_WORD_COUNT, MAX_PASSWORD_LENGTH, MAX_WORD_COUNT, MIN_PASSWORD_LENGTH, MIN_WORD_COUNT };
+// src/defaults/Languages.ts
+var DEFAULT_LANGUAGE_CODE = "en";
+var LANGUAGES = [
+  { code: "en", flag: "\u{1F1EC}\u{1F1E7}", label: "English" },
+  { code: "nl", flag: "\u{1F1F3}\u{1F1F1}", label: "Nederlands" },
+  { code: "de", flag: "\u{1F1E9}\u{1F1EA}", label: "Deutsch" },
+  { code: "fr", flag: "\u{1F1EB}\u{1F1F7}", label: "Fran\xE7ais" },
+  { code: "es", flag: "\u{1F1EA}\u{1F1F8}", label: "Espa\xF1ol" },
+  { code: "it", flag: "\u{1F1EE}\u{1F1F9}", label: "Italiano" },
+  { code: "da", flag: "\u{1F1E9}\u{1F1F0}", label: "Dansk" },
+  { code: "fi", flag: "\u{1F1EB}\u{1F1EE}", label: "Suomi" },
+  { code: "he", flag: "\u{1F1EE}\u{1F1F1}", label: "\u05E2\u05D1\u05E8\u05D9\u05EA" },
+  { code: "pl", flag: "\u{1F1F5}\u{1F1F1}", label: "Polski" },
+  { code: "pt", flag: "\u{1F1E7}\u{1F1F7}", label: "Portugu\xEAs" },
+  { code: "ro", flag: "\u{1F1F7}\u{1F1F4}", label: "Rom\xE2n\u0103" },
+  { code: "ru", flag: "\u{1F1F7}\u{1F1FA}", label: "\u0420\u0443\u0441\u0441\u043A\u0438\u0439" },
+  { code: "sv", flag: "\u{1F1F8}\u{1F1EA}", label: "Svenska" },
+  { code: "uk", flag: "\u{1F1FA}\u{1F1E6}", label: "\u0423\u043A\u0440\u0430\u0457\u043D\u0441\u044C\u043A\u0430" },
+  { code: "zh", flag: "\u{1F1E8}\u{1F1F3}", label: "\u4E2D\u6587" }
+];
+function normalizeLanguageCode(code) {
+  return (code ?? "").slice(0, 2).toLowerCase();
+}
+function getLanguageInfo(code) {
+  const iso = normalizeLanguageCode(code);
+  const match = LANGUAGES.find((l) => l.code === iso);
+  return match ?? { code, flag: "\u{1F310}", label: code };
+}
+function resolveDefaultLanguage(appLanguage, availableCodes) {
+  const iso = normalizeLanguageCode(appLanguage);
+  if (availableCodes.some((c) => c.toLowerCase() === iso)) {
+    return iso;
+  }
+  return availableCodes[0] ?? DEFAULT_LANGUAGE_CODE;
+}
+
+export { DEFAULT_LANGUAGE_CODE, DEFAULT_PASSWORD_LENGTH, DEFAULT_WORD_COUNT, LANGUAGES, MAX_PASSWORD_LENGTH, MAX_WORD_COUNT, MIN_PASSWORD_LENGTH, MIN_WORD_COUNT, getLanguageInfo, normalizeLanguageCode, resolveDefaultLanguage };

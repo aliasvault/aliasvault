@@ -1,5 +1,4 @@
-import { defaultDicewareLanguageForApp } from '@/utils/DicewareLanguages';
-import { DEFAULT_PASSWORD_LENGTH, DEFAULT_WORD_COUNT } from '@/utils/dist/core/models/defaults';
+import { DEFAULT_PASSWORD_LENGTH, DEFAULT_WORD_COUNT, DEFAULT_LANGUAGE_CODE } from '@/utils/dist/core/models/defaults';
 import type { EncryptionKey, PasswordSettings, TotpCode, Attachment } from '@/utils/dist/core/models/vault';
 
 import { BaseRepository } from '../BaseRepository';
@@ -70,7 +69,7 @@ export class SettingsRepository extends BaseRepository {
       UseNonAmbiguousChars: false,
       Type: 'basic',
       WordCount: DEFAULT_WORD_COUNT,
-      Language: defaultDicewareLanguageForApp(navigator.language),
+      Language: DEFAULT_LANGUAGE_CODE,
       Capitalization: 'Lowercase',
       Separator: 'Dash',
       Salt: 'None'

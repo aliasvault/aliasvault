@@ -160,7 +160,7 @@ fn default_true() -> bool {
 }
 
 fn default_language() -> String {
-    "English".to_string()
+    "en".to_string()
 }
 
 /// List the language codes of all bundled Diceware wordlists (first is the default, English).

@@ -23,6 +23,9 @@ node scripts/generate-field-keys.cjs
 echo "🔄 Generating password-generator defaults (Rust, C#)..."
 node scripts/generate-password-defaults.cjs
 
+echo "🔄 Generating language reference (C#)..."
+node scripts/generate-languages.cjs
+
 dist_path="dist"
 files_to_copy=("webapi" "vault" "defaults" "metadata" "icons")
 

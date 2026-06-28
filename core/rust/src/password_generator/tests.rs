@@ -15,7 +15,7 @@ fn empty_json_uses_defaults() {
     assert!(s.use_lowercase && s.use_uppercase && s.use_numbers && s.use_special_chars);
     assert!(!s.use_non_ambiguous_chars);
     assert_eq!(s.word_count, 5);
-    assert_eq!(s.language, "English");
+    assert_eq!(s.language, "en");
     assert_eq!(s.capitalization, Capitalization::Lowercase);
     assert_eq!(s.separator, Separator::Dash);
     assert_eq!(s.salt, Salt::None);
@@ -201,9 +201,9 @@ fn all_wordlists_have_7776_words() {
 
 #[test]
 fn unknown_language_falls_back_to_english() {
-    // Case-insensitive match, and an unknown code must not error.
-    assert_eq!(wordlists::list("english"), wordlists::list("English"));
-    assert_eq!(wordlists::list("doesnotexist"), wordlists::list("English"));
+    // Case-insensitive match, and an unknown code must not error (falls back to 'en').
+    assert_eq!(wordlists::list("en"), wordlists::list("EN"));
+    assert_eq!(wordlists::list("doesnotexist"), wordlists::list("en"));
     let pw = generate_password(r#"{"Type":"diceware","Language":"Klingon"}"#).unwrap();
     assert!(!pw.is_empty());
 }

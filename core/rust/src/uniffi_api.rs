@@ -115,6 +115,32 @@ pub fn extract_root_domain(domain: String) -> String {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Password Generator Functions
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Generate a password or passphrase from a JSON-serialized `PasswordSettings` object.
+///
+/// The `Type` field selects the generator ("basic" or "diceware"). An optional `Seed`
+/// field (64-character hex string) makes generation deterministic for UI previews.
+///
+/// # Arguments
+/// * `settings_json` - JSON string containing the password settings.
+///
+/// # Returns
+/// The generated password/passphrase string, or a [`VaultError`] if the settings JSON
+/// is invalid.
+#[uniffi::export]
+pub fn generate_password(settings_json: String) -> Result<String, VaultError> {
+    crate::password_generator::generate_password(&settings_json)
+}
+
+/// List the language codes of all bundled Diceware wordlists (first is the default, English).
+#[uniffi::export]
+pub fn get_diceware_languages() -> Vec<String> {
+    crate::password_generator::available_languages()
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // SRP (Secure Remote Password) Functions
 // ═══════════════════════════════════════════════════════════════════════════════
 

@@ -75,13 +75,13 @@ export async function generatePassword(settings: PasswordSettings, seed?: string
 }
 
 /**
- * Get the list of bundled Diceware wordlist language codes (first is the default, English).
+ * Get the list of bundled Diceware wordlist language ISO codes (first is the default, 'en').
  * The set is owned by the Rust core; unknown codes fall back to English during generation.
  */
 export async function getDicewareLanguages(): Promise<string[]> {
   await initRustCore();
   const languages = core.getDicewareLanguages() as string[];
-  return languages.length > 0 ? languages : ['English'];
+  return languages.length > 0 ? languages : ['en'];
 }
 
 /**

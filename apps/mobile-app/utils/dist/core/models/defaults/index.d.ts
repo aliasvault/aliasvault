@@ -21,4 +21,49 @@ declare const MIN_WORD_COUNT = 3;
 /** Maximum number of words (also the hard cap enforced by the generator). */
 declare const MAX_WORD_COUNT = 10;
 
-export { DEFAULT_PASSWORD_LENGTH, DEFAULT_WORD_COUNT, MAX_PASSWORD_LENGTH, MAX_WORD_COUNT, MIN_PASSWORD_LENGTH, MIN_WORD_COUNT };
+/**
+ * Generic, cross-platform language reference: maps a two-letter ISO 639-1 code to a flag and a
+ * native display label.
+ */
+/**
+ * Display metadata for a single language.
+ */
+interface ILanguageInfo {
+    /** Two-letter ISO 639-1 language code (e.g. 'en', 'nl'). */
+    code: string;
+    /** Emoji flag for the language. */
+    flag: string;
+    /** Native display label. */
+    label: string;
+}
+/** Default ISO language code used as the universal fallback. */
+declare const DEFAULT_LANGUAGE_CODE = "en";
+/**
+ * Known languages keyed by ISO 639-1 code, with a flag and native label.
+ * Covers the AliasVault app UI languages so this list can be reused beyond a single feature.
+ */
+declare const LANGUAGES: ILanguageInfo[];
+/**
+ * Normalize an app/UI language tag to a two-letter lowercase ISO code (e.g. 'nl-NL' -> 'nl').
+ * @param code The language tag.
+ * @returns The two-letter lowercase code.
+ */
+declare function normalizeLanguageCode(code: string | null | undefined): string;
+/**
+ * Look up the display metadata for an ISO language code.
+ * Falls back to a globe flag and the raw code for unknown languages.
+ * @param code The ISO language code (case-insensitive).
+ * @returns The flag + label info for the code.
+ */
+declare function getLanguageInfo(code: string): ILanguageInfo;
+/**
+ * Resolve a default language code for an app/UI language, restricted to a set of available codes
+ * (e.g. the Diceware wordlist languages returned by the Rust core). Returns the app language when it
+ * is available, otherwise the first available code, otherwise English.
+ * @param appLanguage The app/UI language tag.
+ * @param availableCodes The codes the feature actually supports.
+ * @returns The resolved ISO code.
+ */
+declare function resolveDefaultLanguage(appLanguage: string | null | undefined, availableCodes: string[]): string;
+
+export { DEFAULT_LANGUAGE_CODE, DEFAULT_PASSWORD_LENGTH, DEFAULT_WORD_COUNT, type ILanguageInfo, LANGUAGES, MAX_PASSWORD_LENGTH, MAX_WORD_COUNT, MIN_PASSWORD_LENGTH, MIN_WORD_COUNT, getLanguageInfo, normalizeLanguageCode, resolveDefaultLanguage };

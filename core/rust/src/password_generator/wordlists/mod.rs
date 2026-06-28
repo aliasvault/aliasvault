@@ -8,16 +8,16 @@
 //! the `WORDLISTS` registry below — no changes are needed in the TypeScript model or the
 //! apps. Unknown codes fall back to English.
 
-/// The registry of bundled wordlists, as `(code, raw text)`. The first entry is the
-/// default/fallback (English). To add a language, add one line here plus the `.diceware`
-/// file — nothing else needs to change.
+/// The registry of bundled wordlists, as `(code, raw text)`. The code is the normalized two-letter
+/// ISO 639-1 language code; the first entry is the default/fallback (English). To add a language,
+/// add one line here plus the matching `.diceware` file.
 static WORDLISTS: &[(&str, &str)] = &[
-    ("English", include_str!("en.diceware")),
-    ("Dutch", include_str!("nl.diceware")),
-    ("German", include_str!("de.diceware")),
-    ("French", include_str!("fr.diceware")),
-    ("Spanish", include_str!("es.diceware")),
-    ("Italian", include_str!("it.diceware")),
+    ("en", include_str!("en.diceware")),
+    ("nl", include_str!("nl.diceware")),
+    ("de", include_str!("de.diceware")),
+    ("fr", include_str!("fr.diceware")),
+    ("es", include_str!("es.diceware")),
+    ("it", include_str!("it.diceware")),
 ];
 
 /// Resolve a language code (case-insensitive) to its raw wordlist text, falling back to
