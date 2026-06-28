@@ -503,8 +503,13 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
                 await InitializeAsync();
             }
 
-            var result = await _identityGeneratorModule!.InvokeAsync<string?>("mapUiLanguageToIdentityLanguage", uiLanguageCode);
-            return result;
+            var codes = await _identityGeneratorModule!.InvokeAsync<List<string>>("getAvailableLanguages");
+            if (codes == null || codes.Count == 0)
+            {
+                return null;
+            }
+
+            return Languages.MatchAvailableLanguage(uiLanguageCode, codes);
         }
         catch (JSException ex)
         {

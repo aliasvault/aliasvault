@@ -14,7 +14,7 @@ package_name="models"
 package_path="."
 
 echo "📦 Building $package_name..."
-npm install && npm run lint && npm run build
+npm install && npm run lint && npm run test && npm run build
 
 echo ""
 echo "🔄 Generating platform-specific models (C#, Swift, Kotlin)..."

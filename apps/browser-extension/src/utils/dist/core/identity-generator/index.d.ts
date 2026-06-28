@@ -399,20 +399,6 @@ declare function convertAgeRangeToBirthdateOptions(ageRange: string): IBirthdate
  * @returns Array of ISO language codes (e.g. ["da", "de", "en", ...]).
  */
 declare function getAvailableLanguages(): string[];
-/**
- * Maps a UI language code to an identity generator language code.
- * If no explicit match is found, returns null to indicate no preference.
- *
- * @param uiLanguageCode - The UI language code (e.g., "en", "en-US", "nl-NL", "de-DE", "fr")
- * @returns The matching identity generator language code or null if no match
- *
- * @example
- * mapUiLanguageToIdentityLanguage("en-US") // returns "en"
- * mapUiLanguageToIdentityLanguage("nl") // returns "nl"
- * mapUiLanguageToIdentityLanguage("de-CH") // returns "de"
- * mapUiLanguageToIdentityLanguage("ja") // returns null (no Japanese identity generator)
- */
-declare function mapUiLanguageToIdentityLanguage(uiLanguageCode: string | null | undefined): string | null;
 
 /**
  * Creates a new identity generator based on the language.
@@ -429,4 +415,4 @@ declare const CreateIdentityGenerator: (language: string) => IdentityGenerator;
  */
 declare const CreateUsernameEmailGenerator: () => UsernameEmailGenerator;
 
-export { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, type IAgeRangeOption, type IBirthdateOptions, type IDecadeFirstnames, type IIdentityGenerator, type Identity, IdentityGenerator, IdentityGeneratorDa, IdentityGeneratorDe, IdentityGeneratorEn, IdentityGeneratorEs, IdentityGeneratorFa, IdentityGeneratorFr, IdentityGeneratorIt, IdentityGeneratorNl, IdentityGeneratorRo, IdentityGeneratorSv, IdentityGeneratorUr, IdentityHelperUtils, UsernameEmailGenerator, convertAgeRangeToBirthdateOptions, getAvailableAgeRanges, getAvailableLanguages, mapUiLanguageToIdentityLanguage };
+export { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, type IAgeRangeOption, type IBirthdateOptions, type IDecadeFirstnames, type IIdentityGenerator, type Identity, IdentityGenerator, IdentityGeneratorDa, IdentityGeneratorDe, IdentityGeneratorEn, IdentityGeneratorEs, IdentityGeneratorFa, IdentityGeneratorFr, IdentityGeneratorIt, IdentityGeneratorNl, IdentityGeneratorRo, IdentityGeneratorSv, IdentityGeneratorUr, IdentityHelperUtils, UsernameEmailGenerator, convertAgeRangeToBirthdateOptions, getAvailableAgeRanges, getAvailableLanguages };

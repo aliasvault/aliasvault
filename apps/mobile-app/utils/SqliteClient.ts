@@ -339,12 +339,14 @@ class SqliteClient implements IDatabaseClient {
       return explicitLanguage;
     }
 
-    // Otherwise, try to match UI language to an identity generator language
-    const { mapUiLanguageToIdentityLanguage } = await import('@/utils/dist/core/identity-generator');
+    // Otherwise, match the UI language to one of the identity generator's available languages using
+    // the shared region-variant alternative-code table (e.g. "de-CH" -> "de").
+    const { getAvailableLanguages } = await import('@/utils/dist/core/identity-generator');
+    const { matchAvailableLanguage } = await import('@/utils/dist/core/models/defaults');
     const { default: i18n } = await import('@/i18n');
 
     const uiLanguage = i18n.language;
-    const mappedLanguage = mapUiLanguageToIdentityLanguage(uiLanguage);
+    const mappedLanguage = matchAvailableLanguage(uiLanguage, getAvailableLanguages());
 
     // Return the mapped language, or fall back to "en" if no match found
     return mappedLanguage ?? 'en';

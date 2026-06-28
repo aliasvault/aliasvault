@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT, DEFAULT_LANGUAGE_CODE, getLanguageInfo } from '@/utils/dist/core/models/defaults';
+import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT, getLanguageInfo, resolveDefaultLanguage } from '@/utils/dist/core/models/defaults';
 import type {
   PasswordSettings,
   PasswordGeneratorType,
@@ -103,7 +103,9 @@ const PasswordConfigForm: React.FC<IPasswordConfigFormProps> = ({
   const { t } = useTranslation();
 
   const isDiceware = (settings.Type ?? 'basic') === 'diceware';
-  const currentLanguage = settings.Language ?? DEFAULT_LANGUAGE_CODE;
+  const currentLanguage = (settings.Language && settings.Language.length > 0)
+    ? settings.Language
+    : resolveDefaultLanguage(navigator.language, dicewareLanguages);
 
   /**
    * Human label for a Diceware option value (used in button tooltips).

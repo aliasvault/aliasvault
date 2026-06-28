@@ -10,6 +10,7 @@
  */
 import { browser } from 'wxt/browser';
 
+import { resolveDefaultLanguage } from '@/utils/dist/core/models/defaults';
 import type { Item, PasswordSettings } from '@/utils/dist/core/models/vault';
 import { FieldKey } from '@/utils/dist/core/models/vault';
 import initWasm, * as core from '@/utils/dist/core/rust/aliasvault_core.js';
@@ -70,8 +71,22 @@ export async function extractRootDomain(domain: string): Promise<string> {
  */
 export async function generatePassword(settings: PasswordSettings, seed?: string): Promise<string> {
   await initRustCore();
-  const payload = seed ? { ...settings, Seed: seed } : settings;
+  const effective = await applyEffectiveDicewareLanguage(settings);
+  const payload = seed ? { ...effective, Seed: seed } : effective;
   return core.generatePassword(JSON.stringify(payload));
+}
+
+/**
+ * Resolve the effective Diceware passphrase language when none is explicitly chosen.
+ *
+ * The passphrase language is left empty by default ("auto").
+ */
+async function applyEffectiveDicewareLanguage(settings: PasswordSettings): Promise<PasswordSettings> {
+  if (settings.Type !== 'diceware' || (settings.Language && settings.Language.trim().length > 0)) {
+    return settings;
+  }
+  const codes = await getDicewareLanguages();
+  return { ...settings, Language: resolveDefaultLanguage(navigator.language, codes) };
 }
 
 /**

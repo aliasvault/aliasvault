@@ -64,10 +64,11 @@ public class PasswordSettings
     public int WordCount { get; set; } = PasswordGeneratorDefaults.DefaultWordCount;
 
     /// <summary>
-    /// Gets or sets the Diceware wordlist language. Unknown languages fall back to English in the Rust core.
+    /// Gets or sets the Diceware wordlist language. Empty means "auto": the most appropriate available
+    /// wordlist is resolved from the app language at runtime.
     /// </summary>
     [JsonPropertyName("Language")]
-    public string Language { get; set; } = "en";
+    public string Language { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the Diceware capitalization ("None", "TitleCase", "Uppercase", "Lowercase" or "Random").

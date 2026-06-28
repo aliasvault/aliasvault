@@ -42,8 +42,7 @@ __export(index_exports, {
   UsernameEmailGenerator: () => UsernameEmailGenerator,
   convertAgeRangeToBirthdateOptions: () => convertAgeRangeToBirthdateOptions,
   getAvailableAgeRanges: () => getAvailableAgeRanges,
-  getAvailableLanguages: () => getAvailableLanguages,
-  mapUiLanguageToIdentityLanguage: () => mapUiLanguageToIdentityLanguage
+  getAvailableLanguages: () => getAvailableLanguages
 });
 module.exports = __toCommonJS(index_exports);
 
@@ -11763,43 +11762,21 @@ function convertAgeRangeToBirthdateOptions(ageRange) {
 }
 
 // src/utils/LanguageProvider.ts
-var LANGUAGE_DEFS = [
-  { value: "da", alternativeCodes: ["da-DK"] },
-  { value: "de", alternativeCodes: ["de-DE", "de-AT", "de-CH", "de-LU", "de-LI"] },
-  { value: "en", alternativeCodes: ["en-US", "en-GB", "en-CA", "en-AU", "en-NZ", "en-IE", "en-ZA", "en-SG", "en-IN"] },
-  { value: "es", alternativeCodes: ["es-ES", "es-MX", "es-AR", "es-CO", "es-CL", "es-PE", "es-VE", "es-EC", "es-GT", "es-CU", "es-BO", "es-DO", "es-HN", "es-PY", "es-SV", "es-NI", "es-CR", "es-PA", "es-UY", "es-PR"] },
-  { value: "fr", alternativeCodes: ["fr-FR", "fr-CA", "fr-BE", "fr-CH", "fr-LU", "fr-MC"] },
-  { value: "it", alternativeCodes: ["it-IT", "it-CH", "it-SM", "it-VA"] },
-  { value: "nl", alternativeCodes: ["nl-NL", "nl-BE"] },
-  { value: "ro", alternativeCodes: ["ro-RO", "ro-MD"] },
-  { value: "sv", alternativeCodes: ["sv-SE", "sv-FI"] },
-  { value: "ur", alternativeCodes: ["ur-PK", "ur-IN"] },
-  { value: "fa", alternativeCodes: ["fa-IR", "fa-AF"] }
+var SUPPORTED_LANGUAGE_CODES = [
+  "da",
+  "de",
+  "en",
+  "es",
+  "fr",
+  "it",
+  "nl",
+  "ro",
+  "sv",
+  "ur",
+  "fa"
 ];
 function getAvailableLanguages() {
-  return LANGUAGE_DEFS.map((lang) => lang.value);
-}
-function mapUiLanguageToIdentityLanguage(uiLanguageCode) {
-  if (!uiLanguageCode) {
-    return null;
-  }
-  const normalizedCode = uiLanguageCode.toLowerCase();
-  const exactMatch = LANGUAGE_DEFS.find((lang) => lang.value.toLowerCase() === normalizedCode);
-  if (exactMatch) {
-    return exactMatch.value;
-  }
-  const alternativeMatch = LANGUAGE_DEFS.find(
-    (lang) => lang.alternativeCodes?.some((code) => code.toLowerCase() === normalizedCode)
-  );
-  if (alternativeMatch) {
-    return alternativeMatch.value;
-  }
-  const baseCode = normalizedCode.split("-")[0];
-  const baseMatch = LANGUAGE_DEFS.find((lang) => lang.value.toLowerCase() === baseCode);
-  if (baseMatch) {
-    return baseMatch.value;
-  }
-  return null;
+  return [...SUPPORTED_LANGUAGE_CODES];
 }
 
 // src/factories/IdentityGeneratorFactory.ts
@@ -11858,6 +11835,5 @@ var CreateUsernameEmailGenerator = () => {
   UsernameEmailGenerator,
   convertAgeRangeToBirthdateOptions,
   getAvailableAgeRanges,
-  getAvailableLanguages,
-  mapUiLanguageToIdentityLanguage
+  getAvailableLanguages
 });

@@ -9,7 +9,7 @@ namespace AliasVault.Client.Main.Models;
 
 /// <summary>
 /// Generic language reference shared across all AliasVault clients: maps a two-letter ISO 639-1
-/// code to a flag and native label.
+/// code to a flag, native label, and the region-variant locale codes that map onto it.
 /// </summary>
 public static class Languages
 {
@@ -19,28 +19,29 @@ public static class Languages
     public const string DefaultLanguageCode = "en";
 
     /// <summary>
-    /// Known languages keyed by ISO 639-1 code, with a flag and native label.
+    /// Known languages keyed by ISO 639-1 code, with a flag, native label, and the BCP-47
+    /// region-variant locale codes (e.g. "en-US", "en-GB") that resolve onto the code.
     /// </summary>
-    private static readonly (string Code, string Flag, string Label)[] Meta =
+    private static readonly (string Code, string Flag, string Label, string[] AlternativeCodes)[] Meta =
     [
-        ("en", "🇺🇸", "English"),
-        ("nl", "🇳🇱", "Nederlands"),
-        ("de", "🇩🇪", "Deutsch"),
-        ("fr", "🇫🇷", "Français"),
-        ("es", "🇪🇸", "Español"),
-        ("it", "🇮🇹", "Italiano"),
-        ("da", "🇩🇰", "Dansk"),
-        ("fi", "🇫🇮", "Suomi"),
-        ("he", "🇮🇱", "עברית"),
-        ("pl", "🇵🇱", "Polski"),
-        ("pt", "🇧🇷", "Português Brasileiro"),
-        ("ro", "🇷🇴", "Română"),
-        ("ru", "🇷🇺", "Русский"),
-        ("sv", "🇸🇪", "Svenska"),
-        ("uk", "🇺🇦", "Українська"),
-        ("zh", "🇨🇳", "简体中文"),
-        ("ur", "🇵🇰", "اردو"),
-        ("fa", "🇮🇷", "فارسی"),
+        ("en", "🇺🇸", "English", ["en-US", "en-GB", "en-CA", "en-AU", "en-NZ", "en-IE", "en-ZA", "en-SG", "en-IN"]),
+        ("nl", "🇳🇱", "Nederlands", ["nl-NL", "nl-BE"]),
+        ("de", "🇩🇪", "Deutsch", ["de-DE", "de-AT", "de-CH", "de-LU", "de-LI"]),
+        ("fr", "🇫🇷", "Français", ["fr-FR", "fr-CA", "fr-BE", "fr-CH", "fr-LU", "fr-MC"]),
+        ("es", "🇪🇸", "Español", ["es-ES", "es-MX", "es-AR", "es-CO", "es-CL", "es-PE", "es-VE", "es-EC", "es-GT", "es-CU", "es-BO", "es-DO", "es-HN", "es-PY", "es-SV", "es-NI", "es-CR", "es-PA", "es-UY", "es-PR"]),
+        ("it", "🇮🇹", "Italiano", ["it-IT", "it-CH", "it-SM", "it-VA"]),
+        ("da", "🇩🇰", "Dansk", ["da-DK"]),
+        ("fi", "🇫🇮", "Suomi", ["fi-FI"]),
+        ("he", "🇮🇱", "עברית", ["he-IL"]),
+        ("pl", "🇵🇱", "Polski", ["pl-PL"]),
+        ("pt", "🇧🇷", "Português Brasileiro", ["pt-BR", "pt-PT"]),
+        ("ro", "🇷🇴", "Română", ["ro-RO", "ro-MD"]),
+        ("ru", "🇷🇺", "Русский", ["ru-RU", "ru-BY", "ru-KZ", "ru-UA"]),
+        ("sv", "🇸🇪", "Svenska", ["sv-SE", "sv-FI"]),
+        ("uk", "🇺🇦", "Українська", ["uk-UA"]),
+        ("zh", "🇨🇳", "简体中文", ["zh-CN", "zh-SG", "zh-Hans", "zh-TW", "zh-HK", "zh-MO", "zh-Hant"]),
+        ("ur", "🇵🇰", "اردو", ["ur-PK", "ur-IN"]),
+        ("fa", "🇮🇷", "فارسی", ["fa-IR", "fa-AF"]),
     ];
 
     /// <summary>
@@ -63,7 +64,7 @@ public static class Languages
     public static string GetDisplayLabel(string code)
     {
         var iso = Normalize(code);
-        foreach (var (metaCode, flag, label) in Meta)
+        foreach (var (metaCode, flag, label, _) in Meta)
         {
             if (metaCode == iso)
             {
@@ -82,7 +83,7 @@ public static class Languages
     public static string GetFlag(string code)
     {
         var iso = Normalize(code);
-        foreach (var (metaCode, flag, _) in Meta)
+        foreach (var (metaCode, flag, _, _) in Meta)
         {
             if (metaCode == iso)
             {
@@ -102,7 +103,7 @@ public static class Languages
     public static string GetLabel(string code)
     {
         var iso = Normalize(code);
-        foreach (var (metaCode, _, label) in Meta)
+        foreach (var (metaCode, _, label, _) in Meta)
         {
             if (metaCode == iso)
             {
@@ -114,24 +115,82 @@ public static class Languages
     }
 
     /// <summary>
+    /// Match an app/UI/browser locale to one of a feature's available ISO codes, using the
+    /// region-variant alternative codes (e.g. "en-GB" -> "en", "de-CH" -> "de"). Matching order:
+    /// exact match against an available code, then the alternative-code table, then the base
+    /// language code. Returns null when nothing matches, so callers can decide their own fallback.
+    /// </summary>
+    /// <param name="appLanguage">The app/UI/browser language tag (e.g. "en", "en-US", "nl-BE").</param>
+    /// <param name="availableCodes">The codes the feature actually supports.</param>
+    /// <returns>The matching available code or null if none matched.</returns>
+    public static string? MatchAvailableLanguage(string? appLanguage, System.Collections.Generic.IReadOnlyList<string> availableCodes)
+    {
+        if (string.IsNullOrEmpty(appLanguage))
+        {
+            return null;
+        }
+
+        var lower = appLanguage.ToLowerInvariant();
+
+        // 1. Exact match against an available code.
+        foreach (var code in availableCodes)
+        {
+            if (string.Equals(code, lower, System.StringComparison.OrdinalIgnoreCase))
+            {
+                return code;
+            }
+        }
+
+        // 2. Alternative-code match: find the language whose region variants include this tag, then
+        //    return its base code if the feature supports it.
+        foreach (var (metaCode, _, _, alternativeCodes) in Meta)
+        {
+            var isAlternative = false;
+            foreach (var alt in alternativeCodes)
+            {
+                if (string.Equals(alt, lower, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    isAlternative = true;
+                    break;
+                }
+            }
+
+            if (isAlternative)
+            {
+                foreach (var code in availableCodes)
+                {
+                    if (string.Equals(code, metaCode, System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        return code;
+                    }
+                }
+            }
+        }
+
+        // 3. Base language code match (e.g. an unlisted "en-ZZ" still resolves to "en").
+        var baseCode = Normalize(appLanguage);
+        foreach (var code in availableCodes)
+        {
+            if (string.Equals(code, baseCode, System.StringComparison.OrdinalIgnoreCase))
+            {
+                return code;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Resolve a default language code for an app/UI language, restricted to a set of available
-    /// codes. Returns the app language when available, otherwise the first available code,
-    /// otherwise English.
+    /// codes. Uses <see cref="MatchAvailableLanguage"/> (region-variant aware), then falls back to
+    /// the first available code, otherwise English.
     /// </summary>
     /// <param name="appLanguage">The app/UI language tag.</param>
     /// <param name="availableCodes">The codes the feature actually supports.</param>
     /// <returns>The resolved ISO code.</returns>
     public static string ResolveDefaultLanguage(string? appLanguage, System.Collections.Generic.IReadOnlyList<string> availableCodes)
     {
-        var iso = Normalize(appLanguage);
-        foreach (var code in availableCodes)
-        {
-            if (string.Equals(code, iso, System.StringComparison.OrdinalIgnoreCase))
-            {
-                return iso;
-            }
-        }
-
-        return availableCodes.Count > 0 ? availableCodes[0] : DefaultLanguageCode;
+        return MatchAvailableLanguage(appLanguage, availableCodes)
+            ?? (availableCodes.Count > 0 ? availableCodes[0] : DefaultLanguageCode);
     }
 }

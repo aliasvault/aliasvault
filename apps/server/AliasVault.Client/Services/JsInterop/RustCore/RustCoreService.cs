@@ -372,6 +372,17 @@ public class RustCoreService : IAsyncDisposable
             node["Seed"] = seed;
         }
 
+        // Resolve the effective passphrase language when none is explicitly chosen ("auto"). Pick the
+        // most appropriate available Diceware wordlist for the current app language using the shared
+        // region-variant table (e.g. "de-CH" -> "de"), falling back to English.
+        if (string.Equals(settings.Type, "diceware", StringComparison.OrdinalIgnoreCase)
+            && string.IsNullOrWhiteSpace(settings.Language))
+        {
+            var codes = await GetDicewareLanguagesAsync();
+            var appLanguage = System.Globalization.CultureInfo.CurrentCulture.Name;
+            node["Language"] = Languages.ResolveDefaultLanguage(appLanguage, codes);
+        }
+
         return await jsRuntime.InvokeAsync<string>("rustCoreGeneratePassword", node.ToJsonString());
     }
 
