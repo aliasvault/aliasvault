@@ -75,6 +75,16 @@ export async function generatePassword(settings: PasswordSettings, seed?: string
 }
 
 /**
+ * Get the list of bundled Diceware wordlist language codes (first is the default, English).
+ * The set is owned by the Rust core; unknown codes fall back to English during generation.
+ */
+export async function getDicewareLanguages(): Promise<string[]> {
+  await initRustCore();
+  const languages = core.getDicewareLanguages() as string[];
+  return languages.length > 0 ? languages : ['English'];
+}
+
+/**
  * Generate a random 32-byte seed as a 64-character hex string, suitable for the
  * `seed` argument of {@link generatePassword}.
  */

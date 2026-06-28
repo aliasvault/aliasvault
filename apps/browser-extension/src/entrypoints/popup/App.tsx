@@ -34,6 +34,7 @@ import ContextMenuSettings from '@/entrypoints/popup/pages/settings/ContextMenuS
 import IdentityGeneratorSettings from '@/entrypoints/popup/pages/settings/IdentityGeneratorSettings';
 import LanguageSettings from '@/entrypoints/popup/pages/settings/LanguageSettings';
 import PasskeySettings from '@/entrypoints/popup/pages/settings/PasskeySettings';
+import PasswordGeneratorSettings from '@/entrypoints/popup/pages/settings/PasswordGeneratorSettings';
 import Settings from '@/entrypoints/popup/pages/settings/Settings';
 import VaultUnlockSettings from '@/entrypoints/popup/pages/settings/VaultUnlockSettings';
 
@@ -207,6 +208,7 @@ const App: React.FC = () => {
     { path: '/settings/auto-lock', element: <AutoLockSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/passkeys', element: <PasskeySettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/identity-generator', element: <IdentityGeneratorSettings />, showBackButton: true, title: t('common.settings') },
+    { path: '/settings/password-generator', element: <PasswordGeneratorSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/appearance', element: <AppearanceSettings />, showBackButton: true, title: t('common.settings') },
   ], [t]);
 

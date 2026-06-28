@@ -1,3 +1,4 @@
+import { defaultDicewareLanguageForApp } from '@/utils/DicewareLanguages';
 import { DEFAULT_PASSWORD_LENGTH, DEFAULT_WORD_COUNT } from '@/utils/dist/core/models/defaults';
 import type { EncryptionKey, PasswordSettings, TotpCode, Attachment } from '@/utils/dist/core/models/vault';
 
@@ -69,7 +70,7 @@ export class SettingsRepository extends BaseRepository {
       UseNonAmbiguousChars: false,
       Type: 'basic',
       WordCount: DEFAULT_WORD_COUNT,
-      Language: 'English',
+      Language: defaultDicewareLanguageForApp(navigator.language),
       Capitalization: 'Lowercase',
       Separator: 'Dash',
       Salt: 'None'
@@ -84,6 +85,15 @@ export class SettingsRepository extends BaseRepository {
     }
 
     return defaultSettings;
+  }
+
+  /**
+   * Persist the password generator settings as a JSON blob.
+   * Mirrors the `PasswordGenerationSettings` key used by the other AliasVault clients.
+   * @param settings - The password settings to store.
+   */
+  public setPasswordSettings(settings: PasswordSettings): void {
+    this.updateSetting('PasswordGenerationSettings', JSON.stringify(settings));
   }
 
   /**
