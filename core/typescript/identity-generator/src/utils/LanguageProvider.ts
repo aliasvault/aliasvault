@@ -1,108 +1,47 @@
 /**
- * Represents a language option for identity generation.
+ * Internal definition of an identity-generator language: its ISO code plus the alternative locale
+ * codes that map onto it. Display metadata (flag, native label) is intentionally NOT stored here —
+ * clients look that up from the shared `core/models` language reference so it lives in one place.
  */
-export interface ILanguageOption {
+interface ILanguageDef {
   /**
-   * The language code (e.g., "en", "nl", "de")
+   * The language code (e.g., "en", "nl", "de").
    */
   value: string;
 
   /**
-   * The display label in the native language (e.g., "English", "Nederlands", "Deutsch")
-   */
-  label: string;
-
-  /**
-   * The flag emoji for the language (e.g., "🇬🇧", "🇳🇱", "🇩🇪")
-   */
-  flag: string;
-
-  /**
    * Alternative language codes that map to this identity generator language.
    * Used for matching UI locale codes to identity generator languages.
-   * For example, "en-US", "en-GB", "en-CA" all map to "en"
+   * For example, "en-US", "en-GB", "en-CA" all map to "en".
    */
   alternativeCodes?: string[];
 }
 
 /**
- * Gets all available languages for identity generation.
- * Display labels are in the native language, with optional flag emoji that clients can choose to display.
- * Languages are sorted alphabetically by label for consistent display across all platforms.
- * @returns Array of language options sorted alphabetically by label
+ * The languages supported by the identity generator. Only ISO codes and their alternative locale
+ * codes are defined here; flag emojis and native labels come from the shared `core/models` language
+ * reference (`getLanguageInfo`).
  */
-export function getAvailableLanguages(): ILanguageOption[] {
-  const languages: ILanguageOption[] = [
-    {
-      value: 'da',
-      label: 'Dansk',
-      flag: '🇩🇰',
-      alternativeCodes: ['da-DK']
-    },
-    {
-      value: 'de',
-      label: 'Deutsch',
-      flag: '🇩🇪',
-      alternativeCodes: ['de-DE', 'de-AT', 'de-CH', 'de-LU', 'de-LI']
-    },
-    {
-      value: 'en',
-      label: 'English',
-      flag: '🇬🇧',
-      alternativeCodes: ['en-US', 'en-GB', 'en-CA', 'en-AU', 'en-NZ', 'en-IE', 'en-ZA', 'en-SG', 'en-IN']
-    },
-    {
-      value: 'es',
-      label: 'Español',
-      flag: '🇪🇸',
-      alternativeCodes: ['es-ES', 'es-MX', 'es-AR', 'es-CO', 'es-CL', 'es-PE', 'es-VE', 'es-EC', 'es-GT', 'es-CU', 'es-BO', 'es-DO', 'es-HN', 'es-PY', 'es-SV', 'es-NI', 'es-CR', 'es-PA', 'es-UY', 'es-PR']
-    },
-    {
-      value: 'fr',
-      label: 'Français',
-      flag: '🇫🇷',
-      alternativeCodes: ['fr-FR', 'fr-CA', 'fr-BE', 'fr-CH', 'fr-LU', 'fr-MC']
-    },
-    {
-      value: 'it',
-      label: 'Italiano',
-      flag: '🇮🇹',
-      alternativeCodes: ['it-IT', 'it-CH', 'it-SM', 'it-VA']
-    },
-    {
-      value: 'nl',
-      label: 'Nederlands',
-      flag: '🇳🇱',
-      alternativeCodes: ['nl-NL', 'nl-BE']
-    },
-    {
-      value: 'ro',
-      label: 'Română',
-      flag: '🇷🇴',
-      alternativeCodes: ['ro-RO', 'ro-MD']
-    },
-    {
-      value: 'sv',
-      label: 'Svenska',
-      flag: '🇸🇪',
-      alternativeCodes: ['sv-SE', 'sv-FI']
-    },
-    {
-      value: 'ur',
-      label: 'اردو',
-      flag: '🇵🇰',
-      alternativeCodes: ['ur-PK', 'ur-IN']
-    },
-    {
-      value: 'fa',
-      label: 'فارسی',
-      flag: '🇮🇷',
-      alternativeCodes: ['fa-IR', 'fa-AF']
-    }
-  ];
+const LANGUAGE_DEFS: ILanguageDef[] = [
+  { value: 'da', alternativeCodes: ['da-DK'] },
+  { value: 'de', alternativeCodes: ['de-DE', 'de-AT', 'de-CH', 'de-LU', 'de-LI'] },
+  { value: 'en', alternativeCodes: ['en-US', 'en-GB', 'en-CA', 'en-AU', 'en-NZ', 'en-IE', 'en-ZA', 'en-SG', 'en-IN'] },
+  { value: 'es', alternativeCodes: ['es-ES', 'es-MX', 'es-AR', 'es-CO', 'es-CL', 'es-PE', 'es-VE', 'es-EC', 'es-GT', 'es-CU', 'es-BO', 'es-DO', 'es-HN', 'es-PY', 'es-SV', 'es-NI', 'es-CR', 'es-PA', 'es-UY', 'es-PR'] },
+  { value: 'fr', alternativeCodes: ['fr-FR', 'fr-CA', 'fr-BE', 'fr-CH', 'fr-LU', 'fr-MC'] },
+  { value: 'it', alternativeCodes: ['it-IT', 'it-CH', 'it-SM', 'it-VA'] },
+  { value: 'nl', alternativeCodes: ['nl-NL', 'nl-BE'] },
+  { value: 'ro', alternativeCodes: ['ro-RO', 'ro-MD'] },
+  { value: 'sv', alternativeCodes: ['sv-SE', 'sv-FI'] },
+  { value: 'ur', alternativeCodes: ['ur-PK', 'ur-IN'] },
+  { value: 'fa', alternativeCodes: ['fa-IR', 'fa-AF'] },
+];
 
-  // Sort alphabetically by label using locale-aware comparison
-  return languages.sort((a, b) => a.label.localeCompare(b.label));
+/**
+ * Gets all available language codes for identity generation.
+ * @returns Array of ISO language codes (e.g. ["da", "de", "en", ...]).
+ */
+export function getAvailableLanguages(): string[] {
+  return LANGUAGE_DEFS.map(lang => lang.value);
 }
 
 /**
@@ -116,7 +55,7 @@ export function getAvailableLanguages(): ILanguageOption[] {
  * mapUiLanguageToIdentityLanguage("en-US") // returns "en"
  * mapUiLanguageToIdentityLanguage("nl") // returns "nl"
  * mapUiLanguageToIdentityLanguage("de-CH") // returns "de"
- * mapUiLanguageToIdentityLanguage("fr") // returns null (no French identity generator)
+ * mapUiLanguageToIdentityLanguage("ja") // returns null (no Japanese identity generator)
  */
 export function mapUiLanguageToIdentityLanguage(uiLanguageCode: string | null | undefined): string | null {
   if (!uiLanguageCode) {
@@ -124,16 +63,15 @@ export function mapUiLanguageToIdentityLanguage(uiLanguageCode: string | null | 
   }
 
   const normalizedCode = uiLanguageCode.toLowerCase();
-  const availableLanguages = getAvailableLanguages();
 
   // First, try exact match with the primary value
-  const exactMatch = availableLanguages.find(lang => lang.value.toLowerCase() === normalizedCode);
+  const exactMatch = LANGUAGE_DEFS.find(lang => lang.value.toLowerCase() === normalizedCode);
   if (exactMatch) {
     return exactMatch.value;
   }
 
   // Then, try matching with alternative codes
-  const alternativeMatch = availableLanguages.find(lang =>
+  const alternativeMatch = LANGUAGE_DEFS.find(lang =>
     lang.alternativeCodes?.some(code => code.toLowerCase() === normalizedCode)
   );
   if (alternativeMatch) {
@@ -142,7 +80,7 @@ export function mapUiLanguageToIdentityLanguage(uiLanguageCode: string | null | 
 
   // Finally, try matching the base language code (e.g., "en" from "en-US")
   const baseCode = normalizedCode.split('-')[0];
-  const baseMatch = availableLanguages.find(lang => lang.value.toLowerCase() === baseCode);
+  const baseMatch = LANGUAGE_DEFS.find(lang => lang.value.toLowerCase() === baseCode);
   if (baseMatch) {
     return baseMatch.value;
   }

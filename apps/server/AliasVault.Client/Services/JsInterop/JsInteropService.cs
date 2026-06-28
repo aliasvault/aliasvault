@@ -9,6 +9,7 @@ namespace AliasVault.Client.Services.JsInterop;
 
 using System.Security.Cryptography;
 using System.Text.Json;
+using AliasVault.Client.Main.Models;
 using AliasVault.Client.Services.JsInterop.Models;
 using AliasVault.Shared.Core;
 using Microsoft.AspNetCore.Components;
@@ -436,8 +437,21 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
                 await InitializeAsync();
             }
 
-            var result = await _identityGeneratorModule!.InvokeAsync<List<LanguageOption>>("getAvailableLanguages");
-            return result ?? new List<LanguageOption>();
+            var codes = await _identityGeneratorModule!.InvokeAsync<List<string>>("getAvailableLanguages");
+            if (codes == null)
+            {
+                return new List<LanguageOption>();
+            }
+
+            return codes
+                .Select(code => new LanguageOption
+                {
+                    Value = code,
+                    Flag = Languages.GetFlag(code),
+                    Label = Languages.GetLabel(code),
+                })
+                .OrderBy(option => option.Label, StringComparer.CurrentCulture)
+                .ToList();
         }
         catch (JSException ex)
         {

@@ -4,7 +4,8 @@ import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 
-import { getAvailableLanguages, ILanguageOption } from '@/utils/dist/core/identity-generator';
+import { getAvailableLanguages } from '@/utils/dist/core/identity-generator';
+import { getLanguageInfo } from '@/utils/dist/core/models/defaults';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
@@ -28,7 +29,9 @@ export default function IdentityGeneratorLanguageScreen(): React.ReactNode {
   const { executeVaultMutation } = useVaultMutate();
 
   const [language, setLanguage] = useState<string>('en');
-  const [languageOptions] = useState<ILanguageOption[]>(() => getAvailableLanguages());
+  const [languageOptions] = useState<string[]>(() =>
+    getAvailableLanguages().sort((a, b) => getLanguageInfo(a).label.localeCompare(getLanguageInfo(b).label))
+  );
 
   // Store pending changes and initial values
   const pendingChanges = useRef<{ language?: string }>({});
@@ -130,14 +133,15 @@ export default function IdentityGeneratorLanguageScreen(): React.ReactNode {
         <View style={styles.optionContainer}>
           {languageOptions.map((option, index) => {
             const isLast = index === languageOptions.length - 1;
+            const info = getLanguageInfo(option);
             return (
               <TouchableOpacity
-                key={option.value}
+                key={option}
                 style={[styles.option, isLast && styles.optionLast]}
-                onPress={() => handleLanguageSelect(option.value)}
+                onPress={() => handleLanguageSelect(option)}
               >
-                <ThemedText style={styles.optionText}>{option.flag} {option.label}</ThemedText>
-                {language === option.value && (
+                <ThemedText style={styles.optionText}>{info.flag} {info.label}</ThemedText>
+                {language === option && (
                   <Ionicons name="checkmark" size={20} style={styles.selectedIcon} />
                 )}
               </TouchableOpacity>

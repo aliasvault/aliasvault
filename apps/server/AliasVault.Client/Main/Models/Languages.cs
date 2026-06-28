@@ -23,7 +23,7 @@ public static class Languages
     /// </summary>
     private static readonly (string Code, string Flag, string Label)[] Meta =
     [
-        ("en", "🇬🇧", "English"),
+        ("en", "🇺🇸", "English"),
         ("nl", "🇳🇱", "Nederlands"),
         ("de", "🇩🇪", "Deutsch"),
         ("fr", "🇫🇷", "Français"),
@@ -33,12 +33,14 @@ public static class Languages
         ("fi", "🇫🇮", "Suomi"),
         ("he", "🇮🇱", "עברית"),
         ("pl", "🇵🇱", "Polski"),
-        ("pt", "🇧🇷", "Português"),
+        ("pt", "🇧🇷", "Português Brasileiro"),
         ("ro", "🇷🇴", "Română"),
         ("ru", "🇷🇺", "Русский"),
         ("sv", "🇸🇪", "Svenska"),
         ("uk", "🇺🇦", "Українська"),
-        ("zh", "🇨🇳", "中文"),
+        ("zh", "🇨🇳", "简体中文"),
+        ("ur", "🇵🇰", "اردو"),
+        ("fa", "🇮🇷", "فارسی"),
     ];
 
     /// <summary>
@@ -70,6 +72,45 @@ public static class Languages
         }
 
         return $"🌐 {code}";
+    }
+
+    /// <summary>
+    /// Get the flag emoji for an ISO language code. Falls back to a globe flag for unknown languages.
+    /// </summary>
+    /// <param name="code">The ISO language code (case-insensitive).</param>
+    /// <returns>The flag emoji, e.g. "🇳🇱".</returns>
+    public static string GetFlag(string code)
+    {
+        var iso = Normalize(code);
+        foreach (var (metaCode, flag, _) in Meta)
+        {
+            if (metaCode == iso)
+            {
+                return flag;
+            }
+        }
+
+        return "🌐";
+    }
+
+    /// <summary>
+    /// Get the native display label for an ISO language code. Falls back to the raw code for unknown
+    /// languages.
+    /// </summary>
+    /// <param name="code">The ISO language code (case-insensitive).</param>
+    /// <returns>The native label, e.g. "Nederlands".</returns>
+    public static string GetLabel(string code)
+    {
+        var iso = Normalize(code);
+        foreach (var (metaCode, _, label) in Meta)
+        {
+            if (metaCode == iso)
+            {
+                return label;
+            }
+        }
+
+        return code;
     }
 
     /// <summary>

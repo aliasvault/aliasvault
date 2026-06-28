@@ -23,7 +23,7 @@ export const DEFAULT_LANGUAGE_CODE = 'en';
  * Covers the AliasVault app UI languages so this list can be reused beyond a single feature.
  */
 export const LANGUAGES: ILanguageInfo[] = [
-  { code: 'en', flag: '🇬🇧', label: 'English' },
+  { code: 'en', flag: '🇺🇸', label: 'English' },
   { code: 'nl', flag: '🇳🇱', label: 'Nederlands' },
   { code: 'de', flag: '🇩🇪', label: 'Deutsch' },
   { code: 'fr', flag: '🇫🇷', label: 'Français' },
@@ -33,12 +33,14 @@ export const LANGUAGES: ILanguageInfo[] = [
   { code: 'fi', flag: '🇫🇮', label: 'Suomi' },
   { code: 'he', flag: '🇮🇱', label: 'עברית' },
   { code: 'pl', flag: '🇵🇱', label: 'Polski' },
-  { code: 'pt', flag: '🇧🇷', label: 'Português' },
+  { code: 'pt', flag: '🇧🇷', label: 'Português Brasileiro' },
   { code: 'ro', flag: '🇷🇴', label: 'Română' },
   { code: 'ru', flag: '🇷🇺', label: 'Русский' },
   { code: 'sv', flag: '🇸🇪', label: 'Svenska' },
   { code: 'uk', flag: '🇺🇦', label: 'Українська' },
-  { code: 'zh', flag: '🇨🇳', label: '中文' },
+  { code: 'zh', flag: '🇨🇳', label: '简体中文' },
+  { code: 'ur', flag: '🇵🇰', label: 'اردو' },
+  { code: 'fa', flag: '🇮🇷', label: 'فارسی' },
 ];
 
 /**

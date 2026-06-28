@@ -3,14 +3,15 @@ import { getAvailableLanguages, mapUiLanguageToIdentityLanguage } from '../utils
 
 describe('LanguageProvider', () => {
   describe('getAvailableLanguages', () => {
-    it('should return a list of available languages', () => {
+    it('should return a list of available language codes', () => {
       const languages = getAvailableLanguages();
 
       expect(languages).toBeDefined();
       expect(languages.length).toBeGreaterThan(0);
-      expect(languages[0]).toHaveProperty('value');
-      expect(languages[0]).toHaveProperty('label');
-      expect(languages[0]).toHaveProperty('flag');
+      // Returns ISO codes only; display metadata (flag/label) is resolved by clients from core/models.
+      expect(languages.every(code => typeof code === 'string')).toBe(true);
+      expect(languages).toContain('en');
+      expect(languages).toContain('nl');
     });
   });
 

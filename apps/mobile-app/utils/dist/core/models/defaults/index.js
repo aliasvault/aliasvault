@@ -13,7 +13,7 @@ var MAX_WORD_COUNT = 10;
 // src/defaults/Languages.ts
 var DEFAULT_LANGUAGE_CODE = "en";
 var LANGUAGES = [
-  { code: "en", flag: "\u{1F1EC}\u{1F1E7}", label: "English" },
+  { code: "en", flag: "\u{1F1FA}\u{1F1F8}", label: "English" },
   { code: "nl", flag: "\u{1F1F3}\u{1F1F1}", label: "Nederlands" },
   { code: "de", flag: "\u{1F1E9}\u{1F1EA}", label: "Deutsch" },
   { code: "fr", flag: "\u{1F1EB}\u{1F1F7}", label: "Fran\xE7ais" },
@@ -23,12 +23,14 @@ var LANGUAGES = [
   { code: "fi", flag: "\u{1F1EB}\u{1F1EE}", label: "Suomi" },
   { code: "he", flag: "\u{1F1EE}\u{1F1F1}", label: "\u05E2\u05D1\u05E8\u05D9\u05EA" },
   { code: "pl", flag: "\u{1F1F5}\u{1F1F1}", label: "Polski" },
-  { code: "pt", flag: "\u{1F1E7}\u{1F1F7}", label: "Portugu\xEAs" },
+  { code: "pt", flag: "\u{1F1E7}\u{1F1F7}", label: "Portugu\xEAs Brasileiro" },
   { code: "ro", flag: "\u{1F1F7}\u{1F1F4}", label: "Rom\xE2n\u0103" },
   { code: "ru", flag: "\u{1F1F7}\u{1F1FA}", label: "\u0420\u0443\u0441\u0441\u043A\u0438\u0439" },
   { code: "sv", flag: "\u{1F1F8}\u{1F1EA}", label: "Svenska" },
   { code: "uk", flag: "\u{1F1FA}\u{1F1E6}", label: "\u0423\u043A\u0440\u0430\u0457\u043D\u0441\u044C\u043A\u0430" },
-  { code: "zh", flag: "\u{1F1E8}\u{1F1F3}", label: "\u4E2D\u6587" }
+  { code: "zh", flag: "\u{1F1E8}\u{1F1F3}", label: "\u7B80\u4F53\u4E2D\u6587" },
+  { code: "ur", flag: "\u{1F1F5}\u{1F1F0}", label: "\u0627\u0631\u062F\u0648" },
+  { code: "fa", flag: "\u{1F1EE}\u{1F1F7}", label: "\u0641\u0627\u0631\u0633\u06CC" }
 ];
 function normalizeLanguageCode(code) {
   return (code ?? "").slice(0, 2).toLowerCase();
