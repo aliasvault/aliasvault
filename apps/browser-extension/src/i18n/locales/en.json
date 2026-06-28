@@ -469,7 +469,7 @@
     },
     "passwordGenerator": "Password Generator",
     "passwordGeneratorSettings": {
-      "description": "Configure the default password and passphrase generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
       "configureButton": "Configure"
     },
     "credentialAutofill": "Credential autofill",
