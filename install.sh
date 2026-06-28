@@ -3511,64 +3511,54 @@ check_and_populate_env() {
     if ! grep -q "^SUPPORT_EMAIL=" "$ENV_FILE"; then
         read -p "Enter server admin support email address that is shown on contact page (optional, press Enter to skip): " SUPPORT_EMAIL
         update_env_var "SUPPORT_EMAIL" "$SUPPORT_EMAIL"
-        printf "  Set SUPPORT_EMAIL\n"
     fi
 
     # JWT_KEY
     if [ ! -f "${SECRETS_DIR}/jwt_key" ] || [ -z "$(cat "${SECRETS_DIR}/jwt_key" 2>/dev/null)" ]; then
         JWT_KEY=$(openssl rand -base64 32)
         write_secret_to_file "jwt_key" "$JWT_KEY"
-        printf "  Generated JWT_KEY\n"
     fi
 
     # DATA_PROTECTION_CERT_PASS
     if [ ! -f "${SECRETS_DIR}/data_protection_cert_pass" ] || [ -z "$(cat "${SECRETS_DIR}/data_protection_cert_pass" 2>/dev/null)" ]; then
         CERT_PASS=$(openssl rand -base64 32)
         write_secret_to_file "data_protection_cert_pass" "$CERT_PASS"
-        printf "  Generated DATA_PROTECTION_CERT_PASS\n"
     fi
 
     # POSTGRES_PASSWORD
     if [ ! -f "${SECRETS_DIR}/postgres_password" ] || [ -z "$(cat "${SECRETS_DIR}/postgres_password" 2>/dev/null)" ]; then
         POSTGRES_PASS=$(openssl rand -base64 32)
         write_secret_to_file "postgres_password" "$POSTGRES_PASS"
-        printf "  Generated POSTGRES_PASSWORD\n"
     fi
 
     # PRIVATE_EMAIL_DOMAINS
     if ! grep -q "^PRIVATE_EMAIL_DOMAINS=" "$ENV_FILE"; then
         update_env_var "PRIVATE_EMAIL_DOMAINS" ""
-        printf "  Set PRIVATE_EMAIL_DOMAINS\n"
     fi
 
     # HIDDEN_PRIVATE_EMAIL_DOMAINS
     if ! grep -q "^HIDDEN_PRIVATE_EMAIL_DOMAINS=" "$ENV_FILE"; then
         update_env_var "HIDDEN_PRIVATE_EMAIL_DOMAINS" ""
-        printf "  Set HIDDEN_PRIVATE_EMAIL_DOMAINS\n"
     fi
 
     # HTTP_PORT
     if ! grep -q "^HTTP_PORT=" "$ENV_FILE" || [ -z "$(grep "^HTTP_PORT=" "$ENV_FILE" | cut -d '=' -f2)" ]; then
         update_env_var "HTTP_PORT" "80"
-        printf "  Set HTTP_PORT\n"
     fi
 
     # HTTPS_PORT
     if ! grep -q "^HTTPS_PORT=" "$ENV_FILE" || [ -z "$(grep "^HTTPS_PORT=" "$ENV_FILE" | cut -d '=' -f2)" ]; then
         update_env_var "HTTPS_PORT" "443"
-        printf "  Set HTTPS_PORT\n"
     fi
 
     # SMTP_PORT
     if ! grep -q "^SMTP_PORT=" "$ENV_FILE" || [ -z "$(grep "^SMTP_PORT=" "$ENV_FILE" | cut -d '=' -f2)" ]; then
         update_env_var "SMTP_PORT" "25"
-        printf "  Set SMTP_PORT\n"
     fi
 
     # SMTP_TLS_PORT
     if ! grep -q "^SMTP_TLS_PORT=" "$ENV_FILE" || [ -z "$(grep "^SMTP_TLS_PORT=" "$ENV_FILE" | cut -d '=' -f2)" ]; then
         update_env_var "SMTP_TLS_PORT" "587"
-        printf "  Set SMTP_TLS_PORT\n"
     fi
 
     # SMTP_ADVERTISED_HOSTNAME
@@ -3579,19 +3569,16 @@ check_and_populate_env() {
     # MAX_UPLOAD_SIZE_MB
     if ! grep -q "^MAX_UPLOAD_SIZE_MB=" "$ENV_FILE" 2>/dev/null; then
         update_env_var "MAX_UPLOAD_SIZE_MB" "100"
-        printf "  Set MAX_UPLOAD_SIZE_MB\n"
     fi
 
     # ADMIN_IP_ALLOWLIST
     if ! grep -q "^ADMIN_IP_ALLOWLIST=" "$ENV_FILE" 2>/dev/null; then
         update_env_var "ADMIN_IP_ALLOWLIST" ""
-        printf "  Set ADMIN_IP_ALLOWLIST\n"
     fi
 
     # TRUSTED_PROXIES
     if ! grep -q "^TRUSTED_PROXIES=" "$ENV_FILE" 2>/dev/null; then
         update_env_var "TRUSTED_PROXIES" ""
-        printf "  Set TRUSTED_PROXIES\n"
     fi
 }
 
