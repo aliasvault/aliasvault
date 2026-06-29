@@ -16,6 +16,7 @@
     "copied": "In die Zwischenablage kopiert",
     "loadMore": "Mehr laden",
     "use": "Verwenden",
+    "none": "Keine",
     "confirm": "Bestätigen",
     "next": "Weiter",
     "notice": "Hinweis",
@@ -442,6 +443,29 @@
     "includeNumbers": "Zahlen (0-9)",
     "includeSpecialChars": "Sonderzeichen (!@#)",
     "avoidAmbiguousChars": "Mehrdeutige Zeichen vermeiden",
+    "passwordTypeBasic": "Passwort",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Fehler beim Laden der Daten",
     "vaultSyncFailed": "Synchronisation des Tresors fehlgeschlagen",
     "vaultSyncedSuccessfully": "Tresor erfolgreich synchronisiert",
