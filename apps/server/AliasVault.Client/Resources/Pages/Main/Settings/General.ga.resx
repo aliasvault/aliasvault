@@ -83,7 +83,7 @@
     <comment>Description for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationGenderLabel">
-    <value>Gender</value>
+    <value>Inscne</value>
     <comment>Label for alias generation gender setting</comment>
   </data>
   <data name="AliasGenerationGenderDescription">
