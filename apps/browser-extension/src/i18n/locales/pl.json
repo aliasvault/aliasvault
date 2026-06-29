@@ -62,6 +62,7 @@
     "openInNewWindow": "Otwórz w nowym oknie.",
     "enabled": "Aktywne",
     "disabled": "Nie aktywne",
+    "none": "Brak",
     "showPassword": "Pokaż hasło",
     "hidePassword": "Ukryj hasło",
     "show": "Pokaż",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Elementy",
     "itemName": "Nazwa",
+    "suggestions": "Suggestions",
     "loginCredentials": "Dane logowania",
     "cardInformation": "Informacje o karcie",
     "addItem": "Dodaj element",
@@ -241,6 +243,28 @@
     "includeNumbers": "Uwzględnij numery",
     "includeSpecialChars": "Uwzględnij znaki specjalne",
     "avoidAmbiguousChars": "Unikaj dwuznacznych znaków (o, 0, itp.)",
+    "passwordTypeBasic": "Hasło",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "Prywatny adres e-mail",
     "privateEmailAliasVaultServer": "Serwer AliasVault",
     "privateEmailDescription": "Szyfrowane E2E, w pełni prywatne.",
@@ -442,6 +466,11 @@
         "male": "Mężczyzna",
         "female": "Kobieta"
       }
+    },
+    "passwordGenerator": "Generator haseł",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Skonfiguruj"
     },
     "credentialAutofill": "Credential autofill",
     "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
