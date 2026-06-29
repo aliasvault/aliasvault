@@ -85,7 +85,7 @@
     <comment>Label for last name field</comment>
   </data>
   <data name="FieldLabel_alias_gender" xml:space="preserve">
-    <value>Gender</value>
+    <value>Inscne</value>
     <comment>Label for gender field</comment>
   </data>
   <data name="FieldLabel_alias_birthdate" xml:space="preserve">
