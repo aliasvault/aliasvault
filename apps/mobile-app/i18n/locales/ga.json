@@ -16,6 +16,7 @@
     "copied": "Cóipeáilte chuig an ghearrthaisce",
     "loadMore": "Luchtaigh níos mó",
     "use": "Úsáid",
+    "none": "Dada",
     "confirm": "Deimhnigh",
     "next": "Ar Aghaidh",
     "notice": "Fógra",
@@ -442,6 +443,29 @@
     "includeNumbers": "Uimhreacha (0-9)",
     "includeSpecialChars": "Carachtair Speisialta (!@#)",
     "avoidAmbiguousChars": "Seachain Carachtair Débhríocha",
+    "passwordTypeBasic": "Pasfhocal",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Earráid ag luchtú míreanna",
     "vaultSyncFailed": "Theip ar shioncrónú an tseomra grúpála",
     "vaultSyncedSuccessfully": "Sioncronaíodh an cruinneachán go rathúil",
