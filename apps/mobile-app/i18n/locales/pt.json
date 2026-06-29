@@ -16,6 +16,7 @@
     "copied": "Copiado para a área de transferência",
     "loadMore": "Carregar mais",
     "use": "Utilizar",
+    "none": "Nenhum",
     "confirm": "Confirmar",
     "next": "Próximo",
     "notice": "Aviso",
@@ -442,6 +443,29 @@
     "includeNumbers": "Números (0-9)",
     "includeSpecialChars": "Caracteres Especiais (!@#)",
     "avoidAmbiguousChars": "Evitar Caracteres Ambíguos",
+    "passwordTypeBasic": "Senha",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Erro ao carregar itens",
     "vaultSyncFailed": "Sincronização do cofre falhou",
     "vaultSyncedSuccessfully": "Cofre sincronizado com sucesso",
