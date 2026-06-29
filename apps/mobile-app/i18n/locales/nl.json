@@ -16,6 +16,7 @@
     "copied": "Gekopieerd naar klembord",
     "loadMore": "Laad meer",
     "use": "Gebruik",
+    "none": "Geen",
     "confirm": "Bevestigen",
     "next": "Volgende",
     "notice": "Melding",
@@ -442,6 +443,29 @@
     "includeNumbers": "Cijfers (0-9)",
     "includeSpecialChars": "Speciale tekens (!@#)",
     "avoidAmbiguousChars": "Onduidelijke tekens vermijden",
+    "passwordTypeBasic": "Wachtwoord",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Fout bij het laden van items",
     "vaultSyncFailed": "Vault synchronisatie mislukt",
     "vaultSyncedSuccessfully": "Vault succesvol gesynchroniseerd",
