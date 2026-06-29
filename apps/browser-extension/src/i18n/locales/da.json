@@ -62,6 +62,7 @@
     "openInNewWindow": "Åbn i nyt vindue",
     "enabled": "Aktiveret",
     "disabled": "Deaktiveret",
+    "none": "Ingen",
     "showPassword": "Vis adgangskode",
     "hidePassword": "Skjul adgangskode",
     "show": "Vis",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Elementer",
     "itemName": "Navn",
+    "suggestions": "Suggestions",
     "loginCredentials": "Logonoplysninger",
     "cardInformation": "Kortoplysninger",
     "addItem": "Tilføj element",
@@ -241,6 +243,28 @@
     "includeNumbers": "Inkluder tal",
     "includeSpecialChars": "Inkluder specialtegn",
     "avoidAmbiguousChars": "Undgå tvetydige tegn (o, 0 osv.)",
+    "passwordTypeBasic": "Adgangskode",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "Privat e-mail",
     "privateEmailAliasVaultServer": "AliasVault-server",
     "privateEmailDescription": "E2E-krypteret, fuldt privat.",
@@ -442,6 +466,11 @@
         "male": "Mand",
         "female": "Kvinde"
       }
+    },
+    "passwordGenerator": "Adgangskodegenerator",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Konfigurer"
     },
     "credentialAutofill": "Loginoplysninger autofyld",
     "credentialAutofillDescription": "Vis popup for automatisk udfyldning når brugernavn/adgangskodefelter detekteres",
