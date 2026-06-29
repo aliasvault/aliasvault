@@ -482,38 +482,6 @@ const Settings: React.FC = () => {
         <section>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {/* Identity Generator Settings */}
-              <button
-                onClick={navigateToIdentityGeneratorSettings}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.identityGenerator')}</span>
-                </div>
-                <svg
-                  className="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
               {/* Password Generator Settings */}
               <button
                 onClick={navigateToPasswordGeneratorSettings}
@@ -534,6 +502,38 @@ const Settings: React.FC = () => {
                     />
                   </svg>
                   <span className="text-gray-900 dark:text-white text-left">{t('settings.passwordGenerator')}</span>
+                </div>
+                <svg
+                  className="w-4 h-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              {/* Identity Generator Settings */}
+              <button
+                onClick={navigateToIdentityGeneratorSettings}
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <div className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                  <span className="text-gray-900 dark:text-white text-left">{t('settings.identityGenerator')}</span>
                 </div>
                 <svg
                   className="w-4 h-4 text-gray-400"
