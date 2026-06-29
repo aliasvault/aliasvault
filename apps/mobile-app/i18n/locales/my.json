@@ -16,6 +16,7 @@
     "copied": "ကလစ်ဘုတ်သို့ ကူးယူခဲ့ပြီး",
     "loadMore": "နောက်ထပ် ဝန်ဆွဲတင်ရန်",
     "use": "အသုံးပြု",
+    "none": "None",
     "confirm": "အတည်ပြု",
     "next": "ရှေ့သို့",
     "notice": "သတိပေးချက်",
@@ -442,6 +443,29 @@
     "includeNumbers": "Numbers (0-9)",
     "includeSpecialChars": "Special Characters (!@#)",
     "avoidAmbiguousChars": "Avoid Ambiguous Characters",
+    "passwordTypeBasic": "စကားဝှက်",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Error loading items",
     "vaultSyncFailed": "Vault sync failed",
     "vaultSyncedSuccessfully": "Vault synced successfully",
