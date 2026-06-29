@@ -16,6 +16,7 @@
     "copied": "Copiado al portapapeles",
     "loadMore": "Cargar más",
     "use": "Usar",
+    "none": "Nada",
     "confirm": "Confirmar",
     "next": "Siguiente",
     "notice": "Nota",
@@ -442,6 +443,29 @@
     "includeNumbers": "Números (0-9)",
     "includeSpecialChars": "Caracteres especiales (!@#)",
     "avoidAmbiguousChars": "Evitar caracteres ambiguos",
+    "passwordTypeBasic": "Contraseña",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Error al cargar elementos",
     "vaultSyncFailed": "Fallo al sincronizar la bóveda",
     "vaultSyncedSuccessfully": "Bóveda sincronizada correctamente",
