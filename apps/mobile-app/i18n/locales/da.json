@@ -16,6 +16,7 @@
     "copied": "Kopieret til udklipsholder",
     "loadMore": "Indlæs flere",
     "use": "Brug",
+    "none": "Ingen",
     "confirm": "Bekræft",
     "next": "Næste",
     "notice": "Besked",
@@ -442,6 +443,29 @@
     "includeNumbers": "Tal (0-9)",
     "includeSpecialChars": "Specialtegn (!@#)",
     "avoidAmbiguousChars": "Undgå tvetydige tegn",
+    "passwordTypeBasic": "Adgangskode",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Fejl ved indlæsning af elementer",
     "vaultSyncFailed": "Synkronisering af boks mislykkedes",
     "vaultSyncedSuccessfully": "Boks synkroniseret korrekt",
