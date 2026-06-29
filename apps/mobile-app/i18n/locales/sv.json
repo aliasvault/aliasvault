@@ -16,6 +16,7 @@
     "copied": "Kopierat till urklipp",
     "loadMore": "Läs in fler",
     "use": "Använd",
+    "none": "Inget",
     "confirm": "Bekräfta",
     "next": "Nästa",
     "notice": "Notis",
@@ -442,6 +443,29 @@
     "includeNumbers": "Siffror (0–9)",
     "includeSpecialChars": "Specialtecken (!@#)",
     "avoidAmbiguousChars": "Undvik tvetydiga tecken",
+    "passwordTypeBasic": "Lösenord",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Fel vid laddning av objekt",
     "vaultSyncFailed": "Synkronisering av valv misslyckades",
     "vaultSyncedSuccessfully": "Valvet har synkroniserats",
