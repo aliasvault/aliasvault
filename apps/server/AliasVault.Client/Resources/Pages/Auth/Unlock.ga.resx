@@ -79,7 +79,7 @@
     <comment>Description for password unlock form</comment>
   </data>
   <data name="YourPasswordLabel" xml:space="preserve">
-    <value>Your password</value>
+    <value>Do phasfhocal</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="UnlockButton" xml:space="preserve">
@@ -119,7 +119,7 @@
     <comment>Error message when WebAuthn is not supported</comment>
   </data>
   <data name="GenericUnlockError" xml:space="preserve">
-    <value>An error occurred while processing the login request. Try again (later).</value>
+    <value>Tharla earráid agus an t-iarratas logála isteach á phróiseáil. Déan iarracht eile (níos déanaí).</value>
     <comment>Generic error message for unlock failures</comment>
   </data>
   <data name="UnlockWithMobileButton" xml:space="preserve">
