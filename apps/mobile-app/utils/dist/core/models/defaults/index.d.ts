@@ -22,8 +22,8 @@ declare const MIN_WORD_COUNT = 3;
 declare const MAX_WORD_COUNT = 10;
 
 /**
- * Generic, cross-platform language reference: maps a two-letter ISO 639-1 code to a flag and a
- * native display label.
+ * Generic, cross-platform language reference: maps a two-letter ISO 639-1 code to a flag, a native
+ * display label, and the alternative locale codes (BCP-47 region variants) that map onto it
  */
 /**
  * Display metadata for a single language.
@@ -35,12 +35,14 @@ interface ILanguageInfo {
     flag: string;
     /** Native display label. */
     label: string;
+    /** Alternative locale codes (BCP-47 language-region tags) that map onto this language. */
+    alternativeCodes?: string[];
 }
 /** Default ISO language code used as the universal fallback. */
 declare const DEFAULT_LANGUAGE_CODE = "en";
 /**
- * Known languages keyed by ISO 639-1 code, with a flag and native label.
- * Covers the AliasVault app UI languages so this list can be reused beyond a single feature.
+ * Known languages keyed by ISO 639-1 code, with a flag, native label, and the region-variant locale
+ * codes that map onto each.
  */
 declare const LANGUAGES: ILanguageInfo[];
 /**
@@ -57,13 +59,31 @@ declare function normalizeLanguageCode(code: string | null | undefined): string;
  */
 declare function getLanguageInfo(code: string): ILanguageInfo;
 /**
+ * Match an app/UI/browser locale to one of a feature's available ISO codes, using the region-variant
+ * alternative codes from {@link LANGUAGES} (e.g. 'en-GB' -> 'en', 'de-CH' -> 'de'). Matching order:
+ * exact match against an available code, then the alternative-code table, then the base language code
+ * (the part before the '-'). Returns null when nothing matches, so callers can decide their own
+ * fallback (e.g. "no preference" vs. a concrete default).
+ *
+ * @param appLanguage The app/UI/browser language tag (e.g. 'en', 'en-US', 'nl-BE').
+ * @param availableCodes The codes the feature actually supports.
+ * @returns The matching available code (in its original casing) or null if none matched.
+ *
+ * @example
+ * matchAvailableLanguage('en-US', ['en', 'nl']) // 'en'
+ * matchAvailableLanguage('de-CH', ['de', 'en']) // 'de'
+ * matchAvailableLanguage('ja', ['en', 'nl'])    // null
+ */
+declare function matchAvailableLanguage(appLanguage: string | null | undefined, availableCodes: string[]): string | null;
+/**
  * Resolve a default language code for an app/UI language, restricted to a set of available codes
- * (e.g. the Diceware wordlist languages returned by the Rust core). Returns the app language when it
- * is available, otherwise the first available code, otherwise English.
- * @param appLanguage The app/UI language tag.
+ * (e.g. the Diceware wordlist languages returned by the Rust core, or the identity generator's
+ * supported languages). Uses {@link matchAvailableLanguage} (region-variant aware), then falls back
+ * to the first available code, otherwise English.
+ * @param appLanguage The app/UI/browser language tag.
  * @param availableCodes The codes the feature actually supports.
  * @returns The resolved ISO code.
  */
 declare function resolveDefaultLanguage(appLanguage: string | null | undefined, availableCodes: string[]): string;
 
-export { DEFAULT_LANGUAGE_CODE, DEFAULT_PASSWORD_LENGTH, DEFAULT_WORD_COUNT, type ILanguageInfo, LANGUAGES, MAX_PASSWORD_LENGTH, MAX_WORD_COUNT, MIN_PASSWORD_LENGTH, MIN_WORD_COUNT, getLanguageInfo, normalizeLanguageCode, resolveDefaultLanguage };
+export { DEFAULT_LANGUAGE_CODE, DEFAULT_PASSWORD_LENGTH, DEFAULT_WORD_COUNT, type ILanguageInfo, LANGUAGES, MAX_PASSWORD_LENGTH, MAX_WORD_COUNT, MIN_PASSWORD_LENGTH, MIN_WORD_COUNT, getLanguageInfo, matchAvailableLanguage, normalizeLanguageCode, resolveDefaultLanguage };
