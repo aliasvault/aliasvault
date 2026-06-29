@@ -62,6 +62,7 @@
     "openInNewWindow": "Abrir em uma nova janela",
     "enabled": "Habilitado",
     "disabled": "Desabilitado",
+    "none": "Nenhum",
     "showPassword": "Mostrar senha",
     "hidePassword": "Ocultar senha",
     "show": "Mostrar",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Itens",
     "itemName": "Nome",
+    "suggestions": "Suggestions",
     "loginCredentials": "Credenciais de Login",
     "cardInformation": "Informações do Cartão",
     "addItem": "Adicionar Item",
@@ -241,6 +243,28 @@
     "includeNumbers": "Incluir números",
     "includeSpecialChars": "Incluir caracteres especiais",
     "avoidAmbiguousChars": "Evitar caracteres ambíguos (o, 0, etc.)",
+    "passwordTypeBasic": "Senha",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "E-mail Privado",
     "privateEmailAliasVaultServer": "Servidor AliasVault",
     "privateEmailDescription": "Criptografia E2E, totalmente privado.",
@@ -442,6 +466,11 @@
         "male": "Masculino",
         "female": "Feminino"
       }
+    },
+    "passwordGenerator": "Gerador de Senha",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Configurar"
     },
     "credentialAutofill": "Preenchimento automático de credenciais",
     "credentialAutofillDescription": "Mostrar pop-up de preenchimento automático quando campos de nome de usuário/senha forem detectados",
