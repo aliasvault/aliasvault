@@ -62,6 +62,7 @@
     "openInNewWindow": "Abrir en una ventana nueva",
     "enabled": "Habilitado",
     "disabled": "Desactivado",
+    "none": "Nada",
     "showPassword": "Mostrar contraseña",
     "hidePassword": "Ocultar contraseña",
     "show": "Mostrar",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Elementos",
     "itemName": "Nombre",
+    "suggestions": "Suggestions",
     "loginCredentials": "Credenciales de inicio de sesión",
     "cardInformation": "Información de la tarjeta",
     "addItem": "Añadir elemento",
@@ -241,6 +243,28 @@
     "includeNumbers": "Incluye números",
     "includeSpecialChars": "Incluye caracteres especiales",
     "avoidAmbiguousChars": "Evita caracteres ambiguos (o, 0, etc.)",
+    "passwordTypeBasic": "Contraseña",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "Correo electrónico privado",
     "privateEmailAliasVaultServer": "Servidor AliasVault",
     "privateEmailDescription": "E2E cifrado, totalmente privado.",
@@ -442,6 +466,11 @@
         "male": "Hombre",
         "female": "Mujer"
       }
+    },
+    "passwordGenerator": "Generador de contraseñas",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Configurar"
     },
     "credentialAutofill": "Autorrelleno de credenciales",
     "credentialAutofillDescription": "Mostrar ventana emergente de autorrelleno cuando se detectan campos de nombre de usuario/contraseña",
