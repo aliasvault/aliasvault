@@ -62,6 +62,7 @@
     "openInNewWindow": "Deschide în fereastră nouă",
     "enabled": "Activat",
     "disabled": "Dezactivat",
+    "none": "Niciunul",
     "showPassword": "Afișează parola",
     "hidePassword": "Ascunde parola",
     "show": "Afișează",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Elemente",
     "itemName": "Nume",
+    "suggestions": "Suggestions",
     "loginCredentials": "Date de autentificare",
     "cardInformation": "Informații Card",
     "addItem": "Adaugă element",
@@ -241,6 +243,28 @@
     "includeNumbers": "Include cifre",
     "includeSpecialChars": "Include caractere speciale",
     "avoidAmbiguousChars": "Evită caracterele ambigue (o, 0, etc.)",
+    "passwordTypeBasic": "Parolă",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "E-mail Privat",
     "privateEmailAliasVaultServer": "Server AliasVault",
     "privateEmailDescription": "Criptat E2E, complet privat.",
@@ -442,6 +466,11 @@
         "male": "Masculin",
         "female": "Feminin"
       }
+    },
+    "passwordGenerator": "Generator de Parole",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Configurează"
     },
     "credentialAutofill": "Completează automat datele de autentificare",
     "credentialAutofillDescription": "Afișează fereastra de completare automată când sunt detectate câmpurile de utilizator și parolă",
