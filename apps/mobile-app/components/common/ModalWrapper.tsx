@@ -43,6 +43,8 @@ interface IModalWrapperProps {
   showHeaderBorder?: boolean;
   /** Whether to show footer border. Default: true (only when footer is provided). */
   showFooterBorder?: boolean;
+  /** Whether tapping the backdrop (outside the content) closes the modal. Default: false. */
+  closeOnBackdropPress?: boolean;
 }
 
 /**
@@ -69,6 +71,7 @@ export const ModalWrapper: React.FC<IModalWrapperProps> = ({
   width = '90%',
   showHeaderBorder = true,
   showFooterBorder = true,
+  closeOnBackdropPress = false,
 }) => {
   const colors = useColors();
 
@@ -168,6 +171,18 @@ export const ModalWrapper: React.FC<IModalWrapperProps> = ({
               {renderContent()}
             </TouchableWithoutFeedback>
           </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
+      );
+    }
+
+    if (closeOnBackdropPress) {
+      return (
+        <TouchableWithoutFeedback onPress={handleClose}>
+          <View style={styles.backdrop}>
+            <TouchableWithoutFeedback>
+              {renderContent()}
+            </TouchableWithoutFeedback>
+          </View>
         </TouchableWithoutFeedback>
       );
     }
