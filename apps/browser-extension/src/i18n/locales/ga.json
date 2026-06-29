@@ -1,10 +1,10 @@
 {
   "auth": {
-    "loginTitle": "Log in to AliasVault",
+    "loginTitle": "Logáil isteach chuig AliasVault",
     "username": "Ainm úsáideora nó ríomhphost",
     "usernamePlaceholder": "ainm / ainm@cuideachta.com",
     "passwordPlaceholder": "Cuir isteach do phasfhocal",
-    "rememberMe": "Remember me",
+    "rememberMe": "Cuimhnigh orm",
     "loginButton": "Logáil isteach",
     "noAccount": "No account yet?",
     "createVault": "Create new vault",
@@ -35,7 +35,7 @@
   },
   "menu": {
     "vault": "Vault",
-    "emails": "Emails"
+    "emails": "Ríomhphoist"
   },
   "common": {
     "loading": "Ag lódáil...",
@@ -78,7 +78,7 @@
     "credentials": "Credentials",
     "passkeys": "Passkeys",
     "customFields": "Custom Fields",
-    "twoFactorAuthentication": "Two-factor authentication",
+    "twoFactorAuthentication": "Fíordheimhniú dhá fhachtóir",
     "alias": "Alias",
     "notes": "Nótaí",
     "email": "Ríomhphost",
@@ -290,7 +290,7 @@
     "login.password": "Pasfhocal",
     "alias.first_name": "First Name",
     "alias.last_name": "Last Name",
-    "alias.gender": "Gender",
+    "alias.gender": "Inscne",
     "alias.birthdate": "Birthdate",
     "login.email": "Ríomhphost",
     "notes.content": "Nótaí",
@@ -322,7 +322,7 @@
     "openExpandedWindow": "Open Expanded Window"
   },
   "emails": {
-    "title": "Emails",
+    "title": "Ríomhphoist",
     "deleteEmailTitle": "Delete Email",
     "deleteEmailConfirm": "Are you sure you want to permanently delete this email?",
     "from": "From",
@@ -430,12 +430,12 @@
     },
     "identityGenerator": "Gineadóir Céannachta",
     "identityGeneratorSettings": {
-      "description": "Configure the default language and gender preference for generating new identities.",
+      "description": "Cumraigh an teanga réamhshocraithe agus an inscne chun céannachtaí nua a ghiniúint.",
       "languageSection": "Teanga",
-      "languageDescription": "Set the language that will be used when generating new identities.",
-      "genderSection": "Gender",
-      "genderDescription": "Set the gender preference for generating new identities.",
-      "ageRangeSection": "Age Range",
+      "languageDescription": "Socraigh an teanga a úsáidfear agus céannachtaí nua á nginiúint.",
+      "genderSection": "Inscne",
+      "genderDescription": "Socraigh an rogha inscne chun féiniúlachtaí nua a ghiniúint.",
+      "ageRangeSection": "Raon Aois",
       "ageRangeDescription": "Socraigh an raon aoise chun céannachtaí nua a ghiniúint.",
       "genderOptions": {
         "random": "Randamach",
