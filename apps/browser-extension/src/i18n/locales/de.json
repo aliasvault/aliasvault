@@ -62,6 +62,7 @@
     "openInNewWindow": "In neuem Fenster öffnen",
     "enabled": "Aktiviert",
     "disabled": "Deaktiviert",
+    "none": "Keine",
     "showPassword": "Passwort anzeigen",
     "hidePassword": "Passwort ausblenden",
     "show": "Anzeigen",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Elemente",
     "itemName": "Name",
+    "suggestions": "Suggestions",
     "loginCredentials": "Zugangsdaten",
     "cardInformation": "Karteninformationen",
     "addItem": "Element hinzufügen",
@@ -241,6 +243,28 @@
     "includeNumbers": "Ziffern (0-9)",
     "includeSpecialChars": "Sonderzeichen (!@#$%^&*)",
     "avoidAmbiguousChars": "Mehrdeutige Zeichen (1, l, I, 0, O, etc.) vermeiden",
+    "passwordTypeBasic": "Passwort",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "Private E-Mail-Adresse",
     "privateEmailAliasVaultServer": "AliasVault-Server",
     "privateEmailDescription": "Ende-zu-Ende verschlüsselt, vollständig privat.",
@@ -442,6 +466,11 @@
         "male": "Männlich",
         "female": "Weiblich"
       }
+    },
+    "passwordGenerator": "Passwortgenerator",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Konfigurieren"
     },
     "credentialAutofill": "Anmeldeinformationen-Autofill",
     "credentialAutofillDescription": "Zeige Autofill Popup wenn Benutzername/Passwort-Felder erkannt wurden",
