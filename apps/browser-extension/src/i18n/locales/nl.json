@@ -62,6 +62,7 @@
     "openInNewWindow": "Openen in nieuw venster",
     "enabled": "Ingeschakeld",
     "disabled": "Uitgeschakeld",
+    "none": "Geen",
     "showPassword": "Wachtwoord tonen",
     "hidePassword": "Wachtwoord verbergen",
     "show": "Toon",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Items",
     "itemName": "Naam",
+    "suggestions": "Suggestions",
     "loginCredentials": "Inloggegevens",
     "cardInformation": "Kaartgegevens",
     "addItem": "Item toevoegen",
@@ -241,6 +243,28 @@
     "includeNumbers": "Inclusief cijfers",
     "includeSpecialChars": "Inclusief speciale karakters",
     "avoidAmbiguousChars": "Onduidelijke tekens vermijden (o, 0, etc.)",
+    "passwordTypeBasic": "Wachtwoord",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "Privé e-mail",
     "privateEmailAliasVaultServer": "AliasVault server",
     "privateEmailDescription": "E2E versleuteld, volledig privé.",
@@ -442,6 +466,11 @@
         "male": "Mannelijk",
         "female": "Vrouwelijk"
       }
+    },
+    "passwordGenerator": "Wachtwoordgenerator",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Configureren"
     },
     "credentialAutofill": "Automatisch invullen van inloggegevens",
     "credentialAutofillDescription": "Automatisch invullen popup weergeven wanneer gebruikersnaam/wachtwoord velden worden gedetecteerd",
