@@ -62,6 +62,7 @@
     "openInNewWindow": "Apri in una nuova finestra",
     "enabled": "Abilitato",
     "disabled": "Disabilitato",
+    "none": "Vuoto",
     "showPassword": "Mostra password",
     "hidePassword": "Nascondi password",
     "show": "Mostra",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Elementi",
     "itemName": "Nome",
+    "suggestions": "Suggestions",
     "loginCredentials": "Credenziali di accesso",
     "cardInformation": "Informazioni sulla scheda",
     "addItem": "Aggiungi Elemento",
@@ -241,6 +243,28 @@
     "includeNumbers": "Includi numeri",
     "includeSpecialChars": "Includi caratteri speciali",
     "avoidAmbiguousChars": "Evita caratteri ambigui (o, 0, ecc.)",
+    "passwordTypeBasic": "Password",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "Email Privata",
     "privateEmailAliasVaultServer": "Server AliasVault",
     "privateEmailDescription": "E2E crittografato, completamente privato.",
@@ -442,6 +466,11 @@
         "male": "Maschio",
         "female": "Femmina"
       }
+    },
+    "passwordGenerator": "Generatore di Password",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Configura"
     },
     "credentialAutofill": "Riempimento automatico credenziali",
     "credentialAutofillDescription": "Mostra popup di riempimento automatico quando vengono rilevati campi username/password",
