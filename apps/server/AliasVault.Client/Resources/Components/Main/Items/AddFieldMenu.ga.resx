@@ -58,7 +58,7 @@
     <comment>Last name field label</comment>
   </data>
   <data name="FieldAliasGender">
-    <value>Gender</value>
+    <value>Inscne</value>
     <comment>Gender field label</comment>
   </data>
   <data name="FieldAliasBirthdate">
