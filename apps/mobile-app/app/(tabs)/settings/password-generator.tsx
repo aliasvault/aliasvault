@@ -1,17 +1,14 @@
-import { Ionicons } from '@expo/vector-icons';
-import Slider from '@react-native-community/slider';
 import { useFocusEffect } from 'expo-router';
 import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, TouchableOpacity, Switch, Platform } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import type { PasswordSettings } from '@/utils/dist/core/models/vault';
-import { CreatePasswordGenerator } from '@/utils/dist/core/password-generator';
-import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/PasswordLengthSlider';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 
+import { PasswordGeneratorPanel } from '@/components/form/PasswordGeneratorPanel';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -19,7 +16,8 @@ import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
 
 /**
- * Password Generator Settings screen.
+ * Password Generator Settings screen. Configures the default password and passphrase generator
+ * settings, persisted globally in the vault so they sync across AliasVault clients.
  */
 export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
   const colors = useColors();
@@ -29,27 +27,12 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
   const { executeVaultMutation } = useVaultMutate();
 
   const [settings, setSettings] = useState<PasswordSettings | null>(null);
-  const [previewPassword, setPreviewPassword] = useState<string>('');
-  const [sliderValue, setSliderValue] = useState<number | null>(null);
+  // Increments each time settings are (re)loaded so the panel remounts with fresh initial values.
+  const [loadKey, setLoadKey] = useState(0);
 
-  // Store pending changes and initial values
-  const pendingChanges = useRef<Partial<PasswordSettings>>({});
-  const lastGeneratedLength = useRef<number>(0);
-  const isSliding = useRef(false);
-  const initialValues = useRef<PasswordSettings | null>(null);
-
-  const handleRefreshPreview = useCallback(() => {
-    if (!settings) {
-      return;
-    }
-    try {
-      const passwordGenerator = CreatePasswordGenerator(settings);
-      const password = passwordGenerator.generateRandomPassword();
-      setPreviewPassword(password);
-    } catch (error) {
-      console.error('Error generating password:', error);
-    }
-  }, [settings]);
+  // Latest settings and the last persisted snapshot, used to persist on blur only when changed.
+  const latestSettings = useRef<PasswordSettings | null>(null);
+  const persistedJson = useRef<string>('');
 
   useFocusEffect(
     useCallback(() => {
@@ -59,24 +42,10 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
       const loadSettings = async (): Promise<void> => {
         try {
           const passwordSettings = await dbContext.sqliteClient!.getPasswordSettings();
-
           setSettings(passwordSettings);
-          setSliderValue(lengthToSlider(passwordSettings.Length));
-          initialValues.current = passwordSettings;
-
-          // Generate initial preview password only once
-          try {
-            const passwordGenerator = CreatePasswordGenerator(passwordSettings);
-            const password = passwordGenerator.generateRandomPassword();
-            setPreviewPassword(password);
-          } catch (error) {
-            console.error('Error generating initial password:', error);
-            setPreviewPassword('');
-          }
-
-          // Clear pending changes when screen loads
-          pendingChanges.current = {};
-          console.debug('Settings loaded and initialized');
+          latestSettings.current = passwordSettings;
+          persistedJson.current = JSON.stringify(passwordSettings);
+          setLoadKey((key) => key + 1);
         } catch (error) {
           console.error('Error loading password generator settings:', error);
           showAlert(t('common.error'), t('common.errors.unknownError'));
@@ -85,30 +54,21 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
 
       loadSettings();
 
-      // Save changes when screen loses focus (navigating away)
+      // Persist changes when the screen loses focus (navigating away).
       return (): void => {
-        const hasChanges = Object.keys(pendingChanges.current).length > 0;
-
-        if (!hasChanges) {
+        const current = latestSettings.current;
+        if (!current) {
           return;
         }
-
-        // Use the merged settings with all pending changes
-        if (!initialValues.current) {
+        const currentJson = JSON.stringify(current);
+        if (currentJson === persistedJson.current) {
           return;
         }
-
-        const finalSettings = { ...initialValues.current, ...pendingChanges.current };
 
         executeVaultMutation(async () => {
-          // Save as JSON serialized object
-          const settingsJson = JSON.stringify(finalSettings);
-          await dbContext.sqliteClient!.updateSetting('PasswordGenerationSettings', settingsJson);
+          await dbContext.sqliteClient!.updateSetting('PasswordGenerationSettings', currentJson);
         }).then(() => {
-          // Update initial values after successful save
-          initialValues.current = finalSettings;
-          // Clear pending changes after successful save
-          pendingChanges.current = {};
+          persistedJson.current = currentJson;
         }).catch((error) => {
           console.error('Error saving password generator settings:', error);
         });
@@ -116,196 +76,18 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
     }, [dbContext.sqliteClient, showAlert, t, executeVaultMutation])
   );
 
-  /**
-   * Handle slider value change.
-   */
-  const handleSliderChange = useCallback((value: number): void => {
-    setSliderValue(value);
-    const passwordLength = sliderToLength(value);
-
-    // Only generate if value actually changed and we're actively sliding
-    if (passwordLength !== lastGeneratedLength.current && isSliding.current && settings) {
-      lastGeneratedLength.current = passwordLength;
-
-      // Update settings and regenerate password
-      const newSettings = { ...settings, Length: passwordLength };
-      setSettings(newSettings);
-
-      // Track the change
-      pendingChanges.current = { ...pendingChanges.current, Length: passwordLength };
-
-      // Generate new preview password
-      try {
-        const passwordGenerator = CreatePasswordGenerator(newSettings);
-        const password = passwordGenerator.generateRandomPassword();
-        setPreviewPassword(password);
-      } catch (error) {
-        console.error('Error generating password:', error);
-      }
-    }
-  }, [settings]);
-
-  /**
-   * Handle slider drag start.
-   */
-  const handleSliderStart = useCallback((): void => {
-    isSliding.current = true;
-    lastGeneratedLength.current = sliderToLength(sliderValue ?? 0);
-  }, [sliderValue]);
-
-  /**
-   * Handle slider drag complete.
-   */
-  const handleSliderComplete = useCallback((value: number): void => {
-    isSliding.current = false;
-    const passwordLength = sliderToLength(value);
-
-    if (!settings) {
-      return;
-    }
-
-    // Update settings with final value
-    const newSettings = { ...settings, Length: passwordLength };
-    setSettings(newSettings);
-
-    // Track the change
-    pendingChanges.current = { ...pendingChanges.current, Length: passwordLength };
-
-    // Generate password with final value
-    try {
-      const passwordGenerator = CreatePasswordGenerator(newSettings);
-      const password = passwordGenerator.generateRandomPassword();
-      setPreviewPassword(password);
-    } catch (error) {
-      console.error('Error generating password:', error);
-    }
-
-    lastGeneratedLength.current = 0;
-  }, [settings]);
-
-  /**
-   * Update a boolean setting.
-   */
-  const updateSetting = useCallback((key: keyof PasswordSettings, value: boolean): void => {
-    if (!settings) {
-      return;
-    }
-    const newSettings = { ...settings, [key]: value };
-    setSettings(newSettings);
-
-    // Track the change
-    pendingChanges.current = { ...pendingChanges.current, [key]: value };
-
-    // Generate new preview password
-    try {
-      const passwordGenerator = CreatePasswordGenerator(newSettings);
-      const password = passwordGenerator.generateRandomPassword();
-      setPreviewPassword(password);
-    } catch (error) {
-      console.error('Error generating password:', error);
-    }
-  }, [settings]);
+  const handleSettingsChange = useCallback((newSettings: PasswordSettings): void => {
+    latestSettings.current = newSettings;
+  }, []);
 
   const styles = StyleSheet.create({
     descriptionText: {
       color: colors.textMuted,
-      fontSize: 14,
-      lineHeight: 20,
-      marginBottom: 16,
-    },
-    headerText: {
-      color: colors.textMuted,
       fontSize: 13,
-      marginBottom: 8,
-    },
-    previewContainer: {
-      marginBottom: 20,
-      marginTop: 16,
-    },
-    previewInput: {
-      color: colors.text,
-      flex: 1,
-      fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-      fontSize: 14,
-      padding: 12,
-      textAlign: 'center',
-    },
-    previewInputContainer: {
-      alignItems: 'center',
-      backgroundColor: colors.accentBackground,
-      borderColor: colors.accentBorder,
-      borderRadius: 6,
-      borderWidth: 1,
-      flexDirection: 'row',
-    },
-    previewLabel: {
-      color: colors.text,
-      fontSize: 14,
-      fontWeight: '600',
-      marginBottom: 8,
-    },
-    refreshButton: {
-      borderLeftColor: colors.accentBorder,
-      borderLeftWidth: 1,
-      padding: 10,
-    },
-    sectionTitle: {
-      color: colors.text,
-      fontSize: 18,
-      fontWeight: '600',
-      marginBottom: 8,
-      marginTop: 20,
-    },
-    settingItem: {
-      alignItems: 'center',
-      borderBottomColor: colors.accentBorder,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      paddingHorizontal: 16,
-      paddingVertical: 14,
-    },
-    settingItemLast: {
-      borderBottomWidth: 0,
-    },
-    settingLabel: {
-      color: colors.text,
-      fontSize: 16,
-      flex: 1,
-    },
-    settingsContainer: {
-      backgroundColor: colors.accentBackground,
-      borderRadius: 10,
-      marginTop: 8,
-    },
-    slider: {
-      height: 40,
-      width: '100%',
-    },
-    sliderContainer: {
-      flex: 1,
-      paddingHorizontal: 16,
-      paddingVertical: 14,
-    },
-    sliderHeader: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginBottom: 12,
-    },
-    sliderLabel: {
-      color: colors.text,
-      fontSize: 16,
-    },
-    sliderValue: {
-      color: colors.primary,
-      fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-      fontSize: 16,
-      fontWeight: '600',
+      marginBottom: 16,
     },
   });
 
-  // Don't render until settings are loaded
   if (!settings) {
     return (
       <ThemedContainer>
@@ -319,96 +101,14 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
   return (
     <ThemedContainer>
       <ThemedScrollView>
-        <ThemedText style={styles.headerText}>
+        <ThemedText style={styles.descriptionText}>
           {t('settings.passwordGeneratorSettings.description')}
         </ThemedText>
-
-        <View style={styles.previewContainer}>
-          <ThemedText style={styles.previewLabel}>{t('settings.passwordGeneratorSettings.preview')}</ThemedText>
-          <View style={styles.previewInputContainer}>
-            <ThemedText style={styles.previewInput} numberOfLines={1} ellipsizeMode="tail">{previewPassword}</ThemedText>
-            <TouchableOpacity
-              style={styles.refreshButton}
-              onPress={handleRefreshPreview}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="refresh" size={20} color={colors.primary} />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.settingsContainer}>
-          <View style={styles.sliderContainer}>
-            <View style={styles.sliderHeader}>
-              <ThemedText style={styles.sliderLabel}>{t('items.passwordLength')}</ThemedText>
-              <ThemedText style={styles.sliderValue}>{sliderToLength(sliderValue ?? 0)}</ThemedText>
-            </View>
-            <Slider
-              style={styles.slider}
-              minimumValue={SLIDER_MIN}
-              maximumValue={SLIDER_MAX}
-              value={sliderValue ?? 0}
-              onValueChange={handleSliderChange}
-              onSlidingStart={handleSliderStart}
-              onSlidingComplete={handleSliderComplete}
-              minimumTrackTintColor={colors.primary}
-              maximumTrackTintColor={colors.accentBorder}
-              thumbTintColor={colors.primary}
-            />
-          </View>
-        </View>
-
-        <View style={styles.settingsContainer}>
-          <View style={styles.settingItem}>
-            <ThemedText style={styles.settingLabel}>{t('items.includeLowercase')}</ThemedText>
-            <Switch
-              value={settings.UseLowercase}
-              onValueChange={(value) => updateSetting('UseLowercase', value)}
-              trackColor={{ false: colors.accentBorder, true: colors.primary }}
-              thumbColor={Platform.OS === 'android' ? colors.background : undefined}
-            />
-          </View>
-
-          <View style={styles.settingItem}>
-            <ThemedText style={styles.settingLabel}>{t('items.includeUppercase')}</ThemedText>
-            <Switch
-              value={settings.UseUppercase}
-              onValueChange={(value) => updateSetting('UseUppercase', value)}
-              trackColor={{ false: colors.accentBorder, true: colors.primary }}
-              thumbColor={Platform.OS === 'android' ? colors.background : undefined}
-            />
-          </View>
-
-          <View style={styles.settingItem}>
-            <ThemedText style={styles.settingLabel}>{t('items.includeNumbers')}</ThemedText>
-            <Switch
-              value={settings.UseNumbers}
-              onValueChange={(value) => updateSetting('UseNumbers', value)}
-              trackColor={{ false: colors.accentBorder, true: colors.primary }}
-              thumbColor={Platform.OS === 'android' ? colors.background : undefined}
-            />
-          </View>
-
-          <View style={styles.settingItem}>
-            <ThemedText style={styles.settingLabel}>{t('items.includeSpecialChars')}</ThemedText>
-            <Switch
-              value={settings.UseSpecialChars}
-              onValueChange={(value) => updateSetting('UseSpecialChars', value)}
-              trackColor={{ false: colors.accentBorder, true: colors.primary }}
-              thumbColor={Platform.OS === 'android' ? colors.background : undefined}
-            />
-          </View>
-
-          <View style={[styles.settingItem, styles.settingItemLast]}>
-            <ThemedText style={styles.settingLabel}>{t('items.avoidAmbiguousChars')}</ThemedText>
-            <Switch
-              value={settings.UseNonAmbiguousChars}
-              onValueChange={(value) => updateSetting('UseNonAmbiguousChars', value)}
-              trackColor={{ false: colors.accentBorder, true: colors.primary }}
-              thumbColor={Platform.OS === 'android' ? colors.background : undefined}
-            />
-          </View>
-        </View>
+        <PasswordGeneratorPanel
+          key={loadKey}
+          initialSettings={settings}
+          onSettingsChange={handleSettingsChange}
+        />
       </ThemedScrollView>
     </ThemedContainer>
   );

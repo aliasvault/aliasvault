@@ -331,6 +331,16 @@
     [vaultManager scanQRCode:prefixes statusText:statusText resolver:resolve rejecter:reject];
 }
 
+// MARK: - Password Generator
+
+- (void)generatePassword:(NSString *)settingsJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager generatePassword:settingsJson resolver:resolve rejecter:reject];
+}
+
+- (void)getDicewareLanguages:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getDicewareLanguages:resolve rejecter:reject];
+}
+
 // MARK: - SRP (Secure Remote Password) Operations
 
 - (void)srpGenerateSalt:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {

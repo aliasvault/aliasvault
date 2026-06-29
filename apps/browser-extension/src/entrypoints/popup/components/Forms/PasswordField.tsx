@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next';
 import PasswordConfigDialog from '@/entrypoints/popup/components/Dialogs/PasswordConfigDialog';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
+import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT } from '@/utils/dist/core/models/defaults';
 import type { PasswordSettings } from '@/utils/dist/core/models/vault';
-import { CreatePasswordGenerator } from '@/utils/dist/core/password-generator';
 import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/PasswordLengthSlider';
+import * as RustCore from '@/utils/RustCore';
 
 interface IPasswordFieldProps {
   id: string;
@@ -84,16 +85,17 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
     void loadSettings();
   }, [dbContext.sqliteClient, initialSettings]);
 
-  const generatePassword = useCallback((settings: PasswordSettings) => {
+  const generatePassword = useCallback(async (settings: PasswordSettings): Promise<void> => {
     try {
-      const passwordGenerator = CreatePasswordGenerator(settings);
-      const password = passwordGenerator.generateRandomPassword();
+      const password = await RustCore.generatePassword(settings);
       onChange(password);
       setShowPassword(true);
     } catch (error) {
       console.error('Error generating password:', error);
     }
   }, [onChange, setShowPassword]);
+
+  const isDiceware = currentSettings?.Type === 'diceware';
 
   const handleLengthChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (!currentSettings) {
@@ -108,14 +110,29 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
     onSettingsChange?.(newSettings);
 
     // Always generate password when length changes
-    generatePassword(newSettings);
+    void generatePassword(newSettings);
+  }, [currentSettings, generatePassword, onSettingsChange]);
+
+  const handleWordCountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!currentSettings) {
+      return;
+    }
+    const wordCount = parseInt(e.target.value, 10);
+    const newSettings = { ...currentSettings, WordCount: wordCount };
+    setCurrentSettings(newSettings);
+
+    // Notify parent of settings change for persistence
+    onSettingsChange?.(newSettings);
+
+    // Always regenerate passphrase when word count changes
+    void generatePassword(newSettings);
   }, [currentSettings, generatePassword, onSettingsChange]);
 
   const handleRegeneratePassword = useCallback(() => {
     if (!currentSettings) {
       return;
     }
-    generatePassword(currentSettings);
+    void generatePassword(currentSettings);
   }, [generatePassword, currentSettings]);
 
   const handleConfiguredPassword = useCallback((password: string) => {
@@ -202,15 +219,15 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
         </div>
       </div>
 
-      {/* Inline Password Length Slider */}
+      {/* Inline Slider: password length (basic) or word count (diceware) */}
       <div className="pt-2">
         <div className="flex items-center justify-between mb-2">
           <label htmlFor={`${id}-length`} className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {t('items.passwordLength')}
+            {isDiceware ? t('items.wordCount') : t('items.passwordLength')}
           </label>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600 dark:text-gray-400 font-mono">
-              {currentSettings.Length}
+              {isDiceware ? (currentSettings.WordCount ?? DEFAULT_WORD_COUNT) : currentSettings.Length}
             </span>
             <button
               type="button"
@@ -225,16 +242,29 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
             </button>
           </div>
         </div>
-        <input
-          type="range"
-          id={`${id}-length`}
-          min={SLIDER_MIN}
-          max={SLIDER_MAX}
-          step="0.1"
-          value={lengthToSlider(currentSettings.Length)}
-          onChange={handleLengthChange}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-        />
+        {isDiceware ? (
+          <input
+            type="range"
+            id={`${id}-length`}
+            min={MIN_WORD_COUNT}
+            max={MAX_WORD_COUNT}
+            step="1"
+            value={currentSettings.WordCount ?? DEFAULT_WORD_COUNT}
+            onChange={handleWordCountChange}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+          />
+        ) : (
+          <input
+            type="range"
+            id={`${id}-length`}
+            min={SLIDER_MIN}
+            max={SLIDER_MAX}
+            step="0.1"
+            value={lengthToSlider(currentSettings.Length)}
+            onChange={handleLengthChange}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+          />
+        )}
       </div>
 
       {/* Error Message */}

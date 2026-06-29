@@ -4,7 +4,8 @@ import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 
-import { getAvailableAgeRanges, IAgeRangeOption, getAvailableLanguages, ILanguageOption } from '@/utils/dist/core/identity-generator';
+import { getAvailableAgeRanges, IAgeRangeOption } from '@/utils/dist/core/identity-generator';
+import { getLanguageInfo } from '@/utils/dist/core/models/defaults';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
@@ -29,7 +30,6 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
   const [language, setLanguage] = useState<string>('en');
   const [gender, setGender] = useState<string>('random');
   const [ageRange, setAgeRange] = useState<string>('random');
-  const [languageOptions] = useState<ILanguageOption[]>(() => getAvailableLanguages());
   const [ageRangeOptions] = useState<IAgeRangeOption[]>(() => getAvailableAgeRanges());
 
   // Store pending changes and initial values (language is managed in subview)
@@ -119,9 +119,9 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
    * Get the display label for the current language
    */
   const getLanguageDisplayLabel = useCallback((): string => {
-    const option = languageOptions.find(opt => opt.value === language);
-    return option ? `${option.flag} ${option.label}` : language;
-  }, [language, languageOptions]);
+    const info = getLanguageInfo(language);
+    return `${info.flag} ${info.label}`;
+  }, [language]);
 
   /**
    * Handle gender change

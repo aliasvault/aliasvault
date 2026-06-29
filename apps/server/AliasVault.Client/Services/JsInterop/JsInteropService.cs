@@ -9,6 +9,7 @@ namespace AliasVault.Client.Services.JsInterop;
 
 using System.Security.Cryptography;
 using System.Text.Json;
+using AliasVault.Client.Main.Models;
 using AliasVault.Client.Services.JsInterop.Models;
 using AliasVault.Shared.Core;
 using Microsoft.AspNetCore.Components;
@@ -26,7 +27,6 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     private readonly string _cacheBuster = AppInfo.GetFullVersion();
 
     private IJSObjectReference? _identityGeneratorModule;
-    private IJSObjectReference? _passwordGeneratorModule;
     private IJSObjectReference? _vaultSqlInteropModule;
 
     /// <summary>
@@ -39,12 +39,6 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
         if (_identityGeneratorModule == null)
         {
             throw new InvalidOperationException("Failed to initialize identity generator module");
-        }
-
-        _passwordGeneratorModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/core/password-generator/index.mjs?v={_cacheBuster}");
-        if (_passwordGeneratorModule == null)
-        {
-            throw new InvalidOperationException("Failed to initialize password generator module");
         }
 
         _vaultSqlInteropModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/core/vault/index.mjs?v={_cacheBuster}");
@@ -443,8 +437,21 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
                 await InitializeAsync();
             }
 
-            var result = await _identityGeneratorModule!.InvokeAsync<List<LanguageOption>>("getAvailableLanguages");
-            return result ?? new List<LanguageOption>();
+            var codes = await _identityGeneratorModule!.InvokeAsync<List<string>>("getAvailableLanguages");
+            if (codes == null)
+            {
+                return new List<LanguageOption>();
+            }
+
+            return codes
+                .Select(code => new LanguageOption
+                {
+                    Value = code,
+                    Flag = Languages.GetFlag(code),
+                    Label = Languages.GetLabel(code),
+                })
+                .OrderBy(option => option.Label, StringComparer.CurrentCulture)
+                .ToList();
         }
         catch (JSException ex)
         {
@@ -496,8 +503,13 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
                 await InitializeAsync();
             }
 
-            var result = await _identityGeneratorModule!.InvokeAsync<string?>("mapUiLanguageToIdentityLanguage", uiLanguageCode);
-            return result;
+            var codes = await _identityGeneratorModule!.InvokeAsync<List<string>>("getAvailableLanguages");
+            if (codes == null || codes.Count == 0)
+            {
+                return null;
+            }
+
+            return Languages.MatchAvailableLanguage(uiLanguageCode, codes);
         }
         catch (JSException ex)
         {
@@ -639,33 +651,6 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
         {
             await Console.Error.WriteLineAsync($"JavaScript error generating email prefix: {ex.Message}");
             throw new InvalidOperationException("Failed to generate random email prefix", ex);
-        }
-    }
-
-    /// <summary>
-    /// Generates a random password using the specified settings.
-    /// </summary>
-    /// <param name="settings">The password settings to use.</param>
-    /// <returns>The generated password.</returns>
-    public async Task<string> GenerateRandomPasswordAsync(PasswordSettings settings)
-    {
-        try
-        {
-            if (_passwordGeneratorModule == null)
-            {
-                await InitializeAsync();
-            }
-
-            var generatorInstance = await _passwordGeneratorModule!.InvokeAsync<IJSObjectReference>("CreatePasswordGenerator", settings);
-
-            var result = await generatorInstance.InvokeAsync<string>("generateRandomPassword");
-
-            return result;
-        }
-        catch (JSException ex)
-        {
-            await Console.Error.WriteLineAsync($"JavaScript error generating password: {ex.Message}");
-            throw new InvalidOperationException("Failed to generate random password", ex);
         }
     }
 

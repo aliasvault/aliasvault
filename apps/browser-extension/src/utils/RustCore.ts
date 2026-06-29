@@ -10,7 +10,8 @@
  */
 import { browser } from 'wxt/browser';
 
-import type { Item } from '@/utils/dist/core/models/vault';
+import { resolveDefaultLanguage } from '@/utils/dist/core/models/defaults';
+import type { Item, PasswordSettings } from '@/utils/dist/core/models/vault';
 import { FieldKey } from '@/utils/dist/core/models/vault';
 import initWasm, * as core from '@/utils/dist/core/rust/aliasvault_core.js';
 
@@ -57,6 +58,55 @@ export async function extractDomain(url: string): Promise<string> {
 export async function extractRootDomain(domain: string): Promise<string> {
   await initRustCore();
   return core.extractRootDomain(domain);
+}
+
+/**
+ * Generate a password or passphrase from the given settings.
+ *
+ * The `Type` field selects the generator: `'basic'` (character-set password)
+ * or `'diceware'` (wordlist passphrase). Generation runs in the Rust core.
+ *
+ * Seed is an optional 64-character hex string (32 bytes) that seeds the RNG for deterministic generation
+ * primarily for UI comparison purposes. All normal password generation is non-deterministic.
+ */
+export async function generatePassword(settings: PasswordSettings, seed?: string): Promise<string> {
+  await initRustCore();
+  const effective = await applyEffectiveDicewareLanguage(settings);
+  const payload = seed ? { ...effective, Seed: seed } : effective;
+  return core.generatePassword(JSON.stringify(payload));
+}
+
+/**
+ * Resolve the effective Diceware passphrase language when none is explicitly chosen.
+ *
+ * The passphrase language is left empty by default ("auto").
+ */
+async function applyEffectiveDicewareLanguage(settings: PasswordSettings): Promise<PasswordSettings> {
+  if (settings.Type !== 'diceware' || (settings.Language && settings.Language.trim().length > 0)) {
+    return settings;
+  }
+  const codes = await getDicewareLanguages();
+  return { ...settings, Language: resolveDefaultLanguage(navigator.language, codes) };
+}
+
+/**
+ * Get the list of bundled Diceware wordlist language ISO codes (first is the default, 'en').
+ * The set is owned by the Rust core; unknown codes fall back to English during generation.
+ */
+export async function getDicewareLanguages(): Promise<string[]> {
+  await initRustCore();
+  const languages = core.getDicewareLanguages() as string[];
+  return languages.length > 0 ? languages : ['en'];
+}
+
+/**
+ * Generate a random 32-byte seed as a 64-character hex string, suitable for the
+ * `seed` argument of {@link generatePassword}.
+ */
+export function generateSeed(): string {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 /**

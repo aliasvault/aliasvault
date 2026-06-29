@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
+import PasswordConfigForm from '@/entrypoints/popup/components/Forms/PasswordConfigForm';
+import { usePasswordConfig } from '@/entrypoints/popup/hooks/usePasswordConfig';
 
 import type { PasswordSettings } from '@/utils/dist/core/models/vault';
-import { CreatePasswordGenerator } from '@/utils/dist/core/password-generator';
 
 interface IPasswordConfigDialogProps {
   isOpen: boolean;
@@ -25,38 +26,28 @@ const PasswordConfigDialog: React.FC<IPasswordConfigDialogProps> = ({
   initialSettings
 }) => {
   const { t } = useTranslation();
-  const [settings, setSettings] = useState<PasswordSettings>(initialSettings);
-  const [previewPassword, setPreviewPassword] = useState<string>('');
+  const {
+    settings,
+    previewPassword,
+    dicewareLanguages,
+    handleSettingChange,
+    handleRefreshPreview,
+    reset
+  } = usePasswordConfig(initialSettings, onSettingsChange);
 
-  const generatePreview = useCallback((currentSettings: PasswordSettings) => {
-    try {
-      const passwordGenerator = CreatePasswordGenerator(currentSettings);
-      const password = passwordGenerator.generateRandomPassword();
-      setPreviewPassword(password);
-    } catch (error) {
-      console.error('Error generating preview password:', error);
-      setPreviewPassword('');
-    }
-  }, []);
-
-  // Initialize settings when dialog opens
+  /*
+   * Re-initialize the working settings + seed each time the dialog is opened so it reflects the
+   * latest persisted settings and produces a fresh preview.
+   */
+  const wasOpenRef = useRef(false);
   useEffect(() => {
-    if (isOpen) {
-      setSettings({ ...initialSettings });
-      generatePreview({ ...initialSettings });
+    if (isOpen && !wasOpenRef.current) {
+      wasOpenRef.current = true;
+      reset({ ...initialSettings });
+    } else if (!isOpen) {
+      wasOpenRef.current = false;
     }
-  }, [isOpen, initialSettings, generatePreview]);
-
-  const handleSettingChange = useCallback((key: keyof PasswordSettings, value: boolean | number) => {
-    const newSettings = { ...settings, [key]: value };
-    setSettings(newSettings);
-    generatePreview(newSettings);
-    onSettingsChange?.(newSettings);
-  }, [settings, generatePreview, onSettingsChange]);
-
-  const handleRefreshPreview = useCallback(() => {
-    generatePreview(settings);
-  }, [settings, generatePreview]);
+  }, [isOpen, initialSettings, reset]);
 
   const handleSave = useCallback(() => {
     onSave(previewPassword);
@@ -67,13 +58,13 @@ const PasswordConfigDialog: React.FC<IPasswordConfigDialogProps> = ({
     <ModalWrapper
       isOpen={isOpen}
       onClose={onClose}
-      title={t('items.changePasswordComplexity')}
+      showCloseButton={false}
       maxWidth="max-w-lg"
       footer={
-        <div className="flex justify-end">
+        <div className="flex">
           <button
             type="button"
-            className="inline-flex items-center gap-1 rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500"
+            className="inline-flex w-full items-center justify-center gap-1 rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500"
             onClick={handleSave}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,104 +75,13 @@ const PasswordConfigDialog: React.FC<IPasswordConfigDialogProps> = ({
         </div>
       }
     >
-      <div className="space-y-4">
-        {/* Password Preview */}
-        <div>
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={previewPassword}
-              readOnly
-              className="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white font-mono"
-            />
-            <button
-              type="button"
-              onClick={handleRefreshPreview}
-              className="px-3 py-2 text-sm text-gray-500 dark:text-white bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
-              title={t('common.generate')}
-            >
-              <svg className="w-4 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Character Type Toggle Buttons */}
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-2">
-            {/* Lowercase Toggle */}
-            <button
-              type="button"
-              onClick={() => handleSettingChange('UseLowercase', !settings.UseLowercase)}
-              className={`flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                settings.UseLowercase
-                  ? 'bg-primary-600 text-white hover:bg-primary-700'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-              }`}
-              title={t('items.includeLowercase')}
-            >
-              <span className="font-mono text-base">a-z</span>
-            </button>
-
-            {/* Uppercase Toggle */}
-            <button
-              type="button"
-              onClick={() => handleSettingChange('UseUppercase', !settings.UseUppercase)}
-              className={`flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                settings.UseUppercase
-                  ? 'bg-primary-600 text-white hover:bg-primary-700'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-              }`}
-              title={t('items.includeUppercase')}
-            >
-              <span className="font-mono text-base">A-Z</span>
-            </button>
-
-            {/* Numbers Toggle */}
-            <button
-              type="button"
-              onClick={() => handleSettingChange('UseNumbers', !settings.UseNumbers)}
-              className={`flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                settings.UseNumbers
-                  ? 'bg-primary-600 text-white hover:bg-primary-700'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-              }`}
-              title={t('items.includeNumbers')}
-            >
-              <span className="font-mono text-base">0-9</span>
-            </button>
-
-            {/* Special Characters Toggle */}
-            <button
-              type="button"
-              onClick={() => handleSettingChange('UseSpecialChars', !settings.UseSpecialChars)}
-              className={`flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                settings.UseSpecialChars
-                  ? 'bg-primary-600 text-white hover:bg-primary-700'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-              }`}
-              title={t('items.includeSpecialChars')}
-            >
-              <span className="font-mono text-base">!@#</span>
-            </button>
-          </div>
-
-          {/* Avoid Ambiguous Characters - Checkbox */}
-          <div className="flex items-center">
-            <input
-              id="use-non-ambiguous"
-              type="checkbox"
-              checked={settings.UseNonAmbiguousChars}
-              onChange={(e) => handleSettingChange('UseNonAmbiguousChars', e.target.checked)}
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600"
-            />
-            <label htmlFor="use-non-ambiguous" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-              {t('items.avoidAmbiguousChars')}
-            </label>
-          </div>
-        </div>
-      </div>
+      <PasswordConfigForm
+        settings={settings}
+        previewPassword={previewPassword}
+        dicewareLanguages={dicewareLanguages}
+        onSettingChange={handleSettingChange}
+        onRefreshPreview={handleRefreshPreview}
+      />
     </ModalWrapper>
   );
 };

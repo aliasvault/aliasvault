@@ -84,7 +84,7 @@ const ItemTypeSelector: React.FC = () => {
     const params = new URLSearchParams();
     params.set('type', selectedType);
     if (itemName.trim()) {
-      params.set('name', itemName.trim());
+      params.set('itemTitle', itemName.trim());
     }
     navigate(`/items/add?${params.toString()}`);
   }, [selectedType, itemName, navigate]);

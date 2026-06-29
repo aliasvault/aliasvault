@@ -3,7 +3,7 @@ import { useCallback, useState, type Dispatch, type SetStateAction } from 'react
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import { IdentityHelperUtils, CreateIdentityGenerator, convertAgeRangeToBirthdateOptions, UsernameEmailGenerator } from '@/utils/dist/core/identity-generator';
-import { CreatePasswordGenerator } from '@/utils/dist/core/password-generator';
+import * as RustCore from '@/utils/RustCore';
 
 /**
  * Generated alias data returned by the hook.
@@ -61,9 +61,8 @@ const useAliasGenerator = (): {
 
     // Initialize password generator with settings from vault
     const passwordSettings = dbContext.sqliteClient.settings.getPasswordSettings();
-    const passwordGenerator = CreatePasswordGenerator(passwordSettings);
 
-    return { identityGenerator, passwordGenerator };
+    return { identityGenerator, passwordSettings };
   }, [dbContext?.sqliteClient]);
 
   /**
@@ -76,7 +75,7 @@ const useAliasGenerator = (): {
     }
 
     try {
-      const { identityGenerator, passwordGenerator } = await initializeGenerators();
+      const { identityGenerator, passwordSettings } = await initializeGenerators();
 
       // Get gender preference from database
       const genderPreference = dbContext.sqliteClient.settings.getDefaultIdentityGender();
@@ -87,7 +86,7 @@ const useAliasGenerator = (): {
 
       // Generate identity with gender preference and birthdate options
       const identity = identityGenerator.generateRandomIdentity(genderPreference, birthdateOptions);
-      const password = passwordGenerator.generateRandomPassword();
+      const password = await RustCore.generatePassword(passwordSettings);
 
       const defaultEmailDomain = dbContext.sqliteClient.settings.getDefaultEmailDomain();
       const email = defaultEmailDomain ? `${identity.emailPrefix}@${defaultEmailDomain}` : identity.emailPrefix;

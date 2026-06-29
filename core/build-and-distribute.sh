@@ -72,7 +72,6 @@ fi
 
 # Make all build scripts executable
 chmod +x ./typescript/identity-generator/build.sh
-chmod +x ./typescript/password-generator/build.sh
 chmod +x ./models/build.sh
 chmod +x ./vault/build.sh
 chmod +x ./rust/build.sh
@@ -86,9 +85,6 @@ if $BUILD_COMMON; then
 
     # TypeScript packages (legacy - to be migrated to Rust)
     cd ./typescript/identity-generator
-    ./build.sh
-
-    cd ../password-generator
     ./build.sh
 
     # Models (TypeScript source of truth -> generates C#, Swift, Kotlin)

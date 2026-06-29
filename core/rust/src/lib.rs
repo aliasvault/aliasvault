@@ -14,6 +14,7 @@ pub mod error;
 pub mod vault_merge;
 pub mod vault_pruner;
 pub mod credential_matcher;
+pub mod password_generator;
 pub mod srp;
 
 pub use error::VaultError;
@@ -28,6 +29,7 @@ pub use credential_matcher::{
     filter_credentials, extract_domain, extract_root_domain,
     AutofillMatchingMode, CredentialMatcherInput, CredentialMatcherOutput,
 };
+pub use password_generator::{generate_password, PasswordSettings};
 pub use srp::{
     srp_generate_salt, srp_derive_private_key, srp_derive_verifier,
     srp_generate_ephemeral, srp_derive_session,

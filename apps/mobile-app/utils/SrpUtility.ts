@@ -4,6 +4,15 @@ import { WebApiService } from '@/utils/WebApiService';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
 /**
+ * An SRP client proof for authenticating against the server: the client public ephemeral
+ * and the session proof (M1), both uppercase hex strings.
+ */
+export type SrpClientProof = {
+  clientPublicEphemeral: string;
+  clientSessionProof: string;
+};
+
+/**
  * Utility class for SRP login and validation operations.
  * Uses native Rust SRP implementation via NativeVaultManager.
  */
@@ -15,6 +24,64 @@ export class SrpUtility {
    */
   public constructor(webApiService: WebApiService) {
     this.webApiService = webApiService;
+  }
+
+  /**
+   * Derive an SRP client proof to authenticate against the server with the current password.
+   *
+   * Wraps the native Rust SRP primitives (generate ephemeral, derive private key, derive session)
+   * that are shared used in multiple places.
+   * 
+   * @param salt The user's SRP salt (uppercase hex).
+   * @param identity The SRP identity (srpIdentity from the server, or the username).
+   * @param passwordHashHex The Argon2id-derived password hash as uppercase hex.
+   * @param serverEphemeral The server's public ephemeral from the initiate response.
+   * @returns The client public ephemeral and session proof to send to the server.
+   */
+  public static async deriveClientProof(
+    salt: string,
+    identity: string,
+    passwordHashHex: string,
+    serverEphemeral: string
+  ): Promise<SrpClientProof> {
+    const clientEphemeral = await NativeVaultManager.srpGenerateEphemeral();
+    const privateKey = await NativeVaultManager.srpDerivePrivateKey(salt, identity, passwordHashHex);
+    const session = await NativeVaultManager.srpDeriveSession(
+      clientEphemeral.secret,
+      serverEphemeral,
+      salt,
+      identity,
+      privateKey
+    );
+    return {
+      clientPublicEphemeral: clientEphemeral.public,
+      clientSessionProof: session.proof,
+    };
+  }
+
+  /**
+   * Generate a fresh 32-byte SRP salt as an uppercase hex string (for a new/changed password).
+   * @returns The generated salt.
+   */
+  public static async generateSalt(): Promise<string> {
+    return NativeVaultManager.srpGenerateSalt();
+  }
+
+  /**
+   * Derive the SRP verifier for a (new) password: the value the server stores to authenticate
+   * future logins. Used when registering or changing a password.
+   * @param salt The salt the new password hash was derived against (uppercase hex).
+   * @param identity The SRP identity (srpIdentity from the server, or the username).
+   * @param passwordHashHex The Argon2id-derived password hash as uppercase hex.
+   * @returns The SRP verifier (uppercase hex).
+   */
+  public static async deriveVerifier(
+    salt: string,
+    identity: string,
+    passwordHashHex: string
+  ): Promise<string> {
+    const privateKey = await NativeVaultManager.srpDerivePrivateKey(salt, identity, passwordHashHex);
+    return NativeVaultManager.srpDeriveVerifier(privateKey);
   }
 
   /**
@@ -55,14 +122,11 @@ export class SrpUtility {
      */
     const srpIdentity = loginResponse.srpIdentity ?? username;
 
-    const clientEphemeral = await NativeVaultManager.srpGenerateEphemeral();
-    const privateKey = await NativeVaultManager.srpDerivePrivateKey(loginResponse.salt, srpIdentity, passwordHash);
-    const sessionProof = await NativeVaultManager.srpDeriveSession(
-      clientEphemeral.secret,
-      loginResponse.serverEphemeral,
+    const clientProof = await SrpUtility.deriveClientProof(
       loginResponse.salt,
       srpIdentity,
-      privateKey
+      passwordHash,
+      loginResponse.serverEphemeral
     );
 
     const response = await this.webApiService.rawFetch('Auth/validate', {
@@ -73,8 +137,8 @@ export class SrpUtility {
       body: JSON.stringify({
         username: username.toLowerCase().trim(),
         rememberMe,
-        clientPublicEphemeral: clientEphemeral.public,
-        clientSessionProof: sessionProof.proof,
+        clientPublicEphemeral: clientProof.clientPublicEphemeral,
+        clientSessionProof: clientProof.clientSessionProof,
       }),
     });
 
@@ -105,21 +169,18 @@ export class SrpUtility {
      */
     const srpIdentity = loginResponse.srpIdentity ?? username;
 
-    const clientEphemeral = await NativeVaultManager.srpGenerateEphemeral();
-    const privateKey = await NativeVaultManager.srpDerivePrivateKey(loginResponse.salt, srpIdentity, passwordHash);
-    const sessionProof = await NativeVaultManager.srpDeriveSession(
-      clientEphemeral.secret,
-      loginResponse.serverEphemeral,
+    const clientProof = await SrpUtility.deriveClientProof(
       loginResponse.salt,
       srpIdentity,
-      privateKey
+      passwordHash,
+      loginResponse.serverEphemeral
     );
 
     const model: ValidateLoginRequest2Fa = {
       username: username.toLowerCase().trim(),
       rememberMe,
-      clientPublicEphemeral: clientEphemeral.public,
-      clientSessionProof: sessionProof.proof,
+      clientPublicEphemeral: clientProof.clientPublicEphemeral,
+      clientSessionProof: clientProof.clientSessionProof,
       code2Fa: twoFactorCode,
     };
 

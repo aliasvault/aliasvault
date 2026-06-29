@@ -1,3 +1,5 @@
+import { getAvailableLanguages } from '@/utils/dist/core/identity-generator';
+import { DEFAULT_PASSWORD_LENGTH, DEFAULT_WORD_COUNT, DEFAULT_LANGUAGE_CODE, matchAvailableLanguage } from '@/utils/dist/core/models/defaults';
 import type { EncryptionKey, PasswordSettings, TotpCode, Attachment } from '@/utils/dist/core/models/vault';
 
 import { BaseRepository } from '../BaseRepository';
@@ -60,12 +62,19 @@ export class SettingsRepository extends BaseRepository {
     const settingsJson = this.getSetting('PasswordGenerationSettings');
 
     const defaultSettings: PasswordSettings = {
-      Length: 18,
+      Length: DEFAULT_PASSWORD_LENGTH,
       UseLowercase: true,
       UseUppercase: true,
       UseNumbers: true,
       UseSpecialChars: true,
-      UseNonAmbiguousChars: false
+      UseNonAmbiguousChars: false,
+      Type: 'basic',
+      WordCount: DEFAULT_WORD_COUNT,
+      // Empty = "auto": the passphrase language is resolved from the app language during runtime.
+      Language: '',
+      Capitalization: 'Lowercase',
+      Separator: 'Dash',
+      Salt: 'None'
     };
 
     try {
@@ -77,6 +86,15 @@ export class SettingsRepository extends BaseRepository {
     }
 
     return defaultSettings;
+  }
+
+  /**
+   * Persist the password generator settings as a JSON blob.
+   * Mirrors the `PasswordGenerationSettings` key used by the other AliasVault clients.
+   * @param settings - The password settings to store.
+   */
+  public setPasswordSettings(settings: PasswordSettings): void {
+    this.updateSetting('PasswordGenerationSettings', JSON.stringify(settings));
   }
 
   /**
@@ -135,7 +153,9 @@ export class SettingsRepository extends BaseRepository {
   }
 
   /**
-   * Get the effective identity language, falling back to browser language.
+   * Get the effective identity language. Uses the explicit override when set, otherwise matches the
+   * browser language to one of the identity generator's available languages via the shared
+   * region-variant alternative-code table (e.g. "de-CH" -> "de"), falling back to English.
    * @returns The effective language code
    */
   public getEffectiveIdentityLanguage(): string {
@@ -143,8 +163,7 @@ export class SettingsRepository extends BaseRepository {
     if (storedLanguage) {
       return storedLanguage;
     }
-    // Fall back to browser language (first two characters)
-    return navigator.language.substring(0, 2);
+    return matchAvailableLanguage(navigator.language, getAvailableLanguages()) ?? DEFAULT_LANGUAGE_CODE;
   }
 
   /**

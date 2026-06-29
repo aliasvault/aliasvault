@@ -4,12 +4,12 @@ import { storage } from 'wxt/utils/storage';
 
 import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
-import { FieldKey, ItemTypes, createSystemField, type Item } from '@/utils/dist/core/models/vault';
+import { FieldKey, ItemTypes, createSystemField, type Item, type PasswordSettings } from '@/utils/dist/core/models/vault';
 import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
-import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked } from '@/utils/RustCore';
+import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword } from '@/utils/RustCore';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
@@ -330,37 +330,6 @@ export async function handleClearVaultData(): Promise<messageBoolResponse> {
 }
 
 /**
- * Create a new item in the vault.
- * Uses the native Item type with field-based structure.
- */
-export async function handleCreateItem(
-  message: any,
-) : Promise<messageBoolResponse> {
-  const encryptionKey = await handleGetEncryptionKey();
-
-  if (!encryptionKey) {
-    // E-202: Vault is locked
-    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
-  }
-
-  try {
-    const sqliteClient = await createVaultSqliteClient();
-
-    // Add the new item to the vault/database.
-    await sqliteClient.items.create(message.item, message.attachments || [], message.totpCodes || []);
-
-    // Persist locally and sync in the background (doesn't block when server is offline).
-    await persistLocalVaultMutation(sqliteClient, encryptionKey);
-
-    return { success: true };
-  } catch (error) {
-    console.error('Failed to create item:', error);
-    // E-301: Item create failed
-    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_CREATE_FAILED) };
-  }
-}
-
-/**
  * Filter items by URL matching.
  *
  * @param items - The items to filter
@@ -633,6 +602,21 @@ export async function handleGetPasswordSettings(
     console.error('Error getting password settings:', error);
     // E-601: Storage read failed
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_READ_FAILED) };
+  }
+}
+
+/**
+ * Generate a password or passphrase from the given settings using the Rust core.
+ */
+export async function handleGeneratePassword(
+  settings: PasswordSettings
+): Promise<{ success: boolean; password?: string; error?: string }> {
+  try {
+    const password = await generatePassword(settings);
+    return { success: true, password };
+  } catch (error) {
+    console.error('Error generating password:', error);
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UNKNOWN_ERROR) };
   }
 }
 

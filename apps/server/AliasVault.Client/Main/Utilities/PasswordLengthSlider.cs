@@ -7,6 +7,8 @@
 
 namespace AliasVault.Client.Main.Utilities;
 
+using AliasClientDb.Models;
+
 /// <summary>
 /// Utility functions for password length slider with non-linear scaling.
 ///
@@ -22,12 +24,12 @@ public static class PasswordLengthSlider
     /// <summary>
     /// Minimum password length.
     /// </summary>
-    public const int MinPasswordLength = 8;
+    public const int MinPasswordLength = PasswordGeneratorDefaults.MinPasswordLength;
 
     /// <summary>
     /// Maximum password length.
     /// </summary>
-    public const int MaxPasswordLength = 256;
+    public const int MaxPasswordLength = PasswordGeneratorDefaults.MaxPasswordLength;
 
     /// <summary>
     /// Slider minimum value (internal representation).

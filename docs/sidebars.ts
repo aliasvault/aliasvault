@@ -63,7 +63,7 @@ const sidebars: SidebarsConfig = {
       label: 'Contributing to AliasVault',
       link: {type: 'doc', id: 'contributing/index'},
       collapsed: false,
-      items: ['contributing/ui-translations', 'contributing/identity-generator'],
+      items: ['contributing/ui-translations', 'contributing/identity-generator', 'contributing/passphrase-dictionaries'],
     },
     {
       type: 'category',

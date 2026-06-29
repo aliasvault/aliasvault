@@ -4,13 +4,14 @@
 
 import '@/entrypoints/contentScript/style.css';
 import { CONDITIONAL_PASSKEYS_UPDATED_EVENT, hasPendingConditionalRequest, refreshConditionalPasskeyOptions } from '@/entrypoints/contentScript/ConditionalPasskey';
-import { injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
-import { openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
+import { fillItem, injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
+import { getLastAutofillInput, openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
 import { showSavePrompt, showAddUrlPrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState, restoreAddUrlPromptFromState } from '@/entrypoints/contentScript/SavePrompt';
 import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
 
 import { isAvAutofillAllowed, isAvSuppressSave } from '@/utils/autofill/Autofill';
 import { DEFAULT_POPUP_TYPE, isPopupType, popupTypeForFieldType, POPUP_TYPES, type PopupType } from '@/utils/autofill/PopupTypes';
+import type { Item } from '@/utils/dist/core/models/vault';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { LoginDetector } from '@/utils/loginDetector';
@@ -630,6 +631,45 @@ export default defineContentScript({
           }
 
           await showPopupForElement(target, true);
+
+          return { success: true };
+        });
+
+        /*
+         * A credential was created in the full popup window (opened from this page's "create new
+         * item" flow). Autofill it back into the page form, mirroring the inline quick-create UX.
+         */
+        onMessage('AUTOFILL_CREATED_ITEM', async ({ data }) => {
+          const { item, elementIdentifier } = data;
+
+          if (!item) {
+            return { success: false, error: 'No item provided' };
+          }
+
+          /*
+           * Resolve the target input: prefer the explicit element identifier, then fall back to
+           * the input the autofill popup was most recently shown for on this page.
+           */
+          let resolvedInput: HTMLInputElement | null = null;
+          if (elementIdentifier) {
+            const target = document.getElementById(elementIdentifier) ?? document.getElementsByName(elementIdentifier)[0] ?? null;
+            const { isValid, inputElement } = validateInputField(target);
+            if (isValid && inputElement) {
+              resolvedInput = inputElement;
+            }
+          }
+          if (!resolvedInput) {
+            resolvedInput = getLastAutofillInput();
+          }
+
+          if (!resolvedInput) {
+            return { success: false, error: 'No target input found' };
+          }
+
+          // Close any open inline popup before filling.
+          removeExistingPopup(container);
+
+          await fillItem(item as Item, resolvedInput);
 
           return { success: true };
         });

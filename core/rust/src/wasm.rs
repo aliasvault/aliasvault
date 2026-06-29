@@ -5,6 +5,7 @@ use wasm_bindgen::prelude::*;
 use crate::credential_matcher::{
     filter_credentials, CredentialMatcherInput, CredentialMatcherOutput,
 };
+use crate::password_generator::{available_languages, generate_password};
 use crate::vault_merge::{merge_vaults, MergeInput, MergeOutput};
 use crate::vault_pruner::{prune_vault, PruneInput, PruneOutput};
 
@@ -141,6 +142,26 @@ pub fn extract_domain_js(url: &str) -> String {
 #[wasm_bindgen(js_name = extractRootDomain)]
 pub fn extract_root_domain_js(domain: &str) -> String {
     crate::credential_matcher::extract_root_domain(domain)
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Password Generator WASM Bindings
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Generate a password or passphrase from JSON-serialized settings.
+///
+/// Takes a JSON string (PasswordSettings) and returns the generated password string.
+/// The `Type` field selects the generator ("basic" or "diceware").
+#[wasm_bindgen(js_name = generatePassword)]
+pub fn generate_password_js(settings_json: &str) -> Result<String, JsValue> {
+    generate_password(settings_json)
+        .map_err(|e| JsValue::from_str(&format!("Password generation failed: {}", e)))
+}
+
+/// Get the list of bundled Diceware language codes (first is the default, English).
+#[wasm_bindgen(js_name = getDicewareLanguages)]
+pub fn get_diceware_languages_js() -> Vec<String> {
+    available_languages()
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
