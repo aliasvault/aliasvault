@@ -16,6 +16,7 @@
     "copied": "Copiat în clipboard",
     "loadMore": "Încarcă mai multe",
     "use": "Utilizează",
+    "none": "Niciunul",
     "confirm": "Confirmă",
     "next": "Înainte",
     "notice": "Notă",
@@ -442,6 +443,29 @@
     "includeNumbers": "Cifre (0-9)",
     "includeSpecialChars": "Caractere speciale (!@#)",
     "avoidAmbiguousChars": "Evită caracterele ambigue",
+    "passwordTypeBasic": "Parolă",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Eroare la încărcarea elementelor",
     "vaultSyncFailed": "Sincronizarea seifului a eșuat",
     "vaultSyncedSuccessfully": "Seiful a fost sincronizat cu succes",
