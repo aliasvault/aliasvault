@@ -16,6 +16,7 @@
     "copied": "Скопійовано до буфера обміну",
     "loadMore": "Завантажити більше",
     "use": "Використовувати",
+    "none": "Відсутньо",
     "confirm": "Підтвердити",
     "next": "Далі",
     "notice": "Примітка",
@@ -442,6 +443,29 @@
     "includeNumbers": "Числа (0-9)",
     "includeSpecialChars": "Спеціальні символи (!@#)",
     "avoidAmbiguousChars": "Уникати неоднозначних символів",
+    "passwordTypeBasic": "Пароль",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Помилка завантаження об'єктів",
     "vaultSyncFailed": "Не вдалося синхронізувати сховище",
     "vaultSyncedSuccessfully": "Сховище успішно синхронізовано",
