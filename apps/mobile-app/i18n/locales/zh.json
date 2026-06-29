@@ -16,6 +16,7 @@
     "copied": "已复制到剪贴板",
     "loadMore": "加载更多",
     "use": "使用",
+    "none": "无",
     "confirm": "确认",
     "next": "下一步",
     "notice": "注意",
@@ -442,6 +443,29 @@
     "includeNumbers": "数字（0-9）",
     "includeSpecialChars": "特殊字符（!@#）",
     "avoidAmbiguousChars": "避免使用歧义字符",
+    "passwordTypeBasic": "密码",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "加载项目时出错",
     "vaultSyncFailed": "密码库同步失败",
     "vaultSyncedSuccessfully": "密码库同步成功",
