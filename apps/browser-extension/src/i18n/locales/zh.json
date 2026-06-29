@@ -62,6 +62,7 @@
     "openInNewWindow": "在新窗口中打开",
     "enabled": "启用",
     "disabled": "禁用",
+    "none": "无",
     "showPassword": "显示密码",
     "hidePassword": "隐藏密码",
     "show": "显示",
@@ -188,6 +189,7 @@
   "items": {
     "title": "项目",
     "itemName": "名称",
+    "suggestions": "Suggestions",
     "loginCredentials": "登录凭据",
     "cardInformation": "卡信息",
     "addItem": "添加项目",
@@ -241,6 +243,28 @@
     "includeNumbers": "包含数字",
     "includeSpecialChars": "包含特殊字符",
     "avoidAmbiguousChars": "避免易混淆字符（o、0 等）",
+    "passwordTypeBasic": "密码",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "私人邮箱",
     "privateEmailAliasVaultServer": "AliasVault 服务器",
     "privateEmailDescription": "端到端加密，完全私密。",
@@ -442,6 +466,11 @@
         "male": "男",
         "female": "女"
       }
+    },
+    "passwordGenerator": "密码生成器",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "配置"
     },
     "credentialAutofill": "凭据自动填充",
     "credentialAutofillDescription": "检测到用户名/密码字段时显示自动填充弹窗",
