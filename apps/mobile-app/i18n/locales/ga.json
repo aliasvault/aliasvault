@@ -72,8 +72,8 @@
       "httpError": "Earráid HTTP: {{status}}"
     },
     "confirmLogout": "An bhfuil tú cinnte gur mian leat logáil amach? Ní mór duit logáil isteach arís le do phríomhfhocal faire chun rochtain a fháil ar do stóras.",
-    "noAccountYet": "No account yet?",
-    "createNewVault": "Create new vault",
+    "noAccountYet": "Gan cuntas fós?",
+    "createNewVault": "Cruthaigh cruinneachán nua",
     "connectingTo": "Connecting to",
     "loggedInAs": "Logáilte isteach mar"
   },
