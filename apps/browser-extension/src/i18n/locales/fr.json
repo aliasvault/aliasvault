@@ -62,6 +62,7 @@
     "openInNewWindow": "Ouvrir dans une nouvelle fenêtre",
     "enabled": "Activé",
     "disabled": "Désactivé",
+    "none": "Aucun",
     "showPassword": "Afficher le mot de passe",
     "hidePassword": "Cacher le mot de passe",
     "show": "Afficher",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Éléments",
     "itemName": "Nom",
+    "suggestions": "Suggestions",
     "loginCredentials": "Identifiants de connexion",
     "cardInformation": "Informations de la carte",
     "addItem": "Ajouter un élément",
@@ -241,6 +243,28 @@
     "includeNumbers": "Inclure des chiffres",
     "includeSpecialChars": "Inclure des caractères spéciaux",
     "avoidAmbiguousChars": "Éviter les caractères ambigus (o, 0, etc.)",
+    "passwordTypeBasic": "Mot de passe",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "E-mail privé",
     "privateEmailAliasVaultServer": "Serveur AliasVault",
     "privateEmailDescription": "E2E chiffré, entièrement privé.",
@@ -442,6 +466,11 @@
         "male": "Homme",
         "female": "Femme"
       }
+    },
+    "passwordGenerator": "Générateur de mot de passe",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Configurer"
     },
     "credentialAutofill": "Remplissage automatique des identifiants",
     "credentialAutofillDescription": "Afficher un popup de saisie automatique lorsque les champs nom d'utilisateur/mot de passe sont détectés",
