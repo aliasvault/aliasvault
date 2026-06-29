@@ -16,6 +16,7 @@
     "copied": "Copier dans le presse-papiers",
     "loadMore": "Voir plus",
     "use": "Utiliser",
+    "none": "Aucun",
     "confirm": "Confirmer",
     "next": "Suivant",
     "notice": "Notification",
@@ -442,6 +443,29 @@
     "includeNumbers": "Nombres (0-9)",
     "includeSpecialChars": "Caractères spéciaux (!@#)",
     "avoidAmbiguousChars": "Éviter les caractères ambigus",
+    "passwordTypeBasic": "Mot de passe",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Erreur lors du chargement des éléments",
     "vaultSyncFailed": "Échec de la synchronisation du coffre-fort",
     "vaultSyncedSuccessfully": "Le coffre-fort a été synchronisé avec succès",
