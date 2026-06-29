@@ -16,6 +16,7 @@
     "copied": "Vágólapra másolva",
     "loadMore": "Továbbiak betöltése",
     "use": "Használ",
+    "none": "Nincs",
     "confirm": "Megerősít",
     "next": "Következő",
     "notice": "Megjegyzés",
@@ -442,6 +443,29 @@
     "includeNumbers": "Számok (0-9)",
     "includeSpecialChars": "Speciális karakterek (!@#)",
     "avoidAmbiguousChars": "Kerülje a félreérthető karaktereket",
+    "passwordTypeBasic": "Jelszó",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Hiba az elemek betöltése során",
     "vaultSyncFailed": "Sikertelen széf szinkronizálás",
     "vaultSyncedSuccessfully": "Sikeres széf szinkronizálás",
