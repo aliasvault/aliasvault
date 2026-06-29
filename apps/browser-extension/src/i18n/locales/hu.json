@@ -62,6 +62,7 @@
     "openInNewWindow": "Open in new window",
     "enabled": "Engedélyezve",
     "disabled": "Kikapcsolva",
+    "none": "Nincs",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "show": "Megjelenítés",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Elemek",
     "itemName": "Név",
+    "suggestions": "Suggestions",
     "loginCredentials": "Login Credentials",
     "cardInformation": "Kártya információ",
     "addItem": "Elem hozzáadása",
@@ -241,6 +243,28 @@
     "includeNumbers": "Include numbers",
     "includeSpecialChars": "Include special characters",
     "avoidAmbiguousChars": "Avoid ambiguous characters (o, 0, etc.)",
+    "passwordTypeBasic": "Jelszó",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "Privát e-mail",
     "privateEmailAliasVaultServer": "AliasVault szerver",
     "privateEmailDescription": "E2E kódolású, teljesen bizalmas.",
@@ -442,6 +466,11 @@
         "male": "Férfi",
         "female": "Nő"
       }
+    },
+    "passwordGenerator": "Jelszó Generátor",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Konfigurálás"
     },
     "credentialAutofill": "Credential autofill",
     "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
