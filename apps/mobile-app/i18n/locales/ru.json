@@ -464,7 +464,7 @@
     "dicewareSaltOption": {
       "Prefix": "Prefix",
       "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Suffix": "Суффикс"
     },
     "errorLoadingItems": "Ошибка загрузки записей",
     "vaultSyncFailed": "Сбой синхронизации хранилища",
