@@ -447,7 +447,7 @@
     "passwordTypeDiceware": "Passphrase",
     "passphraseLanguage": "Passphrase language",
     "wordCount": "Words",
-    "capitalization": "Capitalization",
+    "capitalization": "Nagybetűs",
     "separator": "Separator",
     "salt": "Salt",
     "dicewareCapitalizationOption": {
