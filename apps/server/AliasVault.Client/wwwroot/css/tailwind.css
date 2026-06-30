@@ -3120,6 +3120,11 @@ video {
   color: rgb(184 112 47 / var(--tw-text-opacity));
 }
 
+.hover\:text-primary-800:hover {
+  --tw-text-opacity: 1;
+  color: rgb(154 93 38 / var(--tw-text-opacity));
+}
+
 .hover\:text-red-200:hover {
   --tw-text-opacity: 1;
   color: rgb(254 202 202 / var(--tw-text-opacity));

@@ -211,9 +211,10 @@ public class TestVaultGeneratorTests : BrowserExtensionPlaywrightTest
             {
                 // Add TOTP section
                 await AddFieldSectionAsync("Two-Factor Authentication");
-                await Page.WaitForSelectorAsync("input#totp-name");
+                await Page.WaitForSelectorAsync("input#totp-secret");
 
-                // Fill TOTP fields
+                // Fill TOTP fields (name field is hidden by default, reveal it via the optional toggle)
+                await Page.Locator("button[id='add-totp-name']").ClickAsync();
                 await Page.FillAsync("input#totp-name", "Test TOTP");
                 await Page.FillAsync("input#totp-secret", "JBSWY3DPEHPK3PXP");
             });

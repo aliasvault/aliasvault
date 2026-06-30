@@ -31,7 +31,7 @@
                 <div class="p-2 ps-3 pe-3 bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600">
                     <div class="flex justify-between items-center gap-2">
                         <div class="flex items-center flex-1">
-                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">@totpCode.Name</h4>
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">@(string.IsNullOrEmpty(totpCode.Name) ? SharedLocalizer["TotpDefaultName"] : totpCode.Name)</h4>
                         </div>
                         <div class="flex items-center gap-2">
                             <div class="flex flex-col items-end">
@@ -62,6 +62,8 @@
 
 @code {
     private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Components.TotpCodes.TotpViewer", "AliasVault.Client");
+
+    private IStringLocalizer SharedLocalizer => LocalizerFactory.Create("SharedResources", "AliasVault.Client");
 
     /// <summary>
     /// The list of TOTP codes to display.
