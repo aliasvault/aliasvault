@@ -189,7 +189,7 @@
   "items": {
     "title": "项目",
     "itemName": "名称",
-    "suggestions": "Suggestions",
+    "suggestions": "建议",
     "loginCredentials": "登录凭据",
     "cardInformation": "卡信息",
     "addItem": "添加项目",
@@ -244,26 +244,26 @@
     "includeSpecialChars": "包含特殊字符",
     "avoidAmbiguousChars": "避免易混淆字符（o、0 等）",
     "passwordTypeBasic": "密码",
-    "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
+    "passwordTypeDiceware": "密码词组",
+    "passphraseLanguage": "密码词组语言",
+    "wordCount": "词数",
     "dicewareCapitalizationOption": {
-      "TitleCase": "Title Case",
-      "Uppercase": "Uppercase",
-      "Lowercase": "Lowercase"
+      "TitleCase": "标题大小写",
+      "Uppercase": "大写",
+      "Lowercase": "小写"
     },
-    "separator": "Separator",
+    "separator": "分隔符",
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "连字符",
+      "Space": "空格",
+      "Underscore": "下划线",
+      "Dot": "点"
     },
-    "salt": "Salt",
+    "salt": "盐",
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Prefix": "前缀",
+      "Sprinkle": "随机位置",
+      "Suffix": "后缀"
     },
     "privateEmailTitle": "私人邮箱",
     "privateEmailAliasVaultServer": "AliasVault 服务器",
@@ -469,7 +469,7 @@
     },
     "passwordGenerator": "密码生成器",
     "passwordGeneratorSettings": {
-      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "description": "配置新建项目的默认密码生成器设置，包括密码长度、字符集和密码词组语言。",
       "configureButton": "配置"
     },
     "credentialAutofill": "凭据自动填充",
