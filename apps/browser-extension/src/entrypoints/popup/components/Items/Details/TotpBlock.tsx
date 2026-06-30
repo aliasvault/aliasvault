@@ -177,11 +177,11 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId }) => {
               key={totpCode.Id}
               className={`w-full text-left p-2 ps-3 pe-3 rounded bg-white dark:bg-gray-800 shadow hover:shadow-md transition-all border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700`}
               onClick={() => copyToClipboard(currentCodes[totpCode.Id], totpCode.Id)}
-              aria-label={`Copy ${totpCode.Name} code`}
+              aria-label={`Copy ${totpCode.Name || t('totp.defaultName')} code`}
             >
               <div className="flex justify-between items-center gap-2">
                 <div className="flex items-center flex-1">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">{totpCode.Name}</h4>
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">{totpCode.Name || t('totp.defaultName')}</h4>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="flex flex-col items-end">
