@@ -444,27 +444,27 @@
     "includeSpecialChars": "特殊字符（!@#）",
     "avoidAmbiguousChars": "避免使用歧义字符",
     "passwordTypeBasic": "密码",
-    "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
-    "capitalization": "Capitalization",
-    "separator": "Separator",
-    "salt": "Salt",
+    "passwordTypeDiceware": "密码词组",
+    "passphraseLanguage": "密码词组语言",
+    "wordCount": "词数",
+    "capitalization": "大写",
+    "separator": "分隔符",
+    "salt": "盐",
     "dicewareCapitalizationOption": {
-      "Lowercase": "Lowercase",
-      "TitleCase": "Title Case",
-      "Uppercase": "Uppercase"
+      "Lowercase": "小写",
+      "TitleCase": "标题大小写",
+      "Uppercase": "大写"
     },
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "连字符",
+      "Space": "空格",
+      "Underscore": "下划线",
+      "Dot": "点"
     },
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Prefix": "前缀",
+      "Sprinkle": "随机位置",
+      "Suffix": "后缀"
     },
     "errorLoadingItems": "加载项目时出错",
     "vaultSyncFailed": "密码库同步失败",
