@@ -81,7 +81,7 @@
   <string name="password_unlock_title">Széf feloldása</string>
   <string name="password_unlock_subtitle">Adja meg mester jelszavát</string>
   <string name="password_unlock_password_hint">Jelszó</string>
-  <string name="password_unlock_button">Unlock</string>
+  <string name="password_unlock_button">Feloldás</string>
   <string name="password_unlock_incorrect">Hibás jelszó. Próbálkozzon újra.</string>
   <string name="password_unlock_error">Failed to verify password</string>
   <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
