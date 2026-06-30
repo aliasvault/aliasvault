@@ -65,7 +65,7 @@ AliasVault is available on:
   <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/{%22id%22:%22net.aliasvault.app%22,%22url%22:%22https://github.com/aliasvault/aliasvault%22,%22author%22:%22AliasVault%22,%22name%22:%22AliasVault%22,%22additionalSettings%22:%22{\%22about\%22:\%22Privacy-first%20Password%20Manager%20with%20Built-in%20Email%20Aliasing.\%22}%22}" style="display: inline-block;"><img src="https://github.com/user-attachments/assets/0e8c7cc6-533b-4fc4-bbc0-ce974d72de4b" style="height: 40px;" alt="Get it on F-Droid"></a>
 </p>
 
-[<img width="700" alt="Screenshot of AliasVault" src="docs/assets/img/screenshot.png">](https://app.aliasvault.com)
+[<img width="700" alt="Screenshot of AliasVault" src="docs/static/assets/img/screenshot.png">](https://app.aliasvault.com)
 
 ## Self-hosting
 > [!NOTE]
@@ -96,7 +96,7 @@ For more information about the installation process, manual setup instructions a
 - [Documentation website (docs.aliasvault.com) 📚](https://docs.aliasvault.com)
 
 ## Security Architecture
-<a href="https://docs.aliasvault.com/architecture"><img alt="AliasVault Security Architecture Diagram" src="docs/assets/diagrams/security-architecture/aliasvault-security-architecture-thumb.jpg" width="343"></a>
+<a href="https://docs.aliasvault.com/architecture"><img alt="AliasVault Security Architecture Diagram" src="docs/static/assets/diagrams/security-architecture/aliasvault-security-architecture-thumb.jpg" width="343"></a>
 
 AliasVault takes security seriously and implements various measures to protect your data:
 
