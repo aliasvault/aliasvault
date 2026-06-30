@@ -189,7 +189,7 @@
   "items": {
     "title": "Elemente",
     "itemName": "Nume",
-    "suggestions": "Suggestions",
+    "suggestions": "Sugestii",
     "loginCredentials": "Date de autentificare",
     "cardInformation": "Informații Card",
     "addItem": "Adaugă element",
@@ -244,13 +244,13 @@
     "includeSpecialChars": "Include caractere speciale",
     "avoidAmbiguousChars": "Evită caracterele ambigue (o, 0, etc.)",
     "passwordTypeBasic": "Parolă",
-    "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
+    "passwordTypeDiceware": "Parolă de acces",
+    "passphraseLanguage": "Limbă parolă",
+    "wordCount": "Cuvinte",
     "dicewareCapitalizationOption": {
       "TitleCase": "Title Case",
-      "Uppercase": "Uppercase",
-      "Lowercase": "Lowercase"
+      "Uppercase": "Litere mari",
+      "Lowercase": "Litere mici"
     },
     "separator": "Separator",
     "dicewareSeparatorOption": {
