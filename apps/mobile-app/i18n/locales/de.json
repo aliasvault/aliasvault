@@ -445,21 +445,21 @@
     "avoidAmbiguousChars": "Mehrdeutige Zeichen vermeiden",
     "passwordTypeBasic": "Passwort",
     "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
+    "passphraseLanguage": "Passphrasen-Sprache",
+    "wordCount": "Wörter",
     "capitalization": "Capitalization",
-    "separator": "Separator",
-    "salt": "Salt",
+    "separator": "Trennzeichen",
+    "salt": "Passwort-Salt",
     "dicewareCapitalizationOption": {
-      "Lowercase": "Lowercase",
-      "TitleCase": "Title Case",
-      "Uppercase": "Uppercase"
+      "Lowercase": "Kleinschreibung",
+      "TitleCase": "Wortanfänge groß",
+      "Uppercase": "Großschreibung"
     },
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Strich",
+      "Space": "Leerzeichen",
+      "Underscore": "Unterstrich",
+      "Dot": "Punkt"
     },
     "dicewareSaltOption": {
       "Prefix": "Prefix",
