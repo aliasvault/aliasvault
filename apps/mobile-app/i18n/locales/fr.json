@@ -444,27 +444,27 @@
     "includeSpecialChars": "Caractères spéciaux (!@#)",
     "avoidAmbiguousChars": "Éviter les caractères ambigus",
     "passwordTypeBasic": "Mot de passe",
-    "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
-    "capitalization": "Capitalization",
-    "separator": "Separator",
-    "salt": "Salt",
+    "passwordTypeDiceware": "Phrase secrète",
+    "passphraseLanguage": "Langue de la phrase secrète",
+    "wordCount": "Mots",
+    "capitalization": "Mise en majuscules",
+    "separator": "Séparateur",
+    "salt": "Salage",
     "dicewareCapitalizationOption": {
-      "Lowercase": "Lowercase",
-      "TitleCase": "Title Case",
-      "Uppercase": "Uppercase"
+      "Lowercase": "Minuscule",
+      "TitleCase": "Casse du titre",
+      "Uppercase": "Majuscule"
     },
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Tiret",
+      "Space": "Espace",
+      "Underscore": "Tiret bas",
+      "Dot": "Point"
     },
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Prefix": "Préfixe",
+      "Sprinkle": "Position aléatoire",
+      "Suffix": "Suffixe"
     },
     "errorLoadingItems": "Erreur lors du chargement des éléments",
     "vaultSyncFailed": "Échec de la synchronisation du coffre-fort",
