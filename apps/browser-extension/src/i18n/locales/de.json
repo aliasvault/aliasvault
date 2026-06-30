@@ -189,7 +189,7 @@
   "items": {
     "title": "Elemente",
     "itemName": "Name",
-    "suggestions": "Suggestions",
+    "suggestions": "Vorschläge",
     "loginCredentials": "Zugangsdaten",
     "cardInformation": "Karteninformationen",
     "addItem": "Element hinzufügen",
@@ -245,23 +245,23 @@
     "avoidAmbiguousChars": "Mehrdeutige Zeichen (1, l, I, 0, O, etc.) vermeiden",
     "passwordTypeBasic": "Passwort",
     "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
+    "passphraseLanguage": "Passphrasen-Sprache",
+    "wordCount": "Wörter",
     "dicewareCapitalizationOption": {
-      "TitleCase": "Title Case",
-      "Uppercase": "Uppercase",
-      "Lowercase": "Lowercase"
+      "TitleCase": "Wortanfänge groß",
+      "Uppercase": "Großschreibung",
+      "Lowercase": "Kleinschreibung"
     },
-    "separator": "Separator",
+    "separator": "Trennzeichen",
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Strich",
+      "Space": "Leerzeichen",
+      "Underscore": "Unterstrich",
+      "Dot": "Punkt"
     },
-    "salt": "Salt",
+    "salt": "Passwort-Salt",
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
+      "Prefix": "Präfix",
       "Sprinkle": "Random position",
       "Suffix": "Suffix"
     },
