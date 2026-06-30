@@ -263,7 +263,7 @@
     "dicewareSaltOption": {
       "Prefix": "Prefix",
       "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Suffix": "Суффикс"
     },
     "privateEmailTitle": "Личная электронная почта",
     "privateEmailAliasVaultServer": "Сервер AliasVault",
@@ -469,7 +469,7 @@
     },
     "passwordGenerator": "Генератор паролей",
     "passwordGeneratorSettings": {
-      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "description": "Настройте параметры генератора паролей по умолчанию для новых записей: длину, наборы символов и язык кодовой фразы.",
       "configureButton": "Настроить"
     },
     "credentialAutofill": "Автозаполнение данных",
