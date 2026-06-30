@@ -63,7 +63,7 @@
     <comment>Page title for the sync page</comment>
   </data>
   <data name="SwitchAccountsText" xml:space="preserve">
-    <value>Switch accounts?</value>
+    <value>Fiók váltás?</value>
     <comment>Text before logout link</comment>
   </data>
   <data name="LogoutLink" xml:space="preserve">
