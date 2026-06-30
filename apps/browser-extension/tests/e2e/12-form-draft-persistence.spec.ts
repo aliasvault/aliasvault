@@ -21,6 +21,7 @@ const TOTP_SECRET_DRAFT = 'JBSWY3DPEHPK3PXP';
 
 const TOTP_NAME_INPUT = 'input#totp-name';
 const TOTP_SECRET_INPUT = 'input#totp-secret';
+const TOTP_ADD_NAME_BUTTON = 'button#add-totp-name';
 
 /**
  * Simulate the popup closing and reopening. Reloading the document tears the
@@ -54,6 +55,7 @@ async function add2FADraft(client: TestClient, name: string, secret: string): Pr
   await client.popup.locator(ButtonSelectors.ADD_FIELD_MENU).click();
   await client.popup.getByRole('button', { name: 'Two-factor authentication' }).click();
   await expect(client.popup.locator(TOTP_SECRET_INPUT)).toBeVisible({ timeout: Timeouts.MEDIUM });
+  await client.popup.locator(TOTP_ADD_NAME_BUTTON).click();
   await client.popup.fill(TOTP_NAME_INPUT, name);
   await client.popup.fill(TOTP_SECRET_INPUT, secret);
 }
