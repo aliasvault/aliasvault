@@ -444,27 +444,27 @@
     "includeSpecialChars": "Caractere speciale (!@#)",
     "avoidAmbiguousChars": "Evită caracterele ambigue",
     "passwordTypeBasic": "Parolă",
-    "passwordTypeDiceware": "Parolă de acces",
-    "passphraseLanguage": "Limbă parolă",
+    "passwordTypeDiceware": "Frază de acces",
+    "passphraseLanguage": "Limba frazei de acces",
     "wordCount": "Cuvinte",
     "capitalization": "Capitalizare",
     "separator": "Separator",
     "salt": "Salt",
     "dicewareCapitalizationOption": {
       "Lowercase": "Litere mici",
-      "TitleCase": "Title Case",
+      "TitleCase": "Majuscule inițiale",
       "Uppercase": "Litere mari"
     },
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Liniuță",
+      "Space": "Spațiu",
+      "Underscore": "Subliniere",
+      "Dot": "Punct"
     },
     "dicewareSaltOption": {
       "Prefix": "Prefix",
-      "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Sprinkle": "Poziție aleatorie",
+      "Suffix": "Sufix"
     },
     "errorLoadingItems": "Eroare la încărcarea elementelor",
     "vaultSyncFailed": "Sincronizarea seifului a eșuat",
