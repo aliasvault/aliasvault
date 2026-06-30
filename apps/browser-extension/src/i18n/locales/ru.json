@@ -189,7 +189,7 @@
   "items": {
     "title": "Записи",
     "itemName": "Имя",
-    "suggestions": "Suggestions",
+    "suggestions": "Рекомендации",
     "loginCredentials": "Учетные данные для авторизации",
     "cardInformation": "Данные карты",
     "addItem": "Добавить запись",
@@ -244,25 +244,25 @@
     "includeSpecialChars": "Включить специальные символы",
     "avoidAmbiguousChars": "Избегать двусмысленных символов (o, 0 и т.д.)",
     "passwordTypeBasic": "Пароль",
-    "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
+    "passwordTypeDiceware": "Парольная фраза",
+    "passphraseLanguage": "Язык парольной фразы",
+    "wordCount": "Слова",
     "dicewareCapitalizationOption": {
-      "TitleCase": "Title Case",
-      "Uppercase": "Uppercase",
-      "Lowercase": "Lowercase"
+      "TitleCase": "С заглавной буквы",
+      "Uppercase": "Верхний регистр",
+      "Lowercase": "Нижний регистр"
     },
-    "separator": "Separator",
+    "separator": "Разделитель",
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Тире",
+      "Space": "Пробел",
+      "Underscore": "Нижнее подчеркивание",
+      "Dot": "Точка"
     },
-    "salt": "Salt",
+    "salt": "Соль",
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
+      "Prefix": "Префикс",
+      "Sprinkle": "В случайных местах",
       "Suffix": "Суффикс"
     },
     "privateEmailTitle": "Личная электронная почта",
