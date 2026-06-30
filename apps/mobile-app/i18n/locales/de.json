@@ -447,7 +447,7 @@
     "passwordTypeDiceware": "Passphrase",
     "passphraseLanguage": "Passphrasen-Sprache",
     "wordCount": "Wörter",
-    "capitalization": "Capitalization",
+    "capitalization": "Groß-/Kleinschreibung",
     "separator": "Trennzeichen",
     "salt": "Passwort-Salt",
     "dicewareCapitalizationOption": {
@@ -462,8 +462,8 @@
       "Dot": "Punkt"
     },
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
+      "Prefix": "Präfix",
+      "Sprinkle": "Zufällige Position",
       "Suffix": "Suffix"
     },
     "errorLoadingItems": "Fehler beim Laden der Daten",
