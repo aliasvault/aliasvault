@@ -244,26 +244,26 @@
     "includeSpecialChars": "Include caractere speciale",
     "avoidAmbiguousChars": "Evită caracterele ambigue (o, 0, etc.)",
     "passwordTypeBasic": "Parolă",
-    "passwordTypeDiceware": "Parolă de acces",
-    "passphraseLanguage": "Limbă parolă",
+    "passwordTypeDiceware": "Frază de acces",
+    "passphraseLanguage": "Limba frazei de acces",
     "wordCount": "Cuvinte",
     "dicewareCapitalizationOption": {
-      "TitleCase": "Title Case",
+      "TitleCase": "Majuscule inițiale",
       "Uppercase": "Litere mari",
       "Lowercase": "Litere mici"
     },
     "separator": "Separator",
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Liniuță",
+      "Space": "Spațiu",
+      "Underscore": "Subliniere",
+      "Dot": "Punct"
     },
     "salt": "Salt",
     "dicewareSaltOption": {
       "Prefix": "Prefix",
-      "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Sprinkle": "Poziție aleatorie",
+      "Suffix": "Sufix"
     },
     "privateEmailTitle": "E-mail Privat",
     "privateEmailAliasVaultServer": "Server AliasVault",
@@ -469,7 +469,7 @@
     },
     "passwordGenerator": "Generator de Parole",
     "passwordGeneratorSettings": {
-      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "description": "Configurează setările implicite ale generatorului de parole pentru elementele nou create, inclusiv lungimea parolei, seturile de caractere și limba frazelor de acces.",
       "configureButton": "Configurează"
     },
     "credentialAutofill": "Completează automat datele de autentificare",
