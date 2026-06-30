@@ -444,26 +444,26 @@
     "includeSpecialChars": "Специальные символы (!@#)",
     "avoidAmbiguousChars": "Избегать двусмысленных символов",
     "passwordTypeBasic": "Пароль",
-    "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
-    "capitalization": "Capitalization",
-    "separator": "Separator",
-    "salt": "Salt",
+    "passwordTypeDiceware": "Парольная фраза",
+    "passphraseLanguage": "Язык парольной фразы",
+    "wordCount": "Слова",
+    "capitalization": "Регистр",
+    "separator": "Разделитель",
+    "salt": "Соль",
     "dicewareCapitalizationOption": {
-      "Lowercase": "Lowercase",
-      "TitleCase": "Title Case",
-      "Uppercase": "Uppercase"
+      "Lowercase": "Нижний регистр",
+      "TitleCase": "С заглавной буквы",
+      "Uppercase": "Верхний регистр"
     },
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Тире",
+      "Space": "Пробел",
+      "Underscore": "Нижнее подчеркивание",
+      "Dot": "Точка"
     },
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
+      "Prefix": "Префикс",
+      "Sprinkle": "В случайных местах",
       "Suffix": "Суффикс"
     },
     "errorLoadingItems": "Ошибка загрузки записей",
