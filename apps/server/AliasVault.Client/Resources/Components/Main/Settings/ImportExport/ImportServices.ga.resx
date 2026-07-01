@@ -60,54 +60,54 @@
   </resheader>
   <!-- 1Password -->
   <data name="OnePasswordDescription" xml:space="preserve">
-    <value>Import passwords from your 1Password vault</value>
+    <value>Iompórtáil pasfhocail ó do chruinneachán 1Password</value>
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
-    <value>In order to import your 1Password vault, you need to export it. You can do this by logging into your 1Password account in the 1Password 8 desktop app (Windows / MacOS / Linux), going to the 'File' menu and selecting 'Export'.</value>
+    <value>Chun do stóras 1Password a allmhairiú, ní mór duit é a easpórtáil. Is féidir leat é seo a dhéanamh trí logáil isteach i do chuntas 1Password san aip deisce 1Password 8 (Windows / MacOS / Linux), dul go dtí an roghchlár 'Comhad' agus 'Easpórtáil' a roghnú.</value>
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
     <comment>1Password export instructions part 2</comment>
   </data>
   <!-- Bitwarden -->
   <data name="BitwardenDescription" xml:space="preserve">
-    <value>Import passwords from your Bitwarden vault</value>
+    <value>Iompórtáil pasfhocail ó do chruinneachán Bitwarden</value>
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Bitwarden vault, you need to export it. You can do this by logging into your Bitwarden account, going to the 'Tools' menu and selecting 'Export vault'.</value>
+    <value>Chun do chruinneachán Bitwarden a allmhairiú, ní mór duit é a easpórtáil. Is féidir leat é seo a dhéanamh trí logáil isteach i do chuntas Bitwarden, dul go dtí an roghchlár 'Uirlisí' agus 'Easpórtáil cruinneachán' a roghnú.</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
     <comment>Bitwarden export instructions part 2</comment>
   </data>
   <!-- LastPass -->
   <data name="LastPassDescription" xml:space="preserve">
-    <value>Import passwords from your LastPass vault</value>
+    <value>Iompórtáil pasfhocail ó do chruinneachán LastPass</value>
     <comment>Description for LastPass import service</comment>
   </data>
   <data name="LastPassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your LastPass vault, you need to export it as a CSV file. You can do this by logging into your LastPass account, going to 'Advanced Options' in the left sidebar and selecting 'Export' > 'LastPass CSV File'.</value>
+    <value>Chun do chruinneachán LastPass a allmhairiú, ní mór duit é a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí logáil isteach i do chuntas LastPass, dul go dtí 'Ard-Roghanna' sa bharra taoibh clé agus 'Easpórtáil' > 'Comhad CSV LastPass' a roghnú.</value>
     <comment>LastPass export instructions part 1</comment>
   </data>
   <data name="LastPassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
     <comment>LastPass export instructions part 2</comment>
   </data>
   <!-- Chrome -->
   <data name="ChromeDescription" xml:space="preserve">
-    <value>Import passwords from your Chrome Password Manager</value>
+    <value>Iompórtáil pasfhocail ó do Bhainisteoir Pasfhocal Chrome</value>
     <comment>Description for Chrome import service</comment>
   </data>
   <data name="ChromeInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Chrome Password Manager, you need to export it as a CSV file. You can do this by logging into your Chrome browser, going to the 'Settings' menu > 'Password and AutoFill' > 'Google Password Manager'. Then click on 'Export passwords'.</value>
+    <value>Chun do Bhainisteoir Pasfhocal Chrome a allmhairiú, ní mór duit é a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí logáil isteach i do bhrabhsálaí Chrome, ag dul go dtí an roghchlár 'Socruithe' > 'Pasfhocal agus Uathlíonadh' > 'Bainisteoir Pasfhocal Google'. Ansin cliceáil ar 'Pasfhocail a easpórtáil'.</value>
     <comment>Chrome export instructions part 1</comment>
   </data>
   <data name="ChromeInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
     <comment>Chrome export instructions part 2</comment>
   </data>
   <!-- KeePass -->
@@ -120,7 +120,7 @@
     <comment>KeePass export instructions part 1</comment>
   </data>
   <data name="KeePassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
     <comment>KeePass export instructions part 2</comment>
   </data>
   <!-- Generic CSV -->
@@ -162,7 +162,7 @@
     <comment>Firefox export instructions part 1</comment>
   </data>
   <data name="FirefoxInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
     <comment>Firefox export instructions part 2</comment>
   </data>
   <!-- Dashlane -->
@@ -188,7 +188,7 @@
     <comment>KeePassXC export instructions part 1</comment>
   </data>
   <data name="KeePassXCInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
     <comment>KeePassXC export instructions part 2</comment>
   </data>
   <!-- NordPass -->
@@ -201,7 +201,7 @@
     <comment>NordPass export instructions part 1</comment>
   </data>
   <data name="NordPassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
     <comment>NordPass export instructions part 2</comment>
   </data>
   <!-- Proton Pass -->
@@ -214,7 +214,7 @@
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
     <comment>Proton Pass export instructions part 2</comment>
   </data>
   <!-- Strongbox -->
@@ -227,7 +227,7 @@
     <comment>Strongbox export instructions part 1</comment>
   </data>
   <data name="StrongboxInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
     <comment>Strongbox export instructions part 2</comment>
   </data>
   <!-- AliasVault CSV/AVUX/AVEX -->
@@ -262,7 +262,7 @@
     <comment>RoboForm export instructions part 1</comment>
   </data>
   <data name="RoboformInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
     <comment>RoboForm export instructions part 2</comment>
   </data>
   <!-- Edge -->
@@ -275,7 +275,7 @@
     <comment>Edge export instructions part 1</comment>
   </data>
   <data name="EdgeInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
     <comment>Edge export instructions part 2</comment>
   </data>
   <!-- Enpass -->
@@ -288,12 +288,12 @@
     <comment>Enpass export instructions part 1</comment>
   </data>
   <data name="EnpassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
     <comment>Enpass export instructions part 2</comment>
   </data>
   <!-- Common text that can be reused -->
   <data name="UploadFileInstructionCommon" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
     <comment>Common instruction for file upload</comment>
   </data>
 </root>
