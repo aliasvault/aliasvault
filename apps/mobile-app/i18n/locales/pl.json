@@ -3,6 +3,7 @@
     "cancel": "Anuluj",
     "close": "Zamknij",
     "delete": "Usuń",
+    "remove": "Usuń",
     "save": "Zapisz",
     "edit": "Edytuj",
     "yes": "Tak",
@@ -114,11 +115,13 @@
   "totp": {
     "addCode": "Dodaj kod 2FA",
     "nameOptional": "Nazwa (opcjonalnie)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Uwierzytelnianie",
     "secretKey": "Tajny klucz",
     "instructions": "Wprowadź tajny klucz wyświetlony na stronie internetowej, na której chcesz dodać uwierzytelnianie dwuskładnikowe.",
     "saveToViewCode": "Zapisz, aby wyświetlić kod",
     "scanQrCode": "Skanuj kod QR",
-    "enterManually": "Wprowadź klucz konfiguracyjny",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Nieprawidłowy format tajnego klucza.",
       "scanFailed": "Nie udało się zeskanować kodu QR. Spróbuj ponownie."
