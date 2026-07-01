@@ -121,7 +121,7 @@
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "saveToViewCode": "Save to view code",
     "scanQrCode": "Scanáil Cód QR",
-    "enterManually": "Enter secret key",
+    "enterManually": "Cuir isteach eochair rúnda",
     "errors": {
       "invalidSecretKey": "Invalid secret key format.",
       "scanFailed": "Theip ar an gcód QR a scanadh. Déan iarracht arís."
@@ -344,7 +344,7 @@
     "creating": "Creating",
     "editing": "Editing",
     "login": {
-      "title": "Login"
+      "title": "Logáil Isteach"
     },
     "alias": {
       "title": "Alias"
@@ -354,7 +354,7 @@
       "cardInformation": "Card Information"
     },
     "note": {
-      "title": "Note"
+      "title": "Nóta"
     },
     "addField": "Cuir Réimse leis",
     "addCustomField": "Add Custom Field",
@@ -421,10 +421,10 @@
     "selectEmailDomain": "Roghnaigh Fearann ​​Ríomhphoist",
     "privateEmailTitle": "Ríomhphost Príobháideach",
     "privateEmailAliasVaultServer": "Freastalaí AliasVault",
-    "privateEmailDescription": "E2E encrypted, fully private.",
-    "publicEmailTitle": "Public Temp Email Providers",
-    "publicEmailDescription": "Anonymous but limited privacy. Email content is readable by anyone that knows the address.",
-    "searchPlaceholder": "Search vault...",
+    "privateEmailDescription": "E2E criptithe, go hiomlán príobháideach.",
+    "publicEmailTitle": "Soláthraithe Ríomhphoist Sealadacha Poiblí",
+    "publicEmailDescription": "Príobháideacht gan ainm ach teoranta. Is féidir le duine ar bith a bhfuil an seoladh ar eolas aige ábhar an ríomhphoist a léamh.",
+    "searchPlaceholder": "Cuardaigh an cruinneachán...",
     "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
@@ -435,7 +435,7 @@
     "recentEmails": "Recent emails",
     "loadingEmails": "Loading emails...",
     "noEmailsYet": "Níl aon ríomhphoist faighte fós.",
-    "offlineEmailsMessage": "You are offline. Please connect to the internet to load your emails.",
+    "offlineEmailsMessage": "Tá tú as líne. Ceangail leis an idirlíon le do ríomhphoist a luchtú.",
     "emailLoadError": "Tharla earráid agus ríomhphoist á lódáil. Déan iarracht arís ar ball.",
     "emailUnexpectedError": "Tharla earráid gan choinne agus ríomhphoist á lódáil. Déan iarracht arís ar ball.",
     "password": "Pasfhocal",
@@ -450,7 +450,7 @@
     "passwordTypeDiceware": "Passphrase",
     "passphraseLanguage": "Passphrase language",
     "wordCount": "Words",
-    "capitalization": "Capitalization",
+    "capitalization": "Caipitliú",
     "separator": "Separator",
     "salt": "Salt",
     "dicewareCapitalizationOption": {
@@ -498,7 +498,7 @@
       "all": "Items",
       "showFolders": "Fillteáin",
       "passkeys": "Passkeys",
-      "attachments": "Attachments",
+      "attachments": "Ceangaltáin",
       "totp": "2FA Codes"
     },
     "sort": {
@@ -508,7 +508,7 @@
       "alphabetical": "Alphabetical (A-Z)"
     },
     "totpCode": "Cód TOTP",
-    "attachments": "Attachments",
+    "attachments": "Ceangaltáin",
     "deleteAttachment": "Scrios",
     "fileSavedTo": "Comhad sábháilte chuig",
     "previewNotSupported": "Ní thacaítear le réamhamharc",
@@ -536,33 +536,33 @@
       "copyUsername": "Copy Username",
       "copyEmail": "Copy Email",
       "copyPassword": "Copy Password",
-      "copyTotpCode": "Copy TOTP Code"
+      "copyTotpCode": "Cóipeáil Cód TOTP"
     },
     "urlContextMenu": {
-      "title": "URL Options",
-      "copyLink": "Copy Link",
-      "openLink": "Open Link",
-      "shareLink": "Share Link"
+      "title": "Roghanna URL",
+      "copyLink": "Cóipeáil Nasc",
+      "openLink": "Oscail an Nasc",
+      "shareLink": "Comhroinn an Nasc"
     },
     "viewHistory": "View history",
     "history": "History",
     "noHistoryAvailable": "No history available",
-    "deleteHistoryConfirm": "Are you sure you want to delete this history record?",
-    "deleteConfirm": "Are you sure you want to delete this item? This action cannot be undone.",
+    "deleteHistoryConfirm": "An bhfuil tú cinnte gur mian leat an taifead staire seo a scriosadh?",
+    "deleteConfirm": "An bhfuil tú cinnte gur mian leat an mhír seo a scriosadh? Ní féidir an gníomh seo a chealú.",
     "folders": {
       "folder": "Folder",
       "newFolder": "New Folder",
       "createFolder": "Create Folder",
       "editFolder": "Edit Folder",
       "folderName": "Folder Name",
-      "folderNamePlaceholder": "e.g., Work, Personal",
+      "folderNamePlaceholder": "m.sh., Obair, Pearsanta",
       "folderNameRequired": "Folder name is required",
       "deleteFolder": "Delete Folder",
       "deleteFolderKeepItems": "Delete folder only",
       "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
       "deleteFolderAndItems": "Delete folder and all items",
       "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
-      "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
+      "emptyFolderHint": "Tá an fillteán seo folamh. Chun míreanna a bhogadh chuig an bhfillteán seo, cuir an mhír in eagar agus roghnaigh an fillteán seo.",
       "selectFolder": "Select Folder"
     },
     "recentlyDeleted": {
@@ -573,51 +573,51 @@
       "restore": "Restore",
       "deletePermanently": "Delete Permanently",
       "emptyAll": "Empty All",
-      "daysRemaining": "{{count}} day remaining",
-      "daysRemaining_plural": "{{count}} days remaining",
+      "daysRemaining": "{{count}} lá fágtha",
+      "daysRemaining_plural": "{{count}} lá fágtha",
       "expiringSoon": "Expiring soon",
       "confirmDeleteTitle": "Delete Permanently?",
       "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
       "confirmEmptyAllTitle": "Empty Recently Deleted?",
       "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
-      "itemRestored": "Item restored",
-      "itemDeleted": "Item permanently deleted",
-      "allItemsDeleted": "All items permanently deleted"
+      "itemRestored": "Mír athchóirithe",
+      "itemDeleted": "Mír scriosta go buan",
+      "allItemsDeleted": "Gach earra scriosta go buan"
     }
   },
   "emails": {
     "title": "Ríomhphoist",
-    "emailDetails": "Email Details",
-    "subject": "Subject:",
-    "date": "Date:",
-    "from": "From:",
-    "to": "To:",
-    "attachments": "Attachments",
-    "deleteEmail": "Delete Email",
-    "deleteEmailConfirm": "Are you sure you want to delete this email? This action is permanent and cannot be undone.",
-    "emailNotFound": "Email not found",
+    "emailDetails": "Sonraí Ríomhphoist",
+    "subject": "Ábhar:",
+    "date": "Dáta:",
+    "from": "Ó:",
+    "to": "Chuig:",
+    "attachments": "Ceangaltáin",
+    "deleteEmail": "Scrios Ríomhphost",
+    "deleteEmailConfirm": "An bhfuil tú cinnte gur mian leat an ríomhphost seo a scriosadh? Tá an gníomh seo buan agus ní féidir é a chealú.",
+    "emailNotFound": "Níor aimsíodh an ríomhphost",
     "formatHtml": "HTML",
     "formatPlain": "Text",
     "formatSource": "Foinse",
     "formatSwitchTitle": "Athraigh formáid ríomhphoist",
     "sizeKB": "KB",
-    "offlineMessage": "You are offline. Please connect to the internet to load your emails.",
-    "emptyMessage": "You have not received any emails at your private email addresses yet. When you receive a new email, it will appear here.",
+    "offlineMessage": "Tá tú as líne. Ceangail leis an idirlíon le do ríomhphoist a luchtú.",
+    "emptyMessage": "Níl aon ríomhphoist faighte agat ag do sheoltaí ríomhphoist príobháideacha go fóill. Nuair a gheobhaidh tú ríomhphost nua, beidh sé le feiceáil anseo.",
     "loadMore": "Load More ({{count}} remaining)",
     "time": {
-      "justNow": "just now",
+      "justNow": "díreach anois",
       "minutesAgo_single": "{{count}} min ago",
       "minutesAgo_plural": "{{count}} mins ago",
       "hoursAgo_single": "{{count}} hr ago",
       "hoursAgo_plural": "{{count}} hrs ago",
-      "yesterday": "yesterday"
+      "yesterday": "inné"
     }
   },
   "validation": {
-    "required": "This field is required",
-    "serviceNameRequired": "Service name is required",
-    "invalidDateFormat": "Date must be in YYYY-MM-DD format",
-    "invalidEmailFormat": "Invalid email format"
+    "required": "Tá an réimse seo riachtanach",
+    "serviceNameRequired": "Tá ainm na seirbhíse riachtanach",
+    "invalidDateFormat": "Ní mór an dáta a bheith i bhformáid BBBB-MM-LL",
+    "invalidEmailFormat": "Formáid ríomhphoist neamhbhailí"
   },
   "apiErrors": {
     "CLAIM_DOES_NOT_MATCH_USER": "The current chosen email address is already in use. Please change the email address by editing this credential.",
@@ -649,36 +649,36 @@
   "sync": {
     "offline": "Offline",
     "syncing": "Syncing...",
-    "pending": "Pending sync",
-    "backOnline": "Back online",
-    "stillOffline": "Still offline",
-    "syncFailed": "Sync failed"
+    "pending": "Sioncrónú ar feitheamh",
+    "backOnline": "Ar ais ar líne",
+    "stillOffline": "As líne fós",
+    "syncFailed": "Theip ar an sioncrónú"
   },
   "app": {
     "status": {
-      "unlockingVault": "Unlocking vault",
-      "decryptingVault": "Decrypting vault"
+      "unlockingVault": "Ag díghlasáil cruinneacháin",
+      "decryptingVault": "Ag díchriptiú cruinneacháin"
     },
     "navigation": {
-      "login": "Login",
-      "loginSettings": "Login Settings"
+      "login": "Logáil Isteach",
+      "loginSettings": "Socruithe Logála Isteach"
     },
     "notFound": {
-      "title": "Page not found",
-      "message": "This page has been moved or deleted.",
-      "goHome": "Go back to the start"
+      "title": "Leathanach gan aimsiú",
+      "message": "Tá an leathanach seo bogtha nó scriosta.",
+      "goHome": "Téigh ar ais go dtí an tús"
     },
     "appName": "AliasVault",
     "reinitialize": {
-      "vaultAutoLockedMessage": "Vault auto-locked after timeout.",
-      "attemptingToUnlockMessage": "Attempting to unlock."
+      "vaultAutoLockedMessage": "Glasálfar an cruinneachán go huathoibríoch tar éis an ama istigh.",
+      "attemptingToUnlockMessage": "Ag iarraidh díghlasáil."
     },
     "vaultError": {
-      "title": "Vault Error",
-      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
-      "showDetails": "Show error details",
-      "hideDetails": "Hide error details",
-      "copyErrorDetails": "Copy error details"
+      "title": "Earráid Cruinneacháin",
+      "description": "Tharla earráid agus do chruinneachán á luchtú. Má leanann an fhadhb seo, déan teagmháil leis an bhfoireann tacaíochta.",
+      "showDetails": "Taispeáin sonraí na hearráide",
+      "hideDetails": "Folaigh sonraí na hearráide",
+      "copyErrorDetails": "Sonraí earráide cóipeála"
     },
     "loginSettings": {
       "title": "Ceangal API",
