@@ -3,6 +3,7 @@
     "cancel": "Peruuta",
     "close": "Sulje",
     "delete": "Poista",
+    "remove": "Remove",
     "save": "Tallenna",
     "edit": "Muokkaa",
     "yes": "Kyllä",
@@ -114,11 +115,13 @@
   "totp": {
     "addCode": "Lisää 2FA TOTP -koodi",
     "nameOptional": "Nimi (valinnainen)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Authenticator",
     "secretKey": "Salainen avain",
     "instructions": "Syötä salainen avain, joka näkyy sivustossa, jossa haluat lisätä kaksivaiheisen tunnistautumisen",
     "saveToViewCode": "Tallenna nähdäksesi koodin",
     "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Virheellinen salatun avaimen muoto.",
       "scanFailed": "Failed to scan QR code. Please try again."
