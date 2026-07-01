@@ -189,7 +189,7 @@
   "items": {
     "title": "Elementi",
     "itemName": "Nome",
-    "suggestions": "Suggestions",
+    "suggestions": "Suggerimenti",
     "loginCredentials": "Credenziali di accesso",
     "cardInformation": "Informazioni sulla scheda",
     "addItem": "Aggiungi Elemento",
@@ -245,25 +245,25 @@
     "avoidAmbiguousChars": "Evita caratteri ambigui (o, 0, ecc.)",
     "passwordTypeBasic": "Password",
     "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
+    "passphraseLanguage": "Lingua passphrase",
+    "wordCount": "Parole",
     "dicewareCapitalizationOption": {
-      "TitleCase": "Title Case",
-      "Uppercase": "Uppercase",
-      "Lowercase": "Lowercase"
+      "TitleCase": "Iniziali in maiuscolo",
+      "Uppercase": "Maiuscolo",
+      "Lowercase": "Minuscolo"
     },
-    "separator": "Separator",
+    "separator": "Separatore",
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Trattino",
+      "Space": "Spazio",
+      "Underscore": "Trattino basso",
+      "Dot": "Punto"
     },
     "salt": "Salt",
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Prefix": "Prefisso",
+      "Sprinkle": "Posizione casuale",
+      "Suffix": "Suffisso"
     },
     "privateEmailTitle": "Email Privata",
     "privateEmailAliasVaultServer": "Server AliasVault",
@@ -329,7 +329,7 @@
     "addCode": "Aggiungi Codice 2FA",
     "instructions": "Inserisci la chiave segreta mostrata dal sito in cui vuoi aggiungere un'autenticazione a due fattori.",
     "nameOptional": "Nome (facoltativo)",
-    "addName": "Add a name (optional)",
+    "addName": "Aggiungi un nome (opzionale)",
     "secretKey": "Chiave segreta",
     "saveToViewCode": "Salva per visualizzare il codice",
     "defaultName": "Autenticazione",
@@ -470,7 +470,7 @@
     },
     "passwordGenerator": "Generatore di Password",
     "passwordGeneratorSettings": {
-      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "description": "Configurare le impostazioni predefinite del generatore di password per gli elementi appena creati, tra cui la lunghezza della password, i set di caratteri e la lingua di passphrase.",
       "configureButton": "Configura"
     },
     "credentialAutofill": "Riempimento automatico credenziali",
