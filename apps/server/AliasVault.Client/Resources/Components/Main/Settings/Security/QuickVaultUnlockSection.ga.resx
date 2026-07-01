@@ -59,43 +59,43 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Passkey unlock</value>
+    <value>Díghlasáil eochair phas</value>
     <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>Your master password is encrypted with the passkey PRF and stored locally. When you reload the AliasVault page or tab, you can unlock your vault with your passkey. If you wish to disable passkey unlock, you can do so with the button below. Your master password will still work for unlocking the vault.</value>
+    <value>Tá do phasfhocal máistir criptithe leis an eochair phas PRF agus stóráilte go háitiúil. Nuair a athlódálann tú leathanach nó cluaisín AliasVault, is féidir leat do chruinneachán a dhíghlasáil le do phasfhocal. Más mian leat díghlasáil an eochair phas a dhíchumasú, is féidir leat é sin a dhéanamh leis an gcnaipe thíos. Oibreoidh do phasfhocal máistir fós chun an cruinneachán a dhíghlasáil.</value>
     <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Disable Passkey Unlock</value>
+    <value>Díchumasaigh Díghlasáil Eochrach Pas</value>
     <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>By default, reloading the AliasVault page or tab requires you to enter your master password again. With a passkey, you can unlock your vault instantly. When enabled, your master password is locally encrypted using the passkey's PRF extension. Note: the passkey will only work for the current device and browser that you enable it on.</value>
+    <value>De réir réamhshocraithe, ní mór duit do phasfhocal máistir a iontráil arís chun leathanach nó cluaisín AliasVault a athlódáil. Le pasfhocal, is féidir leat do chruinneachán a dhíghlasáil láithreach. Nuair a bhíonn sé cumasaithe, déantar do phasfhocal máistir a chriptiú go háitiúil ag baint úsáide as síneadh PRF an phasfhocal. Tabhair faoi deara: ní oibreoidh an pasfhocal ach don fheiste agus don bhrabhsálaí reatha ar a gcumasaíonn tú é.</value>
     <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>This feature is currently supported by AliasVault browser extension and iOS app. Android support is coming soon. If you experience any issues, you can disable this feature at any time.</value>
+    <value>Tacaítear leis an ngné seo faoi láthair ag síneadh brabhsálaí AliasVault agus ag aip iOS. Beidh tacaíocht Android ag teacht go luath. Má bhíonn aon fhadhbanna agat, is féidir leat an ghné seo a dhíchumasú am ar bith.</value>
     <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Enable Passkey Unlock</value>
+    <value>Cumasaigh Díghlasáil Eochrach Pas</value>
     <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully enabled. The next time your vault is locked, you can unlock it with your created passkey.</value>
+    <value>Tá an díghlasáil eochair phas cumasaithe go rathúil. An chéad uair eile a ghlasálfar do chruinneachán, is féidir leat é a dhíghlasáil leis an eochair phas a chruthaigh tú.</value>
     <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully disabled.</value>
+    <value>Tá díghlasáil an eochair phas díchumasaithe go rathúil.</value>
     <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
-    <value>Your current browser does not support the WebAuthn PRF extension. Please try again with a different browser.</value>
+    <value>Ní thacaíonn do bhrabhsálaí reatha leis an síneadh WebAuthn PRF. Déan iarracht arís le brabhsálaí difriúil.</value>
     <comment>Error when WebAuthn is not supported</comment>
   </data>
   <data name="EnableErrorMessage" xml:space="preserve">
-    <value>An error occurred while trying to enable Quick Vault Unlock. Please try again (later).</value>
+    <value>Tharla earráid agus iarracht á déanamh Díghlasáil Thapa Cruinneacháin a chumasú. Déan iarracht arís (níos déanaí).</value>
     <comment>Generic error message when enabling fails</comment>
   </data>
 </root>
