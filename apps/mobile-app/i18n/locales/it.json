@@ -3,6 +3,7 @@
     "cancel": "Annulla",
     "close": "Chiudi",
     "delete": "Elimina",
+    "remove": "Rimuovi",
     "save": "Salva",
     "edit": "Modifica",
     "yes": "Sì",
@@ -114,11 +115,13 @@
   "totp": {
     "addCode": "Aggiungi Codice 2FA",
     "nameOptional": "Nome (facoltativo)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Autenticazione",
     "secretKey": "Chiave segreta",
     "instructions": "Inserisci la chiave segreta mostrata dal sito in cui vuoi aggiungere un'autenticazione a due fattori.",
     "saveToViewCode": "Salva per visualizzare il codice",
     "scanQrCode": "Scansiona il Codice QR",
-    "enterManually": "Inserisci una chiave di configurazione",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Formato chiave segreta non valido.",
       "scanFailed": "Scansione del codice QR non riuscita. Riprova."
