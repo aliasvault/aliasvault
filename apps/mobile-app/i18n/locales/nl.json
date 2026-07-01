@@ -3,6 +3,7 @@
     "cancel": "Annuleren",
     "close": "Sluiten",
     "delete": "Verwijderen",
+    "remove": "Verwijderen",
     "save": "Opslaan",
     "edit": "Bewerken",
     "yes": "Ja",
@@ -114,11 +115,13 @@
   "totp": {
     "addCode": "2FA-code toevoegen",
     "nameOptional": "Naam (optioneel)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Authenticator",
     "secretKey": "Secret key",
     "instructions": "Voer de secret key in die door de website wordt weergegeven waar je tweestapsverificatie wilt toevoegen.",
     "saveToViewCode": "Opslaan om code te bekijken",
     "scanQrCode": "Scan QR code",
-    "enterManually": "Voer een setup-sleutel in",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Ongeldig formaat.",
       "scanFailed": "Kon QR-code niet scannen. Probeer het opnieuw."
