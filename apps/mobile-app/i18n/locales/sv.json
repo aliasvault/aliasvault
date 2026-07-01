@@ -3,6 +3,7 @@
     "cancel": "Avbryt",
     "close": "Stäng",
     "delete": "Radera",
+    "remove": "Ta bort",
     "save": "Spara",
     "edit": "Redigera",
     "yes": "Ja",
@@ -114,11 +115,13 @@
   "totp": {
     "addCode": "Lägg till 2FA kod",
     "nameOptional": "Namn (valfritt)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Autentiserare",
     "secretKey": "Hemlig nyckel",
     "instructions": "Ange den hemliga nyckeln som visas av webbplatsen där du vill lägga till tvåfaktorsautentisering.",
     "saveToViewCode": "Spara för att visa kod",
     "scanQrCode": "Skanna QR-kod",
-    "enterManually": "Ange en konfigurationsnyckel",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Ogiltigt format för hemlig nyckel.",
       "scanFailed": "Kunde inte skanna QR-kod. Försök igen."
