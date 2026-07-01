@@ -65,10 +65,10 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
   }
 
   /**
-   * Handle click on the container (outside modal content) to close.
+   * Handle mousedown on the container (outside modal content) to close.
    */
-  const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>): void => {
-    // Only close if clicking directly on the container, not the modal content
+  const handleContainerMouseDown = (e: React.MouseEvent<HTMLDivElement>): void => {
+    // Only close if the press started directly on the container, not the modal content
     if (e.target === e.currentTarget) {
       onClose();
     }
@@ -79,13 +79,13 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black bg-opacity-80 transition-opacity"
-        onClick={onClose}
+        onMouseDown={onClose}
       />
 
-      {/* Modal container - clicking here (outside modal content) also closes */}
+      {/* Modal container - pressing here (outside modal content) also closes */}
       <div
         className="fixed inset-0 flex items-center justify-center p-4"
-        onClick={handleContainerClick}
+        onMouseDown={handleContainerMouseDown}
       >
         <div className={`relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-xl transition-all w-full ${maxWidth} mx-4`}>
           {/* Header - only show as block if title exists */}

@@ -36,6 +36,8 @@ public class TotpTests : ClientPlaywrightTest
                 await AddFieldSectionAsync("Two-Factor Authentication");
 
                 // Fill in the TOTP code details (form is already visible)
+                // The name field is hidden by default and revealed via the optional toggle.
+                await Page.Locator("button[id='add-totp-name']").ClickAsync();
                 var nameInput = Page.Locator("input[id='totp-name']");
                 var secretKeyInput = Page.Locator("input[id='totp-secret']");
 
@@ -78,6 +80,8 @@ public class TotpTests : ClientPlaywrightTest
                 await AddFieldSectionAsync("Two-Factor Authentication");
 
                 // Fill in the TOTP code details (form is already visible)
+                // The name field is hidden by default and revealed via the optional toggle.
+                await Page.Locator("button[id='add-totp-name']").ClickAsync();
                 await Page.Locator("input[id='totp-name']").FillAsync("TOTP to Delete");
                 await Page.Locator("input[id='totp-secret']").FillAsync("JBSWY3DPEHPK3PXP");
 
