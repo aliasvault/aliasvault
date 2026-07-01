@@ -189,7 +189,7 @@
   "items": {
     "title": "Elementer",
     "itemName": "Navn",
-    "suggestions": "Suggestions",
+    "suggestions": "Forslag",
     "loginCredentials": "Logonoplysninger",
     "cardInformation": "Kortoplysninger",
     "addItem": "Tilføj element",
@@ -244,20 +244,20 @@
     "includeSpecialChars": "Inkluder specialtegn",
     "avoidAmbiguousChars": "Undgå tvetydige tegn (o, 0 osv.)",
     "passwordTypeBasic": "Adgangskode",
-    "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
+    "passwordTypeDiceware": "Adgangskode",
+    "passphraseLanguage": "Adgangskode sprog",
+    "wordCount": "Ord",
     "dicewareCapitalizationOption": {
-      "TitleCase": "Title Case",
-      "Uppercase": "Uppercase",
-      "Lowercase": "Lowercase"
+      "TitleCase": "Titel Tilstand",
+      "Uppercase": "Store bogstaver",
+      "Lowercase": "Små bogstaver"
     },
-    "separator": "Separator",
+    "separator": "Skilletegn",
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Streg",
+      "Space": "Mellemrum",
+      "Underscore": "Understregning",
+      "Dot": "Punktum"
     },
     "salt": "Salt",
     "dicewareSaltOption": {
