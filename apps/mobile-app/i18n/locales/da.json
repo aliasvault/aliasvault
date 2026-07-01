@@ -462,9 +462,9 @@
       "Dot": "Punktum"
     },
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Prefix": "Præfiks",
+      "Sprinkle": "Tilfældig position",
+      "Suffix": "Suffiks"
     },
     "errorLoadingItems": "Fejl ved indlæsning af elementer",
     "vaultSyncFailed": "Synkronisering af boks mislykkedes",
