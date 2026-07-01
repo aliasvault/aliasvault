@@ -329,6 +329,7 @@
     "addCode": "Adicionar Código de Autenticação de Dois Fatores",
     "instructions": "Digite a chave secreta exibida pelo website que você quer adicionar a autenticação de dois fatores.",
     "nameOptional": "Nome (opcional)",
+    "addName": "Add a name (optional)",
     "secretKey": "Chave Secreta",
     "saveToViewCode": "Salvar para ver código",
     "defaultName": "Autenticador",
