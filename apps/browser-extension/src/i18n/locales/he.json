@@ -329,6 +329,7 @@
     "addCode": "Add 2FA Code",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "nameOptional": "שם (רשות)",
+    "addName": "Add a name (optional)",
     "secretKey": "מפתח סודי",
     "saveToViewCode": "יש לשמור כדי לצפות בקוד",
     "defaultName": "Authenticator",
