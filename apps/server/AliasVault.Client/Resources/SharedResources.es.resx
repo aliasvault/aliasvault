@@ -134,6 +134,14 @@
     <value>Eliminar</value>
     <comment>Button text for deleting an item</comment>
   </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Eliminar</value>
+    <comment>Button text for removing an item</comment>
+  </data>
+  <data name="TotpDefaultName" xml:space="preserve">
+    <value>Autentificador</value>
+    <comment>Display-only fallback name shown for a TOTP code that has no name set</comment>
+  </data>
   <data name="Edit" xml:space="preserve">
     <value>Editar</value>
     <comment>Button text for editing an item</comment>
