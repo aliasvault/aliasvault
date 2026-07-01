@@ -329,6 +329,7 @@
     "addCode": "2FA kodu ekle",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "nameOptional": "İsim (opsiyonel)",
+    "addName": "Add a name (optional)",
     "secretKey": "Gizli anahtar",
     "saveToViewCode": "Save to view code",
     "defaultName": "Authenticator",
