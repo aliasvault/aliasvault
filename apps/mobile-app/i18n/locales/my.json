@@ -3,6 +3,7 @@
     "cancel": "ပယ်ဖျက်မည်",
     "close": "ပိတ်မည်",
     "delete": "ဖျက်မည်",
+    "remove": "Remove",
     "save": "သိမ်းဆည်းမည်",
     "edit": "ပြင်ဆင်မည်",
     "yes": "ဟုတ်",
@@ -114,11 +115,13 @@
   "totp": {
     "addCode": "Add 2FA Code",
     "nameOptional": "Name (optional)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Authenticator",
     "secretKey": "Secret Key",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "saveToViewCode": "Save to view code",
     "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Invalid secret key format.",
       "scanFailed": "Failed to scan QR code. Please try again."
