@@ -444,22 +444,22 @@
     "includeSpecialChars": "Specialtegn (!@#)",
     "avoidAmbiguousChars": "Undgå tvetydige tegn",
     "passwordTypeBasic": "Adgangskode",
-    "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
-    "capitalization": "Capitalization",
-    "separator": "Separator",
+    "passwordTypeDiceware": "Adgangskode",
+    "passphraseLanguage": "Adgangskode sprog",
+    "wordCount": "Ord",
+    "capitalization": "Kapitalisering",
+    "separator": "Skilletegn",
     "salt": "Salt",
     "dicewareCapitalizationOption": {
-      "Lowercase": "Lowercase",
-      "TitleCase": "Title Case",
-      "Uppercase": "Uppercase"
+      "Lowercase": "Små bogstaver",
+      "TitleCase": "Titel Tilstand",
+      "Uppercase": "Store bogstaver"
     },
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Streg",
+      "Space": "Mellemrum",
+      "Underscore": "Understregning",
+      "Dot": "Punktum"
     },
     "dicewareSaltOption": {
       "Prefix": "Prefix",
