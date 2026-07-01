@@ -1,12 +1,44 @@
 /**
- * A single field pattern entry: terms that match a field type, plus optional
- * terms that veto a match. Exclusions are applied with whole-word semantics
- * and let us narrow broad include patterns (e.g. "token" hits "test-tokenfield"
- * widgets that aren't actually 2FA inputs).
+ * The set of terms that mark a field as a given type, split into two tiers:
+ * - `specific`: strong terms that identify the field type on their own (e.g. "totp", "2fa").
+ * - `generic`: terms too weak to stand alone (e.g. bare "code", "token"); optional.
+ *
+ * Every entry uses this same shape (omit `generic` when there's nothing weak to list) so
+ * the patterns are uniform and easy to maintain.
+ *
+ * Field-level matching (a field's own name/id/class) uses both tiers — a field named
+ * exactly "code" is still a strong hint. Looser context searches (scanning surrounding
+ * headings/attributes) use only `specific` to avoid false positives on unrelated forms.
+ */
+export type IncludePatterns = {
+    specific: string[];
+    generic?: string[];
+}
+
+/**
+ * A single field pattern entry: terms that match a field type (see {@link IncludePatterns}),
+ * plus optional terms that veto a match. Exclusions are applied with whole-word semantics
+ * and let us narrow broad include patterns (e.g. "token" hits "test-tokenfield" widgets
+ * that aren't actually 2FA inputs).
  */
 export type FieldPatternEntry = {
-    include: string[];
+    include: IncludePatterns;
     exclude?: string[];
+}
+
+/**
+ * All include terms for an entry (specific + generic). Used by field-level matching.
+ */
+export function includeTerms(entry: FieldPatternEntry): string[] {
+  return [...entry.include.specific, ...(entry.include.generic ?? [])];
+}
+
+/**
+ * Only the strong (specific) include terms for an entry, omitting generic ones.
+ * Used by looser context searches that need high precision.
+ */
+export function specificIncludeTerms(entry: FieldPatternEntry): string[] {
+  return entry.include.specific;
 }
 
 /**
@@ -71,23 +103,29 @@ export type FieldExclusionPatterns = string[];
  * include terms (e.g. TOTP's "token" matches "test-tokenfield" widgets).
  */
 export const EnglishFieldPatterns: FieldPatterns = {
-  username: { include: ['username', 'login', 'identifier', 'user'] },
-  fullName: { include: ['fullname', 'full-name', 'full name'] },
-  firstName: { include: ['firstname', 'first-name', 'first_name', 'fname', 'name', 'given-name'] },
-  lastName: { include: ['lastname', 'last-name', 'last_name', 'lname', 'surname', 'family-name'] },
-  email: { include: ['email', 'mail', 'emailaddress'] },
-  emailConfirm: { include: ['confirm', 'verification', 'repeat', 'retype', 'verify', 'email2'] },
+  username: { include: { specific: ['username', 'login', 'identifier', 'user'] } },
+  fullName: { include: { specific: ['fullname', 'full-name', 'full name'] } },
+  firstName: { include: { specific: ['firstname', 'first-name', 'first_name', 'fname', 'name', 'given-name'] } },
+  lastName: { include: { specific: ['lastname', 'last-name', 'last_name', 'lname', 'surname', 'family-name'] } },
+  email: { include: { specific: ['email', 'mail', 'emailaddress'] } },
+  emailConfirm: { include: { specific: ['confirm', 'verification', 'repeat', 'retype', 'verify', 'email2'] } },
   password: {
-    include: ['password', 'pwd', 'pass'],
+    include: { specific: ['password', 'pwd', 'pass'] },
     exclude: ['otp', 'totp', 'tfa', '2fa', 'mfa', 'twofa', 'authenticator', 'one-time', 'onetime', 'verification-code', 'verificationcode', 'two-factor', 'second-factor', 'auth-code', 'security-code', 'six-digit']
   },
-  birthdate: { include: ['birthdate', 'birth-date', 'dob', 'date-of-birth'] },
-  gender: { include: ['gender', 'sex'] },
-  birthDateDay: { include: ['-day', 'birthdate_d', 'birthdayday', '_day', 'day'] },
-  birthDateMonth: { include: ['-month', 'birthdate_m', 'birthdaymonth', '_month', 'month'] },
-  birthDateYear: { include: ['-year', 'birthdate_y', 'birthdayyear', '_year', 'year'] },
+  birthdate: { include: { specific: ['birthdate', 'birth-date', 'dob', 'date-of-birth'] } },
+  gender: { include: { specific: ['gender', 'sex'] } },
+  birthDateDay: { include: { specific: ['-day', 'birthdate_d', 'birthdayday', '_day', 'day'] } },
+  birthDateMonth: { include: { specific: ['-month', 'birthdate_m', 'birthdaymonth', '_month', 'month'] } },
+  birthDateYear: { include: { specific: ['-year', 'birthdate_y', 'birthdayyear', '_year', 'year'] } },
   totp: {
-    include: ['totp', 'otp', 'one-time', 'onetime', 'six-digit', 'digit-code', 'token', 'authenticator', 'authentication', '2fa', 'twofa', 'two-factor', 'mfa', 'security-code', 'auth-code', 'passcode', 'pin-code', 'pincode', 'google_code', 'verification-code', 'verificationcode', 'tfa', 'tfacode', 'second-factor', 'one time password', 'code'],
+    include: {
+      // specific: strong terms that can clearly identify a TOTP field on their own.
+      specific: ['totp', 'otp', 'one-time', 'onetime', 'six-digit', 'digit-code', 'authenticator', 'authentication', '2fa', 'twofa', 'two-factor', 'mfa', 'security-code', 'auth-code', 'passcode', 'pin-code', 'pincode', 'google_code', 'verification-code', 'verificationcode', 'tfa', 'tfacode', 'second-factor', 'one time password'],
+      // generic: terms too weak to match on their own (can create false positives), but can be used for additional context matching.
+      generic: ['token', 'code']
+    },
+    // exclude: whole-word terms that if found negate the TOTP match.
     exclude: ['test']
   }
 };
@@ -185,19 +223,19 @@ export const EnglishStopWords = new Set([
  * Dutch field patterns used to detect Dutch form fields.
  */
 export const DutchFieldPatterns: FieldPatterns = {
-  username: { include: ['gebruikersnaam', 'gebruiker', 'login', 'identifier'] },
-  fullName: { include: ['volledige naam'] },
-  firstName: { include: ['voornaam', 'naam'] },
-  lastName: { include: ['achternaam'] },
-  email: { include: ['e-mailadres', 'e-mail'] },
-  emailConfirm: { include: ['bevestig', 'herhaal', 'verificatie'] },
-  password: { include: ['wachtwoord', 'pwd'] },
-  birthdate: { include: ['geboortedatum', 'geboorte-datum'] },
-  gender: { include: ['geslacht', 'aanhef'] },
-  birthDateDay: { include: ['dag'] },
-  birthDateMonth: { include: ['maand'] },
-  birthDateYear: { include: ['jaar'] },
-  totp: { include: ['verificatiecode', 'eenmalig', 'authenticatie', 'tweefactor', 'beveiligingscode'] }
+  username: { include: { specific: ['gebruikersnaam', 'gebruiker', 'login', 'identifier'] } },
+  fullName: { include: { specific: ['volledige naam'] } },
+  firstName: { include: { specific: ['voornaam', 'naam'] } },
+  lastName: { include: { specific: ['achternaam'] } },
+  email: { include: { specific: ['e-mailadres', 'e-mail'] } },
+  emailConfirm: { include: { specific: ['bevestig', 'herhaal', 'verificatie'] } },
+  password: { include: { specific: ['wachtwoord', 'pwd'] } },
+  birthdate: { include: { specific: ['geboortedatum', 'geboorte-datum'] } },
+  gender: { include: { specific: ['geslacht', 'aanhef'] } },
+  birthDateDay: { include: { specific: ['dag'] } },
+  birthDateMonth: { include: { specific: ['maand'] } },
+  birthDateYear: { include: { specific: ['jaar'] } },
+  totp: { include: { specific: ['verificatiecode', 'eenmalig', 'authenticatie', 'tweefactor', 'beveiligingscode'] } }
 };
 
 /**
@@ -295,11 +333,14 @@ import { TranslationEmailPatterns, TranslationUsernamePatterns, TranslationPassw
 
 /**
  * Merge per-field-type entries (include + optional exclude) from one or more
- * languages, deduping each list while preserving original order.
+ * languages, deduping each list while preserving original order. The specific /
+ * generic split of `include` is preserved across the merge.
  */
 function mergeEntries(...entries: FieldPatternEntry[]): FieldPatternEntry {
-  const include = [...new Set(entries.flatMap(e => e.include))];
+  const specific = [...new Set(entries.flatMap(e => e.include.specific))];
+  const generic = [...new Set(entries.flatMap(e => e.include.generic ?? []))];
   const exclude = [...new Set(entries.flatMap(e => e.exclude ?? []))];
+  const include: IncludePatterns = generic.length > 0 ? { specific, generic } : { specific };
   return exclude.length > 0 ? { include, exclude } : { include };
 }
 
@@ -310,7 +351,7 @@ function mergeEntries(...entries: FieldPatternEntry[]): FieldPatternEntry {
  * - Translation-based patterns from all supported languages
  */
 export const CombinedFieldPatterns: FieldPatterns = {
-  username: mergeEntries(EnglishFieldPatterns.username, DutchFieldPatterns.username, { include: TranslationUsernamePatterns }),
+  username: mergeEntries(EnglishFieldPatterns.username, DutchFieldPatterns.username, { include: { specific: TranslationUsernamePatterns } }),
   fullName: mergeEntries(EnglishFieldPatterns.fullName, DutchFieldPatterns.fullName),
   firstName: mergeEntries(EnglishFieldPatterns.firstName, DutchFieldPatterns.firstName),
   lastName: mergeEntries(EnglishFieldPatterns.lastName, DutchFieldPatterns.lastName),
@@ -322,9 +363,9 @@ export const CombinedFieldPatterns: FieldPatterns = {
    *
    * Translation patterns are added last to catch all language variations (e.g., "E-post" in Swedish)
    */
-  email: mergeEntries(DutchFieldPatterns.email, EnglishFieldPatterns.email, { include: TranslationEmailPatterns }),
+  email: mergeEntries(DutchFieldPatterns.email, EnglishFieldPatterns.email, { include: { specific: TranslationEmailPatterns } }),
   emailConfirm: mergeEntries(EnglishFieldPatterns.emailConfirm, DutchFieldPatterns.emailConfirm),
-  password: mergeEntries(EnglishFieldPatterns.password, DutchFieldPatterns.password, { include: TranslationPasswordPatterns }),
+  password: mergeEntries(EnglishFieldPatterns.password, DutchFieldPatterns.password, { include: { specific: TranslationPasswordPatterns } }),
   birthdate: mergeEntries(EnglishFieldPatterns.birthdate, DutchFieldPatterns.birthdate),
   gender: mergeEntries(EnglishFieldPatterns.gender, DutchFieldPatterns.gender),
   birthDateDay: mergeEntries(EnglishFieldPatterns.birthDateDay, DutchFieldPatterns.birthDateDay),

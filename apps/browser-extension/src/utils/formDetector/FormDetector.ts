@@ -1,4 +1,4 @@
-import { CombinedEmailVerificationPatterns, CombinedFieldExclusionPatterns, CombinedFieldPatterns, CombinedGenderOptionPatterns, CombinedStopWords, FieldPatternEntry } from "./FieldPatterns";
+import { CombinedEmailVerificationPatterns, CombinedFieldExclusionPatterns, CombinedFieldPatterns, CombinedGenderOptionPatterns, CombinedStopWords, FieldPatternEntry, includeTerms, specificIncludeTerms } from "./FieldPatterns";
 import { DetectedFieldType, FormFields } from "./types/FormFields";
 
 /**
@@ -624,7 +624,7 @@ export class FormDetector {
     excludeElements: HTMLInputElement[] = [],
     checkVisibility: boolean = true
   ): HTMLInputElement[] {
-    const patterns = entry.include;
+    const patterns = includeTerms(entry);
     // Query for standard input elements, select elements, and elements with type attributes
     const standardCandidates = form
       ? Array.from(form.querySelectorAll<HTMLElement>('input, select, [type]'))
@@ -993,10 +993,10 @@ export class FormDetector {
       /*
        * Check if label contains BOTH username and email patterns (dual-purpose field)
        */
-      const labelHasUsername = CombinedFieldPatterns.username.include.some(pattern =>
+      const labelHasUsername = includeTerms(CombinedFieldPatterns.username).some(pattern =>
         labelText.includes(pattern)
       );
-      const labelHasEmail = CombinedFieldPatterns.email.include.some(pattern =>
+      const labelHasEmail = includeTerms(CombinedFieldPatterns.email).some(pattern =>
         labelText.includes(pattern)
       );
 
@@ -1006,10 +1006,10 @@ export class FormDetector {
        * 2. AND the field's name/id contains username pattern but NOT email pattern
        */
       if (labelHasUsername && labelHasEmail) {
-        const hasUsernameInNameOrId = CombinedFieldPatterns.username.include.some(pattern =>
+        const hasUsernameInNameOrId = includeTerms(CombinedFieldPatterns.username).some(pattern =>
           fieldAttributes.includes(pattern)
         );
-        const hasEmailInNameOrId = CombinedFieldPatterns.email.include.some(pattern =>
+        const hasEmailInNameOrId = includeTerms(CombinedFieldPatterns.email).some(pattern =>
           fieldAttributes.includes(pattern)
         );
 
@@ -1465,9 +1465,50 @@ export class FormDetector {
       if (maxLength === 1 && inputMode === 'numeric') {
         return input;
       }
+
+      /*
+       * Check for a 6-character code field whose own attributes give no 2FA signal
+       * but whose surrounding form context clearly identifies a two-factor challenge. 
+       * The strong context patterns keep this from matching unrelated short fields (zip/coupon/PIN inputs).
+       */
+      if (maxLength === 6 &&
+          (inputType === 'text' || inputType === 'tel' || inputType === 'number') &&
+          this.hasTotpFormContext(input)) {
+        return input;
+      }
     }
 
     return null;
+  }
+
+  /**
+   * Check whether the form context surrounding an input clearly indicates a two-factor
+   * challenge. Walks up a bounded number of ancestors collecting identifying attributes
+   * (id/name/class) and nearby heading/legend text, then searches it for the TOTP field
+   * patterns. Only the `specific` TOTP terms are used (generic ones like "code"/"token"
+   * are skipped) so this fires on an unambiguous 2FA signal; used to classify short code
+   * fields that carry no 2FA signal of their own.
+   */
+  private hasTotpFormContext(input: HTMLInputElement): boolean {
+    const parts: string[] = [];
+    let node: HTMLElement | null = input;
+    let depth = 0;
+
+    while (node && depth < 8) {
+      parts.push(node.id);
+      parts.push(node.getAttribute('name') ?? '');
+      parts.push(node.getAttribute('class') ?? '');
+
+      // Capture heading/legend text that sits as a direct child at this level.
+      const headings = node.querySelectorAll(':scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > h5, :scope > h6, :scope > legend');
+      headings.forEach(heading => parts.push(heading.textContent ?? ''));
+
+      node = node.parentElement;
+      depth++;
+    }
+
+    const context = parts.join(' ').toLowerCase();
+    return specificIncludeTerms(CombinedFieldPatterns.totp).some(pattern => context.includes(pattern));
   }
 
   /**
