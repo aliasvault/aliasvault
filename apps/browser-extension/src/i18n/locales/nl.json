@@ -329,7 +329,7 @@
     "addCode": "2FA-code toevoegen",
     "instructions": "Voer de secret key in die door de website wordt weergegeven waar je tweestapsverificatie wilt toevoegen.",
     "nameOptional": "Naam (optioneel)",
-    "addName": "Add a name (optional)",
+    "addName": "Voeg een naam toe (optioneel)",
     "secretKey": "Secret key",
     "saveToViewCode": "Opslaan om code te bekijken",
     "defaultName": "Authenticator",
