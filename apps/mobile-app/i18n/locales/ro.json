@@ -3,6 +3,7 @@
     "cancel": "Anulează",
     "close": "Închide",
     "delete": "Șterge",
+    "remove": "Elimină",
     "save": "Salvează",
     "edit": "Editează",
     "yes": "Da",
@@ -114,11 +115,13 @@
   "totp": {
     "addCode": "Adaugă cod 2FA",
     "nameOptional": "Nume (opțional)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Authenticator",
     "secretKey": "Cheie secretă",
     "instructions": "Introdu cheia secretă furnizată de site-ul unde dorești să adaugi autentificarea cu doi factori.",
     "saveToViewCode": "Salvează pentru a vedea codul",
     "scanQrCode": "Scanează codul QR",
-    "enterManually": "Introdu o cheie de configurare",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Formatul cheii secrete este invalid.",
       "scanFailed": "Scanarea codului QR a eșuat. Încearcă din nou."
