@@ -3,6 +3,7 @@
     "cancel": "Anulează",
     "close": "Închide",
     "delete": "Șterge",
+    "remove": "Elimină",
     "save": "Salvează",
     "edit": "Editează",
     "yes": "Da",
@@ -16,6 +17,7 @@
     "copied": "Copiat în clipboard",
     "loadMore": "Încarcă mai multe",
     "use": "Utilizează",
+    "none": "Niciunul",
     "confirm": "Confirmă",
     "next": "Înainte",
     "notice": "Notă",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "Adaugă cod 2FA",
     "nameOptional": "Nume (opțional)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Authenticator",
     "secretKey": "Cheie secretă",
     "instructions": "Introdu cheia secretă furnizată de site-ul unde dorești să adaugi autentificarea cu doi factori.",
     "saveToViewCode": "Salvează pentru a vedea codul",
     "scanQrCode": "Scanează codul QR",
-    "enterManually": "Introdu o cheie de configurare",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Formatul cheii secrete este invalid.",
       "scanFailed": "Scanarea codului QR a eșuat. Încearcă din nou."
@@ -442,6 +446,29 @@
     "includeNumbers": "Cifre (0-9)",
     "includeSpecialChars": "Caractere speciale (!@#)",
     "avoidAmbiguousChars": "Evită caracterele ambigue",
+    "passwordTypeBasic": "Parolă",
+    "passwordTypeDiceware": "Frază de acces",
+    "passphraseLanguage": "Limba frazei de acces",
+    "wordCount": "Cuvinte",
+    "capitalization": "Capitalizare",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Litere mici",
+      "TitleCase": "Majuscule inițiale",
+      "Uppercase": "Litere mari"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Liniuță",
+      "Space": "Spațiu",
+      "Underscore": "Subliniere",
+      "Dot": "Punct"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Poziție aleatorie",
+      "Suffix": "Sufix"
+    },
     "errorLoadingItems": "Eroare la încărcarea elementelor",
     "vaultSyncFailed": "Sincronizarea seifului a eșuat",
     "vaultSyncedSuccessfully": "Seiful a fost sincronizat cu succes",
@@ -655,7 +682,6 @@
     },
     "loginSettings": {
       "title": "Conexiune API",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Self-hosted",
       "customApiUrl": "URL API personalizat",
       "customApiUrlPlaceholder": "https://instanta-mea.com/api",

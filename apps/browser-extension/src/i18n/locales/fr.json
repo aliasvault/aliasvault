@@ -62,6 +62,7 @@
     "openInNewWindow": "Ouvrir dans une nouvelle fenêtre",
     "enabled": "Activé",
     "disabled": "Désactivé",
+    "none": "Aucun",
     "showPassword": "Afficher le mot de passe",
     "hidePassword": "Cacher le mot de passe",
     "show": "Afficher",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Éléments",
     "itemName": "Nom",
+    "suggestions": "Suggestions",
     "loginCredentials": "Identifiants de connexion",
     "cardInformation": "Informations de la carte",
     "addItem": "Ajouter un élément",
@@ -204,6 +206,8 @@
     "folder": "Dossier",
     "welcomeTitle": "Bienvenue dans AliasVault !",
     "welcomeDescription": "Pour utiliser l'extension de navigateur AliasVault : accédez à un site web et utilisez la fenêtre de saisie automatique AliasVault pour créer un nouvel identifiant.",
+    "currentSiteMatch": "Pour {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} résultats",
     "noMatchingItems": "Aucun élément ne correspond au filtre sélectionné.",
     "noMatchingItemsSearch": "Aucun élément correspondant à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Aucun élément {{filter}} correspondant à \"{{search}}\"",
@@ -239,6 +243,28 @@
     "includeNumbers": "Inclure des chiffres",
     "includeSpecialChars": "Inclure des caractères spéciaux",
     "avoidAmbiguousChars": "Éviter les caractères ambigus (o, 0, etc.)",
+    "passwordTypeBasic": "Mot de passe",
+    "passwordTypeDiceware": "Phrase secrète",
+    "passphraseLanguage": "Langue de la phrase secrète",
+    "wordCount": "Mots",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Casse du titre",
+      "Uppercase": "Majuscule",
+      "Lowercase": "Minuscule"
+    },
+    "separator": "Séparateur",
+    "dicewareSeparatorOption": {
+      "Dash": "Tiret",
+      "Space": "Espace",
+      "Underscore": "Tiret bas",
+      "Dot": "Point"
+    },
+    "salt": "Salage",
+    "dicewareSaltOption": {
+      "Prefix": "Préfixe",
+      "Sprinkle": "Position aléatoire",
+      "Suffix": "Suffixe"
+    },
     "privateEmailTitle": "E-mail privé",
     "privateEmailAliasVaultServer": "Serveur AliasVault",
     "privateEmailDescription": "E2E chiffré, entièrement privé.",
@@ -303,6 +329,7 @@
     "addCode": "Ajouter un code 2FA",
     "instructions": "Entrez la clé secrète affichée par le site Web où vous souhaitez ajouter l'authentification à deux facteurs.",
     "nameOptional": "Nom (facultatif)",
+    "addName": "Ajouter un nom (facultatif)",
     "secretKey": "Clé secrète",
     "saveToViewCode": "Enregistrer pour afficher le code",
     "defaultName": "Authentificateur",
@@ -440,6 +467,11 @@
         "male": "Homme",
         "female": "Femme"
       }
+    },
+    "passwordGenerator": "Générateur de mot de passe",
+    "passwordGeneratorSettings": {
+      "description": "Configurer les paramètres par défaut du générateur de mot de passe pour les éléments nouvellement créés, y compris la longueur du mot de passe, les jeux de caractères et la langue de la phrase secrète.",
+      "configureButton": "Configurer"
     },
     "credentialAutofill": "Remplissage automatique des identifiants",
     "credentialAutofillDescription": "Afficher un popup de saisie automatique lorsque les champs nom d'utilisateur/mot de passe sont détectés",

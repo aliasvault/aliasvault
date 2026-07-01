@@ -3,6 +3,7 @@
     "cancel": "Batal",
     "close": "Tutup",
     "delete": "Hapus",
+    "remove": "Buang",
     "save": "Simpan",
     "edit": "Ubah",
     "yes": "Ya",
@@ -16,6 +17,7 @@
     "copied": "Tersalin ke papan klip",
     "loadMore": "Muat lebih banyak",
     "use": "Gunakan",
+    "none": "None",
     "confirm": "Konfirmasi",
     "next": "Berikutnya",
     "notice": "Perhatian",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "Tambahkan kode 2FA",
     "nameOptional": "Nama (opsional)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Autentikator",
     "secretKey": "Secret Key",
     "instructions": "Masukkan kunci rahasia yang ditampilkan oleh situs web tempat Anda ingin menambahkan autentikasi dua faktor.",
     "saveToViewCode": "Simpan untuk melihat kode",
     "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Format kunci rahasia tidak valid.",
       "scanFailed": "Failed to scan QR code. Please try again."
@@ -442,6 +446,29 @@
     "includeNumbers": "Numbers (0-9)",
     "includeSpecialChars": "Special Characters (!@#)",
     "avoidAmbiguousChars": "Avoid Ambiguous Characters",
+    "passwordTypeBasic": "Kata sandi",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Error loading items",
     "vaultSyncFailed": "Vault sync failed",
     "vaultSyncedSuccessfully": "Vault synced successfully",
@@ -655,7 +682,6 @@
     },
     "loginSettings": {
       "title": "API Connection",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Self-hosted",
       "customApiUrl": "Custom API URL",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",

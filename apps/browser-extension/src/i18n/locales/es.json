@@ -62,6 +62,7 @@
     "openInNewWindow": "Abrir en una ventana nueva",
     "enabled": "Habilitado",
     "disabled": "Desactivado",
+    "none": "Nada",
     "showPassword": "Mostrar contraseña",
     "hidePassword": "Ocultar contraseña",
     "show": "Mostrar",
@@ -149,7 +150,7 @@
     "creatingNewAlias": "Creando nuevo alias",
     "creatingNewCredential": "Creando nueva credencial",
     "noMatchesFound": "No se han encontrado resultados",
-    "loginWithPasskey": "Login with passkey",
+    "loginWithPasskey": "Iniciar sesión con llave acceso",
     "searchVault": "Buscar bóveda...",
     "enterServiceName": "Introduzca el nombre del servicio",
     "enterEmailAddress": "Introduzca la dirección de correo electrónico",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Elementos",
     "itemName": "Nombre",
+    "suggestions": "Sugerencias",
     "loginCredentials": "Credenciales de inicio de sesión",
     "cardInformation": "Información de la tarjeta",
     "addItem": "Añadir elemento",
@@ -204,6 +206,8 @@
     "folder": "Folder",
     "welcomeTitle": "¡Bienvenido a AliasVault!",
     "welcomeDescription": "Para utilizar la extensión del navegador AliasVault: vaya a un sitio web y utilice la ventana de autocompletado de AliasVault para crear una nueva credencial.",
+    "currentSiteMatch": "Para {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} elementos encontrados",
     "noMatchingItems": "No hay elementos que coincidan con el filtro.",
     "noMatchingItemsSearch": "No hay elementos que coincidan con \"{{search}}\"",
     "noMatchingItemsWithFilter": "No hay elementos {{filter}} que coincidan con \"{{search}}\"",
@@ -239,6 +243,28 @@
     "includeNumbers": "Incluye números",
     "includeSpecialChars": "Incluye caracteres especiales",
     "avoidAmbiguousChars": "Evita caracteres ambiguos (o, 0, etc.)",
+    "passwordTypeBasic": "Contraseña",
+    "passwordTypeDiceware": "Frase de contraseña",
+    "passphraseLanguage": "Idioma de la frase",
+    "wordCount": "Palabras",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Estilo título",
+      "Uppercase": "Mayúsculas",
+      "Lowercase": "Minúsculas"
+    },
+    "separator": "Separador",
+    "dicewareSeparatorOption": {
+      "Dash": "Raya",
+      "Space": "Espacio",
+      "Underscore": "Guion bajo",
+      "Dot": "Punto"
+    },
+    "salt": "Sal",
+    "dicewareSaltOption": {
+      "Prefix": "Prefijo",
+      "Sprinkle": "Posición aleatoria",
+      "Suffix": "Sufijo"
+    },
     "privateEmailTitle": "Correo electrónico privado",
     "privateEmailAliasVaultServer": "Servidor AliasVault",
     "privateEmailDescription": "E2E cifrado, totalmente privado.",
@@ -303,6 +329,7 @@
     "addCode": "Añadir código 2FA",
     "instructions": "Introduzca la clave secreta mostrada por el sitio web donde desea añadir autenticación de dos factores.",
     "nameOptional": "Nombre (Opcional)",
+    "addName": "Añadir un nombre (opcional)",
     "secretKey": "Clave secreta",
     "saveToViewCode": "Guardar para ver el código",
     "defaultName": "Autentificador",
@@ -441,6 +468,11 @@
         "female": "Mujer"
       }
     },
+    "passwordGenerator": "Generador de contraseñas",
+    "passwordGeneratorSettings": {
+      "description": "Configurar la configuración predeterminada del generador de contraseñas para elementos recién creados, incluyendo la longitud de contraseña, conjuntos de caracteres y lenguaje de contraseñas.",
+      "configureButton": "Configurar"
+    },
     "credentialAutofill": "Autorrelleno de credenciales",
     "credentialAutofillDescription": "Mostrar ventana emergente de autorrelleno cuando se detectan campos de nombre de usuario/contraseña",
     "totpAutofill": "Codigo 2FA de autorelleno",
@@ -505,7 +537,7 @@
       "selectExistingLoginDescription": "Adjuntar esta llave a una credencial de inicio de sesión existente para este sitio.",
       "attachingToCredential": "Añadiendo llave a: {{serviceName}}",
       "attachPasskey": "Añadir llave de acceso",
-      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
+      "unsupportedAlgorithm": "Este sitio web requiere un tipo de llave de acceso que AliasVault no soporta."
     },
     "settings": {
       "passkeyProvider": "Proveedor de llave de acceso",

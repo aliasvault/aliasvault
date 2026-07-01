@@ -62,6 +62,7 @@
     "openInNewWindow": "Öppna i nytt fönster",
     "enabled": "Aktiverad",
     "disabled": "Inaktiverad",
+    "none": "Inget",
     "showPassword": "Visa lösenord",
     "hidePassword": "Dölj lösenord",
     "show": "Visa",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Objekt",
     "itemName": "Namn",
+    "suggestions": "Suggestions",
     "loginCredentials": "Inloggningsuppgifter",
     "cardInformation": "Kortinformation",
     "addItem": "Lägg till objekt",
@@ -204,6 +206,8 @@
     "folder": "Mapp",
     "welcomeTitle": "Välkommen till AliasVault!",
     "welcomeDescription": "För att använda webbläsartillägget AliasVault: navigera till en webbplats och använd AliasVault-autofyllrutan för att skapa en ny inloggningsuppgift.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items found",
     "noMatchingItems": "Inga objekt matchar de valda filtren",
     "noMatchingItemsSearch": "Inga objekt matchar \"{{search}}\"",
     "noMatchingItemsWithFilter": "Inga {{filter}} objekt som matchar \"{{search}}\"",
@@ -239,6 +243,28 @@
     "includeNumbers": "Inkludera siffror",
     "includeSpecialChars": "Inkludera specialtecken",
     "avoidAmbiguousChars": "Undvik tvetydiga tecken (o, 0, etc.)",
+    "passwordTypeBasic": "Lösenord",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "Privat e-post",
     "privateEmailAliasVaultServer": "AliasVault server",
     "privateEmailDescription": "E2E krypterad, helt privat.",
@@ -303,6 +329,7 @@
     "addCode": "Lägg till 2FA kod",
     "instructions": "Ange den hemliga nyckeln som visas av webbplatsen där du vill lägga till tvåfaktorsautentisering.",
     "nameOptional": "Namn (valfritt)",
+    "addName": "Add a name (optional)",
     "secretKey": "Hemlig nyckel",
     "saveToViewCode": "Spara för att visa kod",
     "defaultName": "Autentiserare",
@@ -440,6 +467,11 @@
         "male": "Man",
         "female": "Kvinna"
       }
+    },
+    "passwordGenerator": "Lösenordsgenerator",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Konfigurera"
     },
     "credentialAutofill": "Autofyll för inloggningsuppgifter",
     "credentialAutofillDescription": "Visa popup för autofyll när användarnamn/lösenordsfält upptäcks",

@@ -34,7 +34,7 @@
   </data>
   <!-- Estimated total -->
   <data name="EstimatedTotalTitle">
-    <value>Estimated vault size</value>
+    <value>Szacowany rozmiar sejfu</value>
     <comment>Title for the estimated total vault size card</comment>
   </data>
   <data name="EstimatedTotalDescription">
@@ -43,7 +43,7 @@
   </data>
   <!-- Counts -->
   <data name="CountsTitle">
-    <value>Overview</value>
+    <value>Podgląd</value>
     <comment>Title for the counts/overview section</comment>
   </data>
   <data name="ItemCountLabel">
@@ -76,7 +76,7 @@
     <comment>Legend label for attachments slice</comment>
   </data>
   <data name="BreakdownLogosLabel">
-    <value>Logos</value>
+    <value>Loga</value>
     <comment>Legend label for logos slice</comment>
   </data>
   <data name="BreakdownBaseOverheadLabel">
@@ -103,11 +103,11 @@
   </data>
   <!-- Table column headers -->
   <data name="ColumnFilename">
-    <value>Filename</value>
+    <value>Nazwa pliku</value>
     <comment>Table column header for attachment filename</comment>
   </data>
   <data name="ColumnSize">
-    <value>Size</value>
+    <value>Rozmiar</value>
     <comment>Table column header for size in KB</comment>
   </data>
   <data name="ColumnItem">

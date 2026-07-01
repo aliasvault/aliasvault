@@ -107,7 +107,7 @@
     <comment>Label for username confirmation input field</comment>
   </data>
   <data name="EnterPasswordLabel" xml:space="preserve">
-    <value>Введите ваш пароль</value>
+    <value>Введите пароль</value>
     <comment>Label for password input field</comment>
   </data>
   <!-- Button text -->

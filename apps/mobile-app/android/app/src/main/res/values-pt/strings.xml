@@ -9,7 +9,7 @@
   <string name="common_back">Voltar</string>
   <string name="common_show_details">Exibir detalhes</string>
   <string name="common_hide_details">Esconder detalhes</string>
-  <string name="common_copy">Copy</string>
+  <string name="common_copy">Copiar</string>
   <string name="common_copied_to_clipboard">Copiado para a área de transferência</string>
   <string name="unknown_error">Ocorreu um erro desconhecido</string>
   <string name="autofill_failed_to_retrieve">Falha ao recuperar, abra o aplicativo</string>

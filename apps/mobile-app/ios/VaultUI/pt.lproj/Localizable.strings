@@ -40,7 +40,7 @@
 "username_copied" = "Nome de usuário copiado";
 "password_copied" = "Senha copiada";
 "email_copied" = "E-mail copiado";
-"totp_code_copied" = "TOTP code copied";
+"totp_code_copied" = "Código de dois fatores copiado";
 "totp_code" = "Código TOTP";
 
 /* Search bar */

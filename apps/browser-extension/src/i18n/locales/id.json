@@ -62,6 +62,7 @@
     "openInNewWindow": "Buka di jendela baru",
     "enabled": "Diaktifkan",
     "disabled": "Dinonaktifkan",
+    "none": "None",
     "showPassword": "Tampilkan kata sandi",
     "hidePassword": "Sembunyikan kata sandi",
     "show": "Tampilkan",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Items",
     "itemName": "Nama",
+    "suggestions": "Suggestions",
     "loginCredentials": "Kredensial Login",
     "cardInformation": "Informasi kartu",
     "addItem": "Tambah Item",
@@ -204,6 +206,8 @@
     "folder": "Folder",
     "welcomeTitle": "Selamat datang di AliasVault!",
     "welcomeDescription": "Untuk menggunakan ekstensi browser AliasVault: kunjungi situs web dan gunakan jendela pop-up isi-otomatis AliasVault untuk membuat kredensial baru.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items found",
     "noMatchingItems": "Tidak ada item yang sesuai dengan filter yang dipilih.",
     "noMatchingItemsSearch": "Tidak ada item yang sesuai \"{{search}}\"",
     "noMatchingItemsWithFilter": "Tidak ada {{filter}} items yang sama dengan \"{{search}}\"",
@@ -239,6 +243,28 @@
     "includeNumbers": "Sertakan angka",
     "includeSpecialChars": "Sertakan karakter khusus",
     "avoidAmbiguousChars": "Hindari karakter yang ambigu (o, 0, dll.)",
+    "passwordTypeBasic": "Kata sandi",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "Email pribadi",
     "privateEmailAliasVaultServer": "Server AliasVault",
     "privateEmailDescription": "Terenkripsi E2E, sangat pribadi.",
@@ -303,6 +329,7 @@
     "addCode": "Tambahkan kode 2FA",
     "instructions": "Masukkan kunci rahasia yang ditampilkan oleh situs web tempat Anda ingin menambahkan autentikasi dua faktor.",
     "nameOptional": "Nama (opsional)",
+    "addName": "Add a name (optional)",
     "secretKey": "Secret Key",
     "saveToViewCode": "Simpan untuk melihat kode",
     "defaultName": "Autentikator",
@@ -440,6 +467,11 @@
         "male": "Laki-laki",
         "female": "Perempuan"
       }
+    },
+    "passwordGenerator": "Password Generator",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Konfigurasikan"
     },
     "credentialAutofill": "Pengisian otomatis kredensial",
     "credentialAutofillDescription": "Tampilkan popup pengisian otomatis saat kolom nama pengguna/kata sandi terdeteksi",

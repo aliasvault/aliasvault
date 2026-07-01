@@ -62,6 +62,7 @@
     "openInNewWindow": "Openen in nieuw venster",
     "enabled": "Ingeschakeld",
     "disabled": "Uitgeschakeld",
+    "none": "Geen",
     "showPassword": "Wachtwoord tonen",
     "hidePassword": "Wachtwoord verbergen",
     "show": "Toon",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Items",
     "itemName": "Naam",
+    "suggestions": "Suggesties",
     "loginCredentials": "Inloggegevens",
     "cardInformation": "Kaartgegevens",
     "addItem": "Item toevoegen",
@@ -204,6 +206,8 @@
     "folder": "Map",
     "welcomeTitle": "Welkom bij AliasVault!",
     "welcomeDescription": "Om de AliasVault browser extensie te gebruiken: navigeer naar een website en gebruik de AliasVault autofill popup om nieuwe credentials aan te maken.",
+    "currentSiteMatch": "Voor {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items gevonden",
     "noMatchingItems": "Geen items gevonden die overeenkomen met het geselecteerde filter.",
     "noMatchingItemsSearch": "Geen items die overeenkomen met \"{{search}}\"",
     "noMatchingItemsWithFilter": "Geen {{filter}} items die overeenkomen met \"{{search}}\"",
@@ -239,6 +243,28 @@
     "includeNumbers": "Inclusief cijfers",
     "includeSpecialChars": "Inclusief speciale karakters",
     "avoidAmbiguousChars": "Onduidelijke tekens vermijden (o, 0, etc.)",
+    "passwordTypeBasic": "Wachtwoord",
+    "passwordTypeDiceware": "Wachtwoordzin",
+    "passphraseLanguage": "Taal wachtwoordzin",
+    "wordCount": "Woorden",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Titelhoofdletter",
+      "Uppercase": "Hoofdletters",
+      "Lowercase": "Kleine letters"
+    },
+    "separator": "Scheidingsteken",
+    "dicewareSeparatorOption": {
+      "Dash": "Streepje",
+      "Space": "Spatie",
+      "Underscore": "Lage streep",
+      "Dot": "Punt"
+    },
+    "salt": "Zout",
+    "dicewareSaltOption": {
+      "Prefix": "Voorvoegsel",
+      "Sprinkle": "Willekeurige positie",
+      "Suffix": "Achtervoegsel"
+    },
     "privateEmailTitle": "Privé e-mail",
     "privateEmailAliasVaultServer": "AliasVault server",
     "privateEmailDescription": "E2E versleuteld, volledig privé.",
@@ -303,6 +329,7 @@
     "addCode": "2FA-code toevoegen",
     "instructions": "Voer de secret key in die door de website wordt weergegeven waar je tweestapsverificatie wilt toevoegen.",
     "nameOptional": "Naam (optioneel)",
+    "addName": "Voeg een naam toe (optioneel)",
     "secretKey": "Secret key",
     "saveToViewCode": "Opslaan om code te bekijken",
     "defaultName": "Authenticator",
@@ -440,6 +467,11 @@
         "male": "Mannelijk",
         "female": "Vrouwelijk"
       }
+    },
+    "passwordGenerator": "Wachtwoordgenerator",
+    "passwordGeneratorSettings": {
+      "description": "Configureer de standaard wachtwoord generator instellingen voor nieuw aangemaakte items, inclusief de lengte van het wachtwoord, tekensets, en de wachtwoordzin.",
+      "configureButton": "Configureren"
     },
     "credentialAutofill": "Automatisch invullen van inloggegevens",
     "credentialAutofillDescription": "Automatisch invullen popup weergeven wanneer gebruikersnaam/wachtwoord velden worden gedetecteerd",

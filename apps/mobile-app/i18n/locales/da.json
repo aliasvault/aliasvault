@@ -3,6 +3,7 @@
     "cancel": "Annuller",
     "close": "Luk",
     "delete": "Slet",
+    "remove": "Fjern",
     "save": "Gem",
     "edit": "Rediger",
     "yes": "Ja",
@@ -16,6 +17,7 @@
     "copied": "Kopieret til udklipsholder",
     "loadMore": "Indlæs flere",
     "use": "Brug",
+    "none": "Ingen",
     "confirm": "Bekræft",
     "next": "Næste",
     "notice": "Besked",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "Tilføj 2FA-kode",
     "nameOptional": "Navn (valgfrit)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Godkender",
     "secretKey": "Hemmelig nøgle (Secret Key)",
     "instructions": "Indtast den hemmelige nøgle, der vises på hjemmesiden, hvor du vil tilføje to-faktor-autentificering.",
     "saveToViewCode": "Gem for at se kode",
     "scanQrCode": "Scan QR Kode",
-    "enterManually": "Indtast en oprettelsesnøgle",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Ugyldigt format for hemmelig nøgle.",
       "scanFailed": "Kunne ikke scanne QR-kode. Prøv igen."
@@ -442,6 +446,29 @@
     "includeNumbers": "Tal (0-9)",
     "includeSpecialChars": "Specialtegn (!@#)",
     "avoidAmbiguousChars": "Undgå tvetydige tegn",
+    "passwordTypeBasic": "Adgangskode",
+    "passwordTypeDiceware": "Adgangskode",
+    "passphraseLanguage": "Adgangskode sprog",
+    "wordCount": "Ord",
+    "capitalization": "Kapitalisering",
+    "separator": "Skilletegn",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Små bogstaver",
+      "TitleCase": "Titel Tilstand",
+      "Uppercase": "Store bogstaver"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Streg",
+      "Space": "Mellemrum",
+      "Underscore": "Understregning",
+      "Dot": "Punktum"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Præfiks",
+      "Sprinkle": "Tilfældig position",
+      "Suffix": "Suffiks"
+    },
     "errorLoadingItems": "Fejl ved indlæsning af elementer",
     "vaultSyncFailed": "Synkronisering af boks mislykkedes",
     "vaultSyncedSuccessfully": "Boks synkroniseret korrekt",
@@ -655,7 +682,6 @@
     },
     "loginSettings": {
       "title": "API-forbindelse",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Selvhostet",
       "customApiUrl": "Brugerdefineret API-URL",
       "customApiUrlPlaceholder": "https://min-aliasvault-instans.dk/api",

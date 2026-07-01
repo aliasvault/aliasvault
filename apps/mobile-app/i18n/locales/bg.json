@@ -3,6 +3,7 @@
     "cancel": "Отмени",
     "close": "Затвори",
     "delete": "Изтриване",
+    "remove": "Премахване",
     "save": "Запазване",
     "edit": "Редактиране",
     "yes": "Да",
@@ -16,6 +17,7 @@
     "copied": "Copied to clipboard",
     "loadMore": "Зареждане на още",
     "use": "Използване",
+    "none": "None",
     "confirm": "Потвърждаване",
     "next": "Следващ",
     "notice": "Известие",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "Add 2FA Code",
     "nameOptional": "Name (optional)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Authenticator",
     "secretKey": "Secret Key",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "saveToViewCode": "Save to view code",
     "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Invalid secret key format.",
       "scanFailed": "Failed to scan QR code. Please try again."
@@ -442,6 +446,29 @@
     "includeNumbers": "Numbers (0-9)",
     "includeSpecialChars": "Special Characters (!@#)",
     "avoidAmbiguousChars": "Avoid Ambiguous Characters",
+    "passwordTypeBasic": "Парола",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Error loading items",
     "vaultSyncFailed": "Vault sync failed",
     "vaultSyncedSuccessfully": "Vault synced successfully",
@@ -655,7 +682,6 @@
     },
     "loginSettings": {
       "title": "API Connection",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Self-hosted",
       "customApiUrl": "Custom API URL",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",

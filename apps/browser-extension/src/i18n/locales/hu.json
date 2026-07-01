@@ -14,7 +14,7 @@
     "verify": "Ellenőrzés",
     "twoFactorNote": "Figyelem: Ha nem elérhető a hitelesítő eszköze, helyreállíthatja a másodfaktoros visszaállító kóddal ha bejelentkezik az oldalra.",
     "masterPassword": "Mester jelszó",
-    "unlockVault": "Unlock",
+    "unlockVault": "Feloldás",
     "unlockWithPin": "PIN kódos feloldás",
     "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "useMasterPassword": "Use Master Password",
@@ -26,7 +26,7 @@
     "browseVault": "Browse vault contents",
     "autoCloseUnlockPopup": "Auto-close on future sign ins",
     "connectingTo": "Csatlakozás a következőhöz:",
-    "switchAccounts": "Switch accounts?",
+    "switchAccounts": "Fiók váltás?",
     "loginWithMobile": "Belépés mobil alkalmazással",
     "unlockWithMobile": "Unlock using Mobile App",
     "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault.",
@@ -62,6 +62,7 @@
     "openInNewWindow": "Open in new window",
     "enabled": "Engedélyezve",
     "disabled": "Kikapcsolva",
+    "none": "Nincs",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "show": "Megjelenítés",
@@ -188,11 +189,12 @@
   "items": {
     "title": "Elemek",
     "itemName": "Név",
+    "suggestions": "Suggestions",
     "loginCredentials": "Login Credentials",
     "cardInformation": "Kártya információ",
     "addItem": "Elem hozzáadása",
-    "addNewItem": "Add new item",
-    "saveItem": "Save Item",
+    "addNewItem": "Új elem hozzáadása",
+    "saveItem": "Elem mentése",
     "itemDetails": "Elem részletek",
     "editItem": "Elem szerkesztése",
     "untitled": "Névtelen",
@@ -204,6 +206,8 @@
     "folder": "Mappa",
     "welcomeTitle": "Welcome to AliasVault!",
     "welcomeDescription": "To use the AliasVault browser extension: navigate to a website and use the AliasVault autofill popup to create a new credential.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items found",
     "noMatchingItems": "Egyetlen elem sem felel meg a kiválasztott szűrőnek.",
     "noMatchingItemsSearch": "Egyetlen elem sem felel meg a \"{{search}}\" szűrőnek",
     "noMatchingItemsWithFilter": "A \"{{search}}\" keresésre egy {{filter}} szűrő sem érvényes",
@@ -239,6 +243,28 @@
     "includeNumbers": "Include numbers",
     "includeSpecialChars": "Include special characters",
     "avoidAmbiguousChars": "Avoid ambiguous characters (o, 0, etc.)",
+    "passwordTypeBasic": "Jelszó",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "Privát e-mail",
     "privateEmailAliasVaultServer": "AliasVault szerver",
     "privateEmailDescription": "E2E kódolású, teljesen bizalmas.",
@@ -303,6 +329,7 @@
     "addCode": "2FA kód hozzáadása",
     "instructions": "Adja meg a weboldal által megjelenített titkos kulcsot a két faktoros hitelesítőjébe.",
     "nameOptional": "Név (nem kötelező)",
+    "addName": "Add a name (optional)",
     "secretKey": "Titkos kulcs",
     "saveToViewCode": "Mentse le a kód megtekintéséhez",
     "defaultName": "Authenticator",
@@ -441,6 +468,11 @@
         "female": "Nő"
       }
     },
+    "passwordGenerator": "Jelszó Generátor",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Konfigurálás"
+    },
     "credentialAutofill": "Credential autofill",
     "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
     "totpAutofill": "2FA code autofill",
@@ -475,7 +507,7 @@
   },
   "passkeys": {
     "passkey": "Azonosítókulcs",
-    "site": "Site",
+    "site": "Weboldal",
     "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential. To replace this passkey or create a new one, visit the website and follow its prompts.",
     "passkeyMarkedForDeletion": "Azonosítókulcs törlésre kijelölve",
     "passkeyWillBeDeleted": "A azonosítókulcs akkor kerül törlésre, ha a bejegyzést menti.",

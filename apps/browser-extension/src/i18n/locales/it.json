@@ -62,6 +62,7 @@
     "openInNewWindow": "Apri in una nuova finestra",
     "enabled": "Abilitato",
     "disabled": "Disabilitato",
+    "none": "Vuoto",
     "showPassword": "Mostra password",
     "hidePassword": "Nascondi password",
     "show": "Mostra",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Elementi",
     "itemName": "Nome",
+    "suggestions": "Suggerimenti",
     "loginCredentials": "Credenziali di accesso",
     "cardInformation": "Informazioni sulla scheda",
     "addItem": "Aggiungi Elemento",
@@ -204,6 +206,8 @@
     "folder": "Cartella",
     "welcomeTitle": "Benvenuto in AliasVault!",
     "welcomeDescription": "Per usare l'estensione browser AliasVault: naviga su un sito e usa la finestra di compilazione automatica per creare una nuova credenziale.",
+    "currentSiteMatch": "Per {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} elementi trovati",
     "noMatchingItems": "Nessun elemento corrisponde ai filtri selezionati",
     "noMatchingItemsSearch": "Nessun elemento corrispondente \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nessun elemento {{filter}} corrispondente \"{{search}}\"",
@@ -239,6 +243,28 @@
     "includeNumbers": "Includi numeri",
     "includeSpecialChars": "Includi caratteri speciali",
     "avoidAmbiguousChars": "Evita caratteri ambigui (o, 0, ecc.)",
+    "passwordTypeBasic": "Password",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Lingua passphrase",
+    "wordCount": "Parole",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Iniziali in maiuscolo",
+      "Uppercase": "Maiuscolo",
+      "Lowercase": "Minuscolo"
+    },
+    "separator": "Separatore",
+    "dicewareSeparatorOption": {
+      "Dash": "Trattino",
+      "Space": "Spazio",
+      "Underscore": "Trattino basso",
+      "Dot": "Punto"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefisso",
+      "Sprinkle": "Posizione casuale",
+      "Suffix": "Suffisso"
+    },
     "privateEmailTitle": "Email Privata",
     "privateEmailAliasVaultServer": "Server AliasVault",
     "privateEmailDescription": "E2E crittografato, completamente privato.",
@@ -303,6 +329,7 @@
     "addCode": "Aggiungi Codice 2FA",
     "instructions": "Inserisci la chiave segreta mostrata dal sito in cui vuoi aggiungere un'autenticazione a due fattori.",
     "nameOptional": "Nome (facoltativo)",
+    "addName": "Aggiungi un nome (opzionale)",
     "secretKey": "Chiave segreta",
     "saveToViewCode": "Salva per visualizzare il codice",
     "defaultName": "Autenticazione",
@@ -440,6 +467,11 @@
         "male": "Maschio",
         "female": "Femmina"
       }
+    },
+    "passwordGenerator": "Generatore di Password",
+    "passwordGeneratorSettings": {
+      "description": "Configurare le impostazioni predefinite del generatore di password per gli elementi appena creati, tra cui la lunghezza della password, i set di caratteri e la lingua di passphrase.",
+      "configureButton": "Configura"
     },
     "credentialAutofill": "Riempimento automatico credenziali",
     "credentialAutofillDescription": "Mostra popup di riempimento automatico quando vengono rilevati campi username/password",

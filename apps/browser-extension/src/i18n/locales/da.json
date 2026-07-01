@@ -62,6 +62,7 @@
     "openInNewWindow": "Åbn i nyt vindue",
     "enabled": "Aktiveret",
     "disabled": "Deaktiveret",
+    "none": "Ingen",
     "showPassword": "Vis adgangskode",
     "hidePassword": "Skjul adgangskode",
     "show": "Vis",
@@ -149,7 +150,7 @@
     "creatingNewAlias": "Opret nyt alias",
     "creatingNewCredential": "Opret nye legitimationsoplysninger",
     "noMatchesFound": "Ingen match fundet",
-    "loginWithPasskey": "Login with passkey",
+    "loginWithPasskey": "Log ind med adgangsnøgle",
     "searchVault": "Søg i boks...",
     "enterServiceName": "Indtast tjenestenavn",
     "enterEmailAddress": "Indtast e-mailadresse",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Elementer",
     "itemName": "Navn",
+    "suggestions": "Forslag",
     "loginCredentials": "Logonoplysninger",
     "cardInformation": "Kortoplysninger",
     "addItem": "Tilføj element",
@@ -204,6 +206,8 @@
     "folder": "Mappe",
     "welcomeTitle": "Velkommen til AliasVault!",
     "welcomeDescription": "For at bruge AliasVault-browserudvidelsen: Gå til et websted og brug AliasVault-autofyld-popup'en til at oprette en ny logonoplysning.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} emner fundet",
     "noMatchingItems": "Ingen elementer matcher det valgte filter.",
     "noMatchingItemsSearch": "Ingen elementer matcher \"{{search}}\"",
     "noMatchingItemsWithFilter": "Ingen {{filter}}-elementer matcher \"{{search}}\"",
@@ -239,6 +243,28 @@
     "includeNumbers": "Inkluder tal",
     "includeSpecialChars": "Inkluder specialtegn",
     "avoidAmbiguousChars": "Undgå tvetydige tegn (o, 0 osv.)",
+    "passwordTypeBasic": "Adgangskode",
+    "passwordTypeDiceware": "Adgangskode",
+    "passphraseLanguage": "Adgangskode sprog",
+    "wordCount": "Ord",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Titel Tilstand",
+      "Uppercase": "Store bogstaver",
+      "Lowercase": "Små bogstaver"
+    },
+    "separator": "Skilletegn",
+    "dicewareSeparatorOption": {
+      "Dash": "Streg",
+      "Space": "Mellemrum",
+      "Underscore": "Understregning",
+      "Dot": "Punktum"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Præfiks",
+      "Sprinkle": "Tilfældig position",
+      "Suffix": "Suffiks"
+    },
     "privateEmailTitle": "Privat e-mail",
     "privateEmailAliasVaultServer": "AliasVault-server",
     "privateEmailDescription": "E2E-krypteret, fuldt privat.",
@@ -303,6 +329,7 @@
     "addCode": "Tilføj 2FA-kode",
     "instructions": "Indtast den hemmelige nøgle (secret key), der vises af webstedet, hvor du vil tilføje to-faktor autentificering.",
     "nameOptional": "Navn (valgfrit)",
+    "addName": "Add a name (optional)",
     "secretKey": "Hemmelig nøgle",
     "saveToViewCode": "Gem for at se kode",
     "defaultName": "Godkender",
@@ -441,6 +468,11 @@
         "female": "Kvinde"
       }
     },
+    "passwordGenerator": "Adgangskodegenerator",
+    "passwordGeneratorSettings": {
+      "description": "Konfigurer indstillingerne for standard adgangskodegenerator for nyoprettede elementer, herunder adgangskodelængde, tegnsæt og kodeord sprog.",
+      "configureButton": "Konfigurer"
+    },
     "credentialAutofill": "Loginoplysninger autofyld",
     "credentialAutofillDescription": "Vis popup for automatisk udfyldning når brugernavn/adgangskodefelter detekteres",
     "totpAutofill": "2FA kode autofyld",
@@ -505,7 +537,7 @@
       "selectExistingLoginDescription": "Forbind denne passkey til en eksisterende logonoplysning for dette websted.",
       "attachingToCredential": "Tilføjer passkey til: {{serviceName}}",
       "attachPasskey": "Tilføj passkey",
-      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
+      "unsupportedAlgorithm": "Denne hjemmeside kræver en adgangsnøgle, som AliasVault ikke understøtter."
     },
     "settings": {
       "passkeyProvider": "Passkey-udbyder",

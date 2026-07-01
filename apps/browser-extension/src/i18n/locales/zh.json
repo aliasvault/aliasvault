@@ -62,6 +62,7 @@
     "openInNewWindow": "在新窗口中打开",
     "enabled": "启用",
     "disabled": "禁用",
+    "none": "无",
     "showPassword": "显示密码",
     "hidePassword": "隐藏密码",
     "show": "显示",
@@ -188,6 +189,7 @@
   "items": {
     "title": "项目",
     "itemName": "名称",
+    "suggestions": "建议",
     "loginCredentials": "登录凭据",
     "cardInformation": "卡信息",
     "addItem": "添加项目",
@@ -204,6 +206,8 @@
     "folder": "文件夹",
     "welcomeTitle": "欢迎使用 AliasVault!",
     "welcomeDescription": "要使用AliasVault浏览器扩展：导航到某个网站，使用AliasVault自动填充弹窗创建新凭据。",
+    "currentSiteMatch": "{{domain}} 的结果",
+    "numberOfItemMatchesFound": "找到 {{count}} 个项目",
     "noMatchingItems": "没有项目符合所选筛选器。",
     "noMatchingItemsSearch": "未找到匹配“{{search}}”的项目",
     "noMatchingItemsWithFilter": "未找到匹配“{{search}}”的 {{filter}} 项目",
@@ -239,6 +243,28 @@
     "includeNumbers": "包含数字",
     "includeSpecialChars": "包含特殊字符",
     "avoidAmbiguousChars": "避免易混淆字符（o、0 等）",
+    "passwordTypeBasic": "密码",
+    "passwordTypeDiceware": "密码词组",
+    "passphraseLanguage": "密码词组语言",
+    "wordCount": "词数",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "标题大小写",
+      "Uppercase": "大写",
+      "Lowercase": "小写"
+    },
+    "separator": "分隔符",
+    "dicewareSeparatorOption": {
+      "Dash": "连字符",
+      "Space": "空格",
+      "Underscore": "下划线",
+      "Dot": "点"
+    },
+    "salt": "盐",
+    "dicewareSaltOption": {
+      "Prefix": "前缀",
+      "Sprinkle": "随机位置",
+      "Suffix": "后缀"
+    },
     "privateEmailTitle": "私人邮箱",
     "privateEmailAliasVaultServer": "AliasVault 服务器",
     "privateEmailDescription": "端到端加密，完全私密。",
@@ -303,6 +329,7 @@
     "addCode": "添加两步验证码",
     "instructions": "输入要添加两步验证的网站显示的密钥。",
     "nameOptional": "名称（可选）",
+    "addName": "添加名称（可选）",
     "secretKey": "密钥",
     "saveToViewCode": "保存以查看验证码",
     "defaultName": "身份验证器",
@@ -440,6 +467,11 @@
         "male": "男",
         "female": "女"
       }
+    },
+    "passwordGenerator": "密码生成器",
+    "passwordGeneratorSettings": {
+      "description": "配置新建项目的默认密码生成器设置，包括密码长度、字符集和密码词组语言。",
+      "configureButton": "配置"
     },
     "credentialAutofill": "凭据自动填充",
     "credentialAutofillDescription": "检测到用户名/密码字段时显示自动填充弹窗",

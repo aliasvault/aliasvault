@@ -62,6 +62,7 @@
     "openInNewWindow": "In neuem Fenster öffnen",
     "enabled": "Aktiviert",
     "disabled": "Deaktiviert",
+    "none": "Keine",
     "showPassword": "Passwort anzeigen",
     "hidePassword": "Passwort ausblenden",
     "show": "Anzeigen",
@@ -149,7 +150,7 @@
     "creatingNewAlias": "Neuen Alias erstellen",
     "creatingNewCredential": "Neue Anmeldeinformationen erstellen",
     "noMatchesFound": "Keine Treffer gefunden",
-    "loginWithPasskey": "Login with passkey",
+    "loginWithPasskey": "Mit Passkey anmelden",
     "searchVault": "Tresor durchsuchen...",
     "enterServiceName": "Name des Dienstes eingeben",
     "enterEmailAddress": "E-Mail-Adresse eingeben",
@@ -188,6 +189,7 @@
   "items": {
     "title": "Elemente",
     "itemName": "Name",
+    "suggestions": "Vorschläge",
     "loginCredentials": "Zugangsdaten",
     "cardInformation": "Karteninformationen",
     "addItem": "Element hinzufügen",
@@ -204,6 +206,8 @@
     "folder": "Ordner",
     "welcomeTitle": "Welcome to AliasVault!",
     "welcomeDescription": "Du möchtest die AliasVault-Browser-Erweiterung verwenden? Navigiere zu einer Website und verwende das AliasVault-Popup-Fenster um einen neuen Zugang zu erstellen.",
+    "currentSiteMatch": "Für {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} Elemente gefunden",
     "noMatchingItems": "Keine Elemente entsprechen den ausgewählten Filtern.",
     "noMatchingItemsSearch": "Keine passenden Elemente \"{{search}}\"",
     "noMatchingItemsWithFilter": "Keine {{filter}} Elemente passend zu \"{{search}}\"",
@@ -239,6 +243,28 @@
     "includeNumbers": "Ziffern (0-9)",
     "includeSpecialChars": "Sonderzeichen (!@#$%^&*)",
     "avoidAmbiguousChars": "Mehrdeutige Zeichen (1, l, I, 0, O, etc.) vermeiden",
+    "passwordTypeBasic": "Passwort",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrasen-Sprache",
+    "wordCount": "Wörter",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Wortanfänge groß",
+      "Uppercase": "Großschreibung",
+      "Lowercase": "Kleinschreibung"
+    },
+    "separator": "Trennzeichen",
+    "dicewareSeparatorOption": {
+      "Dash": "Strich",
+      "Space": "Leerzeichen",
+      "Underscore": "Unterstrich",
+      "Dot": "Punkt"
+    },
+    "salt": "Passwort-Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Präfix",
+      "Sprinkle": "Zufällige Position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "Private E-Mail-Adresse",
     "privateEmailAliasVaultServer": "AliasVault-Server",
     "privateEmailDescription": "Ende-zu-Ende verschlüsselt, vollständig privat.",
@@ -303,6 +329,7 @@
     "addCode": "2FA-Code hinzufügen",
     "instructions": "Gib den Secret-Key ein, der von der Website angezeigt wird, bei der Du die Zwei-Faktor-Authentifizierung hinzufügen möchtest.",
     "nameOptional": "Name (optional)",
+    "addName": "Add a name (optional)",
     "secretKey": "Secret-Key",
     "saveToViewCode": "Speichern, um den Code anzuzeigen",
     "defaultName": "Authenticator",
@@ -441,6 +468,11 @@
         "female": "Weiblich"
       }
     },
+    "passwordGenerator": "Passwortgenerator",
+    "passwordGeneratorSettings": {
+      "description": "Konfiguriere die Standard-Passwortgenerator-Einstellungen für neu erstellte Elemente, einschließlich Passwortlänge, Zeichensätze und Passphrase-Sprache.",
+      "configureButton": "Konfigurieren"
+    },
     "credentialAutofill": "Anmeldeinformationen-Autofill",
     "credentialAutofillDescription": "Zeige Autofill Popup wenn Benutzername/Passwort-Felder erkannt wurden",
     "totpAutofill": "2FA-Code Autofill",
@@ -505,7 +537,7 @@
       "selectExistingLoginDescription": "Diesen Passkey zu bestehenden Anmeldedaten für diese Webseite hinzufügen.",
       "attachingToCredential": "Passkey zu {{serviceName}} hinzufügen",
       "attachPasskey": "Passkey hinzufügen",
-      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
+      "unsupportedAlgorithm": "Diese Website benötigt einen Passkey-Typ, den AliasVault nicht unterstützt."
     },
     "settings": {
       "passkeyProvider": "Passkey-Anbieter",

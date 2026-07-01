@@ -29,24 +29,24 @@
     <comment>Title for editing an existing item</comment>
   </data>
   <data name="AddItemDescription">
-    <value>Create a new item below.</value>
+    <value>A lenti részen hozzon létre egy új elemet.</value>
     <comment>Description for adding a new item</comment>
   </data>
   <data name="EditItemDescription">
-    <value>Edit the existing item below.</value>
+    <value>A lenti részen szerkessze a már meglévő elemet.</value>
     <comment>Description for editing an existing item</comment>
   </data>
   <!-- Breadcrumb items -->
   <data name="ViewItemBreadcrumb">
-    <value>View item</value>
+    <value>Eleme megtekintése</value>
     <comment>Breadcrumb text for viewing an item</comment>
   </data>
   <data name="EditItemBreadcrumb">
-    <value>Edit item</value>
+    <value>Elem szerkesztése</value>
     <comment>Breadcrumb text for editing an item</comment>
   </data>
   <data name="AddNewItemBreadcrumb">
-    <value>Add new item</value>
+    <value>Új elem hozzáadása</value>
     <comment>Breadcrumb text for adding a new item</comment>
   </data>
   <!-- Section headers -->
@@ -100,7 +100,7 @@
     <comment>Label for last name input</comment>
   </data>
   <data name="NickNameLabel">
-    <value>Nick Name</value>
+    <value>Becenév</value>
     <comment>Label for nick name input</comment>
   </data>
   <data name="GenderLabel">
@@ -122,15 +122,15 @@
   </data>
   <!-- Button text -->
   <data name="GenerateRandomAliasButton">
-    <value>Generate Random Alias</value>
+    <value>Véletlenszerű alias generálása</value>
     <comment>Button text for generating a random alias</comment>
   </data>
   <data name="ClearAliasFieldsButton">
-    <value>Clear Alias Fields</value>
+    <value>Alias rubrikák ürítése</value>
     <comment>Button text for clearing alias fields</comment>
   </data>
   <data name="SaveItemButton">
-    <value>Save Item</value>
+    <value>Elem mentése</value>
     <comment>Button text for saving an item</comment>
   </data>
   <data name="CancelButton">
@@ -139,16 +139,16 @@
   </data>
   <!-- Loading and status messages -->
   <data name="SavingVaultMessage">
-    <value>Saving vault...</value>
+    <value>Széf mentése...</value>
     <comment>Loading message when saving vault</comment>
   </data>
   <!-- Error messages -->
   <data name="ItemNotExistError">
-    <value>This item does not exist (anymore). Please try again.</value>
+    <value>Ez az elem már nem létezik. Kérem próbálja újra.</value>
     <comment>Error message when item doesn't exist</comment>
   </data>
   <data name="ErrorSavingItem">
-    <value>Error saving item. Please try again.</value>
+    <value>Hiba az elem mentésekor. Kérem próbálja újra.</value>
     <comment>Error message when saving item fails</comment>
   </data>
   <!-- Success messages -->
@@ -170,7 +170,7 @@
     <comment>Label for passkey</comment>
   </data>
   <data name="PasskeySiteLabel">
-    <value>Site</value>
+    <value>Weboldal</value>
     <comment>Label for passkey site/relying party ID</comment>
   </data>
   <data name="PasskeyDisplayNameLabel">
@@ -182,7 +182,7 @@
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="DeletePasskeyButton">
-    <value>Delete passkey</value>
+    <value>Azonosítókulcs törlése</value>
     <comment>Button to delete passkey</comment>
   </data>
   <data name="PasskeyMarkedForDeletion">

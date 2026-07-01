@@ -52,7 +52,7 @@
     <comment>Cancel button text</comment>
   </data>
   <data name="ViewItemBreadcrumb">
-    <value>View item</value>
+    <value>Eleme megtekintése</value>
     <comment>Breadcrumb text for view item page</comment>
   </data>
   <data name="DeleteItemBreadcrumb">

@@ -82,6 +82,10 @@
     <value>Nome (facoltativo)</value>
     <comment>Label for optional name field</comment>
   </data>
+  <data name="AddNameButton" xml:space="preserve">
+    <value>Aggiungi un nome (opzionale)</value>
+    <comment>Toggle button that reveals the optional name field in the add form</comment>
+  </data>
   <data name="SecretKeyLabel" xml:space="preserve">
     <value>Chiave segreta</value>
     <comment>Label for secret key field</comment>
