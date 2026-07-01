@@ -3,6 +3,7 @@
     "cancel": "ביטול",
     "close": "סגירה",
     "delete": "מחיקה",
+    "remove": "Remove",
     "save": "שמירה",
     "edit": "עריכה",
     "yes": "כן",
@@ -114,11 +115,13 @@
   "totp": {
     "addCode": "Add 2FA Code",
     "nameOptional": "שם (רשות)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Authenticator",
     "secretKey": "מפתח סודי",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "saveToViewCode": "יש לשמור כדי לצפות בקוד",
     "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Invalid secret key format.",
       "scanFailed": "Failed to scan QR code. Please try again."
