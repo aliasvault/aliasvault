@@ -261,9 +261,9 @@
     },
     "salt": "Salt",
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Prefix": "Præfiks",
+      "Sprinkle": "Tilfældig position",
+      "Suffix": "Suffiks"
     },
     "privateEmailTitle": "Privat e-mail",
     "privateEmailAliasVaultServer": "AliasVault-server",
@@ -469,7 +469,7 @@
     },
     "passwordGenerator": "Adgangskodegenerator",
     "passwordGeneratorSettings": {
-      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "description": "Konfigurer indstillingerne for standard adgangskodegenerator for nyoprettede elementer, herunder adgangskodelængde, tegnsæt og kodeord sprog.",
       "configureButton": "Konfigurer"
     },
     "credentialAutofill": "Loginoplysninger autofyld",
