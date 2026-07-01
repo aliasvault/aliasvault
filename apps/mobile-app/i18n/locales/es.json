@@ -115,13 +115,13 @@
   "totp": {
     "addCode": "Añadir código 2FA",
     "nameOptional": "Nombre (Opcional)",
-    "addName": "Add a name (optional)",
+    "addName": "Añadir un nombre (opcional)",
     "defaultName": "Autentificador",
     "secretKey": "Clave secreta",
     "instructions": "Introduzca la clave secreta mostrada por el sitio web donde desea añadir autenticación de dos factores.",
     "saveToViewCode": "Guardar para ver el código",
     "scanQrCode": "Escanear código QR",
-    "enterManually": "Enter secret key",
+    "enterManually": "Introduzca la clave secreta",
     "errors": {
       "invalidSecretKey": "Formato de clave secreta inválida.",
       "scanFailed": "Error al escanear el código QR. Por favor, inténtalo de nuevo."
@@ -447,27 +447,27 @@
     "includeSpecialChars": "Caracteres especiales (!@#)",
     "avoidAmbiguousChars": "Evitar caracteres ambiguos",
     "passwordTypeBasic": "Contraseña",
-    "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
-    "capitalization": "Capitalization",
-    "separator": "Separator",
-    "salt": "Salt",
+    "passwordTypeDiceware": "Frase de contraseña",
+    "passphraseLanguage": "Idioma de la frase",
+    "wordCount": "Palabras",
+    "capitalization": "Uso de mayúsculas",
+    "separator": "Separador",
+    "salt": "Sal",
     "dicewareCapitalizationOption": {
-      "Lowercase": "Lowercase",
-      "TitleCase": "Title Case",
-      "Uppercase": "Uppercase"
+      "Lowercase": "Minúsculas",
+      "TitleCase": "Estilo título",
+      "Uppercase": "Mayúsculas"
     },
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Raya",
+      "Space": "Espacio",
+      "Underscore": "Guion bajo",
+      "Dot": "Punto"
     },
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Prefix": "Prefijo",
+      "Sprinkle": "Posición aleatoria",
+      "Suffix": "Sufijo"
     },
     "errorLoadingItems": "Error al cargar elementos",
     "vaultSyncFailed": "Fallo al sincronizar la bóveda",
