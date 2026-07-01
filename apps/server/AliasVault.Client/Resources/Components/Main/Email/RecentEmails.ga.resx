@@ -87,7 +87,7 @@
     <comment>Error message when email loading fails</comment>
   </data>
   <data name="LoadMoreButton" xml:space="preserve">
-    <value>Load more</value>
+    <value>Luchtaigh níos mó</value>
     <comment>Button text to load more emails</comment>
   </data>
 </root>
