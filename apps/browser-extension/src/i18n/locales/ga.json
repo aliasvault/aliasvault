@@ -53,7 +53,7 @@
     "save": "Sábháil",
     "saving": "Saving...",
     "edit": "Cuir in Eagar",
-    "create": "Create",
+    "create": "Cruthaigh",
     "or": "Or",
     "close": "Dún",
     "dismiss": "Dismiss",
@@ -72,7 +72,7 @@
     "copyToClipboard": "Copy to clipboard",
     "loadingEmails": "Loading emails...",
     "loadingTotpCodes": "Loading TOTP codes...",
-    "attachments": "Attachments",
+    "attachments": "Ceangaltáin",
     "loadingAttachments": "Loading attachments...",
     "settings": "Socruithe",
     "recentEmails": "Recent emails",
@@ -91,7 +91,7 @@
     "syncingVault": "Ag sioncrónú cruinneacháin",
     "checkingVaultUpdates": "Checking for vault updates",
     "syncingUpdatedVault": "Syncing updated vault",
-    "loadMore": "Load more",
+    "loadMore": "Luchtaigh níos mó",
     "offline": "Offline",
     "offlineMode": "Operating in offline mode",
     "pendingSync": "Syncing...",
@@ -151,7 +151,7 @@
     "creatingNewCredential": "Creating new credential",
     "noMatchesFound": "No matches found",
     "loginWithPasskey": "Login with passkey",
-    "searchVault": "Search vault...",
+    "searchVault": "Cuardaigh an cruinneachán...",
     "enterServiceName": "Enter service name",
     "enterEmailAddress": "Enter email address",
     "enterUsername": "Enter username",
@@ -267,11 +267,11 @@
     },
     "privateEmailTitle": "Ríomhphost Príobháideach",
     "privateEmailAliasVaultServer": "Freastalaí AliasVault",
-    "privateEmailDescription": "E2E encrypted, fully private.",
-    "publicEmailTitle": "Public Temp Email Providers",
-    "publicEmailDescription": "Anonymous but limited privacy. Email content is readable by anyone that knows the address.",
+    "privateEmailDescription": "E2E criptithe, go hiomlán príobháideach.",
+    "publicEmailTitle": "Soláthraithe Ríomhphoist Sealadacha Poiblí",
+    "publicEmailDescription": "Príobháideacht gan ainm ach teoranta. Is féidir le duine ar bith a bhfuil an seoladh ar eolas aige ábhar an ríomhphoist a léamh.",
     "validation": {
-      "required": "This field is required"
+      "required": "Tá an réimse seo riachtanach"
     }
   },
   "itemTypes": {
@@ -296,7 +296,7 @@
       "textArea": "Text Area"
     },
     "login": {
-      "title": "Login"
+      "title": "Logáil Isteach"
     },
     "alias": {
       "title": "Alias"
@@ -309,7 +309,7 @@
     }
   },
   "fieldLabels": {
-    "login.url": "Website URL",
+    "login.url": "URL an tsuímh ghréasáin",
     "login.username": "Ainm úsáideora",
     "login.password": "Pasfhocal",
     "alias.first_name": "First Name",
@@ -348,29 +348,29 @@
   },
   "emails": {
     "title": "Ríomhphoist",
-    "deleteEmailTitle": "Delete Email",
+    "deleteEmailTitle": "Scrios Ríomhphost",
     "deleteEmailConfirm": "Are you sure you want to permanently delete this email?",
     "from": "From",
     "to": "To",
     "date": "Date",
     "emailContent": "Email content",
-    "emailNotFound": "Email not found",
+    "emailNotFound": "Níor aimsíodh an ríomhphost",
     "formatHtml": "HTML",
     "formatPlain": "Text",
     "formatSource": "Foinse",
     "formatSwitchTitle": "Athraigh formáid ríomhphoist",
     "item": "Item",
     "noEmails": "No emails found",
-    "noEmailsDescription": "You have not received any emails at your private email addresses yet. When you receive a new email, it will appear here.",
-    "offlineMessage": "You are offline. Please connect to the internet to load your emails.",
+    "noEmailsDescription": "Níl aon ríomhphoist faighte agat ag do sheoltaí ríomhphoist príobháideacha go fóill. Nuair a gheobhaidh tú ríomhphost nua, beidh sé le feiceáil anseo.",
+    "offlineMessage": "Tá tú as líne. Ceangail leis an idirlíon le do ríomhphoist a luchtú.",
     "loadMore": "Load More ({{count}} remaining)",
     "dateFormat": {
-      "justNow": "just now",
+      "justNow": "díreach anois",
       "minutesAgo_single": "{{count}} min ago",
       "minutesAgo_plural": "{{count}} mins ago",
       "hoursAgo_single": "{{count}} hr ago",
       "hoursAgo_plural": "{{count}} hrs ago",
-      "yesterday": "yesterday"
+      "yesterday": "inné"
     },
     "apiErrors": {
       "CLAIM_DOES_NOT_MATCH_USER": "The current chosen email address is already in use. Please change the email address by editing this credential.",
@@ -409,7 +409,7 @@
     "dark": "Dark",
     "keyboardShortcuts": "Keyboard Shortcuts",
     "configureKeyboardShortcuts": "Configure keyboard shortcuts",
-    "configure": "Configure",
+    "configure": "Cumraigh",
     "clipboardClearTimeout": "Clear clipboard after copying",
     "clipboardClearTimeoutDescription": "Automatically clear the clipboard after copying sensitive data",
     "clipboardClearDisabled": "Never clear",
@@ -471,7 +471,7 @@
     "passwordGenerator": "Gineadóir Pasfhocal",
     "passwordGeneratorSettings": {
       "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
-      "configureButton": "Configure"
+      "configureButton": "Cumraigh"
     },
     "credentialAutofill": "Credential autofill",
     "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
@@ -552,8 +552,8 @@
     "restore": "Restore",
     "deletePermanently": "Delete Permanently",
     "emptyAll": "Empty All",
-    "daysRemaining_one": "{{count}} day remaining",
-    "daysRemaining_other": "{{count}} days remaining",
+    "daysRemaining_one": "{{count}} lá fágtha",
+    "daysRemaining_other": "{{count}} lá fágtha",
     "expiringSoon": "Expiring soon",
     "confirmDeleteTitle": "Delete Permanently?",
     "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
