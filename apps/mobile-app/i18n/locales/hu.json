@@ -3,6 +3,7 @@
     "cancel": "Mégse",
     "close": "Bezár",
     "delete": "Törlés",
+    "remove": "Remove",
     "save": "Mentés",
     "edit": "Szerkesztés",
     "yes": "Igen",
@@ -114,11 +115,13 @@
   "totp": {
     "addCode": "2FA kód hozzáadása",
     "nameOptional": "Név (nem kötelező)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Authenticator",
     "secretKey": "Titkos kulcs",
     "instructions": "Adja meg a weboldal által megjelenített titkos kulcsot a két faktoros hitelesítőjébe.",
     "saveToViewCode": "Mentse le a kód megtekintéséhez",
     "scanQrCode": "QR kód beolvasása",
-    "enterManually": "Adjon meg egy beállítási kulcsot",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Hibás titkos kulcs formátum.",
       "scanFailed": "QR kód beolvasása sikertelen. Próbálja meg újra."
