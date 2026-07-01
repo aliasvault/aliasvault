@@ -81,7 +81,7 @@
                 </ClickOutsideHandler>
             }
         </div>
-        <RefreshButton OnClick="LoadItemsAsync" ButtonText="@SharedLocalizer["Refresh"]" />
+        <RefreshButton OnClick="RefreshVaultAsync" ButtonText="@SharedLocalizer["Refresh"]" />
     </CustomActions>
 </PageHeader>
 
@@ -921,6 +921,44 @@ else
     }
 
     /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        // Reload the item list after a full vault reload from the server so changes made on other
+        // devices appear without a hard page refresh.
+        DbService.GetState().StateChanged += OnVaultStateChanged;
+    }
+
+    /// <summary>
+    /// Tracks the previous database status so we can detect a completed vault reload (Loading -> Ready).
+    /// </summary>
+    private DbServiceState.DatabaseStatus _lastVaultStatus = DbServiceState.DatabaseStatus.Uninitialized;
+
+    /// <summary>
+    /// Reloads the item list when the vault finishes reloading from the server. The vault reload swaps in
+    /// a fresh DbContext, which auto-invalidates the ItemService list cache, so the re-query picks up any
+    /// newly synced data.
+    /// </summary>
+    private async void OnVaultStateChanged(object? sender, DbServiceState.DatabaseState newState)
+    {
+        if (newState.Status == DbServiceState.DatabaseStatus.Ready && _lastVaultStatus == DbServiceState.DatabaseStatus.Loading)
+        {
+            await InvokeAsync(LoadItemsAsync);
+        }
+
+        _lastVaultStatus = newState.Status;
+    }
+
+    /// <summary>
+    /// Refreshes the vault by re-fetching it from the server, mirroring the header vault-refresh button.
+    /// </summary>
+    private async Task RefreshVaultAsync()
+    {
+        await DbService.InitializeDatabaseAsync();
+    }
+
+    /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -1000,6 +1038,8 @@ else
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        DbService.GetState().StateChanged -= OnVaultStateChanged;
+
         if (_dotNetRef != null)
         {
             if (_isObserverSetup)
