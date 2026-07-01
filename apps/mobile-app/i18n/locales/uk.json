@@ -3,6 +3,7 @@
     "cancel": "Скасувати",
     "close": "Закрити",
     "delete": "Видалити",
+    "remove": "Remove",
     "save": "Зберегти",
     "edit": "Edit",
     "yes": "Так",
@@ -114,11 +115,13 @@
   "totp": {
     "addCode": "Add 2FA Code",
     "nameOptional": "Ім'я (необов'язково)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Authenticator",
     "secretKey": "Секретний ключ",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "saveToViewCode": "Зберегти для перегляду коду",
     "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Invalid secret key format.",
       "scanFailed": "Failed to scan QR code. Please try again."
