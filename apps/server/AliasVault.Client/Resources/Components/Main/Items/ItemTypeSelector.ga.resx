@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Type names -->
   <data name="TypeLogin">
-    <value>Login</value>
+    <value>Logáil Isteach</value>
     <comment>Login item type name</comment>
   </data>
   <data name="TypeAlias">
