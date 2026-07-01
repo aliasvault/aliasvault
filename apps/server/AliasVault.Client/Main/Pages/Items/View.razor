@@ -304,7 +304,31 @@ else
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+
+        // Reload the item after a full vault reload from the server so changes made on other devices
+        // appear without a hard page refresh.
+        DbService.GetState().StateChanged += OnVaultStateChanged;
+
         // Breadcrumb items are added dynamically in LoadEntryAsync after folder is loaded
+    }
+
+    /// <summary>
+    /// Tracks the previous database status so we can detect a completed vault reload (Loading -> Ready).
+    /// </summary>
+    private DbServiceState.DatabaseStatus _lastVaultStatus = DbServiceState.DatabaseStatus.Uninitialized;
+
+    /// <summary>
+    /// Reloads the item when the vault finishes reloading from the server. The vault reload swaps in a
+    /// fresh DbContext, so <see cref="LoadEntryAsync"/> re-queries and picks up any newly synced data.
+    /// </summary>
+    private async void OnVaultStateChanged(object? sender, DbServiceState.DatabaseState newState)
+    {
+        if (newState.Status == DbServiceState.DatabaseStatus.Ready && _lastVaultStatus == DbServiceState.DatabaseStatus.Loading)
+        {
+            await InvokeAsync(LoadEntryAsync);
+        }
+
+        _lastVaultStatus = newState.Status;
     }
 
     /// <inheritdoc />
@@ -377,6 +401,7 @@ else
     /// <inheritdoc />
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
+        DbService.GetState().StateChanged -= OnVaultStateChanged;
         await KeyboardShortcutService.UnregisterShortcutAsync("ge");
         await KeyboardShortcutService.UnregisterShortcutAsync("gd");
     }
