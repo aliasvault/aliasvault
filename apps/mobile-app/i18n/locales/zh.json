@@ -3,6 +3,7 @@
     "cancel": "取消",
     "close": "关闭",
     "delete": "删除",
+    "remove": "移除",
     "save": "保存",
     "edit": "编辑",
     "yes": "是",
@@ -114,11 +115,13 @@
   "totp": {
     "addCode": "添加两步验证码",
     "nameOptional": "名称（可选）",
+    "addName": "Add a name (optional)",
+    "defaultName": "身份验证器",
     "secretKey": "密钥",
     "instructions": "输入要添加两步验证的网站显示的密钥。",
     "saveToViewCode": "保存以查看验证码",
     "scanQrCode": "扫描二维码",
-    "enterManually": "输入设置密钥",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "密钥格式无效。",
       "scanFailed": "扫描二维码失败，请重试。"
