@@ -67,7 +67,7 @@
     <comment>Header for the notes section</comment>
   </data>
   <data name="AttachmentsSectionHeader">
-    <value>Attachments</value>
+    <value>Ceangaltáin</value>
     <comment>Header for the attachments section</comment>
   </data>
   <!-- Form labels -->
@@ -76,7 +76,7 @@
     <comment>Label for item name input</comment>
   </data>
   <data name="ServiceUrlLabel">
-    <value>Website URL</value>
+    <value>URL an tsuímh ghréasáin</value>
     <comment>Label for website URL input</comment>
   </data>
   <data name="EmailLabel">
@@ -157,7 +157,7 @@
     <comment>Success message when item is updated</comment>
   </data>
   <data name="ItemCreatedSuccess">
-    <value>Item created successfully.</value>
+    <value>Cruthaíodh an mhír go rathúil.</value>
     <comment>Success message when item is created</comment>
   </data>
   <!-- Passkey labels -->
