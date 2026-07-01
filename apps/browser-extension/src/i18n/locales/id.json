@@ -329,6 +329,7 @@
     "addCode": "Tambahkan kode 2FA",
     "instructions": "Masukkan kunci rahasia yang ditampilkan oleh situs web tempat Anda ingin menambahkan autentikasi dua faktor.",
     "nameOptional": "Nama (opsional)",
+    "addName": "Add a name (optional)",
     "secretKey": "Secret Key",
     "saveToViewCode": "Simpan untuk melihat kode",
     "defaultName": "Autentikator",
