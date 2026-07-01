@@ -155,6 +155,37 @@ describe('FormDetector TOTP tests', () => {
     });
   });
 
+  describe('English TOTP form 13 detection (nic.vi - generic name="key" maxlength=6)', () => {
+    const htmlFile = 'en-totp-form13.html';
+    let document: Document;
+    let formDetector: FormDetector;
+
+    beforeEach(() => {
+      const dom = createTestDom(htmlFile);
+      document = dom.window.document;
+    });
+
+    testField(FormField.Totp, 'key', htmlFile);
+
+    it('should detect the code input field as TOTP when focused', () => {
+      const totpInput = document.getElementById('key') as HTMLInputElement;
+      expect(totpInput).toBeTruthy();
+
+      formDetector = new FormDetector(document, totpInput);
+
+      const detectedType = formDetector.getDetectedFieldType();
+      expect(detectedType).toBe(DetectedFieldType.Totp);
+    });
+
+    it('should find the TOTP field when searching from form', () => {
+      formDetector = new FormDetector(document, document.body);
+
+      const form = formDetector.getForm();
+      expect(form?.totpField).toBeTruthy();
+      expect(form?.totpField?.id).toBe('key');
+    });
+  });
+
   describe('Email verification form should NOT be detected as TOTP', () => {
     it('should NOT detect English email verification form as TOTP', () => {
       const htmlFile = 'en-email-verification-form1.html';
