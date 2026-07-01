@@ -329,6 +329,7 @@
     "addCode": "Add 2FA Code",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "nameOptional": "Ім'я (необов'язково)",
+    "addName": "Add a name (optional)",
     "secretKey": "Секретний ключ",
     "saveToViewCode": "Зберегти для перегляду коду",
     "defaultName": "Authenticator",
