@@ -72,7 +72,7 @@
     <comment>Legend label for credential data slice</comment>
   </data>
   <data name="BreakdownAttachmentsLabel">
-    <value>Attachments</value>
+    <value>Ceangaltáin</value>
     <comment>Legend label for attachments slice</comment>
   </data>
   <data name="BreakdownLogosLabel">
@@ -119,7 +119,7 @@
     <comment>Table column header for creation date</comment>
   </data>
   <data name="ColumnWebsiteURL">
-    <value>Website URL</value>
+    <value>URL an tsuímh ghréasáin</value>
     <comment>Table column header for logo source domain</comment>
   </data>
   <data name="ColumnItemCount">
