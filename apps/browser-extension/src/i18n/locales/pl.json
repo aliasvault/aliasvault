@@ -329,6 +329,7 @@
     "addCode": "Dodaj kod 2FA",
     "instructions": "Wprowadź tajny klucz wyświetlony na stronie internetowej, na której chcesz dodać uwierzytelnianie dwuskładnikowe.",
     "nameOptional": "Nazwa (opcjonalnie)",
+    "addName": "Add a name (optional)",
     "secretKey": "Tajny klucz",
     "saveToViewCode": "Zapisz, aby wyświetlić kod",
     "defaultName": "Uwierzytelnianie",
