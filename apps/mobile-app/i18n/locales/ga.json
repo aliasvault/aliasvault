@@ -3,6 +3,7 @@
     "cancel": "Cealaigh",
     "close": "Dún",
     "delete": "Scrios",
+    "remove": "Remove",
     "save": "Sábháil",
     "edit": "Cuir in Eagar",
     "yes": "Tá",
@@ -114,11 +115,13 @@
   "totp": {
     "addCode": "Add 2FA Code",
     "nameOptional": "Name (optional)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Authenticator",
     "secretKey": "Secret Key",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "saveToViewCode": "Save to view code",
     "scanQrCode": "Scanáil Cód QR",
-    "enterManually": "Cuir isteach eochair thusála",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Invalid secret key format.",
       "scanFailed": "Theip ar an gcód QR a scanadh. Déan iarracht arís."
