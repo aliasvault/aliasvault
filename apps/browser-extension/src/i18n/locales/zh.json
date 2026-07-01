@@ -329,7 +329,7 @@
     "addCode": "添加两步验证码",
     "instructions": "输入要添加两步验证的网站显示的密钥。",
     "nameOptional": "名称（可选）",
-    "addName": "Add a name (optional)",
+    "addName": "添加名称（可选）",
     "secretKey": "密钥",
     "saveToViewCode": "保存以查看验证码",
     "defaultName": "身份验证器",
