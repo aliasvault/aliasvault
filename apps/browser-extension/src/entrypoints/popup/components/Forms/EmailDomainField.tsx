@@ -72,6 +72,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
   const [privateEmailDomains, setPrivateEmailDomains] = useState<string[]>([]);
   const [hiddenPrivateEmailDomains, setHiddenPrivateEmailDomains] = useState<string[]>([]);
   const popupRef = useRef<HTMLDivElement>(null);
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
 
   /**
    * Tracks whether the user explicitly toggled mode via buttons.
@@ -308,7 +309,11 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
      * Handle clicks outside the popup to close it.
      */
     const handleClickOutside = (event: MouseEvent): void => {
-      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (toggleButtonRef.current && toggleButtonRef.current.contains(target)) {
+        return;
+      }
+      if (popupRef.current && !popupRef.current.contains(target)) {
         setIsPopupVisible(false);
       }
     };
@@ -409,6 +414,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
 
           {!isCustomDomain && (
             <button
+              ref={toggleButtonRef}
               type="button"
               onClick={() => setIsPopupVisible(!isPopupVisible)}
               className={`inline-flex items-center px-2 py-2 border border-l-0 border-gray-300 dark:border-gray-600 ${onGenerateAlias ? '' : 'rounded-r-md'} bg-gray-50 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500 cursor-pointer text-sm truncate max-w-[120px]`}
