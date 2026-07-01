@@ -329,6 +329,7 @@
     "addCode": "2FA kód hozzáadása",
     "instructions": "Adja meg a weboldal által megjelenített titkos kulcsot a két faktoros hitelesítőjébe.",
     "nameOptional": "Név (nem kötelező)",
+    "addName": "Add a name (optional)",
     "secretKey": "Titkos kulcs",
     "saveToViewCode": "Mentse le a kód megtekintéséhez",
     "defaultName": "Authenticator",
