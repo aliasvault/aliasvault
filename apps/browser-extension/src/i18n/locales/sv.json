@@ -329,6 +329,7 @@
     "addCode": "Lägg till 2FA kod",
     "instructions": "Ange den hemliga nyckeln som visas av webbplatsen där du vill lägga till tvåfaktorsautentisering.",
     "nameOptional": "Namn (valfritt)",
+    "addName": "Add a name (optional)",
     "secretKey": "Hemlig nyckel",
     "saveToViewCode": "Spara för att visa kod",
     "defaultName": "Autentiserare",
