@@ -164,7 +164,7 @@
     <comment>Filter option to show only username/passwords</comment>
   </data>
   <data name="FilterAttachmentsOption" xml:space="preserve">
-    <value>Attachments</value>
+    <value>Ceangaltáin</value>
     <comment>Filter option to show only items with attachments</comment>
   </data>
   <data name="FilterTotpOption" xml:space="preserve">
