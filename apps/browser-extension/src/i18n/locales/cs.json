@@ -329,6 +329,7 @@
     "addCode": "Add 2FA Code",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "nameOptional": "Name (optional)",
+    "addName": "Add a name (optional)",
     "secretKey": "Secret Key",
     "saveToViewCode": "Save to view code",
     "defaultName": "Authenticator",
