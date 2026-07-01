@@ -758,13 +758,16 @@ export default defineContentScript({
           const canShowPopup = forceShow || (await isSiteAllowed() && formDetector.isAutofillTriggerableField());
 
           if (canShowPopup) {
-            // Check the per-popup-type feature toggle (credential vs TOTP, etc.)
-            if (!await POPUP_RUNTIME[popupType].enabled()) {
+            /*
+             * Check the per-popup-type feature toggle (credential vs TOTP, etc.), unless the
+             * popup was explicitly requested (keyboard shortcut / context menu = force show).
+             */
+            if (!forceShow && !await POPUP_RUNTIME[popupType].enabled()) {
               return;
             }
 
             injectIcon(inputElement, container, detectedFieldType ?? undefined);
-            await showPopupWithAuthCheck(inputElement, container, popupType);
+            await showPopupWithAuthCheck(inputElement, container, popupType, forceShow);
           }
         }
 

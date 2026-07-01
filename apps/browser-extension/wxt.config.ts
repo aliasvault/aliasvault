@@ -63,6 +63,10 @@ export default defineConfig({
       ],
       commands: {
         "show-autofill-popup": {
+          suggested_key: {
+            default: "Ctrl+Shift+L",
+            mac: "Command+Shift+L"
+          },
           description: "Show the autofill popup (while focusing an input field)"
         }
       },
