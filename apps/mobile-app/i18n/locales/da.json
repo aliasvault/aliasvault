@@ -3,6 +3,7 @@
     "cancel": "Annuller",
     "close": "Luk",
     "delete": "Slet",
+    "remove": "Fjern",
     "save": "Gem",
     "edit": "Rediger",
     "yes": "Ja",
@@ -114,11 +115,13 @@
   "totp": {
     "addCode": "Tilføj 2FA-kode",
     "nameOptional": "Navn (valgfrit)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Godkender",
     "secretKey": "Hemmelig nøgle (Secret Key)",
     "instructions": "Indtast den hemmelige nøgle, der vises på hjemmesiden, hvor du vil tilføje to-faktor-autentificering.",
     "saveToViewCode": "Gem for at se kode",
     "scanQrCode": "Scan QR Kode",
-    "enterManually": "Indtast en oprettelsesnøgle",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Ugyldigt format for hemmelig nøgle.",
       "scanFailed": "Kunne ikke scanne QR-kode. Prøv igen."
