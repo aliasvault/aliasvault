@@ -329,6 +329,7 @@
     "addCode": "Tilføj 2FA-kode",
     "instructions": "Indtast den hemmelige nøgle (secret key), der vises af webstedet, hvor du vil tilføje to-faktor autentificering.",
     "nameOptional": "Navn (valgfrit)",
+    "addName": "Add a name (optional)",
     "secretKey": "Hemmelig nøgle",
     "saveToViewCode": "Gem for at se kode",
     "defaultName": "Godkender",
