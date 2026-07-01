@@ -35,7 +35,7 @@
 "copy_username" = "Copy Username";
 "copy_password" = "Copy Password";
 "copy_email" = "Copy Email";
-"copy_totp_code" = "Copy TOTP Code";
+"copy_totp_code" = "Cóipeáil Cód TOTP";
 "view_details" = "View Details";
 "username_copied" = "Username copied";
 "password_copied" = "Password copied";
