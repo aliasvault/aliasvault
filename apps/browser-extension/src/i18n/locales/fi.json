@@ -329,6 +329,7 @@
     "addCode": "Lisää 2FA TOTP -koodi",
     "instructions": "Syötä salainen avain, joka näkyy sivustossa, jossa haluat lisätä kaksivaiheisen tunnistautumisen",
     "nameOptional": "Nimi (valinnainen)",
+    "addName": "Add a name (optional)",
     "secretKey": "Salainen avain",
     "saveToViewCode": "Tallenna nähdäksesi koodin",
     "defaultName": "Authenticator",
