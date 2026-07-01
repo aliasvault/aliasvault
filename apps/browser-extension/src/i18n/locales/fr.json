@@ -329,6 +329,7 @@
     "addCode": "Ajouter un code 2FA",
     "instructions": "Entrez la clé secrète affichée par le site Web où vous souhaitez ajouter l'authentification à deux facteurs.",
     "nameOptional": "Nom (facultatif)",
+    "addName": "Add a name (optional)",
     "secretKey": "Clé secrète",
     "saveToViewCode": "Enregistrer pour afficher le code",
     "defaultName": "Authentificateur",
