@@ -3,6 +3,7 @@
     "cancel": "Отмена",
     "close": "Закрыть",
     "delete": "Удалить",
+    "remove": "Удалить",
     "save": "Сохранить",
     "edit": "Редактировать",
     "yes": "Да",
@@ -114,11 +115,13 @@
   "totp": {
     "addCode": "Добавить код 2FA",
     "nameOptional": "Имя (необязательно)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Аутентификатор",
     "secretKey": "Секретный ключ",
     "instructions": "Введите секретный ключ, указанный на веб-сайте, где вы хотите добавить двухфакторную аутентификацию.",
     "saveToViewCode": "Сохранить для просмотра кода",
     "scanQrCode": "Отсканировать QR-код",
-    "enterManually": "Введите ключ настройки",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Неверный формат секретного ключа.",
       "scanFailed": "Не удалось отсканировать QR-код. Попробуйте еще раз."
