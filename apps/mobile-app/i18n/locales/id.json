@@ -3,6 +3,7 @@
     "cancel": "Batal",
     "close": "Tutup",
     "delete": "Hapus",
+    "remove": "Buang",
     "save": "Simpan",
     "edit": "Ubah",
     "yes": "Ya",
@@ -114,11 +115,13 @@
   "totp": {
     "addCode": "Tambahkan kode 2FA",
     "nameOptional": "Nama (opsional)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Autentikator",
     "secretKey": "Secret Key",
     "instructions": "Masukkan kunci rahasia yang ditampilkan oleh situs web tempat Anda ingin menambahkan autentikasi dua faktor.",
     "saveToViewCode": "Simpan untuk melihat kode",
     "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Format kunci rahasia tidak valid.",
       "scanFailed": "Failed to scan QR code. Please try again."
