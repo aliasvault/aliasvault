@@ -115,13 +115,13 @@
   "totp": {
     "addCode": "2FA-Code hinzufügen",
     "nameOptional": "Name (optional)",
-    "addName": "Add a name (optional)",
+    "addName": "Name hinzufügen (optional)",
     "defaultName": "Authenticator",
     "secretKey": "Secret-Key",
     "instructions": "Gib den Secret-Key ein, der von der Website angezeigt wird, bei der Du die Zwei-Faktor-Authentifizierung hinzufügen möchtest.",
     "saveToViewCode": "Speichern, um den Code anzuzeigen",
     "scanQrCode": "QR-Code scannen",
-    "enterManually": "Enter secret key",
+    "enterManually": "Geheimen Schlüssel eingeben",
     "errors": {
       "invalidSecretKey": "Ungültiges Format des Secret-Key",
       "scanFailed": "Fehler beim Scannen des QR-Codes. Bitte versuche es erneut."
