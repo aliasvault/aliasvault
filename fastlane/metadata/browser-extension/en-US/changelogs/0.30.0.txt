@@ -1,0 +1,6 @@
+- Add passphrase generator
+- Update credential/alias create flow from autofill prompt
+- Show current site credential as suggestion instead of auto opening in popup
+- Improve 2FA TOTP code create UI
+- Update aliasvault.net to aliasvault.com as default cloud-URL
+- Update translations
