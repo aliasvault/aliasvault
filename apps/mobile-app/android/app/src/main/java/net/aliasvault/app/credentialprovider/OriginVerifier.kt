@@ -35,7 +35,7 @@ class OriginVerifier {
          */
         // BEGIN_GENERATED: passkeys-allowlist
         // Source: https://www.gstatic.com/gpm-passkeys-privileged-apps/apps.json
-        // Last refreshed: 2026-05-31
+        // Last refreshed: 2026-07-02
         private val PRIVILEGED_ALLOWLIST_JSON = """
         {
           "apps": [
@@ -927,6 +927,18 @@ class OriginVerifier {
                   {
                     "build": "userdebug",
                     "cert_fingerprint_sha256": "7C:AC:39:19:37:98:1B:61:34:BD:CE:1F:D9:83:4C:25:31:81:F5:AB:F9:1D:ED:60:78:21:0D:0F:91:AC:E3:60"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "android",
+              "info": {
+                "package_name": "net.waterfox.android.release",
+                "signatures": [
+                  {
+                    "build": "release",
+                    "cert_fingerprint_sha256": "29:39:99:7A:2D:8F:07:30:3C:EB:37:AD:68:10:AF:EF:0B:DA:71:0B:E2:11:64:76:E3:52:5A:73:79:EC:2E:1A"
                   }
                 ]
               }
