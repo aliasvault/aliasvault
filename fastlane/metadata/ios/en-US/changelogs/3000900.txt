@@ -1,0 +1,4 @@
+- Add passphrase generator
+- Improve 2FA TOTP code create UI
+- Update aliasvault.net to aliasvault.com as default cloud URL
+- Update translations
