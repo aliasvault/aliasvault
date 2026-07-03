@@ -21,15 +21,15 @@
   </xsd:schema>
   <!-- Assistant messages -->
   <data name="GreatNowLetsSetupUsername">
-    <value>Great! Now, let's set up your username for AliasVault.</value>
+    <value>Go hiontach! Anois, socraímis d'ainm úsáideora le haghaidh AliasVault.</value>
     <comment>Assistant message about setting up username</comment>
   </data>
   <data name="EnterUsernameInstructions">
-    <value>Please enter a username you'd like to use. This can be your email address or any unique name you prefer.</value>
+    <value>Cuir isteach ainm úsáideora ar mhaith leat a úsáid. Is féidir leat é seo a bheith mar do sheoladh ríomhphoist nó aon ainm uathúil is fearr leat.</value>
     <comment>Instructions for entering username</comment>
   </data>
   <data name="RememberUsernameNote">
-    <value>Remember: This is what you'll use to log in later, so make sure it's something you'll remember!</value>
+    <value>Cuimhnigh: Seo an rud a úsáidfidh tú chun logáil isteach níos déanaí, mar sin déan cinnte gur rud é a chuimhneoidh tú!</value>
     <comment>Important note about remembering username</comment>
   </data>
   <!-- Form labels -->
@@ -38,29 +38,29 @@
     <comment>Label for username input field</comment>
   </data>
   <data name="UsernamePlaceholder">
-    <value>Enter your desired username or email</value>
+    <value>Cuir isteach d'ainm úsáideora nó do sheoladh ríomhphoist atá uait</value>
     <comment>Placeholder text for username input</comment>
   </data>
   <!-- Validation messages -->
   <data name="ValidatingUsernameMessage">
-    <value>Validating username...</value>
+    <value>Ag bailíochtú ainm úsáideora...</value>
     <comment>Message shown while validating username</comment>
   </data>
   <data name="UsernameAvailableMessage">
-    <value>Username is available!</value>
+    <value>Tá ainm úsáideora ar fáil!</value>
     <comment>Message shown when username is available</comment>
   </data>
   <data name="UsernameRequiredError">
-    <value>Username is required.</value>
+    <value>Tá ainm úsáideora ag teastáil.</value>
     <comment>Error message when username is empty</comment>
   </data>
   <data name="ServerCommunicationError">
-    <value>An error occurred during communication with the AliasVault server.</value>
+    <value>Tharla earráid le linn cumarsáide leis an bhfreastalaí AliasVault.</value>
     <comment>Error message for server communication issues</comment>
   </data>
   <!-- Alt text -->
   <data name="AssistantAvatarAlt">
-    <value>AliasVault Assistant</value>
+    <value>Cúntóir AliasVault</value>
     <comment>Alt text for assistant avatar image</comment>
   </data>
 </root>
