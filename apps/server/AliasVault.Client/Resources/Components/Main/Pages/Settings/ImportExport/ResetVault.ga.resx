@@ -63,7 +63,7 @@
     <comment>Page title</comment>
   </data>
   <data name="BreadcrumbImportExport" xml:space="preserve">
-    <value>Import / Export</value>
+    <value>Iompórtáil / Easpórtáil</value>
     <comment>Breadcrumb for import export</comment>
   </data>
   <data name="BreadcrumbResetVault" xml:space="preserve">
@@ -115,7 +115,7 @@
     <comment>Reset vault final confirmation button</comment>
   </data>
   <data name="ResetVaultUsernameRequired" xml:space="preserve">
-    <value>Username is required.</value>
+    <value>Tá ainm úsáideora ag teastáil.</value>
     <comment>Reset vault username required error</comment>
   </data>
   <data name="ResetVaultUsernameDoesNotMatch" xml:space="preserve">
