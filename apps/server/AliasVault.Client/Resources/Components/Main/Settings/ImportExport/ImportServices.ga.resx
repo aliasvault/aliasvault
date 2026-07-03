@@ -112,11 +112,11 @@
   </data>
   <!-- KeePass -->
   <data name="KeePassDescription" xml:space="preserve">
-    <value>Import passwords from KeePass</value>
+    <value>Pasfhocail a allmhairiú ó KeePass</value>
     <comment>Description for KeePass import service</comment>
   </data>
   <data name="KeePassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your KeePass vault, you need to export it as a CSV file. You can do this by going to the 'File' menu and selecting 'Export' (to CSV).</value>
+    <value>Chun do chruinneachán KeePass a allmhairiú, ní mór duit é a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí dhul go dtí an roghchlár 'Comhad' agus 'Easpórtáil' (go CSV) a roghnú.</value>
     <comment>KeePass export instructions part 1</comment>
   </data>
   <data name="KeePassInstructionsPart2" xml:space="preserve">
@@ -125,40 +125,40 @@
   </data>
   <!-- Generic CSV -->
   <data name="GenericCsvDescription" xml:space="preserve">
-    <value>Import credentials using a template CSV format</value>
+    <value>Dintiúir a allmhairiú ag baint úsáide as formáid teimpléid CSV</value>
     <comment>Description for Generic CSV import service</comment>
   </data>
   <data name="GenericCsvInstructionsPart1" xml:space="preserve">
-    <value>Is the password manager you are using not supported? You can always import your credentials into AliasVault using a generic CSV template format instead.</value>
+    <value>An bhfuil an bainisteoir pasfhocal atá in úsáid agat gan tacaíocht? Is féidir leat do chuid dintiúir a allmhairiú isteach in AliasVault i gcónaí ag baint úsáide as formáid teimpléid CSV ghinearálta ina ionad.</value>
     <comment>Generic CSV instructions part 1</comment>
   </data>
   <data name="GenericCsvStep1" xml:space="preserve">
-    <value>Download the AliasVault Import CSV</value>
+    <value>Íoslódáil an CSV Iompórtála AliasVault</value>
     <comment>Generic CSV step 1</comment>
   </data>
   <data name="GenericCsvStep2" xml:space="preserve">
-    <value>Open it in a spreadsheet program (Microsoft Excel, Google Sheets, etc.)</value>
+    <value>Oscail é i gclár scarbhileog (Microsoft Excel, Google Sheets, srl.)</value>
     <comment>Generic CSV step 2</comment>
   </data>
   <data name="GenericCsvStep3" xml:space="preserve">
-    <value>Fill in your credentials (replace the example data)</value>
+    <value>Líon isteach do chuid dintiúir (cuir na sonraí samplacha ina n-áit)</value>
     <comment>Generic CSV step 3</comment>
   </data>
   <data name="GenericCsvStep4" xml:space="preserve">
-    <value>Save as CSV format and upload it below</value>
+    <value>Sábháil mar fhormáid CSV agus uaslódáil thíos é</value>
     <comment>Generic CSV step 4</comment>
   </data>
   <data name="GenericCsvTemplateDownloadError" xml:space="preserve">
-    <value>Failed to download CSV template. Please try again.</value>
+    <value>Theip ar an teimpléad CSV a íoslódáil. Déan iarracht arís.</value>
     <comment>Error message for template download failure</comment>
   </data>
   <!-- Firefox -->
   <data name="FirefoxDescription" xml:space="preserve">
-    <value>Import passwords from your Firefox Password Manager</value>
+    <value>Iompórtáil pasfhocail ó do Bhainisteoir Pasfhocal Firefox</value>
     <comment>Description for Firefox import service</comment>
   </data>
   <data name="FirefoxInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Firefox passwords, you need to export it as a CSV file. You can do this by opening your Firefox browser, going to menu > 'Passwords'. Then click on the menu icon in the top right corner and select 'Export passwords'.</value>
+    <value>Chun do phasfhocail Firefox a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí do bhrabhsálaí Firefox a oscailt, dul go dtí an roghchlár > 'Pasfhocail'. Ansin cliceáil ar dheilbhín an roghchláir sa chúinne uachtarach ar dheis agus roghnaigh 'Pasfhocail a easpórtáil'.</value>
     <comment>Firefox export instructions part 1</comment>
   </data>
   <data name="FirefoxInstructionsPart2" xml:space="preserve">
@@ -167,24 +167,24 @@
   </data>
   <!-- Dashlane -->
   <data name="DashlaneDescription" xml:space="preserve">
-    <value>Import passwords from your Dashlane account</value>
+    <value>Iompórtáil pasfhocail ó do chuntas Dashlane</value>
     <comment>Description for Dashlane import service</comment>
   </data>
   <data name="DashlaneInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Dashlane passwords, you need to export it as a CSV file. You can do this by logging into your Dashlane account, going to the 'Account' > 'Settings' menu and selecting 'Export to CSV'.</value>
+    <value>Chun do phasfhocail Dashlane a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí logáil isteach i do chuntas Dashlane, dul chuig an roghchlár 'Cuntas' > 'Socruithe' agus 'Easpórtáil go CSV' a roghnú.</value>
     <comment>Dashlane export instructions part 1</comment>
   </data>
   <data name="DashlaneInstructionsPart2" xml:space="preserve">
-    <value>Note: the .zip file you download will contain a "credentials.csv" file. You need to unzip the archive first, and then upload the "credentials.csv" CSV file below.</value>
+    <value>Tabhair faoi deara: beidh comhad "credentials.csv" sa chomhad .zip a íoslódálann tú. Ní mór duit an cartlann a dhízipeáil ar dtús, agus ansin an comhad CSV "credentials.csv" a uaslódáil thíos.</value>
     <comment>Dashlane export instructions part 2</comment>
   </data>
   <!-- KeePassXC -->
   <data name="KeePassXCDescription" xml:space="preserve">
-    <value>Import passwords from KeePassXC</value>
+    <value>Iompórtáil pasfhocail ó KeePassXC</value>
     <comment>Description for KeePassXC import service</comment>
   </data>
   <data name="KeePassXCInstructionsPart1" xml:space="preserve">
-    <value>In order to import your KeePassXC vault, you need to export it as a CSV file. You can do this by going to the 'Database' menu and selecting 'Export' (CSV File).</value>
+    <value>Chun do chruinneachán KeePassXC a allmhairiú, ní mór duit é a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí dhul go dtí an roghchlár 'Bunachar Sonraí' agus 'Easpórtáil' (Comhad CSV) a roghnú.</value>
     <comment>KeePassXC export instructions part 1</comment>
   </data>
   <data name="KeePassXCInstructionsPart2" xml:space="preserve">
@@ -193,11 +193,11 @@
   </data>
   <!-- NordPass -->
   <data name="NordPassDescription" xml:space="preserve">
-    <value>Import passwords from NordPass</value>
+    <value>Pasfhocail a allmhairiú ó NordPass</value>
     <comment>Description for NordPass import service</comment>
   </data>
   <data name="NordPassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your NordPass passwords, you need to export them as a CSV file. You can do this by opening the NordPass app or web vault, going to 'Settings' > 'Export Items', and selecting the CSV format.</value>
+    <value>Chun do phasfhocail NordPass a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh tríd an aip NordPass nó an cruinneachán gréasáin a oscailt, dul go 'Socruithe' > 'Easpórtáil Míreanna', agus an fhormáid CSV a roghnú.</value>
     <comment>NordPass export instructions part 1</comment>
   </data>
   <data name="NordPassInstructionsPart2" xml:space="preserve">
@@ -206,11 +206,11 @@
   </data>
   <!-- Proton Pass -->
   <data name="ProtonPassDescription" xml:space="preserve">
-    <value>Import passwords from Proton Pass</value>
+    <value>Iompórtáil pasfhocail ó Proton Pass</value>
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Proton Pass vault, you need to export it. You can do this in the Proton Pass browser extension by going to 'Settings' > 'Export'.</value>
+    <value>Chun do stór Proton Pass a allmhairiú, ní mór duit é a easpórtáil. Is féidir leat é seo a dhéanamh i síneadh brabhsálaí Proton Pass trí dhul go 'Socruithe' > 'Easpórtáil'.</value>
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">
@@ -219,11 +219,11 @@
   </data>
   <!-- Strongbox -->
   <data name="StrongboxDescription" xml:space="preserve">
-    <value>Import passwords from Strongbox</value>
+    <value>Pasfhocail a allmhairiú ó Strongbox</value>
     <comment>Description for Strongbox import service</comment>
   </data>
   <data name="StrongboxInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Strongbox vault, you need to export it as a CSV file. You can do this by going to the 'File' menu and selecting 'Export Database' (to CSV).</value>
+    <value>Chun do chruinneachán Strongbox a allmhairiú, ní mór duit é a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí dhul go dtí an roghchlár 'Comhad' agus 'Easpórtáil Bunachar Sonraí' (go CSV) a roghnú.</value>
     <comment>Strongbox export instructions part 1</comment>
   </data>
   <data name="StrongboxInstructionsPart2" xml:space="preserve">
@@ -232,33 +232,33 @@
   </data>
   <!-- AliasVault CSV/AVUX/AVEX -->
   <data name="AliasVaultDescription" xml:space="preserve">
-    <value>Import from AliasVault backup</value>
+    <value>Iompórtáil ó chúltaca AliasVault</value>
     <comment>Description for AliasVault import service</comment>
   </data>
   <data name="AliasVaultInstructionsPart1" xml:space="preserve">
-    <value>Import your previously created AliasVault backup.</value>
+    <value>Iompórtáil an cúltaca AliasVault a cruthaíodh roimhe seo.</value>
     <comment>AliasVault import instructions</comment>
   </data>
   <data name="AliasVaultSupportedFormatsInfo" xml:space="preserve">
-    <value>Supports .avex (encrypted), .avux (unencrypted) and CSV (basic) formats.</value>
+    <value>Tacaíonn sé le formáidí .avex (criptithe), .avux (neamhchriptithe) agus CSV (bunúsach).</value>
     <comment>Supported formats information for AliasVault imports</comment>
   </data>
   <!-- Dropbox -->
   <data name="DropboxDescription" xml:space="preserve">
-    <value>Import passwords from Dropbox Passwords</value>
+    <value>Iompórtáil pasfhocail ó Dropbox Passwords</value>
     <comment>Description for Dropbox import service</comment>
   </data>
   <data name="DropboxInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Dropbox Passwords, you need to export them as a CSV file. You can do this by opening Dropbox Passwords, going to 'Account' > 'Export' (to .CSV).</value>
+    <value>Chun do Pasfhocail Dropbox a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí Pasfhocail Dropbox a oscailt, ag dul go 'Cuntas' > 'Easpórtáil' (go .CSV).</value>
     <comment>Dropbox export instructions part 1</comment>
   </data>
   <!-- RoboForm -->
   <data name="RoboformDescription" xml:space="preserve">
-    <value>Import passwords from RoboForm</value>
+    <value>Iompórtáil pasfhocail ó RoboForm</value>
     <comment>Description for RoboForm import service</comment>
   </data>
   <data name="RoboformInstructionsPart1" xml:space="preserve">
-    <value>In order to import your RoboForm passwords, you need to export them as a CSV file. You can do this by opening RoboForm, going to 'RoboForm' menu > 'Options' > 'Account &amp; Data' > 'Export' and selecting CSV format.</value>
+    <value>Chun do phasfhocail RoboForm a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí RoboForm a oscailt, dul go dtí roghchlár 'RoboForm' > 'Roghanna' > 'Cuntas &amp; Sonraí' > 'Easpórtáil' agus formáid CSV a roghnú.</value>
     <comment>RoboForm export instructions part 1</comment>
   </data>
   <data name="RoboformInstructionsPart2" xml:space="preserve">
@@ -267,11 +267,11 @@
   </data>
   <!-- Edge -->
   <data name="EdgeDescription" xml:space="preserve">
-    <value>Import passwords from your Microsoft Edge Password Manager</value>
+    <value>Iompórtáil pasfhocail ó do Bhainisteoir Pasfhocal Microsoft Edge</value>
     <comment>Description for Edge import service</comment>
   </data>
   <data name="EdgeInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Microsoft Edge passwords, you need to export them as a CSV file. You can do this by going to Menu > Settings > Password and autofill > Microsoft Password Manager > ... > Export passwords.</value>
+    <value>Chun do phasfhocail Microsoft Edge a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí dhul go Roghchlár > Socruithe > Pasfhocal agus uathlíonadh > Bainisteoir Pasfhocal Microsoft > ... > Pasfhocail a easpórtáil.</value>
     <comment>Edge export instructions part 1</comment>
   </data>
   <data name="EdgeInstructionsPart2" xml:space="preserve">
@@ -280,11 +280,11 @@
   </data>
   <!-- Enpass -->
   <data name="EnpassDescription" xml:space="preserve">
-    <value>Import passwords from Enpass</value>
+    <value>Pasfhocail a allmhairiú ó Enpass</value>
     <comment>Description for Enpass import service</comment>
   </data>
   <data name="EnpassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Enpass passwords, you need to export them as a CSV file. You can do this by opening Enpass, going to 'Menu' > 'File' > 'Export' and selecting 'CSV file (.csv)'.</value>
+    <value>Chun do phasfhocail Enpass a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí Enpass a oscailt, dul go 'Roghchlár' > 'Comhad' > 'Easpórtáil' agus 'Comhad CSV (.csv)' a roghnú.</value>
     <comment>Enpass export instructions part 1</comment>
   </data>
   <data name="EnpassInstructionsPart2" xml:space="preserve">
