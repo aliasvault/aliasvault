@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="MainTitle" xml:space="preserve">
-    <value>Password &amp; (Email) Alias Manager</value>
+    <value>Bainisteoir Pasfhocal &amp; (Ríomhphoist) Leasainmneacha</value>
     <comment>Main title of the application</comment>
   </data>
   <data name="TaglineText" xml:space="preserve">
-    <value>Your Privacy. Protected.</value>
+    <value>Do Phríobháideacht. Cosanta.</value>
     <comment>Tagline emphasizing privacy protection</comment>
   </data>
   <data name="CreateNewVaultButton" xml:space="preserve">
@@ -71,15 +71,15 @@
     <comment>Button text for creating a new vault</comment>
   </data>
   <data name="LoginExistingAccountButton" xml:space="preserve">
-    <value>Log in with existing account</value>
+    <value>Logáil isteach le cuntas atá ann cheana féin</value>
     <comment>Button text for logging in with existing account</comment>
   </data>
   <data name="HttpsWarningTitle" xml:space="preserve">
-    <value>HTTPS Required</value>
+    <value>HTTPS Riachtanach</value>
     <comment>Title for HTTPS warning banner</comment>
   </data>
   <data name="HttpsWarningMessage" xml:space="preserve">
-    <value>Browsers only allow secure crypto operations via HTTPS, except for localhost. Login/registration won't work over HTTP with the current hostname. Please switch to HTTPS.</value>
+    <value>Ní cheadaíonn brabhsálaithe oibríochtaí criptithe slána ach trí HTTPS, seachas localhost. Ní oibreoidh logáil isteach/clárú thar HTTP leis an ainm óstach reatha. Athraigh go HTTPS le do thoil.</value>
     <comment>Message explaining why HTTPS is required</comment>
   </data>
 </root>
