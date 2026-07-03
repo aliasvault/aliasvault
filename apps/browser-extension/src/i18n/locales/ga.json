@@ -13,8 +13,8 @@
     "authCodePlaceholder": "Cuir isteach cód 6 dhigit",
     "verify": "Fíoraigh",
     "twoFactorNote": "Tabhair faoi deara: mura bhfuil rochtain agat ar do ghléas fíordheimhnitheora, is féidir leat do 2FA a athshocrú le cód aisghabhála trí logáil isteach tríd an suíomh Gréasáin.",
-    "masterPassword": "Master Password",
-    "unlockVault": "Unlock",
+    "masterPassword": "Príomhfhocal Faire",
+    "unlockVault": "Díghlasáil",
     "unlockWithPin": "Unlock with PIN",
     "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "useMasterPassword": "Use Master Password",
@@ -26,7 +26,7 @@
     "browseVault": "Browse vault contents",
     "autoCloseUnlockPopup": "Auto-close on future sign ins",
     "connectingTo": "Connecting to",
-    "switchAccounts": "Switch accounts?",
+    "switchAccounts": "Cuntais a athrú?",
     "loginWithMobile": "Log in using Mobile App",
     "unlockWithMobile": "Unlock using Mobile App",
     "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault.",
@@ -34,7 +34,7 @@
     "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
   },
   "menu": {
-    "vault": "Vault",
+    "vault": "Cruinneachán",
     "emails": "Ríomhphoist"
   },
   "common": {
@@ -58,7 +58,7 @@
     "close": "Dún",
     "dismiss": "Dismiss",
     "logout": "Logáil Amach",
-    "copied": "Copied!",
+    "copied": "Cóipeáilte!",
     "openInNewWindow": "Open in new window",
     "enabled": "Enabled",
     "disabled": "Disabled",
@@ -77,7 +77,7 @@
     "settings": "Socruithe",
     "recentEmails": "Recent emails",
     "credentials": "Credentials",
-    "passkeys": "Passkeys",
+    "passkeys": "Eochracha pas",
     "customFields": "Custom Fields",
     "twoFactorAuthentication": "Fíordheimhniú dhá fhachtóir",
     "alias": "Alias",
@@ -127,7 +127,7 @@
       "REFRESH_TOKEN_REQUIRED": "Refresh token is required.",
       "INVALID_REFRESH_TOKEN": "Invalid refresh token.",
       "PUBLIC_REGISTRATION_DISABLED": "New account registration is currently disabled on this server. Please contact the administrator.",
-      "USERNAME_REQUIRED": "Username is required.",
+      "USERNAME_REQUIRED": "Tá ainm úsáideora ag teastáil.",
       "USERNAME_ALREADY_IN_USE": "Username is already in use.",
       "USERNAME_AVAILABLE": "Username is available.",
       "USERNAME_MISMATCH": "Username does not match the current user.",
@@ -144,7 +144,7 @@
     }
   },
   "content": {
-    "or": "or",
+    "or": "nó",
     "new": "New",
     "vaultLocked": "AliasVault is locked.",
     "creatingNewAlias": "Creating new alias",
@@ -192,13 +192,13 @@
     "suggestions": "Suggestions",
     "loginCredentials": "Login Credentials",
     "cardInformation": "Card Information",
-    "addItem": "Add Item",
+    "addItem": "Cuir Mír Leis",
     "addNewItem": "Add new item",
     "saveItem": "Save Item",
     "itemDetails": "Item Details",
-    "editItem": "Edit Item",
+    "editItem": "Cuir Mír in Eagar",
     "untitled": "Untitled",
-    "newFolder": "New Folder",
+    "newFolder": "Fillteán Nua",
     "createFolder": "Create Folder",
     "editFolder": "Edit Folder",
     "folderName": "Folder Name",
@@ -208,7 +208,7 @@
     "welcomeDescription": "To use the AliasVault browser extension: navigate to a website and use the AliasVault autofill popup to create a new credential.",
     "currentSiteMatch": "For {{domain}}",
     "numberOfItemMatchesFound": "{{count}} items found",
-    "noMatchingItems": "No items match the selected filter.",
+    "noMatchingItems": "Níl aon mhíreanna a oireann don scagaire roghnaithe.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
     "clearSearch": "Clear search",
@@ -292,7 +292,7 @@
       "url": "URL",
       "phone": "Phone",
       "number": "Number",
-      "date": "Date",
+      "date": "Dáta",
       "textArea": "Text Area"
     },
     "login": {
@@ -315,7 +315,7 @@
     "alias.first_name": "First Name",
     "alias.last_name": "Last Name",
     "alias.gender": "Inscne",
-    "alias.birthdate": "Birthdate",
+    "alias.birthdate": "Dáta Breithe",
     "login.email": "Ríomhphost",
     "notes.content": "Nótaí",
     "card.cardholder_name": "Cardholder Name",
@@ -328,10 +328,10 @@
   "totp": {
     "addCode": "Add 2FA Code",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
-    "nameOptional": "Name (optional)",
+    "nameOptional": "Ainm (roghnach)",
     "addName": "Add a name (optional)",
-    "secretKey": "Secret Key",
-    "saveToViewCode": "Save to view code",
+    "secretKey": "Eochair Rúnda",
+    "saveToViewCode": "Sábháil chun an cód a fheiceáil",
     "defaultName": "Authenticator",
     "deleteTotpCodeTitle": "Delete 2FA Code",
     "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
@@ -352,7 +352,7 @@
     "deleteEmailConfirm": "Are you sure you want to permanently delete this email?",
     "from": "From",
     "to": "To",
-    "date": "Date",
+    "date": "Dáta",
     "emailContent": "Email content",
     "emailNotFound": "Níor aimsíodh an ríomhphost",
     "formatHtml": "HTML",
@@ -373,8 +373,8 @@
       "yesterday": "inné"
     },
     "apiErrors": {
-      "CLAIM_DOES_NOT_MATCH_USER": "The current chosen email address is already in use. Please change the email address by editing this credential.",
-      "CLAIM_DOES_NOT_EXIST": "An error occurred while trying to load the emails. Please try to edit and save the credential entry to synchronize the database, then try again."
+      "CLAIM_DOES_NOT_MATCH_USER": "Tá an seoladh ríomhphoist atá roghnaithe faoi láthair in úsáid cheana féin. Athraigh an seoladh ríomhphoist tríd an dintiúir seo a chur in eagar.",
+      "CLAIM_DOES_NOT_EXIST": "Tharla earráid agus na ríomhphoist á luchtú. Déan iarracht an iontráil dintiúir a chur in eagar agus a shábháil chun an bunachar sonraí a shioncrónú, agus ansin déan iarracht arís."
     }
   },
   "settings": {
@@ -489,7 +489,7 @@
     "unlockMethod": {
       "title": "Modh Díghlasála Cruinneachán",
       "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
-      "password": "Master Password",
+      "password": "Príomhfhocal Faire",
       "pin": "PIN Code",
       "pinDescription": "Unlock vault with PIN code",
       "setupPin": "Setup PIN Code",
@@ -545,7 +545,7 @@
     }
   },
   "recentlyDeleted": {
-    "title": "Recently Deleted",
+    "title": "Scriosta le Déanaí",
     "noItems": "No deleted items",
     "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
     "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
