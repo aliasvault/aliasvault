@@ -12,7 +12,7 @@ import {
 /** The identity generator's supported subset, used to exercise restricted matching. */
 const IDENTITY_CODES = ['da', 'de', 'en', 'es', 'fr', 'it', 'nl', 'ro', 'sv', 'ur', 'fa'];
 /** The Diceware passphrase wordlist subset (owned by the Rust core). */
-const DICEWARE_CODES = ['en', 'nl', 'de', 'fr', 'es', 'it'];
+const DICEWARE_CODES = ['en', 'nl', 'de', 'fr', 'es', 'it', 'ro'];
 
 describe('Languages', () => {
   describe('normalizeLanguageCode', () => {

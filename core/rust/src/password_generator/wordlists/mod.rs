@@ -18,6 +18,7 @@ static WORDLISTS: &[(&str, &str)] = &[
     ("fr", include_str!("fr.diceware")),
     ("es", include_str!("es.diceware")),
     ("it", include_str!("it.diceware")),
+    ("ro", include_str!("ro.diceware")),
 ];
 
 /// Resolve a language code (case-insensitive) to its raw wordlist text, falling back to
