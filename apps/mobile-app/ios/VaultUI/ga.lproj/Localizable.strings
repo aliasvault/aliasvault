@@ -22,7 +22,7 @@
 "linking_url" = "Linking...";
 "select_item" = "Select Item";
 "select_text_to_insert" = "Select Text to Insert";
-"choose_username" = "Choose Username";
+"choose_username" = "Roghnaigh Ainm Úsáideora";
 "select_text_to_insert_message" = "Select the text to insert into the focused input field";
 "choose_username_message" = "This website may require either your username or your email address to log in";
 "username_prefix" = "Username: ";
@@ -78,8 +78,8 @@
 "pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
 
 /* Password Unlock */
-"enter_password_to_unlock" = "Enter your master password";
-"unlock" = "Unlock";
+"enter_password_to_unlock" = "Cuir isteach do phríomhfhocal faire";
+"unlock" = "Díghlasáil";
 "incorrect_password" = "Pasfhocal mícheart. Déan iarracht arís.";
 "attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
 "max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
