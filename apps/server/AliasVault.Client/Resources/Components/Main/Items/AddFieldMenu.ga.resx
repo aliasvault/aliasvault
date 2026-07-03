@@ -135,7 +135,7 @@
     <comment>Number field type option</comment>
   </data>
   <data name="FieldTypeDate">
-    <value>Date</value>
+    <value>Dáta</value>
     <comment>Date field type option</comment>
   </data>
   <data name="FieldTypeTextArea">
