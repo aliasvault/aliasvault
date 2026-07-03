@@ -21,52 +21,52 @@
   </xsd:schema>
   <!-- Page title and description -->
   <data name="PageTitle">
-    <value>General settings</value>
+    <value>Socruithe ginearálta</value>
     <comment>Page title for general settings</comment>
   </data>
   <data name="PageDescription">
-    <value>Configure general AliasVault settings.</value>
+    <value>Cumraigh socruithe ginearálta AliasVault.</value>
     <comment>Page description for general settings</comment>
   </data>
   <data name="BreadcrumbTitle">
-    <value>General settings</value>
+    <value>Socruithe ginearálta</value>
     <comment>Breadcrumb title for general settings</comment>
   </data>
   <!-- Email Settings Section -->
   <data name="EmailSettingsTitle">
-    <value>Email Settings</value>
+    <value>Socruithe Ríomhphoist</value>
     <comment>Title for email settings section</comment>
   </data>
   <data name="DefaultEmailDomainLabel">
-    <value>Default email domain</value>
+    <value>Fearann ​​ríomhphoist réamhshocraithe</value>
     <comment>Label for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescription">
-    <value>Set the default email domain that will be used when creating new credentials.</value>
+    <value>Socraigh an fearann ​​ríomhphoist réamhshocraithe a úsáidfear agus dintiúir nua á gcruthú.</value>
     <comment>Description for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescriptionNote">
-    <value>Note: Email received on private domains are end-to-end encrypted and can only be read by you, while email received on public domains can be read by anyone that knows the receiving email address.</value>
+    <value>Nóta: Tá ríomhphoist a fhaightear ar fhearainn phríobháideacha criptithe ó cheann ceann agus ní féidir ach leatsa iad a léamh, ach is féidir le duine ar bith a bhfuil a fhios aige cé hé an seoladh ríomhphoist a fhaigheann iad ríomhphoist a léamh.</value>
     <comment>Note for default email domain setting explaining the difference between private and public domains.</comment>
   </data>
   <data name="DefaultEmailDomainLearnMore">
-    <value>Learn more about the difference</value>
+    <value>Foghlaim tuilleadh faoin difríocht</value>
     <comment>Link to documentation for default email domain setting</comment>
   </data>
   <data name="PrivateDomainsLabel">
-    <value>Private Domains</value>
+    <value>Fearainn Phríobháideacha</value>
     <comment>Label for private domains group</comment>
   </data>
   <data name="PrivateDomainsDisabledLabel">
-    <value>No private email domains configured</value>
+    <value>Níl aon fhearainn ríomhphoist phríobháideacha cumraithe</value>
     <comment>Label for private domains group when no private email domains are configured</comment>
   </data>
   <data name="PublicDomainsLabel">
-    <value>Public Domains</value>
+    <value>Fearainn Phoiblí</value>
     <comment>Label for public domains group</comment>
   </data>
   <data name="AutoEmailRefreshLabel">
-    <value>Auto refresh emails content when new ones arrive</value>
+    <value>Athnuachan uathoibríoch ar ábhar ríomhphoist nuair a thagann cinn nua</value>
     <comment>Label for auto email refresh setting</comment>
   </data>
   <!-- Alias Settings Section -->
