@@ -16,6 +16,9 @@ were collected by that project from the following upstream sources:
 | `fr.diceware` | French     | https://github.com/ArthurPons/diceware-fr-alt |
 | `es.diceware` | Spanish    | https://github.com/mir123/dadoware-bonito-es |
 | `it.diceware` | Italian    | https://www.taringamberini.com/ |
+| `ro.diceware` | Romanian   | Community contribution |
 
 Refer to each upstream source for its specific license terms. If you redistribute
 these lists, preserve this attribution.
+
+Files marked as "Community contribution" were contributed by members of the community. If you are the original author or know the original upstream source, please let us know so we can provide proper attribution.
