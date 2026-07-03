@@ -1362,13 +1362,19 @@ write_secret_to_file() {
 
     # Create secrets directory if it doesn't exist
     if [ ! -d "$SECRETS_DIR" ]; then
-        mkdir -p "$SECRETS_DIR"
-        chmod 700 "$SECRETS_DIR"
+        if ! mkdir -p "$SECRETS_DIR"; then
+            printf "  ${RED}> Failed to create secrets directory $SECRETS_DIR (permission denied?)${NC}\n" >&2
+            return 1
+        fi
+        chmod 700 "$SECRETS_DIR" 2>/dev/null || true
     fi
 
-    # Write secret to file
-    echo -n "$secret_value" > "$secret_file"
-    chmod 600 "$secret_file"
+    # Write secret to file.
+    if ! echo -n "$secret_value" > "$secret_file"; then
+        printf "  ${RED}> Failed to write secret $secret_name to $secret_file (permission denied?)${NC}\n" >&2
+        return 1
+    fi
+    chmod 600 "$secret_file" 2>/dev/null || true
 
     printf "  ${GREEN}> Secret $secret_name has been written to $secret_file${NC}\n"
 }
@@ -2785,9 +2791,6 @@ handle_install_version() {
 
     printf "${GREEN}✓ Docker image pulling completed${NC}\n"
 
-    # Save version to .env
-    update_env_var "ALIASVAULT_VERSION" "$target_version"
-
     # Start containers
     printf "\n${YELLOW}+++ Starting services +++${NC}\n"
 
@@ -2823,6 +2826,10 @@ handle_install_version() {
         printf "${YELLOW}Please check the troubleshooting steps above.${NC}\n"
         exit 1
     fi
+
+    # Save new version to .env only after all checks have passed, so we don't end up with a
+    # partially installed version in case of an error.
+    update_env_var "ALIASVAULT_VERSION" "$target_version"
 
     # Clean up old Docker images
     cleanup_docker_images "$target_version"
@@ -3516,19 +3523,19 @@ check_and_populate_env() {
     # JWT_KEY
     if [ ! -f "${SECRETS_DIR}/jwt_key" ] || [ -z "$(cat "${SECRETS_DIR}/jwt_key" 2>/dev/null)" ]; then
         JWT_KEY=$(openssl rand -base64 32)
-        write_secret_to_file "jwt_key" "$JWT_KEY"
+        write_secret_to_file "jwt_key" "$JWT_KEY" || exit 1
     fi
 
     # DATA_PROTECTION_CERT_PASS
     if [ ! -f "${SECRETS_DIR}/data_protection_cert_pass" ] || [ -z "$(cat "${SECRETS_DIR}/data_protection_cert_pass" 2>/dev/null)" ]; then
         CERT_PASS=$(openssl rand -base64 32)
-        write_secret_to_file "data_protection_cert_pass" "$CERT_PASS"
+        write_secret_to_file "data_protection_cert_pass" "$CERT_PASS" || exit 1
     fi
 
     # POSTGRES_PASSWORD
     if [ ! -f "${SECRETS_DIR}/postgres_password" ] || [ -z "$(cat "${SECRETS_DIR}/postgres_password" 2>/dev/null)" ]; then
         POSTGRES_PASS=$(openssl rand -base64 32)
-        write_secret_to_file "postgres_password" "$POSTGRES_PASS"
+        write_secret_to_file "postgres_password" "$POSTGRES_PASS" || exit 1
     fi
 
     # PRIVATE_EMAIL_DOMAINS
