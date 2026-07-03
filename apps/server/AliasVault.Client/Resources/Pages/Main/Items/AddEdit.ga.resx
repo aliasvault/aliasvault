@@ -21,28 +21,28 @@
   </xsd:schema>
   <!-- Page titles and descriptions -->
   <data name="AddItemTitle">
-    <value>Add Item</value>
+    <value>Cuir Mír Leis</value>
     <comment>Title for adding a new item</comment>
   </data>
   <data name="EditItemTitle">
-    <value>Edit Item</value>
+    <value>Cuir Mír in Eagar</value>
     <comment>Title for editing an existing item</comment>
   </data>
   <data name="AddItemDescription">
-    <value>Create a new item below.</value>
+    <value>Cruthaigh mír nua thíos.</value>
     <comment>Description for adding a new item</comment>
   </data>
   <data name="EditItemDescription">
-    <value>Edit the existing item below.</value>
+    <value>Cuir an mhír atá ann cheana féin in eagar thíos.</value>
     <comment>Description for editing an existing item</comment>
   </data>
   <!-- Breadcrumb items -->
   <data name="ViewItemBreadcrumb">
-    <value>View item</value>
+    <value>Féach ar an mír</value>
     <comment>Breadcrumb text for viewing an item</comment>
   </data>
   <data name="EditItemBreadcrumb">
-    <value>Edit item</value>
+    <value>Cuir mír in eagar</value>
     <comment>Breadcrumb text for editing an item</comment>
   </data>
   <data name="AddNewItemBreadcrumb">
