@@ -60,7 +60,7 @@
   </resheader>
   <!-- Page Header -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Vault</value>
+    <value>Cruinneachán</value>
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
@@ -122,25 +122,25 @@
     <comment>Text describing button location</comment>
   </data>
   <data name="OrText" xml:space="preserve">
-    <value>or</value>
+    <value>nó</value>
     <comment>Separator text between options</comment>
   </data>
   <data name="ImportItemsText" xml:space="preserve">
-    <value>If you previously used a different password manager, you can import your items from it.</value>
+    <value>Má d'úsáid tú bainisteoir pasfhocal difriúil roimhe seo, is féidir leat do mhíreanna a allmhairiú uaidh.</value>
     <comment>Text explaining import option</comment>
   </data>
   <data name="ImportButtonText" xml:space="preserve">
-    <value>Import from KeePass, Bitwarden, Chrome, Firefox...</value>
+    <value>Iompórtáil ó KeePass, Bitwarden, Chrome, Firefox...</value>
     <comment>Import button text</comment>
   </data>
   <!-- Error Messages -->
   <data name="FailedToLoadItemsMessage" xml:space="preserve">
-    <value>Failed to load items.</value>
+    <value>Theip ar lódáil na míreanna.</value>
     <comment>Error message when items fail to load</comment>
   </data>
   <!-- Filter Options -->
   <data name="FilterLabel" xml:space="preserve">
-    <value>Filter</value>
+    <value>Scagaire</value>
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
@@ -152,15 +152,15 @@
     <comment>Toggle option to show or hide folder structure</comment>
   </data>
   <data name="FilterPasskeysOption" xml:space="preserve">
-    <value>Passkeys</value>
+    <value>Eochracha pas</value>
     <comment>Filter option to show only passkeys</comment>
   </data>
   <data name="FilterAliasesOption" xml:space="preserve">
-    <value>Aliases</value>
+    <value>Leasainmneacha</value>
     <comment>Filter option to show only aliases</comment>
   </data>
   <data name="FilterUserpassOption" xml:space="preserve">
-    <value>Passwords</value>
+    <value>Pasfhocail</value>
     <comment>Filter option to show only username/passwords</comment>
   </data>
   <data name="FilterAttachmentsOption" xml:space="preserve">
@@ -172,16 +172,16 @@
     <comment>Filter option to show only items with TOTP codes</comment>
   </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
-    <value>Recently Deleted</value>
+    <value>Scriosta le Déanaí</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
   <data name="NoItemsFound" xml:space="preserve">
-    <value>No items match the selected filter.</value>
+    <value>Níl aon mhíreanna a oireann don scagaire roghnaithe.</value>
     <comment>Empty state message when no items match the filter</comment>
   </data>
   <data name="EmptyFolderMessage" xml:space="preserve">
-    <value>This folder is empty.</value>
+    <value>Tá an fillteán seo folamh.</value>
     <comment>Empty state message when folder has no items</comment>
   </data>
   <data name="AllItemsInFoldersMessage" xml:space="preserve">
@@ -190,7 +190,7 @@
   </data>
   <!-- Folder Management -->
   <data name="NewFolder" xml:space="preserve">
-    <value>New Folder</value>
+    <value>Fillteán Nua</value>
     <comment>Button text for creating a new folder</comment>
   </data>
   <data name="EditFolder" xml:space="preserve">
@@ -206,16 +206,16 @@
     <comment>Button text for navigating back to root</comment>
   </data>
   <data name="FailedToCreateFolder" xml:space="preserve">
-    <value>Failed to create folder.</value>
+    <value>Theip ar fhillteán a chruthú.</value>
     <comment>Error message when folder creation fails</comment>
   </data>
   <data name="FailedToDeleteFolder" xml:space="preserve">
-    <value>Failed to delete folder.</value>
+    <value>Theip ar an bhfillteán a scriosadh.</value>
     <comment>Error message when folder deletion fails</comment>
   </data>
   <!-- Infinite Scroll -->
   <data name="LoadingMore" xml:space="preserve">
-    <value>Loading more...</value>
+    <value>Ag lódáil níos mó...</value>
     <comment>Text shown when loading more items during infinite scroll</comment>
   </data>
   <!-- Clear Filter -->
@@ -224,7 +224,7 @@
     <comment>Button text for clearing the active filter</comment>
   </data>
   <data name="FilteringBy" xml:space="preserve">
-    <value>Filtering by:</value>
+    <value>Ag scagadh de réir:</value>
     <comment>Label shown when a filter is active</comment>
   </data>
 </root>
