@@ -79,9 +79,9 @@
   <string name="pin_confirm_description">Re-enter your PIN to confirm</string>
   <string name="pin_mismatch">PINs do not match. Please try again.</string>
   <string name="password_unlock_title">Díghlasáil an Cruinneachán</string>
-  <string name="password_unlock_subtitle">Enter your master password</string>
+  <string name="password_unlock_subtitle">Cuir isteach do phríomhfhocal faire</string>
   <string name="password_unlock_password_hint">Pasfhocal</string>
-  <string name="password_unlock_button">Unlock</string>
+  <string name="password_unlock_button">Díghlasáil</string>
   <string name="password_unlock_incorrect">Pasfhocal mícheart. Déan iarracht arís.</string>
   <string name="password_unlock_error">Failed to verify password</string>
   <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
