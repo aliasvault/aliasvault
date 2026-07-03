@@ -114,12 +114,12 @@
   },
   "totp": {
     "addCode": "Add 2FA Code",
-    "nameOptional": "Name (optional)",
+    "nameOptional": "Ainm (roghnach)",
     "addName": "Add a name (optional)",
     "defaultName": "Authenticator",
-    "secretKey": "Secret Key",
+    "secretKey": "Eochair Rúnda",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
-    "saveToViewCode": "Save to view code",
+    "saveToViewCode": "Sábháil chun an cód a fheiceáil",
     "scanQrCode": "Scanáil Cód QR",
     "enterManually": "Cuir isteach eochair rúnda",
     "errors": {
@@ -336,7 +336,7 @@
     }
   },
   "navigation": {
-    "vault": "Vault",
+    "vault": "Cruinneachán",
     "emails": "Ríomhphoist",
     "settings": "Socruithe"
   },
@@ -370,7 +370,7 @@
       "url": "URL",
       "phone": "Phone",
       "number": "Number",
-      "date": "Date",
+      "date": "Dáta",
       "textArea": "Text Area"
     }
   },
@@ -393,8 +393,8 @@
   },
   "items": {
     "title": "Items",
-    "addItem": "Add Item",
-    "editItem": "Edit Item",
+    "addItem": "Cuir Mír Leis",
+    "editItem": "Cuir Mír in Eagar",
     "deleteItem": "Scrios Mír",
     "itemDetails": "Item Details",
     "itemCreated": "Mír Cruthaithe",
@@ -425,7 +425,7 @@
     "publicEmailTitle": "Soláthraithe Ríomhphoist Sealadacha Poiblí",
     "publicEmailDescription": "Príobháideacht gan ainm ach teoranta. Is féidir le duine ar bith a bhfuil an seoladh ar eolas aige ábhar an ríomhphoist a léamh.",
     "searchPlaceholder": "Cuardaigh an cruinneachán...",
-    "noMatchingItems": "No items match the selected filter.",
+    "noMatchingItems": "Níl aon mhíreanna a oireann don scagaire roghnaithe.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
     "noItemsFound": "Níor aimsíodh aon mhír. Cruthaigh ceann le tosú. Leid: is féidir leat logáil isteach san aip ghréasáin AliasVault freisin chun dintiúir a allmhairiú ó bhainisteoirí pasfhocal eile.",
@@ -497,7 +497,7 @@
     "filters": {
       "all": "Items",
       "showFolders": "Fillteáin",
-      "passkeys": "Passkeys",
+      "passkeys": "Eochracha pas",
       "attachments": "Ceangaltáin",
       "totp": "2FA Codes"
     },
@@ -551,7 +551,7 @@
     "deleteConfirm": "An bhfuil tú cinnte gur mian leat an mhír seo a scriosadh? Ní féidir an gníomh seo a chealú.",
     "folders": {
       "folder": "Folder",
-      "newFolder": "New Folder",
+      "newFolder": "Fillteán Nua",
       "createFolder": "Create Folder",
       "editFolder": "Edit Folder",
       "folderName": "Folder Name",
@@ -566,7 +566,7 @@
       "selectFolder": "Select Folder"
     },
     "recentlyDeleted": {
-      "title": "Recently Deleted",
+      "title": "Scriosta le Déanaí",
       "noItems": "No deleted items",
       "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
       "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
@@ -620,8 +620,8 @@
     "invalidEmailFormat": "Formáid ríomhphoist neamhbhailí"
   },
   "apiErrors": {
-    "CLAIM_DOES_NOT_MATCH_USER": "The current chosen email address is already in use. Please change the email address by editing this credential.",
-    "CLAIM_DOES_NOT_EXIST": "An error occurred while trying to load the emails. Please try to edit and save the credential entry to synchronize the database, then try again.",
+    "CLAIM_DOES_NOT_MATCH_USER": "Tá an seoladh ríomhphoist atá roghnaithe faoi láthair in úsáid cheana féin. Athraigh an seoladh ríomhphoist tríd an dintiúir seo a chur in eagar.",
+    "CLAIM_DOES_NOT_EXIST": "Tharla earráid agus na ríomhphoist á luchtú. Déan iarracht an iontráil dintiúir a chur in eagar agus a shábháil chun an bunachar sonraí a shioncrónú, agus ansin déan iarracht arís.",
     "UNKNOWN_ERROR": "An unknown error occurred. Please try again.",
     "ACCOUNT_LOCKED": "Account temporarily locked due to too many failed attempts. Please try again later.",
     "ACCOUNT_BLOCKED": "Your account has been disabled. If you believe this is a mistake, please contact support.",
@@ -631,7 +631,7 @@
     "REFRESH_TOKEN_REQUIRED": "Refresh token is required.",
     "INVALID_REFRESH_TOKEN": "Invalid refresh token.",
     "PUBLIC_REGISTRATION_DISABLED": "New account registration is currently disabled on this server. Please contact the administrator.",
-    "USERNAME_REQUIRED": "Username is required.",
+    "USERNAME_REQUIRED": "Tá ainm úsáideora ag teastáil.",
     "USERNAME_ALREADY_IN_USE": "Username is already in use.",
     "USERNAME_AVAILABLE": "Username is available.",
     "USERNAME_MISMATCH": "Username does not match the current user.",
