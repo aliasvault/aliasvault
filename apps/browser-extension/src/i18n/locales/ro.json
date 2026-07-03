@@ -329,7 +329,7 @@
     "addCode": "Adaugă cod 2FA",
     "instructions": "Introdu cheia secretă afișată de site-ul unde dorești să activezi autentificarea cu doi factori.",
     "nameOptional": "Nume (opțional)",
-    "addName": "Add a name (optional)",
+    "addName": "Adaugă un nume (opţional)",
     "secretKey": "Cheie Secretă",
     "saveToViewCode": "Salvează pentru a vedea codul",
     "defaultName": "Authenticator",
