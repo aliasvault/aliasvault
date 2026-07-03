@@ -135,7 +135,7 @@
     <value>Invalid username or password. Please try again.</value>
   </data>
   <data name="USERNAME_REQUIRED" xml:space="preserve">
-    <value>Username is required.</value>
+    <value>Tá ainm úsáideora ag teastáil.</value>
   </data>
   <data name="USERNAME_ALREADY_IN_USE" xml:space="preserve">
     <value>Username is already in use.</value>
