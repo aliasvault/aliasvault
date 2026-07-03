@@ -20,11 +20,11 @@
     </xsd:element>
   </xsd:schema>
   <data name="ViewItemPageTitle">
-    <value>View item</value>
+    <value>Féach ar an mír</value>
     <comment>Page title for viewing an item</comment>
   </data>
   <data name="ViewItemTitle">
-    <value>View item</value>
+    <value>Féach ar an mír</value>
     <comment>Page header title for viewing an item</comment>
   </data>
   <data name="EditButtonMobile">
@@ -32,7 +32,7 @@
     <comment>Text for edit button on mobile</comment>
   </data>
   <data name="EditButtonDesktop">
-    <value>Edit item</value>
+    <value>Cuir mír in eagar</value>
     <comment>Text for edit button on desktop</comment>
   </data>
   <data name="DeleteButtonMobile">
@@ -44,15 +44,15 @@
     <comment>Text for delete button on desktop</comment>
   </data>
   <data name="LoginDetailsSection">
-    <value>Login details</value>
+    <value>Sonraí logála isteach</value>
     <comment>Section header for login details</comment>
   </data>
   <data name="GeneratedItemDescription">
-    <value>Below you can view and copy the generated details for this item. Any emails sent to the shown address will automatically appear on this page.</value>
+    <value>Thíos is féidir leat na sonraí a ghintear don mhír seo a fheiceáil agus a chóipeáil. Aon ríomhphoist a sheoltar chuig an seoladh a thaispeántar, beidh siad le feiceáil go huathoibríoch ar an leathanach seo.</value>
     <comment>Description for generated item with email support</comment>
   </data>
   <data name="StoredItemDescription">
-    <value>Below you can view and copy the stored login details for this item.</value>
+    <value>Thíos is féidir leat na sonraí logála isteach stóráilte don mhír seo a fheiceáil agus a chóipeáil.</value>
     <comment>Description for stored item without email support</comment>
   </data>
   <data name="EmailLabel">
@@ -72,27 +72,27 @@
     <comment>Section header for alias information</comment>
   </data>
   <data name="FullNameLabel">
-    <value>Full name</value>
+    <value>Ainm iomlán</value>
     <comment>Label for full name field</comment>
   </data>
   <data name="FirstNameLabel">
-    <value>First name</value>
+    <value>Céadainm</value>
     <comment>Label for first name field</comment>
   </data>
   <data name="LastNameLabel">
-    <value>Last name</value>
+    <value>Sloinne</value>
     <comment>Label for last name field</comment>
   </data>
   <data name="BirthdateLabel">
-    <value>Birthdate</value>
+    <value>Dáta Breithe</value>
     <comment>Label for birthdate field</comment>
   </data>
   <data name="NicknameLabel">
-    <value>Nickname</value>
+    <value>Leasainm</value>
     <comment>Label for nickname field</comment>
   </data>
   <data name="ViewItemBreadcrumb">
-    <value>View item</value>
+    <value>Féach ar an mír</value>
     <comment>Breadcrumb text for view item page</comment>
   </data>
   <data name="ItemNotFoundError">
@@ -116,7 +116,7 @@
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, edit this item and delete the passkey. To replace or create a new passkey, visit the website and follow its prompts.</value>
+    <value>Cruthaítear pasfhocail tríd an síneadh brabhsálaí nó aipeanna soghluaiste nuair a iarrann suíomh Gréasáin ort iad a dhéanamh. Ní féidir iad a chur in eagar de láimh ná a chruthú tríd an aip ghréasáin. Chun an pasfhocail seo a bhaint, cuir an mhír seo in eagar agus scrios an pasfhocail. Chun pasfhocail nua a athsholáthar nó a chruthú, tabhair cuairt ar an suíomh Gréasáin agus lean a leideanna.</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="Untitled">
