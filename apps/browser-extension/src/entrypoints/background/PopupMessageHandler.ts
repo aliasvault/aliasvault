@@ -2,6 +2,7 @@
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { BoolResponse } from '@/utils/types/messaging/BoolResponse';
 
 import { browser } from '#imports';
@@ -48,19 +49,8 @@ export function handleOpenPopupCreateCredential(message: any, sender?: any) : Pr
     const sourceTabId = sender?.tab?.id;
     const elementIdentifier = message.elementIdentifier;
 
-    // Derive the service URL (origin + pathname) from the page URL passed by the content script.
-    let serviceUrl = '';
-    if (currentUrl) {
-      try {
-        const url = new URL(currentUrl);
-        // Only include http/https URLs
-        if (url.protocol === 'http:' || url.protocol === 'https:') {
-          serviceUrl = url.origin + url.pathname;
-        }
-      } catch (error) {
-        console.error('Error parsing current URL:', error);
-      }
-    }
+    // Derive the service URL (origin only) from the page URL passed by the content script.
+    const serviceUrl = currentUrl ? ServiceDetectionUtility.sanitizeUrl(currentUrl) : '';
 
     // Set a localStorage flag to skip restoring previously persisted form values as we want to start fresh with this explicit create item request.
     await LocalPreferencesService.setSkipFormRestore(true);

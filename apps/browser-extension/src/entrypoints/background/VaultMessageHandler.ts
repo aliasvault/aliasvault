@@ -10,6 +10,7 @@ import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
 import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword } from '@/utils/RustCore';
+import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
@@ -1684,6 +1685,7 @@ export async function handleAddUrlToCredential(message: { itemId: string; url: s
 
   try {
     const sqliteClient = await createVaultSqliteClient();
+    const url = ServiceDetectionUtility.sanitizeUrl(message.url) || message.url;
 
     // Get the existing item
     const item = sqliteClient.items.getById(message.itemId);
@@ -1695,26 +1697,23 @@ export async function handleAddUrlToCredential(message: { itemId: string; url: s
     const urlFieldIndex = item.Fields?.findIndex(f => f.FieldKey === FieldKey.LoginUrl);
 
     if (urlFieldIndex !== undefined && urlFieldIndex >= 0) {
-      // URL field exists - add to it
       const existingField = item.Fields![urlFieldIndex];
-      const existingUrls = Array.isArray(existingField.Value)
-        ? existingField.Value
-        : (existingField.Value ? [existingField.Value] : []);
+      const existingUrls = Array.isArray(existingField.Value) ? existingField.Value : (existingField.Value ? [existingField.Value] : []);
 
       /*
        * Compare on host only (subdomain + domain) so trailing slashes, paths,
        * query strings, fragments, `www.`, and http/https differences don't
        * cause us to store a near-duplicate URL on the credential.
        */
-      if (await isUrlAlreadyLinked(existingUrls as string[], message.url)) {
+      if (await isUrlAlreadyLinked(existingUrls as string[], url)) {
         return { success: true };
       }
 
       // Add the new URL
-      item.Fields![urlFieldIndex].Value = [...existingUrls, message.url];
+      item.Fields![urlFieldIndex].Value = [...existingUrls, url];
     } else {
       // No URL field exists - create one
-      const newUrlField = createSystemField(FieldKey.LoginUrl, { value: message.url });
+      const newUrlField = createSystemField(FieldKey.LoginUrl, { value: url });
       if (!item.Fields) {
         item.Fields = [];
       }
