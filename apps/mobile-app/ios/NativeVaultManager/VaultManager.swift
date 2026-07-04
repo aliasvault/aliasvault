@@ -664,6 +664,12 @@ public class VaultManager: NSObject {
         resolve(isGreaterOrEqual)
     }
 
+    @objc
+    func getServerVersion(_ resolve: @escaping RCTPromiseResolveBlock,
+                         rejecter reject: @escaping RCTPromiseRejectBlock) {
+        resolve(vaultStore.getServerVersion())
+    }
+
     // MARK: - Offline Mode Management
 
     @objc

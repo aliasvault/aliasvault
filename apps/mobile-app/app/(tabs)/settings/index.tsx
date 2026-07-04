@@ -23,6 +23,7 @@ import { UsernameDisplay } from '@/components/ui/UsernameDisplay';
 import { useApp } from '@/context/AppContext';
 import { useDialog } from '@/context/DialogContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
+import NativeVaultManager from '@/specs/NativeVaultManager';
 
 /**
  * Settings screen.
@@ -42,6 +43,7 @@ export default function SettingsScreen() : React.ReactNode {
   const [autoLockDisplay, setAutoLockDisplay] = useState<string>('');
   const [clipboardClearDisplay, setClipboardClearDisplay] = useState<string>('');
   const [authMethodDisplay, setAuthMethodDisplay] = useState<string>('');
+  const [serverVersion, setServerVersion] = useState<string | null>(null);
   const [isFirstLoad, setIsFirstLoad] = useMinDurationLoading(true, 100);
 
   useFocusEffect(
@@ -109,10 +111,18 @@ export default function SettingsScreen() : React.ReactNode {
       };
 
       /**
+       * Load the server version stored on the last sync so it can be shown next to the app version.
+       */
+      const loadServerVersion = async () : Promise<void> => {
+        const version = await NativeVaultManager.getServerVersion();
+        setServerVersion(version ?? null);
+      };
+
+      /**
        * Load all settings data.
        */
       const loadData = async () : Promise<void> => {
-        await Promise.all([loadAutoLockDisplay(), loadClipboardClearDisplay(), loadAuthMethodDisplay(), loadApiUrl()]);
+        await Promise.all([loadAutoLockDisplay(), loadClipboardClearDisplay(), loadAuthMethodDisplay(), loadApiUrl(), loadServerVersion()]);
         setIsFirstLoad(false);
       };
 
@@ -301,12 +311,20 @@ export default function SettingsScreen() : React.ReactNode {
     versionContainer: {
       alignItems: 'center',
       marginTop: 20,
+      opacity: 0.6,
       paddingBottom: 16,
     },
     versionText: {
       color: colors.textMuted,
-      fontSize: 14,
+      fontSize: 12,
+      lineHeight: 20,
       textAlign: 'center',
+    },
+    versionLabel: {
+      color: colors.textMuted,
+      fontSize: 12,
+      lineHeight: 20,
+      fontWeight: 'bold',
     },
   });
 
@@ -513,7 +531,14 @@ export default function SettingsScreen() : React.ReactNode {
         </View>
 
         <View style={styles.versionContainer}>
-          <ThemedText style={styles.versionText}>{t('settings.appVersion', { version: AppInfo.VERSION, url: getDisplayUrl() })}</ThemedText>
+          <ThemedText style={styles.versionText}>
+            <ThemedText style={styles.versionLabel}>{t('settings.appVersion')}:</ThemedText> {AppInfo.VERSION}
+          </ThemedText>
+          {serverVersion && (
+            <ThemedText style={styles.versionText}>
+              <ThemedText style={styles.versionLabel}>{t('settings.serverVersion')}:</ThemedText> {serverVersion} ({getDisplayUrl()})
+            </ThemedText>
+          )}
         </View>
       </Animated.ScrollView>
 

@@ -1252,6 +1252,20 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         }
     }
 
+    /**
+     * Get the stored server version, or null if none has been stored yet.
+     * @param promise The promise to resolve.
+     */
+    @ReactMethod
+    override fun getServerVersion(promise: Promise) {
+        try {
+            promise.resolve(vaultStore.metadata.getServerVersion())
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting server version", e)
+            promise.reject("ERR_GET_SERVER_VERSION", "Failed to get server version: ${e.message}", e)
+        }
+    }
+
     // MARK: - Offline Mode Management
 
     /**
