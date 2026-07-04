@@ -98,6 +98,7 @@ export interface Spec extends TurboModule {
 
   // Server version management
   isServerVersionGreaterThanOrEqualTo(targetVersion: string): Promise<boolean>;
+  getServerVersion(): Promise<string | null>;
 
   // PIN unlock methods
   isPinEnabled(): Promise<boolean>;
