@@ -11,7 +11,7 @@ import { browser } from '#imports';
 type ServiceDetectionResult = {
   /** Detected service name (e.g., "GitHub", "Google") */
   serviceName: string;
-  /** Detected service URL (origin + pathname) */
+  /** Detected service URL (origin only: scheme + host + port) */
   serviceUrl: string;
   /** Alternative service name suggestions derived from the page title/domain */
   suggestedNames: string[];
