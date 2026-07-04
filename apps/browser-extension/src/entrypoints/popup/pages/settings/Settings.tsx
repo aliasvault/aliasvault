@@ -32,6 +32,7 @@ const Settings: React.FC = () => {
   const { loadApiUrl, getDisplayUrl } = useApiUrl();
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [serverVersion, setServerVersion] = useState<string | null>(null);
 
   /**
    * Open the client tab.
@@ -77,6 +78,14 @@ const Settings: React.FC = () => {
   const loadSettings = useCallback(async () : Promise<void> => {
     // Load API URL
     await loadApiUrl();
+
+    /*
+     * Load the last known server version (persisted on each status check) so it can be
+     * shown next to the app version. Useful for self-hosted troubleshooting.
+     */
+    const storedServerVersion = await storage.getItem('local:serverVersion') as string | undefined;
+    setServerVersion(storedServerVersion ?? null);
+
     setIsInitialLoading(false);
   }, [setIsInitialLoading, loadApiUrl]);
 
@@ -655,8 +664,11 @@ const Settings: React.FC = () => {
           </div>
         </section>
 
-        <div className="text-center text-gray-400 dark:text-gray-600">
-          {t('settings.versionPrefix')}{AppInfo.VERSION} ({getDisplayUrl()})
+        <div className="text-center text-[13px] text-gray-400 dark:text-gray-600">
+          <div><span className="font-bold">{t('settings.versionPrefix')}:</span> {AppInfo.VERSION}</div>
+          {serverVersion && (
+            <div><span className="font-bold">{t('settings.serverVersion')}:</span> {serverVersion} ({getDisplayUrl()})</div>
+          )}
         </div>
       </div>
     </>

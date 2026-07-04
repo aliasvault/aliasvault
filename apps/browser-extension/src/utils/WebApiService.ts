@@ -275,7 +275,12 @@ export class WebApiService {
    */
   public async getStatus(): Promise<StatusResponse> {
     try {
-      return await this.get<StatusResponse>('Auth/status');
+      const status = await this.get<StatusResponse>('Auth/status');
+      // Persist the server version so it can be shown on the settings page, also while offline.
+      if (status.serverVersion && status.serverVersion !== '0.0.0') {
+        await storage.setItem('local:serverVersion', status.serverVersion);
+      }
+      return status;
     } catch (error) {
       /**
        * Only re-throw ApiAuthError (session expired, auth failures).
