@@ -196,7 +196,8 @@
       "exportDescription": "Af sikkerhedshensyn skal du indtaste din hovedadgangskode for at bekræfte denne eksport."
     },
     "security": "Sikkerhed",
-    "appVersion": "App-version {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Aldrig",
       "5seconds": "5 sekunder",
