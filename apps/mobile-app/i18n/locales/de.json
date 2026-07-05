@@ -196,7 +196,8 @@
       "exportDescription": "Bitte gebe aus Sicherheitsgründen Dein Master-Passwort ein, um diesen Export zu bestätigen."
     },
     "security": "Sicherheit",
-    "appVersion": "App-Version {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Niemals",
       "5seconds": "5 Sekunden",
