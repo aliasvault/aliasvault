@@ -73,7 +73,7 @@
   </data>
   <!-- Warning messages -->
   <data name="PermanentActionWarning" xml:space="preserve">
-    <value>Warning: This action is permanent and cannot be undone. All your data will be permanently deleted.</value>
+    <value>Rabhadh: Tá an gníomh seo buan agus ní féidir é a chealú. Scriosfar do chuid sonraí go léir go buan.</value>
     <comment>Warning message about permanent deletion</comment>
   </data>
   <data name="FinalWarning" xml:space="preserve">
