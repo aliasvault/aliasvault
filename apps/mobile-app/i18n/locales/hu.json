@@ -196,7 +196,8 @@
       "exportDescription": "Biztonsági okokból kérem adja meg a mester jelszót az exportálás engedélyezéséhez."
     },
     "security": "Biztonság",
-    "appVersion": "App verzió {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Soha",
       "5seconds": "5 másodperc",
