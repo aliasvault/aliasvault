@@ -115,13 +115,13 @@
   "totp": {
     "addCode": "Dodaj kod 2FA",
     "nameOptional": "Nazwa (opcjonalnie)",
-    "addName": "Add a name (optional)",
+    "addName": "Dodaj nazwę (opcjonalnie)",
     "defaultName": "Uwierzytelnianie",
     "secretKey": "Tajny klucz",
     "instructions": "Wprowadź tajny klucz wyświetlony na stronie internetowej, na której chcesz dodać uwierzytelnianie dwuskładnikowe.",
     "saveToViewCode": "Zapisz, aby wyświetlić kod",
     "scanQrCode": "Skanuj kod QR",
-    "enterManually": "Enter secret key",
+    "enterManually": "Wprowadź tajny klucz TOTP",
     "errors": {
       "invalidSecretKey": "Nieprawidłowy format tajnego klucza.",
       "scanFailed": "Nie udało się zeskanować kodu QR. Spróbuj ponownie."
@@ -196,8 +196,8 @@
       "exportDescription": "Ze względów bezpieczeństwa wprowadź swoje hasło główne, aby potwierdzić eksport."
     },
     "security": "Bezpieczeństwo",
-    "appVersion": "App version",
-    "serverVersion": "Server version",
+    "appVersion": "Wersja aplikacji",
+    "serverVersion": "Wersja serwera",
     "autoLockOptions": {
       "never": "Nigdy",
       "5seconds": "5 sekund",
@@ -450,24 +450,24 @@
     "passwordTypeBasic": "Hasło",
     "passwordTypeDiceware": "Passphrase",
     "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
-    "capitalization": "Capitalization",
+    "wordCount": "Słowa",
+    "capitalization": "Stosowanie wielkich liter",
     "separator": "Separator",
     "salt": "Salt",
     "dicewareCapitalizationOption": {
-      "Lowercase": "Lowercase",
+      "Lowercase": "Małe litery",
       "TitleCase": "Title Case",
-      "Uppercase": "Uppercase"
+      "Uppercase": "Wielkie litery"
     },
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
+      "Dash": "Kreska",
+      "Space": "Spacja",
       "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dot": "Kropka"
     },
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
+      "Prefix": "Prefiks",
+      "Sprinkle": "Losowa pozycja",
       "Suffix": "Suffix"
     },
     "errorLoadingItems": "Błąd podczas ładowania elementów",
