@@ -111,7 +111,7 @@
     <comment>Table column header for size in KB</comment>
   </data>
   <data name="ColumnItem">
-    <value>Item</value>
+    <value>Mír</value>
     <comment>Table column header for the parent item name</comment>
   </data>
   <data name="ColumnCreated">
