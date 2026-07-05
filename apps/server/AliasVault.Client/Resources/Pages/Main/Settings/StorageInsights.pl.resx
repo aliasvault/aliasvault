@@ -21,11 +21,11 @@
   </xsd:schema>
   <!-- Page title and description -->
   <data name="PageTitle">
-    <value>Vault storage insights</value>
+    <value>Analiza danych sejfu</value>
     <comment>Page title for vault storage insights</comment>
   </data>
   <data name="PageDescription">
-    <value>See an estimate of your vault size. For best sync performance, it's advised to keep your vault size small and delete items you no longer need.</value>
+    <value>Zobacz szacunkowy rozmiar sejfu. Aby zapewnić najlepszą wydajność synchronizacji, zaleca się zachowanie małego rozmiaru sejfu i usunięcie elementów, których już nie potrzebujesz.</value>
     <comment>Page description for vault storage insights</comment>
   </data>
   <data name="BreadcrumbTitle">
@@ -51,11 +51,11 @@
     <comment>Label for total item count card</comment>
   </data>
   <data name="ItemsWithAttachmentsLabel">
-    <value>Items with attachments</value>
+    <value>Elementy z załącznikami</value>
     <comment>Label for count of items that have at least one attachment</comment>
   </data>
   <data name="ItemsWithLogosLabel">
-    <value>Items with a logo</value>
+    <value>Elemnty z logo (favicon)</value>
     <comment>Label for count of items that reference a logo</comment>
   </data>
   <!-- Breakdown -->
@@ -98,7 +98,7 @@
     <comment>Title for the top logos table</comment>
   </data>
   <data name="TopLogosDescription">
-    <value>Top 10 largest service logos. Logos are reused for items with the same domain.</value>
+    <value>10 największych faviconów serwisowych. Favicony są ponownie używane dla stron z tą samą domeną.</value>
     <comment>Description for the top logos table</comment>
   </data>
   <!-- Table column headers -->
@@ -128,35 +128,36 @@
   </data>
   <!-- Logo management -->
   <data name="LogoManagementTitle">
-    <value>Manage logos</value>
+    <value>Zarządzaj ikonami (faviconami)
+</value>
     <comment>Title for the logo management section</comment>
   </data>
   <data name="LogoManagementDescription">
-    <value>Logos are fetched from the favicon of each item's website. You can delete every logo to reclaim space, or re-download them to pick up improved versions.</value>
+    <value>Ikony są pobierane z favicona każdej strony internetowej. Możesz usunąć każde logo, aby odzyskać miejsce lub pobrać je ponownie, aby odebrać ulepszone wersje.</value>
     <comment>Description for the logo management section</comment>
   </data>
   <data name="DeleteAllLogosButton">
-    <value>Delete all logos</value>
+    <value>Usuń wszystkie loga</value>
     <comment>Button to delete every logo in the vault</comment>
   </data>
   <data name="RedownloadAllLogosButton">
-    <value>Re-download all logos</value>
+    <value>Pobierz ponownie wszystkie favicony</value>
     <comment>Button to re-fetch favicons for every item with a URL</comment>
   </data>
   <data name="DeleteAllLogosConfirmTitle">
-    <value>Delete all logos?</value>
+    <value>Usuń wszystkie favicony?</value>
     <comment>Confirmation modal title for delete-all-logos</comment>
   </data>
   <data name="DeleteAllLogosConfirmMessage">
-    <value>This removes every stored logo from your vault and clears the logo on each credential. You can re-download them at any time. Continue?</value>
+    <value>To usuwa każde przechowywane favicony z Twojego sejfu i usuwa favicony w każdych danych logowania. Możesz je pobrać ponownie w każdej chwili. Kontynuować?</value>
     <comment>Confirmation modal body for delete-all-logos</comment>
   </data>
   <data name="RedownloadAllLogosConfirmTitle">
-    <value>Re-download all logos?</value>
+    <value>Pobierz ponownie wszystkie favicony?</value>
     <comment>Confirmation modal title for redownload-all-logos</comment>
   </data>
   <data name="RedownloadAllLogosConfirmMessage">
-    <value>This re-fetches the favicon for every credential that has a website URL, replacing the existing logo. Depending on your vault size this may take a while. Continue?</value>
+    <value>To ponownie pobiera favicon dla każdego poświadczenia z adresem URL strony internetowej, zastępując istniejące logo. W zależności od rozmiaru sejfu może to zająć chwilę. Kontynuować?</value>
     <comment>Confirmation modal body for redownload-all-logos</comment>
   </data>
 </root>
