@@ -196,7 +196,8 @@
       "exportDescription": "Din motive de securitate, introdu parola ta principală pentru a confirma acest export."
     },
     "security": "Securitate",
-    "appVersion": "Versiune aplicație {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Niciodată",
       "5seconds": "5 secunde",
