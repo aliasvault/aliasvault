@@ -33,75 +33,75 @@
     <comment>Title for the tips step</comment>
   </data>
   <data name="GetStartedStepTitle">
-    <value>Get Started</value>
+    <value>Tosaigh</value>
     <comment>Title for the get started step</comment>
   </data>
   <data name="TutorialStepTitle">
-    <value>Tutorial</value>
+    <value>Rang teagaisc</value>
     <comment>Default tutorial step title</comment>
   </data>
   <!-- Welcome step content -->
   <data name="WelcomeMessage">
-    <value>Your vault has been successfully created! Protect your online privacy by creating unique aliases for each service you sign up for. Let's learn how AliasVault works and then create your first secure alias.</value>
+    <value>Tá do chruinneachán cruthaithe go rathúil! Cosain do phríobháideacht ar líne trí leasainmneacha uathúla a chruthú do gach seirbhís a chláraíonn tú léi. Foghlaimímis conas a oibríonn AliasVault agus ansin cruthaímis do chéad leasainm slán.</value>
     <comment>Welcome message on the first tutorial step</comment>
   </data>
   <!-- How it works step content -->
   <data name="HowItWorksIntro">
-    <value>When you need to sign up for a new service:</value>
+    <value>Nuair is gá duit clárú le haghaidh seirbhís nua:</value>
     <comment>Introduction text for how it works step</comment>
   </data>
   <data name="HowItWorksStep1">
-    <value>AliasVault generates a random identity with a secure private email address</value>
+    <value>Gineann AliasVault céannacht randamach le seoladh ríomhphoist príobháideach slán</value>
     <comment>First step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep2">
-    <value>Use this information to sign up for the service</value>
+    <value>Úsáid an fhaisnéis seo chun clárú don tseirbhís</value>
     <comment>Second step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep3">
-    <value>Received emails show up in this app and can be opened in your browser</value>
+    <value>Taispeántar ríomhphoist a fuarthas san aip seo agus is féidir iad a oscailt i do bhrabhsálaí</value>
     <comment>Third step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep4">
-    <value>Your real email address and other personal information stay private</value>
+    <value>Fanann do sheoladh ríomhphoist fíor agus faisnéis phearsanta eile príobháideach</value>
     <comment>Fourth step in how it works explanation</comment>
   </data>
   <!-- Tips step content -->
   <data name="MasterPasswordTipTitle">
-    <value>Keep Your Master Password Safe</value>
+    <value>Coinnigh Do Phríomhfhocal Faire Sábháilte</value>
     <comment>Title for master password tip</comment>
   </data>
   <data name="MasterPasswordTipContent">
-    <value>Your master password is required to decrypt your vault. Never share it with anyone and store it in a secure location. Warning: If you lose your master password, your data cannot be recovered - not even by our team.</value>
+    <value>Tá do phasfhocal máistir ag teastáil chun do chruinneachán a dhíchriptiú. Ná roinn é le duine ar bith agus stóráil é in áit shábháilte. Rabhadh: Má chailleann tú do phasfhocal máistir, ní féidir leat do chuid sonraí a aisghabháil - fiú amháin lenár bhfoireann.</value>
     <comment>Content for master password tip</comment>
   </data>
   <data name="TwoFactorTipTitle">
-    <value>Enable Two-Factor Authentication In Security Settings</value>
+    <value>Cumasaigh Fíordheimhniú Dhá Fhachtóir i Socruithe Slándála</value>
     <comment>Title for two-factor authentication tip</comment>
   </data>
   <data name="TwoFactorTipContent">
-    <value>Two-factor authentication adds an extra layer of security to your account. It requires you to enter a code from your authenticator app or provide a recovery code before your encrypted vault can be accessed.</value>
+    <value>Cuireann fíordheimhniú dhá fhachtóir ciseal breise slándála le do chuntas. Éilíonn sé ort cód a iontráil ó d’aip fíordheimhnitheora nó cód aisghabhála a sholáthar sula bhféadfar rochtain a fháil ar do chruinneachán criptithe.</value>
     <comment>Content for two-factor authentication tip</comment>
   </data>
   <data name="ExtensionsAppsTipTitle">
-    <value>Browser Extensions and Mobile Apps</value>
+    <value>Síneadh Brabhsálaí agus Aipeanna Soghluaiste</value>
     <comment>Title for browser extensions and mobile apps tip</comment>
   </data>
   <data name="ExtensionsAppsTipContent">
-    <value>Install the AliasVault browser extension and mobile app to create aliases and autofill forms directly from your browser and smartphone.</value>
+    <value>Suiteáil síneadh brabhsálaí AliasVault agus an aip shoghluaiste chun leasainmneacha agus foirmeacha uathlíonta a chruthú go díreach ó do bhrabhsálaí agus ó do ghuthán cliste.</value>
     <comment>Content for browser extensions and mobile apps tip</comment>
   </data>
   <!-- Create first identity step content -->
   <data name="ReadyToStartTitle">
-    <value>Ready to Start?</value>
+    <value>Réidh le tosú?</value>
     <comment>Title for ready to start section</comment>
   </data>
   <data name="ReadyToStartMessage">
-    <value>Now that you know how AliasVault works, let's create your first secure identity!</value>
+    <value>Anois go bhfuil a fhios agat conas a oibríonn AliasVault, cruthaímis do chéad chéannacht shlán!</value>
     <comment>Message encouraging user to create first identity</comment>
   </data>
   <data name="CreateFirstIdentityButton">
-    <value>Create Your First Identity</value>
+    <value>Cruthaigh Do Chéad Céannacht</value>
     <comment>Button text for creating first identity</comment>
   </data>
   <!-- Navigation buttons -->
@@ -110,21 +110,21 @@
     <comment>Continue button text</comment>
   </data>
   <data name="GetStartedButton">
-    <value>Get Started</value>
+    <value>Tosaigh</value>
     <comment>Get started button text</comment>
   </data>
   <!-- Loading and status messages -->
   <data name="FinishingTutorialMessage">
-    <value>Finishing tutorial...</value>
+    <value>Ag críochnú an rang teagaisc...</value>
     <comment>Loading message when finishing tutorial</comment>
   </data>
   <!-- Extension and app labels -->
   <data name="ComingSoonLabel">
-    <value>Coming Soon</value>
+    <value>Ag Teacht Go Luath</value>
     <comment>Label for features coming soon</comment>
   </data>
   <data name="SoonSuffix">
-    <value>(Soon)</value>
+    <value>(Go luath)</value>
     <comment>Suffix indicating feature coming soon</comment>
   </data>
 </root>
