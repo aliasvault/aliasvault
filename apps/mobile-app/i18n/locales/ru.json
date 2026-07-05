@@ -196,7 +196,8 @@
       "exportDescription": "Для безопасности введите мастер-пароль для подтверждения экспорта."
     },
     "security": "Безопасность",
-    "appVersion": "Версия приложения {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Никогда",
       "5seconds": "5 секунд",
