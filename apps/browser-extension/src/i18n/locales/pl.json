@@ -245,7 +245,7 @@
     "avoidAmbiguousChars": "Unikaj dwuznacznych znaków (o, 0, itp.)",
     "passwordTypeBasic": "Hasło",
     "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
+    "passphraseLanguage": "Język Passphrase",
     "wordCount": "Słowa",
     "dicewareCapitalizationOption": {
       "TitleCase": "Title Case",
@@ -256,14 +256,14 @@
     "dicewareSeparatorOption": {
       "Dash": "Kreska",
       "Space": "Spacja",
-      "Underscore": "Underscore",
+      "Underscore": "Podkreślenie",
       "Dot": "Kropka"
     },
     "salt": "Salt",
     "dicewareSaltOption": {
       "Prefix": "Prefiks",
       "Sprinkle": "Losowa pozycja",
-      "Suffix": "Suffix"
+      "Suffix": "Sufiks"
     },
     "privateEmailTitle": "Prywatny adres e-mail",
     "privateEmailAliasVaultServer": "Serwer AliasVault",
@@ -474,9 +474,9 @@
       "description": "Skonfiguruj domyślne ustawienia generatora haseł dla nowo utworzonych elementów, w tym długość hasła, zestawy znaków i język hasła.",
       "configureButton": "Skonfiguruj"
     },
-    "credentialAutofill": "Credential autofill",
+    "credentialAutofill": "Autouzupełnianie",
     "credentialAutofillDescription": "Pokaż wyskakujące okienko autouzupełniania, gdy zostaną wykryte pola nazwy użytkownika/hasła",
-    "totpAutofill": "2FA code autofill",
+    "totpAutofill": "Autouzupełnianie kodów 2FA",
     "totpAutofillDescription": "Pokaż wyskakujące okienko autouzupełniania 2FA, po wykryciu pól logowania",
     "autoCopyTotpOnAutofill": "Automatycznie skopiuj 2FA do schowka",
     "autoCopyTotpOnAutofillDescription": "Automatycznie skopiuj pierwszy kod 2FA do schowka po automatycznym wypełnianiu danych logowania",
@@ -549,7 +549,7 @@
     "title": "Ostatnio usunięte",
     "noItems": "Brak usuniętych elementów",
     "noItemsDescription": "Usunięte elementy pojawią się tutaj na {{days}} dni zanim zostaną trwale usunięte.",
-    "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
+    "description": "Te elementy zostaną trwale usunięte po {{days}} dniach. Możesz je przywrócić lub natychmiast usunąć.",
     "restore": "Przywróć",
     "deletePermanently": "Usuń bezpowrotnie",
     "emptyAll": "Opróżnij wszystkie",
