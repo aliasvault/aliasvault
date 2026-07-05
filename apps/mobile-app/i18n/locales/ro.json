@@ -196,8 +196,8 @@
       "exportDescription": "Din motive de securitate, introdu parola ta principală pentru a confirma acest export."
     },
     "security": "Securitate",
-    "appVersion": "App version",
-    "serverVersion": "Server version",
+    "appVersion": "Versiune aplicație",
+    "serverVersion": "Versiune server",
     "autoLockOptions": {
       "never": "Niciodată",
       "5seconds": "5 secunde",
@@ -451,7 +451,7 @@
     "passwordTypeDiceware": "Frază de acces",
     "passphraseLanguage": "Limba frazei de acces",
     "wordCount": "Cuvinte",
-    "capitalization": "Capitalizare",
+    "capitalization": "Majusculă",
     "separator": "Separator",
     "salt": "Salt",
     "dicewareCapitalizationOption": {
