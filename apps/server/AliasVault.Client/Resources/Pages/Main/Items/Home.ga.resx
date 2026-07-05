@@ -64,7 +64,7 @@
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Find all of your items below.</value>
+    <value>Aimsigh do chuid míreanna go léir thíos.</value>
     <comment>Page description text</comment>
   </data>
   <data name="Items" xml:space="preserve">
@@ -73,44 +73,44 @@
   </data>
   <!-- Settings Dropdown -->
   <data name="ViewModeLabel" xml:space="preserve">
-    <value>View Mode</value>
+    <value>Mód Amhairc</value>
     <comment>Label for view mode dropdown</comment>
   </data>
   <data name="GridViewOption" xml:space="preserve">
-    <value>Grid View</value>
+    <value>Radharc Eangaí</value>
     <comment>Grid view option in dropdown</comment>
   </data>
   <data name="TableViewOption" xml:space="preserve">
-    <value>Table View</value>
+    <value>Radharc Tábla</value>
     <comment>Table view option in dropdown</comment>
   </data>
   <data name="SortOrderLabel" xml:space="preserve">
-    <value>Sort Order</value>
+    <value>Ord Sórtála</value>
     <comment>Label for sort order dropdown</comment>
   </data>
   <data name="OldestFirstOption" xml:space="preserve">
-    <value>Oldest First</value>
+    <value>Is Sine Ar dtús</value>
     <comment>Oldest first sort option</comment>
   </data>
   <data name="NewestFirstOption" xml:space="preserve">
-    <value>Newest First</value>
+    <value>Is Nuaí Ar dtús</value>
     <comment>Newest first sort option</comment>
   </data>
   <data name="AlphabeticalOption" xml:space="preserve">
-    <value>Alphabetical</value>
+    <value>In ord aibítre</value>
     <comment>Alphabetical sort option</comment>
   </data>
   <!-- Empty State -->
   <data name="NoItemsTitle" xml:space="preserve">
-    <value>No items yet</value>
+    <value>Gan aon mhíreanna fós</value>
     <comment>Title when no items exist</comment>
   </data>
   <data name="CreateFirstItemText" xml:space="preserve">
-    <value>Create your first item using the</value>
+    <value>Cruthaigh do chéad mhír ag baint úsáide as an</value>
     <comment>Text explaining how to create first item</comment>
   </data>
   <data name="NewAliasButtonText" xml:space="preserve">
-    <value>"+ New Alias"</value>
+    <value>"+ Alias Nua"</value>
     <comment>Text reference to the New Alias button (desktop)</comment>
   </data>
   <data name="NewAliasButtonTextMobile" xml:space="preserve">
@@ -118,7 +118,7 @@
     <comment>Text reference to the New Alias button (mobile)</comment>
   </data>
   <data name="ButtonLocationText" xml:space="preserve">
-    <value>button in the top right corner.</value>
+    <value>cnaipe sa chúinne uachtarach ar dheis.</value>
     <comment>Text describing button location</comment>
   </data>
   <data name="OrText" xml:space="preserve">
