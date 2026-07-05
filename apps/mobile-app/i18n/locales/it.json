@@ -196,7 +196,8 @@
       "exportDescription": "Per motivi di sicurezza, inserisci la tua password principale per confermare questa esportazione."
     },
     "security": "Sicurezza",
-    "appVersion": "Versione app {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Mai",
       "5seconds": "5 secondi",
