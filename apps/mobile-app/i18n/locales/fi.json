@@ -196,7 +196,8 @@
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
     "security": "Turvallisuus",
-    "appVersion": "Sovelluksen versio {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Ei koskaan",
       "5seconds": "5 sekuntia",
