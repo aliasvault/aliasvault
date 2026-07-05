@@ -129,7 +129,7 @@
     <value>Rejestracja nowych kont jest obecnie wyłączona na tym serwerze. Skontaktuj się z administratorem.</value>
   </data>
   <data name="REGISTRATION_FAILED" xml:space="preserve">
-    <value>Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.</value>
+    <value>Nie można utworzyć konta. Spróbuj ponownie za kilka minut. Jeśli problem będzie się powtarzał, skontaktuj się z pomocą techniczną.</value>
   </data>
   <data name="USER_NOT_FOUND" xml:space="preserve">
     <value>Nieprawidłowa nazwa użytkownika lub hasło. Spróbuj ponownie.</value>
