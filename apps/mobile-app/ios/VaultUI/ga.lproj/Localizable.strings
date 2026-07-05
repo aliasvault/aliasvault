@@ -52,7 +52,7 @@
 "create_passkey_button_confirm" = "Create Passkey";
 
 /* Passkey provider */
-"passkey" = "Passkey";
+"passkey" = "Eochair phas";
 "loading_passkeys" = "Loading passkeys...";
 "no_passkeys_found" = "No passkeys found";
 "no_passkeys_match" = "No existing passkeys match your search";
