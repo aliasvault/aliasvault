@@ -196,7 +196,8 @@
       "exportDescription": "Ze względów bezpieczeństwa wprowadź swoje hasło główne, aby potwierdzić eksport."
     },
     "security": "Bezpieczeństwo",
-    "appVersion": "Wersja aplikacji {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Nigdy",
       "5seconds": "5 sekund",
