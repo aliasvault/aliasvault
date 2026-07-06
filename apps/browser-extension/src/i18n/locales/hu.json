@@ -433,7 +433,7 @@
     "versionPrefix": "App version",
     "serverVersion": "Server version",
     "autofillSettings": "Autofill Settings",
-    "clipboardSettings": "Clipboard Settings",
+    "clipboardSettings": "Vágólap beállítások",
     "contextMenuSettings": "Context Menu Settings",
     "passkeySettings": "Passkey Settings",
     "contextMenuDescription": "Right-click on input fields to access AliasVault options",
