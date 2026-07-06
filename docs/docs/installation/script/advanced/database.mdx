@@ -1,9 +1,13 @@
 ---
 sidebar_position: 4
-sidebar_label: "Database Operations"
+sidebar_label: "Database"
 ---
-# Database Operations (install.sh)
-This page explains how to import/export on the AliasVault server database via the `./install.sh` script.
+import TOCInline from '@theme/TOCInline';
+
+# Database (install.sh)
+This page explains how to import/export on the AliasVault server database via the `./install.sh` script, and how to point AliasVault at an external PostgreSQL server.
+
+<TOCInline toc={toc} />
 
 ## Database Export
 In order to backup the AliasVault server database (which includes all encrypted user vaults as well), you can use the `install.sh` script. This streams a compressed export of the database to the file you redirect to, while the services keep running. This script has to be run in a root terminal, not using sudo.
@@ -12,7 +16,7 @@ In order to backup the AliasVault server database (which includes all encrypted 
 $ ./install.sh db-export > backup.sql.gz
 ```
 
-### Fallback: export directly with Docker
+#### Fallback: export directly with Docker
 If `./install.sh db-export` fails for any reason, you can also export the database directly with Docker, bypassing the install script entirely:
 
 ```bash
@@ -25,6 +29,8 @@ To produce a compressed backup, pipe it through `gzip`:
 $ docker compose exec postgres pg_dump -U aliasvault aliasvault | gzip > backup.sql.gz
 ```
 
+---
+
 ## Database Import
 
 To restore a previously exported database, you can use the `install.sh` script. This script will stop the dependent services, drop the database, import the database from a file, and then restart the services.  This script has to be run in a root terminal, not using sudo.
@@ -33,7 +39,7 @@ To restore a previously exported database, you can use the `install.sh` script. 
 $ ./install.sh db-import < backup.sql.gz
 ```
 
-### Fallback: import directly with Docker
+#### Fallback: import directly with Docker
 If `./install.sh db-import` hangs or fails, you can restore the database directly with Docker. This drops the existing database, recreates it, and imports the backup.
 
 :::warning
@@ -49,3 +55,24 @@ $ docker compose stop api admin task-runner smtp && \
   gunzip < backup.sql.gz | docker compose exec -T postgres psql -U aliasvault aliasvault && \
   docker compose restart api admin task-runner smtp reverse-proxy
 ```
+
+---
+
+## Using an external PostgreSQL server
+By default AliasVault runs a bundled PostgreSQL container and no database configuration is needed. If you prefer to use your own PostgreSQL server instead (e.g. a managed instance or a dedicated database host):
+
+1. Set the connection settings in the `.env` file. The host must be a network address that is reachable from within the Docker containers.
+```bash
+POSTGRES_HOST=db.example.com
+POSTGRES_PORT=5432
+POSTGRES_DATABASE=aliasvault
+POSTGRES_USER=aliasvault
+```
+2. Write the password of your external database user to the `secrets/postgres_password` file.
+3. Restart AliasVault: `./install.sh restart`.
+
+Database migrations are applied automatically on startup, so an empty external database is initialized on first start. The `db-export` and `db-import` commands described still work and will automatically use whichever database is configured in `.env`.
+
+:::note
+The bundled PostgreSQL container will still be started as part of the Docker Compose stack, but it won't serve any connections while an external database is configured. Tip: you can optionally disable the built-in postgres container entirely via a custom `docker-compose.override.yml` file.
+:::
