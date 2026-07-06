@@ -40,7 +40,7 @@
     <comment>Text for delete button on mobile</comment>
   </data>
   <data name="DeleteButtonDesktop">
-    <value>Delete item</value>
+    <value>Elem törlése</value>
     <comment>Text for delete button on desktop</comment>
   </data>
   <data name="LoginDetailsSection">
@@ -128,7 +128,7 @@
     <comment>Section header for notes</comment>
   </data>
   <data name="CardSection">
-    <value>Card Details</value>
+    <value>Kártya adatok</value>
     <comment>Section header for credit card details</comment>
   </data>
   <data name="CustomFieldsSection">
