@@ -1,0 +1,56 @@
+---
+sidebar_position: 4
+sidebar_label: "Database"
+---
+import TOCInline from '@theme/TOCInline';
+
+# Database (Docker Compose)
+This page explains how to import/export on the AliasVault server database when installed via the all-in-one Docker container, and how to point AliasVault at an external PostgreSQL server.
+
+<TOCInline toc={toc} />
+
+## Database Export
+In order to backup the AliasVault server database (which includes all encrypted user vaults as well), you can use the following command. Run this command from the directory where your AliasVault `docker-compose.yml` is located.
+
+```bash
+$ docker compose exec aliasvault pg_dump -U aliasvault aliasvault > backup.sql
+```
+
+---
+
+## Database Import
+
+To restore a previously exported database, you can use the following snippet. Run these commands from the directory where your AliasVault `docker-compose.yml` is located.
+
+```bash
+# Drop database first (warning: this can't be undone!)
+docker compose exec -T aliasvault psql -U postgres -d postgres -c "DROP DATABASE IF EXISTS aliasvault WITH (FORCE);"
+
+# Create new empty database
+docker compose exec -T aliasvault psql -U postgres -d postgres -c "CREATE DATABASE aliasvault OWNER aliasvault;"
+
+# Import backup
+docker compose exec -T aliasvault psql -U aliasvault aliasvault < backup.sql
+```
+
+---
+
+## Optional: using an external PostgreSQL server
+By default the all-in-one container runs an embedded PostgreSQL server and no database configuration is needed. If you prefer to use your own PostgreSQL server instead (e.g. a managed instance or a dedicated database host):
+
+1. Add the connection settings to the `environment:` section of your `docker-compose.yml`. The host must be a network address that is reachable from within the container.
+```yaml
+    environment:
+      POSTGRES_HOST: "db.example.com"
+      POSTGRES_PORT: "5432"
+      POSTGRES_DATABASE: "aliasvault"
+      POSTGRES_USER: "aliasvault"
+```
+2. Make sure the password of your external database user matches the contents of the `./secrets/postgres_password` file. On a fresh setup you can write your own password to this file before the first start; if the container has already been started before, you can update the existing file with the correct password.
+3. Recreate the container: `docker compose down && docker compose up -d`.
+
+Database migrations are applied automatically on startup, so an empty external database is initialized on first start.
+
+:::note
+The embedded PostgreSQL server will still run inside the all-in-one container, but it won't serve any connections while an external database is configured. Note that the export/import commands above target the embedded database; when using an external database, run `pg_dump`/`psql` against your own server directly instead.
+:::
