@@ -315,7 +315,7 @@
     "alias.first_name": "Keresztnév",
     "alias.last_name": "Vezetéknév",
     "alias.gender": "Neme",
-    "alias.birthdate": "Birthdate",
+    "alias.birthdate": "Születési dátum",
     "login.email": "E-mail",
     "notes.content": "Megjegyzések",
     "card.cardholder_name": "Kártyatulajdonos neve",
