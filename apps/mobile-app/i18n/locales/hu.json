@@ -121,7 +121,7 @@
     "instructions": "Adja meg a weboldal által megjelenített titkos kulcsot a két faktoros hitelesítőjébe.",
     "saveToViewCode": "Mentse le a kód megtekintéséhez",
     "scanQrCode": "QR kód beolvasása",
-    "enterManually": "Enter secret key",
+    "enterManually": "Titkos kulcs magadása",
     "errors": {
       "invalidSecretKey": "Hibás titkos kulcs formátum.",
       "scanFailed": "QR kód beolvasása sikertelen. Próbálja meg újra."
