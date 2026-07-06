@@ -44,11 +44,11 @@
     <comment>Text for delete button on desktop</comment>
   </data>
   <data name="LoginDetailsSection">
-    <value>Login details</value>
+    <value>Bejelentkezési adatok</value>
     <comment>Section header for login details</comment>
   </data>
   <data name="GeneratedItemDescription">
-    <value>Below you can view and copy the generated details for this item. Any emails sent to the shown address will automatically appear on this page.</value>
+    <value>Lent megtekintheti és másolhatja az elem generált részleteit. Bármilyen e-mail, amit erre a címre küldenek, itt jelenik majd meg.</value>
     <comment>Description for generated item with email support</comment>
   </data>
   <data name="StoredItemDescription">
