@@ -196,8 +196,8 @@
       "exportDescription": "Om veiligheidsredenen moet je je hoofdwachtwoord invoeren om deze export te bevestigen."
     },
     "security": "Beveiliging",
-    "appVersion": "App version",
-    "serverVersion": "Server version",
+    "appVersion": "App versie",
+    "serverVersion": "Server versie",
     "autoLockOptions": {
       "never": "Nooit",
       "5seconds": "5 seconden",
