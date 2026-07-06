@@ -52,7 +52,7 @@
     <comment>Description for generated item with email support</comment>
   </data>
   <data name="StoredItemDescription">
-    <value>Below you can view and copy the stored login details for this item.</value>
+    <value>Lent megtekintheti és másolhatja a mentett bejelentkezési adatokat az elemnél.</value>
     <comment>Description for stored item without email support</comment>
   </data>
   <data name="EmailLabel">
@@ -72,23 +72,23 @@
     <comment>Section header for alias information</comment>
   </data>
   <data name="FullNameLabel">
-    <value>Full name</value>
+    <value>Teljes név</value>
     <comment>Label for full name field</comment>
   </data>
   <data name="FirstNameLabel">
-    <value>First name</value>
+    <value>Keresztnév</value>
     <comment>Label for first name field</comment>
   </data>
   <data name="LastNameLabel">
-    <value>Last name</value>
+    <value>Vezetéknév</value>
     <comment>Label for last name field</comment>
   </data>
   <data name="BirthdateLabel">
-    <value>Birthdate</value>
+    <value>Születési dátum</value>
     <comment>Label for birthdate field</comment>
   </data>
   <data name="NicknameLabel">
-    <value>Nickname</value>
+    <value>Becenév</value>
     <comment>Label for nickname field</comment>
   </data>
   <data name="ViewItemBreadcrumb">
@@ -116,7 +116,7 @@
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, edit this item and delete the passkey. To replace or create a new passkey, visit the website and follow its prompts.</value>
+    <value>Az azonosítókulcs a böngésző bővítményen vagy a mobil app-on keresztül jön létre a weboldal kérésére. Nem szerkeszthető kézzel vagy hozható létre a web appon keresztül. Az azonosítókulcs törléséhez szerkessze az elemet és törölje. Ha ki akarja cserélni vagy újat akar létrehozni, kövesse a hozzá tartozó weboldal utasításait.</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="Untitled">
