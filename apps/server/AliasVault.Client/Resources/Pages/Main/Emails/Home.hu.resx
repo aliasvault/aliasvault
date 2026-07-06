@@ -63,7 +63,7 @@
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>You can view all emails received by your private email addresses below.</value>
+    <value>Lentebb megtekintheti az összes levelét, amit a privát címéről érkezett.</value>
     <comment>Page description</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
@@ -75,11 +75,11 @@
     <comment>Refresh button text</comment>
   </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
-    <value>You are not using any private email addresses (yet). Create a new alias and use a private email address supported by AliasVault. All emails received by these private email addresses will show up here.</value>
+    <value>Nem használ privát e-mail címet (még). Hozzon létre egy új aliast, és vegye igénybe a privát e-mail címet amit az AliasVault biztosít. Minden ami ezekre a privát címekre érkezik, itt jelenik majd meg.</value>
     <comment>Message when no email addresses are configured</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
-    <value>No emails have been received yet.</value>
+    <value>Még nem érkezett be e-mail.</value>
     <comment>Message when no emails are received</comment>
   </data>
   <data name="LoadingText" xml:space="preserve">
@@ -87,19 +87,19 @@
     <comment>Loading indicator text</comment>
   </data>
   <data name="LoadMoreButtonText" xml:space="preserve">
-    <value>Load More ({0} remaining)</value>
+    <value>Továbbiak betöltése ({0} hátra)</value>
     <comment>Load more button text with count. {0} is placeholder for number of remaining emails</comment>
   </data>
   <data name="ClaimDoesNotExistError" xml:space="preserve">
-    <value>An error occurred while trying to load the emails. Please try to edit and save any credential entry to synchronize the database, then try again.</value>
+    <value>Hiba lépett fel az e-mailek betöltése során. Próbálja meg szerkeszteni majd menteni a bejegyzéseket az adatbázis szinkronizáláshoz, majd próbálkozzon újra.</value>
     <comment>Error message when email claim does not exist</comment>
   </data>
   <data name="LoadEmailsFailedMessage" xml:space="preserve">
-    <value>Failed to load email: {0}</value>
+    <value>{0} e-mail betöltése nem volt sikeres</value>
     <comment>Error message when loading email fails. {0} is placeholder for error message</comment>
   </data>
   <data name="LoadMoreEmailsFailedMessage" xml:space="preserve">
-    <value>Failed to load more emails: {0}</value>
+    <value>{0} további e-mail betöltése nem volt sikeres</value>
     <comment>Error message when loading more emails fails. {0} is placeholder for error message</comment>
   </data>
 </root>
