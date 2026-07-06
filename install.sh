@@ -95,7 +95,7 @@ print_logo() {
 # Canonical command list (primary forms only, no aliases). Used by
 # suggest_commands to render "Did you mean..." prefix matches when the user
 # enters an unknown command. Keep sorted so suggestions appear in stable order.
-KNOWN_COMMANDS="build configure-admin-access configure-email configure-hostname configure-ip-logging configure-registration configure-ssl configure-trusted-proxies db-export db-import install migrate-db reset-admin-password restart start stop uninstall update update-installer"
+KNOWN_COMMANDS="build configure-admin-access configure-email configure-hostname configure-ip-logging configure-registration configure-ssl configure-trusted-proxies db-export db-import install reset-admin-password restart start stop uninstall update update-installer"
 
 # Print "Did you mean ..." suggestions for any known command that has the user's
 # input as a prefix. Returns 0 if at least one match was found, 1 otherwise.
@@ -218,10 +218,6 @@ parse_args() {
             ;;
         update-installer|cs)
             COMMAND="update-installer"
-            shift
-            ;;
-        migrate-db|migrate)
-            COMMAND="migrate-db"
             shift
             ;;
         db-export)
@@ -1334,6 +1330,28 @@ update_env_var() {
     fi
 
     printf "  ${GREEN}> $key has been set in $ENV_FILE.${NC}\n"
+}
+
+# Read a value from the .env file, returning the provided default when the key
+# is missing or set to an empty value.
+get_env_value() {
+    local key="$1" default="$2" value
+    value=$(grep "^${key}=" "$ENV_FILE" 2>/dev/null | head -n1 | cut -d '=' -f2- | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    if [ -z "$value" ]; then
+        printf '%s' "$default"
+    else
+        printf '%s' "$value"
+    fi
+}
+
+# Returns success when AliasVault is pointed at an external PostgreSQL server
+# rather than the bundled container. The bundled container is always reachable in
+# compose as the service host "postgres", so any other POSTGRES_HOST means the
+# database lives elsewhere and db-export/db-import must connect to it over TCP.
+postgres_is_external() {
+    local host
+    host=$(get_env_value "POSTGRES_HOST" "postgres")
+    [ -n "$host" ] && [ "$host" != "postgres" ]
 }
 
 # Prompt for SMTP_ADVERTISED_HOSTNAME (banner / EHLO). Empty value defaults to "aliasvault" at runtime.
@@ -2851,6 +2869,28 @@ set_deployment_mode() {
 # Function to handle database export
 DEV_COMPOSE="docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev"
 
+# Configure db-export/db-import to talk to an external PostgreSQL server when configured in .env.
+setup_external_pg_client() {
+    PG_HOST=$(get_env_value "POSTGRES_HOST" "postgres")
+    PG_PORT=$(get_env_value "POSTGRES_PORT" "5432")
+    PG_USER=$(get_env_value "POSTGRES_USER" "aliasvault")
+    PG_DB=$(get_env_value "POSTGRES_DATABASE" "aliasvault")
+
+    PG_CONN="-h $PG_HOST -p $PG_PORT -U $PG_USER"
+
+    if [ ! -s "${SECRETS_DIR}/postgres_password" ]; then
+        printf "${RED}Error: External database is enabled but the password file '${SECRETS_DIR}/postgres_password' is missing or empty.${NC}\n" >&2
+        printf "${YELLOW}Write your external database password to that file, then retry.${NC}\n" >&2
+        return 1
+    fi
+
+    PGPASSWORD=$(tr -d '\n' < "${SECRETS_DIR}/postgres_password")
+    export PGPASSWORD
+
+    DOCKER_CMD="$(get_docker_compose_command) --progress quiet run --rm --no-deps -T -e PGPASSWORD postgres"
+}
+
+# Function to handle database export
 handle_db_export() {
     printf "${YELLOW}+++ Exporting Database +++${NC}\n" >&2
 
@@ -2873,6 +2913,11 @@ handle_db_export() {
         exit 1
     fi
 
+    # Connection defaults for the bundled container. If using an external database connection
+    # the defaults are overridden by setup_external_pg_client.
+    PG_CONN="-U aliasvault"
+    PG_DB="aliasvault"
+
     # Determine docker compose command based on dev/prod
     if [ "$DEV_DB" = true ]; then
         # Check if dev containers are running
@@ -2889,6 +2934,18 @@ handle_db_export() {
 
         DOCKER_CMD="$DEV_COMPOSE exec -T postgres-dev"
         DB_TYPE="development"
+    elif postgres_is_external; then
+        # External database: no bundled container to exec into. Run the pg client
+        # tools in a temporary container from the postgres image, connecting to the
+        # server configured in .env (password read from secrets/postgres_password).
+        setup_external_pg_client || exit 1
+
+        if ! $DOCKER_CMD pg_isready $PG_CONN >/dev/null 2>&1; then
+            printf "${RED}Error: Cannot reach external PostgreSQL server at ${PG_HOST}:${PG_PORT}. Check your POSTGRES_* settings in .env and secrets/postgres_password.${NC}\n" >&2
+            exit 1
+        fi
+
+        DB_TYPE="production (external)"
     else
         # Production database export logic
         if ! docker compose ps --quiet 2>/dev/null | grep -q .; then
@@ -2909,7 +2966,7 @@ handle_db_export() {
 
     # By default pg_dump waits indefinitely for the shared table locks it needs.
     # Add support for controlling the timeout.
-    PG_DUMP_ARGS="-U aliasvault aliasvault"
+    PG_DUMP_ARGS="$PG_CONN $PG_DB"
     if [ "$LOCK_WAIT_TIMEOUT" -gt 0 ] 2>/dev/null; then
         PG_DUMP_ARGS="--lock-wait-timeout=$((LOCK_WAIT_TIMEOUT * 1000)) $PG_DUMP_ARGS"
     fi
@@ -2955,9 +3012,10 @@ handle_db_export() {
 
 # Function to handle database import
 handle_db_import() {
-    # Save stdin to file descriptor 3 AS THE VERY FIRST THING
-    # This MUST be first to prevent bash/docker/any command from consuming stdin bytes
+    # Save stdin to file descriptor 3
     exec 3<&0
+    # Park stdin on /dev/null to prevent any command from consuming it (e.g. docker compose stop/ps)
+    exec 0</dev/null
 
     printf "${YELLOW}+++ Importing Database +++${NC}\n"
 
@@ -2982,10 +3040,22 @@ handle_db_import() {
         exit 1
     fi
 
+    # Connection defaults for the bundled container. If using an external database connection
+    # the defaults are overridden by setup_external_pg_client.
+    PG_CONN="-U aliasvault"
+    PG_DB="aliasvault"
+    PG_USER="aliasvault"
+
     # Check if containers are running
     if [ "$DEV_DB" = true ]; then
         if ! $DEV_COMPOSE ps postgres-dev | grep -q "healthy"; then
             printf "${RED}Error: Development PostgreSQL container is not healthy. Start it first with: ./scripts/dev.sh db-start${NC}\n"
+            exit 1
+        fi
+    elif postgres_is_external; then
+        setup_external_pg_client || exit 1
+        if ! $DOCKER_CMD pg_isready $PG_CONN >/dev/null 2>&1; then
+            printf "${RED}Error: Cannot reach external PostgreSQL server at ${PG_HOST}:${PG_PORT}. Check your POSTGRES_* settings in .env and secrets/postgres_password.${NC}\n"
             exit 1
         fi
     else
@@ -3009,8 +3079,7 @@ handle_db_import() {
             # Temporarily switch stdin to tty for confirmation
             exec < /dev/tty
             read -p "Continue? [y/N]: " confirm
-            # Switch back to original stdin
-            exec 0<&3
+            exec 0</dev/null
             if [[ ! $confirm =~ ^[Yy]$ ]]; then
                 exec 3<&-  # Close fd 3
                 exit 1
@@ -3037,11 +3106,10 @@ handle_db_import() {
     fi
     printf "database...${NC}\n"
 
-    # Determine docker compose command based on dev/prod ($DEV_COMPOSE was
-    # resolved during the health check above for the active dev instance).
+    # Determine docker compose command based on dev/prod.
     if [ "$DEV_DB" = true ]; then
         DOCKER_CMD="$DEV_COMPOSE exec -T postgres-dev"
-    else
+    elif ! postgres_is_external; then
         DOCKER_CMD="docker compose exec -T postgres"
     fi
 
@@ -3102,15 +3170,15 @@ handle_db_import() {
     # Setup commands read /dev/null: docker exec -T would otherwise drain the shared-offset stdin stream.
     # The pipeline then reassembles the peeked header with the rest of fd 3 and streams it into psql.
     if [ "$VERBOSE" = true ]; then
-        $DOCKER_CMD psql -U aliasvault postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'aliasvault' AND pid <> pg_backend_pid();" < /dev/null && \
-        $DOCKER_CMD psql -U aliasvault postgres -c "DROP DATABASE IF EXISTS aliasvault;" < /dev/null && \
-        $DOCKER_CMD psql -U aliasvault postgres -c "CREATE DATABASE aliasvault OWNER aliasvault;" < /dev/null && \
-        { cat "$header_file"; cat <&3; } | progress | decompress | $DOCKER_CMD psql -U aliasvault aliasvault
+        $DOCKER_CMD psql $PG_CONN postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$PG_DB' AND pid <> pg_backend_pid();" < /dev/null && \
+        $DOCKER_CMD psql $PG_CONN postgres -c "DROP DATABASE IF EXISTS \"$PG_DB\";" < /dev/null && \
+        $DOCKER_CMD psql $PG_CONN postgres -c "CREATE DATABASE \"$PG_DB\" OWNER \"$PG_USER\";" < /dev/null && \
+        { cat "$header_file"; cat <&3; } | progress | decompress | $DOCKER_CMD psql $PG_CONN "$PG_DB"
     else
-        $DOCKER_CMD psql -U aliasvault postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'aliasvault' AND pid <> pg_backend_pid();" < /dev/null > /dev/null 2>&1 && \
-        $DOCKER_CMD psql -U aliasvault postgres -c "DROP DATABASE IF EXISTS aliasvault;" < /dev/null > /dev/null 2>&1 && \
-        $DOCKER_CMD psql -U aliasvault postgres -c "CREATE DATABASE aliasvault OWNER aliasvault;" < /dev/null > /dev/null 2>&1 && \
-        { cat "$header_file"; cat <&3; } | progress | decompress | $DOCKER_CMD psql -U aliasvault aliasvault > /dev/null 2>&1
+        $DOCKER_CMD psql $PG_CONN postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$PG_DB' AND pid <> pg_backend_pid();" < /dev/null > /dev/null 2>&1 && \
+        $DOCKER_CMD psql $PG_CONN postgres -c "DROP DATABASE IF EXISTS \"$PG_DB\";" < /dev/null > /dev/null 2>&1 && \
+        $DOCKER_CMD psql $PG_CONN postgres -c "CREATE DATABASE \"$PG_DB\" OWNER \"$PG_USER\";" < /dev/null > /dev/null 2>&1 && \
+        { cat "$header_file"; cat <&3; } | progress | decompress | $DOCKER_CMD psql $PG_CONN "$PG_DB" > /dev/null 2>&1
     fi
 
     import_status=$?
