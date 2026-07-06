@@ -1868,6 +1868,14 @@ get_docker_compose_command() {
         base_command="$base_command -f docker-compose.letsencrypt.yml"
     fi
 
+    # Passing any -f disables Compose's automatic discovery of
+    # docker-compose.override.yml, so load it explicitly (last, so it wins the
+    # merge) when present. Lets operators override the bundled stack — e.g.
+    # disabling the local postgres container in favour of an external cluster.
+    if [ -f "docker-compose.override.yml" ]; then
+        base_command="$base_command -f docker-compose.override.yml"
+    fi
+
     echo "$base_command"
 }
 
