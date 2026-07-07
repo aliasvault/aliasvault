@@ -76,11 +76,11 @@
     <comment>Content for master password tip</comment>
   </data>
   <data name="TwoFactorTipTitle">
-    <value>Kétfaktoros hitelsítő bekapcsolása a biztonsági beállításokban</value>
+    <value>Kétlépcsős hitelesítő bekapcsolása a biztonsági beállításokban</value>
     <comment>Title for two-factor authentication tip</comment>
   </data>
   <data name="TwoFactorTipContent">
-    <value>A kétfaktoros hitelesítés egy új szintre emeli a fiókja biztonságát. Ebben az esetben szüksége van az applikáció által generált kódra, vagy a visszaállítási kódra, hogy beléphessen a fiókjába.</value>
+    <value>A kétlépcsős hitelesítés egy új szintre emeli a fiókja biztonságát. Ebben az esetben szüksége van az applikáció által generált kódra, vagy a visszaállítási kódra, hogy beléphessen a fiókjába.</value>
     <comment>Content for two-factor authentication tip</comment>
   </data>
   <data name="ExtensionsAppsTipTitle">
