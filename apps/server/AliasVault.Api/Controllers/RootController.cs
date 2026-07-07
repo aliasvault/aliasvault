@@ -24,29 +24,49 @@ public class RootController(IAliasServerDbContextFactory dbContextFactory) : Con
     /// </summary>
     /// <returns>Http 200 if database connection is successful.</returns>
     [HttpGet]
+    [HttpHead]
     [ProducesResponseType<int>(StatusCodes.Status200OK)]
     [ProducesResponseType<int>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Get()
     {
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-
         try
         {
-            var appliedMigrations = await context.Database.GetAppliedMigrationsAsync();
-            var allMigrations = context.Database.GetMigrations();
+            await using var context = await dbContextFactory.CreateDbContextAsync();
 
-            if (allMigrations.Except(appliedMigrations).Any())
+            // Verify we can actually reach the database.
+            if (!await context.Database.CanConnectAsync())
             {
-                // There are pending migrations
-                return StatusCode(500, "There are pending migrations. Please run 'dotnet ef database update' to apply them.");
+                return StatusCode(500, "ERROR: Database unreachable");
             }
 
-            // Database is up-to-date
+            // Check if the database schema exists.
+            IEnumerable<string> appliedMigrations;
+            try
+            {
+                appliedMigrations = await context.Database.GetAppliedMigrationsAsync();
+            }
+            catch
+            {
+                return StatusCode(500, "ERROR: Database schema not initialized");
+            }
+
+            // Check if the database schema is up-to-date.
+            var allMigrations = context.Database.GetMigrations();
+            if (allMigrations.Except(appliedMigrations).Any())
+            {
+                return StatusCode(500, "ERROR: Database schema outdated (pending migrations)");
+            }
+
+            // Database is reachable and up-to-date.
             return Ok("OK");
+        }
+        catch (Exception ex) when (ex is TimeoutException or OperationCanceledException)
+        {
+            return StatusCode(500, "ERROR: Database timeout");
         }
         catch
         {
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, "ERROR: Database error");
         }
     }
 }
