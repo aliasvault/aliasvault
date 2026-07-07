@@ -78,30 +78,30 @@
   </data>
   <!-- Warning message -->
   <data name="WarningMessage" xml:space="preserve">
-    <value>Please note: after disabling two-factor authentication any configured authenticator app(s) will stop working. When you want to re-enable two-factor authentication you will have to configure the authenticator app(s) again.</value>
+    <value>Megjegyzés: Miután kikapcsolja a kétlépcsős hitelesítőt, majd újra bekapcsolja, egy új titkos kód áll majd rendelkezésre. Emiatt az újra aktiválást követően újra konfigurálnia kell a hitelesítő alkalmazását.</value>
     <comment>Warning message about the consequences of disabling 2FA</comment>
   </data>
   <!-- Status message -->
   <data name="StatusMessage" xml:space="preserve">
-    <value>Two factor authentication is currently enabled. Disable it in order to be able to access your vault with your password only.</value>
+    <value>A kétlépcsős hitelesítő jelenleg aktív. Ha kikapcsolja, elégséges csak a jelszó a belépéshez.</value>
     <comment>Status message explaining current 2FA state</comment>
   </data>
   <!-- Button text -->
   <data name="ConfirmDisableButton" xml:space="preserve">
-    <value>Confirm Disable Two-Factor Authentication</value>
+    <value>Kétlépcsős hitelesítő kikapcsolásának jóváhagyása</value>
     <comment>Button text to confirm disabling 2FA</comment>
   </data>
   <!-- Success and error messages -->
   <data name="TwoFactorDisabledSuccess" xml:space="preserve">
-    <value>Two-factor authentication is now successfully disabled.</value>
+    <value>A kétlépcsős hitelesítés sikeresen kikapcsolva.</value>
     <comment>Success message when 2FA is disabled</comment>
   </data>
   <data name="FailedToDisable2Fa" xml:space="preserve">
-    <value>Failed to disable two-factor authentication.</value>
+    <value>A kétlépcsős hitelesítőt nem sikerült kikapcsolni.</value>
     <comment>Error message when 2FA disable fails</comment>
   </data>
   <data name="TwoFactorNotEnabled" xml:space="preserve">
-    <value>Two-factor authentication is not enabled.</value>
+    <value>A kétlépcsős hitelesítő nincs bekapcsolva.</value>
     <comment>Error message when 2FA is not enabled</comment>
   </data>
 </root>
