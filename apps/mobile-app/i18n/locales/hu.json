@@ -118,7 +118,7 @@
     "addName": "Add a name (optional)",
     "defaultName": "Authenticator",
     "secretKey": "Titkos kulcs",
-    "instructions": "Adja meg a weboldal által megjelenített titkos kulcsot a két faktoros hitelesítőjébe.",
+    "instructions": "Adja meg a weboldal által megjelenített titkos kulcsot a kétlépcsős hitelesítőjébe.",
     "saveToViewCode": "Mentse le a kód megtekintéséhez",
     "scanQrCode": "QR kód beolvasása",
     "enterManually": "Titkos kulcs magadása",
