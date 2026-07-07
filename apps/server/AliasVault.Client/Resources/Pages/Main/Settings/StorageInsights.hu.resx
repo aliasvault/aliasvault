@@ -68,7 +68,7 @@
     <comment>Description for the breakdown bar</comment>
   </data>
   <data name="BreakdownCredentialsLabel">
-    <value>Credentials</value>
+    <value>Bejegyzések</value>
     <comment>Legend label for credential data slice</comment>
   </data>
   <data name="BreakdownAttachmentsLabel">
