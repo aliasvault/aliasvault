@@ -3,7 +3,7 @@
     "cancel": "Cealaigh",
     "close": "Dún",
     "delete": "Scrios",
-    "remove": "Remove",
+    "remove": "Bain",
     "save": "Sábháil",
     "edit": "Cuir in Eagar",
     "yes": "Tá",
@@ -76,7 +76,7 @@
     "confirmLogout": "An bhfuil tú cinnte gur mian leat logáil amach? Ní mór duit logáil isteach arís le do phríomhfhocal faire chun rochtain a fháil ar do stóras.",
     "noAccountYet": "Gan cuntas fós?",
     "createNewVault": "Cruthaigh cruinneachán nua",
-    "connectingTo": "Connecting to",
+    "connectingTo": "Ag nascadh le",
     "loggedInAs": "Logáilte isteach mar"
   },
   "logout": {
@@ -193,7 +193,7 @@
     "exportConfirmTitle": "Easpórtáil Cruinneachán",
     "exportWarning": "Rabhadh: Má easpórtálann tú do chruinneachán chuig comhad neamhchriptithe, nochtfar do phasfhocail agus d’fhaisnéis íogair go léir i ngnáththéacs. Ná déan é seo ach ar ghléasanna iontaofa agus cinntigh:\n\n• Stóráil an comhad easpórtáilte in áit shábháilte\n• Scrios an comhad nuair nach bhfuil sé de dhíth ort a thuilleadh\n• Ná roinn an comhad easpórtáilte le daoine eile choíche\n\nAn bhfuil tú cinnte gur mian leat leanúint ar aghaidh leis an easpórtáil?",
     "passwordConfirm": {
-      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+      "exportDescription": "Ar chúiseanna slándála, cuir isteach do mháistirfhocal faire chun an easpórtáil seo a dhearbhú."
     },
     "security": "Slándáil",
     "appVersion": "App version",
@@ -201,7 +201,7 @@
     "autoLockOptions": {
       "never": "Choíche",
       "5seconds": "5 soicind",
-      "15seconds": "15 seconds",
+      "15seconds": "15 soicind",
       "30seconds": "30 soicind",
       "1minute": "1 nóiméad",
       "5minutes": "5 minutes",
@@ -441,7 +441,7 @@
     "emailUnexpectedError": "Tharla earráid gan choinne agus ríomhphoist á lódáil. Déan iarracht arís ar ball.",
     "password": "Pasfhocal",
     "passwordLength": "Fad an Phasfhocail",
-    "changePasswordComplexity": "Password Settings",
+    "changePasswordComplexity": "Socruithe Pasfhocal",
     "includeLowercase": "Cás beag (a-z)",
     "includeUppercase": "Cás Uachtarach (A-Z)",
     "includeNumbers": "Uimhreacha (0-9)",
