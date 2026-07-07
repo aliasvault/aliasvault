@@ -7,7 +7,7 @@
   <string name="common_next">Ar Aghaidh</string>
   <string name="common_cancel">Cealaigh</string>
   <string name="common_back">Ar ais</string>
-  <string name="common_show_details">Show details</string>
+  <string name="common_show_details">Taispeáin sonraí</string>
   <string name="common_hide_details">Hide details</string>
   <string name="common_copy">Copy</string>
   <string name="common_copied_to_clipboard">Cóipeáilte chuig an ghearrthaisce</string>
@@ -70,7 +70,7 @@
   <string name="error_biometric_cancelled">Biometric authentication cancelled</string>
   <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
   <string name="pin_unlock_vault">Díghlasáil an Cruinneachán</string>
-  <string name="pin_enter_to_unlock">Enter your PIN to unlock your vault</string>
+  <string name="pin_enter_to_unlock">Cuir isteach do PIN chun do cruinneachán a dhíghlasáil</string>
   <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
   <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
   <string name="pin_setup_title">Setup PIN</string>
