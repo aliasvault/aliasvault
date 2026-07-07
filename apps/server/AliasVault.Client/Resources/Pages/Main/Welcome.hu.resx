@@ -88,7 +88,7 @@
     <comment>Title for browser extensions and mobile apps tip</comment>
   </data>
   <data name="ExtensionsAppsTipContent">
-    <value>Install the AliasVault browser extension and mobile app to create aliases and autofill forms directly from your browser and smartphone.</value>
+    <value>Telepítse az AliasVault böngésző bővítményt vagy mobil alkalmazást, hogy automatikusan ki tudja tölteni közvetlenül a mezőket telefonján vagy böngészőjében.</value>
     <comment>Content for browser extensions and mobile apps tip</comment>
   </data>
   <!-- Create first identity step content -->
@@ -97,11 +97,11 @@
     <comment>Title for ready to start section</comment>
   </data>
   <data name="ReadyToStartMessage">
-    <value>Now that you know how AliasVault works, let's create your first secure identity!</value>
+    <value>Most, hogy tudja hogyan is működik az AliasVault, hozza létre első biztonságos személyazonosságát!</value>
     <comment>Message encouraging user to create first identity</comment>
   </data>
   <data name="CreateFirstIdentityButton">
-    <value>Create Your First Identity</value>
+    <value>Hozza létre első személyazonosságát</value>
     <comment>Button text for creating first identity</comment>
   </data>
   <!-- Navigation buttons -->
@@ -115,16 +115,16 @@
   </data>
   <!-- Loading and status messages -->
   <data name="FinishingTutorialMessage">
-    <value>Finishing tutorial...</value>
+    <value>Ismertető befejezése...</value>
     <comment>Loading message when finishing tutorial</comment>
   </data>
   <!-- Extension and app labels -->
   <data name="ComingSoonLabel">
-    <value>Coming Soon</value>
+    <value>Hamarosan</value>
     <comment>Label for features coming soon</comment>
   </data>
   <data name="SoonSuffix">
-    <value>(Soon)</value>
+    <value>(Hamarosan)</value>
     <comment>Suffix indicating feature coming soon</comment>
   </data>
 </root>
