@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Section options -->
   <data name="TwoFactorAuthentication">
-    <value>Two-Factor Authentication</value>
+    <value>Kétlépcsős hitelesítés</value>
     <comment>Option to add 2FA section</comment>
   </data>
   <data name="Attachments">
