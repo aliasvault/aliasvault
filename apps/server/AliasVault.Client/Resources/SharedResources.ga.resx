@@ -135,7 +135,7 @@
     <comment>Button text for deleting an item</comment>
   </data>
   <data name="Remove" xml:space="preserve">
-    <value>Remove</value>
+    <value>Bain</value>
     <comment>Button text for removing an item</comment>
   </data>
   <data name="TotpDefaultName" xml:space="preserve">
