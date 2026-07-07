@@ -63,7 +63,7 @@
     <comment>Section title for 2FA codes</comment>
   </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
-    <value>Kétfaktoros hitelesítő kód hozzáadása</value>
+    <value>Kétlépcsős hitelesítő kód hozzáadása</value>
     <comment>Description for adding TOTP codes</comment>
   </data>
   <data name="AddTotpCodeModalTitle" xml:space="preserve">
