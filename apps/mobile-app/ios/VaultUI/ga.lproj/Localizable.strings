@@ -73,7 +73,7 @@
 
 /* PIN Unlock */
 "unlock_vault" = "Díghlasáil an Cruinneachán";
-"enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
+"enter_pin_to_unlock_vault" = "Cuir isteach do PIN chun do cruinneachán a dhíghlasáil";
 "pin_locked_max_attempts" = "PIN locked after too many failed attempts";
 "pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
 
