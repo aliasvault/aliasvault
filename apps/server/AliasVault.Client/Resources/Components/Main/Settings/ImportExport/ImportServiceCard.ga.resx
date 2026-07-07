@@ -219,7 +219,7 @@
     <comment>Button label to copy the error diagnostic block to the clipboard</comment>
   </data>
   <data name="ImportErrorShowDetailsButton" xml:space="preserve">
-    <value>Show details</value>
+    <value>Taispeáin sonraí</value>
     <comment>Button label that reveals the error diagnostic block in an inline read-only textarea</comment>
   </data>
   <data name="ImportErrorHideDetailsButton" xml:space="preserve">
