@@ -108,7 +108,7 @@
     <comment>Title for delete confirmation modal</comment>
   </data>
   <data name="ConfirmDeleteMessage" xml:space="preserve">
-    <value>This action cannot be undone. The item will be permanently removed from your vault.</value>
+    <value>Ez a művelet nem vonható vissza. Az elem végleges törlésre kerül a fiókjából.</value>
     <comment>Message in delete confirmation modal</comment>
   </data>
   <data name="DeletePermanently" xml:space="preserve">
@@ -121,7 +121,7 @@
     <comment>Title for empty all confirmation modal</comment>
   </data>
   <data name="ConfirmEmptyAllMessage" xml:space="preserve">
-    <value>This will permanently delete {0} item(s). This action cannot be undone.</value>
+    <value>{0} elem végleges törlésre kerül. Ez a művelet nem vonható vissza.</value>
     <comment>Message in empty all confirmation modal</comment>
   </data>
   <!-- Status Messages -->
