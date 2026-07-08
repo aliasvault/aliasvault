@@ -75,23 +75,23 @@
     <comment>Reset vault please note prefix</comment>
   </data>
   <data name="ResetVaultItemsDeletedNote" xml:space="preserve">
-    <value>All encrypted items in your vault will be permanently deleted</value>
+    <value>Scriosfar gach mír chriptithe i do chruinneachán go buan</value>
     <comment>Reset vault note about items being deleted</comment>
   </data>
   <data name="ResetVaultEmailAliasesKeptNote" xml:space="preserve">
-    <value>Your email aliases will be preserved and can be re-used after resetting your vault</value>
+    <value>Coinneofar do leasainmneacha ríomhphoist agus is féidir iad a athúsáid tar éis do chruinneachán a athshocrú</value>
     <comment>Reset vault note about email aliases being kept</comment>
   </data>
   <data name="ResetVaultSettingsKeptNote" xml:space="preserve">
-    <value>Your account settings and preferences will be preserved</value>
+    <value>Coinneofar socruithe agus sainroghanna do chuntais</value>
     <comment>Reset vault note about settings being kept</comment>
   </data>
   <data name="ResetVaultIrreversibleNote" xml:space="preserve">
-    <value>This action cannot be undone</value>
+    <value>Ní féidir an gníomh seo a chealú</value>
     <comment>Reset vault note about action being irreversible</comment>
   </data>
   <data name="ResetVaultConfirmUsernameLabel" xml:space="preserve">
-    <value>To continue, please type your username to confirm</value>
+    <value>Chun leanúint ar aghaidh, clóscríobh d'ainm úsáideora le deimhniú</value>
     <comment>Reset vault username confirmation label</comment>
   </data>
   <data name="ResetVaultContinueButton" xml:space="preserve">
