@@ -139,7 +139,7 @@
     <comment>Button text for removing an item</comment>
   </data>
   <data name="TotpDefaultName" xml:space="preserve">
-    <value>Authenticator</value>
+    <value>Hitelesítő</value>
     <comment>Display-only fallback name shown for a TOTP code that has no name set</comment>
   </data>
   <data name="Edit" xml:space="preserve">
