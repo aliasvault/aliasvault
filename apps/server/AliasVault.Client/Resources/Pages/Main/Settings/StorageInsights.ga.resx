@@ -47,7 +47,7 @@
     <comment>Title for the counts/overview section</comment>
   </data>
   <data name="ItemCountLabel">
-    <value>Items</value>
+    <value>Míreanna</value>
     <comment>Label for total item count card</comment>
   </data>
   <data name="ItemsWithAttachmentsLabel">
@@ -68,7 +68,7 @@
     <comment>Description for the breakdown bar</comment>
   </data>
   <data name="BreakdownCredentialsLabel">
-    <value>Credentials</value>
+    <value>Dintiúir</value>
     <comment>Legend label for credential data slice</comment>
   </data>
   <data name="BreakdownAttachmentsLabel">
