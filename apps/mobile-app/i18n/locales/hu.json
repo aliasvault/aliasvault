@@ -456,7 +456,7 @@
     "salt": "Salt",
     "dicewareCapitalizationOption": {
       "Lowercase": "Kisbetűs",
-      "TitleCase": "Title Case",
+      "TitleCase": "Cím betűméret",
       "Uppercase": "Nagybetűs"
     },
     "dicewareSeparatorOption": {
