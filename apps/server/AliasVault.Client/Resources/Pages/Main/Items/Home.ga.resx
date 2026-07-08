@@ -68,7 +68,7 @@
     <comment>Page description text</comment>
   </data>
   <data name="Items" xml:space="preserve">
-    <value>Items</value>
+    <value>Míreanna</value>
     <comment>Items label used in breadcrumb navigation</comment>
   </data>
   <!-- Settings Dropdown -->
@@ -144,7 +144,7 @@
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
-    <value>Items</value>
+    <value>Míreanna</value>
     <comment>Filter option to show all items</comment>
   </data>
   <data name="ShowFoldersOption" xml:space="preserve">
@@ -185,7 +185,7 @@
     <comment>Empty state message when folder has no items</comment>
   </data>
   <data name="AllItemsInFoldersMessage" xml:space="preserve">
-    <value>All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.</value>
+    <value>Tá do chuid míreanna go léir eagraithe i bhfillteáin. Cliceáil ar fhillteán thuas chun do chuid dintiúir a fheiceáil, nó bain úsáid as an gcuardach chun míreanna sonracha a aimsiú.</value>
     <comment>Empty state message when all items are in folders and none at root level</comment>
   </data>
   <!-- Folder Management -->
@@ -220,7 +220,7 @@
   </data>
   <!-- Clear Filter -->
   <data name="ClearFilter" xml:space="preserve">
-    <value>Clear filter</value>
+    <value>Glan an scagaire</value>
     <comment>Button text for clearing the active filter</comment>
   </data>
   <data name="FilteringBy" xml:space="preserve">
