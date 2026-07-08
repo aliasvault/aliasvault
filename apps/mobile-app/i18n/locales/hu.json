@@ -115,8 +115,8 @@
   "totp": {
     "addCode": "2FA kód hozzáadása",
     "nameOptional": "Név (nem kötelező)",
-    "addName": "Add a name (optional)",
-    "defaultName": "Authenticator",
+    "addName": "Név hozzáadása (tetszőleges)",
+    "defaultName": "Hitelesítő",
     "secretKey": "Titkos kulcs",
     "instructions": "Adja meg a weboldal által megjelenített titkos kulcsot a kétlépcsős hitelesítőjébe.",
     "saveToViewCode": "Mentse le a kód megtekintéséhez",
@@ -448,27 +448,27 @@
     "includeSpecialChars": "Speciális karakterek (!@#)",
     "avoidAmbiguousChars": "Kerülje a félreérthető karaktereket",
     "passwordTypeBasic": "Jelszó",
-    "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
+    "passwordTypeDiceware": "Jelmondat",
+    "passphraseLanguage": "Jelmondat nyelv",
+    "wordCount": "Szavak",
     "capitalization": "Nagybetűs",
-    "separator": "Separator",
+    "separator": "Elválasztó",
     "salt": "Salt",
     "dicewareCapitalizationOption": {
-      "Lowercase": "Lowercase",
+      "Lowercase": "Kisbetűs",
       "TitleCase": "Title Case",
-      "Uppercase": "Uppercase"
+      "Uppercase": "Nagybetűs"
     },
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Kötőjel",
+      "Space": "Szóköz",
+      "Underscore": "Alsóvonás",
+      "Dot": "Pont"
     },
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Prefix": "Előtag",
+      "Sprinkle": "Véletlenszerű pozíció",
+      "Suffix": "Utótag"
     },
     "errorLoadingItems": "Hiba az elemek betöltése során",
     "vaultSyncFailed": "Sikertelen széf szinkronizálás",
