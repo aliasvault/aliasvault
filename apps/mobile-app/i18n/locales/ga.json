@@ -80,18 +80,18 @@
     "loggedInAs": "Logáilte isteach mar"
   },
   "logout": {
-    "unsyncedChangesTitle": "Unsynced Changes",
-    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
-    "logoutAnyway": "Log out anyway"
+    "unsyncedChangesTitle": "Athruithe Neamhshioncronaithe",
+    "unsyncedChangesWarning": "Tá athruithe neamhshioncronaithe agat a chaillfear má logálann tú amach anois. An bhfuil tú cinnte gur mhaith leat leanúint ar aghaidh?",
+    "logoutAnyway": "Logáil amach ar aon nós"
   },
   "vault": {
     "syncingVault": "Ag sioncrónú cruinneacháin",
     "uploadingVaultToServer": "Ag uaslódáil cruinneacháin chuig an bhfreastalaí",
     "savingChangesToVault": "Sábháil athruithe chuig an gcruinneog",
-    "checkingForVaultUpdates": "Checking for vault updates",
+    "checkingForVaultUpdates": "Ag seiceáil le haghaidh nuashonruithe cruinneacháin",
     "executingOperation": "Ag cur oibríochta i gcrích...",
     "checkingVaultUpdates": "Ag seiceáil nuashonruithe cruinneacháin",
-    "syncingUpdatedVault": "Syncing updated vault",
+    "syncingUpdatedVault": "Ag sioncrónú an tseomra cruinneacháin nuashonraithe",
     "mergingVault": "Athruithe cruinneacháin á gcumascadh",
     "uploadingChanges": "Athruithe á n-uaslódáil",
     "errors": {
@@ -196,21 +196,21 @@
       "exportDescription": "Ar chúiseanna slándála, cuir isteach do mháistirfhocal faire chun an easpórtáil seo a dhearbhú."
     },
     "security": "Slándáil",
-    "appVersion": "App version",
-    "serverVersion": "Server version",
+    "appVersion": "Leagan an aip",
+    "serverVersion": "Leagan an fhreastalaí",
     "autoLockOptions": {
       "never": "Choíche",
       "5seconds": "5 soicind",
       "15seconds": "15 soicind",
       "30seconds": "30 soicind",
       "1minute": "1 nóiméad",
-      "5minutes": "5 minutes",
+      "5minutes": "5 nóiméad",
       "15minutes": "15 nóiméad",
       "30minutes": "30 nóiméad",
       "1hour": "1 uair an chloig",
       "4hours": "4 uair an chloig",
       "8hours": "8 n-uaire an chloig",
-      "24hours": "24 hours"
+      "24hours": "24 uair an chloig"
     },
     "language": "Teanga",
     "languageSystemMessage": "Chun teanga an aip a athrú, cumraigh an teanga is fearr leat do AliasVault i socruithe do ghléis.",
@@ -352,7 +352,7 @@
     },
     "creditCard": {
       "title": "Credit Card",
-      "cardInformation": "Card Information"
+      "cardInformation": "Eolas Cárta"
     },
     "note": {
       "title": "Nóta"
@@ -393,11 +393,11 @@
     "notes.content": "Nótaí"
   },
   "items": {
-    "title": "Items",
+    "title": "Míreanna",
     "addItem": "Cuir Mír Leis",
     "editItem": "Cuir Mír in Eagar",
     "deleteItem": "Scrios Mír",
-    "itemDetails": "Item Details",
+    "itemDetails": "Sonraí na Míre",
     "itemCreated": "Mír Cruthaithe",
     "itemCreatedMessage": "Tá do mhír nua curtha le do chruinneachán agus tá sé réidh le húsáid.",
     "emailPreview": "Réamhamharc Ríomhphoist",
@@ -407,7 +407,7 @@
     "itemName": "Ainm",
     "serviceUrl": "URL na seirbhíse",
     "loginCredentials": "Dintiúir logála isteach",
-    "cardInformation": "Card Information",
+    "cardInformation": "Eolas Cárta",
     "email": "Ríomhphost",
     "alias": "Alias",
     "firstName": "Céad Ainm",
@@ -427,14 +427,14 @@
     "publicEmailDescription": "Príobháideacht gan ainm ach teoranta. Is féidir le duine ar bith a bhfuil an seoladh ar eolas aige ábhar an ríomhphoist a léamh.",
     "searchPlaceholder": "Cuardaigh an cruinneachán...",
     "noMatchingItems": "Níl aon mhíreanna a oireann don scagaire roghnaithe.",
-    "noMatchingItemsSearch": "No items matching \"{{search}}\"",
-    "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
+    "noMatchingItemsSearch": "Níl aon mhíreanna ag teacht le \"{{search}}\"",
+    "noMatchingItemsWithFilter": "Níl aon mhír {{filter}} a mheaitseálann \"{{search}}\"",
     "noItemsFound": "Níor aimsíodh aon mhír. Cruthaigh ceann le tosú. Leid: is féidir leat logáil isteach san aip ghréasáin AliasVault freisin chun dintiúir a allmhairiú ó bhainisteoirí pasfhocal eile.",
     "allItemsInFolders": "Tá do chuid míreanna go léir eagraithe i bhfillteáin. Tapáil fillteán thuas chun do chuid dintiúir a fheiceáil, nó bain úsáid as an gcuardach chun míreanna sonracha a aimsiú.",
-    "clearSearch": "Clear search",
-    "clearFilter": "Clear filter",
-    "recentEmails": "Recent emails",
-    "loadingEmails": "Loading emails...",
+    "clearSearch": "Glan an cuardach",
+    "clearFilter": "Glan an scagaire",
+    "recentEmails": "Ríomhphoist le déanaí",
+    "loadingEmails": "Ag lódáil ríomhphoist...",
     "noEmailsYet": "Níl aon ríomhphoist faighte fós.",
     "offlineEmailsMessage": "Tá tú as líne. Ceangail leis an idirlíon le do ríomhphoist a luchtú.",
     "emailLoadError": "Tharla earráid agus ríomhphoist á lódáil. Déan iarracht arís ar ball.",
@@ -496,7 +496,7 @@
       "message": "Ba chóir go dtairgfeadh an líonadh uathoibríoch an dintiúir seo an chéad uair eile a osclóidh tú an aip."
     },
     "filters": {
-      "all": "Items",
+      "all": "Míreanna",
       "showFolders": "Fillteáin",
       "passkeys": "Eochracha pas",
       "attachments": "Ceangaltáin",
@@ -525,7 +525,7 @@
       "itemDeleted": "Mír scriosta go rathúil",
       "usernameCopied": "Ainm úsáideora cóipeáilte chuig an ghearrthaisce",
       "emailCopied": "Ríomhphost cóipeáilte chuig an ghearrthaisce",
-      "passwordCopied": "Password copied to clipboard",
+      "passwordCopied": "Pasfhocal cóipeáilte chuig an ghearrthaisce",
       "totpCodeCopied": "Cód TOTP cóipeáilte chuig an ghearrthaisce",
       "urlCopied": "URL cóipeáilte chuig an ghearrthaisce"
     },
@@ -551,7 +551,7 @@
     "deleteHistoryConfirm": "An bhfuil tú cinnte gur mian leat an taifead staire seo a scriosadh?",
     "deleteConfirm": "An bhfuil tú cinnte gur mian leat an mhír seo a scriosadh? Ní féidir an gníomh seo a chealú.",
     "folders": {
-      "folder": "Folder",
+      "folder": "Fillteán",
       "newFolder": "Fillteán Nua",
       "createFolder": "Create Folder",
       "editFolder": "Edit Folder",
@@ -560,27 +560,27 @@
       "folderNameRequired": "Folder name is required",
       "deleteFolder": "Delete Folder",
       "deleteFolderKeepItems": "Delete folder only",
-      "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
-      "deleteFolderAndItems": "Delete folder and all items",
-      "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+      "deleteFolderKeepItemsDescription": "Bogfar míreanna chuig an bhfillteán tuismitheora.",
+      "deleteFolderAndItems": "Scrios an fillteán agus na míreanna go léir",
+      "deleteFolderAndItemsDescription": "Bogfar {{count}} mír(í) go Scriosta le Déanaí.",
       "emptyFolderHint": "Tá an fillteán seo folamh. Chun míreanna a bhogadh chuig an bhfillteán seo, cuir an mhír in eagar agus roghnaigh an fillteán seo.",
       "selectFolder": "Select Folder"
     },
     "recentlyDeleted": {
       "title": "Scriosta le Déanaí",
-      "noItems": "No deleted items",
-      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
-      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
+      "noItems": "Gan aon mhíreanna scriosta",
+      "noItemsDescription": "Beidh míreanna a scriosann tú le feiceáil anseo ar feadh {{days}} lá sula mbainfear go buan iad.",
+      "description": "Scriosfar na míreanna seo go buan tar éis {{days}} lá. Is féidir leat iad a athchóiriú nó iad a scriosadh láithreach.",
       "restore": "Restore",
-      "deletePermanently": "Delete Permanently",
-      "emptyAll": "Empty All",
+      "deletePermanently": "Scrios go Buan",
+      "emptyAll": "Folmhaigh Gach Rud",
       "daysRemaining": "{{count}} lá fágtha",
       "daysRemaining_plural": "{{count}} lá fágtha",
       "expiringSoon": "Expiring soon",
-      "confirmDeleteTitle": "Delete Permanently?",
-      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
-      "confirmEmptyAllTitle": "Empty Recently Deleted?",
-      "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
+      "confirmDeleteTitle": "Scrios go Buan?",
+      "confirmDeleteMessage": "Scriosfar an mhír seo go buan agus ní féidir í a aisghabháil.",
+      "confirmEmptyAllTitle": "Folmhaigh Scriosta le Déanaí?",
+      "confirmEmptyAllMessage": "Scriosfar na míreanna {{count}} go buan agus ní féidir iad a aisghabháil.",
       "itemRestored": "Mír athchóirithe",
       "itemDeleted": "Mír scriosta go buan",
       "allItemsDeleted": "Gach earra scriosta go buan"
@@ -604,13 +604,13 @@
     "sizeKB": "KB",
     "offlineMessage": "Tá tú as líne. Ceangail leis an idirlíon le do ríomhphoist a luchtú.",
     "emptyMessage": "Níl aon ríomhphoist faighte agat ag do sheoltaí ríomhphoist príobháideacha go fóill. Nuair a gheobhaidh tú ríomhphost nua, beidh sé le feiceáil anseo.",
-    "loadMore": "Load More ({{count}} remaining)",
+    "loadMore": "Luchtaigh Tuilleadh ({{count}} fágtha)",
     "time": {
       "justNow": "díreach anois",
-      "minutesAgo_single": "{{count}} min ago",
-      "minutesAgo_plural": "{{count}} mins ago",
-      "hoursAgo_single": "{{count}} hr ago",
-      "hoursAgo_plural": "{{count}} hrs ago",
+      "minutesAgo_single": "{{count}} nóiméad ó shin",
+      "minutesAgo_plural": "{{count}} nóiméad ó shin",
+      "hoursAgo_single": "{{count}} uair an chloig ó shin",
+      "hoursAgo_plural": "{{count}} uair an chloig ó shin",
       "yesterday": "inné"
     }
   },
@@ -624,13 +624,13 @@
     "CLAIM_DOES_NOT_MATCH_USER": "Tá an seoladh ríomhphoist atá roghnaithe faoi láthair in úsáid cheana féin. Athraigh an seoladh ríomhphoist tríd an dintiúir seo a chur in eagar.",
     "CLAIM_DOES_NOT_EXIST": "Tharla earráid agus na ríomhphoist á luchtú. Déan iarracht an iontráil dintiúir a chur in eagar agus a shábháil chun an bunachar sonraí a shioncrónú, agus ansin déan iarracht arís.",
     "UNKNOWN_ERROR": "Tharla earráid anaithnid. Déan iarracht arís.",
-    "ACCOUNT_LOCKED": "Account temporarily locked due to too many failed attempts. Please try again later.",
+    "ACCOUNT_LOCKED": "Tá an cuntas faoi ghlas go sealadach mar gheall ar an iomarca iarrachtaí nár éirigh leo. Déan iarracht arís ar ball.",
     "ACCOUNT_BLOCKED": "Tá do chuntas díchumasaithe. Má chreideann tú gur botún é seo, déan teagmháil leis an bhfoireann tacaíochta.",
     "USER_NOT_FOUND": "Ainm úsáideora nó pasfhocal neamhbhailí. Déan iarracht arís.",
     "INVALID_AUTHENTICATOR_CODE": "Cód fíordheimhnitheora neamhbhailí. Déan iarracht arís.",
     "INVALID_RECOVERY_CODE": "Cód aisghabhála neamhbhailí. Déan iarracht arís.",
     "REFRESH_TOKEN_REQUIRED": "Tá comhartha athnuachana ag teastáil.",
-    "INVALID_REFRESH_TOKEN": "Invalid refresh token.",
+    "INVALID_REFRESH_TOKEN": "Comhartha athnuachana neamhbhailí.",
     "PUBLIC_REGISTRATION_DISABLED": "Tá clárú cuntais nua díchumasaithe ar an bhfreastalaí seo faoi láthair. Téigh i dteagmháil leis an riarthóir le do thoil.",
     "USERNAME_REQUIRED": "Tá ainm úsáideora ag teastáil.",
     "USERNAME_ALREADY_IN_USE": "Tá an t-ainm úsáideora in úsáid cheana féin.",
@@ -644,12 +644,12 @@
     "USERNAME_INVALID_EMAIL": "Seoladh ríomhphoist neamhbhailí.",
     "USERNAME_INVALID_CHARACTERS": "Tá ainm úsáideora neamhbhailí, ní féidir ach litreacha nó digití a bheith ann.",
     "VAULT_NOT_UP_TO_DATE": "Níl do chruinneachán cothrom le dáta. Sioncrónaigh do chruinneachán agus déan iarracht arís.",
-    "INTERNAL_SERVER_ERROR": "Internal server error.",
+    "INTERNAL_SERVER_ERROR": "Earráid inmheánach freastalaí.",
     "VAULT_ERROR": "Níl an cruinneachán áitiúil cothrom le dáta. Sioncrónaigh do chruinneachán tríd an leathanach a athnuachan agus déan iarracht arís."
   },
   "sync": {
-    "offline": "Offline",
-    "syncing": "Syncing...",
+    "offline": "As líne",
+    "syncing": "Ag sioncrónú...",
     "pending": "Sioncrónú ar feitheamh",
     "backOnline": "Ar ais ar líne",
     "stillOffline": "As líne fós",
@@ -696,17 +696,17 @@
     }
   },
   "upgrade": {
-    "title": "Upgrade Vault",
-    "subtitle": "AliasVault has updated and your vault needs to be upgraded. This should only take a few seconds.",
-    "versionInformation": "Version Information",
+    "title": "Uasghrádú an Cruinneacháin",
+    "subtitle": "Tá AliasVault nuashonraithe agus ní mór do chruinneachán a uasghrádú. Níor cheart go dtógfadh sé seo ach cúpla soicind.",
+    "versionInformation": "Faisnéis Leagan",
     "yourVault": "Your vault version:",
     "newVersion": "New available version:",
     "upgrade": "Uasghrádú",
-    "upgrading": "Upgrading...",
+    "upgrading": "Ag uasghrádú...",
     "logout": "Logáil Amach",
-    "whatsNew": "What's New",
-    "whatsNewDescription": "An upgrade is required to support the following changes:",
-    "noDescriptionAvailable": "No description available for this version.",
+    "whatsNew": "Cad atá Nua",
+    "whatsNewDescription": "Tá uasghrádú ag teastáil chun tacú leis na hathruithe seo a leanas:",
+    "noDescriptionAvailable": "Níl aon chur síos ar fáil don leagan seo.",
     "status": {
       "preparingUpgrade": "Uasghrádú á ullmhú...",
       "vaultAlreadyUpToDate": "Tá an Vault cothrom le dáta cheana féin",
@@ -715,12 +715,12 @@
       "committingChanges": "Ag déanamh athruithe..."
     },
     "alerts": {
-      "unableToGetVersionInfo": "Unable to get version information. Please try again.",
-      "selfHostedServer": "Self-Hosted Server",
-      "selfHostedWarning": "If you're using a self-hosted server, make sure to also update your self-hosted instance as otherwise logging in to the web client will stop working.",
-      "continueUpgrade": "Continue Upgrade",
-      "upgradeFailed": "Upgrade Failed",
-      "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})"
+      "unableToGetVersionInfo": "Ní féidir faisnéis leagain a fháil. Déan iarracht arís.",
+      "selfHostedServer": "Freastalaí Féinóstáilte",
+      "selfHostedWarning": "Má tá freastalaí féinóstáilte in úsáid agat, déan cinnte d’fhreastalaí féinóstáilte a nuashonrú freisin nó murach sin stopfaidh logáil isteach sa chliant gréasáin ag obair.",
+      "continueUpgrade": "Lean ar aghaidh leis an uasghrádú",
+      "upgradeFailed": "Theip ar an uasghrádú",
+      "failedToApplyMigration": "Theip ar imirce a chur i bhfeidhm ({{current}} de {{total}})"
     }
   }
 }
