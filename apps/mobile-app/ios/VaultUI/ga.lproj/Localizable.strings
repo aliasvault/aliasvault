@@ -9,16 +9,16 @@
 "title" = "Teideal";
 "unknown_error" = "Tharla earráid anaithnid";
 
-"loading_items" = "Loading items...";
-"no_items_found" = "No items found";
-"no_items_match" = "No existing items match your search";
-"create_new_item" = "Create New Item";
-"open_aliasvault" = "Open AliasVault";
-"untitled_credential" = "this credential";
-"link_url_prompt_title" = "Link to credential?";
-"link_url_prompt_message" = "Add \"{{url}}\" to {{name}} so AliasVault recognises this app or website next time?";
-"link_url_prompt_link_action" = "Link and fill";
-"link_url_prompt_skip_action" = "Just fill";
+"loading_items" = "Míreanna á lódáil...";
+"no_items_found" = "Níor aimsíodh aon rud";
+"no_items_match" = "Níl aon mhíreanna reatha ag teacht le do chuardach";
+"create_new_item" = "Cruthaigh Mír Nua";
+"open_aliasvault" = "Oscail AliasVault";
+"untitled_credential" = "an dintiúir seo";
+"link_url_prompt_title" = "Nasc leis an dintiúir?";
+"link_url_prompt_message" = "Cuir \"{{url}}\" le {{name}} ionas go n-aithníonn AliasVault an aip nó an suíomh Gréasáin seo an chéad uair eile?";
+"link_url_prompt_link_action" = "Nasc agus líon isteach";
+"link_url_prompt_skip_action" = "Líon isteach amháin";
 "linking_url" = "Linking...";
 "select_item" = "Select Item";
 "select_text_to_insert" = "Select Text to Insert";
@@ -81,12 +81,12 @@
 "enter_password_to_unlock" = "Cuir isteach do phríomhfhocal faire";
 "unlock" = "Díghlasáil";
 "incorrect_password" = "Pasfhocal mícheart. Déan iarracht arís.";
-"attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
-"max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
+"attempts_warning" = "Focal faire mícheart. Logálfar amach thú má chuireann tú an focal faire mícheart isteach %d níos mó uaireanta.";
+"max_attempts_reached" = "Theip ar an iomarca iarrachtaí díghlasála. Logáladh amach thú ar chúiseanna slándála.";
 
 /* PIN Setup */
 "pin_setup_title" = "Setup PIN";
 "pin_setup_subtitle" = "Choose a PIN to unlock your vault";
-"pin_confirm_title" = "Confirm PIN";
+"pin_confirm_title" = "Deimhnigh PIN";
 "pin_confirm_subtitle" = "Re-enter your PIN to confirm";
 "pin_mismatch" = "PINs do not match. Please try again.";
