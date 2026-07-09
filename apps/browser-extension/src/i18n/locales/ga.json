@@ -222,48 +222,48 @@
     "deleteFolderAndItemsDescription": "Bogfar {{count}} mír(í) go Scriosta le Déanaí.",
     "filters": {
       "folders": "Fillteáin",
-      "totp": "2FA Codes"
+      "totp": "Cóid 2FA"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Sórtáil de réir",
+      "oldestFirst": "Is sine ar dtús",
+      "newestFirst": "Is nua ar dtús",
+      "alphabetical": "Aibítre (AZ)"
     },
     "deleteItemTitle": "Scrios Mír",
     "deleteItemConfirm": "An bhfuil tú cinnte gur mian leat an mhír seo a scriosadh?",
-    "viewHistory": "View history",
-    "history": "History",
-    "noHistoryAvailable": "No history available",
-    "tags": "Tags",
-    "changePasswordComplexity": "Change password complexity",
-    "passwordLength": "Password length",
-    "includeLowercase": "Include lowercase letters",
-    "includeUppercase": "Include uppercase letters",
-    "includeNumbers": "Include numbers",
-    "includeSpecialChars": "Include special characters",
-    "avoidAmbiguousChars": "Avoid ambiguous characters (o, 0, etc.)",
+    "viewHistory": "Féach ar an stair",
+    "history": "Féach ar an stair",
+    "noHistoryAvailable": "Níl aon stair ar fáil",
+    "tags": "Clibeanna",
+    "changePasswordComplexity": "Athrú ar chastacht pasfhocal",
+    "passwordLength": "Fad pasfhocal",
+    "includeLowercase": "Cuir litreacha beaga san áireamh",
+    "includeUppercase": "Cuir litreacha móra san áireamh",
+    "includeNumbers": "Cuir uimhreacha san áireamh",
+    "includeSpecialChars": "Cuir carachtair speisialta san áireamh",
+    "avoidAmbiguousChars": "Seachain carachtair débhríoch (o, 0, srl.)",
     "passwordTypeBasic": "Pasfhocal",
-    "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
+    "passwordTypeDiceware": "Pasfhocal",
+    "passphraseLanguage": "Teanga pasfhrása",
+    "wordCount": "Focail",
     "dicewareCapitalizationOption": {
-      "TitleCase": "Title Case",
-      "Uppercase": "Uppercase",
-      "Lowercase": "Lowercase"
+      "TitleCase": "Teideal Cás",
+      "Uppercase": "Cás uachtair",
+      "Lowercase": "Cás íochtair"
     },
-    "separator": "Separator",
+    "separator": "Deighilteoir",
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Fleasc",
+      "Space": "Spás",
+      "Underscore": "Fo-scór",
+      "Dot": "Ponc"
     },
-    "salt": "Salt",
+    "salt": "Salann",
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Prefix": "Réimír",
+      "Sprinkle": "Seasamh randamach",
+      "Suffix": "Iarmhír"
     },
     "privateEmailTitle": "Ríomhphost Príobháideach",
     "privateEmailAliasVaultServer": "Freastalaí AliasVault",
@@ -275,19 +275,19 @@
     }
   },
   "itemTypes": {
-    "selectType": "Add New Item",
-    "typeLabel": "Item Type",
+    "selectType": "Cuir Mír Nua leis",
+    "typeLabel": "Cineál Mír",
     "creating": "Creating",
     "editing": "Editing",
-    "regenerateAlias": "Regenerate alias",
-    "addCustomField": "Add custom field",
+    "regenerateAlias": "Ailias a athghiniúint",
+    "addCustomField": "Cuir réimse saincheaptha leis",
     "fieldLabel": "Field Label",
     "enterFieldName": "Enter field name",
     "fieldType": "Field Type",
     "fieldTypes": {
       "text": "Text",
       "password": "Pasfhocal",
-      "hidden": "Hidden (masked text)",
+      "hidden": "I bhfolach (téacs faoi chumhdach)",
       "email": "Ríomhphost",
       "url": "URL",
       "phone": "Phone",
@@ -326,31 +326,31 @@
     "card.pin": "PIN"
   },
   "totp": {
-    "addCode": "Add 2FA Code",
-    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
+    "addCode": "Cuir Cód 2FA leis",
+    "instructions": "Cuir isteach an eochair rúnda a thaispeánann an láithreán gréasáin áit ar mhaith leat fíordheimhniú dhá fhachtóir a chur leis.",
     "nameOptional": "Ainm (roghnach)",
-    "addName": "Add a name (optional)",
+    "addName": "Cuir ainm leis (roghnach)",
     "secretKey": "Eochair Rúnda",
     "saveToViewCode": "Sábháil chun an cód a fheiceáil",
-    "defaultName": "Authenticator",
-    "deleteTotpCodeTitle": "Delete 2FA Code",
-    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
+    "defaultName": "Fíordheimhnitheoir",
+    "deleteTotpCodeTitle": "Scrios Cód 2FA",
+    "deleteTotpCodeConfirmation": "An bhfuil tú cinnte gur mhaith leat an cód 2FA \"{{name}}\" a scriosadh?",
     "errors": {
-      "invalidSecretKey": "Invalid secret key format."
+      "invalidSecretKey": "Formáid eochair rúnda neamhbhailí."
     }
   },
   "attachmentUploader": {
-    "uploading": "Uploading...",
-    "uploadSuccess": "Files uploaded successfully.",
-    "deleteSuccess": "Attachment deleted successfully.",
-    "firefoxExpandRequired": "To upload files, use the expanded window.",
-    "openExpandedWindow": "Open Expanded Window"
+    "uploading": "Á uaslódáil...",
+    "uploadSuccess": "D'éirigh le huaslódáil comhaid.",
+    "deleteSuccess": "D'éirigh leis an gceangaltán a scriosadh.",
+    "firefoxExpandRequired": "Chun comhaid a uaslódáil, bain úsáid as an bhfuinneog leathnaithe.",
+    "openExpandedWindow": "Oscail Fuinneog Leathnaithe"
   },
   "emails": {
     "title": "Ríomhphoist",
     "deleteEmailTitle": "Scrios Ríomhphost",
-    "deleteEmailConfirm": "Are you sure you want to permanently delete this email?",
-    "from": "From",
+    "deleteEmailConfirm": "An bhfuil tú cinnte gur mhaith leat an ríomhphost seo a scriosadh go buan?",
+    "from": "Ó",
     "to": "Chuig",
     "date": "Dáta",
     "emailContent": "Ábhar ríomhphoist",
