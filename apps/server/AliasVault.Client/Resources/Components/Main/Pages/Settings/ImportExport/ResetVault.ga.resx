@@ -95,23 +95,23 @@
     <comment>Reset vault username confirmation label</comment>
   </data>
   <data name="ResetVaultContinueButton" xml:space="preserve">
-    <value>Continue with vault reset</value>
+    <value>Lean ar aghaidh le hathshocrú cruinneachán</value>
     <comment>Reset vault continue button</comment>
   </data>
   <data name="ResetVaultFinalWarning" xml:space="preserve">
-    <value>Final warning: You are about to permanently delete all your items!</value>
+    <value>Rabhadh deiridh: Tá tú ar tí do chuid míreanna go léir a scriosadh go buan!</value>
     <comment>Reset vault final warning message</comment>
   </data>
   <data name="ResetVaultDeletionIrreversibleNote" xml:space="preserve">
-    <value>This deletion is irreversible and cannot be undone</value>
+    <value>Tá an scriosadh seo do-aisiompaithe agus ní féidir é a chealú</value>
     <comment>Reset vault final step irreversible note</comment>
   </data>
   <data name="ResetVaultEnterPasswordLabel" xml:space="preserve">
-    <value>Enter your password to confirm</value>
+    <value>Cuir isteach do phasfhocal le deimhniú</value>
     <comment>Reset vault password confirmation label</comment>
   </data>
   <data name="ResetVaultConfirmButton" xml:space="preserve">
-    <value>Reset my vault</value>
+    <value>Athshocraigh mo cruinneachán</value>
     <comment>Reset vault final confirmation button</comment>
   </data>
   <data name="ResetVaultUsernameRequired" xml:space="preserve">
@@ -119,23 +119,23 @@
     <comment>Reset vault username required error</comment>
   </data>
   <data name="ResetVaultUsernameDoesNotMatch" xml:space="preserve">
-    <value>The username you entered does not match your account username.</value>
+    <value>Ní mheaitseálann an t-ainm úsáideora a d'iontráil tú ainm úsáideora do chuntais.</value>
     <comment>Reset vault username mismatch error</comment>
   </data>
   <data name="ResetVaultPasswordIncorrect" xml:space="preserve">
-    <value>The password you entered is incorrect.</value>
+    <value>Tá an pasfhocal a d'iontráil tú mícheart.</value>
     <comment>Reset vault password incorrect error</comment>
   </data>
   <data name="ResetVaultProgressMessage" xml:space="preserve">
-    <value>Resetting vault...</value>
+    <value>Cruinneachán á athshocrú...</value>
     <comment>Reset vault progress message</comment>
   </data>
   <data name="ResetVaultSuccessMessage" xml:space="preserve">
-    <value>Your vault has been successfully reset. All items have been deleted and you can now start fresh.</value>
+    <value>Athshocraíodh do chruinneachán go rathúil. Scriosadh gach mír agus is féidir leat tosú as an nua anois.</value>
     <comment>Reset vault success message</comment>
   </data>
   <data name="ResetVaultErrorMessage" xml:space="preserve">
-    <value>An error occurred while resetting your vault. Please try again.</value>
+    <value>Tharla earráid agus do cruinneachán á athshocrú. Bain triail eile as.</value>
     <comment>Reset vault error message</comment>
   </data>
 </root>
