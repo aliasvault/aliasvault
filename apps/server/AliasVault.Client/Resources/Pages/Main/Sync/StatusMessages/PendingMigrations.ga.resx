@@ -63,7 +63,7 @@
     <comment>Title for vault upgrade process</comment>
   </data>
   <data name="UpgradeDescription" xml:space="preserve">
-    <value>AliasVault has been updated and your vault needs to be upgraded. This should only take a few seconds.</value>
+    <value>Nuashonraíodh AliasVault agus ní mór do chruinneog a uasghrádú. Níor cheart go dtógfadh sé seo ach cúpla soicind.</value>
     <comment>Description of vault upgrade process</comment>
   </data>
   <data name="VersionInformationTitle" xml:space="preserve">
@@ -71,7 +71,7 @@
     <comment>Title for version information section</comment>
   </data>
   <data name="UpgradeRequiredDescription" xml:space="preserve">
-    <value>An upgrade is required to support the following changes: {0}</value>
+    <value>Tá uasghrádú ag teastáil chun tacú leis na hathruithe seo a leanas: {0}</value>
     <comment>Description of upgrade requirements with changes placeholder</comment>
   </data>
   <data name="NoDescriptionAvailable" xml:space="preserve">
@@ -79,27 +79,27 @@
     <comment>Fallback text when version description is not available</comment>
   </data>
   <data name="YourVaultLabel" xml:space="preserve">
-    <value>Your vault version:</value>
+    <value>Do leagan cruinneachán:</value>
     <comment>Label for current vault version</comment>
   </data>
   <data name="NewVersionLabel" xml:space="preserve">
-    <value>New available version:</value>
+    <value>Leagan nua ar fáil:</value>
     <comment>Label for new vault version</comment>
   </data>
   <data name="StartUpgradeButton" xml:space="preserve">
-    <value>Start upgrade process</value>
+    <value>Tosaigh próiseas uasghrádaithe</value>
     <comment>Button text to start the upgrade process</comment>
   </data>
   <data name="UpgradeSuccessMessage" xml:space="preserve">
-    <value>Vault upgrade successful.</value>
+    <value>D'éirigh leis an uasghrádú cruinneachán.</value>
     <comment>Success message after successful vault upgrade</comment>
   </data>
   <data name="UpgradeSuccessButSaveFailedError" xml:space="preserve">
-    <value>Database upgrade successful but failed to save to server. Please try again or contact support.</value>
+    <value>D'éirigh le huasghrádú an bhunachair sonraí ach níor éirigh leis a shábháil ar an bhfreastalaí. Bain triail eile as nó déan teagmháil leis an bhfoireann tacaíochta.</value>
     <comment>Error message when upgrade succeeds but save fails</comment>
   </data>
   <data name="UpgradeFailedError" xml:space="preserve">
-    <value>Database upgrade failed. Please try again or contact support.</value>
+    <value>Theip ar uasghrádú an bhunachair sonraí. Bain triail eile as nó déan teagmháil leis an bhfoireann tacaíochta.</value>
     <comment>Error message when upgrade fails</comment>
   </data>
 </root>
