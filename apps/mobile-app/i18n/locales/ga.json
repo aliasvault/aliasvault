@@ -110,7 +110,7 @@
     "passkey": "Eochair phas",
     "helpText": "Cruthaítear pasfhocail ar an suíomh gréasáin nuair a iarrtar ort iad a chur in eagar de láimh. Chun an pasfhocail seo a bhaint, is féidir leat í a scriosadh ón dintiúir seo.",
     "passkeyMarkedForDeletion": "Eochair phas marcáilte le scriosadh",
-    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
+    "passkeyWillBeDeleted": "Scriosfar an eochair pas seo nuair a shábhálfaidh tú an scríbhinn seo."
   },
   "totp": {
     "addCode": "Cuir Cód 2FA leis",
@@ -218,16 +218,16 @@
     "vaultUnlockSettings": {
       "description": "Roghnaigh conas is mian leat do chruinneachán a dhíghlasáil.",
       "biometrics": "Bithmhéadracht",
-      "faceId": "Face ID",
-      "touchId": "Touch ID",
-      "faceIdTouchId": "Face ID / Touch ID",
+      "faceId": "ID Aghaidh",
+      "touchId": "ID dteagmháil",
+      "faceIdTouchId": "ID Aghaidh / ID dteagmháil",
       "biometricEnabled": "Tá {{biometric}} cumasaithe go rathúil anois",
       "biometricNotAvailable": "Níl {{biometric}} ar fáil",
       "biometricDisabledMessage": "Tá {{biometric}} díchumasaithe le haghaidh AliasVault. Chun é a úsáid, cumasaigh é i socruithe do ghléis ar dtús.",
       "biometricHelp": "Bain úsáid as bithmhéadracht chun do chruinneachán a dhíghlasáil, atá slán leis an {{keystore}}.",
       "biometricUnavailableHelp": "Níl {{biometric}} ar fáil. Tapáil chun socruithe a oscailt agus/nó téigh chuig socruithe do ghléis chun é a chumasú agus a chumrú.",
       "featureRequiresPasscode": "Éilíonn an ghné seo paschód a bheith cumasaithe ar do ghléas.",
-      "pin": "PIN Code",
+      "pin": "Cód PIN",
       "pinDescription": "Bain úsáid as cód PIN saincheaptha chun do chruinneachán a dhíghlasáil níos tapúla.",
       "pinEnabled": "Cumasaíodh díghlasáil PIN go rathúil",
       "pinDisabled": "Tá díghlasáil PIN díchumasaithe",
@@ -488,7 +488,7 @@
     "autofillLinkExisting": {
       "title": "Nasc chuig dintiúir atá ann cheana féin",
       "intro": "Roghnaigh dintiúir atá ann cheana féin ó do chruinneachán chun nascadh le \"{{target}}\".",
-      "confirmTitle": "Link to credential?",
+      "confirmTitle": "Nasc leis an dintiúir?",
       "confirmMessage": "An bhfuil tú cinnte gur mian leat \"{{url}}\" a nascadh leis an dintiúir seo?"
     },
     "autofillUrlAdded": {
@@ -699,8 +699,8 @@
     "title": "Uasghrádú an Cruinneacháin",
     "subtitle": "Tá AliasVault nuashonraithe agus ní mór do chruinneachán a uasghrádú. Níor cheart go dtógfadh sé seo ach cúpla soicind.",
     "versionInformation": "Faisnéis Leagan",
-    "yourVault": "Your vault version:",
-    "newVersion": "New available version:",
+    "yourVault": "Do leagan cruinneachán:",
+    "newVersion": "Leagan nua ar fáil:",
     "upgrade": "Uasghrádú",
     "upgrading": "Ag uasghrádú...",
     "logout": "Logáil Amach",
