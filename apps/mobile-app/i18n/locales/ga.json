@@ -113,17 +113,17 @@
     "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
   },
   "totp": {
-    "addCode": "Add 2FA Code",
+    "addCode": "Cuir Cód 2FA leis",
     "nameOptional": "Ainm (roghnach)",
-    "addName": "Add a name (optional)",
-    "defaultName": "Authenticator",
+    "addName": "Cuir ainm leis (roghnach)",
+    "defaultName": "Fíordheimhnitheoir",
     "secretKey": "Eochair Rúnda",
-    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
+    "instructions": "Cuir isteach an eochair rúnda a thaispeánann an láithreán gréasáin áit ar mhaith leat fíordheimhniú dhá fhachtóir a chur leis.",
     "saveToViewCode": "Sábháil chun an cód a fheiceáil",
     "scanQrCode": "Scanáil Cód QR",
     "enterManually": "Cuir isteach eochair rúnda",
     "errors": {
-      "invalidSecretKey": "Invalid secret key format.",
+      "invalidSecretKey": "Formáid eochair rúnda neamhbhailí.",
       "scanFailed": "Theip ar an gcód QR a scanadh. Déan iarracht arís."
     }
   },
@@ -448,27 +448,27 @@
     "includeSpecialChars": "Carachtair Speisialta (!@#)",
     "avoidAmbiguousChars": "Seachain Carachtair Débhríocha",
     "passwordTypeBasic": "Pasfhocal",
-    "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
+    "passwordTypeDiceware": "Pasfhocal",
+    "passphraseLanguage": "Teanga pasfhrása",
+    "wordCount": "Focail",
     "capitalization": "Caipitliú",
-    "separator": "Separator",
-    "salt": "Salt",
+    "separator": "Deighilteoir",
+    "salt": "Salann",
     "dicewareCapitalizationOption": {
-      "Lowercase": "Lowercase",
-      "TitleCase": "Title Case",
-      "Uppercase": "Uppercase"
+      "Lowercase": "Cás íochtair",
+      "TitleCase": "Teideal Cás",
+      "Uppercase": "Cás uachtair"
     },
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Fleasc",
+      "Space": "Spás",
+      "Underscore": "Fo-scór",
+      "Dot": "Ponc"
     },
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Prefix": "Réimír",
+      "Sprinkle": "Seasamh randamach",
+      "Suffix": "Iarmhír"
     },
     "errorLoadingItems": "Earráid ag luchtú míreanna",
     "vaultSyncFailed": "Theip ar shioncrónú an tseomra grúpála",
@@ -500,13 +500,13 @@
       "showFolders": "Fillteáin",
       "passkeys": "Eochracha pas",
       "attachments": "Ceangaltáin",
-      "totp": "2FA Codes"
+      "totp": "Cóid 2FA"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Sórtáil de réir",
+      "oldestFirst": "Is sine ar dtús",
+      "newestFirst": "Is nua ar dtús",
+      "alphabetical": "Aibítre (AZ)"
     },
     "totpCode": "Cód TOTP",
     "attachments": "Ceangaltáin",
@@ -545,9 +545,9 @@
       "openLink": "Oscail an Nasc",
       "shareLink": "Comhroinn an Nasc"
     },
-    "viewHistory": "View history",
-    "history": "History",
-    "noHistoryAvailable": "No history available",
+    "viewHistory": "Féach ar an stair",
+    "history": "Féach ar an stair",
+    "noHistoryAvailable": "Níl aon stair ar fáil",
     "deleteHistoryConfirm": "An bhfuil tú cinnte gur mian leat an taifead staire seo a scriosadh?",
     "deleteConfirm": "An bhfuil tú cinnte gur mian leat an mhír seo a scriosadh? Ní féidir an gníomh seo a chealú.",
     "folders": {
