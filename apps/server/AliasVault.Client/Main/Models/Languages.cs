@@ -42,6 +42,7 @@ public static class Languages
         ("zh", "🇨🇳", "简体中文", ["zh-CN", "zh-SG", "zh-Hans", "zh-TW", "zh-HK", "zh-MO", "zh-Hant"]),
         ("ur", "🇵🇰", "اردو", ["ur-PK", "ur-IN"]),
         ("fa", "🇮🇷", "فارسی", ["fa-IR", "fa-AF"]),
+        ("ga", "🇮🇪", "Gaeilge", ["ga-IE"]),
     ];
 
     /// <summary>
