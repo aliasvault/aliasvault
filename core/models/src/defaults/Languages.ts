@@ -43,6 +43,7 @@ export const LANGUAGES: ILanguageInfo[] = [
   { code: 'zh', flag: '🇨🇳', label: '简体中文', alternativeCodes: ['zh-CN', 'zh-SG', 'zh-Hans', 'zh-TW', 'zh-HK', 'zh-MO', 'zh-Hant'] },
   { code: 'ur', flag: '🇵🇰', label: 'اردو', alternativeCodes: ['ur-PK', 'ur-IN'] },
   { code: 'fa', flag: '🇮🇷', label: 'فارسی', alternativeCodes: ['fa-IR', 'fa-AF'] },
+  { code: 'hu', flag: '🇭🇺', label: 'Magyar', alternativeCodes: ['hu-HU'] },
   { code: 'ga', flag: '🇮🇪', label: 'Gaeilge', alternativeCodes: ['ga-IE'] },
 ];
 

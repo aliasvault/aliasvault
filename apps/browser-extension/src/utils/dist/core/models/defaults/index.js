@@ -30,7 +30,8 @@ var LANGUAGES = [
   { code: "uk", flag: "\u{1F1FA}\u{1F1E6}", label: "\u0423\u043A\u0440\u0430\u0457\u043D\u0441\u044C\u043A\u0430", alternativeCodes: ["uk-UA"] },
   { code: "zh", flag: "\u{1F1E8}\u{1F1F3}", label: "\u7B80\u4F53\u4E2D\u6587", alternativeCodes: ["zh-CN", "zh-SG", "zh-Hans", "zh-TW", "zh-HK", "zh-MO", "zh-Hant"] },
   { code: "ur", flag: "\u{1F1F5}\u{1F1F0}", label: "\u0627\u0631\u062F\u0648", alternativeCodes: ["ur-PK", "ur-IN"] },
-  { code: "fa", flag: "\u{1F1EE}\u{1F1F7}", label: "\u0641\u0627\u0631\u0633\u06CC", alternativeCodes: ["fa-IR", "fa-AF"] }
+  { code: "fa", flag: "\u{1F1EE}\u{1F1F7}", label: "\u0641\u0627\u0631\u0633\u06CC", alternativeCodes: ["fa-IR", "fa-AF"] },
+  { code: "hu", flag: "\u{1F1ED}\u{1F1FA}", label: "Magyar", alternativeCodes: ["hu-HU"] },
   { code: "ga", flag: "\u{1F1EE}\u{1F1EA}", label: "Gaeilge", alternativeCodes: ["ga-IE"] }
 ];
 function normalizeLanguageCode(code) {

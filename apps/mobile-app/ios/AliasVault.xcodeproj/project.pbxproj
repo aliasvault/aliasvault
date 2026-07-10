@@ -996,6 +996,7 @@
 				fa,
 				ur,
 				bg,
+				hu,
 				ga,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;

@@ -13,6 +13,7 @@ import fiTranslations from './locales/fi.json';
 import frTranslations from './locales/fr.json';
 import gaTranslations from './locales/ga.json';
 import heTranslations from './locales/he.json';
+import huTranslations from './locales/hu.json';
 import itTranslations from './locales/it.json';
 import nlTranslations from './locales/nl.json';
 import plTranslations from './locales/pl.json';
@@ -51,6 +52,9 @@ export const LANGUAGE_RESOURCES = {
   },
   he: {
     translation: heTranslations
+  },
+  hu: {
+    translation: huTranslations
   },
   it: {
     translation: itTranslations
