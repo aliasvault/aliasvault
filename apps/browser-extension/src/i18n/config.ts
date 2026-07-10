@@ -11,6 +11,7 @@ import enTranslations from './locales/en.json';
 import esTranslations from './locales/es.json';
 import fiTranslations from './locales/fi.json';
 import frTranslations from './locales/fr.json';
+import gaTranslations from './locales/ga.json';
 import heTranslations from './locales/he.json';
 import itTranslations from './locales/it.json';
 import nlTranslations from './locales/nl.json';
@@ -44,6 +45,9 @@ export const LANGUAGE_RESOURCES = {
   },
   fr: {
     translation: frTranslations
+  },
+  ga: {
+    translation: gaTranslations
   },
   he: {
     translation: heTranslations

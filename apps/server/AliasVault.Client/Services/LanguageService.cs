@@ -30,7 +30,7 @@ public class LanguageService(
     /// </summary>
     private static readonly List<string> SupportedLanguageCodes = new()
     {
-        "da", "de", "en", "es", "fi", "fr", "he", "it", "nl", "pl", "pt", "ro", "ru", "sv", "uk", "zh",
+        "da", "de", "en", "es", "fi", "fr", "ga", "he", "it", "nl", "pl", "pt", "ro", "ru", "sv", "uk", "zh",
     };
 
     private readonly ILocalStorageService _localStorage = localStorage;

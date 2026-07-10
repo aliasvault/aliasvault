@@ -31,6 +31,7 @@ var LANGUAGES = [
   { code: "zh", flag: "\u{1F1E8}\u{1F1F3}", label: "\u7B80\u4F53\u4E2D\u6587", alternativeCodes: ["zh-CN", "zh-SG", "zh-Hans", "zh-TW", "zh-HK", "zh-MO", "zh-Hant"] },
   { code: "ur", flag: "\u{1F1F5}\u{1F1F0}", label: "\u0627\u0631\u062F\u0648", alternativeCodes: ["ur-PK", "ur-IN"] },
   { code: "fa", flag: "\u{1F1EE}\u{1F1F7}", label: "\u0641\u0627\u0631\u0633\u06CC", alternativeCodes: ["fa-IR", "fa-AF"] }
+  { code: "ga", flag: "\u{1F1EE}\u{1F1EA}", label: "Gaeilge", alternativeCodes: ["ga-IE"] }
 ];
 function normalizeLanguageCode(code) {
   return (code ?? "").slice(0, 2).toLowerCase();
