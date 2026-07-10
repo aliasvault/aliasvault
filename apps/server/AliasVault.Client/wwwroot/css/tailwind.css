@@ -600,6 +600,10 @@ video {
   border-width: 0;
 }
 
+.pointer-events-none {
+  pointer-events: none;
+}
+
 .visible {
   visibility: visible;
 }
@@ -712,6 +716,10 @@ video {
 
 .top-full {
   top: 100%;
+}
+
+.right-2\.5 {
+  right: 0.625rem;
 }
 
 .-z-10 {
@@ -1095,6 +1103,10 @@ video {
 
 .max-h-\[90vh\] {
   max-height: 90vh;
+}
+
+.max-h-\[60vh\] {
+  max-height: 60vh;
 }
 
 .min-h-\[300px\] {
@@ -2363,6 +2375,14 @@ video {
 
 .pt-8 {
   padding-top: 2rem;
+}
+
+.pl-3 {
+  padding-left: 0.75rem;
+}
+
+.pr-9 {
+  padding-right: 2.25rem;
 }
 
 .text-left {

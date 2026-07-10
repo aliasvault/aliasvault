@@ -6,35 +6,20 @@
 @inject LanguageService LanguageService
 @inject IJSRuntime JSRuntime
 
-<div class="relative">
-    <button type="button" @onclick="ToggleDropdown" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
-        <span>@LanguageService.GetLanguageFlag(_currentLanguage) @GetLanguageDisplayName(_currentLanguage)</span>
-        <svg class="w-4 h-4 transition-transform duration-200 @(_isDropdownOpen ? "rotate-180" : "")" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"></path>
-        </svg>
-    </button>
-
-    @if (_isDropdownOpen)
-    {
-        <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-50">
-            @foreach (var language in LanguageService.GetSupportedLanguages())
-            {
-                <button type="button" @onclick="() => SelectLanguage(language.Key)" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 @(_currentLanguage == language.Key ? "bg-indigo-50 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300" : "")">
-                    <span class="flex-1">@LanguageService.GetLanguageFlag(language.Key) @language.Value</span>
-                    @if (_currentLanguage == language.Key)
-                    {
-                        <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                        </svg>
-                    }
-                </button>
-            }
-        </div>
-    }
+<div class="relative inline-block">
+    <select value="@_currentLanguage" @onchange="OnLanguageChangedFromSelect" aria-label="Select language"
+            class="appearance-none cursor-pointer pl-3 pr-9 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
+        @foreach (var language in LanguageService.GetSupportedLanguages())
+        {
+            <option value="@language.Key">@LanguageService.GetLanguageFlag(language.Key) @language.Value</option>
+        }
+    </select>
+    <svg class="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"></path>
+    </svg>
 </div>
 
 @code {
-    private bool _isDropdownOpen = false;
     private string _currentLanguage = "en";
 
     public void Dispose()
@@ -62,26 +47,18 @@
         StateHasChanged();
     }
 
-    private static string GetLanguageDisplayName(string languageCode)
-    {
-        var supportedLanguages = LanguageService.GetSupportedLanguages();
-        return supportedLanguages.GetValueOrDefault(languageCode, "English");
-    }
-
     private void OnLanguageChanged(string languageCode)
     {
         _currentLanguage = languageCode;
         InvokeAsync(StateHasChanged);
     }
 
-    private void ToggleDropdown()
+    private async Task OnLanguageChangedFromSelect(ChangeEventArgs e)
     {
-        _isDropdownOpen = !_isDropdownOpen;
-    }
-
-    private async Task SelectLanguage(string languageCode)
-    {
-        _isDropdownOpen = false;
-        await LanguageService.SetLanguageAsync(languageCode);
+        var languageCode = e.Value?.ToString();
+        if (!string.IsNullOrEmpty(languageCode))
+        {
+            await LanguageService.SetLanguageAsync(languageCode);
+        }
     }
 }
