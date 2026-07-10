@@ -149,6 +149,7 @@ write_client_dev_settings() {
     "HiddenPrivateEmailDomains": ["disabled.tld"],
     "SupportEmail": "support@example.tld",
     "PublicRegistrationEnabled": "true",
+    "DeploymentMode": "dev",
     "UseDebugEncryptionKey": "$AV_USE_DEBUG_ENCRYPTION_KEY",
     "CryptographyOverrideType": "Argon2Id",
     "CryptographyOverrideSettings": "{\"DegreeOfParallelism\":1,\"MemorySize\":1024,\"Iterations\":1}"
