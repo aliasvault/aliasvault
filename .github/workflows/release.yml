@@ -509,6 +509,9 @@ jobs:
           context: .
           file: dockerfiles/all-in-one/Dockerfile
           platforms: linux/amd64,linux/arm64/v8
+          # Mark this as the official published image (local builds default to "aio-build").
+          build-args: |
+            DEPLOYMENT_MODE=aio
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

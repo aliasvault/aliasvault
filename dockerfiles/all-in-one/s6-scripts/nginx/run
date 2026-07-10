@@ -83,6 +83,9 @@ build_admin_ip_geo_rules() {
 MAX_UPLOAD_SIZE_MB_VALUE="${MAX_UPLOAD_SIZE_MB:-100}"
 sed -i "s|__MAX_UPLOAD_SIZE__|${MAX_UPLOAD_SIZE_MB_VALUE}|g" /etc/nginx/nginx.conf
 
+DEPLOYMENT_MODE_VALUE="${DEPLOYMENT_MODE:-unknown}"
+sed -i "s|__DEPLOYMENT_MODE__|${DEPLOYMENT_MODE_VALUE}|g" /etc/nginx/nginx.conf
+
 ADMIN_IP_GEO_RULES_VALUE=$(build_admin_ip_geo_rules)
 sed -i "s|__ADMIN_IP_GEO_RULES__|${ADMIN_IP_GEO_RULES_VALUE}|g" /etc/nginx/nginx.conf
 

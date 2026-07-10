@@ -1271,7 +1271,7 @@ generate_admin_password() {
     PASSWORD=$(openssl rand -base64 12)
 
     # Build locally if in build mode or if pre-built image is not available
-    if grep -q "^DEPLOYMENT_MODE=build" "$ENV_FILE" 2>/dev/null || ! docker pull ${GITHUB_CONTAINER_REGISTRY}/installcli:latest > /dev/null 2>&1; then
+    if grep -qE "^DEPLOYMENT_MODE=(install-build|build)" "$ENV_FILE" 2>/dev/null || ! docker pull ${GITHUB_CONTAINER_REGISTRY}/installcli:latest > /dev/null 2>&1; then
         log_info "Building InstallCli locally..."
         if [ "$VERBOSE" = true ]; then
             if ! docker build -t installcli -f apps/server/Utilities/AliasVault.InstallCli/Dockerfile .; then
@@ -1859,7 +1859,7 @@ get_docker_compose_command() {
     local base_command="docker compose -f docker-compose.yml"
 
     # Check if using build configuration
-    if grep -q "^DEPLOYMENT_MODE=build" "$ENV_FILE" 2>/dev/null; then
+    if grep -qE "^DEPLOYMENT_MODE=(install-build|build)" "$ENV_FILE" 2>/dev/null; then
         base_command="$base_command -f dockerfiles/docker-compose.build.yml"
     fi
 
@@ -2000,8 +2000,8 @@ handle_install() {
 handle_build() {
     printf "\n${YELLOW}+++ Building AliasVault from source +++${NC}\n"
 
-    # Set deployment mode to build to ensure container lifecycle uses build configuration
-    set_deployment_mode "build"
+    # Set deployment mode to install-build to ensure container lifecycle uses build configuration
+    set_deployment_mode "install-build"
 
     # Initialize workspace which makes sure all required directories and files exist
     initialize_workspace
@@ -2867,7 +2867,7 @@ handle_install_version() {
 # Function to set deployment mode in .env
 set_deployment_mode() {
     local mode=$1
-    if [ "$mode" != "build" ] && [ "$mode" != "install" ]; then
+    if [ "$mode" != "install-build" ] && [ "$mode" != "install" ]; then
         printf "${RED}Invalid deployment mode: $mode${NC}\n"
         exit 1
     fi

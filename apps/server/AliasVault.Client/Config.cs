@@ -79,4 +79,11 @@ public class Config
     /// "Recently Deleted" trash before being permanently pruned.
     /// </summary>
     public int TrashRetentionDays { get; set; } = 30;
+
+    /// <summary>
+    /// Gets or sets how this AliasVault instance was deployed (e.g. "install", "build", "aio").
+    /// Injected into appsettings.json at container startup and shown in the footer to make it
+    /// easy to tell deployments apart. Empty when unknown (e.g. local development).
+    /// </summary>
+    public string DeploymentMode { get; set; } = string.Empty;
 }
