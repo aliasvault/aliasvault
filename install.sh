@@ -1230,21 +1230,6 @@ create_env_file() {
 
         cp "$ENV_EXAMPLE_FILE" "$ENV_FILE"
         printf "  ${GREEN}> New .env file created from .env.example.${NC}\n"
-    else
-        # Check if .env file contains POSTGRES_DB or POSTGRES_USER, remove if present and show confirmation
-        local removed_vars=()
-        if grep -q "^POSTGRES_DB=" "$ENV_FILE"; then
-            sed -i.bak "/^POSTGRES_DB=/d" "$ENV_FILE" && rm -f "$ENV_FILE.bak"
-            removed_vars+=("POSTGRES_DB")
-        fi
-        if grep -q "^POSTGRES_USER=" "$ENV_FILE"; then
-            sed -i.bak "/^POSTGRES_USER=/d" "$ENV_FILE" && rm -f "$ENV_FILE.bak"
-            removed_vars+=("POSTGRES_USER")
-        fi
-        if [ ${#removed_vars[@]} -gt 0 ]; then
-            printf "  ${GREEN}> Removed obsolete variable(s) from .env: %s${NC}\n" "${removed_vars[*]}"
-        fi
-
     fi
 }
 
