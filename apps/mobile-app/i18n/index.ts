@@ -10,6 +10,7 @@ import fi from './locales/fi.json';
 import fr from './locales/fr.json';
 import ga from './locales/ga.json';
 import he from './locales/he.json';
+import hu from './locales/hu.json';
 import it from './locales/it.json';
 import nl from './locales/nl.json';
 import pl from './locales/pl.json';
@@ -29,6 +30,7 @@ const resources = {
   fr: { translation: fr },
   ga: { translation: ga },
   he: { translation: he },
+  hu: { translation: hu },
   nl: { translation: nl },
   it: { translation: it },
   pl: { translation: pl },
