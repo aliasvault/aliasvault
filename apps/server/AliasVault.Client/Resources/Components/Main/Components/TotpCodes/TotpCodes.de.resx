@@ -83,7 +83,7 @@
     <comment>Label for optional name field</comment>
   </data>
   <data name="AddNameButton" xml:space="preserve">
-    <value>Add a name (optional)</value>
+    <value>Name hinzufügen (optional)</value>
     <comment>Toggle button that reveals the optional name field in the add form</comment>
   </data>
   <data name="SecretKeyLabel" xml:space="preserve">

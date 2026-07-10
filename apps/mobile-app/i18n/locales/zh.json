@@ -196,7 +196,8 @@
       "exportDescription": "出于安全考虑，请输入您的主密码以确认导出。"
     },
     "security": "安全",
-    "appVersion": "应用版本 {{version}}（{{url}}）",
+    "appVersion": "应用版本",
+    "serverVersion": "服务器版本",
     "autoLockOptions": {
       "never": "从不",
       "5seconds": "5 秒",

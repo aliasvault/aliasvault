@@ -63,7 +63,7 @@
     <comment>Page title for mobile unlock feature</comment>
   </data>
   <data name="UnlockTitle" xml:space="preserve">
-    <value>Unlock using Mobile App</value>
+    <value>Feloldás mobil appal</value>
     <comment>Modal title for mobile unlock feature</comment>
   </data>
   <data name="ScanQrCodeDescription" xml:space="preserve">

@@ -50,11 +50,11 @@
     <comment>URL field label</comment>
   </data>
   <data name="FieldAliasFirstName">
-    <value>First Name</value>
+    <value>Céad Ainm</value>
     <comment>First name field label</comment>
   </data>
   <data name="FieldAliasLastName">
-    <value>Last Name</value>
+    <value>Sloinne</value>
     <comment>Last name field label</comment>
   </data>
   <data name="FieldAliasGender">
@@ -62,7 +62,7 @@
     <comment>Gender field label</comment>
   </data>
   <data name="FieldAliasBirthdate">
-    <value>Birth Date</value>
+    <value>Dáta Breithe</value>
     <comment>Birth date field label</comment>
   </data>
   <data name="FieldCardNumber">
@@ -135,7 +135,7 @@
     <comment>Number field type option</comment>
   </data>
   <data name="FieldTypeDate">
-    <value>Date</value>
+    <value>Dáta</value>
     <comment>Date field type option</comment>
   </data>
   <data name="FieldTypeTextArea">

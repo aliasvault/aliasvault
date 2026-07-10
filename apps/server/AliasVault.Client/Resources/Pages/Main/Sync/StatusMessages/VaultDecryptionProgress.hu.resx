@@ -63,7 +63,7 @@
     <comment>Title for vault decryption progress</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Please wait while your vault is initialized. This may take a moment.</value>
+    <value>Kérem várjon amíg a széfje feldolgozás alatt van. Ez eltarthat egy kis ideig.</value>
     <comment>Description for vault decryption progress</comment>
   </data>
 </root>

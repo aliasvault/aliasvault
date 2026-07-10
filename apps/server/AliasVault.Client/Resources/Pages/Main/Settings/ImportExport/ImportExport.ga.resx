@@ -59,97 +59,97 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Import / Export</value>
+    <value>Iompórtáil / Easpórtáil</value>
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>On this page you can import and export your vault.</value>
+    <value>Ar an leathanach seo is féidir leat do cruinneachán a iompórtáil agus a easpórtáil.</value>
     <comment>Page description</comment>
   </data>
   <data name="ImportSectionTitle" xml:space="preserve">
-    <value>Import passwords</value>
+    <value>Iompórtáil pasfhocail</value>
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Select a service to import from.</value>
+    <value>Roghnaigh seirbhís le hiompórtáil uaidh.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
-    <value>Export vault</value>
+    <value>Cruinneachán easpórtála</value>
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Export your vault to move credentials between AliasVault servers or to another password manager.</value>
+    <value>Easpórtáil do cruinneachán chun dintiúir a bhogadh idir freastalaithe AliasVault nó chuig bainisteoir pasfhocail eile.</value>
     <comment>Export section description</comment>
   </data>
   <data name="RecommendedLabel" xml:space="preserve">
-    <value>Recommended</value>
+    <value>Molta</value>
     <comment>Label for recommended option</comment>
   </data>
   <data name="ExportAvexTitle" xml:space="preserve">
-    <value>Encrypted full vault export</value>
+    <value>Easpórtáil cruinneachán iomlán criptithe</value>
     <comment>Title for encrypted export option</comment>
   </data>
   <data name="ExportAvexDescription" xml:space="preserve">
-    <value>Password-protected backup of your entire vault. Includes all items, passkeys, and attachments. Use as manual backup and/or to restore to another AliasVault server.</value>
+    <value>Cúltaca cosanta ag pasfhocal de do chruinneachán iomlán. Áirítear gach mír, pas-eochracha agus ceangaltán. Úsáid mar chúltaca láimhe agus/nó chun freastalaí AliasVault eile a chur ar ais.</value>
     <comment>Description for encrypted export option</comment>
   </data>
   <data name="ExportAvuxTitle" xml:space="preserve">
-    <value>Unencrypted full vault export</value>
+    <value>Easpórtáil cruinneachán iomlán gan chriptiú</value>
     <comment>Title for unencrypted full export option</comment>
   </data>
   <data name="ExportAvuxDescription" xml:space="preserve">
-    <value>Complete vault export as unencrypted ZIP-compatible archive. Includes all items, passkeys and attachments.</value>
+    <value>Comhlánaigh easpórtáil cruinneachán mar chartlann neamhchriptithe ZIP-comhoiriúnach. Áirítear gach mír, pas-eochracha agus ceangaltán.</value>
     <comment>Description for unencrypted full export option</comment>
   </data>
   <data name="ExportCsvTitle" xml:space="preserve">
-    <value>CSV export</value>
+    <value>Easpórtáil CSV</value>
     <comment>Title for CSV export option</comment>
   </data>
   <data name="ExportCsvDescription" xml:space="preserve">
-    <value>Basic export for importing into other password managers. Does not include passkeys or attachments.</value>
+    <value>Easpórtáil bhunúsach le hiompórtáil isteach i mbainisteoirí pasfhocail eile. Ní fholaíonn sé pas-eochracha ná ceangaltáin.</value>
     <comment>Description for CSV export option</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>Export to CSV</value>
+    <value>Easpórtáil go CSV</value>
     <comment>Button to export as CSV</comment>
   </data>
   <data name="ExportAvuxButton" xml:space="preserve">
-    <value>Export unencrypted vault (.avux)</value>
+    <value>Easpórtáil cruinneachán neamhchriptithe (.avux)</value>
     <comment>Button to export full vault as .avux archive</comment>
   </data>
   <data name="ExportingVaultMessage" xml:space="preserve">
-    <value>Exporting vault...</value>
+    <value>Cruinneachán á onnmhairiú...</value>
     <comment>Message shown while exporting vault</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
-    <value>Export vault</value>
+    <value>Cruinneachán easpórtála</value>
     <comment>Export confirmation dialog title</comment>
   </data>
   <data name="ExportWarningMessage" xml:space="preserve">
-    <value>Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted computers and ensure you:
+    <value>Rabhadh: Má easpórtálann tú do cruinneachán go comhad neamhchriptithe, nochtfar do phasfhocal agus faisnéis íogair go léir i ngnáth-théacs. Ná déan é seo ach ar ríomhairí iontaofa agus cinntigh go bhfuil:
 
-• Store the exported file in a secure location
-• Delete the file when you no longer need it
-• Never share the exported file with others
+• Stóráil an comhad easpórtáilte i suíomh slán
+• Scrios an comhad nuair nach bhfuil sé uait a thuilleadh
+• Ná roinn an comhad easpórtáilte riamh le daoine eile
 
-Are you sure you want to continue with the export?</value>
+An bhfuil tú cinnte gur mhaith leat leanúint leis an easpórtáil?</value>
     <comment>Export warning confirmation message</comment>
   </data>
   <data name="ResetVaultSectionTitle" xml:space="preserve">
-    <value>Reset Vault</value>
+    <value>Athshocraigh cruinneachán</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="ResetVaultSectionDescription" xml:space="preserve">
-    <value>This option allows you to completely empty your vault while keeping your account and email aliases. Use this if you want to start fresh after importing data from another password manager or if you want to clear all existing credentials to start over.</value>
+    <value>Ligeann an rogha seo duit do cruinneachán a fholmhú go hiomlán agus do chuntas agus ailiasanna ríomhphoist a choinneáil. Bain úsáid as seo más mian leat tosú as an nua tar éis sonraí a allmhairiú ó bhainisteoir pasfhocal eile nó más mian leat na dintiúir go léir atá ann cheana a ghlanadh chun tosú arís.</value>
     <comment>Reset vault section description</comment>
   </data>
   <data name="ExportPasswordConfirmTitle" xml:space="preserve">
-    <value>Confirm Export</value>
+    <value>Deimhnigh Easpórtáil</value>
     <comment>Title for password confirmation modal during export</comment>
   </data>
   <data name="ExportPasswordConfirmDescription" xml:space="preserve">
-    <value>For security reasons, please enter your master password to confirm this export.</value>
+    <value>Ar chúiseanna slándála, cuir isteach do mháistirfhocal faire chun an easpórtáil seo a dhearbhú.</value>
     <comment>Description for password confirmation modal during export</comment>
   </data>
   <data name="VerifyingPasswordMessage" xml:space="preserve">
@@ -165,25 +165,25 @@ Are you sure you want to continue with the export?</value>
     <comment>Generic error message for password verification failure</comment>
   </data>
   <data name="ExportAvexButton" xml:space="preserve">
-    <value>Export encrypted vault (.avex)</value>
+    <value>Easpórtáil cruinneachán criptithe (.avex)</value>
     <comment>Button to export encrypted vault as .avex archive</comment>
   </data>
   <data name="ExportEncryptedWarningMessage" xml:space="preserve">
-    <value>This will create an encrypted export of your entire vault. You will need to provide a password to encrypt the export file.
+    <value>Cruthóidh sé seo easpórtáil criptithe de do chruinneog iomlán. Beidh ort pasfhocal a sholáthar chun an comhad easpórtála a chriptiú.
 
-Are you sure you want to continue?</value>
+An bhfuil tú cinnte gur mhaith leat leanúint ar aghaidh?</value>
     <comment>Warning message for encrypted export confirmation</comment>
   </data>
   <data name="ExportEncryptedPasswordTitle" xml:space="preserve">
-    <value>Set Export Password</value>
+    <value>Socraigh Pasfhocal Easpórtála</value>
     <comment>Title for export password modal</comment>
   </data>
   <data name="ExportEncryptedPasswordDescription" xml:space="preserve">
-    <value>Choose a strong, unique password to encrypt this export. This password is required to decrypt the export. If you lose this password, you will not be able to recover the exported data.</value>
+    <value>Roghnaigh pasfhocal láidir uathúil chun an easpórtáil seo a chriptiú. Tá an pasfhocal seo ag teastáil chun an t-easpórtáil a dhíchriptiú. Má chailleann tú an pasfhocal seo, ní bheidh tú in ann na sonraí easpórtáilte a aisghabháil.</value>
     <comment>Description for export password modal with security warning</comment>
   </data>
   <data name="ExportSuccessMessage" xml:space="preserve">
-    <value>Your vault has been exported successfully.</value>
+    <value>Easpórtáladh do chruinneachán go rathúil.</value>
     <comment>Success message after vault export completes</comment>
   </data>
 </root>

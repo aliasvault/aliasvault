@@ -70,7 +70,7 @@
   <string name="error_biometric_cancelled">Biometric authentication cancelled</string>
   <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
   <string name="pin_unlock_vault">Széf feloldása</string>
-  <string name="pin_enter_to_unlock">Enter your PIN to unlock your vault</string>
+  <string name="pin_enter_to_unlock">Adja meg PIN kódját a széf feloldáshoz</string>
   <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
   <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
   <string name="pin_setup_title">Setup PIN</string>

@@ -196,7 +196,8 @@
       "exportDescription": "Por razones de seguridad, por favor ingrese su contraseña maestra para confirmar esta exportación."
     },
     "security": "Seguridad",
-    "appVersion": "Versión de la aplicación {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Nunca",
       "5seconds": "5 segundos",

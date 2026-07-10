@@ -63,43 +63,43 @@
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>On this page you can import and export your vault.</value>
+    <value>Ezen az oldalon tudja importálni vagy exportálni a széfét.</value>
     <comment>Page description</comment>
   </data>
   <data name="ImportSectionTitle" xml:space="preserve">
-    <value>Import passwords</value>
+    <value>Jelszavak importálása</value>
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Select a service to import from.</value>
+    <value>Válassza ki milyen szolgáltatótól importálná.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
-    <value>Export vault</value>
+    <value>Széf exportálása</value>
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Export your vault to move credentials between AliasVault servers or to another password manager.</value>
+    <value>Exportálja a széfét ha más AliasVault szerverre költöztetné jelszavait, vagy áttérne egy másik jelszókezelőre.</value>
     <comment>Export section description</comment>
   </data>
   <data name="RecommendedLabel" xml:space="preserve">
-    <value>Recommended</value>
+    <value>Ajánlott</value>
     <comment>Label for recommended option</comment>
   </data>
   <data name="ExportAvexTitle" xml:space="preserve">
-    <value>Encrypted full vault export</value>
+    <value>Teljes széf exportálása titkosítva</value>
     <comment>Title for encrypted export option</comment>
   </data>
   <data name="ExportAvexDescription" xml:space="preserve">
-    <value>Password-protected backup of your entire vault. Includes all items, passkeys, and attachments. Use as manual backup and/or to restore to another AliasVault server.</value>
+    <value>A teljes széf jelszóval védett biztonsági mentése. Megtalálható benne minden elem, azonosítókulcs, és csatolmány. Használhatja mint kézi mentés, vagy éppen átköltöztetheti széfét egy másik AliasVault szerverre.</value>
     <comment>Description for encrypted export option</comment>
   </data>
   <data name="ExportAvuxTitle" xml:space="preserve">
-    <value>Unencrypted full vault export</value>
+    <value>Teljes széf exportálása titkosítatlanul</value>
     <comment>Title for unencrypted full export option</comment>
   </data>
   <data name="ExportAvuxDescription" xml:space="preserve">
-    <value>Complete vault export as unencrypted ZIP-compatible archive. Includes all items, passkeys and attachments.</value>
+    <value>Zip kompatibilis tömörített titkosítatlan széf export. Megtalálható benne miden elem, azonosítókulcs és csatolmány.</value>
     <comment>Description for unencrypted full export option</comment>
   </data>
   <data name="ExportCsvTitle" xml:space="preserve">
@@ -107,45 +107,45 @@
     <comment>Title for CSV export option</comment>
   </data>
   <data name="ExportCsvDescription" xml:space="preserve">
-    <value>Basic export for importing into other password managers. Does not include passkeys or attachments.</value>
+    <value>Alap szintű export, amit be tud importálni más jelszókezelőbe. Nem tartalmaz azonosítókulcsokat és csatolmányokat.</value>
     <comment>Description for CSV export option</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>Export to CSV</value>
+    <value>CSV export</value>
     <comment>Button to export as CSV</comment>
   </data>
   <data name="ExportAvuxButton" xml:space="preserve">
-    <value>Export unencrypted vault (.avux)</value>
+    <value>Titkosítatlan széf exportálása (.avux)</value>
     <comment>Button to export full vault as .avux archive</comment>
   </data>
   <data name="ExportingVaultMessage" xml:space="preserve">
-    <value>Exporting vault...</value>
+    <value>Széf exportálása...</value>
     <comment>Message shown while exporting vault</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
-    <value>Export vault</value>
+    <value>Széf exportálása</value>
     <comment>Export confirmation dialog title</comment>
   </data>
   <data name="ExportWarningMessage" xml:space="preserve">
-    <value>Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted computers and ensure you:
+    <value>Figyelem: Ha titkosítatlan fájlba exportálja a széfjét, akkor minden jelszava és szenzitív információja elérhető lesz egy szimpla szöveg formátumban. Csak megbízható eszközökön tegye ezt meg, és legyen abban biztos, hogy:
 
-• Store the exported file in a secure location
-• Delete the file when you no longer need it
-• Never share the exported file with others
+• Biztonságos helyre menti
+• Törölje a fájlt ha már nincs rá szüksége
+• Ne ossza meg mással az exportált fájlt
 
-Are you sure you want to continue with the export?</value>
+Biztosan folytatni akarja az exportálást?</value>
     <comment>Export warning confirmation message</comment>
   </data>
   <data name="ResetVaultSectionTitle" xml:space="preserve">
-    <value>Reset Vault</value>
+    <value>Széf visszaállítása</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="ResetVaultSectionDescription" xml:space="preserve">
-    <value>This option allows you to completely empty your vault while keeping your account and email aliases. Use this if you want to start fresh after importing data from another password manager or if you want to clear all existing credentials to start over.</value>
+    <value>Ez az opció lehetővé teszi, hogy teljesen kiürítse a széfét, miközben megmarad a fiókja és az email aliasai. Használja ezt ha teljesen tiszta lappal akar kezdeni, vagy egy másik jelszókezelőből kívánja újra betölteni az új elemeket.</value>
     <comment>Reset vault section description</comment>
   </data>
   <data name="ExportPasswordConfirmTitle" xml:space="preserve">
-    <value>Confirm Export</value>
+    <value>Export megerősítése</value>
     <comment>Title for password confirmation modal during export</comment>
   </data>
   <data name="ExportPasswordConfirmDescription" xml:space="preserve">
@@ -165,25 +165,25 @@ Are you sure you want to continue with the export?</value>
     <comment>Generic error message for password verification failure</comment>
   </data>
   <data name="ExportAvexButton" xml:space="preserve">
-    <value>Export encrypted vault (.avex)</value>
+    <value>Titkosított széf exportálása (.avux)</value>
     <comment>Button to export encrypted vault as .avex archive</comment>
   </data>
   <data name="ExportEncryptedWarningMessage" xml:space="preserve">
-    <value>This will create an encrypted export of your entire vault. You will need to provide a password to encrypt the export file.
+    <value>Ez egy titkosított exportot hoz létre az egész széfjéről. Meg kell adnia egy jelszót amivel titkosítja az export fájlt.
 
-Are you sure you want to continue?</value>
+Biztosan folytatni kívánja?</value>
     <comment>Warning message for encrypted export confirmation</comment>
   </data>
   <data name="ExportEncryptedPasswordTitle" xml:space="preserve">
-    <value>Set Export Password</value>
+    <value>Export jelszó megadása</value>
     <comment>Title for export password modal</comment>
   </data>
   <data name="ExportEncryptedPasswordDescription" xml:space="preserve">
-    <value>Choose a strong, unique password to encrypt this export. This password is required to decrypt the export. If you lose this password, you will not be able to recover the exported data.</value>
+    <value>Használjon egy egyéni erős jelszót amivel titkosítja az exportot. Ez később szükséges a dekódoláshoz is. Ha elveszíti a jelszót, nem fogja tudni hozzáférni az exportált adatokhoz.</value>
     <comment>Description for export password modal with security warning</comment>
   </data>
   <data name="ExportSuccessMessage" xml:space="preserve">
-    <value>Your vault has been exported successfully.</value>
+    <value>Széfje sikeresen exportálásra került.</value>
     <comment>Success message after vault export completes</comment>
   </data>
 </root>

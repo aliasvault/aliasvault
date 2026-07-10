@@ -149,7 +149,7 @@
     <comment>Loading message during login process</comment>
   </data>
   <data name="VerifyingTwoFactorCodeMessage" xml:space="preserve">
-    <value>Kétfaktoros kód ellenőrzése...</value>
+    <value>Kétlépcsős kód ellenőrzése...</value>
     <comment>Loading message during 2FA verification</comment>
   </data>
   <data name="VerifyingRecoveryCodeMessage" xml:space="preserve">

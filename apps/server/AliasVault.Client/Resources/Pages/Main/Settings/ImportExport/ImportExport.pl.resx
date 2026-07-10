@@ -79,7 +79,7 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Export your vault to move credentials between AliasVault servers or to another password manager.</value>
+    <value>Eksportuj swój sejf do przenoszenia danych logowania pomiędzy serwerami AliasVault lub do innego menedżera haseł.</value>
     <comment>Export section description</comment>
   </data>
   <data name="RecommendedLabel" xml:space="preserve">
@@ -91,15 +91,15 @@
     <comment>Title for encrypted export option</comment>
   </data>
   <data name="ExportAvexDescription" xml:space="preserve">
-    <value>Password-protected backup of your entire vault. Includes all items, passkeys, and attachments. Use as manual backup and/or to restore to another AliasVault server.</value>
+    <value>Zabezpieczona hasłem kopia zapasowa całego sejfu. Zawiera wszystkie elementy, hasła i załączniki. Użyj jako ręczna kopia zapasowa i/lub przywracanie do innego serwera AliasVault.</value>
     <comment>Description for encrypted export option</comment>
   </data>
   <data name="ExportAvuxTitle" xml:space="preserve">
-    <value>Unencrypted full vault export</value>
+    <value>Niezaszyfrowany cały sejf</value>
     <comment>Title for unencrypted full export option</comment>
   </data>
   <data name="ExportAvuxDescription" xml:space="preserve">
-    <value>Complete vault export as unencrypted ZIP-compatible archive. Includes all items, passkeys and attachments.</value>
+    <value>Kompletny eksport sejfu jako niezaszyfrowane archiwum kompatybilne z ZIP. Zawiera wszystkie elementy, hasła i załączniki.</value>
     <comment>Description for unencrypted full export option</comment>
   </data>
   <data name="ExportCsvTitle" xml:space="preserve">
@@ -107,7 +107,7 @@
     <comment>Title for CSV export option</comment>
   </data>
   <data name="ExportCsvDescription" xml:space="preserve">
-    <value>Basic export for importing into other password managers. Does not include passkeys or attachments.</value>
+    <value>Podstawowy eksport do importu do innych menedżerów haseł. Nie zawiera passkeys ani załączników.</value>
     <comment>Description for CSV export option</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
@@ -169,9 +169,9 @@ Czy na pewno chcesz kontynuować eksport?</value>
     <comment>Button to export encrypted vault as .avex archive</comment>
   </data>
   <data name="ExportEncryptedWarningMessage" xml:space="preserve">
-    <value>This will create an encrypted export of your entire vault. You will need to provide a password to encrypt the export file.
+    <value>Spowoduje to utworzenie zaszyfrowanego eksportu całego Twojego sejfu. Musisz podać hasło, aby zaszyfrować plik eksportu.
 
-Are you sure you want to continue?</value>
+Czy na pewno chcesz kontynuować?</value>
     <comment>Warning message for encrypted export confirmation</comment>
   </data>
   <data name="ExportEncryptedPasswordTitle" xml:space="preserve">
@@ -179,7 +179,7 @@ Are you sure you want to continue?</value>
     <comment>Title for export password modal</comment>
   </data>
   <data name="ExportEncryptedPasswordDescription" xml:space="preserve">
-    <value>Choose a strong, unique password to encrypt this export. This password is required to decrypt the export. If you lose this password, you will not be able to recover the exported data.</value>
+    <value>Wybierz silne, unikalne hasło, aby zaszyfrować ten eksport. To hasło jest wymagane do odszyfrowania eksportu. Jeśli utracisz to hasło, nie będziesz w stanie odzyskać eksportowanych danych.</value>
     <comment>Description for export password modal with security warning</comment>
   </data>
   <data name="ExportSuccessMessage" xml:space="preserve">

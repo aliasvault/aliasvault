@@ -196,7 +196,8 @@
       "exportDescription": "Av säkerhetsskäl, ange ditt huvudlösenord för att bekräfta denna export."
     },
     "security": "Säkerhet",
-    "appVersion": "Appversion {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Aldrig",
       "5seconds": "5 sekunder",

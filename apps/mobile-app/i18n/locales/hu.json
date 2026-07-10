@@ -3,7 +3,7 @@
     "cancel": "Mégse",
     "close": "Bezár",
     "delete": "Törlés",
-    "remove": "Remove",
+    "remove": "Eltávolítás",
     "save": "Mentés",
     "edit": "Szerkesztés",
     "yes": "Igen",
@@ -115,13 +115,13 @@
   "totp": {
     "addCode": "2FA kód hozzáadása",
     "nameOptional": "Név (nem kötelező)",
-    "addName": "Add a name (optional)",
-    "defaultName": "Authenticator",
+    "addName": "Név hozzáadása (tetszőleges)",
+    "defaultName": "Hitelesítő",
     "secretKey": "Titkos kulcs",
-    "instructions": "Adja meg a weboldal által megjelenített titkos kulcsot a két faktoros hitelesítőjébe.",
+    "instructions": "Adja meg a weboldal által megjelenített titkos kulcsot a kétlépcsős hitelesítőjébe.",
     "saveToViewCode": "Mentse le a kód megtekintéséhez",
     "scanQrCode": "QR kód beolvasása",
-    "enterManually": "Enter secret key",
+    "enterManually": "Titkos kulcs magadása",
     "errors": {
       "invalidSecretKey": "Hibás titkos kulcs formátum.",
       "scanFailed": "QR kód beolvasása sikertelen. Próbálja meg újra."
@@ -196,7 +196,8 @@
       "exportDescription": "Biztonsági okokból kérem adja meg a mester jelszót az exportálás engedélyezéséhez."
     },
     "security": "Biztonság",
-    "appVersion": "App verzió {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Soha",
       "5seconds": "5 másodperc",
@@ -447,27 +448,27 @@
     "includeSpecialChars": "Speciális karakterek (!@#)",
     "avoidAmbiguousChars": "Kerülje a félreérthető karaktereket",
     "passwordTypeBasic": "Jelszó",
-    "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
+    "passwordTypeDiceware": "Jelmondat",
+    "passphraseLanguage": "Jelmondat nyelv",
+    "wordCount": "Szavak",
     "capitalization": "Nagybetűs",
-    "separator": "Separator",
+    "separator": "Elválasztó",
     "salt": "Salt",
     "dicewareCapitalizationOption": {
-      "Lowercase": "Lowercase",
-      "TitleCase": "Title Case",
-      "Uppercase": "Uppercase"
+      "Lowercase": "Kisbetűs",
+      "TitleCase": "Cím betűméret",
+      "Uppercase": "Nagybetűs"
     },
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Kötőjel",
+      "Space": "Szóköz",
+      "Underscore": "Alsóvonás",
+      "Dot": "Pont"
     },
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Prefix": "Előtag",
+      "Sprinkle": "Véletlenszerű pozíció",
+      "Suffix": "Utótag"
     },
     "errorLoadingItems": "Hiba az elemek betöltése során",
     "vaultSyncFailed": "Sikertelen széf szinkronizálás",

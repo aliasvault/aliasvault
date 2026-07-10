@@ -77,11 +77,11 @@
   </data>
   <!-- Alias Field Labels -->
   <data name="FieldLabel_alias_first_name" xml:space="preserve">
-    <value>First Name</value>
+    <value>Céad Ainm</value>
     <comment>Label for first name field</comment>
   </data>
   <data name="FieldLabel_alias_last_name" xml:space="preserve">
-    <value>Last Name</value>
+    <value>Sloinne</value>
     <comment>Label for last name field</comment>
   </data>
   <data name="FieldLabel_alias_gender" xml:space="preserve">
@@ -89,7 +89,7 @@
     <comment>Label for gender field</comment>
   </data>
   <data name="FieldLabel_alias_birthdate" xml:space="preserve">
-    <value>Birth Date</value>
+    <value>Dáta Breithe</value>
     <comment>Label for birthdate field</comment>
   </data>
   <!-- Card Field Labels -->
@@ -124,7 +124,7 @@
   </data>
   <!-- History -->
   <data name="ViewHistory" xml:space="preserve">
-    <value>View history</value>
+    <value>Féach ar an stair</value>
     <comment>Tooltip for history icon button</comment>
   </data>
 </root>

@@ -30,8 +30,8 @@
     "loginWithMobile": "Zaloguj się za pomocą aplikacji mobilnej",
     "unlockWithMobile": "Odblokuj za pomocą aplikacji mobilnej",
     "scanQrCode": "Zeskanuj ten kod QR za pomocą aplikacji mobilnej AliasVault, aby się zalogować i odblokować sejf.",
-    "passwordAttemptsWarning": "Incorrect password. You will be logged out if you enter the wrong password {{remainingAttempts}} more times.",
-    "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
+    "passwordAttemptsWarning": "Nieprawidłowe hasło. Zostaniesz wylogowany, jeśli wprowadzisz nieprawidłowe hasło {{remainingAttempts}} więcej razy.",
+    "maxAttemptsReached": "Zbyt wiele nieudanych prób odblokowania. Zostałeś wylogowany ze względów bezpieczeństwa."
   },
   "menu": {
     "vault": "Sejf",
@@ -148,7 +148,7 @@
     "new": "Nowy",
     "vaultLocked": "AliasVault jest zablokowany.",
     "creatingNewAlias": "Tworzenie nowego aliasu",
-    "creatingNewCredential": "Creating new credential",
+    "creatingNewCredential": "Utwórz nowe dane logowania",
     "noMatchesFound": "Nie znaleziono żadnych wyników",
     "loginWithPasskey": "Zaloguj się używając passkey",
     "searchVault": "Przeszukaj sejf...",
@@ -170,7 +170,7 @@
     "failedToCreateIdentity": "Nie udało się utworzyć tożsamości. Spróbuj ponownie.",
     "enterEmailAndOrUsername": "Wprowadź adres e-mail i/lub nazwę użytkownika",
     "autofillWithAliasVault": "Autouzupełnianie nazwy użytkownika/hasła",
-    "autofillTotp": "Autofill 2FA",
+    "autofillTotp": "Autouzupełnianie uwierzytelniania dwustopniowego (2FA)",
     "generateRandomPassword": "Wygeneruj losowe hasło (skopiuj do schowka)",
     "generateNewPassword": "Wygeneruj nowe hasło",
     "togglePasswordVisibility": "Przełącz widoczność hasła",
@@ -189,7 +189,7 @@
   "items": {
     "title": "Elementy",
     "itemName": "Nazwa",
-    "suggestions": "Suggestions",
+    "suggestions": "Propozycje",
     "loginCredentials": "Dane logowania",
     "cardInformation": "Informacje o karcie",
     "addItem": "Dodaj element",
@@ -206,8 +206,8 @@
     "folder": "Katalog",
     "welcomeTitle": "Witamy w AliasVault!",
     "welcomeDescription": "Aby skorzystać z rozszerzenia przeglądarki AliasVault - przejdź do strony internetowej i użyj okienka autozupelniania, aby utworzyć nowa tożsamość.",
-    "currentSiteMatch": "For {{domain}}",
-    "numberOfItemMatchesFound": "{{count}} items found",
+    "currentSiteMatch": "Dla {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} znalezionych przedmiotów",
     "noMatchingItems": "Żaden element nie pasuje do wybranego filtra.",
     "noMatchingItemsSearch": "Nie znaleziono żadnych elementów pasujących do „{{search}}”",
     "noMatchingItemsWithFilter": "Brak elementów {{filter}} pasujących do „{{search}}”",
@@ -245,25 +245,25 @@
     "avoidAmbiguousChars": "Unikaj dwuznacznych znaków (o, 0, itp.)",
     "passwordTypeBasic": "Hasło",
     "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
+    "passphraseLanguage": "Język Passphrase",
+    "wordCount": "Słowa",
     "dicewareCapitalizationOption": {
       "TitleCase": "Title Case",
-      "Uppercase": "Uppercase",
-      "Lowercase": "Lowercase"
+      "Uppercase": "Wielkie litery",
+      "Lowercase": "Małe litery"
     },
     "separator": "Separator",
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Kreska",
+      "Space": "Spacja",
+      "Underscore": "Podkreślenie",
+      "Dot": "Kropka"
     },
     "salt": "Salt",
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Prefix": "Prefiks",
+      "Sprinkle": "Losowa pozycja",
+      "Suffix": "Sufiks"
     },
     "privateEmailTitle": "Prywatny adres e-mail",
     "privateEmailAliasVaultServer": "Serwer AliasVault",
@@ -329,7 +329,7 @@
     "addCode": "Dodaj kod 2FA",
     "instructions": "Wprowadź tajny klucz wyświetlony na stronie internetowej, na której chcesz dodać uwierzytelnianie dwuskładnikowe.",
     "nameOptional": "Nazwa (opcjonalnie)",
-    "addName": "Add a name (optional)",
+    "addName": "Dodaj nazwę (opcjonalnie)",
     "secretKey": "Tajny klucz",
     "saveToViewCode": "Zapisz, aby wyświetlić kod",
     "defaultName": "Uwierzytelnianie",
@@ -430,7 +430,8 @@
     "autoLock4Hours": "4 godziny",
     "autoLock8Hours": "8 godzin",
     "autoLock24Hours": "24 godziny",
-    "versionPrefix": "Wersja ",
+    "versionPrefix": "Wersja aplikacji",
+    "serverVersion": "Wersja serwera",
     "autofillSettings": "Ustawienia autouzupełniania",
     "clipboardSettings": "Ustawienia schowka",
     "contextMenuSettings": "Ustawienia menu kontekstowego",
@@ -470,15 +471,15 @@
     },
     "passwordGenerator": "Generator haseł",
     "passwordGeneratorSettings": {
-      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "description": "Skonfiguruj domyślne ustawienia generatora haseł dla nowo utworzonych elementów, w tym długość hasła, zestawy znaków i język hasła.",
       "configureButton": "Skonfiguruj"
     },
-    "credentialAutofill": "Credential autofill",
-    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
-    "totpAutofill": "2FA code autofill",
-    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
-    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
-    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
+    "credentialAutofill": "Autouzupełnianie",
+    "credentialAutofillDescription": "Pokaż wyskakujące okienko autouzupełniania, gdy zostaną wykryte pola nazwy użytkownika/hasła",
+    "totpAutofill": "Autouzupełnianie kodów 2FA",
+    "totpAutofillDescription": "Pokaż wyskakujące okienko autouzupełniania 2FA, po wykryciu pól logowania",
+    "autoCopyTotpOnAutofill": "Automatycznie skopiuj 2FA do schowka",
+    "autoCopyTotpOnAutofillDescription": "Automatycznie skopiuj pierwszy kod 2FA do schowka po automatycznym wypełnianiu danych logowania",
     "loginSave": {
       "title": "Zapisz monit logowania",
       "description": "Pokaż monit o zapisanie danych logowania podczas przesyłania formularza logowania na stronie internetowej.",
@@ -537,7 +538,7 @@
       "selectExistingLoginDescription": "Dołącz ten klucz dostępu do istniejącego logowania dla tej witryny.",
       "attachingToCredential": "Dodawanie klucza dostępu do: {{serviceName}}",
       "attachPasskey": "Dodaj klucz dostępu",
-      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
+      "unsupportedAlgorithm": "Ta strona wymaga typ passkey, którego AliasVault nie obsługuje."
     },
     "settings": {
       "passkeyProvider": "Dostawca klucza dostępu",
@@ -547,8 +548,8 @@
   "recentlyDeleted": {
     "title": "Ostatnio usunięte",
     "noItems": "Brak usuniętych elementów",
-    "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
-    "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
+    "noItemsDescription": "Usunięte elementy pojawią się tutaj na {{days}} dni zanim zostaną trwale usunięte.",
+    "description": "Te elementy zostaną trwale usunięte po {{days}} dniach. Możesz je przywrócić lub natychmiast usunąć.",
     "restore": "Przywróć",
     "deletePermanently": "Usuń bezpowrotnie",
     "emptyAll": "Opróżnij wszystkie",
@@ -588,7 +589,7 @@
   "sync": {
     "offline": "Jesteś w trybie offline",
     "tapToRetry": "Dotknij, aby ponowić synchronizację",
-    "syncErrorTitle": "Sync Failed",
+    "syncErrorTitle": "Synchronizacja nie powiodła się",
     "syncErrorDismiss": "Odrzuć"
   }
 }

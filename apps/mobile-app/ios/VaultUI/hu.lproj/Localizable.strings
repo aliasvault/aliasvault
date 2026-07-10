@@ -73,7 +73,7 @@
 
 /* PIN Unlock */
 "unlock_vault" = "Széf feloldása";
-"enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
+"enter_pin_to_unlock_vault" = "Adja meg PIN kódját a széf feloldáshoz";
 "pin_locked_max_attempts" = "PIN locked after too many failed attempts";
 "pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
 

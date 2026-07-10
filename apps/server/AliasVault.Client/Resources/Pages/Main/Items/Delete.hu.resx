@@ -20,35 +20,35 @@
     </xsd:element>
   </xsd:schema>
   <data name="DeleteItemPageTitle">
-    <value>Delete item</value>
+    <value>Elem törlése</value>
     <comment>Page title for deleting items</comment>
   </data>
   <data name="DeleteItemTitle">
-    <value>Delete item</value>
+    <value>Elem törlése</value>
     <comment>Page header title for deleting item</comment>
   </data>
   <data name="DeleteItemDescription">
-    <value>Are you sure you want to delete this item? It will be moved to the recently deleted items and permanently deleted after {0} days.</value>
+    <value>Biztosan törölni kívánja az elemet? Átkerül a nemrégiben töröltek közé, és véglegesen törlésre kerül {0} nap után.</value>
     <comment>Confirmation message shown in the delete-item modal. Placeholder {0} is the trash retention period in days.</comment>
   </data>
   <data name="ItemEntrySection">
-    <value>Item entry</value>
+    <value>Elem adatai</value>
     <comment>Section header for item details</comment>
   </data>
   <data name="IdLabel">
-    <value>Id</value>
+    <value>Azonosító</value>
     <comment>Label for item ID field</comment>
   </data>
   <data name="ServiceNameLabel">
-    <value>Service name</value>
+    <value>Szolgáltatás név</value>
     <comment>Label for service name field</comment>
   </data>
   <data name="YesImSureButton">
-    <value>Yes, I'm sure</value>
+    <value>Igen, biztos vagyok</value>
     <comment>Confirmation button text</comment>
   </data>
   <data name="NoCancelButton">
-    <value>No, cancel</value>
+    <value>Nem, mégsem</value>
     <comment>Cancel button text</comment>
   </data>
   <data name="ViewItemBreadcrumb">
@@ -56,23 +56,23 @@
     <comment>Breadcrumb text for view item page</comment>
   </data>
   <data name="DeleteItemBreadcrumb">
-    <value>Delete item</value>
+    <value>Elem törlése</value>
     <comment>Breadcrumb text for delete item page</comment>
   </data>
   <data name="DeleteItemNotFoundError">
-    <value>Error deleting. Item not found.</value>
+    <value>Hiba a törléskor. Elem nem található.</value>
     <comment>Error message when item is not found during deletion</comment>
   </data>
   <data name="DeletingItemMessage">
-    <value>Deleting item...</value>
+    <value>Elem törlése...</value>
     <comment>Loading message while deleting item</comment>
   </data>
   <data name="DeleteSuccessMessage">
-    <value>Item successfully deleted.</value>
+    <value>Elem sikeresen törölve.</value>
     <comment>Success message after item deletion</comment>
   </data>
   <data name="DeleteDatabaseError">
-    <value>Error saving database.</value>
+    <value>Hiba az adatbázis mentésekor.</value>
     <comment>Error message when database save fails</comment>
   </data>
 </root>

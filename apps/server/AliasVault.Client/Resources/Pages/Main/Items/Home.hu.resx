@@ -64,7 +64,7 @@
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Find all of your items below.</value>
+    <value>Lentebb megtalálhatja az összes elemét.</value>
     <comment>Page description text</comment>
   </data>
   <data name="Items" xml:space="preserve">
@@ -73,44 +73,44 @@
   </data>
   <!-- Settings Dropdown -->
   <data name="ViewModeLabel" xml:space="preserve">
-    <value>View Mode</value>
+    <value>Nézet mód</value>
     <comment>Label for view mode dropdown</comment>
   </data>
   <data name="GridViewOption" xml:space="preserve">
-    <value>Grid View</value>
+    <value>Rács nézet</value>
     <comment>Grid view option in dropdown</comment>
   </data>
   <data name="TableViewOption" xml:space="preserve">
-    <value>Table View</value>
+    <value>Táblázatos nézet</value>
     <comment>Table view option in dropdown</comment>
   </data>
   <data name="SortOrderLabel" xml:space="preserve">
-    <value>Sort Order</value>
+    <value>Rendezési sorrend</value>
     <comment>Label for sort order dropdown</comment>
   </data>
   <data name="OldestFirstOption" xml:space="preserve">
-    <value>Oldest First</value>
+    <value>Legrégebbi elől</value>
     <comment>Oldest first sort option</comment>
   </data>
   <data name="NewestFirstOption" xml:space="preserve">
-    <value>Newest First</value>
+    <value>Legújabb elől</value>
     <comment>Newest first sort option</comment>
   </data>
   <data name="AlphabeticalOption" xml:space="preserve">
-    <value>Alphabetical</value>
+    <value>Betűrendben</value>
     <comment>Alphabetical sort option</comment>
   </data>
   <!-- Empty State -->
   <data name="NoItemsTitle" xml:space="preserve">
-    <value>No items yet</value>
+    <value>Még nincsenek elemek</value>
     <comment>Title when no items exist</comment>
   </data>
   <data name="CreateFirstItemText" xml:space="preserve">
-    <value>Create your first item using the</value>
+    <value>Hozza létre az első elemet a</value>
     <comment>Text explaining how to create first item</comment>
   </data>
   <data name="NewAliasButtonText" xml:space="preserve">
-    <value>"+ New Alias"</value>
+    <value>"+ Új alias"</value>
     <comment>Text reference to the New Alias button (desktop)</comment>
   </data>
   <data name="NewAliasButtonTextMobile" xml:space="preserve">
@@ -118,7 +118,7 @@
     <comment>Text reference to the New Alias button (mobile)</comment>
   </data>
   <data name="ButtonLocationText" xml:space="preserve">
-    <value>button in the top right corner.</value>
+    <value>jobb felső sarokban levő gombbal.</value>
     <comment>Text describing button location</comment>
   </data>
   <data name="OrText" xml:space="preserve">
@@ -126,21 +126,21 @@
     <comment>Separator text between options</comment>
   </data>
   <data name="ImportItemsText" xml:space="preserve">
-    <value>If you previously used a different password manager, you can import your items from it.</value>
+    <value>Ha korábban egy másik jelszókezelőt használt, importálhatja az elemeket onnan.</value>
     <comment>Text explaining import option</comment>
   </data>
   <data name="ImportButtonText" xml:space="preserve">
-    <value>Import from KeePass, Bitwarden, Chrome, Firefox...</value>
+    <value>Importálja bárhonnan, legyen az KeePass, Bitwarden, Chrome, Firefox...</value>
     <comment>Import button text</comment>
   </data>
   <!-- Error Messages -->
   <data name="FailedToLoadItemsMessage" xml:space="preserve">
-    <value>Failed to load items.</value>
+    <value>Az elem betöltése sikertelen.</value>
     <comment>Error message when items fail to load</comment>
   </data>
   <!-- Filter Options -->
   <data name="FilterLabel" xml:space="preserve">
-    <value>Filter</value>
+    <value>Szűrő</value>
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
@@ -156,11 +156,11 @@
     <comment>Filter option to show only passkeys</comment>
   </data>
   <data name="FilterAliasesOption" xml:space="preserve">
-    <value>Aliases</value>
+    <value>Aliasok</value>
     <comment>Filter option to show only aliases</comment>
   </data>
   <data name="FilterUserpassOption" xml:space="preserve">
-    <value>Passwords</value>
+    <value>Jelszavak</value>
     <comment>Filter option to show only username/passwords</comment>
   </data>
   <data name="FilterAttachmentsOption" xml:space="preserve">
@@ -181,11 +181,11 @@
     <comment>Empty state message when no items match the filter</comment>
   </data>
   <data name="EmptyFolderMessage" xml:space="preserve">
-    <value>This folder is empty.</value>
+    <value>Ez a mappa üres.</value>
     <comment>Empty state message when folder has no items</comment>
   </data>
   <data name="AllItemsInFoldersMessage" xml:space="preserve">
-    <value>All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.</value>
+    <value>Minden eleme be van mappázva. Kattintson a fenti mappák egyikére, hogy meglelje bejegyzését, esetlegesen keressen rá közvetlenül.</value>
     <comment>Empty state message when all items are in folders and none at root level</comment>
   </data>
   <!-- Folder Management -->
@@ -206,16 +206,16 @@
     <comment>Button text for navigating back to root</comment>
   </data>
   <data name="FailedToCreateFolder" xml:space="preserve">
-    <value>Failed to create folder.</value>
+    <value>Sikertelen mappa létrehozás.</value>
     <comment>Error message when folder creation fails</comment>
   </data>
   <data name="FailedToDeleteFolder" xml:space="preserve">
-    <value>Failed to delete folder.</value>
+    <value>Sikertelen mappa törlés.</value>
     <comment>Error message when folder deletion fails</comment>
   </data>
   <!-- Infinite Scroll -->
   <data name="LoadingMore" xml:space="preserve">
-    <value>Loading more...</value>
+    <value>Továbbiak betöltése...</value>
     <comment>Text shown when loading more items during infinite scroll</comment>
   </data>
   <!-- Clear Filter -->
@@ -224,7 +224,7 @@
     <comment>Button text for clearing the active filter</comment>
   </data>
   <data name="FilteringBy" xml:space="preserve">
-    <value>Filtering by:</value>
+    <value>Szűrési szempont</value>
     <comment>Label shown when a filter is active</comment>
   </data>
 </root>

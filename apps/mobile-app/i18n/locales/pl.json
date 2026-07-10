@@ -20,7 +20,7 @@
     "none": "Brak",
     "confirm": "Potwierdź",
     "next": "Dalej",
-    "notice": "Uwaga",
+    "notice": "Notatka",
     "enabled": "Włączone",
     "disabled": "Wyłączone",
     "twoFactorAuthentication": "Weryfikacja dwuetapowa (2FA)",
@@ -115,13 +115,13 @@
   "totp": {
     "addCode": "Dodaj kod 2FA",
     "nameOptional": "Nazwa (opcjonalnie)",
-    "addName": "Add a name (optional)",
+    "addName": "Dodaj nazwę (opcjonalnie)",
     "defaultName": "Uwierzytelnianie",
     "secretKey": "Tajny klucz",
     "instructions": "Wprowadź tajny klucz wyświetlony na stronie internetowej, na której chcesz dodać uwierzytelnianie dwuskładnikowe.",
     "saveToViewCode": "Zapisz, aby wyświetlić kod",
     "scanQrCode": "Skanuj kod QR",
-    "enterManually": "Enter secret key",
+    "enterManually": "Wprowadź tajny klucz TOTP",
     "errors": {
       "invalidSecretKey": "Nieprawidłowy format tajnego klucza.",
       "scanFailed": "Nie udało się zeskanować kodu QR. Spróbuj ponownie."
@@ -196,7 +196,8 @@
       "exportDescription": "Ze względów bezpieczeństwa wprowadź swoje hasło główne, aby potwierdzić eksport."
     },
     "security": "Bezpieczeństwo",
-    "appVersion": "Wersja aplikacji {{version}} ({{url}})",
+    "appVersion": "Wersja aplikacji",
+    "serverVersion": "Wersja serwera",
     "autoLockOptions": {
       "never": "Nigdy",
       "5seconds": "5 sekund",
@@ -354,7 +355,7 @@
       "cardInformation": "Informacje o karcie"
     },
     "note": {
-      "title": "Uwaga"
+      "title": "Uwagi"
     },
     "addField": "Dodaj pole",
     "addCustomField": "Dodaj pole niestandardowe",
@@ -448,26 +449,26 @@
     "avoidAmbiguousChars": "Unikaj niejednoznacznych znaków",
     "passwordTypeBasic": "Hasło",
     "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
-    "capitalization": "Capitalization",
+    "passphraseLanguage": "Język Passphrase",
+    "wordCount": "Słowa",
+    "capitalization": "Stosowanie wielkich liter",
     "separator": "Separator",
     "salt": "Salt",
     "dicewareCapitalizationOption": {
-      "Lowercase": "Lowercase",
+      "Lowercase": "Małe litery",
       "TitleCase": "Title Case",
-      "Uppercase": "Uppercase"
+      "Uppercase": "Wielkie litery"
     },
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Kreska",
+      "Space": "Spacja",
+      "Underscore": "Podkreślenie",
+      "Dot": "Kropka"
     },
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Prefix": "Prefiks",
+      "Sprinkle": "Losowa pozycja",
+      "Suffix": "Sufiks"
     },
     "errorLoadingItems": "Błąd podczas ładowania elementów",
     "vaultSyncFailed": "Nie udało się zsynchronizować sejfu",
@@ -569,7 +570,7 @@
       "title": "Ostatnio usunięte",
       "noItems": "Brak usuniętych elementów",
       "noItemsDescription": "Usunięte elementy pojawią się tutaj na {{days}} dni zanim zostaną trwale usunięte.",
-      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
+      "description": "Te elementy zostaną trwale usunięte po {{days}} dniach. Możesz je przywrócić lub natychmiast usunąć.",
       "restore": "Przywróć",
       "deletePermanently": "Usuń bezpowrotnie",
       "emptyAll": "Opróżnij wszystkie",
@@ -688,7 +689,7 @@
       "version": "Wersja: {{version}}",
       "advancedSettings": "Ustawienia zaawansowane",
       "customProxyHeaders": "Niestandardowe nagłówki serwera proxy",
-      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
+      "customProxyHeadersDescription": "Dodaj nagłówki HTTP, które będą wysyłane z każdą prośbą do serwera AliasVault. Mogą być używane do samodzielnych konfiguracji za odwróconym proxy sprawdzającym nagłówki niestandardowe (np. Pangolin, Cloudflare Access).",
       "headerName": "Header name",
       "headerNamePlaceholder": "X-Custom-Header",
       "headerValue": "Header value"

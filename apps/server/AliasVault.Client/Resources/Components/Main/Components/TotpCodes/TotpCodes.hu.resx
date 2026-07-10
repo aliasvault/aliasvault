@@ -63,7 +63,7 @@
     <comment>Section title for 2FA codes</comment>
   </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
-    <value>Kétfaktoros hitelesítő kód hozzáadása</value>
+    <value>Kétlépcsős hitelesítő kód hozzáadása</value>
     <comment>Description for adding TOTP codes</comment>
   </data>
   <data name="AddTotpCodeModalTitle" xml:space="preserve">
@@ -83,7 +83,7 @@
     <comment>Label for optional name field</comment>
   </data>
   <data name="AddNameButton" xml:space="preserve">
-    <value>Add a name (optional)</value>
+    <value>Név hozzáadása (tetszőleges)</value>
     <comment>Toggle button that reveals the optional name field in the add form</comment>
   </data>
   <data name="SecretKeyLabel" xml:space="preserve">

@@ -196,7 +196,8 @@
       "exportDescription": "Pour des raisons de sécurité, veuillez entrer votre mot de passe maître pour confirmer l'exportation."
     },
     "security": "Sécurité",
-    "appVersion": "Version de l'application {{version}} ({{url}})",
+    "appVersion": "Version de l'app",
+    "serverVersion": "Version du serveur",
     "autoLockOptions": {
       "never": "Jamais",
       "5seconds": "5 secondes",

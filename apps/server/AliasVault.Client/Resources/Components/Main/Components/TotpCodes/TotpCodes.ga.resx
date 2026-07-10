@@ -63,35 +63,35 @@
     <comment>Section title for 2FA codes</comment>
   </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
-    <value>Add a two-factor authenticator code</value>
+    <value>Cuir cód fíordheimhnitheora dhá fhachtóir leis</value>
     <comment>Description for adding TOTP codes</comment>
   </data>
   <data name="AddTotpCodeModalTitle" xml:space="preserve">
-    <value>Add 2FA TOTP Code</value>
+    <value>Cuir Cód 2FA TOTP leis</value>
     <comment>Modal title for adding TOTP code</comment>
   </data>
   <data name="CloseFormButton" xml:space="preserve">
-    <value>Close form</value>
+    <value>Dún an fhoirm</value>
     <comment>Button to close the add TOTP form</comment>
   </data>
   <data name="TotpInstructions" xml:space="preserve">
-    <value>If the website offers or requires 2FA for your account, copy the secret key or QR code URI and paste it below.</value>
+    <value>Má thairgeann an suíomh Gréasáin 2FA do do chuntas nó má éilíonn sé é, cóipeáil an eochair rúnda nó an cód QR URI agus greamaigh thíos é.</value>
     <comment>Instructions for adding TOTP codes</comment>
   </data>
   <data name="NameOptionalLabel" xml:space="preserve">
-    <value>Name (optional)</value>
+    <value>Ainm (roghnach)</value>
     <comment>Label for optional name field</comment>
   </data>
   <data name="AddNameButton" xml:space="preserve">
-    <value>Add a name (optional)</value>
+    <value>Cuir ainm leis (roghnach)</value>
     <comment>Toggle button that reveals the optional name field in the add form</comment>
   </data>
   <data name="SecretKeyLabel" xml:space="preserve">
-    <value>Secret Key</value>
+    <value>Eochair Rúnda</value>
     <comment>Label for secret key field</comment>
   </data>
   <data name="SecretKeyPlaceholder" xml:space="preserve">
-    <value>Enter secret key (manual entry)</value>
+    <value>Cuir isteach eochair rúnda (iontráil láimhe)</value>
     <comment>Placeholder text for secret key input</comment>
   </data>
   <data name="SaveButton" xml:space="preserve">
@@ -99,15 +99,15 @@
     <comment>Save button text</comment>
   </data>
   <data name="SaveToViewCodeMessage" xml:space="preserve">
-    <value>Save to view code</value>
+    <value>Sábháil chun an cód a fheiceáil</value>
     <comment>Message shown for unsaved TOTP codes</comment>
   </data>
   <data name="DeleteTotpCodeConfirmation" xml:space="preserve">
-    <value>Are you sure you want to delete this TOTP code?</value>
+    <value>An bhfuil tú cinnte gur mian leat an cód TOTP seo a scriosadh?</value>
     <comment>Confirmation message for deleting TOTP code</comment>
   </data>
   <data name="DeleteTotpCodeTitle" xml:space="preserve">
-    <value>Delete TOTP code</value>
+    <value>Scrios cód TOTP</value>
     <comment>Title for delete TOTP code action</comment>
   </data>
 </root>

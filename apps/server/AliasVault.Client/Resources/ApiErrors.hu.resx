@@ -129,7 +129,7 @@
     <value>Az új fiók regisztráció jelenleg ki van kapcsolva a szerveren. Kérem vegye fel a kapcsolatot a rendszergazdával.</value>
   </data>
   <data name="REGISTRATION_FAILED" xml:space="preserve">
-    <value>Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.</value>
+    <value>Sikertelen fiók létrehozás. Kérem, próbálja újra pár percet követően. Ha a probléma továbbra is fennáll, vegye fel a kapcsolatot az ügyfélszolgálattal.</value>
   </data>
   <data name="USER_NOT_FOUND" xml:space="preserve">
     <value>Helytelen felhasználónév vagy jelszó. Kérem próbálja meg újra.</value>
@@ -168,7 +168,7 @@
     <value>Helytelen felhasználónév, csak betűket és számokat tartalmazhat.</value>
   </data>
   <data name="PENDING_MIGRATIONS" xml:space="preserve">
-    <value>There are pending migrations. Please run 'dotnet ef database update' to apply them.</value>
+    <value>Vannak folyamatban lévő migrációk. Kérem futtassa a 'dotnet ef database update' frissítést az alkalmazáshoz.</value>
   </data>
   <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
     <value>Belső szerver hiba</value>
@@ -189,6 +189,6 @@
     <value>A széfje nem friss. Kérem, szinkronizálja széfjét és próbálja újra.</value>
   </data>
   <data name="ACCOUNT_LOCKED" xml:space="preserve">
-    <value>You have entered an incorrect password too many times and your account has now been locked out. You can try again in 30 minutes.</value>
+    <value>Túl sokszor adott meg helytelen jelszót, és emiatt kizárta Önt a rendszer. Újra próbálkozhat 30 perc múlva.</value>
   </data>
 </root>

@@ -115,13 +115,13 @@
   "totp": {
     "addCode": "Добавить код 2FA",
     "nameOptional": "Имя (необязательно)",
-    "addName": "Add a name (optional)",
+    "addName": "Название (необязательно)",
     "defaultName": "Аутентификатор",
     "secretKey": "Секретный ключ",
     "instructions": "Введите секретный ключ, указанный на веб-сайте, где вы хотите добавить двухфакторную аутентификацию.",
     "saveToViewCode": "Сохранить для просмотра кода",
     "scanQrCode": "Отсканировать QR-код",
-    "enterManually": "Enter secret key",
+    "enterManually": "Введите ключ доступа",
     "errors": {
       "invalidSecretKey": "Неверный формат секретного ключа.",
       "scanFailed": "Не удалось отсканировать QR-код. Попробуйте еще раз."
@@ -196,7 +196,8 @@
       "exportDescription": "Для безопасности введите мастер-пароль для подтверждения экспорта."
     },
     "security": "Безопасность",
-    "appVersion": "Версия приложения {{version}} ({{url}})",
+    "appVersion": "Версия приложения",
+    "serverVersion": "Версия сервера",
     "autoLockOptions": {
       "never": "Никогда",
       "5seconds": "5 секунд",

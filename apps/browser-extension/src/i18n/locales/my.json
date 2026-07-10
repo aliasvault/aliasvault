@@ -62,7 +62,7 @@
     "openInNewWindow": "Open in new window",
     "enabled": "ဖွင့်ထားသည်",
     "disabled": "အသုံးမပြုထားပါ",
-    "none": "None",
+    "none": "တစ်ခုမှမဟုတ်ပါ",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "show": "ပြသမည်",
@@ -189,7 +189,7 @@
   "items": {
     "title": "Items",
     "itemName": "အမည်",
-    "suggestions": "Suggestions",
+    "suggestions": "အကြံပြုထားသည်များ",
     "loginCredentials": "Login Credentials",
     "cardInformation": "Card Information",
     "addItem": "Add Item",
@@ -246,24 +246,24 @@
     "passwordTypeBasic": "စကားဝှက်",
     "passwordTypeDiceware": "Passphrase",
     "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
+    "wordCount": "စာလုံးများ",
     "dicewareCapitalizationOption": {
       "TitleCase": "Title Case",
-      "Uppercase": "Uppercase",
-      "Lowercase": "Lowercase"
+      "Uppercase": "စာလုံးအကြီး",
+      "Lowercase": "စာလုံးအသေး"
     },
     "separator": "Separator",
     "dicewareSeparatorOption": {
       "Dash": "Dash",
       "Space": "Space",
       "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dot": "အစက်"
     },
     "salt": "Salt",
     "dicewareSaltOption": {
-      "Prefix": "Prefix",
-      "Sprinkle": "Random position",
-      "Suffix": "Suffix"
+      "Prefix": "ရှေ့ဆက်",
+      "Sprinkle": "ကျပန်းနေရာ",
+      "Suffix": "နောက်ဆက်"
     },
     "privateEmailTitle": "Private Email",
     "privateEmailAliasVaultServer": "AliasVault server",
@@ -357,8 +357,8 @@
     "emailNotFound": "Email not found",
     "formatHtml": "HTML",
     "formatPlain": "Text",
-    "formatSource": "Source",
-    "formatSwitchTitle": "Switch email format",
+    "formatSource": "ရင်းမြစ်",
+    "formatSwitchTitle": "အီးမေးလ်ပုံစံ ပြောင်းလဲရန်",
     "item": "Item",
     "noEmails": "No emails found",
     "noEmailsDescription": "You have not received any emails at your private email addresses yet. When you receive a new email, it will appear here.",
@@ -430,7 +430,8 @@
     "autoLock4Hours": "4 hours",
     "autoLock8Hours": "8 hours",
     "autoLock24Hours": "24 hours",
-    "versionPrefix": "Version ",
+    "versionPrefix": "App version",
+    "serverVersion": "Server version",
     "autofillSettings": "Autofill Settings",
     "clipboardSettings": "Clipboard Settings",
     "contextMenuSettings": "Context Menu Settings",

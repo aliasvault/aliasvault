@@ -25,7 +25,7 @@
     <comment>Page title for extensions and apps</comment>
   </data>
   <data name="PageDescription">
-    <value>Install browser extensions and mobile apps to access your vault from all your devices and automatically fill credentials on websites.</value>
+    <value>Telepítse a böngésző bővítményt vagy telefon applikációt, hogy elérhesse széfjét minden eszközéről, és ki tuja tölteni a mezőket az oldalakon.</value>
     <comment>Page description for extensions and apps</comment>
   </data>
   <data name="BreadcrumbTitle">
@@ -34,32 +34,32 @@
   </data>
   <!-- Browser Extensions Section -->
   <data name="BrowserExtensionsTitle">
-    <value>Browser Extensions</value>
+    <value>Böngésző bővítmények</value>
     <comment>Title for browser extensions section</comment>
   </data>
   <data name="BrowserExtensionsDescription">
-    <value>The AliasVault browser extension allows you to autofill existing credentials on any website. It also allows you to generate new aliases during registration, access received emails on all of your aliases, and view your aliases and identities.</value>
+    <value>Az AliasVault böngésző bővítmény segítségével ki tudja tölteni a mezőket meglévő adataival bármely oldalon. Ezen felül lehetővé teszi, hogy új aliasokat generáljon a regisztrálás során, hozzáférést biztosít minden alias e-mailjéhez, valamint az aliashoz tartozó személyazonossághoz is.</value>
     <comment>Description for browser extensions</comment>
   </data>
   <data name="InstallButton">
-    <value>Install</value>
+    <value>Telepítés</value>
     <comment>Install button text</comment>
   </data>
   <data name="ComingSoonText">
-    <value>Coming soon</value>
+    <value>Hamarosan</value>
     <comment>Coming soon text for unavailable extensions</comment>
   </data>
   <!-- Mobile Apps Section -->
   <data name="MobileAppsTitle">
-    <value>Mobile Apps</value>
+    <value>Mobil appok</value>
     <comment>Title for mobile apps section</comment>
   </data>
   <data name="MobileAppsDescription">
-    <value>The AliasVault mobile app allows you to access your aliases and identities on the go, view and manage received emails, and generate new aliases anytime. Your data is fully protected with on-device biometric authentication.</value>
+    <value>Az AliasVault mobil app segítségével elérheti az aliasait és személyazonosságait bárhol, megtekintheti és rendszerezheti e-mailjeit, és új aliasokat generálhat bármikor. Az adatai teljes biztonságban vannak az eszközén biometrikus hitelesítéssel.</value>
     <comment>Description for mobile apps</comment>
   </data>
   <data name="DownloadButton">
-    <value>Download</value>
+    <value>Letöltés</value>
     <comment>Download button text</comment>
   </data>
 </root>

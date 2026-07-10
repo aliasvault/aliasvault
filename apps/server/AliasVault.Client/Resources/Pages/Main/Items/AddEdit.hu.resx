@@ -178,7 +178,7 @@
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, use the delete button below. To replace or create a new passkey, visit the website and follow its prompts.</value>
+    <value>Az azonosítókulcs a böngésző bővítményen vagy a mobil app-on keresztül jön létre a weboldal kérésére. Nem szerkeszthető kézzel vagy hozható létre a web appon keresztül. Az azonosítókulcs törléséhez hasonlóan a többi elemhez, használja a törlés gombot. Ha ki akarja cserélni vagy újat akar létrehozni, kövesse a hozzá tartozó weboldal utasításait.</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="DeletePasskeyButton">
@@ -190,16 +190,16 @@
     <comment>Header when passkey is marked for deletion</comment>
   </data>
   <data name="PasskeyWillBeDeleted">
-    <value>This passkey will be deleted when you save this item.</value>
+    <value>Ez az azonosítókulcs törlésre kerül ha menti az elemet.</value>
     <comment>Message explaining passkey will be deleted on save</comment>
   </data>
   <data name="UndoButton">
-    <value>Undo</value>
+    <value>Visszavonás</value>
     <comment>Button to undo passkey deletion</comment>
   </data>
   <!-- Card section fields -->
   <data name="CardDetailsSectionHeader">
-    <value>Card Details</value>
+    <value>Kártya adatok</value>
     <comment>Header for the credit card details section</comment>
   </data>
   <data name="CardholderNameLabel">
@@ -232,11 +232,11 @@
     <comment>Header for the custom fields section</comment>
   </data>
   <data name="RemoveField">
-    <value>Remove field</value>
+    <value>Mező eltávolítása</value>
     <comment>Tooltip for removing a field</comment>
   </data>
   <data name="AddEmailField">
-    <value>Add Email</value>
+    <value>E-mail lhozzáadása</value>
     <comment>Button text for adding email field</comment>
   </data>
 </root>
