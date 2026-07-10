@@ -68,5 +68,14 @@ fi
 # Update public registration enabled in appsettings.json
 sed -i "s|\"PublicRegistrationEnabled\": \".*\"|\"PublicRegistrationEnabled\": \"$PUBLIC_REGISTRATION_ENABLED\"|g" /usr/share/nginx/html/appsettings.json
 
+# Update deployment mode (install / build / aio) so the footer can show how this
+# instance was deployed. Comes from .env via install.sh; defaults to empty.
+DEPLOYMENT_MODE=${DEPLOYMENT_MODE:-}
+if grep -q "DeploymentMode" /usr/share/nginx/html/appsettings.json; then
+    sed -i "s|\"DeploymentMode\": \".*\"|\"DeploymentMode\": \"$DEPLOYMENT_MODE\"|g" /usr/share/nginx/html/appsettings.json
+else
+    sed -i "s|\"PublicRegistrationEnabled\": \"$PUBLIC_REGISTRATION_ENABLED\"|\"PublicRegistrationEnabled\": \"$PUBLIC_REGISTRATION_ENABLED\",\n    \"DeploymentMode\": \"$DEPLOYMENT_MODE\"|g" /usr/share/nginx/html/appsettings.json
+fi
+
 # Start the application
 nginx -g "daemon off;"

@@ -210,8 +210,14 @@ RUN cp -r /app/installcli /usr/local/bin/aliasvault-cli && \
     # Remove InstallCLI from /app since we copied it to /usr/local/bin
     rm -rf /app/installcli
 
+# Deployment type marker shown in the web app footer and the X-AliasVault-Deployment
+# response header (for observability / troubleshooting). Defaults to "aio-build",
+# the official release pipeline overrides it to "aio" via --build-arg DEPLOYMENT_MODE=aio.
+ARG DEPLOYMENT_MODE=aio-build
+
 # Set environment variables
-ENV ALIASVAULT_VERBOSITY=0 \
+ENV DEPLOYMENT_MODE=${DEPLOYMENT_MODE} \
+    ALIASVAULT_VERBOSITY=0 \
     PUBLIC_REGISTRATION_ENABLED=true \
     IP_LOGGING_ENABLED=true \
     SUPPORT_EMAIL="" \

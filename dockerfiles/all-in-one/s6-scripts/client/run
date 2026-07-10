@@ -74,7 +74,8 @@ cat > /app/client/wwwroot/appsettings.json << EOF
     "PrivateEmailDomains": $json_array,
     "HiddenPrivateEmailDomains": $hidden_json_array,
     "SupportEmail": "$SUPPORT_EMAIL",
-    "PublicRegistrationEnabled": "$PUBLIC_REGISTRATION_ENABLED"
+    "PublicRegistrationEnabled": "$PUBLIC_REGISTRATION_ENABLED",
+    "DeploymentMode": "${DEPLOYMENT_MODE:-aio-build}"
 }
 EOF
 
