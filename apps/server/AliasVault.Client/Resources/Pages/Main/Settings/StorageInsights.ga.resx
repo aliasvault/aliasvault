@@ -21,29 +21,29 @@
   </xsd:schema>
   <!-- Page title and description -->
   <data name="PageTitle">
-    <value>Vault storage insights</value>
+    <value>Léargais stórála cruinneacháin</value>
     <comment>Page title for vault storage insights</comment>
   </data>
   <data name="PageDescription">
-    <value>See an estimate of your vault size. For best sync performance, it's advised to keep your vault size small and delete items you no longer need.</value>
+    <value>Féach meastachán ar mhéid do chruinneacháin. Chun an fheidhmíocht sioncrónaithe is fearr a fháil, moltar méid do chruinneacháin a choinneáil beag agus míreanna nach bhfuil uait a thuilleadh a scriosadh.</value>
     <comment>Page description for vault storage insights</comment>
   </data>
   <data name="BreadcrumbTitle">
-    <value>Storage insights</value>
+    <value>Léargais stórála</value>
     <comment>Breadcrumb title for storage insights page</comment>
   </data>
   <!-- Estimated total -->
   <data name="EstimatedTotalTitle">
-    <value>Estimated vault size</value>
+    <value>Méid measta an tseomra cruinneacháin</value>
     <comment>Title for the estimated total vault size card</comment>
   </data>
   <data name="EstimatedTotalDescription">
-    <value>This is an approximation calculated from your local data.</value>
+    <value>Is meastachán é seo atá ríofa ó do shonraí áitiúla.</value>
     <comment>Subtext explaining that the estimate is approximate</comment>
   </data>
   <!-- Counts -->
   <data name="CountsTitle">
-    <value>Overview</value>
+    <value>Forbhreathnú</value>
     <comment>Title for the counts/overview section</comment>
   </data>
   <data name="ItemCountLabel">
@@ -51,20 +51,20 @@
     <comment>Label for total item count card</comment>
   </data>
   <data name="ItemsWithAttachmentsLabel">
-    <value>Items with attachments</value>
+    <value>Míreanna le ceangaltáin</value>
     <comment>Label for count of items that have at least one attachment</comment>
   </data>
   <data name="ItemsWithLogosLabel">
-    <value>Items with a logo</value>
+    <value>Míreanna le lógó</value>
     <comment>Label for count of items that reference a logo</comment>
   </data>
   <!-- Breakdown -->
   <data name="BreakdownTitle">
-    <value>Storage usage breakdown</value>
+    <value>Miondealú ar úsáid stórála</value>
     <comment>Title for the breakdown bar section</comment>
   </data>
   <data name="BreakdownDescription">
-    <value>Approximate share of vault size by category. Attachments and logos usually take up most of the space.</value>
+    <value>Sciar garbh de mhéid an tseomra cruinneacháin de réir catagóire. Is gnách go nglacann ceangaltáin agus lógónna an chuid is mó den spás.</value>
     <comment>Description for the breakdown bar</comment>
   </data>
   <data name="BreakdownCredentialsLabel">
@@ -76,38 +76,38 @@
     <comment>Legend label for attachments slice</comment>
   </data>
   <data name="BreakdownLogosLabel">
-    <value>Logos</value>
+    <value>Lógónna</value>
     <comment>Legend label for logos slice</comment>
   </data>
   <data name="BreakdownBaseOverheadLabel">
-    <value>Database overhead</value>
+    <value>Forchostais bunachar sonraí</value>
     <comment>Legend label for the fixed SQLite base/schema overhead slice</comment>
   </data>
   <!-- Top attachments table -->
   <data name="TopAttachmentsTitle">
-    <value>Largest attachments</value>
+    <value>Na ceangaltáin is mó</value>
     <comment>Title for the top attachments table</comment>
   </data>
   <data name="TopAttachmentsDescription">
-    <value>Top 10 largest file attachments. Remove the attachment if you no longer need it.</value>
+    <value>Na 10 gceangaltán comhaid is mó. Bain an ceangaltán mura bhfuil sé de dhíth ort a thuilleadh.</value>
     <comment>Description for the top attachments table</comment>
   </data>
   <!-- Top logos table -->
   <data name="TopLogosTitle">
-    <value>Largest logos</value>
+    <value>Lógónna is mó</value>
     <comment>Title for the top logos table</comment>
   </data>
   <data name="TopLogosDescription">
-    <value>Top 10 largest service logos. Logos are reused for items with the same domain.</value>
+    <value>Na 10 lógó seirbhíse is mó. Athúsáidtear lógónna le haghaidh míreanna leis an bhfearann ​​​​céanna.</value>
     <comment>Description for the top logos table</comment>
   </data>
   <!-- Table column headers -->
   <data name="ColumnFilename">
-    <value>Filename</value>
+    <value>Ainm comhaid</value>
     <comment>Table column header for attachment filename</comment>
   </data>
   <data name="ColumnSize">
-    <value>Size</value>
+    <value>Méid</value>
     <comment>Table column header for size in KB</comment>
   </data>
   <data name="ColumnItem">
@@ -115,7 +115,7 @@
     <comment>Table column header for the parent item name</comment>
   </data>
   <data name="ColumnCreated">
-    <value>Created</value>
+    <value>Cruthaithe</value>
     <comment>Table column header for creation date</comment>
   </data>
   <data name="ColumnWebsiteURL">
@@ -123,40 +123,40 @@
     <comment>Table column header for logo source domain</comment>
   </data>
   <data name="ColumnItemCount">
-    <value>Used by</value>
+    <value>Úsáidte ag</value>
     <comment>Table column header for the number of items using a logo</comment>
   </data>
   <!-- Logo management -->
   <data name="LogoManagementTitle">
-    <value>Manage logos</value>
+    <value>Bainistigh lógónna</value>
     <comment>Title for the logo management section</comment>
   </data>
   <data name="LogoManagementDescription">
-    <value>Logos are fetched from the favicon of each item's website. You can delete every logo to reclaim space, or re-download them to pick up improved versions.</value>
+    <value>Faightear lógónna ó favicon shuíomh gréasáin gach míre. Is féidir leat gach lógó a scriosadh chun spás a fháil ar ais, nó iad a ath-íoslódáil chun leaganacha feabhsaithe a fháil.</value>
     <comment>Description for the logo management section</comment>
   </data>
   <data name="DeleteAllLogosButton">
-    <value>Delete all logos</value>
+    <value>Scrios na lógónna go léir</value>
     <comment>Button to delete every logo in the vault</comment>
   </data>
   <data name="RedownloadAllLogosButton">
-    <value>Re-download all logos</value>
+    <value>Ath-íoslódáil na lógónna go léir</value>
     <comment>Button to re-fetch favicons for every item with a URL</comment>
   </data>
   <data name="DeleteAllLogosConfirmTitle">
-    <value>Delete all logos?</value>
+    <value>Scrios gach lógó?</value>
     <comment>Confirmation modal title for delete-all-logos</comment>
   </data>
   <data name="DeleteAllLogosConfirmMessage">
-    <value>This removes every stored logo from your vault and clears the logo on each credential. You can re-download them at any time. Continue?</value>
+    <value>Baintear gach lógó stóráilte as do chruinneachán leis seo agus glantar an lógó ar gach dintiúir. Is féidir leat iad a ath-íoslódáil am ar bith. Ar mhaith leat leanúint ar aghaidh?</value>
     <comment>Confirmation modal body for delete-all-logos</comment>
   </data>
   <data name="RedownloadAllLogosConfirmTitle">
-    <value>Re-download all logos?</value>
+    <value>Ath-íoslódáil na lógónna go léir?</value>
     <comment>Confirmation modal title for redownload-all-logos</comment>
   </data>
   <data name="RedownloadAllLogosConfirmMessage">
-    <value>This re-fetches the favicon for every credential that has a website URL, replacing the existing logo. Depending on your vault size this may take a while. Continue?</value>
+    <value>Athghabhann sé seo an favicon do gach dintiúr a bhfuil URL láithreáin ghréasáin aige, ag cur an lógó atá ann cheana in ionad. Ag brath ar mhéid do chruinnithe, d'fhéadfadh sé seo tamall a thógáil. Lean ar aghaidh?</value>
     <comment>Confirmation modal body for redownload-all-logos</comment>
   </data>
 </root>
