@@ -38,7 +38,7 @@
     <comment>Navigation link for security settings</comment>
   </data>
   <data name="StorageInsightsNav">
-    <value>Storage insights</value>
+    <value>Léargais stórála</value>
     <comment>Navigation link for vault storage insights page</comment>
   </data>
   <data name="ImportExportNav">
