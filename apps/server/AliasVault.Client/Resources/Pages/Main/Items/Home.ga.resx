@@ -194,11 +194,11 @@
     <comment>Button text for creating a new folder</comment>
   </data>
   <data name="EditFolder" xml:space="preserve">
-    <value>Edit Folder</value>
+    <value>Cuir Fillteán in Eagar</value>
     <comment>Button text for editing a folder</comment>
   </data>
   <data name="DeleteFolder" xml:space="preserve">
-    <value>Delete Folder</value>
+    <value>Scrios Fillteán</value>
     <comment>Button text for deleting a folder</comment>
   </data>
   <data name="BackToRoot" xml:space="preserve">
