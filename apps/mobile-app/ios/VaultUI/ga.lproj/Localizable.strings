@@ -19,63 +19,63 @@
 "link_url_prompt_message" = "Cuir \"{{url}}\" le {{name}} ionas go n-aithníonn AliasVault an aip nó an suíomh Gréasáin seo an chéad uair eile?";
 "link_url_prompt_link_action" = "Nasc agus líon isteach";
 "link_url_prompt_skip_action" = "Líon isteach amháin";
-"linking_url" = "Linking...";
-"select_item" = "Select Item";
-"select_text_to_insert" = "Select Text to Insert";
+"linking_url" = "Ag nascadh...";
+"select_item" = "Roghnaigh Mír";
+"select_text_to_insert" = "Roghnaigh Téacs le hIonsáigh";
 "choose_username" = "Roghnaigh Ainm Úsáideora";
-"select_text_to_insert_message" = "Select the text to insert into the focused input field";
-"choose_username_message" = "This website may require either your username or your email address to log in";
-"username_prefix" = "Username: ";
-"email_prefix" = "Email: ";
+"select_text_to_insert_message" = "Roghnaigh an téacs le cur isteach sa réimse ionchuir atá dírithe";
+"choose_username_message" = "D’fhéadfadh go mbeadh d’ainm úsáideora nó do sheoladh ríomhphoist ag teastáil ón suíomh Gréasáin seo le logáil isteach";
+"username_prefix" = "Ainm úsáideora: ";
+"email_prefix" = "Ríomhphost: ";
 "password" = "Pasfhocal";
-"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
-"no_item_selected" = "No item selected.";
+"items_load_error" = "Theip ar lódáil na míreanna. Oscail an aip AliasVault le seiceáil le haghaidh nuashonruithe.";
+"no_item_selected" = "Níl aon mhír roghnaithe.";
 
 /* Context menu strings */
-"copy_username" = "Copy Username";
-"copy_password" = "Copy Password";
-"copy_email" = "Copy Email";
+"copy_username" = "Cóipeáil Ainm Úsáideora";
+"copy_password" = "Cóipeáil Pasfhocal";
+"copy_email" = "Cóipeáil Ríomhphoist";
 "copy_totp_code" = "Cóipeáil Cód TOTP";
-"view_details" = "View Details";
-"username_copied" = "Username copied";
-"password_copied" = "Password copied";
-"email_copied" = "Email copied";
-"totp_code_copied" = "TOTP code copied";
+"view_details" = "Féach Sonraí";
+"username_copied" = "Ainm úsáideora cóipeáilte";
+"password_copied" = "Pasfhocal cóipeáilte";
+"email_copied" = "Ríomhphost cóipeáilte";
+"totp_code_copied" = "Cód TOTP cóipeáilte";
 "totp_code" = "Cód TOTP";
 
 /* Search bar */
-"search_items" = "Search items...";
+"search_items" = "Cuardaigh míreanna...";
 
 /* Passkey registration */
 "create_passkey_title" = "Cruthaigh Eochair phas Nua";
-"create_passkey_subtitle" = "Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.";
+"create_passkey_subtitle" = "Cláraigh eochair phas nua don suíomh Gréasáin seo. Stórálfar go slán é i do chruinneachán agus sioncrónófar go huathoibríoch é ar fud do ghléasanna le AliasVault.";
 "create_passkey_button_confirm" = "Cruthaigh Eochair phas";
 
 /* Passkey provider */
 "passkey" = "Eochair phas";
-"loading_passkeys" = "Loading passkeys...";
-"no_passkeys_found" = "No passkeys found";
-"no_passkeys_match" = "No existing passkeys match your search";
-"select_passkey" = "Select Passkey";
-"passkeys_load_error" = "Failed to load passkeys. Please open the AliasVault app to check for updates.";
+"loading_passkeys" = "Ag lódáil eochracha pas...";
+"no_passkeys_found" = "Níor aimsíodh aon eochracha pas";
+"no_passkeys_match" = "Níl aon eochracha pas ann a oireann do do chuardach";
+"select_passkey" = "Roghnaigh Eochair Pas";
+"passkeys_load_error" = "Theip ar luchtú na n-eochracha pas. Oscail an aip AliasVault le seiceáil le haghaidh nuashonruithe.";
 
 /* Passkey replacement */
 "create_new_passkey" = "Cruthaigh Eochair phas Nua";
-"select_passkey_to_replace" = "Or, replace an existing passkey";
-"replace_passkey" = "Replace Passkey";
-"replace_passkey_explanation" = "This will replace the existing passkey with a new one. Please be aware that your old passkey will be overwritten and no longer accessible. If you wish to create a separate passkey instead, go back to the previous screen.";
-"create_passkey_explanation" = "This creates a new passkey and stores it in your vault. It will be automatically synced across all your devices that use AliasVault.";
+"select_passkey_to_replace" = "Nó, cuir eochair phas atá ann cheana féin in áit";
+"replace_passkey" = "Athsholáthar Eochair Pas";
+"replace_passkey_explanation" = "Cuirfidh sé seo ceann nua in ionad an eochair phas atá ann cheana. Tabhair faoi deara, le do thoil, go ndéanfar do shean-eochair phas a athscríobh agus nach mbeidh rochtain uirthi a thuilleadh. Más mian leat eochair phas ar leith a chruthú ina ionad sin, téigh ar ais go dtí an scáileán roimhe seo.";
+"create_passkey_explanation" = "Cruthaíonn sé seo eochair phas nua agus stórálann sé í i do chruinneachán. Déanfar í a shioncronú go huathoibríoch ar fud do ghléasanna uile a úsáideann AliasVault.";
 
 /* Passkey merge with existing item */
-"passkey_add_to_existing" = "Or, add passkey to an existing item";
+"passkey_add_to_existing" = "Nó, cuir eochair phas le mír atá ann cheana féin";
 "add_passkey" = "Cuir Eochair phas leis";
-"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
+"merge_passkey_explanation" = "Cuirfidh sé seo eochair phasfhocail le do mhír atá ann cheana féin. Coinneofar do phasfhocal agus sonraí eile.";
 
 /* PIN Unlock */
 "unlock_vault" = "Díghlasáil an Cruinneachán";
 "enter_pin_to_unlock_vault" = "Cuir isteach do PIN chun do cruinneachán a dhíghlasáil";
-"pin_locked_max_attempts" = "PIN locked after too many failed attempts";
-"pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
+"pin_locked_max_attempts" = "PIN faoi ghlas tar éis an iomarca iarrachtaí teipthe";
+"pin_incorrect_attempts_remaining" = "PIN mícheart. %d iarracht fágtha";
 
 /* Password Unlock */
 "enter_password_to_unlock" = "Cuir isteach do phríomhfhocal faire";
@@ -85,8 +85,8 @@
 "max_attempts_reached" = "Theip ar an iomarca iarrachtaí díghlasála. Logáladh amach thú ar chúiseanna slándála.";
 
 /* PIN Setup */
-"pin_setup_title" = "Setup PIN";
-"pin_setup_subtitle" = "Choose a PIN to unlock your vault";
+"pin_setup_title" = "Socraigh PIN";
+"pin_setup_subtitle" = "Roghnaigh PIN chun do chruinneachán a dhíghlasáil";
 "pin_confirm_title" = "Deimhnigh PIN";
-"pin_confirm_subtitle" = "Re-enter your PIN to confirm";
-"pin_mismatch" = "PINs do not match. Please try again.";
+"pin_confirm_subtitle" = "Ath-iontráil do PIN le deimhniú";
+"pin_mismatch" = "Ní hionann na PINanna. Déan iarracht arís.";
