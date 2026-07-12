@@ -4,6 +4,7 @@ import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
 
 import { AppInfo } from "./AppInfo";
 import { ApiAuthError } from './types/errors/ApiAuthError';
+import { ApiRequestError } from './types/errors/ApiRequestError';
 import { NetworkError } from './types/errors/NetworkError';
 import { PayloadTooLargeError } from './types/errors/PayloadTooLargeError';
 
@@ -87,7 +88,14 @@ export class WebApiService {
           });
 
           if (!retryResponse.ok) {
-            throw new ApiAuthError('Request failed after token refresh');
+            // Only auth failures after a successful token refresh mean the session is invalid.
+            if (retryResponse.status === 401 || retryResponse.status === 403) {
+              throw new ApiAuthError('Request failed after token refresh');
+            }
+            if (retryResponse.status === 413) {
+              throw new PayloadTooLargeError(`Request rejected with HTTP 413: payload exceeds server limit`);
+            }
+            throw new ApiRequestError(retryResponse.status, await this.extractApiErrorCode(retryResponse));
           }
 
           return parseJson ? retryResponse.json() : retryResponse as unknown as T;
@@ -106,7 +114,7 @@ export class WebApiService {
       }
 
       if (!response.ok && throwOnError) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new ApiRequestError(response.status, await this.extractApiErrorCode(response));
       }
 
       return parseJson ? response.json() : response as unknown as T;
@@ -114,6 +122,24 @@ export class WebApiService {
       console.error('API request failed:', error);
       throw error;
     }
+  }
+
+  /**
+   * Extract the structured API error code (e.g. "VAULT_NOT_UP_TO_DATE") from an error response body.
+   */
+  private async extractApiErrorCode(response: Response): Promise<string | null> {
+    try {
+      const body = await response.clone().json() as { code?: unknown; title?: unknown };
+      for (const value of [body.code, body.title]) {
+        // Server error codes are uppercase enum names
+        if (typeof value === 'string' && /^[A-Z0-9_]{2,64}$/.test(value)) {
+          return value;
+        }
+      }
+    } catch {
+      // Body is empty or not JSON (e.g. proxy error page).
+    }
+    return null;
   }
 
   /**

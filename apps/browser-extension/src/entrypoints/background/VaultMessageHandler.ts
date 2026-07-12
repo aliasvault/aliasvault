@@ -14,6 +14,7 @@ import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetecti
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
+import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
 import { NetworkError } from '@/utils/types/errors/NetworkError';
 import { PayloadTooLargeError } from '@/utils/types/errors/PayloadTooLargeError';
@@ -673,6 +674,13 @@ export async function handleUploadVault(
   } catch (error) {
     console.error('Failed to upload vault:', error);
 
+    /*
+     * Let network and auth errors propagate.
+     */
+    if (error instanceof NetworkError || error instanceof ApiAuthError) {
+      throw error;
+    }
+
     const errorMessage = error instanceof Error ? error.message : '';
 
     // Check if error is UPLOAD_OUTDATED (E-802) - server has newer vault
@@ -689,8 +697,11 @@ export async function handleUploadVault(
       return { success: false, error: errorMessage };
     }
 
-    // E-801: Upload failed for other reasons
-    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_FAILED) };
+    /*
+     * E-801: Upload failed. Include the HTTP status and server error code (if any).
+     */
+    const detail = error instanceof ApiRequestError ? ` [${error.message}]` : '';
+    return { success: false, error: formatErrorWithCode(`${await t('common.errors.unknownError')}${detail}`, AppErrorCode.UPLOAD_FAILED) };
   }
 }
 
@@ -828,8 +839,8 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
     // Outdated - server has newer version
     throw new Error(formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_OUTDATED));
   } else {
-    // Upload failed
-    throw new Error(formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_FAILED));
+    // Upload failed - include the unexpected server status value for diagnosability
+    throw new Error(formatErrorWithCode(`${await t('common.errors.unknownError')} [server status: ${response.status}]`, AppErrorCode.UPLOAD_FAILED));
   }
 
   return response;
@@ -1414,8 +1425,8 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
         return handleFullVaultSync();
       } else {
         console.error('Server recovery failed:', uploadResponse.error);
-        // E-801: Upload failed during server recovery
-        return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_FAILED) };
+        // E-801: Upload failed during server recovery - preserve the upload error detail when available
+        return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: uploadResponse.error ?? formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_FAILED) };
       }
     }
 
