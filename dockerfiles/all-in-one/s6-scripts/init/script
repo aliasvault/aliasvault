@@ -83,12 +83,14 @@ if [ ! -d "$PGDATA/base" ]; then
     chown -R postgres:postgres /database/postgres /logs/postgres /var/run/postgresql
     chmod 700 /database/postgres
 
-    # Initialize database as postgres user
+    # Initialize database with "aliasvault" as the bootstrap superuser, matching
+    # the multi-container setup (official postgres image with POSTGRES_USER=aliasvault)
+    # so data dirs stay interchangeable between both setups.
     log 1 "[init] → Running initdb..."
     if [ "$VERBOSITY" -ge 2 ]; then
-        su - postgres -c "/usr/lib/postgresql/16/bin/initdb -D $PGDATA --locale=C.UTF-8 --encoding=UTF8" 2>&1 | tee /logs/postgres/initdb.log
+        su - postgres -c "/usr/lib/postgresql/16/bin/initdb -D $PGDATA --username=aliasvault --locale=C.UTF-8 --encoding=UTF8" 2>&1 | tee /logs/postgres/initdb.log
     else
-        su - postgres -c "/usr/lib/postgresql/16/bin/initdb -D $PGDATA --locale=C.UTF-8 --encoding=UTF8" > /logs/postgres/initdb.log 2>&1
+        su - postgres -c "/usr/lib/postgresql/16/bin/initdb -D $PGDATA --username=aliasvault --locale=C.UTF-8 --encoding=UTF8" > /logs/postgres/initdb.log 2>&1
     fi
 
     # Fresh cluster always needs (re)provisioning
@@ -147,7 +149,7 @@ if [ ! -f "$PROVISION_MARKER" ]; then
     PG_READY=0
     i=1
     while [ $i -le 60 ]; do
-        if su - postgres -c "/usr/lib/postgresql/16/bin/pg_isready -q"; then
+        if su - postgres -c "/usr/lib/postgresql/16/bin/pg_isready -q -U aliasvault -d postgres"; then
             PG_READY=1
             break
         fi
@@ -156,13 +158,25 @@ if [ ! -f "$PROVISION_MARKER" ]; then
     done
     [ "$PG_READY" -eq 1 ] || fail_init "PostgreSQL did not become ready within 60 seconds."
 
-    # Helper: run a single SQL statement as the postgres superuser, stopping on the
+    # Determine which superuser role this cluster was initialized with. New
+    # clusters and multi-container data dirs use "aliasvault"; clusters created
+    # by older versions of this image use "postgres".
+    PG_SUPERUSER=""
+    for CANDIDATE in aliasvault postgres; do
+        if su - postgres -c "/usr/lib/postgresql/16/bin/psql -U $CANDIDATE -d postgres -tAc 'SELECT 1'" >/dev/null 2>&1; then
+            PG_SUPERUSER="$CANDIDATE"
+            break
+        fi
+    done
+    [ -n "$PG_SUPERUSER" ] || fail_init "Could not connect to PostgreSQL as a superuser (tried roles: postgres, aliasvault)."
+
+    # Helper: run a single SQL statement as the cluster superuser, stopping on the
     # first server error (-v ON_ERROR_STOP=1) so failures surface as a non-zero exit.
     pg_super() {
         if [ "$VERBOSITY" -ge 2 ]; then
-            su - postgres -c "/usr/lib/postgresql/16/bin/psql -v ON_ERROR_STOP=1 -tAc \"$1\""
+            su - postgres -c "/usr/lib/postgresql/16/bin/psql -U $PG_SUPERUSER -d postgres -v ON_ERROR_STOP=1 -tAc \"$1\""
         else
-            su - postgres -c "/usr/lib/postgresql/16/bin/psql -v ON_ERROR_STOP=1 -tAc \"$1\"" >/dev/null 2>&1
+            su - postgres -c "/usr/lib/postgresql/16/bin/psql -U $PG_SUPERUSER -d postgres -v ON_ERROR_STOP=1 -tAc \"$1\"" >/dev/null 2>&1
         fi
     }
 
