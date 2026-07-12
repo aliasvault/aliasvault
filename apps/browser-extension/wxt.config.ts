@@ -47,6 +47,11 @@ export default defineConfig({
       permissions.push("offscreen");
     }
 
+    // Safari: allow messaging the native app (e.g. to open Safari's extension shortcut settings)
+    if (browser === 'safari') {
+      permissions.push("nativeMessaging");
+    }
+
     return {
       name: "AliasVault",
       description: "AliasVault Browser AutoFill Extension. Keeping your personal information private.",
