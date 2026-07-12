@@ -94,23 +94,30 @@ const Settings: React.FC = () => {
   }, [loadSettings]);
 
   /**
-   * Open keyboard shortcuts configuration page.
+   * Opens the browser's keyboard shortcut settings page and closes the popup,
+   * or null if the current browser has no such page (which hides the button).
    */
-  const openKeyboardShortcuts = async (): Promise<void> => {
-    // Detect browser type using user agent
-    const userAgent = navigator.userAgent.toLowerCase();
-    const isFirefox = userAgent.includes('firefox');
-    const isSafari = userAgent.includes('safari') && !userAgent.includes('chrome');
-
-    if (isFirefox) {
-      await browser.tabs.create({ url: 'about:addons' });
-    } else if (isSafari) {
-      await browser.tabs.create({ url: 'safari-extension://shortcuts' });
-    } else {
-      // Chrome and other Chromium-based browsers
-      await browser.tabs.create({ url: 'chrome://extensions/shortcuts' });
+  const openKeyboardShortcuts = ((): (() => Promise<void>) | null => {
+    if (import.meta.env.CHROME) {
+      return async (): Promise<void> => {
+        await browser.tabs.create({ url: 'chrome://extensions/shortcuts' });
+        window.close();
+      };
     }
-  };
+
+    if (import.meta.env.FIREFOX) {
+      // Firefox 137+ only API, not present in the Chrome typings.
+      const { openShortcutSettings } = browser.commands as { openShortcutSettings?: () => Promise<void> };
+      if (openShortcutSettings) {
+        return async (): Promise<void> => {
+          await openShortcutSettings();
+          window.close();
+        };
+      }
+    }
+
+    return null;
+  })();
 
   /**
    * Handle logout click - opens the logout confirmation modal.
@@ -627,7 +634,7 @@ const Settings: React.FC = () => {
               </button>
 
               {/* Keyboard Shortcuts (opens browser settings) */}
-              {import.meta.env.CHROME && (
+              {openKeyboardShortcuts && (
                 <button
                   onClick={openKeyboardShortcuts}
                   className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
