@@ -180,9 +180,13 @@ if [ ! -f "$PROVISION_MARKER" ]; then
         fi
     }
 
+    pg_super_query() {
+        su - postgres -c "/usr/lib/postgresql/16/bin/psql -U $PG_SUPERUSER -d postgres -v ON_ERROR_STOP=1 -tAc \"$1\"" 2>/dev/null
+    }
+
     # Create the role if it does not already exist.
     ESCAPED_PASSWORD=$(printf '%s' "$POSTGRES_PASSWORD" | sed "s/'/''/g")
-    if [ "$(pg_super "SELECT 1 FROM pg_roles WHERE rolname='aliasvault'")" = "1" ]; then
+    if [ "$(pg_super_query "SELECT 1 FROM pg_roles WHERE rolname='aliasvault'")" = "1" ]; then
         pg_super "ALTER USER aliasvault WITH PASSWORD '$ESCAPED_PASSWORD';" \
             || fail_init "Failed to update the aliasvault role password."
     else
@@ -191,7 +195,7 @@ if [ ! -f "$PROVISION_MARKER" ]; then
     fi
 
     # Create the database if it does not already exist.
-    if [ "$(pg_super "SELECT 1 FROM pg_database WHERE datname='aliasvault'")" != "1" ]; then
+    if [ "$(pg_super_query "SELECT 1 FROM pg_database WHERE datname='aliasvault'")" != "1" ]; then
         pg_super "CREATE DATABASE aliasvault OWNER aliasvault LOCALE 'C.UTF-8';" \
             || fail_init "Failed to create the aliasvault database."
     fi
