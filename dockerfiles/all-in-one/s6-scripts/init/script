@@ -70,10 +70,14 @@ log 0 "[init] ✅ Admin password configuration deferred to manual setup"
 POSTGRES_PASSWORD=$(cat /secrets/postgres_password)
 export PGDATA="/database/postgres"
 
-# Initialize PostgreSQL if needed
+# Marker written only after the AliasVault role + database have been fully
+# provisioned, to allow for self-heal in case of errors during first startup.
+PROVISION_MARKER="$PGDATA/.aliasvault_provisioned"
+
+# Step 1: initialize the physical PostgreSQL cluster if the data dir is empty.
 if [ ! -d "$PGDATA/base" ]; then
     log 0 ""
-    log 0 "[init] PostgreSQL database not found, initializing..."
+    log 0 "[init] PostgreSQL data directory not found, initializing cluster..."
 
     # Set proper permissions
     chown -R postgres:postgres /database/postgres /logs/postgres /var/run/postgresql
@@ -86,6 +90,9 @@ if [ ! -d "$PGDATA/base" ]; then
     else
         su - postgres -c "/usr/lib/postgresql/16/bin/initdb -D $PGDATA --locale=C.UTF-8 --encoding=UTF8" > /logs/postgres/initdb.log 2>&1
     fi
+
+    # Fresh cluster always needs (re)provisioning
+    rm -f "$PROVISION_MARKER"
 
     # Configure PostgreSQL
     log 0 "[init] → Configuring PostgreSQL..."
@@ -104,8 +111,30 @@ if [ ! -d "$PGDATA/base" ]; then
         AUTH_METHOD="md5"
     fi
     echo "host    all   all           samenet                  ${AUTH_METHOD}" >> "$PGDATA/pg_hba.conf"
+else
+    log 0 "[init] ✅ PostgreSQL data directory already initialized"
 
-    # Start PostgreSQL temporarily to create database and user
+    # Ensure proper permissions
+    chown -R postgres:postgres /database/postgres /logs/postgres /var/run/postgresql
+    chmod 700 /database/postgres
+fi
+
+# Step 2: ensure the AliasVault role + database exist
+if [ ! -f "$PROVISION_MARKER" ]; then
+    log 0 ""
+    log 0 "[init] → Provisioning AliasVault database and user..."
+
+    # Fail the whole init if provisioning cannot complete, so the failure
+    # is visible in the container logs and retried on the next start.
+    fail_init() {
+        echo "[init] ❌ ERROR: $1" >&2
+        echo "[init]    See /logs/postgres/postgres.log for details." >&2
+        echo "[init]    Provisioning will be retried on the next container restart." >&2
+        su - postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $PGDATA stop" >/dev/null 2>&1
+        exit 1
+    }
+
+    # Start PostgreSQL temporarily for provisioning
     log 0 "[init] → Starting PostgreSQL temporarily for setup..."
     if [ "$VERBOSITY" -ge 2 ]; then
         su - postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $PGDATA -l /logs/postgres/postgres.log start"
@@ -113,45 +142,64 @@ if [ ! -d "$PGDATA/base" ]; then
         su - postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $PGDATA -l /logs/postgres/postgres.log start" >/dev/null 2>&1
     fi
 
-    # Wait for PostgreSQL to be ready
+    # Wait until PostgreSQL actually accepts connections
     log 0 "[init] → Waiting for PostgreSQL to be ready..."
+    PG_READY=0
     i=1
-    while [ $i -le 30 ]; do
-        if su - postgres -c "/usr/lib/postgresql/16/bin/psql -c 'SELECT 1;'" >/dev/null 2>&1; then
+    while [ $i -le 60 ]; do
+        if su - postgres -c "/usr/lib/postgresql/16/bin/pg_isready -q"; then
+            PG_READY=1
             break
         fi
         sleep 1
         i=$((i + 1))
     done
+    [ "$PG_READY" -eq 1 ] || fail_init "PostgreSQL did not become ready within 60 seconds."
 
-    # Create database and user
-    log 0 "[init] → Creating AliasVault database and user..."
-    if [ "$VERBOSITY" -ge 2 ]; then
-        su - postgres -c "/usr/lib/postgresql/16/bin/psql -c \"CREATE USER aliasvault WITH PASSWORD '$POSTGRES_PASSWORD'\""
-        su - postgres -c "/usr/lib/postgresql/16/bin/psql -c \"CREATE DATABASE aliasvault OWNER aliasvault LOCALE 'C.UTF-8';\""
-        su - postgres -c "/usr/lib/postgresql/16/bin/psql -c \"GRANT ALL PRIVILEGES ON DATABASE aliasvault TO aliasvault;\""
+    # Helper: run a single SQL statement as the postgres superuser, stopping on the
+    # first server error (-v ON_ERROR_STOP=1) so failures surface as a non-zero exit.
+    pg_super() {
+        if [ "$VERBOSITY" -ge 2 ]; then
+            su - postgres -c "/usr/lib/postgresql/16/bin/psql -v ON_ERROR_STOP=1 -tAc \"$1\""
+        else
+            su - postgres -c "/usr/lib/postgresql/16/bin/psql -v ON_ERROR_STOP=1 -tAc \"$1\"" >/dev/null 2>&1
+        fi
+    }
+
+    # Create the role if it does not already exist.
+    ESCAPED_PASSWORD=$(printf '%s' "$POSTGRES_PASSWORD" | sed "s/'/''/g")
+    if [ "$(pg_super "SELECT 1 FROM pg_roles WHERE rolname='aliasvault'")" = "1" ]; then
+        pg_super "ALTER USER aliasvault WITH PASSWORD '$ESCAPED_PASSWORD';" \
+            || fail_init "Failed to update the aliasvault role password."
     else
-        su - postgres -c "/usr/lib/postgresql/16/bin/psql -c \"CREATE USER aliasvault WITH PASSWORD '$POSTGRES_PASSWORD'\"" >/dev/null 2>&1
-        su - postgres -c "/usr/lib/postgresql/16/bin/psql -c \"CREATE DATABASE aliasvault OWNER aliasvault LOCALE 'C.UTF-8';\"" >/dev/null 2>&1
-        su - postgres -c "/usr/lib/postgresql/16/bin/psql -c \"GRANT ALL PRIVILEGES ON DATABASE aliasvault TO aliasvault;\"" >/dev/null 2>&1
+        pg_super "CREATE USER aliasvault WITH PASSWORD '$ESCAPED_PASSWORD';" \
+            || fail_init "Failed to create the aliasvault role."
     fi
+
+    # Create the database if it does not already exist.
+    if [ "$(pg_super "SELECT 1 FROM pg_database WHERE datname='aliasvault'")" != "1" ]; then
+        pg_super "CREATE DATABASE aliasvault OWNER aliasvault LOCALE 'C.UTF-8';" \
+            || fail_init "Failed to create the aliasvault database."
+    fi
+
+    pg_super "GRANT ALL PRIVILEGES ON DATABASE aliasvault TO aliasvault;" \
+        || fail_init "Failed to grant privileges on the aliasvault database."
+
+    # Mark provisioning complete only after every step above succeeded.
+    touch "$PROVISION_MARKER"
 
     # Stop PostgreSQL
     log 0 "[init] → Stopping PostgreSQL..."
     if [ "$VERBOSITY" -ge 2 ]; then
-        su - postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $PGDATA stop"
+        su - postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $PGDATA -w stop"
     else
-        su - postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $PGDATA stop" >/dev/null 2>&1
+        su - postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D $PGDATA -w stop" >/dev/null 2>&1
     fi
     sleep 2
 
     log 0 "[init] PostgreSQL initialization complete"
 else
-    log 0 "[init] ✅ PostgreSQL database already initialized"
-
-    # Just ensure permissions are correct
-    chown -R postgres:postgres /database/postgres /logs/postgres /var/run/postgresql
-    chmod 700 /database/postgres
+    log 0 "[init] ✅ AliasVault database and user already provisioned"
 fi
 
 # Function to check if certificate needs regeneration
