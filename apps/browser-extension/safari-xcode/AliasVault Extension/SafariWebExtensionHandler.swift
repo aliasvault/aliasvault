@@ -22,6 +22,12 @@ class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
 
         os_log(.default, "Received message from browser.runtime.sendNativeMessage: %@ (profile: %@)", String(describing: message), profile?.uuidString ?? "none")
 
+        if let messageDict = message as? [String: Any],
+           messageDict["action"] as? String == "openShortcutSettings" {
+            openShortcutSettings(context: context)
+            return
+        }
+
         let response = NSExtensionItem()
         if #available(iOS 15.0, macOS 11.0, *) {
             response.userInfo = [ SFExtensionMessageKey: [ "echo": message ] ]
@@ -29,6 +35,28 @@ class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
             response.userInfo = [ "message": [ "echo": message ] ]
         }
 
+        context.completeRequest(returningItems: [ response ], completionHandler: nil)
+    }
+
+    /// Open Safari Settings → Extensions for this extension, which lists its keyboard shortcuts.
+    private func openShortcutSettings(context: NSExtensionContext) {
+        var success = false
+        #if os(macOS)
+        let identifier = Bundle.main.bundleIdentifier ?? "net.aliasvault.safari.extension"
+        SFSafariApplication.showPreferencesForExtension(withIdentifier: identifier) { error in
+            if let error = error {
+                os_log(.error, "Failed to open Safari extension preferences: %@", error.localizedDescription)
+            }
+        }
+        success = true
+        #endif
+
+        let response = NSExtensionItem()
+        if #available(iOS 15.0, macOS 11.0, *) {
+            response.userInfo = [ SFExtensionMessageKey: [ "success": success ] ]
+        } else {
+            response.userInfo = [ "message": [ "success": success ] ]
+        }
         context.completeRequest(returningItems: [ response ], completionHandler: nil)
     }
 

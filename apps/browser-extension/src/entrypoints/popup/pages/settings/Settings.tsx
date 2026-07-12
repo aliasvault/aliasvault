@@ -116,6 +116,14 @@ const Settings: React.FC = () => {
       }
     }
 
+    if (import.meta.env.SAFARI) {
+      // The native SafariWebExtensionHandler opens Safari Settings → Extensions for this extension.
+      return async (): Promise<void> => {
+        await browser.runtime.sendNativeMessage('application.id', { action: 'openShortcutSettings' });
+        window.close();
+      };
+    }
+
     return null;
   })();
 
