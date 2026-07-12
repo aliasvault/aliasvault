@@ -84,8 +84,20 @@ public class PostgresqlDbContextFactory : IAliasServerDbContextFactory
             }
         }
 
+        // Proxies/loadbalancers in front of PostgreSQL often silently drop idle TCP
+        // sessions, which makes pooled connections go stale. Keepalives prevent connections from
+        // looking idle, and pruning idle connections early limits the window in which outdated
+        // connections could be reused. This prevents potential issues with stale connections in certain environments.
+        var keepaliveBuilder = new NpgsqlConnectionStringBuilder(connectionString)
+        {
+            KeepAlive = 30,
+            ConnectionIdleLifetime = 60,
+        };
+
         optionsBuilder
-            .UseNpgsql(connectionString, options => options.CommandTimeout(60))
+            .UseNpgsql(keepaliveBuilder.ConnectionString, options => options
+                .CommandTimeout(60)
+                .EnableRetryOnFailure(maxRetryCount: 3))
             .UseLazyLoadingProxies();
     }
 
