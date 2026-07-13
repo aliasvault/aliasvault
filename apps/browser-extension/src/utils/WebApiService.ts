@@ -22,7 +22,7 @@ const DEFAULT_REQUEST_TIMEOUT_MS = 5000;
 /**
  * Total request timeout for vault download/upload, which can carry a large encrypted blob.
  */
-const VAULT_TRANSFER_TIMEOUT_MS = 60000;
+const VAULT_TRANSFER_TIMEOUT_MS = 180000;
 
 /**
  * Type for the token response from the API.
