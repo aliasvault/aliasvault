@@ -18,6 +18,7 @@ import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
 import { NetworkError } from '@/utils/types/errors/NetworkError';
 import { PayloadTooLargeError } from '@/utils/types/errors/PayloadTooLargeError';
+import { RequestTimeoutError } from '@/utils/types/errors/RequestTimeoutError';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
 import type { DuplicateCheckResponse } from '@/utils/types/messaging/DuplicateCheckResponse';
@@ -673,6 +674,13 @@ export async function handleUploadVault(
     };
   } catch (error) {
     console.error('Failed to upload vault:', error);
+
+    /*
+     * E-805: Vault transfer timed out.
+     */
+    if (error instanceof RequestTimeoutError) {
+      return { success: false, error: formatErrorWithCode(await t('common.errors.vaultSyncTimeout'), AppErrorCode.UPLOAD_TIMEOUT) };
+    }
 
     /*
      * Let network and auth errors propagate.
@@ -1453,6 +1461,11 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     // Auth error (session expired) - signal popup to trigger logout
     if (err instanceof ApiAuthError) {
       return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, errorKey: 'sessionExpired' };
+    }
+
+    // E-805: Vault transfer timed out - show a targeted error instead of entering offline mode
+    if (err instanceof RequestTimeoutError) {
+      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: formatErrorWithCode(await t('common.errors.vaultSyncTimeout'), AppErrorCode.UPLOAD_TIMEOUT) };
     }
 
     // Network error - enter offline mode if we have a local vault

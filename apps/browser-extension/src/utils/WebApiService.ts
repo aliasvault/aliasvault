@@ -7,6 +7,7 @@ import { ApiAuthError } from './types/errors/ApiAuthError';
 import { ApiRequestError } from './types/errors/ApiRequestError';
 import { NetworkError } from './types/errors/NetworkError';
 import { PayloadTooLargeError } from './types/errors/PayloadTooLargeError';
+import { RequestTimeoutError } from './types/errors/RequestTimeoutError';
 
 import { storage } from '#imports';
 
@@ -144,7 +145,8 @@ export class WebApiService {
 
   /**
    * Fetch data from the API without authentication headers and without access token refresh retry.
-   * Throws NetworkError for network-related failures (offline, timeout, DNS, etc.)
+   * Throws RequestTimeoutError when the request exceeds its timeout, and NetworkError for other
+   * network-related failures (offline, DNS, etc.)
    */
   public async rawFetch(
     endpoint: string,
@@ -168,6 +170,13 @@ export class WebApiService {
       return response;
     } catch (error) {
       console.error('API request failed:', error);
+      /*
+       * The timeout signal aborts with a DOMException; no caller passes its own abort signal,
+       * so any abort here means the request exceeded its timeout.
+       */
+      if (error instanceof DOMException && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
+        throw new RequestTimeoutError(`Request timed out: ${endpoint}`, error);
+      }
       // Convert fetch errors to NetworkError for proper error handling
       throw new NetworkError(
         error instanceof Error ? error.message : 'Network request failed',
