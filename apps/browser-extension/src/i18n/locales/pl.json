@@ -111,6 +111,7 @@
       "syncConflictMaxRetries": "Nie można zsynchronizować sejfu po wielu próbach. Spróbuj ponownie później.",
       "mergeFailed": "Nie udało się scalić zmian w sejfie. Spróbuj ponownie.",
       "vaultTooLarge": "Sejf jest zbyt duży, aby serwer mógł zaakceptować. Spróbuj usunąć niektóre elementy lub załączniki, aby zmniejszyć rozmiar i spróbować ponownie.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Wprowadź prawidłowy 6-cyfrowy kod uwierzytelniający.",
       "serverError": "Nie można połączyć się z serwerem AliasVault. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną, jeśli problem nadal występuje.",
       "wrongPassword": "Nieprawidłowe hasło. Spróbuj ponownie.",
