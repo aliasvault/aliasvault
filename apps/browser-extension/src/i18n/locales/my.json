@@ -111,6 +111,7 @@
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "mergeFailed": "Failed to merge vault changes. Please try again.",
       "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Please enter a valid 6-digit authentication code.",
       "serverError": "AliasVault ဆာဗာသို့ ချိတ်ဆက်မရနိုင်ပါ။ ကျေးဇူးပြု၍ နောက်တစ်ကြိမ်ထပ်မံကြိုးစားပါ သို့မဟုတ် ပြဿနာ ဆက်လက်ဖြစ်ပေါ်နေပါက ထောက်ပံ့သူအား ဆက်သွယ်ပါ။",
       "wrongPassword": "စကားဝှက် မှားယွင်းနေသည်။ ကျေးဇူးပြု၍ ထပ်မံကြိုးစားပါ။",
