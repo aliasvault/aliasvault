@@ -111,6 +111,7 @@
       "syncConflictMaxRetries": "Impossible de synchroniser le coffre-fort après plusieurs tentatives. Veuillez réessayer plus tard.",
       "mergeFailed": "Impossible de fusionner les modifications du coffre-fort. Veuillez réessayer.",
       "vaultTooLarge": "Le coffre-fort est trop grand pour que le serveur l'accepte. Essayez de supprimer certains éléments ou pièces jointes pour réduire la taille et réessayez.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Veuillez entrer un code d'authentification valide à 6 chiffres.",
       "serverError": "Impossible d'accéder au serveur AliasVault. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
       "wrongPassword": "Mot de passe incorrect, veuillez réessayer.",
