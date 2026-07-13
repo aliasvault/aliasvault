@@ -111,6 +111,7 @@
       "syncConflictMaxRetries": "Többszöri próbálkozást követően sem szinkronizálható a széf. Kérem, próbálja meg később újra.",
       "mergeFailed": "A széf változtatások összevonása sikertelen. Kérem, próbálja meg újra.",
       "vaultTooLarge": "Túl nagy a széf a befogadásra. Próbáljon meg eltávolítani egyes elemeket vagy csatolmányokat a méret csökkentéséhez, majd próbálja újra.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Kérem adjon meg egy valós 6 számjegyű kódot.",
       "serverError": "Az AliasVault szerverek nem elérhetőek. Kérem próbálkozzon később, vagy keresse fel az ügyfélszolgálatot ha a probléma továbbra is fent áll.",
       "wrongPassword": "Hibás jelszó. Próbálkozzon újra.",
