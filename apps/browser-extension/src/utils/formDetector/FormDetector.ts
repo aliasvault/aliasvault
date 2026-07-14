@@ -273,6 +273,18 @@ export class FormDetector {
    */
   private matchesExclusionPatterns(input: HTMLInputElement): boolean {
     /*
+     * Explicit credential signals outrank any exclusion patterns, and should not be excluded from autofill.
+     */
+    if ((input.type ?? input.getAttribute('type') ?? '').toLowerCase() === 'password') {
+      return false;
+    }
+
+    const autocomplete = (input.getAttribute('data-av-autocomplete') ?? input.getAttribute('autocomplete'))?.toLowerCase() ?? '';
+    if (['username', 'email', 'current-password', 'new-password', 'one-time-code'].includes(autocomplete)) {
+      return false;
+    }
+
+    /*
      * Collect text attributes to check. The `class` attribute is intentionally
      * excluded: utility-CSS frameworks (Tailwind, DaisyUI, etc.) routinely emit
      * tokens like `duration-100`, `outline-none`, `bg-base-100` whose
