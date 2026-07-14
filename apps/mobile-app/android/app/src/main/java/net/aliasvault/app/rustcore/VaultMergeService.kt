@@ -220,23 +220,15 @@ object VaultMergeService {
             val db = SQLiteDatabase.openDatabase(dbFile.absolutePath, null, SQLiteDatabase.OPEN_READWRITE)
 
             try {
-                // Read only the columns the Rust pruner inspects. Blob columns are reduced
-                // to a 1-byte presence marker to avoid serializing large binary data to JSON.
-                val pruneTableQueries = listOf(
-                    "Items" to "SELECT Id, IsDeleted, DeletedAt, LogoId FROM Items",
-                    "FieldValues" to "SELECT ItemId, IsDeleted FROM FieldValues",
-                    "Attachments" to "SELECT Id, ItemId, IsDeleted, substr(Blob, 1, 1) AS Blob FROM Attachments",
-                    "TotpCodes" to "SELECT ItemId, IsDeleted FROM TotpCodes",
-                    "Passkeys" to "SELECT ItemId, IsDeleted FROM Passkeys",
-                    "Logos" to "SELECT Id, IsDeleted, substr(FileData, 1, 1) AS FileData FROM Logos",
-                )
+                // Get the per-table SELECT queries clients should run to build `PruneInput`.
+                val pruneTableQueries = uniffi.aliasvault_core.getPruneTableQueries()
                 val tables = JSONArray()
 
-                for ((tableName, query) in pruneTableQueries) {
+                for (tableQuery in pruneTableQueries) {
                     tables.put(
                         JSONObject().apply {
-                            put("name", tableName)
-                            put("records", readQuery(db, tableName, query))
+                            put("name", tableQuery.name)
+                            put("records", readQuery(db, tableQuery.name, tableQuery.query))
                         },
                     )
                 }

@@ -88,6 +88,38 @@ pub struct PruneOutput {
     pub stats: PruneStats,
 }
 
+/// A per-table SELECT query for building `PruneInput`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+pub struct PruneTableQuery {
+    /// Table name
+    pub name: String,
+    /// SELECT query reading only the columns the pruner inspects
+    pub query: String,
+}
+
+/// Get the per-table SELECT queries clients should run to build `PruneInput`.
+///
+/// Only the columns the pruner inspects are selected; blob columns are reduced
+/// to a 1-byte presence marker (via `substr`) to avoid serializing large binary
+/// data to JSON on every prune.
+pub fn get_prune_table_queries() -> Vec<PruneTableQuery> {
+    [
+        ("Items", "SELECT Id, IsDeleted, DeletedAt, LogoId FROM Items"),
+        ("FieldValues", "SELECT ItemId, IsDeleted FROM FieldValues"),
+        ("Attachments", "SELECT Id, ItemId, IsDeleted, substr(Blob, 1, 1) AS Blob FROM Attachments"),
+        ("TotpCodes", "SELECT ItemId, IsDeleted FROM TotpCodes"),
+        ("Passkeys", "SELECT ItemId, IsDeleted FROM Passkeys"),
+        ("Logos", "SELECT Id, IsDeleted, substr(FileData, 1, 1) AS FileData FROM Logos"),
+    ]
+    .iter()
+    .map(|(name, query)| PruneTableQuery {
+        name: (*name).to_string(),
+        query: (*query).to_string(),
+    })
+    .collect()
+}
+
 /// Main entry point: prune expired items from trash.
 ///
 /// This function finds all Items with DeletedAt set that are older than

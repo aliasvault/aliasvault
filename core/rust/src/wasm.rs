@@ -99,6 +99,16 @@ pub fn prune_vault_json_js(input_json: &str) -> Result<String, JsValue> {
         .map_err(|e| JsValue::from_str(&format!("Prune failed: {}", e)))
 }
 
+/// Get the per-table SELECT queries used to build prune input.
+///
+/// Returns an array of `{ name, query }` objects. Blob columns are reduced to a
+/// 1-byte presence marker to avoid serializing large binary data to JSON.
+#[wasm_bindgen(js_name = getPruneTableQueries)]
+pub fn get_prune_table_queries_js() -> Result<JsValue, JsValue> {
+    serde_wasm_bindgen::to_value(&crate::vault_pruner::get_prune_table_queries())
+        .map_err(|e| JsValue::from_str(&format!("Failed to serialize output: {}", e)))
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // Credential Matcher WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════

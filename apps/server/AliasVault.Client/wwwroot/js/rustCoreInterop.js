@@ -170,6 +170,24 @@ window.rustCoreGetSyncableTableNames = async function() {
 };
 
 /**
+ * Get the per-table SELECT queries used to build prune input.
+ * Blob columns are reduced to a 1-byte presence marker.
+ * @returns {Promise<Array<{name: string, query: string}>>} Array of table queries.
+ */
+window.rustCoreGetPruneTableQueries = async function() {
+    if (!await initRustCore()) {
+        return [];
+    }
+
+    try {
+        return wasmModule.getPruneTableQueries();
+    } catch (error) {
+        console.error('[RustCore] Get prune table queries failed:', error);
+        return [];
+    }
+};
+
+/**
  * Extract domain from URL.
  * @param {string} url - The URL to extract domain from.
  * @returns {Promise<string>} The extracted domain.

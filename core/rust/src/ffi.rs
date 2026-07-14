@@ -151,6 +151,17 @@ pub extern "C" fn get_syncable_table_names_ffi() -> *mut c_char {
     }
 }
 
+/// Get the per-table SELECT queries used to build prune input, as a JSON array
+/// of `{ "name": ..., "query": ... }` objects. Blob columns are reduced to a
+/// 1-byte presence marker to avoid serializing large binary data to JSON.
+#[no_mangle]
+pub extern "C" fn get_prune_table_queries_ffi() -> *mut c_char {
+    match serde_json::to_string(&crate::vault_pruner::get_prune_table_queries()) {
+        Ok(json) => string_to_c_char(json),
+        Err(_) => ptr::null_mut(),
+    }
+}
+
 /// Free a string that was allocated by Rust.
 ///
 /// # Safety

@@ -154,22 +154,14 @@ public class VaultMergeService {
         let db = try openDatabase(from: decrypted)
         defer { sqlite3_close(db) }
 
-        // Read only the columns the Rust pruner inspects. Blob columns are reduced
-        // to a 1-byte presence marker to avoid serializing large binary data to JSON.
-        let pruneTableQueries: [(name: String, sql: String)] = [
-            ("Items", "SELECT Id, IsDeleted, DeletedAt, LogoId FROM Items"),
-            ("FieldValues", "SELECT ItemId, IsDeleted FROM FieldValues"),
-            ("Attachments", "SELECT Id, ItemId, IsDeleted, substr(Blob, 1, 1) AS Blob FROM Attachments"),
-            ("TotpCodes", "SELECT ItemId, IsDeleted FROM TotpCodes"),
-            ("Passkeys", "SELECT ItemId, IsDeleted FROM Passkeys"),
-            ("Logos", "SELECT Id, IsDeleted, substr(FileData, 1, 1) AS FileData FROM Logos")
-        ]
+        // Get the per-table SELECT queries clients should run to build `PruneInput`.
+        let pruneTableQueries = getPruneTableQueries()
         var tables: [[String: Any]] = []
 
         for entry in pruneTableQueries {
             tables.append([
                 "name": entry.name,
-                "records": try readQuery(from: db, tableName: entry.name, sql: entry.sql)
+                "records": try readQuery(from: db, tableName: entry.name, sql: entry.query)
             ])
         }
 
