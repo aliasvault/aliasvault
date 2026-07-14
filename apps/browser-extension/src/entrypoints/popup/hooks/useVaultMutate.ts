@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
+import { devLog } from '@/utils/DevLogger';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
@@ -55,7 +56,7 @@ export function useVaultMutate(): {
 
   /**
    * Start polling to detect when background sync completes.
-   * Polls isDirty flag AND background sync state every 500ms.
+   * Polls isDirty flag AND background sync state every 200ms.
    * Only clears indicator when vault is clean AND background has no sync in progress.
    */
   const startPollingForCompletion = useCallback((): void => {
@@ -64,7 +65,7 @@ export function useVaultMutate(): {
       clearInterval(pollIntervalRef.current);
     }
 
-    console.info('[VaultMutate] Starting to poll for sync completion');
+    devLog('[VaultMutate] Starting to poll for sync completion');
 
     pollIntervalRef.current = setInterval(async () => {
       try {
@@ -82,7 +83,7 @@ export function useVaultMutate(): {
          * This prevents clearing the indicator between queued syncs.
          */
         if (!syncState.isDirty && !syncState.isSyncInProgress) {
-          console.info('[VaultMutate] Sync completed (isDirty=false, isSyncInProgress=false), clearing uploading indicator');
+          devLog('[VaultMutate] Sync completed (isDirty=false, isSyncInProgress=false), clearing uploading indicator');
           dbContext.setIsUploading(false);
           dbContext.setIsSyncing(false);
 
@@ -98,7 +99,7 @@ export function useVaultMutate(): {
       } catch (error) {
         console.error('[VaultMutate] Error polling sync state:', error);
       }
-    }, 500); /* Poll every 500ms */
+    }, 200); /* Poll every 200ms */
   }, [dbContext]);
 
   /**

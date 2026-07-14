@@ -3,6 +3,7 @@ import * as OTPAuth from 'otpauth';
 import { storage } from 'wxt/utils/storage';
 
 import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
+import { devLog } from '@/utils/DevLogger';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import { FieldKey, ItemTypes, createSystemField, type Item, type PasswordSettings } from '@/utils/dist/core/models/vault';
 import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/core/models/webapi';
@@ -664,13 +665,14 @@ export async function handleUploadVault(
     const sqliteClient = await createVaultSqliteClient();
 
     // Upload the vault to the server.
-    const response = await uploadNewVaultToServer(sqliteClient);
+    const { response, vaultPruned } = await uploadNewVaultToServer(sqliteClient);
 
     return {
       success: true,
       status: response.status,
       newRevisionNumber: response.newRevisionNumber,
-      mutationSeqAtStart
+      mutationSeqAtStart,
+      vaultPruned
     };
   } catch (error) {
     console.error('Failed to upload vault:', error);
@@ -768,8 +770,10 @@ export async function handleClearPersistedFormValues(): Promise<void> {
  * Upload a new version of the vault to the server using the provided sqlite client.
  * Prunes expired trash items before uploading.
  */
-async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<VaultPostResponse> {
+async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<{ response: VaultPostResponse; vaultPruned: boolean }> {
+  devLog('[VaultSync] Upload started');
   let updatedVaultData = sqliteClient.exportToBase64();
+  let vaultPruned = false;
   const encryptionKey = await handleGetEncryptionKey();
 
   if (!encryptionKey) {
@@ -785,8 +789,9 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
   try {
     const pruneResult = await vaultMergeService.prune(updatedVaultData, TRASH_RETENTION_DAYS);
     if (pruneResult.success && pruneResult.statementCount > 0) {
-      console.info(`[VaultSync] Pruned expired items from trash (${pruneResult.statementCount} statements)`);
+      devLog(`[VaultSync] Pruned expired items from trash (${pruneResult.statementCount} statements)`);
       updatedVaultData = pruneResult.prunedVaultBase64;
+      vaultPruned = true;
 
       /**
        * Reload the sqlite client with the pruned vault so the UI reflects the change.
@@ -804,6 +809,8 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
     updatedVaultData,
     encryptionKey
   );
+
+  devLog('[VaultSync] Vault exported, pruned and encrypted, sending to server');
 
   // Store in local: storage for persistence
   await storage.setItem('local:encryptedVault', encryptedVault);
@@ -841,6 +848,8 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
 
   // Check if response is successful (.status === 0)
   if (response.status === 0) {
+    devLog(`[VaultSync] Upload completed (new revision ${response.newRevisionNumber})`);
+
     // Upload succeeded - update server revision
     await storage.setItem('local:serverRevision', response.newRevisionNumber);
   } else if (response.status === 2) {
@@ -851,7 +860,7 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
     throw new Error(formatErrorWithCode(`${await t('common.errors.unknownError')} [server status: ${response.status}]`, AppErrorCode.UPLOAD_FAILED));
   }
 
-  return response;
+  return { response, vaultPruned };
 }
 
 /**
@@ -1199,13 +1208,15 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
   if (isSyncInProgress) {
     // Mark that we need to sync again after current sync completes
     hasPendingSync = true;
-    console.info('[VaultSync] Sync already in progress, queued for retry after completion');
+    devLog('[VaultSync] Sync already in progress, queued for retry after completion');
     return { success: true, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false };
   }
 
   // Mark sync as in progress
   isSyncInProgress = true;
   hasPendingSync = false;
+
+  devLog('[VaultSync] Sync started');
 
   const webApi = new WebApiService();
 
@@ -1226,6 +1237,8 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
 
     // Get current sync state
     const syncState = await handleGetSyncState();
+
+    devLog(`[VaultSync] Status received (server rev ${statusResponse.vaultRevision}, local rev ${syncState.serverRevision}, isDirty ${syncState.isDirty})`);
 
     // Check if server is actually available (0.0.0 indicates connection error)
     if (statusResponse.serverVersion === '0.0.0') {
@@ -1286,7 +1299,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
             const mergeResult = await vaultMergeService.merge(localDecrypted, serverDecrypted);
 
             if (mergeResult.success) {
-              console.info('Vault merge during sync completed:', mergeResult.stats);
+              devLog('[VaultSync] Vault merge during sync completed:', mergeResult.stats);
 
               const mergedEncryptedVault = await EncryptionUtility.symmetricEncrypt(
                 mergeResult.mergedVaultBase64,
@@ -1304,7 +1317,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
               });
 
               if (!storeResult.success) {
-                console.info('Mutation detected during merge, re-syncing...');
+                devLog('[VaultSync] Mutation detected during merge, re-syncing...');
                 return handleFullVaultSync();
               }
 
@@ -1354,7 +1367,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
         });
 
         if (!storeResult.success) {
-          console.info('Mutation detected during sync, re-syncing...');
+          devLog('[VaultSync] Mutation detected during sync, re-syncing...');
           return handleFullVaultSync();
         }
 
@@ -1391,6 +1404,13 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
             mutationSeqAtStart: uploadResponse.mutationSeqAtStart!,
             newServerRevision: uploadResponse.newRevisionNumber!
           });
+
+          /*
+           * If expired trash items were pruned during upload, report the vault as new
+           * so the popup reloads the pruned vault instead of resurrecting the items
+           * from its stale in-memory copy on the next mutation.
+           */
+          return { success: true, hasNewVault: uploadResponse.vaultPruned === true, wasOffline: false, upgradeRequired: false, requiresLogout: false };
         } else if (uploadResponse.status === 2) {
           /**
            * Server returned Outdated - another device uploaded first.
@@ -1426,10 +1446,10 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
           `Server recovery complete: rev ${statusResponse.vaultRevision} → ${uploadResponse.newRevisionNumber}`
         );
 
-        return { success: true, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false };
+        return { success: true, hasNewVault: uploadResponse.vaultPruned === true, wasOffline: false, upgradeRequired: false, requiresLogout: false };
       } else if (uploadResponse.status === 2) {
         // Another client recovered first
-        console.info('Another client recovered server first, re-syncing...');
+        devLog('[VaultSync] Another client recovered server first, re-syncing...');
         return handleFullVaultSync();
       } else {
         console.error('Server recovery failed:', uploadResponse.error);
@@ -1489,13 +1509,15 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     // Reset sync in progress flag
     isSyncInProgress = false;
 
+    devLog('[VaultSync] Sync finished');
+
     /*
      * Check if another sync is needed (mutations happened during this sync).
      * Trigger follow-up sync asynchronously (don't await to avoid blocking).
      * Popup will poll isDirty flag to detect when background sync completes.
      */
     if (hasPendingSync) {
-      console.info('[VaultSync] Pending mutations detected, triggering follow-up sync');
+      devLog('[VaultSync] Pending mutations detected, triggering follow-up sync');
       hasPendingSync = false;
 
       handleFullVaultSync().catch(err => {
