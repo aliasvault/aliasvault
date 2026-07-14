@@ -4,7 +4,7 @@ import { browser } from 'wxt/browser';
 import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
 import { devLog } from '@/utils/DevLogger';
 
-import init, { getSyncableTableNames, mergeVaults, pruneVault } from './dist/core/rust/aliasvault_core.js';
+import init, { getPruneTableQueries, getSyncableTableNames, mergeVaults, pruneVault } from './dist/core/rust/aliasvault_core.js';
 
 /**
  * Record type for JSON data passed to/from Rust.
@@ -268,22 +268,11 @@ export class VaultMergeService {
       const db = this.loadDatabase(SQL, vaultBase64);
 
       try {
-        /*
-         * Read only the columns the Rust pruner inspects. Blob columns are reduced
-         * to a 1-byte presence marker to avoid serializing megabytes of binary data
-         * to JSON on every sync.
-         */
-        const tableQueries: Record<string, string> = {
-          Items: 'SELECT Id, IsDeleted, DeletedAt, LogoId FROM Items',
-          FieldValues: 'SELECT ItemId, IsDeleted FROM FieldValues',
-          Attachments: 'SELECT Id, ItemId, IsDeleted, substr(Blob, 1, 1) AS Blob FROM Attachments',
-          TotpCodes: 'SELECT ItemId, IsDeleted FROM TotpCodes',
-          Passkeys: 'SELECT ItemId, IsDeleted FROM Passkeys',
-          Logos: 'SELECT Id, IsDeleted, substr(FileData, 1, 1) AS FileData FROM Logos',
-        };
+        // Get the per-table SELECT queries clients should run to build `PruneInput`.
+        const tableQueries = getPruneTableQueries() as { name: string; query: string }[];
 
         // Read tables as JSON
-        const tables: TableData[] = Object.entries(tableQueries).map(([name, query]) => ({
+        const tables: TableData[] = tableQueries.map(({ name, query }) => ({
           name,
           records: this.readQueryAsJson(db, query),
         }));

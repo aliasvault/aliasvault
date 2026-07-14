@@ -125,6 +125,28 @@ public class RustCoreService : IAsyncDisposable
     }
 
     /// <summary>
+    /// Get the per-table SELECT queries used to build prune input.
+    /// </summary>
+    /// <returns>List of table queries.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if WASM module is unavailable.</exception>
+    public async Task<List<PruneTableQuery>> GetPruneTableQueriesAsync()
+    {
+        // Wait for WASM to be available with retries, as it may still be loading.
+        if (!await WaitForAvailabilityAsync())
+        {
+            throw new InvalidOperationException("Rust WASM module is not available.");
+        }
+
+        var result = await jsRuntime.InvokeAsync<List<PruneTableQuery>>("rustCoreGetPruneTableQueries");
+        if (result == null || result.Count == 0)
+        {
+            throw new InvalidOperationException("Failed to get prune table queries from Rust WASM.");
+        }
+
+        return result;
+    }
+
+    /// <summary>
     /// Prune expired items from trash.
     /// Items that have been in trash (DeletedAt set) for longer than retentionDays
     /// are permanently deleted (IsDeleted = true).

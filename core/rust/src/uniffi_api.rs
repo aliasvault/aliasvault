@@ -72,6 +72,14 @@ pub fn prune_vault_json(input_json: String) -> Result<String, VaultError> {
     crate::vault_pruner::prune_vault_json(&input_json)
 }
 
+/// Get the per-table SELECT queries used to build prune input.
+/// Blob columns are reduced to a 1-byte presence marker to avoid
+/// serializing large binary data to JSON.
+#[uniffi::export]
+pub fn get_prune_table_queries() -> Vec<crate::vault_pruner::PruneTableQuery> {
+    crate::vault_pruner::get_prune_table_queries()
+}
+
 /// Filter credentials for autofill based on current URL/app and page title.
 ///
 /// # Arguments
@@ -304,7 +312,8 @@ mod tests {
     fn test_prune_vault_json() {
         let input = r#"{
             "tables": [{"name": "Items", "records": []}],
-            "retention_days": 30
+            "retention_days": 30,
+            "current_time": "2024-01-15T10:30:00.000Z"
         }"#;
 
         let result = prune_vault_json(input.to_string());

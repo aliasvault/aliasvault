@@ -1055,27 +1055,20 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
-    /// Reads only the columns the Rust pruner inspects. Blob columns are reduced to a
-    /// 1-byte presence marker to avoid serializing large binary data to JSON.
+    /// Get the per-table SELECT queries clients should run to build `PruneInput`.
     /// </summary>
     /// <param name="connection">The SQLite connection to read from.</param>
     /// <returns>List of TableData objects containing the trimmed table records.</returns>
     private async Task<List<TableData>> ReadPruneTablesAsJsonAsync(SqliteConnection connection)
     {
-        var tableQueries = new (string Name, string Query)[]
-        {
-            ("Items", "SELECT Id, IsDeleted, DeletedAt, LogoId FROM Items"),
-            ("FieldValues", "SELECT ItemId, IsDeleted FROM FieldValues"),
-            ("Attachments", "SELECT Id, ItemId, IsDeleted, substr(Blob, 1, 1) AS Blob FROM Attachments"),
-            ("TotpCodes", "SELECT ItemId, IsDeleted FROM TotpCodes"),
-            ("Passkeys", "SELECT ItemId, IsDeleted FROM Passkeys"),
-            ("Logos", "SELECT Id, IsDeleted, substr(FileData, 1, 1) AS FileData FROM Logos"),
-        };
+        var tableQueries = await _rustCore.GetPruneTableQueriesAsync();
 
         var tables = new List<TableData>();
 
-        foreach (var (tableName, query) in tableQueries)
+        foreach (var tableQuery in tableQueries)
         {
+            var tableName = tableQuery.Name;
+            var query = tableQuery.Query;
             var tableData = new TableData { Name = tableName };
 
             // Check if table exists in the database.
