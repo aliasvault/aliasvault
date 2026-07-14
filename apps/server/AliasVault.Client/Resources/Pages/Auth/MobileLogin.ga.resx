@@ -67,11 +67,11 @@
     <comment>Modal title for mobile unlock feature</comment>
   </data>
   <data name="ScanQrCodeDescription" xml:space="preserve">
-    <value>Scan this QR code with your AliasVault mobile app to login.</value>
+    <value>Scan an cód QR seo le d'aip shoghluaiste AliasVault chun logáil isteach.</value>
     <comment>Description instructing user to scan QR code</comment>
   </data>
   <data name="ScanQrCodeToUnlock" xml:space="preserve">
-    <value>Scan this QR code with your AliasVault mobile app to unlock your vault.</value>
+    <value>Scan an cód QR seo le d’aip shoghluaiste AliasVault chun do chruinneachán a dhíghlasáil.</value>
     <comment>Description instructing user to scan QR code to unlock</comment>
   </data>
 </root>

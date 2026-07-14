@@ -111,6 +111,7 @@
       "syncConflictMaxRetries": "Não foi possível sincronizar seu cofre após várias tentativas. Por favor, tente novamente mais tarde.",
       "mergeFailed": "Falha ao combinar mudanças do cofre. Por favor, tente novamente.",
       "vaultTooLarge": "O cofre é grande demais para o servidor aceitar. Tente remover alguns itens ou anexos para reduzir o tamanho e tente novamente.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Por favor digite o código de autenticação de 6 dígitos.",
       "serverError": "Não foi possível conectar ao servidor do AliasVault. Por favor tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
       "wrongPassword": "Senha incorreta. Por favor tente novamente.",

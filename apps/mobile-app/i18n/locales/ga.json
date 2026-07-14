@@ -342,8 +342,8 @@
     "settings": "Socruithe"
   },
   "itemTypes": {
-    "creating": "Creating",
-    "editing": "Editing",
+    "creating": "Ag cruthú",
+    "editing": "Eagarthóireacht",
     "login": {
       "title": "Logáil Isteach"
     },
@@ -351,28 +351,28 @@
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Credit Card",
+      "title": "Cárta Creidmheasa",
       "cardInformation": "Eolas Cárta"
     },
     "note": {
       "title": "Nóta"
     },
     "addField": "Cuir Réimse leis",
-    "addCustomField": "Add Custom Field",
+    "addCustomField": "Cuir Réimse Saincheaptha leis",
     "customFields": "Réimsí Saincheaptha",
-    "fieldLabel": "Field Label",
-    "fieldType": "Field Type",
-    "enterFieldName": "Enter field name",
+    "fieldLabel": "Lipéad Réimse",
+    "fieldType": "Cineál Réimse",
+    "enterFieldName": "Cuir isteach ainm na réimse",
     "fieldTypes": {
-      "text": "Text",
+      "text": "Téacs",
       "password": "Pasfhocal",
-      "hidden": "Hidden",
+      "hidden": "I bhfolach",
       "email": "Ríomhphost",
       "url": "URL",
-      "phone": "Phone",
-      "number": "Number",
+      "phone": "Fón",
+      "number": "Uimhir",
       "date": "Dáta",
-      "textArea": "Text Area"
+      "textArea": "Limistéar Téacs"
     }
   },
   "fieldLabels": {
@@ -384,10 +384,10 @@
     "alias.last_name": "Sloinne",
     "alias.gender": "Inscne",
     "alias.birthdate": "Dáta Breithe",
-    "card.cardholder_name": "Cardholder Name",
-    "card.number": "Card Number",
-    "card.expiry_month": "Expiry Month",
-    "card.expiry_year": "Expiry Year",
+    "card.cardholder_name": "Ainm Shealbhóir Cárta",
+    "card.number": "Uimhir Cárta",
+    "card.expiry_month": "Mí Éaga",
+    "card.expiry_year": "Bliain Éaga",
     "card.cvv": "CVV",
     "card.pin": "PIN",
     "notes.content": "Nótaí"
@@ -401,7 +401,7 @@
     "itemCreated": "Mír Cruthaithe",
     "itemCreatedMessage": "Tá do mhír nua curtha le do chruinneachán agus tá sé réidh le húsáid.",
     "emailPreview": "Réamhamharc Ríomhphoist",
-    "untitled": "Untitled",
+    "untitled": "Gan Teideal",
     "name": "Ainm",
     "url": "URL",
     "itemName": "Ainm",
@@ -534,9 +534,9 @@
       "title": "Roghanna Míre",
       "edit": "Cuir in Eagar",
       "delete": "Scrios",
-      "copyUsername": "Copy Username",
-      "copyEmail": "Copy Email",
-      "copyPassword": "Copy Password",
+      "copyUsername": "Cóipeáil Ainm Úsáideora",
+      "copyEmail": "Cóipeáil Ríomhphoist",
+      "copyPassword": "Cóipeáil Pasfhocal",
       "copyTotpCode": "Cóipeáil Cód TOTP"
     },
     "urlContextMenu": {
@@ -553,30 +553,30 @@
     "folders": {
       "folder": "Fillteán",
       "newFolder": "Fillteán Nua",
-      "createFolder": "Create Folder",
-      "editFolder": "Edit Folder",
-      "folderName": "Folder Name",
+      "createFolder": "Cruthaigh Fillteán",
+      "editFolder": "Cuir Fillteán in Eagar",
+      "folderName": "Ainm an Fhillteáin",
       "folderNamePlaceholder": "m.sh., Obair, Pearsanta",
-      "folderNameRequired": "Folder name is required",
-      "deleteFolder": "Delete Folder",
-      "deleteFolderKeepItems": "Delete folder only",
+      "folderNameRequired": "Tá ainm fillteáin ag teastáil",
+      "deleteFolder": "Scrios Fillteán",
+      "deleteFolderKeepItems": "Scrios fillteán amháin",
       "deleteFolderKeepItemsDescription": "Bogfar míreanna chuig an bhfillteán tuismitheora.",
       "deleteFolderAndItems": "Scrios an fillteán agus na míreanna go léir",
       "deleteFolderAndItemsDescription": "Bogfar {{count}} mír(í) go Scriosta le Déanaí.",
       "emptyFolderHint": "Tá an fillteán seo folamh. Chun míreanna a bhogadh chuig an bhfillteán seo, cuir an mhír in eagar agus roghnaigh an fillteán seo.",
-      "selectFolder": "Select Folder"
+      "selectFolder": "Roghnaigh Fillteán"
     },
     "recentlyDeleted": {
       "title": "Scriosta le Déanaí",
       "noItems": "Gan aon mhíreanna scriosta",
       "noItemsDescription": "Beidh míreanna a scriosann tú le feiceáil anseo ar feadh {{days}} lá sula mbainfear go buan iad.",
       "description": "Scriosfar na míreanna seo go buan tar éis {{days}} lá. Is féidir leat iad a athchóiriú nó iad a scriosadh láithreach.",
-      "restore": "Restore",
+      "restore": "Athchóirigh",
       "deletePermanently": "Scrios go Buan",
       "emptyAll": "Folmhaigh Gach Rud",
       "daysRemaining": "{{count}} lá fágtha",
       "daysRemaining_plural": "{{count}} lá fágtha",
-      "expiringSoon": "Expiring soon",
+      "expiringSoon": "Ag dul in éag go luath",
       "confirmDeleteTitle": "Scrios go Buan?",
       "confirmDeleteMessage": "Scriosfar an mhír seo go buan agus ní féidir í a aisghabháil.",
       "confirmEmptyAllTitle": "Folmhaigh Scriosta le Déanaí?",
@@ -598,7 +598,7 @@
     "deleteEmailConfirm": "An bhfuil tú cinnte gur mian leat an ríomhphost seo a scriosadh? Tá an gníomh seo buan agus ní féidir é a chealú.",
     "emailNotFound": "Níor aimsíodh an ríomhphost",
     "formatHtml": "HTML",
-    "formatPlain": "Text",
+    "formatPlain": "Téacs",
     "formatSource": "Foinse",
     "formatSwitchTitle": "Athraigh formáid ríomhphoist",
     "sizeKB": "KB",

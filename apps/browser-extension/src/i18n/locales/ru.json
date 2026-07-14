@@ -111,6 +111,7 @@
       "syncConflictMaxRetries": "Ошибка синхронизации хранилища. Повторите попытку позже.",
       "mergeFailed": "Не удалось объединить изменения. Попробуйте снова.",
       "vaultTooLarge": "Хранилище слишком велико для загрузки на сервер. Удалите часть данных или вложений и повторите попытку.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Введите корректный 6-значный код подтверждения.",
       "serverError": "Сервер AliasVault недоступен. Повторите попытку позже или свяжитесь с техподдержкой.",
       "wrongPassword": "Неверный пароль. Повторите попытку.",

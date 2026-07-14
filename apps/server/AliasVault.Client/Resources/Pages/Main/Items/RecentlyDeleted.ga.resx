@@ -64,77 +64,77 @@
     <comment>Page title for recently deleted items</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Items that have been deleted can be restored within 30 days.</value>
+    <value>Is féidir míreanna atá scriosta a athchóiriú laistigh de 30 lá.</value>
     <comment>Page description text</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Items below will be permanently deleted after 30 days. You can restore or permanently delete them sooner.</value>
+    <value>Scriosfar na míreanna thíos go buan tar éis 30 lá. Is féidir leat iad a athchóiriú nó a scriosadh go buan níos luaithe.</value>
     <comment>Description text explaining 30-day retention</comment>
   </data>
   <!-- Empty State -->
   <data name="NoItems" xml:space="preserve">
-    <value>No recently deleted items</value>
+    <value>Gan aon mhíreanna a scriosadh le déanaí</value>
     <comment>Title when no deleted items exist</comment>
   </data>
   <data name="NoItemsDescription" xml:space="preserve">
-    <value>Items you delete will appear here for 30 days before being permanently removed.</value>
+    <value>Beidh míreanna a scriosann tú le feiceáil anseo ar feadh 30 lá sula mbainfear go buan iad.</value>
     <comment>Description when no deleted items exist</comment>
   </data>
   <data name="Untitled" xml:space="preserve">
-    <value>Untitled</value>
+    <value>Gan Teideal</value>
     <comment>Fallback name for items without a name</comment>
   </data>
   <!-- Days Remaining -->
   <data name="DaysRemaining" xml:space="preserve">
-    <value>Permanently deleted in {0} days</value>
+    <value>Scriosta go buan i gceann {0} lá</value>
     <comment>Text showing how many days until permanent deletion</comment>
   </data>
   <data name="ExpiringSoon" xml:space="preserve">
-    <value>Expiring soon</value>
+    <value>Ag dul in éag go luath</value>
     <comment>Text shown when item will be deleted within 24 hours</comment>
   </data>
   <!-- Actions -->
   <data name="Restore" xml:space="preserve">
-    <value>Restore</value>
+    <value>Athchóirigh</value>
     <comment>Button text to restore a deleted item</comment>
   </data>
   <data name="EmptyAll" xml:space="preserve">
-    <value>Empty trash</value>
+    <value>Folmhaigh an bruscar</value>
     <comment>Button text to permanently delete all items</comment>
   </data>
   <!-- Confirm Delete Modal -->
   <data name="ConfirmDeleteTitle" xml:space="preserve">
-    <value>Permanently delete item?</value>
+    <value>An bhfuil tú ag iarraidh an mhír a scriosadh go buan?</value>
     <comment>Title for delete confirmation modal</comment>
   </data>
   <data name="ConfirmDeleteMessage" xml:space="preserve">
-    <value>This action cannot be undone. The item will be permanently removed from your vault.</value>
+    <value>Ní féidir an gníomh seo a chealú. Bainfear an mhír go buan as do chruinneachán.</value>
     <comment>Message in delete confirmation modal</comment>
   </data>
   <data name="DeletePermanently" xml:space="preserve">
-    <value>Delete permanently</value>
+    <value>Scrios go buan</value>
     <comment>Button text to confirm permanent deletion</comment>
   </data>
   <!-- Confirm Empty All Modal -->
   <data name="ConfirmEmptyAllTitle" xml:space="preserve">
-    <value>Empty trash?</value>
+    <value>An bhfuil an bruscar folamh?</value>
     <comment>Title for empty all confirmation modal</comment>
   </data>
   <data name="ConfirmEmptyAllMessage" xml:space="preserve">
-    <value>This will permanently delete {0} item(s). This action cannot be undone.</value>
+    <value>Scriosfaidh sé seo {0} mír(í) go buan. Ní féidir an gníomh seo a chealú.</value>
     <comment>Message in empty all confirmation modal</comment>
   </data>
   <!-- Status Messages -->
   <data name="Restoring" xml:space="preserve">
-    <value>Restoring item...</value>
+    <value>Ag athchóiriú míre...</value>
     <comment>Loading message while restoring</comment>
   </data>
   <data name="RestoreSuccess" xml:space="preserve">
-    <value>Item restored successfully.</value>
+    <value>Athchóiríodh an mhír go rathúil.</value>
     <comment>Success message after restore</comment>
   </data>
   <data name="RestoreFailed" xml:space="preserve">
-    <value>Failed to restore item.</value>
+    <value>Theip ar an mír a athchóiriú.</value>
     <comment>Error message when restore fails</comment>
   </data>
   <data name="Deleting" xml:space="preserve">
@@ -142,19 +142,19 @@
     <comment>Loading message while deleting</comment>
   </data>
   <data name="DeleteSuccess" xml:space="preserve">
-    <value>Item permanently deleted.</value>
+    <value>Mír scriosta go buan.</value>
     <comment>Success message after permanent deletion</comment>
   </data>
   <data name="DeleteFailed" xml:space="preserve">
-    <value>Failed to delete item.</value>
+    <value>Theip ar an mír a scriosadh.</value>
     <comment>Error message when deletion fails</comment>
   </data>
   <data name="EmptyAllSuccess" xml:space="preserve">
-    <value>All items permanently deleted.</value>
+    <value>Gach mír scriosta go buan.</value>
     <comment>Success message after emptying trash</comment>
   </data>
   <data name="EmptyAllPartialFailed" xml:space="preserve">
-    <value>Failed to delete {0} item(s).</value>
+    <value>Theip ar {0} mír(í) a scriosadh.</value>
     <comment>Error message when some deletions fail</comment>
   </data>
 </root>
