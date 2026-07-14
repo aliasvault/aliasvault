@@ -11,6 +11,7 @@ import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAu
 
 import { isAvAutofillAllowed, isAvSuppressSave } from '@/utils/autofill/Autofill';
 import { DEFAULT_POPUP_TYPE, isPopupType, popupTypeForFieldType, POPUP_TYPES, type PopupType } from '@/utils/autofill/PopupTypes';
+import { devLog } from '@/utils/DevLogger';
 import type { Item } from '@/utils/dist/core/models/vault';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -503,10 +504,14 @@ export default defineContentScript({
            * subtrees back in with av-enable="true".
            */
           if (!isAvAutofillAllowed(e.target as Element)) {
+            devLog('[Autofill] focusin skipped: av-disable marker active for', e.target);
             return;
           }
 
           const { isValid, inputElement } = validateInputField(e.target as Element);
+          if (!isValid) {
+            devLog('[Autofill] focusin skipped: not a fillable input field', e.target);
+          }
           if (isValid && inputElement) {
             /**
              * Immediately store the original autocomplete value and disable native autocomplete.
@@ -520,23 +525,27 @@ export default defineContentScript({
 
             const formDetector = new FormDetector(document, inputElement);
             if (!formDetector.containsLoginForm()) {
+              devLog('[Autofill] focusin skipped: no login form detected around', inputElement);
               return;
             }
 
             // Only show popup for autofill-triggerable fields
             const detectedFieldType = formDetector.getDetectedFieldType();
             if (!detectedFieldType) {
+              devLog('[Autofill] focusin skipped: field did not classify as an autofill-triggerable type', inputElement);
               return;
             }
 
             // Check if site allows autofill (site-specific disabled sites)
             if (!await isSiteAllowed()) {
+              devLog('[Autofill] focusin skipped: autofill is disabled for this site');
               return;
             }
 
             // Check if we should show autofill UI for this field type
             const popupType = popupTypeForFieldType(detectedFieldType);
             if (!await POPUP_RUNTIME[popupType].enabled()) {
+              devLog(`[Autofill] focusin skipped: ${popupType} popup is disabled in settings`);
               return;
             }
 
@@ -548,6 +557,7 @@ export default defineContentScript({
              * login / unlock / Enable 2FA forms).
              */
             if (isAvSuppressSave(inputElement) && !await hasMatchForCurrentUrl(popupType)) {
+              devLog('[Autofill] focusin skipped: av-suppress-save active and no matching vault items');
               return;
             }
 
@@ -558,7 +568,10 @@ export default defineContentScript({
 
             // Only show popup if debounce time has passed
             if (popupDebounceTimeHasPassed()) {
+              devLog(`[Autofill] Showing ${popupType} popup for ${detectedFieldType} field`, inputElement);
               await showPopupWithAuthCheck(inputElement, container, popupType);
+            } else {
+              devLog('[Autofill] Popup suppressed by debounce window (icon still shown)');
             }
           }
         };
@@ -736,6 +749,7 @@ export default defineContentScript({
 
           const formDetector = new FormDetector(document, inputElement);
           if (!formDetector.containsLoginForm()) {
+            devLog('[Autofill] showPopupForElement skipped: no login form detected around', inputElement);
             return;
           }
 
@@ -756,6 +770,10 @@ export default defineContentScript({
            * but if forceShow is true, we show the popup regardless.
            */
           const canShowPopup = forceShow || (await isSiteAllowed() && formDetector.isAutofillTriggerableField());
+
+          if (!canShowPopup) {
+            devLog('[Autofill] showPopupForElement skipped: site disabled or field not autofill-triggerable', inputElement);
+          }
 
           if (canShowPopup) {
             /*
