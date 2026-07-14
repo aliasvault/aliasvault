@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/command/with-contenv sh
 
 # Get verbosity level (0=minimal, 1=normal, 2=verbose)
 VERBOSITY="${ALIASVAULT_VERBOSITY:-0}"
@@ -33,7 +33,7 @@ if [ "$VERBOSITY" -le 1 ]; then
         echo ""
 
         # Check if admin password hash file exists to determine which message to show
-        if [ -f /secrets/admin_password_hash ]; then
+        if [ -f "${SECRETS_PATH:-/secrets}/admin_password_hash" ]; then
             # Admin password hash exists - show the legacy warning
             echo "🔑 Admin Login:"
             echo "  • Username: admin"
