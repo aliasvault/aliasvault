@@ -6,6 +6,9 @@
 # Get verbosity level (0=minimal, 1=normal, 2=verbose)
 VERBOSITY="${ALIASVAULT_VERBOSITY:-0}"
 
+# Secrets directory, configurable for orchestrators (e.g. Nomad) that reserve /secrets
+SECRETS_DIR="${SECRETS_PATH:-/secrets}"
+
 # Helper function for logging based on verbosity
 log() {
     level=$1
@@ -31,33 +34,33 @@ echo "[init] Starting AliasVault..."
 echo ""
 
 # Create required directories
-if [ ! -d /database/postgres ] || [ ! -d /logs/postgres ] || [ ! -d /certificates/ssl ] || [ ! -d /certificates/smtp ] || [ ! -d /secrets ] || [ ! -d /var/run/postgresql ]; then
-    mkdir -p /database/postgres /logs/postgres /certificates/ssl /certificates/smtp /secrets /var/run/postgresql
+if [ ! -d /database/postgres ] || [ ! -d /logs/postgres ] || [ ! -d /certificates/ssl ] || [ ! -d /certificates/smtp ] || [ ! -d "$SECRETS_DIR" ] || [ ! -d /var/run/postgresql ]; then
+    mkdir -p /database/postgres /logs/postgres /certificates/ssl /certificates/smtp "$SECRETS_DIR" /var/run/postgresql
     log 0 "[init] Required directories created"
 else
     log 0 "[init] ✅ Required directories already exist"
 fi
 
-if [ ! -f /secrets/postgres_password ]; then
+if [ ! -f "$SECRETS_DIR/postgres_password" ]; then
     log 0 "[init] → Generating PostgreSQL password..."
-    openssl rand -base64 32 | tr -d "\n" > /secrets/postgres_password
-    chmod 600 /secrets/postgres_password
+    openssl rand -base64 32 | tr -d "\n" > "$SECRETS_DIR/postgres_password"
+    chmod 600 "$SECRETS_DIR/postgres_password"
 else
     log 0 "[init] ✅ PostgreSQL password already exists "
 fi
 
-if [ ! -f /secrets/data_protection_cert_pass ]; then
+if [ ! -f "$SECRETS_DIR/data_protection_cert_pass" ]; then
     log 0 "[init] → Generating Data Protection Certificate password..."
-    openssl rand -base64 32 | tr -d "\n" > /secrets/data_protection_cert_pass
-    chmod 600 /secrets/data_protection_cert_pass
+    openssl rand -base64 32 | tr -d "\n" > "$SECRETS_DIR/data_protection_cert_pass"
+    chmod 600 "$SECRETS_DIR/data_protection_cert_pass"
 else
     log 0 "[init] ✅ Data Protection Certificate password already exists"
 fi
 
-if [ ! -f /secrets/jwt_key ]; then
+if [ ! -f "$SECRETS_DIR/jwt_key" ]; then
     log 0 "[init] → Generating JWT key..."
-    openssl rand -base64 32 | tr -d "\n" > /secrets/jwt_key
-    chmod 600 /secrets/jwt_key
+    openssl rand -base64 32 | tr -d "\n" > "$SECRETS_DIR/jwt_key"
+    chmod 600 "$SECRETS_DIR/jwt_key"
 else
     log 0 "[init] ✅ JWT key already exists"
 fi
@@ -67,7 +70,7 @@ fi
 log 0 "[init] ✅ Admin password configuration deferred to manual setup"
 
 # Read PostgreSQL password for database initialization
-POSTGRES_PASSWORD=$(cat /secrets/postgres_password)
+POSTGRES_PASSWORD=$(cat "$SECRETS_DIR/postgres_password")
 export PGDATA="/database/postgres"
 
 # Marker written only after the AliasVault role + database have been fully

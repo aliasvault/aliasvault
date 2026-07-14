@@ -18,14 +18,9 @@ services:
     volumes:
       - ./database:/database
       - ./logs:/logs
-      - ./secrets:/secrets
+      - ./secrets:${SECRETS_PATH:-/secrets}
       - ./certificates:/certificates
 
     environment:
-      HOSTNAME: "localhost"
-      PUBLIC_REGISTRATION_ENABLED: "true"
-      IP_LOGGING_ENABLED: "true"
       FORCE_HTTPS_REDIRECT: "false"
-      SUPPORT_EMAIL: ""
-      PRIVATE_EMAIL_DOMAINS: ""
-      HIDDEN_PRIVATE_EMAIL_DOMAINS: ""
+      PUBLIC_REGISTRATION_ENABLED: "true"

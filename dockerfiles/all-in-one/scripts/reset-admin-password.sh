@@ -10,6 +10,9 @@ NC='\033[0m' # No Color
 CONFIRM_RESET=false
 PASSWORD_LENGTH=16
 
+# Secrets directory, defaults to /secrets but optionally configurable via the SECRETS_PATH environment variable.
+SECRETS_DIR="${SECRETS_PATH:-/secrets}"
+
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -74,13 +77,13 @@ hash_password() {
 # Function to update the admin password hash file
 update_hash_file() {
     local hash=$1
-    local hash_file="/secrets/admin_password_hash"
+    local hash_file="$SECRETS_DIR/admin_password_hash"
 
-    # Create /secrets directory if it doesn't exist
-    if [ ! -d "/secrets" ]; then
-        mkdir -p /secrets
+    # Create secrets directory if it doesn't exist
+    if [ ! -d "$SECRETS_DIR" ]; then
+        mkdir -p "$SECRETS_DIR"
         if [ $? -ne 0 ]; then
-            echo -e "${RED}Error: Failed to create /secrets directory${NC}" >&2
+            echo -e "${RED}Error: Failed to create $SECRETS_DIR directory${NC}" >&2
             return 1
         fi
     fi
@@ -116,7 +119,7 @@ main() {
     # Check if running in Docker container
     if [ ! -f /.dockerenv ] && [ ! -f /run/.containerenv ]; then
         echo -e "${YELLOW}Warning: This script appears to be running outside of a Docker container${NC}"
-        echo -e "${YELLOW}The password hash file will be created at: /secrets/admin_password_hash${NC}"
+        echo -e "${YELLOW}The password hash file will be created at: $SECRETS_DIR/admin_password_hash${NC}"
         echo ""
     fi
 
@@ -171,7 +174,7 @@ main() {
     echo ""
     echo -e "${YELLOW}IMPORTANT:${NC}"
     echo -e "1. Save this password securely - it will not be shown again"
-    echo -e "2. The password hash has been saved to /secrets/admin_password_hash"
+    echo -e "2. The password hash has been saved to $SECRETS_DIR/admin_password_hash"
     echo -e "3. Restart the Docker container for the new password to take effect"
     echo ""
 

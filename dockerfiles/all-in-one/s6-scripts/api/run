@@ -6,7 +6,7 @@ cd /app/api
 VERBOSITY="${ALIASVAULT_VERBOSITY:-0}"
 
 # Read PostgreSQL password from file
-POSTGRES_PASSWORD=$(cat /secrets/postgres_password)
+POSTGRES_PASSWORD=$(cat "${SECRETS_PATH:-/secrets}/postgres_password")
 
 # Wait for PostgreSQL to be ready
 if [ "$VERBOSITY" -ge 1 ]; then

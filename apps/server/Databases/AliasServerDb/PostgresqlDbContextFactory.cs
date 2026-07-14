@@ -117,7 +117,14 @@ public class PostgresqlDbContextFactory : IAliasServerDbContextFactory
     /// <exception cref="KeyNotFoundException">Thrown when the PostgreSQL password cannot be found.</exception>
     private static string GetPostgresPasswordFromSecretFile()
     {
-        const string secretsFilePath = "/secrets/postgres_password";
+        // Secrets directory is configurable via SECRETS_PATH. Defaults to /secrets.
+        var secretsPath = Environment.GetEnvironmentVariable("SECRETS_PATH");
+        if (string.IsNullOrEmpty(secretsPath))
+        {
+            secretsPath = "/secrets";
+        }
+
+        var secretsFilePath = Path.Combine(secretsPath, "postgres_password");
 
         if (!File.Exists(secretsFilePath))
         {
