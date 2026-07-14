@@ -464,6 +464,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      # Free up disk space of unused tools on the GitHub runner as the all-in-one build consumes a lot of disk space.
+      - name: Free up disk space
+        run: |
+          echo "Disk before cleanup:"
+          df -h /
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          sudo docker image prune --all --force || true
+          echo "Disk after cleanup:"
+          df -h /
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
 
