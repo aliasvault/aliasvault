@@ -154,14 +154,22 @@ public class VaultMergeService {
         let db = try openDatabase(from: decrypted)
         defer { sqlite3_close(db) }
 
-        // Read tables needed for pruning
-        let pruneTableNames = ["Items", "FieldValues", "Attachments", "TotpCodes", "Passkeys", "Logos"]
+        // Read only the columns the Rust pruner inspects. Blob columns are reduced
+        // to a 1-byte presence marker to avoid serializing large binary data to JSON.
+        let pruneTableQueries: [(name: String, sql: String)] = [
+            ("Items", "SELECT Id, IsDeleted, DeletedAt, LogoId FROM Items"),
+            ("FieldValues", "SELECT ItemId, IsDeleted FROM FieldValues"),
+            ("Attachments", "SELECT Id, ItemId, IsDeleted, substr(Blob, 1, 1) AS Blob FROM Attachments"),
+            ("TotpCodes", "SELECT ItemId, IsDeleted FROM TotpCodes"),
+            ("Passkeys", "SELECT ItemId, IsDeleted FROM Passkeys"),
+            ("Logos", "SELECT Id, IsDeleted, substr(FileData, 1, 1) AS FileData FROM Logos")
+        ]
         var tables: [[String: Any]] = []
 
-        for tableName in pruneTableNames {
+        for entry in pruneTableQueries {
             tables.append([
-                "name": tableName,
-                "records": try readTable(from: db, tableName: tableName)
+                "name": entry.name,
+                "records": try readQuery(from: db, tableName: entry.name, sql: entry.sql)
             ])
         }
 
@@ -263,6 +271,10 @@ public class VaultMergeService {
     }
 
     private func readTable(from db: OpaquePointer, tableName: String) throws -> [[String: Any]] {
+        return try readQuery(from: db, tableName: tableName, sql: "SELECT * FROM \(tableName)")
+    }
+
+    private func readQuery(from db: OpaquePointer, tableName: String, sql: String) throws -> [[String: Any]] {
         var records: [[String: Any]] = []
 
         // Check if table exists
@@ -287,7 +299,6 @@ public class VaultMergeService {
         }
 
         // Read all records
-        let sql = "SELECT * FROM \(tableName)"
         var stmt: OpaquePointer?
         let selectPrepareResult = sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
         guard selectPrepareResult == SQLITE_OK else {

@@ -268,13 +268,24 @@ export class VaultMergeService {
       const db = this.loadDatabase(SQL, vaultBase64);
 
       try {
-        // Tables needed for pruning
-        const tableNames = ['Items', 'FieldValues', 'Attachments', 'TotpCodes', 'Passkeys', 'Logos'];
+        /*
+         * Read only the columns the Rust pruner inspects. Blob columns are reduced
+         * to a 1-byte presence marker to avoid serializing megabytes of binary data
+         * to JSON on every sync.
+         */
+        const tableQueries: Record<string, string> = {
+          Items: 'SELECT Id, IsDeleted, DeletedAt, LogoId FROM Items',
+          FieldValues: 'SELECT ItemId, IsDeleted FROM FieldValues',
+          Attachments: 'SELECT Id, ItemId, IsDeleted, substr(Blob, 1, 1) AS Blob FROM Attachments',
+          TotpCodes: 'SELECT ItemId, IsDeleted FROM TotpCodes',
+          Passkeys: 'SELECT ItemId, IsDeleted FROM Passkeys',
+          Logos: 'SELECT Id, IsDeleted, substr(FileData, 1, 1) AS FileData FROM Logos',
+        };
 
         // Read tables as JSON
-        const tables: TableData[] = tableNames.map(name => ({
+        const tables: TableData[] = Object.entries(tableQueries).map(([name, query]) => ({
           name,
-          records: this.readTableAsJson(db, name),
+          records: this.readQueryAsJson(db, query),
         }));
 
         // Call Rust WASM prune
@@ -363,8 +374,18 @@ export class VaultMergeService {
    * @returns Array of records as JSON objects
    */
   private readTableAsJson(db: Database, tableName: string): JsonRecord[] {
+    return this.readQueryAsJson(db, `SELECT * FROM ${tableName}`);
+  }
+
+  /**
+   * Read all rows of a query as JSON objects.
+   * @param db - The database to query
+   * @param query - The SELECT query to run
+   * @returns Array of records as JSON objects
+   */
+  private readQueryAsJson(db: Database, query: string): JsonRecord[] {
     const records: JsonRecord[] = [];
-    const stmt = db.prepare(`SELECT * FROM ${tableName}`);
+    const stmt = db.prepare(query);
 
     while (stmt.step()) {
       const obj = stmt.getAsObject();

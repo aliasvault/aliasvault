@@ -220,15 +220,23 @@ object VaultMergeService {
             val db = SQLiteDatabase.openDatabase(dbFile.absolutePath, null, SQLiteDatabase.OPEN_READWRITE)
 
             try {
-                // Read tables needed for pruning
-                val pruneTableNames = listOf("Items", "FieldValues", "Attachments", "TotpCodes", "Passkeys", "Logos")
+                // Read only the columns the Rust pruner inspects. Blob columns are reduced
+                // to a 1-byte presence marker to avoid serializing large binary data to JSON.
+                val pruneTableQueries = listOf(
+                    "Items" to "SELECT Id, IsDeleted, DeletedAt, LogoId FROM Items",
+                    "FieldValues" to "SELECT ItemId, IsDeleted FROM FieldValues",
+                    "Attachments" to "SELECT Id, ItemId, IsDeleted, substr(Blob, 1, 1) AS Blob FROM Attachments",
+                    "TotpCodes" to "SELECT ItemId, IsDeleted FROM TotpCodes",
+                    "Passkeys" to "SELECT ItemId, IsDeleted FROM Passkeys",
+                    "Logos" to "SELECT Id, IsDeleted, substr(FileData, 1, 1) AS FileData FROM Logos",
+                )
                 val tables = JSONArray()
 
-                for (tableName in pruneTableNames) {
+                for ((tableName, query) in pruneTableQueries) {
                     tables.put(
                         JSONObject().apply {
                             put("name", tableName)
-                            put("records", readTable(db, tableName))
+                            put("records", readQuery(db, tableName, query))
                         },
                     )
                 }
@@ -275,6 +283,10 @@ object VaultMergeService {
     }
 
     private fun readTable(db: SQLiteDatabase, tableName: String): JSONArray {
+        return readQuery(db, tableName, "SELECT * FROM $tableName")
+    }
+
+    private fun readQuery(db: SQLiteDatabase, tableName: String, query: String): JSONArray {
         val records = JSONArray()
 
         // Check if table exists
@@ -287,7 +299,7 @@ object VaultMergeService {
         if (!tableExists) return records
 
         // Read all records
-        val cursor = db.rawQuery("SELECT * FROM $tableName", null)
+        val cursor = db.rawQuery(query, null)
         try {
             while (cursor.moveToNext()) {
                 val record = JSONObject()
