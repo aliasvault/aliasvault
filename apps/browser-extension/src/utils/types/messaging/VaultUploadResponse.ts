@@ -4,5 +4,7 @@ export type VaultUploadResponse = {
     status?: number,
     newRevisionNumber?: number,
     /** Mutation sequence at the start of upload, for race detection */
-    mutationSeqAtStart?: number
+    mutationSeqAtStart?: number,
+    /** Whether expired trash items were pruned from the vault during upload */
+    vaultPruned?: boolean
 };
