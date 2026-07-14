@@ -155,7 +155,11 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         }
 
         // Retrieve latest vault of user which contains the current encryption settings.
-        var latestVault = user.Vaults.OrderByDescending(x => x.RevisionNumber).Select(x => new { x.Salt, x.Verifier, x.EncryptionType, x.EncryptionSettings, x.RevisionNumber, x.Version }).First();
+        var latestVault = await context.Vaults
+            .Where(x => x.UserId == user.Id)
+            .OrderByDescending(x => x.RevisionNumber)
+            .Select(x => new { x.Salt, x.Verifier, x.EncryptionType, x.EncryptionSettings, x.RevisionNumber, x.Version })
+            .FirstAsync();
 
         // Reject vaults with a version that is lower than the last vault version.
         if (VersionHelper.IsVersionOlder(model.Version, latestVault.Version))
@@ -255,7 +259,11 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
 
         // Check if the provided revision number is equal to the latest revision number.
         // If not, then the client is trying to update an older vault which we don't allow to prevent data loss.
-        var latestVault = user.Vaults.OrderByDescending(x => x.RevisionNumber).First();
+        var latestVault = await context.Vaults
+            .Where(x => x.UserId == user.Id)
+            .OrderByDescending(x => x.RevisionNumber)
+            .Select(x => new { x.RevisionNumber, x.Version })
+            .FirstAsync();
         if (VersionHelper.IsVersionOlder(model.Version, latestVault.Version))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
