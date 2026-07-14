@@ -283,10 +283,11 @@ export async function handleLockVault(): Promise<messageBoolResponse> {
  * This is safe to call during forced logout as it preserves vault data.
  */
 export async function handleClearSession(): Promise<messageBoolResponse> {
-  // Clear auth tokens
+  // Clear auth tokens and last sync error
   await storage.removeItems([
     'local:accessToken',
     'local:refreshToken',
+    'local:lastSyncError',
   ]);
 
   // Clear session-only data (security: encryption key must not persist)
