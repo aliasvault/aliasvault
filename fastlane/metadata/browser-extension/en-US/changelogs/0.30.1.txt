@@ -1,0 +1,4 @@
+- Improve vault syncing performance
+- Add Irish and Hungarian language options to app
+- Add Romanian language option to passphrase generator
+- Show server version in settings footer
