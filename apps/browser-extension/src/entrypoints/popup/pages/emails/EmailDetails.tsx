@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 
 import Modal from '@/entrypoints/popup/components/Dialogs/Modal';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
@@ -26,6 +26,9 @@ const EmailDetails: React.FC = (): React.ReactElement => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Where the email was opened from (e.g. the owning item); set by the recent-emails list.
+  const fromPath = searchParams.get('returnTo');
   const dbContext = useDb();
   const webApi = useWebApi();
   const [error, setError] = useState<string | null>(null);
@@ -39,10 +42,11 @@ const EmailDetails: React.FC = (): React.ReactElement => {
   const { setHeaderButtons } = useHeaderButtons();
 
   useEffect(() => {
-    // For popup windows, ensure we have proper history state for navigation
-    if (PopoutUtility.isPopup()) {
-      // Clear existing history and create fresh entries
-      window.history.replaceState({}, '', `popup.html#/emails`);
+    // For expanded windows, ensure we have proper history state for navigation.
+    const isExpandedWindow = new URLSearchParams(window.location.search).get('expanded') === 'true';
+    if (isExpandedWindow) {
+      const parentPath = PopoutUtility.getReturnPath() ?? '/emails';
+      window.history.replaceState({}, '', `popup.html#${parentPath}`);
       window.history.pushState({}, '', `popup.html#/emails/${id}`);
     }
 
@@ -144,22 +148,24 @@ const EmailDetails: React.FC = (): React.ReactElement => {
   const handleDelete = useCallback(async () : Promise<void> => {
     try {
       await webApi.delete(`Email/${id}`);
-      if (PopoutUtility.isPopup()) {
-        window.close();
+      // Go back to wherever the email was opened from.
+      if (window.history.length > 1) {
+        navigate(-1);
       } else {
-        navigate('/emails');
+        navigate(fromPath ?? '/emails');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete email');
     }
-  }, [id, webApi, navigate]);
+  }, [id, webApi, navigate, fromPath]);
 
   /**
    * Open the email details in a new expanded popup.
    */
   const openInNewPopup = useCallback((): void => {
-    PopoutUtility.openInNewPopup(`/emails/${id}`);
-  }, [id]);
+    // Carry the origin into the new window so its back/delete returns there.
+    PopoutUtility.openInNewPopup(`/emails/${id}`, fromPath ?? undefined);
+  }, [id, fromPath]);
 
   /**
    * Handle downloading an attachment.

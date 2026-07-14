@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
@@ -29,6 +29,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
   const [displayedCount, setDisplayedCount] = useState(2);
   const webApi = useWebApi();
   const dbContext = useDb();
+  const location = useLocation();
 
   const emailsPerLoad = 3;
   const canLoadMore = displayedCount < emails.length;
@@ -288,7 +289,8 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
         ) : (
           <Link
             key={mail.id}
-            to={`/emails/${mail.id}`}
+            // Carry where we came from so the email's back/delete (incl. popped-out window) returns here, not the emails list.
+            to={`/emails/${mail.id}?returnTo=${encodeURIComponent(`${location.pathname}${location.search}`)}`}
             className={`flex justify-between items-center p-2 ps-3 pe-3 rounded cursor-pointer bg-white dark:bg-gray-800 shadow hover:shadow-md transition-all border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${
               mail.id > lastEmailId ? 'bg-yellow-50 dark:bg-yellow-900/30' : ''
             }`}
