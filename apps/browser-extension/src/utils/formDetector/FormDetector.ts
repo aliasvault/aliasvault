@@ -587,11 +587,10 @@ export class FormDetector {
         if (style.position === 'absolute' || style.position === 'fixed') {
           const left = parseFloat(style.left);
           const top = parseFloat(style.top);
-          const right = parseFloat(style.right);
-          const bottom = parseFloat(style.bottom);
 
           // If positioned far off-screen (more than 5000px away)
-          if (left < -5000 || top < -5000 || right < -5000 || bottom < -5000) {
+          if (left < -5000 || top < -5000) {
+            this.lastHiddenReason = `${describeElement(current)} — positioned off-screen (position=${style.position}, left=${style.left}, top=${style.top})`;
             let parent: HTMLElement | null = current;
             while (parent) {
               if (checkOpacity) {
