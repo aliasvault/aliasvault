@@ -2361,7 +2361,6 @@ configure_letsencrypt() {
     fi
 
     # Get contact email for Let's Encrypt
-    SUPPORT_EMAIL=$(grep "^SUPPORT_EMAIL=" "$ENV_FILE" | cut -d '=' -f2)
     LETSENCRYPT_EMAIL=""
 
     while true; do
@@ -3574,12 +3573,6 @@ handle_trusted_proxies_configuration() {
 
 check_and_populate_env() {
     printf "${CYAN}ℹ Checking .env values...${NC} ${GREEN}✓${NC}\n"
-
-    # SUPPORT_EMAIL
-    if ! grep -q "^SUPPORT_EMAIL=" "$ENV_FILE"; then
-        read -p "Enter server admin support email address that is shown on contact page (optional, press Enter to skip): " SUPPORT_EMAIL
-        update_env_var "SUPPORT_EMAIL" "$SUPPORT_EMAIL"
-    fi
 
     # JWT_KEY
     if [ ! -f "${SECRETS_DIR}/jwt_key" ] || [ -z "$(cat "${SECRETS_DIR}/jwt_key" 2>/dev/null)" ]; then
