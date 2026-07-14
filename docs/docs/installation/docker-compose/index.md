@@ -37,18 +37,18 @@ services:
     volumes:
       - ./database:/database
       - ./logs:/logs
-      - ./secrets:/secrets
+      - ./secrets:${SECRETS_PATH:-/secrets}
       - ./certificates:/certificates
 
     environment:
-      HOSTNAME: "localhost"
-      PUBLIC_REGISTRATION_ENABLED: "true"
-      IP_LOGGING_ENABLED: "true"
       FORCE_HTTPS_REDIRECT: "false"
-      SUPPORT_EMAIL: ""
-      PRIVATE_EMAIL_DOMAINS: ""
-      SMTP_TLS_ENABLED: "false"
+      PUBLIC_REGISTRATION_ENABLED: "true"
 ```
+
+:::tip
+For a full overview of all available environment variables and what they do, see [.env.example](https://github.com/aliasvault/aliasvault/blob/main/.env.example) in the AliasVault repository.
+:::
+
 3. Run `docker compose up -d` to start the container.
 4. After the container has started, AliasVault should now be running. You can access it at:
 
