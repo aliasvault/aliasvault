@@ -348,22 +348,22 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
 
 /// True if the attachment's Blob field is present and non-empty.
 fn attachment_has_blob_bytes(attachment: &Record) -> bool {
-    match attachment.get("Blob") {
-        None => false,
-        Some(serde_json::Value::Null) => false,
-        Some(serde_json::Value::String(s)) => !s.is_empty(),
-        Some(serde_json::Value::Array(a)) => !a.is_empty(),
-        Some(_) => true,
-    }
+    value_has_bytes(attachment.get("Blob"))
 }
 
 /// True if the logo's FileData field is present and non-empty.
 fn logo_has_file_data_bytes(logo: &Record) -> bool {
-    match logo.get("FileData") {
+    value_has_bytes(logo.get("FileData"))
+}
+
+/// True if a JSON value represents non-empty blob bytes.
+fn value_has_bytes(value: Option<&serde_json::Value>) -> bool {
+    match value {
         None => false,
         Some(serde_json::Value::Null) => false,
         Some(serde_json::Value::String(s)) => !s.is_empty(),
         Some(serde_json::Value::Array(a)) => !a.is_empty(),
+        Some(serde_json::Value::Object(o)) => !o.is_empty(),
         Some(_) => true,
     }
 }
@@ -970,6 +970,60 @@ mod tests {
 
         assert_eq!(output.stats.attachment_blobs_cleared, 0);
         assert!(output.statements.is_empty());
+    }
+
+    #[test]
+    fn test_sweeper_skips_empty_uint8array_object_blob() {
+        // An already-cleared blob must not generate a clear statement on every prune.
+        let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+        let input = PruneInput {
+            tables: vec![
+                TableData {
+                    name: "Items".to_string(),
+                    records: vec![],
+                },
+                TableData {
+                    name: "Attachments".to_string(),
+                    records: vec![make_attachment_record("att-empty-object", "item-1", true, serde_json::json!({}))],
+                },
+                TableData {
+                    name: "Logos".to_string(),
+                    records: vec![make_logo_record_with_blob("logo-empty-object", true, serde_json::json!({}))],
+                },
+            ],
+            retention_days: 30,
+            current_time: now_str,
+        };
+
+        let output = prune_vault(input).unwrap();
+
+        assert_eq!(output.stats.attachment_blobs_cleared, 0);
+        assert_eq!(output.stats.logo_blobs_cleared, 0);
+        assert!(output.statements.is_empty());
+    }
+
+    #[test]
+    fn test_sweeper_clears_nonempty_uint8array_object_blob() {
+        // Non-empty blobs are serialized as {"0":104,...}.
+        let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+        let input = PruneInput {
+            tables: vec![
+                TableData {
+                    name: "Items".to_string(),
+                    records: vec![],
+                },
+                TableData {
+                    name: "Attachments".to_string(),
+                    records: vec![make_attachment_record("att-object", "item-1", true, serde_json::json!({"0": 104, "1": 105}))],
+                },
+            ],
+            retention_days: 30,
+            current_time: now_str,
+        };
+
+        let output = prune_vault(input).unwrap();
+
+        assert_eq!(output.stats.attachment_blobs_cleared, 1);
     }
 
     #[test]
