@@ -111,7 +111,7 @@
       "syncConflictMaxRetries": "Níorbh fhéidir an cruinneachán a shioncrónú tar éis roinnt iarrachtaí. Déan iarracht arís ar ball.",
       "mergeFailed": "Theip ar athruithe an chruinnithe a chumasc. Déan iarracht arís.",
       "vaultTooLarge": "Tá an cruinneachán rómhór don fhreastalaí le glacadh leis. Bain triail as roinnt míreanna nó ceangaltán a bhaint chun an méid a laghdú agus déan iarracht arís.",
-      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
+      "vaultSyncTimeout": "Chuaigh an t-am isteach ar shioncrónú an tseomra cruinneacháin. Is féidir leis seo tarlú nuair a bhíonn an seomra cruinneacháin mór nó nuair a bhíonn an nasc idirlín mall. Déan iarracht arís.",
       "invalidCode": "Cuir isteach cód fíordheimhnithe 6 dhigit bailí le do thoil.",
       "serverError": "Níorbh fhéidir teacht ar fhreastalaí AliasVault. Déan iarracht arís ar ball nó déan teagmháil leis an tacaíocht má leanann an fhadhb.",
       "wrongPassword": "Pasfhocal mícheart. Déan iarracht arís.",
