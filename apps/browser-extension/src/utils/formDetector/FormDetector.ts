@@ -1,5 +1,20 @@
+import { devLog } from "@/utils/DevLogger";
+
 import { CombinedEmailVerificationPatterns, CombinedFieldExclusionPatterns, CombinedFieldPatterns, CombinedGenderOptionPatterns, CombinedStopWords, FieldPatternEntry, includeTerms, specificIncludeTerms } from "./FieldPatterns";
 import { DetectedFieldType, FormFields } from "./types/FormFields";
+
+/**
+ * Short human-readable identifier for an element, used in devLog traces.
+ */
+function describeElement(element: Element | null): string {
+  if (!element) {
+    return '<null>';
+  }
+  const id = element.id ? `#${element.id}` : '';
+  const name = element.getAttribute('name') ? `[name=${element.getAttribute('name')}]` : '';
+  const cls = element.className && typeof element.className === 'string' ? `.${element.className.trim().split(/\s+/).slice(0, 3).join('.')}` : '';
+  return `${element.tagName.toLowerCase()}${id}${name}${cls}`;
+}
 
 /**
  * Form detector.
@@ -8,6 +23,9 @@ export class FormDetector {
   private readonly document: Document;
   private readonly clickedElement: HTMLElement | null;
   private readonly visibilityCache: Map<HTMLElement, boolean>;
+
+  /** Which element/check caused the last isElementVisible() call to return false (devLog diagnostics). */
+  private lastHiddenReason: string | null = null;
 
   /**
    * Constructor.
@@ -39,6 +57,10 @@ export class FormDetector {
       if (parentVisible && !elementStrictlyHidden) {
         this.clickedElement = clickedElement;
       } else {
+        devLog('[FormDetector] Clicked element rejected as hidden:', describeElement(clickedElement),
+          !parentVisible
+            ? `— failing check: ${this.lastHiddenReason ?? `unknown (walk broke at ${describeElement(parent)})`}`
+            : `— element itself hidden (display=${style?.display}, visibility=${style?.visibility})`);
         this.clickedElement = null;
       }
     } else {
@@ -75,6 +97,7 @@ export class FormDetector {
     const inputCount = formWrapper.querySelectorAll('input').length;
 
     if (inputCount > 200) {
+      devLog('[FormDetector] containsLoginForm: false — wrapper', describeElement(formWrapper), `has ${inputCount} inputs (>200 sanity limit)`);
       return false;
     }
 
@@ -82,6 +105,9 @@ export class FormDetector {
     const hasPasswordField = this.containsPasswordField(formWrapper);
     const hasUsernameOrEmailField = this.containsLikelyUsernameOrEmailField(formWrapper);
     const hasTotpField = this.containsTotpField(formWrapper);
+
+    devLog('[FormDetector] containsLoginForm: wrapper', describeElement(formWrapper),
+      `password=${hasPasswordField} usernameOrEmail=${hasUsernameOrEmailField} totp=${hasTotpField}`);
 
     if (hasPasswordField || hasUsernameOrEmailField || hasTotpField) {
       return true;
@@ -458,7 +484,11 @@ export class FormDetector {
      * The cache is only used for the default strict visibility checks.
      */
     if (checkOpacity && this.visibilityCache.has(element)) {
-      return this.visibilityCache.get(element)!;
+      const cached = this.visibilityCache.get(element)!;
+      if (!cached) {
+        this.lastHiddenReason = `${describeElement(element)} — cached hidden result from earlier check`;
+      }
+      return cached;
     }
 
     let current: HTMLElement | null = element;
@@ -484,6 +514,7 @@ export class FormDetector {
 
         // Check for display:none
         if (style.display === 'none') {
+          this.lastHiddenReason = `${describeElement(current)} — display:none`;
           // Cache and return false for this element and all its parents
           let parent: HTMLElement | null = current;
           while (parent) {
@@ -497,6 +528,7 @@ export class FormDetector {
 
         // Check for visibility:hidden
         if (style.visibility === 'hidden') {
+          this.lastHiddenReason = `${describeElement(current)} — visibility:hidden`;
           // Cache and return false for this element and all its parents
           let parent: HTMLElement | null = current;
           while (parent) {
@@ -510,6 +542,7 @@ export class FormDetector {
 
         // Check opacity:0 only when checkOpacity is true (allows transition animations otherwise)
         if (checkOpacity && parseFloat(style.opacity) === 0) {
+          this.lastHiddenReason = `${describeElement(current)} — opacity:0`;
           // Cache and return false for this element and all its parents
           let parent: HTMLElement | null = current;
           while (parent) {
@@ -539,6 +572,7 @@ export class FormDetector {
           // Only reject if both bounding rect is 0x0 AND has explicit zero-sizing styles
           if (rect.width === 0 && rect.height === 0 &&
               (height === 0 || width === 0 || maxHeight === 0 || maxWidth === 0)) {
+            this.lastHiddenReason = `${describeElement(current)} — zero-size input (rect 0x0 with explicit zero sizing)`;
             if (checkOpacity) {
               this.visibilityCache.set(current, false);
             }
@@ -581,6 +615,7 @@ export class FormDetector {
           if (clipMatch) {
             const [, top, right, bottom, left] = clipMatch.map(Number);
             if (top === 0 && right === 0 && bottom === 0 && left === 0) {
+              this.lastHiddenReason = `${describeElement(current)} — clip:rect(0,0,0,0)`;
               let parent: HTMLElement | null = current;
               while (parent) {
                 if (checkOpacity) {
@@ -1582,12 +1617,14 @@ export class FormDetector {
    */
   public getDetectedFieldType(): DetectedFieldType | null {
     if (!this.clickedElement) {
+      devLog('[FormDetector] getDetectedFieldType: null — no (visible) clicked element available');
       return null;
     }
 
     // First check if we already detected and stored the field type
     const storedFieldType = this.clickedElement.getAttribute('data-av-field-type');
     if (storedFieldType && Object.values(DetectedFieldType).includes(storedFieldType as DetectedFieldType)) {
+      devLog('[FormDetector] getDetectedFieldType:', storedFieldType, '(stored data-av-field-type)');
       return storedFieldType as DetectedFieldType;
     }
 
@@ -1619,6 +1656,7 @@ export class FormDetector {
     // Check if any of the elements is a username field
     const usernameFields = this.findAllInputFields(formWrapper as HTMLFormElement | null, CombinedFieldPatterns.username, ['text'], [], checkVisibility);
     if (usernameFields.some(input => elementsToCheck.includes(input))) {
+      devLog('[FormDetector] getDetectedFieldType: username —', describeElement(this.clickedElement));
       return DetectedFieldType.Username;
     }
 
@@ -1626,21 +1664,30 @@ export class FormDetector {
     const passwordField = this.findPasswordField(formWrapper as HTMLFormElement | null);
     if ((passwordField.primary && elementsToCheck.includes(passwordField.primary)) ||
         (passwordField.confirm && elementsToCheck.includes(passwordField.confirm))) {
+      devLog('[FormDetector] getDetectedFieldType: password —', describeElement(this.clickedElement));
       return DetectedFieldType.Password;
     }
 
     // Check if any of the elements is an email field
     const emailFields = this.findAllInputFields(formWrapper as HTMLFormElement | null, CombinedFieldPatterns.email, ['text', 'email'], [], checkVisibility);
     if (emailFields.some(input => elementsToCheck.includes(input))) {
+      devLog('[FormDetector] getDetectedFieldType: email —', describeElement(this.clickedElement));
       return DetectedFieldType.Email;
     }
 
     // Check if any of the elements is a TOTP field
     const totpField = this.findTotpField(formWrapper as HTMLFormElement | null);
     if (totpField && elementsToCheck.includes(totpField)) {
+      devLog('[FormDetector] getDetectedFieldType: totp —', describeElement(this.clickedElement));
       return DetectedFieldType.Totp;
     }
 
+    devLog('[FormDetector] getDetectedFieldType: null — clicked element', describeElement(this.clickedElement),
+      'matched no field type. Candidates in wrapper', describeElement(formWrapper),
+      `— username: [${usernameFields.map(f => describeElement(f)).join(', ')}],`,
+      `password: [${[passwordField.primary, passwordField.confirm].filter(Boolean).map(f => describeElement(f)).join(', ')}],`,
+      `email: [${emailFields.map(f => describeElement(f)).join(', ')}],`,
+      `totp: [${totpField ? describeElement(totpField) : ''}]`);
     return null;
   }
 
