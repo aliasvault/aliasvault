@@ -111,6 +111,7 @@
       "syncConflictMaxRetries": "Sinkronisasi brankas gagal setelah beberapa kali percobaan. Silakan coba lagi nanti.",
       "mergeFailed": "Gagal menyatukan perubahan vault. Silakan coba lagi.",
       "vaultTooLarge": "Vault terlalu besar untuk diterima server. Coba untuk menghapus beberapa item atau lampiran untuk mengurangi ukuran dan coba lagi.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Mohon masukkan 6-digit kode autentikasi yang valid.",
       "serverError": "Tidak dapat menjangkau Server AliasVault. Silakan coba lagi nanti atau hubungi layanan pelanggan jika masalah berlanjut.",
       "wrongPassword": "Kata sandi salah. Silakan coba lagi.",

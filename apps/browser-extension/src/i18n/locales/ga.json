@@ -47,7 +47,7 @@
     "back": "Ar ais",
     "next": "Ar Aghaidh",
     "use": "Úsáid",
-    "add": "Add",
+    "add": "Cuir leis",
     "delete": "Scrios",
     "undo": "Cuir ar ceal",
     "save": "Sábháil",
@@ -111,11 +111,12 @@
       "syncConflictMaxRetries": "Níorbh fhéidir an cruinneachán a shioncrónú tar éis roinnt iarrachtaí. Déan iarracht arís ar ball.",
       "mergeFailed": "Theip ar athruithe an chruinnithe a chumasc. Déan iarracht arís.",
       "vaultTooLarge": "Tá an cruinneachán rómhór don fhreastalaí le glacadh leis. Bain triail as roinnt míreanna nó ceangaltán a bhaint chun an méid a laghdú agus déan iarracht arís.",
+      "vaultSyncTimeout": "Chuaigh an t-am isteach ar shioncrónú an tseomra cruinneacháin. Is féidir leis seo tarlú nuair a bhíonn an seomra cruinneacháin mór nó nuair a bhíonn an nasc idirlín mall. Déan iarracht arís.",
       "invalidCode": "Cuir isteach cód fíordheimhnithe 6 dhigit bailí le do thoil.",
       "serverError": "Níorbh fhéidir teacht ar fhreastalaí AliasVault. Déan iarracht arís ar ball nó déan teagmháil leis an tacaíocht má leanann an fhadhb.",
       "wrongPassword": "Pasfhocal mícheart. Déan iarracht arís.",
       "sessionExpired": "Tá do sheisiún imithe in éag. Logáil isteach arís le do thoil.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "mobileLoginRequestExpired": "Iarratas logála isteach soghluaiste imithe in éag. Athlódáil an leathanach agus déan iarracht arís."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Tharla earráid anaithnid. Déan iarracht arís.",
@@ -197,12 +198,12 @@
     "saveItem": "Sábháil Mír",
     "itemDetails": "Sonraí na Míre",
     "editItem": "Cuir Mír in Eagar",
-    "untitled": "Untitled",
+    "untitled": "Gan Teideal",
     "newFolder": "Fillteán Nua",
-    "createFolder": "Create Folder",
-    "editFolder": "Edit Folder",
-    "folderName": "Folder Name",
-    "folderNameRequired": "Folder name is required",
+    "createFolder": "Cruthaigh Fillteán",
+    "editFolder": "Cuir Fillteán in Eagar",
+    "folderName": "Ainm an Fhillteáin",
+    "folderNameRequired": "Tá ainm fillteáin ag teastáil",
     "folder": "Fillteán",
     "welcomeTitle": "Fáilte go AliasVault!",
     "welcomeDescription": "Chun síneadh brabhsálaí AliasVault a úsáid: nascleanúint chuig suíomh Gréasáin agus bain úsáid as an bhfuinneog aníos uathlíonta AliasVault chun dintiúir nua a chruthú.",
@@ -215,8 +216,8 @@
     "clearFilter": "Glan an scagaire",
     "emptyFolderHint": "Tá an fillteán seo folamh. Chun míreanna a bhogadh chuig an bhfillteán seo, cuir an mhír in eagar agus tapáil deilbhín an fhillteáin sa réimse ainm.",
     "allItemsInFolders": "Tá do chuid míreanna go léir eagraithe i bhfillteáin. Cliceáil ar fhillteán thuas chun do chuid dintiúir a fheiceáil, nó bain úsáid as an gcuardach chun míreanna sonracha a aimsiú.",
-    "deleteFolder": "Delete Folder",
-    "deleteFolderKeepItems": "Delete folder only",
+    "deleteFolder": "Scrios Fillteán",
+    "deleteFolderKeepItems": "Scrios fillteán amháin",
     "deleteFolderKeepItemsDescription": "Bogfar míreanna chuig an bhfillteán tuismitheora.",
     "deleteFolderAndItems": "Scrios an fillteán agus na míreanna go léir",
     "deleteFolderAndItemsDescription": "Bogfar {{count}} mír(í) go Scriosta le Déanaí.",
@@ -277,23 +278,23 @@
   "itemTypes": {
     "selectType": "Cuir Mír Nua leis",
     "typeLabel": "Cineál Mír",
-    "creating": "Creating",
-    "editing": "Editing",
+    "creating": "Ag cruthú",
+    "editing": "Eagarthóireacht",
     "regenerateAlias": "Ailias a athghiniúint",
     "addCustomField": "Cuir réimse saincheaptha leis",
-    "fieldLabel": "Field Label",
-    "enterFieldName": "Enter field name",
-    "fieldType": "Field Type",
+    "fieldLabel": "Lipéad Réimse",
+    "enterFieldName": "Cuir isteach ainm na réimse",
+    "fieldType": "Cineál Réimse",
     "fieldTypes": {
-      "text": "Text",
+      "text": "Téacs",
       "password": "Pasfhocal",
       "hidden": "I bhfolach (téacs faoi chumhdach)",
       "email": "Ríomhphost",
       "url": "URL",
-      "phone": "Phone",
-      "number": "Number",
+      "phone": "Fón",
+      "number": "Uimhir",
       "date": "Dáta",
-      "textArea": "Text Area"
+      "textArea": "Limistéar Téacs"
     },
     "login": {
       "title": "Logáil Isteach"
@@ -302,10 +303,10 @@
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Credit Card"
+      "title": "Cárta Creidmheasa"
     },
     "note": {
-      "title": "Secure Note"
+      "title": "Nóta Slán"
     }
   },
   "fieldLabels": {
@@ -318,10 +319,10 @@
     "alias.birthdate": "Dáta Breithe",
     "login.email": "Ríomhphost",
     "notes.content": "Nótaí",
-    "card.cardholder_name": "Cardholder Name",
-    "card.number": "Card Number",
-    "card.expiry_month": "Expiry Month",
-    "card.expiry_year": "Expiry Year",
+    "card.cardholder_name": "Ainm Shealbhóir Cárta",
+    "card.number": "Uimhir Cárta",
+    "card.expiry_month": "Mí Éaga",
+    "card.expiry_year": "Bliain Éaga",
     "card.cvv": "CVV",
     "card.pin": "PIN"
   },
@@ -356,7 +357,7 @@
     "emailContent": "Ábhar ríomhphoist",
     "emailNotFound": "Níor aimsíodh an ríomhphost",
     "formatHtml": "HTML",
-    "formatPlain": "Text",
+    "formatPlain": "Téacs",
     "formatSource": "Foinse",
     "formatSwitchTitle": "Athraigh formáid ríomhphoist",
     "item": "Mír",
@@ -550,12 +551,12 @@
     "noItems": "Gan aon mhíreanna scriosta",
     "noItemsDescription": "Beidh míreanna a scriosann tú le feiceáil anseo ar feadh {{days}} lá sula mbainfear go buan iad.",
     "description": "Scriosfar na míreanna seo go buan tar éis {{days}} lá. Is féidir leat iad a athchóiriú nó iad a scriosadh láithreach.",
-    "restore": "Restore",
+    "restore": "Athchóirigh",
     "deletePermanently": "Scrios go Buan",
     "emptyAll": "Folmhaigh Gach Rud",
     "daysRemaining_one": "{{count}} lá fágtha",
     "daysRemaining_other": "{{count}} lá fágtha",
-    "expiringSoon": "Expiring soon",
+    "expiringSoon": "Ag dul in éag go luath",
     "confirmDeleteTitle": "Scrios go Buan?",
     "confirmDeleteMessage": "Scriosfar an mhír seo go buan agus ní féidir í a aisghabháil.",
     "confirmEmptyAllTitle": "Folmhaigh Scriosta le Déanaí?",

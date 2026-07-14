@@ -111,6 +111,7 @@
       "syncConflictMaxRetries": "Kunne ikke synkronisere boksen efter flere forsøg. Prøv venligst igen senere.",
       "mergeFailed": "Kunne ikke flette ændringer i boks. Prøv venligst igen.",
       "vaultTooLarge": "Boksen er for stor til, at serveren kan acceptere. Prøv at fjerne nogle elementer eller vedhæftede filer for at reducere størrelsen og prøv igen.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Indtast venligst en gyldig 6-cifret autentificeringskode.",
       "serverError": "Kunne ikke få forbindelse til AliasVault-serveren. Prøv venligst igen senere eller kontakt support, hvis problemet fortsætter.",
       "wrongPassword": "Forkert adgangskode. Prøv venligst igen.",
