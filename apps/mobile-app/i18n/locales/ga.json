@@ -129,11 +129,11 @@
   },
   "settings": {
     "title": "Socruithe",
-    "autofill": "Líonadh Uathoibríoch agus Eochracha Pas",
+    "autofill": "Líonadh Uathoibríoch & Eochracha Pas",
     "iosAutofillSettings": {
       "headerText": "Is féidir leat AliasVault a chumrú chun feidhmiúlacht uathlíonta pasfhocail agus eochracha pas dúchasacha a sholáthar in iOS. Lean na treoracha thíos chun é a chumasú.",
       "passkeyNotice": "Cruthaítear pasfhocail trí iOS. Chun iad a stóráil in AliasVault, cinntigh go bhfuil an Líonadh Uathoibríoch thíos cumasaithe.",
-      "howToEnable": "Conas Líonadh Uathoibríoch agus Eochracha Pas a chumasú:",
+      "howToEnable": "Conas Líonadh Uathoibríoch & Eochracha Pas a chumasú:",
       "step1": "1. Oscail Socruithe iOS tríd an gcnaipe thíos",
       "step2": "2. Téigh go \"Ginearálta\"",
       "step3": "3. Beartaigh \"Líonadh Uathoibríoch & Pasfhocail\"",
