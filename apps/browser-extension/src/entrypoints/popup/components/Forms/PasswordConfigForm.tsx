@@ -9,6 +9,7 @@ import type {
   DicewareSeparator,
   DicewareSalt
 } from '@/utils/dist/core/models/vault';
+import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/PasswordLengthSlider';
 
 const CAPITALIZATION_OPTIONS: DicewareCapitalization[] = ['Lowercase', 'TitleCase', 'Uppercase'];
 const SEPARATOR_OPTIONS: DicewareSeparator[] = ['Dash', 'Space', 'Underscore', 'Dot', 'None'];
@@ -162,6 +163,28 @@ const PasswordConfigForm: React.FC<IPasswordConfigFormProps> = ({
         {/* Basic mode: character type options */}
         {!isDiceware && (
           <div className="space-y-3">
+            {/* Password Length Slider */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="basic-password-length" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {t('items.passwordLength')}
+                </label>
+                <span className="text-sm text-gray-600 dark:text-gray-400 font-mono">
+                  {settings.Length}
+                </span>
+              </div>
+              <input
+                id="basic-password-length"
+                type="range"
+                min={SLIDER_MIN}
+                max={SLIDER_MAX}
+                step="0.1"
+                value={lengthToSlider(settings.Length)}
+                onChange={(e) => onSettingChange('Length', sliderToLength(parseFloat(e.target.value)))}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-2">
               {/* Lowercase Toggle */}
               <button
