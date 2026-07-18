@@ -12,6 +12,7 @@
 
 pub mod error;
 pub mod vault_merge;
+pub mod vault_codec;
 pub mod vault_pruner;
 pub mod credential_matcher;
 pub mod password_generator;
@@ -21,6 +22,13 @@ pub use error::VaultError;
 pub use vault_merge::{
     merge_vaults, MergeInput, MergeOutput, MergeStats, SqlStatement, TableData,
     SYNCABLE_TABLE_NAMES,
+};
+pub use vault_codec::{
+    compute_ciphertext_hash, canonicalize_from_sqlite,
+    extract_bucket, generate_user_salt, unpack_payload, materialize_as_sqlite, pack_payload,
+    validate_manifest, validate_data_bucket, which_blobs_to_upload, BlobEntry,
+    CanonicalizeInput, CanonicalizedVault, CodecRecord, CodecTableData, DataBucket, Manifest,
+    MaterializeInput, MaterializedTables, ValidationResult,
 };
 pub use vault_pruner::{
     prune_vault, PruneInput, PruneOutput, PruneStats,

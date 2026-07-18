@@ -265,8 +265,8 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
             // from ONLY the root domain (no subdomains, no path/query) against item names.
             // Same anti-phishing rule: only credentials with NO URLs are eligible.
             // IMPORTANT: Extract words only from root domain to avoid false positives:
-            //   - outlook.office.com → extract from "office.com" only (not "outlook")
-            //   - www.dumpert.nl → extract from "dumpert.nl" only (not "www")
+            //   - outlook.office.com > extract from "office.com" only (not "outlook")
+            //   - www.dumpert.nl > extract from "dumpert.nl" only (not "www")
             //   - Don't match "mail" from "/mail/" path
             // ═══════════════════════════════════════════════════════════════════════════
             let root_domain = extract_root_domain(&current_domain_info.domain);

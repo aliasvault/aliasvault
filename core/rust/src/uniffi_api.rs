@@ -149,6 +149,73 @@ pub fn get_diceware_languages() -> Vec<String> {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Vault Codec Functions (manifest-v1 storage format) — JSON-string in/out.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Canonicalize normalized tables into manifest + metadata + blob map.
+/// Input: `CanonicalizeInput` JSON. Output: `CanonicalizedVault` JSON.
+#[uniffi::export]
+pub fn vault_codec_canonicalize_from_sqlite(input_json: String) -> Result<String, VaultError> {
+    crate::vault_codec::canonicalize_from_sqlite_json(&input_json)
+}
+
+/// Materialize manifest + metadata into the table set the platform inserts.
+/// Input: `MaterializeInput` JSON. Output: `MaterializedTables` JSON.
+#[uniffi::export]
+pub fn vault_codec_materialize_as_sqlite(input_json: String) -> Result<String, VaultError> {
+    crate::vault_codec::materialize_as_sqlite_json(&input_json)
+}
+
+/// Build a single data bucket. Input: `{ category, tables }` JSON. Output: `DataBucket` JSON.
+#[uniffi::export]
+pub fn vault_codec_extract_bucket(input_json: String) -> Result<String, VaultError> {
+    crate::vault_codec::extract_bucket_json(&input_json)
+}
+
+/// Generate a fresh 32-byte per-user salt (lowercase hex).
+#[uniffi::export]
+pub fn vault_codec_generate_user_salt() -> String {
+    crate::vault_codec::generate_user_salt()
+}
+
+/// Pack a payload JSON string into gzip(envelope{contentHash, payload}). The caller encrypts the result.
+#[uniffi::export]
+pub fn vault_codec_pack_payload(payload_json: String) -> Result<Vec<u8>, VaultError> {
+    crate::vault_codec::pack_payload(&payload_json)
+}
+
+/// Unpack a (decrypted) payload: gunzip > verify content hash > return payload JSON string.
+#[uniffi::export]
+pub fn vault_codec_unpack_payload(plain_bytes: Vec<u8>) -> Result<String, VaultError> {
+    crate::vault_codec::unpack_payload(&plain_bytes)
+}
+
+/// Structurally validate a manifest. Input: `Manifest` JSON. Output: `ValidationResult` JSON.
+#[uniffi::export]
+pub fn vault_codec_validate_manifest(manifest_json: String) -> Result<String, VaultError> {
+    crate::vault_codec::validate_manifest_json(&manifest_json)
+}
+
+/// Validate a data bucket. Input: `DataBucket` JSON. Output: `ValidationResult` JSON.
+#[uniffi::export]
+pub fn vault_codec_validate_data_bucket(data_bucket_json: String) -> Result<String, VaultError> {
+    crate::vault_codec::validate_data_bucket_json(&data_bucket_json)
+}
+
+/// SHA-256 (lowercase hex) of a base64 ciphertext string.
+#[uniffi::export]
+pub fn vault_codec_compute_ciphertext_hash(base64_ciphertext: String) -> String {
+    crate::vault_codec::compute_ciphertext_hash(&base64_ciphertext)
+}
+
+/// Return the manifest's referenced blob hashes not present in `knownHashes`.
+/// Input: `{ "manifest": <manifest>, "knownHashes": [..] }`.
+#[uniffi::export]
+pub fn vault_codec_which_blobs_to_upload(input_json: String) -> Result<String, VaultError> {
+    crate::vault_codec::which_blobs_to_upload_json(&input_json)
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // SRP (Secure Remote Password) Functions
 // ═══════════════════════════════════════════════════════════════════════════════
 

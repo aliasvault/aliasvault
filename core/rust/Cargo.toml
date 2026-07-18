@@ -48,6 +48,12 @@ getrandom = { version = "0.3", features = ["wasm_js"] }
 # Argon2 password hashing
 argon2 = "0.5"
 
+# gzip compression for the vault_codec packaged format
+flate2 = { version = "1.0", default-features = false, features = ["rust_backend"] }
+
+# base64 for vault_codec blob byte transport + ciphertext hashing
+base64 = "0.22"
+
 # UniFFI for Swift/Kotlin bindings (optional)
 # Note: Don't add "cli" feature here - it pulls in heavy bindgen dependencies
 # The uniffi-cli feature enables CLI separately for the uniffi-bindgen binary only

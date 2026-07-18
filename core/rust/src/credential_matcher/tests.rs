@@ -400,7 +400,7 @@ fn test_empty_url() {
 }
 
 /// Test that the default cap (DEFAULT_MAX_RESULTS = 10) bounds the output.
-/// Twelve candidates → exactly 10 returned.
+/// Twelve candidates > exactly 10 returned.
 #[test]
 fn test_default_max_results_caps_at_ten() {
     let credentials: Vec<Credential> = (1..=12)

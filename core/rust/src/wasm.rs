@@ -6,6 +6,9 @@ use crate::credential_matcher::{
     filter_credentials, CredentialMatcherInput, CredentialMatcherOutput,
 };
 use crate::password_generator::{available_languages, generate_password};
+use crate::vault_codec::{
+    self, CanonicalizeInput, CodecRecord, DataBucket, Manifest, MaterializeInput,
+};
 use crate::vault_merge::{merge_vaults, MergeInput, MergeOutput};
 use crate::vault_pruner::{prune_vault, PruneInput, PruneOutput};
 
@@ -107,6 +110,108 @@ pub fn prune_vault_json_js(input_json: &str) -> Result<String, JsValue> {
 pub fn get_prune_table_queries_js() -> Result<JsValue, JsValue> {
     serde_wasm_bindgen::to_value(&crate::vault_pruner::get_prune_table_queries())
         .map_err(|e| JsValue::from_str(&format!("Failed to serialize output: {}", e)))
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Vault Codec WASM Bindings (manifest-v1 storage format)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Serialize a codec output to a JsValue with Rust maps rendered as plain JS objects.
+fn codec_to_js<T: serde::Serialize>(value: &T) -> Result<JsValue, JsValue> {
+    value
+        .serialize(&serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true))
+        .map_err(|e| JsValue::from_str(&format!("Failed to serialize codec output: {}", e)))
+}
+
+/// Canonicalize normalized tables into manifest + data buckets.
+/// Input: `CanonicalizeInput`. Output: `CanonicalizedVault`.
+#[wasm_bindgen(js_name = vaultCodecCanonicalizeFromSqlite)]
+pub fn vault_codec_canonicalize_from_sqlite_js(input: JsValue) -> Result<JsValue, JsValue> {
+    let input: CanonicalizeInput = serde_wasm_bindgen::from_value(input)
+        .map_err(|e| JsValue::from_str(&format!("Failed to parse canonicalize_from_sqlite input: {}", e)))?;
+    let output = vault_codec::canonicalize_from_sqlite(input)
+        .map_err(|e| JsValue::from_str(&format!("canonicalize_from_sqlite failed: {}", e)))?;
+    codec_to_js(&output)
+}
+
+/// Materialize the manifest + data buckets into the table set the platform inserts into a fresh schema DB.
+/// Input: `MaterializeInput`. Output: `MaterializedTables`.
+#[wasm_bindgen(js_name = vaultCodecMaterializeAsSqlite)]
+pub fn vault_codec_materialize_as_sqlite_js(input: JsValue) -> Result<JsValue, JsValue> {
+    let input: MaterializeInput = serde_wasm_bindgen::from_value(input)
+        .map_err(|e| JsValue::from_str(&format!("Failed to parse materialize_as_sqlite input: {}", e)))?;
+    let output = vault_codec::materialize_as_sqlite(input)
+        .map_err(|e| JsValue::from_str(&format!("materialize_as_sqlite failed: {}", e)))?;
+    codec_to_js(&output)
+}
+
+/// Build a single data bucket. Input: `{ category, tables: { <name>: [rows] } }`. Output: `DataBucket`.
+#[wasm_bindgen(js_name = vaultCodecExtractBucket)]
+pub fn vault_codec_extract_bucket_js(input: JsValue) -> Result<JsValue, JsValue> {
+    #[derive(serde::Deserialize)]
+    struct Input {
+        category: String,
+        #[serde(default)]
+        tables: std::collections::HashMap<String, Vec<CodecRecord>>,
+    }
+    let input: Input = serde_wasm_bindgen::from_value(input)
+        .map_err(|e| JsValue::from_str(&format!("Failed to parse extract-bucket input: {}", e)))?;
+    codec_to_js(&vault_codec::extract_bucket(input.category, input.tables))
+}
+
+/// Generate a fresh 32-byte per-user salt (lowercase hex).
+#[wasm_bindgen(js_name = vaultCodecGenerateUserSalt)]
+pub fn vault_codec_generate_user_salt_js() -> String {
+    vault_codec::generate_user_salt()
+}
+
+/// Pack a payload JSON string into gzip(envelope{contentHash, payload}). Encryption is done by platform.
+#[wasm_bindgen(js_name = vaultCodecPackPayload)]
+pub fn vault_codec_pack_payload_js(payload_json: &str) -> Result<Vec<u8>, JsValue> {
+    vault_codec::pack_payload(payload_json)
+        .map_err(|e| JsValue::from_str(&format!("pack_payload failed: {}", e)))
+}
+
+/// Unpack a (decrypted) payload: gunzip > verify content hash > return payload JSON string.
+#[wasm_bindgen(js_name = vaultCodecUnpackPayload)]
+pub fn vault_codec_unpack_payload_js(plain_bytes: &[u8]) -> Result<String, JsValue> {
+    vault_codec::unpack_payload(plain_bytes)
+        .map_err(|e| JsValue::from_str(&format!("unpack_payload failed: {}", e)))
+}
+
+/// Structurally validate a manifest. Input: `Manifest`. Output: `ValidationResult`.
+#[wasm_bindgen(js_name = vaultCodecValidateManifest)]
+pub fn vault_codec_validate_manifest_js(manifest: JsValue) -> Result<JsValue, JsValue> {
+    let m: Manifest = serde_wasm_bindgen::from_value(manifest)
+        .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest: {}", e)))?;
+    serde_wasm_bindgen::to_value(&vault_codec::validate_manifest(&m))
+        .map_err(|e| JsValue::from_str(&format!("Failed to serialize result: {}", e)))
+}
+
+/// Validate a data bucket. Input: `DataBucket`. Output: `ValidationResult`.
+#[wasm_bindgen(js_name = vaultCodecValidateDataBucket)]
+pub fn vault_codec_validate_data_bucket_js(data_bucket: JsValue) -> Result<JsValue, JsValue> {
+    let b: DataBucket = serde_wasm_bindgen::from_value(data_bucket)
+        .map_err(|e| JsValue::from_str(&format!("Failed to parse data bucket: {}", e)))?;
+    serde_wasm_bindgen::to_value(&vault_codec::validate_data_bucket(&b))
+        .map_err(|e| JsValue::from_str(&format!("Failed to serialize result: {}", e)))
+}
+
+/// SHA-256 (lowercase hex) of a base64 ciphertext string.
+#[wasm_bindgen(js_name = vaultCodecComputeCiphertextHash)]
+pub fn vault_codec_compute_ciphertext_hash_js(base64_ciphertext: &str) -> String {
+    vault_codec::compute_ciphertext_hash(base64_ciphertext)
+}
+
+/// Return the manifest's referenced blob hashes not present in `known_hashes`.
+#[wasm_bindgen(js_name = vaultCodecWhichBlobsToUpload)]
+pub fn vault_codec_which_blobs_to_upload_js(manifest: JsValue, known_hashes: JsValue) -> Result<JsValue, JsValue> {
+    let m: Manifest = serde_wasm_bindgen::from_value(manifest)
+        .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest: {}", e)))?;
+    let known: Vec<String> = serde_wasm_bindgen::from_value(known_hashes)
+        .map_err(|e| JsValue::from_str(&format!("Failed to parse known hashes: {}", e)))?;
+    serde_wasm_bindgen::to_value(&vault_codec::which_blobs_to_upload(&m, known))
+        .map_err(|e| JsValue::from_str(&format!("Failed to serialize result: {}", e)))
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

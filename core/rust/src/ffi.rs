@@ -191,6 +191,150 @@ fn create_error_response(message: &str) -> *mut c_char {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Vault Codec FFI Functions (manifest-v1 storage format)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Read a JSON c-string argument, returning an error response on null / invalid UTF-8.
+macro_rules! ffi_read_str {
+    ($ptr:expr, $name:literal) => {{
+        if $ptr.is_null() {
+            return create_error_response(concat!("Null pointer argument: ", $name));
+        }
+        match CStr::from_ptr($ptr).to_str() {
+            Ok(s) => s,
+            Err(_) => return create_error_response(concat!("Invalid UTF-8 in ", $name)),
+        }
+    }};
+}
+
+/// Wrap a `fn(&str) -> VaultResult<String>` codec entry point as a C FFI function.
+unsafe fn codec_json_ffi(
+    input_json: *const c_char,
+    arg_name: &'static str,
+    f: impl Fn(&str) -> crate::error::VaultResult<String>,
+) -> *mut c_char {
+    if input_json.is_null() {
+        return create_error_response(&format!("Null pointer argument: {}", arg_name));
+    }
+    let c_str = match CStr::from_ptr(input_json).to_str() {
+        Ok(s) => s,
+        Err(_) => return create_error_response(&format!("Invalid UTF-8 in {}", arg_name)),
+    };
+    match f(c_str) {
+        Ok(json) => string_to_c_char(json),
+        Err(e) => create_error_response(&format!("vault_codec error: {}", e)),
+    }
+}
+
+/// Canonicalize normalized tables. Input: `CanonicalizeInput` JSON. Output: `CanonicalizedVault` JSON.
+///
+/// # Safety
+/// `input_json` must be a valid null-terminated C string; free the result with `free_string`.
+#[no_mangle]
+pub unsafe extern "C" fn vault_codec_canonicalize_from_sqlite_ffi(input_json: *const c_char) -> *mut c_char {
+    codec_json_ffi(input_json, "input_json", crate::vault_codec::canonicalize_from_sqlite_json)
+}
+
+/// Materialize manifest + metadata. Input: `MaterializeInput` JSON. Output: `MaterializedTables` JSON.
+///
+/// # Safety
+/// `input_json` must be a valid null-terminated C string; free the result with `free_string`.
+#[no_mangle]
+pub unsafe extern "C" fn vault_codec_materialize_as_sqlite_ffi(input_json: *const c_char) -> *mut c_char {
+    codec_json_ffi(input_json, "input_json", crate::vault_codec::materialize_as_sqlite_json)
+}
+
+/// Build a single data bucket. Input: `{ category, tables }` JSON. Output: `DataBucket` JSON.
+///
+/// # Safety
+/// `input_json` must be a valid null-terminated C string; free the result with `free_string`.
+#[no_mangle]
+pub unsafe extern "C" fn vault_codec_extract_bucket_ffi(input_json: *const c_char) -> *mut c_char {
+    codec_json_ffi(input_json, "input_json", crate::vault_codec::extract_bucket_json)
+}
+
+/// Validate a manifest. Input: `Manifest` JSON. Output: `ValidationResult` JSON.
+///
+/// # Safety
+/// `input_json` must be a valid null-terminated C string; free the result with `free_string`.
+#[no_mangle]
+pub unsafe extern "C" fn vault_codec_validate_manifest_ffi(input_json: *const c_char) -> *mut c_char {
+    codec_json_ffi(input_json, "input_json", crate::vault_codec::validate_manifest_json)
+}
+
+/// Validate a data bucket. Input: `DataBucket` JSON. Output: `ValidationResult` JSON.
+///
+/// # Safety
+/// `input_json` must be a valid null-terminated C string; free the result with `free_string`.
+#[no_mangle]
+pub unsafe extern "C" fn vault_codec_validate_data_bucket_ffi(input_json: *const c_char) -> *mut c_char {
+    codec_json_ffi(input_json, "input_json", crate::vault_codec::validate_data_bucket_json)
+}
+
+/// Blob upload diff. Input: `{ "manifest": <manifest>, "knownHashes": [..] }`. Output: JSON array of hashes.
+///
+/// # Safety
+/// `input_json` must be a valid null-terminated C string; free the result with `free_string`.
+#[no_mangle]
+pub unsafe extern "C" fn vault_codec_which_blobs_to_upload_ffi(input_json: *const c_char) -> *mut c_char {
+    codec_json_ffi(input_json, "input_json", crate::vault_codec::which_blobs_to_upload_json)
+}
+
+/// Generate a fresh per-user salt (lowercase hex).
+///
+/// # Safety
+/// Free the result with `free_string`.
+#[no_mangle]
+pub extern "C" fn vault_codec_generate_user_salt_ffi() -> *mut c_char {
+    string_to_c_char(crate::vault_codec::generate_user_salt())
+}
+
+/// SHA-256 (lowercase hex) of a base64 ciphertext string.
+///
+/// # Safety
+/// `base64_ciphertext` must be a valid null-terminated C string; free the result with `free_string`.
+#[no_mangle]
+pub unsafe extern "C" fn vault_codec_compute_ciphertext_hash_ffi(base64_ciphertext: *const c_char) -> *mut c_char {
+    let s = ffi_read_str!(base64_ciphertext, "base64_ciphertext");
+    string_to_c_char(crate::vault_codec::compute_ciphertext_hash(s))
+}
+
+/// Pack a payload JSON string. Output: base64 of gzip(envelope{contentHash, payload}). The caller
+/// base64-decodes, then encrypts.
+///
+/// # Safety
+/// `payload_json` must be a valid null-terminated C string; free the result with `free_string`.
+#[no_mangle]
+pub unsafe extern "C" fn vault_codec_pack_payload_ffi(payload_json: *const c_char) -> *mut c_char {
+    use base64::engine::general_purpose::STANDARD as BASE64;
+    use base64::Engine;
+    let s = ffi_read_str!(payload_json, "payload_json");
+    match crate::vault_codec::pack_payload(s) {
+        Ok(bytes) => string_to_c_char(BASE64.encode(bytes)),
+        Err(e) => create_error_response(&format!("pack_payload error: {}", e)),
+    }
+}
+
+/// Unpack a payload supplied as base64 of the decrypted bytes. Output: payload JSON string.
+///
+/// # Safety
+/// `base64_plain_bytes` must be a valid null-terminated C string; free the result with `free_string`.
+#[no_mangle]
+pub unsafe extern "C" fn vault_codec_unpack_payload_ffi(base64_plain_bytes: *const c_char) -> *mut c_char {
+    use base64::engine::general_purpose::STANDARD as BASE64;
+    use base64::Engine;
+    let s = ffi_read_str!(base64_plain_bytes, "base64_plain_bytes");
+    let bytes = match BASE64.decode(s) {
+        Ok(b) => b,
+        Err(e) => return create_error_response(&format!("invalid base64: {}", e)),
+    };
+    match crate::vault_codec::unpack_payload(&bytes) {
+        Ok(json) => string_to_c_char(json),
+        Err(e) => create_error_response(&format!("unpack_payload error: {}", e)),
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // SRP (Secure Remote Password) FFI Functions
 // ═══════════════════════════════════════════════════════════════════════════════
 
