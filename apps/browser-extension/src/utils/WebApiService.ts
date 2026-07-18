@@ -37,11 +37,12 @@ type TokenResponse = {
  */
 export class WebApiService {
   /**
-   * Get the base URL for the API from settings.
+   * Get the base URL for the API from settings. This client speaks the v2 API exclusively — every endpoint
+   * (vault, auth, email, favicon, ...) is resolved under the /v2/ prefix.
    */
   private async getBaseUrl(): Promise<string> {
     const apiUrl = await this.getApiUrl();
-    return apiUrl.replace(/\/$/, '') + '/v1/';
+    return apiUrl.replace(/\/$/, '') + '/v2/';
   }
 
   /**

@@ -337,7 +337,7 @@ export class SrpAuthService {
       const registerRequest = await SrpAuthService.prepareRegistration(username, password);
 
       // Normalize the API URL
-      const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v1/';
+      const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v2/';
 
       // Send registration request to API
       const response = await fetch(`${baseUrl}Auth/register`, {
@@ -393,7 +393,7 @@ export class SrpAuthService {
     error?: string;
   }> {
     try {
-      const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v1/';
+      const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v2/';
       const normalizedUsername = SrpAuthService.normalizeUsername(username);
 
       // Step 1: Initiate login

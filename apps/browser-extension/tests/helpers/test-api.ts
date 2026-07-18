@@ -302,7 +302,7 @@ async function uploadInitialVault(
   username: string,
   encryptionKey: Uint8Array
 ): Promise<void> {
-  const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v1/';
+  const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v2/';
 
   // Create an empty vault database
   const vaultBase64 = createEmptyVaultDatabase();
@@ -361,7 +361,7 @@ export async function registerTestUser(
   password: string
 ): Promise<TokenModel> {
   // Normalize the API URL
-  const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v1/';
+  const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v2/';
 
   // Prepare registration data
   const { request: registerRequest, encryptionKey } = await prepareRegistration(username, password);
@@ -422,7 +422,7 @@ export async function createTestUser(apiBaseUrl: string): Promise<TestUser> {
  */
 export async function isApiAvailable(apiBaseUrl: string): Promise<boolean> {
   try {
-    const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/v1/Auth/status`, {
+    const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/v2/Auth/status`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -443,7 +443,7 @@ export async function isApiAvailable(apiBaseUrl: string): Promise<boolean> {
  * @returns The TOTP secret that can be used to generate codes
  */
 export async function enableTwoFactor(apiBaseUrl: string, token: string): Promise<string> {
-  const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v1/';
+  const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v2/';
 
   // Step 1: Enable 2FA to get the secret
   const enableResponse = await fetch(`${baseUrl}TwoFactorAuth/enable`, {

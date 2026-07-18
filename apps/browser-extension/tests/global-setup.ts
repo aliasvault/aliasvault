@@ -17,7 +17,7 @@ const DEFAULT_API_URL = process.env.ALIASVAULT_API_URL || 'http://localhost:5100
  * testable with this suite because the tests share one IP against a persistent DB.
  */
 async function setServerSetting(apiUrl: string, key: string, value: string): Promise<void> {
-  const url = `${apiUrl.replace(/\/$/, '')}/v1/Test/server-settings`;
+  const url = `${apiUrl.replace(/\/$/, '')}/v2/Test/server-settings`;
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
