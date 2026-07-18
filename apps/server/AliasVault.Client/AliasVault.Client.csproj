@@ -138,22 +138,22 @@
 
     <ItemGroup>
         <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="10.0.9" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.9" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="10.0.9" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.9" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.9" />
-        <PackageReference Include="Microsoft.Extensions.Localization" Version="10.0.9" />
-        <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="10.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.10" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.10" />
+        <PackageReference Include="Microsoft.Extensions.Localization" Version="10.0.10" />
+        <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="10.0.10" />
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.3.0">
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.6.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.301">
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.302">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
