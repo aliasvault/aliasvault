@@ -1,8 +1,11 @@
 import { type Browser } from '@wxt-dev/browser';
 
+import { handleGetPasswordSettings } from '@/entrypoints/background/VaultMessageHandler';
+
 import { POPUP_TYPES, type PopupType, isPopupType } from '@/utils/autofill/PopupTypes';
-import { PasswordGenerator } from '@/utils/dist/core/password-generator';
+import type { PasswordSettings } from '@/utils/dist/core/models/vault';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import * as RustCore from '@/utils/RustCore';
 
 import { t } from '@/i18n/StandaloneI18n';
 
@@ -105,24 +108,48 @@ export async function setupContextMenus() : Promise<void> {
 }
 
 /**
+ * Get the user's saved password settings when the vault is unlocked, otherwise fall back to
+ * defaults so password generation still works while locked.
+ */
+async function getPasswordSettingsOrDefault(): Promise<PasswordSettings> {
+  const defaults: PasswordSettings = {
+    Length: 18,
+    UseLowercase: true,
+    UseUppercase: true,
+    UseNumbers: true,
+    UseSpecialChars: true,
+    UseNonAmbiguousChars: false
+  };
+
+  try {
+    const response = await handleGetPasswordSettings();
+    return response.success && response.settings ? response.settings : defaults;
+  } catch {
+    return defaults;
+  }
+}
+
+/**
  * Handle context menu clicks.
  */
 export function handleContextMenuClick(info: Browser.contextMenus.OnClickData, tab?: Browser.tabs.Tab) : void {
   if (info.menuItemId === "aliasvault-generate-password") {
-    // Initialize password generator
-    const passwordGenerator = new PasswordGenerator();
-    const password = passwordGenerator.generateRandomPassword();
-
-    // Use browser.scripting to write password to clipboard from active tab
+    /*
+     * Generate a password and copy it to the clipboard of the active tab. Use the user's saved 
+     * settings when the vault is unlocked; otherwise fall back to defaults.
+     */
     if (tab?.id) {
-      // Get confirm text translation.
-      t('content.passwordCopiedToClipboard').then((message) => {
+      const tabId = tab.id;
+      void (async (): Promise<void> => {
+        const settings = await getPasswordSettingsOrDefault();
+        const password = await RustCore.generatePassword(settings);
+        const message = await t('content.passwordCopiedToClipboard');
         browser.scripting.executeScript({
-          target: { tabId: tab.id },
+          target: { tabId },
           func: copyPasswordToClipboard,
           args: [message, password]
         });
-      });
+      })();
     }
   } else if (tab?.id) {
     const popupType = popupTypeForMenuId(info.menuItemId);

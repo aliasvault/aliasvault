@@ -186,6 +186,34 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
             prfInputs = extractPrfInputs(from: extensionInput)
         }
 
+        /*
+        * Choose the credential algorithm from the RP’s requested list, preserving RP order.
+        * iOS only exposes this list through `supportedAlgorithms`.
+        *
+        * Note on iOS limitation: as of iOS 18, RS256 (-257) is not forwarded to credential provider
+        * extensions. Even if the RP requests RS256, iOS only provides ES256 (-7), so RS256
+        * registration cannot work on iOS. RS256 signing is still supported for passkeys
+        * created elsewhere and synced into the vault.
+        *
+        * This matches Apple’s embedded assertion behavior: Secure Enclave uses ES256
+        * because it supports elliptic-curve keys, not RSA keys.
+        * https://developer.apple.com/documentation/authenticationservices/creating-an-embedded-assertion
+        */
+        let requestedAlgorithms = passkeyRequest.supportedAlgorithms.map { $0.rawValue }
+
+        let algorithm: Int
+        do {
+            algorithm = try PasskeyAuthenticator.pickSupportedAlgorithm(requestedAlgorithms)
+        } catch {
+            // We don't support the requested algorithm, so decline the request.
+            extensionContext.cancelRequest(withError: NSError(
+                domain: ASExtensionErrorDomain,
+                code: ASExtensionError.failed.rawValue,
+                userInfo: [NSLocalizedDescriptionKey: "No supported passkey algorithm requested by the relying party"]
+            ))
+            return
+        }
+
         // Store parameters for use in viewWillAppear
         // Vault unlock and UI display will happen in viewWillAppear
         self.passkeyRegistrationParams = PasskeyRegistrationParams(
@@ -195,7 +223,8 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
             userId: userId,
             clientDataHash: clientDataHash,
             enablePrf: prfEnabled,
-            prfInputs: prfInputs
+            prfInputs: prfInputs,
+            algorithm: algorithm
         )
     }
 
@@ -210,7 +239,8 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
         clientDataHash: Data,
         vaultStore: VaultStore,
         enablePrf: Bool = false,
-        prfInputs: PrfInputs? = nil
+        prfInputs: PrfInputs? = nil,
+        algorithm: Int = PasskeyAuthenticator.algES256
     ) {
         // Store parameters for closure capture
         let capturedRpId = rpId
@@ -221,6 +251,7 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
         let capturedVaultStore = vaultStore
         let capturedEnablePrf = enablePrf
         let capturedPrfInputs = prfInputs
+        let capturedAlgorithm = algorithm
 
         // Query for existing passkeys with this rpId and userName
         var existingPasskeys: [PasskeyWithCredentialInfo] = []
@@ -287,7 +318,8 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                     vaultStore: capturedVaultStore,
                     viewModel: viewModel,
                     enablePrf: capturedEnablePrf,
-                    prfInputs: capturedPrfInputs
+                    prfInputs: capturedPrfInputs,
+                    algorithm: capturedAlgorithm
                 )
             },
             cancelHandler: { [weak self] in
@@ -326,6 +358,31 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
         self.currentHostingController = hostingController
     }
 
+    /// Maximum time to wait for a best-effort server sync/upload before proceeding offline.
+    /// Keeps passkey creation responsive when the server is slow or unreachable.
+    private static let bestEffortSyncTimeoutSeconds: TimeInterval = 5
+
+    /// Runs an async operation with a best-effort timeout.
+    /// Returns the operation's result, or `nil` if `seconds` elapse first.
+    /// On timeout the in-flight operation is cancelled (e.g. URLSession requests abort), so the
+    /// caller can proceed without blocking the user. The operation never returns `nil` itself, so a
+    /// `nil` result unambiguously means "timed out".
+    private func withBestEffortTimeout<T>(
+        seconds: TimeInterval,
+        operation: @escaping () async -> T
+    ) async -> T? {
+        await withTaskGroup(of: T?.self) { group in
+            group.addTask { await operation() }
+            group.addTask {
+                try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+                return nil
+            }
+            let result = await group.next() ?? nil
+            group.cancelAll()
+            return result
+        }
+    }
+
     /**
      * Create passkey directly in Swift (called when user clicks the button)
      */
@@ -338,7 +395,8 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
         vaultStore: VaultStore,
         viewModel: PasskeyRegistrationViewModel,
         enablePrf: Bool = false,
-        prfInputs: PrfInputs? = nil
+        prfInputs: PrfInputs? = nil,
+        algorithm: Int = PasskeyAuthenticator.algES256
     ) {
         // Create a Task to handle async operations
         Task {
@@ -346,12 +404,22 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                 // Initialize WebApiService for vault sync/mutate and favicon extraction
                 let webApiService = WebApiService()
 
-                // Step 1: Check server connectivity by syncing vault before creating passkey
+                // Step 1: Best-effort vault sync before creating the passkey.
+                // We try to sync immediately so the passkey is created on top of the latest vault,
+                // but we never let a slow or unreachable server block the user. If the sync doesn't
+                // finish within a few seconds we proceed offline: the passkey is stored locally and
+                // the vault stays marked dirty, so it syncs automatically on the next opportunity
+                // (main app launch or next autofill run).
                 viewModel.setLoading(true, message: NSLocalizedString("vault_syncing", comment: "Checking connection..."))
 
-                let syncResult = await vaultStore.syncVaultWithServer(using: webApiService)
-                if !syncResult.success && !syncResult.wasOffline {
-                    // Server connectivity check failed
+                let syncResult = await self.withBestEffortTimeout(seconds: Self.bestEffortSyncTimeoutSeconds) {
+                    await vaultStore.syncVaultWithServer(using: webApiService)
+                }
+
+                // Only surface an error for a fast, definitive failure (e.g. session expired or
+                // password changed). A timeout (nil) or an offline result is treated as best-effort,
+                // and we continue creating the passkey locally.
+                if let syncResult, !syncResult.success, !syncResult.wasOffline {
                     viewModel.setLoading(false)
 
                     // Show appropriate error dialog based on error type
@@ -384,7 +452,8 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                     userDisplayName: userDisplayName,
                     uvPerformed: true,
                     enablePrf: enablePrf,
-                    prfInputs: prfInputs
+                    prfInputs: prfInputs,
+                    algorithm: algorithm
                 )
 
                 // Create a Passkey model object with correct parentItemId
@@ -433,12 +502,18 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                     )
                 }
 
-                // Step 5: Upload vault changes to server
+                // Step 5: Best-effort upload of the new passkey to the server, bounded by the same
+                // timeout so a slow server can't hang the "creating passkey" overlay. On timeout or
+                // failure the passkey stays saved locally with the vault marked dirty and syncs later.
                 viewModel.setLoading(true, message: NSLocalizedString("creating_passkey", comment: "Uploading vault..."))
-                do {
-                    try await vaultStore.mutateVault(using: webApiService)
-                } catch {
-                    // Continue even if upload fails - passkey is saved locally
+                _ = await self.withBestEffortTimeout(seconds: Self.bestEffortSyncTimeoutSeconds) { () -> Bool in
+                    do {
+                        try await vaultStore.mutateVault(using: webApiService)
+                        return true
+                    } catch {
+                        // Continue even if upload fails: the passkey is saved locally
+                        return false
+                    }
                 }
 
                 // Step 6: Update the IdentityStore with the new credential (async call)

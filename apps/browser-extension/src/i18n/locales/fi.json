@@ -62,6 +62,7 @@
     "openInNewWindow": "Avaa uudessa ikkunassa",
     "enabled": "Otettu käyttöön",
     "disabled": "Pois käytöstä",
+    "none": "Ei mitään",
     "showPassword": "Näytä salasana",
     "hidePassword": "Piilota salasana",
     "show": "Show",
@@ -76,6 +77,7 @@
     "settings": "Asetukset",
     "recentEmails": "Viimeaikaiset sähköpostit",
     "credentials": "Tunnistetiedot",
+    "passkeys": "Sala-avaimet",
     "customFields": "Räätälöidyt kentät",
     "twoFactorAuthentication": "Kaksivaiheinen tunnistautuminen",
     "alias": "Alias",
@@ -109,6 +111,7 @@
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "mergeFailed": "Failed to merge vault changes. Please try again.",
       "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Syötä kelvollinen 6-numeroinen tunnistautumiskoodi.",
       "serverError": "AliasVault-palvelimeen ei saatu yhteyttä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
       "wrongPassword": "Virheellinen salasana. Yritä uudelleen. ",
@@ -148,6 +151,7 @@
     "creatingNewAlias": "Luodaan uutta aliasta",
     "creatingNewCredential": "Creating new credential",
     "noMatchesFound": "Osumia ei löytynyt",
+    "loginWithPasskey": "Login with passkey",
     "searchVault": "Etsi holvi...",
     "enterServiceName": "Syötä palvelun nimi",
     "enterEmailAddress": "Syötä sähköpostiosoite",
@@ -186,6 +190,7 @@
   "items": {
     "title": "Tiedot",
     "itemName": "Nimi",
+    "suggestions": "Suggestions",
     "loginCredentials": "Sisäänkirjautumistunnistetiedot",
     "cardInformation": "Korttitiedot",
     "addItem": "Lisää tieto",
@@ -202,6 +207,8 @@
     "folder": "Kansio",
     "welcomeTitle": "Tervetuloa AliasVaultiin!",
     "welcomeDescription": "Käyttääksesi AliasVault-selainlaajennusta, siirry jollekin verkkosivustolle ja käytä AliasVaultin automaattisen täytön ponnahdusikkunaa luodaksesi uuden tunnistetiedon.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items found",
     "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
@@ -216,7 +223,6 @@
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
       "folders": "Folders",
-      "passkeys": "Sala-avaimet",
       "totp": "2FA Codes"
     },
     "sort": {
@@ -238,6 +244,28 @@
     "includeNumbers": "Sisällytä numerot",
     "includeSpecialChars": "Sisällytä erikoismerkit",
     "avoidAmbiguousChars": "Vältä epäselviä merkkejä (o, 0, jne.)",
+    "passwordTypeBasic": "Salasana",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "Yksityinen sähköposti",
     "privateEmailAliasVaultServer": "AliasVault-palvelin",
     "privateEmailDescription": "Päästä päähän (E2E) salattu, täysin yksityinen.",
@@ -259,6 +287,7 @@
     "fieldType": "Kentän tyyppi",
     "fieldTypes": {
       "text": "Teksti",
+      "password": "Salasana",
       "hidden": "Hidden (masked text)",
       "email": "Sähköposti",
       "url": "URL",
@@ -301,6 +330,7 @@
     "addCode": "Lisää 2FA TOTP -koodi",
     "instructions": "Syötä salainen avain, joka näkyy sivustossa, jossa haluat lisätä kaksivaiheisen tunnistautumisen",
     "nameOptional": "Nimi (valinnainen)",
+    "addName": "Add a name (optional)",
     "secretKey": "Salainen avain",
     "saveToViewCode": "Tallenna nähdäksesi koodin",
     "defaultName": "Authenticator",
@@ -401,7 +431,8 @@
     "autoLock4Hours": "4 tuntia",
     "autoLock8Hours": "8 tuntia",
     "autoLock24Hours": "24 tuntia",
-    "versionPrefix": "Versio",
+    "versionPrefix": "App version",
+    "serverVersion": "Server version",
     "autofillSettings": "Automaatisen täytön asetukset",
     "clipboardSettings": "Leikepöydän asetukset",
     "contextMenuSettings": "Kontekstivalikon asetukset",
@@ -438,6 +469,11 @@
         "male": "Mies",
         "female": "Nainen"
       }
+    },
+    "passwordGenerator": "Salasanan luonti",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Määritä"
     },
     "credentialAutofill": "Credential autofill",
     "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
@@ -502,7 +538,8 @@
       "selectExistingLogin": "Add to existing login:",
       "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
       "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey"
+      "attachPasskey": "Add Passkey",
+      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
     "settings": {
       "passkeyProvider": "Todennusavaimen toimittaja",

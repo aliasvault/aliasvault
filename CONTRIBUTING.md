@@ -33,7 +33,7 @@ Help make AliasVault accessible to users worldwide by contributing translations!
 
 AliasVault UI translations are managed through [Crowdin](https://crowdin.com/), an online translation platform. If you'd like to help translate AliasVault into your native language, please [request access to the Crowdin project](https://crowdin.com/project/aliasvault).
 
-You can also get in contact via [Discord](https://discord.gg/DsaXMTEtpF) to chat, or via email at [contact@support.aliasvault.net](mailto:contact@support.aliasvault.net) to discuss the language(s) you are willing to contribute to, and so we can answer any technical questions you might have.
+You can also get in contact via [Discord](https://discord.gg/DsaXMTEtpF) to chat, or via email at [support@aliasvault.com](mailto:support@aliasvault.com) to discuss the language(s) you are willing to contribute to, and so we can answer any technical questions you might have.
 
 ### Identity Generator Translations
 
@@ -44,7 +44,7 @@ In AliasVault, when creating a new credential AliasVault automatically generates
 - Create a list of common last names (surnames)
 - Optionally: Decade-specific names for more authentic generations
 
-Read the specific instructions on how to contribute here: [Identity Generator Translations](https://docs.aliasvault.net/contributing/identity-generator.html).
+Read the specific instructions on how to contribute here: [Identity Generator Translations](https://docs.aliasvault.com/contributing/identity-generator.html).
 
 ## 3. Contributing to the Documentation
 
@@ -72,12 +72,12 @@ Anything that alters how AliasVault works and/or looks is something we handle ca
 
 We care strongly about how AliasVault looks and behaves across all platforms (web app, browser extension, mobile), and getting this right is genuinely hard. That's why UI and UX changes are most likely to be done internally by the core maintainers, and why a no on your PR isn't meant personally.
 
-That said, we genuinely appreciate your ideas and proposals for UI/UX improvements. Please feel free to open a GitHub feature request issue (or reach out via [Discord](https://discord.gg/DsaXMTEtpF) or [email](mailto:contact@support.aliasvault.net)) describing the problem you're trying to solve, ideally with mockups where applicable. Or, if there's already an issue for it, add your thoughts in the comments.
+That said, we genuinely appreciate your ideas and proposals for UI/UX improvements. Please feel free to open a GitHub feature request issue (or reach out via [Discord](https://discord.gg/DsaXMTEtpF) or [email](mailto:support@aliasvault.com)) describing the problem you're trying to solve, ideally with mockups where applicable. Or, if there's already an issue for it, add your thoughts in the comments.
 
 ### 4.2 Set up your local development environment
 You can find instructions on how to get your local development environment setup for the different parts of the AliasVault codebase here:
 
-https://docs.aliasvault.net/misc/dev/
+https://docs.aliasvault.com/misc/dev/
 
 > Tip: if the URL above is not available, the raw doc pages can also be found in the `docs` folder in this repository.
 

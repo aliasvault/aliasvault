@@ -13,7 +13,7 @@
  * reflected in all ports. Method names, parameters, and behavior should remain consistent.
  *
  * Key features:
- * - ES256 (ECDSA P-256) key pair generation
+ * - ES256 (ECDSA P-256) and RS256 (RSASSA-PKCS1-v1.5) key pair generation
  * - CBOR/COSE encoding for attestation objects
  * - Proper authenticator data with WebAuthn flags
  * - Self-attestation (packed format) or none attestation
@@ -39,6 +39,21 @@ export class PasskeyAuthenticator {
     0x8c, 0x5d, 0x2f, 0x7d, 0x13, 0xe8, 0xc9, 0x42
   ]);
 
+  /** COSE algorithm identifier for ES256 (ECDSA P-256 with SHA-256). */
+  private static readonly ALG_ES256 = -7;
+
+  /** COSE algorithm identifier for RS256 (RSASSA-PKCS1-v1.5 with SHA-256). */
+  private static readonly ALG_RS256 = -257;
+
+  /**
+   * Algorithms supported by this authenticator, in our order of preference.
+   * When an RP lists multiple, we honor the RP's order and pick the first match.
+   */
+  private static readonly SUPPORTED_ALGORITHMS = [
+    PasskeyAuthenticator.ALG_ES256,
+    PasskeyAuthenticator.ALG_RS256
+  ];
+
   // MARK: - Public API
 
   /**
@@ -54,29 +69,37 @@ export class PasskeyAuthenticator {
       prfInputs?: { first: string; second?: string };
     }
   ): Promise<PasskeyCreationResult> {
-    // 1. Validate algorithm support
-    PasskeyAuthenticator.pickSupportedAlgorithm(req.publicKey.pubKeyCredParams);
+    // 1. Validate algorithm support and pick the credential algorithm
+    const alg = PasskeyAuthenticator.pickSupportedAlgorithm(req.publicKey.pubKeyCredParams);
 
     // 2. Compute RP ID hash
     const rpId = req.publicKey.rp?.id || new URL(req.origin).hostname;
     const rpIdHash = new Uint8Array(await crypto.subtle.digest('SHA-256', PasskeyAuthenticator.te(rpId) as BufferSource));
 
-    // 3. Generate ES256 key pair
+    // 3. Generate key pair for the chosen algorithm
     const keyPair = await crypto.subtle.generateKey(
-      { name: 'ECDSA', namedCurve: 'P-256' },
+      PasskeyAuthenticator.keyGenParams(alg),
       true,
       ['sign', 'verify']
-    );
+    ) as CryptoKeyPair;
     const pubJwk = await crypto.subtle.exportKey('jwk', keyPair.publicKey);
     const prvJwk = await crypto.subtle.exportKey('jwk', keyPair.privateKey);
 
     // 4. Build credential ID and COSE key
     const credentialIdB64u = PasskeyAuthenticator.toB64u(credentialIdBytes);
-    const coseKey = PasskeyAuthenticator.buildCoseEc2Es256(pubJwk);
+    const coseKey = alg === PasskeyAuthenticator.ALG_RS256
+      ? PasskeyAuthenticator.buildCoseRsaRs256(pubJwk)
+      : PasskeyAuthenticator.buildCoseEc2Es256(pubJwk);
 
-    // 5. Build authenticator flags
+    // 5. Build authenticator flags.
     let flags = 0x41; // UP (bit 0) + AT (bit 6)
-    const uvReq = req.publicKey.authenticatorSelection?.userVerification;
+
+    /*
+     * As in getAssertion, an omitted authenticatorSelection.userVerification defaults to
+     * "preferred" per the WebAuthn spec. Keep registration and assertion symmetric so a
+     * credential registered as verified also asserts as verified.
+     */
+    const uvReq = req.publicKey.authenticatorSelection?.userVerification ?? 'preferred';
     const uvPerformed = !!opts?.uvPerformed;
     if (uvReq === 'required' || (uvReq === 'preferred' && uvPerformed)) {
       flags |= 0x04; // UV (bit 2)
@@ -110,7 +133,7 @@ export class PasskeyAuthenticator {
     const attObjBytes =
       attPref === 'none' || attPref === 'indirect'
         ? PasskeyAuthenticator.buildAttObjNone(authenticatorData)
-        : await PasskeyAuthenticator.buildAttObjPackedSelf(authenticatorData, clientDataJSONBytes, keyPair.privateKey);
+        : await PasskeyAuthenticator.buildAttObjPackedSelf(authenticatorData, clientDataJSONBytes, keyPair.privateKey, alg);
 
     // 11. Process user ID
     let userIdB64: string | null = null;
@@ -185,9 +208,15 @@ export class PasskeyAuthenticator {
     const rpId = req.publicKey.rpId || new URL(req.origin).hostname;
     const rpIdHash = new Uint8Array(await crypto.subtle.digest('SHA-256', PasskeyAuthenticator.te(rpId) as BufferSource));
 
-    // 2. Build authenticator flags
+    // 2. Build authenticator flags.
     let flags = 0x01; // UP (bit 0)
-    const uvReq = req.publicKey.userVerification;
+
+    /*
+     * An omitted userVerification defaults to "preferred" per the WebAuthn spec (not
+     * "discouraged"), and this authenticator always performs UV, so set the UV flag for
+     * required/preferred. RPs that registered with UV "required" reject UV=0 assertions.
+     */
+    const uvReq = req.publicKey.userVerification ?? 'preferred';
     const uvPerformed = !!opts?.uvPerformed;
     if (uvReq === 'required' || (uvReq === 'preferred' && uvPerformed)) {
       flags |= 0x04; // UV (bit 2)
@@ -218,20 +247,19 @@ export class PasskeyAuthenticator {
     const clientDataHash = new Uint8Array(await crypto.subtle.digest('SHA-256', clientDataJSONBytes as BufferSource));
     const toSign = PasskeyAuthenticator.concat(authenticatorData, clientDataHash);
 
-    // 7. Import private key and sign
+    /*
+     * 7. Determine algorithm from the stored key, import it, and sign.
+     * The signature is already in the form the RP expects (DER for ES256, raw for RS256).
+     */
+    const alg = rec.privateKey.kty === 'RSA' ? PasskeyAuthenticator.ALG_RS256 : PasskeyAuthenticator.ALG_ES256;
     const privateKey = await crypto.subtle.importKey(
       'jwk',
       rec.privateKey,
-      { name: 'ECDSA', namedCurve: 'P-256' },
+      PasskeyAuthenticator.keyImportParams(alg),
       false,
       ['sign']
     );
-    const rawSig = new Uint8Array(
-      await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, privateKey, toSign as BufferSource)
-    );
-
-    // 8. Convert raw signature to DER format
-    const derSig = PasskeyAuthenticator.ecdsaRawToDer(rawSig);
+    const signature = await PasskeyAuthenticator.sign(privateKey, toSign, alg);
 
     // 9. Process user handle
     let userHandleB64u: string | null = null;
@@ -258,7 +286,7 @@ export class PasskeyAuthenticator {
       rawId: rec.credentialId,
       clientDataJSON: PasskeyAuthenticator.toB64u(clientDataJSONBytes),
       authenticatorData: PasskeyAuthenticator.toB64u(authenticatorData),
-      signature: PasskeyAuthenticator.toB64u(derSig),
+      signature: PasskeyAuthenticator.toB64u(signature),
       userHandle: userHandleB64u,
       prfResults
     };
@@ -293,19 +321,63 @@ export class PasskeyAuthenticator {
   // MARK: - CBOR Encoding
 
   /**
-   * Ensure ES256 (-7) is available.
+   * Pick a supported credential algorithm from the RP's pubKeyCredParams.
+   * Honors the RP's preference order and returns the first algorithm we support.
+   * Defaults to ES256 when the RP provides no params.
    * @param params - Public key credential parameters
-   * @returns Algorithm identifier (-7 for ES256)
+   * @returns COSE algorithm identifier (-7 for ES256, -257 for RS256)
    */
   private static pickSupportedAlgorithm(params?: Array<{ type: 'public-key'; alg: number }>): number {
     if (!params || params.length === 0) {
-      return -7;
+      return PasskeyAuthenticator.ALG_ES256;
     }
-    const hasEs256 = params.some(p => p.type === 'public-key' && p.alg === -7);
-    if (!hasEs256) {
-      throw new Error('No supported algorithm (ES256) in pubKeyCredParams');
+    for (const p of params) {
+      if (p.type === 'public-key' && PasskeyAuthenticator.SUPPORTED_ALGORITHMS.includes(p.alg)) {
+        return p.alg;
+      }
     }
-    return -7;
+    throw new Error('No supported algorithm (ES256, RS256) in pubKeyCredParams');
+  }
+
+  /**
+   * WebCrypto key generation parameters for a COSE algorithm.
+   */
+  private static keyGenParams(alg: number): EcKeyGenParams | RsaHashedKeyGenParams {
+    if (alg === PasskeyAuthenticator.ALG_RS256) {
+      return {
+        name: 'RSASSA-PKCS1-v1_5',
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+        hash: 'SHA-256'
+      };
+    }
+    return { name: 'ECDSA', namedCurve: 'P-256' };
+  }
+
+  /**
+   * WebCrypto key import parameters for a COSE algorithm.
+   */
+  private static keyImportParams(alg: number): EcKeyImportParams | RsaHashedImportParams {
+    if (alg === PasskeyAuthenticator.ALG_RS256) {
+      return { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' };
+    }
+    return { name: 'ECDSA', namedCurve: 'P-256' };
+  }
+
+  /**
+   * Sign data with the given private key, returning the signature in the encoding
+   * the RP expects: DER-encoded for ES256, raw PKCS#1 v1.5 for RS256.
+   */
+  private static async sign(privateKey: CryptoKey, data: Uint8Array, alg: number): Promise<Uint8Array> {
+    if (alg === PasskeyAuthenticator.ALG_RS256) {
+      return new Uint8Array(
+        await crypto.subtle.sign({ name: 'RSASSA-PKCS1-v1_5' }, privateKey, data as BufferSource)
+      );
+    }
+    const rawSig = new Uint8Array(
+      await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, privateKey, data as BufferSource)
+    );
+    return PasskeyAuthenticator.ecdsaRawToDer(rawSig);
   }
 
   /**
@@ -324,6 +396,23 @@ export class PasskeyAuthenticator {
       0x21, 0x58, 0x20, ...x,   // -2: bytes(32) for x
       0x22, 0x58, 0x20, ...y    // -3: bytes(32) for y
     ]);
+  }
+
+  /**
+   * Build COSE RSA public key for RS256 (RFC 8230).
+   * CBOR map: {1: 3 (kty: RSA), 3: -257 (alg: RS256), -1: n (modulus), -2: e (exponent)}.
+   */
+  private static buildCoseRsaRs256(jwk: JsonWebKey): Uint8Array {
+    const n = PasskeyAuthenticator.fromB64u(jwk.n!);
+    const e = PasskeyAuthenticator.fromB64u(jwk.e!);
+
+    return PasskeyAuthenticator.concat(
+      new Uint8Array([0xa4]),                          // map of 4 pairs
+      new Uint8Array([0x01, 0x03]),                    // 1: 3 (kty: RSA)
+      new Uint8Array([0x03]), PasskeyAuthenticator.cborInt(PasskeyAuthenticator.ALG_RS256), // 3: -257 (alg: RS256)
+      new Uint8Array([0x20]), PasskeyAuthenticator.cborBstr(n),  // -1: modulus n
+      new Uint8Array([0x21]), PasskeyAuthenticator.cborBstr(e)   // -2: exponent e
+    );
   }
 
   /**
@@ -352,18 +441,16 @@ export class PasskeyAuthenticator {
   private static async buildAttObjPackedSelf(
     authenticatorData: Uint8Array,
     clientDataJSON: Uint8Array,
-    privateKey: CryptoKey
+    privateKey: CryptoKey,
+    alg: number
   ): Promise<Uint8Array> {
     const clientDataHash = new Uint8Array(await crypto.subtle.digest('SHA-256', clientDataJSON as BufferSource));
     const toSign = PasskeyAuthenticator.concat(authenticatorData, clientDataHash);
-    const rawSig = new Uint8Array(
-      await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, privateKey, toSign as BufferSource)
-    );
-    const derSig = PasskeyAuthenticator.ecdsaRawToDer(rawSig);
+    const sig = await PasskeyAuthenticator.sign(privateKey, toSign, alg);
 
     const attStmtMap = PasskeyAuthenticator.concat(
-      PasskeyAuthenticator.cborText('alg'), new Uint8Array([0x26]),
-      PasskeyAuthenticator.cborText('sig'), PasskeyAuthenticator.cborBstr(derSig)
+      PasskeyAuthenticator.cborText('alg'), PasskeyAuthenticator.cborInt(alg),
+      PasskeyAuthenticator.cborText('sig'), PasskeyAuthenticator.cborBstr(sig)
     );
     const attStmt = PasskeyAuthenticator.concat(new Uint8Array([0xa2]), attStmtMap);
 
@@ -393,6 +480,26 @@ export class PasskeyAuthenticator {
       return new Uint8Array([0x78, bytes.length, ...bytes]);
     }
     return new Uint8Array([0x79, (bytes.length >> 8) & 0xff, bytes.length & 0xff, ...bytes]);
+  }
+
+  /**
+   * Encode an integer as CBOR (major type 0 for non-negative, 1 for negative).
+   * Used for COSE algorithm identifiers, e.g. -7 (ES256) and -257 (RS256).
+   */
+  private static cborInt(value: number): Uint8Array {
+    /*
+     * Major type 0 (positive) uses the value directly; major type 1 (negative)
+     * encodes -1 - value (so -7 -> 6, -257 -> 256) under the 0x20 prefix.
+     */
+    const major = value < 0 ? 0x20 : 0x00;
+    const n = value < 0 ? -1 - value : value;
+    if (n <= 23) {
+      return new Uint8Array([major | n]);
+    }
+    if (n <= 0xff) {
+      return new Uint8Array([major | 0x18, n]);
+    }
+    return new Uint8Array([major | 0x19, (n >> 8) & 0xff, n & 0xff]);
   }
 
   /**
@@ -570,7 +677,7 @@ export type PasskeyAssertionResult = {
   clientDataJSON: string;
   /** Authenticator data (base64url). */
   authenticatorData: string;
-  /** Signature in DER format (base64url). */
+  /** Signature (base64url): DER-encoded for ES256, raw PKCS#1 v1.5 for RS256. */
   signature: string;
   /** User handle (base64url). */
   userHandle: string | null;

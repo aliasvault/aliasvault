@@ -8,6 +8,18 @@ import VaultUtils
 public class WebApiService {
     private let vaultStore = VaultStore.shared
 
+    /**
+     * URLSession configured with explicit timeouts to avoid blocking the main thread for too long
+     * when the server is not responding in a suitable time.
+     */
+    private lazy var urlSession: URLSession = {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 8
+        config.timeoutIntervalForResource = 120
+        config.waitsForConnectivity = false
+        return URLSession(configuration: config)
+    }()
+
     // Token storage keys
     private let apiUrlKey = "apiUrl"
     private let accessTokenKey = "accessToken"
@@ -15,7 +27,7 @@ public class WebApiService {
     private let customProxyHeadersKey = "customProxyHeaders"
 
     // Default API URL
-    private let defaultApiUrl = "https://app.aliasvault.net/api"
+    private let defaultApiUrl = "https://app.aliasvault.com/api"
 
     /// Shared UserDefaults for communication between main app and extension
     private let userDefaults = UserDefaults(suiteName: VaultConstants.userDefaultsSuite)!
@@ -228,7 +240,7 @@ public class WebApiService {
         }
 
         // Execute the request
-        let (data, urlResponse) = try await URLSession.shared.data(for: request)
+        let (data, urlResponse) = try await urlSession.data(for: request)
 
         guard let httpResponse = urlResponse as? HTTPURLResponse else {
             throw NSError(
@@ -351,7 +363,6 @@ public class WebApiService {
         }
 
         do {
-            // Make request with 5 second timeout
             let response = try await executeRequest(
                 method: "GET",
                 endpoint: "Favicon/Extract?url=\(encodedUrl)",

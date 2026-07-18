@@ -3,13 +3,17 @@
  * Add new languages here to make them available throughout the application
  */
 
+import { getLanguageInfo } from '@/utils/dist/core/models/defaults';
+
 import daTranslations from './locales/da.json';
 import deTranslations from './locales/de.json';
 import enTranslations from './locales/en.json';
 import esTranslations from './locales/es.json';
 import fiTranslations from './locales/fi.json';
 import frTranslations from './locales/fr.json';
+import gaTranslations from './locales/ga.json';
 import heTranslations from './locales/he.json';
+import huTranslations from './locales/hu.json';
 import itTranslations from './locales/it.json';
 import nlTranslations from './locales/nl.json';
 import plTranslations from './locales/pl.json';
@@ -43,8 +47,14 @@ export const LANGUAGE_RESOURCES = {
   fr: {
     translation: frTranslations
   },
+  ga: {
+    translation: gaTranslations
+  },
   he: {
     translation: heTranslations
+  },
+  hu: {
+    translation: huTranslations
   },
   it: {
     translation: itTranslations
@@ -76,121 +86,13 @@ export const LANGUAGE_RESOURCES = {
 };
 
 /**
- * List of all available languages with their code, name, native name and flag.
- * When adding a new language, add the language to the map here.
+ * List of all available UI languages with their code, native name and flag.
  */
-export const AVAILABLE_LANGUAGES: ILanguageConfig[] = [
-  {
-    code: 'da',
-    name: 'Danish',
-    nativeName: 'Dansk',
-    flag: '🇩🇰'
-  },
-  {
-    code: 'de',
-    name: 'German',
-    nativeName: 'Deutsch',
-    flag: '🇩🇪'
-  },
-  {
-    code: 'en',
-    name: 'English',
-    nativeName: 'English',
-    flag: '🇺🇸'
-  },
-  {
-    code: 'es',
-    name: 'Spanish',
-    nativeName: 'Español',
-    flag: '🇪🇸'
-  },
-  {
-    code: 'fi',
-    name: 'Finnish',
-    nativeName: 'Suomi',
-    flag: '🇫🇮'
-  },
-  {
-    code: 'fr',
-    name: 'French',
-    nativeName: 'Français',
-    flag: '🇫🇷'
-  },
-  {
-    code: 'he',
-    name: 'Hebrew',
-    nativeName: 'עברית',
-    flag: '🇮🇱'
-  },
-  {
-    code: 'it',
-    name: 'Italian',
-    nativeName: 'Italiano',
-    flag: '🇮🇹'
-  },
-  {
-    code: 'nl',
-    name: 'Dutch',
-    nativeName: 'Nederlands',
-    flag: '🇳🇱'
-  },
-  {
-    code: 'pl',
-    name: 'Polish',
-    nativeName: 'Polski',
-    flag: '🇵🇱'
-  },
-  {
-    code: 'pt',
-    name: 'Portuguese Brazilian',
-    nativeName: 'Português Brasileiro',
-    flag: '🇧🇷'
-  },
-  {
-    code: 'ro',
-    name: 'Romanian',
-    nativeName: 'Română',
-    flag: '🇷🇴'
-  },
-  {
-    code: 'ru',
-    name: 'Russian',
-    nativeName: 'Русский',
-    flag: '🇷🇺'
-  },
-  {
-    code: 'sv',
-    name: 'Swedish',
-    nativeName: 'Svenska',
-    flag: '🇸🇪'
-  },
-  {
-    code: 'uk',
-    name: 'Ukrainian',
-    nativeName: 'Українська',
-    flag: '🇺🇦'
-  },
-  {
-    code: 'zh',
-    name: 'Chinese',
-    nativeName: '简体中文',
-    flag: '🇨🇳'
-  },
-  /*
-   * {
-   *   code: 'es',
-   *   name: 'Spanish',
-   *   nativeName: 'Español',
-   *   flag: '🇪🇸'
-   * },
-   * {
-   *   code: 'fr',
-   *   name: 'French',
-   *   nativeName: 'Français',
-   *   flag: '🇫🇷'
-   * },
-   */
-];
+export const AVAILABLE_LANGUAGES: ILanguageConfig[] =
+  (Object.keys(LANGUAGE_RESOURCES) as Array<keyof typeof LANGUAGE_RESOURCES>).map((code) => {
+    const info = getLanguageInfo(code);
+    return { code, nativeName: info.label, flag: info.flag };
+  });
 
 /**
  * Default language that is used when no language is set in the browser or when a localized string is not found for the current language.
@@ -201,7 +103,6 @@ export const LANGUAGE_CODES = AVAILABLE_LANGUAGES.map(lang => lang.code);
 
 export interface ILanguageConfig {
     code: string;
-    name: string;
     nativeName: string;
     flag?: string;
   }

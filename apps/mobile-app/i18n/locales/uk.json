@@ -3,6 +3,7 @@
     "cancel": "Скасувати",
     "close": "Закрити",
     "delete": "Видалити",
+    "remove": "Remove",
     "save": "Зберегти",
     "edit": "Edit",
     "yes": "Так",
@@ -16,6 +17,7 @@
     "copied": "Скопійовано до буфера обміну",
     "loadMore": "Завантажити більше",
     "use": "Використовувати",
+    "none": "Відсутньо",
     "confirm": "Підтвердити",
     "next": "Далі",
     "notice": "Примітка",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "Add 2FA Code",
     "nameOptional": "Ім'я (необов'язково)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Authenticator",
     "secretKey": "Секретний ключ",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "saveToViewCode": "Зберегти для перегляду коду",
     "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Invalid secret key format.",
       "scanFailed": "Failed to scan QR code. Please try again."
@@ -192,7 +196,8 @@
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
     "security": "Безпека",
-    "appVersion": "Версія додатку {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Ніколи",
       "5seconds": "5 секунд",
@@ -360,6 +365,7 @@
     "enterFieldName": "Enter field name",
     "fieldTypes": {
       "text": "Text",
+      "password": "Пароль",
       "hidden": "Hidden",
       "email": "Пошта",
       "url": "URL",
@@ -441,6 +447,29 @@
     "includeNumbers": "Числа (0-9)",
     "includeSpecialChars": "Спеціальні символи (!@#)",
     "avoidAmbiguousChars": "Уникати неоднозначних символів",
+    "passwordTypeBasic": "Пароль",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Помилка завантаження об'єктів",
     "vaultSyncFailed": "Не вдалося синхронізувати сховище",
     "vaultSyncedSuccessfully": "Сховище успішно синхронізовано",
@@ -654,7 +683,6 @@
     },
     "loginSettings": {
       "title": "API з'єднання",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Розміщено на власному хостингу",
       "customApiUrl": "URL-адреса користувацького API",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",

@@ -47,10 +47,15 @@ export default defineConfig({
       permissions.push("offscreen");
     }
 
+    // Safari: allow messaging the native app (e.g. to open Safari's extension shortcut settings)
+    if (browser === 'safari') {
+      permissions.push("nativeMessaging");
+    }
+
     return {
       name: "AliasVault",
       description: "AliasVault Browser AutoFill Extension. Keeping your personal information private.",
-      version: "0.30.0",
+      version: "0.31.0",
       content_security_policy: {
         extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
       },
@@ -63,6 +68,10 @@ export default defineConfig({
       ],
       commands: {
         "show-autofill-popup": {
+          suggested_key: {
+            default: "Ctrl+Shift+L",
+            mac: "Command+Shift+L"
+          },
           description: "Show the autofill popup (while focusing an input field)"
         }
       },

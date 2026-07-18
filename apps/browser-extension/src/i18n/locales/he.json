@@ -62,6 +62,7 @@
     "openInNewWindow": "פתיחה בחלון חדש",
     "enabled": "פעיל",
     "disabled": "כבוי",
+    "none": "אין",
     "showPassword": "הצגת סיסמה",
     "hidePassword": "הסתרת סיסמה",
     "show": "Show",
@@ -76,6 +77,7 @@
     "settings": "הגדרות",
     "recentEmails": "הודעות דוא״ל אחרונות",
     "credentials": "פרטי גישה",
+    "passkeys": "Passkeys",
     "customFields": "Custom Fields",
     "twoFactorAuthentication": "אימות דו־שלבי",
     "alias": "כינוי",
@@ -109,6 +111,7 @@
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "mergeFailed": "Failed to merge vault changes. Please try again.",
       "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "נא למלא קוד אימות באורך 6 ספרות.",
       "serverError": "לא ניתן ליצור קשר עם השרת של AliasVault. נא לנסות שוב מאוחר יותר או ליצור קשר עם התמיכה אם הבעיה נשנית.",
       "wrongPassword": "סיסמה שגויה. נא לנסות שוב.",
@@ -148,6 +151,7 @@
     "creatingNewAlias": "נוצר כינוי חדש",
     "creatingNewCredential": "Creating new credential",
     "noMatchesFound": "לא נמצאו תוצאות",
+    "loginWithPasskey": "Login with passkey",
     "searchVault": "חיפוש בכספת…",
     "enterServiceName": "נא למלא את שם השירות",
     "enterEmailAddress": "נא למלא כתובת דוא״ל",
@@ -186,6 +190,7 @@
   "items": {
     "title": "Items",
     "itemName": "שם",
+    "suggestions": "Suggestions",
     "loginCredentials": "פרטי הגישה",
     "cardInformation": "Card Information",
     "addItem": "Add Item",
@@ -202,6 +207,8 @@
     "folder": "תיקייה",
     "welcomeTitle": "ברוך בואך ל־AliasVault!",
     "welcomeDescription": "כדי להשתמש בהרחבת הדפדפן של AliasVault: יש לנווט לאתר ולהשתמש בחלונית ההשלמה האוטומטית של AliasVault כדי ליצור פרטי גישה חדשים.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items found",
     "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
@@ -216,7 +223,6 @@
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
       "folders": "Folders",
-      "passkeys": "Passkeys",
       "totp": "2FA Codes"
     },
     "sort": {
@@ -238,6 +244,28 @@
     "includeNumbers": "לכלול מספרים",
     "includeSpecialChars": "לכלול תווים מיוחדים",
     "avoidAmbiguousChars": "עדיף להימנע מאותיות וספרות שדומים זה לזה (o,‏ 0 וכו׳)",
+    "passwordTypeBasic": "סיסמה",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "כתובת דוא״ל פרטית",
     "privateEmailAliasVaultServer": "שרת AliasVault",
     "privateEmailDescription": "הצפנה מקצה לקצה, פרטיות מלאה.",
@@ -259,6 +287,7 @@
     "fieldType": "Field Type",
     "fieldTypes": {
       "text": "Text",
+      "password": "סיסמה",
       "hidden": "Hidden (masked text)",
       "email": "דוא״ל",
       "url": "URL",
@@ -301,6 +330,7 @@
     "addCode": "Add 2FA Code",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "nameOptional": "שם (רשות)",
+    "addName": "Add a name (optional)",
     "secretKey": "מפתח סודי",
     "saveToViewCode": "יש לשמור כדי לצפות בקוד",
     "defaultName": "Authenticator",
@@ -401,7 +431,8 @@
     "autoLock4Hours": "4 שעות",
     "autoLock8Hours": "8 שעות",
     "autoLock24Hours": "24 שעות",
-    "versionPrefix": "גרסה ",
+    "versionPrefix": "App version",
+    "serverVersion": "Server version",
     "autofillSettings": "הגדרות השלמה אוטומטית",
     "clipboardSettings": "הגדרות לוח הגזירים",
     "contextMenuSettings": "הגדרות תפריט הקשר",
@@ -438,6 +469,11 @@
         "male": "זכר",
         "female": "נקבה"
       }
+    },
+    "passwordGenerator": "יוצר סיסמאות",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "הגדרה"
     },
     "credentialAutofill": "Credential autofill",
     "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
@@ -502,7 +538,8 @@
       "selectExistingLogin": "Add to existing login:",
       "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
       "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey"
+      "attachPasskey": "Add Passkey",
+      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
     "settings": {
       "passkeyProvider": "Passkey Provider",

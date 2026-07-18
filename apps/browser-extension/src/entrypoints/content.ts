@@ -4,13 +4,15 @@
 
 import '@/entrypoints/contentScript/style.css';
 import { CONDITIONAL_PASSKEYS_UPDATED_EVENT, hasPendingConditionalRequest, refreshConditionalPasskeyOptions } from '@/entrypoints/contentScript/ConditionalPasskey';
-import { injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
-import { openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
+import { fillItem, injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
+import { getLastAutofillInput, openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
 import { showSavePrompt, showAddUrlPrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState, restoreAddUrlPromptFromState } from '@/entrypoints/contentScript/SavePrompt';
 import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
 
 import { isAvAutofillAllowed, isAvSuppressSave } from '@/utils/autofill/Autofill';
 import { DEFAULT_POPUP_TYPE, isPopupType, popupTypeForFieldType, POPUP_TYPES, type PopupType } from '@/utils/autofill/PopupTypes';
+import { devLog } from '@/utils/DevLogger';
+import type { Item } from '@/utils/dist/core/models/vault';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { LoginDetector } from '@/utils/loginDetector';
@@ -502,10 +504,14 @@ export default defineContentScript({
            * subtrees back in with av-enable="true".
            */
           if (!isAvAutofillAllowed(e.target as Element)) {
+            devLog('[Autofill] focusin skipped: av-disable marker active for', e.target);
             return;
           }
 
           const { isValid, inputElement } = validateInputField(e.target as Element);
+          if (!isValid) {
+            devLog('[Autofill] focusin skipped: not a fillable input field', e.target);
+          }
           if (isValid && inputElement) {
             /**
              * Immediately store the original autocomplete value and disable native autocomplete.
@@ -519,23 +525,27 @@ export default defineContentScript({
 
             const formDetector = new FormDetector(document, inputElement);
             if (!formDetector.containsLoginForm()) {
+              devLog('[Autofill] focusin skipped: no login form detected around', inputElement);
               return;
             }
 
             // Only show popup for autofill-triggerable fields
             const detectedFieldType = formDetector.getDetectedFieldType();
             if (!detectedFieldType) {
+              devLog('[Autofill] focusin skipped: field did not classify as an autofill-triggerable type', inputElement);
               return;
             }
 
             // Check if site allows autofill (site-specific disabled sites)
             if (!await isSiteAllowed()) {
+              devLog('[Autofill] focusin skipped: autofill is disabled for this site');
               return;
             }
 
             // Check if we should show autofill UI for this field type
             const popupType = popupTypeForFieldType(detectedFieldType);
             if (!await POPUP_RUNTIME[popupType].enabled()) {
+              devLog(`[Autofill] focusin skipped: ${popupType} popup is disabled in settings`);
               return;
             }
 
@@ -547,6 +557,7 @@ export default defineContentScript({
              * login / unlock / Enable 2FA forms).
              */
             if (isAvSuppressSave(inputElement) && !await hasMatchForCurrentUrl(popupType)) {
+              devLog('[Autofill] focusin skipped: av-suppress-save active and no matching vault items');
               return;
             }
 
@@ -557,7 +568,10 @@ export default defineContentScript({
 
             // Only show popup if debounce time has passed
             if (popupDebounceTimeHasPassed()) {
+              devLog(`[Autofill] Showing ${popupType} popup for ${detectedFieldType} field`, inputElement);
               await showPopupWithAuthCheck(inputElement, container, popupType);
+            } else {
+              devLog('[Autofill] Popup suppressed by debounce window (icon still shown)');
             }
           }
         };
@@ -634,6 +648,45 @@ export default defineContentScript({
           return { success: true };
         });
 
+        /*
+         * A credential was created in the full popup window (opened from this page's "create new
+         * item" flow). Autofill it back into the page form, mirroring the inline quick-create UX.
+         */
+        onMessage('AUTOFILL_CREATED_ITEM', async ({ data }) => {
+          const { item, elementIdentifier } = data;
+
+          if (!item) {
+            return { success: false, error: 'No item provided' };
+          }
+
+          /*
+           * Resolve the target input: prefer the explicit element identifier, then fall back to
+           * the input the autofill popup was most recently shown for on this page.
+           */
+          let resolvedInput: HTMLInputElement | null = null;
+          if (elementIdentifier) {
+            const target = document.getElementById(elementIdentifier) ?? document.getElementsByName(elementIdentifier)[0] ?? null;
+            const { isValid, inputElement } = validateInputField(target);
+            if (isValid && inputElement) {
+              resolvedInput = inputElement;
+            }
+          }
+          if (!resolvedInput) {
+            resolvedInput = getLastAutofillInput();
+          }
+
+          if (!resolvedInput) {
+            return { success: false, error: 'No target input found' };
+          }
+
+          // Close any open inline popup before filling.
+          removeExistingPopup(container);
+
+          await fillItem(item as Item, resolvedInput);
+
+          return { success: true };
+        });
+
         // When the vault is unlocked, re-query any pending conditional passkey requests
         onMessage('VAULT_UNLOCKED', async () => {
           if (ctx.isInvalid || !hasPendingConditionalRequest()) {
@@ -696,6 +749,7 @@ export default defineContentScript({
 
           const formDetector = new FormDetector(document, inputElement);
           if (!formDetector.containsLoginForm()) {
+            devLog('[Autofill] showPopupForElement skipped: no login form detected around', inputElement);
             return;
           }
 
@@ -717,14 +771,21 @@ export default defineContentScript({
            */
           const canShowPopup = forceShow || (await isSiteAllowed() && formDetector.isAutofillTriggerableField());
 
+          if (!canShowPopup) {
+            devLog('[Autofill] showPopupForElement skipped: site disabled or field not autofill-triggerable', inputElement);
+          }
+
           if (canShowPopup) {
-            // Check the per-popup-type feature toggle (credential vs TOTP, etc.)
-            if (!await POPUP_RUNTIME[popupType].enabled()) {
+            /*
+             * Check the per-popup-type feature toggle (credential vs TOTP, etc.), unless the
+             * popup was explicitly requested (keyboard shortcut / context menu = force show).
+             */
+            if (!forceShow && !await POPUP_RUNTIME[popupType].enabled()) {
               return;
             }
 
             injectIcon(inputElement, container, detectedFieldType ?? undefined);
-            await showPopupWithAuthCheck(inputElement, container, popupType);
+            await showPopupWithAuthCheck(inputElement, container, popupType, forceShow);
           }
         }
 

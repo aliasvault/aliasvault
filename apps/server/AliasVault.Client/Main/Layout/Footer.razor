@@ -1,5 +1,6 @@
 ﻿@inject NavigationManager NavigationManager
 @inject IStringLocalizerFactory LocalizerFactory
+@inject Config Config
 @using AliasVault.Shared.Core
 @using Microsoft.Extensions.Localization
 @implements IDisposable
@@ -8,7 +9,8 @@
     <div class="container mx-auto px-4 py-4">
         <div class="flex flex-col lg:flex-row justify-between items-center">
             <p class="text-sm text-center text-gray-500 mb-4 lg:mb-0">
-                © @(DateTime.Now.Year) <span>@AppInfo.ApplicationName v@(AppInfo.GetFullVersion())</span>. @Localizer["CopyrightText"]
+                © @(DateTime.Now.Year) <span>@AppInfo.ApplicationName v@(AppInfo.GetFullVersion())</span>@if (!string.IsNullOrEmpty(Config.DeploymentMode))
+                {<text> <span class="ml-1">(@Config.DeploymentMode)</span></text>}. @Localizer["CopyrightText"]
             </p>
             <div class="hidden lg:block text-center text-gray-400 text-sm">@_randomQuote</div>
         </div>

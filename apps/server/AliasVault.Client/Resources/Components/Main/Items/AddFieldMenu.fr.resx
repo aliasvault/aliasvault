@@ -110,6 +110,10 @@
     <value>Texte</value>
     <comment>Text field type option</comment>
   </data>
+  <data name="FieldTypePassword">
+    <value>Mot de passe</value>
+    <comment>Password field type option</comment>
+  </data>
   <data name="FieldTypeHidden">
     <value>Masqué</value>
     <comment>Hidden field type option</comment>

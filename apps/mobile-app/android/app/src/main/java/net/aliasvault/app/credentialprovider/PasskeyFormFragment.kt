@@ -15,10 +15,11 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import net.aliasvault.app.R
 import net.aliasvault.app.components.LoadingIndicator
 import net.aliasvault.app.credentialprovider.models.PasskeyRegistrationViewModel
@@ -46,6 +47,13 @@ class PasskeyFormFragment : Fragment() {
         private const val ARG_IS_REPLACE = "is_replace"
         private const val ARG_PASSKEY_ID = "passkey_id"
         private const val ARG_ITEM_ID = "item_id"
+
+        /**
+         * Maximum time to wait for a best-effort server sync/upload before proceeding offline.
+         * Keeps passkey creation responsive when the server is slow or unreachable; the passkey is
+         * always stored locally and the vault stays dirty, so it syncs on the next opportunity.
+         */
+        private const val BEST_EFFORT_SYNC_TIMEOUT_MS = 5000L
 
         /**
          * Create a new instance of PasskeyFormFragment.
@@ -247,8 +255,14 @@ class PasskeyFormFragment : Fragment() {
                 showLoading(getString(R.string.passkey_checking_connection))
             }
 
-            val syncResult = vaultStore.syncVaultWithServer(webApiService)
-            if (!syncResult.success && !syncResult.wasOffline) {
+            // Best-effort sync: try immediately so the passkey is persisted to the local vault,
+            // but do not block the passkey creation flow itself if server is not available.
+            val syncResult = withTimeoutOrNull(BEST_EFFORT_SYNC_TIMEOUT_MS) {
+                vaultStore.syncVaultWithServer(webApiService)
+            }
+            // Only surface a fast, definitive failure (e.g. session expired or password changed).
+            // A timeout (null) or an offline result is treated as best-effort: continue locally.
+            if (syncResult != null && !syncResult.success && !syncResult.wasOffline) {
                 // Server connectivity check failed - show appropriate error dialog
                 withContext(Dispatchers.Main) {
                     showSyncErrorAlert(Exception(syncResult.error ?: "Sync failed"))
@@ -288,6 +302,9 @@ class PasskeyFormFragment : Fragment() {
             val prfInputs = extractPrfInputs(requestObj)
             val enablePrf = prfInputs != null
 
+            // Pick the credential algorithm from the RP's pubKeyCredParams
+            val algorithm = selectAlgorithm(requestObj)
+
             // Create the passkey using PasskeyAuthenticator
             val passkeyResult = PasskeyAuthenticator.createPasskey(
                 credentialId = credentialId,
@@ -298,6 +315,7 @@ class PasskeyFormFragment : Fragment() {
                 uvPerformed = true,
                 enablePrf = enablePrf,
                 prfInputs = prfInputs,
+                algorithm = algorithm,
             )
 
             // Create Passkey model object
@@ -335,14 +353,15 @@ class PasskeyFormFragment : Fragment() {
                 showLoading(getString(R.string.passkey_syncing))
             }
 
-            try {
-                vaultStore.mutateVault(webApiService)
-            } catch (e: Exception) {
-                Log.w(TAG, "Vault mutation failed, but passkey was created locally", e)
-                // Show error dialog but continue - passkey is still saved locally
-                withContext(Dispatchers.Main) {
-                    showSyncErrorAlert(e)
-                    delay(2000)
+            // Best-effort sync: try immediately so the passkey is persisted to the local vault,
+            // but do not block the passkey creation flow itself if server is not available.
+            withTimeoutOrNull(BEST_EFFORT_SYNC_TIMEOUT_MS) {
+                try {
+                    vaultStore.mutateVault(webApiService)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.w(TAG, "Vault mutation failed, but passkey was created locally", e)
                 }
             }
 
@@ -375,7 +394,7 @@ class PasskeyFormFragment : Fragment() {
                             },
                         )
                         put("publicKey", Helpers.bytesToBase64url(passkeyResult.publicKeyDER))
-                        put("publicKeyAlgorithm", -7)
+                        put("publicKeyAlgorithm", algorithm)
                     },
                 )
 
@@ -441,8 +460,14 @@ class PasskeyFormFragment : Fragment() {
                 showLoading(getString(R.string.passkey_checking_connection))
             }
 
-            val syncResult = vaultStore.syncVaultWithServer(webApiService)
-            if (!syncResult.success && !syncResult.wasOffline) {
+            // Best-effort sync: try immediately so the passkey is persisted to the local vault,
+            // but do not block the passkey creation flow itself if server is not available.
+            val syncResult = withTimeoutOrNull(BEST_EFFORT_SYNC_TIMEOUT_MS) {
+                vaultStore.syncVaultWithServer(webApiService)
+            }
+            // Only surface a fast, definitive failure (e.g. session expired or password changed).
+            // A timeout (null) or an offline result is treated as best-effort: continue locally.
+            if (syncResult != null && !syncResult.success && !syncResult.wasOffline) {
                 // Server connectivity check failed - show appropriate error dialog
                 withContext(Dispatchers.Main) {
                     showSyncErrorAlert(Exception(syncResult.error ?: "Sync failed"))
@@ -480,6 +505,9 @@ class PasskeyFormFragment : Fragment() {
             val prfInputs = extractPrfInputs(requestObj)
             val enablePrf = prfInputs != null
 
+            // Pick the credential algorithm from the RP's pubKeyCredParams
+            val algorithm = selectAlgorithm(requestObj)
+
             // Create the new passkey using PasskeyAuthenticator
             val passkeyResult = PasskeyAuthenticator.createPasskey(
                 credentialId = credentialId,
@@ -490,6 +518,7 @@ class PasskeyFormFragment : Fragment() {
                 uvPerformed = true,
                 enablePrf = enablePrf,
                 prfInputs = prfInputs,
+                algorithm = algorithm,
             )
 
             // Create new Passkey model object
@@ -526,14 +555,15 @@ class PasskeyFormFragment : Fragment() {
                 showLoading(getString(R.string.passkey_syncing))
             }
 
-            try {
-                vaultStore.mutateVault(webApiService)
-            } catch (e: Exception) {
-                Log.w(TAG, "Vault mutation failed, but passkey was replaced locally", e)
-                // Show error dialog but continue - passkey is still saved locally
-                withContext(Dispatchers.Main) {
-                    showSyncErrorAlert(e)
-                    delay(2000)
+            // Best-effort sync: try immediately so the passkey is persisted to the local vault,
+            // but do not block the passkey creation flow itself if server is not available.
+            withTimeoutOrNull(BEST_EFFORT_SYNC_TIMEOUT_MS) {
+                try {
+                    vaultStore.mutateVault(webApiService)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.w(TAG, "Vault mutation failed, but passkey was replaced locally", e)
                 }
             }
 
@@ -565,7 +595,7 @@ class PasskeyFormFragment : Fragment() {
                             },
                         )
                         put("publicKey", Helpers.bytesToBase64url(passkeyResult.publicKeyDER))
-                        put("publicKeyAlgorithm", -7)
+                        put("publicKeyAlgorithm", algorithm)
                     },
                 )
 
@@ -637,8 +667,16 @@ class PasskeyFormFragment : Fragment() {
                 showLoading(getString(R.string.passkey_checking_connection))
             }
 
-            val syncResult = vaultStore.syncVaultWithServer(webApiService)
-            if (!syncResult.success && !syncResult.wasOffline) {
+            // Best-effort sync: try immediately so the passkey is created on top of the latest
+            // vault, but never let a slow or unreachable server block the user. If it doesn't
+            // finish within the timeout we proceed offline (the passkey is stored locally and the
+            // vault stays dirty, so it syncs on the next opportunity).
+            val syncResult = withTimeoutOrNull(BEST_EFFORT_SYNC_TIMEOUT_MS) {
+                vaultStore.syncVaultWithServer(webApiService)
+            }
+            // Only surface a fast, definitive failure (e.g. session expired or password changed).
+            // A timeout (null) or an offline result is treated as best-effort: continue locally.
+            if (syncResult != null && !syncResult.success && !syncResult.wasOffline) {
                 // Server connectivity check failed - show appropriate error dialog
                 withContext(Dispatchers.Main) {
                     showSyncErrorAlert(Exception(syncResult.error ?: "Sync failed"))
@@ -676,6 +714,9 @@ class PasskeyFormFragment : Fragment() {
             val prfInputs = extractPrfInputs(requestObj)
             val enablePrf = prfInputs != null
 
+            // Pick the credential algorithm from the RP's pubKeyCredParams
+            val algorithm = selectAlgorithm(requestObj)
+
             // Create the passkey using PasskeyAuthenticator
             val passkeyResult = PasskeyAuthenticator.createPasskey(
                 credentialId = credentialId,
@@ -686,6 +727,7 @@ class PasskeyFormFragment : Fragment() {
                 uvPerformed = true,
                 enablePrf = enablePrf,
                 prfInputs = prfInputs,
+                algorithm = algorithm,
             )
 
             // Create Passkey model object
@@ -721,14 +763,16 @@ class PasskeyFormFragment : Fragment() {
                 showLoading(getString(R.string.passkey_syncing))
             }
 
-            try {
-                vaultStore.mutateVault(webApiService)
-            } catch (e: Exception) {
-                Log.w(TAG, "Vault mutation failed, but passkey was added locally", e)
-                // Show error dialog but continue - passkey is still saved locally
-                withContext(Dispatchers.Main) {
-                    showSyncErrorAlert(e)
-                    delay(2000)
+            // Best-effort upload bounded by the same timeout so a slow server can't hang the
+            // overlay. On timeout or failure the passkey stays saved locally with the vault marked
+            // dirty and syncs on the next opportunity.
+            withTimeoutOrNull(BEST_EFFORT_SYNC_TIMEOUT_MS) {
+                try {
+                    vaultStore.mutateVault(webApiService)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.w(TAG, "Vault mutation failed, but passkey was added locally", e)
                 }
             }
 
@@ -760,7 +804,7 @@ class PasskeyFormFragment : Fragment() {
                             },
                         )
                         put("publicKey", Helpers.bytesToBase64url(passkeyResult.publicKeyDER))
-                        put("publicKeyAlgorithm", -7)
+                        put("publicKeyAlgorithm", algorithm)
                     },
                 )
 
@@ -816,6 +860,24 @@ class PasskeyFormFragment : Fragment() {
                 showError(getString(R.string.passkey_creation_failed) + ": ${e.message}")
             }
         }
+    }
+
+    /**
+     * Pick the credential algorithm from the RP's pubKeyCredParams.
+     * Honors the RP's preference order; defaults to ES256 when absent.
+     */
+    private fun selectAlgorithm(requestObj: JSONObject): Int {
+        val params = requestObj.optJSONArray("pubKeyCredParams")
+        val algs = mutableListOf<Int>()
+        if (params != null) {
+            for (i in 0 until params.length()) {
+                val entry = params.optJSONObject(i) ?: continue
+                if (entry.optString("type") == "public-key" && entry.has("alg")) {
+                    algs.add(entry.getInt("alg"))
+                }
+            }
+        }
+        return PasskeyAuthenticator.pickSupportedAlgorithm(algs)
     }
 
     /**

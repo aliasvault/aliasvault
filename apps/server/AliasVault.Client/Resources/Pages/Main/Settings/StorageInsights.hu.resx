@@ -68,7 +68,7 @@
     <comment>Description for the breakdown bar</comment>
   </data>
   <data name="BreakdownCredentialsLabel">
-    <value>Credentials</value>
+    <value>Bejegyzések</value>
     <comment>Legend label for credential data slice</comment>
   </data>
   <data name="BreakdownAttachmentsLabel">
@@ -111,7 +111,7 @@
     <comment>Table column header for size in KB</comment>
   </data>
   <data name="ColumnItem">
-    <value>Item</value>
+    <value>Elem</value>
     <comment>Table column header for the parent item name</comment>
   </data>
   <data name="ColumnCreated">
@@ -119,7 +119,7 @@
     <comment>Table column header for creation date</comment>
   </data>
   <data name="ColumnWebsiteURL">
-    <value>Website URL</value>
+    <value>Webcím</value>
     <comment>Table column header for logo source domain</comment>
   </data>
   <data name="ColumnItemCount">

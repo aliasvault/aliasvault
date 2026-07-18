@@ -9,33 +9,76 @@ type EncryptionKey = {
 };
 
 /**
+ * Which generator a password setting uses.
+ */
+type PasswordGeneratorType = 'basic' | 'diceware';
+/**
+ * Capitalization applied to each Diceware word.
+ */
+type DicewareCapitalization = 'None' | 'TitleCase' | 'Uppercase' | 'Lowercase' | 'Random';
+/**
+ * Separator placed between Diceware words.
+ */
+type DicewareSeparator = 'None' | 'Dash' | 'Space' | 'Underscore' | 'Dot';
+/**
+ * Optional random salt character added to a Diceware passphrase.
+ */
+type DicewareSalt = 'None' | 'Prefix' | 'Sprinkle' | 'Suffix';
+/**
  * Settings for password generation stored in SQLite database settings table as string.
+ *
+ * The Diceware fields are optional so that older stored blobs (which only contain the
+ * basic-password fields) remain valid; defaults are applied when reading the settings.
  */
 type PasswordSettings = {
     /**
-     * The length of the password.
+     * The length of the password (basic generator).
      */
     Length: number;
     /**
-     * Whether to use lowercase letters.
+     * Whether to use lowercase letters (basic generator).
      */
     UseLowercase: boolean;
     /**
-     * Whether to use uppercase letters.
+     * Whether to use uppercase letters (basic generator).
      */
     UseUppercase: boolean;
     /**
-     * Whether to use numbers.
+     * Whether to use numbers (basic generator).
      */
     UseNumbers: boolean;
     /**
-     * Whether to use special characters.
+     * Whether to use special characters (basic generator).
      */
     UseSpecialChars: boolean;
     /**
-     * Whether to use non-ambiguous characters.
+     * Whether to use non-ambiguous characters (basic generator).
      */
     UseNonAmbiguousChars: boolean;
+    /**
+     * Which generator to use. Defaults to 'basic' when absent.
+     */
+    Type?: PasswordGeneratorType;
+    /**
+     * Number of words in the passphrase (diceware generator).
+     */
+    WordCount?: number;
+    /**
+     * Wordlist language code (diceware generator).
+     */
+    Language?: string;
+    /**
+     * Capitalization applied to each word (diceware generator). Defaults to 'Lowercase'.
+     */
+    Capitalization?: DicewareCapitalization;
+    /**
+     * Separator between words (diceware generator). Defaults to 'Dash'.
+     */
+    Separator?: DicewareSeparator;
+    /**
+     * Optional random salt character (diceware generator). Defaults to 'None'.
+     */
+    Salt?: DicewareSalt;
 };
 
 /**
@@ -547,4 +590,4 @@ type FieldHistory = {
  */
 declare const MAX_FIELD_HISTORY_RECORDS = 10;
 
-export { type Alias, type Attachment, type CreateCustomFieldOptions, type CreateSystemFieldOptions, type Credential, type EncryptionKey, FieldCategories, type FieldCategory, type FieldHistory, FieldKey, type FieldKeyValue, type FieldType, FieldTypes, type Item, type ItemField, type ItemTag, type ItemTagRef, type ItemType, type ItemTypeFieldConfig, ItemTypes, MAX_FIELD_HISTORY_RECORDS, type Passkey, type PasswordSettings, type SystemFieldDefinition, SystemFieldRegistry, type Tag, type TotpCode, createCustomField, createSystemField, fieldAppliesToType, getAllSystemFieldKeys, getDefaultFieldsForItemType, getFieldConfigForType, getFieldValue, getFieldValues, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, groupFields, groupFieldsByCategory, hasField, isFieldShownByDefault, isSystemField, isSystemFieldPrefix, itemToCredential };
+export { type Alias, type Attachment, type CreateCustomFieldOptions, type CreateSystemFieldOptions, type Credential, type DicewareCapitalization, type DicewareSalt, type DicewareSeparator, type EncryptionKey, FieldCategories, type FieldCategory, type FieldHistory, FieldKey, type FieldKeyValue, type FieldType, FieldTypes, type Item, type ItemField, type ItemTag, type ItemTagRef, type ItemType, type ItemTypeFieldConfig, ItemTypes, MAX_FIELD_HISTORY_RECORDS, type Passkey, type PasswordGeneratorType, type PasswordSettings, type SystemFieldDefinition, SystemFieldRegistry, type Tag, type TotpCode, createCustomField, createSystemField, fieldAppliesToType, getAllSystemFieldKeys, getDefaultFieldsForItemType, getFieldConfigForType, getFieldValue, getFieldValues, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, groupFields, groupFieldsByCategory, hasField, isFieldShownByDefault, isSystemField, isSystemFieldPrefix, itemToCredential };

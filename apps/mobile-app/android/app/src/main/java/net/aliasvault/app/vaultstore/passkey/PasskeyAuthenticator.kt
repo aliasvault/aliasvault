@@ -8,6 +8,8 @@ import java.security.SecureRandom
 import java.security.Signature
 import java.security.interfaces.ECPrivateKey
 import java.security.interfaces.ECPublicKey
+import java.security.interfaces.RSAPrivateCrtKey
+import java.security.interfaces.RSAPublicKey
 import java.security.spec.ECGenParameterSpec
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
@@ -27,7 +29,7 @@ import javax.crypto.spec.SecretKeySpec
  * reflected in all ports. Method names, parameters, and behavior should remain consistent.
  *
  * Key features:
- * - ES256 (ECDSA P-256) key pair generation
+ * - ES256 (ECDSA P-256) and RS256 (RSASSA-PKCS1-v1.5) key pair generation
  * - CBOR/COSE encoding for attestation objects
  * - Proper authenticator data with WebAuthn flags
  * - Self-attestation (packed format) or none attestation
@@ -43,7 +45,45 @@ object PasskeyAuthenticator {
         0x8c.toByte(), 0x5d, 0x2f, 0x7d, 0x13, 0xe8.toByte(), 0xc9.toByte(), 0x42,
     )
 
+    /** COSE algorithm identifier for ES256 (ECDSA P-256 with SHA-256). */
+    const val ALG_ES256 = -7
+
+    /** COSE algorithm identifier for RS256 (RSASSA-PKCS1-v1.5 with SHA-256). */
+    const val ALG_RS256 = -257
+
+    /** RSA modulus size used when generating RS256 credentials. */
+    private const val RSA_KEY_SIZE = 2048
+
+    /**
+     * Algorithms supported by this authenticator, in our order of preference.
+     * When an RP lists multiple, we honor the RP's order and pick the first match.
+     */
+    private val SUPPORTED_ALGORITHMS = listOf(ALG_ES256, ALG_RS256)
+
     // MARK: - Public API
+
+    /**
+     * Pick a supported credential algorithm from the RP's pubKeyCredParams.
+     * Honors the RP's preference order and returns the first algorithm we support.
+     * Defaults to ES256 when the RP provides no params.
+     *
+     * @param params COSE algorithm identifiers from pubKeyCredParams, in RP order.
+     * @return The chosen COSE algorithm identifier (-7 for ES256, -257 for RS256).
+     */
+    @JvmStatic
+    fun pickSupportedAlgorithm(params: List<Int>): Int {
+        if (params.isEmpty()) {
+            return ALG_ES256
+        }
+        for (alg in params) {
+            if (SUPPORTED_ALGORITHMS.contains(alg)) {
+                return alg
+            }
+        }
+        throw PasskeyError.UnsupportedAlgorithm(
+            "No supported algorithm (ES256, RS256) in pubKeyCredParams",
+        )
+    }
 
     /**
      * Create a new passkey (registration).
@@ -60,11 +100,10 @@ object PasskeyAuthenticator {
         uvPerformed: Boolean = false,
         enablePrf: Boolean = false,
         prfInputs: PrfInputs? = null,
+        algorithm: Int = ALG_ES256,
     ): PasskeyCreationResult {
-        // 1. Generate ES256 key pair
-        val keyPairGenerator = KeyPairGenerator.getInstance("EC")
-        keyPairGenerator.initialize(ECGenParameterSpec("secp256r1"))
-        val keyPair = keyPairGenerator.generateKeyPair()
+        // 1. Generate key pair for the chosen algorithm
+        val keyPair = generateKeyPair(algorithm)
 
         // 2. RP ID hash
         val md = MessageDigest.getInstance("SHA-256")
@@ -82,7 +121,11 @@ object PasskeyAuthenticator {
         val signCount = byteArrayOf(0x00, 0x00, 0x00, 0x00)
 
         // 5. Build COSE public key
-        val coseKey = buildCoseEc2Es256(keyPair.public as ECPublicKey)
+        val coseKey = if (algorithm == ALG_RS256) {
+            buildCoseRsaRs256(keyPair.public as RSAPublicKey)
+        } else {
+            buildCoseEc2Es256(keyPair.public as ECPublicKey)
+        }
 
         // 6. Build attested credential data
         val credIdLength = byteArrayOf(
@@ -114,9 +157,16 @@ object PasskeyAuthenticator {
         }
 
         // 11. Export keys for storage
-        val publicKeyJWK = exportPublicKeyAsJWK(keyPair.public as ECPublicKey)
-        val publicKeyDER = (keyPair.public as ECPublicKey).encoded // DER/SPKI format
-        val privateKeyData = exportPrivateKeyAsJWK(keyPair.private as ECPrivateKey, keyPair.public as ECPublicKey)
+        val publicKeyJWK: ByteArray
+        val privateKeyData: ByteArray
+        if (algorithm == ALG_RS256) {
+            publicKeyJWK = exportRsaPublicKeyAsJWK(keyPair.public as RSAPublicKey)
+            privateKeyData = exportRsaPrivateKeyAsJWK(keyPair.private as RSAPrivateCrtKey)
+        } else {
+            publicKeyJWK = exportPublicKeyAsJWK(keyPair.public as ECPublicKey)
+            privateKeyData = exportPrivateKeyAsJWK(keyPair.private as ECPrivateKey, keyPair.public as ECPublicKey)
+        }
+        val publicKeyDER = keyPair.public.encoded // DER/SPKI format (EC or RSA)
 
         return PasskeyCreationResult(
             credentialId = credentialId,
@@ -171,16 +221,18 @@ object PasskeyAuthenticator {
         // 5. Build data to sign: authenticatorData || clientDataHash
         val dataToSign = authenticatorData + clientDataHash
 
-        // 6. Import private key and sign
+        // 6. Determine algorithm from the stored key, import it, and sign
+        val jwk = JSONObject(String(privateKeyJWK, Charsets.UTF_8))
+        val algorithm = if (jwk.optString("kty") == "RSA") ALG_RS256 else ALG_ES256
         val privateKey = importPrivateKeyFromJWK(privateKeyJWK)
-        val signature = Signature.getInstance("SHA256withECDSA")
+        val signatureAlgorithm = if (algorithm == ALG_RS256) "SHA256withRSA" else "SHA256withECDSA"
+        val signature = Signature.getInstance(signatureAlgorithm)
         signature.initSign(privateKey)
         signature.update(dataToSign)
-        val rawSignature = signature.sign()
 
-        // 7. Convert DER signature to raw format if needed, or keep as DER
-        // Android Signature already produces DER format, which is what WebAuthn expects
-        val derSignature = rawSignature
+        // 7. The signature is already in the form the RP expects:
+        // ECDSA output is DER-encoded, RSA output is raw PKCS#1 v1.5. Both are what WebAuthn expects.
+        val signatureBytes = signature.sign()
 
         // 8. Evaluate PRF if requested
         var prfResults: PrfResults? = null
@@ -193,7 +245,7 @@ object PasskeyAuthenticator {
         return PasskeyAssertionResult(
             credentialId = credentialId,
             authenticatorData = authenticatorData,
-            signature = derSignature,
+            signature = signatureBytes,
             userHandle = userId,
             prfResults = prfResults,
         )
@@ -241,16 +293,60 @@ object PasskeyAuthenticator {
     }
 
     /**
-     * Import private key from JWK format.
-     * Uses ECPrivateKeySpec to avoid Android Keystore issues.
+     * Export an RSA public key as JWK format (JSON): {kty, n, e}.
      */
-    private fun importPrivateKeyFromJWK(jwkData: ByteArray): ECPrivateKey {
+    private fun exportRsaPublicKeyAsJWK(publicKey: RSAPublicKey): ByteArray {
+        val jwk = JSONObject().apply {
+            put("kty", "RSA")
+            put("n", PasskeyHelper.bytesToBase64url(publicKey.modulus.toUnsignedBytes()))
+            put("e", PasskeyHelper.bytesToBase64url(publicKey.publicExponent.toUnsignedBytes()))
+        }
+
+        return jwk.toString().toByteArray(Charsets.UTF_8)
+    }
+
+    /**
+     * Export an RSA private key as JWK format (JSON): {kty, n, e, d, p, q, dp, dq, qi}.
+     */
+    private fun exportRsaPrivateKeyAsJWK(privateKey: RSAPrivateCrtKey): ByteArray {
+        val jwk = JSONObject().apply {
+            put("kty", "RSA")
+            put("n", PasskeyHelper.bytesToBase64url(privateKey.modulus.toUnsignedBytes()))
+            put("e", PasskeyHelper.bytesToBase64url(privateKey.publicExponent.toUnsignedBytes()))
+            put("d", PasskeyHelper.bytesToBase64url(privateKey.privateExponent.toUnsignedBytes()))
+            put("p", PasskeyHelper.bytesToBase64url(privateKey.primeP.toUnsignedBytes()))
+            put("q", PasskeyHelper.bytesToBase64url(privateKey.primeQ.toUnsignedBytes()))
+            put("dp", PasskeyHelper.bytesToBase64url(privateKey.primeExponentP.toUnsignedBytes()))
+            put("dq", PasskeyHelper.bytesToBase64url(privateKey.primeExponentQ.toUnsignedBytes()))
+            put("qi", PasskeyHelper.bytesToBase64url(privateKey.crtCoefficient.toUnsignedBytes()))
+        }
+
+        return jwk.toString().toByteArray(Charsets.UTF_8)
+    }
+
+    /**
+     * Import a private key from JWK format, dispatching on the key type ("kty").
+     */
+    private fun importPrivateKeyFromJWK(jwkData: ByteArray): java.security.PrivateKey {
         val jwkString = String(jwkData, Charsets.UTF_8)
         val jwk = JSONObject(jwkString)
+        return if (jwk.optString("kty") == "RSA") {
+            importRsaPrivateKeyFromJWK(jwk)
+        } else {
+            importEcPrivateKeyFromJWK(jwk)
+        }
+    }
 
+    /**
+     * Import an EC (P-256) private key from JWK format.
+     * Uses ECPrivateKeySpec to avoid Android Keystore issues.
+     */
+    private fun importEcPrivateKeyFromJWK(jwk: JSONObject): java.security.PrivateKey {
         // Extract the d parameter (private key component)
         val dBase64url = jwk.optString("d")
-            ?: throw PasskeyError.InvalidJWK("Missing 'd' parameter in JWK")
+        if (dBase64url.isEmpty()) {
+            throw PasskeyError.InvalidJWK("Missing 'd' parameter in JWK")
+        }
 
         // Decode base64url to bytes
         val dBytes = Helpers.base64urlDecode(dBase64url)
@@ -270,6 +366,48 @@ object PasskeyAuthenticator {
         // Generate the private key
         val keyFactory = java.security.KeyFactory.getInstance("EC")
         return keyFactory.generatePrivate(privKeySpec) as ECPrivateKey
+    }
+
+    /**
+     * Import an RSA private key from JWK format using the full CRT parameters.
+     */
+    private fun importRsaPrivateKeyFromJWK(jwk: JSONObject): java.security.PrivateKey {
+        fun param(field: String): java.math.BigInteger {
+            val b64 = jwk.optString(field)
+            if (b64.isEmpty()) {
+                throw PasskeyError.InvalidJWK("Missing '$field' parameter in RSA JWK")
+            }
+            return java.math.BigInteger(1, Helpers.base64urlDecode(b64))
+        }
+
+        val spec = java.security.spec.RSAPrivateCrtKeySpec(
+            param("n"), // modulus
+            param("e"), // public exponent
+            param("d"), // private exponent
+            param("p"), // prime p
+            param("q"), // prime q
+            param("dp"), // prime exponent p
+            param("dq"), // prime exponent q
+            param("qi"), // crt coefficient
+        )
+
+        val keyFactory = java.security.KeyFactory.getInstance("RSA")
+        return keyFactory.generatePrivate(spec)
+    }
+
+    /**
+     * Generate a key pair for the given COSE algorithm.
+     */
+    private fun generateKeyPair(algorithm: Int): java.security.KeyPair {
+        return if (algorithm == ALG_RS256) {
+            val generator = KeyPairGenerator.getInstance("RSA")
+            generator.initialize(RSA_KEY_SIZE)
+            generator.generateKeyPair()
+        } else {
+            val generator = KeyPairGenerator.getInstance("EC")
+            generator.initialize(ECGenParameterSpec("secp256r1"))
+            generator.generateKeyPair()
+        }
     }
 
     // MARK: - CBOR Encoding
@@ -292,6 +430,24 @@ object PasskeyAuthenticator {
         ) + xBytes + byteArrayOf(
             0x22, 0x58, 0x20, // -3: bytes(32) for y
         ) + yBytes
+    }
+
+    /**
+     * Build COSE RSA public key for RS256 (RFC 8230).
+     * CBOR map: {1: 3 (kty: RSA), 3: -257 (alg: RS256), -1: n (modulus), -2: e (exponent)}.
+     */
+    private fun buildCoseRsaRs256(publicKey: RSAPublicKey): ByteArray {
+        val n = publicKey.modulus.toUnsignedBytes()
+        val e = publicKey.publicExponent.toUnsignedBytes()
+
+        return byteArrayOf(
+            0xA4.toByte(), // map(4)
+            0x01, 0x03, // 1: 3 (kty: RSA)
+            0x03, 0x39, 0x01, 0x00, // 3: -257 (alg: RS256)
+            0x20, // -1: modulus n
+        ) + cborBytes(n) + byteArrayOf(
+            0x21, // -2: exponent e
+        ) + cborBytes(e)
     }
 
     /**
@@ -379,6 +535,12 @@ object PasskeyAuthenticator {
         return padded
     }
 
+    /**
+     * Convert a (positive) BigInteger to its minimal unsigned big-endian byte representation.
+     * BigInteger.toByteArray() is two's-complement and may carry a leading 0x00 sign byte.
+     */
+    private fun java.math.BigInteger.toUnsignedBytes(): ByteArray = this.toByteArray().dropLeadingZeros()
+
     // MARK: - Supporting Types
 
     /**
@@ -463,7 +625,7 @@ object PasskeyAuthenticator {
         val credentialId: ByteArray,
         /** The authenticator data bytes. */
         val authenticatorData: ByteArray,
-        /** The signature in DER format. */
+        /** The signature (DER-encoded for ES256, raw PKCS#1 v1.5 for RS256). */
         val signature: ByteArray,
         /** The user handle. */
         val userHandle: ByteArray?,
@@ -591,5 +753,10 @@ object PasskeyAuthenticator {
          * Error indicating CBOR encoding failure.
          */
         class CborEncodingFailed(message: String) : PasskeyError(message)
+
+        /**
+         * Error indicating none of the RP-requested algorithms are supported.
+         */
+        class UnsupportedAlgorithm(message: String) : PasskeyError(message)
     }
 }

@@ -3,14 +3,14 @@ services:
         image: ghcr.io/aliasvault/postgres:latest
         volumes:
             - ./database/postgres:/var/lib/postgresql/data:rw
-            - ./secrets:/secrets:ro
+            - ./secrets:${SECRETS_PATH:-/secrets}:ro
         env_file:
             - .env
         restart: always
         environment:
             POSTGRES_DB: aliasvault
             POSTGRES_USER: aliasvault
-            POSTGRES_PASSWORD_FILE: /secrets/postgres_password
+            POSTGRES_PASSWORD_FILE: ${SECRETS_PATH:-/secrets}/postgres_password
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U aliasvault"]
             interval: 5s
@@ -35,7 +35,7 @@ services:
         volumes:
             - ./database:/database:rw
             - ./logs:/logs:rw
-            - ./secrets:/secrets:ro
+            - ./secrets:${SECRETS_PATH:-/secrets}:ro
         restart: always
         env_file:
             - .env
@@ -50,7 +50,7 @@ services:
         volumes:
             - ./database:/database:rw
             - ./logs:/logs:rw
-            - ./secrets:/secrets:ro
+            - ./secrets:${SECRETS_PATH:-/secrets}:ro
         restart: always
         env_file:
             - .env
@@ -84,7 +84,7 @@ services:
         volumes:
             - ./database:/database:rw
             - ./logs:/logs:rw
-            - ./secrets:/secrets:ro
+            - ./secrets:${SECRETS_PATH:-/secrets}:ro
             - ./certificates/smtp:/certificates/smtp:ro
         restart: always
         env_file:
@@ -98,7 +98,7 @@ services:
         volumes:
             - ./database:/database:rw
             - ./logs:/logs:rw
-            - ./secrets:/secrets:ro
+            - ./secrets:${SECRETS_PATH:-/secrets}:ro
         restart: always
         env_file:
             - .env

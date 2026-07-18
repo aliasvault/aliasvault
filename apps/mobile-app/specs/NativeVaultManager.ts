@@ -98,6 +98,7 @@ export interface Spec extends TurboModule {
 
   // Server version management
   isServerVersionGreaterThanOrEqualTo(targetVersion: string): Promise<boolean>;
+  getServerVersion(): Promise<string | null>;
 
   // PIN unlock methods
   isPinEnabled(): Promise<boolean>;
@@ -134,6 +135,12 @@ export interface Spec extends TurboModule {
   // Scanner will keep scanning until a matching code is found or user cancels.
   // statusText is the message to display on the scanner screen (defaults to "Scan QR code" if null/empty).
   scanQRCode(prefixes: string[] | null, statusText: string | null): Promise<string | null>;
+
+  // Password generator (uses the native Rust core, shared with the other AliasVault clients)
+  // Generate a password or passphrase from a JSON-serialized PasswordSettings object.
+  generatePassword(settingsJson: string): Promise<string>;
+  // List the bundled Diceware wordlist language codes (first is the default, English).
+  getDicewareLanguages(): Promise<string[]>;
 
   // SRP (Secure Remote Password) operations
   // These methods use the native Rust SRP implementation for secure authentication.

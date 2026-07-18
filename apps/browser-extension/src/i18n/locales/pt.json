@@ -62,6 +62,7 @@
     "openInNewWindow": "Abrir em uma nova janela",
     "enabled": "Habilitado",
     "disabled": "Desabilitado",
+    "none": "Nenhum",
     "showPassword": "Mostrar senha",
     "hidePassword": "Ocultar senha",
     "show": "Mostrar",
@@ -76,6 +77,7 @@
     "settings": "Configurações",
     "recentEmails": "E-mails recentes",
     "credentials": "Credenciais",
+    "passkeys": "Passkeys",
     "customFields": "Campos Personalizados",
     "twoFactorAuthentication": "Autenticação de dois fatores",
     "alias": "Alias",
@@ -109,6 +111,7 @@
       "syncConflictMaxRetries": "Não foi possível sincronizar seu cofre após várias tentativas. Por favor, tente novamente mais tarde.",
       "mergeFailed": "Falha ao combinar mudanças do cofre. Por favor, tente novamente.",
       "vaultTooLarge": "O cofre é grande demais para o servidor aceitar. Tente remover alguns itens ou anexos para reduzir o tamanho e tente novamente.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Por favor digite o código de autenticação de 6 dígitos.",
       "serverError": "Não foi possível conectar ao servidor do AliasVault. Por favor tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
       "wrongPassword": "Senha incorreta. Por favor tente novamente.",
@@ -146,8 +149,9 @@
     "new": "Novo",
     "vaultLocked": "AliasVault está bloqueado.",
     "creatingNewAlias": "Criando novo alias",
-    "creatingNewCredential": "Creating new credential",
+    "creatingNewCredential": "Criando uma nova credencial",
     "noMatchesFound": "Nenhum resultado encontrado",
+    "loginWithPasskey": "Entrar com passkey",
     "searchVault": "Pesquisar cofre...",
     "enterServiceName": "Digite o nome do serviço",
     "enterEmailAddress": "Digite o endereço de e-mail",
@@ -166,8 +170,8 @@
     "manualCredentialDescriptionDropdown": "Nome de usuário e senha manuais",
     "failedToCreateIdentity": "Falha ao criar identidade. Por favor, tente novamente.",
     "enterEmailAndOrUsername": "Digite o e-mail e/ou nome de usuário",
-    "autofillWithAliasVault": "Autofill username/password",
-    "autofillTotp": "Autofill 2FA",
+    "autofillWithAliasVault": "Autopreencher nome de usuário/senha",
+    "autofillTotp": "Autopreencher 2FA",
     "generateRandomPassword": "Gerar senha aleatória (copiar para a área de transferência)",
     "generateNewPassword": "Gerar nova senha",
     "togglePasswordVisibility": "Alternar visibilidade da senha",
@@ -186,6 +190,7 @@
   "items": {
     "title": "Itens",
     "itemName": "Nome",
+    "suggestions": "Suggestions",
     "loginCredentials": "Credenciais de Login",
     "cardInformation": "Informações do Cartão",
     "addItem": "Adicionar Item",
@@ -202,6 +207,8 @@
     "folder": "Pasta",
     "welcomeTitle": "Boas-vindas ao AliasVault!",
     "welcomeDescription": "Para utilizar a extensão de navegador do AliasVault: navegue para um site e utilize o pop-up de preenchimento automático do AliasVault para criar uma nova credencial.",
+    "currentSiteMatch": "Para {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} itens encontrados",
     "noMatchingItems": "Nenhum item corresponde ao filtro selecionado.",
     "noMatchingItemsSearch": "Nenhum item corresponde à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nenhum item com o filtro {{filter}} corresponde à \"{{search}}\"",
@@ -216,7 +223,6 @@
     "deleteFolderAndItemsDescription": "{{count}} item(s) será(ão) movido(s) para Recentemente Excluídos.",
     "filters": {
       "folders": "Pastas",
-      "passkeys": "Passkeys",
       "totp": "Códigos de 2FA"
     },
     "sort": {
@@ -238,6 +244,28 @@
     "includeNumbers": "Incluir números",
     "includeSpecialChars": "Incluir caracteres especiais",
     "avoidAmbiguousChars": "Evitar caracteres ambíguos (o, 0, etc.)",
+    "passwordTypeBasic": "Senha",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "E-mail Privado",
     "privateEmailAliasVaultServer": "Servidor AliasVault",
     "privateEmailDescription": "Criptografia E2E, totalmente privado.",
@@ -259,6 +287,7 @@
     "fieldType": "Tipo do Campo",
     "fieldTypes": {
       "text": "Texto",
+      "password": "Senha",
       "hidden": "Escondido (texto mascarado)",
       "email": "E-mail",
       "url": "URL",
@@ -301,6 +330,7 @@
     "addCode": "Adicionar Código de Autenticação de Dois Fatores",
     "instructions": "Digite a chave secreta exibida pelo website que você quer adicionar a autenticação de dois fatores.",
     "nameOptional": "Nome (opcional)",
+    "addName": "Add a name (optional)",
     "secretKey": "Chave Secreta",
     "saveToViewCode": "Salvar para ver código",
     "defaultName": "Autenticador",
@@ -328,8 +358,8 @@
     "emailNotFound": "E-mail não encontrado",
     "formatHtml": "HTML",
     "formatPlain": "Texto",
-    "formatSource": "Source",
-    "formatSwitchTitle": "Switch email format",
+    "formatSource": "Origem",
+    "formatSwitchTitle": "Alterar formato de e-mail",
     "item": "Item",
     "noEmails": "Nenhum e-mail encontrado",
     "noEmailsDescription": "Você ainda não recebeu nenhum e-mail em seus endereços de e-mail privados. Quando receber um novo e-mail, ele aparecerá aqui.",
@@ -401,7 +431,8 @@
     "autoLock4Hours": "4 horas",
     "autoLock8Hours": "8 horas",
     "autoLock24Hours": "24 horas",
-    "versionPrefix": "Versão ",
+    "versionPrefix": "App version",
+    "serverVersion": "Server version",
     "autofillSettings": "Configurações de Preenchimento Automático",
     "clipboardSettings": "Configurações da Área de Transferência",
     "contextMenuSettings": "Configurações do Menu de Contexto",
@@ -438,6 +469,11 @@
         "male": "Masculino",
         "female": "Feminino"
       }
+    },
+    "passwordGenerator": "Gerador de Senha",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Configurar"
     },
     "credentialAutofill": "Preenchimento automático de credenciais",
     "credentialAutofillDescription": "Mostrar pop-up de preenchimento automático quando campos de nome de usuário/senha forem detectados",
@@ -502,7 +538,8 @@
       "selectExistingLogin": "Adicionar à login existente:",
       "selectExistingLoginDescription": "Adicionar este passkey em uma credencial de login para este site.",
       "attachingToCredential": "Adicionando passkey em: {{serviceName}}",
-      "attachPasskey": "Adicionar Passkey"
+      "attachPasskey": "Adicionar Passkey",
+      "unsupportedAlgorithm": "Este website requer um tipo de passkey que o AliasVault não suporta."
     },
     "settings": {
       "passkeyProvider": "Provedor de Passkey",

@@ -11,6 +11,7 @@ using System.ComponentModel.DataAnnotations;
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Helpers;
+using AliasVault.Api.Services;
 using AliasVault.Api.Vault;
 using AliasVault.Api.Vault.RetentionRules;
 using AliasVault.Auth;
@@ -20,6 +21,7 @@ using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.V1.PasswordChange;
 using AliasVault.Shared.Models.WebApi.V1.Vault;
 using AliasVault.Shared.Providers.Time;
+using AliasVault.Shared.Server.Models;
 using AliasVault.Shared.Server.Services;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
@@ -37,9 +39,9 @@ using Microsoft.Extensions.Caching.Memory;
 /// <param name="authLoggingService">AuthLoggingService instance.</param>
 /// <param name="cache">IMemoryCache instance.</param>
 /// <param name="config">Config instance.</param>
-/// <param name="settingsService">ServerSettingsService instance.</param>
+/// <param name="rateLimitService">RateLimitService instance.</param>
 [ApiVersion("1")]
-public class VaultController(ILogger<VaultController> logger, IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, ITimeProvider timeProvider, AuthLoggingService authLoggingService, IMemoryCache cache, Config config, ServerSettingsService settingsService) : AuthenticatedRequestController(userManager)
+public class VaultController(ILogger<VaultController> logger, IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, ITimeProvider timeProvider, AuthLoggingService authLoggingService, IMemoryCache cache, Config config, RateLimitService rateLimitService) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Default retention policy for vaults.
@@ -165,7 +167,11 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         }
 
         // Retrieve latest vault of user which contains the current encryption settings.
-        var latestVault = user.VaultManifests.OrderByDescending(x => x.RevisionNumber).Select(x => new { x.Salt, x.Verifier, x.EncryptionType, x.EncryptionSettings, x.RevisionNumber, x.Version, x.ManifestId }).First();
+        var latestVault = await context.Vaults
+            .Where(x => x.UserId == user.Id)
+            .OrderByDescending(x => x.RevisionNumber)
+            .Select(x => new { x.Salt, x.Verifier, x.EncryptionType, x.EncryptionSettings, x.RevisionNumber, x.Version, x.ManifestId })
+            .FirstAsync();
 
         // Reject vaults with a version that is lower than the last vault version.
         if (VersionHelper.IsVersionOlder(model.Version, latestVault.Version))
@@ -275,7 +281,11 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
 
         // Check if the provided revision number is equal to the latest revision number.
         // If not, then the client is trying to update an older vault which we don't allow to prevent data loss.
-        var latestVault = user.VaultManifests.OrderByDescending(x => x.RevisionNumber).First();
+        var latestVault = await context.Vaults
+            .Where(x => x.UserId == user.Id)
+            .OrderByDescending(x => x.RevisionNumber)
+            .Select(x => new { x.RevisionNumber, x.Version })
+            .FirstAsync();
         if (VersionHelper.IsVersionOlder(model.Version, latestVault.Version))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
@@ -429,14 +439,30 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         // Get list of supported private domains from config
         var supportedPrivateDomains = config.PrivateEmailDomains;
 
-        // Determine the new-account alias creation limit (abuse mitigation). When enabled, accounts younger than
-        // NewAccountAliasLimitDays may not create more than MaxAliasesForNewAccounts aliases in total. We count every
-        // alias the account has ever claimed (including disabled ones), because abusers spin up many throw-away aliases
-        // and disable them after a single use; only counting active aliases would let them bypass the cap entirely.
-        // Both 0 = disabled.
-        var settings = await settingsService.GetAllSettingsAsync();
-        var aliasLimitActive = settings.NewAccountAliasLimitDays > 0 && settings.MaxAliasesForNewAccounts > 0 && user.CreatedAt > timeProvider.UtcNow.AddDays(-settings.NewAccountAliasLimitDays);
-        var ownedAliasCount = userOwnedEmailClaims.Count;
+        // Resolve the alias creation limits for this user.
+        var rateLimits = await rateLimitService.ResolveAsync(user, RateLimitType.AliasCreation);
+
+        // Calculate the current usage baseline per limit. addedThisSync is then added to each in the loop.
+        var limitUsages = new List<(int MaxCount, int BaseCount)>();
+        foreach (var limit in rateLimits)
+        {
+            int baseCount;
+            if (limit.WindowSeconds == 0)
+            {
+                // Global absolute cap: every claim the user has ever made (including disabled ones).
+                baseCount = userOwnedEmailClaims.Count;
+            }
+            else
+            {
+                // Time-based cap: aliases created within the rolling window (create-then-delete still counts).
+                var windowStart = timeProvider.UtcNow.AddSeconds(-limit.WindowSeconds);
+                baseCount = await context.UserEmailClaims.CountAsync(x => x.UserId == user.Id && x.CreatedAt >= windowStart);
+            }
+
+            limitUsages.Add((limit.MaxCount, baseCount));
+        }
+
+        var addedThisSync = 0;
         var aliasLimitLogged = false;
 
         // Register new email addresses.
@@ -487,13 +513,12 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                 continue;
             }
 
-            // Enforce the new-account alias creation limit: once the account is at its cap, silently skip creating
-            // additional aliases (logged once so the limit being hit is visible for audits).
-            if (aliasLimitActive && ownedAliasCount >= settings.MaxAliasesForNewAccounts)
+            // Once any limit is reached, silently skip creating further aliases (logged once for audits).
+            if (limitUsages.Any(u => u.BaseCount + addedThisSync >= u.MaxCount))
             {
                 if (!aliasLimitLogged)
                 {
-                    logger.LogWarning("{User} reached the new-account alias limit of {Limit}. Skipping creation of additional aliases.", user.UserName, settings.MaxAliasesForNewAccounts);
+                    logger.LogWarning("{User} exceeded alias creation limit. Skipping creation of additional aliases.", user.UserName);
                     aliasLimitLogged = true;
                 }
 
@@ -512,7 +537,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                         CreatedAt = timeProvider.UtcNow,
                         UpdatedAt = timeProvider.UtcNow,
                     });
-                ownedAliasCount++;
+                addedThisSync++;
             }
             catch (DbUpdateException ex)
             {

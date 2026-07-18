@@ -10,6 +10,7 @@ import type { TwoFactorState } from '@/entrypoints/background/TwoFactorStateHand
 import type { SyncStatusCheckResult, FullVaultSyncResult } from '@/entrypoints/background/VaultMessageHandler';
 
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
+import type { PasswordSettings } from '@/utils/dist/core/models/vault';
 import type { LoginResponse } from '@/utils/dist/core/models/webapi';
 import type { SavePromptPersistedState, LastAutofilledCredential } from '@/utils/loginDetector';
 import type { PendingPasskeyRequest, WebAuthnSettingsResponse, WebAuthnPublicKeyGetPayload, MatchingPasskeysResponse, WebAuthnAssertionResponse } from '@/utils/passkey/types';
@@ -31,7 +32,8 @@ import type { VaultUploadResponse } from '@/utils/types/messaging/VaultUploadRes
  * the response shape (promises are unwrapped automatically by the library).
  */
 export interface IExtensionMessageProtocol {
-  ADD_URL_TO_CREDENTIAL(data: { itemId: string; url: string }): { success: boolean; error?: string };
+  ADD_URL_TO_CREDENTIAL(data: { itemId: string; url: string }): { success: boolean; error?: string }; 
+  AUTOFILL_CREATED_ITEM(data: { item: any; elementIdentifier?: string }): BoolResponse;
   CANCEL_CLIPBOARD_CLEAR(): void;
   CHECK_AUTH_STATUS(): { isLoggedIn: boolean; isVaultLocked: boolean; hasPendingMigrations: boolean; error?: string };
   CHECK_LOGIN_DUPLICATE(data: { domain: string; username: string }): DuplicateCheckResponse;
@@ -47,8 +49,8 @@ export interface IExtensionMessageProtocol {
   CLIPBOARD_COPIED_FROM_CONTEXT(): void;
   CLIPBOARD_COUNTDOWN(data: { remaining: number; total: number; id: number }): void;
   CLIPBOARD_COUNTDOWN_CANCELLED(data: Record<string, never>): void;
-  CREATE_ITEM(data: any): BoolResponse;
   FULL_VAULT_SYNC(): FullVaultSyncResult;
+  GENERATE_PASSWORD(data: { settings: PasswordSettings }): { success: boolean; password?: string; error?: string };
   GENERATE_TOTP_CODE(data: { itemId: string }): { success: boolean; code?: string; error?: string };
   GET_CLIPBOARD_CLEAR_TIMEOUT(): number;
   GET_CLIPBOARD_COUNTDOWN_STATE(): { remaining: number; total: number; id: number } | null;
@@ -79,7 +81,7 @@ export interface IExtensionMessageProtocol {
   MARK_VAULT_CLEAN(data: { mutationSeqAtStart: number; newServerRevision: number }): { cleared: boolean; currentMutationSeq: number };
   OPEN_AUTOFILL_POPUP(data: { elementIdentifier: string; popupType?: string }): BoolResponse;
   OPEN_POPUP(): BoolResponse;
-  OPEN_POPUP_CREATE_CREDENTIAL(data: any): BoolResponse;
+  OPEN_POPUP_CREATE_CREDENTIAL(data: { itemTitle?: string; currentUrl?: string; elementIdentifier?: string; left?: number; top?: number }): BoolResponse;
   OPEN_POPUP_WITH_ITEM(data: any): BoolResponse;
   PASSKEY_POPUP_RESPONSE(data: any): { success: boolean };
   PERSIST_FORM_VALUES(data: any): void;

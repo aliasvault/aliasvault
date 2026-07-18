@@ -62,6 +62,7 @@
     "openInNewWindow": "Åbn i nyt vindue",
     "enabled": "Aktiveret",
     "disabled": "Deaktiveret",
+    "none": "Ingen",
     "showPassword": "Vis adgangskode",
     "hidePassword": "Skjul adgangskode",
     "show": "Vis",
@@ -76,6 +77,7 @@
     "settings": "Indstillinger",
     "recentEmails": "Seneste e-mails",
     "credentials": "Logonoplysninger",
+    "passkeys": "Passkeys",
     "customFields": "Brugerdefinerede felter",
     "twoFactorAuthentication": "To-faktor autentificering",
     "alias": "Alias",
@@ -109,6 +111,7 @@
       "syncConflictMaxRetries": "Kunne ikke synkronisere boksen efter flere forsøg. Prøv venligst igen senere.",
       "mergeFailed": "Kunne ikke flette ændringer i boks. Prøv venligst igen.",
       "vaultTooLarge": "Boksen er for stor til, at serveren kan acceptere. Prøv at fjerne nogle elementer eller vedhæftede filer for at reducere størrelsen og prøv igen.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Indtast venligst en gyldig 6-cifret autentificeringskode.",
       "serverError": "Kunne ikke få forbindelse til AliasVault-serveren. Prøv venligst igen senere eller kontakt support, hvis problemet fortsætter.",
       "wrongPassword": "Forkert adgangskode. Prøv venligst igen.",
@@ -148,6 +151,7 @@
     "creatingNewAlias": "Opret nyt alias",
     "creatingNewCredential": "Opret nye legitimationsoplysninger",
     "noMatchesFound": "Ingen match fundet",
+    "loginWithPasskey": "Log ind med adgangsnøgle",
     "searchVault": "Søg i boks...",
     "enterServiceName": "Indtast tjenestenavn",
     "enterEmailAddress": "Indtast e-mailadresse",
@@ -186,6 +190,7 @@
   "items": {
     "title": "Elementer",
     "itemName": "Navn",
+    "suggestions": "Forslag",
     "loginCredentials": "Logonoplysninger",
     "cardInformation": "Kortoplysninger",
     "addItem": "Tilføj element",
@@ -202,6 +207,8 @@
     "folder": "Mappe",
     "welcomeTitle": "Velkommen til AliasVault!",
     "welcomeDescription": "For at bruge AliasVault-browserudvidelsen: Gå til et websted og brug AliasVault-autofyld-popup'en til at oprette en ny logonoplysning.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} emner fundet",
     "noMatchingItems": "Ingen elementer matcher det valgte filter.",
     "noMatchingItemsSearch": "Ingen elementer matcher \"{{search}}\"",
     "noMatchingItemsWithFilter": "Ingen {{filter}}-elementer matcher \"{{search}}\"",
@@ -216,7 +223,6 @@
     "deleteFolderAndItemsDescription": "{{count}} element(er) vil blive flyttet til Senest Slettede.",
     "filters": {
       "folders": "Mapper",
-      "passkeys": "Passkeys",
       "totp": "2FA Koder"
     },
     "sort": {
@@ -238,6 +244,28 @@
     "includeNumbers": "Inkluder tal",
     "includeSpecialChars": "Inkluder specialtegn",
     "avoidAmbiguousChars": "Undgå tvetydige tegn (o, 0 osv.)",
+    "passwordTypeBasic": "Adgangskode",
+    "passwordTypeDiceware": "Adgangskode",
+    "passphraseLanguage": "Adgangskode sprog",
+    "wordCount": "Ord",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Titel Tilstand",
+      "Uppercase": "Store bogstaver",
+      "Lowercase": "Små bogstaver"
+    },
+    "separator": "Skilletegn",
+    "dicewareSeparatorOption": {
+      "Dash": "Streg",
+      "Space": "Mellemrum",
+      "Underscore": "Understregning",
+      "Dot": "Punktum"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Præfiks",
+      "Sprinkle": "Tilfældig position",
+      "Suffix": "Suffiks"
+    },
     "privateEmailTitle": "Privat e-mail",
     "privateEmailAliasVaultServer": "AliasVault-server",
     "privateEmailDescription": "E2E-krypteret, fuldt privat.",
@@ -259,6 +287,7 @@
     "fieldType": "Felttype",
     "fieldTypes": {
       "text": "Tekst",
+      "password": "Adgangskode",
       "hidden": "Skjult (maskeret tekst)",
       "email": "E-mail",
       "url": "URL",
@@ -301,6 +330,7 @@
     "addCode": "Tilføj 2FA-kode",
     "instructions": "Indtast den hemmelige nøgle (secret key), der vises af webstedet, hvor du vil tilføje to-faktor autentificering.",
     "nameOptional": "Navn (valgfrit)",
+    "addName": "Tilføj et navn (valgfrit)",
     "secretKey": "Hemmelig nøgle",
     "saveToViewCode": "Gem for at se kode",
     "defaultName": "Godkender",
@@ -328,8 +358,8 @@
     "emailNotFound": "E-mail blev ikke fundet",
     "formatHtml": "HTML",
     "formatPlain": "Tekst",
-    "formatSource": "Source",
-    "formatSwitchTitle": "Switch email format",
+    "formatSource": "Kilde",
+    "formatSwitchTitle": "Skift e-mail format",
     "item": "Element",
     "noEmails": "Ingen e-mails fundet",
     "noEmailsDescription": "Du har endnu ikke modtaget nogen e-mails på dine private e-mailadresser. Når du modtager en ny e-mail, vil den blive vist her.",
@@ -401,7 +431,8 @@
     "autoLock4Hours": "4 timer",
     "autoLock8Hours": "8 timer",
     "autoLock24Hours": "24 timer",
-    "versionPrefix": "Version ",
+    "versionPrefix": "App-version",
+    "serverVersion": "Server version",
     "autofillSettings": "Indstillinger for autofyld",
     "clipboardSettings": "Indstillinger for udklipsholder",
     "contextMenuSettings": "Indstillinger for kontekstmenu",
@@ -438,6 +469,11 @@
         "male": "Mand",
         "female": "Kvinde"
       }
+    },
+    "passwordGenerator": "Adgangskodegenerator",
+    "passwordGeneratorSettings": {
+      "description": "Konfigurer indstillingerne for standard adgangskodegenerator for nyoprettede elementer, herunder adgangskodelængde, tegnsæt og kodeord sprog.",
+      "configureButton": "Konfigurer"
     },
     "credentialAutofill": "Loginoplysninger autofyld",
     "credentialAutofillDescription": "Vis popup for automatisk udfyldning når brugernavn/adgangskodefelter detekteres",
@@ -502,7 +538,8 @@
       "selectExistingLogin": "Tilføj til eksisterende login:",
       "selectExistingLoginDescription": "Forbind denne passkey til en eksisterende logonoplysning for dette websted.",
       "attachingToCredential": "Tilføjer passkey til: {{serviceName}}",
-      "attachPasskey": "Tilføj passkey"
+      "attachPasskey": "Tilføj passkey",
+      "unsupportedAlgorithm": "Denne hjemmeside kræver en adgangsnøgle, som AliasVault ikke understøtter."
     },
     "settings": {
       "passkeyProvider": "Passkey-udbyder",

@@ -7,10 +7,10 @@
   <string name="common_next">Далее</string>
   <string name="common_cancel">Отмена</string>
   <string name="common_back">Назад</string>
-  <string name="common_show_details">Show details</string>
-  <string name="common_hide_details">Hide details</string>
-  <string name="common_copy">Copy</string>
-  <string name="common_copied_to_clipboard">Copied to clipboard</string>
+  <string name="common_show_details">Показать подробности</string>
+  <string name="common_hide_details">Скрыть подробности</string>
+  <string name="common_copy">Копировать</string>
+  <string name="common_copied_to_clipboard">Скопировано в буфер обмена</string>
   <string name="unknown_error">Произошла неизвестная ошибка</string>
   <string name="autofill_failed_to_retrieve">Не удалось извлечь, открыть приложение</string>
   <string name="autofill_no_match_found">Совпадений не найдено</string>

@@ -3,6 +3,7 @@
     "cancel": "Abbrechen",
     "close": "Schließen",
     "delete": "Löschen",
+    "remove": "Entfernen",
     "save": "Speichern",
     "edit": "Bearbeiten",
     "yes": "Ja",
@@ -16,6 +17,7 @@
     "copied": "In die Zwischenablage kopiert",
     "loadMore": "Mehr laden",
     "use": "Verwenden",
+    "none": "Keine",
     "confirm": "Bestätigen",
     "next": "Weiter",
     "notice": "Hinweis",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "2FA-Code hinzufügen",
     "nameOptional": "Name (optional)",
+    "addName": "Name hinzufügen (optional)",
+    "defaultName": "Authenticator",
     "secretKey": "Secret-Key",
     "instructions": "Gib den Secret-Key ein, der von der Website angezeigt wird, bei der Du die Zwei-Faktor-Authentifizierung hinzufügen möchtest.",
     "saveToViewCode": "Speichern, um den Code anzuzeigen",
     "scanQrCode": "QR-Code scannen",
-    "enterManually": "Gib den Einrichtungs-Schlüssel ein",
+    "enterManually": "Geheimen Schlüssel eingeben",
     "errors": {
       "invalidSecretKey": "Ungültiges Format des Secret-Key",
       "scanFailed": "Fehler beim Scannen des QR-Codes. Bitte versuche es erneut."
@@ -192,7 +196,8 @@
       "exportDescription": "Bitte gebe aus Sicherheitsgründen Dein Master-Passwort ein, um diesen Export zu bestätigen."
     },
     "security": "Sicherheit",
-    "appVersion": "App-Version {{version}} ({{url}})",
+    "appVersion": "App-Version",
+    "serverVersion": "Server-Version",
     "autoLockOptions": {
       "never": "Niemals",
       "5seconds": "5 Sekunden",
@@ -360,6 +365,7 @@
     "enterFieldName": "Feldnamen eingeben",
     "fieldTypes": {
       "text": "Text",
+      "password": "Passwort",
       "hidden": "Versteckt",
       "email": "E-Mail",
       "url": "URL",
@@ -441,6 +447,29 @@
     "includeNumbers": "Zahlen (0-9)",
     "includeSpecialChars": "Sonderzeichen (!@#)",
     "avoidAmbiguousChars": "Mehrdeutige Zeichen vermeiden",
+    "passwordTypeBasic": "Passwort",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrasen-Sprache",
+    "wordCount": "Wörter",
+    "capitalization": "Groß-/Kleinschreibung",
+    "separator": "Trennzeichen",
+    "salt": "Passwort-Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Kleinschreibung",
+      "TitleCase": "Wortanfänge groß",
+      "Uppercase": "Großschreibung"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Strich",
+      "Space": "Leerzeichen",
+      "Underscore": "Unterstrich",
+      "Dot": "Punkt"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Präfix",
+      "Sprinkle": "Zufällige Position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Fehler beim Laden der Daten",
     "vaultSyncFailed": "Synchronisation des Tresors fehlgeschlagen",
     "vaultSyncedSuccessfully": "Tresor erfolgreich synchronisiert",
@@ -654,7 +683,6 @@
     },
     "loginSettings": {
       "title": "API-Verbindung",
-      "aliasvaultNet": "AliasVault.net",
       "selfHosted": "Selbstgehostet",
       "customApiUrl": "Benutzerdefinierte API-URL",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",

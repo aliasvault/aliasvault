@@ -102,6 +102,17 @@ export const useVaultSync = (): {
         return false;
       }
 
+      /*
+       * If the lightweight status check already determined the server is unreachable, skip the
+       * full sync to avoid additional network calls that can delay the UI.
+       */
+      if (statusCheck.isOffline) {
+        await dbContext.setIsOffline(true);
+        console.log('[useVaultSync] Status check reported offline, skipping full sync');
+        onOffline?.();
+        return true;
+      }
+
       // Show appropriate indicator based on what sync will do
       if (statusCheck.hasNewerVault) {
         dbContext.setIsSyncing(true);
@@ -238,6 +249,7 @@ export const useVaultSync = (): {
       return false;
     } finally {
       syncInProgressRef.current = false;
+      await dbContext.refreshSyncState();
       dbContext.setIsSyncing(false);
       dbContext.setIsUploading(false);
     }

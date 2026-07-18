@@ -53,12 +53,10 @@ RUN mkdir -p ./apps/server/AliasVault.Client/wwwroot/wasm && \
     cp ./core/rust/dist/wasm/aliasvault_core_bg.wasm ./apps/server/AliasVault.Client/wwwroot/wasm/ && \
     cp ./core/rust/dist/wasm/aliasvault_core.js ./apps/server/AliasVault.Client/wwwroot/wasm/
 
-# Copy TypeScript core packages (identity-generator, password-generator, vault) to Client wwwroot/js/dist/core/
+# Copy TypeScript core packages (identity-generator, vault) to Client wwwroot/js/dist/core/
 RUN mkdir -p ./apps/server/AliasVault.Client/wwwroot/js/dist/core/identity-generator && \
-    mkdir -p ./apps/server/AliasVault.Client/wwwroot/js/dist/core/password-generator && \
     mkdir -p ./apps/server/AliasVault.Client/wwwroot/js/dist/core/vault && \
     cp -r ./core/typescript/identity-generator/dist/* ./apps/server/AliasVault.Client/wwwroot/js/dist/core/identity-generator/ && \
-    cp -r ./core/typescript/password-generator/dist/* ./apps/server/AliasVault.Client/wwwroot/js/dist/core/password-generator/ && \
     cp -r ./core/vault/dist/* ./apps/server/AliasVault.Client/wwwroot/js/dist/core/vault/
 
 # Install required .NET workloads and restore packages once for the entire solution
@@ -126,7 +124,7 @@ LABEL org.opencontainers.image.source="https://github.com/aliasvault/aliasvault"
 LABEL org.opencontainers.image.vendor="AliasVault"
 LABEL org.opencontainers.image.licenses="AGPL-3.0"
 LABEL org.opencontainers.image.title="AliasVault All-in-One"
-LABEL org.opencontainers.image.description="Self-contained AliasVault server including web app, with all services bundled using s6-overlay. Single container solution for easy deployment (see docs.aliasvault.net)."
+LABEL org.opencontainers.image.description="Self-contained AliasVault server including web app, with all services bundled using s6-overlay. Single container solution for easy deployment (see docs.aliasvault.com)."
 
 # Copy s6-overlay from downloader stage
 COPY --from=s6-downloader /*.tar.xz /tmp/
@@ -212,8 +210,14 @@ RUN cp -r /app/installcli /usr/local/bin/aliasvault-cli && \
     # Remove InstallCLI from /app since we copied it to /usr/local/bin
     rm -rf /app/installcli
 
+# Deployment type marker shown in the web app footer and the X-AliasVault-Deployment
+# response header (for observability / troubleshooting). Defaults to "aio-build",
+# the official release pipeline overrides it to "aio" via --build-arg DEPLOYMENT_MODE=aio.
+ARG DEPLOYMENT_MODE=aio-build
+
 # Set environment variables
-ENV ALIASVAULT_VERBOSITY=0 \
+ENV DEPLOYMENT_MODE=${DEPLOYMENT_MODE} \
+    ALIASVAULT_VERBOSITY=0 \
     PUBLIC_REGISTRATION_ENABLED=true \
     IP_LOGGING_ENABLED=true \
     SUPPORT_EMAIL="" \
@@ -225,6 +229,7 @@ ENV ALIASVAULT_VERBOSITY=0 \
     POSTGRES_USER=aliasvault \
     POSTGRES_DATABASE=aliasvault \
     FORCE_HTTPS_REDIRECT=false \
+    SECRETS_PATH=/secrets \
     S6_CMD_WAIT_FOR_SERVICES_MAXTIME=0 \
     S6_VERBOSITY=0
 

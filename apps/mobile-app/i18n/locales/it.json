@@ -3,6 +3,7 @@
     "cancel": "Annulla",
     "close": "Chiudi",
     "delete": "Elimina",
+    "remove": "Rimuovi",
     "save": "Salva",
     "edit": "Modifica",
     "yes": "Sì",
@@ -16,6 +17,7 @@
     "copied": "Copiato negli appunti",
     "loadMore": "Carica altro",
     "use": "Usa",
+    "none": "Vuoto",
     "confirm": "Conferma",
     "next": "Avanti",
     "notice": "Avviso",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "Aggiungi Codice 2FA",
     "nameOptional": "Nome (facoltativo)",
+    "addName": "Aggiungi un nome (opzionale)",
+    "defaultName": "Autenticazione",
     "secretKey": "Chiave segreta",
     "instructions": "Inserisci la chiave segreta mostrata dal sito in cui vuoi aggiungere un'autenticazione a due fattori.",
     "saveToViewCode": "Salva per visualizzare il codice",
     "scanQrCode": "Scansiona il Codice QR",
-    "enterManually": "Inserisci una chiave di configurazione",
+    "enterManually": "Inserisci la chiave segreta",
     "errors": {
       "invalidSecretKey": "Formato chiave segreta non valido.",
       "scanFailed": "Scansione del codice QR non riuscita. Riprova."
@@ -192,7 +196,8 @@
       "exportDescription": "Per motivi di sicurezza, inserisci la tua password principale per confermare questa esportazione."
     },
     "security": "Sicurezza",
-    "appVersion": "Versione app {{version}} ({{url}})",
+    "appVersion": "Versione app",
+    "serverVersion": "Versione server",
     "autoLockOptions": {
       "never": "Mai",
       "5seconds": "5 secondi",
@@ -360,6 +365,7 @@
     "enterFieldName": "Inserisci il nome del campo",
     "fieldTypes": {
       "text": "Testo",
+      "password": "Password",
       "hidden": "Nascosto",
       "email": "Email",
       "url": "URL",
@@ -441,6 +447,29 @@
     "includeNumbers": "Numeri (0-9)",
     "includeSpecialChars": "Caratteri speciali (!@#)",
     "avoidAmbiguousChars": "Evita caratteri ambigui",
+    "passwordTypeBasic": "Password",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Lingua passphrase",
+    "wordCount": "Parole",
+    "capitalization": "Maiuscolo",
+    "separator": "Separatore",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Minuscolo",
+      "TitleCase": "Iniziali in maiuscolo",
+      "Uppercase": "Maiuscolo"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Trattino",
+      "Space": "Spazio",
+      "Underscore": "Trattino basso",
+      "Dot": "Punto"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefisso",
+      "Sprinkle": "Posizione casuale",
+      "Suffix": "Suffisso"
+    },
     "errorLoadingItems": "Errore durante il caricamento degli elementi",
     "vaultSyncFailed": "Sincronizzazione cassaforte fallita",
     "vaultSyncedSuccessfully": "Cassaforte sincronizzata con successo",
@@ -654,7 +683,6 @@
     },
     "loginSettings": {
       "title": "Connessione API",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Self-hosted",
       "customApiUrl": "URL API personalizzata",
       "customApiUrlPlaceholder": "https://mia-istanza-aliasvault.com/api",

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Step titles -->
+  <data name="WelcomeStepTitle">
+    <value>Fáilte go dtí AliasVault</value>
+    <comment>Title for the welcome step</comment>
+  </data>
+  <data name="HowAliasVaultWorksStepTitle">
+    <value>Conas a Oibríonn AliasVault</value>
+    <comment>Title for the how it works step</comment>
+  </data>
+  <data name="TipsStepTitle">
+    <value>Leideanna</value>
+    <comment>Title for the tips step</comment>
+  </data>
+  <data name="GetStartedStepTitle">
+    <value>Tosaigh</value>
+    <comment>Title for the get started step</comment>
+  </data>
+  <data name="TutorialStepTitle">
+    <value>Rang teagaisc</value>
+    <comment>Default tutorial step title</comment>
+  </data>
+  <!-- Welcome step content -->
+  <data name="WelcomeMessage">
+    <value>Tá do chruinneachán cruthaithe go rathúil! Cosain do phríobháideacht ar líne trí leasainmneacha uathúla a chruthú do gach seirbhís a chláraíonn tú léi. Foghlaimímis conas a oibríonn AliasVault agus ansin cruthaímis do chéad leasainm slán.</value>
+    <comment>Welcome message on the first tutorial step</comment>
+  </data>
+  <!-- How it works step content -->
+  <data name="HowItWorksIntro">
+    <value>Nuair is gá duit clárú le haghaidh seirbhís nua:</value>
+    <comment>Introduction text for how it works step</comment>
+  </data>
+  <data name="HowItWorksStep1">
+    <value>Gineann AliasVault céannacht randamach le seoladh ríomhphoist príobháideach slán</value>
+    <comment>First step in how it works explanation</comment>
+  </data>
+  <data name="HowItWorksStep2">
+    <value>Úsáid an fhaisnéis seo chun clárú don tseirbhís</value>
+    <comment>Second step in how it works explanation</comment>
+  </data>
+  <data name="HowItWorksStep3">
+    <value>Taispeántar ríomhphoist a fuarthas san aip seo agus is féidir iad a oscailt i do bhrabhsálaí</value>
+    <comment>Third step in how it works explanation</comment>
+  </data>
+  <data name="HowItWorksStep4">
+    <value>Fanann do sheoladh ríomhphoist fíor agus faisnéis phearsanta eile príobháideach</value>
+    <comment>Fourth step in how it works explanation</comment>
+  </data>
+  <!-- Tips step content -->
+  <data name="MasterPasswordTipTitle">
+    <value>Coinnigh Do Phríomhfhocal Faire Sábháilte</value>
+    <comment>Title for master password tip</comment>
+  </data>
+  <data name="MasterPasswordTipContent">
+    <value>Tá do phasfhocal máistir ag teastáil chun do chruinneachán a dhíchriptiú. Ná roinn é le duine ar bith agus stóráil é in áit shábháilte. Rabhadh: Má chailleann tú do phasfhocal máistir, ní féidir leat do chuid sonraí a aisghabháil - fiú amháin lenár bhfoireann.</value>
+    <comment>Content for master password tip</comment>
+  </data>
+  <data name="TwoFactorTipTitle">
+    <value>Cumasaigh Fíordheimhniú Dhá Fhachtóir i Socruithe Slándála</value>
+    <comment>Title for two-factor authentication tip</comment>
+  </data>
+  <data name="TwoFactorTipContent">
+    <value>Cuireann fíordheimhniú dhá fhachtóir ciseal breise slándála le do chuntas. Éilíonn sé ort cód a iontráil ó d’aip fíordheimhnitheora nó cód aisghabhála a sholáthar sula bhféadfar rochtain a fháil ar do chruinneachán criptithe.</value>
+    <comment>Content for two-factor authentication tip</comment>
+  </data>
+  <data name="ExtensionsAppsTipTitle">
+    <value>Síneadh Brabhsálaí agus Aipeanna Soghluaiste</value>
+    <comment>Title for browser extensions and mobile apps tip</comment>
+  </data>
+  <data name="ExtensionsAppsTipContent">
+    <value>Suiteáil síneadh brabhsálaí AliasVault agus an aip shoghluaiste chun leasainmneacha agus foirmeacha uathlíonta a chruthú go díreach ó do bhrabhsálaí agus ó do ghuthán cliste.</value>
+    <comment>Content for browser extensions and mobile apps tip</comment>
+  </data>
+  <!-- Create first identity step content -->
+  <data name="ReadyToStartTitle">
+    <value>Réidh le tosú?</value>
+    <comment>Title for ready to start section</comment>
+  </data>
+  <data name="ReadyToStartMessage">
+    <value>Anois go bhfuil a fhios agat conas a oibríonn AliasVault, cruthaímis do chéad chéannacht shlán!</value>
+    <comment>Message encouraging user to create first identity</comment>
+  </data>
+  <data name="CreateFirstIdentityButton">
+    <value>Cruthaigh Do Chéad Céannacht</value>
+    <comment>Button text for creating first identity</comment>
+  </data>
+  <!-- Navigation buttons -->
+  <data name="ContinueButton">
+    <value>Lean ar aghaidh</value>
+    <comment>Continue button text</comment>
+  </data>
+  <data name="GetStartedButton">
+    <value>Tosaigh</value>
+    <comment>Get started button text</comment>
+  </data>
+  <!-- Loading and status messages -->
+  <data name="FinishingTutorialMessage">
+    <value>Ag críochnú an rang teagaisc...</value>
+    <comment>Loading message when finishing tutorial</comment>
+  </data>
+  <!-- Extension and app labels -->
+  <data name="ComingSoonLabel">
+    <value>Ag Teacht Go Luath</value>
+    <comment>Label for features coming soon</comment>
+  </data>
+  <data name="SoonSuffix">
+    <value>(Go luath)</value>
+    <comment>Suffix indicating feature coming soon</comment>
+  </data>
+</root>

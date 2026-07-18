@@ -11,15 +11,17 @@ import { browser } from '#imports';
 type ServiceDetectionResult = {
   /** Detected service name (e.g., "GitHub", "Google") */
   serviceName: string;
-  /** Detected service URL (origin + pathname) */
+  /** Detected service URL (origin only: scheme + host + port) */
   serviceUrl: string;
+  /** Alternative service name suggestions derived from the page title/domain */
+  suggestedNames: string[];
 };
 
 /**
  * Hook for detecting service information from URL parameters or the active browser tab.
  *
  * Service detection sources (in priority order):
- * 1. URL parameters (serviceName, serviceUrl, currentUrl) - e.g., from content script popout
+ * 1. URL parameters (serviceUrl, currentUrl) + the provided title - e.g., from the content script create flow
  * 2. Active browser tab - for dashboard/popup opened directly
  */
 const useServiceDetection = (): {
@@ -36,28 +38,27 @@ const useServiceDetection = (): {
   const detectService = useCallback(async (fallbackName?: string | null): Promise<ServiceDetectionResult> => {
     let detectedName = fallbackName || '';
     let detectedUrl = '';
+    let suggestedNames: string[] = [];
 
     try {
-      // Get URL parameters (e.g., from content script popout)
-      const serviceNameFromUrl = searchParams.get('serviceName');
+      // Get URL parameters (e.g., from content script create flow)
       const serviceUrlFromUrl = searchParams.get('serviceUrl');
       const currentUrl = searchParams.get('currentUrl');
 
       // If URL parameters are present, use them
-      if (serviceNameFromUrl || serviceUrlFromUrl || currentUrl) {
-        if (serviceNameFromUrl) {
-          detectedName = decodeURIComponent(serviceNameFromUrl);
-        }
+      if (serviceUrlFromUrl || currentUrl) {
         if (serviceUrlFromUrl) {
           detectedUrl = decodeURIComponent(serviceUrlFromUrl);
         }
 
-        // If we have currentUrl but missing serviceName or serviceUrl, derive them
-        if (currentUrl && (!serviceNameFromUrl || !serviceUrlFromUrl)) {
+        // If we have currentUrl, derive url/suggestions from it (and a name only as a fallback)
+        if (currentUrl) {
           const decodedCurrentUrl = decodeURIComponent(currentUrl);
           const serviceInfo: ServiceInfo = ServiceDetectionUtility.getServiceInfoFromTab(decodedCurrentUrl);
+          suggestedNames = serviceInfo.suggestedNames;
 
-          if (!serviceNameFromUrl && serviceInfo.suggestedNames.length > 0) {
+          // Only fall back to a URL-derived name when no explicit title was provided.
+          if (!detectedName && serviceInfo.suggestedNames.length > 0) {
             detectedName = serviceInfo.suggestedNames[0];
           }
           if (!serviceUrlFromUrl && serviceInfo.serviceUrl) {
@@ -73,6 +74,7 @@ const useServiceDetection = (): {
             activeTab.url,
             activeTab.title
           );
+          suggestedNames = serviceInfo.suggestedNames;
 
           if (serviceInfo.suggestedNames.length > 0 && !detectedName) {
             detectedName = serviceInfo.suggestedNames[0];
@@ -89,6 +91,7 @@ const useServiceDetection = (): {
     return {
       serviceName: detectedName,
       serviceUrl: detectedUrl,
+      suggestedNames,
     };
   }, [searchParams]);
 

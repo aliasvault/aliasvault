@@ -22,6 +22,38 @@ function checkCryptoAvailable() {
 }
 
 /**
+ * Convert a Uint8Array to a base64 string.
+ *
+ * @param {Uint8Array} bytes - The bytes to encode.
+ * @returns {string} The base64-encoded string.
+ */
+function bytesToBase64(bytes) {
+    if (typeof bytes.toBase64 === 'function') {
+        return bytes.toBase64();
+    }
+
+    const CHUNK_SIZE = 0x8000;
+    let binary = '';
+    for (let offset = 0; offset < bytes.length; offset += CHUNK_SIZE) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(offset, offset + CHUNK_SIZE));
+    }
+    return btoa(binary);
+}
+
+/**
+ * Decode a base64 string to a Uint8Array.
+ *
+ * @param {string} base64 - The base64 string to decode.
+ * @returns {Uint8Array} The decoded bytes.
+ */
+function base64ToBytes(base64) {
+    if (typeof Uint8Array.fromBase64 === 'function') {
+        return Uint8Array.fromBase64(base64);
+    }
+    return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+}
+
+/**
  * AES (symmetric) encryption and decryption functions.
  * @type {{encrypt: (function(*, *): Promise<string>), decrypt: (function(*, *): Promise<string>), decryptBytes: (function(*, *): Promise<Uint8Array>)}}
  */
@@ -31,7 +63,7 @@ window.cryptoInterop = {
 
         const key = await window.crypto.subtle.importKey(
             "raw",
-            Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
+            base64ToBytes(base64Key),
             {
                 name: "AES-GCM",
                 length: 256,
@@ -54,18 +86,14 @@ window.cryptoInterop = {
         combined.set(iv, 0);
         combined.set(new Uint8Array(ciphertext), iv.length);
 
-        return btoa(
-            Array.from(combined)
-                .map(byte => String.fromCharCode(byte))
-                .join('')
-        );
+        return bytesToBase64(combined);
     },
     decrypt: async function (base64Ciphertext, base64Key) {
         checkCryptoAvailable();
 
         const key = await window.crypto.subtle.importKey(
             "raw",
-            Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
+            base64ToBytes(base64Key),
             {
                 name: "AES-GCM",
                 length: 256,
@@ -74,9 +102,9 @@ window.cryptoInterop = {
             ["decrypt"]
         );
 
-        const ivAndCiphertext = Uint8Array.from(atob(base64Ciphertext), c => c.charCodeAt(0));
-        const iv = ivAndCiphertext.slice(0, 12);
-        const ciphertext = ivAndCiphertext.slice(12);
+        const ivAndCiphertext = base64ToBytes(base64Ciphertext);
+        const iv = ivAndCiphertext.subarray(0, 12);
+        const ciphertext = ivAndCiphertext.subarray(12);
 
         const decrypted = await window.crypto.subtle.decrypt(
             { name: "AES-GCM", iv: iv },
@@ -92,7 +120,7 @@ window.cryptoInterop = {
 
         const key = await window.crypto.subtle.importKey(
             "raw",
-            Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
+            base64ToBytes(base64Key),
             {
                 name: "AES-GCM",
                 length: 256,
@@ -101,9 +129,9 @@ window.cryptoInterop = {
             ["decrypt"]
         );
 
-        const ivAndCiphertext = Uint8Array.from(atob(base64Ciphertext), c => c.charCodeAt(0));
-        const iv = ivAndCiphertext.slice(0, 12);
-        const ciphertext = ivAndCiphertext.slice(12);
+        const ivAndCiphertext = base64ToBytes(base64Ciphertext);
+        const iv = ivAndCiphertext.subarray(0, 12);
+        const ciphertext = ivAndCiphertext.subarray(12);
 
         const decrypted = await window.crypto.subtle.decrypt(
             { name: "AES-GCM", iv: iv },
@@ -243,7 +271,7 @@ window.rsaInterop = {
             encodedPlaintext
         );
 
-        return btoa(String.fromCharCode.apply(null, new Uint8Array(cipherBuffer)));
+        return bytesToBase64(new Uint8Array(cipherBuffer));
     },
     /**
      * Decrypts a ciphertext string using an RSA private key.
@@ -271,7 +299,7 @@ window.rsaInterop = {
             );
 
             // Decode the base64 ciphertext
-            let cipherBuffer = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
+            let cipherBuffer = base64ToBytes(ciphertext);
 
             // Decrypt the ciphertext
             let plaintextBuffer = await window.crypto.subtle.decrypt(
@@ -285,7 +313,7 @@ window.rsaInterop = {
 
             // Convert to base64 string instead of returning Uint8Array to avoid Blazor serialization issues, see https://github.com/dotnet/aspnetcore/issues/59837
             const decryptedBytes = new Uint8Array(plaintextBuffer);
-            return btoa(String.fromCharCode.apply(null, Array.from(decryptedBytes)));
+            return bytesToBase64(decryptedBytes);
         } catch (error) {
             throw new Error(`Failed to decrypt: ${error.message}`);
         }

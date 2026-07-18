@@ -25,6 +25,7 @@ builder.Services.AddAliasVaultDatabaseConfiguration(builder.Configuration);
 // -----------------------------------------------------------------------
 // Register hosted services via Status library wrapper in order to monitor and control (start/stop) them via the database.
 // -----------------------------------------------------------------------
+builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<ServerSettingsService>();
 
 // Define the tasks that will be executed by the TaskRunner.

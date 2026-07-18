@@ -15,13 +15,24 @@ using System.Threading.Tasks;
 using AliasServerDb;
 using AliasVault.Shared.Server.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 /// <summary>
 /// Server settings service.
 /// </summary>
 /// <param name="dbContextFactory">IDbContextFactory instance.</param>
-public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory)
+/// <param name="cache">IMemoryCache instance used to cache the full settings model for a short period.</param>
+public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory, IMemoryCache cache)
 {
+    /// <summary>
+    /// Number of seconds the full settings model is cached in memory so that high-frequency callers
+    /// (e.g. vault sync) do not query the database on every request. The cache is invalidated immediately
+    /// when settings are changed through this service.
+    /// </summary>
+    private const int AllSettingsCacheDurationSeconds = 60;
+
+    private const string AllSettingsCacheKey = "ServerSettings_AllSettings";
+
     private readonly Dictionary<string, string?> _cache = new();
 
     /// <summary>
@@ -88,6 +99,9 @@ public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory
 
         await dbContext.SaveChangesAsync();
         _cache[key] = value;
+
+        // A setting changed, so drop the cached settings model to force a reload on the next read.
+        cache.Remove(AllSettingsCacheKey);
     }
 
     /// <summary>
@@ -96,6 +110,13 @@ public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory
     /// <returns>The settings.</returns>
     public async Task<ServerSettingsModel> GetAllSettingsAsync()
     {
+        // Serve from the short-lived in-memory cache when still fresh to avoid hitting the database on
+        // every request. The cache is invalidated whenever settings change through this service.
+        if (cache.TryGetValue(AllSettingsCacheKey, out ServerSettingsModel? cachedModel) && cachedModel is not null)
+        {
+            return cachedModel;
+        }
+
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
         var settings = await dbContext.ServerSettings.ToDictionaryAsync(x => x.Key, x => x.Value);
 
@@ -180,15 +201,7 @@ public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory
             model.MobileLoginLogRetentionDays = mobileLoginDays;
         }
 
-        if (int.TryParse(settings.GetValueOrDefault("NewAccountAliasLimitDays"), out var newAccountAliasLimitDays))
-        {
-            model.NewAccountAliasLimitDays = newAccountAliasLimitDays;
-        }
-
-        if (int.TryParse(settings.GetValueOrDefault("MaxAliasesForNewAccounts"), out var maxAliasesForNewAccounts))
-        {
-            model.MaxAliasesForNewAccounts = maxAliasesForNewAccounts;
-        }
+        cache.Set(AllSettingsCacheKey, model, TimeSpan.FromSeconds(AllSettingsCacheDurationSeconds));
 
         return model;
     }
@@ -213,7 +226,5 @@ public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory
         await SetSettingAsync("RefreshTokenLifetimeLong", model.RefreshTokenLifetimeLong.ToString());
         await SetSettingAsync("MaxRegistrationsPerIpPer24Hours", model.MaxRegistrationsPerIpPer24Hours.ToString());
         await SetSettingAsync("MobileLoginLogRetentionDays", model.MobileLoginLogRetentionDays.ToString());
-        await SetSettingAsync("NewAccountAliasLimitDays", model.NewAccountAliasLimitDays.ToString());
-        await SetSettingAsync("MaxAliasesForNewAccounts", model.MaxAliasesForNewAccounts.ToString());
     }
 }

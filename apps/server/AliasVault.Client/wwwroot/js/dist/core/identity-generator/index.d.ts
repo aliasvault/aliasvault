@@ -395,49 +395,10 @@ declare function getAvailableAgeRanges(): IAgeRangeOption[];
 declare function convertAgeRangeToBirthdateOptions(ageRange: string): IBirthdateOptions | null;
 
 /**
- * Represents a language option for identity generation.
+ * Gets all available language codes for identity generation.
+ * @returns Array of ISO language codes (e.g. ["da", "de", "en", ...]).
  */
-interface ILanguageOption {
-    /**
-     * The language code (e.g., "en", "nl", "de")
-     */
-    value: string;
-    /**
-     * The display label in the native language (e.g., "English", "Nederlands", "Deutsch")
-     */
-    label: string;
-    /**
-     * The flag emoji for the language (e.g., "🇬🇧", "🇳🇱", "🇩🇪")
-     */
-    flag: string;
-    /**
-     * Alternative language codes that map to this identity generator language.
-     * Used for matching UI locale codes to identity generator languages.
-     * For example, "en-US", "en-GB", "en-CA" all map to "en"
-     */
-    alternativeCodes?: string[];
-}
-/**
- * Gets all available languages for identity generation.
- * Display labels are in the native language, with optional flag emoji that clients can choose to display.
- * Languages are sorted alphabetically by label for consistent display across all platforms.
- * @returns Array of language options sorted alphabetically by label
- */
-declare function getAvailableLanguages(): ILanguageOption[];
-/**
- * Maps a UI language code to an identity generator language code.
- * If no explicit match is found, returns null to indicate no preference.
- *
- * @param uiLanguageCode - The UI language code (e.g., "en", "en-US", "nl-NL", "de-DE", "fr")
- * @returns The matching identity generator language code or null if no match
- *
- * @example
- * mapUiLanguageToIdentityLanguage("en-US") // returns "en"
- * mapUiLanguageToIdentityLanguage("nl") // returns "nl"
- * mapUiLanguageToIdentityLanguage("de-CH") // returns "de"
- * mapUiLanguageToIdentityLanguage("fr") // returns null (no French identity generator)
- */
-declare function mapUiLanguageToIdentityLanguage(uiLanguageCode: string | null | undefined): string | null;
+declare function getAvailableLanguages(): string[];
 
 /**
  * Creates a new identity generator based on the language.
@@ -454,4 +415,4 @@ declare const CreateIdentityGenerator: (language: string) => IdentityGenerator;
  */
 declare const CreateUsernameEmailGenerator: () => UsernameEmailGenerator;
 
-export { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, type IAgeRangeOption, type IBirthdateOptions, type IDecadeFirstnames, type IIdentityGenerator, type ILanguageOption, type Identity, IdentityGenerator, IdentityGeneratorDa, IdentityGeneratorDe, IdentityGeneratorEn, IdentityGeneratorEs, IdentityGeneratorFa, IdentityGeneratorFr, IdentityGeneratorIt, IdentityGeneratorNl, IdentityGeneratorRo, IdentityGeneratorSv, IdentityGeneratorUr, IdentityHelperUtils, UsernameEmailGenerator, convertAgeRangeToBirthdateOptions, getAvailableAgeRanges, getAvailableLanguages, mapUiLanguageToIdentityLanguage };
+export { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, type IAgeRangeOption, type IBirthdateOptions, type IDecadeFirstnames, type IIdentityGenerator, type Identity, IdentityGenerator, IdentityGeneratorDa, IdentityGeneratorDe, IdentityGeneratorEn, IdentityGeneratorEs, IdentityGeneratorFa, IdentityGeneratorFr, IdentityGeneratorIt, IdentityGeneratorNl, IdentityGeneratorRo, IdentityGeneratorSv, IdentityGeneratorUr, IdentityHelperUtils, UsernameEmailGenerator, convertAgeRangeToBirthdateOptions, getAvailableAgeRanges, getAvailableLanguages };

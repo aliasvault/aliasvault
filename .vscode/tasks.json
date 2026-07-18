@@ -211,9 +211,22 @@
             }
         },
         {
-            "label": "Build and watch Docs",
+            "label": "Build and watch docs (dev)",
             "type": "shell",
-            "command": "docker compose -f docker-compose.dev.yml build && docker compose -f docker-compose.dev.yml up",
+            "command": "npm start",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/docs"
+            }
+        },
+        {
+            "label": "Build and start docs (docker)",
+            "type": "shell",
+            "command": "npm ci && npm run build && docker compose up -d --build",
             "problemMatcher": [],
             "group": {
                 "kind": "build",

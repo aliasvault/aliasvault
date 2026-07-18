@@ -8,7 +8,7 @@ AliasVault is a privacy-first password and email alias manager. Create unique id
 [<img alt="Discord" src="https://img.shields.io/discord/1309300619026235422?logo=discord&logoColor=%237289da&label=Discord&color=%237289da">](https://discord.gg/DsaXMTEtpF)
 [<img src="https://opencollective.com/aliasvault/tiers/badge.svg">](https://opencollective.com/aliasvault)
 
-<a href="https://app.aliasvault.net">Try the cloud version 🔥</a> | <a href="https://aliasvault.net?utm_source=gh-readme">Website </a> | <a href="https://docs.aliasvault.net?utm_source=gh-readme">Documentation </a> | <a href="#self-hosting">Self-host instructions</a>
+<a href="https://app.aliasvault.com">Try the cloud version 🔥</a> | <a href="https://www.aliasvault.com?utm_source=gh-readme">Website </a> | <a href="https://docs.aliasvault.com?utm_source=gh-readme">Documentation </a> | <a href="#self-hosting">Self-host instructions</a>
 
 **⭐ Star us on GitHub, it motivates us a lot!**
 
@@ -49,10 +49,10 @@ Built on 15 years of experience, AliasVault is independent, open-source, self-ho
 </table>
 
 ## Cloud-hosted
-Use the official cloud version of AliasVault at [app.aliasvault.net](https://app.aliasvault.net). This fully supported platform is always up to date with our latest release.
+Use the official cloud version of AliasVault at [app.aliasvault.com](https://app.aliasvault.com). This fully supported platform is always up to date with our latest release.
 
 AliasVault is available on:
-- [Web (universal)](https://app.aliasvault.net)
+- [Web (universal)](https://app.aliasvault.com)
 - [Chrome](https://chromewebstore.google.com/detail/aliasvault/bmoggiinmnodjphdjnmpcnlleamkfedj)
 - [Firefox](https://addons.mozilla.org/en-US/firefox/addon/aliasvault/)
 - [Edge](https://microsoftedge.microsoft.com/addons/detail/aliasvault/kabaanafahnjkfkplbnllebdmppdemfo)
@@ -65,7 +65,7 @@ AliasVault is available on:
   <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/{%22id%22:%22net.aliasvault.app%22,%22url%22:%22https://github.com/aliasvault/aliasvault%22,%22author%22:%22AliasVault%22,%22name%22:%22AliasVault%22,%22additionalSettings%22:%22{\%22about\%22:\%22Privacy-first%20Password%20Manager%20with%20Built-in%20Email%20Aliasing.\%22}%22}" style="display: inline-block;"><img src="https://github.com/user-attachments/assets/0e8c7cc6-533b-4fc4-bbc0-ce974d72de4b" style="height: 40px;" alt="Get it on F-Droid"></a>
 </p>
 
-[<img width="700" alt="Screenshot of AliasVault" src="docs/assets/img/screenshot.png">](https://app.aliasvault.net)
+[<img width="700" alt="Screenshot of AliasVault" src="docs/static/assets/img/screenshot.png">](https://app.aliasvault.com)
 
 ## Self-hosting
 > [!NOTE]
@@ -88,15 +88,15 @@ chmod +x install.sh
 ./install.sh install
 ```
 
-For other installation methods and more detailed steps, please read the [full installation guide](https://docs.aliasvault.net/installation) in the official docs.
+For other installation methods and more detailed steps, please read the [full installation guide](https://docs.aliasvault.com/installation) in the official docs.
 
 ## Documentation
 For more information about the installation process, manual setup instructions and other topics, please see the official documentation website:
 
-- [Documentation website (docs.aliasvault.net) 📚](https://docs.aliasvault.net)
+- [Documentation website (docs.aliasvault.com) 📚](https://docs.aliasvault.com)
 
 ## Security Architecture
-<a href="https://docs.aliasvault.net/architecture"><img alt="AliasVault Security Architecture Diagram" src="docs/assets/diagrams/security-architecture/aliasvault-security-architecture-thumb.jpg" width="343"></a>
+<a href="https://docs.aliasvault.com/architecture"><img alt="AliasVault Security Architecture Diagram" src="docs/static/assets/diagrams/security-architecture/aliasvault-security-architecture-thumb.jpg" width="343"></a>
 
 AliasVault takes security seriously and implements various measures to protect your data:
 
@@ -106,7 +106,7 @@ AliasVault takes security seriously and implements various measures to protect y
 
 For detailed information about our encryption implementation and security architecture, see the following documents:
 - [ARCHITECTURE.md](ARCHITECTURE.md)
-- [Security Architecture Diagram](https://docs.aliasvault.net/architecture)
+- [Security Architecture Diagram](https://docs.aliasvault.com/architecture)
 
 ## Features & Roadmap
 

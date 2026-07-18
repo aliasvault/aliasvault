@@ -79,11 +79,11 @@
     <comment>Message when no emails are available</comment>
   </data>
   <data name="EmailAddressInUseError" xml:space="preserve">
-    <value>The current chosen email address is already in use. Please change the email address by editing this credential.</value>
+    <value>Alamat email yang dipilih saat ini sudah digunakan. Silakan ubah alamat email dengan mengedit kredensial ini.</value>
     <comment>Error message when email address is already in use</comment>
   </data>
   <data name="EmailLoadError" xml:space="preserve">
-    <value>An error occurred while trying to load the emails. Please try to edit and save the credential entry to synchronize the database, then try again.</value>
+    <value>Terjadi kesalahan saat mencoba memuat email. Silakan coba ubah dan simpan entri kredensial untuk menyinkronkan basis data, lalu coba lagi.</value>
     <comment>Error message when email loading fails</comment>
   </data>
   <data name="LoadMoreButton" xml:space="preserve">

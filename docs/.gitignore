@@ -1,1 +1,19 @@
+# Dependencies
+/node_modules
+
+# Production build
+/build
+
+# Generated Docusaurus files
+/.docusaurus
+.docusaurus
+
+# Misc
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Keep the docs release notes directory tracked
 !release

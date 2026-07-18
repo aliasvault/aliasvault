@@ -3,6 +3,7 @@
     "cancel": "Anuluj",
     "close": "Zamknij",
     "delete": "Usuń",
+    "remove": "Usuń",
     "save": "Zapisz",
     "edit": "Edytuj",
     "yes": "Tak",
@@ -16,9 +17,10 @@
     "copied": "Skopiowano do schowka",
     "loadMore": "Załaduj więcej",
     "use": "Użyj",
+    "none": "Brak",
     "confirm": "Potwierdź",
     "next": "Dalej",
-    "notice": "Uwaga",
+    "notice": "Notatka",
     "enabled": "Włączone",
     "disabled": "Wyłączone",
     "twoFactorAuthentication": "Weryfikacja dwuetapowa (2FA)",
@@ -32,7 +34,7 @@
     "errors": {
       "unknownError": "Wystąpił nieznany błąd.",
       "unknownErrorTryAgain": "Wystąpił nieznany błąd. Spróbuj ponownie.",
-      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultTooLarge": "Sejf jest zbyt duży, aby serwer mógł zaakceptować. Spróbuj usunąć niektóre elementy lub załączniki, aby zmniejszyć rozmiar i spróbować ponownie.",
       "serverVersionTooOld": "Aby korzystać z tej funkcji, serwer AliasVault musi zostać zaktualizowany do nowszej wersji. Jeśli potrzebujesz pomocy, skontaktuj się z administratorem serwera."
     }
   },
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "Dodaj kod 2FA",
     "nameOptional": "Nazwa (opcjonalnie)",
+    "addName": "Dodaj nazwę (opcjonalnie)",
+    "defaultName": "Uwierzytelnianie",
     "secretKey": "Tajny klucz",
     "instructions": "Wprowadź tajny klucz wyświetlony na stronie internetowej, na której chcesz dodać uwierzytelnianie dwuskładnikowe.",
     "saveToViewCode": "Zapisz, aby wyświetlić kod",
     "scanQrCode": "Skanuj kod QR",
-    "enterManually": "Wprowadź klucz konfiguracyjny",
+    "enterManually": "Wprowadź tajny klucz TOTP",
     "errors": {
       "invalidSecretKey": "Nieprawidłowy format tajnego klucza.",
       "scanFailed": "Nie udało się zeskanować kodu QR. Spróbuj ponownie."
@@ -154,16 +158,16 @@
       "showSearchTextDescription": "AliasVault otrzymuje z Androida dane, których używa do wyszukania pasujących danych logowania"
     },
     "advancedOptions": "Opcje zaawansowane",
-    "copyTotpOnFill": "Copy TOTP code on autofill",
-    "copyTotpOnFillDescription": "When you autofill a credential with 2FA, automatically copy its TOTP code to the clipboard so you can paste it into the next field.",
+    "copyTotpOnFill": "Skopiuj kod TOTP przy autouzupełnianiu",
+    "copyTotpOnFillDescription": "Gdy autouzupełniasz dane logowania za pomocą 2FA, automatycznie kopiuj swój kod TOTP do schowka, aby można było wkleić go do następnego pola.",
     "vaultUnlock": "Blokada sejfu",
     "autoLock": "Automatyczne blokowanie",
     "clipboardClear": "Wyczyść schowek",
     "clipboardClearDescription": "Automatycznie usuwa skopiowane hasła i poufne informacje ze schowka po upływie określonego czasu.",
     "clipboardClearAndroidWarning": "Uwaga: niektóre urządzenia z systemem Android mają włączoną historię schowka, która może śledzić wcześniej skopiowane elementy, nawet po wyczyszczeniu schowka przez AliasVault. AliasVault może nadpisać tylko najnowszy element, ale starsze wpisy mogą pozostać widoczne w historii. Ze względów bezpieczeństwa zalecamy wyłączenie funkcji historii schowka w ustawieniach urządzenia.",
-    "clipboardLocalOnly": "Local Clipboard Only",
-    "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
-    "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
+    "clipboardLocalOnly": "Tylko lokalny schowek",
+    "clipboardLocalOnlyDescription": "Zachowaj skopiowane dane uwierzytelniające na tym urządzeniu zamiast synchronizować je z innymi urządzeniami Apple za pośrednictwem Universal Cslipboard.",
+    "clipboardLocalOnlyDisabledWarning": "Dzięki temu skopiowane dane uwierzytelniające mogą synchronizować się z innymi urządzeniami Apple (Mac, iPad, itp.) za pośrednictwem Universal Cschowk.",
     "clipboardClearOptions": {
       "never": "Nigdy",
       "5seconds": "5 sekund",
@@ -192,7 +196,8 @@
       "exportDescription": "Ze względów bezpieczeństwa wprowadź swoje hasło główne, aby potwierdzić eksport."
     },
     "security": "Bezpieczeństwo",
-    "appVersion": "Wersja aplikacji {{version}} ({{url}})",
+    "appVersion": "Wersja aplikacji",
+    "serverVersion": "Wersja serwera",
     "autoLockOptions": {
       "never": "Nigdy",
       "5seconds": "5 sekund",
@@ -350,7 +355,7 @@
       "cardInformation": "Informacje o karcie"
     },
     "note": {
-      "title": "Uwaga"
+      "title": "Uwagi"
     },
     "addField": "Dodaj pole",
     "addCustomField": "Dodaj pole niestandardowe",
@@ -360,6 +365,7 @@
     "enterFieldName": "Wprowadź nazwę pola",
     "fieldTypes": {
       "text": "Tekst",
+      "password": "Hasło",
       "hidden": "Ukryte",
       "email": "Skrzynka odbiorcza",
       "url": "adres URL",
@@ -441,30 +447,53 @@
     "includeNumbers": "Liczby (0-9)",
     "includeSpecialChars": "Znaki specjalne (!@#)",
     "avoidAmbiguousChars": "Unikaj niejednoznacznych znaków",
+    "passwordTypeBasic": "Hasło",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Język Passphrase",
+    "wordCount": "Słowa",
+    "capitalization": "Stosowanie wielkich liter",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Małe litery",
+      "TitleCase": "Title Case",
+      "Uppercase": "Wielkie litery"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Kreska",
+      "Space": "Spacja",
+      "Underscore": "Podkreślenie",
+      "Dot": "Kropka"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefiks",
+      "Sprinkle": "Losowa pozycja",
+      "Suffix": "Sufiks"
+    },
     "errorLoadingItems": "Błąd podczas ładowania elementów",
     "vaultSyncFailed": "Nie udało się zsynchronizować sejfu",
     "vaultSyncedSuccessfully": "Synchronizacja sejfu zakończona sukcesem",
     "vaultUpToDate": "Sejf jest aktualny",
     "offlineMessage": "Jesteś offline. Połącz się z Internetem, aby zsynchronizować swój sejf.",
-    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "switchBackToOriginalApp": "Wróć do oryginalnej aplikacji, aby kontynuować.",
     "autofillOpenApp": {
-      "title": "Autofill request",
-      "description": "Choose an action for the app or website that requested autofill.",
-      "appOrUrlLabel": "App or URL",
-      "findExistingTitle": "Link to existing credential",
-      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
-      "createNewTitle": "Create new credential",
-      "createNewDescription": "Add a new credential to your vault for this app or URL."
+      "title": "Żądanie autouzupełniania",
+      "description": "Wybierz akcję dla aplikacji lub strony internetowej, która zażądała autouzupełniania.",
+      "appOrUrlLabel": "Aplikacja lub adres URL",
+      "findExistingTitle": "Link do istniejącego konta",
+      "findExistingDescription": "Wybierz istniejące dane logowania z sejfu aby połączyć się z adresem powyżej.",
+      "createNewTitle": "Utwórz nowe dane logowania",
+      "createNewDescription": "Dodaj nowe dane logowania do sejfu dla tej aplikacji lub adresu URL."
     },
     "autofillLinkExisting": {
-      "title": "Link to existing credential",
-      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
-      "confirmTitle": "Link to credential?",
-      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+      "title": "Link do istniejącego konta",
+      "intro": "Wybierz istniejące dane logowania ze swojego sejfu aby połączyć się z \"{{target}}\".",
+      "confirmTitle": "Link do logowania?",
+      "confirmMessage": "Czy na pewno chcesz połączyć \"{{url}}\" z tym kontem?"
     },
     "autofillUrlAdded": {
-      "title": "Credential linked",
-      "message": "Autofill should now offer this credential the next time you open the app."
+      "title": "Utworzone dane logowania",
+      "message": "Autouzupełnianie powinno teraz zaoferować te dane logowania przy następnym otwarciu aplikacji."
     },
     "filters": {
       "all": "Elementy",
@@ -540,8 +569,8 @@
     "recentlyDeleted": {
       "title": "Ostatnio usunięte",
       "noItems": "Brak usuniętych elementów",
-      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
-      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
+      "noItemsDescription": "Usunięte elementy pojawią się tutaj na {{days}} dni zanim zostaną trwale usunięte.",
+      "description": "Te elementy zostaną trwale usunięte po {{days}} dniach. Możesz je przywrócić lub natychmiast usunąć.",
       "restore": "Przywróć",
       "deletePermanently": "Usuń bezpowrotnie",
       "emptyAll": "Opróżnij wszystkie",
@@ -570,8 +599,8 @@
     "emailNotFound": "Nie znaleziono wiadomości e-mail",
     "formatHtml": "HTML",
     "formatPlain": "Tekst",
-    "formatSource": "Source",
-    "formatSwitchTitle": "Switch email format",
+    "formatSource": "Źródło",
+    "formatSwitchTitle": "Zmień format wiadomości e-mail",
     "sizeKB": "KB",
     "offlineMessage": "Jesteś offline. Połącz się z Internetem, aby załadować wiadomości e-mail.",
     "emptyMessage": "Nie otrzymałeś jeszcze żadnych wiadomości e-mail na swoje prywatne adresy e-mail. Gdy otrzymasz nową wiadomość e-mail, pojawi się ona tutaj.",
@@ -646,22 +675,21 @@
       "attemptingToUnlockMessage": "Próba odblokowania."
     },
     "vaultError": {
-      "title": "Vault Error",
-      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
-      "showDetails": "Show error details",
-      "hideDetails": "Hide error details",
-      "copyErrorDetails": "Copy error details"
+      "title": "Błąd sejfu",
+      "description": "Wystąpił błąd podczas ładowania sejfu. Jeśli problem będzie się powtarzał, skontaktuj się z pomocą techniczną.",
+      "showDetails": "Pokaż szczegóły błędu",
+      "hideDetails": "Ukryj informacje o błędzie",
+      "copyErrorDetails": "Kopiuj informacje o błędzie"
     },
     "loginSettings": {
       "title": "Połączenie API",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Własny hosting",
       "customApiUrl": "Niestandardowy adres URL interfejsu API",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "version": "Wersja: {{version}}",
-      "advancedSettings": "Advanced settings",
-      "customProxyHeaders": "Custom proxy headers",
-      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
+      "advancedSettings": "Ustawienia zaawansowane",
+      "customProxyHeaders": "Niestandardowe nagłówki serwera proxy",
+      "customProxyHeadersDescription": "Dodaj nagłówki HTTP, które będą wysyłane z każdą prośbą do serwera AliasVault. Mogą być używane do samodzielnych konfiguracji za odwróconym proxy sprawdzającym nagłówki niestandardowe (np. Pangolin, Cloudflare Access).",
       "headerName": "Header name",
       "headerNamePlaceholder": "X-Custom-Header",
       "headerValue": "Header value"

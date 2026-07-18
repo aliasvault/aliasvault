@@ -1,0 +1,92 @@
+/* English localization strings for VaultUI */
+"error" = "Earráid";
+"cancel" = "Cealaigh";
+"back" = "Ar ais";
+"next" = "Ar Aghaidh";
+"edit" = "Cuir in Eagar";
+"website" = "Suíomh Gréasáin";
+"username" = "Ainm úsáideora";
+"title" = "Teideal";
+"unknown_error" = "Tharla earráid anaithnid";
+
+"loading_items" = "Míreanna á lódáil...";
+"no_items_found" = "Níor aimsíodh aon rud";
+"no_items_match" = "Níl aon mhíreanna reatha ag teacht le do chuardach";
+"create_new_item" = "Cruthaigh Mír Nua";
+"open_aliasvault" = "Oscail AliasVault";
+"untitled_credential" = "an dintiúir seo";
+"link_url_prompt_title" = "Nasc leis an dintiúir?";
+"link_url_prompt_message" = "Cuir \"{{url}}\" le {{name}} ionas go n-aithníonn AliasVault an aip nó an suíomh Gréasáin seo an chéad uair eile?";
+"link_url_prompt_link_action" = "Nasc agus líon isteach";
+"link_url_prompt_skip_action" = "Líon isteach amháin";
+"linking_url" = "Ag nascadh...";
+"select_item" = "Roghnaigh Mír";
+"select_text_to_insert" = "Roghnaigh Téacs le hIonsáigh";
+"choose_username" = "Roghnaigh Ainm Úsáideora";
+"select_text_to_insert_message" = "Roghnaigh an téacs le cur isteach sa réimse ionchuir atá dírithe";
+"choose_username_message" = "D’fhéadfadh go mbeadh d’ainm úsáideora nó do sheoladh ríomhphoist ag teastáil ón suíomh Gréasáin seo le logáil isteach";
+"username_prefix" = "Ainm úsáideora: ";
+"email_prefix" = "Ríomhphost: ";
+"password" = "Pasfhocal";
+"items_load_error" = "Theip ar lódáil na míreanna. Oscail an aip AliasVault le seiceáil le haghaidh nuashonruithe.";
+"no_item_selected" = "Níl aon mhír roghnaithe.";
+
+/* Context menu strings */
+"copy_username" = "Cóipeáil Ainm Úsáideora";
+"copy_password" = "Cóipeáil Pasfhocal";
+"copy_email" = "Cóipeáil Ríomhphoist";
+"copy_totp_code" = "Cóipeáil Cód TOTP";
+"view_details" = "Féach Sonraí";
+"username_copied" = "Ainm úsáideora cóipeáilte";
+"password_copied" = "Pasfhocal cóipeáilte";
+"email_copied" = "Ríomhphost cóipeáilte";
+"totp_code_copied" = "Cód TOTP cóipeáilte";
+"totp_code" = "Cód TOTP";
+
+/* Search bar */
+"search_items" = "Cuardaigh míreanna...";
+
+/* Passkey registration */
+"create_passkey_title" = "Cruthaigh Eochair phas Nua";
+"create_passkey_subtitle" = "Cláraigh eochair phas nua don suíomh Gréasáin seo. Stórálfar go slán é i do chruinneachán agus sioncrónófar go huathoibríoch é ar fud do ghléasanna le AliasVault.";
+"create_passkey_button_confirm" = "Cruthaigh Eochair phas";
+
+/* Passkey provider */
+"passkey" = "Eochair phas";
+"loading_passkeys" = "Ag lódáil eochracha pas...";
+"no_passkeys_found" = "Níor aimsíodh aon eochracha pas";
+"no_passkeys_match" = "Níl aon eochracha pas ann a oireann do do chuardach";
+"select_passkey" = "Roghnaigh Eochair Pas";
+"passkeys_load_error" = "Theip ar luchtú na n-eochracha pas. Oscail an aip AliasVault le seiceáil le haghaidh nuashonruithe.";
+
+/* Passkey replacement */
+"create_new_passkey" = "Cruthaigh Eochair phas Nua";
+"select_passkey_to_replace" = "Nó, cuir eochair phas atá ann cheana féin in áit";
+"replace_passkey" = "Athsholáthar Eochair Pas";
+"replace_passkey_explanation" = "Cuirfidh sé seo ceann nua in ionad an eochair phas atá ann cheana. Tabhair faoi deara, le do thoil, go ndéanfar do shean-eochair phas a athscríobh agus nach mbeidh rochtain uirthi a thuilleadh. Más mian leat eochair phas ar leith a chruthú ina ionad sin, téigh ar ais go dtí an scáileán roimhe seo.";
+"create_passkey_explanation" = "Cruthaíonn sé seo eochair phas nua agus stórálann sé í i do chruinneachán. Déanfar í a shioncronú go huathoibríoch ar fud do ghléasanna uile a úsáideann AliasVault.";
+
+/* Passkey merge with existing item */
+"passkey_add_to_existing" = "Nó, cuir eochair phas le mír atá ann cheana féin";
+"add_passkey" = "Cuir Eochair phas leis";
+"merge_passkey_explanation" = "Cuirfidh sé seo eochair phasfhocail le do mhír atá ann cheana féin. Coinneofar do phasfhocal agus sonraí eile.";
+
+/* PIN Unlock */
+"unlock_vault" = "Díghlasáil an Cruinneachán";
+"enter_pin_to_unlock_vault" = "Cuir isteach do PIN chun do cruinneachán a dhíghlasáil";
+"pin_locked_max_attempts" = "PIN faoi ghlas tar éis an iomarca iarrachtaí teipthe";
+"pin_incorrect_attempts_remaining" = "PIN mícheart. %d iarracht fágtha";
+
+/* Password Unlock */
+"enter_password_to_unlock" = "Cuir isteach do phríomhfhocal faire";
+"unlock" = "Díghlasáil";
+"incorrect_password" = "Pasfhocal mícheart. Déan iarracht arís.";
+"attempts_warning" = "Focal faire mícheart. Logálfar amach thú má chuireann tú an focal faire mícheart isteach %d níos mó uaireanta.";
+"max_attempts_reached" = "Theip ar an iomarca iarrachtaí díghlasála. Logáladh amach thú ar chúiseanna slándála.";
+
+/* PIN Setup */
+"pin_setup_title" = "Socraigh PIN";
+"pin_setup_subtitle" = "Roghnaigh PIN chun do chruinneachán a dhíghlasáil";
+"pin_confirm_title" = "Deimhnigh PIN";
+"pin_confirm_subtitle" = "Ath-iontráil do PIN le deimhniú";
+"pin_mismatch" = "Ní hionann na PINanna. Déan iarracht arís.";

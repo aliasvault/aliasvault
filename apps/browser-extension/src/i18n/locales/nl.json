@@ -62,6 +62,7 @@
     "openInNewWindow": "Openen in nieuw venster",
     "enabled": "Ingeschakeld",
     "disabled": "Uitgeschakeld",
+    "none": "Geen",
     "showPassword": "Wachtwoord tonen",
     "hidePassword": "Wachtwoord verbergen",
     "show": "Toon",
@@ -76,6 +77,7 @@
     "settings": "Instellingen",
     "recentEmails": "Recente e-mails",
     "credentials": "Credentials",
+    "passkeys": "Wachtwoordsleutels",
     "customFields": "Extra velden",
     "twoFactorAuthentication": "Tweestapsverificatie",
     "alias": "Alias",
@@ -109,6 +111,7 @@
       "syncConflictMaxRetries": "Kan de vault niet synchroniseren na meerdere pogingen. Probeer het later opnieuw.",
       "mergeFailed": "Samenvoegen vault wijzigingen mislukt. Probeer het opnieuw.",
       "vaultTooLarge": "De vault is te groot voor de server om te accepteren. Probeer sommige items of bijlagen te verwijderen om de grootte te verkleinen en probeer het opnieuw.",
+      "vaultSyncTimeout": "Vault synctijd is verlopen. Dit kan gebeuren als de kluis groot is of de internetverbinding traag is. Probeer het opnieuw.",
       "invalidCode": "Voer een geldige 6-cijferige code in.",
       "serverError": "Kon de AliasVault server niet bereiken. Probeer het later opnieuw of neem contact op met support als het probleem aanhoudt.",
       "wrongPassword": "Onjuist wachtwoord. Probeer het opnieuw.",
@@ -148,6 +151,7 @@
     "creatingNewAlias": "Nieuwe alias aanmaken",
     "creatingNewCredential": "Nieuwe inloggegevens aanmaken",
     "noMatchesFound": "Geen resultaten gevonden",
+    "loginWithPasskey": "Aanmelden met wachtwoordsleutel",
     "searchVault": "Vault doorzoeken...",
     "enterServiceName": "Voer servicenaam in",
     "enterEmailAddress": "Voer e-mailadres in",
@@ -186,6 +190,7 @@
   "items": {
     "title": "Items",
     "itemName": "Naam",
+    "suggestions": "Suggesties",
     "loginCredentials": "Inloggegevens",
     "cardInformation": "Kaartgegevens",
     "addItem": "Item toevoegen",
@@ -202,6 +207,8 @@
     "folder": "Map",
     "welcomeTitle": "Welkom bij AliasVault!",
     "welcomeDescription": "Om de AliasVault browser extensie te gebruiken: navigeer naar een website en gebruik de AliasVault autofill popup om nieuwe credentials aan te maken.",
+    "currentSiteMatch": "Voor {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items gevonden",
     "noMatchingItems": "Geen items gevonden die overeenkomen met het geselecteerde filter.",
     "noMatchingItemsSearch": "Geen items die overeenkomen met \"{{search}}\"",
     "noMatchingItemsWithFilter": "Geen {{filter}} items die overeenkomen met \"{{search}}\"",
@@ -216,7 +223,6 @@
     "deleteFolderAndItemsDescription": "{{count}} item(s) zullen worden verplaatst naar recent verwijderd.",
     "filters": {
       "folders": "Mappen",
-      "passkeys": "Passkeys",
       "totp": "2FA codes"
     },
     "sort": {
@@ -238,6 +244,28 @@
     "includeNumbers": "Inclusief cijfers",
     "includeSpecialChars": "Inclusief speciale karakters",
     "avoidAmbiguousChars": "Onduidelijke tekens vermijden (o, 0, etc.)",
+    "passwordTypeBasic": "Wachtwoord",
+    "passwordTypeDiceware": "Wachtwoordzin",
+    "passphraseLanguage": "Taal wachtwoordzin",
+    "wordCount": "Woorden",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Titelhoofdletter",
+      "Uppercase": "Hoofdletters",
+      "Lowercase": "Kleine letters"
+    },
+    "separator": "Scheidingsteken",
+    "dicewareSeparatorOption": {
+      "Dash": "Streepje",
+      "Space": "Spatie",
+      "Underscore": "Lage streep",
+      "Dot": "Punt"
+    },
+    "salt": "Zout",
+    "dicewareSaltOption": {
+      "Prefix": "Voorvoegsel",
+      "Sprinkle": "Willekeurige positie",
+      "Suffix": "Achtervoegsel"
+    },
     "privateEmailTitle": "Privé e-mail",
     "privateEmailAliasVaultServer": "AliasVault server",
     "privateEmailDescription": "E2E versleuteld, volledig privé.",
@@ -259,6 +287,7 @@
     "fieldType": "Veldtype",
     "fieldTypes": {
       "text": "Tekst",
+      "password": "Wachtwoord",
       "hidden": "Verborgen (gemaskeerde tekst)",
       "email": "E-mail",
       "url": "URL",
@@ -301,6 +330,7 @@
     "addCode": "2FA-code toevoegen",
     "instructions": "Voer de secret key in die door de website wordt weergegeven waar je tweestapsverificatie wilt toevoegen.",
     "nameOptional": "Naam (optioneel)",
+    "addName": "Voeg een naam toe (optioneel)",
     "secretKey": "Secret key",
     "saveToViewCode": "Opslaan om code te bekijken",
     "defaultName": "Authenticator",
@@ -401,7 +431,8 @@
     "autoLock4Hours": "4 uur",
     "autoLock8Hours": "8 uur",
     "autoLock24Hours": "24 uur",
-    "versionPrefix": "Versie ",
+    "versionPrefix": "App versie",
+    "serverVersion": "Server versie",
     "autofillSettings": "Autofill instellingen",
     "clipboardSettings": "Klembord instellingen",
     "contextMenuSettings": "Context menu instellingen",
@@ -438,6 +469,11 @@
         "male": "Mannelijk",
         "female": "Vrouwelijk"
       }
+    },
+    "passwordGenerator": "Wachtwoordgenerator",
+    "passwordGeneratorSettings": {
+      "description": "Configureer de standaard wachtwoord generator instellingen voor nieuw aangemaakte items, inclusief de lengte van het wachtwoord, tekensets, en de wachtwoordzin.",
+      "configureButton": "Configureren"
     },
     "credentialAutofill": "Automatisch invullen van inloggegevens",
     "credentialAutofillDescription": "Automatisch invullen popup weergeven wanneer gebruikersnaam/wachtwoord velden worden gedetecteerd",
@@ -502,7 +538,8 @@
       "selectExistingLogin": "Toevoegen aan bestaande login:",
       "selectExistingLoginDescription": "Deze passkey toevoegen aan een bestaande inloggegevens voor deze site.",
       "attachingToCredential": "Passkey toevoegen aan: {{serviceName}}",
-      "attachPasskey": "Passkey toevoegen"
+      "attachPasskey": "Passkey toevoegen",
+      "unsupportedAlgorithm": "Deze website vereist een wachtwoord dat AliasVault niet ondersteunt."
     },
     "settings": {
       "passkeyProvider": "Passkey provider",

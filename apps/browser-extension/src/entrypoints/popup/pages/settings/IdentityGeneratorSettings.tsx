@@ -6,7 +6,8 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
-import { getAvailableLanguages, getAvailableAgeRanges, ILanguageOption, IAgeRangeOption } from '@/utils/dist/core/identity-generator';
+import { getAvailableLanguages, getAvailableAgeRanges, IAgeRangeOption } from '@/utils/dist/core/identity-generator';
+import { getLanguageInfo } from '@/utils/dist/core/models/defaults';
 
 /**
  * Identity Generator Settings page component.
@@ -21,7 +22,7 @@ const IdentityGeneratorSettings: React.FC = () => {
   const [language, setLanguage] = useState<string>('en');
   const [gender, setGender] = useState<string>('random');
   const [ageRange, setAgeRange] = useState<string>('random');
-  const [languageOptions, setLanguageOptions] = useState<ILanguageOption[]>([]);
+  const [languageOptions, setLanguageOptions] = useState<string[]>([]);
   const [ageRangeOptions, setAgeRangeOptions] = useState<IAgeRangeOption[]>([]);
 
   const GENDER_OPTIONS = [
@@ -34,7 +35,9 @@ const IdentityGeneratorSettings: React.FC = () => {
    * Load settings on mount.
    */
   useEffect(() => {
-    const languages = getAvailableLanguages();
+    const languages = getAvailableLanguages().sort(
+      (a, b) => getLanguageInfo(a).label.localeCompare(getLanguageInfo(b).label)
+    );
     const ranges = getAvailableAgeRanges();
     setLanguageOptions(languages);
     setAgeRangeOptions(ranges);
@@ -109,11 +112,14 @@ const IdentityGeneratorSettings: React.FC = () => {
               onChange={(e) => handleLanguageChange(e.target.value)}
               className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500"
             >
-              {languageOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.flag} {option.label}
-                </option>
-              ))}
+              {languageOptions.map((code) => {
+                const info = getLanguageInfo(code);
+                return (
+                  <option key={code} value={code}>
+                    {info.flag} {info.label}
+                  </option>
+                );
+              })}
             </select>
           </div>
         </div>

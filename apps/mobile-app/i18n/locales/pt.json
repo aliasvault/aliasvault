@@ -3,6 +3,7 @@
     "cancel": "Cancelar",
     "close": "Fechar",
     "delete": "Excluir",
+    "remove": "Remover",
     "save": "Salvar",
     "edit": "Editar",
     "yes": "Sim",
@@ -16,6 +17,7 @@
     "copied": "Copiado para a área de transferência",
     "loadMore": "Carregar mais",
     "use": "Utilizar",
+    "none": "Nenhum",
     "confirm": "Confirmar",
     "next": "Próximo",
     "notice": "Aviso",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "Adicionar Código de Autenticação de Dois Fatores",
     "nameOptional": "Nome (opcional)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Autenticador",
     "secretKey": "Chave Secreta",
     "instructions": "Digite a chave secreta exibida pelo website que você quer adicionar a autenticação de dois fatores.",
     "saveToViewCode": "Salvar para ver código",
     "scanQrCode": "Escanear Código QR",
-    "enterManually": "Digite a chave de configuração",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Formato de chave secreta inválido.",
       "scanFailed": "Falha ao escanear código QR. Por favor, tente novamente."
@@ -154,8 +158,8 @@
       "showSearchTextDescription": "Inclua o texto que o AliasVault recebe do Android, e que é usado para pesquisar credenciais relacionadas"
     },
     "advancedOptions": "Opções Avançadas",
-    "copyTotpOnFill": "Copy TOTP code on autofill",
-    "copyTotpOnFillDescription": "When you autofill a credential with 2FA, automatically copy its TOTP code to the clipboard so you can paste it into the next field.",
+    "copyTotpOnFill": "Copiar código de dois fatores ao autopreencher",
+    "copyTotpOnFillDescription": "Quando utilizar o autopreenchimento com uma credencial que tenha 2FA, copia automaticamente o código de dois fatores para a área de transferência para que você possa colar no próximo campo.",
     "vaultUnlock": "Método de Desbloqueio do Cofre",
     "autoLock": "Tempo para Bloqueio Automático",
     "clipboardClear": "Limpar área de transferência",
@@ -192,7 +196,8 @@
       "exportDescription": "Por questões de segurança, por favor, digite sua senha mestre para confirmar esta exportação."
     },
     "security": "Segurança",
-    "appVersion": "Versão do aplicativo {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Nunca",
       "5seconds": "5 segundos",
@@ -360,6 +365,7 @@
     "enterFieldName": "Digite o nome do campo",
     "fieldTypes": {
       "text": "Texto",
+      "password": "Senha",
       "hidden": "Escondido",
       "email": "E-mail",
       "url": "URL",
@@ -441,6 +447,29 @@
     "includeNumbers": "Números (0-9)",
     "includeSpecialChars": "Caracteres Especiais (!@#)",
     "avoidAmbiguousChars": "Evitar Caracteres Ambíguos",
+    "passwordTypeBasic": "Senha",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Erro ao carregar itens",
     "vaultSyncFailed": "Sincronização do cofre falhou",
     "vaultSyncedSuccessfully": "Cofre sincronizado com sucesso",
@@ -570,8 +599,8 @@
     "emailNotFound": "E-mail não encontrado",
     "formatHtml": "HTML",
     "formatPlain": "Texto",
-    "formatSource": "Source",
-    "formatSwitchTitle": "Switch email format",
+    "formatSource": "Origem",
+    "formatSwitchTitle": "Alterar formato do e-mail",
     "sizeKB": "KB",
     "offlineMessage": "Você está offline. Por favor conecte-se à internet para carregar seus e-mails.",
     "emptyMessage": "Você ainda não recebeu nenhum e-mail em seus endereços de e-mail privados. Quando receber um novo e-mail, ele aparecerá aqui.",
@@ -654,7 +683,6 @@
     },
     "loginSettings": {
       "title": "Conexão com API",
-      "aliasvaultNet": "AliasVault.net",
       "selfHosted": "Self-hosted",
       "customApiUrl": "URL de API Customizada",
       "customApiUrlPlaceholder": "https://minha-instancia-aliasvault.com/api",

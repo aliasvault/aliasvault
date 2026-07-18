@@ -110,9 +110,9 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
           const url = searchTerm ? `/items/${item.Id}?returnSearch=${encodeURIComponent(searchTerm)}` : `/items/${item.Id}`;
           navigate(url);
         }}
-        className={`w-full p-2 border rounded flex items-center bg-white dark:bg-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+        className={`w-full p-2 border rounded flex items-center bg-white dark:bg-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 ${
           isActive
-            ? 'border-blue-500 dark:border-blue-400 ring-2 ring-blue-500/40'
+            ? 'border-primary-500 dark:border-primary-400 ring-2 ring-primary-500/40'
             : 'border-gray-200 dark:border-gray-600'
         }`}
       >

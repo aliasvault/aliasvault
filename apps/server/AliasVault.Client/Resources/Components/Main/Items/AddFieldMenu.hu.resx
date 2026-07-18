@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Section options -->
   <data name="TwoFactorAuthentication">
-    <value>Two-Factor Authentication</value>
+    <value>Kétlépcsős hitelesítés</value>
     <comment>Option to add 2FA section</comment>
   </data>
   <data name="Attachments">
@@ -109,6 +109,10 @@
   <data name="FieldTypeText">
     <value>Szöveg</value>
     <comment>Text field type option</comment>
+  </data>
+  <data name="FieldTypePassword">
+    <value>Jelszó</value>
+    <comment>Password field type option</comment>
   </data>
   <data name="FieldTypeHidden">
     <value>Rejtett</value>

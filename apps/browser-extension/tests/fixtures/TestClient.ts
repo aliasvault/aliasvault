@@ -360,10 +360,15 @@ export class TestClient {
   }
 
   /**
-   * Verify a credential exists in the vault list.
+   * Verify a credential with the given name is visible in the popup.
+   *
+   * Called from multiple views (the items list, and the detail/view page right
+   * after saving), so it can't be scoped to the items list. Uses .first() so the
+   * assertion doesn't trip Playwright strict mode when the name appears more than
+   * once - e.g. the current-site suggestion duplicating an item already in the list.
    */
   async verifyCredentialExists(name: string, timeout: number = Timeouts.MEDIUM): Promise<this> {
-    await expect(this.popup.locator(`text=${name}`)).toBeVisible({ timeout });
+    await expect(this.popup.locator(`text=${name}`).first()).toBeVisible({ timeout });
     return this;
   }
 

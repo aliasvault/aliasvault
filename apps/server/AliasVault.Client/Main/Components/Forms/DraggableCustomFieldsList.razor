@@ -32,13 +32,23 @@
                     </textarea>
                 </div>
             }
-            else if (customField.IsHidden || customField.FieldType == FieldType.Hidden || customField.FieldType == FieldType.Password)
+            else if (customField.FieldType == FieldType.Password)
             {
                 <EditPasswordFormRow
                     Id="@($"custom-{customField.TempId ?? customField.FieldKey}")"
                     Label=""
                     @bind-Value="customField.Value"
-                    ShowPassword="false"/>
+                    ShowPassword="false"
+                    ShowGenerateButtons="true"/>
+            }
+            else if (customField.IsHidden || customField.FieldType == FieldType.Hidden)
+            {
+                <EditPasswordFormRow
+                    Id="@($"custom-{customField.TempId ?? customField.FieldKey}")"
+                    Label=""
+                    @bind-Value="customField.Value"
+                    ShowPassword="false"
+                    ShowGenerateButtons="false"/>
             }
             else
             {

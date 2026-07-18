@@ -1,0 +1,51 @@
+{
+  "name": "aliasvault-docs",
+  "version": "0.31.0",
+  "private": true,
+  "description": "AliasVault documentation",
+  "scripts": {
+    "docusaurus": "docusaurus",
+    "start": "docusaurus start --port 5190",
+    "build": "docusaurus build",
+    "serve": "docusaurus serve --port 5190",
+    "clear": "docusaurus clear",
+    "swizzle": "docusaurus swizzle",
+    "typecheck": "tsc",
+    "postinstall": "patch-package"
+  },
+  "dependencies": {
+    "@docusaurus/core": "^3.10.1",
+    "@docusaurus/plugin-client-redirects": "^3.10.1",
+    "@docusaurus/preset-classic": "^3.10.1",
+    "@easyops-cn/docusaurus-search-local": "^0.45.0",
+    "@mdx-js/react": "^3.0.0",
+    "clsx": "^2.1.1",
+    "prism-react-renderer": "^2.4.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@docusaurus/module-type-aliases": "^3.10.1",
+    "@docusaurus/tsconfig": "^3.10.1",
+    "@docusaurus/types": "^3.10.1",
+    "patch-package": "^8.0.0",
+    "typescript": "~5.6.2"
+  },
+  "overrides": {
+    "serialize-javascript": "^7.0.6",
+    "uuid": "^11.1.1",
+    "js-yaml": "^4.2.0",
+    "http-proxy-middleware": "^3.0.7"
+  },
+  "browserslist": {
+    "production": [">0.5%", "not dead", "not op_mini all"],
+    "development": [
+      "last 3 chrome version",
+      "last 3 firefox version",
+      "last 5 safari version"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0"
+  }
+}

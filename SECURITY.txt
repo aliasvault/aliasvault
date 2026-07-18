@@ -1,8 +1,8 @@
-Contact: mailto:security@support.aliasvault.net
+Contact: mailto:security@aliasvault.com
 Expires: 2026-09-16T12:00:00.000Z
 Preferred-Languages: en
 Canonical: https://raw.githubusercontent.com/aliasvault/aliasvault/main/SECURITY.txt
-Policy: https://github.com/lanedirt/AliasVault/blob/main/SECURITY.md
+Policy: https://github.com/aliasvault/aliasvault/blob/main/SECURITY.md
 
 # Security Policy for AliasVault
 #

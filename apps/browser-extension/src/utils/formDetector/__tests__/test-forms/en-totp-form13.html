@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <div class="card">
+        <div class="card-body px-sm-5 py-5">
+            <h3 class="card-title">Two-Factor Authentication</h3>
+
+            <div class="alert alert-warning text-center">
+                Your second factor is required to complete login.
+            </div>
+
+            <form method="post" action="/index.php/login/challenge/verify" id="frmTwoFactorChallenge">
+                <input type="hidden" name="token" value="2b8c371a0690b24ec8b7c84b88c36090a6c68637">
+                <div class="margin-bottom">
+                    <div align="center">
+                        <input id="key" type="text" name="key" maxlength="6" class="form-control input-lg form-control-lg" autofocus="" autocomplete="off" data-av-autocomplete="off">
+                        <br>
+                        <input id="btnLogin" type="submit" class="btn btn-primary btn-block btn-lg" value="Login">
+                    </div>
+                </div>
+            </form>
+
+            <form method="post" action="/index.php/login/challenge/backup" id="frmTwoFactorBackup" class="w-hidden" style="display: none;">
+                <input type="hidden" name="token" value="2b8c371a0690b24ec8b7c84b88c36090a6c68637">
+                <div class="margin-bottom">
+                    <input type="text" name="twofabackupcode" class="form-control form-control-lg" placeholder="Enter Your Backup Code to Login">
+                    <br>
+                    <button type="submit" class="btn btn-primary btn-lg btn-block" id="btnLoginBackup">
+                        Login
+                    </button>
+                </div>
+                <p class="text-center">
+                    <a href="#" class="btn btn-default btn-block mt-2" id="backupCodeCancel">
+                        Cancel
+                    </a>
+                </p>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

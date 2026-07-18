@@ -149,6 +149,7 @@ write_client_dev_settings() {
     "HiddenPrivateEmailDomains": ["disabled.tld"],
     "SupportEmail": "support@example.tld",
     "PublicRegistrationEnabled": "true",
+    "DeploymentMode": "dev",
     "UseDebugEncryptionKey": "$AV_USE_DEBUG_ENCRYPTION_KEY",
     "CryptographyOverrideType": "Argon2Id",
     "CryptographyOverrideSettings": "{\"DegreeOfParallelism\":1,\"MemorySize\":1024,\"Iterations\":1}"
@@ -189,6 +190,8 @@ toggle_db() {
 }
 
 # Run a .NET app with ports + DB driven by env/CLI flags.
+# Binds to 0.0.0.0 so the service is reachable from other devices on the LAN
+# (e.g. a phone running the mobile app), not just from localhost.
 run_dotnet() {
   local proj="$1" http="$2"
   require dotnet
@@ -198,7 +201,7 @@ run_dotnet() {
   ASPNETCORE_ENVIRONMENT="Development" \
   ConnectionStrings__AliasServerDbContext="$CONN_STR" \
     dotnet watch --project "$ROOT_DIR/apps/server/$proj" --no-launch-profile \
-      --urls "http://localhost:$http"
+      --urls "http://0.0.0.0:$http"
 }
 
 # Dev-only secrets. These are static fake values that are used only in dev.

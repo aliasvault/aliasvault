@@ -44,9 +44,11 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
 }) => {
   const { t } = useTranslation();
   const [formError, setFormError] = useState<string | null>(null);
+  const [showNameField, setShowNameField] = useState(!!formData.name);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingTotpCode, setEditingTotpCode] = useState<TotpCode | null>(null);
   const [editName, setEditName] = useState('');
+  const [showEditNameField, setShowEditNameField] = useState(false);
   const [editSecret, setEditSecret] = useState('');
   const [showQrCode, setShowQrCode] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
@@ -84,7 +86,8 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
       throw new Error(t('totp.errors.invalidSecretKey'));
     }
 
-    return { secretKey, name: name || t('totp.defaultName') };
+    // Name is optional; keep it blank when none was provided or derived.
+    return { secretKey, name };
   };
 
   /**
@@ -96,6 +99,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
       formData: { name: '', secretKey: '' }
     });
     setFormError(null);
+    setShowNameField(false);
   };
 
   /**
@@ -107,6 +111,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
       formData: { name: '', secretKey: '' }
     });
     setFormError(null);
+    setShowNameField(false);
   };
 
   /**
@@ -117,6 +122,14 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
       isAddFormVisible,
       formData: { ...formData, ...updates }
     });
+  };
+
+  /**
+   * Hides the optional name field again and clears any entered value
+   */
+  const hideNameField = (): void => {
+    updateFormData({ name: '' });
+    setShowNameField(false);
   };
 
   /**
@@ -209,7 +222,9 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
    */
   const showEditModal = (totpCode: TotpCode): void => {
     setEditingTotpCode(totpCode);
+    // Only reveal the name field when a name was actually set.
     setEditName(totpCode.Name);
+    setShowEditNameField(!!totpCode.Name);
     setEditSecret(totpCode.SecretKey);
     setIsEditModalOpen(true);
     setShowQrCode(false);
@@ -222,9 +237,19 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
     setIsEditModalOpen(false);
     setEditingTotpCode(null);
     setEditName('');
+    setShowEditNameField(false);
     setEditSecret('');
     setShowQrCode(false);
     setQrCodeDataUrl(null);
+  };
+
+  /**
+   * Hides the edit name field again and clears any entered value so the code
+   * falls back to the default name on save.
+   */
+  const hideEditNameField = (): void => {
+    setEditName('');
+    setShowEditNameField(false);
   };
 
   /**
@@ -235,9 +260,12 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
       return;
     }
 
+    // The name is optional; store it as-is (blank when the user left it empty).
+    const finalName = editName.trim();
+
     const updatedTotpCodes = totpCodes.map(tc =>
       tc.Id === editingTotpCode.Id
-        ? { ...tc, Name: editName, SecretKey: editSecret }
+        ? { ...tc, Name: finalName, SecretKey: editSecret }
         : tc
     );
 
@@ -314,7 +342,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
 
       {isAddFormVisible && (
         <div className="p-4 mb-4 bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-2">
             <h4 className="text-lg font-medium text-gray-900 dark:text-white">
               {t('totp.addCode')}
             </h4>
@@ -343,25 +371,13 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
           )}
 
           <div className="mb-4">
-            <label htmlFor="totp-name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-              {t('totp.nameOptional')}
-            </label>
-            <input
-              id="totp-name"
-              type="text"
-              value={formData.name}
-              onChange={(e) => updateFormData({ name: e.target.value })}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-            />
-          </div>
-
-          <div className="mb-4">
             <label htmlFor="totp-secret" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
               {t('totp.secretKey')}
             </label>
             <input
               id="totp-secret"
               type="text"
+              autoFocus
               value={formData.secretKey}
               onChange={(e) => updateFormData({ secretKey: e.target.value })}
               onKeyDown={(e) => {
@@ -374,15 +390,55 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
             />
           </div>
 
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={(e) => handleAddTotpCode(e)}
-              className="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-            >
-              {t('common.save')}
-            </button>
-          </div>
+          {/* Name is optional and hidden by default */}
+          {showNameField ? (
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="totp-name" className="text-sm font-medium text-gray-900 dark:text-white">
+                  {t('totp.nameOptional')}
+                </label>
+                <button
+                  id="remove-totp-name"
+                  type="button"
+                  onClick={hideNameField}
+                  className="w-5 h-5 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
+                  title={t('common.remove')}
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+              <input
+                id="totp-name"
+                type="text"
+                autoFocus
+                value={formData.name}
+                onChange={(e) => updateFormData({ name: e.target.value })}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+              />
+            </div>
+          ) : (
+            <div className="mb-4">
+              <button
+                id="add-totp-name"
+                type="button"
+                onClick={() => setShowNameField(true)}
+                className="text-sm font-medium text-primary-700 hover:text-primary-800 dark:text-primary-500 dark:hover:text-primary-400"
+              >
+                {t('totp.addName')}
+              </button>
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={(e) => handleAddTotpCode(e)}
+            className="w-full text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+          >
+            {t('common.save')}
+          </button>
         </div>
       )}
 
@@ -396,7 +452,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
               <div className="flex justify-between items-center gap-2">
                 <div className="flex items-center flex-1">
                   <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                    {totpCode.Name}
+                    {totpCode.Name || t('totp.defaultName')}
                   </h4>
                 </div>
                 <div className="flex items-center gap-2">
@@ -443,19 +499,6 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
           {editingTotpCode && (
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                  {t('totp.nameOptional')}
-                </label>
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  placeholder={t('totp.nameOptional')}
-                />
-              </div>
-
-              <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm font-medium text-gray-900 dark:text-white">
                     {t('totp.secretKey')}
@@ -487,6 +530,43 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
                 )}
               </div>
 
+              {/* Name is optional; hidden by default unless a custom name was set. */}
+              {showEditNameField ? (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium text-gray-900 dark:text-white">
+                      {t('totp.nameOptional')}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={hideEditNameField}
+                      className="w-5 h-5 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
+                      title={t('common.remove')}
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    autoFocus
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  />
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowEditNameField(true)}
+                  className="text-sm font-medium text-primary-700 hover:text-primary-800 dark:text-primary-500 dark:hover:text-primary-400"
+                >
+                  {t('totp.addName')}
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={saveEditedTotpCode}
@@ -505,7 +585,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
         onClose={cancelDeleteTotpCode}
         onConfirm={confirmDeleteTotpCode}
         title={t('totp.deleteTotpCodeTitle')}
-        message={t('totp.deleteTotpCodeConfirmation', { name: totpToDelete?.Name })}
+        message={t('totp.deleteTotpCodeConfirmation', { name: totpToDelete?.Name || t('totp.defaultName') })}
         confirmText={t('common.delete')}
       />
     </div>

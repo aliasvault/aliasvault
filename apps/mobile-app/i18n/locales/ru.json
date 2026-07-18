@@ -3,6 +3,7 @@
     "cancel": "Отмена",
     "close": "Закрыть",
     "delete": "Удалить",
+    "remove": "Удалить",
     "save": "Сохранить",
     "edit": "Редактировать",
     "yes": "Да",
@@ -16,6 +17,7 @@
     "copied": "Скопировано в буфер обмена",
     "loadMore": "Загрузить ещё",
     "use": "Использовать",
+    "none": "Ничего",
     "confirm": "Подтвердить",
     "next": "Далее",
     "notice": "Примечание",
@@ -52,10 +54,10 @@
     "unlockWithBiometric": "Разблокировать через {{biometric}}",
     "unlockWithPin": "Разблокировать ПИН-кодом﻿",
     "unlockWithPassword": "Разблокировать паролем",
-    "enterPassword": "Введите ваш пароль для разблокировки вашего хранилища",
+    "enterPassword": "Введите пароль для разблокировки хранилища",
     "enterAuthCode": "Введите 6-значный код",
     "usernamePlaceholder": "имя / имя@company.com",
-    "passwordPlaceholder": "Введите ваш пароль",
+    "passwordPlaceholder": "Введите пароль",
     "enableBiometric": "Включить {{biometric}}?",
     "biometricPrompt": "Вы хотите использовать {{biometric}} для разблокировки вашего хранилища?",
     "authCodeNote": "Примечание: если у вас нет доступа к устройству аутентификации, вы можете сбросить ваш 2FA с помощью кода восстановления, войдя в систему через сайт.",
@@ -63,7 +65,7 @@
       "credentialsRequired": "Требуется имя пользователя и пароль",
       "invalidAuthCode": "Пожалуйста, введите правильный 6-значный код аутентификации",
       "incorrectPassword": "Неверный пароль. Пожалуйста, повторите попытку.",
-      "enterPassword": "Пожалуйста, введите ваш пароль",
+      "enterPassword": "Пожалуйста, введите пароль",
       "serverError": "Не удалось подключиться к серверу AliasVault. Пожалуйста, повторите попытку позже или обратитесь в службу поддержки, если проблема не устранится.",
       "serverErrorSelfHosted": "Не удалось связаться с API. Для автономных экземпляров, пожалуйста, убедитесь, что конечная точка API доступна, перейдя к ней в браузере: на экране должно отображаться \"ОК\".",
       "networkError": "Не удалось выполнить сетевой запрос. Пожалуйста, проверьте подключение к Интернету и повторите попытку.",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "Добавить код 2FA",
     "nameOptional": "Имя (необязательно)",
+    "addName": "Название (необязательно)",
+    "defaultName": "Аутентификатор",
     "secretKey": "Секретный ключ",
     "instructions": "Введите секретный ключ, указанный на веб-сайте, где вы хотите добавить двухфакторную аутентификацию.",
     "saveToViewCode": "Сохранить для просмотра кода",
     "scanQrCode": "Отсканировать QR-код",
-    "enterManually": "Введите ключ настройки",
+    "enterManually": "Введите ключ доступа",
     "errors": {
       "invalidSecretKey": "Неверный формат секретного ключа.",
       "scanFailed": "Не удалось отсканировать QR-код. Попробуйте еще раз."
@@ -192,7 +196,8 @@
       "exportDescription": "Для безопасности введите мастер-пароль для подтверждения экспорта."
     },
     "security": "Безопасность",
-    "appVersion": "Версия приложения {{version}} ({{url}})",
+    "appVersion": "Версия приложения",
+    "serverVersion": "Версия сервера",
     "autoLockOptions": {
       "never": "Никогда",
       "5seconds": "5 секунд",
@@ -360,6 +365,7 @@
     "enterFieldName": "Введите название поля",
     "fieldTypes": {
       "text": "Текст",
+      "password": "Пароль",
       "hidden": "Скрытое",
       "email": "Почта",
       "url": "URL",
@@ -441,6 +447,29 @@
     "includeNumbers": "Цифры (0-9)",
     "includeSpecialChars": "Специальные символы (!@#)",
     "avoidAmbiguousChars": "Избегать двусмысленных символов",
+    "passwordTypeBasic": "Пароль",
+    "passwordTypeDiceware": "Парольная фраза",
+    "passphraseLanguage": "Язык парольной фразы",
+    "wordCount": "Слова",
+    "capitalization": "Регистр",
+    "separator": "Разделитель",
+    "salt": "Соль",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Нижний регистр",
+      "TitleCase": "С заглавной буквы",
+      "Uppercase": "Верхний регистр"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Тире",
+      "Space": "Пробел",
+      "Underscore": "Нижнее подчеркивание",
+      "Dot": "Точка"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Префикс",
+      "Sprinkle": "В случайных местах",
+      "Suffix": "Суффикс"
+    },
     "errorLoadingItems": "Ошибка загрузки записей",
     "vaultSyncFailed": "Сбой синхронизации хранилища",
     "vaultSyncedSuccessfully": "Хранилище успешно синхронизировано",
@@ -654,7 +683,6 @@
     },
     "loginSettings": {
       "title": "Подключение к API",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Собственный хостинг",
       "customApiUrl": "Пользовательский URL-адрес API",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",

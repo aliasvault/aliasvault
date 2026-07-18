@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, KeyboardAvoidingView, Platform } from 'react-native';
 
 import type { DeleteAccountInitiateRequest, DeleteAccountInitiateResponse, DeleteAccountRequest } from '@/utils/dist/core/models/webapi';
+import { SrpUtility } from '@/utils/SrpUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
 
@@ -19,7 +20,6 @@ import { UsernameDisplay } from '@/components/ui/UsernameDisplay';
 import { useApp } from '@/context/AppContext';
 import { useDialog } from '@/context/DialogContext';
 import { useWebApi } from '@/context/WebApiContext';
-import NativeVaultManager from '@/specs/NativeVaultManager';
 
 /**
  * Delete account screen.
@@ -165,22 +165,18 @@ export default function DeleteAccountScreen(): React.ReactNode {
       // Convert base64 string to hex string
       const currentPasswordHashString = Buffer.from(currentPasswordHashBase64, 'base64').toString('hex').toUpperCase();
 
-      // Generate client ephemeral and session using native SRP
-      const newClientEphemeral = await NativeVaultManager.srpGenerateEphemeral();
-
-      const privateKey = await NativeVaultManager.srpDerivePrivateKey(currentSalt, srpIdentity, currentPasswordHashString);
-      const newClientSession = await NativeVaultManager.srpDeriveSession(
-        newClientEphemeral.secret,
-        currentServerEphemeral,
+      // Derive the SRP client proof to authenticate the deletion with the server.
+      const clientProof = await SrpUtility.deriveClientProof(
         currentSalt,
         srpIdentity,
-        privateKey
+        currentPasswordHashString,
+        currentServerEphemeral
       );
 
       const deleteAccountRequest: DeleteAccountRequest = {
         username: username,
-        clientPublicEphemeral: newClientEphemeral.public,
-        clientSessionProof: newClientSession.proof,
+        clientPublicEphemeral: clientProof.clientPublicEphemeral,
+        clientSessionProof: clientProof.clientSessionProof,
       };
 
       setLoadingStatus(t('settings.securitySettings.deleteAccount.deletingAccount'));

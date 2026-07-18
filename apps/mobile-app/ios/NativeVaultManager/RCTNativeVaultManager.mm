@@ -249,6 +249,10 @@
     [vaultManager isServerVersionGreaterThanOrEqualTo:targetVersion resolver:resolve rejecter:reject];
 }
 
+- (void)getServerVersion:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getServerVersion:resolve rejecter:reject];
+}
+
 // MARK: - Offline Mode Management
 
 - (void)setOfflineMode:(BOOL)isOffline resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
@@ -329,6 +333,16 @@
 
 - (void)scanQRCode:(NSArray<NSString *> *)prefixes statusText:(NSString *)statusText resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager scanQRCode:prefixes statusText:statusText resolver:resolve rejecter:reject];
+}
+
+// MARK: - Password Generator
+
+- (void)generatePassword:(NSString *)settingsJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager generatePassword:settingsJson resolver:resolve rejecter:reject];
+}
+
+- (void)getDicewareLanguages:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getDicewareLanguages:resolve rejecter:reject];
 }
 
 // MARK: - SRP (Secure Remote Password) Operations

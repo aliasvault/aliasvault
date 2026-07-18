@@ -7,13 +7,13 @@
   <string name="common_next">Dalej</string>
   <string name="common_cancel">Anuluj</string>
   <string name="common_back">Wstecz</string>
-  <string name="common_show_details">Show details</string>
-  <string name="common_hide_details">Hide details</string>
-  <string name="common_copy">Copy</string>
-  <string name="common_copied_to_clipboard">Copied to clipboard</string>
+  <string name="common_show_details">Pokaż szczegóły</string>
+  <string name="common_hide_details">Ukryj szczegóły</string>
+  <string name="common_copy">Kopiuj</string>
+  <string name="common_copied_to_clipboard">Skopiowano do schowka</string>
   <string name="unknown_error">Wystąpił nieznany błąd</string>
   <string name="autofill_failed_to_retrieve">Nie udało się pobrać, otwórz aplikację</string>
-  <string name="autofill_no_match_found">No match found</string>
+  <string name="autofill_no_match_found">Brak dopasowania</string>
   <string name="autofill_open_app">Otwórz aplikację</string>
   <string name="autofill_vault_locked">Sejf jest zablokowany</string>
   <string name="biometric_store_key_title">Klucz szyfrujący sejfu</string>
@@ -83,7 +83,7 @@
   <string name="password_unlock_password_hint">Hasło</string>
   <string name="password_unlock_button">Odblokuj</string>
   <string name="password_unlock_incorrect">Nieprawidłowe hasło. Spróbuj ponownie.</string>
-  <string name="password_unlock_error">Failed to verify password</string>
-  <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
-  <string name="password_unlock_max_attempts_reached">Too many failed unlock attempts. You have been logged out for security reasons.</string>
+  <string name="password_unlock_error">Nie udało się zweryfikować hasła</string>
+  <string name="password_unlock_attempts_warning">Nieprawidłowe hasło. Zostaniesz wylogowany, jeśli wprowadzisz nieprawidłowe hasło %d więcej razy.</string>
+  <string name="password_unlock_max_attempts_reached">Zbyt wiele nieudanych prób odblokowania. Zostałeś wylogowany ze względów bezpieczeństwa.</string>
 </resources>

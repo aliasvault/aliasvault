@@ -14,14 +14,20 @@ package_name="models"
 package_path="."
 
 echo "📦 Building $package_name..."
-npm install && npm run lint && npm run build
+npm install && npm run lint && npm run test && npm run build
 
 echo ""
 echo "🔄 Generating platform-specific models (C#, Swift, Kotlin)..."
 node scripts/generate-field-keys.cjs
 
+echo "🔄 Generating password-generator defaults (Rust, C#)..."
+node scripts/generate-password-defaults.cjs
+
+echo "🔄 Generating language reference (C#)..."
+node scripts/generate-languages.cjs
+
 dist_path="dist"
-files_to_copy=("webapi" "vault" "metadata" "icons")
+files_to_copy=("webapi" "vault" "defaults" "metadata" "icons")
 
 for target in "${TARGETS[@]}"; do
   echo "📂 Copying $package_name → $target"

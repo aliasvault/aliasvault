@@ -3,6 +3,7 @@
     "cancel": "Annuler",
     "close": "Fermer",
     "delete": "Supprimer",
+    "remove": "Supprimer",
     "save": "Sauvegarder",
     "edit": "Editer",
     "yes": "Oui",
@@ -16,6 +17,7 @@
     "copied": "Copier dans le presse-papiers",
     "loadMore": "Voir plus",
     "use": "Utiliser",
+    "none": "Aucun",
     "confirm": "Confirmer",
     "next": "Suivant",
     "notice": "Notification",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "Ajouter un code 2FA",
     "nameOptional": "Nom (facultatif)",
+    "addName": "Ajouter un nom (facultatif)",
+    "defaultName": "Authentificateur",
     "secretKey": "Clé secrète",
     "instructions": "Entrez la clé secrète affichée par le site Web où vous souhaitez ajouter l'authentification à deux facteurs.",
     "saveToViewCode": "Enregistrer pour afficher le code",
     "scanQrCode": "Scanner le QR code",
-    "enterManually": "Entrer une clé de configuration",
+    "enterManually": "Saisir la clé secrète",
     "errors": {
       "invalidSecretKey": "Format de clé secrète invalide.",
       "scanFailed": "Échec du scan du QR code. Veuillez réessayer."
@@ -192,7 +196,8 @@
       "exportDescription": "Pour des raisons de sécurité, veuillez entrer votre mot de passe maître pour confirmer l'exportation."
     },
     "security": "Sécurité",
-    "appVersion": "Version de l'application {{version}} ({{url}})",
+    "appVersion": "Version de l'app",
+    "serverVersion": "Version du serveur",
     "autoLockOptions": {
       "never": "Jamais",
       "5seconds": "5 secondes",
@@ -360,6 +365,7 @@
     "enterFieldName": "Entrez le nom du champ",
     "fieldTypes": {
       "text": "Texte",
+      "password": "Mot de passe",
       "hidden": "Masqué",
       "email": "Email",
       "url": "URL",
@@ -441,6 +447,29 @@
     "includeNumbers": "Nombres (0-9)",
     "includeSpecialChars": "Caractères spéciaux (!@#)",
     "avoidAmbiguousChars": "Éviter les caractères ambigus",
+    "passwordTypeBasic": "Mot de passe",
+    "passwordTypeDiceware": "Phrase secrète",
+    "passphraseLanguage": "Langue de la phrase secrète",
+    "wordCount": "Mots",
+    "capitalization": "Mise en majuscules",
+    "separator": "Séparateur",
+    "salt": "Salage",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Minuscule",
+      "TitleCase": "Casse du titre",
+      "Uppercase": "Majuscule"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Tiret",
+      "Space": "Espace",
+      "Underscore": "Tiret bas",
+      "Dot": "Point"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Préfixe",
+      "Sprinkle": "Position aléatoire",
+      "Suffix": "Suffixe"
+    },
     "errorLoadingItems": "Erreur lors du chargement des éléments",
     "vaultSyncFailed": "Échec de la synchronisation du coffre-fort",
     "vaultSyncedSuccessfully": "Le coffre-fort a été synchronisé avec succès",
@@ -654,7 +683,6 @@
     },
     "loginSettings": {
       "title": "Connexion API",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Auto-hébergé",
       "customApiUrl": "URL de l’API personnalisée",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",

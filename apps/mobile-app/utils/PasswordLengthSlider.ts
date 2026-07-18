@@ -8,12 +8,7 @@
  * This makes it easy to select common password lengths while still allowing
  * very long passwords when needed.
  */
-
-/** Minimum password length */
-export const MIN_PASSWORD_LENGTH = 8;
-
-/** Maximum password length */
-export const MAX_PASSWORD_LENGTH = 256;
+import { MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH } from '@/utils/dist/core/models/defaults';
 
 /** Slider minimum value (internal representation) */
 export const SLIDER_MIN = 0;

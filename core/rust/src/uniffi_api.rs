@@ -72,6 +72,14 @@ pub fn prune_vault_json(input_json: String) -> Result<String, VaultError> {
     crate::vault_pruner::prune_vault_json(&input_json)
 }
 
+/// Get the per-table SELECT queries used to build prune input.
+/// Blob columns are reduced to a 1-byte presence marker to avoid
+/// serializing large binary data to JSON.
+#[uniffi::export]
+pub fn get_prune_table_queries() -> Vec<crate::vault_pruner::PruneTableQuery> {
+    crate::vault_pruner::get_prune_table_queries()
+}
+
 /// Filter credentials for autofill based on current URL/app and page title.
 ///
 /// # Arguments
@@ -112,6 +120,32 @@ pub fn extract_domain(url: String) -> String {
 #[uniffi::export]
 pub fn extract_root_domain(domain: String) -> String {
     crate::credential_matcher::extract_root_domain(&domain)
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Password Generator Functions
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Generate a password or passphrase from a JSON-serialized `PasswordSettings` object.
+///
+/// The `Type` field selects the generator ("basic" or "diceware"). An optional `Seed`
+/// field (64-character hex string) makes generation deterministic for UI previews.
+///
+/// # Arguments
+/// * `settings_json` - JSON string containing the password settings.
+///
+/// # Returns
+/// The generated password/passphrase string, or a [`VaultError`] if the settings JSON
+/// is invalid.
+#[uniffi::export]
+pub fn generate_password(settings_json: String) -> Result<String, VaultError> {
+    crate::password_generator::generate_password(&settings_json)
+}
+
+/// List the language codes of all bundled Diceware wordlists (first is the default, English).
+#[uniffi::export]
+pub fn get_diceware_languages() -> Vec<String> {
+    crate::password_generator::available_languages()
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -278,7 +312,8 @@ mod tests {
     fn test_prune_vault_json() {
         let input = r#"{
             "tables": [{"name": "Items", "records": []}],
-            "retention_days": 30
+            "retention_days": 30,
+            "current_time": "2024-01-15T10:30:00.000Z"
         }"#;
 
         let result = prune_vault_json(input.to_string());

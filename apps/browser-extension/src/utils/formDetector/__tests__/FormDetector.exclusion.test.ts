@@ -79,6 +79,47 @@ describe('FormDetector - Field Exclusion Patterns', () => {
     });
   });
 
+  /*
+   * Exclusion words appearing in surrounding text (placeholder "Enter your configuration password")
+   * must not veto a field that carries explicit credential signals (type="password" / autocomplete="current-password").
+   */
+  describe('Real-world scenario: "Load Configuration" dialog with password field', () => {
+    const htmlFile = 'exclusion-config-password-dialog.html';
+
+    it('should detect the dialog as a login form despite "configuration" placeholders', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const passwordInput = document.getElementById('password');
+      const formDetector = new FormDetector(document, passwordInput as HTMLElement);
+
+      expect(formDetector.containsLoginForm()).toBe(true);
+    });
+
+    it('should trigger autofill when clicking the type="password" field', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const passwordInput = document.getElementById('password');
+      const formDetector = new FormDetector(document, passwordInput as HTMLElement);
+
+      expect(formDetector.isAutofillTriggerableField()).toBe(true);
+
+      const form = formDetector.getForm();
+      expect(form?.passwordField).toBe(passwordInput);
+    });
+
+    it('should detect the login form when focusing the UUID field too', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const uuidInput = document.getElementById('uuid');
+      const formDetector = new FormDetector(document, uuidInput as HTMLElement);
+
+      expect(formDetector.containsLoginForm()).toBe(true);
+    });
+  });
+
   describe('Exclusion patterns should not affect legitimate login fields', () => {
     const htmlFile = 'exclusion-legitimate-login.html';
 

@@ -1,0 +1,25 @@
+{
+  "loading": {
+    "title": "Tá AliasVault ag lódáil",
+    "message": "Ag tosú timpeallacht shlán. Tugann AliasVault tús áite do do phríobháideacht trí rith go hiomlán i do bhrabhsálaí. D’fhéadfadh sé go dtógfadh an chéad ualach tamall beag.",
+    "refreshText": "Más cosúil go bhfuil an luchtú i bhfostú, is féidir leat cliceáil ar an gcnaipe thíos chun an leathanach a athnuachan.",
+    "refreshButtonText": "Athnuachan Leathanach"
+  },
+  "errors": {
+    "unhandledError": "Tharla earráid neamhláimhseáilte. Déan iarracht an leathanach a athlódáil. Má leanann an fhadhb, déan teagmháil leis an bhfoireann tacaíochta.",
+    "webAssemblyError": "Éilíonn AliasVault WebAssembly, rud nach dtacaíonn an brabhsálaí seo leis. Bain triail as brabhsálaí níos nua-aimseartha a thacaíonn le WebAssembly.",
+    "reloadPageText": "Athlódáil an Leathanach"
+  },
+  "quotes": {
+    "security": [
+      "Is í do chéannacht an tsócmhainn is luachmhaire atá agat. Cosain í mar a dhéanfadh tú í.",
+      "Sa domhan digiteach, is é pasfhocal láidir do chéad líne chosanta.",
+      "Ní táirge í an tslándáil, ach próiseas.",
+      "Is é an eilimint dhaonna an nasc is laige sa slabhra slándála.",
+      "Bíonn an tslándáil iomarcach i gcónaí go dtí nach leor í.",
+      "Muinín a bheith agat, ach fíoraigh - go háirithe ar líne.",
+      "Níl do shonraí chomh slán le do phasfhocal is laige.",
+      "Is é an focal faire is sláine an ceann nach féidir leat a mheabhrú."
+    ]
+  }
+}

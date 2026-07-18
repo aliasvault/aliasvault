@@ -79,8 +79,12 @@
     <comment>Instructions for adding TOTP codes</comment>
   </data>
   <data name="NameOptionalLabel" xml:space="preserve">
-    <value>Name (optional)</value>
+    <value>Nama (opsional)</value>
     <comment>Label for optional name field</comment>
+  </data>
+  <data name="AddNameButton" xml:space="preserve">
+    <value>Add a name (optional)</value>
+    <comment>Toggle button that reveals the optional name field in the add form</comment>
   </data>
   <data name="SecretKeyLabel" xml:space="preserve">
     <value>Secret Key</value>
@@ -95,7 +99,7 @@
     <comment>Save button text</comment>
   </data>
   <data name="SaveToViewCodeMessage" xml:space="preserve">
-    <value>Save to view code</value>
+    <value>Simpan untuk melihat kode</value>
     <comment>Message shown for unsaved TOTP codes</comment>
   </data>
   <data name="DeleteTotpCodeConfirmation" xml:space="preserve">

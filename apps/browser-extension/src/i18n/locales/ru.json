@@ -3,7 +3,7 @@
     "loginTitle": "Войдите в AliasVault",
     "username": "Имя пользователя или почта",
     "usernamePlaceholder": "имя / имя@company.com",
-    "passwordPlaceholder": "Введите ваш пароль",
+    "passwordPlaceholder": "Введите пароль",
     "rememberMe": "Запомнить меня",
     "loginButton": "Войти",
     "noAccount": "Нет аккаунта?",
@@ -62,6 +62,7 @@
     "openInNewWindow": "Открыть в новом окне",
     "enabled": "Включено",
     "disabled": "Отключено",
+    "none": "Ничего",
     "showPassword": "Показать пароль",
     "hidePassword": "Скрыть пароль",
     "show": "Показать",
@@ -76,6 +77,7 @@
     "settings": "Настройки",
     "recentEmails": "Последние письма",
     "credentials": "Учетные записи",
+    "passkeys": "Ключи доступа",
     "customFields": "Пользовательские поля",
     "twoFactorAuthentication": "Двухфакторная аутентификация",
     "alias": "Псевдоним",
@@ -109,6 +111,7 @@
       "syncConflictMaxRetries": "Ошибка синхронизации хранилища. Повторите попытку позже.",
       "mergeFailed": "Не удалось объединить изменения. Попробуйте снова.",
       "vaultTooLarge": "Хранилище слишком велико для загрузки на сервер. Удалите часть данных или вложений и повторите попытку.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Введите корректный 6-значный код подтверждения.",
       "serverError": "Сервер AliasVault недоступен. Повторите попытку позже или свяжитесь с техподдержкой.",
       "wrongPassword": "Неверный пароль. Повторите попытку.",
@@ -148,6 +151,7 @@
     "creatingNewAlias": "Создание нового псевдонима",
     "creatingNewCredential": "Создание новой записи",
     "noMatchesFound": "Совпадений не найдено",
+    "loginWithPasskey": "Войти с помощью ключа доступа",
     "searchVault": "Поиск хранилища...",
     "enterServiceName": "Введите имя сервиса",
     "enterEmailAddress": "Введите адрес электронной почты",
@@ -186,6 +190,7 @@
   "items": {
     "title": "Записи",
     "itemName": "Имя",
+    "suggestions": "Рекомендации",
     "loginCredentials": "Учетные данные для авторизации",
     "cardInformation": "Данные карты",
     "addItem": "Добавить запись",
@@ -202,6 +207,8 @@
     "folder": "Папка",
     "welcomeTitle": "Добро пожаловать в AliasVault!",
     "welcomeDescription": "Чтобы использовать браузерное расширение AliasVault: перейдите на сайт и используйте всплывающее окно автозаполнения AliasVault для создания новых учетных данных.",
+    "currentSiteMatch": "Для {{domain}}",
+    "numberOfItemMatchesFound": "Найдено записей: {{count}}",
     "noMatchingItems": "Нет записей, соответствующих выбранному фильтру.",
     "noMatchingItemsSearch": "По запросу \"{{search}}\" ничего не найдено",
     "noMatchingItemsWithFilter": "Ничего не найдено в \"{{filter}}\" по запросу \"{{search}}\"",
@@ -216,7 +223,6 @@
     "deleteFolderAndItemsDescription": "{{count}} объект(ов) будет перемещено в раздел «Недавно удалённые».",
     "filters": {
       "folders": "Папки",
-      "passkeys": "Ключи доступа",
       "totp": "2FA-коды"
     },
     "sort": {
@@ -238,6 +244,28 @@
     "includeNumbers": "Включить числа",
     "includeSpecialChars": "Включить специальные символы",
     "avoidAmbiguousChars": "Избегать двусмысленных символов (o, 0 и т.д.)",
+    "passwordTypeBasic": "Пароль",
+    "passwordTypeDiceware": "Парольная фраза",
+    "passphraseLanguage": "Язык парольной фразы",
+    "wordCount": "Слова",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "С заглавной буквы",
+      "Uppercase": "Верхний регистр",
+      "Lowercase": "Нижний регистр"
+    },
+    "separator": "Разделитель",
+    "dicewareSeparatorOption": {
+      "Dash": "Тире",
+      "Space": "Пробел",
+      "Underscore": "Нижнее подчеркивание",
+      "Dot": "Точка"
+    },
+    "salt": "Соль",
+    "dicewareSaltOption": {
+      "Prefix": "Префикс",
+      "Sprinkle": "В случайных местах",
+      "Suffix": "Суффикс"
+    },
     "privateEmailTitle": "Личная электронная почта",
     "privateEmailAliasVaultServer": "Сервер AliasVault",
     "privateEmailDescription": "Шифрование E2E, полностью приватный.",
@@ -259,6 +287,7 @@
     "fieldType": "Тип поля",
     "fieldTypes": {
       "text": "Текст",
+      "password": "Пароль",
       "hidden": "Скрыто (маскированный текст)",
       "email": "Почта",
       "url": "URL",
@@ -301,6 +330,7 @@
     "addCode": "Добавить код 2FA",
     "instructions": "Введите секретный ключ, указанный на веб-сайте, где вы хотите добавить двухфакторную аутентификацию.",
     "nameOptional": "Имя (необязательно)",
+    "addName": "Название (необязательно)",
     "secretKey": "Секретный ключ",
     "saveToViewCode": "Сохранить для просмотра кода",
     "defaultName": "Аутентификатор",
@@ -401,7 +431,8 @@
     "autoLock4Hours": "4 часа",
     "autoLock8Hours": "8 часов",
     "autoLock24Hours": "24 часов",
-    "versionPrefix": "Версия ",
+    "versionPrefix": "Версия приложения",
+    "serverVersion": "Версия сервера",
     "autofillSettings": "Настройки автозаполнения",
     "clipboardSettings": "Настройки буфера обмена",
     "contextMenuSettings": "Настройки контекстного меню",
@@ -438,6 +469,11 @@
         "male": "Мужской",
         "female": "Женский"
       }
+    },
+    "passwordGenerator": "Генератор паролей",
+    "passwordGeneratorSettings": {
+      "description": "Настройте параметры генератора паролей по умолчанию для новых записей: длину, наборы символов и язык кодовой фразы.",
+      "configureButton": "Настроить"
     },
     "credentialAutofill": "Автозаполнение данных",
     "credentialAutofillDescription": "Показывать окно автозаполнения при обнаружении полей логина и пароля",
@@ -502,7 +538,8 @@
       "selectExistingLogin": "Привязать к логину:",
       "selectExistingLoginDescription": "Привяжите этот ключ доступа к существующей учетной записи для этого сайта.",
       "attachingToCredential": "Добавление ключа доступа для: {{serviceName}}",
-      "attachPasskey": "Добавить ключ доступа"
+      "attachPasskey": "Добавить ключ доступа",
+      "unsupportedAlgorithm": "Этот сайт требует тип ключа доступа, который AliasVault не поддерживает."
     },
     "settings": {
       "passkeyProvider": "Провайдер ключей доступа",

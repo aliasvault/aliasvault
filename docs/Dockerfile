@@ -1,8 +1,8 @@
-FROM jekyll/jekyll:4.2.2
-
-WORKDIR /srv/jekyll
-COPY . .
-RUN chown -R jekyll:jekyll /srv/jekyll
-
-# Install the theme and dependencies
-RUN bundle install
+# Serve a pre-built Docusaurus static site with nginx.
+#
+# To build locally first: `npm ci && npm run build`, then `docker compose up --build`.
+FROM nginx:alpine
+COPY build /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

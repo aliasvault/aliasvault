@@ -64,12 +64,10 @@ RUN mkdir -p /src/AliasVault.Client/wwwroot/wasm && \
     cp /src-core/rust/dist/wasm/aliasvault_core_bg.wasm /src/AliasVault.Client/wwwroot/wasm/ && \
     cp /src-core/rust/dist/wasm/aliasvault_core.js /src/AliasVault.Client/wwwroot/wasm/
 
-# Copy TypeScript core packages (identity-generator, password-generator, vault) to wwwroot/js/dist/core/
+# Copy TypeScript core packages (identity-generator, vault) to wwwroot/js/dist/core/
 RUN mkdir -p /src/AliasVault.Client/wwwroot/js/dist/core/identity-generator && \
-    mkdir -p /src/AliasVault.Client/wwwroot/js/dist/core/password-generator && \
     mkdir -p /src/AliasVault.Client/wwwroot/js/dist/core/vault && \
     cp -r /src-core/typescript/identity-generator/dist/* /src/AliasVault.Client/wwwroot/js/dist/core/identity-generator/ && \
-    cp -r /src-core/typescript/password-generator/dist/* /src/AliasVault.Client/wwwroot/js/dist/core/password-generator/ && \
     cp -r /src-core/vault/dist/* /src/AliasVault.Client/wwwroot/js/dist/core/vault/
 
 # Build the Client project
@@ -100,7 +98,7 @@ LABEL org.opencontainers.image.source="https://github.com/aliasvault/aliasvault"
 LABEL org.opencontainers.image.vendor="AliasVault"
 LABEL org.opencontainers.image.licenses="AGPL-3.0"
 LABEL org.opencontainers.image.title="AliasVault Client"
-LABEL org.opencontainers.image.description="Blazor WebAssembly client UI for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)"
+LABEL org.opencontainers.image.description="Blazor WebAssembly client UI for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)"
 
 WORKDIR /usr/share/nginx/html
 COPY --from=publish /app/publish/wwwroot .

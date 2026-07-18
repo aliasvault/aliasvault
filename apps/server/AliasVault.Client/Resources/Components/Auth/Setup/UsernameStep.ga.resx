@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Assistant messages -->
+  <data name="GreatNowLetsSetupUsername">
+    <value>Go hiontach! Anois, socraímis d'ainm úsáideora le haghaidh AliasVault.</value>
+    <comment>Assistant message about setting up username</comment>
+  </data>
+  <data name="EnterUsernameInstructions">
+    <value>Cuir isteach ainm úsáideora ar mhaith leat a úsáid. Is féidir leat é seo a bheith mar do sheoladh ríomhphoist nó aon ainm uathúil is fearr leat.</value>
+    <comment>Instructions for entering username</comment>
+  </data>
+  <data name="RememberUsernameNote">
+    <value>Cuimhnigh: Seo an rud a úsáidfidh tú chun logáil isteach níos déanaí, mar sin déan cinnte gur rud é a chuimhneoidh tú!</value>
+    <comment>Important note about remembering username</comment>
+  </data>
+  <!-- Form labels -->
+  <data name="UsernameLabel">
+    <value>Ainm úsáideora</value>
+    <comment>Label for username input field</comment>
+  </data>
+  <data name="UsernamePlaceholder">
+    <value>Cuir isteach d'ainm úsáideora nó do sheoladh ríomhphoist atá uait</value>
+    <comment>Placeholder text for username input</comment>
+  </data>
+  <!-- Validation messages -->
+  <data name="ValidatingUsernameMessage">
+    <value>Ag bailíochtú ainm úsáideora...</value>
+    <comment>Message shown while validating username</comment>
+  </data>
+  <data name="UsernameAvailableMessage">
+    <value>Tá ainm úsáideora ar fáil!</value>
+    <comment>Message shown when username is available</comment>
+  </data>
+  <data name="UsernameRequiredError">
+    <value>Tá ainm úsáideora ag teastáil.</value>
+    <comment>Error message when username is empty</comment>
+  </data>
+  <data name="ServerCommunicationError">
+    <value>Tharla earráid le linn cumarsáide leis an bhfreastalaí AliasVault.</value>
+    <comment>Error message for server communication issues</comment>
+  </data>
+  <!-- Alt text -->
+  <data name="AssistantAvatarAlt">
+    <value>Cúntóir AliasVault</value>
+    <comment>Alt text for assistant avatar image</comment>
+  </data>
+</root>

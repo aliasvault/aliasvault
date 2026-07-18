@@ -3,6 +3,7 @@
     "cancel": "Annuleren",
     "close": "Sluiten",
     "delete": "Verwijderen",
+    "remove": "Verwijderen",
     "save": "Opslaan",
     "edit": "Bewerken",
     "yes": "Ja",
@@ -16,6 +17,7 @@
     "copied": "Gekopieerd naar klembord",
     "loadMore": "Laad meer",
     "use": "Gebruik",
+    "none": "Geen",
     "confirm": "Bevestigen",
     "next": "Volgende",
     "notice": "Melding",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "2FA-code toevoegen",
     "nameOptional": "Naam (optioneel)",
+    "addName": "Voeg een naam toe (optioneel)",
+    "defaultName": "Authenticator",
     "secretKey": "Secret key",
     "instructions": "Voer de secret key in die door de website wordt weergegeven waar je tweestapsverificatie wilt toevoegen.",
     "saveToViewCode": "Opslaan om code te bekijken",
     "scanQrCode": "Scan QR code",
-    "enterManually": "Voer een setup-sleutel in",
+    "enterManually": "Voer geheime sleutel in",
     "errors": {
       "invalidSecretKey": "Ongeldig formaat.",
       "scanFailed": "Kon QR-code niet scannen. Probeer het opnieuw."
@@ -192,7 +196,8 @@
       "exportDescription": "Om veiligheidsredenen moet je je hoofdwachtwoord invoeren om deze export te bevestigen."
     },
     "security": "Beveiliging",
-    "appVersion": "App versie {{version}} ({{url}})",
+    "appVersion": "App versie",
+    "serverVersion": "Server versie",
     "autoLockOptions": {
       "never": "Nooit",
       "5seconds": "5 seconden",
@@ -360,6 +365,7 @@
     "enterFieldName": "Voer de veldnaam in",
     "fieldTypes": {
       "text": "Tekst",
+      "password": "Wachtwoord",
       "hidden": "Verborgen",
       "email": "E-mail",
       "url": "URL",
@@ -441,6 +447,29 @@
     "includeNumbers": "Cijfers (0-9)",
     "includeSpecialChars": "Speciale tekens (!@#)",
     "avoidAmbiguousChars": "Onduidelijke tekens vermijden",
+    "passwordTypeBasic": "Wachtwoord",
+    "passwordTypeDiceware": "Wachtwoordzin",
+    "passphraseLanguage": "Taal wachtwoordzin",
+    "wordCount": "Woorden",
+    "capitalization": "Hoofdlettergebruik",
+    "separator": "Scheidingsteken",
+    "salt": "Zout",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Kleine letters",
+      "TitleCase": "Titelhoofdletter",
+      "Uppercase": "Hoofdletters"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Streepje",
+      "Space": "Spatie",
+      "Underscore": "Lage streep",
+      "Dot": "Punt"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Voorvoegsel",
+      "Sprinkle": "Willekeurige positie",
+      "Suffix": "Achtervoegsel"
+    },
     "errorLoadingItems": "Fout bij het laden van items",
     "vaultSyncFailed": "Vault synchronisatie mislukt",
     "vaultSyncedSuccessfully": "Vault succesvol gesynchroniseerd",
@@ -654,7 +683,6 @@
     },
     "loginSettings": {
       "title": "API-verbinding",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Self-hosted",
       "customApiUrl": "Aangepaste API URL",
       "customApiUrlPlaceholder": "https://jouw-aliasvault-instantie.nl/api",

@@ -62,6 +62,7 @@
     "openInNewWindow": "Öppna i nytt fönster",
     "enabled": "Aktiverad",
     "disabled": "Inaktiverad",
+    "none": "Inget",
     "showPassword": "Visa lösenord",
     "hidePassword": "Dölj lösenord",
     "show": "Visa",
@@ -76,6 +77,7 @@
     "settings": "Inställningar",
     "recentEmails": "Senaste e-postmeddelanden",
     "credentials": "Inloggningsuppgifter",
+    "passkeys": "Passkeys",
     "customFields": "Anpassade fält",
     "twoFactorAuthentication": "Tvåfaktorsautentisering",
     "alias": "Alias",
@@ -109,6 +111,7 @@
       "syncConflictMaxRetries": "Kunde inte synkronisera valvet trots flera försök. Försök igen senare.",
       "mergeFailed": "Det gick inte att sammanfoga valvförändringar. Försök igen.",
       "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Ange en giltig 6-siffrig autentiseringskod.",
       "serverError": "Kunde inte nå AliasVault-servern. Försök igen senare eller kontakta support om problemet kvarstår.",
       "wrongPassword": "Felaktigt lösenord. Försök igen.",
@@ -148,6 +151,7 @@
     "creatingNewAlias": "Skapar nytt alias",
     "creatingNewCredential": "Creating new credential",
     "noMatchesFound": "Inga träffar hittades",
+    "loginWithPasskey": "Login with passkey",
     "searchVault": "Sök i valvet...",
     "enterServiceName": "Ange tjänstens namn",
     "enterEmailAddress": "Ange e-postadress",
@@ -186,6 +190,7 @@
   "items": {
     "title": "Objekt",
     "itemName": "Namn",
+    "suggestions": "Suggestions",
     "loginCredentials": "Inloggningsuppgifter",
     "cardInformation": "Kortinformation",
     "addItem": "Lägg till objekt",
@@ -202,6 +207,8 @@
     "folder": "Mapp",
     "welcomeTitle": "Välkommen till AliasVault!",
     "welcomeDescription": "För att använda webbläsartillägget AliasVault: navigera till en webbplats och använd AliasVault-autofyllrutan för att skapa en ny inloggningsuppgift.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items found",
     "noMatchingItems": "Inga objekt matchar de valda filtren",
     "noMatchingItemsSearch": "Inga objekt matchar \"{{search}}\"",
     "noMatchingItemsWithFilter": "Inga {{filter}} objekt som matchar \"{{search}}\"",
@@ -216,7 +223,6 @@
     "deleteFolderAndItemsDescription": "{{count}} objekt kommer att flyttas till Nyligen borttagen.",
     "filters": {
       "folders": "Mappar",
-      "passkeys": "Passkeys",
       "totp": "2FA-Koder"
     },
     "sort": {
@@ -238,6 +244,28 @@
     "includeNumbers": "Inkludera siffror",
     "includeSpecialChars": "Inkludera specialtecken",
     "avoidAmbiguousChars": "Undvik tvetydiga tecken (o, 0, etc.)",
+    "passwordTypeBasic": "Lösenord",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "Privat e-post",
     "privateEmailAliasVaultServer": "AliasVault server",
     "privateEmailDescription": "E2E krypterad, helt privat.",
@@ -259,6 +287,7 @@
     "fieldType": "Fälttyp",
     "fieldTypes": {
       "text": "Text",
+      "password": "Lösenord",
       "hidden": "Dold (maskerad text)",
       "email": "E-post",
       "url": "Webbadress",
@@ -301,6 +330,7 @@
     "addCode": "Lägg till 2FA kod",
     "instructions": "Ange den hemliga nyckeln som visas av webbplatsen där du vill lägga till tvåfaktorsautentisering.",
     "nameOptional": "Namn (valfritt)",
+    "addName": "Add a name (optional)",
     "secretKey": "Hemlig nyckel",
     "saveToViewCode": "Spara för att visa kod",
     "defaultName": "Autentiserare",
@@ -401,7 +431,8 @@
     "autoLock4Hours": "4 timmar",
     "autoLock8Hours": "8 timmar",
     "autoLock24Hours": "24 timmar",
-    "versionPrefix": "Version ",
+    "versionPrefix": "App version",
+    "serverVersion": "Server version",
     "autofillSettings": "Inställningar för Autofyll",
     "clipboardSettings": "Urklippsinställningar",
     "contextMenuSettings": "Inställningar för snabbmenyn",
@@ -438,6 +469,11 @@
         "male": "Man",
         "female": "Kvinna"
       }
+    },
+    "passwordGenerator": "Lösenordsgenerator",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Konfigurera"
     },
     "credentialAutofill": "Autofyll för inloggningsuppgifter",
     "credentialAutofillDescription": "Visa popup för autofyll när användarnamn/lösenordsfält upptäcks",
@@ -502,7 +538,8 @@
       "selectExistingLogin": "Lägg till i befintlig inloggning:",
       "selectExistingLoginDescription": "Bifoga denna passkey till en befintlig inloggningsuppgift för den här webbplatsen.",
       "attachingToCredential": "Lägger till passkey till: {{serviceName}}",
-      "attachPasskey": "Lägg till Passkey"
+      "attachPasskey": "Lägg till Passkey",
+      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
     "settings": {
       "passkeyProvider": "Passkey-leverantör",

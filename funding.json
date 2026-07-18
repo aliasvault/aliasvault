@@ -4,12 +4,12 @@
       "type": "individual",
       "role": "owner",
       "name": "Leendert de Borst",
-      "email": "contact@support.aliasvault.net",
+      "email": "support@aliasvault.com",
       "phone": "",
       "description": "Leendert de Borst (lanedirt) is the creator and maintainer of AliasVault, a privacy-first, open-source password and email-alias manager. AliasVault is entirely self-funded, community-driven, and developed with the mission to make the internet a safer and more private place: where you decide what to share, and with whom.",
       "webpageUrl": {
-        "url": "https://www.aliasvault.net",
-        "wellKnown": "https://www.aliasvault.net/.well-known/funding-manifest-urls"
+        "url": "https://www.aliasvault.com",
+        "wellKnown": "https://www.aliasvault.com/.well-known/funding-manifest-urls"
       }
     },
     "projects": [
@@ -18,8 +18,8 @@
         "name": "AliasVault",
         "description": "AliasVault is an open-source, privacy-first password manager with a built-in email server and alias generator, fully self-hostable on your own infrastructure. It is designed as an alternative to Bitwarden, 1Password, Proton Pass, SimpleLogin, and more. AliasVault helps you generate unique aliases and passwords so you never give away more than necessary. Our mission is simple: to make the internet a safer and more private place, where you decide what to share and with whom. Privacy is a right, not a luxury. AliasVault is the response to a web that tracks everything—a way to take back control of your digital privacy and stay secure online.",
         "webpageUrl": {
-          "url": "https://www.aliasvault.net",
-          "wellKnown": "https://www.aliasvault.net/.well-known/funding-manifest-urls"
+          "url": "https://www.aliasvault.com",
+          "wellKnown": "https://www.aliasvault.com/.well-known/funding-manifest-urls"
         },
         "repositoryUrl": {
           "url": "https://github.com/aliasvault/aliasvault",

@@ -54,15 +54,35 @@
                     </div>
                     <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">@Localizer["TotpInstructions"]</p>
                     <div class="mb-4">
-                        <label for="totp-name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@Localizer["NameOptionalLabel"]</label>
-                        <InputTextOnInput id="totp-name" @bind-Value="NewTotpCode.Name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
-                        <ValidationMessage For="@(() => NewTotpCode.Name)" class="text-red-600 dark:text-red-400 text-sm mt-1" />
-                    </div>
-                    <div class="mb-4">
                         <label for="totp-secret" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@Localizer["SecretKeyLabel"]</label>
                         <InputTextOnInput id="totp-secret" @bind-Value="NewTotpCode.SecretKey" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="@Localizer["SecretKeyPlaceholder"]" />
                         <ValidationMessage For="@(() => NewTotpCode.SecretKey)" class="text-red-600 dark:text-red-400 text-sm mt-1" />
                     </div>
+                    @* Name is optional and hidden by default; revealed on demand since most codes don't need one. *@
+                    @if (ShowNameField)
+                    {
+                        <div class="mb-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="totp-name" class="text-sm font-medium text-gray-900 dark:text-white">@Localizer["NameOptionalLabel"]</label>
+                                <button id="remove-totp-name" type="button" @onclick="HideNameField" class="w-5 h-5 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors" title="@SharedLocalizer["Remove"]">
+                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"/>
+                                        <line x1="6" y1="6" x2="18" y2="18"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <InputTextOnInput id="totp-name" @bind-Value="NewTotpCode.Name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
+                            <ValidationMessage For="@(() => NewTotpCode.Name)" class="text-red-600 dark:text-red-400 text-sm mt-1" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-4">
+                            <button id="add-totp-name" type="button" @onclick="() => ShowNameField = true" class="text-sm font-medium text-primary-700 hover:text-primary-800 dark:text-primary-500 dark:hover:text-primary-400">
+                                @Localizer["AddNameButton"]
+                            </button>
+                        </div>
+                    }
                     <div class="flex justify-end">
                         <button id="save-totp-code" type="submit" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
                             @Localizer["SaveButton"]
@@ -78,7 +98,7 @@
                 <div class="p-2 ps-3 pe-3 bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600">
                     <div class="flex justify-between items-center gap-2">
                         <div class="flex items-center flex-1">
-                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">@totpCode.Name</h4>
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">@(string.IsNullOrEmpty(totpCode.Name) ? SharedLocalizer["TotpDefaultName"] : totpCode.Name)</h4>
                         </div>
                         <div class="flex items-center gap-2">
                             <div class="flex flex-col items-end">
@@ -112,11 +132,6 @@
         {
             <div class="space-y-3">
                 <div>
-                    <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">@Localizer["NameOptionalLabel"]</label>
-                    <input type="text" @bind="EditName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="@Localizer["NameOptionalLabel"]" />
-                </div>
-
-                <div>
                     <div class="flex items-center justify-between mb-2">
                         <label class="text-sm font-medium text-gray-900 dark:text-white">@Localizer["SecretKeyLabel"]</label>
                         <button type="button" @onclick="ToggleQrCode" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1" title="@(ShowQrCode ? SharedLocalizer["Hide"] : SharedLocalizer["Show"]) QR Code">
@@ -133,6 +148,29 @@
                         </div>
                     }
                 </div>
+
+                @* Name is optional; hidden by default unless a custom name was set. *@
+                @if (ShowEditNameField)
+                {
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm font-medium text-gray-900 dark:text-white">@Localizer["NameOptionalLabel"]</label>
+                            <button type="button" @onclick="HideEditNameField" class="w-5 h-5 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors" title="@SharedLocalizer["Remove"]">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"/>
+                                    <line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <input type="text" @bind="EditName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="@Localizer["NameOptionalLabel"]" />
+                    </div>
+                }
+                else
+                {
+                    <button type="button" @onclick="() => ShowEditNameField = true" class="text-sm font-medium text-primary-700 hover:text-primary-800 dark:text-primary-500 dark:hover:text-primary-400">
+                        @Localizer["AddNameButton"]
+                    </button>
+                }
 
                 <button type="button" @onclick="SaveEditedTotpCode" class="w-full text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
                     @SharedLocalizer["Save"]
@@ -184,11 +222,13 @@
     public string? ItemUsername { get; set; }
 
     private bool IsAddFormVisible { get; set; } = false;
+    private bool ShowNameField { get; set; } = false;
     private TotpCodeEdit NewTotpCode { get; set; } = new();
     private List<Guid> OriginalTotpCodeIds { get; set; } = [];
     private bool IsEditModalOpen { get; set; } = false;
     private TotpCode? EditingTotpCode { get; set; }
     private string EditName { get; set; } = string.Empty;
+    private bool ShowEditNameField { get; set; } = false;
     private string EditSecret { get; set; } = string.Empty;
     private bool ShowQrCode { get; set; } = false;
 
@@ -224,7 +264,17 @@
     private void ShowAddForm()
     {
         NewTotpCode = new TotpCodeEdit();
+        ShowNameField = false;
         IsAddFormVisible = true;
+    }
+
+    /// <summary>
+    /// Hides the optional name field again and clears any entered value.
+    /// </summary>
+    private void HideNameField()
+    {
+        NewTotpCode.Name = null;
+        ShowNameField = false;
     }
 
     /// <summary>
@@ -254,7 +304,7 @@
 
         // Create a new TOTP code in memory
         var newTotpCode = NewTotpCode.ToEntity();
-        newTotpCode.Name = NewTotpCode.Name ?? "Authenticator";
+        newTotpCode.Name = NewTotpCode.Name ?? string.Empty;
 
         // Add to the list
         TotpCodeList.Add(newTotpCode);
@@ -316,7 +366,11 @@
     private void ShowEditModal(TotpCode totpCode)
     {
         EditingTotpCode = totpCode;
+
+        // Only reveal the name field when a name was actually set.
         EditName = totpCode.Name;
+        ShowEditNameField = !string.IsNullOrEmpty(totpCode.Name);
+
         EditSecret = totpCode.SecretKey;
         ShowQrCode = false;
         IsEditModalOpen = true;
@@ -331,9 +385,20 @@
         IsEditModalOpen = false;
         EditingTotpCode = null;
         EditName = string.Empty;
+        ShowEditNameField = false;
         EditSecret = string.Empty;
         ShowQrCode = false;
         StateHasChanged();
+    }
+
+    /// <summary>
+    /// Hides the edit name field again and clears any entered value so the code
+    /// falls back to the default name on save.
+    /// </summary>
+    private void HideEditNameField()
+    {
+        EditName = string.Empty;
+        ShowEditNameField = false;
     }
 
     /// <summary>
@@ -346,7 +411,8 @@
         var totpCodeToUpdate = TotpCodeList.FirstOrDefault(t => t.Id == EditingTotpCode.Id);
         if (totpCodeToUpdate != null)
         {
-            totpCodeToUpdate.Name = EditName;
+            // The name is optional; store it as-is (blank when the user left it empty).
+            totpCodeToUpdate.Name = EditName?.Trim() ?? string.Empty;
             totpCodeToUpdate.SecretKey = EditSecret;
             totpCodeToUpdate.UpdatedAt = DateTime.UtcNow;
         }

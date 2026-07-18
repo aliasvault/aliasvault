@@ -3,6 +3,7 @@
     "cancel": "Avbryt",
     "close": "Stäng",
     "delete": "Radera",
+    "remove": "Ta bort",
     "save": "Spara",
     "edit": "Redigera",
     "yes": "Ja",
@@ -16,6 +17,7 @@
     "copied": "Kopierat till urklipp",
     "loadMore": "Läs in fler",
     "use": "Använd",
+    "none": "Inget",
     "confirm": "Bekräfta",
     "next": "Nästa",
     "notice": "Notis",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "Lägg till 2FA kod",
     "nameOptional": "Namn (valfritt)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Autentiserare",
     "secretKey": "Hemlig nyckel",
     "instructions": "Ange den hemliga nyckeln som visas av webbplatsen där du vill lägga till tvåfaktorsautentisering.",
     "saveToViewCode": "Spara för att visa kod",
     "scanQrCode": "Skanna QR-kod",
-    "enterManually": "Ange en konfigurationsnyckel",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Ogiltigt format för hemlig nyckel.",
       "scanFailed": "Kunde inte skanna QR-kod. Försök igen."
@@ -192,7 +196,8 @@
       "exportDescription": "Av säkerhetsskäl, ange ditt huvudlösenord för att bekräfta denna export."
     },
     "security": "Säkerhet",
-    "appVersion": "Appversion {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Aldrig",
       "5seconds": "5 sekunder",
@@ -360,6 +365,7 @@
     "enterFieldName": "Ange fältets namn",
     "fieldTypes": {
       "text": "Text",
+      "password": "Lösenord",
       "hidden": "Dold",
       "email": "E-post",
       "url": "Webbadress",
@@ -441,6 +447,29 @@
     "includeNumbers": "Siffror (0–9)",
     "includeSpecialChars": "Specialtecken (!@#)",
     "avoidAmbiguousChars": "Undvik tvetydiga tecken",
+    "passwordTypeBasic": "Lösenord",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Fel vid laddning av objekt",
     "vaultSyncFailed": "Synkronisering av valv misslyckades",
     "vaultSyncedSuccessfully": "Valvet har synkroniserats",
@@ -654,7 +683,6 @@
     },
     "loginSettings": {
       "title": "API-anslutning",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Egenhostad",
       "customApiUrl": "Anpassad API-URL",
       "customApiUrlPlaceholder": "https://min-aliasvault-instans.se/api",

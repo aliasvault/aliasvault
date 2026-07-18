@@ -1,0 +1,156 @@
+.heroBanner {
+  padding: 5rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(
+      1200px circle at 50% -20%,
+      rgba(244, 149, 65, 0.18),
+      transparent 60%
+    ),
+    var(--ifm-background-color);
+}
+
+.heroTitle {
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+.heroSubtitle {
+  font-size: 1.3rem;
+  font-weight: 300;
+  max-width: 720px;
+  margin: 0 auto 2rem;
+  color: var(--ifm-color-content-secondary);
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.features {
+  padding: 4rem 0;
+}
+
+.feature {
+  margin-bottom: 1.5rem;
+}
+
+.featureCard {
+  height: 100%;
+  padding: 1.75rem;
+  border: 1px solid var(--ifm-toc-border-color);
+  border-radius: 12px;
+  background: var(--ifm-background-surface-color);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.featureCard:hover {
+  transform: translateY(-3px);
+  border-color: var(--ifm-color-primary);
+}
+
+/* When a card is itself a link (e.g. the Explore the docs cards), keep the
+   regular text styling rather than the default link color/underline. */
+a.featureCard,
+a.featureCard:hover {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.featureEmoji {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Generic content section. */
+.section {
+  padding: 4rem 0;
+}
+
+.sectionAlt {
+  background: var(--ifm-background-surface-color);
+  border-top: 1px solid var(--ifm-toc-border-color);
+  border-bottom: 1px solid var(--ifm-toc-border-color);
+}
+
+/* Inside the surface-colored "Explore the docs" section, the cards share the
+   same background and blend in. Use the base page background so they sit with
+   a subtle contrast against the section. */
+.sectionAlt .featureCard {
+  background: var(--ifm-background-color);
+}
+
+/* In dark mode the base background is quite a bit darker than the section
+   surface, making the cards too high-contrast. Nudge them back toward the
+   section color so the difference stays subtle. */
+html[data-theme='dark'] .sectionAlt .featureCard {
+  background: #181f2b;
+}
+
+.sectionTitle {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+.sectionIntro {
+  max-width: 720px;
+  margin: 0 auto 2.5rem;
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--ifm-color-content-secondary);
+}
+
+/* Centered prose column (e.g. the privacy explainer). */
+.prose {
+  max-width: 760px;
+  margin: 0 auto;
+  font-size: 1.05rem;
+  color: var(--ifm-color-content-secondary);
+}
+
+.prose p:last-child {
+  margin-bottom: 0;
+}
+
+/* Two-up content cards (Getting Started / Contribute). */
+.contentCard {
+  height: 100%;
+  padding: 1.75rem;
+  border: 1px solid var(--ifm-toc-border-color);
+  border-radius: 12px;
+  background: var(--ifm-background-surface-color);
+}
+
+.contentCard h3 {
+  margin-top: 0;
+}
+
+.contentCard ul {
+  margin-bottom: 0;
+  padding-left: 1.1rem;
+  color: var(--ifm-color-content-secondary);
+}
+
+@media (max-width: 996px) {
+  .heroTitle {
+    font-size: 2.2rem;
+  }
+  .heroSubtitle {
+    font-size: 1.1rem;
+  }
+  /* Cards stack on mobile; add a vertical gap between them. */
+  .twoUpRow > div:not(:last-child) {
+    margin-bottom: 1.5rem;
+  }
+}

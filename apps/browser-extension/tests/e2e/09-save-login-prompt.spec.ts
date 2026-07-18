@@ -280,6 +280,7 @@ test.describe.serial('9. Save Login Prompt', () => {
 
     // Verify the credential was added to the vault
     await client.goToVault().then(c => c.waitForVaultReady());
+
     await client.verifyCredentialExists(serviceName);
 
     await client.screenshot('9.2-credential-saved-in-vault.png');

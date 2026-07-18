@@ -62,6 +62,7 @@
     "openInNewWindow": "Open in new window",
     "enabled": "Enabled",
     "disabled": "Disabled",
+    "none": "None",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "show": "Show",
@@ -76,6 +77,7 @@
     "settings": "Settings",
     "recentEmails": "Recent emails",
     "credentials": "Credentials",
+    "passkeys": "Passkeys",
     "customFields": "Custom Fields",
     "twoFactorAuthentication": "Two-factor authentication",
     "alias": "Alias",
@@ -109,6 +111,7 @@
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "mergeFailed": "Failed to merge vault changes. Please try again.",
       "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Please enter a valid 6-digit authentication code.",
       "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
       "wrongPassword": "Incorrect password. Please try again.",
@@ -148,6 +151,7 @@
     "creatingNewAlias": "Creating new alias",
     "creatingNewCredential": "Creating new credential",
     "noMatchesFound": "No matches found",
+    "loginWithPasskey": "Login with passkey",
     "searchVault": "Search vault...",
     "enterServiceName": "Enter service name",
     "enterEmailAddress": "Enter email address",
@@ -186,6 +190,7 @@
   "items": {
     "title": "Items",
     "itemName": "نام",
+    "suggestions": "Suggestions",
     "loginCredentials": "Login Credentials",
     "cardInformation": "Card Information",
     "addItem": "Add Item",
@@ -202,6 +207,8 @@
     "folder": "Folder",
     "welcomeTitle": "Welcome to AliasVault!",
     "welcomeDescription": "To use the AliasVault browser extension: navigate to a website and use the AliasVault autofill popup to create a new credential.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items found",
     "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
@@ -216,7 +223,6 @@
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
       "folders": "Folders",
-      "passkeys": "Passkeys",
       "totp": "2FA Codes"
     },
     "sort": {
@@ -238,6 +244,28 @@
     "includeNumbers": "Include numbers",
     "includeSpecialChars": "Include special characters",
     "avoidAmbiguousChars": "Avoid ambiguous characters (o, 0, etc.)",
+    "passwordTypeBasic": "پاس ورڈ",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "Private Email",
     "privateEmailAliasVaultServer": "AliasVault server",
     "privateEmailDescription": "E2E encrypted, fully private.",
@@ -259,6 +287,7 @@
     "fieldType": "Field Type",
     "fieldTypes": {
       "text": "Text",
+      "password": "پاس ورڈ",
       "hidden": "Hidden (masked text)",
       "email": "ای میل",
       "url": "URL",
@@ -301,6 +330,7 @@
     "addCode": "Add 2FA Code",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "nameOptional": "Name (optional)",
+    "addName": "Add a name (optional)",
     "secretKey": "Secret Key",
     "saveToViewCode": "Save to view code",
     "defaultName": "Authenticator",
@@ -401,7 +431,8 @@
     "autoLock4Hours": "4 hours",
     "autoLock8Hours": "8 hours",
     "autoLock24Hours": "24 hours",
-    "versionPrefix": "Version ",
+    "versionPrefix": "App version",
+    "serverVersion": "Server version",
     "autofillSettings": "Autofill Settings",
     "clipboardSettings": "Clipboard Settings",
     "contextMenuSettings": "Context Menu Settings",
@@ -438,6 +469,11 @@
         "male": "Male",
         "female": "Female"
       }
+    },
+    "passwordGenerator": "Password Generator",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Configure"
     },
     "credentialAutofill": "Credential autofill",
     "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
@@ -502,7 +538,8 @@
       "selectExistingLogin": "Add to existing login:",
       "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
       "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey"
+      "attachPasskey": "Add Passkey",
+      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
     "settings": {
       "passkeyProvider": "Passkey Provider",

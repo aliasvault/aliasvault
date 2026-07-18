@@ -134,6 +134,14 @@
     <value>Hapus</value>
     <comment>Button text for deleting an item</comment>
   </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Buang</value>
+    <comment>Button text for removing an item</comment>
+  </data>
+  <data name="TotpDefaultName" xml:space="preserve">
+    <value>Autentikator</value>
+    <comment>Display-only fallback name shown for a TOTP code that has no name set</comment>
+  </data>
   <data name="Edit" xml:space="preserve">
     <value>Ubah</value>
     <comment>Button text for editing an item</comment>
@@ -163,11 +171,11 @@
     <comment>Loading message displayed during async operations</comment>
   </data>
   <data name="Yes" xml:space="preserve">
-    <value>Yes</value>
+    <value>Ya</value>
     <comment>Confirmation button text</comment>
   </data>
   <data name="No" xml:space="preserve">
-    <value>No</value>
+    <value>Tidak</value>
     <comment>Rejection button text</comment>
   </data>
   <data name="Ok" xml:space="preserve">
@@ -175,7 +183,7 @@
     <comment>OK button text</comment>
   </data>
   <data name="Continue" xml:space="preserve">
-    <value>Continue</value>
+    <value>Lanjutkan</value>
     <comment>Button text to continue with an action</comment>
   </data>
   <data name="Confirm" xml:space="preserve">
@@ -208,7 +216,7 @@
     <comment>Label for description input field</comment>
   </data>
   <data name="Title" xml:space="preserve">
-    <value>Title</value>
+    <value>Judul</value>
     <comment>Label for title input field</comment>
   </data>
   <data name="Website" xml:space="preserve">
@@ -254,7 +262,7 @@
   </data>
   <!-- Common status messages -->
   <data name="Success" xml:space="preserve">
-    <value>Success</value>
+    <value>Berhasil</value>
     <comment>Success status message</comment>
   </data>
   <data name="Warning" xml:space="preserve">
@@ -345,11 +353,11 @@
     <comment>Email format switcher: plain text view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatSource" xml:space="preserve">
-    <value>Source</value>
+    <value>Sumber</value>
     <comment>Email format switcher: raw HTML source view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatSwitchTitle" xml:space="preserve">
-    <value>Switch email format</value>
+    <value>Ganti format email</value>
     <comment>Tooltip for the cycle button that switches between HTML / Text / Source views. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailItemLabel" xml:space="preserve">

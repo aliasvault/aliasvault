@@ -108,7 +108,7 @@
     <comment>Title for delete confirmation modal</comment>
   </data>
   <data name="ConfirmDeleteMessage" xml:space="preserve">
-    <value>This action cannot be undone. The item will be permanently removed from your vault.</value>
+    <value>Ez a művelet nem vonható vissza. Az elem végleges törlésre kerül a fiókjából.</value>
     <comment>Message in delete confirmation modal</comment>
   </data>
   <data name="DeletePermanently" xml:space="preserve">
@@ -121,7 +121,7 @@
     <comment>Title for empty all confirmation modal</comment>
   </data>
   <data name="ConfirmEmptyAllMessage" xml:space="preserve">
-    <value>This will permanently delete {0} item(s). This action cannot be undone.</value>
+    <value>{0} elem végleges törlésre kerül. Ez a művelet nem vonható vissza.</value>
     <comment>Message in empty all confirmation modal</comment>
   </data>
   <!-- Status Messages -->
@@ -138,11 +138,11 @@
     <comment>Error message when restore fails</comment>
   </data>
   <data name="Deleting" xml:space="preserve">
-    <value>Deleting item...</value>
+    <value>Elem törlése...</value>
     <comment>Loading message while deleting</comment>
   </data>
   <data name="DeleteSuccess" xml:space="preserve">
-    <value>Item permanently deleted.</value>
+    <value>Elem véglegesen törölve.</value>
     <comment>Success message after permanent deletion</comment>
   </data>
   <data name="DeleteFailed" xml:space="preserve">
@@ -150,7 +150,7 @@
     <comment>Error message when deletion fails</comment>
   </data>
   <data name="EmptyAllSuccess" xml:space="preserve">
-    <value>All items permanently deleted.</value>
+    <value>Minden elem véglegesen törölve.</value>
     <comment>Success message after emptying trash</comment>
   </data>
   <data name="EmptyAllPartialFailed" xml:space="preserve">

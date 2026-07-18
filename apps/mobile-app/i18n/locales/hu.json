@@ -3,6 +3,7 @@
     "cancel": "Mégse",
     "close": "Bezár",
     "delete": "Törlés",
+    "remove": "Eltávolítás",
     "save": "Mentés",
     "edit": "Szerkesztés",
     "yes": "Igen",
@@ -16,6 +17,7 @@
     "copied": "Vágólapra másolva",
     "loadMore": "Továbbiak betöltése",
     "use": "Használ",
+    "none": "Nincs",
     "confirm": "Megerősít",
     "next": "Következő",
     "notice": "Megjegyzés",
@@ -65,9 +67,9 @@
       "incorrectPassword": "Hibás jelszó. Próbálkozzon újra.",
       "enterPassword": "Kérem adja meg a jelszavát",
       "serverError": "Az AliasVault szerverek nem elérhetőek. Kérem próbálkozzon később, vagy keresse fel az ügyfélszolgálatot ha a probléma továbbra is fent áll.",
-      "serverErrorSelfHosted": "Az API nem elérhető. A saját szerveren hosztolás esetén igazolja vissza az API végpont elérést a böngészőn keresztül: 'OK'-nak kell megjelennie.",
+      "serverErrorSelfHosted": "Az API nem elérhető. A saját szerveren üzemeltetés esetén igazolja vissza az API végpont elérést a böngészőn keresztül: 'OK'-nak kell megjelennie.",
       "networkError": "A hálózati kérés sikertelen. Ellenőrizze internet kapcsolatát, és próbálkozzon újra.",
-      "networkErrorSelfHosted": "A hálózati kérés sikertelen. Ellenőrizze hálózati kapcsolatát és a szerver elérhetőséget. Saját szerver hosztolása esetén győződjön meg, hogy telepített fel érvényes SSL tanúsítványt. Saját aláírású tanúsítványok nem támogatottak a mobileszközön biztonsági okokból.",
+      "networkErrorSelfHosted": "A hálózati kérés sikertelen. Ellenőrizze hálózati kapcsolatát és a szerver elérhetőséget. Saját szerver üzemeltetés esetén győződjön meg, hogy telepített fel érvényes SSL tanúsítványt. Saját aláírású tanúsítványok nem támogatottak a mobileszközön biztonsági okokból.",
       "sessionExpired": "Munkaszakasza lejárt. Jelentkezzen be újra.",
       "httpError": "HTTP hiba: {{status}}"
     },
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "2FA kód hozzáadása",
     "nameOptional": "Név (nem kötelező)",
+    "addName": "Név hozzáadása (tetszőleges)",
+    "defaultName": "Hitelesítő",
     "secretKey": "Titkos kulcs",
-    "instructions": "Adja meg a weboldal által megjelenített titkos kulcsot a két faktoros hitelesítőjébe.",
+    "instructions": "Adja meg a weboldal által megjelenített titkos kulcsot a kétlépcsős hitelesítőjébe.",
     "saveToViewCode": "Mentse le a kód megtekintéséhez",
     "scanQrCode": "QR kód beolvasása",
-    "enterManually": "Adjon meg egy beállítási kulcsot",
+    "enterManually": "Titkos kulcs magadása",
     "errors": {
       "invalidSecretKey": "Hibás titkos kulcs formátum.",
       "scanFailed": "QR kód beolvasása sikertelen. Próbálja meg újra."
@@ -192,7 +196,8 @@
       "exportDescription": "Biztonsági okokból kérem adja meg a mester jelszót az exportálás engedélyezéséhez."
     },
     "security": "Biztonság",
-    "appVersion": "App verzió {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Soha",
       "5seconds": "5 másodperc",
@@ -308,7 +313,7 @@
         "password": "Jelszó",
         "enterPassword": "Jelszó megadása",
         "deleteAccount": "Fiók törlése",
-        "confirmationMessage": "Teljesen biztos abban, hogy törölni akarja fiókját? Ez a művelet nem visszafordítható.",
+        "confirmationMessage": "Teljesen biztos abban, hogy törölni akarja fiókját? Ez a művelet nem visszavonható.",
         "usernameDoesNotMatch": "Felhasználónév nem egyezik",
         "verifyingPassword": "Jelszó ellenőrzése...",
         "currentPasswordIncorrect": "A jelenlegi jelszó helytelen",
@@ -360,6 +365,7 @@
     "enterFieldName": "Adja meg a mező nevét",
     "fieldTypes": {
       "text": "Szöveg",
+      "password": "Jelszó",
       "hidden": "Rejtett",
       "email": "E-mail",
       "url": "Webcím",
@@ -441,6 +447,29 @@
     "includeNumbers": "Számok (0-9)",
     "includeSpecialChars": "Speciális karakterek (!@#)",
     "avoidAmbiguousChars": "Kerülje a félreérthető karaktereket",
+    "passwordTypeBasic": "Jelszó",
+    "passwordTypeDiceware": "Jelmondat",
+    "passphraseLanguage": "Jelmondat nyelv",
+    "wordCount": "Szavak",
+    "capitalization": "Nagybetűs",
+    "separator": "Elválasztó",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Kisbetűs",
+      "TitleCase": "Cím betűméret",
+      "Uppercase": "Nagybetűs"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Kötőjel",
+      "Space": "Szóköz",
+      "Underscore": "Alsóvonás",
+      "Dot": "Pont"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Előtag",
+      "Sprinkle": "Véletlenszerű pozíció",
+      "Suffix": "Utótag"
+    },
     "errorLoadingItems": "Hiba az elemek betöltése során",
     "vaultSyncFailed": "Sikertelen széf szinkronizálás",
     "vaultSyncedSuccessfully": "Sikeres széf szinkronizálás",
@@ -611,88 +640,87 @@
     "ACCOUNT_SUCCESSFULLY_DELETED": "A fiók sikeresen törlésre került.",
     "USERNAME_EMPTY_OR_WHITESPACE": "A felhasználónév nem lehet üres vagy whitespace.",
     "USERNAME_TOO_SHORT": "A felhasználónév túl rövid: legalább 3 karakter hosszúnak kell lennie.",
-    "USERNAME_TOO_LONG": "Username too long: cannot be longer than 40 characters.",
-    "USERNAME_INVALID_EMAIL": "Invalid email address.",
-    "USERNAME_INVALID_CHARACTERS": "Username is invalid, can only contain letters or digits.",
-    "VAULT_NOT_UP_TO_DATE": "Your vault is not up-to-date. Please synchronize your vault and try again.",
-    "INTERNAL_SERVER_ERROR": "Internal server error.",
-    "VAULT_ERROR": "The local vault is not up-to-date. Please synchronize your vault by refreshing the page and try again."
+    "USERNAME_TOO_LONG": "A felhasználónév túl hosszú: nem lehet több mint 40 karakter.",
+    "USERNAME_INVALID_EMAIL": "Helytelen e-mail cím.",
+    "USERNAME_INVALID_CHARACTERS": "Helytelen felhasználónév, csak betűket és számokat tartalmazhat.",
+    "VAULT_NOT_UP_TO_DATE": "A széfje nem friss. Kérem, szinkronizálja széfjét és próbálja újra.",
+    "INTERNAL_SERVER_ERROR": "Belső szerver hiba.",
+    "VAULT_ERROR": "A helyi széf nem friss. Szinkronizálja széfjét az oldal frissítésével, majd próbálja újra."
   },
   "sync": {
     "offline": "Offline",
-    "syncing": "Syncing...",
-    "pending": "Pending sync",
-    "backOnline": "Back online",
-    "stillOffline": "Still offline",
-    "syncFailed": "Sync failed"
+    "syncing": "Szinkronizálás...",
+    "pending": "Szinkronizálás folyamatban",
+    "backOnline": "Újra Online",
+    "stillOffline": "Továbbra is Offline",
+    "syncFailed": "Sikertelen szinkronizálás"
   },
   "app": {
     "status": {
-      "unlockingVault": "Unlocking vault",
-      "decryptingVault": "Decrypting vault"
+      "unlockingVault": "Széf feloldása",
+      "decryptingVault": "Széf dekódolása"
     },
     "navigation": {
       "login": "Belépés",
-      "loginSettings": "Login Settings"
+      "loginSettings": "Belépési beállítások"
     },
     "notFound": {
-      "title": "Page not found",
-      "message": "This page has been moved or deleted.",
-      "goHome": "Go back to the start"
+      "title": "Az oldal nem található",
+      "message": "Az oldal áthelyezésre vagy törlésre került.",
+      "goHome": "Ugrás a kezdéshez"
     },
     "appName": "AliasVault",
     "reinitialize": {
-      "vaultAutoLockedMessage": "Vault auto-locked after timeout.",
-      "attemptingToUnlockMessage": "Attempting to unlock."
+      "vaultAutoLockedMessage": "Időtúllépés miatt a széf automatikusan lezárt.",
+      "attemptingToUnlockMessage": "Feloldás megpróbálása."
     },
     "vaultError": {
-      "title": "Vault Error",
-      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
-      "showDetails": "Show error details",
-      "hideDetails": "Hide error details",
-      "copyErrorDetails": "Copy error details"
+      "title": "Széf hiba",
+      "description": "Hiba lépett fel a széf betöltése során. Ha a hiba továbbra is fent áll, vegye fel a kapcsolatot az ügyfélszolgálattal.",
+      "showDetails": "Hiba részleteinek megjelenítése",
+      "hideDetails": "Hiba részleteinek elrejtése",
+      "copyErrorDetails": "Hiba részleteinek másolása"
     },
     "loginSettings": {
-      "title": "API Connection",
-      "aliasvaultNet": "Aliasvault.net",
-      "selfHosted": "Self-hosted",
-      "customApiUrl": "Custom API URL",
+      "title": "API kapcsolat",
+      "selfHosted": "Saját üzemeltetésű",
+      "customApiUrl": "Egyedi API URL",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
-      "version": "Version: {{version}}",
-      "advancedSettings": "Advanced settings",
-      "customProxyHeaders": "Custom proxy headers",
-      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
-      "headerName": "Header name",
-      "headerNamePlaceholder": "X-Custom-Header",
-      "headerValue": "Header value"
+      "version": "{{version}} verzió",
+      "advancedSettings": "Haladó beállítások",
+      "customProxyHeaders": "Egyedi proxy header-ök",
+      "customProxyHeadersDescription": "Adja meg a HTTP header-öket, amelyek küldésre kerülnek az AliasVault szerver felé a kérések során. Olyan saját üzemeltetésű saját fordított proxy esetén használható amely egyedi header-öket ellenőriz (pl. Pangolin, Cloudflare Access).",
+      "headerName": "Header név",
+      "headerNamePlaceholder": "X-Egyedi-Header",
+      "headerValue": "Header érték"
     }
   },
   "upgrade": {
-    "title": "Upgrade Vault",
-    "subtitle": "AliasVault has updated and your vault needs to be upgraded. This should only take a few seconds.",
-    "versionInformation": "Version Information",
-    "yourVault": "Your vault version:",
-    "newVersion": "New available version:",
-    "upgrade": "Upgrade",
-    "upgrading": "Upgrading...",
+    "title": "Széf frissítése",
+    "subtitle": "Az AliasVault frissült, ezért a széfet is frissíteni kell. Ez csak pár másodpercig tart.",
+    "versionInformation": "Verzió információ",
+    "yourVault": "A széf verziója:",
+    "newVersion": "Legújabb elérhető verzió:",
+    "upgrade": "Frissítés",
+    "upgrading": "Frissítés...",
     "logout": "Kijelentkezés",
-    "whatsNew": "What's New",
-    "whatsNewDescription": "An upgrade is required to support the following changes:",
-    "noDescriptionAvailable": "No description available for this version.",
+    "whatsNew": "Újdonságok",
+    "whatsNewDescription": "Frissítés szükséges a következő változások támogatása érdekében:",
+    "noDescriptionAvailable": "Nem elérhető leírás ehhez a verzióhoz.",
     "status": {
-      "preparingUpgrade": "Preparing upgrade...",
-      "vaultAlreadyUpToDate": "Vault is already up to date",
-      "applyingDatabaseMigrations": "Applying database migrations...",
-      "applyingMigration": "Applying migration {{current}} of {{total}}...",
-      "committingChanges": "Committing changes..."
+      "preparingUpgrade": "Frissítés előkészítése...",
+      "vaultAlreadyUpToDate": "A széf már naprakész",
+      "applyingDatabaseMigrations": "Adatbázis migrációk alkalmazása...",
+      "applyingMigration": "{{current}} migráció alkalmazva a {{total}}-ból...",
+      "committingChanges": "Változások alkalmazása..."
     },
     "alerts": {
-      "unableToGetVersionInfo": "Unable to get version information. Please try again.",
-      "selfHostedServer": "Self-Hosted Server",
-      "selfHostedWarning": "If you're using a self-hosted server, make sure to also update your self-hosted instance as otherwise logging in to the web client will stop working.",
-      "continueUpgrade": "Continue Upgrade",
-      "upgradeFailed": "Upgrade Failed",
-      "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})"
+      "unableToGetVersionInfo": "Sikertelen verzió lekérés. Próbálja meg újra.",
+      "selfHostedServer": "Saját üzemeltetésű szerver",
+      "selfHostedWarning": "Ha saját üzemetetésű szervere van, bizonyosodjon meg, hogy naprakész szervert használ, mert máskülönben a web kliensbe való belépés nem fog működni.",
+      "continueUpgrade": "Frissítés folytatása",
+      "upgradeFailed": "Sikertelen frissítés",
+      "failedToApplyMigration": "Migráció alkalmazása sikertelen ({{current}} a {{total}}-ból)"
     }
   }
 }

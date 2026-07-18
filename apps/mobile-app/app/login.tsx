@@ -814,7 +814,7 @@ export default function LoginScreen() : React.ReactNode {
                   <View style={styles.createNewVaultContainer}>
                     <Text style={styles.textMuted}>{t('auth.noAccountYet')} </Text>
                     <InAppBrowserView
-                      url="https://app.aliasvault.net/user/setup"
+                      url="https://app.aliasvault.com/user/setup"
                       title={t('auth.createNewVault')}
                       textStyle={styles.clickableLink}
                     />

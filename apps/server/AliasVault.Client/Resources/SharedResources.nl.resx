@@ -134,6 +134,14 @@
     <value>Verwijderen</value>
     <comment>Button text for deleting an item</comment>
   </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Verwijderen</value>
+    <comment>Button text for removing an item</comment>
+  </data>
+  <data name="TotpDefaultName" xml:space="preserve">
+    <value>Authenticator</value>
+    <comment>Display-only fallback name shown for a TOTP code that has no name set</comment>
+  </data>
   <data name="Edit" xml:space="preserve">
     <value>Bewerken</value>
     <comment>Button text for editing an item</comment>

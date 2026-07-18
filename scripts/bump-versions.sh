@@ -604,6 +604,21 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
         "\"version\": \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
         "\"version\": \"$version\","
 
+    # Update docs (Docusaurus) package.json so the documentation site version
+    # stays in sync with the rest of the codebase.
+    echo -e "${BLUE}Updating docs package.json version...${RESET}"
+    update_version "$REPO_ROOT/docs/package.json" \
+        "\"version\": \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
+        "\"version\": \"$version\","
+
+    # Update docs package-lock.json. The project version appears twice (the
+    # root object and the "" package entry), each on the line directly after a
+    # `"name": "aliasvault-docs"` line. Anchoring on that name leaves the
+    # hundreds of dependency "version" lines untouched (same approach as the
+    # Cargo.lock update below).
+    echo -e "${BLUE}Updating docs package-lock.json version...${RESET}"
+    sed -i '' '/"name": "aliasvault-docs"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/docs/package-lock.json"
+
     # Update browser extension AppInfo.ts version
     echo -e "${BLUE}Updating browser extension AppInfo.ts version...${RESET}"
     update_version "$REPO_ROOT/apps/browser-extension/src/utils/AppInfo.ts" \

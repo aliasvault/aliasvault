@@ -1,4 +1,5 @@
 import type { EncryptionKey, PasswordSettings, TotpCode, Attachment } from '@/utils/dist/core/models/vault';
+import { DEFAULT_PASSWORD_LENGTH, DEFAULT_WORD_COUNT } from '@/utils/dist/core/models/defaults';
 
 import { BaseRepository } from '../BaseRepository';
 
@@ -109,12 +110,19 @@ export class SettingsRepository extends BaseRepository {
     const settingsJson = await this.getSetting('PasswordGenerationSettings');
 
     const defaultSettings: PasswordSettings = {
-      Length: 18,
+      Length: DEFAULT_PASSWORD_LENGTH,
       UseLowercase: true,
       UseUppercase: true,
       UseNumbers: true,
       UseSpecialChars: true,
-      UseNonAmbiguousChars: false
+      UseNonAmbiguousChars: false,
+      Type: 'basic',
+      WordCount: DEFAULT_WORD_COUNT,
+      // Empty = "auto": the passphrase language is resolved from the app language at runtime.
+      Language: '',
+      Capitalization: 'Lowercase',
+      Separator: 'Dash',
+      Salt: 'None'
     };
 
     try {
@@ -126,6 +134,15 @@ export class SettingsRepository extends BaseRepository {
     }
 
     return defaultSettings;
+  }
+
+  /**
+   * Persist the password generator settings as a JSON blob.
+   * Mirrors the `PasswordGenerationSettings` key used by the other AliasVault clients.
+   * @param settings - The password settings to store.
+   */
+  public async setPasswordSettings(settings: PasswordSettings): Promise<void> {
+    await this.updateSetting('PasswordGenerationSettings', JSON.stringify(settings));
   }
 
   /**

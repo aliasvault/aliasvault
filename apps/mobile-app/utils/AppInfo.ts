@@ -8,7 +8,7 @@ export class AppInfo {
   /**
    * The current mobile app version. This should be updated with each release of the mobile app.
    */
-  public static readonly VERSION = '0.30.0-alpha';
+  public static readonly VERSION = '0.31.0-alpha';
 
   /**
    * The API version to send to the server (base semver without stage suffixes).
@@ -39,12 +39,12 @@ export class AppInfo {
   /**
    * The default AliasVault client URL.
    */
-  public static readonly DEFAULT_CLIENT_URL = 'https://app.aliasvault.net';
+  public static readonly DEFAULT_CLIENT_URL = 'https://app.aliasvault.com';
 
   /**
    * The default AliasVault web API URL.
    */
-  public static readonly DEFAULT_API_URL = 'https://app.aliasvault.net/api';
+  public static readonly DEFAULT_API_URL = 'https://app.aliasvault.com/api';
 
   /**
    * Prevent instantiation of this utility class

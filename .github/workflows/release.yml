@@ -375,31 +375,31 @@ jobs:
           - image: client
             dockerfile: apps/server/AliasVault.Client/Dockerfile
             title: AliasVault Client
-            description: Blazor WebAssembly client UI for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
+            description: Blazor WebAssembly client UI for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
           - image: postgres
             dockerfile: apps/server/Databases/AliasServerDb/Dockerfile
             title: AliasVault PostgreSQL
-            description: PostgreSQL database for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
+            description: PostgreSQL database for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
           - image: api
             dockerfile: apps/server/AliasVault.Api/Dockerfile
             title: AliasVault API
-            description: REST API backend for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
+            description: REST API backend for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
           - image: admin
             dockerfile: apps/server/AliasVault.Admin/Dockerfile
             title: AliasVault Admin
-            description: Admin portal for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
+            description: Admin portal for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
           - image: reverse-proxy
             dockerfile: apps/server/Dockerfile
             title: AliasVault Reverse Proxy
-            description: Nginx reverse proxy for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
+            description: Nginx reverse proxy for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
           - image: smtp
             dockerfile: apps/server/Services/AliasVault.SmtpService/Dockerfile
             title: AliasVault SMTP Service
-            description: SMTP service for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
+            description: SMTP service for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
           - image: task-runner
             dockerfile: apps/server/Services/AliasVault.TaskRunner/Dockerfile
             title: AliasVault TaskRunner
-            description: Background task runner for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)
+            description: Background task runner for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
           - image: installcli
             dockerfile: apps/server/Utilities/AliasVault.InstallCli/Dockerfile
             title: AliasVault Install CLI
@@ -464,6 +464,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      # Free up disk space of unused tools on the GitHub runner as the all-in-one build consumes a lot of disk space.
+      - name: Free up disk space
+        run: |
+          echo "Disk before cleanup:"
+          df -h /
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
+          sudo docker image prune --all --force || true
+          echo "Disk after cleanup:"
+          df -h /
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
 
@@ -499,9 +510,9 @@ jobs:
             type=raw,value={{branch}}-{{sha}},enable=${{ needs.detect-version.outputs.version == '' }}
           labels: |
             org.opencontainers.image.title=AliasVault All-in-One
-            org.opencontainers.image.description=Self-contained AliasVault server including web app, with all services bundled using s6-overlay. Single container solution for easy deployment (see docs.aliasvault.net).
+            org.opencontainers.image.description=Self-contained AliasVault server including web app, with all services bundled using s6-overlay. Single container solution for easy deployment (see docs.aliasvault.com).
           annotations: |
-            org.opencontainers.image.description=Self-contained AliasVault server including web app, with all services bundled using s6-overlay. Single container solution for easy deployment (see docs.aliasvault.net).
+            org.opencontainers.image.description=Self-contained AliasVault server including web app, with all services bundled using s6-overlay. Single container solution for easy deployment (see docs.aliasvault.com).
 
       - name: Build and push all-in-one image
         uses: docker/build-push-action@v7
@@ -509,6 +520,9 @@ jobs:
           context: .
           file: dockerfiles/all-in-one/Dockerfile
           platforms: linux/amd64,linux/arm64/v8
+          # Mark this as the official published image (local builds default to "aio-build").
+          build-args: |
+            DEPLOYMENT_MODE=aio
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

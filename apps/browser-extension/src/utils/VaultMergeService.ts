@@ -2,8 +2,9 @@ import initSqlJs, { Database, SqlJsStatic, SqlValue } from 'sql.js';
 import { browser } from 'wxt/browser';
 
 import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
+import { devLog } from '@/utils/DevLogger';
 
-import init, { getSyncableTableNames, mergeVaults, pruneVault } from './dist/core/rust/aliasvault_core.js';
+import init, { getPruneTableQueries, getSyncableTableNames, mergeVaults, pruneVault } from './dist/core/rust/aliasvault_core.js';
 
 /**
  * Record type for JSON data passed to/from Rust.
@@ -135,6 +136,21 @@ export class VaultMergeService {
   }
 
   /**
+   * Get the SQL.js instance, initializing and caching it on first use.
+   */
+  private async getSqlJs(): Promise<SqlJsStatic> {
+    this.sqlJsInstance ??= await initSqlJs({
+      /**
+       * Locate the SQL.js WASM file.
+       * @param file - The file name to locate
+       * @returns The path to the file
+       */
+      locateFile: (file: string) => `src/${file}`
+    });
+    return this.sqlJsInstance;
+  }
+
+  /**
    * Merge local vault changes with server vault using LWW strategy.
    *
    * Uses Rust WASM for the merge logic:
@@ -153,15 +169,7 @@ export class VaultMergeService {
       // Initialize Rust WASM
       await this.initRust();
 
-      // Use injected SQL.js instance or initialize a new one
-      const SQL = this.sqlJsInstance ?? await initSqlJs({
-        /**
-         * Locate the SQL.js WASM file.
-         * @param file - The file name to locate
-         * @returns The path to the file
-         */
-        locateFile: (file: string) => `src/${file}`
-      });
+      const SQL = await this.getSqlJs();
 
       // Load both databases
       const localDb = this.loadDatabase(SQL, localVaultBase64);
@@ -191,7 +199,7 @@ export class VaultMergeService {
           server_tables: serverTables,
         })) as MergeInput;
 
-        console.debug('[VaultMerge] Merge input:', {
+        devLog('[VaultMerge] Merge input:', {
           localTableCount: localTables.length,
           serverTableCount: serverTables.length,
           localTables: localTables.map(t => ({ name: t.name, recordCount: t.records.length })),
@@ -254,27 +262,19 @@ export class VaultMergeService {
       // Initialize Rust WASM
       await this.initRust();
 
-      // Use injected SQL.js instance or initialize a new one
-      const SQL = this.sqlJsInstance ?? await initSqlJs({
-        /**
-         * Locate the SQL.js WASM file.
-         * @param file - The file name to locate
-         * @returns The path to the file
-         */
-        locateFile: (file: string) => `src/${file}`
-      });
+      const SQL = await this.getSqlJs();
 
       // Load the database
       const db = this.loadDatabase(SQL, vaultBase64);
 
       try {
-        // Tables needed for pruning
-        const tableNames = ['Items', 'FieldValues', 'Attachments', 'TotpCodes', 'Passkeys', 'Logos'];
+        // Get the per-table SELECT queries clients should run to build `PruneInput`.
+        const tableQueries = getPruneTableQueries() as { name: string; query: string }[];
 
         // Read tables as JSON
-        const tables: TableData[] = tableNames.map(name => ({
+        const tables: TableData[] = tableQueries.map(({ name, query }) => ({
           name,
-          records: this.readTableAsJson(db, name),
+          records: this.readQueryAsJson(db, query),
         }));
 
         // Call Rust WASM prune
@@ -285,6 +285,16 @@ export class VaultMergeService {
         })) as PruneInput;
 
         const pruneOutput = pruneVault(pruneInput) as PruneOutput;
+        const statementCount = pruneOutput.statements.length;
+
+        // Nothing to prune - return original vault, skipping the export roundtrip
+        if (statementCount === 0) {
+          return {
+            success: pruneOutput.success,
+            prunedVaultBase64: vaultBase64,
+            statementCount,
+          };
+        }
 
         // Execute SQL statements from Rust on database
         for (const stmt of pruneOutput.statements) {
@@ -294,10 +304,9 @@ export class VaultMergeService {
 
         // Export the pruned database
         const prunedVaultBase64 = this.exportDatabase(db);
-        const statementCount = pruneOutput.statements.length;
 
         if (statementCount > 0) {
-          console.info(`[VaultMerge] Pruned expired items from trash (${statementCount} SQL statements executed)`);
+          devLog(`[VaultMerge] Pruned expired items from trash (${statementCount} SQL statements executed)`);
         }
 
         return {
@@ -338,11 +347,13 @@ export class VaultMergeService {
   private exportDatabase(db: Database): string {
     db.run('VACUUM');
     const binaryArray = db.export();
-    let binaryString = '';
-    for (let i = 0; i < binaryArray.length; i++) {
-      binaryString += String.fromCharCode(binaryArray[i]);
+    // Convert to string in chunks to avoid O(n²) byte-by-byte concatenation
+    const chunkSize = 0x8000;
+    const parts: string[] = [];
+    for (let i = 0; i < binaryArray.length; i += chunkSize) {
+      parts.push(String.fromCharCode(...binaryArray.subarray(i, i + chunkSize)));
     }
-    return btoa(binaryString);
+    return btoa(parts.join(''));
   }
 
   /**
@@ -352,8 +363,18 @@ export class VaultMergeService {
    * @returns Array of records as JSON objects
    */
   private readTableAsJson(db: Database, tableName: string): JsonRecord[] {
+    return this.readQueryAsJson(db, `SELECT * FROM ${tableName}`);
+  }
+
+  /**
+   * Read all rows of a query as JSON objects.
+   * @param db - The database to query
+   * @param query - The SELECT query to run
+   * @returns Array of records as JSON objects
+   */
+  private readQueryAsJson(db: Database, query: string): JsonRecord[] {
     const records: JsonRecord[] = [];
-    const stmt = db.prepare(`SELECT * FROM ${tableName}`);
+    const stmt = db.prepare(query);
 
     while (stmt.step()) {
       const obj = stmt.getAsObject();

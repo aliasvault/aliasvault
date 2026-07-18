@@ -7,6 +7,7 @@ import FolderBreadcrumb from '@/entrypoints/popup/components/Folders/FolderBread
 import FolderModal from '@/entrypoints/popup/components/Folders/FolderModal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+import CurrentSiteSuggestion from '@/entrypoints/popup/components/Items/CurrentSiteSuggestion';
 import FolderPill from '@/entrypoints/popup/components/Items/FolderPill';
 import ItemCard from '@/entrypoints/popup/components/Items/ItemCard';
 import ItemFilterDropdown from '@/entrypoints/popup/components/Items/ItemFilterDropdown';
@@ -33,6 +34,13 @@ import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
 const FILTER_STORAGE_KEY = 'items-filter';
 const FILTER_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+
+/*
+ * Minimum number of vault entries before the current-site suggestion is shown.
+ * With only a handful of entries (e.g. right after onboarding) the whole list is
+ * already visible, so a suggestion just duplicates an entry that's right there.
+ */
+const CURRENT_SITE_SUGGESTION_MIN_ITEMS = 5;
 
 /**
  * Sort order options with their translation keys
@@ -724,6 +732,7 @@ const ItemsList: React.FC = () => {
     folderCount: folders.length,
     itemCount: sortedItems.length,
     searchInputRef,
+    resetKey: currentFolderId,
     onActivateFolder: handleActivateFolder,
     onActivateItem: handleActivateItem,
     onGoBack: handleGoBack,
@@ -859,11 +868,16 @@ const ItemsList: React.FC = () => {
             aria-expanded={sortedItems.length > 0 || folders.length > 0}
             aria-activedescendant={activeDescendantId}
             aria-autocomplete="list"
-            className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
           />
         </div>
       ) : (
         <></>
+      )}
+
+      {/* Current-site suggestion: show a suggestion for the current site's matching item(s) to quickly view/open them. */}
+      {items.length > CURRENT_SITE_SUGGESTION_MIN_ITEMS && !currentFolderId && !searchTerm && filterType === 'all' && (
+        <CurrentSiteSuggestion onSearch={setSearchTerm} />
       )}
 
       {items.length === 0 ? (

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Page title and description -->
+  <data name="PageTitle">
+    <value>Síneadh &amp; Aipeanna</value>
+    <comment>Page title for extensions and apps</comment>
+  </data>
+  <data name="PageDescription">
+    <value>Suiteáil síntí brabhsálaí agus aipeanna soghluaiste chun rochtain a fháil ar do chruinneachán ó do ghléasanna go léir agus dintiúir a líonadh go huathoibríoch ar shuíomhanna gréasáin.</value>
+    <comment>Page description for extensions and apps</comment>
+  </data>
+  <data name="BreadcrumbTitle">
+    <value>Síneadh &amp; Aipeanna</value>
+    <comment>Breadcrumb title for extensions and apps</comment>
+  </data>
+  <!-- Browser Extensions Section -->
+  <data name="BrowserExtensionsTitle">
+    <value>Síneadh Brabhsálaí</value>
+    <comment>Title for browser extensions section</comment>
+  </data>
+  <data name="BrowserExtensionsDescription">
+    <value>Ligeann síneadh brabhsálaí AliasVault duit dintiúir atá ann cheana féin a líonadh isteach go huathoibríoch ar aon suíomh Gréasáin. Ligeann sé duit freisin leasainmneacha nua a ghiniúint le linn clárúcháin, rochtain a fháil ar ríomhphoist a fuarthas ar do leasainmneacha go léir, agus féachaint ar do leasainmneacha agus d’aitheantais.</value>
+    <comment>Description for browser extensions</comment>
+  </data>
+  <data name="InstallButton">
+    <value>Suiteáil</value>
+    <comment>Install button text</comment>
+  </data>
+  <data name="ComingSoonText">
+    <value>Ag teacht go luath</value>
+    <comment>Coming soon text for unavailable extensions</comment>
+  </data>
+  <!-- Mobile Apps Section -->
+  <data name="MobileAppsTitle">
+    <value>Aipeanna Soghluaiste</value>
+    <comment>Title for mobile apps section</comment>
+  </data>
+  <data name="MobileAppsDescription">
+    <value>Leis an aip shoghluaiste AliasVault is féidir leat rochtain a fháil ar do leasainmneacha agus d’aitheantais agus tú ag gluaiseacht, ríomhphoist a fuarthas a fheiceáil agus a bhainistiú, agus leasainmneacha nua a ghiniúint am ar bith. Tá do shonraí faoi chosaint iomlán le fíordheimhniú bithmhéadrach ar an ngléas.</value>
+    <comment>Description for mobile apps</comment>
+  </data>
+  <data name="DownloadButton">
+    <value>Íoslódáil</value>
+    <comment>Download button text</comment>
+  </data>
+</root>

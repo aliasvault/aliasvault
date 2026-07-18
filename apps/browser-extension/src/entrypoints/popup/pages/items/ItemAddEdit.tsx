@@ -34,6 +34,9 @@ import type { Item, ItemField, ItemType, FieldType, Attachment, TotpCode, Passwo
 import { FieldCategories, FieldTypes, ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType } from '@/utils/dist/core/models/vault';
 import { FaviconService } from '@/utils/FaviconService';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+
+import { browser } from '#imports';
 
 // Valid item types from the shared model
 const VALID_ITEM_TYPES: ItemType[] = [ItemTypes.Login, ItemTypes.Alias, ItemTypes.CreditCard, ItemTypes.Note];
@@ -76,10 +79,13 @@ const ItemAddEdit: React.FC = () => {
   const dbContext = useDb();
   const isEditMode = id !== undefined && id.length > 0;
 
-  // Get item type, name, and folder from URL parameters (for create mode)
+  // Get item type, title, and folder from URL parameters (for create mode)
   const itemTypeParam = searchParams.get('type') as ItemType | null;
-  const itemNameParam = searchParams.get('name');
+  const itemTitleParam = searchParams.get('itemTitle');
   const folderIdParam = searchParams.get('folderId');
+
+  const sourceTabIdParam = searchParams.get('sourceTabId');
+  const fillBackElementIdentifier = searchParams.get('elementIdentifier');
 
   const { executeVaultMutationAsync } = useVaultMutate();
   const { setHeaderButtons, setBackButtonTitle } = useHeaderButtons();
@@ -102,6 +108,9 @@ const ItemAddEdit: React.FC = () => {
 
   // Folder selection state
   const [folders, setFolders] = useState<Array<{ Id: string; Name: string }>>([]);
+
+  // Alternative service-name suggestions (create mode) derived from the page title/domain.
+  const [suggestedNames, setSuggestedNames] = useState<string[]>([]);
 
   // UI visibility state
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
@@ -333,8 +342,9 @@ const ItemAddEdit: React.FC = () => {
        * Initialize create mode with service detection from URL params or active tab.
        */
       const initializeCreateMode = async (): Promise<void> => {
-        // Use the service detection hook to get name and URL
-        const { serviceName, serviceUrl } = await detectService(itemNameParam);
+        // Use the service detection hook to get name, URL and alternative name suggestions
+        const { serviceName, serviceUrl, suggestedNames: detectedSuggestedNames } = await detectService(itemTitleParam);
+        setSuggestedNames(detectedSuggestedNames);
 
         // Create the new item with detected values
         const newItem: Item = {
@@ -393,13 +403,28 @@ const ItemAddEdit: React.FC = () => {
       return;
     }
 
-    try {
-      const result = dbContext.sqliteClient.items.getById(id);
-      if (result) {
+    /**
+     * Initialize edit mode: load the saved item from the database, then overlay
+     * any unsaved draft that was persisted when the popup was closed mid-edit.
+     */
+    const initializeEditMode = async (): Promise<void> => {
+      const sqliteClient = dbContext?.sqliteClient;
+      if (!sqliteClient) {
+        return;
+      }
+
+      try {
+        const result = sqliteClient.items.getById(id);
+        if (!result) {
+          console.error('Item not found');
+          navigate('/items');
+          return;
+        }
+
         setItem(result);
 
         // Load folders
-        const allFolders = dbContext.sqliteClient.folders.getAll();
+        const allFolders = sqliteClient.folders.getAll();
         setFolders(allFolders);
 
         // Initialize field values from existing fields
@@ -431,7 +456,7 @@ const ItemAddEdit: React.FC = () => {
         setInitiallyVisibleFields(fieldsWithValues);
 
         // Load TOTP codes for this item
-        const itemTotpCodes = dbContext.sqliteClient.settings.getTotpCodesForItem(id);
+        const itemTotpCodes = sqliteClient.settings.getTotpCodesForItem(id);
         setTotpCodes(itemTotpCodes);
         setOriginalTotpCodeIds(itemTotpCodes.map((tc) => tc.Id));
         if (itemTotpCodes.length > 0) {
@@ -439,25 +464,33 @@ const ItemAddEdit: React.FC = () => {
         }
 
         // Load attachments for this item
-        const itemAttachments = dbContext.sqliteClient.settings.getAttachmentsForItem(id);
+        const itemAttachments = sqliteClient.settings.getAttachmentsForItem(id);
         setAttachments(itemAttachments);
         setOriginalAttachmentIds(itemAttachments.map((a) => a.Id));
         if (itemAttachments.length > 0) {
           setShowAttachments(true);
         }
 
+        // Restore any unsaved draft for this item that was persisted when the popup closed mid-edit.
+        const skipFormRestore = await LocalPreferencesService.getSkipFormRestore();
+        if (skipFormRestore) {
+          // Clear the flag after using it
+          await LocalPreferencesService.setSkipFormRestore(false);
+        } else {
+          await loadPersistedValues();
+        }
+
         setLocalLoading(false);
         setIsInitialLoading(false);
-      } else {
-        console.error('Item not found');
-        navigate('/items');
+      } catch (err) {
+        console.error('Error loading item:', err);
+        setLocalLoading(false);
+        setIsInitialLoading(false);
       }
-    } catch (err) {
-      console.error('Error loading item:', err);
-      setLocalLoading(false);
-      setIsInitialLoading(false);
-    }
-  }, [dbContext?.sqliteClient, id, isEditMode, itemTypeParam, itemNameParam, folderIdParam, navigate, setIsInitialLoading, detectService, loadPersistedValues]);
+    };
+
+    void initializeEditMode();
+  }, [dbContext?.sqliteClient, id, isEditMode, itemTypeParam, itemTitleParam, folderIdParam, navigate, setIsInitialLoading, detectService, loadPersistedValues]);
 
   /**
    * Handle generating alias and populating fields.
@@ -631,6 +664,47 @@ const ItemAddEdit: React.FC = () => {
   }, []);
 
   /**
+   * After creating a credential from a page's "create new item" flow, autofill the freshly
+   * created item back into the originating tab and close this popup window. Returns true when the
+   * fill-back path handled the post-save behaviour (so the caller should skip normal navigation).
+   */
+  const fillBackAndCloseWindow = useCallback(async (savedItem: Item): Promise<boolean> => {
+    if (isEditMode || !sourceTabIdParam) {
+      return false;
+    }
+
+    const tabId = Number(sourceTabIdParam);
+    if (!Number.isInteger(tabId)) {
+      return false;
+    }
+
+    try {
+      // Strip the binary logo before sending as its not used by autofill and prevents message serialization errors.
+      const fillPayload = JSON.parse(JSON.stringify({ ...savedItem, Logo: undefined }));
+      await sendMessage('AUTOFILL_CREATED_ITEM', {
+        item: fillPayload,
+        elementIdentifier: fillBackElementIdentifier ?? undefined
+      }, tabId);
+    } catch (err) {
+      console.error('Error autofilling created item into page:', err);
+    }
+
+    // Close this popup window (it was opened as a standalone window from the content script).
+    try {
+      const currentWindow = await browser.windows.getCurrent();
+      if (currentWindow.id !== undefined) {
+        await browser.windows.remove(currentWindow.id);
+      } else {
+        window.close();
+      }
+    } catch {
+      window.close();
+    }
+
+    return true;
+  }, [isEditMode, sourceTabIdParam, fillBackElementIdentifier]);
+
+  /**
    * Handle form submission.
    */
   const handleSave = useCallback(async () => {
@@ -753,6 +827,14 @@ const ItemAddEdit: React.FC = () => {
       await clearPersistedValues();
 
       /*
+       * If this create was launched from a page's "create new item" flow, autofill the new
+       * credential back into the originating tab and close this window instead of navigating.
+       */
+      if (await fillBackAndCloseWindow(updatedItem)) {
+        return;
+      }
+
+      /*
        * Navigate after save:
        * - Edit mode and came from details: navigate(-1) so back from details goes to list (no duplicate details).
        * - Edit mode and did not come from details: go to details with replace so we still land on details.
@@ -767,7 +849,7 @@ const ItemAddEdit: React.FC = () => {
       console.error('Error saving item:', err);
       setIsSaving(false);
     }
-  }, [item, isSaving, fieldValues, applicableSystemFields, customFields, dbContext, isEditMode, executeVaultMutationAsync, navigate, location.state, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyIdsMarkedForDeletion, webApi, clearPersistedValues]);
+  }, [item, isSaving, fieldValues, applicableSystemFields, customFields, dbContext, isEditMode, executeVaultMutationAsync, navigate, location.state, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyIdsMarkedForDeletion, webApi, clearPersistedValues, fillBackAndCloseWindow]);
 
   /**
    * Handle delete action.
@@ -1299,6 +1381,28 @@ const ItemAddEdit: React.FC = () => {
           selectedFolderId={item.FolderId}
           onFolderChange={(folderId) => setItem({ ...item, FolderId: folderId })}
         />
+        {/* Alternative item title suggestions (create mode) */}
+        {!isEditMode && ((): React.ReactNode => {
+          const nameSuggestions = suggestedNames.filter(name => name && name !== item.Name).slice(0, 3);
+          if (nameSuggestions.length === 0) {
+            return null;
+          }
+          return (
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              <span className="text-xs text-gray-500 dark:text-gray-400">{t('items.suggestions')}:</span>
+              {nameSuggestions.map(name => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => setItem(prev => prev ? { ...prev, Name: name } : prev)}
+                  className="px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-primary-100 dark:hover:bg-primary-900/40 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          );
+        })()}
         {/* Primary fields (like URL) shown below name */}
         {primaryFields.map(field => (
           <div key={field.FieldKey}>

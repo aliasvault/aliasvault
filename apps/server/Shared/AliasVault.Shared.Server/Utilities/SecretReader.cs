@@ -26,6 +26,17 @@ public static class SecretReader
     }
 
     /// <summary>
+    /// Gets the container secrets directory, defaults to /secrets but optionally configurable via
+    /// the SECRETS_PATH environment variable.
+    /// </summary>
+    /// <returns>The secrets directory path.</returns>
+    public static string GetSecretsPath()
+    {
+        var secretsPath = Environment.GetEnvironmentVariable("SECRETS_PATH");
+        return string.IsNullOrEmpty(secretsPath) ? "/secrets" : secretsPath;
+    }
+
+    /// <summary>
     /// Gets the JWT key from either the container secrets file or environment variable.
     /// </summary>
     /// <returns>The JWT key.</returns>
@@ -34,7 +45,7 @@ public static class SecretReader
     {
         if (IsRunningInContainer())
         {
-            return ReadSecretFromFile("/secrets/jwt_key", "JWT key");
+            return ReadSecretFromFile(Path.Combine(GetSecretsPath(), "jwt_key"), "JWT key");
         }
 
         var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
@@ -56,7 +67,7 @@ public static class SecretReader
     {
         if (IsRunningInContainer())
         {
-            var secretsFilePath = "/secrets/admin_password_hash";
+            var secretsFilePath = Path.Combine(GetSecretsPath(), "admin_password_hash");
             if (!File.Exists(secretsFilePath))
             {
                 throw new KeyNotFoundException($"Admin password hash file not found at {secretsFilePath}. Container initialization may have failed.");
@@ -106,7 +117,7 @@ public static class SecretReader
     {
         if (IsRunningInContainer())
         {
-            return ReadSecretFromFile("/secrets/data_protection_cert_pass", "Certificate password");
+            return ReadSecretFromFile(Path.Combine(GetSecretsPath(), "data_protection_cert_pass"), "Certificate password");
         }
 
         return Environment.GetEnvironmentVariable("DATA_PROTECTION_CERT_PASS")

@@ -37,8 +37,18 @@ class WebApiService(private val context: Context) {
         private const val REFRESH_TOKEN_KEY = "refreshToken"
         private const val APP_INSTANCE_ID_KEY = "appInstanceId"
         private const val CUSTOM_PROXY_HEADERS_KEY = "customProxyHeaders"
-        private const val DEFAULT_API_URL = "https://app.aliasvault.net/api"
+        private const val DEFAULT_API_URL = "https://app.aliasvault.com/api"
         private const val SHARED_PREFS_NAME = "aliasvault"
+
+        /**
+         * Connection-establishment timeout.
+         */
+        private const val CONNECT_TIMEOUT_MS = 5000
+
+        /**
+         * Read timeout. This is an inactivity timeout between successive reads.
+         */
+        private const val READ_TIMEOUT_MS = 15000
     }
 
     private val sharedPreferences = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
@@ -256,8 +266,8 @@ class WebApiService(private val context: Context) {
             val url = URL(urlString)
             connection = url.openConnection() as HttpURLConnection
             connection.requestMethod = method.uppercase()
-            connection.connectTimeout = 30000 // 30 seconds
-            connection.readTimeout = 30000 // 30 seconds
+            connection.connectTimeout = CONNECT_TIMEOUT_MS
+            connection.readTimeout = READ_TIMEOUT_MS
             connection.doInput = true
 
             // Add any custom proxy headers

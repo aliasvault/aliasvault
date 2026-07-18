@@ -30,8 +30,8 @@
     "loginWithMobile": "Zaloguj się za pomocą aplikacji mobilnej",
     "unlockWithMobile": "Odblokuj za pomocą aplikacji mobilnej",
     "scanQrCode": "Zeskanuj ten kod QR za pomocą aplikacji mobilnej AliasVault, aby się zalogować i odblokować sejf.",
-    "passwordAttemptsWarning": "Incorrect password. You will be logged out if you enter the wrong password {{remainingAttempts}} more times.",
-    "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
+    "passwordAttemptsWarning": "Nieprawidłowe hasło. Zostaniesz wylogowany, jeśli wprowadzisz nieprawidłowe hasło {{remainingAttempts}} więcej razy.",
+    "maxAttemptsReached": "Zbyt wiele nieudanych prób odblokowania. Zostałeś wylogowany ze względów bezpieczeństwa."
   },
   "menu": {
     "vault": "Sejf",
@@ -62,6 +62,7 @@
     "openInNewWindow": "Otwórz w nowym oknie.",
     "enabled": "Aktywne",
     "disabled": "Nie aktywne",
+    "none": "Brak",
     "showPassword": "Pokaż hasło",
     "hidePassword": "Ukryj hasło",
     "show": "Pokaż",
@@ -76,6 +77,7 @@
     "settings": "Ustawienia",
     "recentEmails": "Ostatnie wiadomości e-mail",
     "credentials": "Dane logowania",
+    "passkeys": "Klucze dostępu",
     "customFields": "Pola niestandardowe",
     "twoFactorAuthentication": "Weryfikacja dwuetapowa (2FA)",
     "alias": "Alias",
@@ -108,7 +110,8 @@
       "passwordChanged": "Twoje hasło uległo zmianie od czasu ostatniego logowania. Ze względów bezpieczeństwa prosimy o ponowne zalogowanie się.",
       "syncConflictMaxRetries": "Nie można zsynchronizować sejfu po wielu próbach. Spróbuj ponownie później.",
       "mergeFailed": "Nie udało się scalić zmian w sejfie. Spróbuj ponownie.",
-      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultTooLarge": "Sejf jest zbyt duży, aby serwer mógł zaakceptować. Spróbuj usunąć niektóre elementy lub załączniki, aby zmniejszyć rozmiar i spróbować ponownie.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Wprowadź prawidłowy 6-cyfrowy kod uwierzytelniający.",
       "serverError": "Nie można połączyć się z serwerem AliasVault. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną, jeśli problem nadal występuje.",
       "wrongPassword": "Nieprawidłowe hasło. Spróbuj ponownie.",
@@ -146,8 +149,9 @@
     "new": "Nowy",
     "vaultLocked": "AliasVault jest zablokowany.",
     "creatingNewAlias": "Tworzenie nowego aliasu",
-    "creatingNewCredential": "Creating new credential",
+    "creatingNewCredential": "Utwórz nowe dane logowania",
     "noMatchesFound": "Nie znaleziono żadnych wyników",
+    "loginWithPasskey": "Zaloguj się używając passkey",
     "searchVault": "Przeszukaj sejf...",
     "enterServiceName": "Wprowadź nazwę usługi",
     "enterEmailAddress": "Wprowadź adres e-mail",
@@ -166,8 +170,8 @@
     "manualCredentialDescriptionDropdown": "Ręczne wprowadzanie nazwy użytkownika i hasła",
     "failedToCreateIdentity": "Nie udało się utworzyć tożsamości. Spróbuj ponownie.",
     "enterEmailAndOrUsername": "Wprowadź adres e-mail i/lub nazwę użytkownika",
-    "autofillWithAliasVault": "Autofill username/password",
-    "autofillTotp": "Autofill 2FA",
+    "autofillWithAliasVault": "Autouzupełnianie nazwy użytkownika/hasła",
+    "autofillTotp": "Autouzupełnianie uwierzytelniania dwustopniowego (2FA)",
     "generateRandomPassword": "Wygeneruj losowe hasło (skopiuj do schowka)",
     "generateNewPassword": "Wygeneruj nowe hasło",
     "togglePasswordVisibility": "Przełącz widoczność hasła",
@@ -186,6 +190,7 @@
   "items": {
     "title": "Elementy",
     "itemName": "Nazwa",
+    "suggestions": "Propozycje",
     "loginCredentials": "Dane logowania",
     "cardInformation": "Informacje o karcie",
     "addItem": "Dodaj element",
@@ -202,6 +207,8 @@
     "folder": "Katalog",
     "welcomeTitle": "Witamy w AliasVault!",
     "welcomeDescription": "Aby skorzystać z rozszerzenia przeglądarki AliasVault - przejdź do strony internetowej i użyj okienka autozupelniania, aby utworzyć nowa tożsamość.",
+    "currentSiteMatch": "Dla {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} znalezionych przedmiotów",
     "noMatchingItems": "Żaden element nie pasuje do wybranego filtra.",
     "noMatchingItemsSearch": "Nie znaleziono żadnych elementów pasujących do „{{search}}”",
     "noMatchingItemsWithFilter": "Brak elementów {{filter}} pasujących do „{{search}}”",
@@ -216,7 +223,6 @@
     "deleteFolderAndItemsDescription": "{{count}} element(ów) zostaną przeniesione do Ostatnio usunięte.",
     "filters": {
       "folders": "Foldery",
-      "passkeys": "Klucze dostępu",
       "totp": "Kody 2FA"
     },
     "sort": {
@@ -238,6 +244,28 @@
     "includeNumbers": "Uwzględnij numery",
     "includeSpecialChars": "Uwzględnij znaki specjalne",
     "avoidAmbiguousChars": "Unikaj dwuznacznych znaków (o, 0, itp.)",
+    "passwordTypeBasic": "Hasło",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Język Passphrase",
+    "wordCount": "Słowa",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Wielkie litery",
+      "Lowercase": "Małe litery"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Kreska",
+      "Space": "Spacja",
+      "Underscore": "Podkreślenie",
+      "Dot": "Kropka"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefiks",
+      "Sprinkle": "Losowa pozycja",
+      "Suffix": "Sufiks"
+    },
     "privateEmailTitle": "Prywatny adres e-mail",
     "privateEmailAliasVaultServer": "Serwer AliasVault",
     "privateEmailDescription": "Szyfrowane E2E, w pełni prywatne.",
@@ -259,6 +287,7 @@
     "fieldType": "Typ pola",
     "fieldTypes": {
       "text": "Tekst",
+      "password": "Hasło",
       "hidden": "Ukryty (zamaskowany tekst)",
       "email": "Skrzynka odbiorcza",
       "url": "adres URL",
@@ -301,6 +330,7 @@
     "addCode": "Dodaj kod 2FA",
     "instructions": "Wprowadź tajny klucz wyświetlony na stronie internetowej, na której chcesz dodać uwierzytelnianie dwuskładnikowe.",
     "nameOptional": "Nazwa (opcjonalnie)",
+    "addName": "Dodaj nazwę (opcjonalnie)",
     "secretKey": "Tajny klucz",
     "saveToViewCode": "Zapisz, aby wyświetlić kod",
     "defaultName": "Uwierzytelnianie",
@@ -328,8 +358,8 @@
     "emailNotFound": "Nie znaleziono wiadomości e-mail",
     "formatHtml": "HTML",
     "formatPlain": "Tekst",
-    "formatSource": "Source",
-    "formatSwitchTitle": "Switch email format",
+    "formatSource": "Źródło",
+    "formatSwitchTitle": "Zmień format wiadomości e-mail",
     "item": "Element",
     "noEmails": "Nie znaleziono wiadomości e-mail",
     "noEmailsDescription": "Nie otrzymałeś jeszcze żadnych wiadomości e-mail na prywatne adresy e-mail. Kiedy otrzymasz nowy e-mail, pojawi się on tutaj.",
@@ -401,7 +431,8 @@
     "autoLock4Hours": "4 godziny",
     "autoLock8Hours": "8 godzin",
     "autoLock24Hours": "24 godziny",
-    "versionPrefix": "Wersja ",
+    "versionPrefix": "Wersja aplikacji",
+    "serverVersion": "Wersja serwera",
     "autofillSettings": "Ustawienia autouzupełniania",
     "clipboardSettings": "Ustawienia schowka",
     "contextMenuSettings": "Ustawienia menu kontekstowego",
@@ -439,12 +470,17 @@
         "female": "Kobieta"
       }
     },
-    "credentialAutofill": "Credential autofill",
-    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
-    "totpAutofill": "2FA code autofill",
-    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
-    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
-    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
+    "passwordGenerator": "Generator haseł",
+    "passwordGeneratorSettings": {
+      "description": "Skonfiguruj domyślne ustawienia generatora haseł dla nowo utworzonych elementów, w tym długość hasła, zestawy znaków i język hasła.",
+      "configureButton": "Skonfiguruj"
+    },
+    "credentialAutofill": "Autouzupełnianie",
+    "credentialAutofillDescription": "Pokaż wyskakujące okienko autouzupełniania, gdy zostaną wykryte pola nazwy użytkownika/hasła",
+    "totpAutofill": "Autouzupełnianie kodów 2FA",
+    "totpAutofillDescription": "Pokaż wyskakujące okienko autouzupełniania 2FA, po wykryciu pól logowania",
+    "autoCopyTotpOnAutofill": "Automatycznie skopiuj 2FA do schowka",
+    "autoCopyTotpOnAutofillDescription": "Automatycznie skopiuj pierwszy kod 2FA do schowka po automatycznym wypełnianiu danych logowania",
     "loginSave": {
       "title": "Zapisz monit logowania",
       "description": "Pokaż monit o zapisanie danych logowania podczas przesyłania formularza logowania na stronie internetowej.",
@@ -502,7 +538,8 @@
       "selectExistingLogin": "Dodaj do istniejącego loginu:",
       "selectExistingLoginDescription": "Dołącz ten klucz dostępu do istniejącego logowania dla tej witryny.",
       "attachingToCredential": "Dodawanie klucza dostępu do: {{serviceName}}",
-      "attachPasskey": "Dodaj klucz dostępu"
+      "attachPasskey": "Dodaj klucz dostępu",
+      "unsupportedAlgorithm": "Ta strona wymaga typ passkey, którego AliasVault nie obsługuje."
     },
     "settings": {
       "passkeyProvider": "Dostawca klucza dostępu",
@@ -512,8 +549,8 @@
   "recentlyDeleted": {
     "title": "Ostatnio usunięte",
     "noItems": "Brak usuniętych elementów",
-    "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
-    "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
+    "noItemsDescription": "Usunięte elementy pojawią się tutaj na {{days}} dni zanim zostaną trwale usunięte.",
+    "description": "Te elementy zostaną trwale usunięte po {{days}} dniach. Możesz je przywrócić lub natychmiast usunąć.",
     "restore": "Przywróć",
     "deletePermanently": "Usuń bezpowrotnie",
     "emptyAll": "Opróżnij wszystkie",
@@ -553,7 +590,7 @@
   "sync": {
     "offline": "Jesteś w trybie offline",
     "tapToRetry": "Dotknij, aby ponowić synchronizację",
-    "syncErrorTitle": "Sync Failed",
+    "syncErrorTitle": "Synchronizacja nie powiodła się",
     "syncErrorDismiss": "Odrzuć"
   }
 }

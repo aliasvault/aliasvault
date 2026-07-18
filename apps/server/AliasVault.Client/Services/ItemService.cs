@@ -18,12 +18,13 @@ using System.Threading.Tasks;
 using AliasClientDb;
 using AliasClientDb.Models;
 using AliasVault.Client.Main.Models;
+using AliasVault.Client.Services.JsInterop.RustCore;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
 /// Service class for Item operations.
 /// </summary>
-public sealed class ItemService(HttpClient httpClient, DbService dbService, Config config, JsInteropService jsInteropService, FaviconService faviconService)
+public sealed class ItemService(HttpClient httpClient, DbService dbService, Config config, JsInteropService jsInteropService, RustCoreService rustCoreService, FaviconService faviconService)
 {
     /// <summary>
     /// The default service URL used as placeholder in forms. When this value is set, the URL field is considered empty
@@ -50,13 +51,14 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     /// <returns>Random password.</returns>
     public async Task<string> GenerateRandomPasswordAsync(PasswordSettings settings)
     {
-        // Sanity check: if all settings are false, then default to use lowercase letters only.
+        // Sanity check: if all character classes are disabled for the basic generator, default to lowercase
+        // letters only. This does not affect the diceware generator.
         if (!settings.UseLowercase && !settings.UseUppercase && !settings.UseNumbers && !settings.UseSpecialChars && !settings.UseNonAmbiguousChars)
         {
             settings.UseLowercase = true;
         }
 
-        return await jsInteropService.GenerateRandomPasswordAsync(settings);
+        return await rustCoreService.GenerateRandomPasswordAsync(settings);
     }
 
     /// <summary>
@@ -124,9 +126,9 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         }
         while (isEmailTaken && attempts < MaxAttempts);
 
-        // Generate password using the TypeScript library
+        // Generate password using the Rust core.
         var passwordSettings = dbService.Settings.PasswordSettings;
-        var password = await jsInteropService.GenerateRandomPasswordAsync(passwordSettings);
+        var password = await rustCoreService.GenerateRandomPasswordAsync(passwordSettings);
         SetFieldValue(item, FieldKey.LoginPassword, password);
 
         return item;

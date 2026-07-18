@@ -2,15 +2,11 @@ import * as OTPAuth from 'otpauth';
 
 import { fillItem, fillTotpCode } from '@/entrypoints/contentScript/Form';
 
-import { CreateIdentityGenerator, IdentityHelperUtils } from '@/utils/dist/core/identity-generator';
 import { ItemTypeIconSvgs } from '@/utils/dist/core/models/icons';
-import type { Item, ItemField } from '@/utils/dist/core/models/vault';
-import { ItemTypes, FieldKey, createSystemField, getFieldValue } from '@/utils/dist/core/models/vault';
-import { CreatePasswordGenerator, PasswordGenerator, PasswordSettings } from '@/utils/dist/core/password-generator';
-import { getAllFaviconLinks } from '@/utils/favicon';
+import type { Item } from '@/utils/dist/core/models/vault';
+import { FieldKey, getFieldValue } from '@/utils/dist/core/models/vault';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/PasswordLengthSlider';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
@@ -19,6 +15,49 @@ import { t } from '@/i18n/StandaloneI18n';
 
 import { getCurrentAutofillFrameUrl } from './AutofillFrameUrl';
 import { completeConditionalWithPasskey, getConditionalPasskeyOptions, hasPendingConditionalRequest } from './ConditionalPasskey';
+
+/**
+ * The input element the autofill popup was most recently shown for. Used as a fallback fill
+ * target when a credential is created in the full popup window and filled back into the page.
+ */
+let lastAutofillInput: HTMLInputElement | null = null;
+
+/**
+ * Get the input element the autofill popup was most recently shown for (may be null).
+ */
+export function getLastAutofillInput(): HTMLInputElement | null {
+  return lastAutofillInput;
+}
+
+/*
+ * Dimensions of the create-credential popup window (must match browser.windows.create in the
+ * background's handleOpenPopupCreateCredential), used to keep it fully on-screen when positioning.
+ */
+const CREATE_POPUP_WIDTH = 400;
+const CREATE_POPUP_HEIGHT = 600;
+
+/**
+ * Compute an on-screen top-left position for the create-credential window from a click event, so it
+ * opens centered on where the user clicked rather than in the screen corner. Returns null when no
+ * pointer position is available (e.g. keyboard activation), letting the browser pick a default.
+ */
+function getCreatePopupPosition(e: Event): { left: number; top: number } | null {
+  const mouse = e as MouseEvent;
+  if (!mouse.screenX && !mouse.screenY) {
+    return null;
+  }
+
+  // availLeft/availTop are non-standard but widely supported; fall back to 0 when absent.
+  const screenInfo = window.screen as Screen & { availLeft?: number; availTop?: number };
+  const availLeft = screenInfo.availLeft ?? 0;
+  const availTop = screenInfo.availTop ?? 0;
+
+  // Center the window on the cursor, then clamp so the whole window stays within the screen.
+  const left = Math.max(availLeft, Math.min(mouse.screenX - CREATE_POPUP_WIDTH / 2, availLeft + screenInfo.availWidth - CREATE_POPUP_WIDTH));
+  const top = Math.max(availTop, Math.min(mouse.screenY - CREATE_POPUP_HEIGHT / 2, availTop + screenInfo.availHeight - CREATE_POPUP_HEIGHT));
+
+  return { left: Math.round(left), top: Math.round(top) };
+}
 
 /**
  * WeakMap to store event listeners for popup containers
@@ -70,41 +109,6 @@ function generateTotpCode(secretKey: string): string {
 function getTotpRemainingSeconds(): number {
   return 30 - (Math.floor(Date.now() / 1000) % 30);
 }
-
-/**
- * Create a suggestion pill element using safe DOM methods.
- */
-const createSuggestionPill = (value: string): HTMLElement => {
-  const pill = document.createElement('span');
-  pill.className = 'av-suggestion-pill';
-
-  const textSpan = document.createElement('span');
-  textSpan.className = 'av-suggestion-pill-text';
-  textSpan.dataset.value = value;
-  textSpan.textContent = value;
-
-  const deleteSpan = document.createElement('span');
-  deleteSpan.className = 'av-suggestion-pill-delete';
-  deleteSpan.dataset.value = value;
-  deleteSpan.title = 'Remove';
-  deleteSpan.textContent = '×';
-
-  pill.appendChild(textSpan);
-  pill.appendChild(deleteSpan);
-
-  return pill;
-};
-
-/**
- * Create a suggested name element using safe DOM methods.
- */
-const createSuggestedNameSpan = (name: string): HTMLElement => {
-  const span = document.createElement('span');
-  span.className = 'av-suggested-name';
-  span.dataset.name = name;
-  span.textContent = name;
-  return span;
-};
 
 /**
  * Check if an outside-click event originated from AliasVault UI controls.
@@ -827,15 +831,15 @@ function hasFillableLoginField(item: Item): boolean {
  * Create auto-fill popup
  */
 export async function createAutofillPopup(input: HTMLInputElement, items: Item[] | undefined, rootContainer: HTMLElement, recentlySelectedId?: string | null) : Promise<void> {
+  // Remember the input so a credential created in the full popup window can be filled back here.
+  lastAutofillInput = input;
+
   // Get all translations first
   const newText = await t('content.new');
   const searchPlaceholder = await t('content.searchVault');
   const hideFor1HourText = await t('content.hideFor1Hour');
   const hidePermanentlyText = await t('content.hidePermanently');
   const noMatchesText = await t('content.noMatchesFound');
-  const creatingAliasText = await t('content.creatingNewAlias');
-  const creatingCredentialText = await t('content.creatingNewCredential');
-  const failedText = await t('content.failedToCreateIdentity');
 
   const popup = createBasePopup(input, rootContainer);
 
@@ -883,136 +887,37 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
   `;
 
   /**
-   * Handle create button click
+   * Handle create button click: open the full create-item popup (defaults to Login) prefilled with
+   * the detected service name + page URL. The user can switch to an Alias (or any type) there using
+   * the normal UI, and the created credential is autofilled back into this page on save.
    */
-  const handleCreateClick = async (e: Event) : Promise<void> => {
+  const handleCreateClick = (e: Event) : void => {
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
 
+    // Ensure the field has a stable id so the created credential can be filled back into it.
+    if (!input.id) {
+      input.id = `aliasvault-input-${Math.random().toString(36).substring(2, 11)}`;
+    }
+
+    /*
+     * Position the create-credential window near the click so it opens in the user's line of focus
+     * instead of the screen corner. Mouse screen coordinates are clamped so the whole window stays
+     * on-screen; falls back to the browser default when no pointer position is available (keyboard).
+     */
+    const position = getCreatePopupPosition(e);
+
     const serviceInfo = ServiceDetectionUtility.getServiceInfo(document, window.location);
-    const result = await createAliasCreationPopup(serviceInfo.suggestedNames, rootContainer);
+    sendMessage('OPEN_POPUP_CREATE_CREDENTIAL', {
+      itemTitle: serviceInfo.suggestedNames[0] || '',
+      currentUrl: serviceInfo.currentUrl,
+      elementIdentifier: input.id,
+      left: position?.left,
+      top: position?.top
+    });
 
-    if (!result) {
-      // User cancelled
-      return;
-    }
-
-    const loadingPopup = createLoadingPopup(input, `${result.isCustomCredential ? creatingCredentialText : creatingAliasText}...`, rootContainer);
-
-    try {
-      // Sync with api to ensure we have the latest vault.
-      await sendMessage('SYNC_VAULT');
-
-      // Retrieve default email domain from background
-      const response = await sendMessage('GET_DEFAULT_EMAIL_DOMAIN');
-      const domain = response.value;
-
-      let newItem: Item;
-      const currentDateTime = new Date().toISOString();
-
-      if (result.isCustomCredential) {
-        // Create custom item with information provided by user in popup.
-        const faviconBytes = await getFaviconBytes(document);
-        const serviceUrl = getValidServiceUrl();
-
-        // Build fields using factory - only include non-empty values
-        const fields: ItemField[] = [];
-        if (serviceUrl) {
-          fields.push(createSystemField(FieldKey.LoginUrl, { value: serviceUrl }));
-        }
-        if (result.customUsername) {
-          fields.push(createSystemField(FieldKey.LoginUsername, { value: result.customUsername }));
-        }
-        if (result.customEmail) {
-          fields.push(createSystemField(FieldKey.LoginEmail, { value: result.customEmail }));
-        }
-        if (result.customPassword) {
-          fields.push(createSystemField(FieldKey.LoginPassword, { value: result.customPassword }));
-        }
-
-        newItem = {
-          Id: '',
-          Name: result.serviceName ?? '',
-          ItemType: ItemTypes.Login,
-          Logo: faviconBytes ?? undefined,
-          Fields: fields,
-          CreatedAt: currentDateTime,
-          UpdatedAt: currentDateTime
-        };
-      } else {
-        // Generate new random identity using identity generator.
-        const identitySettings = await sendMessage('GET_DEFAULT_IDENTITY_SETTINGS');
-        const identityGenerator = CreateIdentityGenerator(identitySettings.settings?.language ?? 'en');
-        const identity = identityGenerator.generateRandomIdentity(identitySettings.settings?.gender);
-
-        // Get password settings from background
-        const passwordSettingsResponse = await sendMessage('GET_PASSWORD_SETTINGS');
-
-        // Initialize password generator with the retrieved settings
-        const passwordGenerator = CreatePasswordGenerator(passwordSettingsResponse.settings ?? {
-          Length: 12,
-          UseLowercase: true,
-          UseUppercase: true,
-          UseNumbers: true,
-          UseSpecialChars: true,
-          UseNonAmbiguousChars: true
-        });
-        const password = passwordGenerator.generateRandomPassword();
-
-        // Extract favicon from page and get the bytes
-        const faviconBytes = await getFaviconBytes(document);
-        const serviceUrl = getValidServiceUrl();
-
-        const fields: ItemField[] = [];
-        if (serviceUrl) {
-          fields.push(createSystemField(FieldKey.LoginUrl, { value: serviceUrl }));
-        }
-        fields.push(createSystemField(FieldKey.LoginUsername, { value: identity.nickName }));
-        fields.push(createSystemField(FieldKey.LoginEmail, { value: domain ? `${identity.emailPrefix}@${domain}` : identity.emailPrefix }));
-        fields.push(createSystemField(FieldKey.LoginPassword, { value: password }));
-        fields.push(createSystemField(FieldKey.AliasFirstName, { value: identity.firstName }));
-        fields.push(createSystemField(FieldKey.AliasLastName, { value: identity.lastName }));
-        fields.push(createSystemField(FieldKey.AliasBirthdate, { value: IdentityHelperUtils.normalizeBirthDate(identity.birthDate.toISOString()) }));
-        fields.push(createSystemField(FieldKey.AliasGender, { value: identity.gender }));
-
-        newItem = {
-          Id: '',
-          Name: result.serviceName ?? '',
-          ItemType: ItemTypes.Alias,
-          Logo: faviconBytes ?? undefined,
-          Fields: fields,
-          CreatedAt: currentDateTime,
-          UpdatedAt: currentDateTime
-        };
-      }
-
-      // Create item in background.
-      const createResponse = await sendMessage('CREATE_ITEM', {
-        item: JSON.parse(JSON.stringify(newItem))
-      });
-
-      // Check if item creation succeeded
-      if (!createResponse.success) {
-        throw new Error(createResponse.error || 'Failed to create item');
-      }
-
-      // Close popup.
-      removeExistingPopup(rootContainer);
-
-      // Fill the form with the new item immediately.
-      fillItem(newItem, input);
-    } catch (error) {
-      console.error('Error creating item:', error);
-      loadingPopup.innerHTML = `
-        <div style="padding: 16px; color: #ef4444;">
-          ${failedText}
-        </div>
-      `;
-      setTimeout(() => {
-        removeExistingPopup(rootContainer);
-      }, 2000);
-    }
+    removeExistingPopup(rootContainer);
   };
 
   // Add click listener with capture and prevent removal and security validation.
@@ -1137,12 +1042,9 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
     pillNav.appendChild(passkeysPill);
     pillNav.appendChild(credentialsPill);
     popup.insertBefore(pillNav, popup.firstChild);
-
-    // The passkey hint + list sit directly under the nav, above the credential list.
-    popup.insertBefore(passkeySection.hint, credentialList);
     popup.insertBefore(passkeySection.list, credentialList);
 
-    const whenPasskeysShown = [passkeySection.hint, passkeySection.list];
+    const whenPasskeysShown = [passkeySection.list];
     const whenCredentialsShown = [credentialList, divider, actionContainer];
     let showingPasskeys = true;
 
@@ -1407,7 +1309,7 @@ function createPopoutIcon(itemId: string, rootContainer: HTMLElement): HTMLEleme
  * recognisably different from the credential view, the scrollable list of passkey sign-in rows, 
  * and the passkey count (for the pill-nav label).
  */
-async function createPasskeySection(rootContainer: HTMLElement): Promise<{ hint: HTMLElement; list: HTMLElement; count: number } | null> {
+async function createPasskeySection(rootContainer: HTMLElement): Promise<{ list: HTMLElement; count: number } | null> {
   if (!hasPendingConditionalRequest()) {
     return null;
   }
@@ -1418,22 +1320,19 @@ async function createPasskeySection(rootContainer: HTMLElement): Promise<{ hint:
   }
 
   /*
-   * Hint line (passkey icon + instruction) shown above the list so the passkey view reads
-   * clearly differently from the credential view when switching between the two pills.
-   */
-  const hint = document.createElement('div');
-  hint.className = 'av-passkey-hint';
-  hint.appendChild(createPasskeyBadgeIcon());
-  const hintText = document.createElement('span');
-  hintText.textContent = await t('content.loginWithPasskey');
-  hint.appendChild(hintText);
-
-  /*
    * Reuse the credential-list scroll styling but cap the height so at most ~3 passkeys are
    * visible before the list scrolls, leaving room for the view-switch toggle below.
    */
   const list = document.createElement('div');
   list.className = 'av-credential-list av-passkey-list';
+
+  /*
+   * Hint caption as the first row inside the scroll area, so it scrolls away with the list.
+   */
+  const hint = document.createElement('div');
+  hint.className = 'av-passkey-hint';
+  hint.textContent = await t('content.loginWithPasskey');
+  list.appendChild(hint);
 
   options.forEach((option) => {
     const itemElement = document.createElement('div');
@@ -1487,7 +1386,7 @@ async function createPasskeySection(rootContainer: HTMLElement): Promise<{ hint:
     list.appendChild(itemElement);
   });
 
-  return { hint, list, count: options.length };
+  return { list, count: options.length };
 }
 
 /**
@@ -1625,1038 +1524,6 @@ export async function disableAutoShowPopup(temporary: boolean = false): Promise<
 }
 
 /**
- * Create alias creation popup where user can choose between random alias and custom alias.
- */
-export async function createAliasCreationPopup(suggestedNames: string[], rootContainer: HTMLElement): Promise<{ serviceName: string | null, isCustomCredential: boolean, customEmail?: string, customUsername?: string, customPassword?: string } | null> {
-  // Close existing popup
-  removeExistingPopup(rootContainer);
-
-  // Load history
-  const emailHistory = await LocalPreferencesService.getCustomEmailHistory();
-  const usernameHistory = await LocalPreferencesService.getCustomUsernameHistory();
-
-  return new Promise((resolve) => {
-    (async (): Promise<void> => {
-    // Create modal overlay
-      const overlay = document.createElement('div');
-      overlay.id = 'aliasvault-create-popup';
-      overlay.className = 'av-create-popup-overlay';
-
-      const popup = document.createElement('div');
-      popup.className = 'av-create-popup';
-
-      // Define input method base variables
-      const randomIdentityIcon = `
-      <svg class="av-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-        <circle cx="8" cy="8" r="1"/>
-        <circle cx="16" cy="8" r="1"/>
-        <circle cx="12" cy="12" r="1"/>
-        <circle cx="8" cy="16" r="1"/>
-        <circle cx="16" cy="16" r="1"/>
-      </svg>
-    `;
-      const randomIdentitySubtext = await t('content.randomIdentityDescription');
-      const randomIdentityTitle = await t('content.createRandomAlias');
-      const randomIdentityTitleDropdown = await t('content.randomAlias');
-      const randomIdentitySubtextDropdown = await t('content.randomIdentityDescriptionDropdown');
-
-      const manualUsernamePasswordIcon = `
-      <svg class="av-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="7" r="4"/>
-        <path d="M5.5 20a6.5 6.5 0 0 1 13 0"/>
-      </svg>
-    `;
-      const manualUsernamePasswordSubtext = await t('content.manualCredentialDescription');
-      const manualUsernamePasswordTitle = await t('content.createUsernamePassword');
-      const manualUsernamePasswordTitleDropdown = await t('content.usernamePassword');
-      const manualUsernamePasswordSubtextDropdown = await t('content.manualCredentialDescriptionDropdown');
-
-      // Get all translated strings first
-      const serviceNameText = await t('common.serviceName');
-      const enterServiceNameText = await t('content.enterServiceName');
-      const cancelText = await t('common.cancel');
-      const createAndSaveAliasText = await t('content.createAndSaveAlias');
-      const emailText = await t('common.email');
-      const enterEmailAddressText = await t('content.enterEmailAddress');
-      const usernameText = await t('common.username');
-      const enterUsernameText = await t('content.enterUsername');
-      const passwordText = await t('common.password');
-      const generateNewPasswordText = await t('content.generateNewPassword');
-      const togglePasswordVisibilityText = await t('content.togglePasswordVisibility');
-      const createAndSaveCredentialText = await t('content.createAndSaveCredential');
-      const passwordLengthText = await t('items.passwordLength');
-      const changePasswordComplexityText = await t('items.changePasswordComplexity');
-
-      // Create the main content
-      popup.innerHTML = `
-      <div class="av-create-popup-header">
-        <div class="av-create-popup-title-container">
-          <div class="av-create-popup-title-wrapper">
-            ${randomIdentityIcon}
-            <h3 class="av-create-popup-title">${randomIdentityTitle}</h3>
-          </div>
-          <div class="av-create-popup-header-buttons">
-            <button class="av-create-popup-mode-dropdown">
-              <svg class="av-icon" viewBox="0 0 24 24">
-                <path d="M6 9l6 6 6-6"/>
-              </svg>
-            </button>
-            <button class="av-create-popup-popout" title="Open in main popup">
-              <svg class="av-icon" viewBox="0 0 24 24">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                <polyline points="15 3 21 3 21 9"></polyline>
-                <line x1="10" y1="14" x2="21" y2="3"></line>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="av-create-popup-mode-dropdown-menu" style="display: none;">
-        <button class="av-create-popup-mode-option" data-mode="random">
-          <div class="av-create-popup-mode-icon">
-            ${randomIdentityIcon}
-          </div>
-          <div class="av-create-popup-mode-content">
-            <h4>${randomIdentityTitleDropdown}</h4>
-            <p>${randomIdentitySubtextDropdown}</p>
-          </div>
-        </button>
-
-        <button class="av-create-popup-mode-option" data-mode="custom">
-          <div class="av-create-popup-mode-icon">
-            ${manualUsernamePasswordIcon}
-          </div>
-          <div class="av-create-popup-mode-content">
-            <h4>${manualUsernamePasswordTitleDropdown}</h4>
-            <p>${manualUsernamePasswordSubtextDropdown}</p>
-          </div>
-        </button>
-      </div>
-
-      <div class="av-create-popup-help-text">${randomIdentitySubtext}</div>
-
-      <div class="av-create-popup-field-group">
-        <label for="service-name-input">${serviceNameText}</label>
-        <input
-          type="text"
-          id="service-name-input"
-          value="${suggestedNames[0] ?? ''}"
-          class="av-create-popup-input"
-          placeholder="${enterServiceNameText}"
-        >
-        ${suggestedNames.length > 1 ? '<div class="av-suggested-names"></div>' : ''}
-      </div>
-
-      <div class="av-create-popup-mode av-create-popup-random-mode">
-        <div class="av-create-popup-actions">
-          <button id="cancel-btn" class="av-create-popup-cancel">${cancelText}</button>
-          <button id="save-btn" class="av-create-popup-save">${createAndSaveAliasText}</button>
-        </div>
-      </div>
-
-      <div class="av-create-popup-mode av-create-popup-custom-mode" style="display: none;">
-        <div class="av-create-popup-field-group">
-          <label for="custom-email">${emailText}</label>
-          <input
-            type="email"
-            id="custom-email"
-            class="av-create-popup-input"
-            placeholder="${enterEmailAddressText}"
-          >
-          <div class="av-field-suggestions" id="email-suggestions"></div>
-        </div>
-        <div class="av-create-popup-field-group">
-          <label for="custom-username">${usernameText}</label>
-          <input
-            type="text"
-            id="custom-username"
-            class="av-create-popup-input"
-            placeholder="${enterUsernameText}"
-          >
-          <div class="av-field-suggestions" id="username-suggestions"></div>
-        </div>
-        <div class="av-create-popup-field-group">
-          <label>${passwordText}</label>
-          <div class="av-create-popup-password-preview">
-            <input
-              type="text"
-              id="password-preview"
-              class="av-create-popup-input"
-              data-is-generated="true"
-            >
-            <button id="toggle-password-visibility" class="av-create-popup-visibility-btn" title="${togglePasswordVisibilityText}">
-              <svg class="av-icon" viewBox="0 0 24 24">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            </button>
-            <button id="regenerate-password" class="av-create-popup-regenerate-btn" title="${generateNewPasswordText}">
-              <svg class="av-icon" viewBox="0 0 24 24">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                <path d="M3 3v5h5"></path>
-              </svg>
-            </button>
-          </div>
-
-          <div class="av-password-length-container">
-            <div class="av-password-length-header">
-              <label for="password-length-slider">${passwordLengthText}</label>
-              <div class="av-password-length-controls">
-                <span id="password-length-value" class="av-password-length-value">12</span>
-                <button id="password-config-btn" class="av-password-config-btn" title="${changePasswordComplexityText}">
-                  <svg class="av-icon" viewBox="0 0 24 24">
-                    <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                    <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <input type="range" id="password-length-slider" min="${SLIDER_MIN}" max="${SLIDER_MAX}" step="0.1" value="${lengthToSlider(12)}" class="av-password-length-slider">
-          </div>
-        </div>
-        <div class="av-create-popup-actions">
-          <button id="custom-cancel-btn" class="av-create-popup-cancel">${cancelText}</button>
-          <button id="custom-save-btn" class="av-create-popup-save">${createAndSaveCredentialText}</button>
-        </div>
-      </div>
-    `;
-
-      overlay.appendChild(popup);
-      rootContainer.appendChild(overlay);
-
-      // Animate in
-      requestAnimationFrame(() => {
-        popup.classList.add('show');
-      });
-
-      // Get all the elements
-      const randomMode = popup.querySelector('.av-create-popup-random-mode') as HTMLElement;
-      const customMode = popup.querySelector('.av-create-popup-custom-mode') as HTMLElement;
-      const dropdownMenu = popup.querySelector('.av-create-popup-mode-dropdown-menu') as HTMLElement;
-      const titleContainer = popup.querySelector('.av-create-popup-title-container') as HTMLElement;
-      const popoutBtn = popup.querySelector('.av-create-popup-popout') as HTMLButtonElement;
-      const cancelBtn = popup.querySelector('#cancel-btn') as HTMLButtonElement;
-      const customCancelBtn = popup.querySelector('#custom-cancel-btn') as HTMLButtonElement;
-      const saveBtn = popup.querySelector('#save-btn') as HTMLButtonElement;
-      const customSaveBtn = popup.querySelector('#custom-save-btn') as HTMLButtonElement;
-      const inputServiceName = popup.querySelector('#service-name-input') as HTMLInputElement;
-      const customEmail = popup.querySelector('#custom-email') as HTMLInputElement;
-      const customUsername = popup.querySelector('#custom-username') as HTMLInputElement;
-      const passwordPreview = popup.querySelector('#password-preview') as HTMLInputElement;
-      const regenerateBtn = popup.querySelector('#regenerate-password') as HTMLButtonElement;
-      const toggleVisibilityBtn = popup.querySelector('#toggle-password-visibility') as HTMLButtonElement;
-      const emailSuggestions = popup.querySelector('#email-suggestions') as HTMLElement;
-      const usernameSuggestions = popup.querySelector('#username-suggestions') as HTMLElement;
-
-      // Populate suggested names
-      const suggestedNamesContainer = popup.querySelector('.av-suggested-names') as HTMLElement;
-      if (suggestedNamesContainer) {
-        await populateSuggestedNames(suggestedNamesContainer, suggestedNames, suggestedNames[0] ?? '');
-      }
-
-      /**
-       * Update history with new value (max 2 unique entries)
-       */
-      const updateHistory = async (value: string, historyType: 'email' | 'username', maxItems: number = 2): Promise<string[]> => {
-        const history = historyType === 'email'
-          ? await LocalPreferencesService.getCustomEmailHistory()
-          : await LocalPreferencesService.getCustomUsernameHistory();
-
-        // Remove the value if it already exists
-        const filteredHistory = history.filter((item: string) => item !== value);
-
-        // Add the new value at the beginning
-        if (value.trim()) {
-          filteredHistory.unshift(value);
-        }
-
-        // Keep only the first maxItems
-        const updatedHistory = filteredHistory.slice(0, maxItems);
-
-        // Save the updated history
-        if (historyType === 'email') {
-          await LocalPreferencesService.setCustomEmailHistory(updatedHistory);
-        } else {
-          await LocalPreferencesService.setCustomUsernameHistory(updatedHistory);
-        }
-
-        return updatedHistory;
-      };
-
-      /**
-       * Remove item from history
-       */
-      const removeFromHistory = async (value: string, historyType: 'email' | 'username'): Promise<string[]> => {
-        const history = historyType === 'email'
-          ? await LocalPreferencesService.getCustomEmailHistory()
-          : await LocalPreferencesService.getCustomUsernameHistory();
-        const updatedHistory = history.filter((item: string) => item !== value);
-        if (historyType === 'email') {
-          await LocalPreferencesService.setCustomEmailHistory(updatedHistory);
-        } else {
-          await LocalPreferencesService.setCustomUsernameHistory(updatedHistory);
-        }
-        return updatedHistory;
-      };
-
-      /**
-       * Update suggestions display using safe DOM methods.
-       */
-      const updateSuggestions = (input: HTMLInputElement, suggestionsContainer: HTMLElement, history: string[]): void => {
-        const currentValue = input.value.trim();
-
-        // Filter out the current value from history and limit to 2 items
-        const filteredHistory = history
-          .filter(item => item.toLowerCase() !== currentValue.toLowerCase())
-          .slice(0, 2);
-
-        // Clear existing content
-        suggestionsContainer.textContent = '';
-
-        if (filteredHistory.length === 0) {
-          suggestionsContainer.style.display = 'none';
-          return;
-        }
-
-        // Build pill elements
-        filteredHistory.forEach((item, index) => {
-          if (index > 0) {
-            suggestionsContainer.appendChild(document.createTextNode(' '));
-          }
-          suggestionsContainer.appendChild(createSuggestionPill(item));
-        });
-
-        suggestionsContainer.style.display = 'flex';
-      };
-
-      // Initial display of suggestions
-      updateSuggestions(customEmail, emailSuggestions, emailHistory);
-      updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
-
-      // Handle popout button click
-      popoutBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const serviceName = inputServiceName.value.trim();
-        const encodedServiceInfo = ServiceDetectionUtility.getEncodedServiceInfo(document, window.location);
-        sendMessage('OPEN_POPUP_CREATE_CREDENTIAL', {
-          serviceName: serviceName || encodedServiceInfo.serviceName,
-          currentUrl: encodedServiceInfo.currentUrl
-        });
-        closePopup(null);
-      });
-
-      // Handle email input
-      customEmail.addEventListener('input', () => {
-        updateSuggestions(customEmail, emailSuggestions, emailHistory);
-      });
-
-      // Handle username input
-      customUsername.addEventListener('input', () => {
-        updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
-      });
-
-      // Handle suggestion clicks for email
-      emailSuggestions.addEventListener('click', async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const target = e.target as HTMLElement;
-
-        // Check if delete button was clicked
-        if (target.classList.contains('av-suggestion-pill-delete')) {
-          const value = target.dataset.value;
-          if (value) {
-            const updatedHistory = await removeFromHistory(value, 'email');
-            emailHistory.splice(0, emailHistory.length, ...updatedHistory);
-            updateSuggestions(customEmail, emailSuggestions, emailHistory);
-          }
-        } else {
-          // Check if pill or pill text was clicked
-          let pillElement = target.closest('.av-suggestion-pill') as HTMLElement;
-          if (pillElement) {
-            const textElement = pillElement.querySelector('.av-suggestion-pill-text') as HTMLElement;
-            const value = textElement?.dataset.value;
-            if (value) {
-              customEmail.value = value;
-              updateSuggestions(customEmail, emailSuggestions, emailHistory);
-            }
-          }
-        }
-      });
-
-      // Handle suggestion clicks for username
-      usernameSuggestions.addEventListener('click', async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const target = e.target as HTMLElement;
-
-        // Check if delete button was clicked
-        if (target.classList.contains('av-suggestion-pill-delete')) {
-          const value = target.dataset.value;
-          if (value) {
-            const updatedHistory = await removeFromHistory(value, 'username');
-            usernameHistory.splice(0, usernameHistory.length, ...updatedHistory);
-            updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
-          }
-        } else {
-          // Check if pill or pill text was clicked
-          let pillElement = target.closest('.av-suggestion-pill') as HTMLElement;
-          if (pillElement) {
-            const textElement = pillElement.querySelector('.av-suggestion-pill-text') as HTMLElement;
-            const value = textElement?.dataset.value;
-            if (value) {
-              customUsername.value = value;
-              updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
-            }
-          }
-        }
-      });
-
-      // Get password settings from background
-      let passwordGenerator: PasswordGenerator;
-      let currentPasswordSettings: PasswordSettings = {
-        Length: 12,
-        UseLowercase: true,
-        UseUppercase: true,
-        UseNumbers: true,
-        UseSpecialChars: true,
-        UseNonAmbiguousChars: true
-      };
-
-      sendMessage('GET_PASSWORD_SETTINGS').then((passwordSettingsResponse) => {
-        currentPasswordSettings = passwordSettingsResponse.settings ?? currentPasswordSettings;
-        passwordGenerator = CreatePasswordGenerator(currentPasswordSettings);
-
-        // Update UI with loaded settings
-        const lengthSlider = popup.querySelector('#password-length-slider') as HTMLInputElement;
-        const lengthValue = popup.querySelector('#password-length-value') as HTMLSpanElement;
-        lengthSlider.value = lengthToSlider(currentPasswordSettings.Length).toString();
-        lengthValue.textContent = currentPasswordSettings.Length.toString();
-
-        // Generate initial password after settings are loaded
-        generatePassword();
-      });
-
-      /**
-       * Generate and set password.
-       */
-      const generatePassword = () : void => {
-        if (!passwordGenerator) {
-          return;
-        }
-
-        passwordPreview.value = passwordGenerator.generateRandomPassword();
-        passwordPreview.type = 'text';
-        passwordPreview.dataset.isGenerated = 'true';
-        updateVisibilityIcon(true);
-      };
-
-      // Handle regenerate button click
-      regenerateBtn.addEventListener('click', generatePassword);
-
-      // Handle password length slider
-      const lengthSlider = popup.querySelector('#password-length-slider') as HTMLInputElement;
-      const lengthValue = popup.querySelector('#password-length-value') as HTMLSpanElement;
-
-      lengthSlider.addEventListener('input', () => {
-        const sliderValue = parseFloat(lengthSlider.value);
-        const newLength = sliderToLength(sliderValue);
-        currentPasswordSettings.Length = newLength;
-        lengthValue.textContent = newLength.toString();
-
-        // Regenerate password with new settings
-        if (passwordGenerator) {
-          passwordGenerator = CreatePasswordGenerator(currentPasswordSettings);
-          generatePassword();
-        }
-      });
-
-      // Handle advanced configuration button
-      const configBtn = popup.querySelector('#password-config-btn') as HTMLButtonElement;
-      configBtn.addEventListener('click', () => {
-        showPasswordConfigDialog();
-      });
-
-      // Add password visibility toggle functionality
-      const passwordInput = popup.querySelector('#password-preview') as HTMLInputElement;
-
-      /**
-       * Toggle password visibility icon
-       */
-      const updateVisibilityIcon = (isVisible: boolean): void => {
-        toggleVisibilityBtn.innerHTML = isVisible ? `
-        <svg class="av-icon" viewBox="0 0 24 24">
-          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-          <circle cx="12" cy="12" r="3"></circle>
-        </svg>
-      ` : `
-        <svg class="av-icon" viewBox="0 0 24 24">
-          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-          <line x1="1" y1="1" x2="23" y2="23"></line>
-        </svg>
-      `;
-      };
-
-      /**
-       * Toggle password visibility
-       */
-      const togglePasswordVisibility = (): void => {
-        const isVisible = passwordInput.type === 'text';
-        passwordInput.type = isVisible ? 'password' : 'text';
-        updateVisibilityIcon(!isVisible);
-      };
-
-      toggleVisibilityBtn.addEventListener('click', togglePasswordVisibility);
-
-      /**
-       * Show password configuration dialog
-       */
-      const showPasswordConfigDialog = async (): Promise<void> => {
-        // Get all translations first
-        const changePasswordComplexityText = await t('items.changePasswordComplexity');
-        const generateNewPreviewText = await t('common.generate');
-        const includeLowercaseText = await t('items.includeLowercase');
-        const includeUppercaseText = await t('items.includeUppercase');
-        const includeNumbersText = await t('items.includeNumbers');
-        const includeSpecialCharsText = await t('items.includeSpecialChars');
-        const avoidAmbiguousCharsText = await t('items.avoidAmbiguousChars');
-        const useText = await t('common.use');
-
-        // Create dialog overlay
-        const dialogOverlay = document.createElement('div');
-        dialogOverlay.className = 'av-password-config-overlay';
-
-        const dialog = document.createElement('div');
-        dialog.className = 'av-password-config-dialog';
-
-        dialog.innerHTML = `
-          <div class="av-password-config-header">
-            <h3>${changePasswordComplexityText}</h3>
-            <button class="av-password-config-close">
-              <svg class="av-icon" viewBox="0 0 24 24">
-                <path d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
-          </div>
-
-          <div class="av-password-config-content">
-            <div class="av-password-preview-section">
-              <input type="text" id="config-preview" class="av-password-config-preview" readonly>
-              <button id="config-refresh" class="av-password-config-refresh" title="${generateNewPreviewText}">
-                <svg class="av-icon" viewBox="0 0 24 24">
-                  <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                </svg>
-              </button>
-            </div>
-
-            <div class="av-password-config-options">
-              <div class="av-password-config-toggles">
-                <button class="av-password-config-toggle ${currentPasswordSettings.UseLowercase ? 'active' : ''}" data-setting="UseLowercase" title="${includeLowercaseText}">
-                  <span>a-z</span>
-                </button>
-                <button class="av-password-config-toggle ${currentPasswordSettings.UseUppercase ? 'active' : ''}" data-setting="UseUppercase" title="${includeUppercaseText}">
-                  <span>A-Z</span>
-                </button>
-                <button class="av-password-config-toggle ${currentPasswordSettings.UseNumbers ? 'active' : ''}" data-setting="UseNumbers" title="${includeNumbersText}">
-                  <span>0-9</span>
-                </button>
-                <button class="av-password-config-toggle ${currentPasswordSettings.UseSpecialChars ? 'active' : ''}" data-setting="UseSpecialChars" title="${includeSpecialCharsText}">
-                  <span>!@#</span>
-                </button>
-              </div>
-
-              <div class="av-password-config-checkbox">
-                <label>
-                  <input type="checkbox" id="avoid-ambiguous" ${currentPasswordSettings.UseNonAmbiguousChars ? 'checked' : ''}>
-                  <span>${avoidAmbiguousCharsText}</span>
-                </label>
-              </div>
-            </div>
-
-            <div class="av-password-config-actions">
-              <button id="config-use-btn" class="av-password-config-use">
-                <svg class="av-icon" viewBox="0 0 24 24">
-                  <path d="M15 13l-3 3m0 0l-3-3m3 3V8m0 13a9 9 0 110-18 9 9 0 010 18z"/>
-                </svg>
-                ${useText}
-              </button>
-            </div>
-          </div>
-        `;
-
-        dialogOverlay.appendChild(dialog);
-        popup.appendChild(dialogOverlay);
-
-        // Generate initial preview
-        const configPreview = dialog.querySelector('#config-preview') as HTMLInputElement;
-        /**
-         * Update the config preview.
-         */
-        const updateConfigPreview = (): void => {
-          if (passwordGenerator) {
-            passwordGenerator = CreatePasswordGenerator(currentPasswordSettings);
-            configPreview.value = passwordGenerator.generateRandomPassword();
-          }
-        };
-        updateConfigPreview();
-
-        // Handle toggle buttons
-        dialog.querySelectorAll('.av-password-config-toggle').forEach(toggle => {
-          toggle.addEventListener('click', () => {
-            const setting = (toggle as HTMLElement).dataset.setting;
-            if (setting) {
-              switch (setting) {
-                case 'UseLowercase':
-                  currentPasswordSettings.UseLowercase = !currentPasswordSettings.UseLowercase;
-                  toggle.classList.toggle('active', currentPasswordSettings.UseLowercase);
-                  break;
-                case 'UseUppercase':
-                  currentPasswordSettings.UseUppercase = !currentPasswordSettings.UseUppercase;
-                  toggle.classList.toggle('active', currentPasswordSettings.UseUppercase);
-                  break;
-                case 'UseNumbers':
-                  currentPasswordSettings.UseNumbers = !currentPasswordSettings.UseNumbers;
-                  toggle.classList.toggle('active', currentPasswordSettings.UseNumbers);
-                  break;
-                case 'UseSpecialChars':
-                  currentPasswordSettings.UseSpecialChars = !currentPasswordSettings.UseSpecialChars;
-                  toggle.classList.toggle('active', currentPasswordSettings.UseSpecialChars);
-                  break;
-              }
-              updateConfigPreview();
-            }
-          });
-        });
-
-        // Handle checkbox
-        const avoidAmbiguousCheckbox = dialog.querySelector('#avoid-ambiguous') as HTMLInputElement;
-        avoidAmbiguousCheckbox.addEventListener('change', () => {
-          currentPasswordSettings.UseNonAmbiguousChars = avoidAmbiguousCheckbox.checked;
-          updateConfigPreview();
-        });
-
-        // Handle refresh button
-        const refreshBtn = dialog.querySelector('#config-refresh') as HTMLButtonElement;
-        refreshBtn.addEventListener('click', updateConfigPreview);
-
-        // Handle use button
-        const useBtn = dialog.querySelector('#config-use-btn') as HTMLButtonElement;
-        useBtn.addEventListener('click', () => {
-          passwordPreview.value = configPreview.value;
-          passwordPreview.type = 'text';
-          passwordPreview.dataset.isGenerated = 'true';
-          updateVisibilityIcon(true);
-
-          // Update main password generator
-          passwordGenerator = CreatePasswordGenerator(currentPasswordSettings);
-
-          // Update slider value
-          lengthSlider.value = lengthToSlider(currentPasswordSettings.Length).toString();
-          lengthValue.textContent = currentPasswordSettings.Length.toString();
-
-          // Close dialog
-          dialogOverlay.remove();
-        });
-
-        // Handle close button
-        const closeBtn = dialog.querySelector('.av-password-config-close') as HTMLButtonElement;
-        closeBtn.addEventListener('click', () => {
-          dialogOverlay.remove();
-        });
-
-        // Handle click outside to close
-        dialogOverlay.addEventListener('click', (e) => {
-          if (e.target === dialogOverlay) {
-            dialogOverlay.remove();
-          }
-        });
-      };
-
-      /**
-       * Handle password input changes
-       */
-      const handlePasswordChange = (e: Event): void => {
-        const target = e.target as HTMLInputElement;
-        const isGenerated = target.dataset.isGenerated === 'true';
-        const isEmpty = target.value.trim().length <= 1;
-
-        // If manually cleared (empty or single char) and was previously generated, switch to password type
-        if (isEmpty && isGenerated) {
-          target.type = 'password';
-          target.dataset.isGenerated = 'false';
-          updateVisibilityIcon(false);
-        }
-      };
-
-      /**
-       * Handle paste events
-       */
-      const handlePasswordPaste = (): void => {
-        passwordInput.dataset.isGenerated = 'false';
-        passwordInput.type = 'password';
-        updateVisibilityIcon(false);
-      };
-
-      passwordInput.addEventListener('input', handlePasswordChange);
-      passwordInput.addEventListener('paste', handlePasswordPaste);
-
-      /**
-       * Toggle dropdown visibility.
-       */
-      const toggleDropdown = () : void => {
-        dropdownMenu.style.display = dropdownMenu.style.display === 'none' ? 'block' : 'none';
-      };
-
-      // Make title container clickable to trigger the dropdown
-      titleContainer.addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleDropdown();
-      });
-
-      // Close dropdown when clicking outside
-      document.addEventListener('click', (e) => {
-        if (!titleContainer.contains(e.target as Node) && !dropdownMenu.contains(e.target as Node)) {
-          dropdownMenu.style.display = 'none';
-        }
-      });
-
-      // Handle mode option clicks
-      dropdownMenu.querySelectorAll('.av-create-popup-mode-option').forEach(option => {
-        option.addEventListener('click', () => {
-          const mode = (option as HTMLElement).dataset.mode;
-          const titleWrapper = popup.querySelector('.av-create-popup-title-wrapper') as HTMLElement;
-          if (mode === 'random') {
-            titleWrapper.innerHTML = `
-            ${randomIdentityIcon}
-            <h3 class="av-create-popup-title">${randomIdentityTitle}</h3>
-          `;
-          popup.querySelector('.av-create-popup-help-text')!.textContent = randomIdentitySubtext;
-          randomMode.style.display = 'block';
-          customMode.style.display = 'none';
-          } else if (mode === 'custom') {
-            titleWrapper.innerHTML = `
-            ${manualUsernamePasswordIcon}
-            <h3 class="av-create-popup-title">${manualUsernamePasswordTitle}</h3>
-          `;
-          popup.querySelector('.av-create-popup-help-text')!.textContent = manualUsernamePasswordSubtext;
-          randomMode.style.display = 'none';
-          customMode.style.display = 'block';
-          }
-          dropdownMenu.style.display = 'none';
-        });
-      });
-
-      /**
-       * Close the popup.
-       */
-      const closePopup = (value: { serviceName: string | null, isCustomCredential: boolean, customEmail?: string, customUsername?: string, customPassword?: string } | null) : void => {
-        popup.classList.remove('show');
-        setTimeout(() => {
-          overlay.remove();
-          resolve(value);
-        }, 200);
-      };
-
-      // Handle save buttons
-      saveBtn.addEventListener('click', () => {
-        const serviceName = inputServiceName.value.trim();
-        if (serviceName) {
-          closePopup({
-            serviceName,
-            isCustomCredential: false
-          });
-        }
-      });
-
-      /**
-       * Handle custom save button click.
-       */
-      const handleCustomSave = async () : Promise<void> => {
-        const serviceName = inputServiceName.value.trim();
-        if (serviceName) {
-          const email = customEmail.value.trim();
-          const username = customUsername.value.trim();
-          const finalEmail = email;
-          const finalUsername = username;
-
-          if (!finalEmail && !finalUsername) {
-          // Add error styling to fields
-            customEmail.classList.add('av-create-popup-input-error');
-            customUsername.classList.add('av-create-popup-input-error');
-
-            // Add error messages after labels
-            const emailLabel = customEmail.previousElementSibling as HTMLLabelElement;
-            const usernameLabel = customUsername.previousElementSibling as HTMLLabelElement;
-
-            if (!emailLabel.querySelector('.av-create-popup-error-text')) {
-              const emailError = document.createElement('span');
-              emailError.className = 'av-create-popup-error-text';
-              emailError.textContent = await t('content.enterEmailAndOrUsername');
-              emailLabel.appendChild(emailError);
-            }
-
-            if (!usernameLabel.querySelector('.av-create-popup-error-text')) {
-              const usernameError = document.createElement('span');
-              usernameError.className = 'av-create-popup-error-text';
-              usernameError.textContent = await t('content.enterEmailAndOrUsername');
-              usernameLabel.appendChild(usernameError);
-            }
-
-            /**
-             * Remove error styling.
-             */
-            const removeError = () : void => {
-              customEmail.classList.remove('av-create-popup-input-error');
-              customUsername.classList.remove('av-create-popup-input-error');
-              const emailError = emailLabel.querySelector('.av-create-popup-error-text');
-              const usernameError = usernameLabel.querySelector('.av-create-popup-error-text');
-              if (emailError) {
-                emailError.remove();
-              }
-              if (usernameError) {
-                usernameError.remove();
-              }
-            };
-
-            customEmail.addEventListener('input', removeError, { once: true });
-            customUsername.addEventListener('input', removeError, { once: true });
-
-            return;
-          }
-
-          // Update history when saving
-          if (finalEmail) {
-            await updateHistory(finalEmail, 'email');
-          }
-          if (finalUsername) {
-            await updateHistory(finalUsername, 'username');
-          }
-
-          closePopup({
-            serviceName,
-            isCustomCredential: true,
-            customEmail: finalEmail,
-            customUsername: finalUsername,
-            customPassword: passwordPreview.value
-          });
-        }
-      }
-
-      customSaveBtn.addEventListener('click', handleCustomSave);
-
-      /**
-       * Handle custom form input enter key press to submit the form.
-       */
-      const handleCustomEnter = (e: KeyboardEvent) : void => {
-        if (e.key === 'Enter') {
-          handleCustomSave();
-        }
-      };
-
-      inputServiceName.addEventListener('keyup', handleCustomEnter);
-      customEmail.addEventListener('keyup', handleCustomEnter);
-      customUsername.addEventListener('keyup', handleCustomEnter);
-      passwordPreview.addEventListener('keyup', handleCustomEnter);
-
-      // Handle cancel buttons
-      cancelBtn.addEventListener('click', () => {
-        closePopup(null);
-      });
-
-      customCancelBtn.addEventListener('click', () => {
-        closePopup(null);
-      });
-
-      // Handle Enter key
-      inputServiceName.addEventListener('keyup', (e) => {
-        if (e.key === 'Enter') {
-          const serviceName = inputServiceName.value.trim();
-          if (serviceName) {
-            closePopup({
-              serviceName,
-              isCustomCredential: false
-            });
-          }
-        }
-      });
-
-      /**
-       * Handle click outside.
-       */
-      const handleClickOutside = (event: MouseEvent): void => {
-        const target = event.target as Node;
-        if (target === overlay) {
-          closePopup(null);
-        }
-      };
-
-      // Use mousedown instead of click to prevent closing when dragging text
-      overlay.addEventListener('mousedown', handleClickOutside);
-
-      /**
-       * Handle suggested name click.
-       */
-      const handleSuggestedNameClick = async (e: Event) : Promise<void> => {
-        const target = e.target as HTMLElement;
-        if (target.classList.contains('av-suggested-name')) {
-          const name = target.dataset.name;
-          if (name) {
-          // Update input with clicked name
-            inputServiceName.value = name;
-            customUsername.value = name;
-
-            // Update the suggested names section
-            const suggestedNamesContainer = target.closest('.av-suggested-names') as HTMLElement;
-            if (suggestedNamesContainer) {
-              await populateSuggestedNames(suggestedNamesContainer, suggestedNames, name);
-            }
-          }
-        }
-      };
-
-      popup.addEventListener('click', handleSuggestedNameClick);
-
-      // Focus the input field
-      inputServiceName.select();
-    })();
-  });
-}
-
-/**
- * Populate a suggested names container using safe DOM methods.
- */
-async function populateSuggestedNames(container: HTMLElement, suggestedNames: string[], currentValue: string): Promise<void> {
-  // Filter out the current value and create unique set of remaining suggestions
-  const filteredSuggestions = [...new Set(suggestedNames.filter(n => n !== currentValue))];
-
-  // Clear existing content
-  container.textContent = '';
-
-  if (filteredSuggestions.length === 0) {
-    return;
-  }
-
-  const orLabel = await t('content.or');
-
-  // Add "or" label as text node
-  container.appendChild(document.createTextNode(orLabel + ' '));
-
-  // Add each suggestion
-  filteredSuggestions.forEach((name, index) => {
-    container.appendChild(createSuggestedNameSpan(name));
-    if (index < filteredSuggestions.length - 1) {
-      container.appendChild(document.createTextNode(', '));
-    }
-  });
-
-  container.appendChild(document.createTextNode('?'));
-}
-
-/**
- * Get favicon bytes from page and resize if necessary.
- * Uses the shared FaviconExtractor utility for consistent favicon URL extraction.
- */
-async function getFaviconBytes(doc: Document): Promise<Uint8Array | null> {
-  const MAX_SIZE_BYTES = 50 * 1024; // 50KB max size before resizing
-  const TARGET_WIDTH = 96; // Resize target width
-
-  // Use shared utility for consistent favicon extraction across the extension
-  const faviconLinks = getAllFaviconLinks(doc);
-
-  for (const link of faviconLinks) {
-    const imageData = await fetchAndProcessFavicon(link.href, MAX_SIZE_BYTES, TARGET_WIDTH);
-    if (imageData) {
-      return imageData;
-    }
-  }
-
-  return null;
-}
-
-/**
- * Attempt to fetch and process a favicon from a given URL
- */
-async function fetchAndProcessFavicon(url: string, maxSize: number, targetWidth: number): Promise<Uint8Array | null> {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      return null;
-    }
-
-    const contentType = response.headers.get('content-type');
-    if (!contentType?.startsWith('image/')) {
-      return null;
-    }
-
-    const arrayBuffer = await response.arrayBuffer();
-    if (arrayBuffer.byteLength === 0) {
-      return null;
-    }
-
-    let imageData = new Uint8Array(arrayBuffer);
-
-    // If image is too large, attempt to resize
-    if (imageData.byteLength > maxSize) {
-      const resizedBlob = await resizeImage(imageData, contentType, targetWidth);
-      if (resizedBlob) {
-        imageData = new Uint8Array(await resizedBlob.arrayBuffer());
-      }
-    }
-
-    // Return only if within size limits
-    return imageData.byteLength <= maxSize ? imageData : null;
-  } catch (error) {
-    console.error('Error fetching favicon:', url, error);
-    return null;
-  }
-}
-
-/**
- * Resizes an image using OffscreenCanvas and compresses it.
- */
-async function resizeImage(imageData: Uint8Array, contentType: string, targetWidth: number): Promise<Blob | null> {
-  return new Promise((resolve) => {
-    // Convert Uint8Array to ArrayBuffer to ensure compatibility with Blob
-    const arrayBuffer = imageData.buffer.slice(
-      imageData.byteOffset,
-      imageData.byteOffset + imageData.byteLength
-    ) as ArrayBuffer; // Assert as ArrayBuffer to ensure type compatibility
-    const blob = new Blob([arrayBuffer], { type: contentType });
-    const img = new Image();
-
-    /**
-     * Handle image load.
-     */
-    img.onload = () : void => {
-      const scale = targetWidth / img.width;
-      const targetHeight = Math.floor(img.height * scale);
-
-      const canvas = new OffscreenCanvas(targetWidth, targetHeight);
-      const ctx = canvas.getContext("2d");
-
-      if (!ctx) {
-        resolve(null);
-        return;
-      }
-
-      ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-      canvas.convertToBlob({ type: "image/png", quality: 0.7 }).then(resolve).catch(() => resolve(null));
-    };
-
-    /**
-     * Handle image load error.
-     */
-    img.onerror = () : void => {
-      resolve(null);
-    };
-
-    img.src = URL.createObjectURL(blob);
-  });
-}
-
-/**
  * Dismiss vault locked popup for 4 hours if user is logged in, or for 3 days if user is not logged in.
  */
 export async function dismissVaultLockedPopup(): Promise<void> {
@@ -2671,35 +1538,6 @@ export async function dismissVaultLockedPopup(): Promise<void> {
     // User is not logged in - dismiss for 3 days
     const threeDaysFromNow = Date.now() + (3 * 24 * 60 * 60 * 1000);
     await LocalPreferencesService.setVaultLockedDismissUntil(threeDaysFromNow);
-  }
-}
-
-/**
- * Get a valid service URL from the current page.
- */
-function getValidServiceUrl(): string {
-  try {
-    // Check if we're in an iframe with invalid/null source
-    if (window !== window.top && (!window.location.href || window.location.href === 'about:srcdoc')) {
-      return '';
-    }
-
-    const url = new URL(window.location.href);
-
-    // Validate the domain/origin
-    if (!url.origin || url.origin === 'null' || !url.hostname) {
-      return '';
-    }
-
-    // Check for valid protocol (only http/https)
-    if (!(/^https?:$/).exec(url.protocol)) {
-      return '';
-    }
-
-    return url.origin + url.pathname;
-  } catch (error) {
-    console.debug('Error validating service URL:', error);
-    return '';
   }
 }
 

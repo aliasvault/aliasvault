@@ -14,7 +14,7 @@ During the public beta we only support the **latest major and minor** release. O
 
 ## 1. Reporting a Vulnerability
 
-**Email:** security@support.aliasvault.net
+**Email:** security@aliasvault.com
 
 Please include:
 

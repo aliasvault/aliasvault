@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- 1Password -->
+  <data name="OnePasswordDescription" xml:space="preserve">
+    <value>Iompórtáil pasfhocail ó do chruinneachán 1Password</value>
+    <comment>Description for 1Password import service</comment>
+  </data>
+  <data name="OnePasswordInstructionsPart1" xml:space="preserve">
+    <value>Chun do stóras 1Password a allmhairiú, ní mór duit é a easpórtáil. Is féidir leat é seo a dhéanamh trí logáil isteach i do chuntas 1Password san aip deisce 1Password 8 (Windows / MacOS / Linux), dul go dtí an roghchlár 'Comhad' agus 'Easpórtáil' a roghnú.</value>
+    <comment>1Password export instructions part 1</comment>
+  </data>
+  <data name="OnePasswordInstructionsPart2" xml:space="preserve">
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
+    <comment>1Password export instructions part 2</comment>
+  </data>
+  <!-- Bitwarden -->
+  <data name="BitwardenDescription" xml:space="preserve">
+    <value>Iompórtáil pasfhocail ó do chruinneachán Bitwarden</value>
+    <comment>Description for Bitwarden import service</comment>
+  </data>
+  <data name="BitwardenInstructionsPart1" xml:space="preserve">
+    <value>Chun do chruinneachán Bitwarden a allmhairiú, ní mór duit é a easpórtáil. Is féidir leat é seo a dhéanamh trí logáil isteach i do chuntas Bitwarden, dul go dtí an roghchlár 'Uirlisí' agus 'Easpórtáil cruinneachán' a roghnú.</value>
+    <comment>Bitwarden export instructions part 1</comment>
+  </data>
+  <data name="BitwardenInstructionsPart2" xml:space="preserve">
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
+    <comment>Bitwarden export instructions part 2</comment>
+  </data>
+  <!-- LastPass -->
+  <data name="LastPassDescription" xml:space="preserve">
+    <value>Iompórtáil pasfhocail ó do chruinneachán LastPass</value>
+    <comment>Description for LastPass import service</comment>
+  </data>
+  <data name="LastPassInstructionsPart1" xml:space="preserve">
+    <value>Chun do chruinneachán LastPass a allmhairiú, ní mór duit é a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí logáil isteach i do chuntas LastPass, dul go dtí 'Ard-Roghanna' sa bharra taoibh clé agus 'Easpórtáil' > 'Comhad CSV LastPass' a roghnú.</value>
+    <comment>LastPass export instructions part 1</comment>
+  </data>
+  <data name="LastPassInstructionsPart2" xml:space="preserve">
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
+    <comment>LastPass export instructions part 2</comment>
+  </data>
+  <!-- Chrome -->
+  <data name="ChromeDescription" xml:space="preserve">
+    <value>Iompórtáil pasfhocail ó do Bhainisteoir Pasfhocal Chrome</value>
+    <comment>Description for Chrome import service</comment>
+  </data>
+  <data name="ChromeInstructionsPart1" xml:space="preserve">
+    <value>Chun do Bhainisteoir Pasfhocal Chrome a allmhairiú, ní mór duit é a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí logáil isteach i do bhrabhsálaí Chrome, ag dul go dtí an roghchlár 'Socruithe' > 'Pasfhocal agus Uathlíonadh' > 'Bainisteoir Pasfhocal Google'. Ansin cliceáil ar 'Pasfhocail a easpórtáil'.</value>
+    <comment>Chrome export instructions part 1</comment>
+  </data>
+  <data name="ChromeInstructionsPart2" xml:space="preserve">
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
+    <comment>Chrome export instructions part 2</comment>
+  </data>
+  <!-- KeePass -->
+  <data name="KeePassDescription" xml:space="preserve">
+    <value>Pasfhocail a allmhairiú ó KeePass</value>
+    <comment>Description for KeePass import service</comment>
+  </data>
+  <data name="KeePassInstructionsPart1" xml:space="preserve">
+    <value>Chun do chruinneachán KeePass a allmhairiú, ní mór duit é a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí dhul go dtí an roghchlár 'Comhad' agus 'Easpórtáil' (go CSV) a roghnú.</value>
+    <comment>KeePass export instructions part 1</comment>
+  </data>
+  <data name="KeePassInstructionsPart2" xml:space="preserve">
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
+    <comment>KeePass export instructions part 2</comment>
+  </data>
+  <!-- Generic CSV -->
+  <data name="GenericCsvDescription" xml:space="preserve">
+    <value>Dintiúir a allmhairiú ag baint úsáide as formáid teimpléid CSV</value>
+    <comment>Description for Generic CSV import service</comment>
+  </data>
+  <data name="GenericCsvInstructionsPart1" xml:space="preserve">
+    <value>An bhfuil an bainisteoir pasfhocal atá in úsáid agat gan tacaíocht? Is féidir leat do chuid dintiúir a allmhairiú isteach in AliasVault i gcónaí ag baint úsáide as formáid teimpléid CSV ghinearálta ina ionad.</value>
+    <comment>Generic CSV instructions part 1</comment>
+  </data>
+  <data name="GenericCsvStep1" xml:space="preserve">
+    <value>Íoslódáil an CSV Iompórtála AliasVault</value>
+    <comment>Generic CSV step 1</comment>
+  </data>
+  <data name="GenericCsvStep2" xml:space="preserve">
+    <value>Oscail é i gclár scarbhileog (Microsoft Excel, Google Sheets, srl.)</value>
+    <comment>Generic CSV step 2</comment>
+  </data>
+  <data name="GenericCsvStep3" xml:space="preserve">
+    <value>Líon isteach do chuid dintiúir (cuir na sonraí samplacha ina n-áit)</value>
+    <comment>Generic CSV step 3</comment>
+  </data>
+  <data name="GenericCsvStep4" xml:space="preserve">
+    <value>Sábháil mar fhormáid CSV agus uaslódáil thíos é</value>
+    <comment>Generic CSV step 4</comment>
+  </data>
+  <data name="GenericCsvTemplateDownloadError" xml:space="preserve">
+    <value>Theip ar an teimpléad CSV a íoslódáil. Déan iarracht arís.</value>
+    <comment>Error message for template download failure</comment>
+  </data>
+  <!-- Firefox -->
+  <data name="FirefoxDescription" xml:space="preserve">
+    <value>Iompórtáil pasfhocail ó do Bhainisteoir Pasfhocal Firefox</value>
+    <comment>Description for Firefox import service</comment>
+  </data>
+  <data name="FirefoxInstructionsPart1" xml:space="preserve">
+    <value>Chun do phasfhocail Firefox a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí do bhrabhsálaí Firefox a oscailt, dul go dtí an roghchlár > 'Pasfhocail'. Ansin cliceáil ar dheilbhín an roghchláir sa chúinne uachtarach ar dheis agus roghnaigh 'Pasfhocail a easpórtáil'.</value>
+    <comment>Firefox export instructions part 1</comment>
+  </data>
+  <data name="FirefoxInstructionsPart2" xml:space="preserve">
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
+    <comment>Firefox export instructions part 2</comment>
+  </data>
+  <!-- Dashlane -->
+  <data name="DashlaneDescription" xml:space="preserve">
+    <value>Iompórtáil pasfhocail ó do chuntas Dashlane</value>
+    <comment>Description for Dashlane import service</comment>
+  </data>
+  <data name="DashlaneInstructionsPart1" xml:space="preserve">
+    <value>Chun do phasfhocail Dashlane a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí logáil isteach i do chuntas Dashlane, dul chuig an roghchlár 'Cuntas' > 'Socruithe' agus 'Easpórtáil go CSV' a roghnú.</value>
+    <comment>Dashlane export instructions part 1</comment>
+  </data>
+  <data name="DashlaneInstructionsPart2" xml:space="preserve">
+    <value>Tabhair faoi deara: beidh comhad "credentials.csv" sa chomhad .zip a íoslódálann tú. Ní mór duit an cartlann a dhízipeáil ar dtús, agus ansin an comhad CSV "credentials.csv" a uaslódáil thíos.</value>
+    <comment>Dashlane export instructions part 2</comment>
+  </data>
+  <!-- KeePassXC -->
+  <data name="KeePassXCDescription" xml:space="preserve">
+    <value>Iompórtáil pasfhocail ó KeePassXC</value>
+    <comment>Description for KeePassXC import service</comment>
+  </data>
+  <data name="KeePassXCInstructionsPart1" xml:space="preserve">
+    <value>Chun do chruinneachán KeePassXC a allmhairiú, ní mór duit é a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí dhul go dtí an roghchlár 'Bunachar Sonraí' agus 'Easpórtáil' (Comhad CSV) a roghnú.</value>
+    <comment>KeePassXC export instructions part 1</comment>
+  </data>
+  <data name="KeePassXCInstructionsPart2" xml:space="preserve">
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
+    <comment>KeePassXC export instructions part 2</comment>
+  </data>
+  <!-- NordPass -->
+  <data name="NordPassDescription" xml:space="preserve">
+    <value>Pasfhocail a allmhairiú ó NordPass</value>
+    <comment>Description for NordPass import service</comment>
+  </data>
+  <data name="NordPassInstructionsPart1" xml:space="preserve">
+    <value>Chun do phasfhocail NordPass a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh tríd an aip NordPass nó an cruinneachán gréasáin a oscailt, dul go 'Socruithe' > 'Easpórtáil Míreanna', agus an fhormáid CSV a roghnú.</value>
+    <comment>NordPass export instructions part 1</comment>
+  </data>
+  <data name="NordPassInstructionsPart2" xml:space="preserve">
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
+    <comment>NordPass export instructions part 2</comment>
+  </data>
+  <!-- Proton Pass -->
+  <data name="ProtonPassDescription" xml:space="preserve">
+    <value>Iompórtáil pasfhocail ó Proton Pass</value>
+    <comment>Description for Proton Pass import service</comment>
+  </data>
+  <data name="ProtonPassInstructionsPart1" xml:space="preserve">
+    <value>Chun do stór Proton Pass a allmhairiú, ní mór duit é a easpórtáil. Is féidir leat é seo a dhéanamh i síneadh brabhsálaí Proton Pass trí dhul go 'Socruithe' > 'Easpórtáil'.</value>
+    <comment>Proton Pass export instructions part 1</comment>
+  </data>
+  <data name="ProtonPassInstructionsPart2" xml:space="preserve">
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
+    <comment>Proton Pass export instructions part 2</comment>
+  </data>
+  <!-- Strongbox -->
+  <data name="StrongboxDescription" xml:space="preserve">
+    <value>Pasfhocail a allmhairiú ó Strongbox</value>
+    <comment>Description for Strongbox import service</comment>
+  </data>
+  <data name="StrongboxInstructionsPart1" xml:space="preserve">
+    <value>Chun do chruinneachán Strongbox a allmhairiú, ní mór duit é a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí dhul go dtí an roghchlár 'Comhad' agus 'Easpórtáil Bunachar Sonraí' (go CSV) a roghnú.</value>
+    <comment>Strongbox export instructions part 1</comment>
+  </data>
+  <data name="StrongboxInstructionsPart2" xml:space="preserve">
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
+    <comment>Strongbox export instructions part 2</comment>
+  </data>
+  <!-- AliasVault CSV/AVUX/AVEX -->
+  <data name="AliasVaultDescription" xml:space="preserve">
+    <value>Iompórtáil ó chúltaca AliasVault</value>
+    <comment>Description for AliasVault import service</comment>
+  </data>
+  <data name="AliasVaultInstructionsPart1" xml:space="preserve">
+    <value>Iompórtáil an cúltaca AliasVault a cruthaíodh roimhe seo.</value>
+    <comment>AliasVault import instructions</comment>
+  </data>
+  <data name="AliasVaultSupportedFormatsInfo" xml:space="preserve">
+    <value>Tacaíonn sé le formáidí .avex (criptithe), .avux (neamhchriptithe) agus CSV (bunúsach).</value>
+    <comment>Supported formats information for AliasVault imports</comment>
+  </data>
+  <!-- Dropbox -->
+  <data name="DropboxDescription" xml:space="preserve">
+    <value>Iompórtáil pasfhocail ó Dropbox Passwords</value>
+    <comment>Description for Dropbox import service</comment>
+  </data>
+  <data name="DropboxInstructionsPart1" xml:space="preserve">
+    <value>Chun do Pasfhocail Dropbox a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí Pasfhocail Dropbox a oscailt, ag dul go 'Cuntas' > 'Easpórtáil' (go .CSV).</value>
+    <comment>Dropbox export instructions part 1</comment>
+  </data>
+  <!-- RoboForm -->
+  <data name="RoboformDescription" xml:space="preserve">
+    <value>Iompórtáil pasfhocail ó RoboForm</value>
+    <comment>Description for RoboForm import service</comment>
+  </data>
+  <data name="RoboformInstructionsPart1" xml:space="preserve">
+    <value>Chun do phasfhocail RoboForm a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí RoboForm a oscailt, dul go dtí roghchlár 'RoboForm' > 'Roghanna' > 'Cuntas &amp; Sonraí' > 'Easpórtáil' agus formáid CSV a roghnú.</value>
+    <comment>RoboForm export instructions part 1</comment>
+  </data>
+  <data name="RoboformInstructionsPart2" xml:space="preserve">
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
+    <comment>RoboForm export instructions part 2</comment>
+  </data>
+  <!-- Edge -->
+  <data name="EdgeDescription" xml:space="preserve">
+    <value>Iompórtáil pasfhocail ó do Bhainisteoir Pasfhocal Microsoft Edge</value>
+    <comment>Description for Edge import service</comment>
+  </data>
+  <data name="EdgeInstructionsPart1" xml:space="preserve">
+    <value>Chun do phasfhocail Microsoft Edge a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí dhul go Roghchlár > Socruithe > Pasfhocal agus uathlíonadh > Bainisteoir Pasfhocal Microsoft > ... > Pasfhocail a easpórtáil.</value>
+    <comment>Edge export instructions part 1</comment>
+  </data>
+  <data name="EdgeInstructionsPart2" xml:space="preserve">
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
+    <comment>Edge export instructions part 2</comment>
+  </data>
+  <!-- Enpass -->
+  <data name="EnpassDescription" xml:space="preserve">
+    <value>Pasfhocail a allmhairiú ó Enpass</value>
+    <comment>Description for Enpass import service</comment>
+  </data>
+  <data name="EnpassInstructionsPart1" xml:space="preserve">
+    <value>Chun do phasfhocail Enpass a allmhairiú, ní mór duit iad a easpórtáil mar chomhad CSV. Is féidir leat é seo a dhéanamh trí Enpass a oscailt, dul go 'Roghchlár' > 'Comhad' > 'Easpórtáil' agus 'Comhad CSV (.csv)' a roghnú.</value>
+    <comment>Enpass export instructions part 1</comment>
+  </data>
+  <data name="EnpassInstructionsPart2" xml:space="preserve">
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
+    <comment>Enpass export instructions part 2</comment>
+  </data>
+  <!-- Common text that can be reused -->
+  <data name="UploadFileInstructionCommon" xml:space="preserve">
+    <value>Nuair a bheidh an comhad easpórtáilte agat, is féidir leat é a uaslódáil thíos.</value>
+    <comment>Common instruction for file upload</comment>
+  </data>
+</root>

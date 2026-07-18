@@ -3,6 +3,7 @@
     "cancel": "ပယ်ဖျက်မည်",
     "close": "ပိတ်မည်",
     "delete": "ဖျက်မည်",
+    "remove": "Remove",
     "save": "သိမ်းဆည်းမည်",
     "edit": "ပြင်ဆင်မည်",
     "yes": "ဟုတ်",
@@ -16,6 +17,7 @@
     "copied": "ကလစ်ဘုတ်သို့ ကူးယူခဲ့ပြီး",
     "loadMore": "နောက်ထပ် ဝန်ဆွဲတင်ရန်",
     "use": "အသုံးပြု",
+    "none": "တစ်ခုမှမဟုတ်ပါ",
     "confirm": "အတည်ပြု",
     "next": "ရှေ့သို့",
     "notice": "သတိပေးချက်",
@@ -56,8 +58,8 @@
     "enterAuthCode": "ဂဏန်း ၆ လုံးကုဒ်အား ရိုက်ထည့်ပါ",
     "usernamePlaceholder": "အမည် / name@company.com",
     "passwordPlaceholder": "သင့် စကားဝှက်အား ရိုက်ထည့်ပါ",
-    "enableBiometric": "Enable {{biometric}}?",
-    "biometricPrompt": "Would you like to use {{biometric}} to unlock your vault?",
+    "enableBiometric": "{{biometric}} အား ဖွင့်မည်လော။",
+    "biometricPrompt": "သင့် လုံခြုံရေးသေတ္တာအား ဖွင့်ရန် {{biometric}} ကိုသုံးလိုပါသလား။",
     "authCodeNote": "Note: if you don't have access to your authenticator device, you can reset your 2FA with a recovery code by logging in via the website.",
     "errors": {
       "credentialsRequired": "အသုံးပြုသူအမည်နှင့် စကားဝှက် လိုအပ်သည်",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "Add 2FA Code",
     "nameOptional": "Name (optional)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Authenticator",
     "secretKey": "Secret Key",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "saveToViewCode": "Save to view code",
     "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Invalid secret key format.",
       "scanFailed": "Failed to scan QR code. Please try again."
@@ -132,7 +136,7 @@
       "howToEnable": "How to enable Autofill & Passkeys:",
       "step1": "၁။ အိုင်အိုအက်စ် အပြင်အဆင်များကို အောက်ပါ ခလုတ်မှတဆင့် ဖွင့်ပါ",
       "step2": "၂။ \"General\" သို့ သွားပါ",
-      "step3": "3. Tap \"AutoFill & Passwords\"",
+      "step3": "၃။ \"AutoFill & Passwords\" ကို နှိပ်ပါ",
       "step4": "4. Enable \"AliasVault\"",
       "step5": "5. Disable other password providers (e.g. \"iCloud Passwords\") to avoid conflicts",
       "openIosSettings": "Open iOS Settings",
@@ -192,7 +196,8 @@
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
     "security": "Security",
-    "appVersion": "App version {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "မည်သည့်အခါတွင်မှ",
       "5seconds": "5 seconds",
@@ -360,6 +365,7 @@
     "enterFieldName": "Enter field name",
     "fieldTypes": {
       "text": "Text",
+      "password": "စကားဝှက်",
       "hidden": "Hidden",
       "email": "အီးမေးလ်",
       "url": "URL",
@@ -441,6 +447,29 @@
     "includeNumbers": "Numbers (0-9)",
     "includeSpecialChars": "Special Characters (!@#)",
     "avoidAmbiguousChars": "Avoid Ambiguous Characters",
+    "passwordTypeBasic": "စကားဝှက်",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "စာလုံးများ",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "စာလုံးအသေး",
+      "TitleCase": "Title Case",
+      "Uppercase": "စာလုံးအကြီး"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "အစက်"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "ရှေ့ဆက်",
+      "Sprinkle": "ကျပန်းနေရာ",
+      "Suffix": "နောက်ဆက်"
+    },
     "errorLoadingItems": "Error loading items",
     "vaultSyncFailed": "Vault sync failed",
     "vaultSyncedSuccessfully": "Vault synced successfully",
@@ -570,8 +599,8 @@
     "emailNotFound": "Email not found",
     "formatHtml": "HTML",
     "formatPlain": "Text",
-    "formatSource": "Source",
-    "formatSwitchTitle": "Switch email format",
+    "formatSource": "ရင်းမြစ်",
+    "formatSwitchTitle": "အီးမေးလ်ပုံစံ ပြောင်းလဲရန်",
     "sizeKB": "KB",
     "offlineMessage": "You are offline. Please connect to the internet to load your emails.",
     "emptyMessage": "You have not received any emails at your private email addresses yet. When you receive a new email, it will appear here.",
@@ -654,7 +683,6 @@
     },
     "loginSettings": {
       "title": "API Connection",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Self-hosted",
       "customApiUrl": "Custom API URL",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",

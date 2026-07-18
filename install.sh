@@ -1,5 +1,5 @@
 #!/bin/bash
-# @version 20260614
+# @version 20260714
 
 # Repository information used for downloading files and images from GitHub
 REPO_OWNER="aliasvault"
@@ -95,7 +95,7 @@ print_logo() {
 # Canonical command list (primary forms only, no aliases). Used by
 # suggest_commands to render "Did you mean..." prefix matches when the user
 # enters an unknown command. Keep sorted so suggestions appear in stable order.
-KNOWN_COMMANDS="build configure-admin-access configure-email configure-hostname configure-ip-logging configure-registration configure-ssl configure-trusted-proxies db-export db-import install migrate-db reset-admin-password restart start stop uninstall update update-installer"
+KNOWN_COMMANDS="build configure-admin-access configure-email configure-hostname configure-ip-logging configure-registration configure-ssl configure-trusted-proxies db-export db-import install reset-admin-password restart start stop uninstall update update-installer"
 
 # Print "Did you mean ..." suggestions for any known command that has the user's
 # input as a prefix. Returns 0 if at least one match was found, 1 otherwise.
@@ -218,10 +218,6 @@ parse_args() {
             ;;
         update-installer|cs)
             COMMAND="update-installer"
-            shift
-            ;;
-        migrate-db|migrate)
-            COMMAND="migrate-db"
             shift
             ;;
         db-export)
@@ -1234,21 +1230,6 @@ create_env_file() {
 
         cp "$ENV_EXAMPLE_FILE" "$ENV_FILE"
         printf "  ${GREEN}> New .env file created from .env.example.${NC}\n"
-    else
-        # Check if .env file contains POSTGRES_DB or POSTGRES_USER, remove if present and show confirmation
-        local removed_vars=()
-        if grep -q "^POSTGRES_DB=" "$ENV_FILE"; then
-            sed -i.bak "/^POSTGRES_DB=/d" "$ENV_FILE" && rm -f "$ENV_FILE.bak"
-            removed_vars+=("POSTGRES_DB")
-        fi
-        if grep -q "^POSTGRES_USER=" "$ENV_FILE"; then
-            sed -i.bak "/^POSTGRES_USER=/d" "$ENV_FILE" && rm -f "$ENV_FILE.bak"
-            removed_vars+=("POSTGRES_USER")
-        fi
-        if [ ${#removed_vars[@]} -gt 0 ]; then
-            printf "  ${GREEN}> Removed obsolete variable(s) from .env: %s${NC}\n" "${removed_vars[*]}"
-        fi
-
     fi
 }
 
@@ -1275,7 +1256,7 @@ generate_admin_password() {
     PASSWORD=$(openssl rand -base64 12)
 
     # Build locally if in build mode or if pre-built image is not available
-    if grep -q "^DEPLOYMENT_MODE=build" "$ENV_FILE" 2>/dev/null || ! docker pull ${GITHUB_CONTAINER_REGISTRY}/installcli:latest > /dev/null 2>&1; then
+    if grep -qE "^DEPLOYMENT_MODE=(install-build|build)" "$ENV_FILE" 2>/dev/null || ! docker pull ${GITHUB_CONTAINER_REGISTRY}/installcli:latest > /dev/null 2>&1; then
         log_info "Building InstallCli locally..."
         if [ "$VERBOSE" = true ]; then
             if ! docker build -t installcli -f apps/server/Utilities/AliasVault.InstallCli/Dockerfile .; then
@@ -1336,6 +1317,28 @@ update_env_var() {
     printf "  ${GREEN}> $key has been set in $ENV_FILE.${NC}\n"
 }
 
+# Read a value from the .env file, returning the provided default when the key
+# is missing or set to an empty value.
+get_env_value() {
+    local key="$1" default="$2" value
+    value=$(grep "^${key}=" "$ENV_FILE" 2>/dev/null | head -n1 | cut -d '=' -f2- | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    if [ -z "$value" ]; then
+        printf '%s' "$default"
+    else
+        printf '%s' "$value"
+    fi
+}
+
+# Returns success when AliasVault is pointed at an external PostgreSQL server
+# rather than the bundled container. The bundled container is always reachable in
+# compose as the service host "postgres", so any other POSTGRES_HOST means the
+# database lives elsewhere and db-export/db-import must connect to it over TCP.
+postgres_is_external() {
+    local host
+    host=$(get_env_value "POSTGRES_HOST" "postgres")
+    [ -n "$host" ] && [ "$host" != "postgres" ]
+}
+
 # Prompt for SMTP_ADVERTISED_HOSTNAME (banner / EHLO). Empty value defaults to "aliasvault" at runtime.
 prompt_smtp_advertised_hostname() {
     local current
@@ -1362,13 +1365,19 @@ write_secret_to_file() {
 
     # Create secrets directory if it doesn't exist
     if [ ! -d "$SECRETS_DIR" ]; then
-        mkdir -p "$SECRETS_DIR"
-        chmod 700 "$SECRETS_DIR"
+        if ! mkdir -p "$SECRETS_DIR"; then
+            printf "  ${RED}> Failed to create secrets directory $SECRETS_DIR (permission denied?)${NC}\n" >&2
+            return 1
+        fi
+        chmod 700 "$SECRETS_DIR" 2>/dev/null || true
     fi
 
-    # Write secret to file
-    echo -n "$secret_value" > "$secret_file"
-    chmod 600 "$secret_file"
+    # Write secret to file.
+    if ! echo -n "$secret_value" > "$secret_file"; then
+        printf "  ${RED}> Failed to write secret $secret_name to $secret_file (permission denied?)${NC}\n" >&2
+        return 1
+    fi
+    chmod 600 "$secret_file" 2>/dev/null || true
 
     printf "  ${GREEN}> Secret $secret_name has been written to $secret_file${NC}\n"
 }
@@ -1835,13 +1844,21 @@ get_docker_compose_command() {
     local base_command="docker compose -f docker-compose.yml"
 
     # Check if using build configuration
-    if grep -q "^DEPLOYMENT_MODE=build" "$ENV_FILE" 2>/dev/null; then
+    if grep -qE "^DEPLOYMENT_MODE=(install-build|build)" "$ENV_FILE" 2>/dev/null; then
         base_command="$base_command -f dockerfiles/docker-compose.build.yml"
     fi
 
     # Check if Let's Encrypt is enabled
     if grep -q "^LETSENCRYPT_ENABLED=true" "$ENV_FILE" 2>/dev/null; then
         base_command="$base_command -f docker-compose.letsencrypt.yml"
+    fi
+
+    # Passing any -f disables Compose's automatic discovery of
+    # docker-compose.override.yml, so load it explicitly (last, so it wins the
+    # merge) when present. Lets operators override the bundled stack — e.g.
+    # disabling the local postgres container in favour of an external cluster.
+    if [ -f "docker-compose.override.yml" ]; then
+        base_command="$base_command -f docker-compose.override.yml"
     fi
 
     echo "$base_command"
@@ -1968,8 +1985,8 @@ handle_install() {
 handle_build() {
     printf "\n${YELLOW}+++ Building AliasVault from source +++${NC}\n"
 
-    # Set deployment mode to build to ensure container lifecycle uses build configuration
-    set_deployment_mode "build"
+    # Set deployment mode to install-build to ensure container lifecycle uses build configuration
+    set_deployment_mode "install-build"
 
     # Initialize workspace which makes sure all required directories and files exist
     initialize_workspace
@@ -2344,7 +2361,6 @@ configure_letsencrypt() {
     fi
 
     # Get contact email for Let's Encrypt
-    SUPPORT_EMAIL=$(grep "^SUPPORT_EMAIL=" "$ENV_FILE" | cut -d '=' -f2)
     LETSENCRYPT_EMAIL=""
 
     while true; do
@@ -2785,9 +2801,6 @@ handle_install_version() {
 
     printf "${GREEN}✓ Docker image pulling completed${NC}\n"
 
-    # Save version to .env
-    update_env_var "ALIASVAULT_VERSION" "$target_version"
-
     # Start containers
     printf "\n${YELLOW}+++ Starting services +++${NC}\n"
 
@@ -2824,6 +2837,10 @@ handle_install_version() {
         exit 1
     fi
 
+    # Save new version to .env only after all checks have passed, so we don't end up with a
+    # partially installed version in case of an error.
+    update_env_var "ALIASVAULT_VERSION" "$target_version"
+
     # Clean up old Docker images
     cleanup_docker_images "$target_version"
 
@@ -2834,7 +2851,7 @@ handle_install_version() {
 # Function to set deployment mode in .env
 set_deployment_mode() {
     local mode=$1
-    if [ "$mode" != "build" ] && [ "$mode" != "install" ]; then
+    if [ "$mode" != "install-build" ] && [ "$mode" != "install" ]; then
         printf "${RED}Invalid deployment mode: $mode${NC}\n"
         exit 1
     fi
@@ -2844,6 +2861,28 @@ set_deployment_mode() {
 # Function to handle database export
 DEV_COMPOSE="docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev"
 
+# Configure db-export/db-import to talk to an external PostgreSQL server when configured in .env.
+setup_external_pg_client() {
+    PG_HOST=$(get_env_value "POSTGRES_HOST" "postgres")
+    PG_PORT=$(get_env_value "POSTGRES_PORT" "5432")
+    PG_USER=$(get_env_value "POSTGRES_USER" "aliasvault")
+    PG_DB=$(get_env_value "POSTGRES_DATABASE" "aliasvault")
+
+    PG_CONN="-h $PG_HOST -p $PG_PORT -U $PG_USER"
+
+    if [ ! -s "${SECRETS_DIR}/postgres_password" ]; then
+        printf "${RED}Error: External database is enabled but the password file '${SECRETS_DIR}/postgres_password' is missing or empty.${NC}\n" >&2
+        printf "${YELLOW}Write your external database password to that file, then retry.${NC}\n" >&2
+        return 1
+    fi
+
+    PGPASSWORD=$(tr -d '\n' < "${SECRETS_DIR}/postgres_password")
+    export PGPASSWORD
+
+    DOCKER_CMD="$(get_docker_compose_command) --progress quiet run --rm --no-deps -T -e PGPASSWORD postgres"
+}
+
+# Function to handle database export
 handle_db_export() {
     printf "${YELLOW}+++ Exporting Database +++${NC}\n" >&2
 
@@ -2866,6 +2905,11 @@ handle_db_export() {
         exit 1
     fi
 
+    # Connection defaults for the bundled container. If using an external database connection
+    # the defaults are overridden by setup_external_pg_client.
+    PG_CONN="-U aliasvault"
+    PG_DB="aliasvault"
+
     # Determine docker compose command based on dev/prod
     if [ "$DEV_DB" = true ]; then
         # Check if dev containers are running
@@ -2882,6 +2926,18 @@ handle_db_export() {
 
         DOCKER_CMD="$DEV_COMPOSE exec -T postgres-dev"
         DB_TYPE="development"
+    elif postgres_is_external; then
+        # External database: no bundled container to exec into. Run the pg client
+        # tools in a temporary container from the postgres image, connecting to the
+        # server configured in .env (password read from secrets/postgres_password).
+        setup_external_pg_client || exit 1
+
+        if ! $DOCKER_CMD pg_isready $PG_CONN >/dev/null 2>&1; then
+            printf "${RED}Error: Cannot reach external PostgreSQL server at ${PG_HOST}:${PG_PORT}. Check your POSTGRES_* settings in .env and secrets/postgres_password.${NC}\n" >&2
+            exit 1
+        fi
+
+        DB_TYPE="production (external)"
     else
         # Production database export logic
         if ! docker compose ps --quiet 2>/dev/null | grep -q .; then
@@ -2902,7 +2958,7 @@ handle_db_export() {
 
     # By default pg_dump waits indefinitely for the shared table locks it needs.
     # Add support for controlling the timeout.
-    PG_DUMP_ARGS="-U aliasvault aliasvault"
+    PG_DUMP_ARGS="$PG_CONN $PG_DB"
     if [ "$LOCK_WAIT_TIMEOUT" -gt 0 ] 2>/dev/null; then
         PG_DUMP_ARGS="--lock-wait-timeout=$((LOCK_WAIT_TIMEOUT * 1000)) $PG_DUMP_ARGS"
     fi
@@ -2948,9 +3004,10 @@ handle_db_export() {
 
 # Function to handle database import
 handle_db_import() {
-    # Save stdin to file descriptor 3 AS THE VERY FIRST THING
-    # This MUST be first to prevent bash/docker/any command from consuming stdin bytes
+    # Save stdin to file descriptor 3
     exec 3<&0
+    # Park stdin on /dev/null to prevent any command from consuming it (e.g. docker compose stop/ps)
+    exec 0</dev/null
 
     printf "${YELLOW}+++ Importing Database +++${NC}\n"
 
@@ -2975,10 +3032,22 @@ handle_db_import() {
         exit 1
     fi
 
+    # Connection defaults for the bundled container. If using an external database connection
+    # the defaults are overridden by setup_external_pg_client.
+    PG_CONN="-U aliasvault"
+    PG_DB="aliasvault"
+    PG_USER="aliasvault"
+
     # Check if containers are running
     if [ "$DEV_DB" = true ]; then
         if ! $DEV_COMPOSE ps postgres-dev | grep -q "healthy"; then
             printf "${RED}Error: Development PostgreSQL container is not healthy. Start it first with: ./scripts/dev.sh db-start${NC}\n"
+            exit 1
+        fi
+    elif postgres_is_external; then
+        setup_external_pg_client || exit 1
+        if ! $DOCKER_CMD pg_isready $PG_CONN >/dev/null 2>&1; then
+            printf "${RED}Error: Cannot reach external PostgreSQL server at ${PG_HOST}:${PG_PORT}. Check your POSTGRES_* settings in .env and secrets/postgres_password.${NC}\n"
             exit 1
         fi
     else
@@ -3002,8 +3071,7 @@ handle_db_import() {
             # Temporarily switch stdin to tty for confirmation
             exec < /dev/tty
             read -p "Continue? [y/N]: " confirm
-            # Switch back to original stdin
-            exec 0<&3
+            exec 0</dev/null
             if [[ ! $confirm =~ ^[Yy]$ ]]; then
                 exec 3<&-  # Close fd 3
                 exit 1
@@ -3030,11 +3098,10 @@ handle_db_import() {
     fi
     printf "database...${NC}\n"
 
-    # Determine docker compose command based on dev/prod ($DEV_COMPOSE was
-    # resolved during the health check above for the active dev instance).
+    # Determine docker compose command based on dev/prod.
     if [ "$DEV_DB" = true ]; then
         DOCKER_CMD="$DEV_COMPOSE exec -T postgres-dev"
-    else
+    elif ! postgres_is_external; then
         DOCKER_CMD="docker compose exec -T postgres"
     fi
 
@@ -3095,15 +3162,15 @@ handle_db_import() {
     # Setup commands read /dev/null: docker exec -T would otherwise drain the shared-offset stdin stream.
     # The pipeline then reassembles the peeked header with the rest of fd 3 and streams it into psql.
     if [ "$VERBOSE" = true ]; then
-        $DOCKER_CMD psql -U aliasvault postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'aliasvault' AND pid <> pg_backend_pid();" < /dev/null && \
-        $DOCKER_CMD psql -U aliasvault postgres -c "DROP DATABASE IF EXISTS aliasvault;" < /dev/null && \
-        $DOCKER_CMD psql -U aliasvault postgres -c "CREATE DATABASE aliasvault OWNER aliasvault;" < /dev/null && \
-        { cat "$header_file"; cat <&3; } | progress | decompress | $DOCKER_CMD psql -U aliasvault aliasvault
+        $DOCKER_CMD psql $PG_CONN postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$PG_DB' AND pid <> pg_backend_pid();" < /dev/null && \
+        $DOCKER_CMD psql $PG_CONN postgres -c "DROP DATABASE IF EXISTS \"$PG_DB\";" < /dev/null && \
+        $DOCKER_CMD psql $PG_CONN postgres -c "CREATE DATABASE \"$PG_DB\" OWNER \"$PG_USER\";" < /dev/null && \
+        { cat "$header_file"; cat <&3; } | progress | decompress | $DOCKER_CMD psql $PG_CONN "$PG_DB"
     else
-        $DOCKER_CMD psql -U aliasvault postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'aliasvault' AND pid <> pg_backend_pid();" < /dev/null > /dev/null 2>&1 && \
-        $DOCKER_CMD psql -U aliasvault postgres -c "DROP DATABASE IF EXISTS aliasvault;" < /dev/null > /dev/null 2>&1 && \
-        $DOCKER_CMD psql -U aliasvault postgres -c "CREATE DATABASE aliasvault OWNER aliasvault;" < /dev/null > /dev/null 2>&1 && \
-        { cat "$header_file"; cat <&3; } | progress | decompress | $DOCKER_CMD psql -U aliasvault aliasvault > /dev/null 2>&1
+        $DOCKER_CMD psql $PG_CONN postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$PG_DB' AND pid <> pg_backend_pid();" < /dev/null > /dev/null 2>&1 && \
+        $DOCKER_CMD psql $PG_CONN postgres -c "DROP DATABASE IF EXISTS \"$PG_DB\";" < /dev/null > /dev/null 2>&1 && \
+        $DOCKER_CMD psql $PG_CONN postgres -c "CREATE DATABASE \"$PG_DB\" OWNER \"$PG_USER\";" < /dev/null > /dev/null 2>&1 && \
+        { cat "$header_file"; cat <&3; } | progress | decompress | $DOCKER_CMD psql $PG_CONN "$PG_DB" > /dev/null 2>&1
     fi
 
     import_status=$?
@@ -3507,68 +3574,52 @@ handle_trusted_proxies_configuration() {
 check_and_populate_env() {
     printf "${CYAN}ℹ Checking .env values...${NC} ${GREEN}✓${NC}\n"
 
-    # SUPPORT_EMAIL
-    if ! grep -q "^SUPPORT_EMAIL=" "$ENV_FILE"; then
-        read -p "Enter server admin support email address that is shown on contact page (optional, press Enter to skip): " SUPPORT_EMAIL
-        update_env_var "SUPPORT_EMAIL" "$SUPPORT_EMAIL"
-        printf "  Set SUPPORT_EMAIL\n"
-    fi
-
     # JWT_KEY
     if [ ! -f "${SECRETS_DIR}/jwt_key" ] || [ -z "$(cat "${SECRETS_DIR}/jwt_key" 2>/dev/null)" ]; then
         JWT_KEY=$(openssl rand -base64 32)
-        write_secret_to_file "jwt_key" "$JWT_KEY"
-        printf "  Generated JWT_KEY\n"
+        write_secret_to_file "jwt_key" "$JWT_KEY" || exit 1
     fi
 
     # DATA_PROTECTION_CERT_PASS
     if [ ! -f "${SECRETS_DIR}/data_protection_cert_pass" ] || [ -z "$(cat "${SECRETS_DIR}/data_protection_cert_pass" 2>/dev/null)" ]; then
         CERT_PASS=$(openssl rand -base64 32)
-        write_secret_to_file "data_protection_cert_pass" "$CERT_PASS"
-        printf "  Generated DATA_PROTECTION_CERT_PASS\n"
+        write_secret_to_file "data_protection_cert_pass" "$CERT_PASS" || exit 1
     fi
 
     # POSTGRES_PASSWORD
     if [ ! -f "${SECRETS_DIR}/postgres_password" ] || [ -z "$(cat "${SECRETS_DIR}/postgres_password" 2>/dev/null)" ]; then
         POSTGRES_PASS=$(openssl rand -base64 32)
-        write_secret_to_file "postgres_password" "$POSTGRES_PASS"
-        printf "  Generated POSTGRES_PASSWORD\n"
+        write_secret_to_file "postgres_password" "$POSTGRES_PASS" || exit 1
     fi
 
     # PRIVATE_EMAIL_DOMAINS
     if ! grep -q "^PRIVATE_EMAIL_DOMAINS=" "$ENV_FILE"; then
         update_env_var "PRIVATE_EMAIL_DOMAINS" ""
-        printf "  Set PRIVATE_EMAIL_DOMAINS\n"
     fi
 
     # HIDDEN_PRIVATE_EMAIL_DOMAINS
     if ! grep -q "^HIDDEN_PRIVATE_EMAIL_DOMAINS=" "$ENV_FILE"; then
         update_env_var "HIDDEN_PRIVATE_EMAIL_DOMAINS" ""
-        printf "  Set HIDDEN_PRIVATE_EMAIL_DOMAINS\n"
     fi
 
     # HTTP_PORT
     if ! grep -q "^HTTP_PORT=" "$ENV_FILE" || [ -z "$(grep "^HTTP_PORT=" "$ENV_FILE" | cut -d '=' -f2)" ]; then
         update_env_var "HTTP_PORT" "80"
-        printf "  Set HTTP_PORT\n"
     fi
 
     # HTTPS_PORT
     if ! grep -q "^HTTPS_PORT=" "$ENV_FILE" || [ -z "$(grep "^HTTPS_PORT=" "$ENV_FILE" | cut -d '=' -f2)" ]; then
         update_env_var "HTTPS_PORT" "443"
-        printf "  Set HTTPS_PORT\n"
     fi
 
     # SMTP_PORT
     if ! grep -q "^SMTP_PORT=" "$ENV_FILE" || [ -z "$(grep "^SMTP_PORT=" "$ENV_FILE" | cut -d '=' -f2)" ]; then
         update_env_var "SMTP_PORT" "25"
-        printf "  Set SMTP_PORT\n"
     fi
 
     # SMTP_TLS_PORT
     if ! grep -q "^SMTP_TLS_PORT=" "$ENV_FILE" || [ -z "$(grep "^SMTP_TLS_PORT=" "$ENV_FILE" | cut -d '=' -f2)" ]; then
         update_env_var "SMTP_TLS_PORT" "587"
-        printf "  Set SMTP_TLS_PORT\n"
     fi
 
     # SMTP_ADVERTISED_HOSTNAME
@@ -3579,19 +3630,16 @@ check_and_populate_env() {
     # MAX_UPLOAD_SIZE_MB
     if ! grep -q "^MAX_UPLOAD_SIZE_MB=" "$ENV_FILE" 2>/dev/null; then
         update_env_var "MAX_UPLOAD_SIZE_MB" "100"
-        printf "  Set MAX_UPLOAD_SIZE_MB\n"
     fi
 
     # ADMIN_IP_ALLOWLIST
     if ! grep -q "^ADMIN_IP_ALLOWLIST=" "$ENV_FILE" 2>/dev/null; then
         update_env_var "ADMIN_IP_ALLOWLIST" ""
-        printf "  Set ADMIN_IP_ALLOWLIST\n"
     fi
 
     # TRUSTED_PROXIES
     if ! grep -q "^TRUSTED_PROXIES=" "$ENV_FILE" 2>/dev/null; then
         update_env_var "TRUSTED_PROXIES" ""
-        printf "  Set TRUSTED_PROXIES\n"
     fi
 }
 

@@ -1,0 +1,80 @@
+# Deploys the documentation site (docs/) to docs.aliasvault.com.
+#
+# Triggers:
+#   - Automatically on every published GitHub release.
+#   - Manually via "Run workflow" (workflow_dispatch).
+name: Deploy docs
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or tag to deploy the docs from (defaults to the branch this workflow is run on)'
+        required: false
+        type: string
+
+# Never run two deploys at once; cancel-in-progress is off so an in-flight
+# deploy finishes cleanly before the next one starts.
+concurrency:
+  group: deploy-docs
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy docs to production
+    runs-on: ubuntu-latest
+    environment:
+      name: docs-production
+      url: https://docs.aliasvault.com
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          sparse-checkout: docs
+
+      # Build the static site in CI, we only deploy the built site to the server.
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+
+      - name: Build static site
+        working-directory: docs
+        env:
+          ANALYTICS_SCRIPT: '<script defer data-domain="docs.aliasvault.com" src="https://analytics.aliasvault.com/js/script.file-downloads.js"></script><script>window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>'
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DOCS_DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.DOCS_DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      # Rsync the pre-built static site plus the small serving config.
+      - name: Rsync docs to server
+        run: |
+          rsync -az --delete \
+            --exclude='docker-compose.override.yml' \
+            --exclude='.env' \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            ./docs/build \
+            ./docs/nginx.conf \
+            ./docs/Dockerfile \
+            ./docs/.dockerignore \
+            ./docs/docker-compose.yml \
+            ${{ secrets.DOCS_DEPLOY_USER }}@${{ secrets.DOCS_DEPLOY_HOST }}:/opt/docs/
+
+      - name: Rebuild and restart Docker Compose
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+            ${{ secrets.DOCS_DEPLOY_USER }}@${{ secrets.DOCS_DEPLOY_HOST }} \
+            "cd /opt/docs && docker compose up -d --build --force-recreate && docker system prune -af"

@@ -328,6 +328,56 @@ describe('FormDetector English tests', () => {
   });
 
   /*
+   * Login form popup 1 detection.
+   */
+  describe('English login form popup 1 detection', () => {
+    const htmlFile = 'en-login-form-popup1.html';
+
+    testField(FormField.Email, 'Form_Email', htmlFile);
+    testField(FormField.Password, 'Form_Password', htmlFile);
+
+    it('should detect the popup form as a login form', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const emailInput = document.getElementById('Form_Email');
+      const formDetector = new FormDetector(document, emailInput as HTMLElement);
+      expect(formDetector.containsLoginForm()).toBe(true);
+    });
+
+    it('should trigger autofill when clicking the Email/Username field', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const emailInput = document.getElementById('Form_Email');
+      const formDetector = new FormDetector(document, emailInput as HTMLElement);
+      expect(formDetector.isAutofillTriggerableField()).toBe(true);
+    });
+
+    it('should trigger autofill when clicking the password field', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const passwordInput = document.getElementById('Form_Password');
+      const formDetector = new FormDetector(document, passwordInput as HTMLElement);
+      expect(formDetector.isAutofillTriggerableField()).toBe(true);
+    });
+
+    it('should not autofill the hidden honeypot/system fields', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const emailInput = document.getElementById('Form_Email');
+      const formDetector = new FormDetector(document, emailInput as HTMLElement);
+      const form = formDetector.getForm();
+
+      expect(form?.emailField?.id).toBe('Form_Email');
+      expect(form?.passwordField?.id).toBe('Form_Password');
+      expect(form?.usernameField?.id).not.toBe('Form_ClientHour');
+    });
+  });
+
+  /*
    * Counterpart to the test above: when type="password" is (mis)used to mask
    * an OTP/2FA input, the password detector must NOT classify it as a
    * credential password (otherwise the master password would be autofilled

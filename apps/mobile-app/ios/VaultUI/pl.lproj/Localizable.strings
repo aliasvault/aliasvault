@@ -13,11 +13,11 @@
 "no_items_found" = "Nic nie znaleziono";
 "no_items_match" = "Żadne istniejące elementy nie pasują do Twojego wyszukiwania";
 "create_new_item" = "Stwórz nowy element";
-"open_aliasvault" = "Open AliasVault";
+"open_aliasvault" = "Otwórz AliasVault";
 "untitled_credential" = "this credential";
 "link_url_prompt_title" = "Link to credential?";
-"link_url_prompt_message" = "Add \"{{url}}\" to {{name}} so AliasVault recognises this app or website next time?";
-"link_url_prompt_link_action" = "Link and fill";
+"link_url_prompt_message" = "Dodać \"{{url}}\" do {{name}} więc AliasVault rozpozna tę aplikację lub stronę internetową następnym razem?";
+"link_url_prompt_link_action" = "Połącz i wypełnij";
 "link_url_prompt_skip_action" = "Just fill";
 "linking_url" = "Linking...";
 "select_item" = "Wybierz elementy";
@@ -40,7 +40,7 @@
 "username_copied" = "Nazwa użytkownika skopiowana";
 "password_copied" = "Hasło skopiowane";
 "email_copied" = "Adres e-mail skopiowany";
-"totp_code_copied" = "TOTP code copied";
+"totp_code_copied" = "Kod TOTP skopiowany";
 "totp_code" = "Kod TOTP";
 
 /* Search bar */
@@ -81,8 +81,8 @@
 "enter_password_to_unlock" = "Wprowadź swoje hasło główne";
 "unlock" = "Odblokuj";
 "incorrect_password" = "Nieprawidłowe hasło. Spróbuj ponownie.";
-"attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
-"max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
+"attempts_warning" = "Nieprawidłowe hasło. Zostaniesz wylogowany, jeśli wprowadzisz nieprawidłowe hasło %d więcej razy.";
+"max_attempts_reached" = "Zbyt wiele nieudanych prób odblokowania. Zostałeś wylogowany ze względów bezpieczeństwa.";
 
 /* PIN Setup */
 "pin_setup_title" = "Ustaw kod PIN";

@@ -27,7 +27,7 @@ The following encryption algorithms and standards are used by AliasVault:
 
 Below is a detailed explanation of each encryption algorithm and standard.
 
-For more information about how these algorithms are specifically used in AliasVault, see the [Architecture Documentation](https://docs.aliasvault.net/architecture) section on the documentation site.
+For more information about how these algorithms are specifically used in AliasVault, see the [Architecture Documentation](https://docs.aliasvault.com/architecture) section on the documentation site.
 
 ### Argon2id
 To derive a key from the master password, AliasVault uses the Argon2id key derivation function. Argon2id is a memory-hard
@@ -164,4 +164,4 @@ The mobile login system combines RSA-2048 asymmetric encryption with AES-256-GCM
 - **MITM Protection**: Only the client with the RSA private key can decrypt the response
 - **Limited Attack Surface**: Short timeout window minimizes QR code interception risks
 
-More information about the mobile login flow can be found in the [Architecture Documentation](https://docs.aliasvault.net/architecture/#6-login-with-mobile).
+More information about the mobile login flow can be found in the [Architecture Documentation](https://docs.aliasvault.com/architecture/#6-login-with-mobile).

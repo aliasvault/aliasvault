@@ -601,6 +601,65 @@ namespace AliasServerDb.Migrations
                     b.ToTable("MobileLoginRequests");
                 });
 
+            modelBuilder.Entity("AliasServerDb.RateLimit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("AppliesToAccountAgeMaxDays")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime?>("EffectiveFrom")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("EffectiveUntil")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("LimitType")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int?>("Tier")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<int>("WindowSeconds")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Tier");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("LimitType", "Enabled");
+
+                    b.ToTable("RateLimits");
+                });
+
             modelBuilder.Entity("AliasServerDb.ServerSetting", b =>
                 {
                     b.Property<string>("Key")
@@ -695,6 +754,8 @@ namespace AliasServerDb.Migrations
 
                     b.HasIndex("Address")
                         .IsUnique();
+
+                    b.HasIndex("UserId", "CreatedAt");
 
                     b.HasIndex("UserId", "Disabled");
 
@@ -1091,6 +1152,16 @@ namespace AliasServerDb.Migrations
                 });
 
             modelBuilder.Entity("AliasServerDb.MobileLoginRequest", b =>
+                {
+                    b.HasOne("AliasServerDb.AliasVaultUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AliasServerDb.RateLimit", b =>
                 {
                     b.HasOne("AliasServerDb.AliasVaultUser", "User")
                         .WithMany()

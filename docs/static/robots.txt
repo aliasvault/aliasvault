@@ -1,0 +1,5 @@
+# https://docs.aliasvault.com
+User-agent: *
+Allow: /
+
+Sitemap: https://docs.aliasvault.com/sitemap.xml

@@ -134,6 +134,14 @@
     <value>Usuń</value>
     <comment>Button text for deleting an item</comment>
   </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Usuń</value>
+    <comment>Button text for removing an item</comment>
+  </data>
+  <data name="TotpDefaultName" xml:space="preserve">
+    <value>Uwierzytelnianie</value>
+    <comment>Display-only fallback name shown for a TOTP code that has no name set</comment>
+  </data>
   <data name="Edit" xml:space="preserve">
     <value>Edytuj</value>
     <comment>Button text for editing an item</comment>
@@ -229,11 +237,11 @@
     <comment>Generic unknown error message</comment>
   </data>
   <data name="VaultTooLargeError" xml:space="preserve">
-    <value>The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.</value>
+    <value>Sejf jest zbyt duży, aby serwer mógł zaakceptować. Spróbuj usunąć niektóre elementy lub załączniki, aby zmniejszyć rozmiar i spróbować ponownie.</value>
     <comment>Shown when the server rejects a vault upload with HTTP 413 because the encrypted vault exceeds the configured upload size limit</comment>
   </data>
   <data name="VaultSaveError" xml:space="preserve">
-    <value>Failed to save changes to the vault. Please try again.</value>
+    <value>Nie udało się zapisać zmian w sejfie. Spróbuj ponownie.</value>
     <comment>Generic error shown when a vault save / sync to the server fails for an unexpected reason</comment>
   </data>
   <data name="ErrorValidation" xml:space="preserve">
@@ -345,11 +353,11 @@
     <comment>Email format switcher: plain text view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatSource" xml:space="preserve">
-    <value>Source</value>
+    <value>Źródło</value>
     <comment>Email format switcher: raw HTML source view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatSwitchTitle" xml:space="preserve">
-    <value>Switch email format</value>
+    <value>Zmień format wiadomości e-mail</value>
     <comment>Tooltip for the cycle button that switches between HTML / Text / Source views. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailItemLabel" xml:space="preserve">

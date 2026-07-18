@@ -14,9 +14,9 @@ import { CreateIdentityGenerator, CreateUsernameEmailGenerator, UsernameEmailGen
 import type { Attachment, Item, ItemField, TotpCode, ItemType, FieldType, PasswordSettings } from '@/utils/dist/core/models/vault';
 import { ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType, FieldCategories, FieldTypes } from '@/utils/dist/core/models/vault';
 import type { FaviconExtractModel } from '@/utils/dist/core/models/webapi';
-import { CreatePasswordGenerator, PasswordGenerator } from '@/utils/dist/core/password-generator';
 import emitter from '@/utils/EventEmitter';
 import { HapticsUtility } from '@/utils/HapticsUtility';
+import * as PasswordGenerator from '@/utils/PasswordGeneratorUtility';
 import { extractServiceNameFromUrl } from '@/utils/UrlUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -273,20 +273,12 @@ export default function AddEditItemScreen(): React.ReactNode {
   }, [dbContext.sqliteClient]);
 
   /**
-   * Initialize the password generator with settings from user's vault.
-   */
-  const initializePasswordGenerator = useCallback(async (): Promise<PasswordGenerator> => {
-    const passwordSettings = await dbContext.sqliteClient!.getPasswordSettings();
-    return CreatePasswordGenerator(passwordSettings);
-  }, [dbContext.sqliteClient]);
-
-  /**
    * Generate a random alias and password.
    */
   const generateRandomAlias = useCallback(async (): Promise<void> => {
-    const passwordGenerator = await initializePasswordGenerator();
+    const passwordSettings = await dbContext.sqliteClient!.getPasswordSettings();
     const identity = await generateRandomIdentity();
-    const password = passwordGenerator.generateRandomPassword();
+    const password = await PasswordGenerator.generatePassword(passwordSettings);
     const defaultEmailDomain = await dbContext.sqliteClient!.getDefaultEmailDomain();
     const email = defaultEmailDomain ? `${identity.emailPrefix}@${defaultEmailDomain}` : identity.emailPrefix;
 
@@ -328,7 +320,7 @@ export default function AddEditItemScreen(): React.ReactNode {
       password: password,
       email: email
     });
-  }, [fieldValues, initializePasswordGenerator, generateRandomIdentity, dbContext.sqliteClient, lastGeneratedValues]);
+  }, [fieldValues, generateRandomIdentity, dbContext.sqliteClient, lastGeneratedValues]);
 
   /**
    * Generate a random username.

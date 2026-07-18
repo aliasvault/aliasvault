@@ -84,8 +84,10 @@ const ItemIcon: React.FC<ItemIconProps> = ({ item, className = 'w-8 h-8' }) => {
     return <SvgIcon svg={getCardIconSvg(cardNumber)} className={className} />;
   }
 
-  // For Login/Alias types, use Logo if available, otherwise placeholder
-  const logoSrc = item.Logo && item.Logo.length > 0 ? SqliteClient.imgSrcFromBytes(item.Logo) : null;
+  /*
+   * For Login/Alias types, use Logo if available, otherwise placeholder.
+   */
+  const logoSrc = item.Logo ? SqliteClient.imgSrcFromBytes(item.Logo) : null;
 
   if (logoSrc) {
     return (

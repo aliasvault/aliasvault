@@ -220,15 +220,15 @@ object VaultMergeService {
             val db = SQLiteDatabase.openDatabase(dbFile.absolutePath, null, SQLiteDatabase.OPEN_READWRITE)
 
             try {
-                // Read tables needed for pruning
-                val pruneTableNames = listOf("Items", "FieldValues", "Attachments", "TotpCodes", "Passkeys", "Logos")
+                // Get the per-table SELECT queries clients should run to build `PruneInput`.
+                val pruneTableQueries = uniffi.aliasvault_core.getPruneTableQueries()
                 val tables = JSONArray()
 
-                for (tableName in pruneTableNames) {
+                for (tableQuery in pruneTableQueries) {
                     tables.put(
                         JSONObject().apply {
-                            put("name", tableName)
-                            put("records", readTable(db, tableName))
+                            put("name", tableQuery.name)
+                            put("records", readQuery(db, tableQuery.name, tableQuery.query))
                         },
                     )
                 }
@@ -275,6 +275,10 @@ object VaultMergeService {
     }
 
     private fun readTable(db: SQLiteDatabase, tableName: String): JSONArray {
+        return readQuery(db, tableName, "SELECT * FROM $tableName")
+    }
+
+    private fun readQuery(db: SQLiteDatabase, tableName: String, query: String): JSONArray {
         val records = JSONArray()
 
         // Check if table exists
@@ -287,7 +291,7 @@ object VaultMergeService {
         if (!tableExists) return records
 
         // Read all records
-        val cursor = db.rawQuery("SELECT * FROM $tableName", null)
+        val cursor = db.rawQuery(query, null)
         try {
             while (cursor.moveToNext()) {
                 val record = JSONObject()

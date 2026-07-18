@@ -34,6 +34,8 @@ languages:
   - zh
   - ja
   - ko
+  - hu
+  - ga
 base_path: ./
 preserve_hierarchy: 1
 files:

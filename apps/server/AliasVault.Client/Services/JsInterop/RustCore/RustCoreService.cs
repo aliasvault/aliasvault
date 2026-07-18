@@ -7,7 +7,10 @@
 
 namespace AliasVault.Client.Services.JsInterop.RustCore;
 
+using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using AliasVault.Client.Main.Models;
 using Microsoft.JSInterop;
 
 /// <summary>
@@ -116,6 +119,28 @@ public class RustCoreService : IAsyncDisposable
         if (result == null || result.Length == 0)
         {
             throw new InvalidOperationException("Failed to get syncable table names from Rust WASM.");
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Get the per-table SELECT queries used to build prune input.
+    /// </summary>
+    /// <returns>List of table queries.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if WASM module is unavailable.</exception>
+    public async Task<List<PruneTableQuery>> GetPruneTableQueriesAsync()
+    {
+        // Wait for WASM to be available with retries, as it may still be loading.
+        if (!await WaitForAvailabilityAsync())
+        {
+            throw new InvalidOperationException("Rust WASM module is not available.");
+        }
+
+        var result = await jsRuntime.InvokeAsync<List<PruneTableQuery>>("rustCoreGetPruneTableQueries");
+        if (result == null || result.Count == 0)
+        {
+            throw new InvalidOperationException("Failed to get prune table queries from Rust WASM.");
         }
 
         return result;
@@ -328,6 +353,80 @@ public class RustCoreService : IAsyncDisposable
         if (!result)
         {
             throw new System.Security.SecurityException("Server session proof verification failed.");
+        }
+    }
+
+    /// <summary>
+    /// Generate a cryptographically random 32-byte RNG seed as a 64-character lowercase hex string.
+    /// Supplying the same seed to <see cref="GenerateRandomPasswordAsync"/> yields the same output,
+    /// so the UI can re-apply formatting options to the same underlying password/words for easy comparison.
+    /// </summary>
+    /// <returns>A 64-character lowercase hex string.</returns>
+    public string GenerateSeed()
+    {
+        return Convert.ToHexString(RandomNumberGenerator.GetBytes(32)).ToLowerInvariant();
+    }
+
+    /// <summary>
+    /// Generate a password or passphrase using the Rust core.
+    /// The <see cref="PasswordSettings.Type"/> field selects the generator ("basic" or "diceware").
+    /// </summary>
+    /// <param name="settings">The password settings to use.</param>
+    /// <param name="seed">Optional 64-character hex RNG seed for deterministic generation; pass null for a fresh random password.</param>
+    /// <returns>The generated password/passphrase.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if generation fails or WASM module is unavailable.</exception>
+    public async Task<string> GenerateRandomPasswordAsync(PasswordSettings settings, string? seed = null)
+    {
+        if (!await WaitForAvailabilityAsync())
+        {
+            throw new InvalidOperationException("Rust WASM module is not available.");
+        }
+
+        // Serialize to a JSON object. The PasswordSettings properties carry explicit [JsonPropertyName]
+        // attributes (PascalCase), which the Rust core expects, so the naming policy is irrelevant here.
+        if (JsonSerializer.SerializeToNode(settings) is not JsonObject node)
+        {
+            throw new InvalidOperationException("Failed to serialize password settings.");
+        }
+
+        if (!string.IsNullOrEmpty(seed))
+        {
+            node["Seed"] = seed;
+        }
+
+        // Resolve the effective passphrase language when none is explicitly chosen ("auto"). Pick the
+        // most appropriate available Diceware wordlist for the current app language using the shared
+        // region-variant table (e.g. "de-CH" -> "de"), falling back to English.
+        if (string.Equals(settings.Type, "diceware", StringComparison.OrdinalIgnoreCase)
+            && string.IsNullOrWhiteSpace(settings.Language))
+        {
+            var codes = await GetDicewareLanguagesAsync();
+            var appLanguage = System.Globalization.CultureInfo.CurrentCulture.Name;
+            node["Language"] = Languages.ResolveDefaultLanguage(appLanguage, codes);
+        }
+
+        return await jsRuntime.InvokeAsync<string>("rustCoreGeneratePassword", node.ToJsonString());
+    }
+
+    /// <summary>
+    /// Get the list of bundled Diceware wordlist language codes (first is the default, English).
+    /// </summary>
+    /// <returns>Array of language codes.</returns>
+    public async Task<string[]> GetDicewareLanguagesAsync()
+    {
+        if (!await IsAvailableAsync())
+        {
+            return ["en"];
+        }
+
+        try
+        {
+            var languages = await jsRuntime.InvokeAsync<string[]>("rustCoreGetDicewareLanguages");
+            return languages is { Length: > 0 } ? languages : ["en"];
+        }
+        catch
+        {
+            return ["en"];
         }
     }
 

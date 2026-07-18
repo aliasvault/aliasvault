@@ -7,10 +7,10 @@
   <string name="common_next">Következő</string>
   <string name="common_cancel">Mégse</string>
   <string name="common_back">Vissza</string>
-  <string name="common_show_details">Show details</string>
-  <string name="common_hide_details">Hide details</string>
+  <string name="common_show_details">Részletek megjelenítése</string>
+  <string name="common_hide_details">Részletek elrejtése</string>
   <string name="common_copy">Copy</string>
-  <string name="common_copied_to_clipboard">Copied to clipboard</string>
+  <string name="common_copied_to_clipboard">Vágólapra másolva</string>
   <string name="unknown_error">Ismeretlen hiba lépett fel</string>
   <string name="autofill_failed_to_retrieve">Failed to retrieve, open app</string>
   <string name="autofill_no_match_found">No match found</string>
@@ -70,7 +70,7 @@
   <string name="error_biometric_cancelled">Biometric authentication cancelled</string>
   <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
   <string name="pin_unlock_vault">Széf feloldása</string>
-  <string name="pin_enter_to_unlock">Enter your PIN to unlock your vault</string>
+  <string name="pin_enter_to_unlock">Adja meg PIN kódját a széf feloldáshoz</string>
   <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
   <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
   <string name="pin_setup_title">Setup PIN</string>
@@ -79,9 +79,9 @@
   <string name="pin_confirm_description">Re-enter your PIN to confirm</string>
   <string name="pin_mismatch">PINs do not match. Please try again.</string>
   <string name="password_unlock_title">Széf feloldása</string>
-  <string name="password_unlock_subtitle">Enter your master password</string>
+  <string name="password_unlock_subtitle">Adja meg mester jelszavát</string>
   <string name="password_unlock_password_hint">Jelszó</string>
-  <string name="password_unlock_button">Unlock</string>
+  <string name="password_unlock_button">Feloldás</string>
   <string name="password_unlock_incorrect">Hibás jelszó. Próbálkozzon újra.</string>
   <string name="password_unlock_error">Failed to verify password</string>
   <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>

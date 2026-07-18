@@ -62,6 +62,7 @@
     "openInNewWindow": "Deschide în fereastră nouă",
     "enabled": "Activat",
     "disabled": "Dezactivat",
+    "none": "Niciunul",
     "showPassword": "Afișează parola",
     "hidePassword": "Ascunde parola",
     "show": "Afișează",
@@ -76,6 +77,7 @@
     "settings": "Setări",
     "recentEmails": "E-mailuri recente",
     "credentials": "Date de autentificare",
+    "passkeys": "Passkeys",
     "customFields": "Câmpuri personalizate",
     "twoFactorAuthentication": "Autentificare cu doi factori",
     "alias": "Alias",
@@ -109,6 +111,7 @@
       "syncConflictMaxRetries": "Sincronizarea seifului a eșuat după mai multe încercări. Reîncearcă mai târziu.",
       "mergeFailed": "Îmbinarea modificărilor seifului a eșuat. Încearcă din nou.",
       "vaultTooLarge": "Seiful este prea mare pentru a fi acceptat de server. Încercați să eliminați unele elemente sau atașamente pentru a reduce dimensiunea și încercați din nou.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Introdu un cod de autentificare valid din 6 cifre.",
       "serverError": "Nu s-a putut stabili conexiunea cu serverul AliasVault. Încearcă din nou mai târziu sau contactează asistența dacă problema persistă.",
       "wrongPassword": "Parolă incorectă. Încearcă din nou.",
@@ -148,6 +151,7 @@
     "creatingNewAlias": "Se creează aliasul nou",
     "creatingNewCredential": "Crearea de noi date de autentificare",
     "noMatchesFound": "Nicio potrivire găsită",
+    "loginWithPasskey": "Autentificare cu passkey",
     "searchVault": "Caută în seif...",
     "enterServiceName": "Introdu numele serviciului",
     "enterEmailAddress": "Introdu adresa de e-mail",
@@ -186,6 +190,7 @@
   "items": {
     "title": "Elemente",
     "itemName": "Nume",
+    "suggestions": "Sugestii",
     "loginCredentials": "Date de autentificare",
     "cardInformation": "Informații Card",
     "addItem": "Adaugă element",
@@ -202,6 +207,8 @@
     "folder": "Dosar",
     "welcomeTitle": "Bun venit în AliasVault!",
     "welcomeDescription": "Pentru a utiliza extensia de browser AliasVault: accesează un site web și folosește fereastra pop-up de completare automată AliasVault pentru a crea noi date de autentificare.",
+    "currentSiteMatch": "Pentru {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} elemente găsite",
     "noMatchingItems": "Niciun element nu corespunde filtrului selectat.",
     "noMatchingItemsSearch": "Nu s-au găsit elemente pentru „{{search}}”",
     "noMatchingItemsWithFilter": "Niciun element {{filter}} nu se potrivește cu „{{search}}”",
@@ -216,7 +223,6 @@
     "deleteFolderAndItemsDescription": "{{count}} element(e) vor fi mutate la Șterse Recent.",
     "filters": {
       "folders": "Dosare",
-      "passkeys": "Passkeys",
       "totp": "Coduri 2FA"
     },
     "sort": {
@@ -238,6 +244,28 @@
     "includeNumbers": "Include cifre",
     "includeSpecialChars": "Include caractere speciale",
     "avoidAmbiguousChars": "Evită caracterele ambigue (o, 0, etc.)",
+    "passwordTypeBasic": "Parolă",
+    "passwordTypeDiceware": "Frază de acces",
+    "passphraseLanguage": "Limba frazei de acces",
+    "wordCount": "Cuvinte",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Majuscule inițiale",
+      "Uppercase": "Litere mari",
+      "Lowercase": "Litere mici"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Liniuță",
+      "Space": "Spațiu",
+      "Underscore": "Subliniere",
+      "Dot": "Punct"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Poziție aleatorie",
+      "Suffix": "Sufix"
+    },
     "privateEmailTitle": "E-mail Privat",
     "privateEmailAliasVaultServer": "Server AliasVault",
     "privateEmailDescription": "Criptat E2E, complet privat.",
@@ -259,6 +287,7 @@
     "fieldType": "Tip câmp",
     "fieldTypes": {
       "text": "Text",
+      "password": "Parolă",
       "hidden": "Ascuns (text mascat)",
       "email": "E-mail",
       "url": "URL",
@@ -301,6 +330,7 @@
     "addCode": "Adaugă cod 2FA",
     "instructions": "Introdu cheia secretă afișată de site-ul unde dorești să activezi autentificarea cu doi factori.",
     "nameOptional": "Nume (opțional)",
+    "addName": "Adaugă un nume (opţional)",
     "secretKey": "Cheie Secretă",
     "saveToViewCode": "Salvează pentru a vedea codul",
     "defaultName": "Authenticator",
@@ -401,7 +431,8 @@
     "autoLock4Hours": "4 ore",
     "autoLock8Hours": "8 ore",
     "autoLock24Hours": "24 ore",
-    "versionPrefix": "Versiune ",
+    "versionPrefix": "Versiune aplicație",
+    "serverVersion": "Versiune server",
     "autofillSettings": "Setări completare automată",
     "clipboardSettings": "Setări clipboard",
     "contextMenuSettings": "Setări meniu contextual",
@@ -438,6 +469,11 @@
         "male": "Masculin",
         "female": "Feminin"
       }
+    },
+    "passwordGenerator": "Generator de Parole",
+    "passwordGeneratorSettings": {
+      "description": "Configurează setările implicite ale generatorului de parole pentru elementele nou create, inclusiv lungimea parolei, seturile de caractere și limba frazelor de acces.",
+      "configureButton": "Configurează"
     },
     "credentialAutofill": "Completează automat datele de autentificare",
     "credentialAutofillDescription": "Afișează fereastra de completare automată când sunt detectate câmpurile de utilizator și parolă",
@@ -502,7 +538,8 @@
       "selectExistingLogin": "Adaugă la o autentificare existentă:",
       "selectExistingLoginDescription": "Atașează acest passkey unor date de autentificare existente pentru acest site.",
       "attachingToCredential": "Se adaugă passkey-ul la: {{serviceName}}",
-      "attachPasskey": "Adaugă Passkey"
+      "attachPasskey": "Adaugă Passkey",
+      "unsupportedAlgorithm": "Acest site web necesită un tip de passkey pe care AliasVault nu îl acceptă."
     },
     "settings": {
       "passkeyProvider": "Furnizor Passkey",

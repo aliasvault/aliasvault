@@ -38,8 +38,8 @@ export type PasskeyGetCredentialResponse = {
 export type StoredPasskeyRecord = {
   rpId: string;
   credentialId: string;               // base64url identifier (string)
-  publicKey: JsonWebKey;              // JWK (P-256)
-  privateKey: JsonWebKey;             // JWK (P-256)
+  publicKey: JsonWebKey;              // JWK (EC P-256 for ES256, or RSA for RS256)
+  privateKey: JsonWebKey;             // JWK (EC P-256 for ES256, or RSA for RS256)
   userId?: string | null;             // standard base64 encoded user.id (used for userHandle in authentication)
   userName?: string;
   userDisplayName?: string;

@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="NoLogoText" xml:space="preserve">
+    <value>Gan lógó</value>
+    <comment>Text shown when service logo is not available</comment>
+  </data>
+  <data name="ImportFromServiceTitle" xml:space="preserve">
+    <value>Iompórtáil ó {0}</value>
+    <comment>Modal title for importing from a service. {0} is placeholder for service name</comment>
+  </data>
+  <data name="UploadExportFileText" xml:space="preserve">
+    <value>Uaslódáil do chomhad easpórtála {0}:</value>
+    <comment>Text for file upload instruction. {0} is placeholder for service name</comment>
+  </data>
+  <data name="CancelButton" xml:space="preserve">
+    <value>Cealaigh</value>
+    <comment>Cancel button text</comment>
+  </data>
+  <data name="BackButton" xml:space="preserve">
+    <value>Ar ais</value>
+    <comment>Back button text</comment>
+  </data>
+  <data name="NextButton" xml:space="preserve">
+    <value>Ar Aghaidh</value>
+    <comment>Next button text</comment>
+  </data>
+  <data name="ImportButton" xml:space="preserve">
+    <value>Iompórtáil</value>
+    <comment>Import button text</comment>
+  </data>
+  <data name="ImportFoldersLabel" xml:space="preserve">
+    <value>Iompórtáil fillteáin</value>
+    <comment>Checkbox label for importing folder structure from the source password manager</comment>
+  </data>
+  <data name="FoldersDetected" xml:space="preserve">
+    <value>Braitheadh ​​{0} fillteán(í)</value>
+    <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
+  </data>
+  <data name="ImportAttachmentsLabel" xml:space="preserve">
+    <value>Iompórtáil ceangaltáin a braitheadh</value>
+    <comment>Checkbox label for importing file attachments detected in the source export</comment>
+  </data>
+  <data name="AttachmentsDetected" xml:space="preserve">
+    <value>{0} ceangaltán(í), {1}</value>
+    <comment>Info text showing number of attachments detected and their total size. {0} is the count, {1} is the human-readable size (e.g. "3.9 MB")</comment>
+  </data>
+  <data name="DuplicateCredentialsWarning" xml:space="preserve">
+    <value>Fuarthas {0} dintiúir(í) dhúblacha agus ní dhéanfar iad a allmhairiú.</value>
+    <comment>Warning text when duplicate credentials are detected. {0} is the count</comment>
+  </data>
+  <data name="NoNewCredentials" xml:space="preserve">
+    <value>Ní bhfuarthas aon dintiúir nua le hallmhairiú.</value>
+    <comment>Warning text when no new credentials are available for import</comment>
+  </data>
+  <data name="PreviewInstructions" xml:space="preserve">
+    <value>Seiceáil an bhfuil cuma cheart ar na dintiúir braite seo a leanas sula leanann tú ar aghaidh:</value>
+    <comment>Instructions shown before the credential preview table</comment>
+  </data>
+  <data name="ServiceColumn" xml:space="preserve">
+    <value>Service</value>
+    <comment>Column header for service name in credential preview table</comment>
+  </data>
+  <data name="UsernameColumn" xml:space="preserve">
+    <value>Ainm úsáideora</value>
+    <comment>Column header for username in credential preview table</comment>
+  </data>
+  <data name="PasswordColumn" xml:space="preserve">
+    <value>Pasfhocal</value>
+    <comment>Column header for password in credential preview table</comment>
+  </data>
+  <data name="MoreCredentials" xml:space="preserve">
+    <value>... agus {0} dintiúir eile</value>
+    <comment>Text showing additional credentials not displayed. {0} is the count</comment>
+  </data>
+  <data name="ExtractFaviconsLabel" xml:space="preserve">
+    <value>Bain deilbhíní favic do sheirbhísí le URLanna</value>
+    <comment>Checkbox label for favicon extraction option</comment>
+  </data>
+  <data name="ConfirmImportText" xml:space="preserve">
+    <value>An bhfuil tú cinnte gur mian leat dintiúir ({0}) a allmhairiú? Tabhair faoi deara: d'fhéadfadh go dtógfadh an próiseas allmhairithe tamall gairid.</value>
+    <comment>Confirmation text before importing. {0} is the credential count</comment>
+  </data>
+  <data name="FaviconExtractionNote" xml:space="preserve">
+    <value>Nóta: Tá eastóscadh Favicon cumasaithe. Féadfaidh an próiseas seo roinnt nóiméad a thógáil ag brath ar líon na ndintiúir le URLanna. Coinnigh an leathanach ar oscailt le do thoil.</value>
+    <comment>Warning note about favicon extraction duration</comment>
+  </data>
+  <data name="ExtractingFavicons" xml:space="preserve">
+    <value>Ag baint deilbhíní favicon... {0} / {1}</value>
+    <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SavingCredentials" xml:space="preserve">
+    <value>Sábháil dintiúir chuig an cruinneachán... {0} / {1}</value>
+    <comment>Progress text during credential save. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SyncingVault" xml:space="preserve">
+    <value>Ag sioncrónú cruinneacháin leis an bhfreastalaí...</value>
+    <comment>Progress text when syncing vault to server after import</comment>
+  </data>
+  <data name="ImportSuccessMessage" xml:space="preserve">
+    <value>Dintiúir {0} allmhairithe go rathúil.</value>
+    <comment>Success message after import completes. {0} is the credential count</comment>
+  </data>
+  <data name="ImportErrorGeneric" xml:space="preserve">
+    <value>Tharla earráid le linn an allmhairithe. Déan iarracht arís.</value>
+    <comment>Generic error message when import fails</comment>
+  </data>
+  <data name="ImportErrorInvalidFile" xml:space="preserve">
+    <value>Roghnaigh comhad easpórtála bailí le hallmhairiú.</value>
+    <comment>Error message when invalid file is selected</comment>
+  </data>
+  <data name="ImportErrorZipFile" xml:space="preserve">
+    <value>Dízipeáil an comhad easpórtála sula n-allmhairítear é. Féach na treoracha thíos le haghaidh tuilleadh eolais.</value>
+    <comment>Error message when user tries to import a zip file</comment>
+  </data>
+  <data name="ImportErrorUnsupportedFormat" xml:space="preserve">
+    <value>Formáid comhaid nach dtacaítear léi. Formáidí tacaithe: {0}</value>
+    <comment>Error message when user selects an unsupported file format. {0} is the list of supported extensions</comment>
+  </data>
+  <data name="ImportErrorFileTooLarge" xml:space="preserve">
+    <value>Tá méid an chomhaid níos mó ná teorainn {0}MB.</value>
+    <comment>Error message when file is too large. {0} is the maximum allowed size in megabytes</comment>
+  </data>
+  <data name="EncryptedFilePasswordPrompt" xml:space="preserve">
+    <value>Tá an comhad seo criptithe. Cuir isteach an focal faire a d'úsáid tú agus an t-easpórtáil á cruthú agat.</value>
+    <comment>Prompt for encrypted file password</comment>
+  </data>
+  <data name="DecryptionPasswordLabel" xml:space="preserve">
+    <value>Pasfhocal Díchriptithe</value>
+    <comment>Label for decryption password input</comment>
+  </data>
+  <data name="DecryptionPasswordHint" xml:space="preserve">
+    <value>Seo an focal faire a shocraigh tú agus an t-easpórtáil chriptithe (comhad .avex) á cruthú agat, ní do phríomhfhocal faire cruinneacháin.</value>
+    <comment>Hint explaining what password is needed</comment>
+  </data>
+  <data name="DecryptAndContinueButton" xml:space="preserve">
+    <value>Díchriptigh agus Lean ar aghaidh</value>
+    <comment>Button text for decryption</comment>
+  </data>
+  <data name="DecryptingFile" xml:space="preserve">
+    <value>Ag díchriptiú comhaid...</value>
+    <comment>Progress text during decryption</comment>
+  </data>
+  <data name="IncorrectPasswordError" xml:space="preserve">
+    <value>Pasfhocal mícheart. Déan iarracht arís.</value>
+    <comment>Error message for incorrect decryption password</comment>
+  </data>
+  <data name="DecryptionErrorGeneric" xml:space="preserve">
+    <value>Theip ar an gcomhad a dhíchriptiú. Seiceáil le do thoil nach bhfuil an comhad truaillithe agus déan iarracht arís.</value>
+    <comment>Generic error message for decryption failure</comment>
+  </data>
+  <data name="supportedFormats" xml:space="preserve">
+    <value>Formáidí tacaithe</value>
+    <comment>Label for supported file formats</comment>
+  </data>
+  <data name="ImportErrorDetailsIntro" xml:space="preserve">
+    <value>Cóipeáil na sonraí thíos le do thoil agus roinn iad nuair a bheidh an fhadhb seo á tuairisciú agat.</value>
+    <comment>Intro line shown above the copyable error diagnostic block when an import fails</comment>
+  </data>
+  <data name="ImportErrorCopyDetailsButton" xml:space="preserve">
+    <value>Sonraí cóipeála</value>
+    <comment>Button label to copy the error diagnostic block to the clipboard</comment>
+  </data>
+  <data name="ImportErrorShowDetailsButton" xml:space="preserve">
+    <value>Taispeáin sonraí</value>
+    <comment>Button label that reveals the error diagnostic block in an inline read-only textarea</comment>
+  </data>
+  <data name="ImportErrorHideDetailsButton" xml:space="preserve">
+    <value>Folaigh sonraí</value>
+    <comment>Button label that hides the error diagnostic block again (shown when the block is currently expanded)</comment>
+  </data>
+  <data name="ImportPartialFailureWarning" xml:space="preserve">
+    <value>Níorbh fhéidir {0} mír(eanna) a pharsáil agus scipeálfar iad.</value>
+    <comment>Warning shown in the preview step when some items failed to parse. {0} is the count of failed items</comment>
+  </data>
+</root>

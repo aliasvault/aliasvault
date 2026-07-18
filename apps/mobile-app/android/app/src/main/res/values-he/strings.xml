@@ -7,10 +7,10 @@
   <string name="common_next">הבא</string>
   <string name="common_cancel">ביטול</string>
   <string name="common_back">חזרה</string>
-  <string name="common_show_details">Show details</string>
-  <string name="common_hide_details">Hide details</string>
+  <string name="common_show_details">הצגת פרטים</string>
+  <string name="common_hide_details">הסתרת פרטים</string>
   <string name="common_copy">Copy</string>
-  <string name="common_copied_to_clipboard">Copied to clipboard</string>
+  <string name="common_copied_to_clipboard">הועתק ללוח הגזירים</string>
   <string name="unknown_error">אירעה שגיאה לא ידועה</string>
   <string name="autofill_failed_to_retrieve">המשיכה נכשלה, נא לפתוח את היישום</string>
   <string name="autofill_no_match_found">No match found</string>

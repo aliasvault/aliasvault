@@ -3,19 +3,23 @@ import * as OTPAuth from 'otpauth';
 import { storage } from 'wxt/utils/storage';
 
 import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
+import { devLog } from '@/utils/DevLogger';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
-import { FieldKey, ItemTypes, createSystemField, type Item } from '@/utils/dist/core/models/vault';
+import { FieldKey, ItemTypes, createSystemField, type Item, type PasswordSettings } from '@/utils/dist/core/models/vault';
 import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
-import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked } from '@/utils/RustCore';
+import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword } from '@/utils/RustCore';
+import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
+import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
 import { NetworkError } from '@/utils/types/errors/NetworkError';
 import { PayloadTooLargeError } from '@/utils/types/errors/PayloadTooLargeError';
+import { RequestTimeoutError } from '@/utils/types/errors/RequestTimeoutError';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
 import type { DuplicateCheckResponse } from '@/utils/types/messaging/DuplicateCheckResponse';
@@ -279,10 +283,11 @@ export async function handleLockVault(): Promise<messageBoolResponse> {
  * This is safe to call during forced logout as it preserves vault data.
  */
 export async function handleClearSession(): Promise<messageBoolResponse> {
-  // Clear auth tokens
+  // Clear auth tokens and last sync error
   await storage.removeItems([
     'local:accessToken',
     'local:refreshToken',
+    'local:lastSyncError',
   ]);
 
   // Clear session-only data (security: encryption key must not persist)
@@ -327,37 +332,6 @@ export async function handleClearVaultData(): Promise<messageBoolResponse> {
   await LocalPreferencesService.clearAll();
 
   return { success: true };
-}
-
-/**
- * Create a new item in the vault.
- * Uses the native Item type with field-based structure.
- */
-export async function handleCreateItem(
-  message: any,
-) : Promise<messageBoolResponse> {
-  const encryptionKey = await handleGetEncryptionKey();
-
-  if (!encryptionKey) {
-    // E-202: Vault is locked
-    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
-  }
-
-  try {
-    const sqliteClient = await createVaultSqliteClient();
-
-    // Add the new item to the vault/database.
-    await sqliteClient.items.create(message.item, message.attachments || [], message.totpCodes || []);
-
-    // Upload the new vault to the server.
-    await uploadNewVaultToServer(sqliteClient);
-
-    return { success: true };
-  } catch (error) {
-    console.error('Failed to create item:', error);
-    // E-301: Item create failed
-    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_CREATE_FAILED) };
-  }
 }
 
 /**
@@ -637,6 +611,21 @@ export async function handleGetPasswordSettings(
 }
 
 /**
+ * Generate a password or passphrase from the given settings using the Rust core.
+ */
+export async function handleGeneratePassword(
+  settings: PasswordSettings
+): Promise<{ success: boolean; password?: string; error?: string }> {
+  try {
+    const password = await generatePassword(settings);
+    return { success: true, password };
+  } catch (error) {
+    console.error('Error generating password:', error);
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UNKNOWN_ERROR) };
+  }
+}
+
+/**
  * Get the encryption key for the encrypted vault.
  */
 export async function handleGetEncryptionKey(
@@ -677,16 +666,31 @@ export async function handleUploadVault(
     const sqliteClient = await createVaultSqliteClient();
 
     // Upload the vault to the server.
-    const response = await uploadNewVaultToServer(sqliteClient);
+    const { response, vaultPruned } = await uploadNewVaultToServer(sqliteClient);
 
     return {
       success: true,
       status: response.status,
       newRevisionNumber: response.newRevisionNumber,
-      mutationSeqAtStart
+      mutationSeqAtStart,
+      vaultPruned
     };
   } catch (error) {
     console.error('Failed to upload vault:', error);
+
+    /*
+     * E-805: Vault transfer timed out.
+     */
+    if (error instanceof RequestTimeoutError) {
+      return { success: false, error: formatErrorWithCode(await t('common.errors.vaultSyncTimeout'), AppErrorCode.UPLOAD_TIMEOUT) };
+    }
+
+    /*
+     * Let network and auth errors propagate.
+     */
+    if (error instanceof NetworkError || error instanceof ApiAuthError) {
+      throw error;
+    }
 
     const errorMessage = error instanceof Error ? error.message : '';
 
@@ -704,8 +708,11 @@ export async function handleUploadVault(
       return { success: false, error: errorMessage };
     }
 
-    // E-801: Upload failed for other reasons
-    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_FAILED) };
+    /*
+     * E-801: Upload failed. Include the HTTP status and server error code (if any).
+     */
+    const detail = error instanceof ApiRequestError ? ` [${error.message}]` : '';
+    return { success: false, error: formatErrorWithCode(`${await t('common.errors.unknownError')}${detail}`, AppErrorCode.UPLOAD_FAILED) };
   }
 }
 
@@ -764,8 +771,10 @@ export async function handleClearPersistedFormValues(): Promise<void> {
  * Upload a new version of the vault to the server using the provided sqlite client.
  * Prunes expired trash items before uploading.
  */
-async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<VaultPostResponse> {
+async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<{ response: VaultPostResponse; vaultPruned: boolean }> {
+  devLog('[VaultSync] Upload started');
   let updatedVaultData = sqliteClient.exportToBase64();
+  let vaultPruned = false;
   const encryptionKey = await handleGetEncryptionKey();
 
   if (!encryptionKey) {
@@ -781,8 +790,9 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
   try {
     const pruneResult = await vaultMergeService.prune(updatedVaultData, TRASH_RETENTION_DAYS);
     if (pruneResult.success && pruneResult.statementCount > 0) {
-      console.info(`[VaultSync] Pruned expired items from trash (${pruneResult.statementCount} statements)`);
+      devLog(`[VaultSync] Pruned expired items from trash (${pruneResult.statementCount} statements)`);
       updatedVaultData = pruneResult.prunedVaultBase64;
+      vaultPruned = true;
 
       /**
        * Reload the sqlite client with the pruned vault so the UI reflects the change.
@@ -800,6 +810,8 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
     updatedVaultData,
     encryptionKey
   );
+
+  devLog('[VaultSync] Vault exported, pruned and encrypted, sending to server');
 
   // Store in local: storage for persistence
   await storage.setItem('local:encryptedVault', encryptedVault);
@@ -837,17 +849,34 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
 
   // Check if response is successful (.status === 0)
   if (response.status === 0) {
+    devLog(`[VaultSync] Upload completed (new revision ${response.newRevisionNumber})`);
+
     // Upload succeeded - update server revision
     await storage.setItem('local:serverRevision', response.newRevisionNumber);
   } else if (response.status === 2) {
     // Outdated - server has newer version
     throw new Error(formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_OUTDATED));
   } else {
-    // Upload failed
-    throw new Error(formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_FAILED));
+    // Upload failed - include the unexpected server status value for diagnosability
+    throw new Error(formatErrorWithCode(`${await t('common.errors.unknownError')} [server status: ${response.status}]`, AppErrorCode.UPLOAD_FAILED));
   }
 
-  return response;
+  return { response, vaultPruned };
+}
+
+/**
+ * Persist a locally-mutated vault and attempt to sync it to the server in the background.
+ *
+ * This is tolerant to server being offline (in which case the vault state will be stored locally for next sync).
+ */
+async function persistLocalVaultMutation(sqliteClient: SqliteClient, encryptionKey: string) : Promise<void> {
+  const updatedVaultData = sqliteClient.exportToBase64();
+  const encryptedVault = await EncryptionUtility.symmetricEncrypt(updatedVaultData, encryptionKey);
+  await handleStoreEncryptedVault({ vaultBlob: encryptedVault, markDirty: true });
+
+  void handleFullVaultSync().catch(error => {
+    console.error('Background sync after local vault mutation failed:', error);
+  });
 }
 
 /**
@@ -1180,13 +1209,15 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
   if (isSyncInProgress) {
     // Mark that we need to sync again after current sync completes
     hasPendingSync = true;
-    console.info('[VaultSync] Sync already in progress, queued for retry after completion');
+    devLog('[VaultSync] Sync already in progress, queued for retry after completion');
     return { success: true, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false };
   }
 
   // Mark sync as in progress
   isSyncInProgress = true;
   hasPendingSync = false;
+
+  devLog('[VaultSync] Sync started');
 
   const webApi = new WebApiService();
 
@@ -1207,6 +1238,8 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
 
     // Get current sync state
     const syncState = await handleGetSyncState();
+
+    devLog(`[VaultSync] Status received (server rev ${statusResponse.vaultRevision}, local rev ${syncState.serverRevision}, isDirty ${syncState.isDirty})`);
 
     // Check if server is actually available (0.0.0 indicates connection error)
     if (statusResponse.serverVersion === '0.0.0') {
@@ -1267,7 +1300,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
             const mergeResult = await vaultMergeService.merge(localDecrypted, serverDecrypted);
 
             if (mergeResult.success) {
-              console.info('Vault merge during sync completed:', mergeResult.stats);
+              devLog('[VaultSync] Vault merge during sync completed:', mergeResult.stats);
 
               const mergedEncryptedVault = await EncryptionUtility.symmetricEncrypt(
                 mergeResult.mergedVaultBase64,
@@ -1285,7 +1318,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
               });
 
               if (!storeResult.success) {
-                console.info('Mutation detected during merge, re-syncing...');
+                devLog('[VaultSync] Mutation detected during merge, re-syncing...');
                 return handleFullVaultSync();
               }
 
@@ -1335,7 +1368,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
         });
 
         if (!storeResult.success) {
-          console.info('Mutation detected during sync, re-syncing...');
+          devLog('[VaultSync] Mutation detected during sync, re-syncing...');
           return handleFullVaultSync();
         }
 
@@ -1372,6 +1405,13 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
             mutationSeqAtStart: uploadResponse.mutationSeqAtStart!,
             newServerRevision: uploadResponse.newRevisionNumber!
           });
+
+          /*
+           * If expired trash items were pruned during upload, report the vault as new
+           * so the popup reloads the pruned vault instead of resurrecting the items
+           * from its stale in-memory copy on the next mutation.
+           */
+          return { success: true, hasNewVault: uploadResponse.vaultPruned === true, wasOffline: false, upgradeRequired: false, requiresLogout: false };
         } else if (uploadResponse.status === 2) {
           /**
            * Server returned Outdated - another device uploaded first.
@@ -1407,15 +1447,15 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
           `Server recovery complete: rev ${statusResponse.vaultRevision} → ${uploadResponse.newRevisionNumber}`
         );
 
-        return { success: true, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false };
+        return { success: true, hasNewVault: uploadResponse.vaultPruned === true, wasOffline: false, upgradeRequired: false, requiresLogout: false };
       } else if (uploadResponse.status === 2) {
         // Another client recovered first
-        console.info('Another client recovered server first, re-syncing...');
+        devLog('[VaultSync] Another client recovered server first, re-syncing...');
         return handleFullVaultSync();
       } else {
         console.error('Server recovery failed:', uploadResponse.error);
-        // E-801: Upload failed during server recovery
-        return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_FAILED) };
+        // E-801: Upload failed during server recovery - preserve the upload error detail when available
+        return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: uploadResponse.error ?? formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_FAILED) };
       }
     }
 
@@ -1444,6 +1484,11 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
       return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, errorKey: 'sessionExpired' };
     }
 
+    // E-805: Vault transfer timed out - show a targeted error instead of entering offline mode
+    if (err instanceof RequestTimeoutError) {
+      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: formatErrorWithCode(await t('common.errors.vaultSyncTimeout'), AppErrorCode.UPLOAD_TIMEOUT) };
+    }
+
     // Network error - enter offline mode if we have a local vault
     if (err instanceof NetworkError) {
       const encryptedVault = await storage.getItem('local:encryptedVault');
@@ -1465,13 +1510,15 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     // Reset sync in progress flag
     isSyncInProgress = false;
 
+    devLog('[VaultSync] Sync finished');
+
     /*
      * Check if another sync is needed (mutations happened during this sync).
      * Trigger follow-up sync asynchronously (don't await to avoid blocking).
      * Popup will poll isDirty flag to detect when background sync completes.
      */
     if (hasPendingSync) {
-      console.info('[VaultSync] Pending mutations detected, triggering follow-up sync');
+      devLog('[VaultSync] Pending mutations detected, triggering follow-up sync');
       hasPendingSync = false;
 
       handleFullVaultSync().catch(err => {
@@ -1658,8 +1705,8 @@ export async function handleSaveLoginCredential(
     // Add the item to the vault
     await sqliteClient.items.create(newItem, [], []);
 
-    // Upload the updated vault to the server
-    await uploadNewVaultToServer(sqliteClient);
+    // Persist locally and sync in the background (doesn't block when server is offline).
+    await persistLocalVaultMutation(sqliteClient, encryptionKey);
 
     return { success: true, itemId: newItem.Id };
   } catch (error) {
@@ -1685,6 +1732,7 @@ export async function handleAddUrlToCredential(message: { itemId: string; url: s
 
   try {
     const sqliteClient = await createVaultSqliteClient();
+    const url = ServiceDetectionUtility.sanitizeUrl(message.url) || message.url;
 
     // Get the existing item
     const item = sqliteClient.items.getById(message.itemId);
@@ -1696,26 +1744,23 @@ export async function handleAddUrlToCredential(message: { itemId: string; url: s
     const urlFieldIndex = item.Fields?.findIndex(f => f.FieldKey === FieldKey.LoginUrl);
 
     if (urlFieldIndex !== undefined && urlFieldIndex >= 0) {
-      // URL field exists - add to it
       const existingField = item.Fields![urlFieldIndex];
-      const existingUrls = Array.isArray(existingField.Value)
-        ? existingField.Value
-        : (existingField.Value ? [existingField.Value] : []);
+      const existingUrls = Array.isArray(existingField.Value) ? existingField.Value : (existingField.Value ? [existingField.Value] : []);
 
       /*
        * Compare on host only (subdomain + domain) so trailing slashes, paths,
        * query strings, fragments, `www.`, and http/https differences don't
        * cause us to store a near-duplicate URL on the credential.
        */
-      if (await isUrlAlreadyLinked(existingUrls as string[], message.url)) {
+      if (await isUrlAlreadyLinked(existingUrls as string[], url)) {
         return { success: true };
       }
 
       // Add the new URL
-      item.Fields![urlFieldIndex].Value = [...existingUrls, message.url];
+      item.Fields![urlFieldIndex].Value = [...existingUrls, url];
     } else {
       // No URL field exists - create one
-      const newUrlField = createSystemField(FieldKey.LoginUrl, { value: message.url });
+      const newUrlField = createSystemField(FieldKey.LoginUrl, { value: url });
       if (!item.Fields) {
         item.Fields = [];
       }
@@ -1728,8 +1773,8 @@ export async function handleAddUrlToCredential(message: { itemId: string; url: s
     // Update the item in the vault
     await sqliteClient.items.update(item, [], [], [], []);
 
-    // Upload the updated vault to the server
-    await uploadNewVaultToServer(sqliteClient);
+    // Persist locally and sync in the background (doesn't block when server is offline).
+    await persistLocalVaultMutation(sqliteClient, encryptionKey);
 
     return { success: true };
   } catch (error) {

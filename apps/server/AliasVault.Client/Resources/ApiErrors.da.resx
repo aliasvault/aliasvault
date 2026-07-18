@@ -129,7 +129,7 @@
     <value>Ny brugeroprettelse er i øjeblikket deaktiveret på denne server. Kontakt venligst administratoren.</value>
   </data>
   <data name="REGISTRATION_FAILED" xml:space="preserve">
-    <value>Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.</value>
+    <value>Kunne ikke oprette kontoen. Prøv igen om et par minutter. Hvis dette problem fortsætter, kontakt venligst support.</value>
   </data>
   <data name="USER_NOT_FOUND" xml:space="preserve">
     <value>Ugyldigt brugernavn eller adgangskode. Prøv venligst igen.</value>

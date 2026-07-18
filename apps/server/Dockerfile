@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.source="https://github.com/aliasvault/aliasvault"
 LABEL org.opencontainers.image.vendor="AliasVault"
 LABEL org.opencontainers.image.licenses="AGPL-3.0"
 LABEL org.opencontainers.image.title="AliasVault Reverse Proxy"
-LABEL org.opencontainers.image.description="Nginx reverse proxy for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)"
+LABEL org.opencontainers.image.description="Nginx reverse proxy for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)"
 
 # Install OpenSSL and inotify-tools for certificate watching
 RUN apk add --no-cache openssl inotify-tools

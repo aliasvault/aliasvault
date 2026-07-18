@@ -1,0 +1,145 @@
+---
+sidebar_position: 1
+hide_table_of_contents: true
+---
+# Self-host Install
+
+AliasVault is self-hosted with Docker. Both methods install the **same
+AliasVault**, they differ only in how much is managed for you versus how much
+fits into infrastructure you already run. Pick the one that matches your setup.
+
+<div className="av-install-choice">
+  <a className="av-install-card av-install-card--featured" href="./script/">
+    <span className="av-install-card__badge">Recommended</span>
+    <div className="av-install-card__head">
+      <div className="av-install-card__icon">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="m4 17 6-6-6-6" />
+          <path d="M12 19h8" />
+        </svg>
+      </div>
+      <div>
+        <h3 className="av-install-card__title">Install Script</h3>
+        <div className="av-install-card__meta">~5 min</div>
+      </div>
+    </div>
+    <p className="av-install-card__tagline">
+      A fully managed setup. One script spins up multiple containers, handles HTTPS for
+      you, and gives you CLI helpers for updates and maintenance.
+    </p>
+    <ul className="av-install-card__list">
+      <li>AliasVault on its own VPS or LXC</li>
+      <li>Automatic HTTPS via Let&apos;s Encrypt</li>
+      <li>Guided updates &amp; migrations</li>
+      <li>Production-ready defaults</li>
+    </ul>
+    <p className="av-install-card__bestfor">
+      <strong>Best for</strong> a fresh VM or VPS dedicated to AliasVault.
+    </p>
+    <div className="av-install-card__cta">
+      <span className="button button--primary button--lg">
+        Install with script →
+      </span>
+    </div>
+  </a>
+
+  <a className="av-install-card" href="./docker-compose/">
+    <div className="av-install-card__head">
+      <div className="av-install-card__icon">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="3" width="20" height="7" rx="1.5" />
+          <rect x="2" y="14" width="20" height="7" rx="1.5" />
+          <path d="M6 6.5h.01M6 17.5h.01" />
+        </svg>
+      </div>
+      <div>
+        <h3 className="av-install-card__title">Docker Compose</h3>
+        <div className="av-install-card__meta">~15 min</div>
+      </div>
+    </div>
+    <p className="av-install-card__tagline">
+      A single all-in-one container you can add to your existing Docker stack.
+      You bring your own reverse proxy and TLS, and keep full control.
+    </p>
+    <ul className="av-install-card__list">
+      <li>AliasVault as an all-in-one container on your existing Docker host</li>
+      <li>Best for setups on NAS or when using tools like e.g. Portainer</li>
+      <li>Bring your own TLS (Traefik, Nginx, HAProxy, Caddy…)</li>
+      <li>Updates via <code>docker pull</code> (occasional manual migrations)</li>
+    </ul>
+    <p className="av-install-card__bestfor">
+      <strong>Best for</strong> a NAS or homelab that already runs a reverse proxy and/or other Docker containers.
+    </p>
+    <div className="av-install-card__cta">
+      <span className="button button--secondary button--outline button--lg">
+        Install with Docker →
+      </span>
+    </div>
+  </a>
+</div>
+
+## Side-by-side comparison
+
+Both methods run the same AliasVault version. They differ mainly in how TLS,
+updates, and the surrounding setup are handled.
+
+<div className="av-compare-wrap">
+  <table className="av-compare">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Install Script</th>
+        <th>Docker Compose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">TLS / HTTPS</th>
+        <td>Automatic via Let&apos;s Encrypt</td>
+        <td>Bring your own reverse proxy</td>
+      </tr>
+      <tr>
+        <th scope="row">Updates</th>
+        <td>Guided via <code>install.sh</code></td>
+        <td>Manual <code>docker pull</code> + migrations</td>
+      </tr>
+      <tr>
+        <th scope="row">Architecture</th>
+        <td>Multiple containers (one per service)</td>
+        <td>Single all-in-one image</td>
+      </tr>
+      <tr>
+        <th scope="row">Reverse proxy</th>
+        <td>Included &amp; configured</td>
+        <td>You provide (Traefik, Nginx, Caddy…)</td>
+      </tr>
+      <tr>
+        <th scope="row">Build from source</th>
+        <td>Supported</td>
+        <td>Pre-built image only</td>
+      </tr>
+      <tr>
+        <th scope="row">Best for</th>
+        <td>Dedicated VM / VPS</td>
+        <td>Existing homelab / NAS</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+:::tip Not sure yet? You can switch later.
+Both methods use the same Docker bind-mount directories (`/database`, `/certificates`, `/logs`, `/secrets`), so migration is straightforward. Stop or uninstall one method, then follow the installation steps for the other. Your data stays preserved.
+:::
+
+## Frequently Asked Questions {#faq}
+
+### What are the system requirements?
+**Minimum:**
+- 64-bit Linux OS (Ubuntu or RHEL-based recommended)
+- 1 vCPU, 1 GB RAM, 16 GB disk
+- Docker CE (≥ 20.10) and Docker Compose (≥ 2.0)
+
+**Network:**
+- Ports 80 and 443 available
+- Optional: ports 25 and 587 for private email domains
+

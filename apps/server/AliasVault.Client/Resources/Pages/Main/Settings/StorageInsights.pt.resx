@@ -21,11 +21,11 @@
   </xsd:schema>
   <!-- Page title and description -->
   <data name="PageTitle">
-    <value>Vault storage insights</value>
+    <value>Análise de armazenamento do cofre</value>
     <comment>Page title for vault storage insights</comment>
   </data>
   <data name="PageDescription">
-    <value>See an estimate of your vault size. For best sync performance, it's advised to keep your vault size small and delete items you no longer need.</value>
+    <value>Veja uma estimativa do tamanho do seu cofre. Para melhor performance de sincronização, é recomendado manter seu cofre pequeno e excluir itens que você não precisa mais.</value>
     <comment>Page description for vault storage insights</comment>
   </data>
   <data name="BreadcrumbTitle">

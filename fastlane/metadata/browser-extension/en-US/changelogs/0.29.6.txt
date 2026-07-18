@@ -1,0 +1,4 @@
+- Add support for passkey passive autofill
+- Add support for RS-256 passkey algorithm
+- Add new custom field type: password
+- Fix browser extension load issues on Safari 18.4 and lower

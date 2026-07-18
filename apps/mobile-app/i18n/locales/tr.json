@@ -3,6 +3,7 @@
     "cancel": "İptal",
     "close": "Kapat",
     "delete": "Sil",
+    "remove": "Remove",
     "save": "Kaydet",
     "edit": "Düzenle",
     "yes": "Onayla",
@@ -16,6 +17,7 @@
     "copied": "Panoya kopyalandı",
     "loadMore": "Daha fazla yükle",
     "use": "Kullan",
+    "none": "None",
     "confirm": "Onayla",
     "next": "İleri",
     "notice": "Bildirim",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "2FA kodu ekle",
     "nameOptional": "İsim (opsiyonel)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Authenticator",
     "secretKey": "Gizli anahtar",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "saveToViewCode": "Save to view code",
     "scanQrCode": "Karekodu okut",
-    "enterManually": "Enter a setup key",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Geçersiz gizli anahtar formatı.",
       "scanFailed": "Karekod okunamadı. Lütfen daha sonra tekrar deneyiniz."
@@ -192,7 +196,8 @@
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
     "security": "Güvenlik",
-    "appVersion": "Uygulama sürümü {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Asla",
       "5seconds": "5 saniye",
@@ -360,6 +365,7 @@
     "enterFieldName": "Enter field name",
     "fieldTypes": {
       "text": "Text",
+      "password": "Parola",
       "hidden": "Hidden",
       "email": "E-Posta",
       "url": "URL",
@@ -441,6 +447,29 @@
     "includeNumbers": "Rakamlar (0-9)",
     "includeSpecialChars": "Özel Karakterler (!@#)",
     "avoidAmbiguousChars": "Belirsiz Karakterler Kullanma",
+    "passwordTypeBasic": "Parola",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Error loading items",
     "vaultSyncFailed": "Kasa senkronizasyonu başarısız oldu",
     "vaultSyncedSuccessfully": "Kasa başarıyla senkronize edildi",
@@ -654,7 +683,6 @@
     },
     "loginSettings": {
       "title": "API Connection",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Self-hosted",
       "customApiUrl": "Custom API URL",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",

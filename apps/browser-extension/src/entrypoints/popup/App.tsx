@@ -26,6 +26,7 @@ import RecentlyDeleted from '@/entrypoints/popup/pages/items/RecentlyDeleted';
 import PasskeyAuthenticate from '@/entrypoints/popup/pages/passkeys/PasskeyAuthenticate';
 import PasskeyCreate from '@/entrypoints/popup/pages/passkeys/PasskeyCreate';
 import Reinitialize from '@/entrypoints/popup/pages/Reinitialize';
+import AppearanceSettings from '@/entrypoints/popup/pages/settings/AppearanceSettings';
 import AutofillSettings from '@/entrypoints/popup/pages/settings/AutofillSettings';
 import AutoLockSettings from '@/entrypoints/popup/pages/settings/AutoLockSettings';
 import ClipboardSettings from '@/entrypoints/popup/pages/settings/ClipboardSettings';
@@ -33,6 +34,7 @@ import ContextMenuSettings from '@/entrypoints/popup/pages/settings/ContextMenuS
 import IdentityGeneratorSettings from '@/entrypoints/popup/pages/settings/IdentityGeneratorSettings';
 import LanguageSettings from '@/entrypoints/popup/pages/settings/LanguageSettings';
 import PasskeySettings from '@/entrypoints/popup/pages/settings/PasskeySettings';
+import PasswordGeneratorSettings from '@/entrypoints/popup/pages/settings/PasswordGeneratorSettings';
 import Settings from '@/entrypoints/popup/pages/settings/Settings';
 import VaultUnlockSettings from '@/entrypoints/popup/pages/settings/VaultUnlockSettings';
 
@@ -206,6 +208,8 @@ const App: React.FC = () => {
     { path: '/settings/auto-lock', element: <AutoLockSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/passkeys', element: <PasskeySettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/identity-generator', element: <IdentityGeneratorSettings />, showBackButton: true, title: t('common.settings') },
+    { path: '/settings/password-generator', element: <PasswordGeneratorSettings />, showBackButton: true, title: t('common.settings') },
+    { path: '/settings/appearance', element: <AppearanceSettings />, showBackButton: true, title: t('common.settings') },
   ], [t]);
 
   useEffect(() => {

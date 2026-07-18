@@ -1,0 +1,4 @@
+- Verbeterde vault sync snelheid
+- Ierse and Hongaarse taalopties toegevoegd aan app
+- Roemeense taaloptie toegevoegd aan wachtwoordzin generator
+- Toon server versie in instellingen pagina

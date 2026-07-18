@@ -170,7 +170,7 @@
     <comment>Label for passkey</comment>
   </data>
   <data name="PasskeySiteLabel">
-    <value>Site</value>
+    <value>Situs</value>
     <comment>Label for passkey site/relying party ID</comment>
   </data>
   <data name="PasskeyDisplayNameLabel">
@@ -186,7 +186,7 @@
     <comment>Button to delete passkey</comment>
   </data>
   <data name="PasskeyMarkedForDeletion">
-    <value>Passkey marked for deletion</value>
+    <value>Passkey ditandai untuk dihapus</value>
     <comment>Header when passkey is marked for deletion</comment>
   </data>
   <data name="PasskeyWillBeDeleted">

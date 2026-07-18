@@ -3,6 +3,7 @@
     "cancel": "Cancel",
     "close": "Close",
     "delete": "Delete",
+    "remove": "Remove",
     "save": "Save",
     "edit": "Edit",
     "yes": "Yes",
@@ -16,6 +17,7 @@
     "copied": "Copied to clipboard",
     "loadMore": "Load more",
     "use": "Use",
+    "none": "None",
     "confirm": "Confirm",
     "next": "Next",
     "notice": "Notice",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "Add 2FA Code",
     "nameOptional": "Name (optional)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Authenticator",
     "secretKey": "Secret Key",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "saveToViewCode": "Save to view code",
     "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Invalid secret key format.",
       "scanFailed": "Failed to scan QR code. Please try again."
@@ -192,7 +196,8 @@
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
     "security": "Security",
-    "appVersion": "App version {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Never",
       "5seconds": "5 seconds",
@@ -360,6 +365,7 @@
     "enterFieldName": "Enter field name",
     "fieldTypes": {
       "text": "Text",
+      "password": "Password",
       "hidden": "Hidden",
       "email": "Email",
       "url": "URL",
@@ -441,6 +447,29 @@
     "includeNumbers": "Numbers (0-9)",
     "includeSpecialChars": "Special Characters (!@#)",
     "avoidAmbiguousChars": "Avoid Ambiguous Characters",
+    "passwordTypeBasic": "Password",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Error loading items",
     "vaultSyncFailed": "Vault sync failed",
     "vaultSyncedSuccessfully": "Vault synced successfully",
@@ -654,7 +683,6 @@
     },
     "loginSettings": {
       "title": "API Connection",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Self-hosted",
       "customApiUrl": "Custom API URL",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",

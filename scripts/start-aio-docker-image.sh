@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Go to root
-cd ..
+# Go to root directory
+cd "$(dirname "$0")/.." || exit 1
 
 # Build the all-in-one docker image
 echo "Building all-in-one docker image..."
@@ -23,6 +23,3 @@ docker run -d \
   -v ./secrets:/secrets \
   -v ./certificates:/certificates \
   aliasvault-allinone:local
-
-  # Go back to scripts
-  cd scripts

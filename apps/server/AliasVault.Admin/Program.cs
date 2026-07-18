@@ -74,6 +74,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingAuthenticati
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<AuthLoggingService>();
 builder.Services.AddScoped<ConfirmModalService>();
+builder.Services.AddMemoryCache();
 builder.Services.AddScoped<ServerSettingsService>();
 builder.Services.AddTransient<StatisticsService>();
 builder.Services.AddSingleton(new VersionedContentService(Directory.GetCurrentDirectory() + "/wwwroot"));

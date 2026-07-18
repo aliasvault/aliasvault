@@ -3,6 +3,7 @@
     "cancel": "Anulează",
     "close": "Închide",
     "delete": "Șterge",
+    "remove": "Elimină",
     "save": "Salvează",
     "edit": "Editează",
     "yes": "Da",
@@ -16,6 +17,7 @@
     "copied": "Copiat în clipboard",
     "loadMore": "Încarcă mai multe",
     "use": "Utilizează",
+    "none": "Niciunul",
     "confirm": "Confirmă",
     "next": "Înainte",
     "notice": "Notă",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "Adaugă cod 2FA",
     "nameOptional": "Nume (opțional)",
+    "addName": "Adaugă un nume (opţional)",
+    "defaultName": "Authenticator",
     "secretKey": "Cheie secretă",
     "instructions": "Introdu cheia secretă furnizată de site-ul unde dorești să adaugi autentificarea cu doi factori.",
     "saveToViewCode": "Salvează pentru a vedea codul",
     "scanQrCode": "Scanează codul QR",
-    "enterManually": "Introdu o cheie de configurare",
+    "enterManually": "Introdu cheia secretă",
     "errors": {
       "invalidSecretKey": "Formatul cheii secrete este invalid.",
       "scanFailed": "Scanarea codului QR a eșuat. Încearcă din nou."
@@ -192,7 +196,8 @@
       "exportDescription": "Din motive de securitate, introdu parola ta principală pentru a confirma acest export."
     },
     "security": "Securitate",
-    "appVersion": "Versiune aplicație {{version}} ({{url}})",
+    "appVersion": "Versiune aplicație",
+    "serverVersion": "Versiune server",
     "autoLockOptions": {
       "never": "Niciodată",
       "5seconds": "5 secunde",
@@ -360,6 +365,7 @@
     "enterFieldName": "Introdu numele câmpului",
     "fieldTypes": {
       "text": "Text",
+      "password": "Parolă",
       "hidden": "Ascuns",
       "email": "E-mail",
       "url": "URL",
@@ -441,6 +447,29 @@
     "includeNumbers": "Cifre (0-9)",
     "includeSpecialChars": "Caractere speciale (!@#)",
     "avoidAmbiguousChars": "Evită caracterele ambigue",
+    "passwordTypeBasic": "Parolă",
+    "passwordTypeDiceware": "Frază de acces",
+    "passphraseLanguage": "Limba frazei de acces",
+    "wordCount": "Cuvinte",
+    "capitalization": "Majusculă",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Litere mici",
+      "TitleCase": "Majuscule inițiale",
+      "Uppercase": "Litere mari"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Liniuță",
+      "Space": "Spațiu",
+      "Underscore": "Subliniere",
+      "Dot": "Punct"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Poziție aleatorie",
+      "Suffix": "Sufix"
+    },
     "errorLoadingItems": "Eroare la încărcarea elementelor",
     "vaultSyncFailed": "Sincronizarea seifului a eșuat",
     "vaultSyncedSuccessfully": "Seiful a fost sincronizat cu succes",
@@ -654,7 +683,6 @@
     },
     "loginSettings": {
       "title": "Conexiune API",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Self-hosted",
       "customApiUrl": "URL API personalizat",
       "customApiUrlPlaceholder": "https://instanta-mea.com/api",

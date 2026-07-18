@@ -97,9 +97,13 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 401));
         }
 
-        // Get latest vault revision number
-        var latestVault = user.VaultManifests.OrderByDescending(x => x.RevisionNumber).FirstOrDefault();
-        var latestRevision = latestVault?.RevisionNumber ?? 0;
+        // Get latest vault revision number and salt.
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var latestVault = await context.Vaults
+            .Where(x => x.UserId == user.Id)
+            .OrderByDescending(x => x.RevisionNumber)
+            .Select(x => new { x.RevisionNumber, x.Salt })
+            .FirstOrDefaultAsync();
 
         // Check client version compatibility if header is provided
         var clientSupported = false;
@@ -116,7 +120,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         {
             ClientVersionSupported = clientSupported,
             ServerVersion = AppInfo.GetFullVersion(),
-            VaultRevision = latestRevision,
+            VaultRevision = latestVault?.RevisionNumber ?? 0,
             SrpSalt = latestVault?.Salt ?? string.Empty,
         });
     }

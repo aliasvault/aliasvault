@@ -265,7 +265,7 @@ public static class BaseImporter
                     item.TotpCodes.Add(new TotpCode
                     {
                         Id = Guid.NewGuid(),
-                        Name = name ?? "Authenticator",
+                        Name = name ?? string.Empty,
                         SecretKey = secretKey,
                         CreatedAt = createdAt,
                         UpdatedAt = updatedAt,

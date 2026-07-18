@@ -1,0 +1,6 @@
+# The static `build/` output is intentionally NOT ignored as the Docker image serves it.
+node_modules
+.docusaurus
+.git
+Dockerfile
+.dockerignore

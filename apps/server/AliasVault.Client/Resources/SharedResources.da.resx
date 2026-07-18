@@ -134,6 +134,14 @@
     <value>Slet</value>
     <comment>Button text for deleting an item</comment>
   </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Fjern</value>
+    <comment>Button text for removing an item</comment>
+  </data>
+  <data name="TotpDefaultName" xml:space="preserve">
+    <value>Godkender</value>
+    <comment>Display-only fallback name shown for a TOTP code that has no name set</comment>
+  </data>
   <data name="Edit" xml:space="preserve">
     <value>Rediger</value>
     <comment>Button text for editing an item</comment>
@@ -345,11 +353,11 @@
     <comment>Email format switcher: plain text view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatSource" xml:space="preserve">
-    <value>Source</value>
+    <value>Kilde</value>
     <comment>Email format switcher: raw HTML source view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatSwitchTitle" xml:space="preserve">
-    <value>Switch email format</value>
+    <value>Skift e-mail format</value>
     <comment>Tooltip for the cycle button that switches between HTML / Text / Source views. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailItemLabel" xml:space="preserve">

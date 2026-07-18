@@ -6,6 +6,24 @@ import { FormDetector } from '../formDetector/FormDetector';
  */
 export class ServiceDetectionUtility {
   /**
+   * Sanitize a raw URL down to its origin (scheme + host + port), stripping the
+   * path, query string and fragment.
+   */
+  public static sanitizeUrl(rawUrl: string): string {
+    try {
+      const url = new URL(rawUrl);
+      // Only include http/https URLs
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        return '';
+      }
+      return url.origin;
+    } catch (error) {
+      console.error('Error parsing URL:', error);
+      return '';
+    }
+  }
+
+  /**
    * Get service information from the current page
    */
   public static getServiceInfo(document: Document, location: Location): ServiceInfo {
@@ -15,21 +33,8 @@ export class ServiceDetectionUtility {
     // Get the current URL
     const currentUrl = location.href;
 
-    // Process the URL to extract service URL (origin + pathname)
-    let serviceUrl = '';
-    try {
-      const url = new URL(currentUrl);
-      // Only include http/https URLs
-      if (url.protocol === 'http:' || url.protocol === 'https:') {
-        serviceUrl = url.origin + url.pathname;
-        // Remove trailing slash
-        if (serviceUrl.endsWith('/')) {
-          serviceUrl = serviceUrl.slice(0, -1);
-        }
-      }
-    } catch (error) {
-      console.error('Error parsing current URL:', error);
-    }
+    // Process the URL to extract service URL (origin only)
+    const serviceUrl = this.sanitizeUrl(currentUrl);
 
     return {
       suggestedNames,
@@ -61,15 +66,8 @@ export class ServiceDetectionUtility {
       // Use FormDetector logic for service name detection
       const suggestedNames = FormDetector.getSuggestedServiceName(mockDocument, location);
 
-      // Get service URL (origin + pathname)
-      let serviceUrl = '';
-      if (url.protocol === 'http:' || url.protocol === 'https:') {
-        serviceUrl = url.origin + url.pathname;
-        // Remove trailing slash
-        if (serviceUrl.endsWith('/')) {
-          serviceUrl = serviceUrl.slice(0, -1);
-        }
-      }
+      // Get service URL (origin only)
+      const serviceUrl = this.sanitizeUrl(tabUrl);
 
       return {
         suggestedNames,
@@ -127,7 +125,7 @@ export type ServiceInfo = {
   suggestedNames: string[];
   /** Current page URL */
   currentUrl: string;
-  /** Service URL (origin + pathname) */
+  /** Service URL (origin only: scheme + host + port) */
   serviceUrl: string;
   /** Domain name without www prefix */
   domain: string;

@@ -109,6 +109,7 @@ const getSectionIcon = (key: string): keyof typeof MaterialIcons.glyphMap => {
  */
 const FIELD_TYPE_OPTIONS: { value: FieldType; labelKey: string }[] = [
   { value: 'Text', labelKey: 'itemTypes.fieldTypes.text' },
+  { value: 'Password', labelKey: 'itemTypes.fieldTypes.password' },
   { value: 'Hidden', labelKey: 'itemTypes.fieldTypes.hidden' },
   { value: 'Email', labelKey: 'itemTypes.fieldTypes.email' },
   { value: 'URL', labelKey: 'itemTypes.fieldTypes.url' },

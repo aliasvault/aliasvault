@@ -211,11 +211,11 @@
     <comment>Label for supported file formats</comment>
   </data>
   <data name="ImportErrorDetailsIntro" xml:space="preserve">
-    <value>Please copy the details below and share them when reporting this issue.</value>
+    <value>Por favor, copie os detalhes abaixo e inclua-os ao reportar o problema.</value>
     <comment>Intro line shown above the copyable error diagnostic block when an import fails</comment>
   </data>
   <data name="ImportErrorCopyDetailsButton" xml:space="preserve">
-    <value>Copy details</value>
+    <value>Copiar detalhes</value>
     <comment>Button label to copy the error diagnostic block to the clipboard</comment>
   </data>
   <data name="ImportErrorShowDetailsButton" xml:space="preserve">
@@ -227,7 +227,7 @@
     <comment>Button label that hides the error diagnostic block again (shown when the block is currently expanded)</comment>
   </data>
   <data name="ImportPartialFailureWarning" xml:space="preserve">
-    <value>{0} item(s) could not be parsed and will be skipped.</value>
+    <value>{0} item(ns) não foram processados e serão pulados.</value>
     <comment>Warning shown in the preview step when some items failed to parse. {0} is the count of failed items</comment>
   </data>
 </root>

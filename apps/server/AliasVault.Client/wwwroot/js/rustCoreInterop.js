@@ -170,6 +170,24 @@ window.rustCoreGetSyncableTableNames = async function() {
 };
 
 /**
+ * Get the per-table SELECT queries used to build prune input.
+ * Blob columns are reduced to a 1-byte presence marker.
+ * @returns {Promise<Array<{name: string, query: string}>>} Array of table queries.
+ */
+window.rustCoreGetPruneTableQueries = async function() {
+    if (!await initRustCore()) {
+        return [];
+    }
+
+    try {
+        return wasmModule.getPruneTableQueries();
+    } catch (error) {
+        console.error('[RustCore] Get prune table queries failed:', error);
+        return [];
+    }
+};
+
+/**
  * Extract domain from URL.
  * @param {string} url - The URL to extract domain from.
  * @returns {Promise<string>} The extracted domain.
@@ -202,6 +220,43 @@ window.rustCoreExtractRootDomain = async function(domain) {
     } catch (error) {
         console.error('[RustCore] Extract root domain failed:', error);
         return '';
+    }
+};
+
+/**
+ * Generate a password or passphrase from JSON-serialized PasswordSettings.
+ * The "Type" field selects the generator ("basic" or "diceware").
+ * @param {string} settingsJson - JSON string containing PasswordSettings.
+ * @returns {Promise<string>} The generated password/passphrase.
+ */
+window.rustCoreGeneratePassword = async function(settingsJson) {
+    if (!await initRustCore()) {
+        throw new Error('Rust WASM module not available');
+    }
+
+    try {
+        return wasmModule.generatePassword(settingsJson);
+    } catch (error) {
+        console.error('[RustCore] Generate password failed:', error);
+        throw error;
+    }
+};
+
+/**
+ * Get the list of bundled Diceware language codes (first is the default, English).
+ * @returns {Promise<string[]>} Array of language codes.
+ */
+window.rustCoreGetDicewareLanguages = async function() {
+    if (!await initRustCore()) {
+        return ['en'];
+    }
+
+    try {
+        const languages = wasmModule.getDicewareLanguages();
+        return (languages && languages.length > 0) ? languages : ['en'];
+    } catch (error) {
+        console.error('[RustCore] Get diceware languages failed:', error);
+        return ['en'];
     }
 };
 

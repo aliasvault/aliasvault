@@ -42,8 +42,7 @@ __export(index_exports, {
   UsernameEmailGenerator: () => UsernameEmailGenerator,
   convertAgeRangeToBirthdateOptions: () => convertAgeRangeToBirthdateOptions,
   getAvailableAgeRanges: () => getAvailableAgeRanges,
-  getAvailableLanguages: () => getAvailableLanguages,
-  mapUiLanguageToIdentityLanguage: () => mapUiLanguageToIdentityLanguage
+  getAvailableLanguages: () => getAvailableLanguages
 });
 module.exports = __toCommonJS(index_exports);
 
@@ -11763,99 +11762,21 @@ function convertAgeRangeToBirthdateOptions(ageRange) {
 }
 
 // src/utils/LanguageProvider.ts
+var SUPPORTED_LANGUAGE_CODES = [
+  "da",
+  "de",
+  "en",
+  "es",
+  "fr",
+  "it",
+  "nl",
+  "ro",
+  "sv",
+  "ur",
+  "fa"
+];
 function getAvailableLanguages() {
-  const languages = [
-    {
-      value: "da",
-      label: "Dansk",
-      flag: "\u{1F1E9}\u{1F1F0}",
-      alternativeCodes: ["da-DK"]
-    },
-    {
-      value: "de",
-      label: "Deutsch",
-      flag: "\u{1F1E9}\u{1F1EA}",
-      alternativeCodes: ["de-DE", "de-AT", "de-CH", "de-LU", "de-LI"]
-    },
-    {
-      value: "en",
-      label: "English",
-      flag: "\u{1F1EC}\u{1F1E7}",
-      alternativeCodes: ["en-US", "en-GB", "en-CA", "en-AU", "en-NZ", "en-IE", "en-ZA", "en-SG", "en-IN"]
-    },
-    {
-      value: "es",
-      label: "Espa\xF1ol",
-      flag: "\u{1F1EA}\u{1F1F8}",
-      alternativeCodes: ["es-ES", "es-MX", "es-AR", "es-CO", "es-CL", "es-PE", "es-VE", "es-EC", "es-GT", "es-CU", "es-BO", "es-DO", "es-HN", "es-PY", "es-SV", "es-NI", "es-CR", "es-PA", "es-UY", "es-PR"]
-    },
-    {
-      value: "fr",
-      label: "Fran\xE7ais",
-      flag: "\u{1F1EB}\u{1F1F7}",
-      alternativeCodes: ["fr-FR", "fr-CA", "fr-BE", "fr-CH", "fr-LU", "fr-MC"]
-    },
-    {
-      value: "it",
-      label: "Italiano",
-      flag: "\u{1F1EE}\u{1F1F9}",
-      alternativeCodes: ["it-IT", "it-CH", "it-SM", "it-VA"]
-    },
-    {
-      value: "nl",
-      label: "Nederlands",
-      flag: "\u{1F1F3}\u{1F1F1}",
-      alternativeCodes: ["nl-NL", "nl-BE"]
-    },
-    {
-      value: "ro",
-      label: "Rom\xE2n\u0103",
-      flag: "\u{1F1F7}\u{1F1F4}",
-      alternativeCodes: ["ro-RO", "ro-MD"]
-    },
-    {
-      value: "sv",
-      label: "Svenska",
-      flag: "\u{1F1F8}\u{1F1EA}",
-      alternativeCodes: ["sv-SE", "sv-FI"]
-    },
-    {
-      value: "ur",
-      label: "\u0627\u0631\u062F\u0648",
-      flag: "\u{1F1F5}\u{1F1F0}",
-      alternativeCodes: ["ur-PK", "ur-IN"]
-    },
-    {
-      value: "fa",
-      label: "\u0641\u0627\u0631\u0633\u06CC",
-      flag: "\u{1F1EE}\u{1F1F7}",
-      alternativeCodes: ["fa-IR", "fa-AF"]
-    }
-  ];
-  return languages.sort((a, b) => a.label.localeCompare(b.label));
-}
-function mapUiLanguageToIdentityLanguage(uiLanguageCode) {
-  if (!uiLanguageCode) {
-    return null;
-  }
-  const normalizedCode = uiLanguageCode.toLowerCase();
-  const availableLanguages = getAvailableLanguages();
-  const exactMatch = availableLanguages.find((lang) => lang.value.toLowerCase() === normalizedCode);
-  if (exactMatch) {
-    return exactMatch.value;
-  }
-  const alternativeMatch = availableLanguages.find(
-    (lang) => lang.alternativeCodes?.some((code) => code.toLowerCase() === normalizedCode)
-  );
-  if (alternativeMatch) {
-    return alternativeMatch.value;
-  }
-  const baseCode = normalizedCode.split("-")[0];
-  const baseMatch = availableLanguages.find((lang) => lang.value.toLowerCase() === baseCode);
-  if (baseMatch) {
-    return baseMatch.value;
-  }
-  return null;
+  return [...SUPPORTED_LANGUAGE_CODES];
 }
 
 // src/factories/IdentityGeneratorFactory.ts
@@ -11914,6 +11835,5 @@ var CreateUsernameEmailGenerator = () => {
   UsernameEmailGenerator,
   convertAgeRangeToBirthdateOptions,
   getAvailableAgeRanges,
-  getAvailableLanguages,
-  mapUiLanguageToIdentityLanguage
+  getAvailableLanguages
 });

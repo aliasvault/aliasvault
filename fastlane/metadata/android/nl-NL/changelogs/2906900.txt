@@ -1,0 +1,2 @@
+- Nieuwe custom veld type: wachtwoord
+- De mobiele app ondersteunt nu het aanmaken van RS-256 passkeys

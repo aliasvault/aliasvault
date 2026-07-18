@@ -664,6 +664,12 @@ public class VaultManager: NSObject {
         resolve(isGreaterOrEqual)
     }
 
+    @objc
+    func getServerVersion(_ resolve: @escaping RCTPromiseResolveBlock,
+                         rejecter reject: @escaping RCTPromiseRejectBlock) {
+        resolve(vaultStore.getServerVersion())
+    }
+
     // MARK: - Offline Mode Management
 
     @objc
@@ -1281,6 +1287,30 @@ public class VaultManager: NSObject {
         vaultStore.setCurrentVaultRevisionNumber(0)
 
         resolve(nil)
+    }
+
+    // MARK: - Password Generator
+
+    /// Generate a password or passphrase from a JSON-serialized PasswordSettings object.
+    /// The "Type" field selects the generator ("basic" or "diceware").
+    @objc
+    func generatePassword(_ settingsJson: String,
+                          resolver resolve: @escaping RCTPromiseResolveBlock,
+                          rejecter reject: @escaping RCTPromiseRejectBlock) {
+        do {
+            let password = try RustCoreFramework.generatePassword(settingsJson: settingsJson)
+            resolve(password)
+        } catch {
+            reject("PASSWORD_GENERATOR_ERROR", "Failed to generate password: \(error.localizedDescription)", error)
+        }
+    }
+
+    /// List the bundled Diceware wordlist language codes (first is the default, English).
+    @objc
+    func getDicewareLanguages(_ resolve: @escaping RCTPromiseResolveBlock,
+                              rejecter reject: @escaping RCTPromiseRejectBlock) {
+        let languages = RustCoreFramework.getDicewareLanguages()
+        resolve(languages)
     }
 
     // MARK: - SRP (Secure Remote Password) Operations

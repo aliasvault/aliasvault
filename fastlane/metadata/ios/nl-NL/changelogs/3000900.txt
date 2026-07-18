@@ -1,0 +1,4 @@
+- Nieuwe wachtwoordzin generator toegevoegd
+- 2FA TOTP code toevoegen UI verbeterd
+- Standaard cloud-URL aangepast van aliasvault.net naar aliasvault.com
+- Vertalingen bijgewerkt

@@ -40,9 +40,3 @@ Legacy TypeScript implementations that may be migrated to Rust in the future:
 TypeScript identity generator used by:
 - Browser extension (React and custom TypeScript)
 - Mobile apps (React Native)
-
-### typescript/password-generator
-
-TypeScript password generator used by:
-- Browser extension (React and custom TypeScript)
-- Mobile apps (React Native)

@@ -17,4 +17,6 @@ public struct PasskeyRegistrationParams {
     public let enablePrf: Bool
     /// The PRF inputs
     public let prfInputs: PrfInputs?
+    /// The chosen COSE credential algorithm (-7 ES256, -257 RS256)
+    public let algorithm: Int
 }

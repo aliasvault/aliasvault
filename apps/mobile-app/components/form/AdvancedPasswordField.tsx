@@ -2,18 +2,20 @@ import { MaterialIcons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View, TextInput, TextInputProps, StyleSheet, Platform, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { View, TextInput, TextInputProps, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 
 import type { PasswordSettings } from '@/utils/dist/core/models/vault';
-import { CreatePasswordGenerator } from '@/utils/dist/core/password-generator';
+import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT } from '@/utils/dist/core/models/defaults';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/PasswordLengthSlider';
+import * as PasswordGenerator from '@/utils/PasswordGeneratorUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
 
+import { ModalWrapper } from '@/components/common/ModalWrapper';
+import { PasswordGeneratorPanel } from '@/components/form/PasswordGeneratorPanel';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { useDb } from '@/context/DbContext';
-import { ModalWrapper } from '@/components/common/ModalWrapper';
 
 export type AdvancedPasswordFieldRef = {
   focus: () => void;
@@ -28,12 +30,10 @@ type AdvancedPasswordFieldProps = Omit<TextInputProps, 'value' | 'onChangeText'>
   showPassword?: boolean;
   onShowPasswordChange?: (show: boolean) => void;
   isNewCredential?: boolean;
-  /** Optional callback for remove button - when provided, shows X button in label row */
   onRemove?: () => void;
+  initialSettings?: PasswordSettings;
   /** Optional testID for the text input */
   testID?: string;
-  /** Optional initial password settings to use immediately (prevents flicker) */
-  initialSettings?: PasswordSettings;
 }
 
 const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, AdvancedPasswordFieldProps>(({
@@ -54,10 +54,9 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
   const inputRef = useRef<TextInput>(null);
   const [internalShowPassword, setInternalShowPassword] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  // Initialize settings immediately from initialSettings if provided, otherwise null
   const [currentSettings, setCurrentSettings] = useState<PasswordSettings | null>(initialSettings || null);
-  const [previewPassword, setPreviewPassword] = useState<string>('');
-  // Initialize slider value immediately from initialSettings or value length, otherwise default to 16
+  // Preview produced by the settings panel; used by the "Use" button.
+  const previewPassword = useRef<string>('');
   const [sliderValue, setSliderValue] = useState<number>(() => {
     if (initialSettings) {
       return lengthToSlider(initialSettings.Length);
@@ -73,6 +72,8 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
   const dbContext = useDb();
   const showPassword = controlledShowPassword ?? internalShowPassword;
 
+  const isDiceware = (currentSettings?.Type ?? 'basic') === 'diceware';
+
   const setShowPasswordState = useCallback((show: boolean) => {
     if (controlledShowPassword !== undefined) {
       onShowPasswordChange?.(show);
@@ -83,7 +84,6 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
 
   // Load password settings from database (only if initialSettings not provided)
   useEffect(() => {
-    // If we already have initialSettings, skip loading from database
     if (initialSettings) {
       return;
     }
@@ -92,7 +92,6 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
         if (dbContext.sqliteClient) {
           const settings = await dbContext.sqliteClient.getPasswordSettings();
           setCurrentSettings(settings);
-          // Only update slider if we haven't set it from value yet
           if (!hasSetInitialLength.current) {
             setSliderValue(lengthToSlider(settings.Length));
             hasSetInitialLength.current = true;
@@ -127,24 +126,24 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
     }
   }), [value]);
 
-  const generatePassword = useCallback((settings: PasswordSettings): string => {
+  /**
+   * Generate a password/passphrase from the given settings using the native Rust core.
+   */
+  const generatePassword = useCallback(async (settings: PasswordSettings): Promise<string> => {
     try {
-      const passwordGenerator = CreatePasswordGenerator(settings);
-      return passwordGenerator.generateRandomPassword();
+      return await PasswordGenerator.generatePassword(settings);
     } catch (error) {
       console.error('Error generating password:', error);
       return '';
     }
   }, []);
 
-  const handleGeneratePassword = useCallback(() => {
+  const handleGeneratePassword = useCallback(async () => {
     if (currentSettings) {
-      const password = generatePassword(currentSettings);
+      const password = await generatePassword(currentSettings);
       if (password) {
         onChangeText(password);
         setShowPasswordState(true);
-
-        // Haptic feedback for password generation
         HapticsUtility.impact();
       }
     }
@@ -154,22 +153,21 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
     setSliderValue(sliderVal);
     const passwordLength = sliderToLength(sliderVal);
 
-    if (passwordLength !== lastGeneratedLength.current && isSliding.current) {
+    if (passwordLength !== lastGeneratedLength.current && isSliding.current && currentSettings && !isDiceware) {
       lastGeneratedLength.current = passwordLength;
 
       if (!showPassword) {
         setShowPasswordState(true);
       }
 
-      const newSettings = { ...(currentSettings || {}), Length: passwordLength } as PasswordSettings;
-      if (currentSettings) {
-        const password = generatePassword(newSettings);
+      const newSettings = { ...currentSettings, Length: passwordLength };
+      void generatePassword(newSettings).then((password) => {
         if (password) {
           onChangeText(password);
         }
-      }
+      });
     }
-  }, [currentSettings, generatePassword, showPassword, setShowPasswordState, onChangeText]);
+  }, [currentSettings, isDiceware, generatePassword, showPassword, setShowPasswordState, onChangeText]);
 
   const handleSliderStart = useCallback(() => {
     isSliding.current = true;
@@ -180,44 +178,43 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
     isSliding.current = false;
     const passwordLength = sliderToLength(sliderVal);
     if (currentSettings) {
-      const newSettings = { ...currentSettings, Length: passwordLength };
-      setCurrentSettings(newSettings);
+      setCurrentSettings({ ...currentSettings, Length: passwordLength });
     }
     lastGeneratedLength.current = 0;
   }, [currentSettings]);
 
-  const handleRefreshPreview = useCallback(() => {
-    if (currentSettings) {
-      const password = generatePassword(currentSettings);
-      setPreviewPassword(password);
+  /**
+   * Handle the Diceware word-count slider: update the setting and regenerate the field value.
+   */
+  const handleWordCountChange = useCallback((wordCount: number) => {
+    if (!currentSettings) {
+      return;
     }
-  }, [currentSettings, generatePassword]);
+    const newSettings = { ...currentSettings, WordCount: Math.round(wordCount) };
+    setCurrentSettings(newSettings);
+    if (!showPassword) {
+      setShowPasswordState(true);
+    }
+    void generatePassword(newSettings).then((password) => {
+      if (password) {
+        onChangeText(password);
+      }
+    });
+  }, [currentSettings, generatePassword, onChangeText, showPassword, setShowPasswordState]);
 
   const handleUsePassword = useCallback(() => {
-    if (previewPassword) {
-      onChangeText(previewPassword);
+    if (previewPassword.current) {
+      onChangeText(previewPassword.current);
       setShowPasswordState(true);
       setShowSettingsModal(false);
     }
-  }, [previewPassword, onChangeText, setShowPasswordState]);
+  }, [onChangeText, setShowPasswordState]);
 
   const handleOpenSettings = useCallback(() => {
     if (currentSettings) {
-      const password = generatePassword(currentSettings);
-      setPreviewPassword(password);
       setShowSettingsModal(true);
     }
-  }, [currentSettings, generatePassword]);
-
-  const updateSetting = useCallback((key: keyof PasswordSettings, settingValue: boolean) => {
-    setCurrentSettings(prev => {
-      if (!prev) return prev;
-      const newSettings = { ...prev, [key]: settingValue };
-      const password = generatePassword(newSettings);
-      setPreviewPassword(password);
-      return newSettings;
-    });
-  }, [generatePassword]);
+  }, [currentSettings]);
 
   const styles = useMemo(() => StyleSheet.create({
     button: {
@@ -232,11 +229,6 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
     },
     closeButton: {
       padding: 8,
-    },
-    errorText: {
-      color: 'red',
-      fontSize: 12,
-      marginTop: 4,
     },
     input: {
       color: colors.text,
@@ -266,65 +258,28 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
       justifyContent: 'space-between',
       marginBottom: 4,
     },
-    removeButton: {
-      padding: 4,
-    },
     modalHeader: {
       alignItems: 'center',
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginBottom: 20,
+      marginBottom: 12,
+      marginTop: 10,
     },
     modalTitle: {
       color: colors.text,
       fontSize: 18,
       fontWeight: '600',
     },
-    previewContainer: {
-      marginBottom: 20,
-    },
-    previewInput: {
-      color: colors.text,
-      flex: 1,
-      fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-      fontSize: 14,
-      padding: 12,
-      textAlign: 'center',
-    },
-    previewInputContainer: {
-      alignItems: 'center',
-      backgroundColor: colors.background,
-      borderColor: colors.accentBorder,
-      borderRadius: 6,
-      borderWidth: 1,
-      flexDirection: 'row',
-    },
-    refreshButton: {
-      borderLeftColor: colors.accentBorder,
-      borderLeftWidth: 1,
-      padding: 10,
+    removeButton: {
+      padding: 4,
     },
     requiredIndicator: {
       color: 'red',
       marginLeft: 4,
     },
-    settingItem: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      paddingVertical: 10,
-    },
-    settingLabel: {
-      color: colors.text,
-      flex: 1,
-      fontSize: 14,
-    },
     settingsButton: {
       marginLeft: 8,
       padding: 4,
-    },
-    settingsSection: {
-      marginBottom: 20,
     },
     slider: {
       height: 40,
@@ -360,6 +315,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
       borderRadius: 6,
       flexDirection: 'row',
       justifyContent: 'center',
+      marginTop: 12,
       padding: 12,
     },
     useButtonText: {
@@ -371,101 +327,6 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
   }), [colors]);
 
   const showClearButton = Platform.OS === 'android' && value && value.length > 0;
-
-  const settingsModalContent = (
-    <>
-      <View style={styles.modalHeader}>
-        <ThemedText style={styles.modalTitle}>{t('items.changePasswordComplexity')}</ThemedText>
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={() => setShowSettingsModal(false)}
-          activeOpacity={0.7}
-        >
-          <MaterialIcons name="close" size={24} color={colors.textMuted} />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.previewContainer}>
-          <View style={styles.previewInputContainer}>
-            <TextInput
-              style={styles.previewInput}
-              value={previewPassword}
-              editable={false}
-            />
-            <TouchableOpacity
-              style={styles.refreshButton}
-              onPress={handleRefreshPreview}
-              activeOpacity={0.7}
-            >
-              <MaterialIcons name="refresh" size={20} color={colors.primary} />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.settingsSection}>
-          <View style={styles.settingItem}>
-            <ThemedText style={styles.settingLabel}>{t('items.includeLowercase')}</ThemedText>
-            <Switch
-              value={currentSettings?.UseLowercase ?? true}
-              onValueChange={(settingValue) => updateSetting('UseLowercase', settingValue)}
-              trackColor={{ false: colors.accentBorder, true: colors.primary }}
-              thumbColor={Platform.OS === 'android' ? colors.background : undefined}
-            />
-          </View>
-
-          <View style={styles.settingItem}>
-            <ThemedText style={styles.settingLabel}>{t('items.includeUppercase')}</ThemedText>
-            <Switch
-              value={currentSettings?.UseUppercase ?? true}
-              onValueChange={(settingValue) => updateSetting('UseUppercase', settingValue)}
-              trackColor={{ false: colors.accentBorder, true: colors.primary }}
-              thumbColor={Platform.OS === 'android' ? colors.background : undefined}
-            />
-          </View>
-
-          <View style={styles.settingItem}>
-            <ThemedText style={styles.settingLabel}>{t('items.includeNumbers')}</ThemedText>
-            <Switch
-              value={currentSettings?.UseNumbers ?? true}
-              onValueChange={(settingValue) => updateSetting('UseNumbers', settingValue)}
-              trackColor={{ false: colors.accentBorder, true: colors.primary }}
-              thumbColor={Platform.OS === 'android' ? colors.background : undefined}
-            />
-          </View>
-
-          <View style={styles.settingItem}>
-            <ThemedText style={styles.settingLabel}>{t('items.includeSpecialChars')}</ThemedText>
-            <Switch
-              value={currentSettings?.UseSpecialChars ?? true}
-              onValueChange={(settingValue) => updateSetting('UseSpecialChars', settingValue)}
-              trackColor={{ false: colors.accentBorder, true: colors.primary }}
-              thumbColor={Platform.OS === 'android' ? colors.background : undefined}
-            />
-          </View>
-
-          <View style={styles.settingItem}>
-            <ThemedText style={styles.settingLabel}>{t('items.avoidAmbiguousChars')}</ThemedText>
-            <Switch
-              value={currentSettings?.UseNonAmbiguousChars ?? false}
-              onValueChange={(settingValue) => updateSetting('UseNonAmbiguousChars', settingValue)}
-              trackColor={{ false: colors.accentBorder, true: colors.primary }}
-              thumbColor={Platform.OS === 'android' ? colors.background : undefined}
-            />
-          </View>
-        </View>
-
-        <TouchableOpacity
-          style={styles.useButton}
-          onPress={handleUsePassword}
-          activeOpacity={0.7}
-        >
-          <MaterialIcons name="keyboard-arrow-down" size={20} color={colors.text} />
-          <ThemedText style={styles.useButtonText}>{t('common.use')}</ThemedText>
-        </TouchableOpacity>
-      </ScrollView>
-    </>
-  );
 
   return (
     <View style={styles.inputGroup}>
@@ -534,9 +395,13 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
 
       <View style={styles.sliderContainer}>
         <View style={styles.sliderHeader}>
-          <ThemedText style={styles.sliderLabel}>{t('items.passwordLength')}</ThemedText>
+          <ThemedText style={styles.sliderLabel}>
+            {isDiceware ? t('items.wordCount') : t('items.passwordLength')}
+          </ThemedText>
           <View style={styles.sliderValueContainer}>
-            <ThemedText style={styles.sliderValue}>{sliderToLength(sliderValue)}</ThemedText>
+            <ThemedText style={styles.sliderValue}>
+              {isDiceware ? (currentSettings?.WordCount ?? DEFAULT_WORD_COUNT) : sliderToLength(sliderValue)}
+            </ThemedText>
             <TouchableOpacity
               style={styles.settingsButton}
               onPress={handleOpenSettings}
@@ -547,18 +412,32 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
           </View>
         </View>
 
-        <Slider
-          style={styles.slider}
-          minimumValue={SLIDER_MIN}
-          maximumValue={SLIDER_MAX}
-          value={sliderValue}
-          onValueChange={handleSliderChange}
-          onSlidingStart={handleSliderStart}
-          onSlidingComplete={handleSliderComplete}
-          minimumTrackTintColor={colors.primary}
-          maximumTrackTintColor={colors.accentBorder}
-          thumbTintColor={colors.primary}
-        />
+        {isDiceware ? (
+          <Slider
+            style={styles.slider}
+            minimumValue={MIN_WORD_COUNT}
+            maximumValue={MAX_WORD_COUNT}
+            step={1}
+            value={currentSettings?.WordCount ?? DEFAULT_WORD_COUNT}
+            onValueChange={handleWordCountChange}
+            minimumTrackTintColor={colors.primary}
+            maximumTrackTintColor={colors.accentBorder}
+            thumbTintColor={colors.primary}
+          />
+        ) : (
+          <Slider
+            style={styles.slider}
+            minimumValue={SLIDER_MIN}
+            maximumValue={SLIDER_MAX}
+            value={sliderValue}
+            onValueChange={handleSliderChange}
+            onSlidingStart={handleSliderStart}
+            onSlidingComplete={handleSliderComplete}
+            minimumTrackTintColor={colors.primary}
+            maximumTrackTintColor={colors.accentBorder}
+            thumbTintColor={colors.primary}
+          />
+        )}
       </View>
 
       <ModalWrapper
@@ -567,7 +446,34 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
         showHeaderBorder={false}
         showFooterBorder={false}
       >
-        {settingsModalContent}
+        <View style={styles.modalHeader}>
+          <ThemedText style={styles.modalTitle}>{t('items.changePasswordComplexity')}</ThemedText>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setShowSettingsModal(false)}
+            activeOpacity={0.7}
+          >
+            <MaterialIcons name="close" size={24} color={colors.textMuted} />
+          </TouchableOpacity>
+        </View>
+
+        {currentSettings && (
+          <PasswordGeneratorPanel
+            initialSettings={currentSettings}
+            onSettingsChange={setCurrentSettings}
+            onPreviewChange={(password) => { previewPassword.current = password; }}
+            footer={
+              <TouchableOpacity
+                style={styles.useButton}
+                onPress={handleUsePassword}
+                activeOpacity={0.7}
+              >
+                <MaterialIcons name="keyboard-arrow-down" size={20} color={colors.text} />
+                <ThemedText style={styles.useButtonText}>{t('common.use')}</ThemedText>
+              </TouchableOpacity>
+            }
+          />
+        )}
       </ModalWrapper>
     </View>
   );

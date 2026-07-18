@@ -457,3 +457,6 @@ apps/server/AliasVault.Client/wwwroot/wasm
 
 # Client JS bundle (built by: npm run build:js in apps/server/AliasVault.Client)
 apps/server/AliasVault.Client/wwwroot/js/bundle.min.js
+
+# Docker compose local overrides
+docker-compose.override.yml

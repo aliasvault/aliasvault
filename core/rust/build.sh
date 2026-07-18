@@ -647,11 +647,8 @@ build_android() {
             ;;
     esac
 
-    # Build native library for bindgen (if not already built)
-    if [ ! -f "target/debug/$native_lib_name" ]; then
-        echo -e "    Building native library for bindgen..."
-        cargo build --features uniffi --lib
-    fi
+    echo -e "    Building native library for bindgen..."
+    cargo build --features uniffi --lib
 
     # Generate bindings from native library
     cargo run --features uniffi-cli --bin uniffi-bindgen -- generate \

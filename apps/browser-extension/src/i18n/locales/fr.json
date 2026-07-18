@@ -16,7 +16,7 @@
     "masterPassword": "Mot de passe principal",
     "unlockVault": "Déverrouiller",
     "unlockWithPin": "Déverrouiller avec un code PIN",
-    "enterPinToUnlock": "Entrez votre code PIN pour déverrouiller votre coffre-fort",
+    "enterPinToUnlock": "Saisir votre code NIP pour déverrouiller votre coffre-fort",
     "useMasterPassword": "Utiliser le mot de passe principal",
     "unlockTitle": "Déverrouiller votre coffre-fort",
     "logoutConfirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
@@ -62,6 +62,7 @@
     "openInNewWindow": "Ouvrir dans une nouvelle fenêtre",
     "enabled": "Activé",
     "disabled": "Désactivé",
+    "none": "Aucun",
     "showPassword": "Afficher le mot de passe",
     "hidePassword": "Cacher le mot de passe",
     "show": "Afficher",
@@ -76,6 +77,7 @@
     "settings": "Réglages",
     "recentEmails": "Emails récents",
     "credentials": "Identifiants",
+    "passkeys": "Clés d'accès",
     "customFields": "Champs Personnalisés",
     "twoFactorAuthentication": "Authentification à double facteur",
     "alias": "Alias",
@@ -109,6 +111,7 @@
       "syncConflictMaxRetries": "Impossible de synchroniser le coffre-fort après plusieurs tentatives. Veuillez réessayer plus tard.",
       "mergeFailed": "Impossible de fusionner les modifications du coffre-fort. Veuillez réessayer.",
       "vaultTooLarge": "Le coffre-fort est trop grand pour que le serveur l'accepte. Essayez de supprimer certains éléments ou pièces jointes pour réduire la taille et réessayez.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Veuillez entrer un code d'authentification valide à 6 chiffres.",
       "serverError": "Impossible d'accéder au serveur AliasVault. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
       "wrongPassword": "Mot de passe incorrect, veuillez réessayer.",
@@ -148,6 +151,7 @@
     "creatingNewAlias": "Création d'un nouvel alias",
     "creatingNewCredential": "Création d'un nouvel identifiant",
     "noMatchesFound": "Aucun résultat trouvé",
+    "loginWithPasskey": "Se connecter avec une clé d'accès",
     "searchVault": "Rechercher élément...",
     "enterServiceName": "Entrez le nom du service",
     "enterEmailAddress": "Entrer l'adresse email",
@@ -186,6 +190,7 @@
   "items": {
     "title": "Éléments",
     "itemName": "Nom",
+    "suggestions": "Suggestions",
     "loginCredentials": "Identifiants de connexion",
     "cardInformation": "Informations de la carte",
     "addItem": "Ajouter un élément",
@@ -202,6 +207,8 @@
     "folder": "Dossier",
     "welcomeTitle": "Bienvenue dans AliasVault !",
     "welcomeDescription": "Pour utiliser l'extension de navigateur AliasVault : accédez à un site web et utilisez la fenêtre de saisie automatique AliasVault pour créer un nouvel identifiant.",
+    "currentSiteMatch": "Pour {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} résultats",
     "noMatchingItems": "Aucun élément ne correspond au filtre sélectionné.",
     "noMatchingItemsSearch": "Aucun élément correspondant à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Aucun élément {{filter}} correspondant à \"{{search}}\"",
@@ -216,7 +223,6 @@
     "deleteFolderAndItemsDescription": "{{count}} élément(s) vont être déplacés vers Récemment supprimés.",
     "filters": {
       "folders": "Dossiers",
-      "passkeys": "Clés d'accès",
       "totp": "Codes 2FA"
     },
     "sort": {
@@ -238,6 +244,28 @@
     "includeNumbers": "Inclure des chiffres",
     "includeSpecialChars": "Inclure des caractères spéciaux",
     "avoidAmbiguousChars": "Éviter les caractères ambigus (o, 0, etc.)",
+    "passwordTypeBasic": "Mot de passe",
+    "passwordTypeDiceware": "Phrase secrète",
+    "passphraseLanguage": "Langue de la phrase secrète",
+    "wordCount": "Mots",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Casse du titre",
+      "Uppercase": "Majuscule",
+      "Lowercase": "Minuscule"
+    },
+    "separator": "Séparateur",
+    "dicewareSeparatorOption": {
+      "Dash": "Tiret",
+      "Space": "Espace",
+      "Underscore": "Tiret bas",
+      "Dot": "Point"
+    },
+    "salt": "Salage",
+    "dicewareSaltOption": {
+      "Prefix": "Préfixe",
+      "Sprinkle": "Position aléatoire",
+      "Suffix": "Suffixe"
+    },
     "privateEmailTitle": "E-mail privé",
     "privateEmailAliasVaultServer": "Serveur AliasVault",
     "privateEmailDescription": "E2E chiffré, entièrement privé.",
@@ -259,6 +287,7 @@
     "fieldType": "Type de champ",
     "fieldTypes": {
       "text": "Texte",
+      "password": "Mot de passe",
       "hidden": "Caché (texte masqué)",
       "email": "Email",
       "url": "URL",
@@ -301,6 +330,7 @@
     "addCode": "Ajouter un code 2FA",
     "instructions": "Entrez la clé secrète affichée par le site Web où vous souhaitez ajouter l'authentification à deux facteurs.",
     "nameOptional": "Nom (facultatif)",
+    "addName": "Ajouter un nom (facultatif)",
     "secretKey": "Clé secrète",
     "saveToViewCode": "Enregistrer pour afficher le code",
     "defaultName": "Authentificateur",
@@ -401,7 +431,8 @@
     "autoLock4Hours": "4 heures",
     "autoLock8Hours": "8 heures",
     "autoLock24Hours": "24 heures",
-    "versionPrefix": "Version ",
+    "versionPrefix": "Version de l'app",
+    "serverVersion": "Version du serveur",
     "autofillSettings": "Paramètres du remplissage automatique",
     "clipboardSettings": "Paramètres du presse-papiers",
     "contextMenuSettings": "Paramètres du menu contextuel",
@@ -438,6 +469,11 @@
         "male": "Homme",
         "female": "Femme"
       }
+    },
+    "passwordGenerator": "Générateur de mot de passe",
+    "passwordGeneratorSettings": {
+      "description": "Configurer les paramètres par défaut du générateur de mot de passe pour les éléments nouvellement créés, y compris la longueur du mot de passe, les jeux de caractères et la langue de la phrase secrète.",
+      "configureButton": "Configurer"
     },
     "credentialAutofill": "Remplissage automatique des identifiants",
     "credentialAutofillDescription": "Afficher un popup de saisie automatique lorsque les champs nom d'utilisateur/mot de passe sont détectés",
@@ -502,7 +538,8 @@
       "selectExistingLogin": "Ajouter à l'identifiant existant :",
       "selectExistingLoginDescription": "Joindre cette clé d'accès à un identifiant de connexion existant pour ce site.",
       "attachingToCredential": "Ajout de la clé d'accès à : {{serviceName}}",
-      "attachPasskey": "Ajouter une clé d'accès"
+      "attachPasskey": "Ajouter une clé d'accès",
+      "unsupportedAlgorithm": "Ce site Web nécessite un type de clé d'accès que AliasVault ne prend pas en charge."
     },
     "settings": {
       "passkeyProvider": "Fournisseur de clés d'accès",

@@ -4,12 +4,25 @@ import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
 
 import { AppInfo } from "./AppInfo";
 import { ApiAuthError } from './types/errors/ApiAuthError';
+import { ApiRequestError } from './types/errors/ApiRequestError';
 import { NetworkError } from './types/errors/NetworkError';
 import { PayloadTooLargeError } from './types/errors/PayloadTooLargeError';
+import { RequestTimeoutError } from './types/errors/RequestTimeoutError';
 
 import { storage } from '#imports';
 
 type RequestInit = globalThis.RequestInit;
+
+/**
+ * Total request timeout for lightweight API calls (status checks, auth, etc.). Kept short so the
+ * popup falls back to offline mode quickly when the server is unreachable.
+ */
+const DEFAULT_REQUEST_TIMEOUT_MS = 5000;
+
+/**
+ * Total request timeout for vault download/upload, which can carry a large encrypted blob.
+ */
+const VAULT_TRANSFER_TIMEOUT_MS = 180000;
 
 /**
  * Type for the token response from the API.
@@ -76,7 +89,14 @@ export class WebApiService {
           });
 
           if (!retryResponse.ok) {
-            throw new ApiAuthError('Request failed after token refresh');
+            // Only auth failures after a successful token refresh mean the session is invalid.
+            if (retryResponse.status === 401 || retryResponse.status === 403) {
+              throw new ApiAuthError('Request failed after token refresh');
+            }
+            if (retryResponse.status === 413) {
+              throw new PayloadTooLargeError(`Request rejected with HTTP 413: payload exceeds server limit`);
+            }
+            throw new ApiRequestError(retryResponse.status, await this.extractApiErrorCode(retryResponse));
           }
 
           return parseJson ? retryResponse.json() : retryResponse as unknown as T;
@@ -95,7 +115,7 @@ export class WebApiService {
       }
 
       if (!response.ok && throwOnError) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new ApiRequestError(response.status, await this.extractApiErrorCode(response));
       }
 
       return parseJson ? response.json() : response as unknown as T;
@@ -106,8 +126,27 @@ export class WebApiService {
   }
 
   /**
+   * Extract the structured API error code (e.g. "VAULT_NOT_UP_TO_DATE") from an error response body.
+   */
+  private async extractApiErrorCode(response: Response): Promise<string | null> {
+    try {
+      const body = await response.clone().json() as { code?: unknown; title?: unknown };
+      for (const value of [body.code, body.title]) {
+        // Server error codes are uppercase enum names
+        if (typeof value === 'string' && /^[A-Z0-9_]{2,64}$/.test(value)) {
+          return value;
+        }
+      }
+    } catch {
+      // Body is empty or not JSON (e.g. proxy error page).
+    }
+    return null;
+  }
+
+  /**
    * Fetch data from the API without authentication headers and without access token refresh retry.
-   * Throws NetworkError for network-related failures (offline, timeout, DNS, etc.)
+   * Throws RequestTimeoutError when the request exceeds its timeout, and NetworkError for other
+   * network-related failures (offline, DNS, etc.)
    */
   public async rawFetch(
     endpoint: string,
@@ -123,6 +162,7 @@ export class WebApiService {
     const requestOptions: RequestInit = {
       ...options,
       headers,
+      signal: this.buildTimeoutSignal(endpoint, headers, options.signal),
     };
 
     try {
@@ -130,12 +170,33 @@ export class WebApiService {
       return response;
     } catch (error) {
       console.error('API request failed:', error);
+      /*
+       * The timeout signal aborts with a DOMException; no caller passes its own abort signal,
+       * so any abort here means the request exceeded its timeout.
+       */
+      if (error instanceof DOMException && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
+        throw new RequestTimeoutError(`Request timed out: ${endpoint}`, error);
+      }
       // Convert fetch errors to NetworkError for proper error handling
       throw new NetworkError(
         error instanceof Error ? error.message : 'Network request failed',
         error instanceof Error ? error : undefined
       );
     }
+  }
+
+  /**
+   * Build an AbortSignal that bounds how long a request can run, combined with any caller-supplied
+   * signal.
+   */
+  private buildTimeoutSignal(endpoint: string, headers: Headers, callerSignal?: AbortSignal | null): AbortSignal {
+    const path = endpoint.split('?')[0].replace(/^\/+|\/+$/g, '').toLowerCase();
+    const isLargeTransfer = path === 'vault' ||
+      (headers.get('Accept') ?? '').toLowerCase().includes('application/octet-stream');
+    const timeoutSignal = AbortSignal.timeout(
+      isLargeTransfer ? VAULT_TRANSFER_TIMEOUT_MS : DEFAULT_REQUEST_TIMEOUT_MS
+    );
+    return callerSignal ? AbortSignal.any([callerSignal, timeoutSignal]) : timeoutSignal;
   }
 
   /**
@@ -249,7 +310,12 @@ export class WebApiService {
    */
   public async getStatus(): Promise<StatusResponse> {
     try {
-      return await this.get<StatusResponse>('Auth/status');
+      const status = await this.get<StatusResponse>('Auth/status');
+      // Persist the server version so it can be shown on the settings page, also while offline.
+      if (status.serverVersion && status.serverVersion !== '0.0.0') {
+        await storage.setItem('local:serverVersion', status.serverVersion);
+      }
+      return status;
     } catch (error) {
       /**
        * Only re-throw ApiAuthError (session expired, auth failures).

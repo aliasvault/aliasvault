@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.source="https://github.com/aliasvault/aliasvault"
 LABEL org.opencontainers.image.vendor="AliasVault"
 LABEL org.opencontainers.image.licenses="AGPL-3.0"
 LABEL org.opencontainers.image.title="AliasVault PostgreSQL"
-LABEL org.opencontainers.image.description="PostgreSQL database for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)"
+LABEL org.opencontainers.image.description="PostgreSQL database for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)"
 
 # Install pigz for parallel compression during database exports
 RUN apk add --no-cache pigz

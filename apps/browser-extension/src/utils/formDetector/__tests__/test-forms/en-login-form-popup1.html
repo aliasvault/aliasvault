@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head><title>Sign In - Example Forum</title></head>
+<body>
+<!-- Full-page overlay: computed bottom goes far negative on long pages while remaining fully visible. -->
+<div class="Overlay" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: -5710px;">
+<div id="Popup" class="Popup SignInPopup" style="top: 92.1px; left: 0px;">
+  <div class="Border">
+    <div class="Body" style="max-height: 736.8px; overflow-y: auto;">
+      <div class="Content" style="display: block;">
+        <div class="FormTitleWrapper AjaxForm">
+          <h1>Sign In</h1>
+          <div class="FormWrapper">
+            <form id="Form_User_SignIn" method="post" action="/entry/signin">
+              <div>
+                <input type="hidden" id="Form_TransientKey" name="TransientKey" value="">
+                <input type="hidden" id="Form_hpt" name="hpt" value="" style="display: none;">
+                <input type="hidden" id="Form_Target" name="Target" value="/">
+                <input type="hidden" id="Form_ClientHour" name="ClientHour" value="2026-07-14 10:00">
+                <div class="Entry SingleEntryMethod">
+                  <div class="MainForm">
+                    <ul>
+                      <li>
+                        <label for="Form_Email">Email/Username</label>
+                        <div class="TextBoxWrapper"><input type="text" id="Form_Email" name="Email" value="" autocorrect="off" autocapitalize="off" class="InputBox" autocomplete="off" data-av-autocomplete="off"></div>
+                      </li>
+                      <li>
+                        <label for="Form_Password">Password</label>
+                        <input type="password" id="Form_Password" name="Password" value="" class="InputBox Password" autocomplete="off" data-av-autocomplete="off"><a href="/entry/passwordrequest" class="ForgotPassword">Forgot?</a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="Buttons">
+                  <input type="submit" id="Form_SignIn" name="Sign In" class="Button Primary" value="Sign In">
+                  <label for="SignInRememberMe" class="CheckBoxLabel"><input type="hidden" name="Checkboxes[]" value="RememberMe"><input type="checkbox" id="SignInRememberMe" name="RememberMe" value="1" checked="checked" class=""> Keep me signed in</label>
+                  <div class="CreateAccount">
+                    Don't have an account? <a href="/entry/register?Target=%2F">Create One.</a>
+                  </div>
+                </div>
+              </div>
+            </form>
+            <div></div>
+            <div></div>
+          </div>
+        </div>
+      </div>
+      <div class="Footer" style="display: block;">
+        <a href="#" class="Close"><span>x</span></a>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>

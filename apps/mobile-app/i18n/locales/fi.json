@@ -3,6 +3,7 @@
     "cancel": "Peruuta",
     "close": "Sulje",
     "delete": "Poista",
+    "remove": "Remove",
     "save": "Tallenna",
     "edit": "Muokkaa",
     "yes": "Kyllä",
@@ -16,6 +17,7 @@
     "copied": "Kopioitu leikepöydälle",
     "loadMore": "Lataa lisää",
     "use": "Käytä",
+    "none": "Ei mitään",
     "confirm": "Vahvista",
     "next": "Seuraava",
     "notice": "Huomautus",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "Lisää 2FA TOTP -koodi",
     "nameOptional": "Nimi (valinnainen)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Authenticator",
     "secretKey": "Salainen avain",
     "instructions": "Syötä salainen avain, joka näkyy sivustossa, jossa haluat lisätä kaksivaiheisen tunnistautumisen",
     "saveToViewCode": "Tallenna nähdäksesi koodin",
     "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Virheellinen salatun avaimen muoto.",
       "scanFailed": "Failed to scan QR code. Please try again."
@@ -192,7 +196,8 @@
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
     "security": "Turvallisuus",
-    "appVersion": "Sovelluksen versio {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Ei koskaan",
       "5seconds": "5 sekuntia",
@@ -360,6 +365,7 @@
     "enterFieldName": "Anna kentän nimi",
     "fieldTypes": {
       "text": "Teksti",
+      "password": "Salasana:",
       "hidden": "Piilotettu",
       "email": "Sähköposti",
       "url": "URL",
@@ -441,6 +447,29 @@
     "includeNumbers": "Numerot (0-9)",
     "includeSpecialChars": "Erikoismerkit (!@#)",
     "avoidAmbiguousChars": "Vältä epäselviä merkkejä",
+    "passwordTypeBasic": "Salasana",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Virhe ladattaessa tietoja",
     "vaultSyncFailed": "Holvin synkronointi epäonnistui",
     "vaultSyncedSuccessfully": "Holvi synkronoitu",
@@ -654,7 +683,6 @@
     },
     "loginSettings": {
       "title": "API-yhteys",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Itseylläpidetty (Self-hosted)",
       "customApiUrl": "Mukautettu API URL-osoite",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",

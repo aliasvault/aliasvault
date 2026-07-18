@@ -50,9 +50,11 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
   const [isAddFormVisible, setIsAddFormVisible] = useState(false);
   const [formData, setFormData] = useState<TotpFormData>({ name: '', secretKey: '' });
   const [formError, setFormError] = useState<string | null>(null);
+  const [showNameField, setShowNameField] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingTotpCode, setEditingTotpCode] = useState<TotpCode | null>(null);
   const [editName, setEditName] = useState('');
+  const [showEditNameField, setShowEditNameField] = useState(false);
   const [editSecret, setEditSecret] = useState('');
   const [showQrCode, setShowQrCode] = useState(false);
   const hasLaunchedScanner = React.useRef(false);
@@ -78,6 +80,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
     hideAddChoiceModal();
     setFormData({ name: '', secretKey: '' });
     setFormError(null);
+    setShowNameField(false);
     setIsAddFormVisible(true);
   };
 
@@ -107,7 +110,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
         const parsed = parseOtpAuthUri(scannedData);
         if (parsed && parsed.type === 'totp') {
           const secretKey = parsed.secret.replace(/\s/g, '').replace(/=+$/, '');
-          const name = parsed.label || 'Authenticator';
+          const name = parsed.label || '';
 
           const newTotpCode: TotpCode = {
             Id: crypto.randomUUID().toUpperCase(),
@@ -172,7 +175,8 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
       throw new Error(t('totp.errors.invalidSecretKey'));
     }
 
-    return { secretKey, name: name || 'Authenticator' };
+    // Name is optional; keep it blank when none was provided or derived.
+    return { secretKey, name };
   };
 
   /**
@@ -182,6 +186,15 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
     setIsAddFormVisible(false);
     setFormData({ name: '', secretKey: '' });
     setFormError(null);
+    setShowNameField(false);
+  };
+
+  /**
+   * Hides the optional name field again and clears any entered value
+   */
+  const hideNameField = (): void => {
+    setFormData({ ...formData, name: '' });
+    setShowNameField(false);
   };
 
   /**
@@ -264,7 +277,9 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
    */
   const showEditModal = (totpCode: TotpCode): void => {
     setEditingTotpCode(totpCode);
+    // Only reveal the name field when a name was actually set.
     setEditName(totpCode.Name);
+    setShowEditNameField(!!totpCode.Name);
     setEditSecret(totpCode.SecretKey);
     setShowQrCode(false);
     setIsEditModalOpen(true);
@@ -277,8 +292,18 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
     setIsEditModalOpen(false);
     setEditingTotpCode(null);
     setEditName('');
+    setShowEditNameField(false);
     setEditSecret('');
     setShowQrCode(false);
+  };
+
+  /**
+   * Hides the edit name field again and clears any entered value so the code
+   * falls back to the default name on save.
+   */
+  const hideEditNameField = (): void => {
+    setEditName('');
+    setShowEditNameField(false);
   };
 
   /**
@@ -289,9 +314,12 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
       return;
     }
 
+    // The name is optional; store it as-is (blank when the user left it empty).
+    const finalName = editName.trim();
+
     const updatedTotpCodes = totpCodes.map(tc =>
       tc.Id === editingTotpCode.Id
-        ? { ...tc, Name: editName, SecretKey: editSecret }
+        ? { ...tc, Name: finalName, SecretKey: editSecret }
         : tc
     );
 
@@ -392,6 +420,21 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
       fontSize: 14,
       fontWeight: '600',
       marginTop: 12,
+    },
+    addNameLink: {
+      color: colors.primary,
+      fontSize: 14,
+      fontWeight: '600',
+      marginTop: 16,
+    },
+    nameLabelRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    removeNameButton: {
+      marginTop: 12,
+      padding: 4,
     },
     modalButtons: {
       flexDirection: 'row',
@@ -533,7 +576,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
             <View key={totpCode.Id} style={styles.codeItem}>
               <View style={{ flex: 1 }}>
                 <ThemedText style={styles.codeName}>
-                  {totpCode.Name}
+                  {totpCode.Name || t('totp.defaultName')}
                 </ThemedText>
                 <ThemedText style={styles.saveToViewText}>
                   {t('totp.saveToViewCode')}
@@ -550,7 +593,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
                   style={styles.deleteButton}
                   onPress={() => initiateTotpDelete(totpCode)}
                 >
-                  <Ionicons name="trash" size={20} color={colors.errorText} />
+                  <Ionicons name="trash" size={20} color={colors.destructive} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -656,18 +699,6 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
                 </ThemedText>
 
                 <ThemedText style={styles.label}>
-                  {t('totp.nameOptional')}
-                </ThemedText>
-                <TextInput
-                  style={styles.input}
-                  placeholder={t('totp.nameOptional')}
-                  placeholderTextColor={colors.textMuted}
-                  value={formData.name}
-                  onChangeText={(text) => setFormData({ ...formData, name: text })}
-                  autoCapitalize="words"
-                />
-
-                <ThemedText style={styles.label}>
                   {t('totp.secretKey')}
                 </ThemedText>
                 <TextInput
@@ -677,6 +708,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
                   onChangeText={(text) => setFormData({ ...formData, secretKey: text })}
                   autoCapitalize="characters"
                   autoCorrect={false}
+                  autoFocus
                   multiline
                 />
 
@@ -684,6 +716,35 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
                   <ThemedText style={styles.errorText}>
                     {formError}
                   </ThemedText>
+                )}
+
+                {/* Name is optional and hidden by default; revealed on demand since most codes don't need one. */}
+                {showNameField ? (
+                  <>
+                    <View style={styles.nameLabelRow}>
+                      <ThemedText style={styles.label}>
+                        {t('totp.nameOptional')}
+                      </ThemedText>
+                      <TouchableOpacity style={styles.removeNameButton} onPress={hideNameField}>
+                        <MaterialIcons name="close" size={18} color={colors.textMuted} />
+                      </TouchableOpacity>
+                    </View>
+                    <TextInput
+                      style={styles.input}
+                      placeholder={t('totp.nameOptional')}
+                      placeholderTextColor={colors.textMuted}
+                      value={formData.name}
+                      onChangeText={(text) => setFormData({ ...formData, name: text })}
+                      autoCapitalize="words"
+                      autoFocus
+                    />
+                  </>
+                ) : (
+                  <TouchableOpacity onPress={() => setShowNameField(true)}>
+                    <ThemedText style={styles.addNameLink}>
+                      {t('totp.addName')}
+                    </ThemedText>
+                  </TouchableOpacity>
                 )}
 
                 <View style={styles.modalButtons}>
@@ -745,18 +806,6 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
 
               {editingTotpCode && (
                 <View>
-                  <ThemedText style={styles.label}>
-                    {t('totp.nameOptional')}
-                  </ThemedText>
-                  <TextInput
-                    style={styles.input}
-                    placeholder={t('totp.nameOptional')}
-                    placeholderTextColor={colors.textMuted}
-                    value={editName}
-                    onChangeText={setEditName}
-                    autoCapitalize="words"
-                  />
-
                   <View style={styles.label}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                       <ThemedText style={styles.label}>
@@ -780,6 +829,35 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
                     autoCorrect={false}
                     multiline
                   />
+
+                  {/* Name is optional; hidden by default unless a custom name was set. */}
+                  {showEditNameField ? (
+                    <>
+                      <View style={styles.nameLabelRow}>
+                        <ThemedText style={styles.label}>
+                          {t('totp.nameOptional')}
+                        </ThemedText>
+                        <TouchableOpacity style={styles.removeNameButton} onPress={hideEditNameField}>
+                          <MaterialIcons name="close" size={18} color={colors.textMuted} />
+                        </TouchableOpacity>
+                      </View>
+                      <TextInput
+                        style={styles.input}
+                        placeholder={t('totp.nameOptional')}
+                        placeholderTextColor={colors.textMuted}
+                        value={editName}
+                        onChangeText={setEditName}
+                        autoCapitalize="words"
+                        autoFocus
+                      />
+                    </>
+                  ) : (
+                    <TouchableOpacity onPress={() => setShowEditNameField(true)}>
+                      <ThemedText style={styles.addNameLink}>
+                        {t('totp.addName')}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  )}
 
                   {showQrCode && (
                     <View style={styles.qrCodeContainer}>

@@ -3,6 +3,7 @@
     "cancel": "ביטול",
     "close": "סגירה",
     "delete": "מחיקה",
+    "remove": "Remove",
     "save": "שמירה",
     "edit": "עריכה",
     "yes": "כן",
@@ -16,6 +17,7 @@
     "copied": "הועתק ללוח הגזירים",
     "loadMore": "לטעון עוד",
     "use": "להשתמש",
+    "none": "אין",
     "confirm": "אישור",
     "next": "הבא",
     "notice": "לתשומת ליבך",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "Add 2FA Code",
     "nameOptional": "שם (רשות)",
+    "addName": "Add a name (optional)",
+    "defaultName": "Authenticator",
     "secretKey": "מפתח סודי",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "saveToViewCode": "יש לשמור כדי לצפות בקוד",
     "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "enterManually": "Enter secret key",
     "errors": {
       "invalidSecretKey": "Invalid secret key format.",
       "scanFailed": "Failed to scan QR code. Please try again."
@@ -192,7 +196,8 @@
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
     "security": "אבטחה",
-    "appVersion": "גרסת היישום היא {{version}} ({{url}})",
+    "appVersion": "App version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "אף פעם",
       "5seconds": "5 שניות",
@@ -360,6 +365,7 @@
     "enterFieldName": "Enter field name",
     "fieldTypes": {
       "text": "Text",
+      "password": "סיסמה",
       "hidden": "Hidden",
       "email": "דוא״ל",
       "url": "URL",
@@ -441,6 +447,29 @@
     "includeNumbers": "מספרים (‎0‏-9)",
     "includeSpecialChars": "תווים מיוחדים (!@#)",
     "avoidAmbiguousChars": "כדאי להימנע מאותיות ותווים שדומים חזותית",
+    "passwordTypeBasic": "סיסמה",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "capitalization": "Capitalization",
+    "separator": "Separator",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Lowercase",
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "errorLoadingItems": "Error loading items",
     "vaultSyncFailed": "סנכרון הכספת נכשל",
     "vaultSyncedSuccessfully": "הכספת סונכרנה בהצלחה",
@@ -654,7 +683,6 @@
     },
     "loginSettings": {
       "title": "חיבור API",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "אירוח עצמי",
       "customApiUrl": "כתובת API מותאמת",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",

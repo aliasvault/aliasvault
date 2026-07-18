@@ -1,0 +1,755 @@
+/**
+ * AliasVault documentation theme.
+ *
+ * The Inter webfont is loaded via `headTags` preconnect + <link> in
+ * docusaurus.config.ts (not an `@import` here) to avoid render-blocking.
+ */
+
+:root {
+  /* Brand orange — used for links, buttons, accents. */
+  --ifm-color-primary: #d68338;
+  --ifm-color-primary-dark: #c5762f;
+  --ifm-color-primary-darker: #b8702f;
+  --ifm-color-primary-darkest: #9a5d26;
+  --ifm-color-primary-light: #f49541;
+  --ifm-color-primary-lighter: #f6a752;
+  --ifm-color-primary-lightest: #f8b963;
+
+  --ifm-font-family-base: 'Inter', ui-sans-serif, system-ui, -apple-system,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji';
+  --ifm-font-family-monospace: ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  --ifm-code-font-size: 92%;
+  --ifm-heading-font-weight: 700;
+  --ifm-font-weight-semibold: 600;
+  --ifm-navbar-link-hover-color: var(--ifm-color-primary);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.08);
+
+  /* Roomier chrome — the previous theme felt cramped at the edges. */
+  --ifm-navbar-height: 4.5rem;
+  --ifm-navbar-padding-horizontal: 1.5rem;
+  --ifm-spacing-horizontal: 1.75rem;
+  --ifm-container-width-xl: 1440px;
+
+  /* Generous, rounded sidebar items. */
+  --ifm-menu-link-padding-vertical: 0.55rem;
+  --ifm-menu-link-padding-horizontal: 0.85rem;
+  --ifm-menu-color-background-active: rgba(244, 149, 65, 0.12);
+  --ifm-menu-color-background-hover: rgba(244, 149, 65, 0.08);
+
+  /* Light surfaces from the marketing site. */
+  --ifm-background-color: #ffffff;
+  --ifm-background-surface-color: #fcfcfc;
+  --ifm-navbar-background-color: rgba(255, 255, 255, 0.85);
+  --ifm-footer-background-color: #f7f8fb;
+  --ifm-color-content-secondary: #788293;
+  --ifm-toc-border-color: #e3e8ef;
+  --ifm-table-border-color: #e3e8ef;
+  --av-card-bg: #ffffff;
+  --av-border: #e3e8ef;
+  --av-sidebar-bg: #f7f8fb; /* subtle contrast against the white content column */
+  --av-menu-expanded-bg: rgba(20, 30, 50, 0.05); /* open category header fill */
+
+  /* Collapsible / FAQ header bar tints (matching the marketing accordion). */
+  --av-collapsible-header-hover: #f4f5f8;
+  --av-collapsible-header-open: #f0f2f9;
+}
+
+/* Dark mode — dark-blue surfaces matching the marketing website.
+ * Selector is `html[data-theme='dark']` (not just `[data-theme='dark']`) to
+ * match Infima's own specificity — otherwise Infima's `html[data-theme='dark']`
+ * defaults (e.g. --ifm-background-color: #1b1b1d) win and the content area
+ * stays neutral near-black instead of the brand dark blue (#121723). */
+html[data-theme='dark'] {
+  --ifm-color-primary: #f49541;
+  --ifm-color-primary-dark: #f2882a;
+  --ifm-color-primary-darker: #d68338;
+  --ifm-color-primary-darkest: #b8702f;
+  --ifm-color-primary-light: #f6a752;
+  --ifm-color-primary-lighter: #f8b963;
+  --ifm-color-primary-lightest: #fbcb74;
+
+  --ifm-background-color: #121723; /* website body (dark:bg-black) */
+  --ifm-background-surface-color: #1d2430; /* website `dark` */
+  --ifm-navbar-background-color: rgba(33, 41, 54, 0.85); /* web app header #212936 */
+  --ifm-footer-background-color: #0e131d;
+  --ifm-color-content: #d8dce6;
+  --ifm-color-content-secondary: #959cb1; /* body-color-dark */
+  --ifm-toc-border-color: #2a313f;
+  --ifm-table-border-color: #2a313f;
+  --ifm-menu-color-background-active: rgba(244, 149, 65, 0.14);
+  --ifm-menu-color-background-hover: rgba(244, 149, 65, 0.1);
+  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.07);
+
+  --av-card-bg: #1d2430;
+  --av-border: #2a313f;
+  --av-sidebar-bg: #212936; /* raised panel matching the web app header/sidebar */
+  --av-menu-expanded-bg: rgba(255, 255, 255, 0.05); /* open category header fill */
+
+  --av-collapsible-header-hover: rgba(255, 255, 255, 0.03);
+  --av-collapsible-header-open: rgba(255, 255, 255, 0.05);
+}
+
+/* ---------------------------------------------------------------- Navbar -- */
+
+.navbar {
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--av-border);
+  box-shadow: none;
+}
+
+.navbar.navbar-sidebar--show {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.navbar__title {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* The logo SVG includes the "AliasVault" wordmark, so its height drives the
+ * whole brand size (there is no separate navbar title text). */
+.navbar__logo {
+  height: 2.75rem;
+}
+
+.navbar__link {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* GitHub / external link icon spacing stays tidy. */
+.navbar__items--right > :last-child {
+  margin-right: 0.25rem;
+}
+
+/* Website / Discord / GitHub render as icons in the top bar instead of text.
+ * Each modifier class supplies the glyph via the --av-icon mask; the icon is
+ * tinted with the navbar link color so it tracks light/dark mode and hover.
+ * Scoped to `.navbar__link` (the desktop bar) — in the mobile slide-in menu
+ * these are `.menu__link` and keep their text label (with the icon alongside,
+ * see below). */
+.navbar__link.navbar__icon-link {
+  font-size: 0; /* hide the text label; the glyph comes from ::before */
+  display: flex;
+  align-items: center;
+}
+
+.navbar__link.navbar__icon-link::before {
+  content: '';
+  display: inline-block;
+  width: 1.4rem;
+  height: 1.4rem;
+  background-color: var(--ifm-navbar-link-color);
+  -webkit-mask: var(--av-icon) center / contain no-repeat;
+  mask: var(--av-icon) center / contain no-repeat;
+  transition: background-color 0.15s ease;
+}
+
+.navbar__link.navbar__icon-link:hover::before {
+  background-color: var(--ifm-navbar-link-hover-color);
+}
+
+/* Docusaurus appends an external-link arrow to off-site links; drop it on the
+ * icon-only desktop links. */
+.navbar__link.navbar__icon-link svg {
+  display: none;
+}
+
+/* In the mobile slide-in menu the links keep their text label, with the same
+ * glyph shown alongside it. */
+.menu__link.navbar__icon-link::before {
+  content: '';
+  display: inline-block;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-right: 0.55rem;
+  vertical-align: -0.2rem;
+  background-color: currentColor;
+  -webkit-mask: var(--av-icon) center / contain no-repeat;
+  mask: var(--av-icon) center / contain no-repeat;
+}
+
+.navbar__icon-link--website {
+  --av-icon: url('/assets/img/icons/website.svg');
+}
+.navbar__icon-link--discord {
+  --av-icon: url('/assets/img/icons/discord.svg');
+}
+.navbar__icon-link--github {
+  --av-icon: url('/assets/img/icons/github.svg');
+}
+
+@media (max-width: 1150px) {
+  .navbar {
+    --ifm-navbar-padding-horizontal: 1rem;
+    --ifm-navbar-item-padding-horizontal: 0.5rem;
+  }
+}
+
+@media (max-width: 996px) {
+  .navbar__toggle {
+    display: inherit;
+  }
+  .navbar__item {
+    display: none;
+  }
+  .navbar__link.navbar__icon-link {
+    display: none;
+  }
+}
+
+/* --------------------------------------------------------------- Sidebar -- */
+
+/* Sidebar sits on a slightly raised surface so it reads as a distinct panel
+ * against the content column. */
+.theme-doc-sidebar-container {
+  border-right: 1px solid var(--av-border);
+  background-color: var(--av-sidebar-bg);
+}
+
+.menu {
+  background-color: var(--av-sidebar-bg);
+}
+
+/* Breathing room around the menu and rounded, app-like items. */
+.menu {
+  padding: 1rem 0.75rem !important;
+  font-weight: 500;
+}
+
+/* Nested items get a vertical guide line + indent so an expanded category's
+ * children read as a group, clearly distinct from the next top-level item. */
+.menu__list .menu__list {
+  margin-left: 1rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid var(--av-border);
+}
+
+/* A touch more breathing room above each top-level category separates one
+ * collapsed/expanded group from the next. */
+.menu > .menu__list > .menu__list-item:not(:first-child) {
+  margin-top: 0.15rem;
+}
+
+.menu__link {
+  border-radius: 8px;
+  line-height: 1.4;
+}
+
+.menu__link--active:not(.menu__link--sublist) {
+  font-weight: 600;
+}
+
+.menu__caret {
+  border-radius: 8px;
+}
+
+/* An expanded category's header keeps a persistent tint (distinct from the
+ * flat closed items) so it's obvious which group is currently open. */
+.menu__list-item:not(.menu__list-item--collapsed) > .menu__link--sublist {
+  background-color: var(--av-menu-expanded-bg);
+}
+
+/* --------------------------------------------------------------- Content -- */
+
+/* Standalone doc pages (Architecture, Help & Support) have no sidebar, so
+ * Docusaurus renders no breadcrumb nav above the article. On the sidebar
+ * sections the breadcrumb adds ~2.5rem of vertical space before the H1 (its
+ * own row height plus a 0.8rem bottom margin); without it the heading sits
+ * tight against the navbar. Re-create that top spacing when the article has
+ * no breadcrumb so every page starts with the same breathing room. */
+article:not(:has(> nav.theme-doc-breadcrumbs)) > .theme-doc-markdown {
+  margin-top: 2.5rem;
+}
+
+/* Comfortable reading column with real margins, instead of full-bleed. */
+.theme-doc-markdown {
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 1440px) {
+  .theme-doc-markdown {
+    max-width: 920px;
+  }
+}
+
+.markdown h1:first-child {
+  font-size: 2.4rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
+}
+
+.markdown h2 {
+  letter-spacing: -0.01em;
+  margin-top: 2.25rem;
+}
+
+/* Right-hand table of contents. */
+.table-of-contents {
+  font-size: 0.82rem;
+}
+
+.table-of-contents__link--active {
+  font-weight: 600;
+}
+
+/* --------------------------------------------- Self-host Install layout -- */
+
+/* The install-method chooser page (/installation) hides its on-page ToC via
+ * `hide_table_of_contents` frontmatter so the two side-by-side method cards get
+ * the full width. Docusaurus then renders the content at full column width, but
+ * our default 860px reading cap would still pinch it — so widen the reading
+ * column for just this page (scoped via the route class on <html>). */
+html[class*='docs-doc-id-installation/index'] .theme-doc-markdown {
+  max-width: 1100px;
+}
+
+/* ----------------------------------------------------------------- Cards -- */
+
+.card {
+  background: var(--av-card-bg);
+  border: 1px solid var(--av-border);
+}
+
+/* ------------------------------------------------ Install-method chooser -- */
+
+/* Two side-by-side "pick a path" cards at the top of the install guide.
+ * Collapses to a single column on narrow screens. */
+.av-install-choice {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  margin: 2rem 0 1rem;
+}
+
+@media (max-width: 768px) {
+  .av-install-choice {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Each card is a self-contained panel with the body and the CTA pinned to the
+ * bottom, so both cards line up regardless of copy length. */
+/* The whole card is an <a>, so reset link styling and let the body text read
+ * normally. */
+.av-install-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem;
+  border: 1px solid var(--av-border);
+  border-radius: 14px;
+  background: var(--av-card-bg);
+  color: var(--ifm-color-content);
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.av-install-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 5px 24px rgba(244, 149, 65, 0.12);
+  color: var(--ifm-color-content);
+  text-decoration: none;
+}
+
+/* The recommended option gets a primary-tinted border + a slightly stronger
+ * lift so it reads as the default choice. */
+.av-install-card--featured {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 5px 24px rgba(244, 149, 65, 0.12);
+}
+
+/* Header row: brand-tinted icon tile next to the title + meta line. Mirrors the
+ * marketing site's feature blocks (icon in a soft primary square). */
+.av-install-card__head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+}
+
+.av-install-card__icon {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  color: var(--ifm-color-primary);
+  background: rgba(244, 149, 65, 0.1);
+}
+
+.av-install-card__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.av-install-card__meta {
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--ifm-color-content-secondary);
+}
+
+/* Pinned to the top-right corner of the featured card. */
+.av-install-card__badge {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.1rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #fff;
+  background: var(--ifm-color-primary);
+  border-radius: 9999px;
+  padding: 0.25rem 0.65rem;
+}
+
+.av-install-card__tagline {
+  color: var(--ifm-color-content-secondary);
+  margin-bottom: 1.1rem;
+}
+
+.av-install-card__bestfor {
+  margin: 0 0 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--av-border);
+  font-size: 0.9rem;
+  color: var(--ifm-color-content-secondary);
+}
+
+.av-install-card__bestfor strong {
+  color: var(--ifm-color-content);
+}
+
+.av-install-card__list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.25rem;
+}
+
+.av-install-card__list li {
+  position: relative;
+  padding-left: 1.6rem;
+  margin-bottom: 0.55rem;
+  line-height: 1.45;
+}
+
+.av-install-card__list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--ifm-color-primary);
+  font-weight: 700;
+}
+
+/* Push the CTA to the bottom edge so both cards' buttons align. */
+.av-install-card__cta {
+  margin-top: auto;
+}
+
+/* inline-flex + centering keeps the label optically centered in the pill. */
+.av-install-card__cta .button {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The markdown link text gets wrapped in a <p>, whose default bottom margin
+ * sits inside the pill and pushes the label toward the top. Zero it so the
+ * text is truly centered. */
+.av-install-card__cta .button p {
+  margin: 0;
+}
+
+/* The CTA pill is a <span>, not the link itself, so its :hover never fires —
+ * the whole card is the anchor. Drive the pill's hover look from the card so it
+ * still reacts when you point anywhere on the card: both cards use the subtle
+ * outline button by default and fill with brand orange on hover. */
+.av-install-card:hover .button--secondary.button--outline {
+  background-color: var(--ifm-color-primary);
+  border-color: var(--ifm-color-primary);
+  /* Same value Infima's own `.button--outline:hover` uses, so card-hover reads
+   * identically to a direct button mouseover (white in light mode, dark in dark
+   * mode) instead of leaving the default dark border-color text. */
+  color: var(--ifm-font-color-base-inverse);
+}
+
+/* ------------------------------------------- Install comparison table -- */
+
+/* Full-width custom comparison table that highlights the recommended column,
+ * replacing Docusaurus' default striped markdown table. The wrapper enables
+ * horizontal scrolling on narrow screens without breaking the rounded frame. */
+.av-compare-wrap {
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  border: 1px solid var(--av-border);
+  border-radius: 14px;
+}
+
+.av-compare {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  display: table; /* override Docusaurus' default `display: block` on tables */
+  font-size: 0.95rem;
+}
+
+.av-compare th,
+.av-compare td {
+  padding: 0.85rem 1.1rem;
+  text-align: left;
+  border: none;
+  border-bottom: 1px solid var(--av-border);
+  vertical-align: top;
+}
+
+.av-compare tbody tr:last-child th,
+.av-compare tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* The header row reads as the structural frame via weight + a heavier bottom
+ * rule, rather than a fill that would echo the gray nav/sidebar and blur the
+ * page together. */
+.av-compare thead th {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ifm-color-content);
+  border-bottom: 2px solid var(--av-border);
+}
+
+/* Row labels stay distinct through bold text + a vertical divider, keeping the
+ * column on the card background instead of a separate tinted block. */
+.av-compare tbody th[scope='row'] {
+  font-weight: 600;
+  color: var(--ifm-color-content);
+  white-space: nowrap;
+  border-right: 1px solid var(--av-border);
+}
+
+.av-compare td {
+  color: var(--ifm-color-content-secondary);
+}
+
+/* Both option columns share the remaining width equally so neither reads as
+ * the "default" — the table presents the two methods side by side, evenly. */
+.av-compare thead th:not(:first-child) {
+  width: 38%;
+}
+
+/* ------------------------------------------------ Clickable action cards -- */
+
+/* A responsive grid of "pick a task" cards where the *entire* card is one
+ * clickable link (used on the Contributing page). Collapses to one column on
+ * narrow screens. */
+.av-action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin: 2rem 0 1rem;
+}
+
+/* The whole card is an <a>. Reset link styling so the body text reads normally,
+ * and lift + tint the border on hover to signal it's clickable. */
+.av-action-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  border: 1px solid var(--av-border);
+  border-radius: 14px;
+  background: var(--av-card-bg);
+  color: var(--ifm-color-content);
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.av-action-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 5px 24px rgba(244, 149, 65, 0.12);
+  color: var(--ifm-color-content);
+  text-decoration: none;
+}
+
+.av-action-card__emoji {
+  font-size: 1.85rem;
+  line-height: 1;
+  margin-bottom: 0.85rem;
+}
+
+.av-action-card__title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: var(--ifm-heading-color);
+}
+
+.av-action-card__desc {
+  color: var(--ifm-color-content-secondary);
+  margin: 0 0 1.25rem;
+  line-height: 1.5;
+}
+
+/* The CTA is pinned to the bottom so cards with different copy lengths line up.
+ * The arrow nudges right on hover for a little affordance. */
+.av-action-card__cta {
+  margin-top: auto;
+  font-weight: 600;
+  color: var(--ifm-color-primary);
+}
+
+.av-action-card__cta::after {
+  content: ' →';
+  transition: margin-left 0.15s ease;
+}
+
+.av-action-card:hover .av-action-card__cta::after {
+  margin-left: 0.25rem;
+}
+
+/* ----------------------------------------------------- Collapsibles / FAQ -- */
+
+/* Native <details> styled like the marketing FAQ accordion: a bordered card
+ * with a tinted header bar, a chevron on the right, and a divider above the
+ * muted answer text. Docusaurus ships <details> as `details.alert.alert--info`
+ * (a blue info box), so we neutralise that here. Scoped to doc content. */
+.theme-doc-markdown details {
+  --docusaurus-details-decoration-color: var(--av-border);
+  margin-bottom: 1rem;
+  padding: 0;
+  border: 1px solid var(--av-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--av-card-bg);
+  box-shadow: none;
+}
+
+.theme-doc-markdown details > summary {
+  margin: 0;
+  padding: 1rem 3rem 1rem 1.5rem;
+  font-weight: 600;
+  font-size: 1.02rem;
+  color: var(--ifm-heading-color);
+  background-color: transparent;
+  transition: background-color 150ms ease;
+}
+
+.theme-doc-markdown details > summary:hover {
+  background-color: var(--av-collapsible-header-hover);
+}
+
+.theme-doc-markdown details[open] > summary {
+  background-color: var(--av-collapsible-header-open);
+}
+
+/* Move the disclosure arrow to the right edge and enlarge it slightly. */
+.theme-doc-markdown details > summary::before {
+  left: auto;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%) rotate(0deg);
+  transform-origin: center;
+  border-width: 0.4rem;
+  border-color: transparent transparent transparent var(--ifm-color-content-secondary);
+}
+
+.theme-doc-markdown details[open] > summary::before,
+.theme-doc-markdown details[data-collapsed='false'] > summary::before {
+  transform: translateY(-50%) rotate(90deg);
+}
+
+/* Answer area sits directly under the header bar, with no divider line or
+ * top-margin gap (header's own padding provides separation). Uses the regular
+ * body text color so it stays easy to read. */
+.theme-doc-markdown details > div {
+  margin-top: 0;
+  padding: 0 1.5rem 1.25rem;
+  border-top: none;
+  color: var(--ifm-color-content);
+}
+
+.theme-doc-markdown details > div > :last-child {
+  margin-bottom: 0;
+}
+
+/* ------------------------------------------------------------ Admonitions -- */
+
+/* Brand the informational admonitions (:::info / :::note) with the AliasVault
+ * orange instead of Docusaurus' default blue/grey, matching the marketing
+ * site's callouts (border-primary + faint primary fill). `.theme-admonition`
+ * keeps this off the FAQ <details>, which share the `alert--info` class. */
+.theme-admonition.alert--info,
+.theme-admonition.alert--secondary {
+  --ifm-alert-border-color: var(--ifm-color-primary);
+  --ifm-alert-background-color: rgba(244, 149, 65, 0.1);
+  --ifm-alert-background-color-highlight: rgba(244, 149, 65, 0.15);
+  --ifm-alert-foreground-color: var(--ifm-color-content);
+}
+
+[data-theme='dark'] .theme-admonition.alert--info,
+[data-theme='dark'] .theme-admonition.alert--secondary {
+  --ifm-alert-background-color: rgba(244, 149, 65, 0.06);
+  --ifm-alert-background-color-highlight: rgba(244, 149, 65, 0.1);
+}
+
+/* ---------------------------------------------------------------- Buttons -- */
+
+/* Pill-shaped buttons, matching the website's rounded CTAs. */
+.button {
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+.button--primary {
+  --ifm-button-border-color: transparent;
+  box-shadow: 0px 5px 20px rgba(244, 149, 65, 0.25);
+}
+
+.button--primary:hover {
+  background-color: var(--ifm-color-primary-dark);
+}
+
+.button--secondary.button--outline {
+  border-color: var(--av-border);
+}
+
+/* ----------------------------------------------------------------- Footer -- */
+
+.footer {
+  border-top: 1px solid var(--av-border);
+}
+
+.footer__title {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+/* --------------------------------------------------------------- Tables --- */
+
+.markdown table {
+  border-radius: 10px;
+  overflow: hidden;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.markdown table thead tr {
+  border-bottom: none;
+}

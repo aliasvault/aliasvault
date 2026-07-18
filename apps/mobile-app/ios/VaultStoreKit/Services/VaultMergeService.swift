@@ -154,14 +154,14 @@ public class VaultMergeService {
         let db = try openDatabase(from: decrypted)
         defer { sqlite3_close(db) }
 
-        // Read tables needed for pruning
-        let pruneTableNames = ["Items", "FieldValues", "Attachments", "TotpCodes", "Passkeys", "Logos"]
+        // Get the per-table SELECT queries clients should run to build `PruneInput`.
+        let pruneTableQueries = getPruneTableQueries()
         var tables: [[String: Any]] = []
 
-        for tableName in pruneTableNames {
+        for entry in pruneTableQueries {
             tables.append([
-                "name": tableName,
-                "records": try readTable(from: db, tableName: tableName)
+                "name": entry.name,
+                "records": try readQuery(from: db, tableName: entry.name, sql: entry.query)
             ])
         }
 
@@ -263,6 +263,10 @@ public class VaultMergeService {
     }
 
     private func readTable(from db: OpaquePointer, tableName: String) throws -> [[String: Any]] {
+        return try readQuery(from: db, tableName: tableName, sql: "SELECT * FROM \(tableName)")
+    }
+
+    private func readQuery(from db: OpaquePointer, tableName: String, sql: String) throws -> [[String: Any]] {
         var records: [[String: Any]] = []
 
         // Check if table exists
@@ -287,7 +291,6 @@ public class VaultMergeService {
         }
 
         // Read all records
-        let sql = "SELECT * FROM \(tableName)"
         var stmt: OpaquePointer?
         let selectPrepareResult = sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
         guard selectPrepareResult == SQLITE_OK else {

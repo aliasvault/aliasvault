@@ -62,6 +62,7 @@
     "openInNewWindow": "Apri in una nuova finestra",
     "enabled": "Abilitato",
     "disabled": "Disabilitato",
+    "none": "Vuoto",
     "showPassword": "Mostra password",
     "hidePassword": "Nascondi password",
     "show": "Mostra",
@@ -76,6 +77,7 @@
     "settings": "Impostazioni",
     "recentEmails": "E-mail recenti",
     "credentials": "Credenziali",
+    "passkeys": "Passkey",
     "customFields": "Campi Personalizzati",
     "twoFactorAuthentication": "Autenticazione a due fattori",
     "alias": "Alias",
@@ -109,6 +111,7 @@
       "syncConflictMaxRetries": "Impossibile sincronizzare la cassaforte dopo più tentativi. Riprova più tardi.",
       "mergeFailed": "Sincronizzazione della cassaforte non riuscita. Riprovare.",
       "vaultTooLarge": "La cassaforte è troppo grande perché il server possa accettarla. Provare a rimuovere alcuni elementi o allegati per ridurre le dimensioni e riprovare.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Inserisci un codice di autenticazione a 6 cifre valido.",
       "serverError": "Impossibile raggiungere il server AliasVault. Riprova più tardi o contatta il supporto se il problema persiste.",
       "wrongPassword": "Password errata. Riprovare.",
@@ -148,6 +151,7 @@
     "creatingNewAlias": "Creazione nuovo alias",
     "creatingNewCredential": "Creazione nuove credenziali",
     "noMatchesFound": "Nessun risultato trovato",
+    "loginWithPasskey": "Accedi con passkey",
     "searchVault": "Cerca nella cassaforte...",
     "enterServiceName": "Inserisci nome servizio",
     "enterEmailAddress": "Inserisci indirizzo email",
@@ -186,6 +190,7 @@
   "items": {
     "title": "Elementi",
     "itemName": "Nome",
+    "suggestions": "Suggerimenti",
     "loginCredentials": "Credenziali di accesso",
     "cardInformation": "Informazioni sulla scheda",
     "addItem": "Aggiungi Elemento",
@@ -202,6 +207,8 @@
     "folder": "Cartella",
     "welcomeTitle": "Benvenuto in AliasVault!",
     "welcomeDescription": "Per usare l'estensione browser AliasVault: naviga su un sito e usa la finestra di compilazione automatica per creare una nuova credenziale.",
+    "currentSiteMatch": "Per {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} elementi trovati",
     "noMatchingItems": "Nessun elemento corrisponde ai filtri selezionati",
     "noMatchingItemsSearch": "Nessun elemento corrispondente \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nessun elemento {{filter}} corrispondente \"{{search}}\"",
@@ -216,7 +223,6 @@
     "deleteFolderAndItemsDescription": "{{count}} oggetto(i) verrà spostato in Eliminato Recentemente.",
     "filters": {
       "folders": "Cartelle",
-      "passkeys": "Passkey",
       "totp": "Codici 2FA"
     },
     "sort": {
@@ -238,6 +244,28 @@
     "includeNumbers": "Includi numeri",
     "includeSpecialChars": "Includi caratteri speciali",
     "avoidAmbiguousChars": "Evita caratteri ambigui (o, 0, ecc.)",
+    "passwordTypeBasic": "Password",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Lingua passphrase",
+    "wordCount": "Parole",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Iniziali in maiuscolo",
+      "Uppercase": "Maiuscolo",
+      "Lowercase": "Minuscolo"
+    },
+    "separator": "Separatore",
+    "dicewareSeparatorOption": {
+      "Dash": "Trattino",
+      "Space": "Spazio",
+      "Underscore": "Trattino basso",
+      "Dot": "Punto"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefisso",
+      "Sprinkle": "Posizione casuale",
+      "Suffix": "Suffisso"
+    },
     "privateEmailTitle": "Email Privata",
     "privateEmailAliasVaultServer": "Server AliasVault",
     "privateEmailDescription": "E2E crittografato, completamente privato.",
@@ -259,6 +287,7 @@
     "fieldType": "Tipo di campo",
     "fieldTypes": {
       "text": "Testo",
+      "password": "Password",
       "hidden": "Nascosto (testo mascherato)",
       "email": "Email",
       "url": "URL",
@@ -301,6 +330,7 @@
     "addCode": "Aggiungi Codice 2FA",
     "instructions": "Inserisci la chiave segreta mostrata dal sito in cui vuoi aggiungere un'autenticazione a due fattori.",
     "nameOptional": "Nome (facoltativo)",
+    "addName": "Aggiungi un nome (opzionale)",
     "secretKey": "Chiave segreta",
     "saveToViewCode": "Salva per visualizzare il codice",
     "defaultName": "Autenticazione",
@@ -401,7 +431,8 @@
     "autoLock4Hours": "4 ore",
     "autoLock8Hours": "8 ore",
     "autoLock24Hours": "24 ore",
-    "versionPrefix": "Versione ",
+    "versionPrefix": "Versione app",
+    "serverVersion": "Versione server",
     "autofillSettings": "Impostazioni di riempimento automatico",
     "clipboardSettings": "Impostazioni appunti",
     "contextMenuSettings": "Preferenze menu contestuale",
@@ -438,6 +469,11 @@
         "male": "Maschio",
         "female": "Femmina"
       }
+    },
+    "passwordGenerator": "Generatore di Password",
+    "passwordGeneratorSettings": {
+      "description": "Configurare le impostazioni predefinite del generatore di password per gli elementi appena creati, tra cui la lunghezza della password, i set di caratteri e la lingua di passphrase.",
+      "configureButton": "Configura"
     },
     "credentialAutofill": "Riempimento automatico credenziali",
     "credentialAutofillDescription": "Mostra popup di riempimento automatico quando vengono rilevati campi username/password",
@@ -502,7 +538,8 @@
       "selectExistingLogin": "Aggiungere al login esistente:",
       "selectExistingLoginDescription": "Allega questa passkey a una credenziale di accesso esistente per questo sito.",
       "attachingToCredential": "Aggiunta passkey a: {{serviceName}}",
-      "attachPasskey": "Aggiungi Passkey"
+      "attachPasskey": "Aggiungi Passkey",
+      "unsupportedAlgorithm": "Questo sito web richiede un tipo di passkey che AliasVault non supporta."
     },
     "settings": {
       "passkeyProvider": "Provider Passkey",

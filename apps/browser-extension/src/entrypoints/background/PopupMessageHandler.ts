@@ -2,6 +2,7 @@
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { BoolResponse } from '@/utils/types/messaging/BoolResponse';
 
 import { browser } from '#imports';
@@ -39,50 +40,59 @@ export function handlePopupWithItem(message: any) : Promise<BoolResponse> {
 }
 
 /**
- * Handle opening the popup on create item page with prefilled service name.
+ * Handle opening the popup on create item page with a prefilled item title.
  */
-export function handleOpenPopupCreateCredential(message: any) : Promise<BoolResponse> {
+export function handleOpenPopupCreateCredential(message: any, sender?: any) : Promise<BoolResponse> {
   return (async () : Promise<BoolResponse> => {
-    const serviceName = encodeURIComponent(message.serviceName || '');
+    const itemTitle = message.itemTitle || '';
+    const currentUrl = message.currentUrl || '';
+    const sourceTabId = sender?.tab?.id;
+    const elementIdentifier = message.elementIdentifier;
 
-    // Use the URL passed from the content script (current page URL)
-    let serviceUrl = '';
-    if (message.currentUrl) {
-      try {
-        const url = new URL(message.currentUrl);
-        // Only include http/https URLs
-        if (url.protocol === 'http:' || url.protocol === 'https:') {
-          serviceUrl = encodeURIComponent(url.origin + url.pathname);
-        }
-      } catch (error) {
-        console.error('Error parsing current URL:', error);
-      }
-    }
+    // Derive the service URL (origin only) from the page URL passed by the content script.
+    const serviceUrl = currentUrl ? ServiceDetectionUtility.sanitizeUrl(currentUrl) : '';
 
     // Set a localStorage flag to skip restoring previously persisted form values as we want to start fresh with this explicit create item request.
     await LocalPreferencesService.setSkipFormRestore(true);
 
-    const urlParams = new URLSearchParams();
-    urlParams.set('expanded', 'true');
-    if (serviceName) {
-      urlParams.set('name', serviceName);
+    const hashParams = new URLSearchParams();
+    if (itemTitle) {
+      hashParams.set('itemTitle', itemTitle);
     }
     if (serviceUrl) {
-      urlParams.set('serviceUrl', serviceUrl);
+      hashParams.set('serviceUrl', serviceUrl);
     }
-    if (message.currentUrl) {
-      urlParams.set('currentUrl', message.currentUrl);
+    if (currentUrl) {
+      hashParams.set('currentUrl', currentUrl);
     }
     // Default to Login type for quick create from content script
-    urlParams.set('type', 'Login');
+    hashParams.set('type', 'Login');
 
-    browser.windows.create({
-      url: browser.runtime.getURL(`/popup.html?${urlParams.toString()}#/items/add`),
+    if (sourceTabId !== undefined && sourceTabId !== null) {
+      hashParams.set('sourceTabId', String(sourceTabId));
+    }
+    if (elementIdentifier) {
+      hashParams.set('elementIdentifier', String(elementIdentifier));
+    }
+
+    const createOptions: Parameters<typeof browser.windows.create>[0] = {
+      url: browser.runtime.getURL(`/popup.html?expanded=true#/items/add?${hashParams.toString()}`),
       type: 'popup',
       width: 400,
       height: 600,
       focused: true
-    });
+    };
+
+    /*
+     * Position the window near where the user clicked (passed by the content script, already clamped
+     * to the screen). When absent, the browser picks a default position.
+     */
+    if (typeof message.left === 'number' && typeof message.top === 'number') {
+      createOptions.left = Math.round(message.left);
+      createOptions.top = Math.round(message.top);
+    }
+
+    browser.windows.create(createOptions);
     return { success: true };
   })();
 }

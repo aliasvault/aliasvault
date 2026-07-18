@@ -62,6 +62,7 @@
     "openInNewWindow": "Відкрити у новому вікні",
     "enabled": "Увімкнено",
     "disabled": "Вимкнено",
+    "none": "Відсутньо",
     "showPassword": "Показати пароль",
     "hidePassword": "Приховати пароль",
     "show": "Show",
@@ -76,6 +77,7 @@
     "settings": "Налаштування",
     "recentEmails": "Останні електронні листи",
     "credentials": "Облікові дані",
+    "passkeys": "Ключі доступу",
     "customFields": "Custom Fields",
     "twoFactorAuthentication": "Двофакторна автентифікація",
     "alias": "Псевдонім",
@@ -109,6 +111,7 @@
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "mergeFailed": "Failed to merge vault changes. Please try again.",
       "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Please enter a valid 6-digit authentication code.",
       "serverError": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
       "wrongPassword": "Невірний пароль. Будь ласка, спробуйте ще раз.",
@@ -148,6 +151,7 @@
     "creatingNewAlias": "Створення нового псевдоніму",
     "creatingNewCredential": "Creating new credential",
     "noMatchesFound": "Збігів не знайдено",
+    "loginWithPasskey": "Login with passkey",
     "searchVault": "Пошук сховища...",
     "enterServiceName": "Введіть назву служби",
     "enterEmailAddress": "Введіть електронну адресу",
@@ -186,6 +190,7 @@
   "items": {
     "title": "Об'єкти",
     "itemName": "Назва",
+    "suggestions": "Suggestions",
     "loginCredentials": "Дані для входу",
     "cardInformation": "Card Information",
     "addItem": "Add Item",
@@ -202,6 +207,8 @@
     "folder": "Тека",
     "welcomeTitle": "Ласкаво просимо до AliasVult!",
     "welcomeDescription": "Щоб скористатися розширенням браузера AliasVault: перейдіть на вебсайт і скористайтеся спливаючим вікном автозаповнення AliasVault, щоб створити нові облікові дані.",
+    "currentSiteMatch": "For {{domain}}",
+    "numberOfItemMatchesFound": "{{count}} items found",
     "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
@@ -216,7 +223,6 @@
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
       "folders": "Folders",
-      "passkeys": "Ключі доступу",
       "totp": "2FA Codes"
     },
     "sort": {
@@ -238,6 +244,28 @@
     "includeNumbers": "Включити числа",
     "includeSpecialChars": "Включити спеціальні символи",
     "avoidAmbiguousChars": "Уникайте неоднозначних символів (o, 0 тощо)",
+    "passwordTypeBasic": "Пароль",
+    "passwordTypeDiceware": "Passphrase",
+    "passphraseLanguage": "Passphrase language",
+    "wordCount": "Words",
+    "dicewareCapitalizationOption": {
+      "TitleCase": "Title Case",
+      "Uppercase": "Uppercase",
+      "Lowercase": "Lowercase"
+    },
+    "separator": "Separator",
+    "dicewareSeparatorOption": {
+      "Dash": "Dash",
+      "Space": "Space",
+      "Underscore": "Underscore",
+      "Dot": "Dot"
+    },
+    "salt": "Salt",
+    "dicewareSaltOption": {
+      "Prefix": "Prefix",
+      "Sprinkle": "Random position",
+      "Suffix": "Suffix"
+    },
     "privateEmailTitle": "Приватна електронна адреса",
     "privateEmailAliasVaultServer": "Сервер AliasVault",
     "privateEmailDescription": "Наскрізне шифрування, повністю конфіденційно.",
@@ -259,6 +287,7 @@
     "fieldType": "Field Type",
     "fieldTypes": {
       "text": "Text",
+      "password": "Пароль",
       "hidden": "Hidden (masked text)",
       "email": "Електронна пошта",
       "url": "URL",
@@ -301,6 +330,7 @@
     "addCode": "Add 2FA Code",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "nameOptional": "Ім'я (необов'язково)",
+    "addName": "Add a name (optional)",
     "secretKey": "Секретний ключ",
     "saveToViewCode": "Зберегти для перегляду коду",
     "defaultName": "Authenticator",
@@ -401,7 +431,8 @@
     "autoLock4Hours": "4 години",
     "autoLock8Hours": "8 годин",
     "autoLock24Hours": "24 години",
-    "versionPrefix": "Версія ",
+    "versionPrefix": "App version",
+    "serverVersion": "Server version",
     "autofillSettings": "Налаштування автозаповнення",
     "clipboardSettings": "Параметри буфера обміну",
     "contextMenuSettings": "Налаштування контекстного меню",
@@ -438,6 +469,11 @@
         "male": "Чоловіча",
         "female": "Жіноча"
       }
+    },
+    "passwordGenerator": "Генератор паролів",
+    "passwordGeneratorSettings": {
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "configureButton": "Налаштування"
     },
     "credentialAutofill": "Credential autofill",
     "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
@@ -502,7 +538,8 @@
       "selectExistingLogin": "Add to existing login:",
       "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
       "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey"
+      "attachPasskey": "Add Passkey",
+      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
     "settings": {
       "passkeyProvider": "Passkey Provider",

@@ -6,6 +6,7 @@ interface IUseListKeyboardNavParams {
   folderCount: number;
   itemCount: number;
   searchInputRef: RefObject<HTMLInputElement | null>;
+  resetKey: string | null;
   onActivateFolder: (index: number) => void;
   onActivateItem: (index: number) => void;
   onGoBack: () => void;
@@ -29,10 +30,16 @@ const ID_PREFIX = 'kb-nav';
  *   ←      go up one folder (ignored while typing in the search input)
  */
 export const useListKeyboardNav = (params: IUseListKeyboardNavParams): IUseListKeyboardNavReturn => {
-  const { folderCount, itemCount, searchInputRef, onActivateFolder, onActivateItem, onGoBack, onClearSearch } = params;
+  const { folderCount, itemCount, searchInputRef, resetKey, onActivateFolder, onActivateItem, onGoBack, onClearSearch } = params;
 
   const [activeKind, setActiveKind] = useState<ActiveKind>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+
+  // Reset selection when navigating to a new page/folder so the highlight starts fresh.
+  useEffect(() => {
+    setActiveKind(null);
+    setActiveIndex(0);
+  }, [resetKey]);
 
   // Clamp active selection when the underlying lists shrink (e.g. user types into search).
   useEffect(() => {

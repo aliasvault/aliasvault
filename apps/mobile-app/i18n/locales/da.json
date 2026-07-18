@@ -3,6 +3,7 @@
     "cancel": "Annuller",
     "close": "Luk",
     "delete": "Slet",
+    "remove": "Fjern",
     "save": "Gem",
     "edit": "Rediger",
     "yes": "Ja",
@@ -16,6 +17,7 @@
     "copied": "Kopieret til udklipsholder",
     "loadMore": "Indlæs flere",
     "use": "Brug",
+    "none": "Ingen",
     "confirm": "Bekræft",
     "next": "Næste",
     "notice": "Besked",
@@ -113,11 +115,13 @@
   "totp": {
     "addCode": "Tilføj 2FA-kode",
     "nameOptional": "Navn (valgfrit)",
+    "addName": "Tilføj et navn (valgfrit)",
+    "defaultName": "Godkender",
     "secretKey": "Hemmelig nøgle (Secret Key)",
     "instructions": "Indtast den hemmelige nøgle, der vises på hjemmesiden, hvor du vil tilføje to-faktor-autentificering.",
     "saveToViewCode": "Gem for at se kode",
     "scanQrCode": "Scan QR Kode",
-    "enterManually": "Indtast en oprettelsesnøgle",
+    "enterManually": "Indtast hemmelig nøgle",
     "errors": {
       "invalidSecretKey": "Ugyldigt format for hemmelig nøgle.",
       "scanFailed": "Kunne ikke scanne QR-kode. Prøv igen."
@@ -192,7 +196,8 @@
       "exportDescription": "Af sikkerhedshensyn skal du indtaste din hovedadgangskode for at bekræfte denne eksport."
     },
     "security": "Sikkerhed",
-    "appVersion": "App-version {{version}} ({{url}})",
+    "appVersion": "App-version",
+    "serverVersion": "Server version",
     "autoLockOptions": {
       "never": "Aldrig",
       "5seconds": "5 sekunder",
@@ -360,6 +365,7 @@
     "enterFieldName": "Indtast feltnavn",
     "fieldTypes": {
       "text": "Tekst",
+      "password": "Adgangskode",
       "hidden": "Skjult",
       "email": "E-mail",
       "url": "URL",
@@ -441,6 +447,29 @@
     "includeNumbers": "Tal (0-9)",
     "includeSpecialChars": "Specialtegn (!@#)",
     "avoidAmbiguousChars": "Undgå tvetydige tegn",
+    "passwordTypeBasic": "Adgangskode",
+    "passwordTypeDiceware": "Adgangskode",
+    "passphraseLanguage": "Adgangskode sprog",
+    "wordCount": "Ord",
+    "capitalization": "Kapitalisering",
+    "separator": "Skilletegn",
+    "salt": "Salt",
+    "dicewareCapitalizationOption": {
+      "Lowercase": "Små bogstaver",
+      "TitleCase": "Titel Tilstand",
+      "Uppercase": "Store bogstaver"
+    },
+    "dicewareSeparatorOption": {
+      "Dash": "Streg",
+      "Space": "Mellemrum",
+      "Underscore": "Understregning",
+      "Dot": "Punktum"
+    },
+    "dicewareSaltOption": {
+      "Prefix": "Præfiks",
+      "Sprinkle": "Tilfældig position",
+      "Suffix": "Suffiks"
+    },
     "errorLoadingItems": "Fejl ved indlæsning af elementer",
     "vaultSyncFailed": "Synkronisering af boks mislykkedes",
     "vaultSyncedSuccessfully": "Boks synkroniseret korrekt",
@@ -570,8 +599,8 @@
     "emailNotFound": "E-mail ikke fundet",
     "formatHtml": "HTML",
     "formatPlain": "Tekst",
-    "formatSource": "Source",
-    "formatSwitchTitle": "Switch email format",
+    "formatSource": "Kilde",
+    "formatSwitchTitle": "Skift e-mail format",
     "sizeKB": "KB",
     "offlineMessage": "Du er offline. Opret venligst forbindelse til internettet for at indlæse dine e-mails.",
     "emptyMessage": "Du har ikke modtaget nogen e-mails på dine private e-mailadresser endnu. Når du modtager en ny e-mail, vil den blive vist her.",
@@ -654,7 +683,6 @@
     },
     "loginSettings": {
       "title": "API-forbindelse",
-      "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "Selvhostet",
       "customApiUrl": "Brugerdefineret API-URL",
       "customApiUrlPlaceholder": "https://min-aliasvault-instans.dk/api",

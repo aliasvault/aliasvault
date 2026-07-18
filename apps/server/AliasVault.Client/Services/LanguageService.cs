@@ -8,6 +8,7 @@
 namespace AliasVault.Client.Services;
 
 using System.Globalization;
+using AliasVault.Client.Main.Models;
 using AliasVault.Client.Services.Database;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -23,31 +24,13 @@ public class LanguageService(
     DbService dbService)
 {
     /// <summary>
-    /// Language configuration containing all supported languages.
-    /// To add a new language, simply add a new entry to this list.
+    /// The set of UI languages the client has translations for. Native display names and flag emojis
+    /// are sourced from the shared <see cref="Languages"/> reference, so adding a new language only
+    /// requires adding its ISO code here (plus the matching translation resources).
     /// </summary>
-    private static readonly List<LanguageConfig> SupportedLanguages = new()
+    private static readonly List<string> SupportedLanguageCodes = new()
     {
-        new LanguageConfig("da", "Dansk", "🇩🇰"),
-        new LanguageConfig("de", "Deutsch", "🇩🇪"),
-        new LanguageConfig("en", "English", "🇺🇸"),
-        new LanguageConfig("es", "Español", "🇪🇸"),
-        new LanguageConfig("fi", "Suomi", "🇫🇮"),
-        new LanguageConfig("fr", "Français", "🇫🇷"),
-        new LanguageConfig("he", "עברית", "🇮🇱"),
-        new LanguageConfig("it", "Italiano", "🇮🇹"),
-        new LanguageConfig("nl", "Nederlands", "🇳🇱"),
-        new LanguageConfig("pl", "Polski", "🇵🇱"),
-        new LanguageConfig("pt", "Português Brasileiro", "🇧🇷"),
-        new LanguageConfig("ro", "Română", "🇷🇴"),
-        new LanguageConfig("ru", "Русский", "🇷🇺"),
-        new LanguageConfig("sv", "Svenska", "🇸🇪"),
-        new LanguageConfig("uk", "Українська", "🇺🇦"),
-        new LanguageConfig("zh", "简体中文", "🇨🇳"),
-
-        // Add new languages here:
-        // new LanguageConfig("fr", "Français", "🇫🇷"),
-        // new LanguageConfig("es", "Español", "🇪🇸"),
+        "da", "de", "en", "es", "fi", "fr", "ga", "he", "hu", "it", "nl", "pl", "pt", "ro", "ru", "sv", "uk", "zh",
     };
 
     private readonly ILocalStorageService _localStorage = localStorage;
@@ -66,16 +49,7 @@ public class LanguageService(
     /// <returns>Dictionary of language codes and display names.</returns>
     public static Dictionary<string, string> GetSupportedLanguages()
     {
-        return SupportedLanguages.ToDictionary(lang => lang.Code, lang => lang.DisplayName);
-    }
-
-    /// <summary>
-    /// Gets the list of supported languages with flag emojis.
-    /// </summary>
-    /// <returns>Dictionary of language codes and display names with flag emojis.</returns>
-    public static Dictionary<string, string> GetSupportedLanguagesWithFlags()
-    {
-        return SupportedLanguages.ToDictionary(lang => lang.Code, lang => $"{lang.FlagEmoji} {lang.DisplayName}");
+        return SupportedLanguageCodes.ToDictionary(code => code, Languages.GetLabel);
     }
 
     /// <summary>
@@ -85,8 +59,7 @@ public class LanguageService(
     /// <returns>Flag emoji string.</returns>
     public static string GetLanguageFlag(string languageCode)
     {
-        var language = SupportedLanguages.FirstOrDefault(lang => lang.Code == languageCode);
-        return language?.FlagEmoji ?? "🌐";
+        return Languages.GetFlag(languageCode);
     }
 
     /// <summary>
@@ -96,8 +69,7 @@ public class LanguageService(
     /// <returns>Display name string.</returns>
     public static string GetLanguageDisplayName(string languageCode)
     {
-        var language = SupportedLanguages.FirstOrDefault(lang => lang.Code == languageCode);
-        return language?.DisplayName ?? languageCode;
+        return Languages.GetLabel(languageCode);
     }
 
     /// <summary>
@@ -107,7 +79,7 @@ public class LanguageService(
     /// <returns>True if the language is supported, false otherwise.</returns>
     public static bool IsLanguageSupported(string languageCode)
     {
-        return SupportedLanguages.Any(lang => lang.Code == languageCode);
+        return SupportedLanguageCodes.Contains(languageCode);
     }
 
     /// <summary>
@@ -116,7 +88,7 @@ public class LanguageService(
     /// <returns>Default language code.</returns>
     public static string GetDefaultLanguage()
     {
-        return SupportedLanguages.FirstOrDefault()?.Code ?? "en";
+        return SupportedLanguageCodes.FirstOrDefault() ?? "en";
     }
 
     /// <summary>
@@ -333,9 +305,4 @@ public class LanguageService(
             // Ignore migration errors - user can still change language manually
         }
     }
-
-    /// <summary>
-    /// Configuration for a supported language.
-    /// </summary>
-    private sealed record LanguageConfig(string Code, string DisplayName, string FlagEmoji);
 }

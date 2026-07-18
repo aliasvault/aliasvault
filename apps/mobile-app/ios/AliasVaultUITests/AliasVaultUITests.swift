@@ -861,7 +861,7 @@ final class AliasVaultUITests: XCTestCase {
     @MainActor
     private func performLogin(with testUser: TestUser) {
         // Check if API URL is already configured to localhost by looking at the displayed URL
-        // The login screen shows the URL via server-url-link, containing text like "localhost:5100" or "aliasvault.net"
+        // The login screen shows the URL via server-url-link, containing text like "localhost:5100" or "aliasvault.com"
         let serverUrlLink = app.findElement(testID: "server-url-link")
         var needsApiConfig = true
 

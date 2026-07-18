@@ -1252,6 +1252,20 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         }
     }
 
+    /**
+     * Get the stored server version, or null if none has been stored yet.
+     * @param promise The promise to resolve.
+     */
+    @ReactMethod
+    override fun getServerVersion(promise: Promise) {
+        try {
+            promise.resolve(vaultStore.metadata.getServerVersion())
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting server version", e)
+            promise.reject("ERR_GET_SERVER_VERSION", "Failed to get server version: ${e.message}", e)
+        }
+    }
+
     // MARK: - Offline Mode Management
 
     /**
@@ -1918,6 +1932,40 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         } catch (e: Exception) {
             Log.e(TAG, "Error deriving SRP session", e)
             promise.reject("ERR_SRP_DERIVE_SESSION", "Failed to derive SRP session: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Generate a password or passphrase from a JSON-serialized PasswordSettings object.
+     * The "Type" field selects the generator ("basic" or "diceware").
+     * @param settingsJson The JSON-serialized password settings.
+     * @param promise The promise to resolve with the generated password/passphrase.
+     */
+    @ReactMethod
+    override fun generatePassword(settingsJson: String, promise: Promise) {
+        try {
+            val password = uniffi.aliasvault_core.generatePassword(settingsJson)
+            promise.resolve(password)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error generating password", e)
+            promise.reject("ERR_GENERATE_PASSWORD", "Failed to generate password: ${e.message}", e)
+        }
+    }
+
+    /**
+     * List the bundled Diceware wordlist language codes (first is the default, English).
+     * @param promise The promise to resolve with the array of language codes.
+     */
+    @ReactMethod
+    override fun getDicewareLanguages(promise: Promise) {
+        try {
+            val languages = uniffi.aliasvault_core.getDicewareLanguages()
+            val result = Arguments.createArray()
+            languages.forEach { result.pushString(it) }
+            promise.resolve(result)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting diceware languages", e)
+            promise.reject("ERR_GET_DICEWARE_LANGUAGES", "Failed to get diceware languages: ${e.message}", e)
         }
     }
 }

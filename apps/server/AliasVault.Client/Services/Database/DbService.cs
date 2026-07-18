@@ -977,8 +977,7 @@ public sealed class DbService : IDisposable
         try
         {
             // Read table data for prune operation
-            var tableNames = new[] { "Items", "FieldValues", "Attachments", "TotpCodes", "Passkeys", "Logos" };
-            var tables = await ReadTablesAsJsonAsync(_sqlConnection!, tableNames);
+            var tables = await ReadPruneTablesAsJsonAsync(_sqlConnection!);
 
             var pruneInput = new JsInterop.RustCore.PruneInput
             {
@@ -1053,6 +1052,60 @@ public sealed class DbService : IDisposable
         };
         _dbContext.EncryptionKeys.Add(encryptionKey);
         return encryptionKey;
+    }
+
+    /// <summary>
+    /// Get the per-table SELECT queries clients should run to build `PruneInput`.
+    /// </summary>
+    /// <param name="connection">The SQLite connection to read from.</param>
+    /// <returns>List of TableData objects containing the trimmed table records.</returns>
+    private async Task<List<TableData>> ReadPruneTablesAsJsonAsync(SqliteConnection connection)
+    {
+        var tableQueries = await _rustCore.GetPruneTableQueriesAsync();
+
+        var tables = new List<TableData>();
+
+        foreach (var tableQuery in tableQueries)
+        {
+            var tableName = tableQuery.Name;
+            var query = tableQuery.Query;
+            var tableData = new TableData { Name = tableName };
+
+            // Check if table exists in the database.
+            await using var checkCommand = connection.CreateCommand();
+            checkCommand.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name=@tableName";
+            checkCommand.Parameters.AddWithValue("@tableName", tableName);
+            var exists = await checkCommand.ExecuteScalarAsync();
+
+            if (exists == null)
+            {
+                // Table doesn't exist, add empty table data.
+                tables.Add(tableData);
+                continue;
+            }
+
+            await using var selectCommand = connection.CreateCommand();
+            selectCommand.CommandText = query;
+            await using var reader = await selectCommand.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                var record = new Dictionary<string, object?>();
+                for (var i = 0; i < reader.FieldCount; i++)
+                {
+                    var value = reader.GetValue(i);
+
+                    // Convert DBNull to null for proper JSON serialization.
+                    record[reader.GetName(i)] = value == DBNull.Value ? null : value;
+                }
+
+                tableData.Records.Add(record);
+            }
+
+            tables.Add(tableData);
+        }
+
+        return tables;
     }
 
     /// <summary>

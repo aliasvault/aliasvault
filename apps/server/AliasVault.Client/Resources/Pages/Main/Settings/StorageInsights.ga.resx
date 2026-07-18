@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Page title and description -->
+  <data name="PageTitle">
+    <value>Léargais stórála cruinneacháin</value>
+    <comment>Page title for vault storage insights</comment>
+  </data>
+  <data name="PageDescription">
+    <value>Féach meastachán ar mhéid do chruinneacháin. Chun an fheidhmíocht sioncrónaithe is fearr a fháil, moltar méid do chruinneacháin a choinneáil beag agus míreanna nach bhfuil uait a thuilleadh a scriosadh.</value>
+    <comment>Page description for vault storage insights</comment>
+  </data>
+  <data name="BreadcrumbTitle">
+    <value>Léargais stórála</value>
+    <comment>Breadcrumb title for storage insights page</comment>
+  </data>
+  <!-- Estimated total -->
+  <data name="EstimatedTotalTitle">
+    <value>Méid measta an tseomra cruinneacháin</value>
+    <comment>Title for the estimated total vault size card</comment>
+  </data>
+  <data name="EstimatedTotalDescription">
+    <value>Is meastachán é seo atá ríofa ó do shonraí áitiúla.</value>
+    <comment>Subtext explaining that the estimate is approximate</comment>
+  </data>
+  <!-- Counts -->
+  <data name="CountsTitle">
+    <value>Forbhreathnú</value>
+    <comment>Title for the counts/overview section</comment>
+  </data>
+  <data name="ItemCountLabel">
+    <value>Míreanna</value>
+    <comment>Label for total item count card</comment>
+  </data>
+  <data name="ItemsWithAttachmentsLabel">
+    <value>Míreanna le ceangaltáin</value>
+    <comment>Label for count of items that have at least one attachment</comment>
+  </data>
+  <data name="ItemsWithLogosLabel">
+    <value>Míreanna le lógó</value>
+    <comment>Label for count of items that reference a logo</comment>
+  </data>
+  <!-- Breakdown -->
+  <data name="BreakdownTitle">
+    <value>Miondealú ar úsáid stórála</value>
+    <comment>Title for the breakdown bar section</comment>
+  </data>
+  <data name="BreakdownDescription">
+    <value>Sciar garbh de mhéid an tseomra cruinneacháin de réir catagóire. Is gnách go nglacann ceangaltáin agus lógónna an chuid is mó den spás.</value>
+    <comment>Description for the breakdown bar</comment>
+  </data>
+  <data name="BreakdownCredentialsLabel">
+    <value>Dintiúir</value>
+    <comment>Legend label for credential data slice</comment>
+  </data>
+  <data name="BreakdownAttachmentsLabel">
+    <value>Ceangaltáin</value>
+    <comment>Legend label for attachments slice</comment>
+  </data>
+  <data name="BreakdownLogosLabel">
+    <value>Lógónna</value>
+    <comment>Legend label for logos slice</comment>
+  </data>
+  <data name="BreakdownBaseOverheadLabel">
+    <value>Forchostais bunachar sonraí</value>
+    <comment>Legend label for the fixed SQLite base/schema overhead slice</comment>
+  </data>
+  <!-- Top attachments table -->
+  <data name="TopAttachmentsTitle">
+    <value>Na ceangaltáin is mó</value>
+    <comment>Title for the top attachments table</comment>
+  </data>
+  <data name="TopAttachmentsDescription">
+    <value>Na 10 gceangaltán comhaid is mó. Bain an ceangaltán mura bhfuil sé de dhíth ort a thuilleadh.</value>
+    <comment>Description for the top attachments table</comment>
+  </data>
+  <!-- Top logos table -->
+  <data name="TopLogosTitle">
+    <value>Lógónna is mó</value>
+    <comment>Title for the top logos table</comment>
+  </data>
+  <data name="TopLogosDescription">
+    <value>Na 10 lógó seirbhíse is mó. Athúsáidtear lógónna le haghaidh míreanna leis an bhfearann ​​​​céanna.</value>
+    <comment>Description for the top logos table</comment>
+  </data>
+  <!-- Table column headers -->
+  <data name="ColumnFilename">
+    <value>Ainm comhaid</value>
+    <comment>Table column header for attachment filename</comment>
+  </data>
+  <data name="ColumnSize">
+    <value>Méid</value>
+    <comment>Table column header for size in KB</comment>
+  </data>
+  <data name="ColumnItem">
+    <value>Mír</value>
+    <comment>Table column header for the parent item name</comment>
+  </data>
+  <data name="ColumnCreated">
+    <value>Cruthaithe</value>
+    <comment>Table column header for creation date</comment>
+  </data>
+  <data name="ColumnWebsiteURL">
+    <value>URL an tsuímh ghréasáin</value>
+    <comment>Table column header for logo source domain</comment>
+  </data>
+  <data name="ColumnItemCount">
+    <value>Úsáidte ag</value>
+    <comment>Table column header for the number of items using a logo</comment>
+  </data>
+  <!-- Logo management -->
+  <data name="LogoManagementTitle">
+    <value>Bainistigh lógónna</value>
+    <comment>Title for the logo management section</comment>
+  </data>
+  <data name="LogoManagementDescription">
+    <value>Faightear lógónna ó favicon shuíomh gréasáin gach míre. Is féidir leat gach lógó a scriosadh chun spás a fháil ar ais, nó iad a ath-íoslódáil chun leaganacha feabhsaithe a fháil.</value>
+    <comment>Description for the logo management section</comment>
+  </data>
+  <data name="DeleteAllLogosButton">
+    <value>Scrios na lógónna go léir</value>
+    <comment>Button to delete every logo in the vault</comment>
+  </data>
+  <data name="RedownloadAllLogosButton">
+    <value>Ath-íoslódáil na lógónna go léir</value>
+    <comment>Button to re-fetch favicons for every item with a URL</comment>
+  </data>
+  <data name="DeleteAllLogosConfirmTitle">
+    <value>Scrios gach lógó?</value>
+    <comment>Confirmation modal title for delete-all-logos</comment>
+  </data>
+  <data name="DeleteAllLogosConfirmMessage">
+    <value>Baintear gach lógó stóráilte as do chruinneachán leis seo agus glantar an lógó ar gach dintiúir. Is féidir leat iad a ath-íoslódáil am ar bith. Ar mhaith leat leanúint ar aghaidh?</value>
+    <comment>Confirmation modal body for delete-all-logos</comment>
+  </data>
+  <data name="RedownloadAllLogosConfirmTitle">
+    <value>Ath-íoslódáil na lógónna go léir?</value>
+    <comment>Confirmation modal title for redownload-all-logos</comment>
+  </data>
+  <data name="RedownloadAllLogosConfirmMessage">
+    <value>Athghabhann sé seo an favicon do gach dintiúr a bhfuil URL láithreáin ghréasáin aige, ag cur an lógó atá ann cheana in ionad. Ag brath ar mhéid do chruinnithe, d'fhéadfadh sé seo tamall a thógáil. Lean ar aghaidh?</value>
+    <comment>Confirmation modal body for redownload-all-logos</comment>
+  </data>
+</root>
