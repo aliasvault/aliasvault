@@ -37,11 +37,9 @@ runs:
       run: |
         # Check if files exist and were recently modified
         TARGET_DIRS=(
-          "apps/browser-extension/src/utils/dist/core/identity-generator"
           "apps/browser-extension/src/utils/dist/core/models"
           "apps/browser-extension/src/utils/dist/core/vault"
           "apps/browser-extension/src/utils/dist/core/rust"
-          "apps/mobile-app/utils/dist/core/identity-generator"
           "apps/mobile-app/utils/dist/core/models"
           "apps/mobile-app/utils/dist/core/vault"
         )
