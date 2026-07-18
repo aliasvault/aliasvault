@@ -18,7 +18,7 @@ Languages with flat lists have three files:
 <code>/lastnames.txt
 ```
 
-Languages with decade-based first names (currently `de`, `it` and `ro`) split the first
+Languages with decade-based first names split the first
 names per birth decade so generated first names match names that were popular around
 the generated birth year:
 
