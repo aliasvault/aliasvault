@@ -1,0 +1,15 @@
+<Project>
+
+  <!--
+    Central build settings inherited by every project under apps/server.
+
+    NuGet package vulnerability audit warnings (NU1901-NU1904) should stay
+    visible but must not fail the build. This keeps interactive builds (e.g.
+    building an older version whose dependencies now have advisories) working
+    while still surfacing the notice. CI can re-promote these to errors if desired.
+  -->
+  <PropertyGroup>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+  </PropertyGroup>
+
+</Project>
