@@ -2,7 +2,7 @@ import initSqlJs, { Database, SqlJsStatic, SqlValue } from 'sql.js';
 import { browser } from 'wxt/browser';
 
 import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
-import { devLog } from '@/utils/DevLogger';
+import { devLog } from '@/utils/devLogger/DevLogger';
 
 import init, { getPruneTableQueries, getSyncableTableNames, mergeVaults, pruneVault } from './dist/core/rust/aliasvault_core.js';
 

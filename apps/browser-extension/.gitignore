@@ -25,6 +25,9 @@ web-ext.config.ts
 *.sln
 *.sw?
 
+# Local dev-log channel filter (see src/utils/devLogger/devlog.local.example.ts)
+src/utils/devLogger/devlog.local.ts
+
 # Test related output files
 playwright-report
 tests/screenshots

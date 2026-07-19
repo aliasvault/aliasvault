@@ -2,7 +2,7 @@ import { useCallback, useRef } from 'react';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-import { devLog } from '@/utils/DevLogger';
+import { devLog } from '@/utils/devLogger/DevLogger';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import type { VaultMutationOptions, VaultMutationScope } from '@/utils/types/VaultMutationScope';

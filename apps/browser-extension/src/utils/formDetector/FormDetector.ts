@@ -1,4 +1,4 @@
-import { devLog } from "@/utils/DevLogger";
+import { devLog } from "@/utils/devLogger/DevLogger";
 
 import { CombinedEmailVerificationPatterns, CombinedFieldExclusionPatterns, CombinedFieldPatterns, CombinedGenderOptionPatterns, CombinedStopWords, FieldPatternEntry, includeTerms, specificIncludeTerms } from "./FieldPatterns";
 import { DetectedFieldType, FormFields } from "./types/FormFields";

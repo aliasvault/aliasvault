@@ -11,7 +11,7 @@ import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAu
 
 import { isAvAutofillAllowed, isAvSuppressSave } from '@/utils/autofill/Autofill';
 import { DEFAULT_POPUP_TYPE, isPopupType, popupTypeForFieldType, POPUP_TYPES, type PopupType } from '@/utils/autofill/PopupTypes';
-import { devLog } from '@/utils/DevLogger';
+import { devLog } from '@/utils/devLogger/DevLogger';
 import type { Item } from '@/utils/dist/core/models/vault';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
