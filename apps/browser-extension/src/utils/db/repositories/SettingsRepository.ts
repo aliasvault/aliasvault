@@ -1,6 +1,6 @@
-import { getAvailableLanguages } from '@/utils/dist/core/identity-generator';
 import { DEFAULT_PASSWORD_LENGTH, DEFAULT_WORD_COUNT, DEFAULT_LANGUAGE_CODE, matchAvailableLanguage } from '@/utils/dist/core/models/defaults';
 import type { EncryptionKey, PasswordSettings, TotpCode, Attachment } from '@/utils/dist/core/models/vault';
+import { getIdentityLanguages } from '@/utils/RustCore';
 
 import { BaseRepository } from '../BaseRepository';
 import { SettingsQueries } from '../queries/SettingsQueries';
@@ -156,14 +156,15 @@ export class SettingsRepository extends BaseRepository {
    * Get the effective identity language. Uses the explicit override when set, otherwise matches the
    * browser language to one of the identity generator's available languages via the shared
    * region-variant alternative-code table (e.g. "de-CH" -> "de"), falling back to English.
+   * Async because the available languages are owned by the Rust core.
    * @returns The effective language code
    */
-  public getEffectiveIdentityLanguage(): string {
+  public async getEffectiveIdentityLanguage(): Promise<string> {
     const storedLanguage = this.getDefaultIdentityLanguage();
     if (storedLanguage) {
       return storedLanguage;
     }
-    return matchAvailableLanguage(navigator.language, getAvailableLanguages()) ?? DEFAULT_LANGUAGE_CODE;
+    return matchAvailableLanguage(navigator.language, await getIdentityLanguages()) ?? DEFAULT_LANGUAGE_CODE;
   }
 
   /**
