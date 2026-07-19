@@ -70,9 +70,7 @@ public class VaultController(
             return Unauthorized();
         }
 
-        // "Migrated to v2" is defined as having ANY manifest-v1 row — identical to the V1 controller's guard
-        // (V1/VaultController.HasMigratedToV2). The two checks MUST agree: if /status said "legacy" while the
-        // guard said "migrated", the client would call /v1/Vault and get a 426 it didn't expect.
+        // Check if the user has migrated to v2 by checking if they have any manifest-v1 rows.
         var isV2 = await context.VaultManifests.AnyAsync(x => x.OwnerUserId == user.Id && x.StorageFormat == ManifestFormat);
 
         // Content revision = the highest RevisionNumber among the user's manifest-v1 rows. Null for legacy users.
@@ -181,7 +179,7 @@ public class VaultController(
     /// <summary>
     /// Atomic upload. Inserts any new blobs, validates every referenced hash exists, inserts a new Vaults row
     /// for the new manifest, replaces blob references, optionally upserts metadata, optionally syncs email
-    /// routing — all in a single DB transaction.
+    /// routing, all in a single DB transaction on purpose.
     /// </summary>
     /// <param name="model">Upload request DTO.</param>
     /// <param name="clientHeader">Client header.</param>
@@ -203,8 +201,7 @@ public class VaultController(
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USERNAME_MISMATCH, 400));
         }
 
-        // Take a SRP-settings snapshot from the user's latest vault row (v1 or v2 — either works) so we can
-        // preserve them on the new v2 row. SRP auth is unchanged in this PoC.
+        // Take a SRP-settings snapshot from the user's latest vault row so we can preserve them on the new v2 row.
         var srpSnapshot = await context.VaultManifests
             .Where(x => x.OwnerUserId == user.Id)
             .OrderByDescending(x => x.RevisionNumber)
@@ -213,8 +210,7 @@ public class VaultController(
 
         if (srpSnapshot == null)
         {
-            // No vault at all yet — registration-time path. Not handled by PoC; legacy /v1/Auth/register
-            // still creates the initial vault. Reject for now.
+            // No previous vault exists yet. TODO: test v2 registration flow to ensure this ensures a vault record always is created during registration.
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
         }
 
@@ -235,120 +231,123 @@ public class VaultController(
             });
         }
 
-        await using var tx = await context.Database.BeginTransactionAsync();
-
-        // 1) Upsert any new blob objects this client is contributing. (hash, userId) is the PK so re-upload of
-        // an existing blob is a no-op. Clients normally pre-upload blobs via POST /v2/Vault/blobs and send only
-        // references here, but inline NewBlobs remain supported for small payloads.
-        if (model.NewBlobs.Count > 0)
+        // The DbContext uses a retrying execution strategy (EnableRetryOnFailure), which forbids user-initiated
+        // transactions unless the whole unit runs inside the strategy so it can be retried atomically.
+        var strategy = context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync<IActionResult>(async () =>
         {
-            if (!await TryUpsertBlobObjectsAsync(context, user.Id, model.NewBlobs))
+            await using var tx = await context.Database.BeginTransactionAsync();
+
+            // 1) Upsert any new blob objects this client is contributing. (hash, userId) is the PK so re-upload of
+            // an existing blob is a no-op. Clients normally pre-upload blobs via POST /v2/Vault/blobs and send only
+            // references here, but inline NewBlobs remain supported for small payloads.
+            if (model.NewBlobs.Count > 0)
             {
-                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
+                if (!await TryUpsertBlobObjectsAsync(context, user.Id, model.NewBlobs))
+                {
+                    return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
+                }
+
+                await context.SaveChangesAsync();
+            }
+
+            // 2) Validate every referenced hash exists for this user. If any missing, abort and tell the client which.
+            if (model.BlobReferences.Count > 0)
+            {
+                var refHashes = model.BlobReferences.Select(r => r.Hash).Distinct().ToList();
+                var presentHashes = await context.VaultBlobObjects
+                    .Where(b => b.OwnerUserId == user.Id && refHashes.Contains(b.Hash))
+                    .Select(b => b.Hash)
+                    .ToListAsync();
+                var missing = refHashes.Except(presentHashes).ToList();
+                if (missing.Count > 0)
+                {
+                    await tx.RollbackAsync();
+                    return Ok(new UploadResponse
+                    {
+                        Status = VaultStatus.Ok,
+                        NewManifestRevision = serverRevision,
+                        MissingBlobHashes = missing,
+                    });
+                }
+            }
+
+            // 3) Insert the new Vaults row in manifest-v1 format. VaultBlob (legacy column) is left empty for v2 rows.
+            var newVault = new VaultManifest
+            {
+                OwnerUserId = user.Id,
+
+                // Same logical "main" manifest as the user's existing rows, reuse its ManifestId so this revision
+                // stays grouped with the prior ones (legacy rows have been backfilled with a per-user ManifestId).
+                ManifestId = srpSnapshot.ManifestId,
+                Category = VaultManifestCategory.Main,
+                VaultBlob = string.Empty,
+                StorageFormat = ManifestFormat,
+                ManifestBlob = model.ManifestBlob,
+                ManifestCiphertextHash = model.ManifestCiphertextHash,
+                Version = model.Version,
+                RevisionNumber = newManifestRevision,
+                FileSize = FileHelper.Base64StringToKilobytes(model.ManifestBlob),
+                CredentialsCount = model.CredentialsCount,
+                EmailClaimsCount = model.EmailRouting.EmailAddressList.Count,
+                Salt = srpSnapshot.Salt,
+                Verifier = srpSnapshot.Verifier,
+                EncryptionType = srpSnapshot.EncryptionType,
+                EncryptionSettings = srpSnapshot.EncryptionSettings,
+                Client = clientHeader,
+                CreatedAt = timeProvider.UtcNow,
+                UpdatedAt = timeProvider.UtcNow,
+            };
+
+            await ApplyVaultRetention(context, user.Id, newVault);
+            context.VaultManifests.Add(newVault);
+            await context.SaveChangesAsync();
+
+            // 4) Replace blob references for this new vault id.
+            foreach (var dto in model.BlobReferences)
+            {
+                context.VaultBlobReferences.Add(new VaultBlobReference
+                {
+                    ManifestRevisionId = newVault.RevisionId,
+                    BlobHash = dto.Hash,
+                });
+            }
+
+            // 5) Optional data bucket upserts (settings, etc.). Each insert adds a new revision row (history); the
+            // revision is server-assigned (currentRevision: null = "increment from whatever the server has"). The
+            // bundled path does not do per-bucket concurrency.
+            var newBucketRevisions = new List<BucketRevision>();
+            foreach (var bucket in model.Buckets)
+            {
+                if (string.IsNullOrEmpty(bucket.Blob))
+                {
+                    continue;
+                }
+
+                var rev = await UpsertBucketAsync(context, user.Id, bucket.Category, bucket.Blob, bucket.CiphertextHash, currentRevision: null);
+                newBucketRevisions.Add(new BucketRevision { Category = bucket.Category, Revision = rev });
+            }
+
+            // 6) Email routing.
+            if (model.EmailRouting.EmailAddressList.Count > 0)
+            {
+                await UpdateUserEmailClaimsAsync(context, user, model.EmailRouting.EmailAddressList);
+            }
+
+            if (!string.IsNullOrEmpty(model.EncryptionPublicKey))
+            {
+                await UpdateUserPublicKeyAsync(context, user.Id, model.EncryptionPublicKey);
             }
 
             await context.SaveChangesAsync();
-        }
+            await tx.CommitAsync();
 
-        // 2) Validate every referenced hash exists for this user. If any missing, abort and tell the client which.
-        if (model.BlobReferences.Count > 0)
-        {
-            var refHashes = model.BlobReferences.Select(r => r.Hash).Distinct().ToList();
-            var presentHashes = await context.VaultBlobObjects
-                .Where(b => b.OwnerUserId == user.Id && refHashes.Contains(b.Hash))
-                .Select(b => b.Hash)
-                .ToListAsync();
-            var missing = refHashes.Except(presentHashes).ToList();
-            if (missing.Count > 0)
+            return Ok(new UploadResponse
             {
-                await tx.RollbackAsync();
-                return Ok(new UploadResponse
-                {
-                    Status = VaultStatus.Ok,
-                    NewManifestRevision = serverRevision,
-                    MissingBlobHashes = missing,
-                });
-            }
-        }
-
-        // 3) Insert the new Vaults row in manifest-v1 format. VaultBlob (legacy column) is left empty for v2 rows.
-        var newVault = new VaultManifest
-        {
-            OwnerUserId = user.Id,
-
-            // Same logical "main" manifest as the user's existing rows — reuse its ManifestId so this revision
-            // stays grouped with the prior ones (legacy rows were backfilled with a per-user ManifestId).
-            ManifestId = srpSnapshot.ManifestId,
-            Category = VaultManifestCategory.Main,
-            VaultBlob = string.Empty,
-            StorageFormat = ManifestFormat,
-            ManifestBlob = model.ManifestBlob,
-            ManifestCiphertextHash = model.ManifestCiphertextHash,
-            Version = model.Version,
-            RevisionNumber = newManifestRevision,
-            FileSize = FileHelper.Base64StringToKilobytes(model.ManifestBlob),
-            CredentialsCount = model.CredentialsCount,
-            EmailClaimsCount = model.EmailRouting.EmailAddressList.Count,
-            Salt = srpSnapshot.Salt,
-            Verifier = srpSnapshot.Verifier,
-            EncryptionType = srpSnapshot.EncryptionType,
-            EncryptionSettings = srpSnapshot.EncryptionSettings,
-            Client = clientHeader,
-            CreatedAt = timeProvider.UtcNow,
-            UpdatedAt = timeProvider.UtcNow,
-        };
-
-        // Retention on legacy v1 + v2 rows lumped together — for the PoC we keep the existing policy, treating
-        // them as a single revision history per user.
-        await ApplyVaultRetention(context, user.Id, newVault);
-        context.VaultManifests.Add(newVault);
-        await context.SaveChangesAsync();
-
-        // 4) Replace blob references for this new vault id.
-        foreach (var dto in model.BlobReferences)
-        {
-            context.VaultBlobReferences.Add(new VaultBlobReference
-            {
-                ManifestRevisionId = newVault.RevisionId,
-                BlobHash = dto.Hash,
+                Status = VaultStatus.Ok,
+                NewManifestRevision = newManifestRevision,
+                NewBucketRevisions = newBucketRevisions,
             });
-        }
-
-        // 5) Optional data bucket upserts (settings, etc.). Each insert adds a new revision row (history); the
-        // revision is server-assigned (currentRevision: null = "increment from whatever the server has"). The
-        // bundled path does not do per-bucket concurrency.
-        var newBucketRevisions = new List<BucketRevision>();
-        foreach (var bucket in model.Buckets)
-        {
-            if (string.IsNullOrEmpty(bucket.Blob))
-            {
-                continue;
-            }
-
-            var rev = await UpsertBucketAsync(context, user.Id, bucket.Category, bucket.Blob, bucket.CiphertextHash, currentRevision: null);
-            newBucketRevisions.Add(new BucketRevision { Category = bucket.Category, Revision = rev });
-        }
-
-        // 6) Email routing — same plaintext logic as v1 controller does today. (The plan calls for moving this
-        // to a dedicated endpoint; deferred — for now we keep it bundled so behavior matches v1.)
-        if (model.EmailRouting.EmailAddressList.Count > 0)
-        {
-            await UpdateUserEmailClaimsAsync(context, user, model.EmailRouting.EmailAddressList);
-        }
-
-        if (!string.IsNullOrEmpty(model.EncryptionPublicKey))
-        {
-            await UpdateUserPublicKeyAsync(context, user.Id, model.EncryptionPublicKey);
-        }
-
-        await context.SaveChangesAsync();
-        await tx.CommitAsync();
-
-        return Ok(new UploadResponse
-        {
-            Status = VaultStatus.Ok,
-            NewManifestRevision = newManifestRevision,
-            NewBucketRevisions = newBucketRevisions,
         });
     }
 
@@ -446,9 +445,8 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Download a batch of encrypted blobs by hash. POST with a body for the same URL-length reason as
-    /// blobs/missing. Returns base64-encoded payloads in JSON because the PoC keeps the codec language-agnostic;
-    /// a future revision should switch to multipart binary.
+    /// Download a batch of encrypted blobs by hash. TODO: Returns base64-encoded payloads in JSON
+    /// because for now we kept the codec language-agnostic. Look into switching to multipart binary in the future.
     /// </summary>
     /// <param name="model">Hash list request.</param>
     /// <returns>List of blob DTOs.</returns>
@@ -516,7 +514,7 @@ public class VaultController(
 
     /// <summary>
     /// Upserts a batch of encrypted blob objects for a user in one round-trip. Existing blobs (same hash) only get
-    /// their LastReferencedAt bumped; new blobs are validated and inserted. Does not call SaveChanges — the caller
+    /// their LastReferencedAt bumped; new blobs are validated and inserted. Does not call SaveChanges, the caller
     /// owns the transaction boundary.
     /// </summary>
     /// <param name="context">DbContext to operate on.</param>
@@ -535,7 +533,7 @@ public class VaultController(
         {
             if (existing.TryGetValue(dto.Hash, out var row))
             {
-                // Already have it (or a duplicate within this batch) — bump LastReferencedAt so GC leaves it alone.
+                // Already have it (or a duplicate within this batch), bump LastReferencedAt so GC leaves it alone.
                 row.LastReferencedAt = nowUtc;
                 continue;
             }
@@ -552,7 +550,7 @@ public class VaultController(
 
             if (data.Length < 16)
             {
-                // Anything smaller than IV+tag overhead can't be valid AES-GCM ciphertext — reject the upload.
+                // Anything smaller than IV+tag overhead can't be valid AES-GCM ciphertext, reject the upload.
                 return false;
             }
 
@@ -628,9 +626,6 @@ public class VaultController(
 
     private async Task UpdateUserEmailClaimsAsync(AliasServerDbContext context, AliasVaultUser user, List<string> newEmailAddresses)
     {
-        // Duplicated minimally from VaultController to avoid coupling the two controllers across this PoC. If
-        // the v2 path is kept, this should be extracted into a shared service. For now: same semantics, same
-        // results — sanitize, register new claims for supported private domains, disable claims no longer used.
         newEmailAddresses = newEmailAddresses.Select(EmailHelper.SanitizeEmail).Distinct().ToList();
         var userOwnedEmailClaims = await context.UserEmailClaims.Where(x => x.UserId == user.Id).ToListAsync();
         var processed = new List<string>();

@@ -10,7 +10,7 @@ namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 using System.Text.Json.Serialization;
 
 /// <summary>
-/// Known data-bucket categories for the avux-v2 storage format. Each value is one small, independently-versioned,
+/// Known data-bucket categories for the manifest-v1 storage format. Each value is one small, independently-versioned,
 /// user-scoped category of encrypted data kept out of the main vault content manifest so it syncs cheaply.
 /// Serialized as its string name on the wire (not the numeric value) and stored as a string in the database.
 /// Adding a new kind requires a server-side rollout first, because the server reasons about kinds for

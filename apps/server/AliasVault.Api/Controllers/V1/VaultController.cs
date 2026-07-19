@@ -167,8 +167,8 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         }
 
         // Retrieve latest vault of user which contains the current encryption settings.
-        var latestVault = await context.Vaults
-            .Where(x => x.UserId == user.Id)
+        var latestVault = await context.VaultManifests
+            .Where(x => x.OwnerUserId == user.Id)
             .OrderByDescending(x => x.RevisionNumber)
             .Select(x => new { x.Salt, x.Verifier, x.EncryptionType, x.EncryptionSettings, x.RevisionNumber, x.Version, x.ManifestId })
             .FirstAsync();
@@ -281,10 +281,10 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
 
         // Check if the provided revision number is equal to the latest revision number.
         // If not, then the client is trying to update an older vault which we don't allow to prevent data loss.
-        var latestVault = await context.Vaults
-            .Where(x => x.UserId == user.Id)
+        var latestVault = await context.VaultManifests
+            .Where(x => x.OwnerUserId == user.Id)
             .OrderByDescending(x => x.RevisionNumber)
-            .Select(x => new { x.RevisionNumber, x.Version })
+            .Select(x => new { x.RevisionNumber, x.Version, x.ManifestId })
             .FirstAsync();
         if (VersionHelper.IsVersionOlder(model.Version, latestVault.Version))
         {
@@ -306,7 +306,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         {
             OwnerUserId = user.Id,
 
-            // Legacy revision of the same logical main manifest — reuse the existing ManifestId to keep it grouped.
+            // Legacy revision of the same logical main manifest, reuse the existing ManifestId to keep it grouped.
             ManifestId = latestVault.ManifestId,
             Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main,
             VaultBlob = model.Blob,

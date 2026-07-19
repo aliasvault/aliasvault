@@ -135,28 +135,33 @@ public class TwoFactorAuthController(IDbContextFactory<AliasServerDbContext> dbC
         }
 
         await using var context = await dbContextFactory.CreateDbContextAsync();
-        await using var transaction = await context.Database.BeginTransactionAsync();
 
-        try
+        var strategy = context.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
         {
-            // Disable 2FA and remove any existing authenticator key(s) and recovery codes.
-            await GetUserManager().SetTwoFactorEnabledAsync(user, false);
+            await using var transaction = await context.Database.BeginTransactionAsync();
 
-            context.UserTokens.RemoveRange(
-                await context.UserTokens.Where(
-                    x => x.UserId == user.Id &&
-                         (x.Name == "AuthenticatorKey" || x.Name == "RecoveryCodes")).ToListAsync());
+            try
+            {
+                // Disable 2FA and remove any existing authenticator key(s) and recovery codes.
+                await GetUserManager().SetTwoFactorEnabledAsync(user, false);
 
-            await context.SaveChangesAsync();
-            await transaction.CommitAsync();
+                context.UserTokens.RemoveRange(
+                    await context.UserTokens.Where(
+                        x => x.UserId == user.Id &&
+                             (x.Name == "AuthenticatorKey" || x.Name == "RecoveryCodes")).ToListAsync());
 
-            await authLoggingService.LogAuthEventSuccessAsync(user.UserName!, AuthEventType.TwoFactorAuthDisable);
-            return Ok();
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        });
+
+        await authLoggingService.LogAuthEventSuccessAsync(user.UserName!, AuthEventType.TwoFactorAuthDisable);
+        return Ok();
     }
 }
