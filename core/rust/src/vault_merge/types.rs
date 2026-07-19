@@ -9,6 +9,10 @@ pub struct TableConfig {
     /// When empty, uses "Id" column for matching.
     /// When set, these columns are concatenated to form the composite key.
     pub composite_key_columns: &'static [&'static str],
+    /// The single-column primary key used to address a row in generated UPDATE statements
+    /// (the WHERE clause) and to identify local rows. Defaults to "Id"; tables whose primary
+    /// key is a different column (e.g. Settings keyed by "Key") override this.
+    pub primary_key: &'static str,
 }
 
 impl TableConfig {
@@ -16,11 +20,17 @@ impl TableConfig {
         Self {
             name,
             composite_key_columns: &[],
+            primary_key: "Id",
         }
     }
 
     pub const fn with_composite_key(mut self, columns: &'static [&'static str]) -> Self {
         self.composite_key_columns = columns;
+        self
+    }
+
+    pub const fn with_primary_key(mut self, column: &'static str) -> Self {
+        self.primary_key = column;
         self
     }
 
@@ -31,11 +41,7 @@ impl TableConfig {
 }
 
 /// All tables that need LWW merge.
-/// FieldValues uses composite key (ItemId + FieldKey) for merging.
-/// Logos uses composite key (Source): Id is a per-client random GUID but Source is the natural unique
-/// key (schema enforces UNIQUE(Source)). Merging by Source collapses two clients' rows for the same
-/// domain into one — and the composite-key path keeps the local Id on conflict, so Items.LogoId stays
-/// valid — instead of the by-Id path minting a second same-Source row that breaks materialize.
+/// Allows for specifying optional (custom) composite key columns and primary key columns for each table.
 pub static SYNCABLE_TABLES: &[TableConfig] = &[
     TableConfig::new("Items"),
     TableConfig::new("FieldValues").with_composite_key(&["ItemId", "FieldKey"]),
@@ -48,6 +54,8 @@ pub static SYNCABLE_TABLES: &[TableConfig] = &[
     TableConfig::new("FieldDefinitions"),
     TableConfig::new("FieldHistories"),
     TableConfig::new("Logos").with_composite_key(&["Source"]),
+    TableConfig::new("EncryptionKeys"),
+    TableConfig::new("Settings").with_primary_key("Key"),
 ];
 
 /// List of syncable table names (for clients to know which tables to read).
@@ -63,4 +71,6 @@ pub const SYNCABLE_TABLE_NAMES: &[&str] = &[
     "FieldDefinitions",
     "FieldHistories",
     "Logos",
+    "EncryptionKeys",
+    "Settings",
 ];

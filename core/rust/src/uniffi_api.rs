@@ -351,7 +351,9 @@ mod tests {
         let names = get_syncable_table_names();
         assert!(names.contains(&"Items".to_string()));
         assert!(names.contains(&"FieldValues".to_string()));
-        assert_eq!(names.len(), 11);
+        assert!(names.contains(&"Settings".to_string()));
+        assert!(names.contains(&"EncryptionKeys".to_string()));
+        assert_eq!(names.len(), 13);
     }
 
     #[test]

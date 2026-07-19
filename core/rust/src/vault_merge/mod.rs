@@ -132,10 +132,17 @@ pub fn merge_vaults(input: MergeInput) -> VaultResult<MergeOutput> {
                 local_records,
                 server_records,
                 table_config.composite_key_columns,
+                table_config.primary_key,
                 &mut total_stats,
             )
         } else {
-            merge_table_by_id(table_name, local_records, server_records, &mut total_stats)
+            merge_table_by_id(
+                table_name,
+                local_records,
+                server_records,
+                table_config.primary_key,
+                &mut total_stats,
+            )
         };
 
         statements.extend(table_statements);
@@ -158,27 +165,29 @@ pub fn merge_vaults_json(input_json: &str) -> VaultResult<String> {
     Ok(output_json)
 }
 
-/// Merge table records by Id (standard merge).
+/// Merge table records by their primary-key column (standard merge).
+/// `primary_key` is the column that identifies a row (usually "Id"; "Key" for Settings).
 /// Returns SQL statements to apply to local database.
 fn merge_table_by_id(
     table_name: &str,
     local_records: &[Record],
     server_records: &[Record],
+    primary_key: &str,
     stats: &mut MergeStats,
 ) -> Vec<SqlStatement> {
     let mut statements: Vec<SqlStatement> = Vec::new();
 
-    // Create map of server records by Id
+    // Create map of server records by primary key
     let mut server_map: HashMap<String, &Record> = HashMap::new();
     for record in server_records {
-        if let Some(id) = get_record_id(record) {
+        if let Some(id) = get_record_pk(record, primary_key) {
             server_map.insert(id, record);
         }
     }
 
     // Process local records
     for local_record in local_records {
-        let local_id = match get_record_id(local_record) {
+        let local_id = match get_record_pk(local_record, primary_key) {
             Some(id) => id,
             None => continue,
         };
@@ -193,7 +202,7 @@ fn merge_table_by_id(
                     // Server wins - generate UPDATE
                     stats.conflicts += 1;
                     stats.records_from_server += 1;
-                    if let Some(stmt) = generate_update_sql(table_name, server_record, &local_id) {
+                    if let Some(stmt) = generate_update_sql(table_name, server_record, &local_id, primary_key) {
                         statements.push(stmt);
                     }
                 }
@@ -227,6 +236,7 @@ fn merge_table_by_composite_key(
     local_records: &[Record],
     server_records: &[Record],
     key_columns: &[&str],
+    primary_key: &str,
     stats: &mut MergeStats,
 ) -> Vec<SqlStatement> {
     let mut statements: Vec<SqlStatement> = Vec::new();
@@ -249,7 +259,7 @@ fn merge_table_by_composite_key(
     for local_record in local_records {
         let composite_key = get_composite_key(local_record, key_columns);
 
-        let local_id = match get_record_id(local_record) {
+        let local_id = match get_record_pk(local_record, primary_key) {
             Some(id) => id,
             None => continue,
         };
@@ -264,7 +274,7 @@ fn merge_table_by_composite_key(
                     // Server wins - update with server data but keep local Id
                     stats.conflicts += 1;
                     stats.records_from_server += 1;
-                    if let Some(stmt) = generate_update_sql(table_name, server_record, &local_id) {
+                    if let Some(stmt) = generate_update_sql(table_name, server_record, &local_id, primary_key) {
                         statements.push(stmt);
                     }
                 }
@@ -291,9 +301,9 @@ fn merge_table_by_composite_key(
     statements
 }
 
-/// Get the Id field from a record.
-fn get_record_id(record: &Record) -> Option<String> {
-    record.get("Id").and_then(|v| v.as_str()).map(String::from)
+/// Get the primary-key field (by column name) from a record.
+fn get_record_pk(record: &Record, primary_key: &str) -> Option<String> {
+    record.get(primary_key).and_then(|v| v.as_str()).map(String::from)
 }
 
 /// Get the UpdatedAt timestamp from a record.
@@ -356,14 +366,14 @@ fn generate_insert_sql(table_name: &str, record: &Record) -> Option<SqlStatement
 }
 
 /// Generate an UPDATE SQL statement for a record.
-/// Updates all columns except Id, which is used in the WHERE clause.
-fn generate_update_sql(table_name: &str, record: &Record, id: &str) -> Option<SqlStatement> {
+/// Updates all columns except the primary-key column, which is used in the WHERE clause.
+fn generate_update_sql(table_name: &str, record: &Record, id: &str, primary_key: &str) -> Option<SqlStatement> {
     if record.is_empty() {
         return None;
     }
 
-    // Sort column names for consistent ordering, excluding Id
-    let mut columns: Vec<&String> = record.keys().filter(|c| *c != "Id").collect();
+    // Sort column names for consistent ordering, excluding the primary-key column
+    let mut columns: Vec<&String> = record.keys().filter(|c| c.as_str() != primary_key).collect();
     columns.sort();
 
     if columns.is_empty() {
@@ -377,9 +387,9 @@ fn generate_update_sql(table_name: &str, record: &Record, id: &str) -> Option<Sq
         .join(", ");
 
     let mut params: Vec<serde_json::Value> = columns.iter().map(|c| record[*c].clone()).collect();
-    params.push(serde_json::json!(id)); // Add Id for WHERE clause
+    params.push(serde_json::json!(id)); // Add primary key for WHERE clause
 
-    let sql = format!("UPDATE {} SET {} WHERE Id = ?", table_name, set_clause);
+    let sql = format!("UPDATE {} SET {} WHERE {} = ?", table_name, set_clause, primary_key);
 
     Some(SqlStatement { sql, params })
 }
@@ -402,7 +412,7 @@ mod tests {
         let server = vec![make_record("1", "2024-01-01T00:00:00Z")];
         let mut stats = MergeStats::default();
 
-        let statements = merge_table_by_id("Test", &local, &server, &mut stats);
+        let statements = merge_table_by_id("Test", &local, &server, "Id", &mut stats);
 
         assert_eq!(stats.records_from_local, 1);
         assert_eq!(stats.records_from_server, 0);
@@ -415,7 +425,7 @@ mod tests {
         let server = vec![make_record("1", "2024-01-02T00:00:00Z")];
         let mut stats = MergeStats::default();
 
-        let statements = merge_table_by_id("Test", &local, &server, &mut stats);
+        let statements = merge_table_by_id("Test", &local, &server, "Id", &mut stats);
 
         assert_eq!(stats.records_from_server, 1);
         assert_eq!(stats.conflicts, 1);
@@ -429,7 +439,7 @@ mod tests {
         let server = vec![make_record("1", "2024-01-01T00:00:00Z")];
         let mut stats = MergeStats::default();
 
-        let statements = merge_table_by_id("Test", &local, &server, &mut stats);
+        let statements = merge_table_by_id("Test", &local, &server, "Id", &mut stats);
 
         assert_eq!(stats.records_inserted, 1);
         assert_eq!(statements.len(), 1);
@@ -442,7 +452,7 @@ mod tests {
         let server: Vec<Record> = vec![];
         let mut stats = MergeStats::default();
 
-        let statements = merge_table_by_id("Test", &local, &server, &mut stats);
+        let statements = merge_table_by_id("Test", &local, &server, "Id", &mut stats);
 
         assert_eq!(stats.records_created_locally, 1);
         assert!(statements.is_empty()); // No SQL needed
@@ -483,13 +493,13 @@ mod tests {
     #[test]
     fn logos_merge_by_source_collapses_distinct_ids_and_keeps_local_id() {
         // Two clients minted different Ids for github.com. Merging by Source (server newer) must UPDATE
-        // the local row in place — keeping the local Id so Items.LogoId stays valid — not INSERT a
+        // the local row in place, keeping the local Id so Items.LogoId stays valid, not INSERT a
         // second same-Source row (which would violate UNIQUE(Source) / break materialize).
         let local = vec![logo("local-id", "github.com", "2024-01-01T00:00:00Z")];
         let server = vec![logo("server-id", "github.com", "2024-01-02T00:00:00Z")];
         let mut stats = MergeStats::default();
 
-        let statements = merge_table_by_composite_key("Logos", &local, &server, &["Source"], &mut stats);
+        let statements = merge_table_by_composite_key("Logos", &local, &server, &["Source"], "Id", &mut stats);
 
         assert_eq!(stats.conflicts, 1);
         assert_eq!(stats.records_inserted, 0, "no second same-Source row inserted");
@@ -498,6 +508,61 @@ mod tests {
         assert!(statements[0].sql.ends_with("WHERE Id = ?"));
         // WHERE-clause Id is the LOCAL id (last param), so the local row is updated in place.
         assert_eq!(statements[0].params.last().unwrap(), &serde_json::json!("local-id"));
+    }
+
+    fn setting(key: &str, value: &str, updated_at: &str) -> Record {
+        let mut r = HashMap::new();
+        r.insert("Key".to_string(), serde_json::json!(key));
+        r.insert("Value".to_string(), serde_json::json!(value));
+        r.insert("UpdatedAt".to_string(), serde_json::json!(updated_at));
+        r
+    }
+
+    #[test]
+    fn settings_merge_by_key_server_wins_updates_by_key() {
+        // Settings has no "Id" column, its primary key is "Key". A newer server value must UPDATE the
+        // local row addressed by Key, not be skipped (which is what would happen if merge assumed "Id").
+        let local = vec![setting("theme", "light", "2024-01-01T00:00:00Z")];
+        let server = vec![setting("theme", "dark", "2024-01-02T00:00:00Z")];
+        let mut stats = MergeStats::default();
+
+        let statements = merge_table_by_id("Settings", &local, &server, "Key", &mut stats);
+
+        assert_eq!(stats.conflicts, 1);
+        assert_eq!(stats.records_from_server, 1);
+        assert_eq!(statements.len(), 1);
+        assert!(statements[0].sql.starts_with("UPDATE Settings SET"));
+        assert!(statements[0].sql.ends_with("WHERE Key = ?"));
+        // The Key column is used in WHERE, not in the SET clause.
+        assert!(!statements[0].sql.contains("Key = ?,"));
+        assert_eq!(statements[0].params.last().unwrap(), &serde_json::json!("theme"));
+    }
+
+    #[test]
+    fn settings_merge_by_key_local_and_server_only_rows() {
+        let local = vec![setting("theme", "dark", "2024-01-02T00:00:00Z")];
+        let server = vec![setting("language", "en", "2024-01-01T00:00:00Z")];
+        let mut stats = MergeStats::default();
+
+        let statements = merge_table_by_id("Settings", &local, &server, "Key", &mut stats);
+
+        assert_eq!(stats.records_created_locally, 1);
+        assert_eq!(stats.records_inserted, 1);
+        assert_eq!(statements.len(), 1);
+        assert!(statements[0].sql.starts_with("INSERT OR REPLACE INTO Settings"));
+    }
+
+    #[test]
+    fn settings_and_encryption_keys_are_syncable() {
+        let settings = SYNCABLE_TABLES.iter().find(|t| t.name == "Settings").unwrap();
+        assert_eq!(settings.primary_key, "Key");
+        assert!(!settings.uses_composite_key());
+
+        let keys = SYNCABLE_TABLES.iter().find(|t| t.name == "EncryptionKeys").unwrap();
+        assert_eq!(keys.primary_key, "Id");
+
+        assert!(SYNCABLE_TABLE_NAMES.contains(&"Settings"));
+        assert!(SYNCABLE_TABLE_NAMES.contains(&"EncryptionKeys"));
     }
 
     #[test]
@@ -522,7 +587,7 @@ mod tests {
     #[test]
     fn test_generate_update_sql() {
         let record = make_record("test-id", "2024-01-01T00:00:00Z");
-        let stmt = generate_update_sql("Items", &record, "test-id").unwrap();
+        let stmt = generate_update_sql("Items", &record, "test-id", "Id").unwrap();
 
         assert!(stmt.sql.starts_with("UPDATE Items SET"));
         assert!(stmt.sql.contains("WHERE Id = ?"));
