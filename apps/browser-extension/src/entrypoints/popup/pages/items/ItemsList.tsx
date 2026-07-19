@@ -829,7 +829,7 @@ const ItemsList: React.FC = () => {
                           // Save to settings and trigger vault sync
                           await executeVaultMutationAsync(async () => {
                             dbContext.sqliteClient?.settings.setCredentialsSortOrder(option.value);
-                          });
+                          }, { scope: 'Settings' });
                         }}
                         className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 ${
                           sortOrder === option.value ? 'text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'

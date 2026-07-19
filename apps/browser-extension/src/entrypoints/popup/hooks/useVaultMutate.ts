@@ -5,6 +5,7 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { devLog } from '@/utils/DevLogger';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import type { VaultMutationOptions, VaultMutationScope } from '@/utils/types/VaultMutationScope';
 
 /**
  * Hook to execute a vault mutation.
@@ -23,7 +24,7 @@ import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
  * even if the popup closes. This ensures vault changes are always synced to the server.
  */
 export function useVaultMutate(): {
-    executeVaultMutationAsync: (operation: () => Promise<void>) => Promise<void>;
+    executeVaultMutationAsync: (operation: () => Promise<void>, options?: VaultMutationOptions) => Promise<void>;
     } {
   const dbContext = useDb();
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -32,7 +33,7 @@ export function useVaultMutate(): {
    * Execute the provided operation and save locally.
    * Atomically increments mutation sequence and marks dirty.
    */
-  const saveLocally = useCallback(async (operation: () => Promise<void>): Promise<void> => {
+  const saveLocally = useCallback(async (operation: () => Promise<void>, scope?: VaultMutationScope): Promise<void> => {
     // Execute the provided operation (e.g. create/update/delete credential)
     await operation();
 
@@ -44,10 +45,15 @@ export function useVaultMutate(): {
       encryptionKey
     );
 
-    // Store the updated vault locally, mark dirty, increment mutation sequence
+    /*
+     * Store the updated vault locally, mark dirty, increment mutation sequence. The scope records what
+     * changed: bucket-scoped mutations (e.g. 'Settings') let the background sync push just that data bucket
+     * instead of the full vault manifest.
+     */
     await sendMessage('STORE_ENCRYPTED_VAULT', {
       vaultBlob: encryptedVaultBlob,
-      markDirty: true
+      markDirty: true,
+      scope
     });
 
     // Refresh the sync state in React
@@ -147,12 +153,15 @@ export function useVaultMutate(): {
   /**
    * Execute a vault mutation asynchronously: save locally immediately, then
    * trigger sync in background. This doesn't block the UI.
+   * Pass `options.scope` for mutations that only touch bucket-scoped data (e.g. 'Settings') so the sync
+   * pushes just that data bucket instead of the full vault.
    */
   const executeVaultMutationAsync = useCallback(async (
-    operation: () => Promise<void>
+    operation: () => Promise<void>,
+    options?: VaultMutationOptions
   ): Promise<void> => {
     // 1. Execute mutation and save locally (fast, doesn't block)
-    await saveLocally(operation);
+    await saveLocally(operation, options?.scope);
 
     // 2. Trigger sync in background (fire-and-forget, continues even if popup closes)
     triggerBackgroundSync();

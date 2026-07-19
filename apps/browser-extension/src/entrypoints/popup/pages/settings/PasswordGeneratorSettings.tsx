@@ -107,7 +107,7 @@ const PasswordGeneratorSettings: React.FC = () => {
     if (dbContext?.sqliteClient) {
       void executeVaultMutationAsync(async () => {
         dbContext.sqliteClient!.settings.setPasswordSettings(next);
-      });
+      }, { scope: 'Settings' });
     }
   }, [dbContext?.sqliteClient, executeVaultMutationAsync]);
 

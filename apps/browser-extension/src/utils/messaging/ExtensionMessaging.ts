@@ -23,6 +23,7 @@ import type { SaveLoginResponse } from '@/utils/types/messaging/SaveLoginRespons
 import type { StringResponse } from '@/utils/types/messaging/StringResponse';
 import type { VaultResponse } from '@/utils/types/messaging/VaultResponse';
 import type { VaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
+import type { VaultMutationScope } from '@/utils/types/VaultMutationScope';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
@@ -93,7 +94,7 @@ export interface IExtensionMessageProtocol {
   SET_CLIPBOARD_CLEAR_TIMEOUT(data: number): boolean;
   SET_LOGIN_SAVE_ENABLED(data: boolean): BoolResponse;
   SET_RECENTLY_SELECTED(data: { itemId: string; domain: string }): { success: boolean };
-  STORE_ENCRYPTED_VAULT(data: { vaultBlob: string; markDirty?: boolean; serverRevision?: number; expectedMutationSeq?: number }): { success: boolean; mutationSequence: number };
+  STORE_ENCRYPTED_VAULT(data: { vaultBlob: string; markDirty?: boolean; serverRevision?: number; expectedMutationSeq?: number; scope?: VaultMutationScope }): { success: boolean; mutationSequence: number };
   STORE_ENCRYPTION_KEY(data: string): BoolResponse;
   STORE_ENCRYPTION_KEY_DERIVATION_PARAMS(data: EncryptionKeyDerivationParams): BoolResponse;
   STORE_LAST_AUTOFILLED(data: LastAutofilledCredential): { success: boolean };

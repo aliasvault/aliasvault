@@ -63,7 +63,7 @@ const IdentityGeneratorSettings: React.FC = () => {
     if (dbContext?.sqliteClient) {
       await executeVaultMutationAsync(async () => {
         dbContext.sqliteClient!.settings.updateSetting('DefaultIdentityLanguage', newLanguage);
-      });
+      }, { scope: 'Settings' });
     }
   }, [dbContext?.sqliteClient, executeVaultMutationAsync]);
 
@@ -75,7 +75,7 @@ const IdentityGeneratorSettings: React.FC = () => {
     if (dbContext?.sqliteClient) {
       await executeVaultMutationAsync(async () => {
         dbContext.sqliteClient!.settings.updateSetting('DefaultIdentityGender', newGender);
-      });
+      }, { scope: 'Settings' });
     }
   }, [dbContext?.sqliteClient, executeVaultMutationAsync]);
 
@@ -87,7 +87,7 @@ const IdentityGeneratorSettings: React.FC = () => {
     if (dbContext?.sqliteClient) {
       await executeVaultMutationAsync(async () => {
         dbContext.sqliteClient!.settings.updateSetting('DefaultIdentityAgeRange', newAgeRange);
-      });
+      }, { scope: 'Settings' });
     }
   }, [dbContext?.sqliteClient, executeVaultMutationAsync]);
 
