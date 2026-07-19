@@ -216,20 +216,6 @@ fn validate_manifest_ok_for_clean_vault() {
 }
 
 #[test]
-fn which_blobs_to_upload_excludes_known() {
-    let favicon = vec![0x09, 0x08, 0x07];
-    let out = canonicalize_from_sqlite(basic_input(vec![CodecTableData {
-        name: "Logos".to_string(),
-        records: vec![row(&[("Id", json!("l1")), ("FileData", json!({ "__b64": b64(&favicon) }))])],
-    }]))
-    .unwrap();
-    let hash = out.blobs.keys().next().unwrap().clone();
-
-    assert_eq!(which_blobs_to_upload(&out.manifest, vec![]), vec![hash.clone()]);
-    assert!(which_blobs_to_upload(&out.manifest, vec![hash]).is_empty());
-}
-
-#[test]
 fn generate_user_salt_is_64_hex_chars() {
     let salt = generate_user_salt();
     assert_eq!(salt.len(), 64);
@@ -253,11 +239,6 @@ fn forward_compat_unknown_manifest_fields_preserved() {
     assert!(manifest.extra.contains_key("futureField"));
     let reser = serde_json::to_value(&manifest).unwrap();
     assert_eq!(reser["futureField"], json!({ "nested": true }));
-}
-
-/// Rows of `table` in the materialized output (empty if absent).
-fn materialized_rows<'a>(m: &'a MaterializedTables, table: &str) -> &'a [CodecRecord] {
-    m.tables.iter().find(|t| t.name == table).map(|t| t.records.as_slice()).unwrap_or(&[])
 }
 
 #[test]
@@ -300,58 +281,50 @@ fn canonicalize_dedupes_duplicate_logo_sources_and_remaps_items() {
 }
 
 #[test]
-fn materialize_dedupes_duplicate_logo_sources_from_legacy_manifest() {
-    // A manifest already on the server carrying duplicate Source rows must materialize cleanly
-    // (self-heal on pull) rather than exploding on the UNIQUE(Source) index.
-    let mut manifest = canonicalize_from_sqlite(basic_input(vec![
-        CodecTableData { name: "Items".to_string(), records: vec![] },
+fn canonicalize_dedup_tiebreak_keeps_highest_id_when_no_favicon() {
+    // When neither duplicate carries favicon bytes, the survivor is chosen deterministically by Id
+    // (highest wins); the Item pointing at the dropped row is remapped to it.
+    let out = canonicalize_from_sqlite(basic_input(vec![
+        CodecTableData {
+            name: "Logos".to_string(),
+            records: vec![
+                row(&[("Id", json!("logo-a")), ("Source", json!("github.com"))]),
+                row(&[("Id", json!("logo-b")), ("Source", json!("github.com"))]),
+            ],
+        },
+        CodecTableData {
+            name: "Items".to_string(),
+            records: vec![row(&[("Id", json!("i1")), ("LogoId", json!("logo-a"))])],
+        },
     ]))
-    .unwrap()
-    .manifest;
-    manifest.tables.insert(
-        "Logos".to_string(),
-        vec![
-            row(&[("Id", json!("logo-a")), ("Source", json!("github.com"))]),
-            row(&[("Id", json!("logo-b")), ("Source", json!("github.com"))]),
-        ],
-    );
-    manifest.tables.insert(
-        "Items".to_string(),
-        vec![row(&[("Id", json!("i1")), ("LogoId", json!("logo-b"))])],
-    );
+    .unwrap();
 
-    let re = materialize_as_sqlite(MaterializeInput { manifest, data_buckets: vec![] }).unwrap();
-    let logos = materialized_rows(&re, "Logos");
-    assert_eq!(logos.len(), 1, "duplicate Source collapsed on materialize");
-    let survivor = logos[0]["Id"].as_str().unwrap().to_string();
-    // The Item's LogoId now points at whichever row survived (deterministically the smaller Id, logo-a).
-    assert_eq!(survivor, "logo-a");
-    assert_eq!(materialized_rows(&re, "Items")[0]["LogoId"], json!("logo-a"));
+    let logos = &out.manifest.tables["Logos"];
+    assert_eq!(logos.len(), 1, "duplicate Source collapsed to one row");
+    assert_eq!(logos[0]["Id"], json!("logo-b"), "highest Id survives the tiebreak");
+    assert_eq!(out.manifest.tables["Items"][0]["LogoId"], json!("logo-b"), "Item remapped to survivor");
 }
 
 #[test]
-fn materialize_nulls_dangling_logo_reference() {
-    // An Item pointing at a logo Id that no longer exists (e.g. collapsed away by a cross-client merge)
-    // is nulled — matching FK_Items_Logos_LogoId ON DELETE SET NULL — so foreign_key_check passes.
-    let mut manifest = canonicalize_from_sqlite(basic_input(vec![
-        CodecTableData { name: "Items".to_string(), records: vec![] },
+fn canonicalize_nulls_dangling_logo_reference() {
+    // An Item pointing at a logo Id that doesn't exist (e.g. collapsed away by a cross-client merge) is
+    // nulled — matching FK_Items_Logos_LogoId ON DELETE SET NULL — so materialize's foreign_key_check passes.
+    let out = canonicalize_from_sqlite(basic_input(vec![
+        CodecTableData {
+            name: "Logos".to_string(),
+            records: vec![row(&[("Id", json!("logo-a")), ("Source", json!("github.com"))])],
+        },
+        CodecTableData {
+            name: "Items".to_string(),
+            records: vec![
+                row(&[("Id", json!("i1")), ("LogoId", json!("logo-a"))]),
+                row(&[("Id", json!("i2")), ("LogoId", json!("ghost"))]),
+            ],
+        },
     ]))
-    .unwrap()
-    .manifest;
-    manifest.tables.insert(
-        "Logos".to_string(),
-        vec![row(&[("Id", json!("logo-a")), ("Source", json!("github.com"))])],
-    );
-    manifest.tables.insert(
-        "Items".to_string(),
-        vec![
-            row(&[("Id", json!("i1")), ("LogoId", json!("logo-a"))]),
-            row(&[("Id", json!("i2")), ("LogoId", json!("ghost"))]),
-        ],
-    );
+    .unwrap();
 
-    let re = materialize_as_sqlite(MaterializeInput { manifest, data_buckets: vec![] }).unwrap();
-    let items = materialized_rows(&re, "Items");
+    let items = &out.manifest.tables["Items"];
     let i1 = items.iter().find(|r| r["Id"] == json!("i1")).unwrap();
     let i2 = items.iter().find(|r| r["Id"] == json!("i2")).unwrap();
     assert_eq!(i1["LogoId"], json!("logo-a"), "valid reference untouched");

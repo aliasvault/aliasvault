@@ -1,6 +1,6 @@
 //! Vault codec: logic for translating between the canonical manifest-v1 storage format (as persisted on the server)
 //! and local vault formats (e.g., SQLite, or others), including integrity envelope (canonical hash),
-//! gzip packing/unpacking, structural validation, and blob-upload diff detection.
+//! gzip packing/unpacking, and structural validation.
 //!
 //! This module defines the *format* codec that maps between canonical artifacts (manifest, data buckets,
 //! content-addressed blobs) and platform-specific representations, without embedding knowledge of encryption
@@ -15,8 +15,6 @@ mod manifest;
 mod materialize;
 mod types;
 mod validate;
-
-use std::collections::HashSet;
 
 use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
@@ -135,31 +133,6 @@ pub fn compute_ciphertext_hash(base64_ciphertext: &str) -> String {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// blob diff
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// Return the manifest's referenced blob hashes that are NOT already known.
-pub fn which_blobs_to_upload(manifest: &Manifest, known_hashes: Vec<String>) -> Vec<String> {
-    let known: HashSet<String> = known_hashes.into_iter().collect();
-    let mut seen: HashSet<String> = HashSet::new();
-    let mut out: Vec<String> = Vec::new();
-
-    for rows in manifest.tables.values() {
-        for row in rows {
-            for value in row.values() {
-                if let Some(hash) = value.get("__blobRef").and_then(|v| v.as_str()) {
-                    if !known.contains(hash) && seen.insert(hash.to_string()) {
-                        out.push(hash.to_string());
-                    }
-                }
-            }
-        }
-    }
-
-    out
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // JSON-string siblings (FFI / UniFFI interface)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -197,20 +170,6 @@ pub fn validate_manifest_json(manifest_json: &str) -> VaultResult<String> {
 pub fn validate_data_bucket_json(data_bucket_json: &str) -> VaultResult<String> {
     let b: DataBucket = serde_json::from_str(data_bucket_json)?;
     Ok(serde_json::to_string(&validate_data_bucket(&b))?)
-}
-
-/// JSON-string sibling of [`which_blobs_to_upload`]. Input:
-/// `{ "manifest": <manifest>, "knownHashes": [..] }`.
-pub fn which_blobs_to_upload_json(input_json: &str) -> VaultResult<String> {
-    #[derive(serde::Deserialize)]
-    #[serde(rename_all = "camelCase")]
-    struct Input {
-        manifest: Manifest,
-        #[serde(default)]
-        known_hashes: Vec<String>,
-    }
-    let input: Input = serde_json::from_str(input_json)?;
-    Ok(serde_json::to_string(&which_blobs_to_upload(&input.manifest, input.known_hashes))?)
 }
 
 #[cfg(test)]

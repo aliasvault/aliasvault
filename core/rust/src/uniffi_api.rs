@@ -208,13 +208,6 @@ pub fn vault_codec_compute_ciphertext_hash(base64_ciphertext: String) -> String 
     crate::vault_codec::compute_ciphertext_hash(&base64_ciphertext)
 }
 
-/// Return the manifest's referenced blob hashes not present in `knownHashes`.
-/// Input: `{ "manifest": <manifest>, "knownHashes": [..] }`.
-#[uniffi::export]
-pub fn vault_codec_which_blobs_to_upload(input_json: String) -> Result<String, VaultError> {
-    crate::vault_codec::which_blobs_to_upload_json(&input_json)
-}
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // SRP (Secure Remote Password) Functions
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -271,15 +271,6 @@ pub unsafe extern "C" fn vault_codec_validate_data_bucket_ffi(input_json: *const
     codec_json_ffi(input_json, "input_json", crate::vault_codec::validate_data_bucket_json)
 }
 
-/// Blob upload diff. Input: `{ "manifest": <manifest>, "knownHashes": [..] }`. Output: JSON array of hashes.
-///
-/// # Safety
-/// `input_json` must be a valid null-terminated C string; free the result with `free_string`.
-#[no_mangle]
-pub unsafe extern "C" fn vault_codec_which_blobs_to_upload_ffi(input_json: *const c_char) -> *mut c_char {
-    codec_json_ffi(input_json, "input_json", crate::vault_codec::which_blobs_to_upload_json)
-}
-
 /// Generate a fresh per-user salt (lowercase hex).
 ///
 /// # Safety

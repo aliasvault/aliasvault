@@ -26,7 +26,7 @@ pub use vault_merge::{
 pub use vault_codec::{
     compute_ciphertext_hash, canonicalize_from_sqlite,
     extract_bucket, generate_user_salt, unpack_payload, materialize_as_sqlite, pack_payload,
-    validate_manifest, validate_data_bucket, which_blobs_to_upload, BlobEntry,
+    validate_manifest, validate_data_bucket, BlobEntry,
     CanonicalizeInput, CanonicalizedVault, CodecRecord, CodecTableData, DataBucket, Manifest,
     MaterializeInput, MaterializedTables, ValidationResult,
 };

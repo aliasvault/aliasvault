@@ -203,17 +203,6 @@ pub fn vault_codec_compute_ciphertext_hash_js(base64_ciphertext: &str) -> String
     vault_codec::compute_ciphertext_hash(base64_ciphertext)
 }
 
-/// Return the manifest's referenced blob hashes not present in `known_hashes`.
-#[wasm_bindgen(js_name = vaultCodecWhichBlobsToUpload)]
-pub fn vault_codec_which_blobs_to_upload_js(manifest: JsValue, known_hashes: JsValue) -> Result<JsValue, JsValue> {
-    let m: Manifest = serde_wasm_bindgen::from_value(manifest)
-        .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest: {}", e)))?;
-    let known: Vec<String> = serde_wasm_bindgen::from_value(known_hashes)
-        .map_err(|e| JsValue::from_str(&format!("Failed to parse known hashes: {}", e)))?;
-    serde_wasm_bindgen::to_value(&vault_codec::which_blobs_to_upload(&m, known))
-        .map_err(|e| JsValue::from_str(&format!("Failed to serialize result: {}", e)))
-}
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // Credential Matcher WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════
