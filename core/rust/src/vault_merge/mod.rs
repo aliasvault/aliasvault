@@ -472,6 +472,41 @@ mod tests {
         assert!(output.statements[0].sql.starts_with("UPDATE Items SET"));
     }
 
+    fn logo(id: &str, source: &str, updated_at: &str) -> Record {
+        let mut r = HashMap::new();
+        r.insert("Id".to_string(), serde_json::json!(id));
+        r.insert("Source".to_string(), serde_json::json!(source));
+        r.insert("UpdatedAt".to_string(), serde_json::json!(updated_at));
+        r
+    }
+
+    #[test]
+    fn logos_merge_by_source_collapses_distinct_ids_and_keeps_local_id() {
+        // Two clients minted different Ids for github.com. Merging by Source (server newer) must UPDATE
+        // the local row in place — keeping the local Id so Items.LogoId stays valid — not INSERT a
+        // second same-Source row (which would violate UNIQUE(Source) / break materialize).
+        let local = vec![logo("local-id", "github.com", "2024-01-01T00:00:00Z")];
+        let server = vec![logo("server-id", "github.com", "2024-01-02T00:00:00Z")];
+        let mut stats = MergeStats::default();
+
+        let statements = merge_table_by_composite_key("Logos", &local, &server, &["Source"], &mut stats);
+
+        assert_eq!(stats.conflicts, 1);
+        assert_eq!(stats.records_inserted, 0, "no second same-Source row inserted");
+        assert_eq!(statements.len(), 1);
+        assert!(statements[0].sql.starts_with("UPDATE Logos SET"));
+        assert!(statements[0].sql.ends_with("WHERE Id = ?"));
+        // WHERE-clause Id is the LOCAL id (last param), so the local row is updated in place.
+        assert_eq!(statements[0].params.last().unwrap(), &serde_json::json!("local-id"));
+    }
+
+    #[test]
+    fn logos_config_uses_source_composite_key() {
+        let cfg = SYNCABLE_TABLES.iter().find(|t| t.name == "Logos").unwrap();
+        assert!(cfg.uses_composite_key());
+        assert_eq!(cfg.composite_key_columns, &["Source"]);
+    }
+
     #[test]
     fn test_generate_insert_sql() {
         let record = make_record("test-id", "2024-01-01T00:00:00Z");

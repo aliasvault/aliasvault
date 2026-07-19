@@ -17,6 +17,7 @@ use base64::Engine;
 use serde_json::json;
 
 use super::hash::salted_blob_hash;
+use super::logos::dedupe_logos_by_source;
 use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedVault, DataBucket, Manifest, CodecRecord};
 use super::types::{blob_spec_for, bucket_categories, bucket_category_for, is_skip_table, SCHEMA_VERSION};
 use crate::error::VaultResult;
@@ -24,6 +25,21 @@ use crate::error::VaultResult;
 /// Canonicalize normalized tables into the split resources: the manifest, one data bucket per declared
 /// category (see [`BUCKET_TABLES`](super::types::BUCKET_TABLES)), and the content-addressed blob map.
 pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<CanonicalizedVault> {
+    // Collect every non-skip table into a name > rows map (row order preserved per table). Blob
+    // extraction and bucket-splitting happen below; deduping Logos first (before extraction) means a
+    // dropped duplicate never registers an orphan favicon blob.
+    let mut all_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
+    for table in &input.tables {
+        if is_skip_table(&table.name) {
+            continue;
+        }
+        all_tables.entry(table.name.clone()).or_default().extend(table.records.iter().cloned());
+    }
+
+    // Collapse duplicate Logos rows sharing a Source (see `logos` module) and remap Items.LogoId so
+    // the manifest we write is free of any UNIQUE(Source) collision that would break materialize.
+    dedupe_logos_by_source(&mut all_tables);
+
     let mut blobs: HashMap<String, BlobEntry> = HashMap::new();
     let mut manifest_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
 
@@ -34,33 +50,27 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         bucketed.insert(category.to_string(), HashMap::new());
     }
 
-    for table in &input.tables {
-        let name = table.name.as_str();
-        if is_skip_table(name) {
-            continue;
-        }
-
+    for (name, records) in all_tables {
         // Bucketed table: carried verbatim in its bucket (bucketed tables own no blob columns today).
-        if let Some(category) = bucket_category_for(name) {
+        if let Some(category) = bucket_category_for(&name) {
             bucketed
                 .get_mut(category)
                 .expect("declared bucket category is seeded above")
-                .insert(name.to_string(), table.records.clone());
+                .insert(name, records);
             continue;
         }
 
         // Manifest table: extract any blob column into the content-addressed map.
-        let blob_spec = blob_spec_for(name);
-        let mut out_rows: Vec<CodecRecord> = Vec::with_capacity(table.records.len());
-        for row in &table.records {
-            let mut row = row.clone();
+        let blob_spec = blob_spec_for(&name);
+        let mut out_rows: Vec<CodecRecord> = Vec::with_capacity(records.len());
+        for mut row in records {
             if let Some((_, blob_col, kind)) = blob_spec {
                 let extracted = extract_blob_cell(row.get(*blob_col), &input.user_salt, kind, &mut blobs);
                 row.insert((*blob_col).to_string(), extracted);
             }
             out_rows.push(row);
         }
-        manifest_tables.insert(name.to_string(), out_rows);
+        manifest_tables.insert(name, out_rows);
     }
 
     let manifest = Manifest {

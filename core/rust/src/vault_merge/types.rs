@@ -32,6 +32,10 @@ impl TableConfig {
 
 /// All tables that need LWW merge.
 /// FieldValues uses composite key (ItemId + FieldKey) for merging.
+/// Logos uses composite key (Source): Id is a per-client random GUID but Source is the natural unique
+/// key (schema enforces UNIQUE(Source)). Merging by Source collapses two clients' rows for the same
+/// domain into one — and the composite-key path keeps the local Id on conflict, so Items.LogoId stays
+/// valid — instead of the by-Id path minting a second same-Source row that breaks materialize.
 pub static SYNCABLE_TABLES: &[TableConfig] = &[
     TableConfig::new("Items"),
     TableConfig::new("FieldValues").with_composite_key(&["ItemId", "FieldKey"]),
@@ -43,7 +47,7 @@ pub static SYNCABLE_TABLES: &[TableConfig] = &[
     TableConfig::new("Passkeys"),
     TableConfig::new("FieldDefinitions"),
     TableConfig::new("FieldHistories"),
-    TableConfig::new("Logos"),
+    TableConfig::new("Logos").with_composite_key(&["Source"]),
 ];
 
 /// List of syncable table names (for clients to know which tables to read).

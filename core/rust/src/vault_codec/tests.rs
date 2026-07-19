@@ -255,6 +255,129 @@ fn forward_compat_unknown_manifest_fields_preserved() {
     assert_eq!(reser["futureField"], json!({ "nested": true }));
 }
 
+/// Rows of `table` in the materialized output (empty if absent).
+fn materialized_rows<'a>(m: &'a MaterializedTables, table: &str) -> &'a [CodecRecord] {
+    m.tables.iter().find(|t| t.name == table).map(|t| t.records.as_slice()).unwrap_or(&[])
+}
+
+#[test]
+fn canonicalize_dedupes_duplicate_logo_sources_and_remaps_items() {
+    // Two clients minted distinct Ids for the same domain; Items point at each. Canonicalize must
+    // collapse to one Logos row and repoint the orphaned Item at the survivor.
+    let favicon = vec![0x01, 0x02, 0x03];
+    let out = canonicalize_from_sqlite(basic_input(vec![
+        CodecTableData {
+            name: "Logos".to_string(),
+            records: vec![
+                row(&[("Id", json!("logo-a")), ("Source", json!("github.com")), ("FileData", json!({ "__b64": b64(&favicon) }))]),
+                row(&[("Id", json!("logo-b")), ("Source", json!("github.com")), ("FileData", serde_json::Value::Null)]),
+            ],
+        },
+        CodecTableData {
+            name: "Items".to_string(),
+            records: vec![
+                row(&[("Id", json!("i1")), ("LogoId", json!("logo-a"))]),
+                row(&[("Id", json!("i2")), ("LogoId", json!("logo-b"))]),
+            ],
+        },
+    ]))
+    .unwrap();
+
+    let logos = &out.manifest.tables["Logos"];
+    assert_eq!(logos.len(), 1, "duplicate Source collapsed to one row");
+    // Survivor is the row that actually carries favicon bytes (logo-a), not the empty one.
+    assert_eq!(logos[0]["Id"], json!("logo-a"));
+    assert!(logos[0]["FileData"].get("__blobRef").is_some());
+
+    let items = &out.manifest.tables["Items"];
+    let i1 = items.iter().find(|r| r["Id"] == json!("i1")).unwrap();
+    let i2 = items.iter().find(|r| r["Id"] == json!("i2")).unwrap();
+    assert_eq!(i1["LogoId"], json!("logo-a"));
+    assert_eq!(i2["LogoId"], json!("logo-a"), "Item pointing at the dropped duplicate is remapped");
+
+    // No orphan blob: exactly the survivor's favicon is registered.
+    assert_eq!(out.blobs.len(), 1);
+}
+
+#[test]
+fn materialize_dedupes_duplicate_logo_sources_from_legacy_manifest() {
+    // A manifest already on the server carrying duplicate Source rows must materialize cleanly
+    // (self-heal on pull) rather than exploding on the UNIQUE(Source) index.
+    let mut manifest = canonicalize_from_sqlite(basic_input(vec![
+        CodecTableData { name: "Items".to_string(), records: vec![] },
+    ]))
+    .unwrap()
+    .manifest;
+    manifest.tables.insert(
+        "Logos".to_string(),
+        vec![
+            row(&[("Id", json!("logo-a")), ("Source", json!("github.com"))]),
+            row(&[("Id", json!("logo-b")), ("Source", json!("github.com"))]),
+        ],
+    );
+    manifest.tables.insert(
+        "Items".to_string(),
+        vec![row(&[("Id", json!("i1")), ("LogoId", json!("logo-b"))])],
+    );
+
+    let re = materialize_as_sqlite(MaterializeInput { manifest, data_buckets: vec![] }).unwrap();
+    let logos = materialized_rows(&re, "Logos");
+    assert_eq!(logos.len(), 1, "duplicate Source collapsed on materialize");
+    let survivor = logos[0]["Id"].as_str().unwrap().to_string();
+    // The Item's LogoId now points at whichever row survived (deterministically the smaller Id, logo-a).
+    assert_eq!(survivor, "logo-a");
+    assert_eq!(materialized_rows(&re, "Items")[0]["LogoId"], json!("logo-a"));
+}
+
+#[test]
+fn materialize_nulls_dangling_logo_reference() {
+    // An Item pointing at a logo Id that no longer exists (e.g. collapsed away by a cross-client merge)
+    // is nulled — matching FK_Items_Logos_LogoId ON DELETE SET NULL — so foreign_key_check passes.
+    let mut manifest = canonicalize_from_sqlite(basic_input(vec![
+        CodecTableData { name: "Items".to_string(), records: vec![] },
+    ]))
+    .unwrap()
+    .manifest;
+    manifest.tables.insert(
+        "Logos".to_string(),
+        vec![row(&[("Id", json!("logo-a")), ("Source", json!("github.com"))])],
+    );
+    manifest.tables.insert(
+        "Items".to_string(),
+        vec![
+            row(&[("Id", json!("i1")), ("LogoId", json!("logo-a"))]),
+            row(&[("Id", json!("i2")), ("LogoId", json!("ghost"))]),
+        ],
+    );
+
+    let re = materialize_as_sqlite(MaterializeInput { manifest, data_buckets: vec![] }).unwrap();
+    let items = materialized_rows(&re, "Items");
+    let i1 = items.iter().find(|r| r["Id"] == json!("i1")).unwrap();
+    let i2 = items.iter().find(|r| r["Id"] == json!("i2")).unwrap();
+    assert_eq!(i1["LogoId"], json!("logo-a"), "valid reference untouched");
+    assert_eq!(i2["LogoId"], serde_json::Value::Null, "dangling reference nulled");
+}
+
+#[test]
+fn validate_manifest_rejects_duplicate_logo_sources() {
+    // Guard: if a duplicate-Source manifest ever reaches validation (dedup bypassed), reject it.
+    let mut manifest = canonicalize_from_sqlite(basic_input(vec![
+        CodecTableData { name: "Items".to_string(), records: vec![] },
+    ]))
+    .unwrap()
+    .manifest;
+    manifest.tables.insert(
+        "Logos".to_string(),
+        vec![
+            row(&[("Id", json!("logo-a")), ("Source", json!("github.com"))]),
+            row(&[("Id", json!("logo-b")), ("Source", json!("github.com"))]),
+        ],
+    );
+    let result = validate_manifest(&manifest);
+    assert!(!result.ok);
+    assert!(result.failed_rules.iter().any(|r| r == "logo-sources-not-unique"));
+}
+
 #[test]
 fn json_siblings_roundtrip() {
     let input = basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i1"))])] }]);

@@ -120,6 +120,15 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
         failed.push("folder-ids-not-unique".to_string());
     }
 
+    // Logos.Source is UNIQUE in the client schema (IX_Logos_Source); a duplicate would pass through
+    // canonicalize but fail on materialize. Refuse the upload rather than write a manifest no client can load.
+    let logos = table(manifest, "Logos");
+    let logo_sources: std::collections::HashSet<&str> = logos.iter().filter_map(|l| str_field(l, "Source")).collect();
+    let logos_with_source = logos.iter().filter(|l| str_field(l, "Source").is_some()).count();
+    if logo_sources.len() != logos_with_source {
+        failed.push("logo-sources-not-unique".to_string());
+    }
+
     ValidationResult {
         ok: failed.is_empty(),
         failed_rules: failed,

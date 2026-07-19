@@ -10,6 +10,7 @@
 mod compress;
 mod canonicalize;
 mod hash;
+mod logos;
 mod manifest;
 mod materialize;
 mod types;
