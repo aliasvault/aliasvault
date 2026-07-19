@@ -114,6 +114,7 @@
       "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "invalidCode": "Please enter a valid 6-digit authentication code.",
       "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
+      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
       "wrongPassword": "Incorrect password. Please try again.",
       "sessionExpired": "Your session has expired. Please log in again.",
       "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."

@@ -7,6 +7,7 @@ import MobileUnlockModal from '@/entrypoints/popup/components/Dialogs/MobileUnlo
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIcon, HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import LoginServerInfo from '@/entrypoints/popup/components/LoginServerInfo';
+import VaultErrorReport from '@/entrypoints/popup/components/VaultErrorReport';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
@@ -22,6 +23,7 @@ import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCodes';
+import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
 import { vaultStateEvents } from '@/events/VaultStateEvents';
@@ -57,6 +59,7 @@ const Login: React.FC = () => {
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [clientUrl, setClientUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [vaultError, setVaultError] = useState<VaultProcessingError | null>(null);
   const [showMobileLoginModal, setShowMobileLoginModal] = useState(false);
   const webApi = useWebApi();
   const srpUtil = new SrpUtility(webApi);
@@ -276,6 +279,7 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) : Promise<void> => {
     e.preventDefault();
     setError(null);
+    setVaultError(null);
 
     try {
       showLoading();
@@ -344,8 +348,15 @@ const Login: React.FC = () => {
         loginResponse
       );
     } catch (err) {
-      // Show API authentication errors as-is.
-      if (err instanceof ApiAuthError) {
+      console.error('Login error:', err);
+      if (err instanceof ServerUpdateRequiredError) {
+        // This client is v2-only; an outdated (self-hosted) server must be updated before login can proceed.
+        setError(t('common.errors.serverVersionNotSupported'));
+      } else if (err instanceof VaultProcessingError) {
+        // The vault was fetched but couldn't be decrypted/materialized — surface the real error (copyable) for support.
+        setVaultError(err);
+      } else if (err instanceof ApiAuthError) {
+        // Show API authentication errors as-is.
         setError(t('common.apiErrors.' + err.message));
       } else if (hasErrorCode(err)) {
         // Error contains an error code (E-XXX), show the formatted message as-is
@@ -363,6 +374,7 @@ const Login: React.FC = () => {
   const handleTwoFactorSubmit = async (e: React.FormEvent) : Promise<void> => {
     e.preventDefault();
     setError(null);
+    setVaultError(null);
 
     try {
       showLoading();
@@ -491,6 +503,7 @@ const Login: React.FC = () => {
               {error}
             </div>
           )}
+          {vaultError && <VaultErrorReport error={vaultError} />}
           <div className="mb-6">
             <p className="text-gray-700 dark:text-gray-200 mb-4">
               {t('auth.twoFactorTitle')}
@@ -558,6 +571,7 @@ const Login: React.FC = () => {
               {error}
             </div>
           )}
+          {vaultError && <VaultErrorReport error={vaultError} />}
 
           <div className="mb-4">
             <label className="block text-gray-700 dark:text-gray-200 font-medium mb-2" htmlFor="username">
