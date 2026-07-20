@@ -42,7 +42,7 @@ export function initRustCore(): Promise<void> {
 
 /**
  * Extract the host (subdomain + domain) from a URL.
- * Example: `https://www.example.com/path` → `example.com`.
+ * Example: `https://www.example.com/path` > `example.com`.
  * Returns empty string for inputs the Rust extractor rejects, e.g.
  * reversed-TLD app bundle identifiers like `com.example.app`.
  */
@@ -53,7 +53,7 @@ export async function extractDomain(url: string): Promise<string> {
 
 /**
  * Extract the root domain.
- * Example: `sub.example.co.uk` → `example.co.uk`.
+ * Example: `sub.example.co.uk` > `example.co.uk`.
  */
 export async function extractRootDomain(domain: string): Promise<string> {
   await initRustCore();
@@ -168,6 +168,135 @@ function urlComparisonKey(url: string): string {
   }
   const domain = core.extractDomain(trimmed);
   return domain.length > 0 ? domain : trimmed;
+}
+
+/*
+ * Vault codec (manifest-v1 storage format).
+ *
+ * The format logic (canonicalize/materialize, canonical hash + integrity envelope, gzip pack/unpack,
+ * structural validation, blob diff) lives in `core/rust/src/vault_codec`. These wrappers adapt the
+ * WASM exports to TypeScript types.
+ */
+
+/** A single table's rows (byte columns rendered as `{ __b64 }`). */
+export type CodecTableData = { name: string; records: Array<Record<string, unknown>> };
+
+/** Manifest-v1 manifest. Forward-compat: unknown keys are preserved on round-trip. */
+export type CodecManifest = {
+  schemaVersion: number;
+  migrationId: string;
+  version: string;
+  userSalt: string;
+  canonicalizedAt: string;
+  tables: Record<string, Array<Record<string, unknown>>>;
+  [key: string]: unknown;
+};
+
+/**
+ * A manifest-v1 data bucket.
+ */
+export type CodecDataBucket = {
+  schemaVersion: number;
+  category: string;
+  tables: Record<string, Array<Record<string, unknown>>>;
+  [key: string]: unknown;
+};
+
+/** A decoded blob entry: kind + plaintext bytes (base64). */
+export type CodecBlobEntry = { kind: string; bytesBase64: string };
+
+/** Result of canonicalize: manifest + data buckets. */
+export type CodecCanonicalized = {
+  manifest: CodecManifest;
+  dataBuckets: CodecDataBucket[];
+  blobs: Record<string, CodecBlobEntry>;
+};
+
+/** Input for canonicalize. */
+export type CodecCanonicalizeInput = {
+  tables: CodecTableData[];
+  userSalt: string;
+  migrationId: string;
+  version: string;
+  canonicalizedAt: string;
+};
+
+/** Materialized tables the platform inserts into a fresh SQLite DB. */
+export type CodecMaterialized = { tables: CodecTableData[]; migrationId: string };
+
+/** Structural validation outcome. */
+export type CodecValidation = { ok: boolean; failedRules: string[]; message: string };
+
+/**
+ * Canonicalize normalized tables into manifest + data buckets + blob map.
+ */
+export async function vaultCodecCanonicalizeFromSqlite(input: CodecCanonicalizeInput): Promise<CodecCanonicalized> {
+  await initRustCore();
+  return core.vaultCodecCanonicalizeFromSqlite(input) as CodecCanonicalized;
+}
+
+/**
+ * Materialize the manifest + its data buckets into the table set the platform inserts.
+ */
+export async function vaultCodecMaterializeAsSqlite(manifest: CodecManifest, dataBuckets: CodecDataBucket[]): Promise<CodecMaterialized> {
+  await initRustCore();
+  return core.vaultCodecMaterializeAsSqlite({ manifest, dataBuckets }) as CodecMaterialized;
+}
+
+/**
+ * Build a single data bucket for `category` from its tables (bucket-only push path).
+ */
+export async function vaultCodecExtractBucket(category: string, tables: Record<string, Array<Record<string, unknown>>>): Promise<CodecDataBucket> {
+  await initRustCore();
+  return core.vaultCodecExtractBucket({ category, tables }) as CodecDataBucket;
+}
+
+/**
+ * Generate a fresh 32-byte per-user salt (lowercase hex).
+ */
+export async function vaultCodecGenerateUserSalt(): Promise<string> {
+  await initRustCore();
+  return core.vaultCodecGenerateUserSalt();
+}
+
+/**
+ * Pack a payload JSON string into gzip(envelope{contentHash, payload}). The caller encrypts the result.
+ */
+export async function vaultCodecPackPayload(payloadJson: string): Promise<Uint8Array> {
+  await initRustCore();
+  return core.vaultCodecPackPayload(payloadJson);
+}
+
+/**
+ * Unpack a (decrypted) payload: gunzip > verify content hash > return the payload JSON string.
+ */
+export async function vaultCodecUnpackPayload(plainBytes: Uint8Array): Promise<string> {
+  await initRustCore();
+  return core.vaultCodecUnpackPayload(plainBytes);
+}
+
+/**
+ * Structurally validate a manifest before upload.
+ */
+export async function vaultCodecValidateManifest(manifest: CodecManifest): Promise<CodecValidation> {
+  await initRustCore();
+  return core.vaultCodecValidateManifest(manifest) as CodecValidation;
+}
+
+/**
+ * Validate a data bucket before upload.
+ */
+export async function vaultCodecValidateDataBucket(bucket: CodecDataBucket): Promise<CodecValidation> {
+  await initRustCore();
+  return core.vaultCodecValidateDataBucket(bucket) as CodecValidation;
+}
+
+/**
+ * SHA-256 (lowercase hex) of a base64 ciphertext string.
+ */
+export async function vaultCodecComputeCiphertextHash(base64Ciphertext: string): Promise<string> {
+  await initRustCore();
+  return core.vaultCodecComputeCiphertextHash(base64Ciphertext);
 }
 
 /**
