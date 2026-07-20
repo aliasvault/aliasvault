@@ -23,8 +23,10 @@ import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCodes';
+import { ServerUpdateRequiredError } from '@/utils/types/errors/ServerUpdateRequiredError';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
+import { vaultRetrievalService } from '@/utils/VaultRetrievalService';
 
 import { vaultStateEvents } from '@/events/VaultStateEvents';
 
@@ -150,12 +152,7 @@ const Login: React.FC = () => {
     passwordHashBase64: string,
     loginResponse: LoginResponse
   ) : Promise<void> => {
-    // Try to get latest vault manually providing auth token.
-    const vaultResponseJson = await webApi.authFetch<VaultResponse>('Vault', { method: 'GET', headers: {
-      'Authorization': `Bearer ${token}`
-    } });
-
-    // All is good. Store auth info which is required to make requests to the web API.
+    // Store auth info first — the vault fetch below makes an authenticated request via the stored access token.
     await app.setAuthTokens(username, token, refreshToken);
 
     // Store the encryption key and derivation params separately
@@ -166,13 +163,16 @@ const Login: React.FC = () => {
       encryptionSettings: loginResponse.encryptionSettings
     });
 
+    // Fetch the latest vault.
+    const vaultResponseJson = await vaultRetrievalService.retrieveVault(passwordHashBase64);
+
     /*
      * Persist and load the vault.
      * If there was a forced logout, persistAndLoadVault checks existing vault data:
-     * - If different user → uses server vault
-     * - If local vault is more advanced → preserves it (will upload via sync in /reinitialize)
-     * - If server is more advanced → uses server vault
-     * - If password changed (can't decrypt) → uses server vault
+     * - If different user > uses server vault
+     * - If local vault is more advanced > preserves it (will upload via sync in /reinitialize)
+     * - If server is more advanced > uses server vault
+     * - If password changed (can't decrypt) > uses server vault
      */
     await persistAndLoadVault(vaultResponseJson, passwordHashBase64, username);
 
@@ -350,16 +350,16 @@ const Login: React.FC = () => {
     } catch (err) {
       console.error('Login error:', err);
       if (err instanceof ServerUpdateRequiredError) {
-        // This client is v2-only; an outdated (self-hosted) server must be updated before login can proceed.
+        // Server does not support the v2 API, throw unsupported error.
         setError(t('common.errors.serverVersionNotSupported'));
       } else if (err instanceof VaultProcessingError) {
-        // The vault was fetched but couldn't be decrypted/materialized — surface the real error (copyable) for support.
+        // The vault was fetched but couldn't be decrypted/materialized, surface the real error (copyable) for support.
         setVaultError(err);
       } else if (err instanceof ApiAuthError) {
         // Show API authentication errors as-is.
         setError(t('common.apiErrors.' + err.message));
       } else if (hasErrorCode(err)) {
-        // Error contains an error code (E-XXX), show the formatted message as-is
+        // Error contains an error code (E-XXX), show the formatted message.
         setError(getErrorMessage(err, t('common.errors.serverError')));
       } else {
         setError(t('common.errors.serverError'));
@@ -424,10 +424,16 @@ const Login: React.FC = () => {
     } catch (err) {
       // Show API authentication errors as-is.
       console.error('2FA error:', err);
-      if (err instanceof ApiAuthError) {
+      if (err instanceof ServerUpdateRequiredError) {
+        // Server does not support the v2 API, throw unsupported error.
+        setError(t('common.errors.serverVersionNotSupported'));
+      } else if (err instanceof VaultProcessingError) {
+        // The vault was fetched but couldn't be decrypted/materialized, surface the real error (copyable) for support.
+        setVaultError(err);
+      } else if (err instanceof ApiAuthError) {
         setError(t('common.apiErrors.' + err.message));
       } else if (hasErrorCode(err)) {
-        // Error contains an error code (E-XXX), show the formatted message as-is
+        // Error contains an error code (E-XXX), show the formatted message.
         setError(getErrorMessage(err, t('common.errors.serverError')));
       } else {
         setError(t('common.errors.serverError'));
@@ -445,15 +451,7 @@ const Login: React.FC = () => {
       // Clear global message if set
       app.clearGlobalMessage();
 
-      // Fetch vault from server with the new auth token
-      const vaultResponse = await webApi.authFetch<VaultResponse>('Vault', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${result.token}`,
-        },
-      });
-
-      // Store auth tokens and username
+      // Store auth tokens and username first — the vault fetch below uses the stored access token.
       await app.setAuthTokens(result.username, result.token, result.refreshToken);
 
       // Store the encryption key and derivation params
@@ -463,6 +461,9 @@ const Login: React.FC = () => {
         encryptionType: result.encryptionType,
         encryptionSettings: result.encryptionSettings,
       });
+
+      // Fetch the latest vault.
+      const vaultResponse = await vaultRetrievalService.retrieveVault(result.decryptionKey);
 
       // Persist and load the vault
       await persistAndLoadVault(vaultResponse, result.decryptionKey, result.username);
@@ -477,7 +478,12 @@ const Login: React.FC = () => {
       setIsInitialLoading(false);
       navigate('/reinitialize', { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
+      if (err instanceof ServerUpdateRequiredError) {
+        // Server does not support the v2 API, throw unsupported error.
+        setError(t('common.errors.serverVersionNotSupported'));
+      } else {
+        setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
+      }
       hideLoading();
       throw err; // Re-throw to let modal show error
     }

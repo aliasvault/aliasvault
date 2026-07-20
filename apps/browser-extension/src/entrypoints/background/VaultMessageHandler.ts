@@ -3,14 +3,14 @@ import * as OTPAuth from 'otpauth';
 import { storage } from 'wxt/utils/storage';
 
 import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
-import { devLog } from '@/utils/DevLogger';
+import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import { FieldKey, ItemTypes, createSystemField, type Item, type PasswordSettings } from '@/utils/dist/core/models/vault';
-import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/core/models/webapi';
+import type { VaultResponse, VaultPostResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
-import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword } from '@/utils/RustCore';
+import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword, vaultCodecExtractBucket } from '@/utils/RustCore';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
@@ -20,6 +20,7 @@ import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppError
 import { NetworkError } from '@/utils/types/errors/NetworkError';
 import { PayloadTooLargeError } from '@/utils/types/errors/PayloadTooLargeError';
 import { RequestTimeoutError } from '@/utils/types/errors/RequestTimeoutError';
+import { ServerUpdateRequiredError } from '@/utils/types/errors/ServerUpdateRequiredError';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
 import type { DuplicateCheckResponse } from '@/utils/types/messaging/DuplicateCheckResponse';
@@ -30,7 +31,11 @@ import type { SaveLoginResponse } from '@/utils/types/messaging/SaveLoginRespons
 import { StringResponse as stringResponse } from '@/utils/types/messaging/StringResponse';
 import { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 import { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
+import { type VaultMutationScope, ALL_VAULT_MUTATION_SCOPES, DEFAULT_VAULT_MUTATION_SCOPE, dirtyScopeStorageKey, isManifestScope } from '@/utils/types/VaultMutationScope';
+import { VaultCodec } from '@/utils/VaultCodec';
 import { vaultMergeService } from '@/utils/VaultMergeService';
+import { vaultRetrievalService } from '@/utils/VaultRetrievalService';
+import { vaultV2SyncService } from '@/utils/VaultV2SyncService';
 import { WebApiService } from '@/utils/WebApiService';
 
 import { t } from '@/i18n/StandaloneI18n';
@@ -183,6 +188,70 @@ export async function handleStoreEncryptionKeyDerivationParams(
 }
 
 /**
+ * Fetch the latest vault from the server as a VaultResponse, via the v2-only {@link VaultRetrievalService}.
+ *
+ * GET /v2/Vault returns either the manifest model (materialized locally into a SQLite blob) or, for a
+ * not-yet-migrated user, the legacy SQLite blob as-is, so a migrated user never hits the legacy API's 426
+ * guard from the sync paths. There is no legacy-API fallback: a server without the v2 API surfaces E-903
+ * (update your server).
+ */
+async function fetchLatestVaultFromServer(): Promise<VaultResponse> {
+  const encryptionKey = await handleGetEncryptionKey();
+  if (!encryptionKey) {
+    throw new Error(formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED));
+  }
+
+  try {
+    return await vaultRetrievalService.retrieveVault(encryptionKey);
+  } catch (error) {
+    if (error instanceof ServerUpdateRequiredError) {
+      throw new Error(formatErrorWithCode(await t('common.errors.serverVersionNotSupported'), AppErrorCode.SERVER_UPDATE_REQUIRED));
+    }
+    throw error;
+  }
+}
+
+/**
+ * Upload the current SQLite via the v2 storage format.
+ * @param sqliteClient - the in-memory SQLite client to upload
+ */
+async function uploadVaultV2(sqliteClient: SqliteClient): Promise<VaultPostResponse> {
+  // Surfaces ServerUpdateRequiredError for servers that do not support the v2 API before we attempt the push.
+  await vaultV2SyncService.checkStatus();
+
+  const encryptionKey = await handleGetEncryptionKey();
+  if (!encryptionKey) {
+    throw new Error(formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED));
+  }
+
+  const username = (await storage.getItem('local:username')) as string;
+  const emailAddresses = await getEmailAddressesForVault(sqliteClient);
+
+  const result = await vaultV2SyncService.pushVault(sqliteClient, encryptionKey, username, emailAddresses);
+
+  if (result.status === 'ok') {
+    return { status: 0, newRevisionNumber: result.newManifestRevision ?? 0 };
+  }
+
+  if (result.status === 'outdated') {
+    return { status: 2, newRevisionNumber: result.newManifestRevision ?? 0 };
+  }
+
+  if (result.status === 'rejected') {
+    // Structural validation tripped — surface the reasons rather than silently uploading garbage.
+    const reason = (result.reasons ?? ['Integrity check failed']).join('; ');
+    devError('[V2Sync] Refusing to upload corrupt vault:', reason);
+    throw new Error(formatErrorWithCode(`Vault integrity check failed: ${reason}`, AppErrorCode.UPLOAD_FAILED));
+  }
+
+  /*
+   * missing-blobs: pushVault already re-uploaded the blob bytes the server asked for and retried once; landing
+   * here means the server still reports gaps, a genuine server-side problem, not a transient race.
+   */
+  throw new Error(formatErrorWithCode('Server reported missing blobs; please retry', AppErrorCode.UPLOAD_FAILED));
+}
+
+/**
  * Sync the vault with the server to check if a newer vault is available. If so, the vault will be updated.
  */
 export async function handleSyncVault(
@@ -197,8 +266,10 @@ export async function handleSyncVault(
   const localServerRevision = await storage.getItem('local:serverRevision') as number | null ?? 0;
 
   if (statusResponse.vaultRevision > localServerRevision) {
-    // Retrieve the latest vault from the server.
-    const vaultResponse = await webApi.get<VaultResponse>('Vault');
+    /*
+     * Retrieve the latest vault from the server.
+     */
+    const vaultResponse = await fetchLatestVaultFromServer();
 
     // Store in local: storage for persistence (fresh from server, not dirty)
     await storage.setItems([
@@ -322,6 +393,7 @@ export async function handleClearVaultData(): Promise<messageBoolResponse> {
     'local:hiddenPrivateEmailDomains',
     'local:serverRevision',
     'local:isDirty',
+    ...ALL_VAULT_MUTATION_SCOPES.map(scope => dirtyScopeStorageKey(scope)),
     'local:mutationSequence',
     'local:isOfflineMode',
     'local:encryptionKeyDerivationParams',
@@ -653,8 +725,69 @@ export async function handleGetEncryptionKeyDerivationParams(
 }
 
 /**
+ * Read the set of currently-dirty mutation scopes from their independent per-scope flags. Each scope is a
+ * separate idempotent boolean key (see {@link dirtyScopeStorageKey}), so concurrent mutations can never
+ * clobber each other's scope the way pushing onto one shared array could. Returns the dirty scopes in the
+ * stable {@link ALL_VAULT_MUTATION_SCOPES} order.
+ */
+async function getDirtyScopes(): Promise<VaultMutationScope[]> {
+  const flags = await Promise.all(
+    ALL_VAULT_MUTATION_SCOPES.map(async scope => ((await storage.getItem(dirtyScopeStorageKey(scope))) === true ? scope : null))
+  );
+  return flags.filter((s): s is VaultMutationScope => s !== null);
+}
+
+/**
+ * Clear every per-scope dirty flag. Called once a sync has confirmed all pending changes are on the server
+ * (guarded by the mutation-sequence check in {@link handleMarkVaultClean}).
+ */
+async function clearDirtyScopes(): Promise<void> {
+  await storage.removeItems(ALL_VAULT_MUTATION_SCOPES.map(scope => dirtyScopeStorageKey(scope)));
+}
+
+/**
+ * Push only the data buckets named by the dirty scopes — no manifest upload. Used when every pending local
+ * mutation since the last sync is bucket-scoped (e.g. a settings toggle): the server's vault content manifest
+ * is still current, so re-uploading it would be pure waste.
+ *
+ * Extension point for future bucket categories: map each category name to its extraction + push logic below.
+ * Unknown categories fall back to a full vault upload, which always covers everything.
+ * @param sqliteClient - the in-memory SQLite client to read bucket data from
+ * @param scopes - the pending dirty scopes (bucket category names, deduplicated here)
+ */
+async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultMutationScope[]): Promise<VaultPostResponse> {
+  const encryptionKey = await handleGetEncryptionKey();
+  if (!encryptionKey) {
+    throw new Error(formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED));
+  }
+
+  for (const category of new Set(scopes)) {
+    if (category === 'Settings') {
+      const settingsRows = VaultCodec.readSettingsRows(sqliteClient);
+      const bucket = await vaultCodecExtractBucket('Settings', { Settings: settingsRows });
+      const result = await vaultV2SyncService.pushDataBucketOnly(bucket, encryptionKey);
+      if (result.status !== 'ok') {
+        // Conflict persisted even after the rebase-retry — let the caller run a full re-sync (status 2).
+        return { status: 2, newRevisionNumber: (await storage.getItem('local:serverRevision')) as number | null ?? 0 };
+      }
+      devLog(`[V2Push] Bucket-only push for "Settings" done (bucket revision ${result.revision}); manifest untouched.`);
+    } else {
+      devWarn(`[V2Push] Unknown bucket scope "${category}" — falling back to full vault upload.`);
+      return (await uploadNewVaultToServer(sqliteClient)).response;
+    }
+  }
+
+  // Manifest unchanged, so the content revision stays where it was.
+  return { status: 0, newRevisionNumber: (await storage.getItem('local:serverRevision')) as number | null ?? 0 };
+}
+
+/**
  * Upload the currently stored vault to the server.
  * Returns the upload status and captures the mutation sequence at start for race detection.
+ *
+ * Bucket-aware: when every pending mutation is scoped to a data bucket (e.g. Settings), only those buckets
+ * are pushed. A dirty 'manifest' scope (or a dirty state with no recorded scopes) triggers the full upload, 
+ * which bundles all buckets as a safeguard too.
  */
 export async function handleUploadVault(
 ) : Promise<messageVaultUploadResponse> {
@@ -665,8 +798,20 @@ export async function handleUploadVault(
     // Create sqlite client from the already-stored vault blob.
     const sqliteClient = await createVaultSqliteClient();
 
-    // Upload the vault to the server.
-    const { response, vaultPruned } = await uploadNewVaultToServer(sqliteClient);
+    // Upload to the server: bucket-only when possible, full vault otherwise.
+    const dirtyScopes = await getDirtyScopes();
+    const bucketOnly = dirtyScopes.length > 0 && !dirtyScopes.some(isManifestScope);
+    if (bucketOnly) {
+      devLog(`[V2Push] All pending mutations are bucket-scoped (${dirtyScopes.join(', ')}), skipping manifest upload.`);
+    }
+    let response: VaultPostResponse;
+    let vaultPruned = false;
+    if (bucketOnly) {
+      // Bucket-only pushes never prune (settings buckets carry no trash items).
+      response = await uploadDirtyBucketsOnly(sqliteClient, dirtyScopes);
+    } else {
+      ({ response, vaultPruned } = await uploadNewVaultToServer(sqliteClient));
+    }
 
     return {
       success: true,
@@ -806,62 +951,27 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<{ re
     console.warn('[VaultSync] Failed to prune vault, continuing with upload:', pruneError);
   }
 
-  const encryptedVault = await EncryptionUtility.symmetricEncrypt(
-    updatedVaultData,
-    encryptionKey
-  );
-
-  devLog('[VaultSync] Vault exported, pruned and encrypted, sending to server');
-
-  // Store in local: storage for persistence
-  await storage.setItem('local:encryptedVault', encryptedVault);
-
-  // Get server revision for API
-  const serverRevision = await storage.getItem('local:serverRevision') as number | null ?? 0;
-
-  // Upload new encrypted vault to server.
-  const username = await storage.getItem('local:username') as string;
-  const emailAddresses = await getEmailAddressesForVault(sqliteClient);
-
-  const newVault: Vault = {
-    blob: encryptedVault,
-    createdAt: new Date().toISOString(),
-    credentialsCount: sqliteClient.items.getAll().length,
-    currentRevisionNumber: serverRevision,
-    emailAddressList: emailAddresses,
-    updatedAt: new Date().toISOString(),
-    username: username,
-    version: (await sqliteClient.getDatabaseVersion()).version,
-    // TODO: add public RSA encryption key to payload when implementing vault creation from browser extension. Currently only web app does this.
-    encryptionPublicKey: '',
-  };
-
-  const webApi = new WebApiService();
-  let response: VaultPostResponse;
+  let v2Response: VaultPostResponse;
   try {
-    response = await webApi.post<Vault, VaultPostResponse>('Vault', newVault);
+    v2Response = await uploadVaultV2(sqliteClient);
   } catch (err) {
+    if (err instanceof ServerUpdateRequiredError) {
+      throw new Error(formatErrorWithCode(await t('common.errors.serverVersionNotSupported'), AppErrorCode.SERVER_UPDATE_REQUIRED));
+    }
     if (err instanceof PayloadTooLargeError) {
       throw new Error(formatErrorWithCode(await t('common.errors.vaultTooLarge'), AppErrorCode.UPLOAD_TOO_LARGE));
     }
     throw err;
   }
 
-  // Check if response is successful (.status === 0)
-  if (response.status === 0) {
-    devLog(`[VaultSync] Upload completed (new revision ${response.newRevisionNumber})`);
-
-    // Upload succeeded - update server revision
-    await storage.setItem('local:serverRevision', response.newRevisionNumber);
-  } else if (response.status === 2) {
-    // Outdated - server has newer version
-    throw new Error(formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_OUTDATED));
-  } else {
-    // Upload failed - include the unexpected server status value for diagnosability
-    throw new Error(formatErrorWithCode(`${await t('common.errors.unknownError')} [server status: ${response.status}]`, AppErrorCode.UPLOAD_FAILED));
+  // Re-encrypt and persist locally so handleGetVault / readers continue to work without a re-sync.
+  const reEncrypted = await EncryptionUtility.symmetricEncrypt(updatedVaultData, encryptionKey);
+  await storage.setItem('local:encryptedVault', reEncrypted);
+  if (v2Response.status === 0) {
+    await storage.setItem('local:serverRevision', v2Response.newRevisionNumber);
   }
 
-  return { response, vaultPruned };
+  return { response: v2Response, vaultPruned };
 }
 
 /**
@@ -946,6 +1056,7 @@ export async function handleStoreEncryptedVault(request: {
   markDirty?: boolean;
   serverRevision?: number;
   expectedMutationSeq?: number;
+  scope?: VaultMutationScope;
 }): Promise<{ success: boolean; mutationSequence: number }> {
   let mutationSequence = await storage.getItem('local:mutationSequence') as number | null ?? 0;
 
@@ -958,23 +1069,28 @@ export async function handleStoreEncryptedVault(request: {
   }
 
   if (request.markDirty) {
-    // Increment mutation sequence and mark dirty
+    // Increment mutation sequence and mark as dirty.
     mutationSequence++;
   }
 
-  // Build items to store - use explicit typing for storage.setItems
+  // Track what changed so the next sync can choose a cheap bucket-only push (e.g. a settings toggle) over a full manifest push.
+  const dirtyScopeKey = dirtyScopeStorageKey(request.scope ?? DEFAULT_VAULT_MUTATION_SCOPE);
+
+  // Build items to store.
   if (request.markDirty && request.serverRevision !== undefined) {
     await storage.setItems([
       { key: 'local:encryptedVault', value: request.vaultBlob },
       { key: 'local:mutationSequence', value: mutationSequence },
       { key: 'local:isDirty', value: true },
-      { key: 'local:serverRevision', value: request.serverRevision }
+      { key: 'local:serverRevision', value: request.serverRevision },
+      { key: dirtyScopeKey, value: true }
     ]);
   } else if (request.markDirty) {
     await storage.setItems([
       { key: 'local:encryptedVault', value: request.vaultBlob },
       { key: 'local:mutationSequence', value: mutationSequence },
-      { key: 'local:isDirty', value: true }
+      { key: 'local:isDirty', value: true },
+      { key: dirtyScopeKey, value: true }
     ]);
   } else if (request.serverRevision !== undefined) {
     await storage.setItems([
@@ -1012,6 +1128,7 @@ export async function handleMarkVaultClean(request: {
       { key: 'local:isDirty', value: false },
       { key: 'local:serverRevision', value: request.newServerRevision }
     ]);
+    await clearDirtyScopes();
     return { cleared: true, currentMutationSeq };
   }
 
@@ -1283,7 +1400,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
       /*
        * Server has a newer vault.
        */
-      const vaultResponseJson = await webApi.get<VaultResponse>('Vault');
+      const vaultResponseJson = await fetchLatestVaultFromServer();
 
       try {
         if (syncState.isDirty) {
