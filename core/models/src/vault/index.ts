@@ -8,6 +8,7 @@ export * from './Credential';
 export * from './Attachment';
 export * from './Passkey';
 export * from './FieldKey';
+export * from './VaultDataBucketCategory';
 export * from './Tag';
 export * from './ItemTag';
 export * from './Item';

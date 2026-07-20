@@ -14,7 +14,14 @@ package_name="models"
 package_path="."
 
 echo "📦 Building $package_name..."
-npm install && npm run lint && npm run test && npm run build
+npm install
+
+echo ""
+echo "🔄 Generating vault data bucket categories (C#, TS, Swift, Kotlin) from Rust source..."
+# Run before the build so the generated TS lands in src/ and is compiled into dist/ (and linted).
+node scripts/generate-bucket-categories.cjs
+
+npm run lint && npm run test && npm run build
 
 echo ""
 echo "🔄 Generating platform-specific models (C#, Swift, Kotlin)..."

@@ -81,6 +81,14 @@ var FieldKey = {
   NotesContent: "notes.content"
 };
 
+// src/vault/VaultDataBucketCategory.ts
+var VaultDataBucketCategory = {
+  /**
+   * User client settings (sort order, autofill prefs, identity defaults, etc.).
+   */
+  Settings: "Settings"
+};
+
 // src/vault/Item.ts
 var ItemTypes = {
   Login: "Login",
@@ -443,4 +451,4 @@ function createCustomField(options) {
 // src/vault/FieldHistory.ts
 var MAX_FIELD_HISTORY_RECORDS = 10;
 
-export { FieldCategories, FieldKey, FieldTypes, ItemTypes, MAX_FIELD_HISTORY_RECORDS, SystemFieldRegistry, createCustomField, createSystemField, fieldAppliesToType, getAllSystemFieldKeys, getDefaultFieldsForItemType, getFieldConfigForType, getFieldValue, getFieldValues, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, groupFields, groupFieldsByCategory, hasField, isFieldShownByDefault, isSystemField, isSystemFieldPrefix, itemToCredential };
+export { FieldCategories, FieldKey, FieldTypes, ItemTypes, MAX_FIELD_HISTORY_RECORDS, SystemFieldRegistry, VaultDataBucketCategory, createCustomField, createSystemField, fieldAppliesToType, getAllSystemFieldKeys, getDefaultFieldsForItemType, getFieldConfigForType, getFieldValue, getFieldValues, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, groupFields, groupFieldsByCategory, hasField, isFieldShownByDefault, isSystemField, isSystemFieldPrefix, itemToCredential };

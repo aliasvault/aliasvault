@@ -3,15 +3,18 @@
  * full manifest push and a more efficient bucket-only push.
  */
 
+import { VaultDataBucketCategory, type VaultDataBucketCategoryValue } from '@/utils/dist/core/models/vault';
+
 export type VaultManifestScope = 'Main';
 
-export type VaultBucketScope = 'Settings';
+// A bucket scope is one of the generated data-bucket categories (single source of truth: Rust BUCKET_TABLES).
+export type VaultBucketScope = VaultDataBucketCategoryValue;
 
 export type VaultMutationScope = VaultManifestScope | VaultBucketScope;
 
 export const ALL_VAULT_MANIFEST_SCOPES: readonly VaultManifestScope[] = ['Main'];
 
-export const ALL_VAULT_BUCKET_SCOPES: readonly VaultBucketScope[] = ['Settings'];
+export const ALL_VAULT_BUCKET_SCOPES: readonly VaultBucketScope[] = Object.values(VaultDataBucketCategory);
 
 export const ALL_VAULT_MUTATION_SCOPES: readonly VaultMutationScope[] = [...ALL_VAULT_MANIFEST_SCOPES, ...ALL_VAULT_BUCKET_SCOPES];
 
