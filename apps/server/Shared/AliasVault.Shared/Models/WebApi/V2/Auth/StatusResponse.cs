@@ -5,11 +5,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Shared.Models.WebApi.V1.Auth;
+namespace AliasVault.Shared.Models.WebApi.V2.Auth;
+
+using AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
-/// Response model for the v1 status endpoint. Carries the single global vault revision. v2 clients use
-/// <see cref="AliasVault.Shared.Models.WebApi.V2.Auth.StatusResponse"/> instead, which is manifest-revision based.
+/// Response model for the v2 status endpoint.
 /// </summary>
 public class StatusResponse
 {
@@ -26,10 +27,12 @@ public class StatusResponse
     public required string ServerVersion { get; set; }
 
     /// <summary>
-    /// Gets or sets the latest vault revision number for the authenticated user, which the client
-    /// can use to determine if it should refresh the vault from the server.
+    /// Gets or sets the latest revision for each logical manifest the user has, so the client can compare each
+    /// manifest's server revision against its own last-known revision per manifest. For a not-yet-migrated user
+    /// the server synthesizes a Main entry from their legacy vault, so the list always contains at least one entry
+    /// for an existing user.
     /// </summary>
-    public required long VaultRevision { get; set; }
+    public List<ManifestRevision> ManifestRevisions { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the SRP salt. This is used by the client to validate that the local encryption key

@@ -97,9 +97,15 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 401));
         }
 
-        // Get latest vault revision number
+        // Latest revision per logical manifest (group by ManifestId, take the max) so the client can compare each
+        // manifest against its own last-known revision.
+        var manifestRevisions = user.VaultManifests
+            .GroupBy(x => new { x.ManifestId, x.Category })
+            .Select(g => new AliasVault.Shared.Models.WebApi.V2.Vault.ManifestRevision { ManifestId = g.Key.ManifestId, Category = g.Key.Category, Revision = g.Max(m => m.RevisionNumber) })
+            .ToList();
+
+        // Still needed for the SRP salt below (unrelated to revision reporting).
         var latestVault = user.VaultManifests.OrderByDescending(x => x.RevisionNumber).FirstOrDefault();
-        var latestRevision = latestVault?.RevisionNumber ?? 0;
 
         // Check client version compatibility if header is provided
         var clientSupported = false;
@@ -112,11 +118,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             clientSupported = meetsMinimum && !isBlocked;
         }
 
-        return Ok(new StatusResponse
+        return Ok(new AliasVault.Shared.Models.WebApi.V2.Auth.StatusResponse
         {
             ClientVersionSupported = clientSupported,
             ServerVersion = AppInfo.GetFullVersion(),
-            VaultRevision = latestRevision,
+            ManifestRevisions = manifestRevisions,
             SrpSalt = latestVault?.Salt ?? string.Empty,
         });
     }

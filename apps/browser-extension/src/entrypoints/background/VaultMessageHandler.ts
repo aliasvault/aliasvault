@@ -6,7 +6,7 @@ import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import { FieldKey, ItemTypes, createSystemField, type Item, type PasswordSettings } from '@/utils/dist/core/models/vault';
-import type { VaultResponse, VaultPostResponse } from '@/utils/dist/core/models/webapi';
+import type { VaultResponse, VaultPostResponse, StatusResponseV2 } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
@@ -53,6 +53,18 @@ import { t } from '@/i18n/StandaloneI18n';
  */
 let cachedSqliteClient: SqliteClient | null = null;
 let cachedVaultBlob: string | null = null;
+
+/** The manifest category representing the user's own personal vault. */
+const MAIN_MANIFEST_CATEGORY = 'Main';
+
+/**
+ * The server revision of the user's Main manifest,
+ * @param status - the v2 status response from the server
+ */
+function mainManifestRevision(status: StatusResponseV2): number {
+  const main = (status.manifestRevisions ?? []).find(m => m.category === MAIN_MANIFEST_CATEGORY);
+  return main?.revision ?? 0;
+}
 
 /**
  * Global sync queue state.
@@ -264,7 +276,7 @@ export async function handleSyncVault(
 
   const localServerRevision = await storage.getItem('local:serverRevision') as number | null ?? 0;
 
-  if (statusResponse.vaultRevision > localServerRevision) {
+  if (mainManifestRevision(statusResponse) > localServerRevision) {
     /*
      * Retrieve the latest vault from the server.
      */
@@ -1269,7 +1281,7 @@ export async function handleCheckSyncStatus(): Promise<SyncStatusCheckResult> {
 
     return {
       success: true,
-      hasNewerVault: statusResponse.vaultRevision > syncState.serverRevision,
+      hasNewerVault: mainManifestRevision(statusResponse) > syncState.serverRevision,
       hasDirtyChanges: syncState.isDirty,
       isOffline: false,
       requiresLogout: false
@@ -1360,7 +1372,10 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     // Get current sync state
     const syncState = await handleGetSyncState();
 
-    devLog(`[VaultSync] Status received (server rev ${statusResponse.vaultRevision}, local rev ${syncState.serverRevision}, isDirty ${syncState.isDirty})`);
+    // Compare the Main manifest's server revision (not the global vaultRevision) against our last-known revision.
+    const serverManifestRevision = mainManifestRevision(statusResponse);
+
+    devLog(`[VaultSync] Status received (server rev ${serverManifestRevision}, local rev ${syncState.serverRevision}, isDirty ${syncState.isDirty})`);
 
     // Check if server is actually available (0.0.0 indicates connection error)
     if (statusResponse.serverVersion === '0.0.0') {
@@ -1400,7 +1415,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
       return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: await t('common.errors.vaultIsLocked') };
     }
 
-    if (statusResponse.vaultRevision > syncState.serverRevision) {
+    if (serverManifestRevision > syncState.serverRevision) {
       /*
        * Server has a newer vault.
        */
@@ -1514,7 +1529,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
           AppErrorCode.VAULT_DECRYPT_FAILED
         ));
       }
-    } else if (statusResponse.vaultRevision === syncState.serverRevision) {
+    } else if (serverManifestRevision === syncState.serverRevision) {
       /**
        * Server and local vault are at the same revision.
        * If we have pending local changes, upload them now.
@@ -1546,13 +1561,13 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
       }
 
       return { success: true, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false };
-    } else if (statusResponse.vaultRevision < syncState.serverRevision) {
+    } else if (serverManifestRevision < syncState.serverRevision) {
       /**
        * Server revision DECREASED - server data loss/rollback detected.
        * Client has more advanced revision - upload to recover server state.
        */
       console.warn(
-        `Server data loss detected! Server at rev ${statusResponse.vaultRevision}, ` +
+        `Server data loss detected! Server at rev ${serverManifestRevision}, ` +
         `client at rev ${syncState.serverRevision}. Uploading to recover server state.`
       );
 
@@ -1565,7 +1580,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
         });
 
         console.info(
-          `Server recovery complete: rev ${statusResponse.vaultRevision} → ${uploadResponse.newRevisionNumber}`
+          `Server recovery complete: rev ${serverManifestRevision} → ${uploadResponse.newRevisionNumber}`
         );
 
         return { success: true, hasNewVault: uploadResponse.vaultPruned === true, wasOffline: false, upgradeRequired: false, requiresLogout: false };

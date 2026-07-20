@@ -59,12 +59,30 @@ type VaultPostResponse = {
 };
 
 /**
- * Status response type.
+ * Status response type (v1). Returned by GET /v1/Auth/status.
  */
 type StatusResponse = {
     clientVersionSupported: boolean;
     serverVersion: string;
     vaultRevision: number;
+    srpSalt: string;
+};
+
+/**
+ * The latest revision of a single logical manifest.
+ */
+type ManifestRevision = {
+    manifestId: string;
+    category: string;
+    revision: number;
+};
+/**
+ * Status response type (v2). Returned by GET /v2/Auth/status.
+ */
+type StatusResponseV2 = {
+    clientVersionSupported: boolean;
+    serverVersion: string;
+    manifestRevisions: ManifestRevision[];
     srpSalt: string;
 };
 
@@ -424,4 +442,4 @@ type MobileLoginPollResponse = {
     encryptedUsername: string | null;
 };
 
-export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type Email, type EmailAttachment, type FaviconExtractModel, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type RefreshToken, type StatusResponse, type TokenModel, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse };
+export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type Email, type EmailAttachment, type FaviconExtractModel, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, type ManifestRevision, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type RefreshToken, type StatusResponse, type StatusResponseV2, type TokenModel, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse };

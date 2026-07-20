@@ -15,8 +15,8 @@ public class StatusResponse
     /// <summary>Gets or sets the storage format the server has recorded for the user's latest vault.</summary>
     public required StorageFormat StorageFormat { get; set; }
 
-    /// <summary>Gets or sets the latest manifest revision (null for legacy users).</summary>
-    public long? ManifestRevision { get; set; }
+    /// <summary>Gets or sets the latest revision for each logical manifest the user has. Empty for legacy users.</summary>
+    public List<ManifestRevision> ManifestRevisions { get; set; } = [];
 
     /// <summary>Gets or sets the latest revision for each data-bucket kind the user has. Empty when none stored.</summary>
     public List<BucketRevision> BucketRevisions { get; set; } = [];

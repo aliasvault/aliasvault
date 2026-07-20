@@ -28,20 +28,16 @@ public class GetResponse
     /// <summary>Gets or sets the data-model version string of the returned vault (legacy version for sqlite-blob).</summary>
     public string? Version { get; set; }
 
-    /// <summary>Gets or sets the encrypted manifest blob (base64 of AES-GCM ciphertext) — null on empty vault.</summary>
-    public string? ManifestBlob { get; set; }
+    /// <summary>Gets or sets the legacy sqlite-blob revision number. Set only when StorageFormat = SqliteBlob.</summary>
+    public long? LegacyRevision { get; set; }
 
-    /// <summary>Gets or sets the SHA-256 (hex) of the manifest ciphertext for client-side storage-integrity check.</summary>
-    public string? ManifestCiphertextHash { get; set; }
-
-    /// <summary>Gets or sets the manifest revision number.</summary>
-    public long? ManifestRevision { get; set; }
+    /// <summary>
+    /// Gets or sets the manifests that make up the user's logical vault. Empty for legacy sqlite-blobs.
+    /// </summary>
+    public List<Manifest> Manifests { get; set; } = [];
 
     /// <summary>Gets or sets the data buckets (e.g. settings) for this user — each with its own kind + revision.</summary>
     public List<Bucket> Buckets { get; set; } = [];
-
-    /// <summary>Gets or sets the list of blob references the manifest needs (so the client can detect cache misses).</summary>
-    public List<BlobReference> BlobReferences { get; set; } = [];
 
     /// <summary>Gets or sets the plaintext email routing data (private/public domains + claimed addresses).</summary>
     public EmailRouting EmailRouting { get; set; } = new();

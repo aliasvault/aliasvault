@@ -6,6 +6,7 @@ export * from './VaultResponse';
 export * from './Vault';
 export * from './VaultPostResponse';
 export * from './StatusResponse';
+export * from './StatusResponseV2';
 export * from './Login';
 export * from './ValidateLogin';
 export * from './MailboxBulk';

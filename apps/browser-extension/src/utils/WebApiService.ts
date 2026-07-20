@@ -1,4 +1,4 @@
-import type { StatusResponse } from '@/utils/dist/core/models/webapi';
+import type { StatusResponseV2 } from '@/utils/dist/core/models/webapi';
 
 import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
 
@@ -309,9 +309,9 @@ export class WebApiService {
    * Returns offline indicator (serverVersion: '0.0.0') for network failures and server errors (5xx, 404, etc.).
    * Auth errors (ApiAuthError) are re-thrown to be handled appropriately (e.g., trigger logout).
    */
-  public async getStatus(): Promise<StatusResponse> {
+  public async getStatus(): Promise<StatusResponseV2> {
     try {
-      const status = await this.get<StatusResponse>('Auth/status');
+      const status = await this.get<StatusResponseV2>('Auth/status');
       // Persist the server version so it can be shown on the settings page, also while offline.
       if (status.serverVersion && status.serverVersion !== '0.0.0') {
         await storage.setItem('local:serverVersion', status.serverVersion);
@@ -329,7 +329,7 @@ export class WebApiService {
       return {
         clientVersionSupported: true,
         serverVersion: '0.0.0',
-        vaultRevision: 0,
+        manifestRevisions: [],
         srpSalt: ''
       };
     }
@@ -338,7 +338,7 @@ export class WebApiService {
   /**
    * Validates the status response and returns an error message (as translation key) if validation fails.
    */
-  public validateStatusResponse(statusResponse: StatusResponse): string | null {
+  public validateStatusResponse(statusResponse: StatusResponseV2): string | null {
     if (!statusResponse.clientVersionSupported) {
       return 'clientVersionNotSupported';
     }

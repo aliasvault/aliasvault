@@ -70,15 +70,12 @@ public class VaultController(
             return Unauthorized();
         }
 
-        // Check if the user has migrated to v2 by checking if they have any manifest-v1 rows.
-        var isV2 = await context.VaultManifests.AnyAsync(x => x.OwnerUserId == user.Id && x.StorageFormat == ManifestFormat);
-
-        // Content revision = the highest RevisionNumber among the user's manifest-v1 rows. Null for legacy users.
-        var manifestRevision = isV2
-            ? await context.VaultManifests
-                .Where(x => x.OwnerUserId == user.Id && x.StorageFormat == ManifestFormat)
-                .MaxAsync(x => (long?)x.RevisionNumber)
-            : null;
+        // Latest revision per logical manifest.
+        var manifestRevisions = await context.VaultManifests
+            .Where(x => x.OwnerUserId == user.Id && x.StorageFormat == ManifestFormat)
+            .GroupBy(x => new { x.ManifestId, x.Category })
+            .Select(g => new ManifestRevision { ManifestId = g.Key.ManifestId, Category = g.Key.Category, Revision = g.Max(m => m.RevisionNumber) })
+            .ToListAsync();
 
         // Latest revision per bucket kind (history table → group by kind, take the max).
         var bucketRevisions = await context.VaultDataBuckets
@@ -89,8 +86,8 @@ public class VaultController(
 
         return Ok(new StatusResponse
         {
-            StorageFormat = isV2 ? StorageFormat.Manifest : StorageFormat.SqliteBlob,
-            ManifestRevision = manifestRevision,
+            StorageFormat = manifestRevisions.Count > 0 ? StorageFormat.Manifest : StorageFormat.SqliteBlob,
+            ManifestRevisions = manifestRevisions,
             BucketRevisions = bucketRevisions,
         });
     }
@@ -112,12 +109,17 @@ public class VaultController(
 
         var emailRouting = await BuildEmailRoutingAsync(context, user);
 
-        var latestVault = await context.VaultManifests
-            .Where(x => x.OwnerUserId == user.Id && x.StorageFormat == ManifestFormat)
-            .OrderByDescending(x => x.RevisionNumber)
-            .FirstOrDefaultAsync();
+        // Latest revision per logical manifest: keep only rows whose RevisionNumber equals the max for their
+        // ManifestId.
+        var latestManifests = await context.VaultManifests
+            .Where(x => x.OwnerUserId == user.Id && x.StorageFormat == ManifestFormat
+                && x.RevisionNumber == context.VaultManifests
+                    .Where(y => y.OwnerUserId == user.Id && y.StorageFormat == ManifestFormat && y.ManifestId == x.ManifestId)
+                    .Max(y => y.RevisionNumber))
+            .Select(x => new { x.RevisionId, x.ManifestId, x.Category, x.ManifestBlob, x.ManifestCiphertextHash, x.RevisionNumber })
+            .ToListAsync();
 
-        if (latestVault == null)
+        if (latestManifests.Count == 0)
         {
             // User hasn't migrated to manifest-v1 yet. Rather than forcing the client onto the v1 endpoint (which
             // would round-trip through the 426 guard), we serve the latest legacy SQLite blob from here with a
@@ -134,7 +136,7 @@ public class VaultController(
                 StorageFormat = StorageFormat.SqliteBlob,
                 LegacyVaultBlob = legacy?.VaultBlob ?? string.Empty,
                 Version = legacy?.Version ?? string.Empty,
-                ManifestRevision = legacy?.RevisionNumber ?? 0,
+                LegacyRevision = legacy?.RevisionNumber ?? 0,
                 EmailRouting = emailRouting,
             });
         }
@@ -154,8 +156,70 @@ public class VaultController(
             })
             .ToListAsync();
 
+        // Blob references are scoped per manifest revision. Fetch them for all latest manifests in one query, then
+        // group them back onto each manifest so every entry in the list carries exactly the blobs it needs.
+        var latestRevisionIds = latestManifests.Select(m => m.RevisionId).ToList();
+        var refsByRevision = (await context.VaultBlobReferences
+                .Where(r => latestRevisionIds.Contains(r.ManifestRevisionId))
+                .Join(
+                    context.VaultBlobObjects.Where(b => b.OwnerUserId == user.Id),
+                    r => r.BlobHash,
+                    b => b.Hash,
+                    (r, b) => new { r.ManifestRevisionId, b.Hash, b.Category })
+                .ToListAsync())
+            .GroupBy(x => x.ManifestRevisionId)
+            .ToDictionary(g => g.Key, g => g.Select(x => new BlobReference { Hash = x.Hash, Category = x.Category }).ToList());
+
+        var manifests = latestManifests.Select(m => new Manifest
+        {
+            ManifestId = m.ManifestId,
+            Category = m.Category,
+            Blob = m.ManifestBlob,
+            CiphertextHash = m.ManifestCiphertextHash,
+            Revision = m.RevisionNumber,
+            BlobReferences = refsByRevision.TryGetValue(m.RevisionId, out var refs) ? refs : [],
+        }).ToList();
+
+        return Ok(new GetResponse
+        {
+            Status = VaultStatus.Ok,
+            StorageFormat = StorageFormat.Manifest,
+            Manifests = manifests,
+            Buckets = buckets,
+            EmailRouting = emailRouting,
+        });
+    }
+
+    /// <summary>
+    /// Single-manifest fetch. Returns the latest revision of one logical manifest (by ManifestId) plus its blob
+    /// references, without the rest of the snapshot. Lets a client incrementally refresh just one manifest (e.g. a
+    /// single shared folder) instead of re-pulling the whole vault. The bundled <see cref="Get"/> stays the
+    /// one-round-trip path for fresh init.
+    /// </summary>
+    /// <param name="manifestId">The stable identifier of the logical manifest to fetch.</param>
+    /// <returns>The manifest DTO, or 404 when the user has no such manifest-v1 manifest.</returns>
+    [HttpGet("manifest/{manifestId:guid}")]
+    public async Task<IActionResult> GetManifest(Guid manifestId)
+    {
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var user = await GetCurrentUserAsync();
+        if (user == null)
+        {
+            return Unauthorized();
+        }
+
+        var latest = await context.VaultManifests
+            .Where(x => x.OwnerUserId == user.Id && x.StorageFormat == ManifestFormat && x.ManifestId == manifestId)
+            .OrderByDescending(x => x.RevisionNumber)
+            .FirstOrDefaultAsync();
+
+        if (latest == null)
+        {
+            return NotFound();
+        }
+
         var blobRefs = await context.VaultBlobReferences
-            .Where(r => r.ManifestRevisionId == latestVault.RevisionId)
+            .Where(r => r.ManifestRevisionId == latest.RevisionId)
             .Join(
                 context.VaultBlobObjects.Where(b => b.OwnerUserId == user.Id),
                 r => r.BlobHash,
@@ -163,16 +227,14 @@ public class VaultController(
                 (r, b) => new BlobReference { Hash = b.Hash, Category = b.Category })
             .ToListAsync();
 
-        return Ok(new GetResponse
+        return Ok(new Manifest
         {
-            Status = VaultStatus.Ok,
-            StorageFormat = StorageFormat.Manifest,
-            ManifestBlob = latestVault.ManifestBlob,
-            ManifestCiphertextHash = latestVault.ManifestCiphertextHash,
-            ManifestRevision = latestVault.RevisionNumber,
-            Buckets = buckets,
+            ManifestId = latest.ManifestId,
+            Category = latest.Category,
+            Blob = latest.ManifestBlob,
+            CiphertextHash = latest.ManifestCiphertextHash,
+            Revision = latest.RevisionNumber,
             BlobReferences = blobRefs,
-            EmailRouting = emailRouting,
         });
     }
 
