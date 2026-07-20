@@ -6,7 +6,7 @@ import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import { FieldKey, ItemTypes, createSystemField, type Item, type PasswordSettings } from '@/utils/dist/core/models/vault';
-import type { VaultResponse, VaultPostResponse, StatusResponseV2 } from '@/utils/dist/core/models/webapi';
+import type { VaultResponse, VaultPostResponse, StatusResponseV2, ManifestRevision } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
@@ -34,7 +34,7 @@ import { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types
 import { type VaultMutationScope, ALL_VAULT_MUTATION_SCOPES, DEFAULT_VAULT_MUTATION_SCOPE, dirtyScopeStorageKey, isManifestScope } from '@/utils/types/VaultMutationScope';
 import { VaultCodec } from '@/utils/VaultCodec';
 import { vaultMergeService } from '@/utils/VaultMergeService';
-import { vaultSyncService } from '@/utils/VaultSyncService';
+import { vaultSyncService, SERVER_MANIFEST_REVISIONS_STORAGE_KEY } from '@/utils/VaultSyncService';
 import { WebApiService } from '@/utils/WebApiService';
 
 import { t } from '@/i18n/StandaloneI18n';
@@ -58,12 +58,50 @@ let cachedVaultBlob: string | null = null;
 const MAIN_MANIFEST_CATEGORY = 'Main';
 
 /**
- * The server revision of the user's Main manifest,
- * @param status - the v2 status response from the server
+ * The server revision of the user's Main manifest.
+ * @param status - the status response from the server
  */
 function mainManifestRevision(status: StatusResponseV2): number {
   const main = (status.manifestRevisions ?? []).find(m => m.category === MAIN_MANIFEST_CATEGORY);
   return main?.revision ?? 0;
+}
+
+/** The client's last-known revision per non-Main manifest (manifestId → revision); empty when no shared folders. */
+async function getLocalSharedManifestRevisions(): Promise<Record<string, number>> {
+  return (await storage.getItem(SERVER_MANIFEST_REVISIONS_STORAGE_KEY)) as Record<string, number> | null ?? {};
+}
+
+/**
+ * Whether the client should pull and re-materialize because the server's manifest set no longer matches what the
+ * client has locally materialized. Compares the full server list against the client's per-manifest last-known
+ * revisions and is idempotent: after a successful materialize the local record matches
+ * the server, so this returns false until the next server-side change.
+ *
+ * @param serverManifests - the per-manifest revisions from the status response
+ * @param localMainRevision - the client's last-known Main revision (local:serverRevision)
+ * @param localSharedRevisions - the client's last-known revision per non-Main manifest
+ */
+function serverManifestsNeedPull(serverManifests: ManifestRevision[], localMainRevision: number, localSharedRevisions: Record<string, number>): boolean {
+  const serverShared = new Map<string, number>();
+  for (const m of (serverManifests ?? [])) {
+    if (m.category === MAIN_MANIFEST_CATEGORY) {
+      if (m.revision > localMainRevision) {
+        return true;
+      }
+    } else {
+      serverShared.set(m.manifestId, m.revision);
+    }
+  }
+
+  // Any shared-folder manifest added or with a changed revision on the server.
+  for (const [manifestId, revision] of serverShared) {
+    if (localSharedRevisions[manifestId] !== revision) {
+      return true;
+    }
+  }
+
+  // Any shared-folder manifest the client still tracks but the server no longer lists (removed / revoked).
+  return Object.keys(localSharedRevisions).some(manifestId => !serverShared.has(manifestId));
 }
 
 /**
@@ -275,8 +313,9 @@ export async function handleSyncVault(
   }
 
   const localServerRevision = await storage.getItem('local:serverRevision') as number | null ?? 0;
+  const localSharedRevisions = await getLocalSharedManifestRevisions();
 
-  if (mainManifestRevision(statusResponse) > localServerRevision) {
+  if (serverManifestsNeedPull(statusResponse.manifestRevisions, localServerRevision, localSharedRevisions)) {
     /*
      * Retrieve the latest vault from the server.
      */
@@ -403,6 +442,7 @@ export async function handleClearVaultData(): Promise<messageBoolResponse> {
     'local:privateEmailDomains',
     'local:hiddenPrivateEmailDomains',
     'local:serverRevision',
+    SERVER_MANIFEST_REVISIONS_STORAGE_KEY,
     'local:isDirty',
     ...ALL_VAULT_MUTATION_SCOPES.map(scope => dirtyScopeStorageKey(scope)),
     'local:mutationSequence',
@@ -1279,9 +1319,11 @@ export async function handleCheckSyncStatus(): Promise<SyncStatusCheckResult> {
       return { success: false, hasNewerVault: false, hasDirtyChanges: false, isOffline: false, requiresLogout: true, errorKey: 'passwordChanged' };
     }
 
+    const localSharedRevisions = await getLocalSharedManifestRevisions();
+
     return {
       success: true,
-      hasNewerVault: mainManifestRevision(statusResponse) > syncState.serverRevision,
+      hasNewerVault: serverManifestsNeedPull(statusResponse.manifestRevisions, syncState.serverRevision, localSharedRevisions),
       hasDirtyChanges: syncState.isDirty,
       isOffline: false,
       requiresLogout: false
@@ -1372,10 +1414,11 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     // Get current sync state
     const syncState = await handleGetSyncState();
 
-    // Compare the Main manifest's server revision (not the global vaultRevision) against our last-known revision.
     const serverManifestRevision = mainManifestRevision(statusResponse);
+    const localSharedRevisions = await getLocalSharedManifestRevisions();
+    const needsPull = serverManifestsNeedPull(statusResponse.manifestRevisions, syncState.serverRevision, localSharedRevisions);
 
-    devLog(`[VaultSync] Status received (server rev ${serverManifestRevision}, local rev ${syncState.serverRevision}, isDirty ${syncState.isDirty})`);
+    devLog(`[VaultSync] Status received (server main rev ${serverManifestRevision}, local rev ${syncState.serverRevision}, needsPull ${needsPull}, isDirty ${syncState.isDirty})`);
 
     // Check if server is actually available (0.0.0 indicates connection error)
     if (statusResponse.serverVersion === '0.0.0') {
@@ -1415,9 +1458,10 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
       return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: await t('common.errors.vaultIsLocked') };
     }
 
-    if (serverManifestRevision > syncState.serverRevision) {
+    if (needsPull) {
       /*
-       * Server has a newer vault.
+       * Server has a manifest we haven't materialized yet. Either the Main vault advanced, or a manifest was
+       * added/updated (e.g. a newly shared folder). Pull and re-materialize so the new/updated content appears.
        */
       const vaultResponseJson = await fetchLatestVaultFromServer();
 

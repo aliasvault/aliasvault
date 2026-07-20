@@ -96,6 +96,10 @@ const bucketRevKey = (category: string): `local:${string}` => `local:vaultV2Buck
 const BLOB_CACHE_STORAGE_KEY = 'local:vaultV2BlobCipherCache';
 /** Hashes the server has stored (refreshed on every pull/push). */
 const SERVER_HASHES_STORAGE_KEY = 'local:vaultV2ServerBlobHashes';
+/**
+ * The client's last-known revision per non-Main manifest (manifestId > revision), refreshed on every materialize.
+ */
+export const SERVER_MANIFEST_REVISIONS_STORAGE_KEY = 'local:serverManifestRevisions';
 
 /** Max accumulated base64 ciphertext characters per POST /v2/Vault/blobs call (~4 MB request body). */
 const BLOB_UPLOAD_BATCH_MAX_CHARS = 4 * 1024 * 1024;
@@ -146,11 +150,38 @@ export type PushResult = {
 type BlobRefDto = { hash: string; category: string };
 type BlobDto = { hash: string; category: string; encryptedDataBase64: string };
 
+/**
+ * A single manifest as carried in the GET snapshot / single-manifest fetch.
+ */
+type ManifestDto = {
+  manifestId: string;
+  /** Manifest category. */
+  category: string;
+  blob?: string | null;
+  ciphertextHash?: string | null;
+  revision: number;
+  blobReferences?: BlobRefDto[];
+};
+
+/** Per-manifest revision as carried in the status response. */
+type ManifestRevisionDto = { manifestId: string; category: string; revision: number };
+
 /** A data bucket as carried in the GET snapshot / bundled upload. `category` matches the server enum name (e.g. "Settings"). */
 type BucketDto = { category: string; blob?: string | null; ciphertextHash?: string | null; revision?: number };
 
 /** Per-kind revision as carried in status / upload responses. */
 type BucketRevisionDto = { category: string; revision: number };
+
+/** The manifest category that represents the user's own personal vault. */
+const MAIN_MANIFEST_CATEGORY = 'Main';
+
+/**
+ * Pick the user's main manifest from a snapshot's manifest list.
+ */
+function selectMainManifest(manifests: ManifestDto[] | undefined | null): ManifestDto | undefined {
+  const list = manifests ?? [];
+  return list.find(m => m.category === MAIN_MANIFEST_CATEGORY) ?? list[0];
+}
 
 /**
  * Numeric value of the server StorageFormat enum for the manifest-v1 format (SqliteBlob = 0, Manifest = 1).
@@ -167,11 +198,11 @@ export type GetResponseDto = {
   /** The legacy encrypted SQLite blob (for not-yet-migrated users). */
   legacyVaultBlob?: string | null;
   version?: string | null;
-  manifestBlob?: string | null;
-  manifestCiphertextHash?: string | null;
-  manifestRevision?: number | null;
+  /** The legacy sqlite-blob revision (set only on the sqlite-blob path). */
+  legacyRevision?: number | null;
+  /** The manifests making up the logical vault. Each carries its own blob references. */
+  manifests?: ManifestDto[];
   buckets?: BucketDto[];
-  blobReferences?: BlobRefDto[];
   emailRouting?: {
     emailAddressList?: string[];
     privateEmailDomainList?: string[];
@@ -182,7 +213,7 @@ export type GetResponseDto = {
 
 type StatusResponseDto = {
   storageFormat: number;
-  manifestRevision: number | null;
+  manifestRevisions: ManifestRevisionDto[];
   bucketRevisions: BucketRevisionDto[];
 };
 
@@ -215,7 +246,8 @@ export class VaultSyncService {
      */
     devLog('[V2Pull] Step 1/4: fetching vault snapshot (GET /v2/Vault)...');
     const snapshot = await this.fetchSnapshot();
-    devLog(`[V2Pull] Step 1/4 done: storageFormat=${snapshot.storageFormat}, revision=${snapshot.manifestRevision}, manifestBlob=${snapshot.manifestBlob?.length ?? 0} chars, buckets=${snapshot.buckets?.length ?? 0}, blobRefs=${snapshot.blobReferences?.length ?? 0}`);
+    const mainManifest = selectMainManifest(snapshot.manifests);
+    devLog(`[V2Pull] Step 1/4 done: storageFormat=${snapshot.storageFormat}, manifests=${snapshot.manifests?.length ?? 0}, mainRevision=${mainManifest?.revision}, manifestBlob=${mainManifest?.blob?.length ?? 0} chars, buckets=${snapshot.buckets?.length ?? 0}, blobRefs=${mainManifest?.blobReferences?.length ?? 0}`);
 
     /*
      * Steps 2–4 — decrypt, materialize, and re-encrypt. Any failure here is a client-side vault-processing error
@@ -241,7 +273,7 @@ export class VaultSyncService {
       return this.buildResponse(
         snapshot.legacyVaultBlob ?? '',
         snapshot.version ?? '',
-        typeof snapshot.manifestRevision === 'number' ? snapshot.manifestRevision : 0,
+        typeof snapshot.legacyRevision === 'number' ? snapshot.legacyRevision : 0,
         snapshot
       );
     } catch (error) {
@@ -258,9 +290,11 @@ export class VaultSyncService {
     try {
       const dto = await webApi.get<StatusResponseDto>(STATUS_ENDPOINT);
       const settingsRevision = (dto.bucketRevisions ?? []).find(b => b.category === SETTINGS_BUCKET_CATEGORY)?.revision ?? null;
+      const revisions = dto.manifestRevisions ?? [];
+      const mainManifestRevision = (revisions.find(m => m.category === MAIN_MANIFEST_CATEGORY) ?? revisions[0])?.revision ?? null;
       return {
         isMigrated: dto.storageFormat === STORAGE_FORMAT_MANIFEST,
-        manifestRevision: dto.manifestRevision,
+        manifestRevision: mainManifestRevision,
         settingsRevision,
       };
     } catch (e) {
@@ -294,27 +328,41 @@ export class VaultSyncService {
    */
   private async materializeFromSnapshot(snapshot: GetResponseDto, vek: string): Promise<PullResult> {
     const webApi = new WebApiService();
-    if (!snapshot.manifestBlob) {
+
+    const mainManifest = selectMainManifest(snapshot.manifests);
+    if (!mainManifest?.blob) {
       throw new Error('VaultSyncService: server returned no manifest blob, nothing to assemble.');
     }
 
     // Storage-layer integrity: verify the ciphertext we received matches the hash the server stored.
-    if (snapshot.manifestCiphertextHash) {
-      const actual = await vaultCodecComputeCiphertextHash(snapshot.manifestBlob);
-      if (actual !== snapshot.manifestCiphertextHash) {
+    if (mainManifest.ciphertextHash) {
+      const actual = await vaultCodecComputeCiphertextHash(mainManifest.blob);
+      if (actual !== mainManifest.ciphertextHash) {
         throw new Error('VaultSyncService: manifest ciphertext hash mismatch, refusing to load. Possible storage corruption.');
       }
     }
 
     devLog('[V2Pull] Manifest ciphertext hash verified; decrypting + opening manifest...');
-    const manifestJson = await decryptUnpack(snapshot.manifestBlob, vek);
+    const manifestJson = await decryptUnpack(mainManifest.blob, vek);
     const manifest = JSON.parse(manifestJson) as VaultManifest;
     devLog(`[V2Pull] Manifest opened (content hash verified): schemaVersion=${manifest.schemaVersion}, migrationId=${manifest.migrationId}, tables: ${Object.entries(manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
 
     // Persist the user salt locally so subsequent canonicalizes hash blobs the same way.
     await storage.setItem(SALT_STORAGE_KEY, manifest.userSalt);
-    const manifestRevision = typeof snapshot.manifestRevision === 'number' ? snapshot.manifestRevision : 0;
+    const manifestRevision = typeof mainManifest.revision === 'number' ? mainManifest.revision : 0;
     await storage.setItem('local:serverRevision', manifestRevision);
+
+    /*
+     * Persist the revision of every non-Main manifest (shared folders) so sync can detect when one is added or
+     * updated server-side. Main is excluded on purpose, it's tracked via local:serverRevision above.
+     */
+    const sharedManifestRevisions: Record<string, number> = {};
+    for (const m of (snapshot.manifests ?? [])) {
+      if (m.category !== MAIN_MANIFEST_CATEGORY && typeof m.revision === 'number') {
+        sharedManifestRevisions[m.manifestId] = m.revision;
+      }
+    }
+    await storage.setItem(SERVER_MANIFEST_REVISIONS_STORAGE_KEY, sharedManifestRevisions);
 
     // Decrypt every data bucket in the snapshot (Settings today; more categories later).
     const dataBuckets: VaultDataBucket[] = [];
@@ -342,7 +390,7 @@ export class VaultSyncService {
     }
 
     // Fetch any blobs referenced by the manifest that aren't already in the local (encrypted) cache.
-    const refs = snapshot.blobReferences ?? [];
+    const refs = mainManifest.blobReferences ?? [];
     const cache = await this.loadBlobCache();
     const missingHashes = refs.map(r => r.hash).filter(h => !(h in cache));
     devLog(`[V2Pull] Blob refs: ${refs.length} referenced, ${refs.length - missingHashes.length} cached locally, ${missingHashes.length} to download.`);
