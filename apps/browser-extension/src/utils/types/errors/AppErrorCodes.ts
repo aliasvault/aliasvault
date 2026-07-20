@@ -72,6 +72,7 @@ export enum AppErrorCode {
   // Migration/version errors (E-9xx)
   MIGRATION_CHECK_FAILED = 'E-901',
   VERSION_INCOMPATIBLE = 'E-902',
+  SERVER_UPDATE_REQUIRED = 'E-903',
 }
 
 /**
@@ -167,6 +168,7 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     // Migration/version errors (E-9xx)
     [AppErrorCode.MIGRATION_CHECK_FAILED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.VERSION_INCOMPATIBLE]: 'common.errors.browserExtensionOutdated',
+    [AppErrorCode.SERVER_UPDATE_REQUIRED]: 'common.errors.serverVersionNotSupported',
   };
 
   return codeToKeyMap[code] || 'common.errors.unknownErrorTryAgain';
