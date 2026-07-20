@@ -89,9 +89,9 @@ pub fn pack_payload(payload_json: &str) -> VaultResult<Vec<u8>> {
     compress::gzip(envelope_json.as_bytes())
 }
 
-/// Unpack a payload: gunzip > parse envelope > verify the embedded content hash.
+/// Unpack a payload: decompress (gzip or plain JSON) > parse envelope > verify the embedded content hash.
 pub fn unpack_payload(plain_bytes: &[u8]) -> VaultResult<String> {
-    let envelope_json = compress::gunzip_to_string(plain_bytes)?;
+    let envelope_json = compress::decompress_to_string(plain_bytes)?;
     let envelope: serde_json::Value = serde_json::from_str(&envelope_json)?;
 
     if !envelope.get("schemaVersion").map(|v| v.is_number()).unwrap_or(false) {

@@ -190,6 +190,20 @@ fn pack_unpack_roundtrip_verifies_content_hash() {
 }
 
 #[test]
+fn unpack_payload_accepts_uncompressed_raw_json() {
+    // Plain (uncompressed) value: the envelope is raw UTF-8 JSON with no gzip magic bytes.
+    // unpack_payload supports both gzipped and plain values, so this must round-trip.
+    let payload = json!({ "schemaVersion": 1, "tables": { "Items": [] }, "userSalt": "abcd" });
+    let content_hash = hash::content_hash(&payload);
+    let envelope = json!({ "schemaVersion": 1, "contentHash": content_hash, "payload": payload });
+    let raw = serde_json::to_string(&envelope).unwrap().into_bytes();
+    assert_ne!(&raw[0..2], &[0x1f, 0x8b]); // sanity: no gzip magic present
+    let unpacked = unpack_payload(&raw).unwrap();
+    let unpacked_val: serde_json::Value = serde_json::from_str(&unpacked).unwrap();
+    assert_eq!(unpacked_val, payload);
+}
+
+#[test]
 fn unpack_payload_rejects_tampered_payload() {
     let payload = json!({ "a": 1 });
     let content_hash = hash::content_hash(&payload);
