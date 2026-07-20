@@ -484,7 +484,7 @@
     "loginSave": {
       "title": "Mentési felhívás ablak",
       "description": "Felugró ablak amely megkérdezi, hogy a beírt belépést mentse e az oldalhoz.",
-      "blockedSites": "Blocked sites",
+      "blockedSites": "Blokkolt oldalak",
       "blockedSitesDescription": "Sites where the save prompt will never appear.",
       "clearAllBlockedSites": "Clear all blocked sites"
     },
