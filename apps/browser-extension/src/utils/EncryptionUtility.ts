@@ -89,6 +89,40 @@ export class EncryptionUtility {
   }
 
   /**
+   * Encrypts raw bytes using AES-GCM symmetric encryption.
+   */
+  public static async symmetricEncryptBytes(plaintextBytes: Uint8Array, base64Key: string): Promise<string> {
+    const key = await crypto.subtle.importKey(
+      "raw",
+      Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
+      {
+        name: "AES-GCM",
+        length: 256,
+      },
+      false,
+      ["encrypt"]
+    );
+
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+
+    const ciphertext = await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv: iv },
+      key,
+      plaintextBytes
+    );
+
+    const combined = new Uint8Array(iv.length + ciphertext.byteLength);
+    combined.set(iv, 0);
+    combined.set(new Uint8Array(ciphertext), iv.length);
+
+    return btoa(
+      Array.from(combined)
+        .map(byte => String.fromCharCode(byte))
+        .join('')
+    );
+  }
+
+  /**
    * Decrypts data using AES-GCM symmetric encryption
    */
   public static async symmetricDecrypt(base64Ciphertext: string, base64Key: string): Promise<string> {
