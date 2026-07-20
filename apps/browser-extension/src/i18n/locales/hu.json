@@ -472,14 +472,14 @@
     },
     "passwordGenerator": "Jelszó Generátor",
     "passwordGeneratorSettings": {
-      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "description": "Jelszó alapbeállítás újonnan létrehozott elemekhez, mint például hossz, karakter készlet, azonosítókulcs nyelve.",
       "configureButton": "Konfigurálás"
     },
-    "credentialAutofill": "Credential autofill",
-    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
-    "totpAutofill": "2FA code autofill",
-    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
-    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
+    "credentialAutofill": "Bejegyzések kitöltése",
+    "credentialAutofillDescription": "Felugró kitöltő ablak megjelenítése ha felhasználónév/jelszó mezőt érzékel",
+    "totpAutofill": "Kétlépcsős kód kitöltés",
+    "totpAutofillDescription": "Felugró kitöltő ablak megjelenítése ha kétlépcsős mezőt érzékel",
+    "autoCopyTotpOnAutofill": "Kétlépcsős kód automata másolása vágólapra",
     "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
     "loginSave": {
       "title": "Save Login Prompt",
