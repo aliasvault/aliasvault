@@ -480,10 +480,10 @@
     "totpAutofill": "Kétlépcsős kód kitöltés",
     "totpAutofillDescription": "Felugró kitöltő ablak megjelenítése ha kétlépcsős mezőt érzékel",
     "autoCopyTotpOnAutofill": "Kétlépcsős kód automata másolása vágólapra",
-    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
+    "autoCopyTotpOnAutofillDescription": "Az elem kitöltést követően a kétlépcsős kód automatikus másolása a vágólapra",
     "loginSave": {
-      "title": "Save Login Prompt",
-      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "title": "Mentési felhívás ablak",
+      "description": "Felugró ablak amely megkérdezi, hogy a beírt belépést mentse e az oldalhoz.",
       "blockedSites": "Blocked sites",
       "blockedSitesDescription": "Sites where the save prompt will never appear.",
       "clearAllBlockedSites": "Clear all blocked sites"
