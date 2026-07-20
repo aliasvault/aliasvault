@@ -34,8 +34,7 @@ import { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types
 import { type VaultMutationScope, ALL_VAULT_MUTATION_SCOPES, DEFAULT_VAULT_MUTATION_SCOPE, dirtyScopeStorageKey, isManifestScope } from '@/utils/types/VaultMutationScope';
 import { VaultCodec } from '@/utils/VaultCodec';
 import { vaultMergeService } from '@/utils/VaultMergeService';
-import { vaultRetrievalService } from '@/utils/VaultRetrievalService';
-import { vaultV2SyncService } from '@/utils/VaultV2SyncService';
+import { vaultSyncService } from '@/utils/VaultSyncService';
 import { WebApiService } from '@/utils/WebApiService';
 
 import { t } from '@/i18n/StandaloneI18n';
@@ -188,7 +187,7 @@ export async function handleStoreEncryptionKeyDerivationParams(
 }
 
 /**
- * Fetch the latest vault from the server as a VaultResponse, via the v2-only {@link VaultRetrievalService}.
+ * Fetch the latest vault from the server as a VaultResponse, via the v2-only {@link VaultSyncService}.
  *
  * GET /v2/Vault returns either the manifest model (materialized locally into a SQLite blob) or, for a
  * not-yet-migrated user, the legacy SQLite blob as-is, so a migrated user never hits the legacy API's 426
@@ -202,7 +201,7 @@ async function fetchLatestVaultFromServer(): Promise<VaultResponse> {
   }
 
   try {
-    return await vaultRetrievalService.retrieveVault(encryptionKey);
+    return await vaultSyncService.pull(encryptionKey);
   } catch (error) {
     if (error instanceof ServerUpdateRequiredError) {
       throw new Error(formatErrorWithCode(await t('common.errors.serverVersionNotSupported'), AppErrorCode.SERVER_UPDATE_REQUIRED));
@@ -217,7 +216,7 @@ async function fetchLatestVaultFromServer(): Promise<VaultResponse> {
  */
 async function uploadVaultV2(sqliteClient: SqliteClient): Promise<VaultPostResponse> {
   // Surfaces ServerUpdateRequiredError for servers that do not support the v2 API before we attempt the push.
-  await vaultV2SyncService.checkStatus();
+  await vaultSyncService.checkStatus();
 
   const encryptionKey = await handleGetEncryptionKey();
   if (!encryptionKey) {
@@ -227,7 +226,7 @@ async function uploadVaultV2(sqliteClient: SqliteClient): Promise<VaultPostRespo
   const username = (await storage.getItem('local:username')) as string;
   const emailAddresses = await getEmailAddressesForVault(sqliteClient);
 
-  const result = await vaultV2SyncService.pushVault(sqliteClient, encryptionKey, username, emailAddresses);
+  const result = await vaultSyncService.push(sqliteClient, encryptionKey, username, emailAddresses);
 
   if (result.status === 'ok') {
     return { status: 0, newRevisionNumber: result.newManifestRevision ?? 0 };
@@ -245,7 +244,7 @@ async function uploadVaultV2(sqliteClient: SqliteClient): Promise<VaultPostRespo
   }
 
   /*
-   * missing-blobs: pushVault already re-uploaded the blob bytes the server asked for and retried once; landing
+   * missing-blobs: push already re-uploaded the blob bytes the server asked for and retried once; landing
    * here means the server still reports gaps, a genuine server-side problem, not a transient race.
    */
   throw new Error(formatErrorWithCode('Server reported missing blobs; please retry', AppErrorCode.UPLOAD_FAILED));
@@ -774,7 +773,7 @@ async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultM
 
     const tables = VaultCodec.readNamedTables(sqliteClient, spec.tables);
     const bucket = await vaultCodecExtractBucket(category, tables);
-    const result = await vaultV2SyncService.pushDataBucketOnly(bucket, encryptionKey);
+    const result = await vaultSyncService.pushDataBucketOnly(bucket, encryptionKey);
     if (result.status !== 'ok') {
       // Conflict persisted even after the rebase-retry, let the caller run a full re-sync (status 2).
       return { status: 2, newRevisionNumber: (await storage.getItem('local:serverRevision')) as number | null ?? 0 };

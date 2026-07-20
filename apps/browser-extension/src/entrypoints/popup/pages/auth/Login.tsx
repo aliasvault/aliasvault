@@ -26,7 +26,7 @@ import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCode
 import { ServerUpdateRequiredError } from '@/utils/types/errors/ServerUpdateRequiredError';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
-import { vaultRetrievalService } from '@/utils/VaultRetrievalService';
+import { vaultSyncService } from '@/utils/VaultSyncService';
 
 import { vaultStateEvents } from '@/events/VaultStateEvents';
 
@@ -164,7 +164,7 @@ const Login: React.FC = () => {
     });
 
     // Fetch the latest vault.
-    const vaultResponseJson = await vaultRetrievalService.retrieveVault(passwordHashBase64);
+    const vaultResponseJson = await vaultSyncService.pull(passwordHashBase64);
 
     /*
      * Persist and load the vault.
@@ -463,7 +463,7 @@ const Login: React.FC = () => {
       });
 
       // Fetch the latest vault.
-      const vaultResponse = await vaultRetrievalService.retrieveVault(result.decryptionKey);
+      const vaultResponse = await vaultSyncService.pull(result.decryptionKey);
 
       // Persist and load the vault
       await persistAndLoadVault(vaultResponse, result.decryptionKey, result.username);
