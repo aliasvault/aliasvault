@@ -10,7 +10,7 @@ import type { VaultResponse, VaultPostResponse } from '@/utils/dist/core/models/
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
-import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword, vaultCodecExtractBucket } from '@/utils/RustCore';
+import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword, vaultCodecExtractBucket, vaultCodecBucketLayout } from '@/utils/RustCore';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
@@ -746,11 +746,10 @@ async function clearDirtyScopes(): Promise<void> {
 }
 
 /**
- * Push only the data buckets named by the dirty scopes — no manifest upload. Used when every pending local
+ * Push only the data buckets named by the dirty scopes, no manifest upload. Used when every pending local
  * mutation since the last sync is bucket-scoped (e.g. a settings toggle): the server's vault content manifest
  * is still current, so re-uploading it would be pure waste.
  *
- * Extension point for future bucket categories: map each category name to its extraction + push logic below.
  * Unknown categories fall back to a full vault upload, which always covers everything.
  * @param sqliteClient - the in-memory SQLite client to read bucket data from
  * @param scopes - the pending dirty scopes (bucket category names, deduplicated here)
@@ -761,20 +760,26 @@ async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultM
     throw new Error(formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED));
   }
 
+  /*
+   * Which tables make up each bucket category is owned by the Rust layer.
+   */
+  const layout = await vaultCodecBucketLayout();
+
   for (const category of new Set(scopes)) {
-    if (category === 'Settings') {
-      const settingsRows = VaultCodec.readSettingsRows(sqliteClient);
-      const bucket = await vaultCodecExtractBucket('Settings', { Settings: settingsRows });
-      const result = await vaultV2SyncService.pushDataBucketOnly(bucket, encryptionKey);
-      if (result.status !== 'ok') {
-        // Conflict persisted even after the rebase-retry — let the caller run a full re-sync (status 2).
-        return { status: 2, newRevisionNumber: (await storage.getItem('local:serverRevision')) as number | null ?? 0 };
-      }
-      devLog(`[V2Push] Bucket-only push for "Settings" done (bucket revision ${result.revision}); manifest untouched.`);
-    } else {
-      devWarn(`[V2Push] Unknown bucket scope "${category}" — falling back to full vault upload.`);
+    const spec = layout.find(entry => entry.category === category);
+    if (!spec) {
+      devWarn(`[V2Push] Unknown bucket scope "${category}", falling back to full vault upload.`);
       return (await uploadNewVaultToServer(sqliteClient)).response;
     }
+
+    const tables = VaultCodec.readNamedTables(sqliteClient, spec.tables);
+    const bucket = await vaultCodecExtractBucket(category, tables);
+    const result = await vaultV2SyncService.pushDataBucketOnly(bucket, encryptionKey);
+    if (result.status !== 'ok') {
+      // Conflict persisted even after the rebase-retry, let the caller run a full re-sync (status 2).
+      return { status: 2, newRevisionNumber: (await storage.getItem('local:serverRevision')) as number | null ?? 0 };
+    }
+    devLog(`[V2Push] Bucket-only push for "${category}" done (bucket revision ${result.revision}); manifest untouched.`);
   }
 
   // Manifest unchanged, so the content revision stays where it was.

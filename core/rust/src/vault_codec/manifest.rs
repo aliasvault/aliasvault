@@ -54,6 +54,14 @@ impl DataBucket {
     }
 }
 
+/// One entry in the bucket layout: a category and the tables it owns.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BucketLayoutEntry {
+    pub category: String,
+    pub tables: Vec<String>,
+}
+
 /// A decoded blob entry. `bytes_base64` is the plaintext blob, base64-encoded for transport
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

@@ -224,6 +224,9 @@ export type CodecCanonicalizeInput = {
 /** Materialized tables the platform inserts into a fresh SQLite DB. */
 export type CodecMaterialized = { tables: CodecTableData[]; migrationId: string };
 
+/** One entry in the bucket layout: a category and the tables it owns. */
+export type CodecBucketLayoutEntry = { category: string; tables: string[] };
+
 /** Structural validation outcome. */
 export type CodecValidation = { ok: boolean; failedRules: string[]; message: string };
 
@@ -249,6 +252,14 @@ export async function vaultCodecMaterializeAsSqlite(manifest: CodecManifest, dat
 export async function vaultCodecExtractBucket(category: string, tables: Record<string, Array<Record<string, unknown>>>): Promise<CodecDataBucket> {
   await initRustCore();
   return core.vaultCodecExtractBucket({ category, tables }) as CodecDataBucket;
+}
+
+/**
+ * The bucket layout: every category and the tables it owns.
+ */
+export async function vaultCodecBucketLayout(): Promise<CodecBucketLayoutEntry[]> {
+  await initRustCore();
+  return core.vaultCodecBucketLayout() as CodecBucketLayoutEntry[];
 }
 
 /**

@@ -45,8 +45,24 @@ fn canonicalize_from_sqlite_splits_settings_into_data_bucket() {
 }
 
 #[test]
+fn bucket_layout_matches_bucket_tables_source_of_truth() {
+    // The layout platforms consume must be derived purely from BUCKET_TABLES, one entry per distinct
+    // category, each listing exactly that category's tables.
+    let layout = bucket_layout();
+    assert_eq!(layout.len(), bucket_categories().len());
+    for entry in &layout {
+        assert_eq!(entry.tables, tables_for_category(&entry.category));
+        for table in &entry.tables {
+            assert_eq!(bucket_category_for(table), Some(entry.category.as_str()));
+        }
+    }
+    assert_eq!(layout.iter().map(|e| e.category.as_str()).collect::<Vec<_>>(), vec!["Settings"]);
+    assert_eq!(bucket_layout_json().unwrap(), serde_json::to_string(&layout).unwrap());
+}
+
+#[test]
 fn canonicalize_from_sqlite_skips_internal_tables() {
-    // Gotcha #4: skip-tables must never enter the manifest.
+    // Skip-tables must never enter the manifest.
     let input = basic_input(vec![
         CodecTableData { name: "Items".to_string(), records: vec![] },
         CodecTableData { name: "__EFMigrationsHistory".to_string(), records: vec![row(&[("MigrationId", json!("x"))])] },

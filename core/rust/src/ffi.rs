@@ -271,6 +271,18 @@ pub unsafe extern "C" fn vault_codec_validate_data_bucket_ffi(input_json: *const
     codec_json_ffi(input_json, "input_json", crate::vault_codec::validate_data_bucket_json)
 }
 
+/// The bucket layout: `[{ category, tables: [<name>] }]` JSON.
+///
+/// # Safety
+/// Free the result with `free_string`.
+#[no_mangle]
+pub extern "C" fn vault_codec_bucket_layout_ffi() -> *mut c_char {
+    match crate::vault_codec::bucket_layout_json() {
+        Ok(json) => string_to_c_char(json),
+        Err(e) => create_error_response(&format!("vault_codec error: {}", e)),
+    }
+}
+
 /// Generate a fresh per-user salt (lowercase hex).
 ///
 /// # Safety

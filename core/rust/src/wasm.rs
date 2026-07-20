@@ -159,6 +159,12 @@ pub fn vault_codec_extract_bucket_js(input: JsValue) -> Result<JsValue, JsValue>
     codec_to_js(&vault_codec::extract_bucket(input.category, input.tables))
 }
 
+/// The bucket layout: `[{ category, tables: [<name>] }]`. Source of truth for platform bucket-only sync.
+#[wasm_bindgen(js_name = vaultCodecBucketLayout)]
+pub fn vault_codec_bucket_layout_js() -> Result<JsValue, JsValue> {
+    codec_to_js(&vault_codec::bucket_layout())
+}
+
 /// Generate a fresh 32-byte per-user salt (lowercase hex).
 #[wasm_bindgen(js_name = vaultCodecGenerateUserSalt)]
 pub fn vault_codec_generate_user_salt_js() -> String {

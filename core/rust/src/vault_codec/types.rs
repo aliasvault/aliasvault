@@ -42,6 +42,11 @@ pub fn bucket_categories() -> Vec<&'static str> {
     out
 }
 
+/// The tables that make up a bucket category, in declaration order. Empty if the category is unknown.
+pub fn tables_for_category(category: &str) -> Vec<&'static str> {
+    BUCKET_TABLES.iter().filter(|(_, c)| *c == category).map(|(t, _)| *t).collect()
+}
+
 /// Manifest / metadata schema version. This is the manifest *wire structure* version and is its own
 /// axis, independent of the data-model `version` string (which tracks EF migrations).
 /// It starts at 1 for the first manifest generation; bump only on a breaking structural change

@@ -172,6 +172,12 @@ pub fn vault_codec_extract_bucket(input_json: String) -> Result<String, VaultErr
     crate::vault_codec::extract_bucket_json(&input_json)
 }
 
+/// The bucket layout: `[{ category, tables: [<name>] }]` JSON. Source of truth for bucket-only sync.
+#[uniffi::export]
+pub fn vault_codec_bucket_layout() -> Result<String, VaultError> {
+    crate::vault_codec::bucket_layout_json()
+}
+
 /// Generate a fresh 32-byte per-user salt (lowercase hex).
 #[uniffi::export]
 pub fn vault_codec_generate_user_salt() -> String {

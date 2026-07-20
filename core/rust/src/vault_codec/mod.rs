@@ -24,12 +24,12 @@ use crate::error::{VaultError, VaultResult};
 
 pub use hash::{canonical_json, content_hash};
 pub use manifest::{
-    BlobEntry, CanonicalizeInput, CanonicalizedVault, DataBucket, Manifest, MaterializeInput,
-    MaterializedTables, CodecRecord, CodecTableData,
+    BlobEntry, BucketLayoutEntry, CanonicalizeInput, CanonicalizedVault, DataBucket, Manifest,
+    MaterializeInput, MaterializedTables, CodecRecord, CodecTableData,
 };
 pub use types::{
-    bucket_categories, bucket_category_for, BLOB_COLUMNS, BUCKET_TABLES, SCHEMA_VERSION,
-    SKIP_TABLES,
+    bucket_categories, bucket_category_for, tables_for_category, BLOB_COLUMNS, BUCKET_TABLES,
+    SCHEMA_VERSION, SKIP_TABLES,
 };
 pub use validate::ValidationResult;
 
@@ -50,6 +50,17 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
 /// Build a single data bucket for `category` from its tables (bucket-only push path).
 pub fn extract_bucket(category: String, tables: std::collections::HashMap<String, Vec<CodecRecord>>) -> DataBucket {
     canonicalize::extract_bucket(category, tables)
+}
+
+/// The bucket layout: every category and the tables it owns, in declaration order.
+pub fn bucket_layout() -> Vec<BucketLayoutEntry> {
+    bucket_categories()
+        .into_iter()
+        .map(|category| BucketLayoutEntry {
+            category: category.to_string(),
+            tables: tables_for_category(category).into_iter().map(str::to_string).collect(),
+        })
+        .collect()
 }
 
 /// Generate a fresh 32-byte per-user salt as a lowercase hex string.
@@ -158,6 +169,11 @@ pub fn extract_bucket_json(input_json: &str) -> VaultResult<String> {
     }
     let input: Input = serde_json::from_str(input_json)?;
     Ok(serde_json::to_string(&extract_bucket(input.category, input.tables))?)
+}
+
+/// JSON-string sibling of [`bucket_layout`]. Output: `[{ "category": <str>, "tables": [<str>] }]`.
+pub fn bucket_layout_json() -> VaultResult<String> {
+    Ok(serde_json::to_string(&bucket_layout())?)
 }
 
 /// JSON-string sibling of [`validate_manifest`].
