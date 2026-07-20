@@ -10,6 +10,7 @@ namespace AliasVault.Api.Controllers.V2;
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Helpers;
+using AliasVault.Api.Services;
 using AliasVault.Api.Vault;
 using AliasVault.Api.Vault.RetentionRules;
 using AliasVault.Shared.Models.Enums;
@@ -30,6 +31,7 @@ using Microsoft.EntityFrameworkCore;
 /// <param name="userManager">UserManager.</param>
 /// <param name="timeProvider">Time provider.</param>
 /// <param name="config">Server config.</param>
+/// <param name="rateLimitService">RateLimitService instance.</param>
 [ApiVersion("2")]
 
 public class VaultController(
@@ -37,7 +39,8 @@ public class VaultController(
     IAliasServerDbContextFactory dbContextFactory,
     UserManager<AliasVaultUser> userManager,
     ITimeProvider timeProvider,
-    Config config) : AuthenticatedRequestController(userManager)
+    Config config,
+    RateLimitService rateLimitService) : AuthenticatedRequestController(userManager)
 {
     private const string ManifestFormat = "manifest-v1";
     private const string LegacyFormat = "sqlite-blob";
@@ -693,6 +696,32 @@ public class VaultController(
         var processed = new List<string>();
         var supportedDomains = config.PrivateEmailDomains;
 
+        // Resolve the alias creation limits for this user.
+        var rateLimits = await rateLimitService.ResolveAsync(user, RateLimitType.AliasCreation);
+
+        // Calculate the current usage baseline per limit. addedThisSync is then added to each in the loop.
+        var limitUsages = new List<(int MaxCount, int BaseCount)>();
+        foreach (var limit in rateLimits)
+        {
+            int baseCount;
+            if (limit.WindowSeconds == 0)
+            {
+                // Global absolute cap: every claim the user has ever made (including disabled ones).
+                baseCount = userOwnedEmailClaims.Count;
+            }
+            else
+            {
+                // Time-based cap: aliases created within the rolling window (create-then-delete still counts).
+                var windowStart = timeProvider.UtcNow.AddSeconds(-limit.WindowSeconds);
+                baseCount = await context.UserEmailClaims.CountAsync(x => x.UserId == user.Id && x.CreatedAt >= windowStart);
+            }
+
+            limitUsages.Add((limit.MaxCount, baseCount));
+        }
+
+        var addedThisSync = 0;
+        var aliasLimitLogged = false;
+
         foreach (var email in newEmailAddresses)
         {
             var sanitized = EmailHelper.SanitizeEmail(email);
@@ -730,6 +759,18 @@ public class VaultController(
                 continue;
             }
 
+            // Once any limit is reached, silently skip creating further aliases (logged once for audits).
+            if (limitUsages.Any(u => u.BaseCount + addedThisSync >= u.MaxCount))
+            {
+                if (!aliasLimitLogged)
+                {
+                    logger.LogWarning("{User} exceeded alias creation limit. Skipping creation of additional aliases.", user.UserName);
+                    aliasLimitLogged = true;
+                }
+
+                continue;
+            }
+
             context.UserEmailClaims.Add(new UserEmailClaim
             {
                 UserId = user.Id,
@@ -739,6 +780,7 @@ public class VaultController(
                 CreatedAt = timeProvider.UtcNow,
                 UpdatedAt = timeProvider.UtcNow,
             });
+            addedThisSync++;
         }
 
         foreach (var existing in userOwnedEmailClaims.Where(x => !x.Disabled).ToList())
