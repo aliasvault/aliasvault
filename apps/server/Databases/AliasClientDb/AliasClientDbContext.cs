@@ -110,6 +110,11 @@ public class AliasClientDbContext : DbContext
     public DbSet<ItemTag> ItemTags { get; set; }
 
     /// <summary>
+    /// Gets or sets the CodecOverflows DbSet.
+    /// </summary>
+    public DbSet<CodecOverflow> CodecOverflows { get; set; }
+
+    /// <summary>
     /// The OnModelCreating method.
     /// </summary>
     /// <param name="modelBuilder">ModelBuilder instance.</param>
