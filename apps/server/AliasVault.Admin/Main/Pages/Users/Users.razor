@@ -234,7 +234,7 @@ else
                     CreatedAt = user.CreatedAt,
                     LastActivityDate = user.LastActivityDate,
                     VaultCount = user.Vaults.Count(),
-                    CredentialCount = user.Vaults.OrderByDescending(x => x.RevisionNumber).First().CredentialCount,
+                    CredentialCount = user.Vaults.Sum(x => x.CredentialCount),
                     EmailClaimCount = user.EmailClaimCount,
                     VaultStorageInKb = user.Vaults.Sum(x => x.FileSize),
                 };
@@ -347,8 +347,8 @@ else
                 break;
             case "CredentialCount":
                 query = SortDirection == SortDirection.Ascending
-                    ? query.OrderBy(x => x.VaultManifests.OrderByDescending(x => x.RevisionNumber).First().CredentialsCount)
-                    : query.OrderByDescending(x => x.VaultManifests.OrderByDescending(x => x.RevisionNumber).First().CredentialsCount);
+                    ? query.OrderBy(x => x.VaultManifests.Sum(v => v.CredentialsCount))
+                    : query.OrderByDescending(x => x.VaultManifests.Sum(v => v.CredentialsCount));
                 break;
             case "EmailClaimCount":
                 query = SortDirection == SortDirection.Ascending

@@ -303,7 +303,7 @@ else
     private AliasVaultUser? User { get; set; } = new();
     private int TwoFactorKeysCount { get; set; }
     private List<AliasVaultUserRefreshToken> RefreshTokenList { get; set; } = [];
-    private List<VaultManifest> VaultList { get; set; } = [];
+    private List<VaultManifestBase> VaultList { get; set; } = [];
     private List<AuthLog> AuthLogList { get; set; } = [];
     private UserUsageStatistics? UserUsageStats { get; set; }
     private bool IsEditingEmailLimits { get; set; }
@@ -382,12 +382,12 @@ else
             .OrderBy(x => x.CreatedAt)
             .ToListAsync();
 
-        // Load all vaults for this user (do not load the actual file content for performance reasons).
-        VaultList = await dbContext.VaultManifests.Where(x => x.OwnerUserId == User.Id).Select(x => new VaultManifest
+        // Load all vault revisions for this user: the current revision per manifest plus the history revisions
+        // (do not load the actual file content for performance reasons).
+        var currentManifests = await dbContext.VaultManifests.Where(x => x.OwnerUserId == User.Id).Select(x => new VaultManifest
             {
-                RevisionId = x.RevisionId,
                 ManifestId = x.ManifestId,
-                Category = x.Category,
+                IsRoot = x.IsRoot,
                 StorageFormat = x.StorageFormat,
                 Version = x.Version,
                 RevisionNumber = x.RevisionNumber,
@@ -403,8 +403,30 @@ else
                 EmailClaimsCount = x.EmailClaimsCount,
                 Client = x.Client,
             })
-            .OrderBy(x => x.UpdatedAt)
             .ToListAsync();
+
+        var historyRevisions = await dbContext.VaultManifestsHistory.Where(x => x.OwnerUserId == User.Id).Select(x => new VaultManifestsHistory
+            {
+                ManifestId = x.ManifestId,
+                OwnerUserId = x.OwnerUserId,
+                StorageFormat = x.StorageFormat,
+                Version = x.Version,
+                RevisionNumber = x.RevisionNumber,
+                FileSize = x.FileSize,
+                CreatedAt = x.CreatedAt,
+                UpdatedAt = x.UpdatedAt,
+                Salt = x.Salt,
+                Verifier = x.Verifier,
+                VaultBlob = string.Empty,
+                EncryptionType = x.EncryptionType,
+                EncryptionSettings = x.EncryptionSettings,
+                CredentialsCount = x.CredentialsCount,
+                EmailClaimsCount = x.EmailClaimsCount,
+                Client = x.Client,
+            })
+            .ToListAsync();
+
+        VaultList = currentManifests.Cast<VaultManifestBase>().Concat(historyRevisions).OrderBy(x => x.UpdatedAt).ToList();
 
         // Load recent auth logs for this user (last 3 records).
         AuthLogList = await dbContext.AuthLogs
@@ -502,11 +524,19 @@ else
     }
 
     /// <summary>
-    /// Handles the action of making a vault the current one.
+    /// Handles the action of restoring a history revision as the current one. The current revision is archived into
+    /// history first, then the chosen history revision's payload is copied onto the current row with a new (higher)
+    /// revision number so the monotonic revision sequence is preserved for client concurrency checks.
     /// </summary>
-    /// <param name="vault">The vault to make current.</param>
-    private async Task MakeCurrentAsync(VaultManifest vault)
+    /// <param name="vault">The vault revision to make current.</param>
+    private async Task MakeCurrentAsync(VaultManifestBase vault)
     {
+        if (vault is not VaultManifestsHistory historyEntry)
+        {
+            // Already the current revision; nothing to restore.
+            return;
+        }
+
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
         if (await ConfirmModalService.ShowConfirmation(
                 title: "Confirm Vault Restoration",
@@ -518,15 +548,26 @@ Important notes:
 • All active sessions will be revoked and the user will need to login again on all devices.
 
 Do you want to proceed with the restoration?")) {
-            // Load vault
-            var currentVault = await dbContext.VaultManifests.FindAsync(vault.RevisionId);
-            if (currentVault == null)
+            // Load the current row and the full history revision (including its blob payload).
+            var currentVault = await dbContext.VaultManifests.FindAsync(historyEntry.ManifestId);
+            var revisionToRestore = await dbContext.VaultManifestsHistory.FindAsync(historyEntry.ManifestId, historyEntry.RevisionNumber);
+            if (currentVault == null || revisionToRestore == null)
             {
                 return;
             }
 
-            // Update time to make this the current vault.
-            currentVault.RevisionNumber = VaultList.MaxBy(x => x.RevisionNumber)!.RevisionNumber + 1;
+            // Archive the current revision into history first, then copy the restored payload onto the current row
+            // with a new revision number one above the previous current.
+            var newRevisionNumber = currentVault.RevisionNumber + 1;
+            dbContext.VaultManifestsHistory.Add(VaultManifestsHistory.CreateFrom(currentVault));
+            currentVault.CopyPayloadFrom(revisionToRestore);
+            currentVault.RevisionNumber = newRevisionNumber;
+
+            // The restored revision moves out of history; re-key its blob references to the new revision number.
+            dbContext.VaultManifestsHistory.Remove(revisionToRestore);
+            await dbContext.VaultBlobReferences
+                .Where(r => r.ManifestId == currentVault.ManifestId && r.RevisionNumber == historyEntry.RevisionNumber)
+                .ExecuteUpdateAsync(s => s.SetProperty(r => r.RevisionNumber, newRevisionNumber));
 
             // Save it.
             await dbContext.SaveChangesAsync();

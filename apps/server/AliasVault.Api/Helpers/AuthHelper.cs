@@ -74,8 +74,8 @@ public static class AuthHelper
     /// <returns>Tuple with salt, verifier, encryption type and encryption settings.</returns>
     public static (string Salt, string Verifier, string EncryptionType, string EncryptionSettings) GetUserLatestVaultEncryptionSettings(AliasVaultUser user)
     {
-        // Retrieve latest vault of user which contains the encryption settings.
-        var latestVault = user.VaultManifests.OrderByDescending(x => x.RevisionNumber).Select(x => new { x.Salt, x.Verifier, x.EncryptionType, x.EncryptionSettings }).First();
+        // Retrieve the user's root manifest which contains the current encryption settings.
+        var latestVault = user.VaultManifests.Where(x => x.IsRoot).Select(x => new { x.Salt, x.Verifier, x.EncryptionType, x.EncryptionSettings }).First();
         return (latestVault.Salt, latestVault.Verifier, latestVault.EncryptionType, latestVault.EncryptionSettings);
     }
 

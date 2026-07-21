@@ -97,15 +97,14 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 401));
         }
 
-        // Latest revision per logical manifest (group by ManifestId, take the max) so the client can compare each
-        // manifest against its own last-known revision.
+        // Current revision per logical manifest (one row per manifest) so the client can compare each manifest
+        // against its own last-known revision.
         var manifestRevisions = user.VaultManifests
-            .GroupBy(x => new { x.ManifestId, x.Category })
-            .Select(g => new AliasVault.Shared.Models.WebApi.V2.Vault.ManifestRevision { ManifestId = g.Key.ManifestId, Category = g.Key.Category, Revision = g.Max(m => m.RevisionNumber) })
+            .Select(x => new AliasVault.Shared.Models.WebApi.V2.Vault.ManifestRevision { ManifestId = x.ManifestId, IsRoot = x.IsRoot, Revision = x.RevisionNumber })
             .ToList();
 
-        // Still needed for the SRP salt below (unrelated to revision reporting).
-        var latestVault = user.VaultManifests.OrderByDescending(x => x.RevisionNumber).FirstOrDefault();
+        // Root manifest still needed for the SRP salt below (unrelated to revision reporting).
+        var latestVault = user.VaultManifests.FirstOrDefault(x => x.IsRoot);
 
         // Check client version compatibility if header is provided
         var clientSupported = false;
@@ -484,7 +483,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         user.VaultManifests.Add(new AliasServerDb.VaultManifest
         {
             ManifestId = Guid.NewGuid(),
-            Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main,
+            IsRoot = true,
             VaultBlob = string.Empty,
             StorageFormat = "sqlite-blob",
             Version = "0.0.0",

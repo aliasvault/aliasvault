@@ -73,14 +73,13 @@ public class VaultController(
             return Unauthorized();
         }
 
-        // Latest revision per logical manifest.
+        // Current revision per logical manifest.
         var manifestRevisions = await context.VaultManifests
             .Where(x => x.OwnerUserId == user.Id && x.StorageFormat == ManifestFormat)
-            .GroupBy(x => new { x.ManifestId, x.Category })
-            .Select(g => new ManifestRevision { ManifestId = g.Key.ManifestId, Category = g.Key.Category, Revision = g.Max(m => m.RevisionNumber) })
+            .Select(x => new ManifestRevision { ManifestId = x.ManifestId, IsRoot = x.IsRoot, Revision = x.RevisionNumber })
             .ToListAsync();
 
-        // Latest revision per bucket kind (history table → group by kind, take the max).
+        // Latest revision per bucket kind.
         var bucketRevisions = await context.VaultDataBuckets
             .Where(x => x.OwnerUserId == user.Id)
             .GroupBy(x => x.Category)
@@ -112,14 +111,10 @@ public class VaultController(
 
         var emailRouting = await BuildEmailRoutingAsync(context, user);
 
-        // Latest revision per logical manifest: keep only rows whose RevisionNumber equals the max for their
-        // ManifestId.
+        // Current revision per logical manifest (one row per manifest in the VaultManifests table).
         var latestManifests = await context.VaultManifests
-            .Where(x => x.OwnerUserId == user.Id && x.StorageFormat == ManifestFormat
-                && x.RevisionNumber == context.VaultManifests
-                    .Where(y => y.OwnerUserId == user.Id && y.StorageFormat == ManifestFormat && y.ManifestId == x.ManifestId)
-                    .Max(y => y.RevisionNumber))
-            .Select(x => new { x.RevisionId, x.ManifestId, x.Category, x.ManifestBlob, x.ManifestCiphertextHash, x.RevisionNumber })
+            .Where(x => x.OwnerUserId == user.Id && x.StorageFormat == ManifestFormat)
+            .Select(x => new { x.ManifestId, x.IsRoot, x.ManifestBlob, x.ManifestCiphertextHash, x.RevisionNumber })
             .ToListAsync();
 
         if (latestManifests.Count == 0)
@@ -159,28 +154,30 @@ public class VaultController(
             })
             .ToListAsync();
 
-        // Blob references are scoped per manifest revision. Fetch them for all latest manifests in one query, then
-        // group them back onto each manifest so every entry in the list carries exactly the blobs it needs.
-        var latestRevisionIds = latestManifests.Select(m => m.RevisionId).ToList();
-        var refsByRevision = (await context.VaultBlobReferences
-                .Where(r => latestRevisionIds.Contains(r.ManifestRevisionId))
+        // Blob references are scoped per manifest revision. Fetch them for all manifests in one query, then keep
+        // only the refs belonging to each manifest's current revision (older refs belong to history revisions).
+        var manifestIds = latestManifests.Select(m => m.ManifestId).ToList();
+        var currentRevisionByManifest = latestManifests.ToDictionary(m => m.ManifestId, m => m.RevisionNumber);
+        var refsByManifest = (await context.VaultBlobReferences
+                .Where(r => manifestIds.Contains(r.ManifestId))
                 .Join(
                     context.VaultBlobObjects.Where(b => b.OwnerUserId == user.Id),
                     r => r.BlobHash,
                     b => b.Hash,
-                    (r, b) => new { r.ManifestRevisionId, b.Hash, b.Category })
+                    (r, b) => new { r.ManifestId, r.RevisionNumber, b.Hash, b.Category })
                 .ToListAsync())
-            .GroupBy(x => x.ManifestRevisionId)
+            .Where(x => currentRevisionByManifest.TryGetValue(x.ManifestId, out var rev) && rev == x.RevisionNumber)
+            .GroupBy(x => x.ManifestId)
             .ToDictionary(g => g.Key, g => g.Select(x => new BlobReference { Hash = x.Hash, Category = x.Category }).ToList());
 
         var manifests = latestManifests.Select(m => new Manifest
         {
             ManifestId = m.ManifestId,
-            Category = m.Category,
+            IsRoot = m.IsRoot,
             Blob = m.ManifestBlob,
             CiphertextHash = m.ManifestCiphertextHash,
             Revision = m.RevisionNumber,
-            BlobReferences = refsByRevision.TryGetValue(m.RevisionId, out var refs) ? refs : [],
+            BlobReferences = refsByManifest.TryGetValue(m.ManifestId, out var refs) ? refs : [],
         }).ToList();
 
         return Ok(new GetResponse
@@ -213,7 +210,6 @@ public class VaultController(
 
         var latest = await context.VaultManifests
             .Where(x => x.OwnerUserId == user.Id && x.StorageFormat == ManifestFormat && x.ManifestId == manifestId)
-            .OrderByDescending(x => x.RevisionNumber)
             .FirstOrDefaultAsync();
 
         if (latest == null)
@@ -222,7 +218,7 @@ public class VaultController(
         }
 
         var blobRefs = await context.VaultBlobReferences
-            .Where(r => r.ManifestRevisionId == latest.RevisionId)
+            .Where(r => r.ManifestId == latest.ManifestId && r.RevisionNumber == latest.RevisionNumber)
             .Join(
                 context.VaultBlobObjects.Where(b => b.OwnerUserId == user.Id),
                 r => r.BlobHash,
@@ -233,7 +229,7 @@ public class VaultController(
         return Ok(new Manifest
         {
             ManifestId = latest.ManifestId,
-            Category = latest.Category,
+            IsRoot = latest.IsRoot,
             Blob = latest.ManifestBlob,
             CiphertextHash = latest.ManifestCiphertextHash,
             Revision = latest.RevisionNumber,
@@ -242,9 +238,9 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Atomic upload. Inserts any new blobs, validates every referenced hash exists, inserts a new Vaults row
-    /// for the new manifest, replaces blob references, optionally upserts metadata, optionally syncs email
-    /// routing, all in a single DB transaction on purpose.
+    /// Atomic upload. Inserts any new blobs, validates every referenced hash exists, archives the current manifest
+    /// revision into history, updates the current manifest row in place, adds blob references, optionally upserts
+    /// metadata, optionally syncs email routing, all in a single DB transaction on purpose.
     /// </summary>
     /// <param name="model">Upload request DTO.</param>
     /// <param name="clientHeader">Client header.</param>
@@ -266,26 +262,19 @@ public class VaultController(
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USERNAME_MISMATCH, 400));
         }
 
-        // Take a SRP-settings snapshot from the user's latest vault row so we can preserve them on the new v2 row.
-        var srpSnapshot = await context.VaultManifests
-            .Where(x => x.OwnerUserId == user.Id)
-            .OrderByDescending(x => x.RevisionNumber)
-            .Select(x => new { x.Salt, x.Verifier, x.EncryptionType, x.EncryptionSettings, x.Version, x.ManifestId })
-            .FirstOrDefaultAsync();
-
-        if (srpSnapshot == null)
+        // The v2 upload targets the user's root manifest. Registration guarantees a root manifest row exists.
+        var currentManifest = await context.VaultManifests.FirstOrDefaultAsync(x => x.OwnerUserId == user.Id && x.IsRoot);
+        if (currentManifest == null)
         {
-            // No previous vault exists yet. TODO: test v2 registration flow to ensure this ensures a vault record always is created during registration.
+            // No root manifest exists yet. TODO: test v2 registration flow to ensure this ensures a vault record always is created during registration.
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
         }
 
         // Optimistic concurrency against the single monotonic RevisionNumber counter, which is shared across
-        // legacy ("sqlite-blob") and "manifest-v1" rows. A migrating client sends the legacy revision it last
-        // synced as CurrentManifestRevision, so the first manifest-v1 row continues the sequence (e.g. legacy 50 →
-        // manifest-v1 51) rather than resetting to 1 and sorting below the legacy rows.
-        var serverRevision = await context.VaultManifests
-            .Where(x => x.OwnerUserId == user.Id)
-            .MaxAsync(x => (long?)x.RevisionNumber) ?? 0;
+        // legacy ("sqlite-blob") and "manifest-v1" revisions. A migrating client sends the legacy revision it last
+        // synced as CurrentManifestRevision, so the first manifest-v1 revision continues the sequence (e.g. legacy
+        // 50 → manifest-v1 51) rather than resetting to 1 and sorting below the legacy revisions.
+        var serverRevision = currentManifest.RevisionNumber;
         var newManifestRevision = model.CurrentManifestRevision + 1;
         if (serverRevision >= newManifestRevision)
         {
@@ -337,43 +326,37 @@ public class VaultController(
                 }
             }
 
-            // 3) Insert the new Vaults row in manifest-v1 format. VaultBlob (legacy column) is left empty for v2 rows.
-            var newVault = new VaultManifest
-            {
-                OwnerUserId = user.Id,
+            // 3) Archive the current revision into history first, then update the current row in place with the
+            // new manifest-v1 revision. This ordering is a design invariant: the VaultManifests table structurally
+            // never holds two rows for the same manifest. SRP settings (Salt/Verifier/EncryptionType/Settings) stay
+            // untouched on the current row. VaultBlob (legacy column) is emptied for v2 revisions.
+            var archivedRevision = VaultManifestsHistory.CreateFrom(currentManifest);
+            context.VaultManifestsHistory.Add(archivedRevision);
 
-                // Same logical "main" manifest as the user's existing rows, reuse its ManifestId so this revision
-                // stays grouped with the prior ones (legacy rows have been backfilled with a per-user ManifestId).
-                ManifestId = srpSnapshot.ManifestId,
-                Category = VaultManifestCategory.Main,
-                VaultBlob = string.Empty,
-                StorageFormat = ManifestFormat,
-                ManifestBlob = model.ManifestBlob,
-                ManifestCiphertextHash = model.ManifestCiphertextHash,
-                Version = model.Version,
-                RevisionNumber = newManifestRevision,
-                FileSize = FileHelper.Base64StringToKilobytes(model.ManifestBlob),
-                CredentialsCount = model.CredentialsCount,
-                EmailClaimsCount = model.EmailRouting.EmailAddressList.Count,
-                Salt = srpSnapshot.Salt,
-                Verifier = srpSnapshot.Verifier,
-                EncryptionType = srpSnapshot.EncryptionType,
-                EncryptionSettings = srpSnapshot.EncryptionSettings,
-                Client = clientHeader,
-                CreatedAt = timeProvider.UtcNow,
-                UpdatedAt = timeProvider.UtcNow,
-            };
+            currentManifest.VaultBlob = string.Empty;
+            currentManifest.StorageFormat = ManifestFormat;
+            currentManifest.ManifestBlob = model.ManifestBlob;
+            currentManifest.ManifestCiphertextHash = model.ManifestCiphertextHash;
+            currentManifest.Version = model.Version;
+            currentManifest.RevisionNumber = newManifestRevision;
+            currentManifest.FileSize = FileHelper.Base64StringToKilobytes(model.ManifestBlob);
+            currentManifest.CredentialsCount = model.CredentialsCount;
+            currentManifest.EmailClaimsCount = model.EmailRouting.EmailAddressList.Count;
+            currentManifest.Client = clientHeader;
+            currentManifest.CreatedAt = timeProvider.UtcNow;
+            currentManifest.UpdatedAt = timeProvider.UtcNow;
 
-            await ApplyVaultRetention(context, user.Id, newVault);
-            context.VaultManifests.Add(newVault);
+            await ApplyVaultRetention(context, currentManifest, archivedRevision);
             await context.SaveChangesAsync();
 
-            // 4) Replace blob references for this new vault id.
+            // 4) Add blob references for the new revision. The previous revision's references stay tied to its
+            // revision number and are cleaned up when retention prunes that revision.
             foreach (var dto in model.BlobReferences)
             {
                 context.VaultBlobReferences.Add(new VaultBlobReference
                 {
-                    ManifestRevisionId = newVault.RevisionId,
+                    ManifestId = currentManifest.ManifestId,
+                    RevisionNumber = newManifestRevision,
                     BlobHash = dto.Hash,
                 });
             }
@@ -656,16 +639,19 @@ public class VaultController(
         };
     }
 
-    private async Task ApplyVaultRetention(AliasServerDbContext context, string userId, VaultManifest newVault)
+    /// <summary>
+    /// Applies the retention policy to the history revisions of a manifest and removes the pruned revisions plus
+    /// their blob references. Runs after the previous current revision has been archived (passed as
+    /// <paramref name="justArchived"/>, still unsaved) and the current row has been updated in place.
+    /// </summary>
+    private async Task ApplyVaultRetention(AliasServerDbContext context, VaultManifest currentManifest, VaultManifestsHistory justArchived)
     {
-        var existingVaults = await context.VaultManifests
-            .Where(x => x.OwnerUserId == userId)
-            .OrderByDescending(v => v.UpdatedAt)
-            .Select(x => new VaultManifest
+        // Load existing history without the (potentially large) blob payload columns; the rules only need metadata.
+        var historyRevisions = await context.VaultManifestsHistory
+            .Where(x => x.ManifestId == currentManifest.ManifestId)
+            .Select(x => new VaultManifestsHistory
             {
-                RevisionId = x.RevisionId,
                 ManifestId = x.ManifestId,
-                Category = x.Category,
                 OwnerUserId = x.OwnerUserId,
                 VaultBlob = string.Empty,
                 ManifestBlob = null,
@@ -684,9 +670,17 @@ public class VaultController(
                 UpdatedAt = x.UpdatedAt,
             })
             .ToListAsync();
+        historyRevisions.Add(justArchived);
 
-        var vaultsToDelete = VaultRetentionManager.ApplyRetention(_retentionPolicy, existingVaults, timeProvider.UtcNow, newVault);
-        context.VaultManifests.RemoveRange(vaultsToDelete);
+        var revisionsToDelete = VaultRetentionManager.ApplyRetention(_retentionPolicy, historyRevisions, timeProvider.UtcNow, currentManifest);
+        context.VaultManifestsHistory.RemoveRange(revisionsToDelete);
+
+        // Blob references of pruned revisions are deleted explicitly (they only cascade with the whole manifest).
+        var prunedRevisionNumbers = revisionsToDelete.Select(x => x.RevisionNumber).ToList();
+        if (prunedRevisionNumbers.Count > 0)
+        {
+            await context.VaultBlobReferences.Where(r => r.ManifestId == currentManifest.ManifestId && prunedRevisionNumbers.Contains(r.RevisionNumber)).ExecuteDeleteAsync();
+        }
     }
 
     private async Task UpdateUserEmailClaimsAsync(AliasServerDbContext context, AliasVaultUser user, List<string> newEmailAddresses)

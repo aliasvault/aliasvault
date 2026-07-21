@@ -149,7 +149,7 @@ public class StatisticsService
                 UserId = g.Key,
                 Username = g.First().User.UserName,
                 Blocked = g.First().User.Blocked,
-                TotalStorageBytes = g.OrderByDescending(v => v.RevisionNumber).First().FileSize,
+                TotalStorageBytes = g.Sum(v => v.FileSize),
             })
             .OrderByDescending(u => u.TotalStorageBytes)
             .Skip((page - 1) * pageSize)
@@ -284,7 +284,7 @@ public class StatisticsService
                 UserId = g.Key,
                 Username = g.First().User.UserName,
                 Blocked = g.First().User.Blocked,
-                CredentialCount = g.OrderByDescending(v => v.RevisionNumber).First().CredentialsCount,
+                CredentialCount = g.Sum(v => v.CredentialsCount),
             })
             .OrderByDescending(u => u.CredentialCount)
             .Skip((page - 1) * pageSize)
@@ -343,11 +343,16 @@ public class StatisticsService
         var user = await context.AliasVaultUsers.FindAsync(userId);
         stats.TotalEmailsReceivedPersistent = user?.EmailsReceived ?? 0;
 
-        // Get recent statistics (last 72 hours) - this is approximated since we don't have creation timestamps on individual credentials
-        // For recent credentials and email claims, we'll use vault versions created in the last 72h as a proxy
-        var recentVaultVersions = await context.VaultManifests
+        // Get recent statistics (last 72 hours).
+        var recentCurrentRevisions = await context.VaultManifests
             .Where(v => v.OwnerUserId == userId && v.CreatedAt >= cutoffDate)
+            .Select(v => new { v.RevisionNumber, v.CredentialsCount, v.EmailClaimsCount })
             .ToListAsync();
+        var recentHistoryRevisions = await context.VaultManifestsHistory
+            .Where(v => v.OwnerUserId == userId && v.CreatedAt >= cutoffDate)
+            .Select(v => new { v.RevisionNumber, v.CredentialsCount, v.EmailClaimsCount })
+            .ToListAsync();
+        var recentVaultVersions = recentCurrentRevisions.Concat(recentHistoryRevisions).ToList();
 
         if (recentVaultVersions.Count > 0)
         {

@@ -100,27 +100,17 @@ public class TestController(
 
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        // Get the newest revisions to delete
-        var revisionsToDelete = await context.VaultManifests
-            .Where(v => v.OwnerUserId == user.Id)
-            .OrderByDescending(v => v.RevisionNumber)
-            .Take(count)
-            .ToListAsync();
-
-        if (revisionsToDelete.Count == 0)
+        var deletedRevisions = await PopNewestRevisionsAsync(context, user.Id, count);
+        if (deletedRevisions.Count == 0)
         {
             return Ok(new { deleted = 0, message = "No revisions found to delete" });
         }
 
-        // Delete the revisions
-        context.VaultManifests.RemoveRange(revisionsToDelete);
-        var deletedCount = await context.SaveChangesAsync();
-
         return Ok(new
         {
-            deleted = revisionsToDelete.Count,
-            deletedRevisions = revisionsToDelete.Select(r => r.RevisionNumber).ToList(),
-            message = $"Deleted {revisionsToDelete.Count} vault revision(s)",
+            deleted = deletedRevisions.Count,
+            deletedRevisions,
+            message = $"Deleted {deletedRevisions.Count} vault revision(s)",
         });
     }
 
@@ -145,23 +135,7 @@ public class TestController(
 
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        var revisions = await context.VaultManifests
-            .Where(v => v.OwnerUserId == user.Id)
-            .OrderByDescending(v => v.RevisionNumber)
-            .Select(v => new
-            {
-                v.RevisionNumber,
-                v.CreatedAt,
-                v.UpdatedAt,
-            })
-            .ToListAsync();
-
-        return Ok(new
-        {
-            count = revisions.Count,
-            currentRevision = revisions.FirstOrDefault()?.RevisionNumber ?? 0,
-            revisions,
-        });
+        return Ok(await BuildRevisionInfoAsync(context, user.Id));
     }
 
     /// <summary>
@@ -269,23 +243,7 @@ public class TestController(
             return NotFound($"User '{username}' not found");
         }
 
-        var revisions = await context.VaultManifests
-            .Where(v => v.OwnerUserId == user.Id)
-            .OrderByDescending(v => v.RevisionNumber)
-            .Select(v => new
-            {
-                v.RevisionNumber,
-                v.CreatedAt,
-                v.UpdatedAt,
-            })
-            .ToListAsync();
-
-        return Ok(new
-        {
-            count = revisions.Count,
-            currentRevision = revisions.FirstOrDefault()?.RevisionNumber ?? 0,
-            revisions,
-        });
+        return Ok(await BuildRevisionInfoAsync(context, user.Id));
     }
 
     /// <summary>
@@ -320,27 +278,17 @@ public class TestController(
             return NotFound($"User '{username}' not found");
         }
 
-        // Get the newest revisions to delete
-        var revisionsToDelete = await context.VaultManifests
-            .Where(v => v.OwnerUserId == user.Id)
-            .OrderByDescending(v => v.RevisionNumber)
-            .Take(count)
-            .ToListAsync();
-
-        if (revisionsToDelete.Count == 0)
+        var deletedRevisions = await PopNewestRevisionsAsync(context, user.Id, count);
+        if (deletedRevisions.Count == 0)
         {
             return Ok(new { deleted = 0, message = "No revisions found to delete" });
         }
 
-        // Delete the revisions
-        context.VaultManifests.RemoveRange(revisionsToDelete);
-        await context.SaveChangesAsync();
-
         return Ok(new
         {
-            deleted = revisionsToDelete.Count,
-            deletedRevisions = revisionsToDelete.Select(r => r.RevisionNumber).ToList(),
-            message = $"Deleted {revisionsToDelete.Count} vault revision(s)",
+            deleted = deletedRevisions.Count,
+            deletedRevisions,
+            message = $"Deleted {deletedRevisions.Count} vault revision(s)",
         });
     }
 
@@ -470,6 +418,78 @@ public class TestController(
             key,
             value,
         });
+    }
+
+    /// <summary>
+    /// Builds the revision info payload for a user: the current revision of the root manifest plus all history
+    /// revisions, newest first.
+    /// </summary>
+    private static async Task<object> BuildRevisionInfoAsync(AliasServerDbContext context, string userId)
+    {
+        var current = await context.VaultManifests
+            .Where(v => v.OwnerUserId == userId && v.IsRoot)
+            .Select(v => new { v.RevisionNumber, v.CreatedAt, v.UpdatedAt })
+            .FirstOrDefaultAsync();
+
+        var history = await context.VaultManifestsHistory
+            .Where(v => v.OwnerUserId == userId)
+            .OrderByDescending(v => v.RevisionNumber)
+            .Select(v => new { v.RevisionNumber, v.CreatedAt, v.UpdatedAt })
+            .ToListAsync();
+
+        var revisions = history.ToList();
+        if (current != null)
+        {
+            revisions.Insert(0, current);
+        }
+
+        revisions = revisions.OrderByDescending(v => v.RevisionNumber).ToList();
+
+        return new
+        {
+            count = revisions.Count,
+            currentRevision = current?.RevisionNumber ?? 0,
+            revisions,
+        };
+    }
+
+    /// <summary>
+    /// Deletes the newest <paramref name="count"/> revisions of the user's root manifest by rolling the current row
+    /// back to the newest history revision each time (the inverse of the archive-then-update upload flow). When no
+    /// history remains, the manifest row itself is deleted. Returns the revision numbers that were discarded.
+    /// </summary>
+    private static async Task<List<long>> PopNewestRevisionsAsync(AliasServerDbContext context, string userId, int count)
+    {
+        var deletedRevisions = new List<long>();
+        var current = await context.VaultManifests.FirstOrDefaultAsync(v => v.OwnerUserId == userId && v.IsRoot);
+
+        for (var i = 0; i < count && current != null; i++)
+        {
+            deletedRevisions.Add(current.RevisionNumber);
+
+            // Drop the blob references of the revision being discarded.
+            await context.VaultBlobReferences.Where(r => r.ManifestId == current.ManifestId && r.RevisionNumber == current.RevisionNumber).ExecuteDeleteAsync();
+
+            var newestHistory = await context.VaultManifestsHistory
+                .Where(h => h.ManifestId == current.ManifestId)
+                .OrderByDescending(h => h.RevisionNumber)
+                .FirstOrDefaultAsync();
+
+            if (newestHistory == null)
+            {
+                context.VaultManifests.Remove(current);
+                current = null;
+            }
+            else
+            {
+                current.CopyPayloadFrom(newestHistory);
+                context.VaultManifestsHistory.Remove(newestHistory);
+            }
+
+            await context.SaveChangesAsync();
+        }
+
+        return deletedRevisions;
     }
 }
 #endif

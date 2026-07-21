@@ -162,8 +162,8 @@ else
             .Select(g => new
             {
                 UserId = g.Key,
-                CredentialsCount = g.OrderByDescending(v => v.RevisionNumber).First().CredentialsCount,
-                EmailClaimsCount = g.OrderByDescending(v => v.RevisionNumber).First().EmailClaimsCount
+                CredentialsCount = g.Sum(v => v.CredentialsCount),
+                EmailClaimsCount = g.Sum(v => v.EmailClaimsCount)
             })
             .ToListAsync();
 

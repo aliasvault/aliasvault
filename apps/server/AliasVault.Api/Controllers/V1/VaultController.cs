@@ -81,11 +81,8 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             return UpgradeRequired();
         }
 
-        // Logic to retrieve vault for the user.
-        var vault = await context.VaultManifests
-            .Where(x => x.OwnerUserId == user.Id)
-            .OrderByDescending(x => x.RevisionNumber)
-            .FirstOrDefaultAsync();
+        // Logic to retrieve vault for the user: the current revision of the user's root manifest.
+        var vault = await context.VaultManifests.FirstOrDefaultAsync(x => x.OwnerUserId == user.Id && x.IsRoot);
 
         // If no vault is found on server, return an empty object. This means the client will use an empty vault
         // as starting point.
@@ -166,15 +163,11 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USERNAME_MISMATCH, 400));
         }
 
-        // Retrieve latest vault of user which contains the current encryption settings.
-        var latestVault = await context.VaultManifests
-            .Where(x => x.OwnerUserId == user.Id)
-            .OrderByDescending(x => x.RevisionNumber)
-            .Select(x => new { x.Salt, x.Verifier, x.EncryptionType, x.EncryptionSettings, x.RevisionNumber, x.Version, x.ManifestId })
-            .FirstAsync();
+        // Retrieve the current revision of the user's root manifest, which contains the current encryption settings.
+        var currentManifest = await context.VaultManifests.FirstAsync(x => x.OwnerUserId == user.Id && x.IsRoot);
 
         // Reject vaults with a version that is lower than the last vault version.
-        if (VersionHelper.IsVersionOlder(model.Version, latestVault.Version))
+        if (VersionHelper.IsVersionOlder(model.Version, currentManifest.Version))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
         }
@@ -184,40 +177,30 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
 
         // Check if the latest vault revision number is equal to or higher than the new revision number.
         // If so it means the client's vault is outdated and the client should fetch the latest vault from the server before saving can continue.
-        if (latestVault.RevisionNumber >= newRevisionNumber)
+        if (currentManifest.RevisionNumber >= newRevisionNumber)
         {
-            return Ok(new VaultUpdateResponse { Status = VaultStatus.Outdated, NewRevisionNumber = latestVault.RevisionNumber });
+            return Ok(new VaultUpdateResponse { Status = VaultStatus.Outdated, NewRevisionNumber = currentManifest.RevisionNumber });
         }
 
-        // Create new vault entry with salt and verifier of current vault.
-        var newVault = new AliasServerDb.VaultManifest
-        {
-            OwnerUserId = user.Id,
+        // Archive the current revision into history first, then update the current row in place. This ordering is a
+        // design invariant: the VaultManifests table structurally never holds two rows for the same manifest.
+        // Salt/verifier and encryption settings stay untouched on the current row.
+        var archivedRevision = AliasServerDb.VaultManifestsHistory.CreateFrom(currentManifest);
+        context.VaultManifestsHistory.Add(archivedRevision);
 
-            // Legacy revision of the same logical main manifest — reuse the existing ManifestId to keep it grouped.
-            ManifestId = latestVault.ManifestId,
-            Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main,
-            VaultBlob = model.Blob,
-            StorageFormat = "sqlite-blob",
-            Version = model.Version,
-            RevisionNumber = newRevisionNumber,
-            FileSize = FileHelper.Base64StringToKilobytes(model.Blob),
-            CredentialsCount = model.CredentialsCount,
-            EmailClaimsCount = model.EmailAddressList.Count,
-            Salt = latestVault.Salt,
-            Verifier = latestVault.Verifier,
-            EncryptionType = latestVault.EncryptionType,
-            EncryptionSettings = latestVault.EncryptionSettings,
-            Client = clientHeader,
-            CreatedAt = timeProvider.UtcNow,
-            UpdatedAt = timeProvider.UtcNow,
-        };
+        currentManifest.VaultBlob = model.Blob;
+        currentManifest.StorageFormat = "sqlite-blob";
+        currentManifest.Version = model.Version;
+        currentManifest.RevisionNumber = newRevisionNumber;
+        currentManifest.FileSize = FileHelper.Base64StringToKilobytes(model.Blob);
+        currentManifest.CredentialsCount = model.CredentialsCount;
+        currentManifest.EmailClaimsCount = model.EmailAddressList.Count;
+        currentManifest.Client = clientHeader;
+        currentManifest.CreatedAt = timeProvider.UtcNow;
+        currentManifest.UpdatedAt = timeProvider.UtcNow;
 
-        // Run the vault retention manager to clean up old vaults.
-        await ApplyVaultRetention(context, user.Id, newVault);
-
-        // Add the new vault and commit to database.
-        context.VaultManifests.Add(newVault);
+        // Run the vault retention manager to clean up old history revisions, then commit to database.
+        await ApplyVaultRetention(context, currentManifest, archivedRevision);
         await context.SaveChangesAsync();
 
         // Update user email claims if email addresses have been supplied.
@@ -281,12 +264,8 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
 
         // Check if the provided revision number is equal to the latest revision number.
         // If not, then the client is trying to update an older vault which we don't allow to prevent data loss.
-        var latestVault = await context.VaultManifests
-            .Where(x => x.OwnerUserId == user.Id)
-            .OrderByDescending(x => x.RevisionNumber)
-            .Select(x => new { x.RevisionNumber, x.Version, x.ManifestId })
-            .FirstAsync();
-        if (VersionHelper.IsVersionOlder(model.Version, latestVault.Version))
+        var currentManifest = await context.VaultManifests.FirstAsync(x => x.OwnerUserId == user.Id && x.IsRoot);
+        if (VersionHelper.IsVersionOlder(model.Version, currentManifest.Version))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
         }
@@ -296,40 +275,33 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
 
         // Check if the latest vault revision number is equal to or higher than the new revision number.
         // If so it means the client's vault is outdated and the client should fetch the latest vault from the server before saving can continue.
-        if (latestVault.RevisionNumber >= newRevisionNumber)
+        if (currentManifest.RevisionNumber >= newRevisionNumber)
         {
-            return Ok(new VaultUpdateResponse { Status = VaultStatus.Outdated, NewRevisionNumber = latestVault.RevisionNumber });
+            return Ok(new VaultUpdateResponse { Status = VaultStatus.Outdated, NewRevisionNumber = currentManifest.RevisionNumber });
         }
 
-        // Create new vault entry with salt and verifier of current vault.
-        var newVault = new AliasServerDb.VaultManifest
-        {
-            OwnerUserId = user.Id,
+        // Archive the current revision into history first, then update the current row in place with the
+        // re-encrypted vault and the new salt/verifier belonging to the new password.
+        var archivedRevision = AliasServerDb.VaultManifestsHistory.CreateFrom(currentManifest);
+        context.VaultManifestsHistory.Add(archivedRevision);
 
-            // Legacy revision of the same logical main manifest, reuse the existing ManifestId to keep it grouped.
-            ManifestId = latestVault.ManifestId,
-            Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main,
-            VaultBlob = model.Blob,
-            StorageFormat = "sqlite-blob",
-            Version = model.Version,
-            RevisionNumber = newRevisionNumber,
-            CredentialsCount = model.CredentialsCount,
-            EmailClaimsCount = model.EmailAddressList.Count,
-            FileSize = FileHelper.Base64StringToKilobytes(model.Blob),
-            Salt = model.NewPasswordSalt,
-            Verifier = model.NewPasswordVerifier,
-            EncryptionType = Defaults.EncryptionType,
-            EncryptionSettings = Defaults.EncryptionSettings,
-            Client = clientHeader,
-            CreatedAt = timeProvider.UtcNow,
-            UpdatedAt = timeProvider.UtcNow,
-        };
+        currentManifest.VaultBlob = model.Blob;
+        currentManifest.StorageFormat = "sqlite-blob";
+        currentManifest.Version = model.Version;
+        currentManifest.RevisionNumber = newRevisionNumber;
+        currentManifest.CredentialsCount = model.CredentialsCount;
+        currentManifest.EmailClaimsCount = model.EmailAddressList.Count;
+        currentManifest.FileSize = FileHelper.Base64StringToKilobytes(model.Blob);
+        currentManifest.Salt = model.NewPasswordSalt;
+        currentManifest.Verifier = model.NewPasswordVerifier;
+        currentManifest.EncryptionType = Defaults.EncryptionType;
+        currentManifest.EncryptionSettings = Defaults.EncryptionSettings;
+        currentManifest.Client = clientHeader;
+        currentManifest.CreatedAt = timeProvider.UtcNow;
+        currentManifest.UpdatedAt = timeProvider.UtcNow;
 
-        // Run the vault retention manager to clean up old vaults.
-        await ApplyVaultRetention(context, user.Id, newVault);
-
-        // Add the new vault and commit to database.
-        context.VaultManifests.Add(newVault);
+        // Run the vault retention manager to clean up old history revisions, then commit to database.
+        await ApplyVaultRetention(context, currentManifest, archivedRevision);
         await context.SaveChangesAsync();
 
         // Update the password last changed at timestamp for user.
@@ -372,27 +344,25 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
     }
 
     /// <summary>
-    /// Apply vault retention policies to the user's vaults and delete the ones that are not covered
-    /// by the retention policies.
+    /// Apply vault retention policies to the history revisions of a manifest and delete the ones that are not
+    /// covered by the retention policies (plus their blob references). Runs after the previous current revision has
+    /// been archived (passed as <paramref name="justArchived"/>, still unsaved) and the current row has been updated
+    /// in place.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="userId">User ID.</param>
-    /// <param name="newVault">New vault object.</param>
-    private async Task ApplyVaultRetention(AliasServerDbContext context, string userId, AliasServerDb.VaultManifest newVault)
+    /// <param name="currentManifest">The current manifest row (already updated in place, always kept).</param>
+    /// <param name="justArchived">The just-archived previous revision, not yet saved.</param>
+    private async Task ApplyVaultRetention(AliasServerDbContext context, AliasServerDb.VaultManifest currentManifest, AliasServerDb.VaultManifestsHistory justArchived)
     {
-        // Run the vault retention manager to keep the required vaults according
-        // to the applied retention policies and delete the rest.
-        // We only select the Id and UpdatedAt fields to reduce the amount of data transferred from the database.
-        var existingVaults = await context.VaultManifests
-            .Where(x => x.OwnerUserId == userId)
-            .OrderByDescending(v => v.UpdatedAt)
-            .Select(x => new AliasServerDb.VaultManifest
+        // Load existing history without the (potentially large) blob payload columns; the rules only need metadata.
+        var historyRevisions = await context.VaultManifestsHistory
+            .Where(x => x.ManifestId == currentManifest.ManifestId)
+            .Select(x => new AliasServerDb.VaultManifestsHistory
             {
-                RevisionId = x.RevisionId,
                 ManifestId = x.ManifestId,
-                Category = x.Category,
                 OwnerUserId = x.OwnerUserId,
                 VaultBlob = string.Empty,
+                ManifestBlob = null,
                 StorageFormat = x.StorageFormat,
                 Version = x.Version,
                 RevisionNumber = x.RevisionNumber,
@@ -408,11 +378,17 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                 UpdatedAt = x.UpdatedAt,
             })
             .ToListAsync();
+        historyRevisions.Add(justArchived);
 
-        var vaultsToDelete = VaultRetentionManager.ApplyRetention(_retentionPolicy, existingVaults, timeProvider.UtcNow, newVault);
+        var revisionsToDelete = VaultRetentionManager.ApplyRetention(_retentionPolicy, historyRevisions, timeProvider.UtcNow, currentManifest);
+        context.VaultManifestsHistory.RemoveRange(revisionsToDelete);
 
-        // Delete vaults that are not needed anymore.
-        context.VaultManifests.RemoveRange(vaultsToDelete);
+        // Blob references of pruned revisions are deleted explicitly (they only cascade with the whole manifest).
+        var prunedRevisionNumbers = revisionsToDelete.Select(x => x.RevisionNumber).ToList();
+        if (prunedRevisionNumbers.Count > 0)
+        {
+            await context.VaultBlobReferences.Where(r => r.ManifestId == currentManifest.ManifestId && prunedRevisionNumbers.Contains(r.RevisionNumber)).ExecuteDeleteAsync();
+        }
     }
 
     /// <summary>
