@@ -310,23 +310,7 @@ public sealed class DbService : IDisposable
     /// <returns>Base64 encoded string that represents SQLite database.</returns>
     public async Task<string> ExportSqliteToBase64Async()
     {
-        var tempFileName = Path.GetRandomFileName();
-
-        // Export SQLite memory database to a temp file.
-        using var memoryStream = new MemoryStream();
-        await using var command = _sqlConnection!.CreateCommand();
-        command.CommandText = "VACUUM main INTO @fileName";
-        command.Parameters.Add(new SqliteParameter("@fileName", tempFileName));
-        await command.ExecuteNonQueryAsync();
-
-        // Get bytes.
-        var bytes = await File.ReadAllBytesAsync(tempFileName);
-        string base64String = Convert.ToBase64String(bytes);
-
-        // Delete temp file.
-        File.Delete(tempFileName);
-
-        return base64String;
+        return await ExportConnectionToBase64Async(_sqlConnection!);
     }
 
     /// <summary>
@@ -591,10 +575,36 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
-    /// Loads a SQLite database from a base64 string which represents a .sqlite file.
+    /// Export a given in-memory SQLite connection to a base64 string.
     /// </summary>
-    /// <param name="base64String">Base64 string representation of a .sqlite file.</param>
-    /// <param name="connection">The connection to the database that should be used for the import.</param>
+    /// <param name="connection">The SQLite connection to export.</param>
+    /// <returns>Base64 encoded string that represents the SQLite database.</returns>
+    private static async Task<string> ExportConnectionToBase64Async(SqliteConnection connection)
+    {
+        var tempFileName = Path.GetRandomFileName();
+
+        // Export SQLite memory database to a temp file.
+        await using var command = connection.CreateCommand();
+        command.CommandText = "VACUUM main INTO @fileName";
+        command.Parameters.Add(new SqliteParameter("@fileName", tempFileName));
+        await command.ExecuteNonQueryAsync();
+
+        // Get bytes.
+        var bytes = await File.ReadAllBytesAsync(tempFileName);
+        string base64String = Convert.ToBase64String(bytes);
+
+        // Delete temp file.
+        File.Delete(tempFileName);
+
+        return base64String;
+    }
+
+    /// <summary>
+    /// Imports a base64-encoded SQLite database into the given connection, replacing its contents.
+    /// </summary>
+    /// <param name="base64String">The base64-encoded SQLite database.</param>
+    /// <param name="connection">The connection to import into.</param>
+    /// <returns>Task.</returns>
     private static async Task ImportDbContextFromBase64Async(string base64String, SqliteConnection connection)
     {
         var bytes = Convert.FromBase64String(base64String);
@@ -767,14 +777,15 @@ public sealed class DbService : IDisposable
             var serverTables = await ReadTablesAsJsonAsync(serverConnection, tableNames);
             _logger.LogDebug("Read {Count} server tables.", serverTables.Count);
 
-            // Create the merge input (local has our pending changes, server has the latest).
+            // Create the merge input (local has our pending changes, server is the merge base).
             var mergeInput = new MergeInput
             {
                 LocalTables = localTables,
                 ServerTables = serverTables,
             };
 
-            // Call Rust WASM merge (LWW - Last Write Wins based on UpdatedAt).
+            // Call Rust WASM merge (LWW - Last Write Wins based on UpdatedAt). The merge base is the
+            // server vault; the returned statements bring the local changes onto that base.
             var mergeOutput = await _rustCore.MergeVaultsAsync(mergeInput);
 
             _logger.LogInformation(
@@ -785,8 +796,11 @@ public sealed class DbService : IDisposable
                 mergeOutput.Stats.RecordsInserted,
                 mergeOutput.Stats.Conflicts);
 
-            // Execute the SQL statements returned by the merge to update local database.
-            await ExecuteMergeSqlStatementsAsync(mergeOutput.Statements);
+            // Apply the local changes onto the server base (statements target the server database),
+            // then adopt the merged (server-based) database as the live local database.
+            await ExecuteMergeSqlStatementsAsync(mergeOutput.Statements, serverConnection);
+            var mergedBase64 = await ExportConnectionToBase64Async(serverConnection);
+            await ImportDbContextFromBase64Async(mergedBase64, _sqlConnection!);
 
             // Verify foreign key integrity after merge.
             await using (var command = _sqlConnection!.CreateCommand())
@@ -1173,11 +1187,12 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
-    /// Executes the SQL statements returned by the Rust merge operation.
+    /// Executes the SQL statements returned by the Rust merge operation against the given connection.
     /// </summary>
     /// <param name="statements">The SQL statements to execute.</param>
+    /// <param name="connection">The connection to execute the statements against (the merge base).</param>
     /// <returns>Task.</returns>
-    private async Task ExecuteMergeSqlStatementsAsync(List<SqlStatement> statements)
+    private async Task ExecuteMergeSqlStatementsAsync(List<SqlStatement> statements, SqliteConnection connection)
     {
         if (statements.Count == 0)
         {
@@ -1188,7 +1203,7 @@ public sealed class DbService : IDisposable
         _logger.LogDebug("Executing {Count} SQL statements from merge.", statements.Count);
 
         // Disable foreign key checks during merge execution.
-        await using (var pragmaCommand = _sqlConnection!.CreateCommand())
+        await using (var pragmaCommand = connection.CreateCommand())
         {
             pragmaCommand.CommandText = "PRAGMA foreign_keys = OFF;";
             await pragmaCommand.ExecuteNonQueryAsync();
@@ -1198,7 +1213,7 @@ public sealed class DbService : IDisposable
         {
             foreach (var statement in statements)
             {
-                await using var command = _sqlConnection!.CreateCommand();
+                await using var command = connection.CreateCommand();
                 command.CommandText = statement.Sql;
 
                 // Add parameters in order (SQLite uses positional parameters with ?).
@@ -1232,7 +1247,7 @@ public sealed class DbService : IDisposable
         finally
         {
             // Re-enable foreign key checks.
-            await using var pragmaCommand = _sqlConnection!.CreateCommand();
+            await using var pragmaCommand = connection.CreateCommand();
             pragmaCommand.CommandText = "PRAGMA foreign_keys = ON;";
             await pragmaCommand.ExecuteNonQueryAsync();
         }

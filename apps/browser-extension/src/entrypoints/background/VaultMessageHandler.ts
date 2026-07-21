@@ -10,7 +10,7 @@ import type { VaultResponse, VaultPostResponse, StatusResponseV2, ManifestRevisi
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
-import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword, vaultCodecExtractBucket, vaultCodecBucketLayout } from '@/utils/RustCore';
+import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword, vaultCodecExtractBucket, vaultCodecBucketLayout, vaultCodecOverflowTable } from '@/utils/RustCore';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
@@ -34,7 +34,7 @@ import { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types
 import { type VaultMutationScope, ALL_VAULT_MUTATION_SCOPES, DEFAULT_VAULT_MUTATION_SCOPE, dirtyScopeStorageKey, isManifestScope } from '@/utils/types/VaultMutationScope';
 import { VaultCodec } from '@/utils/VaultCodec';
 import { vaultMergeService } from '@/utils/VaultMergeService';
-import { vaultSyncService, SERVER_MANIFEST_REVISIONS_STORAGE_KEY, CODEC_OVERFLOW_STORAGE_KEY } from '@/utils/VaultSyncService';
+import { vaultSyncService, SERVER_MANIFEST_REVISIONS_STORAGE_KEY } from '@/utils/VaultSyncService';
 import { WebApiService } from '@/utils/WebApiService';
 
 import { t } from '@/i18n/StandaloneI18n';
@@ -440,7 +440,6 @@ export async function handleClearVaultData(): Promise<messageBoolResponse> {
     'local:hiddenPrivateEmailDomains',
     'local:serverRevision',
     SERVER_MANIFEST_REVISIONS_STORAGE_KEY,
-    CODEC_OVERFLOW_STORAGE_KEY,
     'local:isDirty',
     ...ALL_VAULT_MUTATION_SCOPES.map(scope => dirtyScopeStorageKey(scope)),
     'local:mutationSequence',
@@ -821,9 +820,12 @@ async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultM
       return (await uploadNewVaultToServer(sqliteClient)).response;
     }
 
-    const tables = VaultCodec.readNamedTables(sqliteClient, spec.tables);
-    // Overflow re-merges a newer client's bucket tables/columns so this partial push doesn't drop them.
-    const bucket = await vaultCodecExtractBucket(category, tables, await vaultSyncService.loadOverflow(encryptionKey));
+    /*
+     * Read the CodecOverflows carrier row alongside the bucket's tables: extract_bucket consumes it
+     * to re-merge a newer client's bucket tables/columns, so this partial push doesn't drop them.
+     */
+    const tables = VaultCodec.readNamedTables(sqliteClient, [...spec.tables, await vaultCodecOverflowTable()]);
+    const bucket = await vaultCodecExtractBucket(category, tables);
     const result = await vaultSyncService.pushDataBucketOnly(bucket, encryptionKey);
     if (result.status !== 'ok') {
       // Conflict persisted even after the rebase-retry, let the caller run a full re-sync (status 2).

@@ -109,13 +109,14 @@ public class VaultMergeService {
         let output = try parseOutput(outputJson)
 
 
-        // Apply SQL statements to local database
+        // Apply SQL statements to the SERVER database (the merge base). The exported server DB carries
+        // the newest codec overflow carrier untouched.
         for (index, statement) in output.statements.enumerated() {
-            try executeStatement(on: localDb, sql: statement.sql, params: statement.params)
+            try executeStatement(on: serverDb, sql: statement.sql, params: statement.params)
         }
 
         // Export, encrypt, and return in same format: base64(encrypted(base64(sqlite)))
-        let mergedData = try exportDatabase(from: localDb)
+        let mergedData = try exportDatabase(from: serverDb)
         // Step 1: Base64 encode raw SQLite bytes
         let innerBase64 = mergedData.base64EncodedString()
         // Step 2: Encrypt the base64 string

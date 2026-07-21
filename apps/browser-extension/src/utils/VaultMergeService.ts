@@ -153,12 +153,14 @@ export class VaultMergeService {
   /**
    * Merge local vault changes with server vault using LWW strategy.
    *
-   * Uses Rust WASM for the merge logic:
+   * Uses Rust WASM for the merge logic. The merge base is the SERVER vault (it is freshly
+   * materialized with the newest schema and the newest codec overflow carrier), and the local
+   * vault's winning changes are applied on top of it:
    * 1. Load both SQLite databases with sql.js
-   * 2. Read all tables as JSON
-   * 3. Call Rust merge (returns SQL statements)
-   * 4. Execute SQL statements on local database
-   * 5. Export merged database
+   * 2. Read the syncable tables from both as JSON
+   * 3. Call Rust merge (returns SQL statements that bring local changes onto the server base)
+   * 4. Execute SQL statements on the SERVER database
+   * 5. Export the merged (server-based) database - the codec overflow carrier rides along untouched
    *
    * @param localVaultBase64 - The local vault (with offline changes) as base64 SQLite
    * @param serverVaultBase64 - The server vault (latest version) as base64 SQLite
@@ -208,15 +210,16 @@ export class VaultMergeService {
 
         const mergeOutput = mergeVaults(mergeInput) as MergeOutput;
 
-        // Execute SQL statements from Rust on local database
+        // Execute SQL statements from Rust on the SERVER database (the merge base). The exported
+        // server DB carries the newest codec overflow carrier untouched.
         for (const stmt of mergeOutput.statements) {
           // Convert undefined to null for sql.js (serde-wasm-bindgen may convert null to undefined)
           const sanitizedParams = stmt.params.map(p => p === undefined ? null : p);
-          localDb.run(stmt.sql, sanitizedParams);
+          serverDb.run(stmt.sql, sanitizedParams);
         }
 
-        // Export the merged database
-        const mergedVaultBase64 = this.exportDatabase(localDb);
+        // Export the merged (server-based) database
+        const mergedVaultBase64 = this.exportDatabase(serverDb);
 
         return {
           success: mergeOutput.success,
@@ -363,6 +366,10 @@ export class VaultMergeService {
    * @returns Array of records as JSON objects
    */
   private readTableAsJson(db: Database, tableName: string): JsonRecord[] {
+    const exists = this.readQueryAsJson(db, `SELECT name FROM sqlite_master WHERE type='table' AND name='${tableName}'`).length > 0;
+    if (!exists) {
+      return [];
+    }
     return this.readQueryAsJson(db, `SELECT * FROM ${tableName}`);
   }
 

@@ -11,7 +11,7 @@ import { VaultDataBucketCategory } from '@/utils/dist/core/models/vault';
 import type { VaultResponse } from '@/utils/dist/core/models/webapi';
 import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import {type CodecOverflow, vaultCodecComputeCiphertextHash, vaultCodecCanonicalizeFromSqlite, vaultCodecGenerateUserSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket} from '@/utils/RustCore';
+import {vaultCodecComputeCiphertextHash, vaultCodecCanonicalizeFromSqlite, vaultCodecGenerateUserSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket} from '@/utils/RustCore';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { ServerUpdateRequiredError } from '@/utils/types/errors/ServerUpdateRequiredError';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
@@ -96,11 +96,6 @@ const bucketRevKey = (category: string): `local:${string}` => `local:vaultV2Buck
 const BLOB_CACHE_STORAGE_KEY = 'local:vaultV2BlobCipherCache';
 /** Hashes the server has stored (refreshed on every pull/push). */
 const SERVER_HASHES_STORAGE_KEY = 'local:vaultV2ServerBlobHashes';
-/**
- * Codec overflow persisted between pull and push: a newer client's tables/columns that this client's
- * local SQLite schema can't hold.
- */
-export const CODEC_OVERFLOW_STORAGE_KEY = 'local:vaultV2CodecOverflow';
 /**
  * The client's last-known revision per non-Main manifest (manifestId > revision), refreshed on every materialize.
  */
@@ -450,11 +445,10 @@ export class VaultSyncService {
     const materialized = await vaultCodecMaterializeAsSqlite(manifest, dataBuckets, schemaColumns);
 
     /*
-     * Anything a newer client wrote that our schema can't hold was split into overflow instead of the
-     * insert set. Persist it so push/extract re-merge it into the manifest: without this, our next
-     * push would silently delete those tables/columns for every other client.
+     * Anything a newer client wrote that our schema can't hold was split off the insert set into the
+     * CodecOverflows carrier row (part of the tables inserted below, so it lives inside the encrypted
+     * vault DB). Canonicalize re-merges it on push, so this client never deletes a newer writer's data.
      */
-    await this.saveOverflow(materialized.overflow, vek);
     const overflowTableCount = Object.keys(materialized.overflow.tables).length + Object.values(materialized.overflow.bucketTables).reduce((n, t) => n + Object.keys(t).length, 0);
     const overflowColumnTables = Object.keys(materialized.overflow.columns);
     if (overflowTableCount > 0 || overflowColumnTables.length > 0) {
@@ -532,13 +526,12 @@ export class VaultSyncService {
     // Read tables from the SQLite database and apply the manifest-v1 format rules.
     const tables = VaultCodec.readTables(sqliteClient);
     const migrationId = VaultCodec.getLatestMigrationId(sqliteClient);
-    const canonicalized = await timedStage('canonicalize (incl. Rust→JS conversion)', async () => vaultCodecCanonicalizeFromSqlite({
+    const canonicalized = await timedStage('canonicalize (incl. Rust→JS conversion)', () => vaultCodecCanonicalizeFromSqlite({
       tables,
       userSalt,
       migrationId,
       version: '2.0.0',
       canonicalizedAt: new Date().toISOString(),
-      overflow: await this.loadOverflow(vek),
     }));
 
     // Plaintext blob bytes held platform-side for encryption/upload.
@@ -821,37 +814,6 @@ export class VaultSyncService {
     await storage.setItem(BLOB_CACHE_STORAGE_KEY, cache);
   }
 
-  /**
-   * Load the codec overflow persisted by the last pull (undefined when none): a newer client's
-   * tables/columns our local schema can't hold. Callers pass it into canonicalize/extractBucket so a
-   * push from this client re-emits that data instead of dropping it. Stored AES-GCM encrypted; an
-   * entry that no longer decrypts (key rotated, account switched) is discarded: the next pull
-   * rebuilds it from the server manifest.
-   * @param vek - the user's symmetric key
-   */
-  public async loadOverflow(vek: string): Promise<CodecOverflow | undefined> {
-    const ciphertext = (await storage.getItem(CODEC_OVERFLOW_STORAGE_KEY)) as string | null;
-    if (!ciphertext) {
-      return undefined;
-    }
-    try {
-      return JSON.parse(await EncryptionUtility.symmetricDecrypt(ciphertext, vek)) as CodecOverflow;
-    } catch {
-      devWarn('[V2Sync] Persisted codec overflow could not be decrypted with the current key, discarding it. It will be rebuilt on the next pull.');
-      await storage.removeItem(CODEC_OVERFLOW_STORAGE_KEY);
-      return undefined;
-    }
-  }
-
-  /**
-   * Persist the codec overflow produced by materialize (rebuilt wholesale on every pull),
-   * AES-GCM encrypted so no vault row data sits in extension storage as plaintext.
-   * @param overflow - the overflow split off by the last materialize
-   * @param vek - the user's symmetric key
-   */
-  private async saveOverflow(overflow: CodecOverflow, vek: string): Promise<void> {
-    await storage.setItem(CODEC_OVERFLOW_STORAGE_KEY, await EncryptionUtility.symmetricEncrypt(JSON.stringify(overflow), vek));
-  }
 }
 
 export const vaultSyncService = new VaultSyncService();

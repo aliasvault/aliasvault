@@ -125,8 +125,10 @@ object VaultMergeService {
                 )
             }
 
-            val localDb = SQLiteDatabase.openDatabase(localDbFile.absolutePath, null, SQLiteDatabase.OPEN_READWRITE)
-            val serverDb = SQLiteDatabase.openDatabase(serverDbFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY)
+            // The merge base is the SERVER database (opened read-write so the merge statements land on
+            // it); the local database is only read for its offline changes.
+            val localDb = SQLiteDatabase.openDatabase(localDbFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY)
+            val serverDb = SQLiteDatabase.openDatabase(serverDbFile.absolutePath, null, SQLiteDatabase.OPEN_READWRITE)
 
             try {
                 // Read all syncable tables
@@ -158,15 +160,16 @@ object VaultMergeService {
                 val outputJson = uniffi.aliasvault_core.mergeVaultsJson(mergeInput.toString())
                 val statements = parseStatements(outputJson)
 
-                // Apply SQL statements
-                localDb.beginTransaction()
+                // Apply SQL statements to the SERVER database (the merge base). The exported server DB
+                // carries the newest codec overflow carrier untouched.
+                serverDb.beginTransaction()
                 try {
                     for ((sql, params) in statements) {
-                        localDb.execSQL(sql, params.toTypedArray())
+                        serverDb.execSQL(sql, params.toTypedArray())
                     }
-                    localDb.setTransactionSuccessful()
+                    serverDb.setTransactionSuccessful()
                 } finally {
-                    localDb.endTransaction()
+                    serverDb.endTransaction()
                 }
 
                 localDb.close()
@@ -174,7 +177,7 @@ object VaultMergeService {
 
                 // Encrypt and return
                 // Output format must match input: base64(encrypted(base64(sqlite_bytes)))
-                val mergedData = localDbFile.readBytes()
+                val mergedData = serverDbFile.readBytes()
                 val mergedBase64 = Base64.encodeToString(mergedData, Base64.NO_WRAP)
                 val encrypted = VaultCrypto.encrypt(mergedBase64.toByteArray(Charsets.UTF_8), encryptionKey)
                 return Base64.encodeToString(encrypted, Base64.DEFAULT)
