@@ -16,8 +16,8 @@ public class ManifestRevision
     /// <summary>Gets or sets the stable identifier of the logical manifest.</summary>
     public required Guid ManifestId { get; set; }
 
-    /// <summary>Gets or sets the manifest kind discriminator.</summary>
-    public required VaultManifestCategory Category { get; set; }
+    /// <summary>Gets or sets a value indicating whether this is the user's root manifest.</summary>
+    public required bool IsRoot { get; set; }
 
     /// <summary>Gets or sets the current (latest) revision number for this manifest.</summary>
     public required long Revision { get; set; }

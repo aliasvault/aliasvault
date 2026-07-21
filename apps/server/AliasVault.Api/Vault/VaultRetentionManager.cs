@@ -13,53 +13,50 @@ using System.Linq;
 using AliasServerDb;
 
 /// <summary>
-/// History manager for vaults that keeps track of vault history and applies retention rules to
-/// determine how many vaults to keep as backups and automatically deletes vaults that do not
-/// match the applied retention policies.
+/// History manager for vault manifests that applies retention rules to determine how many superseded revisions to
+/// keep as backups and returns the history revisions that should be deleted.
 /// </summary>
 public static class VaultRetentionManager
 {
     /// <summary>
-    /// Applies retention policies to a list of existing vaults and a new vault.
+    /// Applies retention policies to the superseded (history) revisions of a manifest. The current revision is
+    /// passed in so the rules see the full revision timeline, but it is never eligible for deletion — only history
+    /// revisions are returned.
     /// </summary>
     /// <param name="retentionPolicy">List of retention policies to apply.</param>
-    /// <param name="existingVaults">List of existing vaults for a certain user.</param>
+    /// <param name="historyRevisions">Superseded revisions of the manifest (including the one just archived).</param>
     /// <param name="now">DateTime which represents current time.</param>
-    /// <param name="newVault">New encrypted vault to be added that is also taken into account for calculating retention policy.</param>
-    /// <returns>List of vaults to delete according to the retention policies.</returns>
-    public static List<VaultManifest> ApplyRetention(RetentionPolicy retentionPolicy, List<VaultManifest> existingVaults, DateTime now, VaultManifest? newVault = null)
+    /// <param name="currentRevision">The current revision of the manifest, taken into account by the rules but always kept.</param>
+    /// <returns>List of history revisions to delete according to the retention policies.</returns>
+    public static List<VaultManifestsHistory> ApplyRetention(RetentionPolicy retentionPolicy, List<VaultManifestsHistory> historyRevisions, DateTime now, VaultManifest? currentRevision = null)
     {
-        // Add the new vault to the list of existing vaults if provided
-        if (newVault is not null)
+        var allRevisions = new List<VaultManifestBase>(historyRevisions);
+        if (currentRevision is not null)
         {
-            existingVaults = new List<VaultManifest>(existingVaults) { newVault };
+            allRevisions.Add(currentRevision);
         }
 
-        // Sort vaults by UpdatedAt in descending order
-        existingVaults = existingVaults.OrderByDescending(v => v.UpdatedAt).ToList();
+        // Sort revisions by UpdatedAt in descending order.
+        allRevisions = allRevisions.OrderByDescending(v => v.UpdatedAt).ToList();
 
-        var vaultsToKeep = new HashSet<VaultManifest>();
+        var revisionsToKeep = new HashSet<VaultManifestBase>();
 
-        // Process retention rules
+        // Process retention rules.
         foreach (var rule in retentionPolicy.Rules)
         {
-            var keptVaults = rule.ApplyRule(existingVaults, now);
-            foreach (var vault in keptVaults)
+            foreach (var revision in rule.ApplyRule(allRevisions, now))
             {
-                vaultsToKeep.Add(vault);
+                revisionsToKeep.Add(revision);
             }
         }
 
-        // Always keep the most recent vault
-        if (existingVaults.Count > 0)
+        // Always keep the most recent revision.
+        if (allRevisions.Count > 0)
         {
-            vaultsToKeep.Add(existingVaults[0]);
+            revisionsToKeep.Add(allRevisions[0]);
         }
 
-        // Determine vaults to delete
-        var vaultsToDelete = existingVaults.Except(vaultsToKeep).ToList();
-
-        // Return the vaults to delete
-        return vaultsToDelete;
+        // Only history revisions are deletable; the current revision is always kept implicitly.
+        return allRevisions.Except(revisionsToKeep).OfType<VaultManifestsHistory>().ToList();
     }
 }

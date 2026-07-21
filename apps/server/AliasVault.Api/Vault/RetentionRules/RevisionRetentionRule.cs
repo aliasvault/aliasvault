@@ -20,7 +20,7 @@ public class RevisionRetentionRule : IRetentionRule
     public int RevisionsToKeep { get; init; }
 
    /// <inheritdoc cref="IRetentionRule.ApplyRule"/>
-    public IEnumerable<VaultManifest> ApplyRule(List<VaultManifest> vaults, DateTime now)
+    public IEnumerable<VaultManifestBase> ApplyRule(List<VaultManifestBase> vaults, DateTime now)
     {
         // For the specified amount of versions, take last vault per version.
         return vaults

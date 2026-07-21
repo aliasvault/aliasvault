@@ -93,10 +93,16 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<AdminRole> AdminRoles { get; set; }
 
     /// <summary>
-    /// Gets or sets the VaultManifests DbSet. Each row is one revision of a manifest; rows sharing a ManifestId are
-    /// revisions of the same logical manifest (the user's main vault, or an R2 shared folder).
+    /// Gets or sets the VaultManifests DbSet. Exactly one row per logical manifest, holding its current revision.
+    /// Superseded revisions live in <see cref="VaultManifestsHistory"/>.
     /// </summary>
     public DbSet<VaultManifest> VaultManifests { get; set; }
+
+    /// <summary>
+    /// Gets or sets the VaultManifestsHistory DbSet. Superseded manifest revisions kept for backup/rollback,
+    /// pruned by the retention policy.
+    /// </summary>
+    public DbSet<VaultManifestsHistory> VaultManifestsHistory { get; set; }
 
     /// <summary>
     /// Gets or sets the Emails DbSet.
@@ -270,17 +276,32 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             builder.HasIndex(e => e.Application);
         });
 
-        // Configure VaultManifest - AliasVaultUser relationship + manifest-lineage indexing.
+        // Configure VaultManifest - one row per logical manifest (current revision), keyed by ManifestId.
         modelBuilder.Entity<VaultManifest>(builder =>
         {
+            builder.HasKey(e => e.ManifestId);
             builder.HasOne(l => l.User)
                 .WithMany(c => c.VaultManifests)
                 .HasForeignKey(l => l.OwnerUserId)
                 .OnDelete(DeleteBehavior.Cascade);
-            builder.Property(e => e.Category).HasConversion<string>().HasMaxLength(20);
 
-            // Revisions of one logical manifest share a ManifestId; index supports "latest revision of a manifest".
-            builder.HasIndex(e => new { e.ManifestId, e.RevisionNumber });
+            // Every user has exactly one root manifest (the residual container for everything not carved out
+            // into another manifest).
+            builder.HasIndex(e => e.OwnerUserId).HasFilter("\"IsRoot\"").IsUnique().HasDatabaseName("UX_VaultManifests_OwnerUserId_Root");
+        });
+
+        // Configure VaultManifestsHistory - superseded revisions, composite key (ManifestId, RevisionNumber).
+        modelBuilder.Entity<VaultManifestsHistory>(builder =>
+        {
+            builder.ToTable("VaultManifestsHistory");
+            builder.HasKey(e => new { e.ManifestId, e.RevisionNumber });
+            builder.HasOne(e => e.Manifest)
+                .WithMany()
+                .HasForeignKey(e => e.ManifestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Denormalized owner id for direct per-user queries (admin statistics, retention).
+            builder.HasIndex(e => e.OwnerUserId);
         });
 
         // Configure UserEmailClaim - AliasVaultUser relationship
@@ -336,13 +357,14 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Configure VaultBlobReference - composite key (VaultId, BlobHash).
+        // Configure VaultBlobReference - composite key (ManifestId, RevisionNumber, BlobHash). Cascades with the
+        // manifest; retention deletes references of pruned history revisions explicitly.
         modelBuilder.Entity<VaultBlobReference>(builder =>
         {
-            builder.HasKey(e => new { e.ManifestRevisionId, e.BlobHash });
-            builder.HasOne(e => e.ManifestRevision)
+            builder.HasKey(e => new { e.ManifestId, e.RevisionNumber, e.BlobHash });
+            builder.HasOne(e => e.Manifest)
                 .WithMany()
-                .HasForeignKey(e => e.ManifestRevisionId)
+                .HasForeignKey(e => e.ManifestId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

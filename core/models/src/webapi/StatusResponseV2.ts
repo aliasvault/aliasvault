@@ -3,7 +3,7 @@
  */
 export type ManifestRevision = {
   manifestId: string;
-  category: string;
+  isRoot: boolean;
   revision: number;
 }
 

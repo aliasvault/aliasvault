@@ -9,17 +9,20 @@ namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
 /// A single vault manifest as carried in list-based payloads. A user's logical vault is assembled from one or more
-/// manifests: exactly one <see cref="VaultManifestCategory.Main"/> plus (from R2) any number of
-/// <see cref="VaultManifestCategory.SharedFolder"/> manifests the user owns or has been granted access to. Each
-/// manifest is independently encrypted and revisioned, and carries its own blob references.
+/// manifests: exactly one root manifest plus (from R2) any number of non-root manifests the user owns or has been
+/// granted access to. Each manifest is independently encrypted and revisioned, and carries its own blob references.
 /// </summary>
 public class Manifest
 {
     /// <summary>Gets or sets the stable identifier of the logical manifest (constant across its revisions).</summary>
     public required Guid ManifestId { get; set; }
 
-    /// <summary>Gets or sets the manifest kind discriminator.</summary>
-    public required VaultManifestCategory Category { get; set; }
+    /// <summary>
+    /// Gets or sets a value indicating whether this is the user's root manifest: the residual container that holds
+    /// everything not carved out into another manifest. Sharing status is not encoded here — it is tracked
+    /// separately (R2 access table); a non-root manifest is not necessarily shared.
+    /// </summary>
+    public required bool IsRoot { get; set; }
 
     /// <summary>Gets or sets the encrypted manifest blob (base64 of AES-GCM ciphertext) — null on empty vault.</summary>
     public string? Blob { get; set; }

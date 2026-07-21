@@ -83,20 +83,8 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         Console.WriteLine($"Vault revision before rollback: {revisionBeforeRollback}");
         Assert.That(revisionBeforeRollback, Is.GreaterThanOrEqualTo(3), "Should have at least 3 revisions");
 
-        // SIMULATE SERVER DATA LOSS: Delete the last 2 vault revisions from the server database
-        var revisionsToDelete = await ApiDbContext.VaultManifests
-            .Where(v => v.RevisionNumber > revisionBeforeRollback - 2)
-            .OrderByDescending(v => v.RevisionNumber)
-            .Take(2)
-            .ToListAsync();
-
-        foreach (var revision in revisionsToDelete)
-        {
-            Console.WriteLine($"Deleting vault revision: {revision.RevisionNumber}");
-            ApiDbContext.VaultManifests.Remove(revision);
-        }
-
-        await ApiDbContext.SaveChangesAsync();
+        // SIMULATE SERVER DATA LOSS: Roll the server vault back 2 revisions (restore from history).
+        await RollbackServerVaultRevisions(2);
 
         // Verify the server now has a lower revision
         var vaultAfterRollback = await ApiDbContext.VaultManifests
@@ -177,9 +165,8 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         var clientRevision = vaultBeforeRollback!.RevisionNumber;
         Console.WriteLine($"Client vault revision before rollback: {clientRevision}");
 
-        // 3. Simulate server data loss by deleting latest vault revision
-        ApiDbContext.VaultManifests.Remove(vaultBeforeRollback);
-        await ApiDbContext.SaveChangesAsync();
+        // 3. Simulate server data loss by rolling back the latest vault revision (restore from history).
+        await RollbackServerVaultRevisions(1);
 
         var serverRevisionAfterRollback = (await ApiDbContext.VaultManifests
             .OrderByDescending(v => v.RevisionNumber)
@@ -642,4 +629,40 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         // Clean up the temporary file after the test
         File.Delete(tempHtmlPath);
     }*/
+
+    /// <summary>
+    /// Simulates server data loss by rolling the current vault back <paramref name="count"/> revisions: each step
+    /// restores the newest history revision as the current row (the inverse of the archive-then-update upload flow).
+    /// When no history remains, the manifest row itself is deleted.
+    /// </summary>
+    /// <param name="count">Number of newest revisions to discard.</param>
+    private async Task RollbackServerVaultRevisions(int count)
+    {
+        for (var i = 0; i < count; i++)
+        {
+            var current = await ApiDbContext.VaultManifests.OrderByDescending(v => v.RevisionNumber).FirstOrDefaultAsync();
+            if (current == null)
+            {
+                return;
+            }
+
+            Console.WriteLine($"Rolling back vault revision: {current.RevisionNumber}");
+            var newestHistory = await ApiDbContext.VaultManifestsHistory
+                .Where(h => h.ManifestId == current.ManifestId)
+                .OrderByDescending(h => h.RevisionNumber)
+                .FirstOrDefaultAsync();
+
+            if (newestHistory == null)
+            {
+                ApiDbContext.VaultManifests.Remove(current);
+            }
+            else
+            {
+                current.CopyPayloadFrom(newestHistory);
+                ApiDbContext.VaultManifestsHistory.Remove(newestHistory);
+            }
+
+            await ApiDbContext.SaveChangesAsync();
+        }
+    }
 }

@@ -47,13 +47,14 @@ public class DbUpgradeTests : ClientPlaywrightTest
         user.SrpIdentity = TestUserUsername.ToLowerInvariant();
         await ApiDbContext.SaveChangesAsync();
 
-        // Insert static 1.0.0 vault into the database for the current user.
-        ApiDbContext.VaultManifests.Add(
-            new VaultManifest
+        // Overwrite the user's current vault with the static 1.0.0 vault (the current row is updated in place;
+        // the VaultManifests table holds exactly one row per manifest).
+        var currentVault = ApiDbContext.VaultManifests.First(x => x.OwnerUserId == user.Id && x.IsRoot);
+        currentVault.CopyPayloadFrom(
+            new VaultManifestsHistory
             {
-                RevisionId = Guid.NewGuid(),
-                Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main,
-                OwnerUserId = ApiDbContext.AliasVaultUsers.First().Id,
+                ManifestId = currentVault.ManifestId,
+                OwnerUserId = user.Id,
                 StorageFormat = "sqlite-blob",
                 Version = "1.0.0",
                 RevisionNumber = 2,

@@ -54,8 +54,8 @@ public class UserManagementTests : AdminPlaywrightTest
         // Create a vault for the test user (required by the Users list page)
         var testVault = new VaultManifest
         {
-            RevisionId = Guid.NewGuid(),
-            Category = AliasVault.Shared.Models.WebApi.V2.Vault.VaultManifestCategory.Main,
+            ManifestId = Guid.NewGuid(),
+            IsRoot = true,
             OwnerUserId = _testUserId,
             StorageFormat = "sqlite-blob",
             Version = "1.0.0",

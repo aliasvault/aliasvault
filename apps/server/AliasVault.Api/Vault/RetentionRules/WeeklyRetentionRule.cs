@@ -20,7 +20,7 @@ public class WeeklyRetentionRule : IRetentionRule
     public int WeeksToKeep { get; init; }
 
     /// <inheritdoc cref="IRetentionRule.ApplyRule"/>
-    public IEnumerable<VaultManifest> ApplyRule(List<VaultManifest> vaults, DateTime now)
+    public IEnumerable<VaultManifestBase> ApplyRule(List<VaultManifestBase> vaults, DateTime now)
     {
         // Helper function to get the start of the week with Monday as the first day of the week.
         DateTime GetStartOfWeek(DateTime date)
