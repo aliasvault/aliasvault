@@ -485,16 +485,16 @@
       "title": "Mentési felhívás ablak",
       "description": "Felugró ablak amely megkérdezi, hogy a beírt belépést mentse e az oldalhoz.",
       "blockedSites": "Blokkolt oldalak",
-      "blockedSitesDescription": "Sites where the save prompt will never appear.",
-      "clearAllBlockedSites": "Clear all blocked sites"
+      "blockedSitesDescription": "Azon oldalak, ahol a mentés felhívás nem jelenik meg.",
+      "clearAllBlockedSites": "Blokkolt oldalak listájának törlése"
     },
     "unlockMethod": {
       "title": "Széf feloldási mód",
-      "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
+      "introText": "Válassza ki, hogyan kívánja feloldani széfjét. Használhatja a mester jelszavát (mindig elérhető) vagy PIN kód a gyorsabb belépés érdekében. Azonban ha háromszor hibásan adja meg a PIN kódját, csak a mester jelszavával tud majd belépni.",
       "password": "Mester jelszó",
       "pin": "PIN kód",
-      "pinDescription": "Unlock vault with PIN code",
-      "setupPin": "Setup PIN Code",
+      "pinDescription": "Széf feloldása PIN kóddal",
+      "setupPin": "PIN kód beállítása",
       "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
       "confirmPin": "Confirm PIN",
       "confirmPinDescription": "Enter your PIN again to confirm",
