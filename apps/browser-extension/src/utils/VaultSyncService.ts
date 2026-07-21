@@ -155,8 +155,7 @@ type BlobDto = { hash: string; category: string; encryptedDataBase64: string };
  */
 type ManifestDto = {
   manifestId: string;
-  /** Manifest category. */
-  category: string;
+  isRoot: boolean;
   blob?: string | null;
   ciphertextHash?: string | null;
   revision: number;
@@ -164,7 +163,7 @@ type ManifestDto = {
 };
 
 /** Per-manifest revision as carried in the status response. */
-type ManifestRevisionDto = { manifestId: string; category: string; revision: number };
+type ManifestRevisionDto = { manifestId: string; isRoot: boolean; revision: number };
 
 /** A data bucket as carried in the GET snapshot / bundled upload. `category` matches the server enum name (e.g. "Settings"). */
 type BucketDto = { category: string; blob?: string | null; ciphertextHash?: string | null; revision?: number };
@@ -172,15 +171,13 @@ type BucketDto = { category: string; blob?: string | null; ciphertextHash?: stri
 /** Per-kind revision as carried in status / upload responses. */
 type BucketRevisionDto = { category: string; revision: number };
 
-/** The manifest category that represents the user's own personal vault. */
-const MAIN_MANIFEST_CATEGORY = 'Main';
-
 /**
- * Pick the user's main manifest from a snapshot's manifest list.
+ * Pick the user's root manifest from a snapshot's manifest list. Strict on purpose: when no manifest is flagged as
+ * root there is no safe fallback (grabbing an arbitrary manifest could assemble the wrong vault), so callers that
+ * require a root manifest must fail loudly on `undefined`.
  */
-function selectMainManifest(manifests: ManifestDto[] | undefined | null): ManifestDto | undefined {
-  const list = manifests ?? [];
-  return list.find(m => m.category === MAIN_MANIFEST_CATEGORY) ?? list[0];
+function selectRootManifest(manifests: ManifestDto[] | undefined | null): ManifestDto | undefined {
+  return (manifests ?? []).find(m => m.isRoot);
 }
 
 /**
@@ -246,8 +243,8 @@ export class VaultSyncService {
      */
     devLog('[V2Pull] Step 1/4: fetching vault snapshot (GET /v2/Vault)...');
     const snapshot = await this.fetchSnapshot();
-    const mainManifest = selectMainManifest(snapshot.manifests);
-    devLog(`[V2Pull] Step 1/4 done: storageFormat=${snapshot.storageFormat}, manifests=${snapshot.manifests?.length ?? 0}, mainRevision=${mainManifest?.revision}, manifestBlob=${mainManifest?.blob?.length ?? 0} chars, buckets=${snapshot.buckets?.length ?? 0}, blobRefs=${mainManifest?.blobReferences?.length ?? 0}`);
+    const rootManifest = selectRootManifest(snapshot.manifests);
+    devLog(`[V2Pull] Step 1/4 done: storageFormat=${snapshot.storageFormat}, manifests=${snapshot.manifests?.length ?? 0}, rootRevision=${rootManifest?.revision}, manifestBlob=${rootManifest?.blob?.length ?? 0} chars, buckets=${snapshot.buckets?.length ?? 0}, blobRefs=${rootManifest?.blobReferences?.length ?? 0}`);
 
     /*
      * Steps 2–4 — decrypt, materialize, and re-encrypt. Any failure here is a client-side vault-processing error
@@ -291,10 +288,10 @@ export class VaultSyncService {
       const dto = await webApi.get<StatusResponseDto>(STATUS_ENDPOINT);
       const settingsRevision = (dto.bucketRevisions ?? []).find(b => b.category === SETTINGS_BUCKET_CATEGORY)?.revision ?? null;
       const revisions = dto.manifestRevisions ?? [];
-      const mainManifestRevision = (revisions.find(m => m.category === MAIN_MANIFEST_CATEGORY) ?? revisions[0])?.revision ?? null;
+      const rootManifestRevision = revisions.find(m => m.isRoot)?.revision ?? null;
       return {
         isMigrated: dto.storageFormat === STORAGE_FORMAT_MANIFEST,
-        manifestRevision: mainManifestRevision,
+        manifestRevision: rootManifestRevision,
         settingsRevision,
       };
     } catch (e) {
@@ -329,36 +326,40 @@ export class VaultSyncService {
   private async materializeFromSnapshot(snapshot: GetResponseDto, vek: string): Promise<PullResult> {
     const webApi = new WebApiService();
 
-    const mainManifest = selectMainManifest(snapshot.manifests);
-    if (!mainManifest?.blob) {
+    const rootManifest = selectRootManifest(snapshot.manifests);
+    if (!rootManifest) {
+      throw new Error('VaultSyncService: server returned no root manifest, refusing to assemble.');
+    }
+
+    if (!rootManifest.blob) {
       throw new Error('VaultSyncService: server returned no manifest blob, nothing to assemble.');
     }
 
     // Storage-layer integrity: verify the ciphertext we received matches the hash the server stored.
-    if (mainManifest.ciphertextHash) {
-      const actual = await vaultCodecComputeCiphertextHash(mainManifest.blob);
-      if (actual !== mainManifest.ciphertextHash) {
+    if (rootManifest.ciphertextHash) {
+      const actual = await vaultCodecComputeCiphertextHash(rootManifest.blob);
+      if (actual !== rootManifest.ciphertextHash) {
         throw new Error('VaultSyncService: manifest ciphertext hash mismatch, refusing to load. Possible storage corruption.');
       }
     }
 
     devLog('[V2Pull] Manifest ciphertext hash verified; decrypting + opening manifest...');
-    const manifestJson = await decryptUnpack(mainManifest.blob, vek);
+    const manifestJson = await decryptUnpack(rootManifest.blob, vek);
     const manifest = JSON.parse(manifestJson) as VaultManifest;
     devLog(`[V2Pull] Manifest opened (content hash verified): schemaVersion=${manifest.schemaVersion}, migrationId=${manifest.migrationId}, tables: ${Object.entries(manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
 
     // Persist the user salt locally so subsequent canonicalizes hash blobs the same way.
     await storage.setItem(SALT_STORAGE_KEY, manifest.userSalt);
-    const manifestRevision = typeof mainManifest.revision === 'number' ? mainManifest.revision : 0;
+    const manifestRevision = typeof rootManifest.revision === 'number' ? rootManifest.revision : 0;
     await storage.setItem('local:serverRevision', manifestRevision);
 
     /*
-     * Persist the revision of every non-Main manifest (shared folders) so sync can detect when one is added or
-     * updated server-side. Main is excluded on purpose, it's tracked via local:serverRevision above.
+     * Persist the revision of every non-root manifest (e.g. shared folders) so sync can detect when one is added or
+     * updated server-side. The root manifest is excluded on purpose, it's tracked via local:serverRevision above.
      */
     const sharedManifestRevisions: Record<string, number> = {};
     for (const m of (snapshot.manifests ?? [])) {
-      if (m.category !== MAIN_MANIFEST_CATEGORY && typeof m.revision === 'number') {
+      if (!m.isRoot && typeof m.revision === 'number') {
         sharedManifestRevisions[m.manifestId] = m.revision;
       }
     }
@@ -390,7 +391,7 @@ export class VaultSyncService {
     }
 
     // Fetch any blobs referenced by the manifest that aren't already in the local (encrypted) cache.
-    const refs = mainManifest.blobReferences ?? [];
+    const refs = rootManifest.blobReferences ?? [];
     const cache = await this.loadBlobCache();
     const missingHashes = refs.map(r => r.hash).filter(h => !(h in cache));
     devLog(`[V2Pull] Blob refs: ${refs.length} referenced, ${refs.length - missingHashes.length} cached locally, ${missingHashes.length} to download.`);
@@ -405,9 +406,10 @@ export class VaultSyncService {
 
     /*
      * Decrypt referenced blobs for reassembly and prune the persisted cache to exactly the referenced set, so
-     * the cache stays bounded by the current vault size. A referenced blob the server couldn't serve is fatal
-     * for attachments (silently dropping bytes would propagate permanent data loss on the next push); a missing
-     * favicon only degrades cosmetically, so it's logged and skipped.
+     * the cache stays bounded by the current vault size. A blob that can't be reconstituted — the server couldn't
+     * serve it (missing) or its ciphertext won't decrypt with the current key (stale key / corruption) — is fatal
+     * for attachments (silently dropping bytes would propagate permanent data loss on the next push); a favicon
+     * only degrades cosmetically, so it's logged and skipped. The codec inserts NULL for any skipped blob ref.
      */
     const prunedCache: Record<string, string> = {};
     const blobMap = new Map<string, Uint8Array>();
@@ -420,8 +422,16 @@ export class VaultSyncService {
         devWarn(`[V2Sync] Referenced ${r.category} blob ${r.hash} missing on server, continuing without it.`);
         continue;
       }
-      prunedCache[r.hash] = ciphertext;
-      blobMap.set(r.hash, await this.decryptBlobToBytes(ciphertext, vek));
+      try {
+        blobMap.set(r.hash, await this.decryptBlobToBytes(ciphertext, vek));
+        prunedCache[r.hash] = ciphertext;
+      } catch (e) {
+        // Present on the server but undecryptable with the current key. Apply the same policy as a missing blob.
+        if (r.category === 'attachment') {
+          throw new Error(`VaultSyncService: attachment blob ${r.hash} is referenced by the manifest but could not be decrypted with the current key (stale key or corrupt ciphertext), refusing to assemble an incomplete vault. Underlying: ${e instanceof Error ? e.message : String(e)}`);
+        }
+        devWarn(`[V2Sync] Referenced ${r.category} blob ${r.hash} failed to decrypt with the current key, continuing without it.`);
+      }
     }
     await this.saveBlobCache(prunedCache);
 

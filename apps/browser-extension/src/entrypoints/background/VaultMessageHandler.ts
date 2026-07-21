@@ -54,19 +54,16 @@ import { t } from '@/i18n/StandaloneI18n';
 let cachedSqliteClient: SqliteClient | null = null;
 let cachedVaultBlob: string | null = null;
 
-/** The manifest category representing the user's own personal vault. */
-const MAIN_MANIFEST_CATEGORY = 'Main';
-
 /**
- * The server revision of the user's Main manifest.
+ * The server revision of the user's root manifest.
  * @param status - the status response from the server
  */
-function mainManifestRevision(status: StatusResponseV2): number {
-  const main = (status.manifestRevisions ?? []).find(m => m.category === MAIN_MANIFEST_CATEGORY);
-  return main?.revision ?? 0;
+function rootManifestRevision(status: StatusResponseV2): number {
+  const root = (status.manifestRevisions ?? []).find(m => m.isRoot);
+  return root?.revision ?? 0;
 }
 
-/** The client's last-known revision per non-Main manifest (manifestId → revision); empty when no shared folders. */
+/** The client's last-known revision per non-root manifest (manifestId → revision); empty when no shared folders. */
 async function getLocalSharedManifestRevisions(): Promise<Record<string, number>> {
   return (await storage.getItem(SERVER_MANIFEST_REVISIONS_STORAGE_KEY)) as Record<string, number> | null ?? {};
 }
@@ -78,13 +75,13 @@ async function getLocalSharedManifestRevisions(): Promise<Record<string, number>
  * the server, so this returns false until the next server-side change.
  *
  * @param serverManifests - the per-manifest revisions from the status response
- * @param localMainRevision - the client's last-known Main revision (local:serverRevision)
- * @param localSharedRevisions - the client's last-known revision per non-Main manifest
+ * @param localMainRevision - the client's last-known root manifest revision (local:serverRevision)
+ * @param localSharedRevisions - the client's last-known revision per non-root manifest
  */
 function serverManifestsNeedPull(serverManifests: ManifestRevision[], localMainRevision: number, localSharedRevisions: Record<string, number>): boolean {
   const serverShared = new Map<string, number>();
   for (const m of (serverManifests ?? [])) {
-    if (m.category === MAIN_MANIFEST_CATEGORY) {
+    if (m.isRoot) {
       if (m.revision > localMainRevision) {
         return true;
       }
@@ -1414,7 +1411,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     // Get current sync state
     const syncState = await handleGetSyncState();
 
-    const serverManifestRevision = mainManifestRevision(statusResponse);
+    const serverManifestRevision = rootManifestRevision(statusResponse);
     const localSharedRevisions = await getLocalSharedManifestRevisions();
     const needsPull = serverManifestsNeedPull(statusResponse.manifestRevisions, syncState.serverRevision, localSharedRevisions);
 
