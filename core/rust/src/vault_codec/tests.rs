@@ -29,6 +29,7 @@ fn basic_input(tables: Vec<CodecTableData>) -> CanonicalizeInput {
         migration_id: "20250101000000_Init".to_string(),
         version: "2.0.0".to_string(),
         canonicalized_at: "2026-01-01T00:00:00.000Z".to_string(),
+        overflow: None,
     }
 }
 
@@ -122,7 +123,7 @@ fn inline_b64_columns_survive_roundtrip() {
     let cell = &out.manifest.tables["Items"][0]["Secret"];
     assert_eq!(cell["__b64"], json!(b64(&secret)));
 
-    let re = materialize_as_sqlite(MaterializeInput { manifest: out.manifest, data_buckets: out.data_buckets }).unwrap();
+    let re = materialize_as_sqlite(MaterializeInput { manifest: out.manifest, data_buckets: out.data_buckets, schema_columns: None }).unwrap();
     let items = re.tables.iter().find(|t| t.name == "Items").unwrap();
     assert_eq!(items.records[0]["Secret"]["__b64"], json!(b64(&secret)));
 }
@@ -135,7 +136,7 @@ fn materialize_as_sqlite_emits_settings_table_and_migration_id() {
         CodecTableData { name: "Settings".to_string(), records: vec![row(&[("Key", json!("k"))])] },
     ]);
     let out = canonicalize_from_sqlite(input).unwrap();
-    let re = materialize_as_sqlite(MaterializeInput { manifest: out.manifest, data_buckets: out.data_buckets }).unwrap();
+    let re = materialize_as_sqlite(MaterializeInput { manifest: out.manifest, data_buckets: out.data_buckets, schema_columns: None }).unwrap();
     assert_eq!(re.migration_id, "20250101000000_Init");
     assert!(re.tables.iter().any(|t| t.name == "Settings" && t.records.len() == 1));
     assert!(re.tables.iter().any(|t| t.name == "Items"));
@@ -150,7 +151,7 @@ fn materialize_as_sqlite_drops_skip_tables() {
     manifest
         .tables
         .insert("android_metadata".to_string(), vec![row(&[("locale", json!("en_US"))])]);
-    let re = materialize_as_sqlite(MaterializeInput { manifest, data_buckets: vec![] }).unwrap();
+    let re = materialize_as_sqlite(MaterializeInput { manifest, data_buckets: vec![], schema_columns: None }).unwrap();
     assert!(!re.tables.iter().any(|t| t.name == "android_metadata"));
 }
 
@@ -167,7 +168,7 @@ fn full_roundtrip_with_blobs_is_semantically_equal() {
     let out = canonicalize_from_sqlite(basic_input(tables)).unwrap();
     assert_eq!(out.blobs.len(), 2);
 
-    let re = materialize_as_sqlite(MaterializeInput { manifest: out.manifest.clone(), data_buckets: out.data_buckets.clone() }).unwrap();
+    let re = materialize_as_sqlite(MaterializeInput { manifest: out.manifest.clone(), data_buckets: out.data_buckets.clone(), schema_columns: None }).unwrap();
     // Items/Logos/Attachments/Settings all present (skip tables aside).
     for name in ["Items", "Logos", "Attachments", "Settings"] {
         assert!(re.tables.iter().any(|t| t.name == name), "missing table {name}");
@@ -379,6 +380,109 @@ fn validate_manifest_rejects_duplicate_logo_sources() {
     let result = validate_manifest(&manifest);
     assert!(!result.ok);
     assert!(result.failed_rules.iter().any(|r| r == "logo-sources-not-unique"));
+}
+
+/// A minimal local schema map for overflow tests: Items(Id, Name), Settings(Key, Value).
+fn old_client_schema() -> std::collections::HashMap<String, Vec<String>> {
+    [
+        ("Items".to_string(), vec!["Id".to_string(), "Name".to_string()]),
+        ("Settings".to_string(), vec!["Key".to_string(), "Value".to_string()]),
+    ]
+    .into_iter()
+    .collect()
+}
+
+#[test]
+fn materialize_splits_unknown_columns_into_overflow_and_canonicalize_remerges() {
+    // A newer client wrote Items.AliasEnabled; this client's schema doesn't know it. The column must
+    // not reach the insert (it would crash), must land in overflow keyed by row Id, and must
+    // reappear on the next canonicalize so the push doesn't drop it.
+    let out = canonicalize_from_sqlite(basic_input(vec![CodecTableData {
+        name: "Items".to_string(),
+        records: vec![row(&[("Id", json!("i1")), ("Name", json!("GitHub")), ("AliasEnabled", json!(true))])],
+    }]))
+    .unwrap();
+
+    let re = materialize_as_sqlite(MaterializeInput { manifest: out.manifest, data_buckets: out.data_buckets, schema_columns: Some(old_client_schema()) }).unwrap();
+    let items = re.tables.iter().find(|t| t.name == "Items").unwrap();
+    assert!(!items.records[0].contains_key("AliasEnabled"), "unknown column filtered out of the insert set");
+    assert_eq!(items.records[0]["Name"], json!("GitHub"));
+    assert_eq!(re.overflow.columns["Items"]["i1"]["AliasEnabled"], json!(true));
+
+    // The old client edits Name locally, then pushes: the overflow column re-attaches to the row.
+    let mut push_input = basic_input(vec![CodecTableData {
+        name: "Items".to_string(),
+        records: vec![row(&[("Id", json!("i1")), ("Name", json!("GitHub (renamed)"))])],
+    }]);
+    push_input.overflow = Some(re.overflow);
+    let pushed = canonicalize_from_sqlite(push_input).unwrap();
+    let item = &pushed.manifest.tables["Items"][0];
+    assert_eq!(item["Name"], json!("GitHub (renamed)"));
+    assert_eq!(item["AliasEnabled"], json!(true), "newer writer's column survives the old client's push");
+}
+
+#[test]
+fn overflow_of_locally_deleted_row_is_dropped_on_canonicalize() {
+    // The row carrying the unknown column was deleted locally: its overflow must vanish with it.
+    let overflow = CodecOverflow {
+        columns: [("Items".to_string(), [("gone".to_string(), row(&[("AliasEnabled", json!(true))]))].into_iter().collect())].into_iter().collect(),
+        ..Default::default()
+    };
+    let mut input = basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("kept"))])] }]);
+    input.overflow = Some(overflow);
+    let out = canonicalize_from_sqlite(input).unwrap();
+    assert!(!out.manifest.tables["Items"][0].contains_key("AliasEnabled"));
+}
+
+#[test]
+fn materialize_splits_unknown_tables_into_overflow_and_canonicalize_reemits() {
+    // A newer client added a whole table (manifest-level) and a whole bucket table. Neither exists
+    // in this client's schema; both must round-trip through overflow back to their original place.
+    let mut out = canonicalize_from_sqlite(basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i1"))])] }])).unwrap();
+    out.manifest.tables.insert("NewTable".to_string(), vec![row(&[("Id", json!("n1")), ("Data", json!("x"))])]);
+    out.data_buckets[0].tables.insert("Preferences".to_string(), vec![row(&[("Key", json!("p1"))])]);
+
+    let re = materialize_as_sqlite(MaterializeInput { manifest: out.manifest, data_buckets: out.data_buckets, schema_columns: Some(old_client_schema()) }).unwrap();
+    assert!(!re.tables.iter().any(|t| t.name == "NewTable" || t.name == "Preferences"), "unknown tables never reach the insert set");
+    assert_eq!(re.overflow.tables["NewTable"].len(), 1);
+    assert_eq!(re.overflow.bucket_tables["Settings"]["Preferences"].len(), 1);
+
+    let mut push_input = basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i1"))])] }]);
+    push_input.overflow = Some(re.overflow.clone());
+    let pushed = canonicalize_from_sqlite(push_input).unwrap();
+    assert_eq!(pushed.manifest.tables["NewTable"].len(), 1, "unknown manifest table re-emitted");
+    assert_eq!(bucket_rows(&pushed, "Settings", "Preferences").len(), 1, "unknown bucket table re-emitted into its category");
+
+    // Bucket-only push path: extract_bucket must re-emit the bucket's overflow table too.
+    let bucket = extract_bucket("Settings".to_string(), [("Settings".to_string(), vec![row(&[("Key", json!("k")), ("Value", json!("v"))])])].into_iter().collect(), Some(&re.overflow));
+    assert_eq!(bucket.tables["Preferences"].len(), 1);
+    assert_eq!(bucket.tables["Settings"].len(), 1);
+}
+
+#[test]
+fn extract_bucket_remerges_overflow_columns() {
+    // A newer client added a column to Settings; a bucket-only push from this client must keep it.
+    let overflow = CodecOverflow {
+        columns: [("Settings".to_string(), [("theme".to_string(), row(&[("SyncScope", json!("device"))]))].into_iter().collect())].into_iter().collect(),
+        ..Default::default()
+    };
+    let bucket = extract_bucket("Settings".to_string(), [("Settings".to_string(), vec![row(&[("Key", json!("theme")), ("Value", json!("dark"))])])].into_iter().collect(), Some(&overflow));
+    assert_eq!(bucket.tables["Settings"][0]["SyncScope"], json!("device"));
+    assert_eq!(bucket.tables["Settings"][0]["Value"], json!("dark"));
+}
+
+#[test]
+fn materialize_without_schema_columns_passes_rows_through_verbatim() {
+    // Legacy callers (no schema map) keep today's behavior exactly: nothing filtered, empty overflow.
+    let out = canonicalize_from_sqlite(basic_input(vec![CodecTableData {
+        name: "Items".to_string(),
+        records: vec![row(&[("Id", json!("i1")), ("AliasEnabled", json!(true))])],
+    }]))
+    .unwrap();
+    let re = materialize_as_sqlite(MaterializeInput { manifest: out.manifest, data_buckets: out.data_buckets, schema_columns: None }).unwrap();
+    let items = re.tables.iter().find(|t| t.name == "Items").unwrap();
+    assert_eq!(items.records[0]["AliasEnabled"], json!(true));
+    assert!(re.overflow.is_empty());
 }
 
 #[test]

@@ -10,8 +10,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::error::VaultResult;
-use types::SYNCABLE_TABLES;
 pub use types::SYNCABLE_TABLE_NAMES;
+pub use types::{SYNCABLE_TABLES, TableConfig};
 
 /// A record is a map of column names to JSON values.
 pub type Record = HashMap<String, serde_json::Value>;

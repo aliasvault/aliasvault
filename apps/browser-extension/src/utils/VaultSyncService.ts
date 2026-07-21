@@ -11,7 +11,7 @@ import { VaultDataBucketCategory } from '@/utils/dist/core/models/vault';
 import type { VaultResponse } from '@/utils/dist/core/models/webapi';
 import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import {vaultCodecComputeCiphertextHash, vaultCodecCanonicalizeFromSqlite, vaultCodecGenerateUserSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket} from '@/utils/RustCore';
+import {type CodecOverflow, vaultCodecComputeCiphertextHash, vaultCodecCanonicalizeFromSqlite, vaultCodecGenerateUserSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket} from '@/utils/RustCore';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { ServerUpdateRequiredError } from '@/utils/types/errors/ServerUpdateRequiredError';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
@@ -96,6 +96,11 @@ const bucketRevKey = (category: string): `local:${string}` => `local:vaultV2Buck
 const BLOB_CACHE_STORAGE_KEY = 'local:vaultV2BlobCipherCache';
 /** Hashes the server has stored (refreshed on every pull/push). */
 const SERVER_HASHES_STORAGE_KEY = 'local:vaultV2ServerBlobHashes';
+/**
+ * Codec overflow persisted between pull and push: a newer client's tables/columns that this client's
+ * local SQLite schema can't hold.
+ */
+export const CODEC_OVERFLOW_STORAGE_KEY = 'local:vaultV2CodecOverflow';
 /**
  * The client's last-known revision per non-Main manifest (manifestId > revision), refreshed on every materialize.
  */
@@ -237,7 +242,7 @@ export class VaultSyncService {
    */
   public async pull(encryptionKey: string): Promise<VaultResponse> {
     /*
-     * Step 1 — network fetch. Failures here (server unreachable, HTTP error, or ServerUpdateRequiredError for an
+     * Step 1: network fetch. Failures here (server unreachable, HTTP error, or ServerUpdateRequiredError for an
      * outdated server) are "can't reach / must update the server" conditions, NOT vault-processing problems, so
      * they propagate unchanged and the caller maps them to the appropriate "server" message.
      */
@@ -247,14 +252,14 @@ export class VaultSyncService {
     devLog(`[V2Pull] Step 1/4 done: storageFormat=${snapshot.storageFormat}, manifests=${snapshot.manifests?.length ?? 0}, rootRevision=${rootManifest?.revision}, manifestBlob=${rootManifest?.blob?.length ?? 0} chars, buckets=${snapshot.buckets?.length ?? 0}, blobRefs=${rootManifest?.blobReferences?.length ?? 0}`);
 
     /*
-     * Steps 2–4 — decrypt, materialize, and re-encrypt. Any failure here is a client-side vault-processing error
+     * Steps 2–4: decrypt, materialize, and re-encrypt. Any failure here is a client-side vault-processing error
      * (codec/format mismatch, integrity failure, corrupt blob, …). We wrap it in a VaultProcessingError so the UI
      * can surface the real technical detail in a copyable report instead of a misleading "server unreachable".
      */
     try {
       if (snapshot.storageFormat === STORAGE_FORMAT_MANIFEST) {
         // Manifest-v1 user: materialize the manifest + metadata + blobs into a SQLite blob, then encrypt it.
-        devLog('[V2Pull] Step 2/4: manifest format — decrypting and reassembling local SQLite...');
+        devLog('[V2Pull] Step 2/4: manifest format: decrypting and reassembling local SQLite...');
         const pull = await this.materializeFromSnapshot(snapshot, encryptionKey);
         devLog(`[V2Pull] Step 3/4: materialized SQLite (${pull.sqliteBase64.length} base64 chars); re-encrypting for local storage...`);
         const encryptedVault = await EncryptionUtility.symmetricEncrypt(pull.sqliteBase64, encryptionKey);
@@ -264,7 +269,7 @@ export class VaultSyncService {
 
       /*
        * Not-yet-migrated (sqlite-blob fallback) user: the server returned the legacy encrypted SQLite blob. It's already in the stored
-       * format (encrypted SQLite), so we pass it through unchanged — the on-open schema upgrade handles the rest.
+       * format (encrypted SQLite), so we pass it through unchanged: the on-open schema upgrade handles the rest.
        */
       devLog('[V2Pull] Step 2/4: legacy blob pass-through (user not yet migrated), returning as-is.');
       return this.buildResponse(
@@ -274,7 +279,7 @@ export class VaultSyncService {
         snapshot
       );
     } catch (error) {
-      devError('[V2Pull] FAILED — the last logged step above is where it broke:', error);
+      devError('[V2Pull] FAILED: the last logged step above is where it broke:', error);
       throw new VaultProcessingError('vault-pull', error);
     }
   }
@@ -406,8 +411,8 @@ export class VaultSyncService {
 
     /*
      * Decrypt referenced blobs for reassembly and prune the persisted cache to exactly the referenced set, so
-     * the cache stays bounded by the current vault size. A blob that can't be reconstituted — the server couldn't
-     * serve it (missing) or its ciphertext won't decrypt with the current key (stale key / corruption) — is fatal
+     * the cache stays bounded by the current vault size. A blob that can't be reconstituted: the server couldn't
+     * serve it (missing) or its ciphertext won't decrypt with the current key (stale key / corruption): is fatal
      * for attachments (silently dropping bytes would propagate permanent data loss on the next push); a favicon
      * only degrades cosmetically, so it's logged and skipped. The codec inserts NULL for any skipped blob ref.
      */
@@ -441,7 +446,21 @@ export class VaultSyncService {
     devLog(`[V2Pull] ${blobMap.size} blobs decrypted; running codec reassembly into a fresh SQLite...`);
     const sqlGen = new VaultSqlGenerator();
     const schemaSql = sqlGen.getCompleteSchemaSql();
-    const materialized = await vaultCodecMaterializeAsSqlite(manifest, dataBuckets);
+    const schemaColumns = await VaultCodec.getSchemaColumns(schemaSql);
+    const materialized = await vaultCodecMaterializeAsSqlite(manifest, dataBuckets, schemaColumns);
+
+    /*
+     * Anything a newer client wrote that our schema can't hold was split into overflow instead of the
+     * insert set. Persist it so push/extract re-merge it into the manifest: without this, our next
+     * push would silently delete those tables/columns for every other client.
+     */
+    await this.saveOverflow(materialized.overflow, vek);
+    const overflowTableCount = Object.keys(materialized.overflow.tables).length + Object.values(materialized.overflow.bucketTables).reduce((n, t) => n + Object.keys(t).length, 0);
+    const overflowColumnTables = Object.keys(materialized.overflow.columns);
+    if (overflowTableCount > 0 || overflowColumnTables.length > 0) {
+      devWarn(`[V2Pull] Newer-schema data preserved as overflow: ${overflowTableCount} unknown table(s), unknown columns on [${overflowColumnTables.join(', ')}]. It will round-trip on push but is not usable locally until the app is updated.`);
+    }
+
     const sqliteBase64 = await VaultCodec.insertTables(materialized, blobMap, schemaSql);
     devLog('[V2Pull] Codec reassembly complete.');
 
@@ -513,12 +532,13 @@ export class VaultSyncService {
     // Read tables from the SQLite database and apply the manifest-v1 format rules.
     const tables = VaultCodec.readTables(sqliteClient);
     const migrationId = VaultCodec.getLatestMigrationId(sqliteClient);
-    const canonicalized = await timedStage('canonicalize (incl. Rust→JS conversion)', () => vaultCodecCanonicalizeFromSqlite({
+    const canonicalized = await timedStage('canonicalize (incl. Rust→JS conversion)', async () => vaultCodecCanonicalizeFromSqlite({
       tables,
       userSalt,
       migrationId,
       version: '2.0.0',
       canonicalizedAt: new Date().toISOString(),
+      overflow: await this.loadOverflow(vek),
     }));
 
     // Plaintext blob bytes held platform-side for encryption/upload.
@@ -799,6 +819,38 @@ export class VaultSyncService {
    */
   private async saveBlobCache(cache: Record<string, string>): Promise<void> {
     await storage.setItem(BLOB_CACHE_STORAGE_KEY, cache);
+  }
+
+  /**
+   * Load the codec overflow persisted by the last pull (undefined when none): a newer client's
+   * tables/columns our local schema can't hold. Callers pass it into canonicalize/extractBucket so a
+   * push from this client re-emits that data instead of dropping it. Stored AES-GCM encrypted; an
+   * entry that no longer decrypts (key rotated, account switched) is discarded: the next pull
+   * rebuilds it from the server manifest.
+   * @param vek - the user's symmetric key
+   */
+  public async loadOverflow(vek: string): Promise<CodecOverflow | undefined> {
+    const ciphertext = (await storage.getItem(CODEC_OVERFLOW_STORAGE_KEY)) as string | null;
+    if (!ciphertext) {
+      return undefined;
+    }
+    try {
+      return JSON.parse(await EncryptionUtility.symmetricDecrypt(ciphertext, vek)) as CodecOverflow;
+    } catch {
+      devWarn('[V2Sync] Persisted codec overflow could not be decrypted with the current key, discarding it. It will be rebuilt on the next pull.');
+      await storage.removeItem(CODEC_OVERFLOW_STORAGE_KEY);
+      return undefined;
+    }
+  }
+
+  /**
+   * Persist the codec overflow produced by materialize (rebuilt wholesale on every pull),
+   * AES-GCM encrypted so no vault row data sits in extension storage as plaintext.
+   * @param overflow - the overflow split off by the last materialize
+   * @param vek - the user's symmetric key
+   */
+  private async saveOverflow(overflow: CodecOverflow, vek: string): Promise<void> {
+    await storage.setItem(CODEC_OVERFLOW_STORAGE_KEY, await EncryptionUtility.symmetricEncrypt(JSON.stringify(overflow), vek));
   }
 }
 

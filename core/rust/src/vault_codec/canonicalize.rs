@@ -18,8 +18,9 @@ use serde_json::json;
 
 use super::hash::salted_blob_hash;
 use super::logos::dedupe_logos_by_source;
-use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedVault, DataBucket, Manifest, CodecRecord};
-use super::types::{blob_spec_for, bucket_categories, bucket_category_for, is_skip_table, SCHEMA_VERSION};
+use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedVault, CodecOverflow, DataBucket, Manifest, CodecRecord};
+use super::materialize::row_key;
+use super::types::{blob_spec_for, bucket_categories, bucket_category_for, is_skip_table, primary_key_for, SCHEMA_VERSION};
 use crate::error::VaultResult;
 
 /// Canonicalize normalized tables into the split resources: the manifest, one data bucket per declared
@@ -34,6 +35,15 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
             continue;
         }
         all_tables.entry(table.name.clone()).or_default().extend(table.records.iter().cloned());
+    }
+
+    // Re-merge overflow from the last materialize (a newer writer's tables/columns this client's
+    // local schema couldn't hold) so this push doesn't drop them. See `CodecOverflow`.
+    let overflow = input.overflow.unwrap_or_default();
+    remerge_overflow_columns(&mut all_tables, &overflow);
+    for (name, rows) in &overflow.tables {
+        // Local rows win if the table somehow exists locally now (e.g. client upgraded since the pull).
+        all_tables.entry(name.clone()).or_insert_with(|| rows.clone());
     }
 
     // Collapse duplicate Logos rows sharing a Source (see `logos` module) and remap Items.LogoId so
@@ -71,6 +81,18 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
             out_rows.push(row);
         }
         manifest_tables.insert(name, out_rows);
+    }
+
+    /*
+     * Re-emit overflow bucket tables into their original categories. A category this client's
+     * BUCKET_TABLES doesn't declare yet is added as its own bucket, preserving the newer writer's
+     * bucket structure verbatim.
+     */
+    for (category, ov_tables) in &overflow.bucket_tables {
+        let bucket = bucketed.entry(category.clone()).or_default();
+        for (name, rows) in ov_tables {
+            bucket.entry(name.clone()).or_insert_with(|| rows.clone());
+        }
     }
 
     let manifest = Manifest {
@@ -124,9 +146,47 @@ fn extract_blob_cell(
     json!({ "__blobRef": hash, "__blobKind": kind })
 }
 
-/// Build a single data bucket for `category` from its already-normalized tables (name > rows). 
-/// The bucket-only push path (a bucket changed but the manifest didn't). Input rows are 
+/// Re-attach overflow columns (split off at materialize time because the local schema didn't know
+/// them) to their rows, matched by the table's primary-key value. A row deleted locally simply has
+/// no match and its overflow is dropped with it, which is the correct outcome. Locally-known
+/// columns always win on a (theoretical) name collision.
+fn remerge_overflow_columns(tables: &mut HashMap<String, Vec<CodecRecord>>, overflow: &CodecOverflow) {
+    for (table_name, by_pk) in &overflow.columns {
+        let rows = match tables.get_mut(table_name) {
+            Some(rows) => rows,
+            None => continue,
+        };
+        let pk_column = primary_key_for(table_name);
+        for row in rows {
+            let pk_value = match row.get(pk_column).map(row_key) {
+                Some(v) => v,
+                None => continue,
+            };
+            if let Some(extra_columns) = by_pk.get(&pk_value) {
+                for (column, value) in extra_columns {
+                    row.entry(column.clone()).or_insert_with(|| value.clone());
+                }
+            }
+        }
+    }
+}
+
+/// Build a single data bucket for `category` from its already-normalized tables (name > rows).
+/// The bucket-only push path (a bucket changed but the manifest didn't). Input rows are
 /// already normalized by the platform read logic.
-pub fn extract_bucket(category: String, tables: HashMap<String, Vec<CodecRecord>>) -> DataBucket {
+///
+/// `overflow` (persisted from the last materialize) is re-merged the same way the full
+/// canonicalize does it: unknown columns re-attach to this bucket's rows, and whole unknown tables
+/// recorded under this bucket's category are re-emitted, so a bucket-only push from an older
+/// client never drops a newer writer's data either.
+pub fn extract_bucket(category: String, mut tables: HashMap<String, Vec<CodecRecord>>, overflow: Option<&CodecOverflow>) -> DataBucket {
+    if let Some(overflow) = overflow {
+        remerge_overflow_columns(&mut tables, overflow);
+        if let Some(ov_tables) = overflow.bucket_tables.get(&category) {
+            for (name, rows) in ov_tables {
+                tables.entry(name.clone()).or_insert_with(|| rows.clone());
+            }
+        }
+    }
     DataBucket::new(category, tables)
 }

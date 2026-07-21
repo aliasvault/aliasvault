@@ -87,6 +87,26 @@ export class VaultCodec {
   }
 
   /**
+   * The column set of the local client schema, per table: the input Rust's materialize uses to
+   * split off anything a newer writer stored that this schema cannot hold (see `CodecOverflow`).
+   * @param schemaSql - the COMPLETE_SCHEMA_SQL string for the target client version
+   */
+  public static async getSchemaColumns(schemaSql: string): Promise<Record<string, string[]>> {
+    const db = await this.createDatabase();
+    try {
+      db.run(schemaSql);
+      const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table'")[0]?.values.map(v => String(v[0])) ?? [];
+      const out: Record<string, string[]> = {};
+      for (const table of tables) {
+        out[table] = db.exec(`PRAGMA table_info("${table}")`)[0]?.values.map(v => String(v[1])) ?? [];
+      }
+      return out;
+    } finally {
+      db.close();
+    }
+  }
+
+  /**
    * Insert the materialized tables into a fresh SQLite database and export it (base64).
    * @param materialized - tables + migration id produced by the Rust `materialize_as_sqlite`
    * @param blobs - map of `hash -> plaintext bytes` (caller fetched + decrypted these)
@@ -94,9 +114,7 @@ export class VaultCodec {
    * @returns A base64-encoded SQLite database identical (in row content) to the original.
    */
   public static async insertTables(materialized: CodecMaterialized, blobs: Map<string, Uint8Array>, schemaSql: string): Promise<string> {
-    const initSqlJs = (await import('sql.js')).default;
-    const SQL = await initSqlJs({ locateFile: (file: string): string => `src/${file}` });
-    const db = new SQL.Database();
+    const db = await this.createDatabase();
 
     try {
       // 1) Apply the schema.
@@ -182,6 +200,22 @@ export class VaultCodec {
     } finally {
       db.close();
     }
+  }
+
+  /**
+   * Open a fresh in-memory sql.js database.
+   */
+  private static async createDatabase(): Promise<import('sql.js').Database> {
+    const initSqlJs = (await import('sql.js')).default;
+    const SQL = await initSqlJs({
+      /**
+       * Locates SQL.js files from the local file system.
+       * @param file - The name of the file to locate
+       * @returns The complete URL path to the file
+       */
+      locateFile: (file: string): string => `src/${file}`
+    });
+    return new SQL.Database();
   }
 
   /**

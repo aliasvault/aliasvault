@@ -89,13 +89,45 @@ pub struct CodecTableData {
     pub records: Vec<CodecRecord>,
 }
 
+/// Data a newer writer put in the manifest that this client's local SQLite schema cannot hold.
+///
+/// Materialize splits it off (so inserts don't crash on unknown tables/columns) and canonicalize
+/// re-merges it (so this client's next push never drops it). The platform persists this value
+/// opaquely between pull and push; it is rebuilt from scratch on every pull, so it tracks the same
+/// staleness/LWW semantics as the rest of the row data.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CodecOverflow {
+    /// Whole manifest tables the local schema doesn't know: name > rows, re-emitted verbatim.
+    #[serde(default)]
+    pub tables: HashMap<String, Vec<CodecRecord>>,
+    /// Whole bucket tables the local schema doesn't know: category > (name > rows). Kept per
+    /// category so both full pushes and bucket-only pushes re-emit them into the right bucket.
+    #[serde(default)]
+    pub bucket_tables: HashMap<String, HashMap<String, Vec<CodecRecord>>>,
+    /// Unknown columns split off rows of known tables: table > row primary-key value > {column: value}.
+    #[serde(default)]
+    pub columns: HashMap<String, HashMap<String, CodecRecord>>,
+}
+
+impl CodecOverflow {
+    /// True when nothing was split off (the common case: reader and writer share a schema).
+    pub fn is_empty(&self) -> bool {
+        self.tables.is_empty() && self.bucket_tables.is_empty() && self.columns.is_empty()
+    }
+}
+
 /// Materialized tables the platform inserts into a fresh schema DB. Blob columns carry
-/// `{ "__blobRef": hash }`; inline byte columns carry `{ "__b64": ... }`.
+/// `{ "__blobRef": hash }`; inline byte columns carry `{ "__b64": ... }`. `overflow` holds whatever
+/// the local schema couldn't accept (see [`CodecOverflow`]); the platform must persist it and feed
+/// it back into the next canonicalize.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterializedTables {
     pub tables: Vec<CodecTableData>,
     pub migration_id: String,
+    #[serde(default)]
+    pub overflow: CodecOverflow,
 }
 
 /// Input for [`crate::vault_codec::canonicalize_from_sqlite`].
@@ -108,6 +140,10 @@ pub struct CanonicalizeInput {
     #[serde(default = "default_version")]
     pub version: String,
     pub canonicalized_at: String,
+    /// Overflow persisted from the last materialize (see [`CodecOverflow`]); re-merged into the
+    /// output so a client with an older schema never drops a newer writer's tables/columns.
+    #[serde(default)]
+    pub overflow: Option<CodecOverflow>,
 }
 
 fn default_version() -> String {
@@ -121,4 +157,9 @@ pub struct MaterializeInput {
     pub manifest: Manifest,
     #[serde(default)]
     pub data_buckets: Vec<DataBucket>,
+    /// The caller's local SQLite schema: table > column names. When present, rows are filtered down
+    /// to what the schema can hold and the remainder lands in [`MaterializedTables::overflow`];
+    /// when absent, rows pass through verbatim (legacy behavior — unknown columns crash the insert).
+    #[serde(default)]
+    pub schema_columns: Option<HashMap<String, Vec<String>>>,
 }

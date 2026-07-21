@@ -40,6 +40,8 @@ export type TestUser = {
   token?: TokenModel;
   /** TOTP secret if 2FA is enabled */
   totpSecret?: string;
+  /** Argon2Id-derived vault encryption key, for tests that decrypt/re-encrypt vault blobs API-side. */
+  encryptionKey?: Uint8Array;
 };
 
 /**
@@ -191,6 +193,38 @@ async function symmetricEncrypt(plaintext: string, keyBytes: Uint8Array): Promis
 }
 
 /**
+ * Encrypts raw bytes using AES-GCM (matching the browser extension's `symmetricEncryptBytes`).
+ *
+ * @param plaintextBytes - The plaintext bytes to encrypt
+ * @param keyBytes - The 256-bit encryption key as Uint8Array
+ * @returns Base64-encoded ciphertext (IV prepended to ciphertext)
+ */
+export async function symmetricEncryptBytes(plaintextBytes: Uint8Array, keyBytes: Uint8Array): Promise<string> {
+  const key = await webcrypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+  const iv = webcrypto.getRandomValues(new Uint8Array(12));
+  const ciphertext = await webcrypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintextBytes);
+
+  const combined = new Uint8Array(iv.length + ciphertext.byteLength);
+  combined.set(iv);
+  combined.set(new Uint8Array(ciphertext), iv.length);
+  return Buffer.from(combined).toString('base64');
+}
+
+/**
+ * Decrypts an AES-GCM ciphertext produced by the extension's `symmetricEncrypt(Bytes)` (IV-prefixed).
+ *
+ * @param base64Ciphertext - Base64-encoded ciphertext (12-byte IV prepended)
+ * @param keyBytes - The 256-bit encryption key as Uint8Array
+ * @returns The decrypted plaintext bytes
+ */
+export async function symmetricDecryptBytes(base64Ciphertext: string, keyBytes: Uint8Array): Promise<Uint8Array> {
+  const combined = new Uint8Array(Buffer.from(base64Ciphertext, 'base64'));
+  const key = await webcrypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+  const plaintext = await webcrypto.subtle.decrypt({ name: 'AES-GCM', iv: combined.slice(0, 12) }, key, combined.slice(12));
+  return new Uint8Array(plaintext);
+}
+
+/**
  * Creates an empty vault database with the latest schema.
  *
  * @returns Base64-encoded SQLite database
@@ -302,7 +336,9 @@ async function uploadInitialVault(
   username: string,
   encryptionKey: Uint8Array
 ): Promise<void> {
-  const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v2/';
+  // Intentionally the v1 endpoint: the initial vault is a legacy sqlite-blob (the v2 endpoint is
+  // manifest-only). This mirrors a pre-manifest account; the extension migrates it on first save.
+  const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v1/';
 
   // Create an empty vault database
   const vaultBase64 = createEmptyVaultDatabase();
@@ -359,7 +395,7 @@ export async function registerTestUser(
   apiBaseUrl: string,
   username: string,
   password: string
-): Promise<TokenModel> {
+): Promise<{ tokenModel: TokenModel; encryptionKey: Uint8Array }> {
   // Normalize the API URL
   const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v2/';
 
@@ -392,7 +428,7 @@ export async function registerTestUser(
   // Upload initial empty vault
   await uploadInitialVault(apiBaseUrl, tokenModel.token, username, encryptionKey);
 
-  return tokenModel;
+  return { tokenModel, encryptionKey };
 }
 
 /**
@@ -405,12 +441,13 @@ export async function createTestUser(apiBaseUrl: string): Promise<TestUser> {
   const username = generateTestUsername();
   const password = generateTestPassword();
 
-  const token = await registerTestUser(apiBaseUrl, username, password);
+  const { tokenModel, encryptionKey } = await registerTestUser(apiBaseUrl, username, password);
 
   return {
     username,
     password,
-    token,
+    token: tokenModel,
+    encryptionKey,
   };
 }
 
@@ -519,15 +556,16 @@ export async function createTestUserWith2FA(apiBaseUrl: string): Promise<TestUse
   const username = generateTestUsername();
   const password = generateTestPassword();
 
-  const token = await registerTestUser(apiBaseUrl, username, password);
+  const { tokenModel, encryptionKey } = await registerTestUser(apiBaseUrl, username, password);
 
   // Enable 2FA for the user
-  const totpSecret = await enableTwoFactor(apiBaseUrl, token.token);
+  const totpSecret = await enableTwoFactor(apiBaseUrl, tokenModel.token);
 
   return {
     username,
     password,
-    token,
+    token: tokenModel,
     totpSecret,
+    encryptionKey,
   };
 }

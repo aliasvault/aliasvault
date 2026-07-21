@@ -212,6 +212,18 @@ export type CodecCanonicalized = {
   blobs: Record<string, CodecBlobEntry>;
 };
 
+/**
+ * Data a newer writer put in the manifest that this client's local SQLite schema cannot hold:
+ * whole unknown manifest tables, whole unknown bucket tables (per category), and unknown columns
+ * keyed by table > row primary-key value. Produced by materialize, persisted opaquely by the
+ * platform, and fed back into canonicalize / extractBucket so a push never drops the data.
+ */
+export type CodecOverflow = {
+  tables: Record<string, Array<Record<string, unknown>>>;
+  bucketTables: Record<string, Record<string, Array<Record<string, unknown>>>>;
+  columns: Record<string, Record<string, Record<string, unknown>>>;
+};
+
 /** Input for canonicalize. */
 export type CodecCanonicalizeInput = {
   tables: CodecTableData[];
@@ -219,10 +231,11 @@ export type CodecCanonicalizeInput = {
   migrationId: string;
   version: string;
   canonicalizedAt: string;
+  overflow?: CodecOverflow;
 };
 
 /** Materialized tables the platform inserts into a fresh SQLite DB. */
-export type CodecMaterialized = { tables: CodecTableData[]; migrationId: string };
+export type CodecMaterialized = { tables: CodecTableData[]; migrationId: string; overflow: CodecOverflow };
 
 /** One entry in the bucket layout: a category and the tables it owns. */
 export type CodecBucketLayoutEntry = { category: string; tables: string[] };
@@ -240,18 +253,22 @@ export async function vaultCodecCanonicalizeFromSqlite(input: CodecCanonicalizeI
 
 /**
  * Materialize the manifest + its data buckets into the table set the platform inserts.
+ * `schemaColumns` (table > column names of the local schema) makes Rust split anything the schema
+ * can't hold into `overflow` instead of emitting it; the caller must persist that overflow and pass
+ * it back into the next canonicalize so the data survives the round trip.
  */
-export async function vaultCodecMaterializeAsSqlite(manifest: CodecManifest, dataBuckets: CodecDataBucket[]): Promise<CodecMaterialized> {
+export async function vaultCodecMaterializeAsSqlite(manifest: CodecManifest, dataBuckets: CodecDataBucket[], schemaColumns?: Record<string, string[]>): Promise<CodecMaterialized> {
   await initRustCore();
-  return core.vaultCodecMaterializeAsSqlite({ manifest, dataBuckets }) as CodecMaterialized;
+  return core.vaultCodecMaterializeAsSqlite({ manifest, dataBuckets, schemaColumns }) as CodecMaterialized;
 }
 
 /**
- * Build a single data bucket for `category` from its tables (bucket-only push path).
+ * Build a single data bucket for `category` from its tables (bucket-only push path). `overflow`
+ * (persisted from the last materialize) re-merges a newer writer's columns/tables so they survive.
  */
-export async function vaultCodecExtractBucket(category: string, tables: Record<string, Array<Record<string, unknown>>>): Promise<CodecDataBucket> {
+export async function vaultCodecExtractBucket(category: string, tables: Record<string, Array<Record<string, unknown>>>, overflow?: CodecOverflow): Promise<CodecDataBucket> {
   await initRustCore();
-  return core.vaultCodecExtractBucket({ category, tables }) as CodecDataBucket;
+  return core.vaultCodecExtractBucket({ category, tables, overflow }) as CodecDataBucket;
 }
 
 /**

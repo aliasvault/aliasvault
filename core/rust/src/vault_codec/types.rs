@@ -62,3 +62,10 @@ pub fn blob_spec_for(table_name: &str) -> Option<&'static (&'static str, &'stati
 pub fn is_skip_table(table_name: &str) -> bool {
     SKIP_TABLES.contains(&table_name)
 }
+
+/// The single-column primary key that addresses a row in `table_name`, shared with the merge layer
+/// (see `vault_merge::types::SYNCABLE_TABLES`) so overflow keying and LWW merge agree on row identity.
+/// Defaults to "Id" for tables outside the registry.
+pub fn primary_key_for(table_name: &str) -> &'static str {
+    crate::vault_merge::SYNCABLE_TABLES.iter().find(|t| t.name == table_name).map(|t| t.primary_key).unwrap_or("Id")
+}
