@@ -115,12 +115,33 @@ impl CodecOverflow {
     pub fn is_empty(&self) -> bool {
         self.tables.is_empty() && self.bucket_tables.is_empty() && self.columns.is_empty()
     }
+
+    /// Render this overflow as the single `OVERFLOW_TABLE` row the platform inserts into the vault DB.
+    pub fn to_table_records(&self) -> Vec<CodecRecord> {
+        let mut row: CodecRecord = HashMap::new();
+        row.insert("Id".to_string(), serde_json::Value::String(super::types::OVERFLOW_ROW_ID.to_string()));
+        row.insert("Data".to_string(), serde_json::Value::String(serde_json::to_string(self).unwrap_or_default()));
+        vec![row]
+    }
+
+    /// Parse an `OVERFLOW_TABLE` row set read back from the vault DB. Tolerant: no rows, a missing
+    /// `Data` column, or unparseable JSON all yield an empty overflow (better to push what we have
+    /// than refuse to push at all).
+    pub fn from_table_records(records: &[CodecRecord]) -> Self {
+        records
+            .first()
+            .and_then(|row| row.get("Data"))
+            .and_then(|v| v.as_str())
+            .and_then(|json| serde_json::from_str(json).ok())
+            .unwrap_or_default()
+    }
 }
 
 /// Materialized tables the platform inserts into a fresh schema DB. Blob columns carry
-/// `{ "__blobRef": hash }`; inline byte columns carry `{ "__b64": ... }`. `overflow` holds whatever
-/// the local schema couldn't accept (see [`CodecOverflow`]); the platform must persist it and feed
-/// it back into the next canonicalize.
+/// `{ "__blobRef": hash }`; inline byte columns carry `{ "__b64": ... }`. Any overflow (see
+/// [`CodecOverflow`]) is already included in `tables` as the `OVERFLOW_TABLE` row — the platform
+/// inserts it like any other table and needs no separate persistence. The `overflow` field is a
+/// diagnostics copy of the same data (for logging), not something the platform must store.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterializedTables {
@@ -134,16 +155,15 @@ pub struct MaterializedTables {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CanonicalizeInput {
+    /// All local vault tables (a plain `SELECT *` read). When the read includes the
+    /// [`OVERFLOW_TABLE`](super::types::OVERFLOW_TABLE) row written by the last materialize, its
+    /// overflow (a newer writer's tables/columns this schema can't hold) is re-merged automatically.
     pub tables: Vec<CodecTableData>,
     pub user_salt: String,
     pub migration_id: String,
     #[serde(default = "default_version")]
     pub version: String,
     pub canonicalized_at: String,
-    /// Overflow persisted from the last materialize (see [`CodecOverflow`]); re-merged into the
-    /// output so a client with an older schema never drops a newer writer's tables/columns.
-    #[serde(default)]
-    pub overflow: Option<CodecOverflow>,
 }
 
 fn default_version() -> String {

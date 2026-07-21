@@ -69,3 +69,12 @@ pub fn is_skip_table(table_name: &str) -> bool {
 pub fn primary_key_for(table_name: &str) -> &'static str {
     crate::vault_merge::SYNCABLE_TABLES.iter().find(|t| t.name == table_name).map(|t| t.primary_key).unwrap_or("Id")
 }
+
+/// Client-local SQLite table that carries the codec overflow inside the vault database itself (see
+/// `CodecOverflow`): materialize writes a single row `{ Id: OVERFLOW_ROW_ID, Data: <json> }`, and
+/// canonicalize / extract_bucket consume it to build the manifest.
+pub const OVERFLOW_TABLE: &str = "CodecOverflows";
+
+/// Fixed sentinel primary key of the single `OVERFLOW_TABLE` row (deterministic on purpose:
+/// materialize output must not depend on a random source).
+pub const OVERFLOW_ROW_ID: &str = "00000000-0000-0000-0000-00000000c0de";

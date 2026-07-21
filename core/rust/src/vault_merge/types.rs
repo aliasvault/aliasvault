@@ -58,6 +58,11 @@ pub static SYNCABLE_TABLES: &[TableConfig] = &[
     TableConfig::new("Settings").with_primary_key("Key"),
 ];
 
+/// The tables a platform must read into the merge input: the syncable tables.
+pub fn merge_table_names() -> Vec<&'static str> {
+    SYNCABLE_TABLE_NAMES.to_vec()
+}
+
 /// List of syncable table names (for clients to know which tables to read).
 pub const SYNCABLE_TABLE_NAMES: &[&str] = &[
     "Items",

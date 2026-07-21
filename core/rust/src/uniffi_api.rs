@@ -12,14 +12,10 @@ pub fn get_core_version() -> String {
     crate::get_core_version().to_string()
 }
 
-/// Get the list of syncable table names.
-/// These are the tables that need to be read from the database for merge/prune operations.
+/// Get the list of syncable table names a platform must read into the merge input.
 #[uniffi::export]
 pub fn get_syncable_table_names() -> Vec<String> {
-    SYNCABLE_TABLE_NAMES
-        .iter()
-        .map(|s| s.to_string())
-        .collect()
+    crate::vault_merge::merge_table_names().iter().map(|s| s.to_string()).collect()
 }
 
 /// Merge local and server vaults using Last-Write-Wins strategy.
@@ -359,6 +355,7 @@ mod tests {
         assert!(names.contains(&"FieldValues".to_string()));
         assert!(names.contains(&"Settings".to_string()));
         assert!(names.contains(&"EncryptionKeys".to_string()));
+        assert!(!names.contains(&crate::vault_codec::OVERFLOW_TABLE.to_string()), "overflow carrier is not in the merge input; the server base owns it");
         assert_eq!(names.len(), 13);
     }
 

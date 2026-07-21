@@ -20,7 +20,7 @@ use super::hash::salted_blob_hash;
 use super::logos::dedupe_logos_by_source;
 use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedVault, CodecOverflow, DataBucket, Manifest, CodecRecord};
 use super::materialize::row_key;
-use super::types::{blob_spec_for, bucket_categories, bucket_category_for, is_skip_table, primary_key_for, SCHEMA_VERSION};
+use super::types::{blob_spec_for, bucket_categories, bucket_category_for, is_skip_table, primary_key_for, OVERFLOW_TABLE, SCHEMA_VERSION};
 use crate::error::VaultResult;
 
 /// Canonicalize normalized tables into the split resources: the manifest, one data bucket per declared
@@ -30,16 +30,22 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
     // extraction and bucket-splitting happen below; deduping Logos first (before extraction) means a
     // dropped duplicate never registers an orphan favicon blob.
     let mut all_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
+    let mut overflow = CodecOverflow::default();
     for table in &input.tables {
+        // The OVERFLOW_TABLE row carries a newer writer's tables/columns this client's schema
+        // couldn't hold (written by the last materialize). Consume it here — re-merged below,
+        // never emitted into the manifest itself.
+        if table.name == OVERFLOW_TABLE {
+            overflow = CodecOverflow::from_table_records(&table.records);
+            continue;
+        }
         if is_skip_table(&table.name) {
             continue;
         }
         all_tables.entry(table.name.clone()).or_default().extend(table.records.iter().cloned());
     }
 
-    // Re-merge overflow from the last materialize (a newer writer's tables/columns this client's
-    // local schema couldn't hold) so this push doesn't drop them. See `CodecOverflow`.
-    let overflow = input.overflow.unwrap_or_default();
+    // Re-merge the overflow so this push doesn't drop a newer writer's data. See `CodecOverflow`.
     remerge_overflow_columns(&mut all_tables, &overflow);
     for (name, rows) in &overflow.tables {
         // Local rows win if the table somehow exists locally now (e.g. client upgraded since the pull).
@@ -175,17 +181,17 @@ fn remerge_overflow_columns(tables: &mut HashMap<String, Vec<CodecRecord>>, over
 /// The bucket-only push path (a bucket changed but the manifest didn't). Input rows are
 /// already normalized by the platform read logic.
 ///
-/// `overflow` (persisted from the last materialize) is re-merged the same way the full
-/// canonicalize does it: unknown columns re-attach to this bucket's rows, and whole unknown tables
-/// recorded under this bucket's category are re-emitted, so a bucket-only push from an older
-/// client never drops a newer writer's data either.
-pub fn extract_bucket(category: String, mut tables: HashMap<String, Vec<CodecRecord>>, overflow: Option<&CodecOverflow>) -> DataBucket {
-    if let Some(overflow) = overflow {
-        remerge_overflow_columns(&mut tables, overflow);
-        if let Some(ov_tables) = overflow.bucket_tables.get(&category) {
-            for (name, rows) in ov_tables {
-                tables.entry(name.clone()).or_insert_with(|| rows.clone());
-            }
+/// When `tables` includes the [`OVERFLOW_TABLE`] row (callers should read it alongside the
+/// bucket's tables), it is consumed and re-merged the same way the full canonicalize does it:
+/// unknown columns re-attach to this bucket's rows, and whole unknown tables recorded under this
+/// bucket's category are re-emitted, so a bucket-only push from an older client never drops a
+/// newer writer's data either.
+pub fn extract_bucket(category: String, mut tables: HashMap<String, Vec<CodecRecord>>) -> DataBucket {
+    let overflow = tables.remove(OVERFLOW_TABLE).map(|records| CodecOverflow::from_table_records(&records)).unwrap_or_default();
+    remerge_overflow_columns(&mut tables, &overflow);
+    if let Some(ov_tables) = overflow.bucket_tables.get(&category) {
+        for (name, rows) in ov_tables {
+            tables.entry(name.clone()).or_insert_with(|| rows.clone());
         }
     }
     DataBucket::new(category, tables)

@@ -144,7 +144,7 @@ pub unsafe extern "C" fn filter_credentials_ffi(input_json: *const c_char) -> *m
 /// A null-terminated C string containing a JSON array of table names.
 #[no_mangle]
 pub extern "C" fn get_syncable_table_names_ffi() -> *mut c_char {
-    let names: Vec<&str> = SYNCABLE_TABLE_NAMES.iter().map(|s| *s).collect();
+    let names = crate::vault_merge::merge_table_names();
     match serde_json::to_string(&names) {
         Ok(json) => string_to_c_char(json),
         Err(_) => ptr::null_mut(),

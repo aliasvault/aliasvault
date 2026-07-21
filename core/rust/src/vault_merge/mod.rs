@@ -11,7 +11,7 @@ use std::collections::HashMap;
 
 use crate::error::VaultResult;
 pub use types::SYNCABLE_TABLE_NAMES;
-pub use types::{SYNCABLE_TABLES, TableConfig};
+pub use types::{merge_table_names, SYNCABLE_TABLES, TableConfig};
 
 /// A record is a map of column names to JSON values.
 pub type Record = HashMap<String, serde_json::Value>;
@@ -74,24 +74,28 @@ pub struct MergeOutput {
 
 /// Main entry point: merge local and server vault data.
 ///
+/// The merge **base is the server vault** (`input.server_tables`): a freshly-materialized SQLite with
+/// the newest schema and the newest codec overflow carrier already in place. The returned statements
+/// bring the local vault's winning changes (`input.local_tables`) onto that base.
+///
 /// # Arguments
-/// * `input` - MergeInput containing local and server table data
+/// * `input` - MergeInput containing local (incoming) and server (base) table data
 ///
 /// # Returns
-/// MergeOutput with SQL statements to execute on local database
+/// MergeOutput with SQL statements to execute on the server (base) database
 pub fn merge_vaults(input: MergeInput) -> VaultResult<MergeOutput> {
     let mut total_stats = MergeStats::default();
     let mut statements: Vec<SqlStatement> = Vec::new();
 
-    // Create lookup maps for quick access
-    let local_map: HashMap<&str, &TableData> = input
-        .local_tables
+    // Base = server vault; incoming = local vault. Statements mutate the base.
+    let base_map: HashMap<&str, &TableData> = input
+        .server_tables
         .iter()
         .map(|t| (t.name.as_str(), t))
         .collect();
 
-    let server_map: HashMap<&str, &TableData> = input
-        .server_tables
+    let incoming_map: HashMap<&str, &TableData> = input
+        .local_tables
         .iter()
         .map(|t| (t.name.as_str(), t))
         .collect();
@@ -100,20 +104,19 @@ pub fn merge_vaults(input: MergeInput) -> VaultResult<MergeOutput> {
     for table_config in SYNCABLE_TABLES {
         let table_name = table_config.name;
 
-        let local_data = local_map.get(table_name);
-        let server_data = server_map.get(table_name);
+        let base_data = base_map.get(table_name);
+        let incoming_data = incoming_map.get(table_name);
 
         // Skip if table doesn't exist in either database
-        let (local_records, server_records) = match (local_data, server_data) {
-            (Some(l), Some(s)) => (&l.records, &s.records),
-            (Some(l), None) => {
-                // Table only in local - nothing to merge
-                total_stats.records_created_locally += l.records.len() as u32;
+        let (base_records, incoming_records) = match (base_data, incoming_data) {
+            (Some(b), Some(i)) => (&b.records, &i.records),
+            (Some(_), None) => {
+                // Table only in the server base. Already present, nothing to bring over.
                 continue;
             }
-            (None, Some(s)) => {
-                // Table only in server - insert all
-                for record in &s.records {
+            (None, Some(i)) => {
+                // Table only in local - insert all local rows into the server base.
+                for record in &i.records {
                     if let Some(stmt) = generate_insert_sql(table_name, record) {
                         statements.push(stmt);
                         total_stats.records_inserted += 1;
@@ -129,8 +132,8 @@ pub fn merge_vaults(input: MergeInput) -> VaultResult<MergeOutput> {
         let table_statements = if table_config.uses_composite_key() {
             merge_table_by_composite_key(
                 table_name,
-                local_records,
-                server_records,
+                base_records,
+                incoming_records,
                 table_config.composite_key_columns,
                 table_config.primary_key,
                 &mut total_stats,
@@ -138,8 +141,8 @@ pub fn merge_vaults(input: MergeInput) -> VaultResult<MergeOutput> {
         } else {
             merge_table_by_id(
                 table_name,
-                local_records,
-                server_records,
+                base_records,
+                incoming_records,
                 table_config.primary_key,
                 &mut total_stats,
             )
@@ -167,61 +170,62 @@ pub fn merge_vaults_json(input_json: &str) -> VaultResult<String> {
 
 /// Merge table records by their primary-key column (standard merge).
 /// `primary_key` is the column that identifies a row (usually "Id"; "Key" for Settings).
-/// Returns SQL statements to apply to local database.
+/// `base_records` are the merge base (kept on tie / when the base wins); `incoming_records` are the
+/// changes merged onto it. Returns SQL statements to apply to the base database.
 fn merge_table_by_id(
     table_name: &str,
-    local_records: &[Record],
-    server_records: &[Record],
+    base_records: &[Record],
+    incoming_records: &[Record],
     primary_key: &str,
     stats: &mut MergeStats,
 ) -> Vec<SqlStatement> {
     let mut statements: Vec<SqlStatement> = Vec::new();
 
-    // Create map of server records by primary key
-    let mut server_map: HashMap<String, &Record> = HashMap::new();
-    for record in server_records {
+    // Create map of incoming records by primary key
+    let mut incoming_map: HashMap<String, &Record> = HashMap::new();
+    for record in incoming_records {
         if let Some(id) = get_record_pk(record, primary_key) {
-            server_map.insert(id, record);
+            incoming_map.insert(id, record);
         }
     }
 
-    // Process local records
-    for local_record in local_records {
-        let local_id = match get_record_pk(local_record, primary_key) {
+    // Process base records
+    for base_record in base_records {
+        let base_id = match get_record_pk(base_record, primary_key) {
             Some(id) => id,
             None => continue,
         };
 
-        if let Some(server_record) = server_map.get(&local_id) {
+        if let Some(incoming_record) = incoming_map.get(&base_id) {
             // Record exists in both - compare UpdatedAt for LWW
-            let local_ts = get_updated_at(local_record);
-            let server_ts = get_updated_at(server_record);
+            let incoming_ts = get_updated_at(incoming_record);
+            let base_ts = get_updated_at(base_record);
 
-            match (server_ts, local_ts) {
-                (Some(s_ts), Some(l_ts)) if s_ts > l_ts => {
-                    // Server wins - generate UPDATE
+            match (incoming_ts, base_ts) {
+                (Some(i_ts), Some(b_ts)) if i_ts > b_ts => {
+                    // Incoming wins - generate UPDATE on the base row
                     stats.conflicts += 1;
                     stats.records_from_server += 1;
-                    if let Some(stmt) = generate_update_sql(table_name, server_record, &local_id, primary_key) {
+                    if let Some(stmt) = generate_update_sql(table_name, incoming_record, &base_id, primary_key) {
                         statements.push(stmt);
                     }
                 }
                 _ => {
-                    // Local wins - no action needed
+                    // Base wins - no action needed
                     stats.records_from_local += 1;
                 }
             }
-            server_map.remove(&local_id);
+            incoming_map.remove(&base_id);
         } else {
-            // Only in local (created offline) - no action needed
+            // Only in base - no action needed
             stats.records_created_locally += 1;
         }
     }
 
-    // Server-only records - generate INSERTs
-    for server_record in server_map.values() {
+    // Incoming-only records - generate INSERTs into the base
+    for incoming_record in incoming_map.values() {
         stats.records_inserted += 1;
-        if let Some(stmt) = generate_insert_sql(table_name, server_record) {
+        if let Some(stmt) = generate_insert_sql(table_name, incoming_record) {
             statements.push(stmt);
         }
     }
@@ -230,70 +234,72 @@ fn merge_table_by_id(
 }
 
 /// Merge table by composite key.
-/// Returns SQL statements to apply to local database.
+/// `base_records` are the merge base (kept on tie / when the base wins, and their primary key is
+/// preserved on conflict); `incoming_records` are merged onto the base by composite key.
+/// Returns SQL statements to apply to the base database.
 fn merge_table_by_composite_key(
     table_name: &str,
-    local_records: &[Record],
-    server_records: &[Record],
+    base_records: &[Record],
+    incoming_records: &[Record],
     key_columns: &[&str],
     primary_key: &str,
     stats: &mut MergeStats,
 ) -> Vec<SqlStatement> {
     let mut statements: Vec<SqlStatement> = Vec::new();
 
-    // Create map of server records by composite key
-    let mut server_map: HashMap<String, &Record> = HashMap::new();
-    for record in server_records {
+    // Create map of incoming records by composite key
+    let mut incoming_map: HashMap<String, &Record> = HashMap::new();
+    for record in incoming_records {
         let key = get_composite_key(record, key_columns);
         // Keep the one with latest UpdatedAt if duplicate keys
-        if let Some(existing) = server_map.get(&key) {
+        if let Some(existing) = incoming_map.get(&key) {
             if get_updated_at(record) > get_updated_at(existing) {
-                server_map.insert(key, record);
+                incoming_map.insert(key, record);
             }
         } else {
-            server_map.insert(key, record);
+            incoming_map.insert(key, record);
         }
     }
 
-    // Process local records
-    for local_record in local_records {
-        let composite_key = get_composite_key(local_record, key_columns);
+    // Process base records
+    for base_record in base_records {
+        let composite_key = get_composite_key(base_record, key_columns);
 
-        let local_id = match get_record_pk(local_record, primary_key) {
+        let base_id = match get_record_pk(base_record, primary_key) {
             Some(id) => id,
             None => continue,
         };
 
-        if let Some(server_record) = server_map.get(&composite_key) {
+        if let Some(incoming_record) = incoming_map.get(&composite_key) {
             // Record exists in both - compare UpdatedAt
-            let local_ts = get_updated_at(local_record);
-            let server_ts = get_updated_at(server_record);
+            let incoming_ts = get_updated_at(incoming_record);
+            let base_ts = get_updated_at(base_record);
 
-            match (server_ts, local_ts) {
-                (Some(s_ts), Some(l_ts)) if s_ts > l_ts => {
-                    // Server wins - update with server data but keep local Id
+            match (incoming_ts, base_ts) {
+                (Some(i_ts), Some(b_ts)) if i_ts > b_ts => {
+                    // Incoming wins - update with incoming data but keep the base Id
                     stats.conflicts += 1;
                     stats.records_from_server += 1;
-                    if let Some(stmt) = generate_update_sql(table_name, server_record, &local_id, primary_key) {
+                    if let Some(stmt) = generate_update_sql(table_name, incoming_record, &base_id, primary_key) {
                         statements.push(stmt);
                     }
                 }
                 _ => {
-                    // Local wins - no action needed
+                    // Base wins - no action needed
                     stats.records_from_local += 1;
                 }
             }
-            server_map.remove(&composite_key);
+            incoming_map.remove(&composite_key);
         } else {
-            // Only in local - no action needed
+            // Only in base - no action needed
             stats.records_created_locally += 1;
         }
     }
 
-    // Server-only records (by composite key) - generate INSERTs
-    for (_key, server_record) in &server_map {
+    // Incoming-only records (by composite key) - generate INSERTs into the base
+    for (_key, incoming_record) in &incoming_map {
         stats.records_inserted += 1;
-        if let Some(stmt) = generate_insert_sql(table_name, server_record) {
+        if let Some(stmt) = generate_insert_sql(table_name, incoming_record) {
             statements.push(stmt);
         }
     }
@@ -460,14 +466,16 @@ mod tests {
 
     #[test]
     fn test_merge_vaults_json() {
+        // Base is the server vault. A newer LOCAL row wins and is written onto the server base as an
+        // UPDATE. (A newer server row would win with no statement, since the base already holds it.)
         let input = MergeInput {
             local_tables: vec![TableData {
                 name: "Items".to_string(),
-                records: vec![make_record("1", "2024-01-01T00:00:00Z")],
+                records: vec![make_record("1", "2024-01-02T00:00:00Z")],
             }],
             server_tables: vec![TableData {
                 name: "Items".to_string(),
-                records: vec![make_record("1", "2024-01-02T00:00:00Z")],
+                records: vec![make_record("1", "2024-01-01T00:00:00Z")],
             }],
         };
 
@@ -477,9 +485,33 @@ mod tests {
 
         assert!(output.success);
         assert_eq!(output.stats.conflicts, 1);
-        // Should have one UPDATE statement
+        // Should have one UPDATE statement applied to the server base.
         assert_eq!(output.statements.len(), 1);
         assert!(output.statements[0].sql.starts_with("UPDATE Items SET"));
+    }
+
+    #[test]
+    fn merge_vault_server_newer_is_noop_on_base() {
+        // The mirror case: a newer SERVER row already sits in the base, so the merge emits nothing.
+        let input = MergeInput {
+            local_tables: vec![TableData { name: "Items".to_string(), records: vec![make_record("1", "2024-01-01T00:00:00Z")] }],
+            server_tables: vec![TableData { name: "Items".to_string(), records: vec![make_record("1", "2024-01-02T00:00:00Z")] }],
+        };
+        let output = merge_vaults(input).unwrap();
+        assert!(output.success);
+        assert!(output.statements.is_empty(), "server base already holds the winning row");
+    }
+
+    #[test]
+    fn merge_vault_local_only_row_inserted_into_base() {
+        // A row created offline (local only) must be inserted into the server base.
+        let input = MergeInput {
+            local_tables: vec![TableData { name: "Items".to_string(), records: vec![make_record("local-only", "2024-01-01T00:00:00Z")] }],
+            server_tables: vec![TableData { name: "Items".to_string(), records: vec![] }],
+        };
+        let output = merge_vaults(input).unwrap();
+        assert_eq!(output.statements.len(), 1);
+        assert!(output.statements[0].sql.starts_with("INSERT OR REPLACE INTO Items"));
     }
 
     fn logo(id: &str, source: &str, updated_at: &str) -> Record {
@@ -570,6 +602,32 @@ mod tests {
         let cfg = SYNCABLE_TABLES.iter().find(|t| t.name == "Logos").unwrap();
         assert!(cfg.uses_composite_key());
         assert_eq!(cfg.composite_key_columns, &["Source"]);
+    }
+
+    #[test]
+    fn merge_never_touches_codec_overflow_carrier() {
+        // The merge base is the server vault, so the codec overflow carrier rides along on the server
+        // base untouched (implicit server-wins) and needs no special case. Even if a platform were to
+        // pass the carrier in the merge input, merge must emit NO statement referencing it — it is not
+        // a syncable table.
+        let overflow_table = crate::vault_codec::OVERFLOW_TABLE;
+        let overflow_row = |data: &str| -> Record {
+            [("Id".to_string(), serde_json::json!("00000000-0000-0000-0000-00000000c0de")), ("Data".to_string(), serde_json::json!(data))].into_iter().collect()
+        };
+
+        let output = merge_vaults(MergeInput {
+            local_tables: vec![TableData { name: overflow_table.to_string(), records: vec![overflow_row("{\"stale\":true}")] }],
+            server_tables: vec![TableData { name: overflow_table.to_string(), records: vec![overflow_row("{\"fresh\":true}")] }],
+        })
+        .unwrap();
+        assert!(!output.statements.iter().any(|s| s.sql.contains(overflow_table)), "no carrier statements: the server base owns the overflow");
+    }
+
+    #[test]
+    fn merge_table_names_excludes_overflow_carrier() {
+        let names = merge_table_names();
+        assert_eq!(names.len(), SYNCABLE_TABLE_NAMES.len());
+        assert!(!names.contains(&crate::vault_codec::OVERFLOW_TABLE), "carrier is not part of the merge input");
     }
 
     #[test]

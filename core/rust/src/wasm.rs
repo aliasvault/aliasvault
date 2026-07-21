@@ -38,13 +38,10 @@ pub fn get_core_version_js() -> String {
 // Vault Merge WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Get the list of table names that need to be synced.
+/// Get the list of syncable table names a platform must read into the merge input.
 #[wasm_bindgen(js_name = getSyncableTableNames)]
 pub fn get_syncable_table_names() -> Vec<String> {
-    crate::vault_merge::SYNCABLE_TABLE_NAMES
-        .iter()
-        .map(|s| s.to_string())
-        .collect()
+    crate::vault_merge::merge_table_names().iter().map(|s| s.to_string()).collect()
 }
 
 /// Merge vaults using LWW strategy.
@@ -145,21 +142,18 @@ pub fn vault_codec_materialize_as_sqlite_js(input: JsValue) -> Result<JsValue, J
     codec_to_js(&output)
 }
 
-/// Build a single data bucket. Input: `{ category, tables: { <name>: [rows] }, overflow? }`. Output: `DataBucket`.
+/// Build a single data bucket. Input: `{ category, tables: { <name>: [rows] } }`.
 #[wasm_bindgen(js_name = vaultCodecExtractBucket)]
 pub fn vault_codec_extract_bucket_js(input: JsValue) -> Result<JsValue, JsValue> {
     #[derive(serde::Deserialize)]
-    #[serde(rename_all = "camelCase")]
     struct Input {
         category: String,
         #[serde(default)]
         tables: std::collections::HashMap<String, Vec<CodecRecord>>,
-        #[serde(default)]
-        overflow: Option<vault_codec::CodecOverflow>,
     }
     let input: Input = serde_wasm_bindgen::from_value(input)
         .map_err(|e| JsValue::from_str(&format!("Failed to parse extract-bucket input: {}", e)))?;
-    codec_to_js(&vault_codec::extract_bucket(input.category, input.tables, input.overflow.as_ref()))
+    codec_to_js(&vault_codec::extract_bucket(input.category, input.tables))
 }
 
 /// The bucket layout: `[{ category, tables: [<name>] }]`. Source of truth for platform bucket-only sync.

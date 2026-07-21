@@ -10,13 +10,15 @@
 //! Forward compatibility: when the caller supplies its local schema (`schema_columns`), anything a
 //! newer writer put in the manifest that this schema cannot hold — whole unknown tables or unknown
 //! columns on known tables — is split into [`CodecOverflow`] instead of being emitted (which would
-//! crash the platform insert). The platform persists the overflow and passes it back into
-//! `canonicalize_from_sqlite`, which re-merges it so this client's next push never drops the data.
+//! crash the platform insert). The overflow is emitted as a regular table row (`OVERFLOW_TABLE`),
+//! so it lives inside the vault DB itself and `canonicalize_from_sqlite` re-merges it from the
+//! ordinary table read — this client's next push never drops the data, and no platform has to wire
+//! (or remember) a separate persistence channel.
 
 use std::collections::{HashMap, HashSet};
 
 use super::manifest::{CodecOverflow, CodecRecord, CodecTableData, MaterializeInput, MaterializedTables};
-use super::types::{is_skip_table, primary_key_for};
+use super::types::{is_skip_table, primary_key_for, OVERFLOW_TABLE};
 use crate::error::VaultResult;
 
 /// Materialize the manifest + its data buckets into the table set the platform inserts.
@@ -27,7 +29,9 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     let mut tables: Vec<CodecTableData> = Vec::with_capacity(manifest.tables.len() + data_buckets.len());
 
     for (name, records) in manifest.tables {
-        if is_skip_table(&name) {
+        // OVERFLOW_TABLE is local-only bookkeeping: it must never occur in a manifest, and passing
+        // one through would collide with the row this function emits below.
+        if is_skip_table(&name) || name == OVERFLOW_TABLE {
             continue;
         }
         match split_for_schema(&name, records, schema_columns.as_ref(), &mut overflow.columns) {
@@ -42,7 +46,7 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     // their category so canonicalize / extract_bucket can re-emit them into the right bucket.
     for bucket in data_buckets {
         for (name, records) in bucket.tables {
-            if is_skip_table(&name) {
+            if is_skip_table(&name) || name == OVERFLOW_TABLE {
                 continue;
             }
             match split_for_schema(&name, records, schema_columns.as_ref(), &mut overflow.columns) {
@@ -52,6 +56,11 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
                 }
             }
         }
+    }
+
+    // Carry the overflow inside the vault DB itself: one OVERFLOW_TABLE row, inserted like any table.
+    if !overflow.is_empty() {
+        tables.push(CodecTableData { name: OVERFLOW_TABLE.to_string(), records: overflow.to_table_records() });
     }
 
     Ok(MaterializedTables {

@@ -29,7 +29,7 @@ pub use manifest::{
 };
 pub use types::{
     bucket_categories, bucket_category_for, tables_for_category, BLOB_COLUMNS, BUCKET_TABLES,
-    SCHEMA_VERSION, SKIP_TABLES,
+    OVERFLOW_ROW_ID, OVERFLOW_TABLE, SCHEMA_VERSION, SKIP_TABLES,
 };
 pub use validate::ValidationResult;
 
@@ -47,10 +47,11 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     materialize::materialize_as_sqlite(input)
 }
 
-/// Build a single data bucket for `category` from its tables (bucket-only push path). `overflow`
-/// (persisted from the last materialize) re-merges a newer writer's columns/tables so they survive.
-pub fn extract_bucket(category: String, tables: std::collections::HashMap<String, Vec<CodecRecord>>, overflow: Option<&CodecOverflow>) -> DataBucket {
-    canonicalize::extract_bucket(category, tables, overflow)
+/// Build a single data bucket for `category` from its tables (bucket-only push path). Include the
+/// [`OVERFLOW_TABLE`] row in `tables` (read it alongside the bucket's tables) so a newer writer's
+/// columns/tables re-merge and survive; it is consumed and never emitted into the bucket.
+pub fn extract_bucket(category: String, tables: std::collections::HashMap<String, Vec<CodecRecord>>) -> DataBucket {
+    canonicalize::extract_bucket(category, tables)
 }
 
 /// The bucket layout: every category and the tables it owns, in declaration order.
@@ -160,19 +161,16 @@ pub fn materialize_as_sqlite_json(input_json: &str) -> VaultResult<String> {
     Ok(serde_json::to_string(&materialize_as_sqlite(input)?)?)
 }
 
-/// JSON-string sibling of [`extract_bucket`]. Input: `{ "category": <str>, "tables": { <name>: [rows] }, "overflow"?: CodecOverflow }`.
+/// JSON-string sibling of [`extract_bucket`]. Input: `{ "category": <str>, "tables": { <name>: [rows] } }`.
 pub fn extract_bucket_json(input_json: &str) -> VaultResult<String> {
     #[derive(serde::Deserialize)]
-    #[serde(rename_all = "camelCase")]
     struct Input {
         category: String,
         #[serde(default)]
         tables: std::collections::HashMap<String, Vec<CodecRecord>>,
-        #[serde(default)]
-        overflow: Option<CodecOverflow>,
     }
     let input: Input = serde_json::from_str(input_json)?;
-    Ok(serde_json::to_string(&extract_bucket(input.category, input.tables, input.overflow.as_ref()))?)
+    Ok(serde_json::to_string(&extract_bucket(input.category, input.tables))?)
 }
 
 /// JSON-string sibling of [`bucket_layout`]. Output: `[{ "category": <str>, "tables": [<str>] }]`.
