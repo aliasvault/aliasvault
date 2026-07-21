@@ -6,9 +6,15 @@
 import { VaultVersion } from "../types/VaultVersion";
 
 /**
- * All vault migrations/versions in chronological order. When adding a new migration, make sure to
- * update the "releaseVersion" field to the correct AliasVault release version that introduced this
- * migration.
+ * All vault migrations/versions in chronological order.
+ *
+ * NOTE: this legacy migration chain is FROZEN — do not add new entries. It exists solely to
+ * upgrade pre-2.0.0 blob-era vaults (via the user-facing upgrade prompt) up to vault version
+ * 2.0.0, the first schema compatible with the manifest-v1 storage model. From 2.0.0 onwards the
+ * local SQLite is re-materialized from COMPLETE_SCHEMA_SQL on every vault pull, so schema changes
+ * ship through the full schema only: no individual migration scripts and no version entries here.
+ * 
+ * TODO: delete this once all active users have migrated to 2.0.0+
  */
 export const VAULT_VERSIONS: VaultVersion[] = [
   {

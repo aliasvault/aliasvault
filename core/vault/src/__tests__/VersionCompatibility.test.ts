@@ -166,4 +166,26 @@ describe('VersionCompatibility', () => {
       });
     });
   });
+
+  describe('frozen migration chain', () => {
+    it('should end at vault version 2.0.0 (revision 13) and never gain new entries', () => {
+      /*
+       * The legacy sqlite blob migration chain is frozen.
+       */
+      const latest = getLatestClientVersion();
+      expect(latest.version).toBe('2.0.0');
+      expect(latest.revision).toBe(13);
+    });
+
+    it('should accept newer full-schema EF stamps (e.g. 2.1.0) via the same-major fallback', () => {
+      /*
+       * Materialized databases carry EF history rows beyond 2.0.0 (e.g. 2.1.0-AddCodecOverflows).
+       * Those are unknown to the frozen chain on purpose and must resolve as compatible.
+       */
+      const result = checkVersionCompatibility('2.1.0');
+      expect(result.isCompatible).toBe(true);
+      expect(result.isKnownVersion).toBe(false);
+      expect(result.isMajorVersionDifference).toBe(false);
+    });
+  });
 });
