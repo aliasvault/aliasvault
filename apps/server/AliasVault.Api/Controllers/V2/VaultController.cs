@@ -257,7 +257,7 @@ public class VaultController(
             return Unauthorized();
         }
 
-        if (!string.Equals(user.UserName, model.Username, StringComparison.Ordinal))
+        if (!string.Equals(user.UserName, model.Username, StringComparison.OrdinalIgnoreCase))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USERNAME_MISMATCH, 400));
         }
