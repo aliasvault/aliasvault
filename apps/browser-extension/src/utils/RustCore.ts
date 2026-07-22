@@ -34,7 +34,7 @@ export function initRustCore(): Promise<void> {
     initPromise = (async (): Promise<void> => {
       const wasmUrl = (browser.runtime.getURL as (path: string) => string)('src/aliasvault_core_bg.wasm');
       const wasmBytes = await (await fetch(wasmUrl)).arrayBuffer();
-      await initWasm(wasmBytes);
+      await initWasm({ module_or_path: wasmBytes });
     })();
   }
   return initPromise;

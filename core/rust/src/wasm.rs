@@ -162,6 +162,14 @@ pub fn vault_codec_bucket_layout_js() -> Result<JsValue, JsValue> {
     codec_to_js(&vault_codec::bucket_layout())
 }
 
+/// The name of the client-local SQLite table that carries the codec overflow inside the vault DB.
+/// Platforms include this table alongside a bucket's tables on a bucket-only push so a newer writer's
+/// unknown columns/tables re-merge and survive.
+#[wasm_bindgen(js_name = vaultCodecOverflowTable)]
+pub fn vault_codec_overflow_table_js() -> String {
+    vault_codec::OVERFLOW_TABLE.to_string()
+}
+
 /// Generate a fresh 32-byte per-user salt (lowercase hex).
 #[wasm_bindgen(js_name = vaultCodecGenerateUserSalt)]
 pub fn vault_codec_generate_user_salt_js() -> String {
