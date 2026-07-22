@@ -504,24 +504,24 @@
       "incorrectPinSingular": "Hibás PIN kód. 1 próbálkozás van hátra.",
       "enableSuccess": "PIN kódos feloldás sikeresen bekapcsolva!",
       "pinLocked": "A PIN kódos feloldás kikapcsolásra került. Használja a mester jelszavát a széfje feloldásához.",
-      "pinSecurityWarning": "PIN unlock in the browser extension can be less secure than your master password, as PINs typically have lower entropy and may be brute-forced if your device is compromised. Use it only on devices you fully trust."
+      "pinSecurityWarning": "A PIN kódos feloldás a böngésző bővítményben kevésbé biztonságos, mint a mester jelszavas belépés, miután komplexitása alacsony, és próbálkozásokkal hamarabb feloldható. Csak teljesen megbízható eszközök esetében használja."
     }
   },
   "passkeys": {
     "passkey": "Azonosítókulcs",
     "site": "Weboldal",
-    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential. To replace this passkey or create a new one, visit the website and follow its prompts.",
+    "helpText": "Az azonosítókulcsok az oldal kérésére jönnek létre. Kézzel nem szerkeszthetőek. Ha ki akarja törölni, el tudja távolítani a bejegyzésből. Ha ki akarja cserélni vagy újat akar létrehozni, kövesse a weboldal specifikus leírását ezzel kapcsolatban.",
     "passkeyMarkedForDeletion": "Azonosítókulcs törlésre kijelölve",
     "passkeyWillBeDeleted": "A azonosítókulcs akkor kerül törlésre, ha a bejegyzést menti.",
-    "useBrowserPasskey": "Use Browser Passkey",
+    "useBrowserPasskey": "Böngészős azonosítókulcs használata",
     "bypass": {
-      "description": "How long would you like to use the browser's passkey provider for {{origin}}?",
-      "thisTimeOnly": "This time only",
-      "alwaysForSite": "Always for this site"
+      "description": "Milyen gyakorisággal kívánja használni a(z) {{origin}} oldal azonosítókulcsát?",
+      "thisTimeOnly": "Csak most",
+      "alwaysForSite": "Mindig ennél az oldalnál"
     },
     "authenticate": {
-      "title": "Sign in with Passkey",
-      "signInFor": "Sign in with passkey for",
+      "title": "Belépés azonosítókulccsal",
+      "signInFor": "Belépés azonosítókulccsal eddig",
       "selectPasskey": "Select a passkey to sign in:",
       "noPasskeysFound": "No passkeys found for this site"
     },
