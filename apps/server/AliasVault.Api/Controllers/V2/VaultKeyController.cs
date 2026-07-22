@@ -52,9 +52,9 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
             {
                 KeyType = vaultKey.KeyType,
                 WrappedVek = vaultKey.WrappedVek,
-                Salt = vaultKey.Salt,
-                EncryptionType = vaultKey.EncryptionType,
-                EncryptionSettings = vaultKey.EncryptionSettings,
+                Salt = vaultKey.Salt!,
+                EncryptionType = vaultKey.EncryptionType!,
+                EncryptionSettings = vaultKey.EncryptionSettings!,
             },
         });
     }

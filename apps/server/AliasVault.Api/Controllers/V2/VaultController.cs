@@ -370,6 +370,7 @@ public class VaultController(
                     UserId = user.Id,
                     VaultManifestId = currentManifest.ManifestId,
                     KeyType = AuthHelper.VaultKeyTypePassword,
+                    WrapScheme = AuthHelper.WrapSchemeAesGcmKek,
                     WrappedVek = model.CreateVaultKey.WrappedVek,
                     Salt = currentManifest.Salt,
                     Verifier = currentManifest.Verifier,

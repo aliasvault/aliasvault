@@ -513,6 +513,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
                 UserId = user.Id,
                 VaultManifestId = rootManifest.ManifestId,
                 KeyType = AuthHelper.VaultKeyTypePassword,
+                WrapScheme = AuthHelper.WrapSchemeAesGcmKek,
                 WrappedVek = model.WrappedVek!,
                 Salt = model.Salt,
                 Verifier = model.Verifier,

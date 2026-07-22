@@ -41,10 +41,16 @@ public class VaultKey
     public Guid? VaultManifestId { get; set; }
 
     /// <summary>
-    /// Gets or sets the unlock method type: "password".
+    /// Gets or sets the unlock method type: "password" (R1). Extensible for R2+: "webauthn", "recovery", "shared".
     /// </summary>
     [StringLength(50)]
     public required string KeyType { get; set; }
+
+    /// <summary>
+    /// Gets or sets which wrap scheme was used to encrypt the wrapped VEK.
+    /// </summary>
+    [StringLength(30)]
+    public required string WrapScheme { get; set; }
 
     /// <summary>
     /// Gets or sets the wrapped VEK: base64(IV | ciphertext | authTag) of the VEK encrypted with the KEK (AES-256-GCM).
@@ -52,26 +58,40 @@ public class VaultKey
     public required string WrappedVek { get; set; }
 
     /// <summary>
-    /// Gets or sets the salt used both for KEK derivation and SRP authentication.
+    /// Gets or sets the salt used both for KEK derivation and SRP authentication. Set for SRP-authenticating self
+    /// methods (password); null for methods that don't authenticate via SRP (webauthn, recovery) or shared keys.
     /// </summary>
     [StringLength(100)]
-    public required string Salt { get; set; }
+    public string? Salt { get; set; }
 
     /// <summary>
-    /// Gets or sets the verifier used for SRP authentication.
+    /// Gets or sets the verifier used for SRP authentication. Null for non-SRP key types (see <see cref="Salt"/>).
     /// </summary>
     [StringLength(1000)]
-    public required string Verifier { get; set; }
+    public string? Verifier { get; set; }
 
     /// <summary>
-    /// Gets or sets the encryption (key derivation) type.
+    /// Gets or sets the encryption (key derivation) type. Null for non-SRP key types (see <see cref="Salt"/>).
     /// </summary>
-    public required string EncryptionType { get; set; }
+    public string? EncryptionType { get; set; }
 
     /// <summary>
-    /// Gets or sets the encryption (key derivation) settings.
+    /// Gets or sets the encryption (key derivation) settings. Null for non-SRP key types (see <see cref="Salt"/>).
     /// </summary>
-    public required string EncryptionSettings { get; set; }
+    public string? EncryptionSettings { get; set; }
+
+    /// <summary>
+    /// Gets or sets, for a shared (asymmetric) key, the foreign key to the recipient <see cref="UserEncryptionKey"/>
+    /// whose public key wrapped this VEK.
+    /// </summary>
+    public Guid? RecipientPublicKeyId { get; set; }
+
+    /// <summary>
+    /// Gets or sets an optional per-key-type extension bag (JSON) for fields the server never evaluates, e.g. a
+    /// WebAuthn credential id + transports + PRF salt, or recovery-code derivation params. A new unlock method can
+    /// add fields here with no schema migration. Null when the key type needs no extra fields.
+    /// </summary>
+    public string? Metadata { get; set; }
 
     /// <summary>
     /// Gets or sets the timestamp at which this key was created.
@@ -82,4 +102,9 @@ public class VaultKey
     /// Gets or sets the timestamp at which this key was last updated.
     /// </summary>
     public DateTime UpdatedAt { get; set; }
+
+    /// <summary>
+    /// Gets or sets the timestamp at which this key was last used to unlock, or null if never recorded.
+    /// </summary>
+    public DateTime? LastUsedAt { get; set; }
 }

@@ -310,7 +310,7 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             builder.HasIndex(e => e.OwnerUserId);
         });
 
-        // Configure VaultKey: one row per user per unlock method.
+        // Configure VaultKey: a wrapped-VEK grant for (holder, manifest, unlock method).
         modelBuilder.Entity<VaultKey>(builder =>
         {
             builder.HasOne(e => e.User)
@@ -318,7 +318,9 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex(e => new { e.UserId, e.KeyType }).IsUnique().HasDatabaseName("UX_VaultKeys_UserId_KeyType");
+            builder.HasIndex(e => new { e.UserId, e.KeyType, e.VaultManifestId }).IsUnique().HasDatabaseName("UX_VaultKeys_UserId_KeyType_Manifest");
+            builder.HasIndex(e => e.VaultManifestId).HasDatabaseName("IX_VaultKeys_VaultManifestId");
+            builder.Property(e => e.Metadata).HasColumnType("jsonb");
         });
 
         // Configure UserEmailClaim - AliasVaultUser relationship

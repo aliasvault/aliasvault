@@ -34,6 +34,11 @@ public static class AuthHelper
     public static readonly string VaultKeyTypePassword = "password";
 
     /// <summary>
+    /// The WrapScheme value for a VEK wrapped symmetrically with a method-derived KEK (self-unlock keys).
+    /// </summary>
+    public static readonly string WrapSchemeAesGcmKek = "aesgcm-kek";
+
+    /// <summary>
     /// Helper method that validates the SRP session based on provided SRP identity, ephemeral and proof.
     /// </summary>
     /// <param name="cache">IMemoryCache instance.</param>
@@ -84,7 +89,7 @@ public static class AuthHelper
         var passwordKey = user.VaultKeys.FirstOrDefault(x => x.KeyType == VaultKeyTypePassword);
         if (passwordKey is not null)
         {
-            return (passwordKey.Salt, passwordKey.Verifier, passwordKey.EncryptionType, passwordKey.EncryptionSettings);
+            return (passwordKey.Salt!, passwordKey.Verifier!, passwordKey.EncryptionType!, passwordKey.EncryptionSettings!);
         }
 
         // Legacy model: the root manifest carries the current encryption settings.
