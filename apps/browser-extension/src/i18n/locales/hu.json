@@ -522,28 +522,28 @@
     "authenticate": {
       "title": "Belépés azonosítókulccsal",
       "signInFor": "Belépés azonosítókulccsal eddig",
-      "selectPasskey": "Select a passkey to sign in:",
-      "noPasskeysFound": "No passkeys found for this site"
+      "selectPasskey": "Bejelentkezéshez használt azonosítókulcs:",
+      "noPasskeysFound": "Az oldalhoz nem található azonosítókulcs"
     },
     "create": {
-      "title": "Create Passkey",
-      "createFor": "Create a new passkey for",
+      "title": "Azonosítókulcs létrehozása",
+      "createFor": "Azonosítókulcs létrehozás ehhez:",
       "titleLabel": "Cím",
-      "titlePlaceholder": "Enter a name for this passkey",
-      "createButton": "Create Passkey",
-      "selectPasskeyToReplace": "Select a passkey to replace:",
-      "createNewPasskey": "Create New Passkey",
-      "replacingPasskey": "Replacing passkey: {{displayName}}",
-      "confirmReplace": "Confirm Replace",
-      "selectExistingLogin": "Add to existing login:",
-      "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
-      "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey",
-      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
+      "titlePlaceholder": "Azonosítókulcs nevének megadása",
+      "createButton": "Azonosítókulcs létrehozása",
+      "selectPasskeyToReplace": "Kicserélendő azonosítókulcs:",
+      "createNewPasskey": "Új azonosítókulcs létrehozása",
+      "replacingPasskey": "Kicserélendő azonosítókulcs: {{displayName}}",
+      "confirmReplace": "Csere megerősítése",
+      "selectExistingLogin": "Hozzáadás már létező belépéshez:",
+      "selectExistingLoginDescription": "Egy már az oldalhoz tartozó elemhez való csatolás.",
+      "attachingToCredential": "Hozzáadás a(z) {{serviceName}} oldalhoz",
+      "attachPasskey": "Azonosítókulcs hozzáadása",
+      "unsupportedAlgorithm": "Az oldalhoz tartozó azonosítókulcsot nem támogatja az AliasVault."
     },
     "settings": {
-      "passkeyProvider": "Passkey Provider",
-      "passkeyProviderOn": "Passkey Provider on "
+      "passkeyProvider": "Azonosítókulcs kiszolgáló",
+      "passkeyProviderOn": "Azonosítókulcs kiszolgáló itt "
     }
   },
   "recentlyDeleted": {
@@ -589,8 +589,8 @@
   },
   "sync": {
     "offline": "Offline",
-    "tapToRetry": "Tap to retry sync",
-    "syncErrorTitle": "Sync Failed",
+    "tapToRetry": "Koppintson a szinkronizálás újrapróbálásához",
+    "syncErrorTitle": "Sikertelen szinkronizálás",
     "syncErrorDismiss": "Elvet"
   }
 }
