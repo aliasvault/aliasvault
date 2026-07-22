@@ -20,4 +20,8 @@ public class StatusResponse
 
     /// <summary>Gets or sets the latest revision for each data-bucket kind the user has. Empty when none stored.</summary>
     public List<BucketRevision> BucketRevisions { get; set; } = [];
+
+    /// <summary>Gets or sets a value indicating whether the user has a vault key (KEK/VEK model). When false the
+    /// client must perform the KEK/VEK migration on its next full vault upload via <see cref="UploadRequest.CreateVaultKey"/>.</summary>
+    public bool HasVaultKey { get; set; }
 }

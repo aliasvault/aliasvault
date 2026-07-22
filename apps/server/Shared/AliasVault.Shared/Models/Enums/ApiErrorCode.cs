@@ -153,4 +153,14 @@ public enum ApiErrorCode
     /// Generic user account registration failure.
     /// </summary>
     REGISTRATION_FAILED,
+
+    /// <summary>
+    /// A vault key already exists for this user/key type.
+    /// </summary>
+    VAULT_KEY_ALREADY_EXISTS,
+
+    /// <summary>
+    /// The user has no vault key so the requested operation is unavailable; use the legacy v1 flow.
+    /// </summary>
+    VAULT_KEY_NOT_FOUND,
 }

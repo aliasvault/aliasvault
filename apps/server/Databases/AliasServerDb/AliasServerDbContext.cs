@@ -175,6 +175,12 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<RateLimit> RateLimits { get; set; }
 
     /// <summary>
+    /// Gets or sets the VaultKeys DbSet. These hold the wrapped vault encryption key (VEK) plus SRP credentials
+    /// per user per unlock method (KEK/VEK model). Users without rows here are on the legacy single-derived-key model.
+    /// </summary>
+    public DbSet<VaultKey> VaultKeys { get; set; }
+
+    /// <summary>
     /// Sets up the connection string if it is not already configured.
     /// </summary>
     /// <param name="optionsBuilder">DbContextOptionsBuilder instance.</param>
@@ -302,6 +308,17 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
 
             // Denormalized owner id for direct per-user queries (admin statistics, retention).
             builder.HasIndex(e => e.OwnerUserId);
+        });
+
+        // Configure VaultKey: one row per user per unlock method.
+        modelBuilder.Entity<VaultKey>(builder =>
+        {
+            builder.HasOne(e => e.User)
+                .WithMany(u => u.VaultKeys)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(e => new { e.UserId, e.KeyType }).IsUnique().HasDatabaseName("UX_VaultKeys_UserId_KeyType");
         });
 
         // Configure UserEmailClaim - AliasVaultUser relationship

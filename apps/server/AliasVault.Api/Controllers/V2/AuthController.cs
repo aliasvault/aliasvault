@@ -34,6 +34,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using SecureRemotePassword;
+using V2Auth = AliasVault.Shared.Models.WebApi.V2.Auth;
 
 /// <summary>
 /// Auth controller for handling authentication.
@@ -103,8 +104,9 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             .Select(x => new AliasVault.Shared.Models.WebApi.V2.Vault.ManifestRevision { ManifestId = x.ManifestId, IsRoot = x.IsRoot, Revision = x.RevisionNumber })
             .ToList();
 
-        // Root manifest still needed for the SRP salt below (unrelated to revision reporting).
-        var latestVault = user.VaultManifests.FirstOrDefault(x => x.IsRoot);
+        // Current SRP salt: lives on the password VaultKey for v2 migrated users, on the root manifest for legacy users.
+        var encryptionSettings = AuthHelper.GetUserLatestVaultEncryptionSettings(user);
+        var hasVaultKey = user.VaultKeys.Any(x => x.KeyType == AuthHelper.VaultKeyTypePassword);
 
         // Check client version compatibility if header is provided
         var clientSupported = false;
@@ -122,7 +124,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             ClientVersionSupported = clientSupported,
             ServerVersion = AppInfo.GetFullVersion(),
             ManifestRevisions = manifestRevisions,
-            SrpSalt = latestVault?.Salt ?? string.Empty,
+            SrpSalt = encryptionSettings.Salt,
+            HasVaultKey = hasVaultKey,
         });
     }
 
@@ -435,7 +438,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// <param name="model">Register request model.</param>
     /// <returns>IActionResult.</returns>
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest model)
+    public async Task<IActionResult> Register([FromBody] V2Auth.RegisterRequest model)
     {
         // Check if public registration is disabled in the configuration.
         if (!config.PublicRegistrationEnabled)
@@ -480,7 +483,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             PasswordChangedAt = timeProvider.UtcNow,
         };
 
-        user.VaultManifests.Add(new AliasServerDb.VaultManifest
+        // KEK/VEK registration: the SRP credentials live on the VaultKey row and the manifest row carries none.
+        // Legacy registration (no wrapped VEK supplied): the SRP credentials live on the manifest row.
+        var createsVaultKey = !string.IsNullOrEmpty(model.WrappedVek);
+
+        var rootManifest = new AliasServerDb.VaultManifest
         {
             ManifestId = Guid.NewGuid(),
             IsRoot = true,
@@ -488,14 +495,33 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             StorageFormat = "sqlite-blob",
             Version = "0.0.0",
             RevisionNumber = 0,
-            Salt = model.Salt,
-            Verifier = model.Verifier,
-            EncryptionType = model.EncryptionType,
-            EncryptionSettings = model.EncryptionSettings,
+            Salt = createsVaultKey ? string.Empty : model.Salt,
+            Verifier = createsVaultKey ? string.Empty : model.Verifier,
+            EncryptionType = createsVaultKey ? string.Empty : model.EncryptionType,
+            EncryptionSettings = createsVaultKey ? string.Empty : model.EncryptionSettings,
             FileSize = 0,
             CreatedAt = timeProvider.UtcNow,
             UpdatedAt = timeProvider.UtcNow,
-        });
+        };
+        user.VaultManifests.Add(rootManifest);
+
+        if (createsVaultKey)
+        {
+            user.VaultKeys.Add(new VaultKey
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                VaultManifestId = rootManifest.ManifestId,
+                KeyType = AuthHelper.VaultKeyTypePassword,
+                WrappedVek = model.WrappedVek!,
+                Salt = model.Salt,
+                Verifier = model.Verifier,
+                EncryptionType = model.EncryptionType,
+                EncryptionSettings = model.EncryptionSettings,
+                CreatedAt = timeProvider.UtcNow,
+                UpdatedAt = timeProvider.UtcNow,
+            });
+        }
 
         var result = await userManager.CreateAsync(user);
 
@@ -518,9 +544,6 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// <summary>
     /// Password change request is done by verifying the current password and then saving the new password via SRP.
     /// </summary>
-    /// <remarks>The submit handler for the change password logic is in VaultController.UpdateChangePassword()
-    /// because changing the password of the AliasVault user also requires a new vault encrypted with that same
-    /// password in order for things to work properly.</remarks>
     /// <returns>Task.</returns>
     [HttpGet("change-password/initiate")]
     [Authorize]
@@ -546,6 +569,63 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         cache.Set(AuthHelper.CachePrefixEphemeral + srpIdentity, ephemeral.Secret, TimeSpan.FromMinutes(5));
 
         return Ok(new PasswordChangeInitiateResponse(latestVaultEncryptionSettings.Salt, ephemeral.Public, latestVaultEncryptionSettings.EncryptionType, latestVaultEncryptionSettings.EncryptionSettings, srpIdentity));
+    }
+
+    /// <summary>
+    /// Password change submit. Verifies the current password via SRP, then atomically updates the
+    /// password VaultKey row with the new salt/verifier and the rewrapped VEK.
+    /// </summary>
+    /// <param name="model">Password change request model.</param>
+    /// <returns>IActionResult.</returns>
+    [HttpPost("change-password")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword([FromBody] V2Auth.PasswordChangeRequest model)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404));
+        }
+
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var vaultKey = await context.VaultKeys.FirstOrDefaultAsync(x => x.UserId == user.Id && x.KeyType == AuthHelper.VaultKeyTypePassword);
+        if (vaultKey == null)
+        {
+            // Legacy users that have not migrated to v2 yet need to use the v1 flow (or migrate first).
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
+        }
+
+        // Validate the SRP session (actual current password check).
+        var serverSession = AuthHelper.ValidateSrpSession(cache, user, model.CurrentClientPublicEphemeral, model.CurrentClientSessionProof);
+        if (serverSession is null)
+        {
+            // Increment failed login attempts in order to lock out the account when the limit is reached.
+            await userManager.AccessFailedAsync(user);
+
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.PasswordChange, AuthFailureReason.InvalidPassword);
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PASSWORD_MISMATCH, 400));
+        }
+
+        vaultKey.Salt = model.NewPasswordSalt;
+        vaultKey.Verifier = model.NewPasswordVerifier;
+        vaultKey.WrappedVek = model.NewWrappedVek;
+        vaultKey.EncryptionType = Defaults.EncryptionType;
+        vaultKey.EncryptionSettings = Defaults.EncryptionSettings;
+        vaultKey.UpdatedAt = timeProvider.UtcNow;
+        await context.SaveChangesAsync();
+
+        // Update the password last changed at timestamp for user.
+        user.PasswordChangedAt = timeProvider.UtcNow;
+        await userManager.UpdateAsync(user);
+
+        await authLoggingService.LogAuthEventSuccessAsync(user.UserName!, AuthEventType.PasswordChange);
+
+        // Force revoke all logged-in sessions except the current one so other clients re-authenticate with the
+        // new password and rederive their KEK. Their locally cached vault stays decryptable: the VEK is unchanged.
+        var deviceIdentifier = AuthHelper.GenerateDeviceIdentifier(Request);
+        await context.AliasVaultUserRefreshTokens.Where(x => x.UserId == user.Id && x.DeviceIdentifier != deviceIdentifier).ExecuteDeleteAsync();
+
+        return Ok();
     }
 
     /// <summary>

@@ -47,4 +47,9 @@ public class UploadRequest
 
     /// <summary>Gets or sets the public encryption key (server-side email encryption). Optional, preserved for legacy parity.</summary>
     public string? EncryptionPublicKey { get; set; }
+
+    /// <summary>Gets or sets the vault key creation request (KEK/VEK migration). Set on the first upload after the
+    /// client re-encrypted the vault with a freshly generated VEK; the server creates the VaultKey row atomically
+    /// with the upload and moves the SRP credentials from the root manifest onto it. Rejected when a key already exists.</summary>
+    public CreateVaultKeyRequest? CreateVaultKey { get; set; }
 }

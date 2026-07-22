@@ -320,13 +320,12 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
     }
 
     /// <summary>
-    /// True once the user has any vault row in the v2 (manifest-v1) storage format. Used by the legacy v1
-    /// endpoints to refuse to serve outdated clients and stop them from clobbering the new format with a
-    /// legacy SQLite blob.
+    /// True once the user has any vault row in the v2 (manifest-v1) storage format or any vault key record.
     /// </summary>
     private static async Task<bool> HasMigratedToV2(AliasServerDbContext context, string userId)
     {
-        return await context.VaultManifests.AnyAsync(x => x.OwnerUserId == userId && x.StorageFormat == "manifest-v1");
+        return await context.VaultManifests.AnyAsync(x => x.OwnerUserId == userId && x.StorageFormat == "manifest-v1")
+            || await context.VaultKeys.AnyAsync(x => x.UserId == userId);
     }
 
     /// <summary>

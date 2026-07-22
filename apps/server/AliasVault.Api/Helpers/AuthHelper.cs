@@ -29,6 +29,11 @@ public static class AuthHelper
     public static readonly string CachePrefixFakeData = "FakeData_";
 
     /// <summary>
+    /// The KeyType value for password-based vault keys (KEK derived from the master password via Argon2id).
+    /// </summary>
+    public static readonly string VaultKeyTypePassword = "password";
+
+    /// <summary>
     /// Helper method that validates the SRP session based on provided SRP identity, ephemeral and proof.
     /// </summary>
     /// <param name="cache">IMemoryCache instance.</param>
@@ -68,13 +73,21 @@ public static class AuthHelper
     }
 
     /// <summary>
-    /// Get the user's latest vault which contains the current salt and verifier.
+    /// Get the user's current SRP salt/verifier and key derivation settings. For users migrated to the KEK/VEK
+    /// model these live on the password VaultKey row; for legacy users they live on the root vault manifest.
     /// </summary>
     /// <param name="user">User object.</param>
     /// <returns>Tuple with salt, verifier, encryption type and encryption settings.</returns>
     public static (string Salt, string Verifier, string EncryptionType, string EncryptionSettings) GetUserLatestVaultEncryptionSettings(AliasVaultUser user)
     {
-        // Retrieve the user's root manifest which contains the current encryption settings.
+        // KEK/VEK model: the password VaultKey row is the authority for SRP credentials once it exists.
+        var passwordKey = user.VaultKeys.FirstOrDefault(x => x.KeyType == VaultKeyTypePassword);
+        if (passwordKey is not null)
+        {
+            return (passwordKey.Salt, passwordKey.Verifier, passwordKey.EncryptionType, passwordKey.EncryptionSettings);
+        }
+
+        // Legacy model: the root manifest carries the current encryption settings.
         var latestVault = user.VaultManifests.Where(x => x.IsRoot).Select(x => new { x.Salt, x.Verifier, x.EncryptionType, x.EncryptionSettings }).First();
         return (latestVault.Salt, latestVault.Verifier, latestVault.EncryptionType, latestVault.EncryptionSettings);
     }

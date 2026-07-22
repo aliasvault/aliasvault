@@ -86,11 +86,14 @@ public class VaultController(
             .Select(g => new BucketRevision { Category = g.Key, Revision = g.Max(b => b.RevisionNumber) })
             .ToListAsync();
 
+        var hasVaultKey = await context.VaultKeys.AnyAsync(x => x.UserId == user.Id && x.KeyType == AuthHelper.VaultKeyTypePassword);
+
         return Ok(new StatusResponse
         {
             StorageFormat = manifestRevisions.Count > 0 ? StorageFormat.Manifest : StorageFormat.SqliteBlob,
             ManifestRevisions = manifestRevisions,
             BucketRevisions = bucketRevisions,
+            HasVaultKey = hasVaultKey,
         });
     }
 
@@ -273,7 +276,7 @@ public class VaultController(
         // Optimistic concurrency against the single monotonic RevisionNumber counter, which is shared across
         // legacy ("sqlite-blob") and "manifest-v1" revisions. A migrating client sends the legacy revision it last
         // synced as CurrentManifestRevision, so the first manifest-v1 revision continues the sequence (e.g. legacy
-        // 50 → manifest-v1 51) rather than resetting to 1 and sorting below the legacy revisions.
+        // 50 --> manifest-v1 51) rather than resetting to 1 and sorting below the legacy revisions.
         var serverRevision = currentManifest.RevisionNumber;
         var newManifestRevision = model.CurrentManifestRevision + 1;
         if (serverRevision >= newManifestRevision)
@@ -285,6 +288,13 @@ public class VaultController(
             });
         }
 
+        // Sanity check if user already has a vault key (when providing vault key creation request).
+        var hasExistingVaultKey = await context.VaultKeys.AnyAsync(x => x.UserId == user.Id && x.KeyType == AuthHelper.VaultKeyTypePassword);
+        if (model.CreateVaultKey != null && hasExistingVaultKey)
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400));
+        }
+
         // The DbContext uses a retrying execution strategy (EnableRetryOnFailure), which forbids user-initiated
         // transactions unless the whole unit runs inside the strategy so it can be retried atomically.
         var strategy = context.Database.CreateExecutionStrategy();
@@ -292,12 +302,10 @@ public class VaultController(
         {
             await using var tx = await context.Database.BeginTransactionAsync();
 
-            // 1) Upsert any new blob objects this client is contributing. (hash, userId) is the PK so re-upload of
-            // an existing blob is a no-op. Clients normally pre-upload blobs via POST /v2/Vault/blobs and send only
-            // references here, but inline NewBlobs remain supported for small payloads.
+            // 1) Upsert any new blob objects.
             if (model.NewBlobs.Count > 0)
             {
-                if (!await TryUpsertBlobObjectsAsync(context, user.Id, model.NewBlobs))
+                if (!await TryUpsertBlobObjectsAsync(context, user.Id, model.NewBlobs, overwrite: model.CreateVaultKey != null))
                 {
                     return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
                 }
@@ -326,10 +334,7 @@ public class VaultController(
                 }
             }
 
-            // 3) Archive the current revision into history first, then update the current row in place with the
-            // new manifest-v1 revision. This ordering is a design invariant: the VaultManifests table structurally
-            // never holds two rows for the same manifest. SRP settings (Salt/Verifier/EncryptionType/Settings) stay
-            // untouched on the current row. VaultBlob (legacy column) is emptied for v2 revisions.
+            // 3) Archive the current revision into history first, then update the current row in place with the new manifest-v1 revision.
             var archivedRevision = VaultManifestsHistory.CreateFrom(currentManifest);
             context.VaultManifestsHistory.Add(archivedRevision);
 
@@ -346,11 +351,40 @@ public class VaultController(
             currentManifest.CreatedAt = timeProvider.UtcNow;
             currentManifest.UpdatedAt = timeProvider.UtcNow;
 
+            // Create VaultKey row atomically with this upload if provided (migration flow from old v1 encryption flow).
+            if (model.CreateVaultKey != null)
+            {
+                if (model.CreateVaultKey.KeyType != AuthHelper.VaultKeyTypePassword)
+                {
+                    await tx.RollbackAsync();
+                    return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
+                }
+
+                context.VaultKeys.Add(new VaultKey
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = user.Id,
+                    VaultManifestId = currentManifest.ManifestId,
+                    KeyType = AuthHelper.VaultKeyTypePassword,
+                    WrappedVek = model.CreateVaultKey.WrappedVek,
+                    Salt = currentManifest.Salt,
+                    Verifier = currentManifest.Verifier,
+                    EncryptionType = currentManifest.EncryptionType,
+                    EncryptionSettings = currentManifest.EncryptionSettings,
+                    CreatedAt = timeProvider.UtcNow,
+                    UpdatedAt = timeProvider.UtcNow,
+                });
+
+                currentManifest.Salt = string.Empty;
+                currentManifest.Verifier = string.Empty;
+                currentManifest.EncryptionType = string.Empty;
+                currentManifest.EncryptionSettings = string.Empty;
+            }
+
             await ApplyVaultRetention(context, currentManifest, archivedRevision);
             await context.SaveChangesAsync();
 
-            // 4) Add blob references for the new revision. The previous revision's references stay tied to its
-            // revision number and are cleaned up when retention prunes that revision.
+            // 4) Add blob references for the new revision.
             foreach (var dto in model.BlobReferences)
             {
                 context.VaultBlobReferences.Add(new VaultBlobReference
@@ -361,9 +395,7 @@ public class VaultController(
                 });
             }
 
-            // 5) Optional data bucket upserts (settings, etc.). Each insert adds a new revision row (history); the
-            // revision is server-assigned (currentRevision: null = "increment from whatever the server has"). The
-            // bundled path does not do per-bucket concurrency.
+            // 5) Optional data bucket upserts (settings, etc.). Each insert adds a new revision row (history).
             var newBucketRevisions = new List<BucketRevision>();
             foreach (var bucket in model.Buckets)
             {
@@ -452,7 +484,7 @@ public class VaultController(
             return Ok(new BlobUploadResponse { AcceptedCount = 0 });
         }
 
-        if (!await TryUpsertBlobObjectsAsync(context, user.Id, model.Blobs))
+        if (!await TryUpsertBlobObjectsAsync(context, user.Id, model.Blobs, model.Overwrite))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
         }
@@ -562,14 +594,16 @@ public class VaultController(
 
     /// <summary>
     /// Upserts a batch of encrypted blob objects for a user in one round-trip. Existing blobs (same hash) only get
-    /// their LastReferencedAt bumped; new blobs are validated and inserted. Does not call SaveChanges, the caller
-    /// owns the transaction boundary.
+    /// their LastReferencedAt bumped, unless <paramref name="overwrite"/> is set (KEK/VEK migration) in which case
+    /// their ciphertext is replaced with the re-encrypted bytes. Does not call SaveChanges, the caller owns the
+    /// transaction boundary.
     /// </summary>
     /// <param name="context">DbContext to operate on.</param>
     /// <param name="userId">Owning user id.</param>
     /// <param name="blobs">Blobs to upsert.</param>
+    /// <param name="overwrite">When true, existing blobs with the same hash get their ciphertext replaced.</param>
     /// <returns>True when every payload is structurally valid; false when any is malformed (caller should 400).</returns>
-    private async Task<bool> TryUpsertBlobObjectsAsync(AliasServerDbContext context, string userId, List<Blob> blobs)
+    private async Task<bool> TryUpsertBlobObjectsAsync(AliasServerDbContext context, string userId, List<Blob> blobs, bool overwrite = false)
     {
         var nowUtc = timeProvider.UtcNow;
         var hashes = blobs.Select(b => b.Hash).Distinct().ToList();
@@ -579,27 +613,38 @@ public class VaultController(
 
         foreach (var dto in blobs)
         {
-            if (existing.TryGetValue(dto.Hash, out var row))
+            byte[]? data = null;
+            if (!existing.TryGetValue(dto.Hash, out var row) || overwrite)
+            {
+                try
+                {
+                    data = Convert.FromBase64String(dto.EncryptedDataBase64);
+                }
+                catch (FormatException)
+                {
+                    return false;
+                }
+
+                if (data.Length < 16)
+                {
+                    // Anything smaller than IV+tag overhead can't be valid AES-GCM ciphertext, reject the upload.
+                    return false;
+                }
+            }
+
+            if (row != null)
             {
                 // Already have it (or a duplicate within this batch), bump LastReferencedAt so GC leaves it alone.
+                // During a KEK/VEK migration the stored ciphertext is replaced (same plaintext hash, new key).
                 row.LastReferencedAt = nowUtc;
+                if (overwrite)
+                {
+                    row.Category = dto.Category;
+                    row.EncryptedData = data!;
+                    row.SizeBytes = data!.Length;
+                }
+
                 continue;
-            }
-
-            byte[] data;
-            try
-            {
-                data = Convert.FromBase64String(dto.EncryptedDataBase64);
-            }
-            catch (FormatException)
-            {
-                return false;
-            }
-
-            if (data.Length < 16)
-            {
-                // Anything smaller than IV+tag overhead can't be valid AES-GCM ciphertext, reject the upload.
-                return false;
             }
 
             var entity = new VaultBlobObject
@@ -607,8 +652,8 @@ public class VaultController(
                 Hash = dto.Hash,
                 OwnerUserId = userId,
                 Category = dto.Category,
-                EncryptedData = data,
-                SizeBytes = data.Length,
+                EncryptedData = data!,
+                SizeBytes = data!.Length,
                 CreatedAt = nowUtc,
                 LastReferencedAt = nowUtc,
             };

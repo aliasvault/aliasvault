@@ -55,19 +55,18 @@ public abstract class VaultManifestBase
     public int FileSize { get; set; }
 
     /// <summary>
-    /// Gets or sets the salt used for SRP authentication. Note: the login credentials are stored with the vault manifest
-    /// because the vault manifest is encrypted with the same key derived from the user's password. So the password the user
-    /// uses to log in to AliasVault needs to be the same as the vault manifest to keep everything in-sync in case of vault
-    /// backup restores.
+    /// Gets or sets the salt used for SRP authentication. On the legacy model the login
+    /// credentials are stored with the vault manifest because the manifest is encrypted with the key derived from
+    /// the user's password, keeping login and vault password in sync across backup restores. Once a user has a VaultKey
+    /// the SRP credentials live there instead and this column is empty on current revisions (history revisions keep
+    /// their at-the-time values). TODO: remove this column once the legacy model is fully deprecated.
     /// </summary>
     [StringLength(100)]
     public required string Salt { get; set; }
 
     /// <summary>
-    /// Gets or sets the verifier used for SRP authentication. Note: the login credentials are stored with the vault
-    /// manifest because the vault manifest is encrypted with the same key derived from the user's password. So the password the
-    /// user uses to log in to AliasVault needs to be the same as the vault to keep everything in-sync in case of vault
-    /// backup restores.
+    /// Gets or sets the verifier used for SRP authentication. See the remarks on
+    /// <see cref="Salt"/> for how this relates to the VaultKey model. TODO: remove this column once the legacy model is fully deprecated.
     /// </summary>
     [StringLength(1000)]
     public required string Verifier { get; set; }
@@ -85,12 +84,14 @@ public abstract class VaultManifestBase
     public int EmailClaimsCount { get; set; }
 
     /// <summary>
-    /// Gets or sets the encryption type.
+    /// Gets or sets the encryption type. See remarks on <see cref="Salt"/> for how this relates to the VaultKey model.
+    /// TODO: remove this column once the legacy model is fully deprecated.
     /// </summary>
     public required string EncryptionType { get; set; }
 
     /// <summary>
-    /// Gets or sets the encryption settings as a JSON string.
+    /// Gets or sets the encryption settings. See remarks on <see cref="Salt"/> for how this relates to the VaultKey model.
+    /// TODO: remove this column once the legacy model is fully deprecated.
     /// </summary>
     public required string EncryptionSettings { get; set; }
 

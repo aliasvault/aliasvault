@@ -40,4 +40,9 @@ public class StatusResponse
     /// to make the user re-authenticate with the new password.
     /// </summary>
     public required string SrpSalt { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the user has a vault key.
+    /// </summary>
+    public bool HasVaultKey { get; set; }
 }
