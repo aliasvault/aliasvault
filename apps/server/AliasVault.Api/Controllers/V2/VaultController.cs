@@ -79,6 +79,10 @@ public class VaultController(
             .Select(x => new ManifestRevision { ManifestId = x.ManifestId, IsRoot = x.IsRoot, Revision = x.RevisionNumber })
             .ToListAsync();
 
+        // Migration status is judged solely by the user's own root manifest. A shared-with-me manifest (always
+        // IsRoot=false, owned by another user) must never make a not-yet-migrated user look migrated, or the client
+        // would push without CreateVaultKey and the upload would fail with VAULT_KEY_NOT_FOUND.
+        var isMigrated = ownedManifestRevisions.Any(x => x.IsRoot);
         // Latest revision per bucket kind.
         var bucketRevisions = await context.VaultDataBuckets
             .Where(x => x.OwnerUserId == user.Id)
@@ -88,7 +92,7 @@ public class VaultController(
 
         return Ok(new StatusResponse
         {
-            StorageFormat = manifestRevisions.Count > 0 ? StorageFormat.Manifest : StorageFormat.SqliteBlob,
+            StorageFormat = isMigrated ? StorageFormat.Manifest : StorageFormat.SqliteBlob,
             ManifestRevisions = manifestRevisions,
             BucketRevisions = bucketRevisions,
         });
