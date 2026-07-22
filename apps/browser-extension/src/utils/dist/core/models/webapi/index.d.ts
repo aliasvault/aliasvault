@@ -84,6 +84,8 @@ type StatusResponseV2 = {
     serverVersion: string;
     manifestRevisions: ManifestRevision[];
     srpSalt: string;
+    /** Whether the user has a vault key (KEK/VEK model). Optional: absent on older servers. */
+    hasVaultKey?: boolean;
 };
 
 /**
@@ -442,4 +444,31 @@ type MobileLoginPollResponse = {
     encryptedUsername: string | null;
 };
 
-export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type Email, type EmailAttachment, type FaviconExtractModel, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, type ManifestRevision, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type RefreshToken, type StatusResponse, type StatusResponseV2, type TokenModel, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse };
+/**
+ * Vault key response type (KEK/VEK model). Returned by GET /v2/VaultKey/{keyType}.
+ * Carries the wrapped VEK plus the KEK derivation parameters so an authenticated client can derive the KEK from
+ * the unlock secret and unwrap the vault encryption key. The SRP verifier is never returned.
+ */
+type VaultKeyResponse = {
+    /** The unlock method type, e.g. "password". */
+    keyType: string;
+    /** The wrapped VEK: base64(IV ‖ ciphertext ‖ authTag) of the VEK encrypted with the KEK (AES-256-GCM). */
+    wrappedVek: string;
+    /** The salt used for KEK derivation (same value as the SRP salt for the password key type). */
+    salt: string;
+    /** The key derivation type, e.g. "Argon2Id". */
+    encryptionType: string;
+    /** The key derivation settings as a JSON string. */
+    encryptionSettings: string;
+};
+/**
+ * Envelope returned by GET /v2/VaultKey/{keyType} with HTTP 200. A null vaultKey means the user has no vault key
+ * of the requested type (legacy user). An HTTP 404 on the endpoint itself means the server does not implement
+ * vault keys at all (older server version) and must be treated differently: fall back to any locally cached
+ * wrapped VEK instead of assuming a legacy account.
+ */
+type VaultKeyGetResponse = {
+    vaultKey: VaultKeyResponse | null;
+};
+
+export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type Email, type EmailAttachment, type FaviconExtractModel, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, type ManifestRevision, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type RefreshToken, type StatusResponse, type StatusResponseV2, type TokenModel, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, type VaultKeyGetResponse, type VaultKeyResponse, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse };

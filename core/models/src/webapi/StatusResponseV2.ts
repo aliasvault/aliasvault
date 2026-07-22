@@ -15,4 +15,6 @@ export type StatusResponseV2 = {
   serverVersion: string;
   manifestRevisions: ManifestRevision[];
   srpSalt: string;
+  /** Whether the user has a vault key (KEK/VEK model). Optional: absent on older servers. */
+  hasVaultKey?: boolean;
 }
