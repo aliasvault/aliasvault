@@ -137,7 +137,7 @@ Biztosan folytatni akarja az exportálást?</value>
     <comment>Export warning confirmation message</comment>
   </data>
   <data name="ResetVaultSectionTitle" xml:space="preserve">
-    <value>Széf visszaállítása</value>
+    <value>Széf gyári visszaállítása</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="ResetVaultSectionDescription" xml:space="preserve">
