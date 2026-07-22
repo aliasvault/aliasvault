@@ -22,6 +22,19 @@ export type RegisterRequest = {
   encryptionSettings: string;
   /** The SRP identity used for authentication (a random GUID generated at registration). */
   srpIdentity: string;
+  /** The wrapped VEK (KEK/VEK model): base64 of the freshly generated VEK encrypted with the password-derived KEK. */
+  wrappedVek: string;
+};
+
+/**
+ * Prepared registration data: the request payload plus the key material the caller must keep client-side.
+ */
+export type PreparedRegistration = {
+  request: RegisterRequest;
+  /** The generated VEK (base64): the vault encryption key to store in session after successful registration. */
+  vaultEncryptionKey: string;
+  /** The password-derived key (base64): the KEK, only needed for wrapping/SRP, never for vault content. */
+  derivedKey: string;
 };
 
 /**
@@ -30,6 +43,10 @@ export type RegisterRequest = {
 export type RegistrationResult = {
   success: boolean;
   token?: TokenModel;
+  /** The vault encryption key (VEK, base64) to use for all vault encryption after successful registration. */
+  encryptionKey?: string;
+  /** The wrapped VEK to cache locally for offline unlock. */
+  wrappedVek?: string;
   error?: string;
 };
 
@@ -282,12 +299,12 @@ export class SrpAuthService {
    *
    * @param username - The username for registration
    * @param password - The password for registration
-   * @returns Registration request data ready to send to the API
+   * @returns Registration request data ready to send to the API plus the generated key material
    */
   public static async prepareRegistration(
     username: string,
     password: string
-  ): Promise<RegisterRequest> {
+  ): Promise<PreparedRegistration> {
     const normalizedUsername = SrpAuthService.normalizeUsername(username);
     const salt = await SrpAuthService.generateSalt();
 
@@ -309,13 +326,25 @@ export class SrpAuthService {
     const privateKey = await SrpAuthService.derivePrivateKey(salt, srpIdentity, credentials.passwordHashString);
     const verifier = await SrpAuthService.deriveVerifier(privateKey);
 
+    /*
+     * KEK/VEK: generate a random VEK that will encrypt the vault content, wrapped with the password-derived KEK.
+     * The server stores only the wrapped form; the VEK itself stays client-side.
+     */
+    const vaultEncryptionKey = EncryptionUtility.generateVaultEncryptionKey();
+    const wrappedVek = await EncryptionUtility.wrapVaultEncryptionKey(vaultEncryptionKey, credentials.passwordHashBase64);
+
     return {
-      username: normalizedUsername,
-      salt,
-      verifier,
-      encryptionType: DEFAULT_ENCRYPTION.type,
-      encryptionSettings: DEFAULT_ENCRYPTION.settings,
-      srpIdentity,
+      request: {
+        username: normalizedUsername,
+        salt,
+        verifier,
+        encryptionType: DEFAULT_ENCRYPTION.type,
+        encryptionSettings: DEFAULT_ENCRYPTION.settings,
+        srpIdentity,
+        wrappedVek,
+      },
+      vaultEncryptionKey,
+      derivedKey: credentials.passwordHashBase64,
     };
   }
 
@@ -334,7 +363,7 @@ export class SrpAuthService {
   ): Promise<RegistrationResult> {
     try {
       // Prepare registration data
-      const registerRequest = await SrpAuthService.prepareRegistration(username, password);
+      const prepared = await SrpAuthService.prepareRegistration(username, password);
 
       // Normalize the API URL
       const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v2/';
@@ -345,7 +374,7 @@ export class SrpAuthService {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(registerRequest),
+        body: JSON.stringify(prepared.request),
       });
 
       if (!response.ok) {
@@ -361,7 +390,7 @@ export class SrpAuthService {
       }
 
       const tokenModel = (await response.json()) as TokenModel;
-      return { success: true, token: tokenModel };
+      return { success: true, token: tokenModel, encryptionKey: prepared.vaultEncryptionKey, wrappedVek: prepared.request.wrappedVek };
     } catch (error) {
       return {
         success: false,

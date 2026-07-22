@@ -16,6 +16,7 @@ import { SqliteClient } from '@/utils/SqliteClient';
 import { ServerUpdateRequiredError } from '@/utils/types/errors/ServerUpdateRequiredError';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
 import { type BlobEntry, type VaultManifest, type VaultDataBucket, VaultCodec } from '@/utils/VaultCodec';
+import { VAULT_KEY_TYPE_PASSWORD, WRAPPED_VEK_STORAGE_KEY } from '@/utils/VaultKeyService';
 import { WebApiService } from '@/utils/WebApiService';
 
 // Endpoints are relative; WebApiService resolves them under the API's /v2/ prefix.
@@ -115,6 +116,14 @@ const SETTINGS_BUCKET_CATEGORY = VaultDataBucketCategory.Settings;
 export type VaultSyncStatus = {
   /** Whether the user has been migrated to manifest-v1 storage (false = still legacy, migrate on next save). */
   isMigrated: boolean;
+  /** Whether the user has a vault key (KEK/VEK model). False = the next full upload must carry createVaultKey. */
+  hasVaultKey: boolean;
+  /**
+   * Whether the server understands vault keys at all (the hasVaultKey field was present in its status response).
+   * A KEK/VEK migration must never be attempted against a server that would silently drop createVaultKey: the
+   * upload would be VEK-encrypted while the wrapped VEK is never stored, stranding every other device.
+   */
+  vaultKeySupported: boolean;
   manifestRevision: number | null;
   settingsRevision: number | null;
 };
@@ -145,6 +154,11 @@ export type PushResult = {
   status: 'ok' | 'outdated' | 'missing-blobs' | 'rejected';
   newManifestRevision: number | null;
   reasons?: string[];
+  /**
+   * Set when this push performed the KEK/VEK migration: the freshly generated VEK the caller must adopt as the
+   * session encryption key (the old password-derived key is now only the KEK).
+   */
+  newEncryptionKey?: string;
 };
 
 type BlobRefDto = { hash: string; category: string };
@@ -212,6 +226,7 @@ type StatusResponseDto = {
   storageFormat: number;
   manifestRevisions: ManifestRevisionDto[];
   bucketRevisions: BucketRevisionDto[];
+  hasVaultKey?: boolean;
 };
 
 type UploadResponseDto = {
@@ -291,6 +306,8 @@ export class VaultSyncService {
       const rootManifestRevision = revisions.find(m => m.isRoot)?.revision ?? null;
       return {
         isMigrated: dto.storageFormat === STORAGE_FORMAT_MANIFEST,
+        hasVaultKey: dto.hasVaultKey === true,
+        vaultKeySupported: dto.hasVaultKey !== undefined,
         manifestRevision: rootManifestRevision,
         settingsRevision,
       };
@@ -505,17 +522,32 @@ export class VaultSyncService {
    * reports missing blobs still missing (stale local knowledge, e.g. server-side GC), the missing bytes are uploaded
    * and the POST retried once.
    * @param sqliteClient - the in-memory SQLite the user has been editing
-   * @param vek - the symmetric encryption key
+   * @param vek - the symmetric encryption key (on a KEK/VEK migration push this is the password-derived key,
+   *   which becomes the KEK; on a normal push it is the VEK itself)
    * @param username - the user's username (sent in the upload payload for cross-check)
    * @param emailAddressList - claimed email aliases (server needs these in plaintext for routing)
+   * @param options - set createVaultKey to perform the KEK/VEK migration as part of this push
    * @returns Push outcome.
    */
   public async push(
     sqliteClient: SqliteClient,
     vek: string,
     username: string,
-    emailAddressList: string[]
+    emailAddressList: string[],
+    options?: { createVaultKey?: boolean }
   ): Promise<PushResult> {
+    /*
+     * KEK/VEK migration: on the first push after this feature ships, generate a fresh VEK and encrypt everything
+     * with it; the passed-in password-derived key becomes the KEK that wraps the VEK. On a normal push the
+     * passed-in key IS the VEK and is used directly.
+     */
+    const migrateToVaultKey = options?.createVaultKey === true;
+    const contentKey = migrateToVaultKey ? EncryptionUtility.generateVaultEncryptionKey() : vek;
+    const wrappedVek = migrateToVaultKey ? await EncryptionUtility.wrapVaultEncryptionKey(contentKey, vek) : null;
+    if (migrateToVaultKey) {
+      devLog('[V2Push] KEK/VEK migration: generated new VEK, vault content and all blobs will be re-encrypted and re-uploaded.');
+    }
+
     // 1) Canonicalize using the persisted user salt (or generate one on first save).
     let userSalt = (await storage.getItem(SALT_STORAGE_KEY)) as string | null;
     if (!userSalt) {
@@ -569,7 +601,7 @@ export class VaultSyncService {
 
     // 3) Pack then AES-GCM encrypt.
     const manifestPlaintext = await timedStage('stringify-manifest', () => JSON.stringify(canonicalized.manifest));
-    const { ciphertext: manifestCiphertext, compressedBytes: manifestCompressedBytes } = await packEncrypt(manifestPlaintext, vek);
+    const { ciphertext: manifestCiphertext, compressedBytes: manifestCompressedBytes } = await packEncrypt(manifestPlaintext, contentKey);
     const manifestCiphertextHash = await vaultCodecComputeCiphertextHash(manifestCiphertext);
     devLog(`[V2Push] Manifest blob: raw ${formatKb(manifestPlaintext.length)} → compressed ${formatKb(manifestCompressedBytes)} → encrypted ${formatKb(manifestCiphertext.length)}.`);
 
@@ -577,7 +609,7 @@ export class VaultSyncService {
     const bucketDtos: Array<{ category: string; blob: string; ciphertextHash: string }> = [];
     for (const bucket of canonicalized.dataBuckets) {
       const bucketPlaintext = JSON.stringify(bucket);
-      const { ciphertext, compressedBytes } = await packEncrypt(bucketPlaintext, vek);
+      const { ciphertext, compressedBytes } = await packEncrypt(bucketPlaintext, contentKey);
       const ciphertextHash = await vaultCodecComputeCiphertextHash(ciphertext);
       bucketDtos.push({ category: bucket.category, blob: ciphertext, ciphertextHash });
       devLog(`[V2Push] Data bucket "${bucket.category}": raw ${formatKb(bucketPlaintext.length)} → compressed ${formatKb(compressedBytes)} → encrypted ${formatKb(ciphertext.length)}.`);
@@ -594,15 +626,21 @@ export class VaultSyncService {
     const candidates = allBlobHashes.filter(h => !knownServerHashes.has(h));
 
     let hashesToUpload: string[] = [];
-    if (candidates.length > 0) {
+    if (migrateToVaultKey) {
+      /*
+       * The blob content hashes are plaintext-based and thus unchanged, but every stored ciphertext was encrypted
+       * with the old key. Re-encrypt and re-upload all of them with the new VEK (server overwrites in place).
+       */
+      hashesToUpload = allBlobHashes;
+    } else if (candidates.length > 0) {
       const missingResp = await webApi.post<{ hashes: string[] }, MissingBlobsResponseDto>(BLOBS_MISSING_ENDPOINT, { hashes: candidates });
       hashesToUpload = missingResp.missing ?? [];
     }
 
-    devLog(`[V2Push] Blob diff: ${allBlobHashes.length} blobs in vault, ${candidates.length} not known to be on server, ${hashesToUpload.length} confirmed missing → uploading ${hashesToUpload.length}.`);
+    devLog(`[V2Push] Blob diff: ${allBlobHashes.length} blobs in vault, ${candidates.length} not known to be on server, uploading ${hashesToUpload.length}${migrateToVaultKey ? ' (all, VEK migration)' : ''}.`);
 
     // Pre-upload the missing blobs in size-capped batches so the manifest POST below carries references only.
-    const uploadedCiphertexts = await this.uploadBlobs(webApi, blobEntries, hashesToUpload, vek);
+    const uploadedCiphertexts = await this.uploadBlobs(webApi, blobEntries, hashesToUpload, contentKey, migrateToVaultKey);
 
     const blobReferences: BlobRefDto[] = Array.from(blobEntries.entries()).map(([hash, entry]) => ({
       hash,
@@ -624,6 +662,7 @@ export class VaultSyncService {
       blobReferences,
       emailRouting: { emailAddressList },
       encryptionPublicKey: '',
+      createVaultKey: wrappedVek ? { keyType: VAULT_KEY_TYPE_PASSWORD, wrappedVek } : null,
     };
 
     let resp = await webApi.post<typeof payload, UploadResponseDto>(UPLOAD_ENDPOINT, payload);
@@ -639,7 +678,7 @@ export class VaultSyncService {
       }
 
       devWarn(`[V2Sync] Server reported ${resp.missingBlobHashes.length} missing blob(s); uploading and retrying once.`);
-      const retried = await this.uploadBlobs(webApi, blobEntries, resp.missingBlobHashes, vek);
+      const retried = await this.uploadBlobs(webApi, blobEntries, resp.missingBlobHashes, contentKey, migrateToVaultKey);
       for (const [hash, ciphertext] of retried.entries()) {
         uploadedCiphertexts.set(hash, ciphertext);
       }
@@ -676,12 +715,21 @@ export class VaultSyncService {
     }
     await this.saveBlobCache(newCache);
 
+    /*
+     * KEK/VEK migration completed: cache the wrapped VEK for offline unlock and hand the new VEK to the caller,
+     * which must adopt it as the session encryption key and re-encrypt the locally stored vault with it.
+     */
+    if (migrateToVaultKey && wrappedVek) {
+      await storage.setItem(WRAPPED_VEK_STORAGE_KEY, wrappedVek);
+      devLog('[V2Push] KEK/VEK migration complete: vault key created server-side, wrapped VEK cached locally.');
+    }
+
     const uploadedBlobChars = Array.from(uploadedCiphertexts.values()).reduce((sum, c) => sum + c.length, 0);
     const bucketChars = bucketDtos.reduce((sum, b) => sum + b.blob.length, 0);
     const totalChars = manifestCiphertext.length + bucketChars + uploadedBlobChars;
     devLog(`[V2Push] Total pushed (encrypted): manifest ${formatKb(manifestCiphertext.length)} + ${bucketDtos.length} buckets ${formatKb(bucketChars)} + ${uploadedCiphertexts.size} blobs ${formatKb(uploadedBlobChars)} = ${formatKb(totalChars)} (+ ${blobReferences.length} blob references).`);
 
-    return { status: 'ok', newManifestRevision: resp.newManifestRevision };
+    return { status: 'ok', newManifestRevision: resp.newManifestRevision, newEncryptionKey: migrateToVaultKey ? contentKey : undefined };
   }
 
   /**
@@ -730,9 +778,10 @@ export class VaultSyncService {
    * @param hashes - the subset of hashes to upload (hashes without an entry in `blobs` are skipped)
    * @param vek - symmetric encryption key
    * @param webApi - API client to reuse
+   * @param overwrite - ask the server to replace the ciphertext of blobs it already has (KEK/VEK migration)
    * @returns Map of hash → uploaded ciphertext (base64), for the local encrypted blob cache.
    */
-  private async uploadBlobs(webApi: WebApiService, blobs: Map<string, BlobEntry>, hashes: string[], vek: string): Promise<Map<string, string>> {
+  private async uploadBlobs(webApi: WebApiService, blobs: Map<string, BlobEntry>, hashes: string[], vek: string, overwrite: boolean = false): Promise<Map<string, string>> {
     const ciphertexts = new Map<string, string>();
     if (hashes.length === 0) {
       return ciphertexts;
@@ -752,7 +801,7 @@ export class VaultSyncService {
 
       if (batch.length > 0 && batchChars + ciphertext.length > BLOB_UPLOAD_BATCH_MAX_CHARS) {
         devLog(`[V2Push] Uploading blob batch: ${batch.length} blobs, ${formatKb(batchChars)}.`);
-        await webApi.post(BLOBS_UPLOAD_ENDPOINT, { blobs: batch });
+        await webApi.post(BLOBS_UPLOAD_ENDPOINT, { blobs: batch, overwrite });
         batch = [];
         batchChars = 0;
       }
@@ -763,7 +812,7 @@ export class VaultSyncService {
 
     if (batch.length > 0) {
       devLog(`[V2Push] Uploading blob batch: ${batch.length} blobs, ${formatKb(batchChars)}.`);
-      await webApi.post(BLOBS_UPLOAD_ENDPOINT, { blobs: batch });
+      await webApi.post(BLOBS_UPLOAD_ENDPOINT, { blobs: batch, overwrite });
     }
 
     return ciphertexts;

@@ -33,6 +33,7 @@ import { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/V
 import { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
 import { type VaultMutationScope, ALL_VAULT_MUTATION_SCOPES, DEFAULT_VAULT_MUTATION_SCOPE, dirtyScopeStorageKey, isManifestScope } from '@/utils/types/VaultMutationScope';
 import { VaultCodec } from '@/utils/VaultCodec';
+import { VaultKeyService, WRAPPED_VEK_STORAGE_KEY } from '@/utils/VaultKeyService';
 import { vaultMergeService } from '@/utils/VaultMergeService';
 import { vaultSyncService, SERVER_MANIFEST_REVISIONS_STORAGE_KEY } from '@/utils/VaultSyncService';
 import { WebApiService } from '@/utils/WebApiService';
@@ -263,7 +264,7 @@ async function fetchLatestVaultFromServer(): Promise<VaultResponse> {
  */
 async function uploadVaultV2(sqliteClient: SqliteClient): Promise<VaultPostResponse> {
   // Surfaces ServerUpdateRequiredError for servers that do not support the v2 API before we attempt the push.
-  await vaultSyncService.checkStatus();
+  const syncStatus = await vaultSyncService.checkStatus();
 
   const encryptionKey = await handleGetEncryptionKey();
   if (!encryptionKey) {
@@ -273,9 +274,20 @@ async function uploadVaultV2(sqliteClient: SqliteClient): Promise<VaultPostRespo
   const username = (await storage.getItem('local:username')) as string;
   const emailAddresses = await getEmailAddressesForVault(sqliteClient);
 
-  const result = await vaultSyncService.push(sqliteClient, encryptionKey, username, emailAddresses);
+  /*
+   * KEK/VEK migration: when the server has no vault key yet, this push generates a VEK, re-encrypts everything
+   * with it, and creates the vault key server-side (wrapping the VEK with the current password-derived key).
+   * Guarded on vaultKeySupported: a server that predates vault keys would silently drop createVaultKey while
+   * storing the VEK-encrypted payload, which would strand every other device. Such servers get a normal push.
+   */
+  const result = await vaultSyncService.push(sqliteClient, encryptionKey, username, emailAddresses, { createVaultKey: syncStatus.vaultKeySupported && !syncStatus.hasVaultKey });
 
   if (result.status === 'ok') {
+    if (result.newEncryptionKey) {
+      // Migration succeeded: from now on the session key is the VEK, not the password-derived key.
+      await handleStoreEncryptionKey(result.newEncryptionKey);
+    }
+
     return { status: 0, newRevisionNumber: result.newManifestRevision ?? 0 };
   }
 
@@ -445,6 +457,7 @@ export async function handleClearVaultData(): Promise<messageBoolResponse> {
     'local:mutationSequence',
     'local:isOfflineMode',
     'local:encryptionKeyDerivationParams',
+    WRAPPED_VEK_STORAGE_KEY,
     'local:username',
   ]);
 
@@ -809,6 +822,16 @@ async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultM
   }
 
   /*
+   * A bucket-only push encrypts with the current session key. As long as the user has no vault key yet, the full
+   * upload path must run instead so the KEK/VEK migration re-keys the whole vault in one atomic request.
+   */
+  const syncStatus = await vaultSyncService.checkStatus();
+  if (syncStatus.vaultKeySupported && !syncStatus.hasVaultKey) {
+    devLog('[V2Push] User has no vault key yet, falling back to full vault upload to run the KEK/VEK migration.');
+    return (await uploadNewVaultToServer(sqliteClient)).response;
+  }
+
+  /*
    * Which tables make up each bucket category is owned by the Rust layer.
    */
   const layout = await vaultCodecBucketLayout();
@@ -1021,8 +1044,13 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<{ re
     throw err;
   }
 
-  // Re-encrypt and persist locally so handleGetVault / readers continue to work without a re-sync.
-  const reEncrypted = await EncryptionUtility.symmetricEncrypt(updatedVaultData, encryptionKey);
+  /*
+   * Re-encrypt and persist locally so handleGetVault / readers continue to work without a re-sync. Re-fetch the
+   * session key: a KEK/VEK migration inside uploadVaultV2 swaps it to the freshly generated VEK, and the local
+   * copy must be encrypted with the same key the next reader will use.
+   */
+  const currentKey = await handleGetEncryptionKey() ?? encryptionKey;
+  const reEncrypted = await EncryptionUtility.symmetricEncrypt(updatedVaultData, currentKey);
   await storage.setItem('local:encryptedVault', reEncrypted);
   if (v2Response.status === 0) {
     await storage.setItem('local:serverRevision', v2Response.newRevisionNumber);
@@ -1244,6 +1272,58 @@ export async function handleGetServerRevision(): Promise<number> {
 }
 
 /**
+ * Adopt a vault key created by another device (KEK/VEK migration race, or another client migrating while this one
+ * holds a live session). When the server reports a vault key but this session still holds the raw password-derived
+ * key (recognizable by the missing cached wrapped VEK), fetch the vault key, unwrap the VEK with the derived key,
+ * swap the session key, and re-encrypt the locally persisted vault with the VEK. Returns false when adoption fails
+ * (VEK cannot be unwrapped with the current session key): the caller must force a re-login.
+ * @param statusResponse - the status response from the server
+ */
+async function adoptRemoteVaultKeyIfNeeded(statusResponse: StatusResponseV2): Promise<boolean> {
+  if (statusResponse.hasVaultKey !== true) {
+    return true;
+  }
+
+  const wrappedVek = await storage.getItem(WRAPPED_VEK_STORAGE_KEY) as string | null;
+  if (wrappedVek) {
+    // Already on the KEK/VEK model: the session key is the VEK.
+    return true;
+  }
+
+  const sessionKey = await handleGetEncryptionKey();
+  if (!sessionKey) {
+    // Vault is locked; the next unlock/login resolves the key through the vault key endpoint.
+    return true;
+  }
+
+  try {
+    const fetchResult = await VaultKeyService.fetchVaultKey();
+    if (!fetchResult.vaultKey) {
+      return true;
+    }
+
+    const vek = await EncryptionUtility.unwrapVaultEncryptionKey(fetchResult.vaultKey.wrappedVek, sessionKey);
+
+    // Re-encrypt the locally persisted vault with the VEK before swapping the session key.
+    const encryptedVault = await storage.getItem('local:encryptedVault') as string | null;
+    if (encryptedVault) {
+      const decrypted = await EncryptionUtility.symmetricDecrypt(encryptedVault, sessionKey);
+      await storage.setItem('local:encryptedVault', await EncryptionUtility.symmetricEncrypt(decrypted, vek));
+    }
+
+    await storage.setItem(WRAPPED_VEK_STORAGE_KEY, fetchResult.vaultKey.wrappedVek);
+    await handleStoreEncryptionKey(vek);
+    cachedSqliteClient = null;
+    cachedVaultBlob = null;
+    devLog('[VaultSync] Adopted vault key created by another client; session key swapped to the VEK.');
+    return true;
+  } catch (error) {
+    devError('[VaultSync] Failed to adopt remote vault key, forcing re-login:', error);
+    return false;
+  }
+}
+
+/**
  * Result of a sync status check (without doing actual sync).
  */
 export type SyncStatusCheckResult = {
@@ -1317,6 +1397,11 @@ export async function handleCheckSyncStatus(): Promise<SyncStatusCheckResult> {
     // Check if the SRP salt has changed (password change detection)
     const storedEncryptionParams = await handleGetEncryptionKeyDerivationParams();
     if (storedEncryptionParams && statusResponse.srpSalt && statusResponse.srpSalt !== storedEncryptionParams.salt) {
+      return { success: false, hasNewerVault: false, hasDirtyChanges: false, isOffline: false, requiresLogout: true, errorKey: 'passwordChanged' };
+    }
+
+    // Adopt a vault key created by another device before any sync work happens.
+    if (!await adoptRemoteVaultKeyIfNeeded(statusResponse)) {
       return { success: false, hasNewerVault: false, hasDirtyChanges: false, isOffline: false, requiresLogout: true, errorKey: 'passwordChanged' };
     }
 
@@ -1445,6 +1530,11 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     // Check if the SRP salt has changed (password change detection)
     const storedEncryptionParams = await handleGetEncryptionKeyDerivationParams();
     if (storedEncryptionParams && statusResponse.srpSalt && statusResponse.srpSalt !== storedEncryptionParams.salt) {
+      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, errorKey: 'passwordChanged' };
+    }
+
+    // Adopt a vault key created by another device before any sync work happens.
+    if (!await adoptRemoteVaultKeyIfNeeded(statusResponse)) {
       return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, errorKey: 'passwordChanged' };
     }
 

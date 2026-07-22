@@ -26,6 +26,7 @@ import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCode
 import { ServerUpdateRequiredError } from '@/utils/types/errors/ServerUpdateRequiredError';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
+import { VaultKeyService } from '@/utils/VaultKeyService';
 import { vaultSyncService } from '@/utils/VaultSyncService';
 
 import { vaultStateEvents } from '@/events/VaultStateEvents';
@@ -155,8 +156,14 @@ const Login: React.FC = () => {
     // Store auth info first — the vault fetch below makes an authenticated request via the stored access token.
     await app.setAuthTokens(username, token, refreshToken);
 
+    /*
+     * KEK/VEK: for migrated accounts the derived key is only the KEK; fetch the vault key and unwrap the VEK,
+     * which becomes the session encryption key. Legacy accounts keep using the derived key directly.
+     */
+    const { encryptionKey } = await VaultKeyService.resolveEncryptionKey(passwordHashBase64, webApi);
+
     // Store the encryption key and derivation params separately
-    await dbContext.storeEncryptionKey(passwordHashBase64);
+    await dbContext.storeEncryptionKey(encryptionKey);
     await dbContext.storeEncryptionKeyDerivationParams({
       salt: loginResponse.salt,
       encryptionType: loginResponse.encryptionType,
@@ -164,7 +171,7 @@ const Login: React.FC = () => {
     });
 
     // Fetch the latest vault.
-    const vaultResponseJson = await vaultSyncService.pull(passwordHashBase64);
+    const vaultResponseJson = await vaultSyncService.pull(encryptionKey);
 
     /*
      * Persist and load the vault.
@@ -174,7 +181,7 @@ const Login: React.FC = () => {
      * - If server is more advanced > uses server vault
      * - If password changed (can't decrypt) > uses server vault
      */
-    await persistAndLoadVault(vaultResponseJson, passwordHashBase64, username);
+    await persistAndLoadVault(vaultResponseJson, encryptionKey, username);
 
     // Reset prefill flag so next logout will prefill again
     usernamePrefillAttempted = false;
@@ -454,8 +461,16 @@ const Login: React.FC = () => {
       // Store auth tokens and username first — the vault fetch below uses the stored access token.
       await app.setAuthTokens(result.username, result.token, result.refreshToken);
 
+      /*
+       * The mobile device sends the vault encryption key (the VEK for migrated accounts, or the derived key when
+       * the mobile app predates the KEK/VEK model). Refresh the local wrapped-VEK cache so offline password unlock
+       * keeps working, then upgrade the received key to the VEK when it turns out to be the KEK.
+       */
+      await VaultKeyService.cacheWrappedVekFromServer(webApi);
+      const { key: mobileKey } = await VaultKeyService.upgradeStoredKeyIfNeeded(result.decryptionKey);
+
       // Store the encryption key and derivation params
-      await dbContext.storeEncryptionKey(result.decryptionKey);
+      await dbContext.storeEncryptionKey(mobileKey);
       await dbContext.storeEncryptionKeyDerivationParams({
         salt: result.salt,
         encryptionType: result.encryptionType,
@@ -463,10 +478,10 @@ const Login: React.FC = () => {
       });
 
       // Fetch the latest vault.
-      const vaultResponse = await vaultSyncService.pull(result.decryptionKey);
+      const vaultResponse = await vaultSyncService.pull(mobileKey);
 
       // Persist and load the vault
-      await persistAndLoadVault(vaultResponse, result.decryptionKey, result.username);
+      await persistAndLoadVault(vaultResponse, mobileKey, result.username);
 
       /*
        * Navigate to reinitialize page which will:

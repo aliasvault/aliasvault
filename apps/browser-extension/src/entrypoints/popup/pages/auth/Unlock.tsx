@@ -29,11 +29,13 @@ import {
   IncorrectPinError,
   InvalidPinFormatError,
   resetFailedAttempts,
+  setupPin,
   unlockWithPin
 } from '@/utils/PinUnlockService';
 import { hasErrorCode, getErrorMessage, extractErrorCode, AppErrorCode } from '@/utils/types/errors/AppErrorCodes';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
+import { VaultKeyService } from '@/utils/VaultKeyService';
 
 import { vaultStateEvents } from '@/events/VaultStateEvents';
 
@@ -275,14 +277,19 @@ const Unlock: React.FC = () => {
           loginResponse.encryptionType,
           loginResponse.encryptionSettings
         );
-        passwordHashBase64 = credentials.passwordHashBase64;
-
         // Store encryption params for future offline unlock
         await dbContext.storeEncryptionKeyDerivationParams({
           salt: loginResponse.salt,
           encryptionType: loginResponse.encryptionType,
           encryptionSettings: loginResponse.encryptionSettings,
         });
+
+        /*
+         * KEK/VEK: for migrated accounts the derived key is only the KEK; unwrap the VEK which is the actual
+         * vault encryption key. Throws a decrypt-failed (E-203) error on a wrong password. Legacy accounts keep
+         * using the derived key directly.
+         */
+        passwordHashBase64 = (await VaultKeyService.resolveEncryptionKey(credentials.passwordHashBase64, webApi)).encryptionKey;
       } else {
         // Offline mode: use stored encryption params to derive key
         const storedParams = await sendMessage('GET_ENCRYPTION_KEY_DERIVATION_PARAMS');
@@ -301,7 +308,12 @@ const Unlock: React.FC = () => {
           storedParams.encryptionType,
           storedParams.encryptionSettings
         );
-        passwordHashBase64 = credentials.passwordHashBase64;
+
+        /*
+         * KEK/VEK offline: unwrap the locally cached wrapped VEK with the derived key. Throws a decrypt-failed
+         * (E-203) error on a wrong password. Legacy accounts (no cached wrapped VEK) use the derived key directly.
+         */
+        passwordHashBase64 = await VaultKeyService.resolveEncryptionKeyOffline(credentials.passwordHashBase64);
 
         // Set offline mode
         await dbContext.setIsOffline(true);
@@ -410,7 +422,18 @@ const Unlock: React.FC = () => {
 
     try {
       // Unlock with PIN - this derives the encryption key from the PIN
-      const passwordHashBase64 = await unlockWithPin(pinToUse);
+      let passwordHashBase64 = await unlockWithPin(pinToUse);
+
+      /*
+       * KEK/VEK: when the PIN was set up before the vault key migration, the PIN-protected key is the old
+       * password-derived key (now the KEK). Upgrade to the VEK and refresh the PIN store so future PIN unlocks
+       * return the VEK directly.
+       */
+      const upgrade = await VaultKeyService.upgradeStoredKeyIfNeeded(passwordHashBase64);
+      if (upgrade.upgraded) {
+        passwordHashBase64 = upgrade.key;
+        await setupPin(pinToUse, passwordHashBase64);
+      }
 
       // Check if we're online or offline (for offline mode flag)
       const statusResult = await checkStatus();
@@ -558,8 +581,16 @@ const Unlock: React.FC = () => {
       // Set new auth tokens
       await authContext.setAuthTokens(result.username, result.token, result.refreshToken);
 
+      /*
+       * The mobile device sends the vault encryption key (the VEK for migrated accounts, or the derived key when
+       * the mobile app predates the KEK/VEK model). Refresh the local wrapped-VEK cache so offline password unlock
+       * keeps working, then upgrade the received key to the VEK when it turns out to be the KEK.
+       */
+      await VaultKeyService.cacheWrappedVekFromServer(webApi);
+      const { key: mobileKey } = await VaultKeyService.upgradeStoredKeyIfNeeded(result.decryptionKey);
+
       // Store the encryption key and derivation params
-      await dbContext.storeEncryptionKey(result.decryptionKey);
+      await dbContext.storeEncryptionKey(mobileKey);
       await dbContext.storeEncryptionKeyDerivationParams({
         salt: result.salt,
         encryptionType: result.encryptionType,
