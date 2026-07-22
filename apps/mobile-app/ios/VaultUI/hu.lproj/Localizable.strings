@@ -87,6 +87,6 @@
 /* PIN Setup */
 "pin_setup_title" = "Setup PIN";
 "pin_setup_subtitle" = "Choose a PIN to unlock your vault";
-"pin_confirm_title" = "Confirm PIN";
+"pin_confirm_title" = "PIN kód megerősítése";
 "pin_confirm_subtitle" = "Re-enter your PIN to confirm";
 "pin_mismatch" = "PINs do not match. Please try again.";
