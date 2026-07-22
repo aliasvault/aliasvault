@@ -163,4 +163,29 @@ public enum ApiErrorCode
     /// The user has no vault key so the requested operation is unavailable; use the legacy v1 flow.
     /// </summary>
     VAULT_KEY_NOT_FOUND,
+
+    /// <summary>
+    /// The referenced shared folder manifest does not exist or is not owned by the caller.
+    /// </summary>
+    SHARED_MANIFEST_NOT_FOUND,
+
+    /// <summary>
+    /// The recipient already has a share grant for this manifest.
+    /// </summary>
+    SHARE_ALREADY_EXISTS,
+
+    /// <summary>
+    /// No share grant exists for the given recipient and manifest.
+    /// </summary>
+    SHARE_NOT_FOUND,
+
+    /// <summary>
+    /// The recipient has no usable public key to wrap a shared vault key for, or the referenced key is invalid.
+    /// </summary>
+    RECIPIENT_KEY_NOT_FOUND,
+
+    /// <summary>
+    /// The supplied wrap scheme is not valid for the requested operation.
+    /// </summary>
+    INVALID_WRAP_SCHEME,
 }

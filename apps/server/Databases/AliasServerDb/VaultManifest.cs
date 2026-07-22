@@ -32,6 +32,14 @@ public class VaultManifest : VaultManifestBase
     public required bool IsRoot { get; set; }
 
     /// <summary>
+    /// Gets or sets the display name of a shared folder manifest. Null for the root manifest (the user's main vault
+    /// has no name). Set only for non-root manifests, which — by definition — are shareable folders. This is stored
+    /// in plaintext so the sharing/ACL UI can list folders and pending shares without decrypting their content.
+    /// </summary>
+    [StringLength(255)]
+    public string? Name { get; set; }
+
+    /// <summary>
     /// Gets or sets the ID of the owning user.
     /// </summary>
     [StringLength(255)]

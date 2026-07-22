@@ -39,6 +39,16 @@ public static class AuthHelper
     public static readonly string WrapSchemeAesGcmKek = "aesgcm-kek";
 
     /// <summary>
+    /// The KeyType value for a folder-access grant: a wrapped VEK held by a member of a shared (non-root) manifest.
+    /// </summary>
+    public static readonly string VaultKeyTypeShared = "shared";
+
+    /// <summary>
+    /// The asymmetric WrapScheme values used when wrapping a shared folder's VEK for a recipient's public key.
+    /// </summary>
+    public static readonly IReadOnlySet<string> AsymmetricWrapSchemes = new HashSet<string>(StringComparer.Ordinal) { "rsa-oaep", "x25519-sealedbox" };
+
+    /// <summary>
     /// Helper method that validates the SRP session based on provided SRP identity, ephemeral and proof.
     /// </summary>
     /// <param name="cache">IMemoryCache instance.</param>
