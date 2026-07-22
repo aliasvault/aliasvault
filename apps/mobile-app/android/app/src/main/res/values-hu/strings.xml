@@ -75,7 +75,7 @@
   <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
   <string name="pin_setup_title">Setup PIN</string>
   <string name="pin_setup_description">Choose a PIN to unlock your vault</string>
-  <string name="pin_confirm_title">Confirm PIN</string>
+  <string name="pin_confirm_title">PIN kód megerősítése</string>
   <string name="pin_confirm_description">Re-enter your PIN to confirm</string>
   <string name="pin_mismatch">PINs do not match. Please try again.</string>
   <string name="password_unlock_title">Széf feloldása</string>
