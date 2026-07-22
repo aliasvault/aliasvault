@@ -467,7 +467,7 @@ const Login: React.FC = () => {
        * keeps working, then upgrade the received key to the VEK when it turns out to be the KEK.
        */
       await VaultKeyService.cacheWrappedVekFromServer(webApi);
-      const { key: mobileKey } = await VaultKeyService.upgradeStoredKeyIfNeeded(result.decryptionKey);
+      const mobileKey = await VaultKeyService.resolveStoredUnlockKey(result.decryptionKey);
 
       // Store the encryption key and derivation params
       await dbContext.storeEncryptionKey(mobileKey);

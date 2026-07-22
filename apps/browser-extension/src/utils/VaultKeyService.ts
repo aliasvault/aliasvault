@@ -127,10 +127,24 @@ export class VaultKeyService {
   }
 
   /**
-   * Given a key restored from an auxiliary unlock method (PIN, mobile QR), return the key to actually use.
+   * Resolve the key to actually use for a local additional unlock method (PIN, mobile QR), upgrading a pre-migration
+   * stored key (the old KEK) to the VEK when needed.
+   * @param storedKey - the key restored from the auxiliary unlock method
+   * @param onUpgraded - optional callback invoked with the upgraded VEK when the stored key was the old KEK
+   */
+  public static async resolveStoredUnlockKey(storedKey: string, onUpgraded?: (vek: string) => Promise<void>): Promise<string> {
+    const { key, upgraded } = await VaultKeyService.upgradeStoredKeyIfNeeded(storedKey);
+    if (upgraded && onUpgraded) {
+      await onUpgraded(key);
+    }
+    return key;
+  }
+
+  /**
+   * Given a key restored from an auxiliary unlock method (PIN, mobile QR), return the key to actually use and whether it was upgraded.
    * @param storedKey - the key restored from the auxiliary unlock method
    */
-  public static async upgradeStoredKeyIfNeeded(storedKey: string): Promise<{ key: string; upgraded: boolean }> {
+  private static async upgradeStoredKeyIfNeeded(storedKey: string): Promise<{ key: string; upgraded: boolean }> {
     const wrappedVek = await storage.getItem(WRAPPED_VEK_STORAGE_KEY) as string | null;
     if (!wrappedVek) {
       return { key: storedKey, upgraded: false };

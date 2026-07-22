@@ -426,14 +426,10 @@ const Unlock: React.FC = () => {
 
       /*
        * KEK/VEK: when the PIN was set up before the vault key migration, the PIN-protected key is the old
-       * password-derived key (now the KEK). Upgrade to the VEK and refresh the PIN store so future PIN unlocks
+       * password-derived key (now the KEK). Upgrade to the VEK and re-seal the PIN store so future PIN unlocks
        * return the VEK directly.
        */
-      const upgrade = await VaultKeyService.upgradeStoredKeyIfNeeded(passwordHashBase64);
-      if (upgrade.upgraded) {
-        passwordHashBase64 = upgrade.key;
-        await setupPin(pinToUse, passwordHashBase64);
-      }
+      passwordHashBase64 = await VaultKeyService.resolveStoredUnlockKey(passwordHashBase64, key => setupPin(pinToUse, key));
 
       // Check if we're online or offline (for offline mode flag)
       const statusResult = await checkStatus();
@@ -587,7 +583,7 @@ const Unlock: React.FC = () => {
        * keeps working, then upgrade the received key to the VEK when it turns out to be the KEK.
        */
       await VaultKeyService.cacheWrappedVekFromServer(webApi);
-      const { key: mobileKey } = await VaultKeyService.upgradeStoredKeyIfNeeded(result.decryptionKey);
+      const mobileKey = await VaultKeyService.resolveStoredUnlockKey(result.decryptionKey);
 
       // Store the encryption key and derivation params
       await dbContext.storeEncryptionKey(mobileKey);

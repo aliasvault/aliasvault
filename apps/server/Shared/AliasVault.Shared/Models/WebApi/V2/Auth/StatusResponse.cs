@@ -42,7 +42,8 @@ public class StatusResponse
     public required string SrpSalt { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the user has a vault key.
+    /// Gets or sets a value indicating whether the user has a vault key (KEK/VEK model).
+    /// TODO: remove once every user has migrated to the KEK/VEK model.
     /// </summary>
     public bool HasVaultKey { get; set; }
 }

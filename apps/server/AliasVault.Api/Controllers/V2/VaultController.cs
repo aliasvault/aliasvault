@@ -86,14 +86,11 @@ public class VaultController(
             .Select(g => new BucketRevision { Category = g.Key, Revision = g.Max(b => b.RevisionNumber) })
             .ToListAsync();
 
-        var hasVaultKey = await context.VaultKeys.AnyAsync(x => x.UserId == user.Id && x.KeyType == AuthHelper.VaultKeyTypePassword);
-
         return Ok(new StatusResponse
         {
             StorageFormat = manifestRevisions.Count > 0 ? StorageFormat.Manifest : StorageFormat.SqliteBlob,
             ManifestRevisions = manifestRevisions,
             BucketRevisions = bucketRevisions,
-            HasVaultKey = hasVaultKey,
         });
     }
 
@@ -293,6 +290,13 @@ public class VaultController(
         if (model.CreateVaultKey != null && hasExistingVaultKey)
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400));
+        }
+
+        // Sanity check that the user has a vault key (when not providing vault key creation request).
+        // TODO: remove this guard once every user has migrated to the KEK/VEK model (no keyless users remain).
+        if (model.CreateVaultKey == null && !hasExistingVaultKey)
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
         }
 
         // The DbContext uses a retrying execution strategy (EnableRetryOnFailure), which forbids user-initiated

@@ -114,16 +114,10 @@ const SETTINGS_BUCKET_CATEGORY = VaultDataBucketCategory.Settings;
  * Status response from the server.
  */
 export type VaultSyncStatus = {
-  /** Whether the user has been migrated to manifest-v1 storage (false = still legacy, migrate on next save). */
-  isMigrated: boolean;
-  /** Whether the user has a vault key (KEK/VEK model). False = the next full upload must carry createVaultKey. */
-  hasVaultKey: boolean;
   /**
-   * Whether the server understands vault keys at all (the hasVaultKey field was present in its status response).
-   * A KEK/VEK migration must never be attempted against a server that would silently drop createVaultKey: the
-   * upload would be VEK-encrypted while the wrapped VEK is never stored, stranding every other device.
+   * Whether the user has been migrated to manifest-v1 storage (false = still legacy, migrate on next save).
    */
-  vaultKeySupported: boolean;
+  isMigrated: boolean;
   manifestRevision: number | null;
   settingsRevision: number | null;
 };
@@ -226,7 +220,6 @@ type StatusResponseDto = {
   storageFormat: number;
   manifestRevisions: ManifestRevisionDto[];
   bucketRevisions: BucketRevisionDto[];
-  hasVaultKey?: boolean;
 };
 
 type UploadResponseDto = {
@@ -306,8 +299,6 @@ export class VaultSyncService {
       const rootManifestRevision = revisions.find(m => m.isRoot)?.revision ?? null;
       return {
         isMigrated: dto.storageFormat === STORAGE_FORMAT_MANIFEST,
-        hasVaultKey: dto.hasVaultKey === true,
-        vaultKeySupported: dto.hasVaultKey !== undefined,
         manifestRevision: rootManifestRevision,
         settingsRevision,
       };

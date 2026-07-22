@@ -275,12 +275,11 @@ async function uploadVaultV2(sqliteClient: SqliteClient): Promise<VaultPostRespo
   const emailAddresses = await getEmailAddressesForVault(sqliteClient);
 
   /*
-   * KEK/VEK migration: when the server has no vault key yet, this push generates a VEK, re-encrypts everything
-   * with it, and creates the vault key server-side (wrapping the VEK with the current password-derived key).
-   * Guarded on vaultKeySupported: a server that predates vault keys would silently drop createVaultKey while
-   * storing the VEK-encrypted payload, which would strand every other device. Such servers get a normal push.
+   * KEK/VEK migration: a not-yet-migrated (legacy sqlite-blob) user has no vault key, so their first manifest
+   * upload generates a VEK, re-encrypts everything with it, and creates the vault key server-side (wrapping the
+   * VEK with the current password-derived key).
    */
-  const result = await vaultSyncService.push(sqliteClient, encryptionKey, username, emailAddresses, { createVaultKey: syncStatus.vaultKeySupported && !syncStatus.hasVaultKey });
+  const result = await vaultSyncService.push(sqliteClient, encryptionKey, username, emailAddresses, { createVaultKey: !syncStatus.isMigrated });
 
   if (result.status === 'ok') {
     if (result.newEncryptionKey) {
@@ -822,12 +821,12 @@ async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultM
   }
 
   /*
-   * A bucket-only push encrypts with the current session key. As long as the user has no vault key yet, the full
-   * upload path must run instead so the KEK/VEK migration re-keys the whole vault in one atomic request.
+   * A bucket-only push encrypts with the current session key. A not-yet-migrated user has no vault key yet, so the
+   * full upload path must run instead to re-key the whole vault (KEK/VEK migration) in one atomic request.
    */
   const syncStatus = await vaultSyncService.checkStatus();
-  if (syncStatus.vaultKeySupported && !syncStatus.hasVaultKey) {
-    devLog('[V2Push] User has no vault key yet, falling back to full vault upload to run the KEK/VEK migration.');
+  if (!syncStatus.isMigrated) {
+    devLog('[V2Push] User not yet migrated (no vault key), falling back to full vault upload to run the KEK/VEK migration.');
     return (await uploadNewVaultToServer(sqliteClient)).response;
   }
 
@@ -1272,14 +1271,19 @@ export async function handleGetServerRevision(): Promise<number> {
 }
 
 /**
- * Adopt a vault key created by another device (KEK/VEK migration race, or another client migrating while this one
- * holds a live session). When the server reports a vault key but this session still holds the raw password-derived
- * key (recognizable by the missing cached wrapped VEK), fetch the vault key, unwrap the VEK with the derived key,
- * swap the session key, and re-encrypt the locally persisted vault with the VEK. Returns false when adoption fails
- * (VEK cannot be unwrapped with the current session key): the caller must force a re-login.
- * @param statusResponse - the status response from the server
+ * Catch this device up when ANOTHER device performed the KEK/VEK migration.
+ *
+ * After another device migrates, the server reports hasVaultKey=true but this device may still be holding the old
+ * password-derived key (the KEK) as its session key, with no cached wrapped VEK. Rather than force a re-login, this
+ * fetches the wrapped VEK, unwraps it with the session key (= the KEK), re-encrypts the locally persisted vault
+ * under the VEK, swaps the session key to the VEK, and caches the wrapped VEK. A no-op when there is nothing to
+ * adopt (no server key, already on the VEK, or vault locked).
+ *
+ * TODO: this method can be removed once all users have migrated to the KEK/VEK model.
+ *
+ * @param statusResponse - the status response from the server (hasVaultKey signals another device migrated)
  */
-async function adoptRemoteVaultKeyIfNeeded(statusResponse: StatusResponseV2): Promise<boolean> {
+async function catchUpAfterRemoteVaultKeyMigration(statusResponse: StatusResponseV2): Promise<boolean> {
   if (statusResponse.hasVaultKey !== true) {
     return true;
   }
@@ -1400,8 +1404,8 @@ export async function handleCheckSyncStatus(): Promise<SyncStatusCheckResult> {
       return { success: false, hasNewerVault: false, hasDirtyChanges: false, isOffline: false, requiresLogout: true, errorKey: 'passwordChanged' };
     }
 
-    // Adopt a vault key created by another device before any sync work happens.
-    if (!await adoptRemoteVaultKeyIfNeeded(statusResponse)) {
+    // If another device performed the KEK/VEK migration, catch up before any sync work happens.
+    if (!await catchUpAfterRemoteVaultKeyMigration(statusResponse)) {
       return { success: false, hasNewerVault: false, hasDirtyChanges: false, isOffline: false, requiresLogout: true, errorKey: 'passwordChanged' };
     }
 
@@ -1533,8 +1537,8 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
       return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, errorKey: 'passwordChanged' };
     }
 
-    // Adopt a vault key created by another device before any sync work happens.
-    if (!await adoptRemoteVaultKeyIfNeeded(statusResponse)) {
+    // If another device performed the KEK/VEK migration, catch up before any sync work happens.
+    if (!await catchUpAfterRemoteVaultKeyMigration(statusResponse)) {
       return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, errorKey: 'passwordChanged' };
     }
 
