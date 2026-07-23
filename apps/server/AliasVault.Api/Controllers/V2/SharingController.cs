@@ -253,12 +253,18 @@ public class SharingController(
     }
 
     /// <summary>
-    /// List the shared folders the caller has been granted access to, each with the wrapped VEK the caller unwraps
-    /// with its private key.
+    /// Upload a new revision of a shared-folder manifest. Allowed for the owner and for every user holding a
+    /// <c>shared</c> grant on it — all members write the same manifest, guarded by the optimistic revision check
+    /// (a stale writer gets <see cref="VaultStatus.Outdated"/> and must re-pull + merge, like the root manifest).
+    /// Blob bytes are uploaded beforehand via <c>POST /v2/Vault/blobs</c> into the pusher's own store; the manifest
+    /// snapshot endpoints resolve referenced blobs across member stores.
     /// </summary>
-    /// <returns>The shared folders available to the caller.</returns>
-    [HttpGet("shared-with-me")]
-    public async Task<IActionResult> SharedWithMe()
+    /// <param name="manifestId">The shared folder manifest id.</param>
+    /// <param name="model">The update request.</param>
+    /// <param name="clientHeader">The client identifier header.</param>
+    /// <returns>The update response.</returns>
+    [HttpPost("folders/{manifestId:guid}")]
+    public async Task<IActionResult> UpdateFolder(Guid manifestId, [FromBody] UpdateSharedFolderRequest model, [FromHeader(Name = "X-AliasVault-Client")] string? clientHeader)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
         var me = await GetCurrentUserAsync();
@@ -267,44 +273,57 @@ public class SharingController(
             return Unauthorized();
         }
 
-        var grants = await context.VaultKeys
-            .Where(x => x.UserId == me.Id && x.KeyType == AuthHelper.VaultKeyTypeShared)
-            .ToListAsync();
-
-        var response = new SharedWithMeResponse();
-        if (grants.Count == 0)
+        var manifest = await context.VaultManifests.FirstOrDefaultAsync(x => x.ManifestId == manifestId && !x.IsRoot);
+        var canWrite = manifest != null && (manifest.OwnerUserId == me.Id || await context.VaultKeys.AnyAsync(k => k.UserId == me.Id && k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId == manifestId));
+        if (manifest == null || !canWrite)
         {
-            return Ok(response);
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
         }
 
-        var manifestIds = grants.Where(g => g.VaultManifestId != null).Select(g => g.VaultManifestId!.Value).ToList();
-        var manifestsById = await context.VaultManifests
-            .Where(m => manifestIds.Contains(m.ManifestId))
-            .ToDictionaryAsync(m => m.ManifestId);
-
-        var ownerIds = manifestsById.Values.Select(m => m.OwnerUserId).Distinct().ToList();
-        var ownerUsernamesById = await context.AliasVaultUsers
-            .Where(u => ownerIds.Contains(u.Id))
-            .ToDictionaryAsync(u => u.Id, u => u.UserName);
-
-        foreach (var g in grants)
+        var newRevision = model.CurrentRevision + 1;
+        if (manifest.RevisionNumber >= newRevision)
         {
-            if (g.VaultManifestId is null || !manifestsById.TryGetValue(g.VaultManifestId.Value, out var manifest))
+            return Ok(new UpdateSharedFolderResponse { Status = VaultStatus.Outdated, NewRevisionNumber = manifest.RevisionNumber });
+        }
+
+        var strategy = context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync<IActionResult>(async () =>
+        {
+            await using var tx = await context.Database.BeginTransactionAsync();
+
+            // Referenced blob bytes must already exist in some member's store (uploaded via POST /v2/Vault/blobs).
+            if (model.BlobReferences.Count > 0)
             {
-                continue;
+                var refHashes = model.BlobReferences.Select(r => r.Hash).Distinct().ToList();
+                var presentHashes = await context.VaultBlobObjects.Where(b => refHashes.Contains(b.Hash)).Select(b => b.Hash).Distinct().ToListAsync();
+                if (refHashes.Except(presentHashes).Any())
+                {
+                    await tx.RollbackAsync();
+                    return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
+                }
             }
 
-            response.Folders.Add(new SharedWithMeItem
-            {
-                ManifestId = manifest.ManifestId,
-                Name = manifest.Name,
-                OwnerUserId = manifest.OwnerUserId,
-                OwnerUsername = ownerUsernamesById.GetValueOrDefault(manifest.OwnerUserId),
-                WrappedVek = g.WrappedVek,
-                WrapScheme = g.WrapScheme,
-            });
-        }
+            // Archive the current revision, then update the row in place. TODO: apply a retention policy to
+            // shared-manifest history (currently only the root manifest history is pruned).
+            context.VaultManifestsHistory.Add(VaultManifestsHistory.CreateFrom(manifest));
 
-        return Ok(response);
+            manifest.ManifestBlob = model.ManifestBlob;
+            manifest.ManifestCiphertextHash = model.ManifestCiphertextHash;
+            manifest.Version = model.Version;
+            manifest.RevisionNumber = newRevision;
+            manifest.FileSize = FileHelper.Base64StringToKilobytes(model.ManifestBlob);
+            manifest.Client = clientHeader;
+            manifest.UpdatedAt = timeProvider.UtcNow;
+
+            foreach (var dto in model.BlobReferences)
+            {
+                context.VaultBlobReferences.Add(new VaultBlobReference { ManifestId = manifest.ManifestId, RevisionNumber = newRevision, BlobHash = dto.Hash });
+            }
+
+            await context.SaveChangesAsync();
+            await tx.CommitAsync();
+
+            return Ok(new UpdateSharedFolderResponse { Status = VaultStatus.Ok, NewRevisionNumber = newRevision });
+        });
     }
 }

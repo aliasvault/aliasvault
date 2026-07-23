@@ -73,8 +73,9 @@ public class VaultController(
             return Unauthorized();
         }
 
-        // Current revision per logical manifest.
-        var manifestRevisions = await context.VaultManifests
+        // Current revision per logical manifest: everything the user owns plus manifests shared with them,
+        // so revision-based pull detection covers shared folders too.
+        var ownedManifestRevisions = await context.VaultManifests
             .Where(x => x.OwnerUserId == user.Id && x.StorageFormat == ManifestFormat)
             .Select(x => new ManifestRevision { ManifestId = x.ManifestId, IsRoot = x.IsRoot, Revision = x.RevisionNumber })
             .ToListAsync();
@@ -83,6 +84,14 @@ public class VaultController(
         // IsRoot=false, owned by another user) must never make a not-yet-migrated user look migrated, or the client
         // would push without CreateVaultKey and the upload would fail with VAULT_KEY_NOT_FOUND.
         var isMigrated = ownedManifestRevisions.Any(x => x.IsRoot);
+
+        var manifestRevisions = ownedManifestRevisions;
+        var grantedManifestIds = await GetGrantedManifestIdsAsync(context, user.Id);
+        manifestRevisions.AddRange(await context.VaultManifests
+            .Where(x => grantedManifestIds.Contains(x.ManifestId) && x.StorageFormat == ManifestFormat)
+            .Select(x => new ManifestRevision { ManifestId = x.ManifestId, IsRoot = false, Revision = x.RevisionNumber })
+            .ToListAsync());
+
         // Latest revision per bucket kind.
         var bucketRevisions = await context.VaultDataBuckets
             .Where(x => x.OwnerUserId == user.Id)
@@ -118,7 +127,7 @@ public class VaultController(
         // Current revision per logical manifest (one row per manifest in the VaultManifests table).
         var latestManifests = await context.VaultManifests
             .Where(x => x.OwnerUserId == user.Id && x.StorageFormat == ManifestFormat)
-            .Select(x => new { x.ManifestId, x.IsRoot, x.ManifestBlob, x.ManifestCiphertextHash, x.RevisionNumber })
+            .Select(x => new { x.ManifestId, x.IsRoot, x.Name, x.ManifestBlob, x.ManifestCiphertextHash, x.RevisionNumber })
             .ToListAsync();
 
         if (latestManifests.Count == 0)
@@ -178,11 +187,16 @@ public class VaultController(
         {
             ManifestId = m.ManifestId,
             IsRoot = m.IsRoot,
+            Name = m.Name,
             Blob = m.ManifestBlob,
             CiphertextHash = m.ManifestCiphertextHash,
             Revision = m.RevisionNumber,
             BlobReferences = refsByManifest.TryGetValue(m.ManifestId, out var refs) ? refs : [],
         }).ToList();
+
+        // Append manifests shared with this user by other owners, each carrying the wrapped VEK the caller
+        // unwraps with its private key.
+        manifests.AddRange(await BuildSharedWithMeManifestsAsync(context, user.Id));
 
         return Ok(new GetResponse
         {
@@ -212,8 +226,9 @@ public class VaultController(
             return Unauthorized();
         }
 
+        // The caller can fetch a manifest it owns, or one another user granted to it (a shared folder).
         var latest = await context.VaultManifests
-            .Where(x => x.OwnerUserId == user.Id && x.StorageFormat == ManifestFormat && x.ManifestId == manifestId)
+            .Where(x => x.StorageFormat == ManifestFormat && x.ManifestId == manifestId && (x.OwnerUserId == user.Id || context.VaultKeys.Any(k => k.UserId == user.Id && k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId == x.ManifestId)))
             .FirstOrDefaultAsync();
 
         if (latest == null)
@@ -221,24 +236,36 @@ public class VaultController(
             return NotFound();
         }
 
-        var blobRefs = await context.VaultBlobReferences
-            .Where(r => r.ManifestId == latest.ManifestId && r.RevisionNumber == latest.RevisionNumber)
-            .Join(
-                context.VaultBlobObjects.Where(b => b.OwnerUserId == user.Id),
-                r => r.BlobHash,
-                b => b.Hash,
-                (r, b) => new BlobReference { Hash = b.Hash, Category = b.Category })
-            .ToListAsync();
+        var blobRefs = (await context.VaultBlobReferences
+                .Where(r => r.ManifestId == latest.ManifestId && r.RevisionNumber == latest.RevisionNumber)
+                .Join(context.VaultBlobObjects, r => r.BlobHash, b => b.Hash, (r, b) => new { b.Hash, b.Category })
+                .Distinct()
+                .ToListAsync())
+            .Select(x => new BlobReference { Hash = x.Hash, Category = x.Category })
+            .ToList();
 
-        return Ok(new Manifest
+        var manifest = new Manifest
         {
             ManifestId = latest.ManifestId,
             IsRoot = latest.IsRoot,
+            Name = latest.Name,
             Blob = latest.ManifestBlob,
             CiphertextHash = latest.ManifestCiphertextHash,
             Revision = latest.RevisionNumber,
             BlobReferences = blobRefs,
-        });
+        };
+
+        // Not the owner: enrich with the caller's grant (wrapped VEK + owner identity), same shape as the snapshot.
+        if (latest.OwnerUserId != user.Id)
+        {
+            var grant = await context.VaultKeys.FirstOrDefaultAsync(k => k.UserId == user.Id && k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId == latest.ManifestId);
+            var ownerUsername = await context.AliasVaultUsers.Where(u => u.Id == latest.OwnerUserId).Select(u => u.UserName).FirstOrDefaultAsync();
+            manifest.WrappedVek = grant?.WrappedVek;
+            manifest.WrapScheme = grant?.WrapScheme;
+            manifest.OwnerUsername = ownerUsername;
+        }
+
+        return Ok(manifest);
     }
 
     /// <summary>
@@ -565,6 +592,46 @@ public class VaultController(
             })
             .ToListAsync();
 
+        // Hashes not in the caller's own store may belong to a shared folder: any blob referenced by the current
+        // revision of a manifest the caller can access (granted to them, or a manifest they own that another member
+        // pushed blobs for) is downloadable regardless of which member's store holds the ciphertext.
+        var missing = wanted.Except(rows.Select(r => r.Hash), StringComparer.Ordinal).ToList();
+        if (missing.Count > 0)
+        {
+            var accessibleManifests = await context.VaultManifests
+                .Where(m => m.StorageFormat == ManifestFormat && !m.IsRoot && (m.OwnerUserId == user.Id || context.VaultKeys.Any(k => k.UserId == user.Id && k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId == m.ManifestId)))
+                .Select(m => new { m.ManifestId, m.RevisionNumber })
+                .ToListAsync();
+            var accessibleIds = accessibleManifests.Select(m => m.ManifestId).ToList();
+            var currentRevisionById = accessibleManifests.ToDictionary(m => m.ManifestId, m => m.RevisionNumber);
+
+            if (accessibleIds.Count > 0)
+            {
+                var referencedHashes = (await context.VaultBlobReferences
+                        .Where(r => accessibleIds.Contains(r.ManifestId) && missing.Contains(r.BlobHash))
+                        .Select(r => new { r.ManifestId, r.RevisionNumber, r.BlobHash })
+                        .ToListAsync())
+                    .Where(r => currentRevisionById.TryGetValue(r.ManifestId, out var rev) && rev == r.RevisionNumber)
+                    .Select(r => r.BlobHash)
+                    .Distinct()
+                    .ToList();
+
+                if (referencedHashes.Count > 0)
+                {
+                    var sharedRows = await context.VaultBlobObjects
+                        .Where(b => referencedHashes.Contains(b.Hash))
+                        .Select(b => new Blob
+                        {
+                            Hash = b.Hash,
+                            Category = b.Category,
+                            EncryptedDataBase64 = Convert.ToBase64String(b.EncryptedData),
+                        })
+                        .ToListAsync();
+                    rows.AddRange(sharedRows.GroupBy(b => b.Hash, StringComparer.Ordinal).Select(g => g.First()));
+                }
+            }
+        }
+
         return Ok(rows);
     }
 
@@ -599,6 +666,79 @@ public class VaultController(
             UpdatedAt = now,
         });
         return newRev;
+    }
+
+    /// <summary>
+    /// The ids of manifests other users have granted to <paramref name="userId"/> via a <c>shared</c> VaultKey row.
+    /// </summary>
+    private static async Task<List<Guid>> GetGrantedManifestIdsAsync(AliasServerDbContext context, string userId)
+    {
+        return await context.VaultKeys
+            .Where(k => k.UserId == userId && k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId != null)
+            .Select(k => k.VaultManifestId!.Value)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// Builds the manifest DTOs for every shared folder granted to <paramref name="userId"/> by other users: the
+    /// encrypted manifest blob plus the grant's wrapped VEK, wrap scheme, and owner identity. Blob references are
+    /// taken straight from the manifest's current revision, unscoped by store owner (see DownloadBlobs).
+    /// </summary>
+    private static async Task<List<Manifest>> BuildSharedWithMeManifestsAsync(AliasServerDbContext context, string userId)
+    {
+        var grants = await context.VaultKeys
+            .Where(k => k.UserId == userId && k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId != null)
+            .ToListAsync();
+        if (grants.Count == 0)
+        {
+            return [];
+        }
+
+        var manifestIds = grants.Select(g => g.VaultManifestId!.Value).ToList();
+        var manifestsById = await context.VaultManifests
+            .Where(m => manifestIds.Contains(m.ManifestId) && m.StorageFormat == ManifestFormat)
+            .ToDictionaryAsync(m => m.ManifestId);
+
+        var ownerIds = manifestsById.Values.Select(m => m.OwnerUserId).Distinct().ToList();
+        var ownerUsernamesById = await context.AliasVaultUsers
+            .Where(u => ownerIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => u.UserName);
+
+        var refRows = await context.VaultBlobReferences
+            .Where(r => manifestIds.Contains(r.ManifestId))
+            .Join(context.VaultBlobObjects, r => r.BlobHash, b => b.Hash, (r, b) => new { r.ManifestId, r.RevisionNumber, b.Hash, b.Category })
+            .ToListAsync();
+
+        var result = new List<Manifest>();
+        foreach (var grant in grants)
+        {
+            if (!manifestsById.TryGetValue(grant.VaultManifestId!.Value, out var manifestRow))
+            {
+                continue;
+            }
+
+            var blobRefs = refRows
+                .Where(r => r.ManifestId == manifestRow.ManifestId && r.RevisionNumber == manifestRow.RevisionNumber)
+                .GroupBy(r => r.Hash, StringComparer.Ordinal)
+                .Select(g => new BlobReference { Hash = g.Key, Category = g.First().Category })
+                .ToList();
+
+            result.Add(new Manifest
+            {
+                ManifestId = manifestRow.ManifestId,
+                IsRoot = false,
+                Name = manifestRow.Name,
+                Blob = manifestRow.ManifestBlob,
+                CiphertextHash = manifestRow.ManifestCiphertextHash,
+                Revision = manifestRow.RevisionNumber,
+                BlobReferences = blobRefs,
+                OwnerUsername = ownerUsernamesById.GetValueOrDefault(manifestRow.OwnerUserId),
+                WrappedVek = grant.WrappedVek,
+                WrapScheme = grant.WrapScheme,
+            });
+        }
+
+        return result;
     }
 
     /// <summary>

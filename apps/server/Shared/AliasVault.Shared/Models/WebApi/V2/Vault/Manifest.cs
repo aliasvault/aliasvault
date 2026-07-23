@@ -35,4 +35,20 @@ public class Manifest
 
     /// <summary>Gets or sets the blob references this manifest revision needs (so the client can detect cache misses).</summary>
     public List<BlobReference> BlobReferences { get; set; } = [];
+
+    /// <summary>Gets or sets the plaintext display name of a shared-folder manifest. Null for the root manifest.</summary>
+    public string? Name { get; set; }
+
+    /// <summary>Gets or sets the username of the manifest owner. Set only on manifests granted to the caller by another user.</summary>
+    public string? OwnerUsername { get; set; }
+
+    /// <summary>
+    /// Gets or sets the manifest VEK wrapped with the caller's public key. Set only on manifests granted to the
+    /// caller by another user; the caller unwraps it with their private key. Null on manifests the caller owns
+    /// (the owner keeps their own copy of the folder VEK inside their root vault).
+    /// </summary>
+    public string? WrappedVek { get; set; }
+
+    /// <summary>Gets or sets the wrap scheme of <see cref="WrappedVek"/> (e.g. "rsa-oaep"). Null when <see cref="WrappedVek"/> is null.</summary>
+    public string? WrapScheme { get; set; }
 }
