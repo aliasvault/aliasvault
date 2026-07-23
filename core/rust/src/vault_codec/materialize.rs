@@ -8,11 +8,11 @@
 //! to the caller and let the caller handle the actual SQLite database creation and data insertion.
 //!
 //! Forward compatibility: when the caller supplies its local schema (`schema_columns`), anything a
-//! newer writer put in the manifest that this schema cannot hold — whole unknown tables or unknown
-//! columns on known tables — is split into [`CodecOverflow`] instead of being emitted (which would
+//! newer writer put in the manifest that this schema cannot hold (whole unknown tables or unknown
+//! columns on known tables is split into [`CodecOverflow`] instead of being emitted (which would
 //! crash the platform insert). The overflow is emitted as a regular table row (`OVERFLOW_TABLE`),
 //! so it lives inside the vault DB itself and `canonicalize_from_sqlite` re-merges it from the
-//! ordinary table read — this client's next push never drops the data, and no platform has to wire
+//! ordinary table read, this client's next push never drops the data, and no platform has to wire
 //! (or remember) a separate persistence channel.
 
 use std::collections::{HashMap, HashSet};
@@ -21,14 +21,22 @@ use super::manifest::{CodecOverflow, CodecRecord, CodecTableData, MaterializeInp
 use super::types::{is_skip_table, primary_key_for, OVERFLOW_TABLE};
 use crate::error::VaultResult;
 
-/// Materialize the manifest + its data buckets into the table set the platform inserts.
+/// Materialize the manifest + its data buckets into the table set the platform inserts. Shared-folder
+/// manifests (if any) are combined into the root's table set first, root-wins primary-key dedup,
+/// personal-table stripping, dangling-parent repair, and cross-manifest logo dedup.
 pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<MaterializedTables> {
-    let MaterializeInput { manifest, data_buckets, schema_columns } = input;
+    let MaterializeInput { manifest, data_buckets, schema_columns, shared_manifests } = input;
+
+    let combined = if shared_manifests.is_empty() {
+        manifest.tables
+    } else {
+        super::sharing::combine_manifest_tables(manifest.tables, shared_manifests)
+    };
 
     let mut overflow = CodecOverflow::default();
-    let mut tables: Vec<CodecTableData> = Vec::with_capacity(manifest.tables.len() + data_buckets.len());
+    let mut tables: Vec<CodecTableData> = Vec::with_capacity(combined.len() + data_buckets.len());
 
-    for (name, records) in manifest.tables {
+    for (name, records) in combined {
         // OVERFLOW_TABLE is local-only bookkeeping: it must never occur in a manifest, and passing
         // one through would collide with the row this function emits below.
         if is_skip_table(&name) || name == OVERFLOW_TABLE {

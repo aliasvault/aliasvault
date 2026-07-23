@@ -18,10 +18,16 @@ pub struct Manifest {
     pub migration_id: String,
     /// Human-readable data-model version label (e.g. "2.0.0").
     pub version: String,
-    /// Per-user salt for blob hashing (hex).
+    /// Per-manifest salt for blob hashing (hex). For a shared-folder manifest this salt is shared by
+    /// every participant (it lives inside the encrypted manifest itself) so all of them compute the
+    /// same content-addressed blob hashes.
     pub user_salt: String,
     /// Timestamp when this canonical snapshot was produced (ISO-8601).
     pub canonicalized_at: String,
+    /// Set on a shared-folder manifest: the `Folders.Id` of the folder this manifest carries. `None`
+    /// for a root (personal) manifest.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub shared_folder_id: Option<String>,
     /// Tables mapped to arrays of row objects. Blob columns replaced with `{ "__blobRef", "__blobKind" }`.
     pub tables: HashMap<String, Vec<CodecRecord>>,
     /// Forward-compat: unknown top-level keys preserved on round-trip.
@@ -71,8 +77,29 @@ pub struct BlobEntry {
     pub bytes_base64: String,
 }
 
-/// Result of canonicalizing a vault: the manifest, its data buckets (one per category, e.g. Settings),
-/// and the content-addressed blob map.
+/// Identifies one shared folder for the canonicalize split: the folder whose subtree is written into
+/// its own manifest, and the per-manifest salt used for that manifest's blob hashing (the salt is
+/// shared by every participant of the folder and travels inside the encrypted shared manifest).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SharedFolderSpec {
+    pub folder_id: String,
+    pub user_salt: String,
+}
+
+/// One shared-folder manifest produced by the canonicalize split: the folder it represents, the
+/// manifest carrying its subtree, and the blob map hashed with that manifest's own salt.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SharedVault {
+    pub folder_id: String,
+    pub manifest: Manifest,
+    /// hash > blob plaintext (base64), hashed with this manifest's salt.
+    pub blobs: HashMap<String, BlobEntry>,
+}
+
+/// Result of canonicalizing a vault: the root manifest, its data buckets (one per category, e.g.
+/// Settings), the root content-addressed blob map, and one [`SharedVault`] per requested shared folder.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CanonicalizedVault {
@@ -80,6 +107,9 @@ pub struct CanonicalizedVault {
     pub data_buckets: Vec<DataBucket>,
     /// hash > blob plaintext (base64).
     pub blobs: HashMap<String, BlobEntry>,
+    /// One entry per [`CanonicalizeInput::shared_folders`] spec, in spec order.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub shared_vaults: Vec<SharedVault>,
 }
 
 /// A single table's rows for reassembly.
@@ -124,7 +154,7 @@ impl CodecOverflow {
         vec![row]
     }
 
-    /// Parse an `OVERFLOW_TABLE` row set read back from the vault DB. Tolerant: no rows, a missing
+    /// Parse an `OVERFLOW_TABLE` row set read back from the vault DB. Tolerant to: no rows, a missing
     /// `Data` column, or unparseable JSON all yield an empty overflow (better to push what we have
     /// than refuse to push at all).
     pub fn from_table_records(records: &[CodecRecord]) -> Self {
@@ -139,7 +169,7 @@ impl CodecOverflow {
 
 /// Materialized tables the platform inserts into a fresh schema DB. Blob columns carry
 /// `{ "__blobRef": hash }`; inline byte columns carry `{ "__b64": ... }`. Any overflow (see
-/// [`CodecOverflow`]) is already included in `tables` as the `OVERFLOW_TABLE` row — the platform
+/// [`CodecOverflow`]) is already included in `tables` as the `OVERFLOW_TABLE` row, the platform
 /// inserts it like any other table and needs no separate persistence. The `overflow` field is a
 /// diagnostics copy of the same data (for logging), not something the platform must store.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -155,15 +185,17 @@ pub struct MaterializedTables {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CanonicalizeInput {
-    /// All local vault tables (a plain `SELECT *` read). When the read includes the
-    /// [`OVERFLOW_TABLE`](super::types::OVERFLOW_TABLE) row written by the last materialize, its
-    /// overflow (a newer writer's tables/columns this schema can't hold) is re-merged automatically.
+    /// All local vault tables (a plain `SELECT *` read from the vault DB). When the read includes the
+    /// [`OVERFLOW_TABLE`](super::types::OVERFLOW_TABLE) row written by the last materialize, its overflow 
+    /// (a newer writer's tables/columns this schema can't hold) is re-merged automatically.
     pub tables: Vec<CodecTableData>,
     pub user_salt: String,
     pub migration_id: String,
     #[serde(default = "default_version")]
     pub version: String,
     pub canonicalized_at: String,
+    #[serde(default)]
+    pub shared_folders: Vec<SharedFolderSpec>,
 }
 
 fn default_version() -> String {
@@ -177,6 +209,8 @@ pub struct MaterializeInput {
     pub manifest: Manifest,
     #[serde(default)]
     pub data_buckets: Vec<DataBucket>,
+    #[serde(default)]
+    pub shared_manifests: Vec<Manifest>,
     /// The caller's local SQLite schema: table > column names. When present, rows are filtered down
     /// to what the schema can hold and the remainder lands in [`MaterializedTables::overflow`];
     /// when absent, rows pass through verbatim (legacy behavior — unknown columns crash the insert).

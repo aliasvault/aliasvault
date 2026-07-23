@@ -13,6 +13,7 @@ mod hash;
 mod logos;
 mod manifest;
 mod materialize;
+mod sharing;
 mod types;
 mod validate;
 
@@ -25,11 +26,12 @@ use crate::error::{VaultError, VaultResult};
 pub use hash::{canonical_json, content_hash};
 pub use manifest::{
     BlobEntry, BucketLayoutEntry, CanonicalizeInput, CanonicalizedVault, CodecOverflow, DataBucket,
-    Manifest, MaterializeInput, MaterializedTables, CodecRecord, CodecTableData,
+    Manifest, MaterializeInput, MaterializedTables, CodecRecord, CodecTableData, SharedFolderSpec, SharedVault,
 };
+pub use sharing::extract_primary_encryption_key_from_bucket;
 pub use types::{
-    bucket_categories, bucket_category_for, tables_for_category, BLOB_COLUMNS, BUCKET_TABLES,
-    OVERFLOW_ROW_ID, OVERFLOW_TABLE, SCHEMA_VERSION, SKIP_TABLES,
+    bucket_categories, bucket_category_for, is_personal_table, tables_for_category, BLOB_COLUMNS, BUCKET_TABLES,
+    OVERFLOW_ROW_ID, OVERFLOW_TABLE, PERSONAL_TABLES, SCHEMA_VERSION, SKIP_TABLES,
 };
 pub use validate::ValidationResult;
 
@@ -200,3 +202,6 @@ pub fn validate_data_bucket_json(data_bucket_json: &str) -> VaultResult<String> 
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod sharing_tests;

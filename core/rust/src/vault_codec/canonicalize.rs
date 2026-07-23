@@ -18,8 +18,9 @@ use serde_json::json;
 
 use super::hash::salted_blob_hash;
 use super::logos::dedupe_logos_by_source;
-use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedVault, CodecOverflow, DataBucket, Manifest, CodecRecord};
+use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedVault, CodecOverflow, DataBucket, Manifest, CodecRecord, SharedVault};
 use super::materialize::row_key;
+use super::sharing::partition_for_sharing;
 use super::types::{blob_spec_for, bucket_categories, bucket_category_for, is_skip_table, primary_key_for, OVERFLOW_TABLE, SCHEMA_VERSION};
 use crate::error::VaultResult;
 
@@ -56,6 +57,9 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
     // the manifest we write is free of any UNIQUE(Source) collision that would break materialize.
     dedupe_logos_by_source(&mut all_tables);
 
+    // Split each shared folder's subtree into its own partition; `all_tables` keeps the root's rows.
+    let shared_partitions = partition_for_sharing(&mut all_tables, &input.shared_folders)?;
+
     let mut blobs: HashMap<String, BlobEntry> = HashMap::new();
     let mut manifest_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
 
@@ -77,15 +81,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         }
 
         // Manifest table: extract any blob column into the content-addressed map.
-        let blob_spec = blob_spec_for(&name);
-        let mut out_rows: Vec<CodecRecord> = Vec::with_capacity(records.len());
-        for mut row in records {
-            if let Some((_, blob_col, kind)) = blob_spec {
-                let extracted = extract_blob_cell(row.get(*blob_col), &input.user_salt, kind, &mut blobs);
-                row.insert((*blob_col).to_string(), extracted);
-            }
-            out_rows.push(row);
-        }
+        let out_rows = extract_table_blobs(&name, records, &input.user_salt, &mut blobs);
         manifest_tables.insert(name, out_rows);
     }
 
@@ -101,12 +97,41 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         }
     }
 
+    // Each shared partition becomes its own manifest, its blobs hashed with its own per-manifest salt.
+    let mut shared_vaults: Vec<SharedVault> = Vec::with_capacity(shared_partitions.len());
+    for partition in shared_partitions {
+        let mut shared_blobs: HashMap<String, BlobEntry> = HashMap::new();
+        let shared_tables: HashMap<String, Vec<CodecRecord>> = partition
+            .tables
+            .into_iter()
+            .map(|(name, records)| {
+                let out_rows = extract_table_blobs(&name, records, &partition.user_salt, &mut shared_blobs);
+                (name, out_rows)
+            })
+            .collect();
+        shared_vaults.push(SharedVault {
+            folder_id: partition.folder_id.clone(),
+            manifest: Manifest {
+                schema_version: SCHEMA_VERSION,
+                migration_id: input.migration_id.clone(),
+                version: input.version.clone(),
+                user_salt: partition.user_salt,
+                canonicalized_at: input.canonicalized_at.clone(),
+                shared_folder_id: Some(partition.folder_id),
+                tables: shared_tables,
+                extra: HashMap::new(),
+            },
+            blobs: shared_blobs,
+        });
+    }
+
     let manifest = Manifest {
         schema_version: SCHEMA_VERSION,
         migration_id: input.migration_id,
         version: input.version,
         user_salt: input.user_salt,
         canonicalized_at: input.canonicalized_at,
+        shared_folder_id: None,
         tables: manifest_tables,
         extra: HashMap::new(),
     };
@@ -122,7 +147,22 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         manifest,
         data_buckets,
         blobs,
+        shared_vaults,
     })
+}
+
+/// Extract `table`'s blob column (if it owns one) into `blobs`, returning the rewritten rows.
+fn extract_table_blobs(table: &str, records: Vec<CodecRecord>, user_salt: &str, blobs: &mut HashMap<String, BlobEntry>) -> Vec<CodecRecord> {
+    let blob_spec = blob_spec_for(table);
+    let mut out_rows: Vec<CodecRecord> = Vec::with_capacity(records.len());
+    for mut row in records {
+        if let Some((_, blob_col, kind)) = blob_spec {
+            let extracted = extract_blob_cell(row.get(*blob_col), user_salt, kind, blobs);
+            row.insert((*blob_col).to_string(), extracted);
+        }
+        out_rows.push(row);
+    }
+    out_rows
 }
 
 /// Extract a blob column cell: if it holds non-empty `{ "__b64" }` bytes, hash + register them and
