@@ -107,7 +107,9 @@ public class SharingController(
             StorageFormat = ManifestFormat,
             ManifestBlob = model.ManifestBlob,
             ManifestCiphertextHash = model.ManifestCiphertextHash,
-            Version = model.Version,
+
+            // Deprecated column: manifest-v1 revisions no longer carry a data-model version (see VaultManifestBase.Version).
+            Version = string.Empty,
             RevisionNumber = 1,
             Salt = string.Empty,
             Verifier = string.Empty,

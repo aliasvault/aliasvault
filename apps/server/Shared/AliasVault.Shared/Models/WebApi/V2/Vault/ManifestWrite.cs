@@ -24,9 +24,6 @@ public class ManifestWrite
     /// <summary>Gets or sets the SHA-256 (hex) of the manifest ciphertext.</summary>
     public required string ManifestCiphertextHash { get; set; }
 
-    /// <summary>Gets or sets the data-model version string (e.g. "2.0.0").</summary>
-    public required string Version { get; set; }
-
     /// <summary>Gets or sets the revision the client last synced for this manifest; the new revision must be exactly one above it.</summary>
     public required long CurrentRevision { get; set; }
 

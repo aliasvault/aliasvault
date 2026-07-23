@@ -413,7 +413,9 @@ public class VaultController(
                 row.StorageFormat = ManifestFormat;
                 row.ManifestBlob = mw.ManifestBlob;
                 row.ManifestCiphertextHash = mw.ManifestCiphertextHash;
-                row.Version = mw.Version;
+
+                // Deprecated column: manifest-v1 revisions no longer carry a data-model version (see VaultManifestBase.Version).
+                row.Version = string.Empty;
                 row.RevisionNumber = mw.CurrentRevision + 1;
                 row.FileSize = FileHelper.Base64StringToKilobytes(mw.ManifestBlob);
                 row.CredentialsCount = mw.CredentialsCount;

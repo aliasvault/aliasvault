@@ -23,9 +23,6 @@ public class CreateSharedFolderRequest
     /// <summary>Gets or sets the SHA-256 (hex) of the manifest ciphertext, for storage-layer integrity verification.</summary>
     public string? ManifestCiphertextHash { get; set; }
 
-    /// <summary>Gets or sets the vault data model version string.</summary>
-    public required string Version { get; set; }
-
     /// <summary>Gets or sets the folder VEK wrapped with the caller's own public key (base64), decryptable only by the caller.</summary>
     public required string SelfWrappedVek { get; set; }
 

@@ -38,7 +38,10 @@ public abstract class VaultManifestBase
     public string? ManifestCiphertextHash { get; set; }
 
     /// <summary>
-    /// Gets or sets the vault data model version.
+    /// Gets or sets the vault data model version. Only the legacy sqlite-blob format populates this; manifest-v1
+    /// revisions leave it empty as the version is carried inside the manifest naming scheme instead. Kept so
+    /// not-yet-migrated users' manifests retain their historic value. TODO: remove this column once the legacy
+    /// model is fully deprecated.
     /// </summary>
     [StringLength(255)]
     public required string Version { get; set; }
