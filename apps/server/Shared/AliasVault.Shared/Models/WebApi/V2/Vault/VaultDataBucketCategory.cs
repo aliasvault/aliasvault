@@ -18,4 +18,7 @@ public enum VaultDataBucketCategory
 {
     /// <summary>User client settings (sort order, autofill prefs, identity defaults, etc.).</summary>
     Settings = 0,
+
+    /// <summary>The user's asymmetric keypairs, which are used for both email decryption and to unwrap shared-folder VEKs.</summary>
+    EncryptionKeys = 1,
 }

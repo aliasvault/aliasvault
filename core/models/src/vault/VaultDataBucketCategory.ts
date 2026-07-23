@@ -15,6 +15,11 @@ export const VaultDataBucketCategory = {
    * User client settings (sort order, autofill prefs, identity defaults, etc.).
    */
   Settings: 'Settings',
+
+  /**
+   * The user's asymmetric keypairs, which are used for both email decryption and to unwrap shared-folder VEKs.
+   */
+  EncryptionKeys: 'EncryptionKeys',
 } as const;
 
 /**

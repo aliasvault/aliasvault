@@ -290,6 +290,10 @@ declare const VaultDataBucketCategory: {
      * User client settings (sort order, autofill prefs, identity defaults, etc.).
      */
     readonly Settings: "Settings";
+    /**
+     * The user's asymmetric keypairs, which are used for both email decryption and to unwrap shared-folder VEKs.
+     */
+    readonly EncryptionKeys: "EncryptionKeys";
 };
 /**
  * Type representing all valid vault data bucket category values.

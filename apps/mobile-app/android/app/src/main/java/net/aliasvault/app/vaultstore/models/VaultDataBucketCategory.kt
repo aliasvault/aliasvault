@@ -15,7 +15,12 @@ object VaultDataBucketCategory {
     const val SETTINGS = "Settings"
 
     /**
+     * The user's asymmetric keypairs, which are used for both email decryption and to unwrap shared-folder VEKs.
+     */
+    const val ENCRYPTION_KEYS = "EncryptionKeys"
+
+    /**
      * All known data bucket categories.
      */
-    val all = listOf(SETTINGS)
+    val all = listOf(SETTINGS, ENCRYPTION_KEYS)
 }

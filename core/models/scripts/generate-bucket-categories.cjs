@@ -26,6 +26,7 @@ const KOTLIN_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/android/app/src/main
  */
 const CATEGORY_DESCRIPTIONS = {
   Settings: 'User client settings (sort order, autofill prefs, identity defaults, etc.).',
+  EncryptionKeys: "The user's asymmetric keypairs, which are used for both email decryption and to unwrap shared-folder VEKs.",
 };
 const DEFAULT_DESCRIPTION = 'A manifest-v1 data bucket category.';
 
