@@ -31,7 +31,7 @@
     "unlockWithMobile": "Feloldás mobil appal",
     "scanQrCode": "Olvassa be a QR kódot a mobil applikációjával, hogy bejelentkezzen és feloldja a széfjét.",
     "passwordAttemptsWarning": "Hibás jelszó. Ha további {{remainingAttempts}} alkalommal rossz jelszót ad meg, kijelentkezteti a rendszer.",
-    "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
+    "maxAttemptsReached": "Túl sok sikertelen belépési kísérlet. A rendszer biztonsági okok miatt kilépteti."
   },
   "menu": {
     "vault": "Széf",
