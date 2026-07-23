@@ -64,7 +64,7 @@
     <comment>Page title for recently deleted items</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Items that have been deleted can be restored within 30 days.</value>
+    <value>Az utolsó 30 napban törölt elemek visszaállíthatóak.</value>
     <comment>Page description text</comment>
   </data>
   <data name="Description" xml:space="preserve">
@@ -73,7 +73,7 @@
   </data>
   <!-- Empty State -->
   <data name="NoItems" xml:space="preserve">
-    <value>No recently deleted items</value>
+    <value>Nincs nemrégiben törölt elem</value>
     <comment>Title when no deleted items exist</comment>
   </data>
   <data name="NoItemsDescription" xml:space="preserve">
