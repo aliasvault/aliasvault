@@ -21,29 +21,29 @@
   </xsd:schema>
   <!-- Page title and description -->
   <data name="PageTitle">
-    <value>Vault storage insights</value>
+    <value>Széf tároló áttekintő</value>
     <comment>Page title for vault storage insights</comment>
   </data>
   <data name="PageDescription">
-    <value>See an estimate of your vault size. For best sync performance, it's advised to keep your vault size small and delete items you no longer need.</value>
+    <value>Egy körülbelüli széf méret. A leghatékonyabb szinkronizálás érdekében érdemes a széf méretét minimalizálni, és a már nem használt elemeket törölni.</value>
     <comment>Page description for vault storage insights</comment>
   </data>
   <data name="BreadcrumbTitle">
-    <value>Storage insights</value>
+    <value>Tároló áttekintő</value>
     <comment>Breadcrumb title for storage insights page</comment>
   </data>
   <!-- Estimated total -->
   <data name="EstimatedTotalTitle">
-    <value>Estimated vault size</value>
+    <value>Körülbelüli széf méret</value>
     <comment>Title for the estimated total vault size card</comment>
   </data>
   <data name="EstimatedTotalDescription">
-    <value>This is an approximation calculated from your local data.</value>
+    <value>Ez egy a helyi adatok alapján saccolt érték.</value>
     <comment>Subtext explaining that the estimate is approximate</comment>
   </data>
   <!-- Counts -->
   <data name="CountsTitle">
-    <value>Overview</value>
+    <value>Áttekintés</value>
     <comment>Title for the counts/overview section</comment>
   </data>
   <data name="ItemCountLabel">
@@ -51,20 +51,20 @@
     <comment>Label for total item count card</comment>
   </data>
   <data name="ItemsWithAttachmentsLabel">
-    <value>Items with attachments</value>
+    <value>Csatolmányos elemek</value>
     <comment>Label for count of items that have at least one attachment</comment>
   </data>
   <data name="ItemsWithLogosLabel">
-    <value>Items with a logo</value>
+    <value>Logós elemek</value>
     <comment>Label for count of items that reference a logo</comment>
   </data>
   <!-- Breakdown -->
   <data name="BreakdownTitle">
-    <value>Storage usage breakdown</value>
+    <value>Tároló használati felosztás</value>
     <comment>Title for the breakdown bar section</comment>
   </data>
   <data name="BreakdownDescription">
-    <value>Approximate share of vault size by category. Attachments and logos usually take up most of the space.</value>
+    <value>Körülbelüli széf méret kategóriákra bontva. A legtöbb helyet általában a logók és a csatolmányok teszik ki.</value>
     <comment>Description for the breakdown bar</comment>
   </data>
   <data name="BreakdownCredentialsLabel">
@@ -76,38 +76,38 @@
     <comment>Legend label for attachments slice</comment>
   </data>
   <data name="BreakdownLogosLabel">
-    <value>Logos</value>
+    <value>Logók</value>
     <comment>Legend label for logos slice</comment>
   </data>
   <data name="BreakdownBaseOverheadLabel">
-    <value>Database overhead</value>
+    <value>Adatbázis üresjárat</value>
     <comment>Legend label for the fixed SQLite base/schema overhead slice</comment>
   </data>
   <!-- Top attachments table -->
   <data name="TopAttachmentsTitle">
-    <value>Largest attachments</value>
+    <value>Legnagyobb csatolmányok</value>
     <comment>Title for the top attachments table</comment>
   </data>
   <data name="TopAttachmentsDescription">
-    <value>Top 10 largest file attachments. Remove the attachment if you no longer need it.</value>
+    <value>A 10 legnagyobb csatolmány. Törölje, ha már nincs rá szüksége.</value>
     <comment>Description for the top attachments table</comment>
   </data>
   <!-- Top logos table -->
   <data name="TopLogosTitle">
-    <value>Largest logos</value>
+    <value>Legnagyobb logók</value>
     <comment>Title for the top logos table</comment>
   </data>
   <data name="TopLogosDescription">
-    <value>Top 10 largest service logos. Logos are reused for items with the same domain.</value>
+    <value>A 10 legnagyobb szolgáltatás logója. A tartományon belül ismétlődő logók újra felhasználásra kerülnek.</value>
     <comment>Description for the top logos table</comment>
   </data>
   <!-- Table column headers -->
   <data name="ColumnFilename">
-    <value>Filename</value>
+    <value>Fájlnév</value>
     <comment>Table column header for attachment filename</comment>
   </data>
   <data name="ColumnSize">
-    <value>Size</value>
+    <value>Méret</value>
     <comment>Table column header for size in KB</comment>
   </data>
   <data name="ColumnItem">
@@ -115,7 +115,7 @@
     <comment>Table column header for the parent item name</comment>
   </data>
   <data name="ColumnCreated">
-    <value>Created</value>
+    <value>Létrehozva</value>
     <comment>Table column header for creation date</comment>
   </data>
   <data name="ColumnWebsiteURL">
@@ -123,12 +123,12 @@
     <comment>Table column header for logo source domain</comment>
   </data>
   <data name="ColumnItemCount">
-    <value>Used by</value>
+    <value>Logót használ</value>
     <comment>Table column header for the number of items using a logo</comment>
   </data>
   <!-- Logo management -->
   <data name="LogoManagementTitle">
-    <value>Manage logos</value>
+    <value>Logó kezelő</value>
     <comment>Title for the logo management section</comment>
   </data>
   <data name="LogoManagementDescription">
