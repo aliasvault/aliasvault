@@ -104,6 +104,21 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             .Select(x => new AliasVault.Shared.Models.WebApi.V2.Vault.ManifestRevision { ManifestId = x.ManifestId, IsRoot = x.IsRoot, Revision = x.RevisionNumber })
             .ToList();
 
+        // Include manifests shared with this user (owned by other users, granted via a `shared` VaultKey).
+        var ownedManifestIds = user.VaultManifests.Select(m => m.ManifestId).ToHashSet();
+        var grantedManifestIds = user.VaultKeys
+            .Where(k => k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId != null && !ownedManifestIds.Contains(k.VaultManifestId.Value))
+            .Select(k => k.VaultManifestId!.Value)
+            .ToList();
+        if (grantedManifestIds.Count > 0)
+        {
+            await using var context = await dbContextFactory.CreateDbContextAsync();
+            manifestRevisions.AddRange(await context.VaultManifests
+                .Where(m => grantedManifestIds.Contains(m.ManifestId) && m.StorageFormat == "manifest-v1")
+                .Select(m => new AliasVault.Shared.Models.WebApi.V2.Vault.ManifestRevision { ManifestId = m.ManifestId, IsRoot = false, Revision = m.RevisionNumber })
+                .ToListAsync());
+        }
+
         // Current SRP salt: lives on the password VaultKey for v2 migrated users, on the root manifest for legacy users.
         var encryptionSettings = AuthHelper.GetUserLatestVaultEncryptionSettings(user);
         var hasVaultKey = user.VaultKeys.Any(x => x.KeyType == AuthHelper.VaultKeyTypePassword);

@@ -81,25 +81,42 @@ async function getLocalSharedManifestRevisions(): Promise<Record<string, number>
  */
 function serverManifestsNeedPull(serverManifests: ManifestRevision[], localMainRevision: number, localSharedRevisions: Record<string, number>): boolean {
   const serverShared = new Map<string, number>();
+  let serverRootRevision: number | null = null;
   for (const m of (serverManifests ?? [])) {
     if (m.isRoot) {
-      if (m.revision > localMainRevision) {
-        return true;
-      }
+      serverRootRevision = m.revision;
     } else {
       serverShared.set(m.manifestId, m.revision);
     }
   }
 
+  /*
+   * Decide whether to pull and log the concrete reason.
+   */
+  if (serverRootRevision !== null && serverRootRevision > localMainRevision) {
+    devLog(`[VaultSync] Pull needed: root manifest server rev ${serverRootRevision} > local rev ${localMainRevision}.`);
+    return true;
+  }
+
   // Any shared-folder manifest added or with a changed revision on the server.
   for (const [manifestId, revision] of serverShared) {
-    if (localSharedRevisions[manifestId] !== revision) {
+    const local = localSharedRevisions[manifestId];
+    if (local !== revision) {
+      const reason = local === undefined ? `not tracked locally (server rev ${revision})` : `server rev ${revision} != local rev ${local}`;
+      devLog(`[VaultSync] Pull needed: shared manifest ${manifestId} ${reason}.`);
       return true;
     }
   }
 
   // Any shared-folder manifest the client still tracks but the server no longer lists (removed / revoked).
-  return Object.keys(localSharedRevisions).some(manifestId => !serverShared.has(manifestId));
+  const removed = Object.keys(localSharedRevisions).find(manifestId => !serverShared.has(manifestId));
+  if (removed) {
+    devLog(`[VaultSync] Pull needed: shared manifest ${removed} (local rev ${localSharedRevisions[removed]}) no longer listed by the server (revoked/removed).`);
+    return true;
+  }
+
+  devLog(`[VaultSync] No pull needed: root rev ${serverRootRevision ?? 'n/a'} (local ${localMainRevision}), ${serverShared.size} shared manifest(s) all match local revisions.`);
+  return false;
 }
 
 /**
