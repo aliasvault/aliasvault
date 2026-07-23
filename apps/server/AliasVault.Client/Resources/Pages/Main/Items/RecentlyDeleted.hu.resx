@@ -68,7 +68,7 @@
     <comment>Page description text</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Items below will be permanently deleted after 30 days. You can restore or permanently delete them sooner.</value>
+    <value>A lenti elemek végleges törlésre kerülnek 30 napot követően. Ezen határidő előtt még visszaállíthatja, vagy akár véglegesen törölheti is őket.</value>
     <comment>Description text explaining 30-day retention</comment>
   </data>
   <!-- Empty State -->
@@ -77,7 +77,7 @@
     <comment>Title when no deleted items exist</comment>
   </data>
   <data name="NoItemsDescription" xml:space="preserve">
-    <value>Items you delete will appear here for 30 days before being permanently removed.</value>
+    <value>A törölt elemei itt még ideiglenesen elérhetőek, de 30 napot követően végleges törlésre kerülnek.</value>
     <comment>Description when no deleted items exist</comment>
   </data>
   <data name="Untitled" xml:space="preserve">
@@ -86,7 +86,7 @@
   </data>
   <!-- Days Remaining -->
   <data name="DaysRemaining" xml:space="preserve">
-    <value>Permanently deleted in {0} days</value>
+    <value>{0} nap múlva véglegesen torlődik</value>
     <comment>Text showing how many days until permanent deletion</comment>
   </data>
   <data name="ExpiringSoon" xml:space="preserve">
@@ -99,12 +99,12 @@
     <comment>Button text to restore a deleted item</comment>
   </data>
   <data name="EmptyAll" xml:space="preserve">
-    <value>Empty trash</value>
+    <value>Lomtár ürítése</value>
     <comment>Button text to permanently delete all items</comment>
   </data>
   <!-- Confirm Delete Modal -->
   <data name="ConfirmDeleteTitle" xml:space="preserve">
-    <value>Permanently delete item?</value>
+    <value>Elem végleges törlése?</value>
     <comment>Title for delete confirmation modal</comment>
   </data>
   <data name="ConfirmDeleteMessage" xml:space="preserve">
@@ -112,12 +112,12 @@
     <comment>Message in delete confirmation modal</comment>
   </data>
   <data name="DeletePermanently" xml:space="preserve">
-    <value>Delete permanently</value>
+    <value>Végleges törlés</value>
     <comment>Button text to confirm permanent deletion</comment>
   </data>
   <!-- Confirm Empty All Modal -->
   <data name="ConfirmEmptyAllTitle" xml:space="preserve">
-    <value>Empty trash?</value>
+    <value>Lomtár ürítése?</value>
     <comment>Title for empty all confirmation modal</comment>
   </data>
   <data name="ConfirmEmptyAllMessage" xml:space="preserve">
@@ -126,15 +126,15 @@
   </data>
   <!-- Status Messages -->
   <data name="Restoring" xml:space="preserve">
-    <value>Restoring item...</value>
+    <value>Elem visszaállítása...</value>
     <comment>Loading message while restoring</comment>
   </data>
   <data name="RestoreSuccess" xml:space="preserve">
-    <value>Item restored successfully.</value>
+    <value>Elem sikeresen visszaállítva.</value>
     <comment>Success message after restore</comment>
   </data>
   <data name="RestoreFailed" xml:space="preserve">
-    <value>Failed to restore item.</value>
+    <value>Nem sikerült helyreállítani az elemet.</value>
     <comment>Error message when restore fails</comment>
   </data>
   <data name="Deleting" xml:space="preserve">
@@ -146,7 +146,7 @@
     <comment>Success message after permanent deletion</comment>
   </data>
   <data name="DeleteFailed" xml:space="preserve">
-    <value>Failed to delete item.</value>
+    <value>Nem sikerült az elem törlése.</value>
     <comment>Error message when deletion fails</comment>
   </data>
   <data name="EmptyAllSuccess" xml:space="preserve">
@@ -154,7 +154,7 @@
     <comment>Success message after emptying trash</comment>
   </data>
   <data name="EmptyAllPartialFailed" xml:space="preserve">
-    <value>Failed to delete {0} item(s).</value>
+    <value>Nem sikerült a(z) {0} elem törlése.</value>
     <comment>Error message when some deletions fail</comment>
   </data>
 </root>
