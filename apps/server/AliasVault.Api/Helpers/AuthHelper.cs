@@ -45,8 +45,9 @@ public static class AuthHelper
 
     /// <summary>
     /// The asymmetric WrapScheme values used when wrapping a shared folder's VEK for a recipient's public key.
+    /// Can support other schemes in the future, but only rsa-oaep is currently used.
     /// </summary>
-    public static readonly IReadOnlySet<string> AsymmetricWrapSchemes = new HashSet<string>(StringComparer.Ordinal) { "rsa-oaep", "x25519-sealedbox" };
+    public static readonly IReadOnlySet<string> AsymmetricWrapSchemes = new HashSet<string>(StringComparer.Ordinal) { "rsa-oaep" };
 
     /// <summary>
     /// Helper method that validates the SRP session based on provided SRP identity, ephemeral and proof.

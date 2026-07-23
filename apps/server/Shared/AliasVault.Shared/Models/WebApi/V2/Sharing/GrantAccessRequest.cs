@@ -25,6 +25,6 @@ public class GrantAccessRequest
     /// <summary>Gets or sets the id of the recipient public key used to wrap (from GET /v2/Sharing/recipient).</summary>
     public required Guid RecipientPublicKeyId { get; set; }
 
-    /// <summary>Gets or sets the asymmetric wrap scheme used, e.g. "x25519-sealedbox" or "rsa-oaep".</summary>
+    /// <summary>Gets or sets the asymmetric wrap scheme used, e.g. "rsa-oaep" or "x25519-sealedbox".</summary>
     public required string WrapScheme { get; set; }
 }
