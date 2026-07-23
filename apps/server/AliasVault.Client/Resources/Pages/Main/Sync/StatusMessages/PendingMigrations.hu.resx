@@ -95,11 +95,11 @@
     <comment>Success message after successful vault upgrade</comment>
   </data>
   <data name="UpgradeSuccessButSaveFailedError" xml:space="preserve">
-    <value>Database upgrade successful but failed to save to server. Please try again or contact support.</value>
+    <value>Az adatbázis frissítés sikeres volt, de nem sikerült a szerverre menteni. Kérem, próbálja meg újra, vagy vegye fel a kapcsolatot az ügyfélszolgálattal.</value>
     <comment>Error message when upgrade succeeds but save fails</comment>
   </data>
   <data name="UpgradeFailedError" xml:space="preserve">
-    <value>Database upgrade failed. Please try again or contact support.</value>
+    <value>Sikertelen adatbázis frissítés. Próbálja meg újra, vagy vegye fel a kapcsolatot az ügyfélszolgálattal.</value>
     <comment>Error message when upgrade fails</comment>
   </data>
 </root>
