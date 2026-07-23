@@ -81,8 +81,8 @@
 "enter_password_to_unlock" = "Adja meg mester jelszavát";
 "unlock" = "Feloldás";
 "incorrect_password" = "Hibás jelszó. Próbálkozzon újra.";
-"attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
-"max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
+"attempts_warning" = "Hibás jelszó. Ha további %d alkalommal sem tudja megadni a helyes jelszót, a rendszer kijelentkezteti.";
+"max_attempts_reached" = "Túl sok sikertelen belépési kísérlet. A rendszer biztonsági okok miatt kilépteti.";
 
 /* PIN Setup */
 "pin_setup_title" = "Setup PIN";
