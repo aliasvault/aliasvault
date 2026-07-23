@@ -8,7 +8,7 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
-/// Vault key creation payload carried inside <see cref="UploadRequest"/> for the KEK/VEK migration.
+/// Vault key creation payload carried inside <see cref="VaultWriteRequest"/> for the KEK/VEK migration.
 /// TODO: remove this class once the legacy model is fully deprecated and upgrade path is no longer needed.
 /// </summary>
 public class CreateVaultKeyRequest

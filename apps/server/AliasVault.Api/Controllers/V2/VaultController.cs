@@ -284,16 +284,15 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Atomic upload. Inserts any new blobs, validates every referenced hash exists, archives the current manifest
-    /// revision into history, updates the current manifest row in place, adds blob references, optionally upserts
-    /// metadata, optionally syncs email routing, all in a single DB transaction on purpose.
+    /// Unified atomic write. Applies any number of changed manifests (root and/or shared folders), changed data
+    /// buckets, and new blobs in a single all-or-nothing DB transaction.
     /// </summary>
-    /// <param name="model">Upload request DTO.</param>
+    /// <param name="model">Vault write request DTO.</param>
     /// <param name="clientHeader">Client header.</param>
-    /// <returns>Upload response DTO.</returns>
+    /// <returns>Vault write response DTO.</returns>
     [HttpPost("")]
-    public async Task<IActionResult> Upload(
-        [FromBody] UploadRequest model,
+    public async Task<IActionResult> Write(
+        [FromBody] VaultWriteRequest model,
         [FromHeader(Name = "X-AliasVault-Client")] string? clientHeader)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
@@ -308,41 +307,82 @@ public class VaultController(
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USERNAME_MISMATCH, 400));
         }
 
-        // The v2 upload targets the user's root manifest. Registration guarantees a root manifest row exists.
-        var currentManifest = await context.VaultManifests.FirstOrDefaultAsync(x => x.OwnerUserId == user.Id && x.IsRoot);
-        if (currentManifest == null)
+        // Each manifest and bucket may appear at most once.
+        if (model.Manifests.Select(m => m.ManifestId).Distinct().Count() != model.Manifests.Count
+            || model.Buckets.Select(b => b.Category).Distinct().Count() != model.Buckets.Count)
         {
-            // No root manifest exists yet. TODO: test v2 registration flow to ensure this ensures a vault record always is created during registration.
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
         }
 
-        // Optimistic concurrency against the single monotonic RevisionNumber counter, which is shared across
-        // legacy ("sqlite-blob") and "manifest-v1" revisions. A migrating client sends the legacy revision it last
-        // synced as CurrentManifestRevision, so the first manifest-v1 revision continues the sequence (e.g. legacy
-        // 50 --> manifest-v1 51) rather than resetting to 1 and sorting below the legacy revisions.
-        var serverRevision = currentManifest.RevisionNumber;
-        var newManifestRevision = model.CurrentManifestRevision + 1;
-        if (serverRevision >= newManifestRevision)
+        var rootWrite = model.Manifests.FirstOrDefault(m => m.ManifestId == null);
+
+        // KEK/VEK migration (CreateVaultKey) is a full root push and only valid alongside a root manifest.
+        var hasExistingVaultKey = await context.VaultKeys.AnyAsync(x => x.UserId == user.Id && x.KeyType == AuthHelper.VaultKeyTypePassword);
+        if (model.CreateVaultKey != null && (rootWrite == null || model.CreateVaultKey.KeyType != AuthHelper.VaultKeyTypePassword))
         {
-            return Ok(new UploadResponse
-            {
-                Status = VaultStatus.Outdated,
-                NewManifestRevision = serverRevision,
-            });
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
         }
 
-        // Sanity check if user already has a vault key (when providing vault key creation request).
-        var hasExistingVaultKey = await context.VaultKeys.AnyAsync(x => x.UserId == user.Id && x.KeyType == AuthHelper.VaultKeyTypePassword);
         if (model.CreateVaultKey != null && hasExistingVaultKey)
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400));
         }
 
-        // Sanity check that the user has a vault key (when not providing vault key creation request).
+        // A root push from a not-yet-migrated user must carry CreateVaultKey.
         // TODO: remove this guard once every user has migrated to the KEK/VEK model (no keyless users remain).
-        if (model.CreateVaultKey == null && !hasExistingVaultKey)
+        if (rootWrite != null && model.CreateVaultKey == null && !hasExistingVaultKey)
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
+        }
+
+        // Resolve + authorize each manifest write to its stored row: a null ManifestId targets the caller's root
+        // manifest (created at registration); a keyed write targets a non-root manifest the caller owns or holds a
+        // shared grant on.
+        var resolved = new List<(ManifestWrite Write, VaultManifest Row)>();
+        foreach (var mw in model.Manifests)
+        {
+            if (mw.ManifestId == null)
+            {
+                var rootRow = await context.VaultManifests.FirstOrDefaultAsync(x => x.OwnerUserId == user.Id && x.IsRoot);
+                if (rootRow == null)
+                {
+                    return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
+                }
+
+                resolved.Add((mw, rootRow));
+                continue;
+            }
+
+            var row = await context.VaultManifests.FirstOrDefaultAsync(x => x.ManifestId == mw.ManifestId && !x.IsRoot);
+            var canWrite = row != null && (row.OwnerUserId == user.Id || await context.VaultKeys.AnyAsync(k => k.UserId == user.Id && k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId == mw.ManifestId));
+            if (row == null || !canWrite)
+            {
+                return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+            }
+
+            resolved.Add((mw, row));
+        }
+
+        // All-or-nothing revision gate: every manifest and bucket must be exactly one ahead of the server's current.
+        // On any staleness, reject the whole write with Outdated and hand back the current revisions to pull/merge.
+        var bucketCurrentRevisions = new Dictionary<VaultDataBucketCategory, long>();
+        foreach (var bw in model.Buckets)
+        {
+            bucketCurrentRevisions[bw.Category] = await context.VaultDataBuckets
+                .Where(x => x.OwnerUserId == user.Id && x.Category == bw.Category)
+                .MaxAsync(x => (long?)x.RevisionNumber) ?? 0;
+        }
+
+        var manifestStale = resolved.Any(r => r.Row.RevisionNumber >= r.Write.CurrentRevision + 1);
+        var bucketStale = model.Buckets.Any(b => bucketCurrentRevisions[b.Category] >= b.CurrentRevision + 1);
+        if (manifestStale || bucketStale)
+        {
+            return Ok(new VaultWriteResponse
+            {
+                Status = VaultStatus.Outdated,
+                ManifestRevisions = resolved.Select(r => new ManifestWriteResult { ManifestId = r.Write.ManifestId, Revision = r.Row.RevisionNumber }).ToList(),
+                BucketRevisions = model.Buckets.Select(b => new BucketRevision { Category = b.Category, Revision = bucketCurrentRevisions[b.Category] }).ToList(),
+            });
         }
 
         // The DbContext uses a retrying execution strategy (EnableRetryOnFailure), which forbids user-initiated
@@ -357,96 +397,116 @@ public class VaultController(
             {
                 if (!await TryUpsertBlobObjectsAsync(context, user.Id, model.NewBlobs, overwrite: model.CreateVaultKey != null))
                 {
+                    await tx.RollbackAsync();
                     return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
                 }
 
                 await context.SaveChangesAsync();
             }
 
-            // 2) Validate every referenced hash exists for this user. If any missing, abort and tell the client which.
-            if (model.BlobReferences.Count > 0)
+            // 2) Validate every referenced hash exists.
+            var ownScopeHashes = resolved.Where(r => r.Write.ManifestId == null).SelectMany(r => r.Write.BlobReferences).Select(br => br.Hash).Distinct().ToList();
+            var anyScopeHashes = resolved.Where(r => r.Write.ManifestId != null).SelectMany(r => r.Write.BlobReferences).Select(br => br.Hash).Distinct().ToList();
+            var missing = new List<string>();
+            if (ownScopeHashes.Count > 0)
             {
-                var refHashes = model.BlobReferences.Select(r => r.Hash).Distinct().ToList();
-                var presentHashes = await context.VaultBlobObjects
-                    .Where(b => b.OwnerUserId == user.Id && refHashes.Contains(b.Hash))
-                    .Select(b => b.Hash)
-                    .ToListAsync();
-                var missing = refHashes.Except(presentHashes).ToList();
-                if (missing.Count > 0)
+                var present = await context.VaultBlobObjects.Where(b => b.OwnerUserId == user.Id && ownScopeHashes.Contains(b.Hash)).Select(b => b.Hash).ToListAsync();
+                missing.AddRange(ownScopeHashes.Except(present));
+            }
+
+            if (anyScopeHashes.Count > 0)
+            {
+                var present = await context.VaultBlobObjects.Where(b => anyScopeHashes.Contains(b.Hash)).Select(b => b.Hash).Distinct().ToListAsync();
+                missing.AddRange(anyScopeHashes.Except(present));
+            }
+
+            missing = missing.Distinct().ToList();
+            if (missing.Count > 0)
+            {
+                await tx.RollbackAsync();
+                return Ok(new VaultWriteResponse
                 {
-                    await tx.RollbackAsync();
-                    return Ok(new UploadResponse
+                    Status = VaultStatus.Ok,
+                    MissingBlobHashes = missing,
+                    ManifestRevisions = resolved.Select(r => new ManifestWriteResult { ManifestId = r.Write.ManifestId, Revision = r.Row.RevisionNumber }).ToList(),
+                });
+            }
+
+            // 3) Apply each manifest: archive the current revision into history, update the row in place, run the
+            // root-only side effects (email claims count + KEK/VEK key creation), and prune history per retention.
+            var manifestResults = new List<ManifestWriteResult>();
+            foreach (var (mw, row) in resolved)
+            {
+                var archivedRevision = VaultManifestsHistory.CreateFrom(row);
+                context.VaultManifestsHistory.Add(archivedRevision);
+
+                row.VaultBlob = string.Empty;
+                row.StorageFormat = ManifestFormat;
+                row.ManifestBlob = mw.ManifestBlob;
+                row.ManifestCiphertextHash = mw.ManifestCiphertextHash;
+                row.Version = mw.Version;
+                row.RevisionNumber = mw.CurrentRevision + 1;
+                row.FileSize = FileHelper.Base64StringToKilobytes(mw.ManifestBlob);
+                row.CredentialsCount = mw.CredentialsCount;
+                row.Client = clientHeader;
+                row.UpdatedAt = timeProvider.UtcNow;
+
+                if (row.IsRoot)
+                {
+                    row.CreatedAt = timeProvider.UtcNow;
+                    if (model.EmailRouting != null)
                     {
-                        Status = VaultStatus.Ok,
-                        NewManifestRevision = serverRevision,
-                        MissingBlobHashes = missing,
+                        row.EmailClaimsCount = model.EmailRouting.EmailAddressList.Count;
+                    }
+
+                    // Create the VaultKey row atomically with this write on the KEK/VEK migration (first push after the
+                    // client re-encrypted the vault under a fresh VEK). Move the SRP credentials off the manifest row.
+                    if (model.CreateVaultKey != null)
+                    {
+                        context.VaultKeys.Add(new VaultKey
+                        {
+                            Id = Guid.NewGuid(),
+                            UserId = user.Id,
+                            VaultManifestId = row.ManifestId,
+                            KeyType = AuthHelper.VaultKeyTypePassword,
+                            WrapScheme = AuthHelper.WrapSchemeAesGcmKek,
+                            WrappedVek = model.CreateVaultKey.WrappedVek,
+                            Salt = row.Salt,
+                            Verifier = row.Verifier,
+                            EncryptionType = row.EncryptionType,
+                            EncryptionSettings = row.EncryptionSettings,
+                            CreatedAt = timeProvider.UtcNow,
+                            UpdatedAt = timeProvider.UtcNow,
+                        });
+
+                        row.Salt = string.Empty;
+                        row.Verifier = string.Empty;
+                        row.EncryptionType = string.Empty;
+                        row.EncryptionSettings = string.Empty;
+                    }
+                }
+
+                await ApplyVaultRetention(context, row, archivedRevision);
+                manifestResults.Add(new ManifestWriteResult { ManifestId = mw.ManifestId, Revision = row.RevisionNumber });
+            }
+
+            await context.SaveChangesAsync();
+
+            // 4) Add blob references for each manifest's new revision.
+            foreach (var (mw, row) in resolved)
+            {
+                foreach (var dto in mw.BlobReferences)
+                {
+                    context.VaultBlobReferences.Add(new VaultBlobReference
+                    {
+                        ManifestId = row.ManifestId,
+                        RevisionNumber = row.RevisionNumber,
+                        BlobHash = dto.Hash,
                     });
                 }
             }
 
-            // 3) Archive the current revision into history first, then update the current row in place with the new manifest-v1 revision.
-            var archivedRevision = VaultManifestsHistory.CreateFrom(currentManifest);
-            context.VaultManifestsHistory.Add(archivedRevision);
-
-            currentManifest.VaultBlob = string.Empty;
-            currentManifest.StorageFormat = ManifestFormat;
-            currentManifest.ManifestBlob = model.ManifestBlob;
-            currentManifest.ManifestCiphertextHash = model.ManifestCiphertextHash;
-            currentManifest.Version = model.Version;
-            currentManifest.RevisionNumber = newManifestRevision;
-            currentManifest.FileSize = FileHelper.Base64StringToKilobytes(model.ManifestBlob);
-            currentManifest.CredentialsCount = model.CredentialsCount;
-            currentManifest.EmailClaimsCount = model.EmailRouting.EmailAddressList.Count;
-            currentManifest.Client = clientHeader;
-            currentManifest.CreatedAt = timeProvider.UtcNow;
-            currentManifest.UpdatedAt = timeProvider.UtcNow;
-
-            // Create VaultKey row atomically with this upload if provided (migration flow from old v1 encryption flow).
-            if (model.CreateVaultKey != null)
-            {
-                if (model.CreateVaultKey.KeyType != AuthHelper.VaultKeyTypePassword)
-                {
-                    await tx.RollbackAsync();
-                    return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
-                }
-
-                context.VaultKeys.Add(new VaultKey
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = user.Id,
-                    VaultManifestId = currentManifest.ManifestId,
-                    KeyType = AuthHelper.VaultKeyTypePassword,
-                    WrapScheme = AuthHelper.WrapSchemeAesGcmKek,
-                    WrappedVek = model.CreateVaultKey.WrappedVek,
-                    Salt = currentManifest.Salt,
-                    Verifier = currentManifest.Verifier,
-                    EncryptionType = currentManifest.EncryptionType,
-                    EncryptionSettings = currentManifest.EncryptionSettings,
-                    CreatedAt = timeProvider.UtcNow,
-                    UpdatedAt = timeProvider.UtcNow,
-                });
-
-                currentManifest.Salt = string.Empty;
-                currentManifest.Verifier = string.Empty;
-                currentManifest.EncryptionType = string.Empty;
-                currentManifest.EncryptionSettings = string.Empty;
-            }
-
-            await ApplyVaultRetention(context, currentManifest, archivedRevision);
-            await context.SaveChangesAsync();
-
-            // 4) Add blob references for the new revision.
-            foreach (var dto in model.BlobReferences)
-            {
-                context.VaultBlobReferences.Add(new VaultBlobReference
-                {
-                    ManifestId = currentManifest.ManifestId,
-                    RevisionNumber = newManifestRevision,
-                    BlobHash = dto.Hash,
-                });
-            }
-
-            // 5) Optional data bucket upserts (settings, etc.). Each insert adds a new revision row (history).
+            // 5) Data bucket upserts (settings, etc.). Each insert adds a new revision row (history).
             var newBucketRevisions = new List<BucketRevision>();
             foreach (var bucket in model.Buckets)
             {
@@ -455,12 +515,12 @@ public class VaultController(
                     continue;
                 }
 
-                var rev = await UpsertBucketAsync(context, user.Id, bucket.Category, bucket.Blob, bucket.CiphertextHash, currentRevision: null);
+                var rev = await UpsertBucketAsync(context, user.Id, bucket.Category, bucket.Blob, bucket.CiphertextHash, bucket.CurrentRevision);
                 newBucketRevisions.Add(new BucketRevision { Category = bucket.Category, Revision = rev });
             }
 
-            // 6) Email routing.
-            if (model.EmailRouting.EmailAddressList.Count > 0)
+            // 6) Root-scoped email routing + public key.
+            if (model.EmailRouting != null && model.EmailRouting.EmailAddressList.Count > 0)
             {
                 await UpdateUserEmailClaimsAsync(context, user, model.EmailRouting.EmailAddressList);
             }
@@ -473,43 +533,13 @@ public class VaultController(
             await context.SaveChangesAsync();
             await tx.CommitAsync();
 
-            return Ok(new UploadResponse
+            return Ok(new VaultWriteResponse
             {
                 Status = VaultStatus.Ok,
-                NewManifestRevision = newManifestRevision,
-                NewBucketRevisions = newBucketRevisions,
+                ManifestRevisions = manifestResults,
+                BucketRevisions = newBucketRevisions,
             });
         });
-    }
-
-    /// <summary>
-    /// Single data-bucket upload. For changes to one bucket kind (e.g. settings) that don't touch vault content.
-    /// </summary>
-    /// <param name="model">Bucket upload request.</param>
-    /// <returns>Bucket upload response.</returns>
-    [HttpPost("buckets")]
-    public async Task<IActionResult> UpdateBucket([FromBody] BucketUploadRequest model)
-    {
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-        var user = await GetCurrentUserAsync();
-        if (user == null)
-        {
-            return Unauthorized();
-        }
-
-        var currentRev = await context.VaultDataBuckets
-            .Where(x => x.OwnerUserId == user.Id && x.Category == model.Category)
-            .MaxAsync(x => (long?)x.RevisionNumber) ?? 0;
-        var newRev = model.CurrentRevision + 1;
-        if (currentRev >= newRev)
-        {
-            return Ok(new BucketUploadResponse { Status = VaultStatus.Outdated, Category = model.Category, NewRevision = currentRev });
-        }
-
-        var stored = await UpsertBucketAsync(context, user.Id, model.Category, model.BucketBlob, model.BucketCiphertextHash, model.CurrentRevision);
-        await context.SaveChangesAsync();
-
-        return Ok(new BucketUploadResponse { Status = VaultStatus.Ok, Category = model.Category, NewRevision = stored });
     }
 
     /// <summary>
