@@ -116,7 +116,7 @@
       "serverError": "Az AliasVault szerverek nem elérhetőek. Kérem próbálkozzon később, vagy keresse fel az ügyfélszolgálatot ha a probléma továbbra is fent áll.",
       "wrongPassword": "Hibás jelszó. Próbálkozzon újra.",
       "sessionExpired": "A munkamenete lejárt. Kérem, jelentkezzen be újra.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "mobileLoginRequestExpired": "A mobil belépési kérelem lejárt. Kérem, frissítse az oldalt, és próbálja újra."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Egy ismeretlen hiba lépett fel. Próbálkozzon újra.",
@@ -306,7 +306,7 @@
       "title": "Bankkártya"
     },
     "note": {
-      "title": "Secure Note"
+      "title": "Biztonsági jegyzet"
     }
   },
   "fieldLabels": {
