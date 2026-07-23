@@ -9,7 +9,7 @@ namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
 /// A single vault manifest as carried in list-based payloads. A user's logical vault is assembled from one or more
-/// manifests: exactly one root manifest plus (from R2) any number of non-root manifests the user owns or has been
+/// manifests: exactly one root manifest plus, any number of non-root manifests the user owns or has been
 /// granted access to. Each manifest is independently encrypted and revisioned, and carries its own blob references.
 /// </summary>
 public class Manifest
@@ -51,4 +51,9 @@ public class Manifest
 
     /// <summary>Gets or sets the wrap scheme of <see cref="WrappedVek"/> (e.g. "rsa-oaep"). Null when <see cref="WrappedVek"/> is null.</summary>
     public string? WrapScheme { get; set; }
+
+    /// <summary>
+    /// Gets or sets the public key <see cref="WrappedVek"/> was wrapped with.
+    /// </summary>
+    public string? WrapPublicKey { get; set; }
 }

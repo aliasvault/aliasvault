@@ -5,12 +5,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Shared.Models.WebApi.V2.Auth;
+namespace AliasVault.Shared.Models.WebApi.V2.Status;
 
 using AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
-/// Response model for the v2 status endpoint.
+/// Response for GET /v2/Status: a single generic status endpoint that combines session/version checks
+/// with the vault storage-format and revision info.
 /// </summary>
 public class StatusResponse
 {
@@ -27,14 +28,6 @@ public class StatusResponse
     public required string ServerVersion { get; set; }
 
     /// <summary>
-    /// Gets or sets the latest revision for each logical manifest the user has, so the client can compare each
-    /// manifest's server revision against its own last-known revision per manifest. For a not-yet-migrated user
-    /// the server synthesizes a Main entry from their legacy vault, so the list always contains at least one entry
-    /// for an existing user.
-    /// </summary>
-    public List<ManifestRevision> ManifestRevisions { get; set; } = [];
-
-    /// <summary>
     /// Gets or sets the SRP salt. This is used by the client to validate that the local encryption key
     /// still matches the latest vault revision. If it doesn't match, the client should trigger a logout
     /// to make the user re-authenticate with the new password.
@@ -46,4 +39,15 @@ public class StatusResponse
     /// TODO: remove once every user has migrated to the KEK/VEK model.
     /// </summary>
     public bool HasVaultKey { get; set; }
+
+    /// <summary>Gets or sets the storage format the server has recorded for the user's latest vault.</summary>
+    public required StorageFormat StorageFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the latest revision for each logical manifest the user has access to.
+    /// </summary>
+    public List<ManifestRevision> ManifestRevisions { get; set; } = [];
+
+    /// <summary>Gets or sets the latest revision for each data-bucket kind the user has. Empty when none stored.</summary>
+    public List<BucketRevision> BucketRevisions { get; set; } = [];
 }

@@ -59,55 +59,6 @@ public class VaultController(
     };
 
     /// <summary>
-    /// Status endpoint. Tells the client which storage format the server has for this user so the client can
-    /// pick the v1 (legacy) or v2 (new) sync path.
-    /// </summary>
-    /// <returns>Status DTO.</returns>
-    [HttpGet("status")]
-    public async Task<IActionResult> Status()
-    {
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-        var user = await GetCurrentUserAsync();
-        if (user == null)
-        {
-            return Unauthorized();
-        }
-
-        // Current revision per logical manifest: everything the user owns plus manifests shared with them,
-        // so revision-based pull detection covers shared folders too.
-        var ownedManifestRevisions = await context.VaultManifests
-            .Where(x => x.OwnerUserId == user.Id && x.StorageFormat == ManifestFormat)
-            .Select(x => new ManifestRevision { ManifestId = x.ManifestId, IsRoot = x.IsRoot, Revision = x.RevisionNumber })
-            .ToListAsync();
-
-        // Migration status is judged solely by the user's own root manifest. A shared-with-me manifest (always
-        // IsRoot=false, owned by another user) must never make a not-yet-migrated user look migrated, or the client
-        // would push without CreateVaultKey and the upload would fail with VAULT_KEY_NOT_FOUND.
-        var isMigrated = ownedManifestRevisions.Any(x => x.IsRoot);
-
-        var manifestRevisions = ownedManifestRevisions;
-        var grantedManifestIds = await GetGrantedManifestIdsAsync(context, user.Id);
-        manifestRevisions.AddRange(await context.VaultManifests
-            .Where(x => grantedManifestIds.Contains(x.ManifestId) && x.StorageFormat == ManifestFormat)
-            .Select(x => new ManifestRevision { ManifestId = x.ManifestId, IsRoot = false, Revision = x.RevisionNumber })
-            .ToListAsync());
-
-        // Latest revision per bucket kind.
-        var bucketRevisions = await context.VaultDataBuckets
-            .Where(x => x.OwnerUserId == user.Id)
-            .GroupBy(x => x.Category)
-            .Select(g => new BucketRevision { Category = g.Key, Revision = g.Max(b => b.RevisionNumber) })
-            .ToListAsync();
-
-        return Ok(new StatusResponse
-        {
-            StorageFormat = isMigrated ? StorageFormat.Manifest : StorageFormat.SqliteBlob,
-            ManifestRevisions = manifestRevisions,
-            BucketRevisions = bucketRevisions,
-        });
-    }
-
-    /// <summary>
     /// Atomic snapshot. Returns the latest encrypted manifest + metadata + blob refs + email routing in one shot.
     /// Convenient for fresh client init.
     /// </summary>
@@ -192,6 +143,8 @@ public class VaultController(
                 .Where(k => k.UserId == user.Id && k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId != null && ownedNonRootIds.Contains(k.VaultManifestId.Value))
                 .ToDictionaryAsync(k => k.VaultManifestId!.Value);
 
+        var selfWrapPublicKeys = await ResolveWrapPublicKeysAsync(context, selfGrantsByManifest.Values.Where(g => g.RecipientPublicKeyId != null).Select(g => g.RecipientPublicKeyId!.Value));
+
         var manifests = latestManifests.Select(m => new Manifest
         {
             ManifestId = m.ManifestId,
@@ -203,6 +156,7 @@ public class VaultController(
             BlobReferences = refsByManifest.TryGetValue(m.ManifestId, out var refs) ? refs : [],
             WrappedVek = selfGrantsByManifest.TryGetValue(m.ManifestId, out var selfGrant) ? selfGrant.WrappedVek : null,
             WrapScheme = selfGrantsByManifest.TryGetValue(m.ManifestId, out var selfGrant2) ? selfGrant2.WrapScheme : null,
+            WrapPublicKey = selfGrantsByManifest.TryGetValue(m.ManifestId, out var selfGrant3) && selfGrant3.RecipientPublicKeyId != null ? selfWrapPublicKeys.GetValueOrDefault(selfGrant3.RecipientPublicKeyId.Value) : null,
         }).ToList();
 
         // Append manifests shared with this user by other owners, each carrying the wrapped VEK the caller
@@ -274,6 +228,11 @@ public class VaultController(
             var grant = await context.VaultKeys.FirstOrDefaultAsync(k => k.UserId == user.Id && k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId == latest.ManifestId);
             manifest.WrappedVek = grant?.WrappedVek;
             manifest.WrapScheme = grant?.WrapScheme;
+            if (grant?.RecipientPublicKeyId != null)
+            {
+                manifest.WrapPublicKey = await context.UserEncryptionKeys.Where(k => k.Id == grant.RecipientPublicKeyId).Select(k => k.PublicKey).FirstOrDefaultAsync();
+            }
+
             if (latest.OwnerUserId != user.Id)
             {
                 manifest.OwnerUsername = await context.AliasVaultUsers.Where(u => u.Id == latest.OwnerUserId).Select(u => u.UserName).FirstOrDefaultAsync();
@@ -724,16 +683,19 @@ public class VaultController(
     }
 
     /// <summary>
-    /// The ids of manifests <b>other</b> users have granted to <paramref name="userId"/> via a <c>shared</c> VaultKey
-    /// row. The user's own self-grants are excluded, those manifests are already covered as owned manifests.
+    /// Resolves the public key each grant's VEK was wrapped with.
     /// </summary>
-    private static async Task<List<Guid>> GetGrantedManifestIdsAsync(AliasServerDbContext context, string userId)
+    private static async Task<Dictionary<Guid, string>> ResolveWrapPublicKeysAsync(AliasServerDbContext context, IEnumerable<Guid> publicKeyIds)
     {
-        return await context.VaultKeys
-            .Where(k => k.UserId == userId && k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId != null
-                && context.VaultManifests.Any(m => m.ManifestId == k.VaultManifestId && m.OwnerUserId != userId))
-            .Select(k => k.VaultManifestId!.Value)
-            .ToListAsync();
+        var ids = publicKeyIds.Distinct().ToList();
+        if (ids.Count == 0)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        return await context.UserEncryptionKeys
+            .Where(k => ids.Contains(k.Id))
+            .ToDictionaryAsync(k => k.Id, k => k.PublicKey);
     }
 
     /// <summary>
@@ -770,6 +732,8 @@ public class VaultController(
             .Join(context.VaultBlobObjects, r => r.BlobHash, b => b.Hash, (r, b) => new { r.ManifestId, r.RevisionNumber, b.Hash, b.Category })
             .ToListAsync();
 
+        var wrapPublicKeys = await ResolveWrapPublicKeysAsync(context, grants.Where(g => g.RecipientPublicKeyId != null).Select(g => g.RecipientPublicKeyId!.Value));
+
         var result = new List<Manifest>();
         foreach (var grant in grants)
         {
@@ -796,6 +760,7 @@ public class VaultController(
                 OwnerUsername = ownerUsernamesById.GetValueOrDefault(manifestRow.OwnerUserId),
                 WrappedVek = grant.WrappedVek,
                 WrapScheme = grant.WrapScheme,
+                WrapPublicKey = grant.RecipientPublicKeyId != null ? wrapPublicKeys.GetValueOrDefault(grant.RecipientPublicKeyId.Value) : null,
             });
         }
 

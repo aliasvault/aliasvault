@@ -8,8 +8,7 @@
 namespace AliasVault.Shared.Models.WebApi.V1.Auth;
 
 /// <summary>
-/// Response model for the v1 status endpoint. Carries the single global vault revision. v2 clients use
-/// <see cref="AliasVault.Shared.Models.WebApi.V2.Auth.StatusResponse"/> instead, which is manifest-revision based.
+/// Response model for the v1 status endpoint.
 /// </summary>
 public class StatusResponse
 {

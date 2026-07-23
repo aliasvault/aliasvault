@@ -8,7 +8,7 @@ export type ManifestRevision = {
 }
 
 /**
- * Status response type (v2). Returned by GET /v2/Auth/status.
+ * Status response type (v2).
  */
 export type StatusResponseV2 = {
   clientVersionSupported: boolean;
