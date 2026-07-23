@@ -188,9 +188,17 @@ export type CodecManifest = {
   version: string;
   userSalt: string;
   canonicalizedAt: string;
+  /** Set on a shared-folder manifest: the Folders.Id this manifest carries. Absent on a root manifest. */
+  sharedFolderId?: string | null;
   tables: Record<string, Array<Record<string, unknown>>>;
   [key: string]: unknown;
 };
+
+/** One shared folder to split out during canonicalize: the folder id + that manifest's own blob salt. */
+export type CodecSharedFolderSpec = { folderId: string; userSalt: string };
+
+/** One shared-folder manifest produced by the canonicalize split, with its own blob map. */
+export type CodecSharedVault = { folderId: string; manifest: CodecManifest; blobs: Record<string, CodecBlobEntry> };
 
 /**
  * A manifest-v1 data bucket.
@@ -205,11 +213,12 @@ export type CodecDataBucket = {
 /** A decoded blob entry: kind + plaintext bytes (base64). */
 export type CodecBlobEntry = { kind: string; bytesBase64: string };
 
-/** Result of canonicalize: manifest + data buckets. */
+/** Result of canonicalize: root manifest + data buckets + blob map + optional shared vaults. */
 export type CodecCanonicalized = {
   manifest: CodecManifest;
   dataBuckets: CodecDataBucket[];
   blobs: Record<string, CodecBlobEntry>;
+  sharedVaults?: CodecSharedVault[];
 };
 
 /**
@@ -232,6 +241,7 @@ export type CodecCanonicalizeInput = {
   userSalt: string;
   migrationId: string;
   version: string;
+  sharedFolders?: CodecSharedFolderSpec[];
   canonicalizedAt: string;
 };
 
@@ -258,7 +268,11 @@ export async function vaultCodecCanonicalizeFromSqlite(input: CodecCanonicalizeI
  * can't hold into the `CodecOverflows` carrier row (included in the returned tables) instead of
  * emitting it, so unknown newer-client data survives the round trip inside the vault DB itself.
  */
-export async function vaultCodecMaterializeAsSqlite(manifest: CodecManifest, dataBuckets: CodecDataBucket[], schemaColumns?: Record<string, string[]>): Promise<CodecMaterialized> {
+export async function vaultCodecMaterializeAsSqlite(manifest: CodecManifest, dataBuckets: CodecDataBucket[], schemaColumns?: Record<string, string[]>, sharedManifests?: CodecManifest[]): Promise<CodecMaterialized> {
+  await initRustCore();
+  return core.vaultCodecMaterializeAsSqlite({ manifest, dataBuckets, schemaColumns, sharedManifests }) as CodecMaterialized;
+}
+
 /**
  * Extract the primary encryption-key row (the user's asymmetric keypair) from the decrypted
  * `EncryptionKeys` data bucket — the small, independently-decryptable bucket the keypair now lives in.
