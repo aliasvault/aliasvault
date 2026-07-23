@@ -271,14 +271,20 @@ pub unsafe extern "C" fn vault_codec_validate_data_bucket_ffi(input_json: *const
     codec_json_ffi(input_json, "input_json", crate::vault_codec::validate_data_bucket_json)
 }
 
-/// Extract the primary encryption-key row from the decrypted `EncryptionKeys` data bucket.
-/// Input: `DataBucket` JSON. Output: the `EncryptionKeys` row JSON object, or `null` when absent.
+/// Extract the encryption-key row whose `PublicKey` matches `public_key` from the decrypted `EncryptionKeys`
+/// data bucket. Input: `DataBucket` JSON + the target public key. Output: the matching row JSON object, or
+/// `null` when no live row carries that key.
 ///
 /// # Safety
-/// `input_json` must be a valid null-terminated C string; free the result with `free_string`.
+/// `input_json` and `public_key` must be valid null-terminated C strings; free the result with `free_string`.
 #[no_mangle]
-pub unsafe extern "C" fn vault_codec_extract_primary_encryption_key_from_bucket_ffi(input_json: *const c_char) -> *mut c_char {
-    codec_json_ffi(input_json, "input_json", crate::vault_codec::extract_primary_encryption_key_from_bucket_json)
+pub unsafe extern "C" fn vault_codec_extract_encryption_key_for_public_key_from_bucket_ffi(input_json: *const c_char, public_key: *const c_char) -> *mut c_char {
+    let bucket = ffi_read_str!(input_json, "input_json");
+    let key = ffi_read_str!(public_key, "public_key");
+    match crate::vault_codec::extract_encryption_key_for_public_key_from_bucket_json(bucket, key) {
+        Ok(json) => string_to_c_char(json),
+        Err(e) => create_error_response(&format!("vault_codec error: {}", e)),
+    }
 }
 
 /// The bucket layout: `[{ category, tables: [<name>] }]` JSON.

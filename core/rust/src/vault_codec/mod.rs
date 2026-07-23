@@ -28,7 +28,7 @@ pub use manifest::{
     BlobEntry, BucketLayoutEntry, CanonicalizeInput, CanonicalizedVault, CodecOverflow, DataBucket,
     Manifest, MaterializeInput, MaterializedTables, CodecRecord, CodecTableData, SharedFolderSpec, SharedVault,
 };
-pub use sharing::extract_primary_encryption_key_from_bucket;
+pub use sharing::extract_encryption_key_for_public_key_from_bucket;
 pub use types::{
     bucket_categories, bucket_category_for, is_personal_table, tables_for_category, BLOB_COLUMNS, BUCKET_TABLES,
     OVERFLOW_ROW_ID, OVERFLOW_TABLE, PERSONAL_TABLES, SCHEMA_VERSION, SKIP_TABLES,
@@ -137,12 +137,11 @@ pub fn validate_data_bucket(b: &DataBucket) -> ValidationResult {
     validate::validate_data_bucket(b)
 }
 
-/// Extract the primary encryption-key row from the decrypted `EncryptionKeys` data bucket — used to
-/// unwrap shared-folder VEKs during pull, decrypting only the small keypair bucket rather than the
-/// full root manifest.
-pub fn extract_primary_encryption_key_from_bucket_json(bucket_json: &str) -> VaultResult<String> {
+/// Extract the encryption-key row whose `PublicKey` matches `public_key` from the decrypted
+/// `EncryptionKeys` data bucket.
+pub fn extract_encryption_key_for_public_key_from_bucket_json(bucket_json: &str, public_key: &str) -> VaultResult<String> {
     let b: DataBucket = serde_json::from_str(bucket_json)?;
-    Ok(serde_json::to_string(&extract_primary_encryption_key_from_bucket(&b))?)
+    Ok(serde_json::to_string(&extract_encryption_key_for_public_key_from_bucket(&b, public_key))?)
 }
 
 /// SHA-256 (lowercase hex) of a base64 ciphertext string — storage-layer integrity.

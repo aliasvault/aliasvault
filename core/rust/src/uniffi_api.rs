@@ -210,11 +210,13 @@ pub fn vault_codec_compute_ciphertext_hash(base64_ciphertext: String) -> String 
     crate::vault_codec::compute_ciphertext_hash(&base64_ciphertext)
 }
 
-/// Extract the primary encryption-key row from the decrypted `EncryptionKeys` data bucket.
-/// Input: `DataBucket` JSON. Output: the `EncryptionKeys` row JSON object, or `null` when absent.
+/// Extract the encryption-key row whose `PublicKey` matches `public_key` from the decrypted `EncryptionKeys`
+/// data bucket. Input: `DataBucket` JSON + the target public key. Output: the matching row JSON object, or
+/// `null` when no live row carries that key. Chosen over the primary key so a shared-folder VEK wrapped for
+/// an older key still unwraps after key rotation.
 #[uniffi::export]
-pub fn vault_codec_extract_primary_encryption_key_from_bucket(bucket_json: String) -> Result<String, VaultError> {
-    crate::vault_codec::extract_primary_encryption_key_from_bucket_json(&bucket_json)
+pub fn vault_codec_extract_encryption_key_for_public_key_from_bucket(bucket_json: String, public_key: String) -> Result<String, VaultError> {
+    crate::vault_codec::extract_encryption_key_for_public_key_from_bucket_json(&bucket_json, &public_key)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

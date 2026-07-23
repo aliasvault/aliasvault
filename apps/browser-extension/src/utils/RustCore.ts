@@ -274,14 +274,12 @@ export async function vaultCodecMaterializeAsSqlite(manifest: CodecManifest, dat
 }
 
 /**
- * Extract the primary encryption-key row (the user's asymmetric keypair) from the decrypted
- * `EncryptionKeys` data bucket — the small, independently-decryptable bucket the keypair now lives in.
- * Used to unwrap shared-folder VEKs during pull without materializing the full root manifest.
- * Returns null when the bucket carries no primary key.
+ * Extract the encryption-key row whose `PublicKey` matches `publicKey` from the decrypted `EncryptionKeys`
+ * data bucket. Returns null when no live row carries that key.
  */
-export async function vaultCodecExtractPrimaryEncryptionKeyFromBucket(bucket: CodecDataBucket): Promise<Record<string, unknown> | null> {
+export async function vaultCodecExtractEncryptionKeyForPublicKeyFromBucket(bucket: CodecDataBucket, publicKey: string): Promise<Record<string, unknown> | null> {
   await initRustCore();
-  return (core.vaultCodecExtractPrimaryEncryptionKeyFromBucket(bucket) ?? null) as Record<string, unknown> | null;
+  return (core.vaultCodecExtractEncryptionKeyForPublicKeyFromBucket(bucket, publicKey) ?? null) as Record<string, unknown> | null;
 }
 
 /**

@@ -244,19 +244,15 @@ fn null_dangling_parent_folders(tables: &mut HashMap<String, Vec<CodecRecord>>) 
     }
 }
 
-/// Pick the current primary key row out of an `EncryptionKeys` table: the first non-deleted primary row.
-fn primary_key_row(tables: &HashMap<String, Vec<CodecRecord>>) -> Option<CodecRecord> {
-    tables
+/// Extract the encryption-key row whose `PublicKey` matches `public_key`, straight from the decrypted
+/// `EncryptionKeys` data bucket. Deleted rows are skipped. Returns `None` when no live row carries that key.
+pub fn extract_encryption_key_for_public_key_from_bucket(bucket: &DataBucket, public_key: &str) -> Option<CodecRecord> {
+    bucket
+        .tables
         .get("EncryptionKeys")?
         .iter()
-        .find(|row| is_truthy(row.get("IsPrimary")) && !is_truthy(row.get("IsDeleted")))
+        .find(|row| str_col(row, "PublicKey") == Some(public_key) && !is_truthy(row.get("IsDeleted")))
         .cloned()
-}
-
-/// Extract the primary encryption-key row (the user's asymmetric keypair, e.g. for unwrapping shared-folder VEKs) 
-/// straight from the decrypted `EncryptionKeys` data bucket.
-pub fn extract_primary_encryption_key_from_bucket(bucket: &DataBucket) -> Option<CodecRecord> {
-    primary_key_row(&bucket.tables)
 }
 
 /// Map every folder inside a spec's subtree (root included) to that spec's index. Errors when one
