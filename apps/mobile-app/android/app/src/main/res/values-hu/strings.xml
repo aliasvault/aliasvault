@@ -47,9 +47,9 @@
   <string name="add_passkey">Azonosítókulcs hozzáadása</string>
   <string name="add_passkey_subtitle">Azonosítókulcs már létező elemhez való hozzáadása</string>
   <string name="passkey_checking_connection">Kapcsolat ellenőrzése…</string>
-  <string name="passkey_retrieving">Retrieving passkey…</string>
-  <string name="passkey_verifying">Verifying…</string>
-  <string name="passkey_authenticating">Authenticating…</string>
+  <string name="passkey_retrieving">Azonosítókulcs kinyerése…</string>
+  <string name="passkey_verifying">Ellenőrzés…</string>
+  <string name="passkey_authenticating">Hitelesítés…</string>
   <string name="connection_error_title">Connection Error</string>
   <string name="connection_error_message">No connection to the server can be made. Please check your internet connection and try creating the passkey again.</string>
   <string name="session_expired_title">Session Expired</string>
@@ -63,12 +63,12 @@
   <string name="network_error_title">Network Error</string>
   <string name="network_error_message">A network error occurred. Please check your connection and try again.</string>
   <string name="server_version_not_supported_title">Server Update Required</string>
-  <string name="server_version_not_supported_message">The server version is outdated. Please contact your administrator to update the server.</string>
-  <string name="error_unlock_method_required">Please enable biometric or PIN authentication in the main AliasVault app in order to continue</string>
-  <string name="error_unlock_vault_first">Please unlock vault in AliasVault app first</string>
-  <string name="error_vault_decrypt_failed">Failed to decrypt vault</string>
-  <string name="error_biometric_cancelled">Biometric authentication cancelled</string>
-  <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
+  <string name="server_version_not_supported_message">A szerver verzió túl régi. Kérem, lépjen kapcsolatba a rendszergazdával, hogy frissítse a szervert.</string>
+  <string name="error_unlock_method_required">Kérem, kapcsolja be a PIN kódos vagy biometrikus belépést a fő appban mielőtt tovább halad</string>
+  <string name="error_unlock_vault_first">Kérem, először oldja fel az AliasVault-ot az appban</string>
+  <string name="error_vault_decrypt_failed">A széf dekódolása sikertelen</string>
+  <string name="error_biometric_cancelled">Biometrikus hitelesítés visszavonva</string>
+  <string name="error_encryption_key_failed">Nem sikerült a kódolási kulcs kinyerése</string>
   <string name="pin_unlock_vault">Széf feloldása</string>
   <string name="pin_enter_to_unlock">Adja meg PIN kódját a széf feloldáshoz</string>
   <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
@@ -83,7 +83,7 @@
   <string name="password_unlock_password_hint">Jelszó</string>
   <string name="password_unlock_button">Feloldás</string>
   <string name="password_unlock_incorrect">Hibás jelszó. Próbálkozzon újra.</string>
-  <string name="password_unlock_error">Failed to verify password</string>
-  <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
-  <string name="password_unlock_max_attempts_reached">Too many failed unlock attempts. You have been logged out for security reasons.</string>
+  <string name="password_unlock_error">A jelszó ellenőrzése sikertelen</string>
+  <string name="password_unlock_attempts_warning">Hibás jelszó. Ha további %d alkalommal sem tudja megadni a helyes jelszót, a rendszer kijelentkezteti.</string>
+  <string name="password_unlock_max_attempts_reached">Túl sok sikertelen belépési kísérlet. A rendszer biztonsági okok miatt kilépteti.</string>
 </resources>
