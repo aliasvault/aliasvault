@@ -314,7 +314,7 @@ public class VaultController(
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
         }
 
-        var rootWrite = model.Manifests.FirstOrDefault(m => m.ManifestId == null);
+        var rootWrite = model.Manifests.FirstOrDefault(m => m.IsRoot);
 
         // KEK/VEK migration (CreateVaultKey) is a full root push and only valid alongside a root manifest.
         var hasExistingVaultKey = await context.VaultKeys.AnyAsync(x => x.UserId == user.Id && x.KeyType == AuthHelper.VaultKeyTypePassword);
@@ -335,14 +335,18 @@ public class VaultController(
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
         }
 
-        // Resolve + authorize each manifest write to its stored row: a null ManifestId targets the caller's root
-        // manifest (created at registration); a keyed write targets a non-root manifest the caller owns or holds a
-        // shared grant on.
+        // Resolve + authorize each manifest write to its stored row.
         var resolved = new List<(ManifestWrite Write, VaultManifest Row)>();
         foreach (var mw in model.Manifests)
         {
-            if (mw.ManifestId == null)
+            if (mw.IsRoot)
             {
+                if (mw.ManifestId != null)
+                {
+                    // Contradictory target (root + an id): refuse rather than guess which was intended.
+                    return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
+                }
+
                 var rootRow = await context.VaultManifests.FirstOrDefaultAsync(x => x.OwnerUserId == user.Id && x.IsRoot);
                 if (rootRow == null)
                 {
@@ -351,6 +355,12 @@ public class VaultController(
 
                 resolved.Add((mw, rootRow));
                 continue;
+            }
+
+            if (mw.ManifestId == null)
+            {
+                // A non-root write must name its manifest; a missing id must never fall through to the root.
+                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
             }
 
             var row = await context.VaultManifests.FirstOrDefaultAsync(x => x.ManifestId == mw.ManifestId && !x.IsRoot);
@@ -380,7 +390,7 @@ public class VaultController(
             return Ok(new VaultWriteResponse
             {
                 Status = VaultStatus.Outdated,
-                ManifestRevisions = resolved.Select(r => new ManifestWriteResult { ManifestId = r.Write.ManifestId, Revision = r.Row.RevisionNumber }).ToList(),
+                ManifestRevisions = resolved.Select(r => new ManifestWriteResult { IsRoot = r.Write.IsRoot, ManifestId = r.Write.ManifestId, Revision = r.Row.RevisionNumber }).ToList(),
                 BucketRevisions = model.Buckets.Select(b => new BucketRevision { Category = b.Category, Revision = bucketCurrentRevisions[b.Category] }).ToList(),
             });
         }
@@ -405,8 +415,8 @@ public class VaultController(
             }
 
             // 2) Validate every referenced hash exists.
-            var ownScopeHashes = resolved.Where(r => r.Write.ManifestId == null).SelectMany(r => r.Write.BlobReferences).Select(br => br.Hash).Distinct().ToList();
-            var anyScopeHashes = resolved.Where(r => r.Write.ManifestId != null).SelectMany(r => r.Write.BlobReferences).Select(br => br.Hash).Distinct().ToList();
+            var ownScopeHashes = resolved.Where(r => r.Write.IsRoot).SelectMany(r => r.Write.BlobReferences).Select(br => br.Hash).Distinct().ToList();
+            var anyScopeHashes = resolved.Where(r => !r.Write.IsRoot).SelectMany(r => r.Write.BlobReferences).Select(br => br.Hash).Distinct().ToList();
             var missing = new List<string>();
             if (ownScopeHashes.Count > 0)
             {
@@ -428,7 +438,7 @@ public class VaultController(
                 {
                     Status = VaultStatus.Ok,
                     MissingBlobHashes = missing,
-                    ManifestRevisions = resolved.Select(r => new ManifestWriteResult { ManifestId = r.Write.ManifestId, Revision = r.Row.RevisionNumber }).ToList(),
+                    ManifestRevisions = resolved.Select(r => new ManifestWriteResult { IsRoot = r.Write.IsRoot, ManifestId = r.Write.ManifestId, Revision = r.Row.RevisionNumber }).ToList(),
                 });
             }
 
@@ -487,7 +497,7 @@ public class VaultController(
                 }
 
                 await ApplyVaultRetention(context, row, archivedRevision);
-                manifestResults.Add(new ManifestWriteResult { ManifestId = mw.ManifestId, Revision = row.RevisionNumber });
+                manifestResults.Add(new ManifestWriteResult { IsRoot = mw.IsRoot, ManifestId = mw.ManifestId, Revision = row.RevisionNumber });
             }
 
             await context.SaveChangesAsync();

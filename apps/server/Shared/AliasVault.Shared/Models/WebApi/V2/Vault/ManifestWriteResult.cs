@@ -12,7 +12,10 @@ namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 /// </summary>
 public class ManifestWriteResult
 {
-    /// <summary>Gets or sets the manifest id.</summary>
+    /// <summary>Gets or sets a value indicating whether this result is for the caller's root manifest.</summary>
+    public bool IsRoot { get; set; }
+
+    /// <summary>Gets or sets the manifest id (null for the root manifest).</summary>
     public Guid? ManifestId { get; set; }
 
     /// <summary>Gets or sets the revision.</summary>
