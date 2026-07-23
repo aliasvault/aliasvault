@@ -19,11 +19,13 @@ export class FolderRepository extends BaseRepository {
    * Create a new folder.
    * @param name - The name of the folder
    * @param parentFolderId - Optional parent folder ID for nested folders
+   * @param id - Optional explicit folder ID (used when the id must be known before creation, e.g. a shared folder
+   *   whose id is embedded in its server-side manifest); a new GUID is generated when omitted.
    * @returns The ID of the created folder
    */
-  public async create(name: string, parentFolderId?: string | null): Promise<string> {
+  public async create(name: string, parentFolderId?: string | null, id?: string): Promise<string> {
     return this.withTransaction(async () => {
-      const folderId = crypto.randomUUID().toUpperCase();
+      const folderId = id ?? crypto.randomUUID().toUpperCase();
       const currentDateTime = this.now();
 
       this.client.executeUpdate(FolderQueries.INSERT, [

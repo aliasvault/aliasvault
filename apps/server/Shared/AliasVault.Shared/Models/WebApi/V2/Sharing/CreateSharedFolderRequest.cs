@@ -9,8 +9,8 @@ namespace AliasVault.Shared.Models.WebApi.V2.Sharing;
 
 /// <summary>
 /// Request for POST /v2/Sharing/folders. Creates a new non-root (shareable) manifest owned by the caller. The
-/// folder's VEK is generated and kept client-side (wrapped into the owner's own vault); the server only stores the
-/// encrypted folder manifest. Access is granted to other users afterwards via POST /v2/Sharing/grant.
+/// folder's VEK is generated client-side and wrapped for the caller's *own* public key, persisted as a
+/// <c>shared</c> grant in the same call.
 /// </summary>
 public class CreateSharedFolderRequest
 {
@@ -25,4 +25,13 @@ public class CreateSharedFolderRequest
 
     /// <summary>Gets or sets the vault data model version string.</summary>
     public required string Version { get; set; }
+
+    /// <summary>Gets or sets the folder VEK wrapped with the caller's own public key (base64), decryptable only by the caller.</summary>
+    public required string SelfWrappedVek { get; set; }
+
+    /// <summary>Gets or sets the id of the caller's own public key used to wrap (from GET /v2/Sharing/recipient for their own username).</summary>
+    public required Guid SelfPublicKeyId { get; set; }
+
+    /// <summary>Gets or sets the asymmetric wrap scheme used, e.g. "rsa-oaep".</summary>
+    public required string WrapScheme { get; set; }
 }

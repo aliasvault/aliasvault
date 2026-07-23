@@ -22,9 +22,8 @@ using Microsoft.EntityFrameworkCore;
 
 /// <summary>
 /// Vault sharing. A shared folder is a non-root <see cref="VaultManifest"/> owned by a user and
-/// encrypted with its own VEK. Access is granted by persisting that VEK wrapped with a recipient's public key as a
-/// <c>shared</c> <see cref="VaultKey"/> row. The owner keeps their own copy of the folder VEK client-side
-/// (inside their main vault).
+/// encrypted with its own VEK. Access is granted by persisting that VEK wrapped with a member's public key as a
+/// <c>shared</c> <see cref="VaultKey"/> row.
 /// </summary>
 /// <param name="dbContextFactory">DbContext factory.</param>
 /// <param name="userManager">UserManager.</param>
@@ -69,8 +68,8 @@ public class SharingController(
     }
 
     /// <summary>
-    /// Create a new shared folder manifest owned by the caller. The folder VEK is generated and kept
-    /// client-side; the server only stores the encrypted manifest. Access is granted afterwards via <see cref="Grant"/>.
+    /// Create a new shared folder manifest owned by the caller, plus the caller's own <c>shared</c> grant (the
+    /// folder VEK wrapped with their own public key).
     /// </summary>
     /// <param name="model">The create request.</param>
     /// <param name="clientHeader">The client identifier header.</param>
@@ -83,6 +82,19 @@ public class SharingController(
         if (me == null)
         {
             return Unauthorized();
+        }
+
+        // The owner's self-grant must be wrapped asymmetrically for their own public key.
+        if (!AuthHelper.AsymmetricWrapSchemes.Contains(model.WrapScheme))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_WRAP_SCHEME, 400));
+        }
+
+        // The key wrapped for must be the caller's own public key.
+        var keyOwnedByMe = await context.UserEncryptionKeys.AnyAsync(x => x.Id == model.SelfPublicKeyId && x.UserId == me.Id);
+        if (!keyOwnedByMe)
+        {
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 404));
         }
 
         var manifest = new VaultManifest
@@ -107,6 +119,18 @@ public class SharingController(
             UpdatedAt = timeProvider.UtcNow,
         };
         context.VaultManifests.Add(manifest);
+        context.VaultKeys.Add(new VaultKey
+        {
+            Id = Guid.NewGuid(),
+            UserId = me.Id,
+            VaultManifestId = manifest.ManifestId,
+            KeyType = AuthHelper.VaultKeyTypeShared,
+            WrapScheme = model.WrapScheme,
+            WrappedVek = model.SelfWrappedVek,
+            RecipientPublicKeyId = model.SelfPublicKeyId,
+            CreatedAt = timeProvider.UtcNow,
+            UpdatedAt = timeProvider.UtcNow,
+        });
         await context.SaveChangesAsync();
 
         return Ok(new CreateSharedFolderResponse { ManifestId = manifest.ManifestId, RevisionNumber = manifest.RevisionNumber });
@@ -226,8 +250,10 @@ public class SharingController(
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
         }
 
+        // The owner holds a self-grant too (their own wrapped VEK), but it is surfaced as the synthetic owner
+        // entry below, not as a recipient. So exclude it from the recipient list.
         var grants = await context.VaultKeys
-            .Where(x => x.VaultManifestId == manifestId && x.KeyType == AuthHelper.VaultKeyTypeShared)
+            .Where(x => x.VaultManifestId == manifestId && x.KeyType == AuthHelper.VaultKeyTypeShared && x.UserId != me.Id)
             .ToListAsync();
 
         var recipientIds = grants.Select(g => g.UserId).ToList();
@@ -254,7 +280,7 @@ public class SharingController(
 
     /// <summary>
     /// Upload a new revision of a shared-folder manifest. Allowed for the owner and for every user holding a
-    /// <c>shared</c> grant on it — all members write the same manifest, guarded by the optimistic revision check
+    /// <c>shared</c> grant on it. All members write the same manifest, guarded by the optimistic revision check
     /// (a stale writer gets <see cref="VaultStatus.Outdated"/> and must re-pull + merge, like the root manifest).
     /// Blob bytes are uploaded beforehand via <c>POST /v2/Vault/blobs</c> into the pusher's own store; the manifest
     /// snapshot endpoints resolve referenced blobs across member stores.

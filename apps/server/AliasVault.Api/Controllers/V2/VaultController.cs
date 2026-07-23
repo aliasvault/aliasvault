@@ -183,6 +183,15 @@ public class VaultController(
             .GroupBy(x => x.ManifestId)
             .ToDictionary(g => g.Key, g => g.Select(x => new BlobReference { Hash = x.Hash, Category = x.Category }).ToList());
 
+        // The caller's own grants on the non-root manifests they own: the folder VEK wrapped with their own public
+        // key.
+        var ownedNonRootIds = latestManifests.Where(m => !m.IsRoot).Select(m => m.ManifestId).ToList();
+        var selfGrantsByManifest = ownedNonRootIds.Count == 0
+            ? new Dictionary<Guid, VaultKey>()
+            : await context.VaultKeys
+                .Where(k => k.UserId == user.Id && k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId != null && ownedNonRootIds.Contains(k.VaultManifestId.Value))
+                .ToDictionaryAsync(k => k.VaultManifestId!.Value);
+
         var manifests = latestManifests.Select(m => new Manifest
         {
             ManifestId = m.ManifestId,
@@ -192,10 +201,13 @@ public class VaultController(
             CiphertextHash = m.ManifestCiphertextHash,
             Revision = m.RevisionNumber,
             BlobReferences = refsByManifest.TryGetValue(m.ManifestId, out var refs) ? refs : [],
+            WrappedVek = selfGrantsByManifest.TryGetValue(m.ManifestId, out var selfGrant) ? selfGrant.WrappedVek : null,
+            WrapScheme = selfGrantsByManifest.TryGetValue(m.ManifestId, out var selfGrant2) ? selfGrant2.WrapScheme : null,
         }).ToList();
 
         // Append manifests shared with this user by other owners, each carrying the wrapped VEK the caller
-        // unwraps with its private key.
+        // unwraps with its private key. (OwnerUsername left null on the caller's own manifests above marks them
+        // as owned rather than shared-with-me.)
         manifests.AddRange(await BuildSharedWithMeManifestsAsync(context, user.Id));
 
         return Ok(new GetResponse
@@ -255,14 +267,17 @@ public class VaultController(
             BlobReferences = blobRefs,
         };
 
-        // Not the owner: enrich with the caller's grant (wrapped VEK + owner identity), same shape as the snapshot.
-        if (latest.OwnerUserId != user.Id)
+        // A non-root manifest is unlocked via the caller's grant (their wrapped VEK), whether they own it (self-grant)
+        // or another user shared it with them. Attach that grant; only stamp OwnerUsername when it is shared with them.
+        if (!latest.IsRoot)
         {
             var grant = await context.VaultKeys.FirstOrDefaultAsync(k => k.UserId == user.Id && k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId == latest.ManifestId);
-            var ownerUsername = await context.AliasVaultUsers.Where(u => u.Id == latest.OwnerUserId).Select(u => u.UserName).FirstOrDefaultAsync();
             manifest.WrappedVek = grant?.WrappedVek;
             manifest.WrapScheme = grant?.WrapScheme;
-            manifest.OwnerUsername = ownerUsername;
+            if (latest.OwnerUserId != user.Id)
+            {
+                manifest.OwnerUsername = await context.AliasVaultUsers.Where(u => u.Id == latest.OwnerUserId).Select(u => u.UserName).FirstOrDefaultAsync();
+            }
         }
 
         return Ok(manifest);
@@ -669,12 +684,14 @@ public class VaultController(
     }
 
     /// <summary>
-    /// The ids of manifests other users have granted to <paramref name="userId"/> via a <c>shared</c> VaultKey row.
+    /// The ids of manifests <b>other</b> users have granted to <paramref name="userId"/> via a <c>shared</c> VaultKey
+    /// row. The user's own self-grants are excluded, those manifests are already covered as owned manifests.
     /// </summary>
     private static async Task<List<Guid>> GetGrantedManifestIdsAsync(AliasServerDbContext context, string userId)
     {
         return await context.VaultKeys
-            .Where(k => k.UserId == userId && k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId != null)
+            .Where(k => k.UserId == userId && k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId != null
+                && context.VaultManifests.Any(m => m.ManifestId == k.VaultManifestId && m.OwnerUserId != userId))
             .Select(k => k.VaultManifestId!.Value)
             .ToListAsync();
     }
@@ -686,8 +703,12 @@ public class VaultController(
     /// </summary>
     private static async Task<List<Manifest>> BuildSharedWithMeManifestsAsync(AliasServerDbContext context, string userId)
     {
+        // Only manifests owned by OTHER users. The user's own self-grant (their own shared folders) must be
+        // excluded here — those are already returned as owned manifests, and re-listing them as shared-with-me
+        // would stamp them with an OwnerUsername, flipping the owner's own share detection off.
         var grants = await context.VaultKeys
-            .Where(k => k.UserId == userId && k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId != null)
+            .Where(k => k.UserId == userId && k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId != null
+                && context.VaultManifests.Any(m => m.ManifestId == k.VaultManifestId && m.OwnerUserId != userId))
             .ToListAsync();
         if (grants.Count == 0)
         {
