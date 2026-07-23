@@ -64,7 +64,6 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
 
         // Current SRP salt: lives on the password VaultKey for v2 migrated users, on the root manifest for legacy users.
         var encryptionSettings = AuthHelper.GetUserLatestVaultEncryptionSettings(user);
-        var hasVaultKey = user.VaultKeys.Any(x => x.KeyType == AuthHelper.VaultKeyTypePassword);
 
         // Check client version compatibility if the header is provided.
         var clientSupported = false;
@@ -82,8 +81,7 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
             ClientVersionSupported = clientSupported,
             ServerVersion = AppInfo.GetFullVersion(),
             SrpSalt = encryptionSettings.Salt,
-            HasVaultKey = hasVaultKey,
-            StorageFormat = isMigrated ? StorageFormat.Manifest : StorageFormat.SqliteBlob,
+            IsMigrated = isMigrated,
             ManifestRevisions = manifestRevisions,
             BucketRevisions = bucketRevisions,
         });

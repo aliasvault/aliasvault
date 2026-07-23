@@ -35,13 +35,11 @@ public class StatusResponse
     public required string SrpSalt { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the user has a vault key (KEK/VEK model).
-    /// TODO: remove once every user has migrated to the KEK/VEK model.
+    /// Gets or sets a value indicating whether the user has migrated to the manifest-v1 storage format (and thus the
+    /// KEK/VEK key model). False while still on the legacy sqlite-blob format.
+    /// TODO: remove once every user has migrated off the legacy sqlite-blob format.
     /// </summary>
-    public bool HasVaultKey { get; set; }
-
-    /// <summary>Gets or sets the storage format the server has recorded for the user's latest vault.</summary>
-    public required StorageFormat StorageFormat { get; set; }
+    public required bool IsMigrated { get; set; }
 
     /// <summary>
     /// Gets or sets the latest revision for each logical manifest the user has access to.

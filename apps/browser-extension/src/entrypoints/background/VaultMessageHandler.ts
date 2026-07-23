@@ -851,6 +851,7 @@ async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultM
    * Which tables make up each bucket category is owned by the Rust layer.
    */
   const layout = await vaultCodecBucketLayout();
+  const username = (await storage.getItem('local:username')) as string;
 
   for (const category of new Set(scopes)) {
     const spec = layout.find(entry => entry.category === category);
@@ -865,7 +866,7 @@ async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultM
      */
     const tables = VaultCodec.readNamedTables(sqliteClient, [...spec.tables, await vaultCodecOverflowTable()]);
     const bucket = await vaultCodecExtractBucket(category, tables);
-    const result = await vaultSyncService.pushDataBucketOnly(bucket, encryptionKey);
+    const result = await vaultSyncService.pushDataBucketOnly(bucket, encryptionKey, username);
     if (result.status !== 'ok') {
       // Conflict persisted even after the rebase-retry, let the caller run a full re-sync (status 2).
       return { status: 2, newRevisionNumber: (await storage.getItem('local:serverRevision')) as number | null ?? 0 };
@@ -1290,7 +1291,7 @@ export async function handleGetServerRevision(): Promise<number> {
 /**
  * Catch this device up when ANOTHER device performed the KEK/VEK migration.
  *
- * After another device migrates, the server reports hasVaultKey=true but this device may still be holding the old
+ * After another device migrates, the server reports isMigrated=true but this device may still be holding the old
  * password-derived key (the KEK) as its session key, with no cached wrapped VEK. Rather than force a re-login, this
  * fetches the wrapped VEK, unwraps it with the session key (= the KEK), re-encrypts the locally persisted vault
  * under the VEK, swaps the session key to the VEK, and caches the wrapped VEK. A no-op when there is nothing to
@@ -1298,10 +1299,10 @@ export async function handleGetServerRevision(): Promise<number> {
  *
  * TODO: this method can be removed once all users have migrated to the KEK/VEK model.
  *
- * @param statusResponse - the status response from the server (hasVaultKey signals another device migrated)
+ * @param statusResponse - the status response from the server (isMigrated=true signals another device migrated)
  */
 async function catchUpAfterRemoteVaultKeyMigration(statusResponse: StatusResponseV2): Promise<boolean> {
-  if (statusResponse.hasVaultKey !== true) {
+  if (!statusResponse.isMigrated) {
     return true;
   }
 

@@ -77,15 +77,15 @@ type ManifestRevision = {
     revision: number;
 };
 /**
- * Status response type (v2). Returned by GET /v2/Auth/status.
+ * Status response type (v2).
  */
 type StatusResponseV2 = {
     clientVersionSupported: boolean;
     serverVersion: string;
     manifestRevisions: ManifestRevision[];
     srpSalt: string;
-    /** Whether the user has a vault key (KEK/VEK model). Optional: absent on older servers. */
-    hasVaultKey?: boolean;
+    /** Whether the user has migrated to the manifest-v1 storage format (and the KEK/VEK key model). */
+    isMigrated: boolean;
 };
 
 /**
