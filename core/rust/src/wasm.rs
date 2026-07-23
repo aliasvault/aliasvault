@@ -214,6 +214,15 @@ pub fn vault_codec_compute_ciphertext_hash_js(base64_ciphertext: &str) -> String
     vault_codec::compute_ciphertext_hash(base64_ciphertext)
 }
 
+/// Extract the primary encryption-key row from the decrypted `EncryptionKeys` data bucket.
+/// Input: `DataBucket`. Output: the `EncryptionKeys` row object, or null when the bucket has none.
+#[wasm_bindgen(js_name = vaultCodecExtractPrimaryEncryptionKeyFromBucket)]
+pub fn vault_codec_extract_primary_encryption_key_from_bucket_js(bucket: JsValue) -> Result<JsValue, JsValue> {
+    let b: DataBucket = serde_wasm_bindgen::from_value(bucket)
+        .map_err(|e| JsValue::from_str(&format!("Failed to parse data bucket: {}", e)))?;
+    codec_to_js(&vault_codec::extract_primary_encryption_key_from_bucket(&b))
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // Credential Matcher WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════

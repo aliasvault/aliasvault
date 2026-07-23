@@ -135,6 +135,14 @@ pub fn validate_data_bucket(b: &DataBucket) -> ValidationResult {
     validate::validate_data_bucket(b)
 }
 
+/// Extract the primary encryption-key row from the decrypted `EncryptionKeys` data bucket — used to
+/// unwrap shared-folder VEKs during pull, decrypting only the small keypair bucket rather than the
+/// full root manifest.
+pub fn extract_primary_encryption_key_from_bucket_json(bucket_json: &str) -> VaultResult<String> {
+    let b: DataBucket = serde_json::from_str(bucket_json)?;
+    Ok(serde_json::to_string(&extract_primary_encryption_key_from_bucket(&b))?)
+}
+
 /// SHA-256 (lowercase hex) of a base64 ciphertext string — storage-layer integrity.
 pub fn compute_ciphertext_hash(base64_ciphertext: &str) -> String {
     match BASE64.decode(base64_ciphertext) {

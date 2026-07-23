@@ -271,6 +271,16 @@ pub unsafe extern "C" fn vault_codec_validate_data_bucket_ffi(input_json: *const
     codec_json_ffi(input_json, "input_json", crate::vault_codec::validate_data_bucket_json)
 }
 
+/// Extract the primary encryption-key row from the decrypted `EncryptionKeys` data bucket.
+/// Input: `DataBucket` JSON. Output: the `EncryptionKeys` row JSON object, or `null` when absent.
+///
+/// # Safety
+/// `input_json` must be a valid null-terminated C string; free the result with `free_string`.
+#[no_mangle]
+pub unsafe extern "C" fn vault_codec_extract_primary_encryption_key_from_bucket_ffi(input_json: *const c_char) -> *mut c_char {
+    codec_json_ffi(input_json, "input_json", crate::vault_codec::extract_primary_encryption_key_from_bucket_json)
+}
+
 /// The bucket layout: `[{ category, tables: [<name>] }]` JSON.
 ///
 /// # Safety

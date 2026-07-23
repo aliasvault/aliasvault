@@ -259,8 +259,15 @@ export async function vaultCodecCanonicalizeFromSqlite(input: CodecCanonicalizeI
  * emitting it, so unknown newer-client data survives the round trip inside the vault DB itself.
  */
 export async function vaultCodecMaterializeAsSqlite(manifest: CodecManifest, dataBuckets: CodecDataBucket[], schemaColumns?: Record<string, string[]>): Promise<CodecMaterialized> {
+/**
+ * Extract the primary encryption-key row (the user's asymmetric keypair) from the decrypted
+ * `EncryptionKeys` data bucket — the small, independently-decryptable bucket the keypair now lives in.
+ * Used to unwrap shared-folder VEKs during pull without materializing the full root manifest.
+ * Returns null when the bucket carries no primary key.
+ */
+export async function vaultCodecExtractPrimaryEncryptionKeyFromBucket(bucket: CodecDataBucket): Promise<Record<string, unknown> | null> {
   await initRustCore();
-  return core.vaultCodecMaterializeAsSqlite({ manifest, dataBuckets, schemaColumns }) as CodecMaterialized;
+  return (core.vaultCodecExtractPrimaryEncryptionKeyFromBucket(bucket) ?? null) as Record<string, unknown> | null;
 }
 
 /**
