@@ -533,6 +533,7 @@
     "contextMenu": {
       "title": "Elem opciók",
       "edit": "Szerkesztés",
+      "duplicate": "Duplicate",
       "delete": "Törlés",
       "copyUsername": "Felhasználónév másolása",
       "copyEmail": "E-mail másolása",
