@@ -533,6 +533,7 @@
     "contextMenu": {
       "title": "Options de l'élément",
       "edit": "Modifier",
+      "duplicate": "Duplicate",
       "delete": "Supprimer",
       "copyUsername": "Copier le nom d'utilisateur",
       "copyEmail": "Copier l'e-mail",
