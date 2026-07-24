@@ -289,8 +289,8 @@ public abstract class VaultImportTestsBase : ClientPlaywrightTest
 
     /// <summary>
     /// Verifies that imported items appear in the correct order based on their creation timestamps.
-    /// The web app uses "oldest first" sorting by default, so we verify that the first few items
-    /// appear in the order they were originally created.
+    /// The web app uses "newest first" (DESC create date) sorting by default, so we verify that the
+    /// most recently created items appear before the older ones.
     /// </summary>
     /// <returns>Async task.</returns>
     protected async Task VerifyItemsOrderPreserved()
@@ -308,14 +308,15 @@ public abstract class VaultImportTestsBase : ClientPlaywrightTest
         // Get text content from the page to find item positions
         var pageContent = await Page.TextContentAsync("body");
 
-        // The expected order based on creation timestamps in the test data
-        // These are the first 4 items that were created in the GenerateAvuxAvexTestFile test
+        // The expected order based on creation timestamps in the test data.
+        // These are the first 4 items that were created in the GenerateAvuxAvexTestFile test,
+        // listed newest-first to match the default DESC create date sorting.
         var expectedOrder = new[]
         {
-            "Basic Login Test",
-            "Login with 2FA",
-            "Login with Attachment",
             "Test Credit Card",
+            "Login with Attachment",
+            "Login with 2FA",
+            "Basic Login Test",
         };
 
         // Find the positions of each expected item in the page content
@@ -332,14 +333,14 @@ public abstract class VaultImportTestsBase : ClientPlaywrightTest
         // Verify we found all expected items
         Assert.That(positions.Count, Is.EqualTo(expectedOrder.Length), "Not all expected items were found on the page");
 
-        // Verify the items appear in the expected order (oldest first)
+        // Verify the items appear in the expected order (newest first)
         // Each item should appear before the next one in the list
         for (int i = 0; i < positions.Count - 1; i++)
         {
             var currentItem = positions[i];
             var nextItem = positions[i + 1];
 
-            var errorMessage = $"Item '{currentItem.ItemName}' should appear before '{nextItem.ItemName}' in oldest-first order. " +
+            var errorMessage = $"Item '{currentItem.ItemName}' should appear before '{nextItem.ItemName}' in newest-first order. " +
                 $"This indicates that timestamps from the import were not preserved correctly.";
 
             Assert.That(currentItem.Position, Is.LessThan(nextItem.Position), errorMessage);
