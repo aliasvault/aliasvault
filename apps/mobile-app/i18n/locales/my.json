@@ -533,6 +533,7 @@
     "contextMenu": {
       "title": "Item Options",
       "edit": "ပြင်ဆင်မည်",
+      "duplicate": "Duplicate",
       "delete": "ဖျက်မည်",
       "copyUsername": "Copy Username",
       "copyEmail": "Copy Email",
