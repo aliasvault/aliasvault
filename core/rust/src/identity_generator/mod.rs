@@ -228,10 +228,14 @@ fn random_birth_date<R: RngCore + ?Sized>(
         Some(BirthdateOptions {
             target_year,
             year_deviation,
-        }) => (
-            first_day_of_year(target_year - year_deviation.abs()),
-            last_day_of_year(target_year + year_deviation.abs()),
-        ),
+        }) => {
+            // Sanity check for overflows in the calculation.
+            let deviation = year_deviation.saturating_abs();
+            (
+                first_day_of_year(target_year.saturating_sub(deviation)),
+                last_day_of_year(target_year.saturating_add(deviation)),
+            )
+        }
         None => (years_ago(today, DEFAULT_MAX_AGE), years_ago(today, DEFAULT_MIN_AGE)),
     };
 

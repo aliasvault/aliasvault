@@ -30,7 +30,7 @@ fn parse_seed_hex(hex: &str) -> Option<[u8; 32]> {
 }
 
 /// Get an unbiased random index in `0..max` using rejection sampling over the given CSPRNG.
-/// Handles modulo bias by rejecting values above the largest multiple of `max` that fits in a `u32`.
+/// Handles modulo bias by rejecting values above the largest multiple of `max` that fits in a `u64`.
 pub(crate) fn unbiased_index<R: RngCore + ?Sized>(rng: &mut R, max: usize) -> usize {
     debug_assert!(max > 0, "unbiased_index requires max > 0");
     if max <= 1 {
@@ -38,12 +38,52 @@ pub(crate) fn unbiased_index<R: RngCore + ?Sized>(rng: &mut R, max: usize) -> us
     }
 
     let max = max as u64;
-    let limit = ((1u64 << 32) / max) * max;
+    let rem = max.wrapping_neg() % max;
 
     loop {
-        let value = rng.next_u32() as u64;
-        if value < limit {
+        let value = rng.next_u64();
+        if rem == 0 || value < rem.wrapping_neg() {
             return (value % max) as usize;
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn seeded_rng() -> StdRng {
+        StdRng::from_seed([7u8; 32])
+    }
+
+    #[test]
+    fn unbiased_index_stays_in_range() {
+        let mut rng = seeded_rng();
+        for max in [2usize, 3, 10, 36, 100] {
+            for _ in 0..1000 {
+                assert!(unbiased_index(&mut rng, max) < max);
+            }
+        }
+    }
+
+    #[test]
+    fn unbiased_index_handles_edge_maxes() {
+        let mut rng = seeded_rng();
+        // max <= 1 short-circuits to 0.
+        assert_eq!(unbiased_index(&mut rng, 1), 0);
+
+        // Powers of two divide 2^64 evenly (rem == 0): must accept immediately, never hang.
+        for shift in [1u32, 8, 16] {
+            let max = 1usize << shift;
+            assert!(unbiased_index(&mut rng, max) < max);
+        }
+
+        #[cfg(target_pointer_width = "64")]
+        {
+            assert!(unbiased_index(&mut rng, 1usize << 62) < (1usize << 62));
+            let big = (u32::MAX as usize) + 1;
+            assert!(unbiased_index(&mut rng, big) < big);
+            assert!(unbiased_index(&mut rng, usize::MAX) < usize::MAX);
         }
     }
 }

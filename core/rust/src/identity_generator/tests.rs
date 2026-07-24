@@ -124,6 +124,30 @@ fn birthdate_options_deviation_bounds_the_year_range() {
 }
 
 #[test]
+fn extreme_birthdate_options_do_not_overflow() {
+    // Test with values that would be able to cause overflow in the calculation.
+    let cases = [
+        (i32::MIN, i32::MIN),
+        (i32::MAX, i32::MAX),
+        (i32::MIN, i32::MAX),
+        (0, i32::MIN),
+        (i32::MAX, 1),
+    ];
+
+    for (target_year, year_deviation) in cases {
+        let mut req = request("en");
+        req.birthdate_options = Some(BirthdateOptions {
+            target_year,
+            year_deviation,
+        });
+
+        let identity = generate_from_request(&req);
+        assert!(!identity.birth_date.is_empty());
+        assert!(!identity.first_name.is_empty());
+    }
+}
+
+#[test]
 fn german_decade_names_follow_the_birth_year() {
     for target_year in (1955..=2025).step_by(10) {
         let mut req = request("de");
