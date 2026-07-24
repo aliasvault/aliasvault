@@ -1,0 +1,3 @@
+- Add right-click menu with new "duplicate credential" option
+- Update default sort order to show newest credentials first
+- Add missing password length slider to password settings popup
