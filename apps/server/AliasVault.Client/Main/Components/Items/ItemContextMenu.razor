@@ -7,7 +7,7 @@
 
 <div class="relative" @onclick:stopPropagation="true">
     <button type="button" id="@($"itemMenuBtn-{InstanceId}")" @onclick="ToggleMenu"
-            aria-label="@Localizer["ItemOptionsLabel"]" aria-haspopup="menu"
+            aria-label="@SharedLocalizer["ItemOptions"]" aria-haspopup="menu"
             class="px-0.5 py-1 rounded text-gray-400 transition-opacity @(IsOpen ? "opacity-100" : "opacity-0") group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
         <svg class="w-2 h-4" viewBox="0 0 12 24" fill="currentColor" aria-hidden="true">
             <circle cx="6" cy="5" r="2" />
@@ -23,15 +23,15 @@
                  class="@(HasCursorPosition ? "fixed" : "absolute right-0 top-full mt-1") z-50 w-40 py-1 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-700">
                 <button type="button" role="menuitem" @onclick="EditItem"
                         class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
-                    @Localizer["EditMenuItem"]
+                    @SharedLocalizer["Edit"]
                 </button>
                 <button type="button" role="menuitem" @onclick="DuplicateItem"
                         class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
-                    @Localizer["DuplicateMenuItem"]
+                    @SharedLocalizer["Duplicate"]
                 </button>
                 <button type="button" role="menuitem" @onclick="OpenDeleteModal"
                         class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-600">
-                    @Localizer["DeleteMenuItem"]
+                    @SharedLocalizer["Delete"]
                 </button>
             </div>
         </ClickOutsideHandler>
@@ -85,8 +85,7 @@
     [Parameter]
     public EventCallback OnMutated { get; set; }
 
-    private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Items.ItemContextMenu", "AliasVault.Client");
-    private IStringLocalizer ViewLocalizer => LocalizerFactory.Create("Pages.Main.Items.View", "AliasVault.Client");
+    private IStringLocalizer SharedLocalizer => LocalizerFactory.Create("SharedResources", "AliasVault.Client");
     private IStringLocalizer DeleteLocalizer => LocalizerFactory.Create("Pages.Main.Items.Delete", "AliasVault.Client");
 
     private string InstanceId { get; } = Guid.NewGuid().ToString("N")[..8];
@@ -167,11 +166,11 @@
             var newItemId = await ItemService.DuplicateEntryAsync(ItemId);
             if (newItemId == Guid.Empty)
             {
-                GlobalNotificationService.AddErrorMessage(ViewLocalizer["DuplicateErrorMessage"], true);
+                GlobalNotificationService.AddErrorMessage(SharedLocalizer["DuplicateErrorMessage"], true);
                 return;
             }
 
-            GlobalNotificationService.AddSuccessMessage(ViewLocalizer["DuplicateSuccessMessage"], true);
+            GlobalNotificationService.AddSuccessMessage(SharedLocalizer["DuplicateSuccessMessage"], true);
             await OnMutated.InvokeAsync();
         }
         finally
