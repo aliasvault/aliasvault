@@ -111,7 +111,7 @@
       "syncConflictMaxRetries": "Sincronizarea seifului a eșuat după mai multe încercări. Reîncearcă mai târziu.",
       "mergeFailed": "Îmbinarea modificărilor seifului a eșuat. Încearcă din nou.",
       "vaultTooLarge": "Seiful este prea mare pentru a fi acceptat de server. Încercați să eliminați unele elemente sau atașamente pentru a reduce dimensiunea și încercați din nou.",
-      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
+      "vaultSyncTimeout": "Sincronizarea seifului a expirat. Acest lucru se poate întâmpla dacă seiful este de dimensiuni mari sau conexiunea la internet este lentă. Încearcă din nou.",
       "invalidCode": "Introdu un cod de autentificare valid din 6 cifre.",
       "serverError": "Nu s-a putut stabili conexiunea cu serverul AliasVault. Încearcă din nou mai târziu sau contactează asistența dacă problema persistă.",
       "wrongPassword": "Parolă incorectă. Încearcă din nou.",

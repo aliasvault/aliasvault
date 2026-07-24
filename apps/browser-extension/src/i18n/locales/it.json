@@ -111,7 +111,7 @@
       "syncConflictMaxRetries": "Impossibile sincronizzare la cassaforte dopo più tentativi. Riprova più tardi.",
       "mergeFailed": "Sincronizzazione della cassaforte non riuscita. Riprovare.",
       "vaultTooLarge": "La cassaforte è troppo grande perché il server possa accettarla. Provare a rimuovere alcuni elementi o allegati per ridurre le dimensioni e riprovare.",
-      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
+      "vaultSyncTimeout": "Sincronizzazione cassaforte scaduta. Questo può accadere quando la cassaforte è molto grande o la connessione internet è troppo lenta. Riprovare.",
       "invalidCode": "Inserisci un codice di autenticazione a 6 cifre valido.",
       "serverError": "Impossibile raggiungere il server AliasVault. Riprova più tardi o contatta il supporto se il problema persiste.",
       "wrongPassword": "Password errata. Riprovare.",

@@ -31,7 +31,7 @@
     "unlockWithMobile": "Feloldás mobil appal",
     "scanQrCode": "Olvassa be a QR kódot a mobil applikációjával, hogy bejelentkezzen és feloldja a széfjét.",
     "passwordAttemptsWarning": "Hibás jelszó. Ha további {{remainingAttempts}} alkalommal rossz jelszót ad meg, kijelentkezteti a rendszer.",
-    "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
+    "maxAttemptsReached": "Túl sok sikertelen belépési kísérlet. A rendszer biztonsági okok miatt kilépteti."
   },
   "menu": {
     "vault": "Széf",
@@ -111,12 +111,12 @@
       "syncConflictMaxRetries": "Többszöri próbálkozást követően sem szinkronizálható a széf. Kérem, próbálja meg később újra.",
       "mergeFailed": "A széf változtatások összevonása sikertelen. Kérem, próbálja meg újra.",
       "vaultTooLarge": "Túl nagy a széf a befogadásra. Próbáljon meg eltávolítani egyes elemeket vagy csatolmányokat a méret csökkentéséhez, majd próbálja újra.",
-      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
+      "vaultSyncTimeout": "A széf szinkronizálás időtúllépés miatt leállt. Ez akkor fordulhat elő, ha az internet lassú vagy a széf túl nagy. Kérem próbálja újra.",
       "invalidCode": "Kérem adjon meg egy valós 6 számjegyű kódot.",
       "serverError": "Az AliasVault szerverek nem elérhetőek. Kérem próbálkozzon később, vagy keresse fel az ügyfélszolgálatot ha a probléma továbbra is fent áll.",
       "wrongPassword": "Hibás jelszó. Próbálkozzon újra.",
       "sessionExpired": "A munkamenete lejárt. Kérem, jelentkezzen be újra.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "mobileLoginRequestExpired": "A mobil belépési kérelem lejárt. Kérem, frissítse az oldalt, és próbálja újra."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Egy ismeretlen hiba lépett fel. Próbálkozzon újra.",
@@ -306,7 +306,7 @@
       "title": "Bankkártya"
     },
     "note": {
-      "title": "Secure Note"
+      "title": "Biztonsági jegyzet"
     }
   },
   "fieldLabels": {
@@ -419,7 +419,7 @@
     "clipboardClear15Seconds": "Ürítés 15 mp után",
     "autoLockTimeout": "Auto-zárolás időtúllépés",
     "autoLockTimeoutDescription": "Automatikusan zárolja a széfet bizonyos idejű inaktivitást követően",
-    "autoLockTimeoutHelp": "The vault will only lock after the specified period of inactivity (no autofill usage or extension popup opened). The vault will always lock when the browser is closed, regardless of this setting.",
+    "autoLockTimeoutHelp": "A széf csak a megadott időtartamot követően záródik (kitöltés vagy felugró bővítmény használata nélkül). A széf mindig záródik ha a böngésző bezárásra kerül ettől a beállítástól függetlenül.",
     "autoLockNever": "Soha",
     "autoLock15Seconds": "15 másodperc",
     "autoLock30Seconds": "30 másodperc",
@@ -431,17 +431,17 @@
     "autoLock4Hours": "4 óra",
     "autoLock8Hours": "8 óra",
     "autoLock24Hours": "24 óra",
-    "versionPrefix": "App version",
-    "serverVersion": "Server version",
-    "autofillSettings": "Autofill Settings",
+    "versionPrefix": "App verzió",
+    "serverVersion": "Szerver verzió",
+    "autofillSettings": "Kitöltés beállítások",
     "clipboardSettings": "Vágólap beállítások",
-    "contextMenuSettings": "Context Menu Settings",
-    "passkeySettings": "Passkey Settings",
-    "contextMenuDescription": "Right-click on input fields to access AliasVault options",
-    "selectLanguage": "Select Language",
-    "serverConfiguration": "Server Configuration",
-    "serverConfigurationDescription": "Configure the AliasVault server URL for self-hosted instances",
-    "customApiUrl": "API URL",
+    "contextMenuSettings": "Kontextus menü beállítások",
+    "passkeySettings": "Azonosítókulcs beállítások",
+    "contextMenuDescription": "Kattintson jobb egér gombbal a mezőre az AliasVault beállításokhoz",
+    "selectLanguage": "Nyelv kiválasztása",
+    "serverConfiguration": "Szerver konfiguráció",
+    "serverConfigurationDescription": "AliasVault szerver webcím konfigurálása saját üzemeltetés esetén",
+    "customApiUrl": "API webcím",
     "customClientUrl": "Kliens webcím",
     "apiUrlHint": "Az API végpont webcím (többnyire kliens webcím + /api)",
     "clientUrlHint": "A saját üzemeltetésű szerver webes felülete",
@@ -472,78 +472,78 @@
     },
     "passwordGenerator": "Jelszó Generátor",
     "passwordGeneratorSettings": {
-      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
+      "description": "Jelszó alapbeállítás újonnan létrehozott elemekhez, mint például hossz, karakter készlet, azonosítókulcs nyelve.",
       "configureButton": "Konfigurálás"
     },
-    "credentialAutofill": "Credential autofill",
-    "credentialAutofillDescription": "Show autofill popup when username/password fields are detected",
-    "totpAutofill": "2FA code autofill",
-    "totpAutofillDescription": "Show autofill popup when 2FA code fields are detected",
-    "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
-    "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
+    "credentialAutofill": "Bejegyzések kitöltése",
+    "credentialAutofillDescription": "Felugró kitöltő ablak megjelenítése ha felhasználónév/jelszó mezőt érzékel",
+    "totpAutofill": "Kétlépcsős kód kitöltés",
+    "totpAutofillDescription": "Felugró kitöltő ablak megjelenítése ha kétlépcsős mezőt érzékel",
+    "autoCopyTotpOnAutofill": "Kétlépcsős kód automata másolása vágólapra",
+    "autoCopyTotpOnAutofillDescription": "Az elem kitöltést követően a kétlépcsős kód automatikus másolása a vágólapra",
     "loginSave": {
-      "title": "Save Login Prompt",
-      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
-      "blockedSites": "Blocked sites",
-      "blockedSitesDescription": "Sites where the save prompt will never appear.",
-      "clearAllBlockedSites": "Clear all blocked sites"
+      "title": "Mentési felhívás ablak",
+      "description": "Felugró ablak amely megkérdezi, hogy a beírt belépést mentse e az oldalhoz.",
+      "blockedSites": "Blokkolt oldalak",
+      "blockedSitesDescription": "Azon oldalak, ahol a mentés felhívás nem jelenik meg.",
+      "clearAllBlockedSites": "Blokkolt oldalak listájának törlése"
     },
     "unlockMethod": {
       "title": "Széf feloldási mód",
-      "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
+      "introText": "Válassza ki, hogyan kívánja feloldani széfjét. Használhatja a mester jelszavát (mindig elérhető) vagy PIN kód a gyorsabb belépés érdekében. Azonban ha háromszor hibásan adja meg a PIN kódját, csak a mester jelszavával tud majd belépni.",
       "password": "Mester jelszó",
       "pin": "PIN kód",
-      "pinDescription": "Unlock vault with PIN code",
-      "setupPin": "Setup PIN Code",
-      "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
-      "confirmPin": "Confirm PIN",
-      "confirmPinDescription": "Enter your PIN again to confirm",
-      "invalidPinFormat": "Invalid PIN format",
-      "pinMismatch": "PINs do not match",
-      "incorrectPin": "Incorrect PIN. {{attemptsRemaining}} attempts remaining.",
-      "incorrectPinSingular": "Incorrect PIN. 1 attempt remaining.",
+      "pinDescription": "Széf feloldása PIN kóddal",
+      "setupPin": "PIN kód beállítása",
+      "enterNewPinDescription": "Adjon meg egy legalább 6 karakterű PIN kódot",
+      "confirmPin": "PIN kód megerősítése",
+      "confirmPinDescription": "Adja meg újra PIN kódját a megerősítéshez",
+      "invalidPinFormat": "Hibás PIN kód formátum",
+      "pinMismatch": "A PIN kódok nem egyeznek",
+      "incorrectPin": "Hibás PIN kód. Még {{attemptsRemaining}} próbálkozása van hátra.",
+      "incorrectPinSingular": "Hibás PIN kód. 1 próbálkozás van hátra.",
       "enableSuccess": "PIN kódos feloldás sikeresen bekapcsolva!",
-      "pinLocked": "PIN unlock has been disabled. Please use your master password to unlock your vault.",
-      "pinSecurityWarning": "PIN unlock in the browser extension can be less secure than your master password, as PINs typically have lower entropy and may be brute-forced if your device is compromised. Use it only on devices you fully trust."
+      "pinLocked": "A PIN kódos feloldás kikapcsolásra került. Használja a mester jelszavát a széfje feloldásához.",
+      "pinSecurityWarning": "A PIN kódos feloldás a böngésző bővítményben kevésbé biztonságos, mint a mester jelszavas belépés, miután komplexitása alacsony, és próbálkozásokkal hamarabb feloldható. Csak teljesen megbízható eszközök esetében használja."
     }
   },
   "passkeys": {
     "passkey": "Azonosítókulcs",
     "site": "Weboldal",
-    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential. To replace this passkey or create a new one, visit the website and follow its prompts.",
+    "helpText": "Az azonosítókulcsok az oldal kérésére jönnek létre. Kézzel nem szerkeszthetőek. Ha ki akarja törölni, el tudja távolítani a bejegyzésből. Ha ki akarja cserélni vagy újat akar létrehozni, kövesse a weboldal specifikus leírását ezzel kapcsolatban.",
     "passkeyMarkedForDeletion": "Azonosítókulcs törlésre kijelölve",
     "passkeyWillBeDeleted": "A azonosítókulcs akkor kerül törlésre, ha a bejegyzést menti.",
-    "useBrowserPasskey": "Use Browser Passkey",
+    "useBrowserPasskey": "Böngészős azonosítókulcs használata",
     "bypass": {
-      "description": "How long would you like to use the browser's passkey provider for {{origin}}?",
-      "thisTimeOnly": "This time only",
-      "alwaysForSite": "Always for this site"
+      "description": "Milyen gyakorisággal kívánja használni a(z) {{origin}} oldal azonosítókulcsát?",
+      "thisTimeOnly": "Csak most",
+      "alwaysForSite": "Mindig ennél az oldalnál"
     },
     "authenticate": {
-      "title": "Sign in with Passkey",
-      "signInFor": "Sign in with passkey for",
-      "selectPasskey": "Select a passkey to sign in:",
-      "noPasskeysFound": "No passkeys found for this site"
+      "title": "Belépés azonosítókulccsal",
+      "signInFor": "Belépés azonosítókulccsal eddig",
+      "selectPasskey": "Bejelentkezéshez használt azonosítókulcs:",
+      "noPasskeysFound": "Az oldalhoz nem található azonosítókulcs"
     },
     "create": {
-      "title": "Create Passkey",
-      "createFor": "Create a new passkey for",
+      "title": "Azonosítókulcs létrehozása",
+      "createFor": "Azonosítókulcs létrehozás ehhez:",
       "titleLabel": "Cím",
-      "titlePlaceholder": "Enter a name for this passkey",
-      "createButton": "Create Passkey",
-      "selectPasskeyToReplace": "Select a passkey to replace:",
-      "createNewPasskey": "Create New Passkey",
-      "replacingPasskey": "Replacing passkey: {{displayName}}",
-      "confirmReplace": "Confirm Replace",
-      "selectExistingLogin": "Add to existing login:",
-      "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
-      "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey",
-      "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
+      "titlePlaceholder": "Azonosítókulcs nevének megadása",
+      "createButton": "Azonosítókulcs létrehozása",
+      "selectPasskeyToReplace": "Kicserélendő azonosítókulcs:",
+      "createNewPasskey": "Új azonosítókulcs létrehozása",
+      "replacingPasskey": "Kicserélendő azonosítókulcs: {{displayName}}",
+      "confirmReplace": "Csere megerősítése",
+      "selectExistingLogin": "Hozzáadás már létező belépéshez:",
+      "selectExistingLoginDescription": "Egy már az oldalhoz tartozó elemhez való csatolás.",
+      "attachingToCredential": "Hozzáadás a(z) {{serviceName}} oldalhoz",
+      "attachPasskey": "Azonosítókulcs hozzáadása",
+      "unsupportedAlgorithm": "Az oldalhoz tartozó azonosítókulcsot nem támogatja az AliasVault."
     },
     "settings": {
-      "passkeyProvider": "Passkey Provider",
-      "passkeyProviderOn": "Passkey Provider on "
+      "passkeyProvider": "Azonosítókulcs kiszolgáló",
+      "passkeyProviderOn": "Azonosítókulcs kiszolgáló itt "
     }
   },
   "recentlyDeleted": {
@@ -589,8 +589,8 @@
   },
   "sync": {
     "offline": "Offline",
-    "tapToRetry": "Tap to retry sync",
-    "syncErrorTitle": "Sync Failed",
+    "tapToRetry": "Koppintson a szinkronizálás újrapróbálásához",
+    "syncErrorTitle": "Sikertelen szinkronizálás",
     "syncErrorDismiss": "Elvet"
   }
 }

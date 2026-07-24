@@ -39,7 +39,7 @@
     }
   },
   "auth": {
-    "login": "Logáil isteach",
+    "login": "Logáil Isteach",
     "logout": "Logáil Amach",
     "username": "Ainm úsáideora nó ríomhphost",
     "password": "Pasfhocal",
