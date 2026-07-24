@@ -533,6 +533,7 @@
     "contextMenu": {
       "title": "Item Options",
       "edit": "Düzenle",
+      "duplicate": "Duplicate",
       "delete": "Sil",
       "copyUsername": "Kullanıcı Adını Kopyala",
       "copyEmail": "E-postayı Kopyala",

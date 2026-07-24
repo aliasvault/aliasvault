@@ -533,6 +533,7 @@
     "contextMenu": {
       "title": "Objektalternativ",
       "edit": "Redigera",
+      "duplicate": "Duplicate",
       "delete": "Radera",
       "copyUsername": "Kopiera användarnamn",
       "copyEmail": "Kopiera e-postadress",

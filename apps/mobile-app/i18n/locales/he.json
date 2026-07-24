@@ -533,6 +533,7 @@
     "contextMenu": {
       "title": "Item Options",
       "edit": "עריכה",
+      "duplicate": "Duplicate",
       "delete": "מחיקה",
       "copyUsername": "העתקת שם משתמש",
       "copyEmail": "העתקת דוא״ל",

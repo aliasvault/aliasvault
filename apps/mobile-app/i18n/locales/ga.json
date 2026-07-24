@@ -533,6 +533,7 @@
     "contextMenu": {
       "title": "Roghanna Míre",
       "edit": "Cuir in Eagar",
+      "duplicate": "Duplicate",
       "delete": "Scrios",
       "copyUsername": "Cóipeáil Ainm Úsáideora",
       "copyEmail": "Cóipeáil Ríomhphoist",

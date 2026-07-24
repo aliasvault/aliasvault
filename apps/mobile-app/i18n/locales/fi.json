@@ -533,6 +533,7 @@
     "contextMenu": {
       "title": "Item Options",
       "edit": "Muokkaa",
+      "duplicate": "Duplicate",
       "delete": "Poista",
       "copyUsername": "Kopioi käyttäjänimi",
       "copyEmail": "Kopioi sähköposti",
