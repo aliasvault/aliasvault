@@ -236,12 +236,12 @@ export class SettingsRepository extends BaseRepository {
    * @returns The sort order preference
    */
   public async getCredentialsSortOrder(): Promise<CredentialSortOrder> {
-    const value = await this.getSetting('CredentialsSortOrder', 'OldestFirst');
+    const value = await this.getSetting('CredentialsSortOrder', 'NewestFirst');
     // Validate the value is a valid sort order
     if (value === 'OldestFirst' || value === 'NewestFirst' || value === 'Alphabetical') {
       return value;
     }
-    return 'OldestFirst';
+    return 'NewestFirst';
   }
 
   /**

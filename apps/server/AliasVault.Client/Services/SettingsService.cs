@@ -79,8 +79,8 @@ public sealed class SettingsService
     {
         get
         {
-            var value = GetSetting("CredentialsSortOrder", "OldestFirst")!;
-            return Enum.TryParse<CredentialSortOrder>(value, out var result) ? result : CredentialSortOrder.OldestFirst;
+            var value = GetSetting("CredentialsSortOrder", "NewestFirst")!;
+            return Enum.TryParse<CredentialSortOrder>(value, out var result) ? result : CredentialSortOrder.NewestFirst;
         }
     }
 

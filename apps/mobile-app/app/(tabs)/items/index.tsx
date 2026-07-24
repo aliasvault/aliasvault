@@ -84,7 +84,7 @@ export default function ItemsScreen(): React.ReactNode {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<ItemFilterType>('all');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
-  const [sortOrder, setSortOrder] = useState<CredentialSortOrder>('OldestFirst');
+  const [sortOrder, setSortOrder] = useState<CredentialSortOrder>('NewestFirst');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showFolderItems, setShowFolderItems] = useState(true);
 
