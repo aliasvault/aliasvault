@@ -91,6 +91,9 @@ export default function ItemsScreen(): React.ReactNode {
   // Recently deleted count state
   const [recentlyDeletedCount, setRecentlyDeletedCount] = useState(0);
 
+  // Freshly duplicated item that gets scrolled into view and briefly highlighted
+  const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
+
   // Alert dialog state
   const [alertConfig, setAlertConfig] = useState<{ title: string; message: string } | null>(null);
 
@@ -504,6 +507,41 @@ export default function ItemsScreen(): React.ReactNode {
     // Reload items to reflect the deletion
     await loadItems();
   }, [dbContext.sqliteClient, executeVaultMutation, loadItems]);
+
+  /**
+   * Duplicate an item including all fields except passkeys and field history.
+   * Non-blocking: saves locally and syncs in background via ServerSyncIndicator.
+   */
+  const onItemDuplicate = useCallback(async (itemId: string): Promise<void> => {
+    let newItemId: string | null = null;
+    await executeVaultMutation(async () => {
+      newItemId = await dbContext.sqliteClient!.items.duplicate(itemId);
+    });
+
+    // Reload items to show the new duplicate
+    await loadItems();
+
+    // Scroll to and briefly highlight the new duplicate so it's clear where it landed
+    setHighlightedItemId(newItemId);
+  }, [dbContext.sqliteClient, executeVaultMutation, loadItems]);
+
+  /**
+   * Scroll the highlighted item (a freshly created duplicate) into view once it's
+   * rendered, then clear the highlight after a short moment.
+   */
+  useEffect(() => {
+    if (!highlightedItemId) {
+      return;
+    }
+
+    const index = sortedItems.findIndex(itm => itm.Id === highlightedItemId);
+    if (index >= 0) {
+      flatListRef.current?.scrollToIndex({ index, viewPosition: 0.5, animated: true });
+    }
+
+    const timer = setTimeout(() => setHighlightedItemId(null), 2000);
+    return (): void => clearTimeout(timer);
+  }, [highlightedItemId, sortedItems]);
 
   /**
    * Navigate to a folder, preserving the active type/feature filter so the folder view
@@ -950,6 +988,9 @@ export default function ItemsScreen(): React.ReactNode {
           windowSize={7}
           removeClippedSubviews={false}
           ListHeaderComponent={renderListHeader() as React.ReactElement}
+          onScrollToIndexFailed={({ index, averageItemLength }) => {
+            flatListRef.current?.scrollToOffset({ offset: index * averageItemLength, animated: true });
+          }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -962,7 +1003,7 @@ export default function ItemsScreen(): React.ReactNode {
             isLoadingItems ? (
               <SkeletonLoader count={1} height={60} parts={2} />
             ) : (
-              <ItemCard item={itm} onItemDelete={onItemDelete} showFolderPath={!!searchQuery} />
+              <ItemCard item={itm} onItemDelete={onItemDelete} onItemDuplicate={onItemDuplicate} showFolderPath={!!searchQuery} isHighlighted={itm.Id === highlightedItemId} />
             )
           }
           ListEmptyComponent={renderEmptyComponent() as React.ReactElement}
