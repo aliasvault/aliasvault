@@ -1,0 +1,229 @@
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizerFactory LocalizerFactory
+@inject NavigationManager NavigationManager
+@inject ItemService ItemService
+@inject GlobalNotificationService GlobalNotificationService
+@inject Config Config
+
+<div class="relative" @onclick:stopPropagation="true">
+    <button type="button" id="@($"itemMenuBtn-{InstanceId}")" @onclick="ToggleMenu"
+            aria-label="@Localizer["ItemOptionsLabel"]" aria-haspopup="menu"
+            class="px-0.5 py-1 rounded text-gray-400 transition-opacity @(IsOpen ? "opacity-100" : "opacity-0") group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
+        <svg class="w-2 h-4" viewBox="0 0 12 24" fill="currentColor" aria-hidden="true">
+            <circle cx="6" cy="5" r="2" />
+            <circle cx="6" cy="12" r="2" />
+            <circle cx="6" cy="19" r="2" />
+        </svg>
+    </button>
+
+    @if (IsOpen)
+    {
+        <ClickOutsideHandler OnClose="CloseMenu" ContentId="@($"itemMenu-{InstanceId},itemMenuBtn-{InstanceId}")">
+            <div id="@($"itemMenu-{InstanceId}")" role="menu" style="@MenuStyle"
+                 class="@(HasCursorPosition ? "fixed" : "absolute right-0 top-full mt-1") z-50 w-40 py-1 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-700">
+                <button type="button" role="menuitem" @onclick="EditItem"
+                        class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+                    @Localizer["EditMenuItem"]
+                </button>
+                <button type="button" role="menuitem" @onclick="DuplicateItem"
+                        class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+                    @Localizer["DuplicateMenuItem"]
+                </button>
+                <button type="button" role="menuitem" @onclick="OpenDeleteModal"
+                        class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-600">
+                    @Localizer["DeleteMenuItem"]
+                </button>
+            </div>
+        </ClickOutsideHandler>
+    }
+
+    @if (ShowDeleteModal)
+    {
+        <FormModal
+            IsOpen="ShowDeleteModal"
+            Title="@DeleteLocalizer["DeleteItemTitle"]"
+            IconBackgroundClass="bg-red-100 dark:bg-red-900/30"
+            ConfirmText="@DeleteLocalizer["YesImSureButton"]"
+            CancelText="@DeleteLocalizer["NoCancelButton"]"
+            ConfirmButtonClass="bg-red-600 hover:bg-red-700"
+            IsLoading="IsDeleting"
+            OnConfirm="ConfirmDelete"
+            OnClose="CancelDelete">
+            <Icon>
+                <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+            </Icon>
+            <ChildContent>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                    @string.Format(DeleteLocalizer["DeleteItemDescription"].Value, Config.TrashRetentionDays)
+                </p>
+                <div class="bg-gray-50 dark:bg-gray-700/50 rounded-md p-3">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white break-all">@(ItemName ?? string.Empty)</p>
+                </div>
+            </ChildContent>
+        </FormModal>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Gets or sets the id of the item this menu operates on.
+    /// </summary>
+    [Parameter]
+    public Guid ItemId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the display name of the item, shown in the delete confirmation.
+    /// </summary>
+    [Parameter]
+    public string? ItemName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback raised after the item was duplicated or deleted so the parent can refresh its list.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnMutated { get; set; }
+
+    private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Items.ItemContextMenu", "AliasVault.Client");
+    private IStringLocalizer ViewLocalizer => LocalizerFactory.Create("Pages.Main.Items.View", "AliasVault.Client");
+    private IStringLocalizer DeleteLocalizer => LocalizerFactory.Create("Pages.Main.Items.Delete", "AliasVault.Client");
+
+    private string InstanceId { get; } = Guid.NewGuid().ToString("N")[..8];
+    private bool IsOpen { get; set; }
+    private bool ShowDeleteModal { get; set; }
+    private bool IsDeleting { get; set; }
+    private bool IsDuplicating { get; set; }
+    private double MenuX { get; set; }
+    private double MenuY { get; set; }
+
+    private bool HasCursorPosition => MenuX > 0 || MenuY > 0;
+
+    /// <summary>
+    /// Inline style that places the menu at the cursor.
+    /// </summary>
+    private string MenuStyle => HasCursorPosition
+        ? FormattableString.Invariant($"left: min({(int)MenuX}px, calc(100vw - 170px)); top: min({(int)MenuY}px, calc(100vh - 140px));")
+        : string.Empty;
+
+    /// <summary>
+    /// Opens the menu at the given mouse position. Used by parent components on right-click of the row/card.
+    /// </summary>
+    public void Open(MouseEventArgs e)
+    {
+        MenuX = e.ClientX;
+        MenuY = e.ClientY;
+        IsOpen = true;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Toggles the menu visibility from the trigger button, opening at the click position.
+    /// </summary>
+    private void ToggleMenu(MouseEventArgs e)
+    {
+        if (IsOpen)
+        {
+            CloseMenu();
+            return;
+        }
+
+        Open(e);
+    }
+
+    /// <summary>
+    /// Closes the menu.
+    /// </summary>
+    private void CloseMenu()
+    {
+        IsOpen = false;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Navigates to the edit page for this item.
+    /// </summary>
+    private void EditItem()
+    {
+        NavigationManager.NavigateTo($"/items/{ItemId}/edit");
+    }
+
+    /// <summary>
+    /// Duplicates the item (including fields, TOTP codes, attachments and tags) and notifies the parent.
+    /// </summary>
+    private async Task DuplicateItem()
+    {
+        IsOpen = false;
+
+        if (IsDuplicating)
+        {
+            return;
+        }
+
+        IsDuplicating = true;
+
+        try
+        {
+            var newItemId = await ItemService.DuplicateEntryAsync(ItemId);
+            if (newItemId == Guid.Empty)
+            {
+                GlobalNotificationService.AddErrorMessage(ViewLocalizer["DuplicateErrorMessage"], true);
+                return;
+            }
+
+            GlobalNotificationService.AddSuccessMessage(ViewLocalizer["DuplicateSuccessMessage"], true);
+            await OnMutated.InvokeAsync();
+        }
+        finally
+        {
+            IsDuplicating = false;
+        }
+    }
+
+    /// <summary>
+    /// Opens the delete confirmation modal.
+    /// </summary>
+    private void OpenDeleteModal()
+    {
+        IsOpen = false;
+        ShowDeleteModal = true;
+    }
+
+    /// <summary>
+    /// Closes the delete confirmation modal without deleting.
+    /// </summary>
+    private void CancelDelete()
+    {
+        if (IsDeleting)
+        {
+            return;
+        }
+
+        ShowDeleteModal = false;
+    }
+
+    /// <summary>
+    /// Moves the item to the trash and notifies the parent.
+    /// </summary>
+    private async Task ConfirmDelete()
+    {
+        if (IsDeleting)
+        {
+            return;
+        }
+
+        IsDeleting = true;
+
+        try
+        {
+            await ItemService.TrashItemInBackgroundAsync(ItemId);
+            GlobalNotificationService.AddSuccessMessage(DeleteLocalizer["DeleteSuccessMessage"], true);
+            ShowDeleteModal = false;
+            await OnMutated.InvokeAsync();
+        }
+        finally
+        {
+            IsDeleting = false;
+        }
+    }
+}

@@ -5,7 +5,7 @@
 <SortableTable Columns="@_tableColumns" SortColumn="@SortColumn" SortDirection="@CurrentSortDirection" OnSortChanged="HandleSortChanged">
     @foreach (var credential in Credentials)
     {
-        <SortableTableRow @key="credential.Id" Class="cursor-pointer" OnClick="@(() => NavigateToCredential(credential.Id))">
+        <SortableTableRow @key="credential.Id" Class="cursor-pointer group" OnClick="@(() => NavigateToCredential(credential.Id))" OnContextMenu="@((MouseEventArgs e) => OpenRowMenu(credential.Id, e))">
             <SortableTableColumn Padding="false">
                 <div class="flex items-center space-x-2 py-2 pl-2">
                     <ItemIcon
@@ -20,6 +20,11 @@
             <SortableTableColumn Padding="false">@credential.Username</SortableTableColumn>
             <SortableTableColumn Padding="false">@credential.Email</SortableTableColumn>
             <SortableTableColumn Padding="false">@credential.CreatedAt.ToString("yyyy-MM-dd")</SortableTableColumn>
+            <SortableTableColumn Padding="false">
+                <div class="flex justify-end pr-2">
+                    <ItemContextMenu @ref="_rowMenus[credential.Id]" ItemId="@credential.Id" ItemName="@credential.Service" OnMutated="OnMutated" />
+                </div>
+            </SortableTableColumn>
         </SortableTableRow>
     }
 </SortableTable>
@@ -51,14 +56,26 @@
     public EventCallback<(string Column, SortDirection Direction)> OnTableSortChanged { get; set; }
 
     /// <summary>
+    /// Gets or sets the callback raised after an item was mutated via the row context menu (duplicated or deleted).
+    /// </summary>
+    [Parameter]
+    public EventCallback OnMutated { get; set; }
+
+    /// <summary>
     /// Gets or sets the columns to show in the table.
     /// </summary>
     private readonly List<TableColumn> _tableColumns = [
         new TableColumn { Title = "Service", PropertyName = "Service" },
         new TableColumn { Title = "Username", PropertyName = "Username" },
         new TableColumn { Title = "Email", PropertyName = "Email" },
-        new TableColumn { Title = "Created", PropertyName = "CreatedAt" }
+        new TableColumn { Title = "Created", PropertyName = "CreatedAt" },
+        new TableColumn { Title = string.Empty, Sortable = false }
     ];
+
+    /// <summary>
+    /// Context menu component references per row, used to open the menu via right-click.
+    /// </summary>
+    private readonly Dictionary<Guid, ItemContextMenu> _rowMenus = new();
 
     /// <summary>
     /// Handles the sort changed event from the table header click.
@@ -77,5 +94,18 @@
     private void NavigateToCredential(Guid credentialId)
     {
         NavigationManager.NavigateTo($"/items/{credentialId}");
+    }
+
+    /// <summary>
+    /// Opens the context menu for the given row at the right-click position.
+    /// </summary>
+    /// <param name="credentialId">The ID of the credential whose menu to open.</param>
+    /// <param name="e">The mouse event containing the cursor position.</param>
+    private void OpenRowMenu(Guid credentialId, MouseEventArgs e)
+    {
+        if (_rowMenus.TryGetValue(credentialId, out var menu))
+        {
+            menu.Open(e);
+        }
     }
 }

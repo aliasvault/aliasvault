@@ -14,6 +14,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AliasClientDb;
 using AliasClientDb.Models;
@@ -330,6 +331,131 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         }
 
         return existingItem.Id;
+    }
+
+    /// <summary>
+    /// Duplicate an existing item including all fields. Data that is not duplicated is passkeys and field history.
+    /// </summary>
+    /// <param name="itemId">Id of item to duplicate.</param>
+    /// <returns>Guid of the new item, or an empty guid when duplication failed.</returns>
+    public async Task<Guid> DuplicateEntryAsync(Guid itemId)
+    {
+        InvalidateListCache();
+        var context = await dbService.GetDbContextAsync();
+
+        var source = await LoadEntryAsync(itemId);
+        if (source is null)
+        {
+            return Guid.Empty;
+        }
+
+        var currentDateTime = DateTime.UtcNow;
+        var existingNames = await context.Items
+            .Where(x => !x.IsDeleted && x.DeletedAt == null)
+            .Select(x => x.Name)
+            .ToListAsync();
+
+        var newItem = new Item
+        {
+            Id = Guid.NewGuid(),
+            Name = GenerateCopyName(source.Name, existingNames),
+            ItemType = source.ItemType,
+            LogoId = source.LogoId,
+            FolderId = source.FolderId,
+        };
+        SetInsertTimestamps(newItem, currentDateTime);
+
+        // Copy field values. Custom field definitions are duplicated as well so later
+        // edits to the duplicate's custom fields don't affect the original item.
+        var definitionMap = new Dictionary<Guid, FieldDefinition>();
+        foreach (var fieldValue in source.FieldValues)
+        {
+            FieldDefinition? newDefinition = null;
+            if (fieldValue.FieldDefinition is not null)
+            {
+                if (!definitionMap.TryGetValue(fieldValue.FieldDefinition.Id, out newDefinition))
+                {
+                    newDefinition = new FieldDefinition
+                    {
+                        Id = Guid.NewGuid(),
+                        FieldType = fieldValue.FieldDefinition.FieldType,
+                        Label = fieldValue.FieldDefinition.Label,
+                        IsMultiValue = fieldValue.FieldDefinition.IsMultiValue,
+                        IsHidden = fieldValue.FieldDefinition.IsHidden,
+                        EnableHistory = fieldValue.FieldDefinition.EnableHistory,
+                        Weight = fieldValue.FieldDefinition.Weight,
+                        ApplicableToTypes = fieldValue.FieldDefinition.ApplicableToTypes,
+                    };
+                    SetInsertTimestamps(newDefinition, currentDateTime);
+                    definitionMap.Add(fieldValue.FieldDefinition.Id, newDefinition);
+                    context.FieldDefinitions.Add(newDefinition);
+                }
+            }
+
+            var newFieldValue = new FieldValue
+            {
+                Id = Guid.NewGuid(),
+                ItemId = newItem.Id,
+                FieldDefinition = newDefinition,
+                FieldDefinitionId = newDefinition?.Id,
+                FieldKey = fieldValue.FieldKey,
+                Value = fieldValue.Value,
+                Weight = fieldValue.Weight,
+            };
+            SetInsertTimestamps(newFieldValue, currentDateTime);
+            newItem.FieldValues.Add(newFieldValue);
+        }
+
+        foreach (var attachment in source.Attachments)
+        {
+            var newAttachment = new Attachment
+            {
+                Id = Guid.NewGuid(),
+                Filename = attachment.Filename,
+                Blob = attachment.Blob,
+                ItemId = newItem.Id,
+            };
+            SetInsertTimestamps(newAttachment, currentDateTime);
+            newItem.Attachments.Add(newAttachment);
+        }
+
+        foreach (var totpCode in source.TotpCodes)
+        {
+            var newTotpCode = new TotpCode
+            {
+                Id = Guid.NewGuid(),
+                Name = totpCode.Name,
+                SecretKey = totpCode.SecretKey,
+                ItemId = newItem.Id,
+            };
+            SetInsertTimestamps(newTotpCode, currentDateTime);
+            newItem.TotpCodes.Add(newTotpCode);
+        }
+
+        // Copy tag assignments (the tags themselves are shared, not duplicated).
+        var sourceItemTags = await context.ItemTags
+            .Where(x => x.ItemId == itemId && !x.IsDeleted)
+            .ToListAsync();
+        foreach (var itemTag in sourceItemTags)
+        {
+            var newItemTag = new ItemTag
+            {
+                Id = Guid.NewGuid(),
+                ItemId = newItem.Id,
+                TagId = itemTag.TagId,
+            };
+            SetInsertTimestamps(newItemTag, currentDateTime);
+            newItem.ItemTags.Add(newItemTag);
+        }
+
+        context.Items.Add(newItem);
+
+        if (!await dbService.SaveDatabaseAsync())
+        {
+            return Guid.Empty;
+        }
+
+        return newItem.Id;
     }
 
     /// <summary>
@@ -1502,6 +1628,33 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
                 record.UpdatedAt = updateDateTime;
             }
         }
+    }
+
+    /// <summary>
+    /// Generate a unique name for a duplicated item: "Name (1)", "Name (2)", etc.
+    /// If the source name already ends with a "(n)" suffix, the counter is incremented
+    /// instead of stacking suffixes.
+    /// </summary>
+    /// <param name="sourceName">Name of the item being duplicated.</param>
+    /// <param name="existingNames">Names of all active items, used to avoid collisions.</param>
+    /// <returns>The generated name, or the source name when it is null or empty.</returns>
+    private static string? GenerateCopyName(string? sourceName, List<string?> existingNames)
+    {
+        if (string.IsNullOrEmpty(sourceName))
+        {
+            return sourceName;
+        }
+
+        var baseName = Regex.Replace(sourceName, " \\(\\d+\\)$", string.Empty);
+        var taken = existingNames.OfType<string>().ToHashSet();
+
+        var candidate = $"{baseName} (1)";
+        for (var counter = 2; taken.Contains(candidate); counter++)
+        {
+            candidate = $"{baseName} ({counter})";
+        }
+
+        return candidate;
     }
 
     /// <summary>

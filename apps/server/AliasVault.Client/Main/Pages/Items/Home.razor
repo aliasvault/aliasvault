@@ -140,7 +140,8 @@ else
                 Credentials="@FilteredAndSortedItems.ToList()"
                 SortColumn="@TableSortColumn"
                 CurrentSortDirection="@TableSortDirection"
-                OnTableSortChanged="HandleTableSortChanged" />
+                OnTableSortChanged="HandleTableSortChanged"
+                OnMutated="LoadItemsAsync" />
         }
         else
         {
@@ -197,7 +198,7 @@ else
                 }
                 @foreach (var item in FilteredAndSortedItems)
                 {
-                    <ItemCard @key="item.Id" Obj="@item" ShowFolderPath="@IsSearching" />
+                    <ItemCard @key="item.Id" Obj="@item" ShowFolderPath="@IsSearching" OnMutated="LoadItemsAsync" />
                 }
             </div>
         }
