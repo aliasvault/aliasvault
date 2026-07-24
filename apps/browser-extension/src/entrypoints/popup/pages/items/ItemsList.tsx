@@ -128,7 +128,7 @@ const ItemsList: React.FC = () => {
   const [showEditFolderModal, setShowEditFolderModal] = useState(false);
   const [recentlyDeletedCount, setRecentlyDeletedCount] = useState(0);
   const [folderRefreshKey, setFolderRefreshKey] = useState(0);
-  const [sortOrder, setSortOrder] = useState<CredentialSortOrder>('OldestFirst');
+  const [sortOrder, setSortOrder] = useState<CredentialSortOrder>('NewestFirst');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showFolders, setShowFolders] = useState(true);
   const { setIsInitialLoading } = useLoading();
@@ -446,7 +446,7 @@ const ItemsList: React.FC = () => {
         const deletedCount = dbContext.sqliteClient?.items.getRecentlyDeletedCount() ?? 0;
         setRecentlyDeletedCount(deletedCount);
         // Load sort order from settings
-        const savedSortOrder = dbContext.sqliteClient?.settings.getCredentialsSortOrder() ?? 'OldestFirst';
+        const savedSortOrder = dbContext.sqliteClient?.settings.getCredentialsSortOrder() ?? 'NewestFirst';
         setSortOrder(savedSortOrder);
         setIsLoading(false);
         setIsInitialLoading(false);

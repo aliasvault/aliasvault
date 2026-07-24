@@ -173,12 +173,12 @@ export class SettingsRepository extends BaseRepository {
    * @returns The sort order preference
    */
   public getCredentialsSortOrder(): CredentialSortOrder {
-    const value = this.getSetting('CredentialsSortOrder', 'OldestFirst');
+    const value = this.getSetting('CredentialsSortOrder', 'NewestFirst');
     // Validate the value is a valid sort order
     if (value === 'OldestFirst' || value === 'NewestFirst' || value === 'Alphabetical') {
       return value;
     }
-    return 'OldestFirst';
+    return 'NewestFirst';
   }
 
   /**
