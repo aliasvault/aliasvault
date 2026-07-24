@@ -1,4 +1,4 @@
-import { Gender, IdentityHelperUtils } from "@/utils/dist/core/identity-generator";
+import { Gender, IdentityHelperUtils } from "@/utils/dist/core/models/identity";
 import type { Credential } from "@/utils/dist/core/models/vault";
 import { CombinedDateOptionPatterns, CombinedGenderOptionPatterns } from "@/utils/formDetector/FieldPatterns";
 import { FormFields } from "@/utils/formDetector/types/FormFields";

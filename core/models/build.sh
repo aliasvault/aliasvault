@@ -27,7 +27,7 @@ echo "🔄 Generating language reference (C#)..."
 node scripts/generate-languages.cjs
 
 dist_path="dist"
-files_to_copy=("webapi" "vault" "defaults" "metadata" "icons")
+files_to_copy=("webapi" "vault" "defaults" "metadata" "icons" "identity")
 
 for target in "${TARGETS[@]}"; do
   echo "📂 Copying $package_name → $target"

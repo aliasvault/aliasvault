@@ -71,7 +71,6 @@ if ! $BUILD_BROWSER && ! $BUILD_DOTNET && ! $BUILD_IOS && ! $BUILD_ANDROID; then
 fi
 
 # Make all build scripts executable
-chmod +x ./typescript/identity-generator/build.sh
 chmod +x ./models/build.sh
 chmod +x ./vault/build.sh
 chmod +x ./rust/build.sh
@@ -83,12 +82,8 @@ echo ""
 if $BUILD_COMMON; then
     echo "📦 Building common components..."
 
-    # TypeScript packages (legacy - to be migrated to Rust)
-    cd ./typescript/identity-generator
-    ./build.sh
-
     # Models (TypeScript source of truth -> generates C#, Swift, Kotlin)
-    cd ../../models
+    cd ./models
     ./build.sh
 
     # Vault database schema & SQL utilities

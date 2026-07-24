@@ -4,6 +4,8 @@
 //! - **vault_merge**: Vault merge using Last-Write-Wins (LWW) strategy
 //! - **vault_pruner**: Prunes expired items from trash (30-day retention)
 //! - **credential_matcher**: Cross-platform credential filtering for autofill
+//! - **password_generator**: Password and passphrase (Diceware) generation
+//! - **identity_generator**: Random identity (alias persona) generation
 //! - **srp**: Secure Remote Password (SRP-6a) protocol for authentication
 //!
 //! This library accepts data as JSON and returns results as JSON.
@@ -11,10 +13,12 @@
 //! and calls this library for the core logic.
 
 pub mod error;
+mod rng;
 pub mod vault_merge;
 pub mod vault_pruner;
 pub mod credential_matcher;
 pub mod password_generator;
+pub mod identity_generator;
 pub mod srp;
 
 pub use error::VaultError;
@@ -30,6 +34,7 @@ pub use credential_matcher::{
     AutofillMatchingMode, CredentialMatcherInput, CredentialMatcherOutput,
 };
 pub use password_generator::{generate_password, PasswordSettings};
+pub use identity_generator::{generate_identity, Identity, IdentityRequest};
 pub use srp::{
     srp_generate_salt, srp_derive_private_key, srp_derive_verifier,
     srp_generate_ephemeral, srp_derive_session,

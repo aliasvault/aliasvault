@@ -6,8 +6,8 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
-import { getAvailableLanguages, getAvailableAgeRanges, IAgeRangeOption } from '@/utils/dist/core/identity-generator';
 import { getLanguageInfo } from '@/utils/dist/core/models/defaults';
+import * as RustCore from '@/utils/RustCore';
 
 /**
  * Identity Generator Settings page component.
@@ -23,7 +23,7 @@ const IdentityGeneratorSettings: React.FC = () => {
   const [gender, setGender] = useState<string>('random');
   const [ageRange, setAgeRange] = useState<string>('random');
   const [languageOptions, setLanguageOptions] = useState<string[]>([]);
-  const [ageRangeOptions, setAgeRangeOptions] = useState<IAgeRangeOption[]>([]);
+  const [ageRangeOptions, setAgeRangeOptions] = useState<string[]>([]);
 
   const GENDER_OPTIONS = [
     { label: t('settings.identityGeneratorSettings.genderOptions.random'), value: 'random' },
@@ -35,24 +35,31 @@ const IdentityGeneratorSettings: React.FC = () => {
    * Load settings on mount.
    */
   useEffect(() => {
-    const languages = getAvailableLanguages().sort(
-      (a, b) => getLanguageInfo(a).label.localeCompare(getLanguageInfo(b).label)
-    );
-    const ranges = getAvailableAgeRanges();
-    setLanguageOptions(languages);
-    setAgeRangeOptions(ranges);
+    /**
+     * Load available options from the Rust core and current settings from the vault.
+     */
+    const loadSettings = async (): Promise<void> => {
+      const languages = (await RustCore.getIdentityLanguages()).sort(
+        (a, b) => getLanguageInfo(a).label.localeCompare(getLanguageInfo(b).label)
+      );
+      const ranges = await RustCore.getIdentityAgeRanges();
+      setLanguageOptions(languages);
+      setAgeRangeOptions(ranges);
 
-    if (dbContext?.sqliteClient) {
-      const currentLanguage = dbContext.sqliteClient.settings.getEffectiveIdentityLanguage();
-      const currentGender = dbContext.sqliteClient.settings.getDefaultIdentityGender();
-      const currentAgeRange = dbContext.sqliteClient.settings.getDefaultIdentityAgeRange();
+      if (dbContext?.sqliteClient) {
+        const currentLanguage = await dbContext.sqliteClient.settings.getEffectiveIdentityLanguage();
+        const currentGender = dbContext.sqliteClient.settings.getDefaultIdentityGender();
+        const currentAgeRange = dbContext.sqliteClient.settings.getDefaultIdentityAgeRange();
 
-      setLanguage(currentLanguage);
-      setGender(currentGender);
-      setAgeRange(currentAgeRange);
-    }
+        setLanguage(currentLanguage);
+        setGender(currentGender);
+        setAgeRange(currentAgeRange);
+      }
 
-    setIsInitialLoading(false);
+      setIsInitialLoading(false);
+    };
+
+    void loadSettings();
   }, [dbContext?.sqliteClient, setIsInitialLoading]);
 
   /**
@@ -172,8 +179,8 @@ const IdentityGeneratorSettings: React.FC = () => {
               className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500"
             >
               {ageRangeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.value === 'random' ? t('settings.identityGeneratorSettings.genderOptions.random') : option.label}
+                <option key={option} value={option}>
+                  {option === 'random' ? t('settings.identityGeneratorSettings.genderOptions.random') : option}
                 </option>
               ))}
             </select>

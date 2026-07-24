@@ -149,6 +149,58 @@ pub fn get_diceware_languages() -> Vec<String> {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Identity Generator Functions
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Generate a random identity from a JSON-serialized request.
+///
+/// The request accepts `language`, `gender` ("male"/"female"/"random"), `ageRange`
+/// (e.g. "21-25" or "random") and/or explicit `birthdateOptions`.
+///
+/// # Arguments
+/// * `request_json` - JSON string, e.g. `{"language":"en","gender":"random","ageRange":"21-25"}`
+///
+/// # Returns
+/// The generated identity as a JSON string with camelCase fields:
+/// `{"firstName":"...","lastName":"...","gender":"Male","birthDate":"1990-05-15","emailPrefix":"...","nickName":"..."}`
+#[uniffi::export]
+pub fn generate_identity(request_json: String) -> Result<String, VaultError> {
+    crate::identity_generator::generate_identity(&request_json)
+}
+
+/// Generate a username from a JSON-serialized name input
+/// (`{"firstName":"...","lastName":"...","birthDate":"1990-05-15"}`).
+#[uniffi::export]
+pub fn generate_identity_username(input_json: String) -> Result<String, VaultError> {
+    crate::identity_generator::generate_username(&input_json)
+}
+
+/// Generate an email prefix from a JSON-serialized name input
+/// (`{"firstName":"...","lastName":"...","birthDate":"1990-05-15"}`).
+#[uniffi::export]
+pub fn generate_identity_email_prefix(input_json: String) -> Result<String, VaultError> {
+    crate::identity_generator::generate_email_prefix(&input_json)
+}
+
+/// Generate a random alphanumeric email prefix that is not based on any identity.
+#[uniffi::export]
+pub fn generate_random_email_prefix(length: u32) -> String {
+    crate::identity_generator::generate_random_email_prefix(length)
+}
+
+/// Get the list of bundled identity dictionary language codes.
+#[uniffi::export]
+pub fn get_identity_languages() -> Vec<String> {
+    crate::identity_generator::available_languages()
+}
+
+/// Get the list of age range option values ("random" plus 5-year ranges).
+#[uniffi::export]
+pub fn get_identity_age_ranges() -> Vec<String> {
+    crate::identity_generator::available_age_ranges()
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // SRP (Secure Remote Password) Functions
 // ═══════════════════════════════════════════════════════════════════════════════
 
