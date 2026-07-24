@@ -2,7 +2,7 @@ import type { Gender } from './Gender';
 
 /**
  * A generated identity as returned by the Rust core identity generator
-*/
+ */
 export type Identity = {
   firstName: string;
   lastName: string;
