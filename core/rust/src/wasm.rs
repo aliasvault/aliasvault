@@ -175,6 +175,55 @@ pub fn get_diceware_languages_js() -> Vec<String> {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Identity Generator WASM Bindings
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Generate a random identity from a JSON-serialized request.
+///
+/// The request accepts `language`, `gender` ("male"/"female"/"random"), `ageRange`
+/// (e.g. "21-25" or "random") and/or explicit `birthdateOptions`. Returns the
+/// generated identity as a JSON string with camelCase fields.
+#[wasm_bindgen(js_name = generateIdentity)]
+pub fn generate_identity_js(request_json: &str) -> Result<String, JsValue> {
+    crate::identity_generator::generate_identity(request_json)
+        .map_err(|e| JsValue::from_str(&format!("Identity generation failed: {}", e)))
+}
+
+/// Generate a username from a JSON-serialized name input
+/// (`firstName`, `lastName`, `birthDate`).
+#[wasm_bindgen(js_name = generateIdentityUsername)]
+pub fn generate_identity_username_js(input_json: &str) -> Result<String, JsValue> {
+    crate::identity_generator::generate_username(input_json)
+        .map_err(|e| JsValue::from_str(&format!("Username generation failed: {}", e)))
+}
+
+/// Generate an email prefix from a JSON-serialized name input
+/// (`firstName`, `lastName`, `birthDate`).
+#[wasm_bindgen(js_name = generateIdentityEmailPrefix)]
+pub fn generate_identity_email_prefix_js(input_json: &str) -> Result<String, JsValue> {
+    crate::identity_generator::generate_email_prefix(input_json)
+        .map_err(|e| JsValue::from_str(&format!("Email prefix generation failed: {}", e)))
+}
+
+/// Generate a random alphanumeric email prefix that is not based on any identity.
+#[wasm_bindgen(js_name = generateRandomEmailPrefix)]
+pub fn generate_random_email_prefix_js(length: u32) -> String {
+    crate::identity_generator::generate_random_email_prefix(length)
+}
+
+/// Get the list of bundled identity dictionary language codes.
+#[wasm_bindgen(js_name = getIdentityLanguages)]
+pub fn get_identity_languages_js() -> Vec<String> {
+    crate::identity_generator::available_languages()
+}
+
+/// Get the list of age range option values ("random" plus 5-year ranges).
+#[wasm_bindgen(js_name = getIdentityAgeRanges)]
+pub fn get_identity_age_ranges_js() -> Vec<String> {
+    crate::identity_generator::available_age_ranges()
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // SRP (Secure Remote Password) WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════
 

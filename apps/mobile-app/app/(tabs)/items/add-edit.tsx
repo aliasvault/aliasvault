@@ -10,12 +10,14 @@ import { StyleSheet, View, Keyboard, Platform, ScrollView, KeyboardAvoidingView,
 import Toast from 'react-native-toast-message';
 
 import type { Folder } from '@/utils/db/repositories/FolderRepository';
-import { CreateIdentityGenerator, CreateUsernameEmailGenerator, UsernameEmailGenerator, Gender, Identity, IdentityHelperUtils, convertAgeRangeToBirthdateOptions } from '@/utils/dist/core/identity-generator';
+import type { Identity } from '@/utils/dist/core/models/identity';
+import { IdentityHelperUtils } from '@/utils/dist/core/models/identity';
 import type { Attachment, Item, ItemField, TotpCode, ItemType, FieldType, PasswordSettings } from '@/utils/dist/core/models/vault';
 import { ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType, FieldCategories, FieldTypes } from '@/utils/dist/core/models/vault';
 import type { FaviconExtractModel } from '@/utils/dist/core/models/webapi';
 import emitter from '@/utils/EventEmitter';
 import { HapticsUtility } from '@/utils/HapticsUtility';
+import * as IdentityGenerator from '@/utils/IdentityGeneratorUtility';
 import * as PasswordGenerator from '@/utils/PasswordGeneratorUtility';
 import { extractServiceNameFromUrl } from '@/utils/UrlUtility';
 
@@ -263,13 +265,14 @@ export default function AddEditItemScreen(): React.ReactNode {
    */
   const generateRandomIdentity = useCallback(async (): Promise<Identity> => {
     const identityLanguage = await dbContext.sqliteClient!.getEffectiveIdentityLanguage();
-    const identityGenerator = CreateIdentityGenerator(identityLanguage);
-
     const genderPreference = await dbContext.sqliteClient!.getDefaultIdentityGender();
     const ageRange = await dbContext.sqliteClient!.getDefaultIdentityAgeRange();
-    const birthdateOptions = convertAgeRangeToBirthdateOptions(ageRange);
 
-    return identityGenerator.generateRandomIdentity(genderPreference, birthdateOptions);
+    return IdentityGenerator.generateIdentity({
+      language: identityLanguage,
+      gender: genderPreference,
+      ageRange
+    });
   }, [dbContext.sqliteClient]);
 
   /**
@@ -298,7 +301,7 @@ export default function AddEditItemScreen(): React.ReactNode {
     newValues['alias.first_name'] = identity.firstName;
     newValues['alias.last_name'] = identity.lastName;
     newValues['alias.gender'] = identity.gender;
-    newValues['alias.birthdate'] = IdentityHelperUtils.normalizeBirthDate(identity.birthDate.toISOString());
+    newValues['alias.birthdate'] = identity.birthDate;
 
     // Only overwrite username if it's empty or matches the last generated value
     if (!currentUsername || currentUsername === lastGeneratedValues.username) {
@@ -337,30 +340,7 @@ export default function AddEditItemScreen(): React.ReactNode {
         const randomIdentity = await generateRandomIdentity();
         username = randomIdentity.nickName;
       } else {
-        const usernameEmailGenerator = CreateUsernameEmailGenerator();
-
-        let gender = Gender.Other;
-        try {
-          gender = (fieldValues['alias.gender'] as string) as Gender;
-        } catch {
-          // Gender parsing failed, default to other
-        }
-
-        let parsedBirthDate = new Date(birthDate);
-        if (!birthDate || isNaN(parsedBirthDate.getTime())) {
-          parsedBirthDate = new Date();
-        }
-
-        const identity: Identity = {
-          firstName,
-          lastName,
-          nickName: '',
-          gender,
-          birthDate: parsedBirthDate,
-          emailPrefix: (fieldValues['login.email'] as string) ?? '',
-        };
-
-        username = usernameEmailGenerator.generateUsername(identity);
+        username = await IdentityGenerator.generateIdentityUsername({ firstName, lastName, birthDate });
       }
 
       handleFieldChange('login.username', username);
@@ -379,24 +359,14 @@ export default function AddEditItemScreen(): React.ReactNode {
     const firstName = (fieldValues['alias.first_name'] as string) || '';
     const lastName = (fieldValues['alias.last_name'] as string) || '';
 
-    const generator = new UsernameEmailGenerator();
     let prefix: string;
 
     if (!firstName.trim() && !lastName.trim()) {
       // No alias identity fields filled in, fall back to random prefix.
-      prefix = generator.generateRandomEmailPrefix();
+      prefix = await IdentityGenerator.generateRandomEmailPrefix();
     } else {
-      const gender = (fieldValues['alias.gender'] as string) || Gender.Other;
-      const birthdate = (fieldValues['alias.birthdate'] as string) || '';
-
-      prefix = generator.generateEmailPrefix({
-        firstName,
-        lastName,
-        gender: gender as Gender,
-        birthDate: birthdate ? new Date(birthdate) : new Date(),
-        emailPrefix: '',
-        nickName: ''
-      });
+      const birthDate = (fieldValues['alias.birthdate'] as string) || '';
+      prefix = await IdentityGenerator.generateIdentityEmailPrefix({ firstName, lastName, birthDate });
     }
 
     const defaultEmailDomain = await dbContext.sqliteClient!.getDefaultEmailDomain();
@@ -411,8 +381,7 @@ export default function AddEditItemScreen(): React.ReactNode {
    * has no persona fields to base the email on.
    */
   const handleGenerateRandomEmail = useCallback(async () => {
-    const generator = new UsernameEmailGenerator();
-    const prefix = generator.generateRandomEmailPrefix();
+    const prefix = await IdentityGenerator.generateRandomEmailPrefix();
 
     const defaultEmailDomain = await dbContext.sqliteClient!.getDefaultEmailDomain();
     const email = defaultEmailDomain ? `${prefix}@${defaultEmailDomain}` : prefix;

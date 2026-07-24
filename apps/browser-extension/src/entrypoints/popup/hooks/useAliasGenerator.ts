@@ -2,7 +2,6 @@ import { useCallback, useState, type Dispatch, type SetStateAction } from 'react
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-import { IdentityHelperUtils, CreateIdentityGenerator, convertAgeRangeToBirthdateOptions, UsernameEmailGenerator } from '@/utils/dist/core/identity-generator';
 import * as RustCore from '@/utils/RustCore';
 
 /**
@@ -33,7 +32,7 @@ type LastGeneratedValues = {
  */
 const useAliasGenerator = (): {
   generateAlias: () => Promise<GeneratedAliasData | null>;
-  generateRandomEmailPrefix: () => string;
+  generateRandomEmailPrefix: () => Promise<string>;
   lastGeneratedValues: LastGeneratedValues;
   setLastGeneratedValues: Dispatch<SetStateAction<LastGeneratedValues>>;
 } => {
@@ -46,26 +45,6 @@ const useAliasGenerator = (): {
   });
 
   /**
-   * Initialize generators for random alias generation.
-   */
-  const initializeGenerators = useCallback(async () => {
-    if (!dbContext?.sqliteClient) {
-      throw new Error('Database not initialized');
-    }
-
-    // Get effective identity language (smart default based on UI language if no explicit override)
-    const identityLanguage = dbContext.sqliteClient.settings.getEffectiveIdentityLanguage();
-
-    // Initialize identity generator based on language
-    const identityGenerator = CreateIdentityGenerator(identityLanguage);
-
-    // Initialize password generator with settings from vault
-    const passwordSettings = dbContext.sqliteClient.settings.getPasswordSettings();
-
-    return { identityGenerator, passwordSettings };
-  }, [dbContext?.sqliteClient]);
-
-  /**
    * Generate random alias data.
    * Returns the generated data for the caller to use.
    */
@@ -75,17 +54,20 @@ const useAliasGenerator = (): {
     }
 
     try {
-      const { identityGenerator, passwordSettings } = await initializeGenerators();
+      // Get effective identity language (smart default based on UI language if no explicit override)
+      const identityLanguage = await dbContext.sqliteClient.settings.getEffectiveIdentityLanguage();
 
-      // Get gender preference from database
+      // Get gender and age range preferences from database
       const genderPreference = dbContext.sqliteClient.settings.getDefaultIdentityGender();
-
-      // Get age range preference and convert to birthdate options
       const ageRange = dbContext.sqliteClient.settings.getDefaultIdentityAgeRange();
-      const birthdateOptions = convertAgeRangeToBirthdateOptions(ageRange);
 
-      // Generate identity with gender preference and birthdate options
-      const identity = identityGenerator.generateRandomIdentity(genderPreference, birthdateOptions);
+      // Generate identity and password in the Rust core
+      const identity = await RustCore.generateIdentity({
+        language: identityLanguage,
+        gender: genderPreference,
+        ageRange
+      });
+      const passwordSettings = dbContext.sqliteClient.settings.getPasswordSettings();
       const password = await RustCore.generatePassword(passwordSettings);
 
       const defaultEmailDomain = dbContext.sqliteClient.settings.getDefaultEmailDomain();
@@ -96,7 +78,7 @@ const useAliasGenerator = (): {
         firstName: identity.firstName,
         lastName: identity.lastName,
         gender: identity.gender,
-        birthdate: IdentityHelperUtils.normalizeBirthDate(identity.birthDate.toISOString()),
+        birthdate: identity.birthDate,
         username: identity.nickName,
         password
       };
@@ -113,15 +95,14 @@ const useAliasGenerator = (): {
       console.error('Error generating random alias:', error);
       return null;
     }
-  }, [dbContext?.sqliteClient, initializeGenerators]);
+  }, [dbContext?.sqliteClient]);
 
   /**
    * Generate a random string email prefix (not identity-based).
    * Used for Login-type credentials where no persona fields are available.
    */
-  const generateRandomEmailPrefix = useCallback((): string => {
-    const generator = new UsernameEmailGenerator();
-    return generator.generateRandomEmailPrefix();
+  const generateRandomEmailPrefix = useCallback((): Promise<string> => {
+    return RustCore.generateRandomEmailPrefix();
   }, []);
 
   return {

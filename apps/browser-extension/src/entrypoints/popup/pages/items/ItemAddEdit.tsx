@@ -29,12 +29,12 @@ import useFormPersistence from '@/entrypoints/popup/hooks/useFormPersistence';
 import useServiceDetection from '@/entrypoints/popup/hooks/useServiceDetection';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
-import { UsernameEmailGenerator, Gender } from '@/utils/dist/core/identity-generator';
 import type { Item, ItemField, ItemType, FieldType, Attachment, TotpCode, PasswordSettings } from '@/utils/dist/core/models/vault';
 import { FieldCategories, FieldTypes, ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType } from '@/utils/dist/core/models/vault';
 import { FaviconService } from '@/utils/FaviconService';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import * as RustCore from '@/utils/RustCore';
 
 import { browser } from '#imports';
 
@@ -542,7 +542,7 @@ const ItemAddEdit: React.FC = () => {
    * Uses the current alias field values (first name, last name, birthdate) to derive the email prefix,
    * so the email stays consistent with the filled-in persona fields.
    */
-  const handleGenerateAliasEmail = useCallback(() => {
+  const handleGenerateAliasEmail = useCallback(async (): Promise<void> => {
     if (!dbContext?.sqliteClient) {
       return;
     }
@@ -553,20 +553,10 @@ const ItemAddEdit: React.FC = () => {
     let prefix: string;
     if (!firstName.trim() && !lastName.trim()) {
       // No alias identity fields filled in, fall back to random prefix.
-      prefix = generateRandomEmailPrefix();
+      prefix = await generateRandomEmailPrefix();
     } else {
-      const gender = (fieldValues['alias.gender'] as string) || Gender.Other;
-      const birthdate = (fieldValues['alias.birthdate'] as string) || '';
-
-      const generator = new UsernameEmailGenerator();
-      prefix = generator.generateEmailPrefix({
-        firstName,
-        lastName,
-        gender: gender as Gender,
-        birthDate: birthdate ? new Date(birthdate) : new Date(),
-        emailPrefix: '',
-        nickName: ''
-      });
+      const birthDate = (fieldValues['alias.birthdate'] as string) || '';
+      prefix = await RustCore.generateIdentityEmailPrefix({ firstName, lastName, birthDate });
     }
 
     const defaultEmailDomain = dbContext.sqliteClient.settings.getDefaultEmailDomain();
@@ -583,12 +573,12 @@ const ItemAddEdit: React.FC = () => {
    * Uses random characters instead of identity-based prefixes since Login type
    * has no persona fields to base the email on.
    */
-  const handleGenerateRandomEmail = useCallback(() => {
+  const handleGenerateRandomEmail = useCallback(async (): Promise<void> => {
     if (!dbContext?.sqliteClient) {
       return;
     }
 
-    const prefix = generateRandomEmailPrefix();
+    const prefix = await generateRandomEmailPrefix();
     const defaultEmailDomain = dbContext.sqliteClient.settings.getDefaultEmailDomain();
     const email = defaultEmailDomain ? `${prefix}@${defaultEmailDomain}` : prefix;
 

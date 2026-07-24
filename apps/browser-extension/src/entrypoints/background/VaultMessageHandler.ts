@@ -576,7 +576,7 @@ export async function handleGetDefaultIdentitySettings(
 ) : Promise<IdentitySettingsResponse> {
   try {
     const sqliteClient = await createVaultSqliteClient();
-    const language = sqliteClient.settings.getEffectiveIdentityLanguage();
+    const language = await sqliteClient.settings.getEffectiveIdentityLanguage();
     const gender = sqliteClient.settings.getDefaultIdentityGender();
 
     return {

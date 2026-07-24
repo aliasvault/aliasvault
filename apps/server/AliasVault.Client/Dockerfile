@@ -64,10 +64,8 @@ RUN mkdir -p /src/AliasVault.Client/wwwroot/wasm && \
     cp /src-core/rust/dist/wasm/aliasvault_core_bg.wasm /src/AliasVault.Client/wwwroot/wasm/ && \
     cp /src-core/rust/dist/wasm/aliasvault_core.js /src/AliasVault.Client/wwwroot/wasm/
 
-# Copy TypeScript core packages (identity-generator, vault) to wwwroot/js/dist/core/
-RUN mkdir -p /src/AliasVault.Client/wwwroot/js/dist/core/identity-generator && \
-    mkdir -p /src/AliasVault.Client/wwwroot/js/dist/core/vault && \
-    cp -r /src-core/typescript/identity-generator/dist/* /src/AliasVault.Client/wwwroot/js/dist/core/identity-generator/ && \
+# Copy TypeScript core packages to wwwroot/js/dist/core/
+RUN mkdir -p /src/AliasVault.Client/wwwroot/js/dist/core/vault && \
     cp -r /src-core/vault/dist/* /src/AliasVault.Client/wwwroot/js/dist/core/vault/
 
 # Build the Client project

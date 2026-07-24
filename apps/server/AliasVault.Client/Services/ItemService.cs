@@ -74,14 +74,11 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
 
         do
         {
-            // Convert age range to birthdate options using shared JS utility
-            var birthdateOptions = await jsInteropService.ConvertAgeRangeToBirthdateOptionsAsync(dbService.Settings.DefaultIdentityAgeRange);
-
             // Get the effective identity language (smart default based on UI language if no explicit override is set)
             var identityLanguage = await GetEffectiveIdentityLanguageAsync();
 
-            // Generate a random identity using the TypeScript library
-            var identity = await jsInteropService.GenerateRandomIdentityAsync(identityLanguage, dbService.Settings.DefaultIdentityGender, birthdateOptions);
+            // Generate a random identity using the Rust core
+            var identity = await jsInteropService.GenerateRandomIdentityAsync(identityLanguage, dbService.Settings.DefaultIdentityGender, dbService.Settings.DefaultIdentityAgeRange);
 
             // Set username field
             SetFieldValue(item, FieldKey.LoginUsername, identity.NickName);

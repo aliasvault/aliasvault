@@ -292,6 +292,117 @@ window.rustCorePruneVault = async function(inputJson) {
 };
 
 // ============================================================================
+// Identity Generator Functions
+// ============================================================================
+
+/**
+ * Generate a random identity from a JSON-serialized request.
+ * @param {string} requestJson - JSON string with language, gender and ageRange.
+ * @returns {Promise<object>} The generated identity object (camelCase fields).
+ */
+window.rustCoreGenerateIdentity = async function(requestJson) {
+    if (!await initRustCore()) {
+        throw new Error('Rust WASM module not available');
+    }
+
+    try {
+        return JSON.parse(wasmModule.generateIdentity(requestJson));
+    } catch (error) {
+        console.error('[RustCore] Generate identity failed:', error);
+        throw error;
+    }
+};
+
+/**
+ * Generate a username from an identity's name fields.
+ * @param {object} identity - Object with firstName, lastName and birthDate.
+ * @returns {Promise<string>} The generated username.
+ */
+window.rustCoreGenerateIdentityUsername = async function(identity) {
+    if (!await initRustCore()) {
+        throw new Error('Rust WASM module not available');
+    }
+
+    try {
+        return wasmModule.generateIdentityUsername(JSON.stringify(identity));
+    } catch (error) {
+        console.error('[RustCore] Generate identity username failed:', error);
+        throw error;
+    }
+};
+
+/**
+ * Generate an email prefix from an identity's name fields.
+ * @param {object} identity - Object with firstName, lastName and birthDate.
+ * @returns {Promise<string>} The generated email prefix.
+ */
+window.rustCoreGenerateIdentityEmailPrefix = async function(identity) {
+    if (!await initRustCore()) {
+        throw new Error('Rust WASM module not available');
+    }
+
+    try {
+        return wasmModule.generateIdentityEmailPrefix(JSON.stringify(identity));
+    } catch (error) {
+        console.error('[RustCore] Generate identity email prefix failed:', error);
+        throw error;
+    }
+};
+
+/**
+ * Generate a random alphanumeric email prefix that is not based on any identity.
+ * @param {number} length - The desired prefix length.
+ * @returns {Promise<string>} The generated prefix.
+ */
+window.rustCoreGenerateRandomEmailPrefix = async function(length) {
+    if (!await initRustCore()) {
+        throw new Error('Rust WASM module not available');
+    }
+
+    try {
+        return wasmModule.generateRandomEmailPrefix(length);
+    } catch (error) {
+        console.error('[RustCore] Generate random email prefix failed:', error);
+        throw error;
+    }
+};
+
+/**
+ * Get the list of bundled identity dictionary language codes.
+ * @returns {Promise<string[]>} Array of language codes.
+ */
+window.rustCoreGetIdentityLanguages = async function() {
+    if (!await initRustCore()) {
+        return ['en'];
+    }
+
+    try {
+        const languages = wasmModule.getIdentityLanguages();
+        return (languages && languages.length > 0) ? languages : ['en'];
+    } catch (error) {
+        console.error('[RustCore] Get identity languages failed:', error);
+        return ['en'];
+    }
+};
+
+/**
+ * Get the list of identity age range option values ("random" plus 5-year ranges).
+ * @returns {Promise<string[]>} Array of age range values.
+ */
+window.rustCoreGetIdentityAgeRanges = async function() {
+    if (!await initRustCore()) {
+        return [];
+    }
+
+    try {
+        return wasmModule.getIdentityAgeRanges();
+    } catch (error) {
+        console.error('[RustCore] Get identity age ranges failed:', error);
+        return [];
+    }
+};
+
+// ============================================================================
 // SRP (Secure Remote Password) Functions
 // ============================================================================
 

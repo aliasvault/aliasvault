@@ -35,7 +35,6 @@ runs:
       shell: bash
       run: |
         TARGET_DIRS=(
-          "apps/mobile-app/utils/dist/core/identity-generator"
           "apps/mobile-app/utils/dist/core/models"
           "apps/mobile-app/utils/dist/core/vault"
         )
