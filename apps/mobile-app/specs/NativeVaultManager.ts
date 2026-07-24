@@ -142,6 +142,22 @@ export interface Spec extends TurboModule {
   // List the bundled Diceware wordlist language codes (first is the default, English).
   getDicewareLanguages(): Promise<string[]>;
 
+  // Identity generator (uses the native Rust core, shared with the other AliasVault clients)
+  // Generate a random identity from a JSON-serialized request
+  // (e.g. {"language":"en","gender":"random","ageRange":"21-25"}).
+  // Returns the identity as a JSON string with camelCase fields.
+  generateIdentity(requestJson: string): Promise<string>;
+  // Generate a username from a JSON-serialized name input ({"firstName","lastName","birthDate"}).
+  generateIdentityUsername(inputJson: string): Promise<string>;
+  // Generate an email prefix from a JSON-serialized name input ({"firstName","lastName","birthDate"}).
+  generateIdentityEmailPrefix(inputJson: string): Promise<string>;
+  // Generate a random alphanumeric email prefix that is not based on any identity.
+  generateRandomEmailPrefix(length: number): Promise<string>;
+  // List the bundled identity dictionary language codes.
+  getIdentityLanguages(): Promise<string[]>;
+  // List the identity age range option values ("random" plus 5-year ranges).
+  getIdentityAgeRanges(): Promise<string[]>;
+
   // SRP (Secure Remote Password) operations
   // These methods use the native Rust SRP implementation for secure authentication.
   // All hex values are uppercase strings.
