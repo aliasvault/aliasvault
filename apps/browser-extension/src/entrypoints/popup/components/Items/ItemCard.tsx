@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,6 +6,7 @@ import type { Item } from '@/utils/dist/core/models/vault';
 import { FieldKey } from '@/utils/dist/core/models/vault';
 import { truncateFolderPath } from '@/utils/FolderUtils';
 
+import ItemContextMenu from './ItemContextMenu';
 import ItemIcon from './ItemIcon';
 
 type ItemCardProps = {
@@ -15,6 +16,9 @@ type ItemCardProps = {
   currentFolderPath?: string[] | null;
   isActive?: boolean;
   optionId?: string;
+  isHighlighted?: boolean;
+  onDuplicate?: (itemId: string) => void;
+  onDelete?: (itemId: string) => void;
 };
 
 /**
@@ -24,9 +28,11 @@ type ItemCardProps = {
  * It allows the user to navigate to the item details page when clicked.
  *
  */
-const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searchTerm = '', currentFolderPath = null, isActive = false, optionId }) => {
+const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searchTerm = '', currentFolderPath = null, isActive = false, optionId, isHighlighted = false, onDuplicate, onDelete }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null);
+  const menuEnabled = Boolean(onDuplicate || onDelete);
 
   /**
    * Get the display text for the item (username or email)
@@ -102,8 +108,28 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
     return truncated.join(' > ');
   };
 
+  /**
+   * Open the item context menu from a right-click at the cursor position.
+   */
+  const handleContextMenu = (e: React.MouseEvent): void => {
+    if (!menuEnabled) {
+      return;
+    }
+    e.preventDefault();
+    setMenuPosition({ x: e.clientX, y: e.clientY });
+  };
+
+  /**
+   * Open the item context menu anchored below the ellipsis button.
+   */
+  const handleEllipsisClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMenuPosition({ x: rect.right - 160, y: rect.bottom + 4 });
+  };
+
   return (
-    <li id={optionId} role="option" aria-selected={isActive}>
+    <li id={optionId} data-item-id={item.Id} role="option" aria-selected={isActive} className="relative group" onContextMenu={handleContextMenu}>
       <button
         onClick={() => {
           // Build URL with search query parameter if present
@@ -111,7 +137,9 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
           navigate(url);
         }}
         className={`w-full p-2 border rounded flex items-center bg-white dark:bg-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-          isActive
+          menuEnabled ? 'pr-7' : ''
+        } ${
+          isActive || isHighlighted
             ? 'border-primary-500 dark:border-primary-400 ring-2 ring-primary-500/40'
             : 'border-gray-200 dark:border-gray-600'
         }`}
@@ -180,6 +208,31 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
           <p className="text-sm text-gray-600 dark:text-gray-400">{getDisplayText(item)}</p>
         </div>
       </button>
+      {menuEnabled && (
+        <button
+          onClick={handleEllipsisClick}
+          aria-label={t('items.itemOptions')}
+          aria-haspopup="menu"
+          className={`absolute right-2 top-1/2 -translate-y-1/2 px-1 py-1 rounded text-gray-400 transition-opacity ${
+            isActive || menuPosition ? 'opacity-100' : 'opacity-0'
+          } group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500`}
+        >
+          <svg className="w-2 h-4" viewBox="0 0 12 24" fill="currentColor" aria-hidden="true">
+            <circle cx="6" cy="5" r="2" />
+            <circle cx="6" cy="12" r="2" />
+            <circle cx="6" cy="19" r="2" />
+          </svg>
+        </button>
+      )}
+      {menuPosition && (
+        <ItemContextMenu
+          position={menuPosition}
+          onClose={() => setMenuPosition(null)}
+          onEdit={() => navigate(`/items/${item.Id}/edit`)}
+          onDuplicate={() => onDuplicate?.(item.Id)}
+          onDelete={() => onDelete?.(item.Id)}
+        />
+      )}
     </li>
   );
 };

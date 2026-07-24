@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
+import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
 import DeleteFolderModal from '@/entrypoints/popup/components/Folders/DeleteFolderModal';
 import FolderBreadcrumb from '@/entrypoints/popup/components/Folders/FolderBreadcrumb';
 import FolderModal from '@/entrypoints/popup/components/Folders/FolderModal';
@@ -126,6 +127,8 @@ const ItemsList: React.FC = () => {
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [showDeleteFolderModal, setShowDeleteFolderModal] = useState(false);
   const [showEditFolderModal, setShowEditFolderModal] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
+  const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
   const [recentlyDeletedCount, setRecentlyDeletedCount] = useState(0);
   const [folderRefreshKey, setFolderRefreshKey] = useState(0);
   const [sortOrder, setSortOrder] = useState<CredentialSortOrder>('NewestFirst');
@@ -254,6 +257,67 @@ const ItemsList: React.FC = () => {
     const results = dbContext.sqliteClient!.items.getAll();
     setItems(results);
   }, [dbContext, currentFolderId, executeVaultMutationAsync]);
+
+  /**
+   * Duplicate an item via the item context menu.
+   */
+  const handleDuplicateItem = useCallback(async (itemId: string) : Promise<void> => {
+    if (!dbContext?.sqliteClient) {
+      return;
+    }
+
+    let newItemId: string | null = null;
+    await executeVaultMutationAsync(async () => {
+      newItemId = await dbContext.sqliteClient!.items.duplicate(itemId);
+    });
+
+    // Refresh items to show the new duplicate
+    const results = dbContext.sqliteClient!.items.getAll();
+    setItems(results);
+
+    // Scroll to and briefly highlight the new duplicate so it's clear where it landed
+    setHighlightedItemId(newItemId);
+  }, [dbContext, executeVaultMutationAsync]);
+
+  /**
+   * Scroll the highlighted item (a freshly created duplicate) into view once it's
+   * rendered, then clear the highlight after a short moment.
+   */
+  useEffect(() => {
+    if (!highlightedItemId) {
+      return;
+    }
+
+    // Wait a frame so the re-rendered list contains the new item before scrolling.
+    requestAnimationFrame(() => {
+      document.querySelector(`[data-item-id="${highlightedItemId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    const timer = setTimeout(() => setHighlightedItemId(null), 2000);
+    return (): void => clearTimeout(timer);
+  }, [highlightedItemId]);
+
+  /**
+   * Move an item to the trash after confirmation via the item context menu.
+   */
+  const handleConfirmDeleteItem = useCallback(async () : Promise<void> => {
+    if (!dbContext?.sqliteClient || !deleteItemId) {
+      return;
+    }
+
+    const itemId = deleteItemId;
+    setDeleteItemId(null);
+
+    await executeVaultMutationAsync(async () => {
+      await dbContext.sqliteClient!.items.trash(itemId);
+    });
+
+    // Refresh items to reflect the deletion
+    const results = dbContext.sqliteClient!.items.getAll();
+    setItems(results);
+    const deletedCount = dbContext.sqliteClient!.items.getRecentlyDeletedCount();
+    setRecentlyDeletedCount(deletedCount);
+  }, [dbContext, deleteItemId, executeVaultMutationAsync]);
 
   /**
    * Handle delete folder (keep items, move them to root).
@@ -1035,6 +1099,9 @@ const ItemsList: React.FC = () => {
                   currentFolderPath={currentFolderPath}
                   isActive={activeKind === 'item' && activeIndex === index}
                   optionId={itemIdFor(index)}
+                  isHighlighted={item.Id === highlightedItemId}
+                  onDuplicate={handleDuplicateItem}
+                  onDelete={setDeleteItemId}
                 />
               ))}
             </ul>
@@ -1081,6 +1148,16 @@ const ItemsList: React.FC = () => {
           )}
         </>
       )}
+
+      {/* Delete Item Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={deleteItemId !== null}
+        onClose={() => setDeleteItemId(null)}
+        onConfirm={handleConfirmDeleteItem}
+        title={t('items.deleteItemTitle')}
+        message={t('items.deleteItemConfirm')}
+        confirmText={t('common.delete')}
+      />
 
       {/* Create Folder Modal */}
       <FolderModal
