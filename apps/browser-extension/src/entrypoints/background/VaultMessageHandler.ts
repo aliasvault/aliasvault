@@ -35,7 +35,7 @@ import { type VaultMutationScope, ALL_VAULT_MUTATION_SCOPES, DEFAULT_VAULT_MUTAT
 import { VaultCodec } from '@/utils/VaultCodec';
 import { VaultKeyService, WRAPPED_VEK_STORAGE_KEY } from '@/utils/VaultKeyService';
 import { vaultMergeService } from '@/utils/VaultMergeService';
-import { vaultSyncService, SERVER_MANIFEST_REVISIONS_STORAGE_KEY } from '@/utils/VaultSyncService';
+import { vaultSyncService, SERVER_MANIFEST_REVISIONS_STORAGE_KEY, CONTENT_FINGERPRINTS_STORAGE_KEY } from '@/utils/VaultSyncService';
 import { WebApiService } from '@/utils/WebApiService';
 
 import { t } from '@/i18n/StandaloneI18n';
@@ -278,10 +278,19 @@ async function fetchLatestVaultFromServer(): Promise<VaultResponse> {
 /**
  * Upload the current SQLite via the v2 storage format.
  * @param sqliteClient - the in-memory SQLite client to upload
+ * @param forceFullWrite - bypass the content-fingerprint gating and rewrite every manifest and bucket (server rollback recovery)
  */
-async function uploadVaultV2(sqliteClient: SqliteClient): Promise<VaultPostResponse> {
+async function uploadVaultV2(sqliteClient: SqliteClient, forceFullWrite: boolean = false): Promise<VaultPostResponse> {
   // Surfaces ServerUpdateRequiredError for servers that do not support the v2 API before we attempt the push.
-  const syncStatus = await vaultSyncService.checkStatus();
+  await vaultSyncService.checkStatus();
+
+  /*
+   * A vault key another device created must be adopted before we decide anything, otherwise this push would try to
+   * migrate an already-migrated vault and the server would reject it.
+   */
+  if (!await adoptRemoteVaultKeyIfNeeded()) {
+    throw new Error(formatErrorWithCode('Vault encryption key out of sync with the server; please log in again', AppErrorCode.VAULT_DECRYPT_FAILED));
+  }
 
   const encryptionKey = await handleGetEncryptionKey();
   if (!encryptionKey) {
@@ -294,9 +303,11 @@ async function uploadVaultV2(sqliteClient: SqliteClient): Promise<VaultPostRespo
   /*
    * KEK/VEK migration: a not-yet-migrated (legacy sqlite-blob) user has no vault key, so their first manifest
    * upload generates a VEK, re-encrypts everything with it, and creates the vault key server-side (wrapping the
-   * VEK with the current password-derived key).
+   * VEK with the current password-derived key). The local wrapped-VEK cache is the source of truth here: it is
+   * exactly "the session key is a VEK", which is the question this decision asks.
    */
-  const result = await vaultSyncService.push(sqliteClient, encryptionKey, username, emailAddresses, { createVaultKey: !syncStatus.isMigrated });
+  const hasVaultKey = await VaultKeyService.hasLocalVaultKey();
+  const result = await vaultSyncService.push(sqliteClient, encryptionKey, username, emailAddresses, { createVaultKey: !hasVaultKey, forceFullWrite });
 
   if (result.status === 'ok') {
     if (result.newEncryptionKey) {
@@ -468,6 +479,7 @@ export async function handleClearVaultData(): Promise<messageBoolResponse> {
     'local:hiddenPrivateEmailDomains',
     'local:serverRevision',
     SERVER_MANIFEST_REVISIONS_STORAGE_KEY,
+    CONTENT_FINGERPRINTS_STORAGE_KEY,
     'local:isDirty',
     ...ALL_VAULT_MUTATION_SCOPES.map(scope => dirtyScopeStorageKey(scope)),
     'local:mutationSequence',
@@ -476,6 +488,9 @@ export async function handleClearVaultData(): Promise<messageBoolResponse> {
     WRAPPED_VEK_STORAGE_KEY,
     'local:username',
   ]);
+
+  // Clear the cached vault key and wrapped VEK.
+  VaultKeyService.clearCache();
 
   // Clear all local preferences (site settings, login save settings, etc.)
   await LocalPreferencesService.clearAll();
@@ -839,10 +854,10 @@ async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultM
 
   /*
    * A bucket-only push encrypts with the current session key. A not-yet-migrated user has no vault key yet, so the
-   * full upload path must run instead to re-key the whole vault (KEK/VEK migration) in one atomic request.
+   * full upload path must run instead to re-key the whole vault (KEK/VEK migration) in one atomic request. Answered
+   * from the local wrapped-VEK cache, so the common (migrated) case costs no round-trip.
    */
-  const syncStatus = await vaultSyncService.checkStatus();
-  if (!syncStatus.isMigrated) {
+  if (!await VaultKeyService.hasLocalVaultKey()) {
     devLog('[V2Push] User not yet migrated (no vault key), falling back to full vault upload to run the KEK/VEK migration.');
     return (await uploadNewVaultToServer(sqliteClient)).response;
   }
@@ -883,10 +898,13 @@ async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultM
  * Returns the upload status and captures the mutation sequence at start for race detection.
  *
  * Bucket-aware: when every pending mutation is scoped to a data bucket (e.g. Settings), only those buckets
- * are pushed. A dirty 'manifest' scope (or a dirty state with no recorded scopes) triggers the full upload, 
- * which bundles all buckets as a safeguard too.
+ * are pushed. A dirty 'manifest' scope (or a dirty state with no recorded scopes) triggers the full upload path,
+ * whose content-fingerprint gating then narrows the write down to the manifests/buckets that actually changed.
+ * @param options - set forceFullWrite to rewrite every manifest and bucket regardless of change detection
+ *   (server rollback recovery)
  */
 export async function handleUploadVault(
+  options?: { forceFullWrite?: boolean }
 ) : Promise<messageVaultUploadResponse> {
   try {
     // Capture mutation sequence at start of upload for race detection
@@ -895,9 +913,10 @@ export async function handleUploadVault(
     // Create sqlite client from the already-stored vault blob.
     const sqliteClient = await createVaultSqliteClient();
 
-    // Upload to the server: bucket-only when possible, full vault otherwise.
+    // Upload to the server: bucket-only when possible, full vault otherwise. A forced full write skips the bucket-only shortcut.
+    const forceFullWrite = options?.forceFullWrite === true;
     const dirtyScopes = await getDirtyScopes();
-    const bucketOnly = dirtyScopes.length > 0 && !dirtyScopes.some(isManifestScope);
+    const bucketOnly = !forceFullWrite && dirtyScopes.length > 0 && !dirtyScopes.some(isManifestScope);
     if (bucketOnly) {
       devLog(`[V2Push] All pending mutations are bucket-scoped (${dirtyScopes.join(', ')}), skipping manifest upload.`);
     }
@@ -907,7 +926,7 @@ export async function handleUploadVault(
       // Bucket-only pushes never prune (settings buckets carry no trash items).
       response = await uploadDirtyBucketsOnly(sqliteClient, dirtyScopes);
     } else {
-      ({ response, vaultPruned } = await uploadNewVaultToServer(sqliteClient));
+      ({ response, vaultPruned } = await uploadNewVaultToServer(sqliteClient, forceFullWrite));
     }
 
     return {
@@ -1012,8 +1031,10 @@ export async function handleClearPersistedFormValues(): Promise<void> {
 /**
  * Upload a new version of the vault to the server using the provided sqlite client.
  * Prunes expired trash items before uploading.
+ * @param sqliteClient - the in-memory SQLite client to upload
+ * @param forceFullWrite - bypass the content-fingerprint gating and rewrite every manifest and bucket
  */
-async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<{ response: VaultPostResponse; vaultPruned: boolean }> {
+async function uploadNewVaultToServer(sqliteClient: SqliteClient, forceFullWrite: boolean = false) : Promise<{ response: VaultPostResponse; vaultPruned: boolean }> {
   devLog('[VaultSync] Upload started');
   let updatedVaultData = sqliteClient.exportToBase64();
   let vaultPruned = false;
@@ -1050,7 +1071,7 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<{ re
 
   let v2Response: VaultPostResponse;
   try {
-    v2Response = await uploadVaultV2(sqliteClient);
+    v2Response = await uploadVaultV2(sqliteClient, forceFullWrite);
   } catch (err) {
     if (err instanceof ServerUpdateRequiredError) {
       throw new Error(formatErrorWithCode(await t('common.errors.serverVersionNotSupported'), AppErrorCode.SERVER_UPDATE_REQUIRED));
@@ -1289,25 +1310,19 @@ export async function handleGetServerRevision(): Promise<number> {
 }
 
 /**
- * Catch this device up when ANOTHER device performed the KEK/VEK migration.
+ * Adopt a server-side vault key this device does not know about yet.
  *
- * After another device migrates, the server reports isMigrated=true but this device may still be holding the old
- * password-derived key (the KEK) as its session key, with no cached wrapped VEK. Rather than force a re-login, this
- * fetches the wrapped VEK, unwraps it with the session key (= the KEK), re-encrypts the locally persisted vault
- * under the VEK, swaps the session key to the VEK, and caches the wrapped VEK. A no-op when there is nothing to
- * adopt (no server key, already on the VEK, or vault locked).
+ * A missing local wrapped-VEK cache means one of three things: this user is genuinely still legacy (their next full
+ * push performs the KEK/VEK migration), another device migrated while this one held the old password-derived key, or
+ * this device never cached the key it registered with.
  *
- * TODO: this method can be removed once all users have migrated to the KEK/VEK model.
+ * TODO: this method can be removed once all users have migrated to the KEK/VEK model and we don't support legacy users anymore.
  *
- * @param statusResponse - the status response from the server (isMigrated=true signals another device migrated)
+ * @returns False only when this device is holding key material that matches neither the KEK nor the VEK, which
+ *   requires a re-login; true in every other case, including offline (the next sync retries).
  */
-async function catchUpAfterRemoteVaultKeyMigration(statusResponse: StatusResponseV2): Promise<boolean> {
-  if (!statusResponse.isMigrated) {
-    return true;
-  }
-
-  const wrappedVek = await storage.getItem(WRAPPED_VEK_STORAGE_KEY) as string | null;
-  if (wrappedVek) {
+async function adoptRemoteVaultKeyIfNeeded(): Promise<boolean> {
+  if (await VaultKeyService.hasLocalVaultKey()) {
     // Already on the KEK/VEK model: the session key is the VEK.
     return true;
   }
@@ -1318,30 +1333,56 @@ async function catchUpAfterRemoteVaultKeyMigration(statusResponse: StatusRespons
     return true;
   }
 
+  let fetchResult;
   try {
-    const fetchResult = await VaultKeyService.fetchVaultKey();
-    if (!fetchResult.vaultKey) {
-      return true;
-    }
+    fetchResult = await VaultKeyService.fetchVaultKey();
+  } catch (error) {
+    // Server unreachable or the probe failed: state is unchanged and unknowable, so let the next sync retry.
+    devWarn('[VaultSync] Vault key probe failed, deferring vault key adoption:', error);
+    return true;
+  }
 
-    const vek = await EncryptionUtility.unwrapVaultEncryptionKey(fetchResult.vaultKey.wrappedVek, sessionKey);
+  if (!fetchResult.vaultKey) {
+    // Genuinely legacy: the next full push creates the vault key and re-encrypts the vault under a fresh VEK.
+    return true;
+  }
 
-    // Re-encrypt the locally persisted vault with the VEK before swapping the session key.
-    const encryptedVault = await storage.getItem('local:encryptedVault') as string | null;
+  const serverWrappedVek = fetchResult.vaultKey.wrappedVek;
+  const encryptedVault = await storage.getItem('local:encryptedVault') as string | null;
+
+  try {
+    const vek = await EncryptionUtility.unwrapVaultEncryptionKey(serverWrappedVek, sessionKey);
+
+    // The session key was the KEK: re-encrypt the locally persisted vault with the VEK before swapping the session key.
     if (encryptedVault) {
       const decrypted = await EncryptionUtility.symmetricDecrypt(encryptedVault, sessionKey);
       await storage.setItem('local:encryptedVault', await EncryptionUtility.symmetricEncrypt(decrypted, vek));
     }
 
-    await storage.setItem(WRAPPED_VEK_STORAGE_KEY, fetchResult.vaultKey.wrappedVek);
+    await storage.setItem(WRAPPED_VEK_STORAGE_KEY, serverWrappedVek);
     await handleStoreEncryptionKey(vek);
     cachedSqliteClient = null;
     cachedVaultBlob = null;
     devLog('[VaultSync] Adopted vault key created by another client; session key swapped to the VEK.');
     return true;
-  } catch (error) {
-    devError('[VaultSync] Failed to adopt remote vault key, forcing re-login:', error);
-    return false;
+  } catch {
+    /*
+     * Unwrap failed, so the session key is not the KEK. The remaining possibility is that it already is the VEK and
+     * this device simply never cached the wrapped form (e.g. registered on the KEK/VEK model). Confirm against the
+     * local vault before trusting it: if the session key still decrypts the vault, cache the wrapped VEK and carry on.
+     */
+    try {
+      if (encryptedVault) {
+        await EncryptionUtility.symmetricDecrypt(encryptedVault, sessionKey);
+      }
+    } catch (error) {
+      devError('[VaultSync] Session key matches neither the KEK nor the VEK, forcing re-login:', error);
+      return false;
+    }
+
+    await storage.setItem(WRAPPED_VEK_STORAGE_KEY, serverWrappedVek);
+    devLog('[VaultSync] Session key is already the VEK; cached the wrapped VEK for offline unlock.');
+    return true;
   }
 }
 
@@ -1423,7 +1464,7 @@ export async function handleCheckSyncStatus(): Promise<SyncStatusCheckResult> {
     }
 
     // If another device performed the KEK/VEK migration, catch up before any sync work happens.
-    if (!await catchUpAfterRemoteVaultKeyMigration(statusResponse)) {
+    if (!await adoptRemoteVaultKeyIfNeeded()) {
       return { success: false, hasNewerVault: false, hasDirtyChanges: false, isOffline: false, requiresLogout: true, errorKey: 'passwordChanged' };
     }
 
@@ -1556,7 +1597,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     }
 
     // If another device performed the KEK/VEK migration, catch up before any sync work happens.
-    if (!await catchUpAfterRemoteVaultKeyMigration(statusResponse)) {
+    if (!await adoptRemoteVaultKeyIfNeeded()) {
       return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, errorKey: 'passwordChanged' };
     }
 
@@ -1728,7 +1769,11 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
         `client at rev ${syncState.serverRevision}. Uploading to recover server state.`
       );
 
-      const uploadResponse = await handleUploadVault();
+      /*
+       * Force a full write: the server's content is behind the client's baselines, so the fingerprint gating
+       * would wrongly report "unchanged" and skip exactly the targets that need to be restored.
+       */
+      const uploadResponse = await handleUploadVault({ forceFullWrite: true });
 
       if (uploadResponse.success && uploadResponse.status === 0) {
         await handleMarkVaultClean({

@@ -33,17 +33,6 @@ public static class VaultStatusHelper
     }
 
     /// <summary>
-    /// Whether the user has migrated to the manifest-v1 storage format.
-    /// </summary>
-    /// <param name="context">Database context.</param>
-    /// <param name="userId">The id of the user to check migration status for.</param>
-    /// <returns>True when the user's own root manifest is in the manifest-v1 format.</returns>
-    public static async Task<bool> IsUserMigratedAsync(AliasServerDbContext context, string userId)
-    {
-        return await context.VaultManifests.AnyAsync(x => x.OwnerUserId == userId && x.IsRoot && x.StorageFormat == ManifestFormat);
-    }
-
-    /// <summary>
     /// The revision entries for every manifest owned by <paramref name="userId"/>, across all storage formats.
     /// </summary>
     /// <param name="context">Database context.</param>

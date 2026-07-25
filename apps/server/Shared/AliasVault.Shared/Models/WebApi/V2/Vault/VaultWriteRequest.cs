@@ -29,7 +29,4 @@ public class VaultWriteRequest
 
     /// <summary>Gets or sets the public encryption key.</summary>
     public string? EncryptionPublicKey { get; set; }
-
-    /// <summary>Gets or sets the vault key creation request.</summary>
-    public CreateVaultKeyRequest? CreateVaultKey { get; set; }
 }

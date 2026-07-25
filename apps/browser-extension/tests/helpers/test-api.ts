@@ -459,7 +459,7 @@ export async function createTestUser(apiBaseUrl: string): Promise<TestUser> {
  */
 export async function isApiAvailable(apiBaseUrl: string): Promise<boolean> {
   try {
-    const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/v2/Auth/status`, {
+    const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/v2/Status`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

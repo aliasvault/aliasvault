@@ -84,8 +84,6 @@ type StatusResponseV2 = {
     serverVersion: string;
     manifestRevisions: ManifestRevision[];
     srpSalt: string;
-    /** Whether the user has migrated to the manifest-v1 storage format (and the KEK/VEK key model). */
-    isMigrated: boolean;
 };
 
 /**

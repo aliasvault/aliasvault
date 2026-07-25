@@ -22,6 +22,22 @@ export const WRAPPED_VEK_STORAGE_KEY = 'local:wrappedVek';
 export const VAULT_KEY_TYPE_PASSWORD = 'password';
 
 /**
+ * How long a fetched password vault key response is reused before hitting the network again. Mirrors the /v2/Status
+ * cache: long enough to collapse the repeated probes a single sync cycle makes, short enough that it never spans
+ * two user actions.
+ */
+const VAULT_KEY_CACHE_TTL_MS = 1000;
+
+/**
+ * Process-wide (background service worker) cache of the last successful password vault key response.
+ *
+ * This exists for NOT-yet-migrated users. A migrated device answers "do I have a vault key" from its local wrapped-VEK
+ * cache and never probes at all, but a legacy device has nothing to cache, so every caller that asks would otherwise
+ * issue its own GET — several per sync across the status check and the push path.
+ */
+let cachedVaultKey: { data: FetchVaultKeyResult; timestamp: number } | null = null;
+
+/**
  * Result of resolving the vault encryption key after deriving the password key.
  */
 export type ResolvedEncryptionKey = {
@@ -46,23 +62,33 @@ export type FetchVaultKeyResult = {
  */
 export class VaultKeyService {
   /**
-   * Fetch the current user's password vault key from the server.
+   * Fetch the current user's password vault key from the server. Successful responses are reused for
+   * {@link VAULT_KEY_CACHE_TTL_MS} so the several callers a single sync cycle makes share one request; errors are
+   * never cached, so a transient failure does not stick.
    * @param webApi - the API client to use (popup context passes its own instance; background creates one)
    */
   public static async fetchVaultKey(webApi?: WebApiService): Promise<FetchVaultKeyResult> {
+    if (cachedVaultKey && Date.now() - cachedVaultKey.timestamp < VAULT_KEY_CACHE_TTL_MS) {
+      return cachedVaultKey.data;
+    }
+
     const api = webApi ?? new WebApiService();
+    let result: FetchVaultKeyResult;
     try {
       const response = await api.get<VaultKeyGetResponse>(`VaultKey/${VAULT_KEY_TYPE_PASSWORD}`);
-      return { supported: true, vaultKey: response.vaultKey ?? null };
+      result = { supported: true, vaultKey: response.vaultKey ?? null };
     } catch (e) {
       if (e instanceof ApiRequestError && e.statusCode === 404) {
-        return { supported: false, vaultKey: null };
+        result = { supported: false, vaultKey: null };
+      } else if (e instanceof Error && e.message.includes('status: 404')) {
+        result = { supported: false, vaultKey: null };
+      } else {
+        throw e;
       }
-      if (e instanceof Error && e.message.includes('status: 404')) {
-        return { supported: false, vaultKey: null };
-      }
-      throw e;
     }
+
+    cachedVaultKey = { data: result, timestamp: Date.now() };
+    return result;
   }
 
   /**
@@ -111,6 +137,25 @@ export class VaultKeyService {
     }
 
     return VaultKeyService.unwrapOrThrow(wrappedVek, derivedKeyBase64);
+  }
+
+  /**
+   * Drop the in-memory vault key response cache. Called when the account is cleared (logout), so a subsequent login
+   * as a different user can never be answered from the previous user's response inside the TTL window.
+   */
+  public static clearCache(): void {
+    cachedVaultKey = null;
+  }
+
+  /**
+   * Whether this device holds a vault key, i.e. whether the session encryption key is a VEK rather than the raw
+   * password-derived key. This is the local source of truth for "am I on the KEK/VEK model": the cache is written
+   * by {@link resolveEncryptionKey} on every login and cleared when the server reports no vault key, so it needs no
+   * server round-trip. A false answer is only ever stale in one direction (another device migrated since the last
+   * login), which the background sync resolves by adopting the remote key before any vault work happens.
+   */
+  public static async hasLocalVaultKey(): Promise<boolean> {
+    return (await storage.getItem(WRAPPED_VEK_STORAGE_KEY) as string | null) !== null;
   }
 
   /**

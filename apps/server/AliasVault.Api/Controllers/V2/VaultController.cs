@@ -275,21 +275,25 @@ public class VaultController(
 
         var rootWrite = model.Manifests.FirstOrDefault(m => m.IsRoot);
 
-        // KEK/VEK migration (CreateVaultKey) is a full root push and only valid alongside a root manifest.
+        /*
+         * KEK/VEK migration: the wrapped VEK rides on the root manifest write it unlocks. A non-root write must never
+         * carry one. We reject rather than silently ignore, so a misdirected key can never be dropped unnoticed.
+         * TODO: these guards can be removed once all user has migrated to the KEK/VEK model and we don't support legacy users anymore.
+         */
         var hasExistingVaultKey = await context.VaultKeys.AnyAsync(x => x.UserId == user.Id && x.KeyType == AuthHelper.VaultKeyTypePassword);
-        if (model.CreateVaultKey != null && (rootWrite == null || model.CreateVaultKey.KeyType != AuthHelper.VaultKeyTypePassword))
+        var migrationWrappedVek = rootWrite?.WrappedVek;
+        if (model.Manifests.Any(m => !m.IsRoot && !string.IsNullOrEmpty(m.WrappedVek)))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
         }
 
-        if (model.CreateVaultKey != null && hasExistingVaultKey)
+        if (!string.IsNullOrEmpty(migrationWrappedVek) && hasExistingVaultKey)
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400));
         }
 
-        // A root push from a not-yet-migrated user must carry CreateVaultKey.
-        // TODO: remove this guard once every user has migrated to the KEK/VEK model (no keyless users remain).
-        if (rootWrite != null && model.CreateVaultKey == null && !hasExistingVaultKey)
+        // A root push from a not-yet-migrated user must carry the wrapped VEK to migrate the vault into the manifest-v1 format.
+        if (rootWrite != null && string.IsNullOrEmpty(migrationWrappedVek) && !hasExistingVaultKey)
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
         }
@@ -364,7 +368,7 @@ public class VaultController(
             // 1) Upsert any new blob objects.
             if (model.NewBlobs.Count > 0)
             {
-                if (!await TryUpsertBlobObjectsAsync(context, user.Id, model.NewBlobs, overwrite: model.CreateVaultKey != null))
+                if (!await TryUpsertBlobObjectsAsync(context, user.Id, model.NewBlobs, overwrite: !string.IsNullOrEmpty(migrationWrappedVek)))
                 {
                     await tx.RollbackAsync();
                     return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
@@ -432,7 +436,7 @@ public class VaultController(
 
                     // Create the VaultKey row atomically with this write on the KEK/VEK migration (first push after the
                     // client re-encrypted the vault under a fresh VEK). Move the SRP credentials off the manifest row.
-                    if (model.CreateVaultKey != null)
+                    if (!string.IsNullOrEmpty(migrationWrappedVek))
                     {
                         context.VaultKeys.Add(new VaultKey
                         {
@@ -441,7 +445,7 @@ public class VaultController(
                             VaultManifestId = row.ManifestId,
                             KeyType = AuthHelper.VaultKeyTypePassword,
                             WrapScheme = AuthHelper.WrapSchemeAesGcmKek,
-                            WrappedVek = model.CreateVaultKey.WrappedVek,
+                            WrappedVek = migrationWrappedVek,
                             Salt = row.Salt,
                             Verifier = row.Verifier,
                             EncryptionType = row.EncryptionType,

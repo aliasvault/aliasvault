@@ -33,4 +33,13 @@ public class ManifestWrite
     /// <summary>Gets or sets the complete list of blob hashes this manifest revision references. The server validates
     /// each exists (in the caller's store for the root manifest; in any member's store for a shared manifest) before committing.</summary>
     public List<BlobReference> BlobReferences { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the wrapped VEK of the vault encryption key encrypted with the password-derived KEK using AES-256-GCM.
+    /// Set on the legacy user's first manifest-v1 write, where the client re-encrypts the whole vault under a fresh VEK;
+    /// the server creates the password VaultKey for this manifest in the same transaction. Null on every subsequent write.
+    /// Only valid on the root write; a non-root write carrying it is rejected rather than silently ignored.
+    /// TODO: remove once the legacy sqlite-blob format is fully deprecated and we don't support legacy users anymore.
+    /// </summary>
+    public string? WrappedVek { get; set; } // base64(IV | ciphertext | authTag)
 }
