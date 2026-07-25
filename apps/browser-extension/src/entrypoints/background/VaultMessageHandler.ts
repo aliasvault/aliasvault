@@ -1309,9 +1309,10 @@ export async function handleGetServerRevision(): Promise<number> {
 /**
  * Adopt a server-side vault key this device does not know about yet.
  *
- * A missing local wrapped-VEK cache means one of three things: this user is genuinely still legacy (their next full
- * push performs the KEK/VEK migration), another device migrated while this one held the old password-derived key, or
- * this device never cached the key it registered with.
+ * A missing local wrapped-VEK cache means one of two things: this user is genuinely still legacy (their next full
+ * push performs the KEK/VEK migration), or another device migrated while this one held the old password-derived key.
+ * Every path that adopts a VEK as the session key writes the wrapped-VEK cache first, so a session key that is
+ * already the VEK without a cache is not a reachable state -- it can only come from torn storage, which a re-login fixes.
  *
  * TODO: this method can be removed once all users have migrated to the KEK/VEK model and we don't support legacy users anymore.
  *
@@ -1362,24 +1363,13 @@ async function adoptRemoteVaultKeyIfNeeded(): Promise<boolean> {
     cachedVaultBlob = null;
     devLog('[VaultSync] Adopted vault key created by another client; session key swapped to the VEK.');
     return true;
-  } catch {
+  } catch (error) {
     /*
-     * Unwrap failed, so the session key is not the KEK. The remaining possibility is that it already is the VEK and
-     * this device simply never cached the wrapped form (e.g. registered on the KEK/VEK model). Confirm against the
-     * local vault before trusting it: if the session key still decrypts the vault, cache the wrapped VEK and carry on.
+     * Unwrap failed, so this device holds key material that is not the KEK the server wrapped the VEK with.
+     * We trigger a re-login to fix the problem.
      */
-    try {
-      if (encryptedVault) {
-        await EncryptionUtility.symmetricDecrypt(encryptedVault, sessionKey);
-      }
-    } catch (error) {
-      devError('[VaultSync] Session key matches neither the KEK nor the VEK, forcing re-login:', error);
-      return false;
-    }
-
-    await storage.setItem(WRAPPED_VEK_STORAGE_KEY, serverWrappedVek);
-    devLog('[VaultSync] Session key is already the VEK; cached the wrapped VEK for offline unlock.');
-    return true;
+    devError('[VaultSync] Session key matches neither the KEK nor the VEK, forcing re-login:', error);
+    return false;
   }
 }
 
