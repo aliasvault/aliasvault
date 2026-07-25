@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import EncryptionUtility from '@/utils/EncryptionUtility';
-import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import SqliteClient from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
@@ -205,6 +205,17 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     return (): void => {
       unwatch();
     };
+  }, []);
+
+  /**
+   * Drive the sync/upload indicators from the background sync itself. The background announces what it is doing as
+   * soon as its status call tells it, so the popup never has to make a status call of its own to pick an indicator.
+   */
+  useEffect(() => {
+    return onMessage('VAULT_SYNC_PHASE', ({ data }) => {
+      setIsSyncing(data.phase === 'pull');
+      setIsUploading(data.phase === 'push');
+    });
   }, []);
 
   /**

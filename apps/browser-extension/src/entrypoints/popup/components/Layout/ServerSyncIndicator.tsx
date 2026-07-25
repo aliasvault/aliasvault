@@ -13,6 +13,13 @@ import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 const MIN_SYNC_DISPLAY_TIME = 1000;
 
 /**
+ * Grace period (ms) before the pending indicator appears. A save flips the vault to dirty for a few hundred ms
+ * even when the background sync will resolve it afterwards. So we wait a bit before showing the pending indicator
+ * to avoid flashing the badge unnecessarily.
+ */
+const PENDING_DISPLAY_DELAY = 1000;
+
+/**
  * Sync status indicator component.
  * Displays clickable status badges for offline mode, syncing, and pending sync.
  *
@@ -35,6 +42,21 @@ const ServerSyncIndicator: React.FC = () => {
   // Track syncing state with minimum display time
   const [showSyncing, setShowSyncing] = useState(false);
   const syncStartTimeRef = useRef<number | null>(null);
+
+  // Track pending state with a grace delay so transient dirty windows never flash the badge
+  const [showPending, setShowPending] = useState(false);
+
+  /**
+   * Only surface the pending indicator when the vault has stayed dirty for the grace period.
+   */
+  useEffect(() => {
+    if (!dbContext.isDirty) {
+      setShowPending(false);
+      return;
+    }
+    const timer = setTimeout((): void => setShowPending(true), PENDING_DISPLAY_DELAY);
+    return (): void => clearTimeout(timer);
+  }, [dbContext.isDirty]);
 
   /**
    * Handle syncing state changes with minimum display time.
@@ -76,11 +98,6 @@ const ServerSyncIndicator: React.FC = () => {
 
     setIsRetrying(true);
 
-    // If we have local changes, show uploading indicator
-    if (dbContext.isDirty) {
-      dbContext.setIsUploading(true);
-    }
-
     try {
       const result = await sendMessage('FULL_VAULT_SYNC');
 
@@ -111,7 +128,6 @@ const ServerSyncIndicator: React.FC = () => {
       console.error('Retry sync error:', error);
     } finally {
       setIsRetrying(false);
-      dbContext.setIsUploading(false);
     }
   }, [isRetrying, dbContext, app, t]);
 
@@ -204,7 +220,7 @@ const ServerSyncIndicator: React.FC = () => {
   }
 
   // Priority 4: Pending indicator (clickable to force sync) - icon only
-  if (dbContext.isDirty) {
+  if (showPending) {
     return (
       <button
         onClick={handleRetry}

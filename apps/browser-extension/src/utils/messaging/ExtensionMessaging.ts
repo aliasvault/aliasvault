@@ -7,7 +7,7 @@
 import { defineExtensionMessaging } from '@webext-core/messaging';
 
 import type { TwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
-import type { SyncStatusCheckResult, FullVaultSyncResult } from '@/entrypoints/background/VaultMessageHandler';
+import type { FullVaultSyncResult, VaultSyncPhase } from '@/entrypoints/background/VaultMessageHandler';
 
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import type { PasswordSettings } from '@/utils/dist/core/models/vault';
@@ -38,7 +38,6 @@ export interface IExtensionMessageProtocol {
   CANCEL_CLIPBOARD_CLEAR(): void;
   CHECK_AUTH_STATUS(): { isLoggedIn: boolean; isVaultLocked: boolean; hasPendingMigrations: boolean; error?: string };
   CHECK_LOGIN_DUPLICATE(data: { domain: string; username: string }): DuplicateCheckResponse;
-  CHECK_SYNC_STATUS(): SyncStatusCheckResult;
   CLEAR_LAST_AUTOFILLED(): { success: boolean };
   CLEAR_PERSISTED_FORM_VALUES(): void;
   CLEAR_SAVE_PROMPT_STATE(): { success: boolean };
@@ -104,6 +103,7 @@ export interface IExtensionMessageProtocol {
   SYNC_VAULT(): BoolResponse;
   TOGGLE_CONTEXT_MENU(data: any): BoolResponse;
   UPLOAD_VAULT(): VaultUploadResponse;
+  VAULT_SYNC_PHASE(data: { phase: VaultSyncPhase }): void;
   VAULT_UNLOCKED(): void;
   WEBAUTHN_CREATE(data: any): any;
   WEBAUTHN_GET(data: any): any;
