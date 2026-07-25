@@ -548,3 +548,46 @@ fn json_siblings_roundtrip() {
     let materialized: MaterializedTables = serde_json::from_str(&materialized_json).unwrap();
     assert!(materialized.tables.iter().any(|t| t.name == "Items"));
 }
+
+#[test]
+fn content_fingerprint_ignores_key_order_and_whitespace() {
+    let a = compute_content_fingerprint(r#"{"schemaVersion":1,"tables":{"Items":[{"Id":"x","Name":"n"}]}}"#);
+    let b = compute_content_fingerprint(r#"{ "tables": { "Items": [ { "Name": "n", "Id": "x" } ] }, "schemaVersion": 1 }"#);
+    assert_eq!(a, b);
+    assert_eq!(a.len(), 64);
+}
+
+#[test]
+fn content_fingerprint_excludes_canonicalized_at() {
+    let a = compute_content_fingerprint(r#"{"canonicalizedAt":"2026-01-01T00:00:00.000Z","tables":{}}"#);
+    let b = compute_content_fingerprint(r#"{"canonicalizedAt":"2026-07-25T12:34:56.789Z","tables":{}}"#);
+    let c = compute_content_fingerprint(r#"{"tables":{}}"#);
+    assert_eq!(a, b);
+    assert_eq!(a, c);
+}
+
+#[test]
+fn content_fingerprint_detects_content_change() {
+    let a = compute_content_fingerprint(r#"{"tables":{"Items":[{"Id":"x"}]}}"#);
+    let b = compute_content_fingerprint(r#"{"tables":{"Items":[{"Id":"y"}]}}"#);
+    assert_ne!(a, b);
+}
+
+#[test]
+fn content_fingerprint_matches_serialized_manifest_roundtrip() {
+    // A manifest serialized by this codec and the same JSON re-parsed/re-serialized by another producer
+    // (different key order) must fingerprint identically.
+    let manifest = Manifest {
+        schema_version: 1,
+        migration_id: "20250101000000_Test".into(),
+        version: "2.0.0".into(),
+        user_salt: "00ff".into(),
+        canonicalized_at: "2026-01-01T00:00:00.000Z".into(),
+        shared_folder_id: None,
+        tables: std::collections::HashMap::from([(String::from("Items"), vec![])]),
+        extra: std::collections::HashMap::new(),
+    };
+    let serialized = serde_json::to_string(&manifest).unwrap();
+    let reordered = r#"{"tables":{"Items":[]},"userSalt":"00ff","version":"2.0.0","migrationId":"20250101000000_Test","schemaVersion":1,"canonicalizedAt":"1999-12-31T23:59:59.000Z"}"#;
+    assert_eq!(compute_content_fingerprint(&serialized), compute_content_fingerprint(reordered));
+}

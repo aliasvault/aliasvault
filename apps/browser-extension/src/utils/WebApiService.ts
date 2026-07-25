@@ -33,17 +33,6 @@ type TokenResponse = {
 }
 
 /**
- * How long a fetched /v2/Status response is reused before hitting the network again.
- */
-const STATUS_CACHE_TTL_MS = 1000;
-
-/**
- * Process-wide (background service worker) cache of the last successful /v2/Status response, shared across all
- * WebApiService instances.
- */
-let cachedStatus: { data: StatusResponseV2; timestamp: number } | null = null;
-
-/**
  * Service class for interacting with the web API.
  */
 export class WebApiService {
@@ -320,20 +309,12 @@ export class WebApiService {
    * Auth errors (ApiAuthError) are re-thrown to be handled appropriately (e.g., trigger logout).
    */
   public async getStatus(): Promise<StatusResponseV2> {
-    /*
-     * Serve a very recent status from the shared cache to prevent multiple round-trips to the server.
-     */
-    if (cachedStatus && Date.now() - cachedStatus.timestamp < STATUS_CACHE_TTL_MS) {
-      return cachedStatus.data;
-    }
-
     try {
       const status = await this.get<StatusResponseV2>('Status');
       // Persist the server version so it can be shown on the settings page, also while offline.
       if (status.serverVersion && status.serverVersion !== '0.0.0') {
         await storage.setItem('local:serverVersion', status.serverVersion);
       }
-      cachedStatus = { data: status, timestamp: Date.now() };
       return status;
     } catch (error) {
       /**

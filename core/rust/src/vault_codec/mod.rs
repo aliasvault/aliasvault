@@ -154,6 +154,23 @@ pub fn compute_ciphertext_hash(base64_ciphertext: &str) -> String {
     }
 }
 
+/// Content fingerprint of a manifest / data-bucket payload for client-side change detection: SHA-256
+/// (lowercase hex) of the canonical JSON with the volatile top-level `canonicalizedAt` timestamp removed
+/// (it is regenerated on every canonicalize and must not read as a content change).
+pub fn compute_content_fingerprint(payload_json: &str) -> String {
+    match serde_json::from_str::<serde_json::Value>(payload_json) {
+        Ok(mut value) => {
+            if let Some(obj) = value.as_object_mut() {
+                obj.remove("canonicalizedAt");
+            }
+            hash::content_hash(&value)
+        }
+        // An unparsable payload hashes to a stable but obviously-wrong value; callers compare equality, so
+        // a malformed input simply reads as "changed" (safe: it only forces an upload).
+        Err(_) => hash::sha256_hex(payload_json.as_bytes()),
+    }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // JSON-string siblings (FFI / UniFFI interface)
 // ─────────────────────────────────────────────────────────────────────────────

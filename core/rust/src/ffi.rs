@@ -318,6 +318,17 @@ pub unsafe extern "C" fn vault_codec_compute_ciphertext_hash_ffi(base64_cipherte
     string_to_c_char(crate::vault_codec::compute_ciphertext_hash(s))
 }
 
+/// Content fingerprint of a manifest / data-bucket payload JSON for change detection: SHA-256 (lowercase
+/// hex) of the canonical JSON, excluding the volatile `canonicalizedAt` timestamp.
+///
+/// # Safety
+/// `payload_json` must be a valid null-terminated C string; free the result with `free_string`.
+#[no_mangle]
+pub unsafe extern "C" fn vault_codec_compute_content_fingerprint_ffi(payload_json: *const c_char) -> *mut c_char {
+    let s = ffi_read_str!(payload_json, "payload_json");
+    string_to_c_char(crate::vault_codec::compute_content_fingerprint(s))
+}
+
 /// Pack a payload JSON string. Output: base64 of gzip(envelope{contentHash, payload}). The caller
 /// base64-decodes, then encrypts.
 ///

@@ -357,6 +357,16 @@ export async function vaultCodecComputeCiphertextHash(base64Ciphertext: string):
 }
 
 /**
+ * Content fingerprint of a manifest / data-bucket payload JSON for change detection: SHA-256 (lowercase hex)
+ * of the Rust codec's canonical JSON, excluding the volatile `canonicalizedAt` timestamp. Calculated in Rust so
+ * every platform uses the same fingerprinting algorithm.
+ */
+export async function vaultCodecComputeContentFingerprint(payloadJson: string): Promise<string> {
+  await initRustCore();
+  return core.vaultCodecComputeContentFingerprint(payloadJson);
+}
+
+/**
  * Read all non-empty values for a field key from an item, returning them as
  * a string array (single-value fields are wrapped to a 1-element array).
  */

@@ -210,6 +210,13 @@ pub fn vault_codec_compute_ciphertext_hash(base64_ciphertext: String) -> String 
     crate::vault_codec::compute_ciphertext_hash(&base64_ciphertext)
 }
 
+/// Content fingerprint of a manifest / data-bucket payload JSON for change detection: SHA-256 (lowercase
+/// hex) of the canonical JSON, excluding the volatile `canonicalizedAt` timestamp.
+#[uniffi::export]
+pub fn vault_codec_compute_content_fingerprint(payload_json: String) -> String {
+    crate::vault_codec::compute_content_fingerprint(&payload_json)
+}
+
 /// Extract the encryption-key row whose `PublicKey` matches `public_key` from the decrypted `EncryptionKeys`
 /// data bucket. Input: `DataBucket` JSON + the target public key. Output: the matching row JSON object, or
 /// `null` when no live row carries that key. Chosen over the primary key so a shared-folder VEK wrapped for

@@ -214,6 +214,13 @@ pub fn vault_codec_compute_ciphertext_hash_js(base64_ciphertext: &str) -> String
     vault_codec::compute_ciphertext_hash(base64_ciphertext)
 }
 
+/// Content fingerprint of a manifest / data-bucket payload JSON for change detection: SHA-256 (lowercase
+/// hex) of the canonical JSON, excluding the volatile `canonicalizedAt` timestamp.
+#[wasm_bindgen(js_name = vaultCodecComputeContentFingerprint)]
+pub fn vault_codec_compute_content_fingerprint_js(payload_json: &str) -> String {
+    vault_codec::compute_content_fingerprint(payload_json)
+}
+
 /// Extract the encryption-key row whose `PublicKey` matches `public_key` from the decrypted `EncryptionKeys`
 /// data bucket. Input: `DataBucket` + the target public key. Output: the matching row object, or null when
 /// no live row carries that key.

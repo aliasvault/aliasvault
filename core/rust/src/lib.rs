@@ -24,7 +24,7 @@ pub use vault_merge::{
     SYNCABLE_TABLE_NAMES,
 };
 pub use vault_codec::{
-    compute_ciphertext_hash, canonicalize_from_sqlite,
+    compute_ciphertext_hash, compute_content_fingerprint, canonicalize_from_sqlite,
     extract_bucket, generate_user_salt, unpack_payload, materialize_as_sqlite, pack_payload,
     validate_manifest, validate_data_bucket, BlobEntry,
     CanonicalizeInput, CanonicalizedVault, CodecRecord, CodecTableData, DataBucket, Manifest,
