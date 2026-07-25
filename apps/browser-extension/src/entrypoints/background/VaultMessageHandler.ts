@@ -1463,16 +1463,21 @@ export async function handleCheckSyncStatus(): Promise<SyncStatusCheckResult> {
       return { success: false, hasNewerVault: false, hasDirtyChanges: false, isOffline: false, requiresLogout: true, errorKey: 'passwordChanged' };
     }
 
-    // If another device performed the KEK/VEK migration, catch up before any sync work happens.
-    if (!await adoptRemoteVaultKeyIfNeeded()) {
+    const localSharedRevisions = await getLocalSharedManifestRevisions();
+    const hasNewerVault = serverManifestsNeedPull(statusResponse.manifestRevisions, syncState.serverRevision, localSharedRevisions);
+
+    /*
+     * Only matters when there is server content to materialize: a device that migrated elsewhere necessarily wrote a
+     * new root manifest revision, so a remote migration always shows up as a pull. With nothing to pull there is
+     * nothing encrypted under a VEK we might be missing, and an unmigrated device can skip the probe entirely.
+     */
+    if (hasNewerVault && !await adoptRemoteVaultKeyIfNeeded()) {
       return { success: false, hasNewerVault: false, hasDirtyChanges: false, isOffline: false, requiresLogout: true, errorKey: 'passwordChanged' };
     }
 
-    const localSharedRevisions = await getLocalSharedManifestRevisions();
-
     return {
       success: true,
-      hasNewerVault: serverManifestsNeedPull(statusResponse.manifestRevisions, syncState.serverRevision, localSharedRevisions),
+      hasNewerVault,
       hasDirtyChanges: syncState.isDirty,
       isOffline: false,
       requiresLogout: false
@@ -1596,8 +1601,11 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
       return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, errorKey: 'passwordChanged' };
     }
 
-    // If another device performed the KEK/VEK migration, catch up before any sync work happens.
-    if (!await adoptRemoteVaultKeyIfNeeded()) {
+    /*
+     * Only needed when we are about to pull: the vault data below is decrypted with the session key, which is stale if
+     * another device migrated. An unmigrated device with nothing to pull has nothing to adopt and skips the check.
+     */
+    if (needsPull && !await adoptRemoteVaultKeyIfNeeded()) {
       return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, errorKey: 'passwordChanged' };
     }
 
