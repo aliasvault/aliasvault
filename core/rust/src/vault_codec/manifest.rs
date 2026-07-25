@@ -16,8 +16,6 @@ pub struct Manifest {
     pub schema_version: u32,
     /// Latest EF migration ID.
     pub migration_id: String,
-    /// Human-readable data-model version label (e.g. "2.0.0").
-    pub version: String,
     /// Per-manifest salt for blob hashing (hex). For a shared-folder manifest this salt is shared by
     /// every participant (it lives inside the encrypted manifest itself) so all of them compute the
     /// same content-addressed blob hashes.
@@ -191,15 +189,9 @@ pub struct CanonicalizeInput {
     pub tables: Vec<CodecTableData>,
     pub user_salt: String,
     pub migration_id: String,
-    #[serde(default = "default_version")]
-    pub version: String,
     pub canonicalized_at: String,
     #[serde(default)]
     pub shared_folders: Vec<SharedFolderSpec>,
-}
-
-fn default_version() -> String {
-    String::from("2.0.0")
 }
 
 /// Input for [`crate::vault_codec::materialize_as_sqlite`].

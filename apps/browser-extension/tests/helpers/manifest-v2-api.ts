@@ -39,7 +39,6 @@ export type VaultSnapshot = {
 export type DecryptedManifest = {
   schemaVersion: number;
   migrationId: string;
-  version: string;
   userSalt: string;
   canonicalizedAt: string;
   tables: Record<string, Array<Record<string, unknown>>>;
@@ -132,7 +131,6 @@ export async function pushManifest(
 
   const payload = {
     username: normalizeUsername(username),
-    version: manifest.version,
     manifestBlob,
     manifestCiphertextHash,
     currentManifestRevision: currentRevision,

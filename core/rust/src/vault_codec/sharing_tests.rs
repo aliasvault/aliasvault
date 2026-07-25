@@ -35,7 +35,6 @@ fn input_with_shares(tables: Vec<CodecTableData>, shared_folders: Vec<SharedFold
         tables,
         user_salt: SALT_ROOT.to_string(),
         migration_id: "20250101000000_Init".to_string(),
-        version: "2.0.0".to_string(),
         canonicalized_at: "2026-01-01T00:00:00.000Z".to_string(),
         shared_folders,
     }

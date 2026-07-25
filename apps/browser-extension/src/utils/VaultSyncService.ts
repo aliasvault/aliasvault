@@ -241,6 +241,9 @@ type CanonicalizedVaultSet = { canonicalized: CodecCanonicalized; sharedFolderRe
 
 let canonicalizeCache: ({ client: SqliteClient; mutationSequence: number } & CanonicalizedVaultSet) | null = null;
 
+/**
+ * Drop the cached canonicalize result so the next push re-canonicalizes from the live SQLite state.
+ */
 export function invalidateCanonicalizeCache(): void {
   canonicalizeCache = null;
 }
@@ -1072,7 +1075,6 @@ export class VaultSyncService {
       tables,
       userSalt,
       migrationId,
-      version: '2.0.0',
       sharedFolders,
       canonicalizedAt: new Date().toISOString(),
     }));

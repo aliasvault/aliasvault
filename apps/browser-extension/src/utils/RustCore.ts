@@ -184,8 +184,8 @@ export type CodecTableData = { name: string; records: Array<Record<string, unkno
 /** Manifest-v1 manifest. Forward-compat: unknown keys are preserved on round-trip. */
 export type CodecManifest = {
   schemaVersion: number;
+  /** Latest EF migration ID; readers derive the data-model version label from it. */
   migrationId: string;
-  version: string;
   userSalt: string;
   canonicalizedAt: string;
   /** Set on a shared-folder manifest: the Folders.Id this manifest carries. Absent on a root manifest. */
@@ -240,7 +240,6 @@ export type CodecCanonicalizeInput = {
   tables: CodecTableData[];
   userSalt: string;
   migrationId: string;
-  version: string;
   sharedFolders?: CodecSharedFolderSpec[];
   canonicalizedAt: string;
 };

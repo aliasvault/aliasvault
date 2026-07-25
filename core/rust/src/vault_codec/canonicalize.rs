@@ -114,7 +114,6 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
             manifest: Manifest {
                 schema_version: SCHEMA_VERSION,
                 migration_id: input.migration_id.clone(),
-                version: input.version.clone(),
                 user_salt: partition.user_salt,
                 canonicalized_at: input.canonicalized_at.clone(),
                 shared_folder_id: Some(partition.folder_id),
@@ -128,7 +127,6 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
     let manifest = Manifest {
         schema_version: SCHEMA_VERSION,
         migration_id: input.migration_id,
-        version: input.version,
         user_salt: input.user_salt,
         canonicalized_at: input.canonicalized_at,
         shared_folder_id: None,

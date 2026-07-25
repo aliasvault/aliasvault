@@ -27,7 +27,6 @@ fn basic_input(tables: Vec<CodecTableData>) -> CanonicalizeInput {
         tables,
         user_salt: "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff".to_string(),
         migration_id: "20250101000000_Init".to_string(),
-        version: "2.0.0".to_string(),
         canonicalized_at: "2026-01-01T00:00:00.000Z".to_string(),
         shared_folders: Vec::new(),
     }
@@ -255,11 +254,9 @@ fn generate_user_salt_is_64_hex_chars() {
 
 #[test]
 fn forward_compat_unknown_manifest_fields_preserved() {
-    // The plan's document-store rule: unknown top-level keys round-trip verbatim.
     let manifest_json = json!({
         "schemaVersion": 1,
         "migrationId": "m",
-        "version": "2.0.0",
         "userSalt": "00112233445566778899aabbccddeeff",
         "canonicalizedAt": "2026-01-01T00:00:00.000Z",
         "tables": { "Items": [] },
@@ -580,7 +577,6 @@ fn content_fingerprint_matches_serialized_manifest_roundtrip() {
     let manifest = Manifest {
         schema_version: 1,
         migration_id: "20250101000000_Test".into(),
-        version: "2.0.0".into(),
         user_salt: "00ff".into(),
         canonicalized_at: "2026-01-01T00:00:00.000Z".into(),
         shared_folder_id: None,
@@ -588,6 +584,6 @@ fn content_fingerprint_matches_serialized_manifest_roundtrip() {
         extra: std::collections::HashMap::new(),
     };
     let serialized = serde_json::to_string(&manifest).unwrap();
-    let reordered = r#"{"tables":{"Items":[]},"userSalt":"00ff","version":"2.0.0","migrationId":"20250101000000_Test","schemaVersion":1,"canonicalizedAt":"1999-12-31T23:59:59.000Z"}"#;
+    let reordered = r#"{"tables":{"Items":[]},"userSalt":"00ff","migrationId":"20250101000000_Test","schemaVersion":1,"canonicalizedAt":"1999-12-31T23:59:59.000Z"}"#;
     assert_eq!(compute_content_fingerprint(&serialized), compute_content_fingerprint(reordered));
 }

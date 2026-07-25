@@ -36,7 +36,7 @@ pub static BUCKET_TABLES: &[(&str, &str)] = &[
 pub static PERSONAL_TABLES: &[&str] = &["EncryptionKeys"];
 
 /// Manifest / metadata schema version. This is the manifest *wire structure* version and is its own
-/// axis, independent of the data-model `version` string (which tracks EF migrations).
+/// axis, independent of the data-model version (which readers derive from the manifest's `migrationId`).
 /// It starts at 1 for the first manifest generation; bump only on a breaking structural change
 /// (field type changes, removed fields).
 pub const SCHEMA_VERSION: u32 = 1;
