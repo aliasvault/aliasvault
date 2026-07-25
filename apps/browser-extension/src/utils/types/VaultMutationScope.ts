@@ -29,13 +29,6 @@ export const isManifestScope = (scope: VaultMutationScope): scope is VaultManife
   (ALL_VAULT_MANIFEST_SCOPES as readonly string[]).includes(scope);
 
 /**
- * Storage key holding the dirty flag for a single scope. Each scope gets its OWN boolean key so a mutation
- * marks exactly its scope dirty via an idempotent write.
- * @param scope - the mutation scope
- */
-export const dirtyScopeStorageKey = (scope: VaultMutationScope): `local:${string}` => `local:dirtyScope:${scope}`;
-
-/**
  * Options for executing a vault mutation.
  */
 export type VaultMutationOptions = {

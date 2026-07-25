@@ -1,16 +1,12 @@
 import React, { createContext, useContext, useState, useMemo, useEffect, useCallback } from 'react';
 
 import { storage } from '#imports';
+import { StorageKeys } from '@/utils/constants/storageKeys';
 
 /**
  * Theme type.
  */
 type Theme = 'light' | 'dark' | 'system';
-
-/**
- * Theme preference key in storage.
- */
-const THEME_PREFERENCE_KEY = 'local:theme';
 
 /**
  * Theme context type.
@@ -63,14 +59,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
    * Get the theme from storage.
    */
   const getTheme = async (): Promise<Theme> => {
-    return (await storage.getItem(THEME_PREFERENCE_KEY) as Theme) || 'system';
+    return (await storage.getItem(StorageKeys.THEME) as Theme) || 'system';
   };
 
   /**
    * Set the theme in storage.
    */
   const setStoredTheme = async (theme: Theme): Promise<void> => {
-    await storage.setItem(THEME_PREFERENCE_KEY, theme);
+    await storage.setItem(StorageKeys.THEME, theme);
   };
 
   /**

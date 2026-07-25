@@ -2,6 +2,7 @@ import argon2 from 'argon2-browser/dist/argon2-bundled.min.js';
 import { browser } from 'wxt/browser';
 
 import { storage } from '#imports';
+import { StorageKeys } from '@/utils/constants/storageKeys';
 
 /**
  * PinUnlockService - Handles PIN-based vault unlock
@@ -28,11 +29,6 @@ import { storage } from '#imports';
  * use full master password unlock.
  */
 
-const PIN_ENABLED_KEY = 'local:aliasvault_pin_enabled';
-const PIN_ENCRYPTED_KEY_KEY = 'local:aliasvault_pin_encrypted_key';
-const PIN_SALT_KEY = 'local:aliasvault_pin_salt';
-const PIN_LENGTH_KEY = 'local:aliasvault_pin_length';
-const PIN_FAILED_ATTEMPTS_KEY = 'local:aliasvault_pin_failed_attempts';
 const MAX_PIN_ATTEMPTS = 4;
 
 /**
@@ -100,7 +96,7 @@ export class EncryptionKeyNotAvailableError extends Error {
  */
 export async function isPinEnabled(): Promise<boolean> {
   try {
-    const result = await storage.getItem(PIN_ENABLED_KEY) as boolean | null;
+    const result = await storage.getItem(StorageKeys.PIN_ENABLED) as boolean | null;
     return result === true;
   } catch {
     return false;
@@ -112,7 +108,7 @@ export async function isPinEnabled(): Promise<boolean> {
  */
 export async function getPinLength(): Promise<number | null> {
   try {
-    const result = await storage.getItem(PIN_LENGTH_KEY) as number | null;
+    const result = await storage.getItem(StorageKeys.PIN_LENGTH) as number | null;
     return result || null;
   } catch {
     return null;
@@ -132,7 +128,7 @@ export function isValidPin(pin: string): boolean {
  */
 export async function getFailedAttempts(): Promise<number> {
   try {
-    const result = await storage.getItem(PIN_FAILED_ATTEMPTS_KEY) as number | null;
+    const result = await storage.getItem(StorageKeys.PIN_FAILED_ATTEMPTS) as number | null;
     return result || 0;
   } catch {
     return 0;
@@ -184,11 +180,11 @@ export async function setupPin(pin: string, vaultEncryptionKey: string): Promise
 
     /* Store encrypted key, salt, PIN length, and enable flag */
     await Promise.all([
-      storage.setItem(PIN_ENABLED_KEY, true),
-      storage.setItem(PIN_ENCRYPTED_KEY_KEY, encryptedKeyBase64),
-      storage.setItem(PIN_SALT_KEY, saltBase64),
-      storage.setItem(PIN_LENGTH_KEY, pin.length),
-      storage.setItem(PIN_FAILED_ATTEMPTS_KEY, 0)
+      storage.setItem(StorageKeys.PIN_ENABLED, true),
+      storage.setItem(StorageKeys.PIN_ENCRYPTED_KEY, encryptedKeyBase64),
+      storage.setItem(StorageKeys.PIN_SALT, saltBase64),
+      storage.setItem(StorageKeys.PIN_LENGTH, pin.length),
+      storage.setItem(StorageKeys.PIN_FAILED_ATTEMPTS, 0)
     ]);
 
   } catch (error: unknown) {
@@ -222,8 +218,8 @@ export async function unlockWithPin(pin: string): Promise<string> {
   try {
     /* Get stored data */
     const [encryptedKeyBase64, saltBase64] = await Promise.all([
-      storage.getItem(PIN_ENCRYPTED_KEY_KEY) as Promise<string | null>,
-      storage.getItem(PIN_SALT_KEY) as Promise<string | null>
+      storage.getItem(StorageKeys.PIN_ENCRYPTED_KEY) as Promise<string | null>,
+      storage.getItem(StorageKeys.PIN_SALT) as Promise<string | null>
     ]);
 
     if (!encryptedKeyBase64 || !saltBase64) {
@@ -250,14 +246,14 @@ export async function unlockWithPin(pin: string): Promise<string> {
     const vaultEncryptionKey = new TextDecoder().decode(decryptedData);
 
     /* Reset failed attempts on success */
-    await storage.setItem(PIN_FAILED_ATTEMPTS_KEY, 0);
+    await storage.setItem(StorageKeys.PIN_FAILED_ATTEMPTS, 0);
 
     return vaultEncryptionKey;
   } catch {
     /* Increment failed attempts */
     const currentAttempts = await getFailedAttempts();
     const newAttempts = currentAttempts + 1;
-    await storage.setItem(PIN_FAILED_ATTEMPTS_KEY, newAttempts);
+    await storage.setItem(StorageKeys.PIN_FAILED_ATTEMPTS, newAttempts);
 
     /*
      * If max attempts reached, disable PIN and clear ALL stored data for security.
@@ -278,11 +274,11 @@ export async function unlockWithPin(pin: string): Promise<string> {
 export async function removeAndDisablePin(): Promise<void> {
   try {
     await Promise.all([
-      storage.removeItem(PIN_ENABLED_KEY),
-      storage.removeItem(PIN_ENCRYPTED_KEY_KEY),
-      storage.removeItem(PIN_SALT_KEY),
-      storage.removeItem(PIN_LENGTH_KEY),
-      storage.removeItem(PIN_FAILED_ATTEMPTS_KEY)
+      storage.removeItem(StorageKeys.PIN_ENABLED),
+      storage.removeItem(StorageKeys.PIN_ENCRYPTED_KEY),
+      storage.removeItem(StorageKeys.PIN_SALT),
+      storage.removeItem(StorageKeys.PIN_LENGTH),
+      storage.removeItem(StorageKeys.PIN_FAILED_ATTEMPTS)
     ]);
   } catch (error) {
     console.error('[PinUnlockService] Failed to disable PIN:', error);
@@ -296,7 +292,7 @@ export async function removeAndDisablePin(): Promise<void> {
  */
 export async function resetFailedAttempts(): Promise<void> {
   try {
-    await storage.setItem(PIN_FAILED_ATTEMPTS_KEY, 0);
+    await storage.setItem(StorageKeys.PIN_FAILED_ATTEMPTS, 0);
   } catch (error) {
     console.error('[PinUnlockService] Failed to reset failed attempts:', error);
   }

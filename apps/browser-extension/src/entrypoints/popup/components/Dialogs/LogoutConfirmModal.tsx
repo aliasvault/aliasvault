@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 
 import { storage } from '#imports';
+import { StorageKeys } from '@/utils/constants/storageKeys';
 
 interface ILogoutConfirmModalProps {
   isOpen: boolean;
@@ -41,7 +42,7 @@ const LogoutConfirmModal: React.FC<ILogoutConfirmModalProps> = ({
 
     (async () : Promise<void> => {
       try {
-        const dirty = await storage.getItem('local:isDirty') as boolean | null;
+        const dirty = await storage.getItem(StorageKeys.IS_DIRTY) as boolean | null;
         if (!cancelled) {
           setIsDirty(dirty ?? false);
         }

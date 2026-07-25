@@ -6,10 +6,8 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { AUTH_FLOW_PATHS } from '@/entrypoints/popup/utils/routes';
 
 import { storage } from '#imports';
+import { StorageKeys } from '@/utils/constants/storageKeys';
 
-const LAST_VISITED_PAGE_KEY = 'session:lastVisitedPage';
-const LAST_VISITED_TIME_KEY = 'session:lastVisitedTime';
-const NAVIGATION_HISTORY_KEY = 'session:navigationHistory';
 
 type NavigationHistoryEntry = {
   pathname: string;
@@ -76,9 +74,9 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       }
 
       await Promise.all([
-        storage.setItem(LAST_VISITED_PAGE_KEY, location.pathname),
-        storage.setItem(LAST_VISITED_TIME_KEY, Date.now()),
-        storage.setItem(NAVIGATION_HISTORY_KEY, historyEntries),
+        storage.setItem(StorageKeys.LAST_VISITED_PAGE, location.pathname),
+        storage.setItem(StorageKeys.LAST_VISITED_TIME, Date.now()),
+        storage.setItem(StorageKeys.NAVIGATION_HISTORY, historyEntries),
       ]);
     }
   }, [location, isFullyInitialized, requiresAuth]);

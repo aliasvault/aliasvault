@@ -15,6 +15,7 @@ import { useApiUrl } from '@/entrypoints/popup/utils/ApiUrlUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { AppInfo } from '@/utils/AppInfo';
+import { StorageKeys } from '@/utils/constants/storageKeys';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { browser, storage } from "#imports";
@@ -38,7 +39,7 @@ const Settings: React.FC = () => {
    * Open the client tab.
    */
   const openClientTab = async () : Promise<void> => {
-    const settingClientUrl = await storage.getItem('local:clientUrl') as string | undefined;
+    const settingClientUrl = await storage.getItem(StorageKeys.CLIENT_URL) as string | undefined;
     let clientUrl = AppInfo.DEFAULT_CLIENT_URL;
     if (settingClientUrl && settingClientUrl.length > 0) {
       clientUrl = settingClientUrl;
@@ -83,7 +84,7 @@ const Settings: React.FC = () => {
      * Load the last known server version (persisted on each status check) so it can be
      * shown next to the app version. Useful for self-hosted troubleshooting.
      */
-    const storedServerVersion = await storage.getItem('local:serverVersion') as string | undefined;
+    const storedServerVersion = await storage.getItem(StorageKeys.SERVER_VERSION) as string | undefined;
     setServerVersion(storedServerVersion ?? null);
 
     setIsInitialLoading(false);

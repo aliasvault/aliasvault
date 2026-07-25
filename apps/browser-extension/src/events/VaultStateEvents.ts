@@ -1,10 +1,8 @@
 import { storage } from '#imports';
+import { StorageKeys } from '@/utils/constants/storageKeys';
 
 type Unsubscribe = () => void;
 type Listener = () => void;
-
-const ENCRYPTION_KEY_STORAGE_KEY = 'session:encryptionKey';
-const ACCESS_TOKEN_STORAGE_KEY = 'local:accessToken';
 
 /**
  * Last encryption-key value this window wrote, used to ignore our own
@@ -28,7 +26,7 @@ export function markOwnEncryptionKey(key: string): void {
  * any window locks/logs out). Without this, A's stored "own" value would
  * mask a later unlock from B that happens to use the same key value.
  */
-storage.watch<string | null>(ENCRYPTION_KEY_STORAGE_KEY, (newValue) => {
+storage.watch<string | null>(StorageKeys.ENCRYPTION_KEY, (newValue) => {
   if (!newValue) {
     lastOwnEncryptionKey = null;
   }
@@ -40,7 +38,7 @@ storage.watch<string | null>(ENCRYPTION_KEY_STORAGE_KEY, (newValue) => {
 export const vaultStateEvents = {
   /** Fires when the vault is locked in any window. */
   onVaultLocked(listener: Listener): Unsubscribe {
-    return storage.watch<string | null>(ENCRYPTION_KEY_STORAGE_KEY, (newValue) => {
+    return storage.watch<string | null>(StorageKeys.ENCRYPTION_KEY, (newValue) => {
       if (!newValue) {
         listener();
       }
@@ -53,7 +51,7 @@ export const vaultStateEvents = {
    * is set synchronously before the write through `markOwnEncryptionKey`.
    */
   onVaultUnlocked(listener: Listener): Unsubscribe {
-    return storage.watch<string | null>(ENCRYPTION_KEY_STORAGE_KEY, (newValue) => {
+    return storage.watch<string | null>(StorageKeys.ENCRYPTION_KEY, (newValue) => {
       if (newValue && newValue !== lastOwnEncryptionKey) {
         listener();
       }
@@ -62,7 +60,7 @@ export const vaultStateEvents = {
 
   /** Fires when the user is logged out in any window. */
   onLoggedOut(listener: Listener): Unsubscribe {
-    return storage.watch<string | null>(ACCESS_TOKEN_STORAGE_KEY, (newValue) => {
+    return storage.watch<string | null>(StorageKeys.ACCESS_TOKEN, (newValue) => {
       if (!newValue) {
         listener();
       }

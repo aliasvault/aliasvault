@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
+import { StorageKeys } from '@/utils/constants/storageKeys';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
@@ -168,7 +169,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const setIsOffline = useCallback(async (offline: boolean) => {
     isOfflineRef.current = offline;
     setIsOfflineState(offline);
-    await storage.setItem('local:isOfflineMode', offline);
+    await storage.setItem(StorageKeys.IS_OFFLINE_MODE, offline);
   }, []);
 
   /**
@@ -180,10 +181,10 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
      */
     const loadSyncState = async (): Promise<void> => {
       const [offlineMode, dirty, revision, lastError] = await Promise.all([
-        storage.getItem('local:isOfflineMode') as Promise<boolean | null>,
-        storage.getItem('local:isDirty') as Promise<boolean | null>,
-        storage.getItem('local:serverRevision') as Promise<number | null>,
-        storage.getItem('local:lastSyncError') as Promise<string | null>
+        storage.getItem(StorageKeys.IS_OFFLINE_MODE) as Promise<boolean | null>,
+        storage.getItem(StorageKeys.IS_DIRTY) as Promise<boolean | null>,
+        storage.getItem(StorageKeys.SERVER_REVISION) as Promise<number | null>,
+        storage.getItem(StorageKeys.LAST_SYNC_ERROR) as Promise<string | null>
       ]);
       isOfflineRef.current = offlineMode ?? false;
       setIsOfflineState(offlineMode ?? false);
@@ -199,7 +200,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * even when the failing sync wasn't triggered by anything in the popup itself.
    */
   useEffect(() => {
-    const unwatch = storage.watch<string | null>('local:lastSyncError', (newValue) => {
+    const unwatch = storage.watch<string | null>(StorageKeys.LAST_SYNC_ERROR, (newValue) => {
       setSyncError(newValue ?? null);
     });
     return (): void => {
@@ -223,7 +224,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    */
   const clearSyncError = useCallback(async (): Promise<void> => {
     setSyncError(null);
-    await storage.removeItem('local:lastSyncError');
+    await storage.removeItem(StorageKeys.LAST_SYNC_ERROR);
   }, []);
 
   // Reflect locks from other windows.
@@ -316,10 +317,10 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const getVaultMetadata = useCallback(async () : Promise<VaultMetadata | null> => {
     try {
       // Use fallback for keys migrated from session: to local: in v0.26.0
-      const publicEmailDomains = await getItemWithFallback<string[]>('local:publicEmailDomains');
-      const privateEmailDomains = await getItemWithFallback<string[]>('local:privateEmailDomains');
-      const hiddenPrivateEmailDomains = await getItemWithFallback<string[]>('local:hiddenPrivateEmailDomains');
-      const revision = await storage.getItem('local:serverRevision') as number | null;
+      const publicEmailDomains = await getItemWithFallback<string[]>(StorageKeys.PUBLIC_EMAIL_DOMAINS);
+      const privateEmailDomains = await getItemWithFallback<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS);
+      const hiddenPrivateEmailDomains = await getItemWithFallback<string[]>(StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS);
+      const revision = await storage.getItem(StorageKeys.SERVER_REVISION) as number | null;
 
       if (!publicEmailDomains && !privateEmailDomains) {
         return null;
@@ -342,8 +343,8 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    */
   const refreshSyncState = useCallback(async (): Promise<void> => {
     const [dirty, revision] = await Promise.all([
-      storage.getItem('local:isDirty') as Promise<boolean | null>,
-      storage.getItem('local:serverRevision') as Promise<number | null>
+      storage.getItem(StorageKeys.IS_DIRTY) as Promise<boolean | null>,
+      storage.getItem(StorageKeys.SERVER_REVISION) as Promise<number | null>
     ]);
     setIsDirty(dirty ?? false);
     setServerRevision(revision ?? 0);

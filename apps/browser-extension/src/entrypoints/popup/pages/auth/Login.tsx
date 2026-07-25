@@ -18,6 +18,7 @@ import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 
 import { AppInfo } from '@/utils/AppInfo';
 import { SrpAuthService } from '@/utils/auth/SrpAuthService';
+import { StorageKeys } from '@/utils/constants/storageKeys';
 import type { VaultResponse, LoginResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
@@ -74,9 +75,9 @@ const Login: React.FC = () => {
    */
   const persistAndLoadVault = async (vaultResponse: VaultResponse, encryptionKey: string, loginUsername: string): Promise<void> => {
     // Check if there's existing vault data (from forced logout)
-    const existingVault = await storage.getItem('local:encryptedVault') as string | null;
-    const existingRevision = await storage.getItem('local:serverRevision') as number | null;
-    const storedUsername = await storage.getItem('local:username') as string | null;
+    const existingVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string | null;
+    const existingRevision = await storage.getItem(StorageKeys.SERVER_REVISION) as number | null;
+    const storedUsername = await storage.getItem(StorageKeys.USERNAME) as string | null;
 
     let vaultToLoad = vaultResponse.vault.blob;
 
@@ -207,7 +208,7 @@ const Login: React.FC = () => {
      */
     const loadInitialData = async () : Promise<void> => {
       // Load client URL
-      const settingClientUrl = await storage.getItem('local:clientUrl') as string;
+      const settingClientUrl = await storage.getItem(StorageKeys.CLIENT_URL) as string;
       let clientUrl = AppInfo.DEFAULT_CLIENT_URL;
       if (settingClientUrl && settingClientUrl.length > 0) {
         clientUrl = settingClientUrl;
@@ -241,7 +242,7 @@ const Login: React.FC = () => {
        */
       if (!usernamePrefillAttempted) {
         usernamePrefillAttempted = true;
-        const savedUsername = await storage.getItem('local:username') as string | null;
+        const savedUsername = await storage.getItem(StorageKeys.USERNAME) as string | null;
         if (savedUsername) {
           setCredentials(prev => ({ ...prev, username: savedUsername }));
         }

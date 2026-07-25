@@ -1,3 +1,4 @@
+import { StorageKeys } from '@/utils/constants/storageKeys';
 import type { StatusResponseV2 } from '@/utils/dist/core/models/webapi';
 
 import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
@@ -313,7 +314,7 @@ export class WebApiService {
       const status = await this.get<StatusResponseV2>('Status');
       // Persist the server version so it can be shown on the settings page, also while offline.
       if (status.serverVersion && status.serverVersion !== '0.0.0') {
-        await storage.setItem('local:serverVersion', status.serverVersion);
+        await storage.setItem(StorageKeys.SERVER_VERSION, status.serverVersion);
       }
       return status;
     } catch (error) {
@@ -406,7 +407,7 @@ export class WebApiService {
    * Get the current access token from storage.
    */
   private async getAccessToken(): Promise<string | null> {
-    const token = await storage.getItem('local:accessToken') as string;
+    const token = await storage.getItem(StorageKeys.ACCESS_TOKEN) as string;
     return token ?? null;
   }
 
@@ -414,7 +415,7 @@ export class WebApiService {
    * Get the current refresh token from storage.
    */
   private async getRefreshToken(): Promise<string | null> {
-    const token = await storage.getItem('local:refreshToken') as string;
+    const token = await storage.getItem(StorageKeys.REFRESH_TOKEN) as string;
     return token ?? null;
   }
 
@@ -422,15 +423,15 @@ export class WebApiService {
    * Update both access and refresh tokens in storage.
    */
   private async updateTokens(accessToken: string, refreshToken: string): Promise<void> {
-    await storage.setItem('local:accessToken', accessToken);
-    await storage.setItem('local:refreshToken', refreshToken);
+    await storage.setItem(StorageKeys.ACCESS_TOKEN, accessToken);
+    await storage.setItem(StorageKeys.REFRESH_TOKEN, refreshToken);
   }
 
   /**
    * Get the API URL from settings.
    */
   private async getApiUrl(): Promise<string> {
-    const result = await storage.getItem('local:apiUrl') as string;
+    const result = await storage.getItem(StorageKeys.API_URL) as string;
     if (!result || result.length === 0) {
       return AppInfo.DEFAULT_API_URL;
     }

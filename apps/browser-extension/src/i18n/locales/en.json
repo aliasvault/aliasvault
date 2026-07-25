@@ -508,6 +508,16 @@
       "pinSecurityWarning": "PIN unlock in the browser extension can be less secure than your master password, as PINs typically have lower entropy and may be brute-forced if your device is compromised. Use it only on devices you fully trust."
     }
   },
+  "sharing": {
+    "shareWithOthers": "Share with others",
+    "manageAccess": "Manage access",
+    "share": "Share",
+    "grantSuccess": "Access granted.",
+    "members": "Members",
+    "owner": "Owner",
+    "revoke": "Revoke",
+    "keyFingerprint": "Key fingerprint"
+  },
   "passkeys": {
     "passkey": "Passkey",
     "site": "Site",

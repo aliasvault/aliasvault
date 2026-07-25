@@ -8,6 +8,7 @@ import {
 } from './config';
 
 import { storage } from '#imports';
+import { StorageKeys } from '@/utils/constants/storageKeys';
 
 // Detect browser language
 /**
@@ -15,7 +16,7 @@ import { storage } from '#imports';
  */
 const detectLanguage = async (): Promise<string> => {
   // Check localStorage first
-  const stored = await storage.getItem('local:language') as string;
+  const stored = await storage.getItem(StorageKeys.LANGUAGE) as string;
   if (stored && LANGUAGE_CODES.includes(stored)) {
     return stored;
   }

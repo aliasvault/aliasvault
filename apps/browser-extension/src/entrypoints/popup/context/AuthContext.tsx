@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useMemo, useCallback } from
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
+import { StorageKeys } from '@/utils/constants/storageKeys';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { removeAndDisablePin } from '@/utils/PinUnlockService';
@@ -39,9 +40,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * @returns boolean indicating whether the user is logged in.
    */
   const initializeAuth = useCallback(async () : Promise<boolean> => {
-    const accessToken = await storage.getItem('local:accessToken') as string;
-    const refreshToken = await storage.getItem('local:refreshToken') as string;
-    const username = await storage.getItem('local:username') as string;
+    const accessToken = await storage.getItem(StorageKeys.ACCESS_TOKEN) as string;
+    const refreshToken = await storage.getItem(StorageKeys.REFRESH_TOKEN) as string;
+    const username = await storage.getItem(StorageKeys.USERNAME) as string;
     setIsInitialized(true);
     if (accessToken && refreshToken && username) {
       setUsername(username);
@@ -55,9 +56,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * Set auth tokens in browser local storage as part of the login process. After db is initialized, the login method should be called as well.
    */
   const setAuthTokens = useCallback(async (username: string, accessToken: string, refreshToken: string) : Promise<void> => {
-    await storage.setItem('local:username', username);
-    await storage.setItem('local:accessToken', accessToken);
-    await storage.setItem('local:refreshToken', refreshToken);
+    await storage.setItem(StorageKeys.USERNAME, username);
+    await storage.setItem(StorageKeys.ACCESS_TOKEN, accessToken);
+    await storage.setItem(StorageKeys.REFRESH_TOKEN, refreshToken);
 
     // Clear dismiss until (which can be enabled after user has dimissed vault is locked popup) to ensure popup is shown.
     await LocalPreferencesService.setVaultLockedDismissUntil(0);

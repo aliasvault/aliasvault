@@ -9,14 +9,12 @@
 
 import { storage } from 'wxt/utils/storage';
 
+import { StorageKeys } from '@/utils/constants/storageKeys';
 import type { VaultKeyGetResponse, VaultKeyResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
 import { WebApiService } from '@/utils/WebApiService';
-
-/** Local cache of the wrapped VEK (AES-GCM ciphertext) enabling offline unlock for migrated users. */
-export const WRAPPED_VEK_STORAGE_KEY = 'local:wrappedVek';
 
 /** The key type for password-based vault keys, mirroring the server's VaultKey.KeyType value. */
 export const VAULT_KEY_TYPE_PASSWORD = 'password';
@@ -106,7 +104,7 @@ export class VaultKeyService {
 
     if (!result.supported) {
       // Older server: trust the local cache. Legacy accounts have no cached wrapped VEK and use the derived key.
-      const cachedWrappedVek = await storage.getItem(WRAPPED_VEK_STORAGE_KEY) as string | null;
+      const cachedWrappedVek = await storage.getItem(StorageKeys.WRAPPED_VEK) as string | null;
       if (!cachedWrappedVek) {
         return { encryptionKey: derivedKeyBase64, wrappedVek: null };
       }
@@ -115,12 +113,12 @@ export class VaultKeyService {
     }
 
     if (!result.vaultKey) {
-      await storage.removeItem(WRAPPED_VEK_STORAGE_KEY);
+      await storage.removeItem(StorageKeys.WRAPPED_VEK);
       return { encryptionKey: derivedKeyBase64, wrappedVek: null };
     }
 
     const vek = await VaultKeyService.unwrapOrThrow(result.vaultKey.wrappedVek, derivedKeyBase64);
-    await storage.setItem(WRAPPED_VEK_STORAGE_KEY, result.vaultKey.wrappedVek);
+    await storage.setItem(StorageKeys.WRAPPED_VEK, result.vaultKey.wrappedVek);
     return { encryptionKey: vek, wrappedVek: result.vaultKey.wrappedVek };
   }
 
@@ -131,7 +129,7 @@ export class VaultKeyService {
    * @throws Error with {@link AppErrorCode.VAULT_DECRYPT_FAILED} when unwrapping fails (wrong password).
    */
   public static async resolveEncryptionKeyOffline(derivedKeyBase64: string): Promise<string> {
-    const wrappedVek = await storage.getItem(WRAPPED_VEK_STORAGE_KEY) as string | null;
+    const wrappedVek = await storage.getItem(StorageKeys.WRAPPED_VEK) as string | null;
     if (!wrappedVek) {
       return derivedKeyBase64;
     }
@@ -155,7 +153,7 @@ export class VaultKeyService {
    * login), which the background sync resolves by adopting the remote key before any vault work happens.
    */
   public static async hasLocalVaultKey(): Promise<boolean> {
-    return (await storage.getItem(WRAPPED_VEK_STORAGE_KEY) as string | null) !== null;
+    return (await storage.getItem(StorageKeys.WRAPPED_VEK) as string | null) !== null;
   }
 
   /**
@@ -165,9 +163,9 @@ export class VaultKeyService {
   public static async cacheWrappedVekFromServer(webApi?: WebApiService): Promise<void> {
     const result = await VaultKeyService.fetchVaultKey(webApi);
     if (result.vaultKey) {
-      await storage.setItem(WRAPPED_VEK_STORAGE_KEY, result.vaultKey.wrappedVek);
+      await storage.setItem(StorageKeys.WRAPPED_VEK, result.vaultKey.wrappedVek);
     } else if (result.supported) {
-      await storage.removeItem(WRAPPED_VEK_STORAGE_KEY);
+      await storage.removeItem(StorageKeys.WRAPPED_VEK);
     }
   }
 
@@ -190,7 +188,7 @@ export class VaultKeyService {
    * @param storedKey - the key restored from the auxiliary unlock method
    */
   private static async upgradeStoredKeyIfNeeded(storedKey: string): Promise<{ key: string; upgraded: boolean }> {
-    const wrappedVek = await storage.getItem(WRAPPED_VEK_STORAGE_KEY) as string | null;
+    const wrappedVek = await storage.getItem(StorageKeys.WRAPPED_VEK) as string | null;
     if (!wrappedVek) {
       return { key: storedKey, upgraded: false };
     }

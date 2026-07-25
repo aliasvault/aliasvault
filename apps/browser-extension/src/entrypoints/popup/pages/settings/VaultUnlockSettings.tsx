@@ -8,6 +8,7 @@ import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
+import { StorageKeys } from '@/utils/constants/storageKeys';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import {
   isPinEnabled,
@@ -117,7 +118,7 @@ const VaultUnlockSettings: React.FC = () => {
       showLoading();
 
       /* Get the encryption key from session storage */
-      const encryptionKeyResponse = await storage.getItem('session:encryptionKey') as string | undefined;
+      const encryptionKeyResponse = await storage.getItem(StorageKeys.ENCRYPTION_KEY) as string | undefined;
       const encryptionKey = encryptionKeyResponse as string;
 
       if (!encryptionKey) {

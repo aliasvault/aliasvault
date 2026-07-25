@@ -1,3 +1,4 @@
+import { LOCAL_PREFERENCE_STORAGE_KEYS, StorageKeys } from '@/utils/constants/storageKeys';
 import { AutofillMatchingMode } from '@/utils/RustCore';
 
 import { storage } from '#imports';
@@ -6,57 +7,6 @@ import { storage } from '#imports';
  * Concrete unlock methods that can be used to unlock the vault.
  */
 export type UnlockMethod = 'password' | 'pin' | 'mobile';
-
-/*
- * Storage keys for local preferences.
- * These are defined inline since they're only used by this service.
- */
-const KEYS = {
-  // Site settings
-  DISABLED_SITES: 'local:aliasvault_disabled_sites',
-  TEMPORARY_DISABLED_SITES: 'local:aliasvault_temporary_disabled_sites',
-  PASSKEY_DISABLED_SITES: 'local:aliasvault_passkey_disabled_sites',
-
-  // Global toggles
-  CREDENTIAL_AUTOFILL_POPUP_ENABLED: 'local:aliasvault_global_autofill_popup_enabled',
-  GLOBAL_CONTEXT_MENU_ENABLED: 'local:aliasvault_global_context_menu_enabled',
-  PASSKEY_PROVIDER_ENABLED: 'local:aliasvault_passkey_provider_enabled',
-
-  // Timeouts
-  CLIPBOARD_CLEAR_TIMEOUT: 'local:aliasvault_clipboard_clear_timeout',
-  AUTO_LOCK_TIMEOUT: 'local:aliasvault_auto_lock_timeout',
-  VAULT_LOCKED_DISMISS_UNTIL: 'local:aliasvault_vault_locked_dismiss_until',
-
-  // Autofill behavior
-  TOTP_AUTOFILL_ENABLED: 'local:aliasvault_totp_autofill_enabled',
-  AUTO_COPY_TOTP_ON_AUTOFILL: 'local:aliasvault_auto_copy_totp_on_autofill',
-
-  // Matching mode
-  AUTOFILL_MATCHING_MODE: 'local:aliasvault_autofill_matching_mode',
-
-  // History (TODO: move to vault in v1.0)
-  CUSTOM_EMAIL_HISTORY: 'local:aliasvault_custom_email_history',
-  CUSTOM_USERNAME_HISTORY: 'local:aliasvault_custom_username_history',
-
-  // UI preferences
-  SHOW_FOLDERS: 'local:aliasvault_show_folders',
-  AUTO_CLOSE_UNLOCK_POPUP: 'local:aliasvault_auto_close_unlock_popup',
-
-  // Unlock screen behavior
-  LAST_USED_UNLOCK_METHOD: 'local:aliasvault_last_used_unlock_method',
-
-  // Login save feature
-  LOGIN_SAVE_ENABLED: 'local:loginSaveEnabled',
-  LOGIN_SAVE_AUTO_DISMISS_SECONDS: 'local:loginSaveAutoDismissSeconds',
-  LOGIN_SAVE_BLOCKED_DOMAINS: 'local:loginSaveBlockedDomains',
-
-  // Session/Navigation state
-  PENDING_REDIRECT_URL: 'session:pendingRedirectUrl',
-  SKIP_FORM_RESTORE: 'local:aliasvault_skip_form_restore',
-
-  // Brute force protection
-  PASSWORD_UNLOCK_FAILED_ATTEMPTS: 'local:password_unlock_failed_attempts',
-} as const;
 
 /**
  * Service for managing user preferences that are stored locally (not in the vault).
@@ -68,7 +18,7 @@ export const LocalPreferencesService = {
    * @returns Whether to show folders (true) or show all items flat (false). Defaults to true.
    */
   async getShowFolders(): Promise<boolean> {
-    const value = await storage.getItem(KEYS.SHOW_FOLDERS) as boolean | null;
+    const value = await storage.getItem(StorageKeys.SHOW_FOLDERS) as boolean | null;
     return value ?? true;
   },
 
@@ -76,7 +26,7 @@ export const LocalPreferencesService = {
    * Set the show folders preference.
    */
   async setShowFolders(showFolders: boolean): Promise<void> {
-    await storage.setItem(KEYS.SHOW_FOLDERS, showFolders);
+    await storage.setItem(StorageKeys.SHOW_FOLDERS, showFolders);
   },
 
   /**
@@ -84,7 +34,7 @@ export const LocalPreferencesService = {
    * @returns Whether to auto-close the popup after unlocking. Defaults to true.
    */
   async getAutoCloseUnlockPopup(): Promise<boolean> {
-    const value = await storage.getItem(KEYS.AUTO_CLOSE_UNLOCK_POPUP) as boolean | null;
+    const value = await storage.getItem(StorageKeys.AUTO_CLOSE_UNLOCK_POPUP) as boolean | null;
     return value ?? true;
   },
 
@@ -92,7 +42,7 @@ export const LocalPreferencesService = {
    * Set the auto-close unlock popup preference.
    */
   async setAutoCloseUnlockPopup(enabled: boolean): Promise<void> {
-    await storage.setItem(KEYS.AUTO_CLOSE_UNLOCK_POPUP, enabled);
+    await storage.setItem(StorageKeys.AUTO_CLOSE_UNLOCK_POPUP, enabled);
   },
 
   /*
@@ -106,7 +56,7 @@ export const LocalPreferencesService = {
    * @returns The last-used method, or null if none has been recorded yet.
    */
   async getLastUsedUnlockMethod(): Promise<UnlockMethod | null> {
-    const value = await storage.getItem(KEYS.LAST_USED_UNLOCK_METHOD) as UnlockMethod | null;
+    const value = await storage.getItem(StorageKeys.LAST_USED_UNLOCK_METHOD) as UnlockMethod | null;
     if (value === 'password' || value === 'pin' || value === 'mobile') {
       return value;
     }
@@ -117,7 +67,7 @@ export const LocalPreferencesService = {
    * Set the last-used unlock method.
    */
   async setLastUsedUnlockMethod(method: UnlockMethod): Promise<void> {
-    await storage.setItem(KEYS.LAST_USED_UNLOCK_METHOD, method);
+    await storage.setItem(StorageKeys.LAST_USED_UNLOCK_METHOD, method);
   },
 
   /**
@@ -125,7 +75,7 @@ export const LocalPreferencesService = {
    * @returns The matching mode. Defaults to DEFAULT.
    */
   async getAutofillMatchingMode(): Promise<AutofillMatchingMode> {
-    const value = await storage.getItem(KEYS.AUTOFILL_MATCHING_MODE) as AutofillMatchingMode | null;
+    const value = await storage.getItem(StorageKeys.AUTOFILL_MATCHING_MODE) as AutofillMatchingMode | null;
     return value ?? AutofillMatchingMode.DEFAULT;
   },
 
@@ -133,7 +83,7 @@ export const LocalPreferencesService = {
    * Set the autofill matching mode.
    */
   async setAutofillMatchingMode(mode: AutofillMatchingMode): Promise<void> {
-    await storage.setItem(KEYS.AUTOFILL_MATCHING_MODE, mode);
+    await storage.setItem(StorageKeys.AUTOFILL_MATCHING_MODE, mode);
   },
 
   /**
@@ -141,7 +91,7 @@ export const LocalPreferencesService = {
    * @returns Array of disabled site URLs. Defaults to empty array.
    */
   async getDisabledSites(): Promise<string[]> {
-    const value = await storage.getItem(KEYS.DISABLED_SITES) as string[] | null;
+    const value = await storage.getItem(StorageKeys.DISABLED_SITES) as string[] | null;
     return value ?? [];
   },
 
@@ -149,7 +99,7 @@ export const LocalPreferencesService = {
    * Set the list of permanently disabled sites.
    */
   async setDisabledSites(sites: string[]): Promise<void> {
-    await storage.setItem(KEYS.DISABLED_SITES, sites);
+    await storage.setItem(StorageKeys.DISABLED_SITES, sites);
   },
 
   /**
@@ -157,7 +107,7 @@ export const LocalPreferencesService = {
    * @returns Record of site URL to expiry timestamp. Defaults to empty object.
    */
   async getTemporaryDisabledSites(): Promise<Record<string, number>> {
-    const value = await storage.getItem(KEYS.TEMPORARY_DISABLED_SITES) as Record<string, number> | null;
+    const value = await storage.getItem(StorageKeys.TEMPORARY_DISABLED_SITES) as Record<string, number> | null;
     return value ?? {};
   },
 
@@ -165,7 +115,7 @@ export const LocalPreferencesService = {
    * Set the map of temporarily disabled sites.
    */
   async setTemporaryDisabledSites(sites: Record<string, number>): Promise<void> {
-    await storage.setItem(KEYS.TEMPORARY_DISABLED_SITES, sites);
+    await storage.setItem(StorageKeys.TEMPORARY_DISABLED_SITES, sites);
   },
 
   /**
@@ -173,7 +123,7 @@ export const LocalPreferencesService = {
    * @returns Whether context menu is globally enabled. Defaults to true.
    */
   async getGlobalContextMenuEnabled(): Promise<boolean> {
-    const value = await storage.getItem(KEYS.GLOBAL_CONTEXT_MENU_ENABLED) as boolean | null;
+    const value = await storage.getItem(StorageKeys.GLOBAL_CONTEXT_MENU_ENABLED) as boolean | null;
     return value !== false;
   },
 
@@ -181,7 +131,7 @@ export const LocalPreferencesService = {
    * Set whether the global context menu is enabled.
    */
   async setGlobalContextMenuEnabled(enabled: boolean): Promise<void> {
-    await storage.setItem(KEYS.GLOBAL_CONTEXT_MENU_ENABLED, enabled);
+    await storage.setItem(StorageKeys.GLOBAL_CONTEXT_MENU_ENABLED, enabled);
   },
 
   /*
@@ -195,7 +145,7 @@ export const LocalPreferencesService = {
    * @returns Whether passkey provider is enabled. Defaults to true.
    */
   async getPasskeyProviderEnabled(): Promise<boolean> {
-    const value = await storage.getItem(KEYS.PASSKEY_PROVIDER_ENABLED) as boolean | null;
+    const value = await storage.getItem(StorageKeys.PASSKEY_PROVIDER_ENABLED) as boolean | null;
     return value !== false;
   },
 
@@ -203,7 +153,7 @@ export const LocalPreferencesService = {
    * Set whether the passkey provider is globally enabled.
    */
   async setPasskeyProviderEnabled(enabled: boolean): Promise<void> {
-    await storage.setItem(KEYS.PASSKEY_PROVIDER_ENABLED, enabled);
+    await storage.setItem(StorageKeys.PASSKEY_PROVIDER_ENABLED, enabled);
   },
 
   /**
@@ -211,7 +161,7 @@ export const LocalPreferencesService = {
    * @returns Array of disabled site URLs. Defaults to empty array.
    */
   async getPasskeyDisabledSites(): Promise<string[]> {
-    const value = await storage.getItem(KEYS.PASSKEY_DISABLED_SITES) as string[] | null;
+    const value = await storage.getItem(StorageKeys.PASSKEY_DISABLED_SITES) as string[] | null;
     return value ?? [];
   },
 
@@ -219,7 +169,7 @@ export const LocalPreferencesService = {
    * Set the list of sites where passkey provider is disabled.
    */
   async setPasskeyDisabledSites(sites: string[]): Promise<void> {
-    await storage.setItem(KEYS.PASSKEY_DISABLED_SITES, sites);
+    await storage.setItem(StorageKeys.PASSKEY_DISABLED_SITES, sites);
   },
 
   /**
@@ -227,7 +177,7 @@ export const LocalPreferencesService = {
    * @returns Timeout in seconds. Defaults to 10.
    */
   async getClipboardClearTimeout(): Promise<number> {
-    const value = await storage.getItem(KEYS.CLIPBOARD_CLEAR_TIMEOUT) as number | null;
+    const value = await storage.getItem(StorageKeys.CLIPBOARD_CLEAR_TIMEOUT) as number | null;
     return value ?? 10;
   },
 
@@ -235,7 +185,7 @@ export const LocalPreferencesService = {
    * Set the clipboard clear timeout in seconds.
    */
   async setClipboardClearTimeout(timeout: number): Promise<void> {
-    await storage.setItem(KEYS.CLIPBOARD_CLEAR_TIMEOUT, timeout);
+    await storage.setItem(StorageKeys.CLIPBOARD_CLEAR_TIMEOUT, timeout);
   },
 
   /**
@@ -243,7 +193,7 @@ export const LocalPreferencesService = {
    * @returns Timeout in seconds. Defaults to 0 (never).
    */
   async getAutoLockTimeout(): Promise<number> {
-    const value = await storage.getItem(KEYS.AUTO_LOCK_TIMEOUT) as number | null;
+    const value = await storage.getItem(StorageKeys.AUTO_LOCK_TIMEOUT) as number | null;
     return value ?? 0;
   },
 
@@ -251,7 +201,7 @@ export const LocalPreferencesService = {
    * Set the auto-lock timeout in seconds.
    */
   async setAutoLockTimeout(timeout: number): Promise<void> {
-    await storage.setItem(KEYS.AUTO_LOCK_TIMEOUT, timeout);
+    await storage.setItem(StorageKeys.AUTO_LOCK_TIMEOUT, timeout);
   },
 
   /**
@@ -259,7 +209,7 @@ export const LocalPreferencesService = {
    * @returns Timestamp until which the vault locked message is dismissed. Defaults to 0.
    */
   async getVaultLockedDismissUntil(): Promise<number> {
-    const value = await storage.getItem(KEYS.VAULT_LOCKED_DISMISS_UNTIL) as number | null;
+    const value = await storage.getItem(StorageKeys.VAULT_LOCKED_DISMISS_UNTIL) as number | null;
     return value ?? 0;
   },
 
@@ -267,7 +217,7 @@ export const LocalPreferencesService = {
    * Set the vault locked dismiss until timestamp.
    */
   async setVaultLockedDismissUntil(timestamp: number): Promise<void> {
-    await storage.setItem(KEYS.VAULT_LOCKED_DISMISS_UNTIL, timestamp);
+    await storage.setItem(StorageKeys.VAULT_LOCKED_DISMISS_UNTIL, timestamp);
   },
 
   /*
@@ -281,7 +231,7 @@ export const LocalPreferencesService = {
    * @returns Array of previously used custom emails. Defaults to empty array.
    */
   async getCustomEmailHistory(): Promise<string[]> {
-    const value = await storage.getItem(KEYS.CUSTOM_EMAIL_HISTORY) as string[] | null;
+    const value = await storage.getItem(StorageKeys.CUSTOM_EMAIL_HISTORY) as string[] | null;
     return value ?? [];
   },
 
@@ -289,7 +239,7 @@ export const LocalPreferencesService = {
    * Set the custom email history.
    */
   async setCustomEmailHistory(history: string[]): Promise<void> {
-    await storage.setItem(KEYS.CUSTOM_EMAIL_HISTORY, history);
+    await storage.setItem(StorageKeys.CUSTOM_EMAIL_HISTORY, history);
   },
 
   /**
@@ -297,7 +247,7 @@ export const LocalPreferencesService = {
    * @returns Array of previously used custom usernames. Defaults to empty array.
    */
   async getCustomUsernameHistory(): Promise<string[]> {
-    const value = await storage.getItem(KEYS.CUSTOM_USERNAME_HISTORY) as string[] | null;
+    const value = await storage.getItem(StorageKeys.CUSTOM_USERNAME_HISTORY) as string[] | null;
     return value ?? [];
   },
 
@@ -305,7 +255,7 @@ export const LocalPreferencesService = {
    * Set the custom username history.
    */
   async setCustomUsernameHistory(history: string[]): Promise<void> {
-    await storage.setItem(KEYS.CUSTOM_USERNAME_HISTORY, history);
+    await storage.setItem(StorageKeys.CUSTOM_USERNAME_HISTORY, history);
   },
 
   /**
@@ -313,16 +263,16 @@ export const LocalPreferencesService = {
    * Note: This only clears UI preferences, not security-related settings.
    */
   async clearUiPreferences(): Promise<void> {
-    await storage.removeItem(KEYS.SHOW_FOLDERS);
+    await storage.removeItem(StorageKeys.SHOW_FOLDERS);
   },
 
   /**
    * Reset all site-specific settings (disabled sites, temporary disabled sites).
    */
   async resetAllSiteSettings(): Promise<void> {
-    await storage.setItem(KEYS.DISABLED_SITES, []);
-    await storage.setItem(KEYS.TEMPORARY_DISABLED_SITES, {});
-    await storage.setItem(KEYS.PASSKEY_DISABLED_SITES, []);
+    await storage.setItem(StorageKeys.DISABLED_SITES, []);
+    await storage.setItem(StorageKeys.TEMPORARY_DISABLED_SITES, {});
+    await storage.setItem(StorageKeys.PASSKEY_DISABLED_SITES, []);
   },
 
   /**
@@ -330,9 +280,7 @@ export const LocalPreferencesService = {
    * Clears all keys managed by this service.
    */
   async clearAll(): Promise<void> {
-    await Promise.all(
-      Object.values(KEYS).map(key => storage.removeItem(key))
-    );
+    await Promise.all(LOCAL_PREFERENCE_STORAGE_KEYS.map(key => storage.removeItem(key)));
   },
 
   /**
@@ -340,7 +288,7 @@ export const LocalPreferencesService = {
    * @returns The pending redirect URL or null if not set.
    */
   async getPendingRedirectUrl(): Promise<string | null> {
-    const value = await storage.getItem(KEYS.PENDING_REDIRECT_URL) as string | null;
+    const value = await storage.getItem(StorageKeys.PENDING_REDIRECT_URL) as string | null;
     return value ?? null;
   },
 
@@ -349,9 +297,9 @@ export const LocalPreferencesService = {
    */
   async setPendingRedirectUrl(url: string | null): Promise<void> {
     if (url === null) {
-      await storage.removeItem(KEYS.PENDING_REDIRECT_URL);
+      await storage.removeItem(StorageKeys.PENDING_REDIRECT_URL);
     } else {
-      await storage.setItem(KEYS.PENDING_REDIRECT_URL, url);
+      await storage.setItem(StorageKeys.PENDING_REDIRECT_URL, url);
     }
   },
 
@@ -360,7 +308,7 @@ export const LocalPreferencesService = {
    * @returns Whether to skip form restore. Defaults to false.
    */
   async getSkipFormRestore(): Promise<boolean> {
-    const value = await storage.getItem(KEYS.SKIP_FORM_RESTORE) as boolean | null;
+    const value = await storage.getItem(StorageKeys.SKIP_FORM_RESTORE) as boolean | null;
     return value ?? false;
   },
 
@@ -368,7 +316,7 @@ export const LocalPreferencesService = {
    * Set whether form restore should be skipped.
    */
   async setSkipFormRestore(skip: boolean): Promise<void> {
-    await storage.setItem(KEYS.SKIP_FORM_RESTORE, skip);
+    await storage.setItem(StorageKeys.SKIP_FORM_RESTORE, skip);
   },
 
   /*
@@ -382,7 +330,7 @@ export const LocalPreferencesService = {
    * @returns Whether login save is enabled. Defaults to true (enabled by default).
    */
   async getLoginSaveEnabled(): Promise<boolean> {
-    const value = await storage.getItem(KEYS.LOGIN_SAVE_ENABLED) as boolean | null;
+    const value = await storage.getItem(StorageKeys.LOGIN_SAVE_ENABLED) as boolean | null;
     return value !== false;
   },
 
@@ -390,7 +338,7 @@ export const LocalPreferencesService = {
    * Set whether the login save feature is enabled.
    */
   async setLoginSaveEnabled(enabled: boolean): Promise<void> {
-    await storage.setItem(KEYS.LOGIN_SAVE_ENABLED, enabled);
+    await storage.setItem(StorageKeys.LOGIN_SAVE_ENABLED, enabled);
   },
 
   /**
@@ -398,7 +346,7 @@ export const LocalPreferencesService = {
    * @returns Timeout in seconds. Defaults to 15.
    */
   async getLoginSaveAutoDismissSeconds(): Promise<number> {
-    const value = await storage.getItem(KEYS.LOGIN_SAVE_AUTO_DISMISS_SECONDS) as number | null;
+    const value = await storage.getItem(StorageKeys.LOGIN_SAVE_AUTO_DISMISS_SECONDS) as number | null;
     return value ?? 15;
   },
 
@@ -406,7 +354,7 @@ export const LocalPreferencesService = {
    * Set the auto-dismiss timeout for the login save prompt in seconds.
    */
   async setLoginSaveAutoDismissSeconds(seconds: number): Promise<void> {
-    await storage.setItem(KEYS.LOGIN_SAVE_AUTO_DISMISS_SECONDS, seconds);
+    await storage.setItem(StorageKeys.LOGIN_SAVE_AUTO_DISMISS_SECONDS, seconds);
   },
 
   /**
@@ -414,7 +362,7 @@ export const LocalPreferencesService = {
    * @returns Array of blocked domain URLs. Defaults to empty array.
    */
   async getLoginSaveBlockedDomains(): Promise<string[]> {
-    const value = await storage.getItem(KEYS.LOGIN_SAVE_BLOCKED_DOMAINS) as string[] | null;
+    const value = await storage.getItem(StorageKeys.LOGIN_SAVE_BLOCKED_DOMAINS) as string[] | null;
     return value ?? [];
   },
 
@@ -422,7 +370,7 @@ export const LocalPreferencesService = {
    * Set the list of blocked domains for login save.
    */
   async setLoginSaveBlockedDomains(domains: string[]): Promise<void> {
-    await storage.setItem(KEYS.LOGIN_SAVE_BLOCKED_DOMAINS, domains);
+    await storage.setItem(StorageKeys.LOGIN_SAVE_BLOCKED_DOMAINS, domains);
   },
 
   /*
@@ -436,7 +384,7 @@ export const LocalPreferencesService = {
    * @returns The number of failed password unlock attempts. Defaults to 0.
    */
   async getPasswordUnlockFailedAttempts(): Promise<number> {
-    const value = await storage.getItem(KEYS.PASSWORD_UNLOCK_FAILED_ATTEMPTS) as number | string | null;
+    const value = await storage.getItem(StorageKeys.PASSWORD_UNLOCK_FAILED_ATTEMPTS) as number | string | null;
     if (typeof value === 'number') {
       return value;
     }
@@ -450,14 +398,14 @@ export const LocalPreferencesService = {
    * Set the password unlock failed attempts count.
    */
   async setPasswordUnlockFailedAttempts(attempts: number): Promise<void> {
-    await storage.setItem(KEYS.PASSWORD_UNLOCK_FAILED_ATTEMPTS, attempts);
+    await storage.setItem(StorageKeys.PASSWORD_UNLOCK_FAILED_ATTEMPTS, attempts);
   },
 
   /**
    * Reset the password unlock failed attempts counter.
    */
   async resetPasswordUnlockFailedAttempts(): Promise<void> {
-    await storage.removeItem(KEYS.PASSWORD_UNLOCK_FAILED_ATTEMPTS);
+    await storage.removeItem(StorageKeys.PASSWORD_UNLOCK_FAILED_ATTEMPTS);
   },
 
   /*
@@ -471,7 +419,7 @@ export const LocalPreferencesService = {
    * @returns Whether autofill popup is globally enabled. Defaults to true.
    */
   async getGlobalAutofillPopupEnabled(): Promise<boolean> {
-    const value = await storage.getItem(KEYS.CREDENTIAL_AUTOFILL_POPUP_ENABLED) as boolean | null;
+    const value = await storage.getItem(StorageKeys.CREDENTIAL_AUTOFILL_POPUP_ENABLED) as boolean | null;
     return value !== false;
   },
 
@@ -479,7 +427,7 @@ export const LocalPreferencesService = {
    * Set whether the global autofill popup is enabled.
    */
   async setGlobalAutofillPopupEnabled(enabled: boolean): Promise<void> {
-    await storage.setItem(KEYS.CREDENTIAL_AUTOFILL_POPUP_ENABLED, enabled);
+    await storage.setItem(StorageKeys.CREDENTIAL_AUTOFILL_POPUP_ENABLED, enabled);
   },
 
   /**
@@ -487,7 +435,7 @@ export const LocalPreferencesService = {
    * @returns Whether TOTP autofill is enabled. Defaults to true (enabled by default).
    */
   async getTotpAutofillEnabled(): Promise<boolean> {
-    const value = await storage.getItem(KEYS.TOTP_AUTOFILL_ENABLED) as boolean | null;
+    const value = await storage.getItem(StorageKeys.TOTP_AUTOFILL_ENABLED) as boolean | null;
     return value !== false;
   },
 
@@ -495,7 +443,7 @@ export const LocalPreferencesService = {
    * Set whether TOTP autofill is enabled.
    */
   async setTotpAutofillEnabled(enabled: boolean): Promise<void> {
-    await storage.setItem(KEYS.TOTP_AUTOFILL_ENABLED, enabled);
+    await storage.setItem(StorageKeys.TOTP_AUTOFILL_ENABLED, enabled);
   },
 
   /**
@@ -503,7 +451,7 @@ export const LocalPreferencesService = {
    * @returns Whether to auto-copy TOTP. Defaults to true (enabled by default).
    */
   async getAutoCopyTotpOnAutofill(): Promise<boolean> {
-    const value = await storage.getItem(KEYS.AUTO_COPY_TOTP_ON_AUTOFILL) as boolean | null;
+    const value = await storage.getItem(StorageKeys.AUTO_COPY_TOTP_ON_AUTOFILL) as boolean | null;
     return value !== false;
   },
 
@@ -511,6 +459,6 @@ export const LocalPreferencesService = {
    * Set whether to automatically copy TOTP code to clipboard after autofill.
    */
   async setAutoCopyTotpOnAutofill(enabled: boolean): Promise<void> {
-    await storage.setItem(KEYS.AUTO_COPY_TOTP_ON_AUTOFILL, enabled);
+    await storage.setItem(StorageKeys.AUTO_COPY_TOTP_ON_AUTOFILL, enabled);
   },
 };

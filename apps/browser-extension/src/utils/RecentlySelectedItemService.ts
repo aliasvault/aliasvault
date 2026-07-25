@@ -1,10 +1,5 @@
 import { storage } from '#imports';
-
-/**
- * Storage key for recently selected item.
- * Uses session storage (memory-only, cleared on browser restart).
- */
-const RECENTLY_SELECTED_KEY = 'session:aliasvault_recently_selected_item';
+import { StorageKeys } from '@/utils/constants/storageKeys';
 
 /**
  * Time-to-live for recently selected items (60 seconds).
@@ -40,7 +35,7 @@ export const RecentlySelectedItemService = {
       timestamp: Date.now(),
       domain,
     };
-    await storage.setItem(RECENTLY_SELECTED_KEY, data);
+    await storage.setItem(StorageKeys.RECENTLY_SELECTED_ITEM, data);
   },
 
   /**
@@ -49,7 +44,7 @@ export const RecentlySelectedItemService = {
    * @returns The item ID if valid, or null if expired or not matching domain
    */
   async getRecentlySelected(domain: string): Promise<string | null> {
-    const data = await storage.getItem(RECENTLY_SELECTED_KEY) as IRecentlySelectedItem | null;
+    const data = await storage.getItem(StorageKeys.RECENTLY_SELECTED_ITEM) as IRecentlySelectedItem | null;
 
     if (!data) {
       return null;
@@ -84,7 +79,7 @@ export const RecentlySelectedItemService = {
    * Clear the recently selected item.
    */
   async clear(): Promise<void> {
-    await storage.removeItem(RECENTLY_SELECTED_KEY);
+    await storage.removeItem(StorageKeys.RECENTLY_SELECTED_ITEM);
   },
 
   /**
@@ -92,7 +87,7 @@ export const RecentlySelectedItemService = {
    * @returns Remaining TTL in ms, or 0 if expired or not set
    */
   async getRemainingTTL(): Promise<number> {
-    const data = await storage.getItem(RECENTLY_SELECTED_KEY) as IRecentlySelectedItem | null;
+    const data = await storage.getItem(StorageKeys.RECENTLY_SELECTED_ITEM) as IRecentlySelectedItem | null;
 
     if (!data) {
       return 0;

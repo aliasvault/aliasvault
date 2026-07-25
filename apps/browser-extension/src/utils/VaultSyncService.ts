@@ -6,6 +6,7 @@
 
 import { storage } from 'wxt/utils/storage';
 
+import { bucketRevisionStorageKey, StorageKeys } from '@/utils/constants/storageKeys';
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
 import { VaultDataBucketCategory } from '@/utils/dist/core/models/vault';
 import type { VaultResponse } from '@/utils/dist/core/models/webapi';
@@ -17,7 +18,7 @@ import { SqliteClient } from '@/utils/SqliteClient';
 import { ServerUpdateRequiredError } from '@/utils/types/errors/ServerUpdateRequiredError';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
 import { type BlobEntry, type VaultManifest, type VaultDataBucket, VaultCodec } from '@/utils/VaultCodec';
-import { VaultKeyService, WRAPPED_VEK_STORAGE_KEY } from '@/utils/VaultKeyService';
+import { VaultKeyService } from '@/utils/VaultKeyService';
 import { WebApiService } from '@/utils/WebApiService';
 
 // Endpoints are relative; WebApiService resolves them under the API's /v2/ prefix.
@@ -89,23 +90,11 @@ async function decryptUnpack(base64Ciphertext: string, vek: string): Promise<str
   return vaultCodecUnpackPayload(plainBytes);
 }
 
-const SALT_STORAGE_KEY = 'local:vaultV2UserSalt';
-export const CONTENT_FINGERPRINTS_STORAGE_KEY = 'local:vaultV2ContentFingerprints';
 const FINGERPRINT_ROOT_KEY = 'root';
 /** Fingerprint record key for a non-root (shared-folder) manifest. */
 const fingerprintManifestKey = (manifestId: string): string => `manifest:${manifestId}`;
 /** Fingerprint record key for a data bucket. */
 const fingerprintBucketKey = (category: string): string => `bucket:${category}`;
-/** Per-category data-bucket revision number. */
-const bucketRevKey = (category: string): `local:${string}` => `local:vaultV2BucketRev:${category}`;
-/** Local cache of encrypted blobs (hash → base64 AES-GCM ciphertext). Never stores plaintext at rest. */
-const BLOB_CACHE_STORAGE_KEY = 'local:vaultV2BlobCipherCache';
-/** Hashes the server has stored (refreshed on every pull/push). */
-const SERVER_HASHES_STORAGE_KEY = 'local:vaultV2ServerBlobHashes';
-/**
- * The client's last-known revision per non-Main manifest (manifestId > revision), refreshed on every materialize.
- */
-export const SERVER_MANIFEST_REVISIONS_STORAGE_KEY = 'local:serverManifestRevisions';
 
 /** Max accumulated base64 ciphertext characters per POST /v2/Vault/blobs call (~4 MB request body). */
 const BLOB_UPLOAD_BATCH_MAX_CHARS = 4 * 1024 * 1024;
@@ -300,7 +289,7 @@ export class VaultSyncService {
        * format (encrypted SQLite), so we pass it through unchanged: the on-open schema upgrade handles the rest.
        * There is no manifest-v1 server state, so drop any stale content fingerprints.
        */
-      await storage.removeItem(CONTENT_FINGERPRINTS_STORAGE_KEY);
+      await storage.removeItem(StorageKeys.VAULT_V2_CONTENT_FINGERPRINTS);
       devLog('[V2Pull] Step 2/4: legacy blob pass-through (user not yet migrated), returning as-is.');
       return this.buildResponse(
         snapshot.legacyVaultBlob ?? '',
@@ -381,9 +370,9 @@ export class VaultSyncService {
     pulledFingerprints[FINGERPRINT_ROOT_KEY] = await vaultCodecComputeContentFingerprint(manifestJson);
 
     // Persist the user salt locally so subsequent canonicalizes hash blobs the same way.
-    await storage.setItem(SALT_STORAGE_KEY, manifest.userSalt);
+    await storage.setItem(StorageKeys.VAULT_V2_USER_SALT, manifest.userSalt);
     const manifestRevision = typeof rootManifest.revision === 'number' ? rootManifest.revision : 0;
-    await storage.setItem('local:serverRevision', manifestRevision);
+    await storage.setItem(StorageKeys.SERVER_REVISION, manifestRevision);
 
     /*
      * Persist the revision of every non-root manifest (e.g. shared folders) so sync can detect when one is added or
@@ -395,7 +384,7 @@ export class VaultSyncService {
         sharedManifestRevisions[m.manifestId] = m.revision;
       }
     }
-    await storage.setItem(SERVER_MANIFEST_REVISIONS_STORAGE_KEY, sharedManifestRevisions);
+    await storage.setItem(StorageKeys.SERVER_MANIFEST_REVISIONS, sharedManifestRevisions);
     devLog(`[V2Pull] Stored local shared-manifest revisions from snapshot: ${Object.keys(sharedManifestRevisions).length === 0 ? '(none)' : Object.entries(sharedManifestRevisions).map(([id, rev]) => `${id}=${rev}`).join(', ')}. Next status check compares against these.`);
 
     // Decrypt every data bucket in the snapshot (Settings today; more categories later).
@@ -417,7 +406,7 @@ export class VaultSyncService {
       const rowCount = Object.values(bucket.tables ?? {}).reduce((n, rows) => n + rows.length, 0);
       devLog(`[V2Pull] Data bucket "${bucketDto.category}" opened: ${rowCount} rows (revision ${bucketDto.revision}).`);
       if (typeof bucketDto.revision === 'number') {
-        await storage.setItem(bucketRevKey(bucketDto.category), bucketDto.revision);
+        await storage.setItem(bucketRevisionStorageKey(bucketDto.category), bucketDto.revision);
       }
     }
     if (dataBuckets.length === 0) {
@@ -561,13 +550,13 @@ export class VaultSyncService {
     await this.saveBlobCache(prunedCache);
 
     // The server demonstrably has every blob it just served or referenced, seed the upload diff with them.
-    await storage.setItem(SERVER_HASHES_STORAGE_KEY, refs.map(r => r.hash));
+    await storage.setItem(StorageKeys.VAULT_V2_SERVER_BLOB_HASHES, refs.map(r => r.hash));
 
     /*
      * Replace (not merge) the content-fingerprint baselines: the record must mirror exactly the manifests and
      * buckets the server holds right now, so entries of revoked/removed manifests drop out.
      */
-    await storage.setItem(CONTENT_FINGERPRINTS_STORAGE_KEY, pulledFingerprints);
+    await storage.setItem(StorageKeys.VAULT_V2_CONTENT_FINGERPRINTS, pulledFingerprints);
     devLog(`[V2Pull] Stored ${Object.keys(pulledFingerprints).length} content fingerprint baseline(s) for push-side change detection.`);
 
     devLog(`[V2Pull] ${blobMap.size} blobs decrypted; running codec reassembly into a fresh SQLite (${sharedManifests.length} shared manifest(s) combined)...`);
@@ -702,7 +691,7 @@ export class VaultSyncService {
     }
 
     // 1) Canonicalize, reusing the pre-push no-op check's result when it is still current (same client instance, no mutations since).
-    const currentMutationSequence = ((await storage.getItem('local:mutationSequence')) as number | null) ?? 0;
+    const currentMutationSequence = ((await storage.getItem(StorageKeys.MUTATION_SEQUENCE)) as number | null) ?? 0;
     const cachedSet = (canonicalizeCache && canonicalizeCache.client === sqliteClient && canonicalizeCache.mutationSequence === currentMutationSequence) ? canonicalizeCache : null;
     if (cachedSet) {
       devLog('[V2Push] Reusing the canonicalize result from the pre-push no-op check.');
@@ -783,7 +772,7 @@ export class VaultSyncService {
 
       const { ciphertext, compressedBytes } = await packEncrypt(bucketPlaintext, contentKey);
       const ciphertextHash = await vaultCodecComputeCiphertextHash(ciphertext);
-      const currentRevision = ((await storage.getItem(bucketRevKey(bucket.category))) as number | null) ?? 0;
+      const currentRevision = ((await storage.getItem(bucketRevisionStorageKey(bucket.category))) as number | null) ?? 0;
       bucketDtos.push({ category: bucket.category, blob: ciphertext, ciphertextHash, currentRevision });
       writtenBucketFingerprints[bucket.category] = bucketFingerprint;
       devLog(`[V2Push] Data bucket "${bucket.category}": raw ${formatKb(bucketPlaintext.length)} → compressed ${formatKb(compressedBytes)} → encrypted ${formatKb(ciphertext.length)}.`);
@@ -805,7 +794,7 @@ export class VaultSyncService {
      * manifest is skipped entirely: this both avoids re-uploading it and keeps its (possibly stale) revision out of
      * the all-or-nothing gate, so another member's update to that folder can't fail an unrelated write.
      */
-    const sharedRevisions = ((await storage.getItem(SERVER_MANIFEST_REVISIONS_STORAGE_KEY)) as Record<string, number> | null) ?? {};
+    const sharedRevisions = ((await storage.getItem(StorageKeys.SERVER_MANIFEST_REVISIONS)) as Record<string, number> | null) ?? {};
     const rootBlobEntries = blobEntries;
     const sharedBlobEntries = new Map<string, { bytes: Uint8Array; kind: 'favicon' | 'attachment'; vek: string }>();
     const sharedManifestWrites: ManifestWriteDto[] = [];
@@ -856,7 +845,7 @@ export class VaultSyncService {
       writtenSharedFingerprints[record.manifestId] = sharedFingerprint;
     }
 
-    const currentManifestRevision = ((await storage.getItem('local:serverRevision')) as number | null) ?? 0;
+    const currentManifestRevision = ((await storage.getItem(StorageKeys.SERVER_REVISION)) as number | null) ?? 0;
 
     /*
      * Nothing changed versus the server baselines: skip the write (and the blob diff) entirely. Reachable when a
@@ -876,7 +865,7 @@ export class VaultSyncService {
     const rootHashes = Array.from(rootBlobEntries.keys());
     const sharedHashes = Array.from(sharedBlobEntries.keys());
     const allBlobHashes = [...rootHashes, ...sharedHashes];
-    const knownServerHashes = new Set(((await storage.getItem(SERVER_HASHES_STORAGE_KEY)) as string[] | null) ?? []);
+    const knownServerHashes = new Set(((await storage.getItem(StorageKeys.VAULT_V2_SERVER_BLOB_HASHES)) as string[] | null) ?? []);
 
     let rootToUpload: string[] = [];
     let sharedToUpload: string[] = [];
@@ -978,16 +967,16 @@ export class VaultSyncService {
     }
 
     // 5) Update local persisted state on success.
-    await storage.setItem('local:serverRevision', newRootRevision);
+    await storage.setItem(StorageKeys.SERVER_REVISION, newRootRevision);
     for (const br of (resp.bucketRevisions ?? [])) {
-      await storage.setItem(bucketRevKey(br.category), br.revision);
+      await storage.setItem(bucketRevisionStorageKey(br.category), br.revision);
     }
 
     /*
      * Persist the new revision of every shared manifest written, mirrored onto the session records so a subsequent
      * push in the same session rebases on the right revision.
      */
-    const persistedSharedRevisions = ((await storage.getItem(SERVER_MANIFEST_REVISIONS_STORAGE_KEY)) as Record<string, number> | null) ?? {};
+    const persistedSharedRevisions = ((await storage.getItem(StorageKeys.SERVER_MANIFEST_REVISIONS)) as Record<string, number> | null) ?? {};
     const sessionShared = await SharingService.getSessionSharedFolders();
     for (const r of (resp.manifestRevisions ?? [])) {
       if (r.isRoot || r.manifestId == null) {
@@ -999,7 +988,7 @@ export class VaultSyncService {
         sessionShared[folder.folderId].revision = r.revision;
       }
     }
-    await storage.setItem(SERVER_MANIFEST_REVISIONS_STORAGE_KEY, persistedSharedRevisions);
+    await storage.setItem(StorageKeys.SERVER_MANIFEST_REVISIONS, persistedSharedRevisions);
     await SharingService.setSessionSharedFolders(sessionShared);
 
     /*
@@ -1018,7 +1007,7 @@ export class VaultSyncService {
     await this.saveContentFingerprints(fingerprints);
 
     // Every referenced hash is now known to be on the server, refresh the diff baseline.
-    await storage.setItem(SERVER_HASHES_STORAGE_KEY, allBlobHashes);
+    await storage.setItem(StorageKeys.VAULT_V2_SERVER_BLOB_HASHES, allBlobHashes);
 
     /*
      * Refresh the encrypted blob cache: keep entries still referenced by the new manifests, add the ciphertexts we just uploaded.
@@ -1038,7 +1027,7 @@ export class VaultSyncService {
      * which must adopt it as the session encryption key and re-encrypt the locally stored vault with it.
      */
     if (migrateToVaultKey && wrappedVek) {
-      await storage.setItem(WRAPPED_VEK_STORAGE_KEY, wrappedVek);
+      await storage.setItem(StorageKeys.WRAPPED_VEK, wrappedVek);
       devLog('[V2Push] KEK/VEK migration complete: vault key created server-side, wrapped VEK cached locally.');
     }
 
@@ -1059,10 +1048,10 @@ export class VaultSyncService {
    * @returns The canonicalized set plus the resolved shared-folder session records
    */
   private async canonicalizeVault(sqliteClient: SqliteClient): Promise<CanonicalizedVaultSet> {
-    let userSalt = (await storage.getItem(SALT_STORAGE_KEY)) as string | null;
+    let userSalt = (await storage.getItem(StorageKeys.VAULT_V2_USER_SALT)) as string | null;
     if (!userSalt) {
       userSalt = await vaultCodecGenerateUserSalt();
-      await storage.setItem(SALT_STORAGE_KEY, userSalt);
+      await storage.setItem(StorageKeys.VAULT_V2_USER_SALT, userSalt);
     }
 
     // Read tables from the SQLite database and apply the manifest-v1 format rules.
@@ -1160,7 +1149,7 @@ export class VaultSyncService {
     const fingerprints = await this.loadContentFingerprints();
     const bucketFingerprint = await vaultCodecComputeContentFingerprint(plaintext);
     if (fingerprints[fingerprintBucketKey(category)] === bucketFingerprint) {
-      const revision = ((await storage.getItem(bucketRevKey(category))) as number | null) ?? 0;
+      const revision = ((await storage.getItem(bucketRevisionStorageKey(category))) as number | null) ?? 0;
       devLog(`[V2Push] Bucket "${category}" (bucket-only) unchanged versus server baseline, skipping upload.`);
       return { status: 'ok', revision };
     }
@@ -1172,7 +1161,7 @@ export class VaultSyncService {
     const webApi = new WebApiService();
     const bucketEntry = { category, blob: ciphertext, ciphertextHash };
 
-    let currentRevision = (((await storage.getItem(bucketRevKey(category))) as number | null) ?? 0);
+    let currentRevision = (((await storage.getItem(bucketRevisionStorageKey(category))) as number | null) ?? 0);
     let resp = await webApi.post<Record<string, unknown>, VaultWriteResponseDto>(UPLOAD_ENDPOINT, {
       username, manifests: [], buckets: [{ ...bucketEntry, currentRevision }], newBlobs: [], emailRouting: null, encryptionPublicKey: '',
     });
@@ -1191,7 +1180,7 @@ export class VaultSyncService {
     }
 
     const newRevision = (resp.bucketRevisions ?? []).find(b => b.category === category)?.revision ?? currentRevision + 1;
-    await storage.setItem(bucketRevKey(category), newRevision);
+    await storage.setItem(bucketRevisionStorageKey(category), newRevision);
 
     // New server baseline for this bucket, so an unchanged follow-up push (bucket-only or full) can skip it.
     fingerprints[fingerprintBucketKey(category)] = bucketFingerprint;
@@ -1343,10 +1332,10 @@ export class VaultSyncService {
   }
 
   /**
-   * Load the per-target content-fingerprint baselines (see {@link CONTENT_FINGERPRINTS_STORAGE_KEY}).
+   * Load the per-target content-fingerprint baselines (see {@link StorageKeys.VAULT_V2_CONTENT_FINGERPRINTS}).
    */
   private async loadContentFingerprints(): Promise<Record<string, string>> {
-    return ((await storage.getItem(CONTENT_FINGERPRINTS_STORAGE_KEY)) as Record<string, string> | null) ?? {};
+    return ((await storage.getItem(StorageKeys.VAULT_V2_CONTENT_FINGERPRINTS)) as Record<string, string> | null) ?? {};
   }
 
   /**
@@ -1354,7 +1343,7 @@ export class VaultSyncService {
    * @param fingerprints - fingerprint record to persist
    */
   private async saveContentFingerprints(fingerprints: Record<string, string>): Promise<void> {
-    await storage.setItem(CONTENT_FINGERPRINTS_STORAGE_KEY, fingerprints);
+    await storage.setItem(StorageKeys.VAULT_V2_CONTENT_FINGERPRINTS, fingerprints);
   }
 
   /**
@@ -1362,7 +1351,7 @@ export class VaultSyncService {
    * Entries are stored as served to/from the server, so nothing in the cache is plaintext at rest.
    */
   private async loadBlobCache(): Promise<Record<string, string>> {
-    return ((await storage.getItem(BLOB_CACHE_STORAGE_KEY)) as Record<string, string> | null) ?? {};
+    return ((await storage.getItem(StorageKeys.VAULT_V2_BLOB_CIPHER_CACHE)) as Record<string, string> | null) ?? {};
   }
 
   /**
@@ -1370,7 +1359,7 @@ export class VaultSyncService {
    * @param cache - cache to persist
    */
   private async saveBlobCache(cache: Record<string, string>): Promise<void> {
-    await storage.setItem(BLOB_CACHE_STORAGE_KEY, cache);
+    await storage.setItem(StorageKeys.VAULT_V2_BLOB_CIPHER_CACHE, cache);
   }
 
 }

@@ -1,6 +1,6 @@
 import { storage } from 'wxt/utils/storage';
 
-type StorageKey = `local:${string}` | `session:${string}`;
+import { type StorageKey, StorageKeys } from '@/utils/constants/storageKeys';
 
 /**
  * Storage keys that were migrated from session: to local: storage in v0.26.0 for offline mode support.
@@ -10,10 +10,10 @@ type StorageKey = `local:${string}` | `session:${string}`;
  * Format: local key -> session fallback key
  */
 const MIGRATED_STORAGE_KEYS: Record<string, StorageKey> = {
-  'local:publicEmailDomains': 'session:publicEmailDomains',
-  'local:privateEmailDomains': 'session:privateEmailDomains',
-  'local:hiddenPrivateEmailDomains': 'session:hiddenPrivateEmailDomains',
-  'local:encryptionKeyDerivationParams': 'session:encryptionKeyDerivationParams',
+  [StorageKeys.PUBLIC_EMAIL_DOMAINS]: StorageKeys.LEGACY_SESSION_PUBLIC_EMAIL_DOMAINS,
+  [StorageKeys.PRIVATE_EMAIL_DOMAINS]: StorageKeys.LEGACY_SESSION_PRIVATE_EMAIL_DOMAINS,
+  [StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS]: StorageKeys.LEGACY_SESSION_HIDDEN_PRIVATE_EMAIL_DOMAINS,
+  [StorageKeys.ENCRYPTION_KEY_DERIVATION_PARAMS]: StorageKeys.LEGACY_SESSION_ENCRYPTION_KEY_DERIVATION_PARAMS,
 };
 
 /**
@@ -25,10 +25,10 @@ const MIGRATED_STORAGE_KEYS: Record<string, StorageKey> = {
  *
  * @example
  * // Instead of:
- * const domains = await storage.getItem('local:publicEmailDomains');
+ * const domains = await storage.getItem(StorageKeys.PUBLIC_EMAIL_DOMAINS);
  *
  * // Use:
- * const domains = await getItemWithFallback('local:publicEmailDomains');
+ * const domains = await getItemWithFallback(StorageKeys.PUBLIC_EMAIL_DOMAINS);
  *
  * @note This fallback can be removed in v0.27.0+ after users have had time to upgrade
  */

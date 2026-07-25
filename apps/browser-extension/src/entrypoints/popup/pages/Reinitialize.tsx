@@ -8,14 +8,11 @@ import useCurrentTabMatching from '@/entrypoints/popup/hooks/useCurrentTabMatchi
 import { consumePendingRedirectUrl } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 
+import { StorageKeys } from '@/utils/constants/storageKeys';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { storage } from '#imports';
 
-const LAST_VISITED_PAGE_KEY = 'session:lastVisitedPage';
-const LAST_VISITED_TIME_KEY = 'session:lastVisitedTime';
-const NAVIGATION_HISTORY_KEY = 'session:navigationHistory';
-const LAST_TAB_URL_KEY = 'session:lastTabUrl';
 const PAGE_MEMORY_DURATION = 120 * 1000; // 2 minutes in milliseconds
 
 type NavigationHistoryEntry = {
@@ -63,10 +60,10 @@ const Reinitialize: React.FC = () => {
     const matchResult = await matchCurrentTab();
 
     const [lastPage, lastVisitTime, savedHistory, lastTabUrl] = await Promise.all([
-      storage.getItem(LAST_VISITED_PAGE_KEY) as Promise<string>,
-      storage.getItem(LAST_VISITED_TIME_KEY) as Promise<number>,
-      storage.getItem(NAVIGATION_HISTORY_KEY) as Promise<NavigationHistoryEntry[]>,
-      storage.getItem(LAST_TAB_URL_KEY) as Promise<string>,
+      storage.getItem(StorageKeys.LAST_VISITED_PAGE) as Promise<string>,
+      storage.getItem(StorageKeys.LAST_VISITED_TIME) as Promise<number>,
+      storage.getItem(StorageKeys.NAVIGATION_HISTORY) as Promise<NavigationHistoryEntry[]>,
+      storage.getItem(StorageKeys.LAST_TAB_URL) as Promise<string>,
     ]);
 
     // Check if user switched to a different tab (different URL)
@@ -112,15 +109,15 @@ const Reinitialize: React.FC = () => {
 
     // Clear stored navigation data since we're using fresh URL matching
     await Promise.all([
-      storage.removeItem(LAST_VISITED_PAGE_KEY),
-      storage.removeItem(LAST_VISITED_TIME_KEY),
-      storage.removeItem(NAVIGATION_HISTORY_KEY),
+      storage.removeItem(StorageKeys.LAST_VISITED_PAGE),
+      storage.removeItem(StorageKeys.LAST_VISITED_TIME),
+      storage.removeItem(StorageKeys.NAVIGATION_HISTORY),
       sendMessage('CLEAR_PERSISTED_FORM_VALUES'),
     ]);
 
     // Save current tab URL for future tab-switch detection
     if (currentTabUrl) {
-      await storage.setItem(LAST_TAB_URL_KEY, currentTabUrl);
+      await storage.setItem(StorageKeys.LAST_TAB_URL, currentTabUrl);
     }
 
     // Navigate to the items index: any current-site match is shown as a suggestion there.

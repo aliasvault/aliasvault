@@ -11,6 +11,7 @@ import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAu
 
 import { isAvAutofillAllowed, isAvSuppressSave } from '@/utils/autofill/Autofill';
 import { DEFAULT_POPUP_TYPE, isPopupType, popupTypeForFieldType, POPUP_TYPES, type PopupType } from '@/utils/autofill/PopupTypes';
+import { StorageKeys } from '@/utils/constants/storageKeys';
 import { devLog } from '@/utils/devLogger/DevLogger';
 import type { Item } from '@/utils/dist/core/models/vault';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
@@ -88,10 +89,10 @@ async function handleSaveLogin(login: CapturedLogin, serviceName: string): Promi
 async function handleNeverSaveForDomain(domain: string): Promise<void> {
   // Store the blocked domain in local storage
   try {
-    const blockedDomains = await storage.getItem('local:loginSaveBlockedDomains') as string[] ?? [];
+    const blockedDomains = await storage.getItem(StorageKeys.LOGIN_SAVE_BLOCKED_DOMAINS) as string[] ?? [];
     if (!blockedDomains.includes(domain)) {
       blockedDomains.push(domain);
-      await storage.setItem('local:loginSaveBlockedDomains', blockedDomains);
+      await storage.setItem(StorageKeys.LOGIN_SAVE_BLOCKED_DOMAINS, blockedDomains);
     }
   } catch (error) {
     console.error('[AliasVault] Error saving blocked domain:', error);
@@ -149,7 +150,7 @@ async function isLoginSaveEnabled(): Promise<boolean> {
  */
 async function isDomainBlocked(domain: string): Promise<boolean> {
   try {
-    const blockedDomains = await storage.getItem('local:loginSaveBlockedDomains') as string[] ?? [];
+    const blockedDomains = await storage.getItem(StorageKeys.LOGIN_SAVE_BLOCKED_DOMAINS) as string[] ?? [];
     return blockedDomains.includes(domain);
   } catch {
     return false;
@@ -226,7 +227,7 @@ async function checkAndRestoreSavePromptEarly(ctx: Parameters<typeof createShado
       name: 'aliasvault-save-prompt',
       position: 'inline',
       anchor: 'body',
-      mode: await storage.getItem('local:e2eTestMode') === true ? 'open' : 'closed',
+      mode: await storage.getItem(StorageKeys.E2E_TEST_MODE) === true ? 'open' : 'closed',
       /**
        * Mount handler for early save prompt restore.
        */
@@ -468,7 +469,7 @@ export default defineContentScript({
       name: 'aliasvault-ui',
       position: 'inline',
       anchor: 'body',
-      mode: await storage.getItem('local:e2eTestMode') === true ? 'open' : 'closed',
+      mode: await storage.getItem(StorageKeys.E2E_TEST_MODE) === true ? 'open' : 'closed',
       /**
        * Handle mount.
        */

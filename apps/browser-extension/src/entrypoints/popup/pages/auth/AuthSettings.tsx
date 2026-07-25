@@ -6,6 +6,7 @@ import LanguageSwitcher from '@/entrypoints/popup/components/LanguageSwitcher';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import { AppInfo } from '@/utils/AppInfo';
+import { StorageKeys } from '@/utils/constants/storageKeys';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 import { storage } from '#imports';
@@ -86,11 +87,11 @@ const AuthSettings: React.FC = () => {
       // Save any pending values synchronously before unmount
       if (pendingApiUrlRef.current !== null) {
         const value = pendingApiUrlRef.current;
-        storage.setItem('local:apiUrl', value);
+        storage.setItem(StorageKeys.API_URL, value);
       }
       if (pendingClientUrlRef.current !== null) {
         const value = pendingClientUrlRef.current;
-        storage.setItem('local:clientUrl', value);
+        storage.setItem(StorageKeys.CLIENT_URL, value);
       }
     };
   }, []);
@@ -100,8 +101,8 @@ const AuthSettings: React.FC = () => {
      * Load the stored settings from the storage.
      */
     const loadStoredSettings = async () : Promise<void> => {
-      const apiUrl = await storage.getItem('local:apiUrl') as string;
-      const clientUrl = await storage.getItem('local:clientUrl') as string;
+      const apiUrl = await storage.getItem(StorageKeys.API_URL) as string;
+      const clientUrl = await storage.getItem(StorageKeys.CLIENT_URL) as string;
       const globallyEnabled = await LocalPreferencesService.getGlobalAutofillPopupEnabled();
       const dismissUntil = await LocalPreferencesService.getVaultLockedDismissUntil();
 
@@ -135,8 +136,8 @@ const AuthSettings: React.FC = () => {
     const value = e.target.value;
     setSelectedOption(value);
     if (value !== 'custom') {
-      await storage.setItem('local:apiUrl', '');
-      await storage.setItem('local:clientUrl', '');
+      await storage.setItem(StorageKeys.API_URL, '');
+      await storage.setItem(StorageKeys.CLIENT_URL, '');
       setCustomUrl('');
       setCustomClientUrl('');
       setErrors({});
@@ -160,14 +161,14 @@ const AuthSettings: React.FC = () => {
       try {
         await urlSchema.validateAt('apiUrl', { apiUrl: value });
         setErrors(prev => ({ ...prev, apiUrl: undefined }));
-        await storage.setItem('local:apiUrl', value);
+        await storage.setItem(StorageKeys.API_URL, value);
         pendingApiUrlRef.current = null;
       } catch (error: unknown) {
         if (error instanceof Yup.ValidationError) {
           setErrors(prev => ({ ...prev, apiUrl: error.message }));
           // On error we revert back to the aliasvault.com official hosted instance.
-          await storage.setItem('local:apiUrl', AppInfo.DEFAULT_API_URL);
-          await storage.setItem('local:clientUrl', AppInfo.DEFAULT_CLIENT_URL);
+          await storage.setItem(StorageKeys.API_URL, AppInfo.DEFAULT_API_URL);
+          await storage.setItem(StorageKeys.CLIENT_URL, AppInfo.DEFAULT_CLIENT_URL);
           pendingApiUrlRef.current = null;
         }
       }
@@ -191,7 +192,7 @@ const AuthSettings: React.FC = () => {
       try {
         await urlSchema.validateAt('clientUrl', { clientUrl: value });
         setErrors(prev => ({ ...prev, clientUrl: undefined }));
-        await storage.setItem('local:clientUrl', value);
+        await storage.setItem(StorageKeys.CLIENT_URL, value);
         pendingClientUrlRef.current = null;
       } catch (error: unknown) {
         if (error instanceof Yup.ValidationError) {
