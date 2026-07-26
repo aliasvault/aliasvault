@@ -17,7 +17,7 @@ use base64::Engine;
 use serde_json::json;
 
 use super::hash::salted_blob_hash;
-use super::logos::dedupe_logos_by_source;
+use super::logos::{normalize_logo_scope, reconcile_logo_references};
 use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedVault, CodecOverflow, DataBucket, Manifest, CodecRecord, SharedVault};
 use super::materialize::row_key;
 use super::sharing::partition_for_sharing;
@@ -28,13 +28,12 @@ use crate::error::VaultResult;
 /// category (see [`BUCKET_TABLES`](super::types::BUCKET_TABLES)), and the content-addressed blob map.
 pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<CanonicalizedVault> {
     // Collect every non-skip table into a name > rows map (row order preserved per table). Blob
-    // extraction and bucket-splitting happen below; deduping Logos first (before extraction) means a
-    // dropped duplicate never registers an orphan favicon blob.
+    // extraction and bucket-splitting happen below.
     let mut all_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
     let mut overflow = CodecOverflow::default();
     for table in &input.tables {
         // The OVERFLOW_TABLE row carries a newer writer's tables/columns this client's schema
-        // couldn't hold (written by the last materialize). Consume it here — re-merged below,
+        // couldn't hold (written by the last materialize). Consume it here, re-merged below,
         // never emitted into the manifest itself.
         if table.name == OVERFLOW_TABLE {
             overflow = CodecOverflow::from_table_records(&table.records);
@@ -53,12 +52,18 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         all_tables.entry(name.clone()).or_insert_with(|| rows.clone());
     }
 
-    // Collapse duplicate Logos rows sharing a Source (see `logos` module) and remap Items.LogoId so
-    // the manifest we write is free of any UNIQUE(Source) collision that would break materialize.
-    dedupe_logos_by_source(&mut all_tables);
+    /*
+     * Logos are scoped per manifest. Snapshot the full set before routing so each partition can clone
+     * in the icon of an item that just moved across a scope boundary.
+     */
+    let all_logos: Vec<CodecRecord> = all_tables.get("Logos").cloned().unwrap_or_default();
 
     // Split each shared folder's subtree into its own partition; `all_tables` keeps the root's rows.
-    let shared_partitions = partition_for_sharing(&mut all_tables, &input.shared_folders)?;
+    let shared_partitions = partition_for_sharing(&mut all_tables, &input.shared_folders, &all_logos)?;
+
+    // The root manifest is a scope like any other: `SharedFolderId` NULL, ids derived against it.
+    reconcile_logo_references(&mut all_tables, None, &all_logos);
+    normalize_logo_scope(&mut all_tables, None);
 
     let mut blobs: HashMap<String, BlobEntry> = HashMap::new();
     let mut manifest_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();

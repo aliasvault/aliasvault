@@ -180,6 +180,13 @@ pub fn vault_codec_generate_user_salt() -> String {
     crate::vault_codec::generate_user_salt()
 }
 
+/// The `Logos.Id` to use for `source` inside the manifest scoped to `shared_folder_id` (`None` = the
+/// user's own root manifest). Every platform derives logo ids via this method to prevent duplicates.
+#[uniffi::export]
+pub fn vault_codec_logo_id_for_source(shared_folder_id: Option<String>, source: String) -> String {
+    crate::vault_codec::logo_id_for_source(shared_folder_id.as_deref(), &source)
+}
+
 /// Pack a payload JSON string into gzip(envelope{contentHash, payload}). The caller encrypts the result.
 #[uniffi::export]
 pub fn vault_codec_pack_payload(payload_json: String) -> Result<Vec<u8>, VaultError> {

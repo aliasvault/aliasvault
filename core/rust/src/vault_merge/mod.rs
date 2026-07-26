@@ -523,23 +523,43 @@ mod tests {
     }
 
     #[test]
-    fn logos_merge_by_source_collapses_distinct_ids_and_keeps_local_id() {
-        // Two clients minted different Ids for github.com. Merging by Source (server newer) must UPDATE
-        // the local row in place, keeping the local Id so Items.LogoId stays valid, not INSERT a
-        // second same-Source row (which would violate UNIQUE(Source) / break materialize).
-        let local = vec![logo("local-id", "github.com", "2024-01-01T00:00:00Z")];
-        let server = vec![logo("server-id", "github.com", "2024-01-02T00:00:00Z")];
+    fn logos_merge_by_id_so_same_domain_in_two_scopes_survives() {
+        // A personal logo and a shared-folder logo for the same domain are different rows by design
+        // (see vault_codec::logos). Merging Logos by Id keeps both.
+        let mut personal = logo(&crate::vault_codec::logo_id_for_source(None, "github.com"), "github.com", "2024-01-01T00:00:00Z");
+        personal.insert("SharedFolderId".to_string(), serde_json::Value::Null);
+        let mut shared = logo(&crate::vault_codec::logo_id_for_source(Some("f-1"), "github.com"), "github.com", "2024-01-02T00:00:00Z");
+        shared.insert("SharedFolderId".to_string(), serde_json::json!("f-1"));
+
+        let output = merge_vaults(MergeInput {
+            local_tables: vec![TableData { name: "Logos".to_string(), records: vec![personal.clone(), shared.clone()] }],
+            server_tables: vec![TableData { name: "Logos".to_string(), records: vec![personal] }],
+        })
+        .unwrap();
+
+        // The shared-scope row is new to the base and is inserted alongside, not merged into, the
+        // personal one.
+        assert_eq!(output.statements.len(), 1);
+        assert!(output.statements[0].sql.starts_with("INSERT OR REPLACE INTO Logos"));
+        assert_eq!(output.stats.conflicts, 0, "different scopes are never a conflict");
+    }
+
+    #[test]
+    fn logos_merge_resolves_same_scope_rows_by_lww() {
+        // Within one scope, two writers produce the SAME derived Id, so an ordinary by-Id LWW settles
+        // whose favicon bytes win.
+        let id = crate::vault_codec::logo_id_for_source(None, "github.com");
+        let base = vec![logo(&id, "github.com", "2024-01-01T00:00:00Z")];
+        let incoming = vec![logo(&id, "github.com", "2024-01-02T00:00:00Z")];
         let mut stats = MergeStats::default();
 
-        let statements = merge_table_by_composite_key("Logos", &local, &server, &["Source"], "Id", &mut stats);
+        let statements = merge_table_by_id("Logos", &base, &incoming, "Id", &mut stats);
 
         assert_eq!(stats.conflicts, 1);
-        assert_eq!(stats.records_inserted, 0, "no second same-Source row inserted");
+        assert_eq!(stats.records_inserted, 0, "no second row for the same scope+domain");
         assert_eq!(statements.len(), 1);
         assert!(statements[0].sql.starts_with("UPDATE Logos SET"));
-        assert!(statements[0].sql.ends_with("WHERE Id = ?"));
-        // WHERE-clause Id is the LOCAL id (last param), so the local row is updated in place.
-        assert_eq!(statements[0].params.last().unwrap(), &serde_json::json!("local-id"));
+        assert_eq!(statements[0].params.last().unwrap(), &serde_json::json!(id));
     }
 
     fn setting(key: &str, value: &str, updated_at: &str) -> Record {
@@ -598,17 +618,19 @@ mod tests {
     }
 
     #[test]
-    fn logos_config_uses_source_composite_key() {
+    fn logos_config_merges_by_id_not_source() {
+        // Guard on the decision itself: Logos identity is the codec-derived Id, so this table must
+        // never go back to composite-key matching on Source.
         let cfg = SYNCABLE_TABLES.iter().find(|t| t.name == "Logos").unwrap();
-        assert!(cfg.uses_composite_key());
-        assert_eq!(cfg.composite_key_columns, &["Source"]);
+        assert!(!cfg.uses_composite_key());
+        assert_eq!(cfg.primary_key, "Id");
     }
 
     #[test]
     fn merge_never_touches_codec_overflow_carrier() {
         // The merge base is the server vault, so the codec overflow carrier rides along on the server
         // base untouched (implicit server-wins) and needs no special case. Even if a platform were to
-        // pass the carrier in the merge input, merge must emit NO statement referencing it — it is not
+        // pass the carrier in the merge input, merge must emit NO statement referencing it, it is not
         // a syncable table.
         let overflow_table = crate::vault_codec::OVERFLOW_TABLE;
         let overflow_row = |data: &str| -> Record {

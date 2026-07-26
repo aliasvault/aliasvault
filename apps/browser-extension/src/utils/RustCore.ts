@@ -308,6 +308,20 @@ export async function vaultCodecBucketLayout(): Promise<CodecBucketLayoutEntry[]
 }
 
 /**
+ * The `Logos.Id` to use for a source domain inside a given manifest scope (`null` = the user's own
+ * personal vault, otherwise the shared folder's id).
+ *
+ * Logo identity is derived: two devices that fetch the same favicon independently produce
+ * the same row and merge by LWW. The same domain in two different manifests deliberately yields
+ * two different ids, so a shared folder's icon and the user's own icon for that domain never
+ * overwrite each other.
+ */
+export async function vaultCodecLogoIdForSource(sharedFolderId: string | null, source: string): Promise<string> {
+  await initRustCore();
+  return core.vaultCodecLogoIdForSource(sharedFolderId ?? undefined, source);
+}
+
+/**
  * Generate a fresh 32-byte per-user salt (lowercase hex).
  */
 export async function vaultCodecGenerateUserSalt(): Promise<string> {

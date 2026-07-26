@@ -206,6 +206,30 @@ window.rustCoreExtractDomain = async function(url) {
 };
 
 /**
+ * The Logos.Id to use for a source domain inside a given manifest scope.
+ *
+ * Logo identity is derived, not minted: two clients that fetch the same favicon independently produce
+ * the same row and merge by LWW, instead of two rows that collide on UNIQUE(SharedFolderId, Source).
+ * The same domain in two different manifests deliberately yields two different ids, so a shared
+ * folder's icon and the user's own icon for that domain never overwrite each other.
+ * @param {string|null} sharedFolderId - Owning shared folder, or null for the user's own vault.
+ * @param {string} source - The normalized source domain (e.g. 'github.com').
+ * @returns {Promise<string>} The logo id, or '' when the WASM module is unavailable.
+ */
+window.rustCoreVaultCodecLogoIdForSource = async function(sharedFolderId, source) {
+    if (!await initRustCore()) {
+        return '';
+    }
+
+    try {
+        return wasmModule.vaultCodecLogoIdForSource(sharedFolderId ?? undefined, source);
+    } catch (error) {
+        console.error('[RustCore] Logo id derivation failed:', error);
+        return '';
+    }
+};
+
+/**
  * Extract root domain from a domain string.
  * @param {string} domain - The domain to extract root from.
  * @returns {Promise<string>} The root domain.

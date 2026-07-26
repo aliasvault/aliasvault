@@ -67,6 +67,17 @@ pub fn bucket_layout() -> Vec<BucketLayoutEntry> {
         .collect()
 }
 
+/// The `Logos.Id` a client must use for `source` inside the manifest scoped to `shared_folder_id`
+/// (`None` = the user's own root manifest).
+///
+/// Logo identity is derived: every platform that creates a logo row calls this, so two
+/// devices — or two members of one shared folder — that fetch the same domain independently produce
+/// the same row, preventing duplicates. The same domain in two different manifests deliberately yields
+/// two different ids, so members keep their own icons.
+pub fn logo_id_for_source(shared_folder_id: Option<&str>, source: &str) -> String {
+    logos::logo_id_for(shared_folder_id, source)
+}
+
 /// Generate a fresh 32-byte per-user salt as a lowercase hex string.
 pub fn generate_user_salt() -> String {
     use rand::RngCore;

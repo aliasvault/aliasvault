@@ -116,8 +116,16 @@ pub fn get_prune_table_queries_js() -> Result<JsValue, JsValue> {
 /// Serialize a codec output to a JsValue with Rust maps rendered as plain JS objects.
 fn codec_to_js<T: serde::Serialize>(value: &T) -> Result<JsValue, JsValue> {
     value
-        .serialize(&serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true))
+        .serialize(&serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true).serialize_missing_as_null(true))
         .map_err(|e| JsValue::from_str(&format!("Failed to serialize codec output: {}", e)))
+}
+
+/// The `Logos.Id` to use for `source` inside the manifest scoped to `sharedFolderId` (null/undefined =
+/// the user's own root manifest). Every platform derives logo ids through this so independent writers
+/// produce the same row instead of colliding on `UNIQUE(SharedFolderId, Source)`.
+#[wasm_bindgen(js_name = vaultCodecLogoIdForSource)]
+pub fn vault_codec_logo_id_for_source_js(shared_folder_id: Option<String>, source: String) -> String {
+    vault_codec::logo_id_for_source(shared_folder_id.as_deref(), &source)
 }
 
 /// Canonicalize normalized tables into manifest + data buckets.

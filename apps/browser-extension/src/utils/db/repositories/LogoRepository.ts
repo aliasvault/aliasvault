@@ -1,3 +1,5 @@
+import { vaultCodecLogoIdForSource } from '@/utils/RustCore';
+
 import { BaseRepository } from '../BaseRepository';
 import { LogoQueries } from '../queries/LogoQueries';
 
@@ -32,44 +34,29 @@ export class LogoRepository extends BaseRepository {
   }
 
   /**
-   * Get or create a logo ID for the given source domain.
-   * If a logo for this source already exists, returns its ID.
-   * Otherwise, creates a new logo entry and returns its ID.
+   * Get the source domain a logo was stored under, or null when the logo no longer exists.
+   * @param logoId The logo ID to look up
+   * @returns The source domain, or null
+   */
+  public getSourceForId(logoId: string): string | null {
+    const rows = this.client.executeQuery<{ Source: string }>(LogoQueries.GET_SOURCE_FOR_ID, [logoId]);
+    return rows.length > 0 ? rows[0].Source : null;
+  }
+
+  /**
+   * Get or create the personal-scope logo for the given source domain, refilling its image data.
+   *
+   * The ID is derived from (personal scope, source) by the Rust core rather than randomly generated,
+   * so every device and platform produces the same row for a domain instead of minting duplicates
+   * that collide on UNIQUE(SharedFolderId, Source).
    * @param source The normalized source domain (e.g., 'github.com')
    * @param logoData The logo image data as Uint8Array
    * @param currentDateTime The current date/time string for timestamps
-   * @returns The logo ID (existing or newly created)
+   * @returns The logo ID
    */
-  public getOrCreate(source: string, logoData: Uint8Array, currentDateTime: string): string {
-    const existing = this.client.executeQuery<{ Id: string; IsDeleted: number }>(
-      LogoQueries.GET_BY_SOURCE_INCLUDING_DELETED,
-      [source]
-    );
-
-    if (existing.length > 0) {
-      const row = existing[0];
-      if (row.IsDeleted === 1) {
-        // Restore a previously soft-deleted record and refill its FileData.
-        this.client.executeUpdate(LogoQueries.RESTORE_WITH_FILE_DATA, [
-          logoData,
-          currentDateTime,
-          row.Id
-        ]);
-      }
-      return row.Id;
-    }
-
-    // Create new logo entry
-    const logoId = this.generateId();
-    this.client.executeUpdate(LogoQueries.INSERT, [
-      logoId,
-      source,
-      logoData,
-      currentDateTime,
-      currentDateTime,
-      0
-    ]);
-
+  public async getOrCreate(source: string, logoData: Uint8Array, currentDateTime: string): Promise<string> {
+    const logoId = await vaultCodecLogoIdForSource(null, source);
+    this.client.executeUpdate(LogoQueries.UPSERT, [logoId, source, logoData, currentDateTime, currentDateTime]);
     return logoId;
   }
 

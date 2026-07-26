@@ -132,13 +132,23 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
         failed.push("folder-ids-not-unique".to_string());
     }
 
-    // Logos.Source is UNIQUE in the client schema (IX_Logos_Source); a duplicate would pass through
-    // canonicalize but fail on materialize. Refuse the upload rather than write a manifest no client can load.
+    /*
+     * A logo belongs to exactly one manifest, and (SharedFolderId, Source) is UNIQUE in the client
+     * schema. Check for duplicates.
+     */
     let logos = table(manifest, "Logos");
-    let logo_sources: std::collections::HashSet<&str> = logos.iter().filter_map(|l| str_field(l, "Source")).collect();
+    let logo_sources: std::collections::HashSet<String> = logos.iter().filter_map(|l| str_field(l, "Source")).map(str::to_lowercase).collect();
     let logos_with_source = logos.iter().filter(|l| str_field(l, "Source").is_some()).count();
     if logo_sources.len() != logos_with_source {
         failed.push("logo-sources-not-unique".to_string());
+    }
+
+    // Every logo in a manifest must claim that manifest's scope, otherwise the row would materialize
+    // into the wrong uniqueness bucket and could collide with the reader's own rows.
+    let expected_scope = manifest.shared_folder_id.as_deref();
+    if logos.iter().any(|l| str_field(l, "SharedFolderId") != expected_scope) {
+        failed.push("logo-scope-mismatch".to_string());
+        explain.push("Logos carry a SharedFolderId that is not this manifest's scope".to_string());
     }
 
     ValidationResult {

@@ -270,9 +270,10 @@ fn forward_compat_unknown_manifest_fields_preserved() {
 }
 
 #[test]
-fn canonicalize_dedupes_duplicate_logo_sources_and_remaps_items() {
-    // Two clients minted distinct Ids for the same domain; Items point at each. Canonicalize must
-    // collapse to one Logos row and repoint the orphaned Item at the survivor.
+fn canonicalize_remints_legacy_logo_ids_and_collapses_duplicate_sources() {
+    // Two clients minted distinct random Ids for the same domain; Items point at each. Canonicalize
+    // re-mints the row against its scope's derived id, which is what stops the two from ever being
+    // minted apart again and repoints both Items at it.
     let favicon = vec![0x01, 0x02, 0x03];
     let out = canonicalize_from_sqlite(basic_input(vec![
         CodecTableData {
@@ -292,51 +293,53 @@ fn canonicalize_dedupes_duplicate_logo_sources_and_remaps_items() {
     ]))
     .unwrap();
 
+    let expected_id = json!(logos::logo_id_for(None, "github.com"));
     let logos = &out.manifest.tables["Logos"];
     assert_eq!(logos.len(), 1, "duplicate Source collapsed to one row");
-    // Survivor is the row that actually carries favicon bytes (logo-a), not the empty one.
-    assert_eq!(logos[0]["Id"], json!("logo-a"));
+    assert_eq!(logos[0]["Id"], expected_id, "id derived from (root scope, source)");
+    assert_eq!(logos[0]["SharedFolderId"], serde_json::Value::Null, "root manifest is the null scope");
+    // The row carrying favicon bytes is the one that survived, not the empty one.
     assert!(logos[0]["FileData"].get("__blobRef").is_some());
 
     let items = &out.manifest.tables["Items"];
-    let i1 = items.iter().find(|r| r["Id"] == json!("i1")).unwrap();
-    let i2 = items.iter().find(|r| r["Id"] == json!("i2")).unwrap();
-    assert_eq!(i1["LogoId"], json!("logo-a"));
-    assert_eq!(i2["LogoId"], json!("logo-a"), "Item pointing at the dropped duplicate is remapped");
+    for item in items {
+        assert_eq!(item["LogoId"], expected_id, "every Item repointed at the derived row");
+    }
 
     // No orphan blob: exactly the survivor's favicon is registered.
     assert_eq!(out.blobs.len(), 1);
 }
 
 #[test]
-fn canonicalize_dedup_tiebreak_keeps_highest_id_when_no_favicon() {
-    // When neither duplicate carries favicon bytes, the survivor is chosen deterministically by Id
-    // (highest wins); the Item pointing at the dropped row is remapped to it.
+fn canonicalize_dedup_tiebreak_prefers_the_row_with_favicon_bytes() {
+    // The derived id is the same either way, so the tiebreak decides which row's *content* survives:
+    // the one that actually carries bytes wins regardless of row order.
+    let favicon = vec![0x07];
     let out = canonicalize_from_sqlite(basic_input(vec![
         CodecTableData {
             name: "Logos".to_string(),
             records: vec![
-                row(&[("Id", json!("logo-a")), ("Source", json!("github.com"))]),
-                row(&[("Id", json!("logo-b")), ("Source", json!("github.com"))]),
+                row(&[("Id", json!("logo-z")), ("Source", json!("github.com")), ("MimeType", json!("empty"))]),
+                row(&[("Id", json!("logo-a")), ("Source", json!("github.com")), ("MimeType", json!("image/png")), ("FileData", json!({ "__b64": b64(&favicon) }))]),
             ],
         },
         CodecTableData {
             name: "Items".to_string(),
-            records: vec![row(&[("Id", json!("i1")), ("LogoId", json!("logo-a"))])],
+            records: vec![row(&[("Id", json!("i1")), ("LogoId", json!("logo-z"))])],
         },
     ]))
     .unwrap();
 
     let logos = &out.manifest.tables["Logos"];
     assert_eq!(logos.len(), 1, "duplicate Source collapsed to one row");
-    assert_eq!(logos[0]["Id"], json!("logo-b"), "highest Id survives the tiebreak");
-    assert_eq!(out.manifest.tables["Items"][0]["LogoId"], json!("logo-b"), "Item remapped to survivor");
+    assert_eq!(logos[0]["MimeType"], json!("image/png"), "the row with bytes supplies the surviving content");
+    assert_eq!(out.manifest.tables["Items"][0]["LogoId"], json!(logos::logo_id_for(None, "github.com")));
 }
 
 #[test]
 fn canonicalize_nulls_dangling_logo_reference() {
-    // An Item pointing at a logo Id that doesn't exist (e.g. collapsed away by a cross-client merge) is
-    // nulled — matching FK_Items_Logos_LogoId ON DELETE SET NULL — so materialize's foreign_key_check passes.
+    // An Item pointing at a logo Id that doesn't exist anywhere in the vault is nulled, matching
+    // FK_Items_Logos_LogoId ON DELETE SET NULL, so materialize's foreign_key_check passes.
     let out = canonicalize_from_sqlite(basic_input(vec![
         CodecTableData {
             name: "Logos".to_string(),
@@ -355,8 +358,35 @@ fn canonicalize_nulls_dangling_logo_reference() {
     let items = &out.manifest.tables["Items"];
     let i1 = items.iter().find(|r| r["Id"] == json!("i1")).unwrap();
     let i2 = items.iter().find(|r| r["Id"] == json!("i2")).unwrap();
-    assert_eq!(i1["LogoId"], json!("logo-a"), "valid reference untouched");
+    assert_eq!(i1["LogoId"], json!(logos::logo_id_for(None, "github.com")), "valid reference follows the re-mint");
     assert_eq!(i2["LogoId"], serde_json::Value::Null, "dangling reference nulled");
+}
+
+#[test]
+fn canonicalize_logo_normalization_is_idempotent() {
+    // Push stability: canonicalizing already-normalized rows must not change them, or every push would
+    // rewrite the manifest and burn a revision for nothing.
+    let favicon = vec![0x01, 0x02];
+    let first = canonicalize_from_sqlite(basic_input(vec![
+        CodecTableData {
+            name: "Logos".to_string(),
+            records: vec![row(&[("Id", json!("legacy-id")), ("Source", json!("github.com")), ("FileData", json!({ "__b64": b64(&favicon) }))])],
+        },
+        CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i1")), ("LogoId", json!("legacy-id"))])] },
+    ]))
+    .unwrap();
+
+    // Feed the normalized rows back in (bytes restored, as the platform read would).
+    let mut logo_row = first.manifest.tables["Logos"][0].clone();
+    logo_row.insert("FileData".to_string(), json!({ "__b64": b64(&favicon) }));
+    let second = canonicalize_from_sqlite(basic_input(vec![
+        CodecTableData { name: "Logos".to_string(), records: vec![logo_row] },
+        CodecTableData { name: "Items".to_string(), records: first.manifest.tables["Items"].clone() },
+    ]))
+    .unwrap();
+
+    assert_eq!(second.manifest.tables["Logos"], first.manifest.tables["Logos"]);
+    assert_eq!(second.manifest.tables["Items"], first.manifest.tables["Items"]);
 }
 
 #[test]
@@ -522,7 +552,7 @@ fn materialize_without_schema_columns_passes_rows_through_verbatim() {
 #[test]
 fn materialize_drops_overflow_table_smuggled_into_a_manifest() {
     // Defense: OVERFLOW_TABLE is local-only bookkeeping. A manifest that somehow carries one (corrupt
-    // or malicious) must not pass through — it would collide with the row materialize emits itself.
+    // or malicious) must not pass through, it would collide with the row materialize emits itself.
     let mut out = canonicalize_from_sqlite(basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i1")), ("AliasEnabled", json!(true))])] }])).unwrap();
     out.manifest.tables.insert(OVERFLOW_TABLE.to_string(), vec![row(&[("Id", json!("smuggled")), ("Data", json!("{}"))])]);
 

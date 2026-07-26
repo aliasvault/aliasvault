@@ -23,15 +23,13 @@ use crate::error::VaultResult;
 
 /// Materialize the manifest + its data buckets into the table set the platform inserts. Shared-folder
 /// manifests (if any) are combined into the root's table set first, root-wins primary-key dedup,
-/// personal-table stripping, dangling-parent repair, and cross-manifest logo dedup.
+/// personal-table stripping, dangling-parent repair, and per-manifest logo scoping.
 pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<MaterializedTables> {
     let MaterializeInput { manifest, data_buckets, schema_columns, shared_manifests } = input;
 
-    let combined = if shared_manifests.is_empty() {
-        manifest.tables
-    } else {
-        super::sharing::combine_manifest_tables(manifest.tables, shared_manifests)
-    };
+    // Always goes through combine: even with no shared manifests it normalizes the root's logos to
+    // the root scope, which is what heals a vault written before logos carried one.
+    let combined = super::sharing::combine_manifest_tables(manifest.tables, shared_manifests);
 
     let mut overflow = CodecOverflow::default();
     let mut tables: Vec<CodecTableData> = Vec::with_capacity(combined.len() + data_buckets.len());

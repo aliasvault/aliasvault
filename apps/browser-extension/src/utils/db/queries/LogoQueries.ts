@@ -4,38 +4,31 @@
  */
 export class LogoQueries {
   /**
-   * Check if logo exists for source.
+   * Check if a logo exists in the personal scope for a source. Shared-folder rows are deliberately
+   * excluded: adopting another manifest's row here would drag its icon into the personal cache.
    */
   public static readonly GET_ID_FOR_SOURCE = `
     SELECT Id FROM Logos
-    WHERE Source = ? AND IsDeleted = 0
+    WHERE Source = ? AND SharedFolderId IS NULL AND IsDeleted = 0
     LIMIT 1`;
 
   /**
-   * Look up a logo by source regardless of IsDeleted state. Used by getOrCreate to detect
-   * soft-deleted rows that still occupy the UNIQUE(Source) slot, so we can refill them
-   * instead of trying (and failing) to INSERT a duplicate.
+   * The source of an existing logo, whatever scope it belongs to. Used to tell whether an item's logo
+   * still matches its URL, so an edit doesn't re-resolve (and thereby re-scope) an unchanged icon.
    */
-  public static readonly GET_BY_SOURCE_INCLUDING_DELETED = `
-    SELECT Id, IsDeleted FROM Logos
-    WHERE Source = ?
+  public static readonly GET_SOURCE_FOR_ID = `
+    SELECT Source FROM Logos
+    WHERE Id = ?
     LIMIT 1`;
 
   /**
-   * Insert new logo.
+   * Insert or update a logo.
    */
-  public static readonly INSERT = `
-    INSERT INTO Logos (Id, Source, FileData, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, ?, ?, ?)`;
-
-  /**
-   * Restore a soft-deleted logo and refill its bytes in one statement. Caller passes
-   * (FileData, UpdatedAt, Id).
-   */
-  public static readonly RESTORE_WITH_FILE_DATA = `
-    UPDATE Logos
-    SET IsDeleted = 0,
-        FileData = ?,
-        UpdatedAt = ?
-    WHERE Id = ?`;
+  public static readonly UPSERT = `
+    INSERT INTO Logos (Id, Source, SharedFolderId, FileData, CreatedAt, UpdatedAt, IsDeleted)
+    VALUES (?, ?, NULL, ?, ?, ?, 0)
+    ON CONFLICT(Id) DO UPDATE SET
+      FileData = excluded.FileData,
+      UpdatedAt = excluded.UpdatedAt,
+      IsDeleted = 0`;
 }

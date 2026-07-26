@@ -167,7 +167,7 @@ export class VaultCodec {
             if (this.isInlineB64(v)) {
               return this.base64ToBytes((v as { __b64: string }).__b64);
             }
-            return v as unknown;
+            return (v === undefined ? null : v) as unknown;
           });
 
           const quotedCols = cols.map(c => `"${c}"`).join(', ');

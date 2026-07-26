@@ -53,7 +53,7 @@ pub static SYNCABLE_TABLES: &[TableConfig] = &[
     TableConfig::new("Passkeys"),
     TableConfig::new("FieldDefinitions"),
     TableConfig::new("FieldHistories"),
-    TableConfig::new("Logos").with_composite_key(&["Source"]),
+    TableConfig::new("Logos"),
     TableConfig::new("EncryptionKeys"),
     TableConfig::new("Settings").with_primary_key("Key"),
 ];

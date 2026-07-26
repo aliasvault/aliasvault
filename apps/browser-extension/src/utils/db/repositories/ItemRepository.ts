@@ -189,7 +189,7 @@ export class ItemRepository extends BaseRepository {
       const itemId = item.Id || this.generateId();
 
       // 1. Handle Logo
-      const logoId = this.resolveLogoId(item, currentDateTime);
+      const logoId = await this.resolveLogoId(item, currentDateTime);
 
       // 2. Insert Item
       this.client.executeUpdate(ItemQueries.INSERT_ITEM, [
@@ -237,16 +237,16 @@ export class ItemRepository extends BaseRepository {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
 
-      // 1. Handle Logo
-      const logoId = this.resolveLogoId(item, currentDateTime);
-
-      // 2. Update Item only if item-level fields changed
+      // 1. Read the stored item first: resolving the logo needs to know which one it already has.
       const existing = this.client.executeQuery<{
         Name: string | null;
         ItemType: number;
         FolderId: string | null;
         LogoId: string | null;
       }>(ItemQueries.GET_ITEM_FIELDS, [item.Id])[0];
+
+      // 2. Handle Logo
+      const logoId = await this.resolveLogoId(item, currentDateTime, existing?.LogoId ?? null);
 
       if (existing) {
         const nameChanged = (item.Name ?? null) !== existing.Name;
@@ -455,12 +455,19 @@ export class ItemRepository extends BaseRepository {
     });
   }
 
-  // ===== Private Helper Methods =====
-
   /**
    * Resolve the logo ID for an item (create new or reuse existing).
+   *
+   * An item that already has a logo for the same domain keeps it. That matters for items inside a
+   * shared folder: their logo belongs to the folder's manifest, and re-resolving would swap in the
+   * personal-scope row, which the next push would then copy over the folder's icon, a write every
+   * member sees, every time anyone edits the item.
+   * @param item The item being created or updated
+   * @param currentDateTime The current date/time string for timestamps
+   * @param existingLogoId The logo the item currently has, when updating
+   * @returns The logo ID to store on the item, or null when it should have none
    */
-  private resolveLogoId(item: Item, currentDateTime: string): string | null {
+  private async resolveLogoId(item: Item, currentDateTime: string, existingLogoId: string | null = null): Promise<string | null> {
     const urlField = item.Fields?.find(f => f.FieldKey === 'login.url');
     const urlValue = urlField?.Value;
     const urlString = Array.isArray(urlValue) ? urlValue[0] : urlValue;
@@ -472,7 +479,12 @@ export class ItemRepository extends BaseRepository {
         return this.logoRepository.getOrCreate(source, logoData, currentDateTime);
       }
     } else if (source !== 'unknown') {
-      return this.logoRepository.getIdForSource(source);
+      // Keep the current logo when it is already the one for this domain, whatever scope it lives in.
+      if (existingLogoId && this.logoRepository.getSourceForId(existingLogoId) === source) {
+        return existingLogoId;
+      }
+
+      return this.logoRepository.getIdForSource(source) ?? existingLogoId;
     }
 
     return null;
