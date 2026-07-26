@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { StorageKeys } from '@/utils/constants/storageKeys';
+
 import { AVAILABLE_LANGUAGES, getLanguageConfig, ILanguageConfig } from '../../../i18n/config';
 
 import { storage } from '#imports';
-import { StorageKeys } from '@/utils/constants/storageKeys';
 
 type LanguageSwitcherProps = {
   variant?: 'dropdown' | 'buttons';

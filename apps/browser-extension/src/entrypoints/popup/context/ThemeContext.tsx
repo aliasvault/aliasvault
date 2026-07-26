@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useMemo, useEffect, useCallback } from 'react';
 
-import { storage } from '#imports';
 import { StorageKeys } from '@/utils/constants/storageKeys';
+
+import { storage } from '#imports';
 
 /**
  * Theme type.

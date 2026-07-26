@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 
-import { storage } from '#imports';
 import { StorageKeys } from '@/utils/constants/storageKeys';
+
+import { storage } from '#imports';
 
 interface ILogoutConfirmModalProps {
   isOpen: boolean;

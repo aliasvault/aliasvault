@@ -5,9 +5,9 @@ import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { AUTH_FLOW_PATHS } from '@/entrypoints/popup/utils/routes';
 
-import { storage } from '#imports';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 
+import { storage } from '#imports';
 
 type NavigationHistoryEntry = {
   pathname: string;

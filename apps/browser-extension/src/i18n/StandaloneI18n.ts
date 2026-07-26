@@ -3,6 +3,8 @@
  * This is used to translate strings in non-React contexts, such as the background and content scripts.
  */
 
+import { StorageKeys } from '@/utils/constants/storageKeys';
+
 import {
   DEFAULT_LANGUAGE,
   LANGUAGE_CODES,
@@ -11,7 +13,6 @@ import {
 } from './config';
 
 import { storage } from '#imports';
-import { StorageKeys } from '@/utils/constants/storageKeys';
 
 /**
  * Get current language from storage

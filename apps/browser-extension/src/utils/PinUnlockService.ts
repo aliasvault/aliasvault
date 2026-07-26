@@ -1,8 +1,9 @@
 import argon2 from 'argon2-browser/dist/argon2-bundled.min.js';
 import { browser } from 'wxt/browser';
 
-import { storage } from '#imports';
 import { StorageKeys } from '@/utils/constants/storageKeys';
+
+import { storage } from '#imports';
 
 /**
  * PinUnlockService - Handles PIN-based vault unlock

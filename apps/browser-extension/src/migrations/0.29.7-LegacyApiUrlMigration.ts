@@ -1,7 +1,7 @@
 import { AppInfo } from '@/utils/AppInfo';
+import { StorageKeys } from '@/utils/constants/storageKeys';
 
 import { storage } from '#imports';
-import { StorageKeys } from '@/utils/constants/storageKeys';
 
 /**
  * Legacy official hosted URLs from before the aliasvault.net -> aliasvault.com domain move.

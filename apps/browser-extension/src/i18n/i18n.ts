@@ -1,6 +1,8 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
+import { StorageKeys } from '@/utils/constants/storageKeys';
+
 import {
   DEFAULT_LANGUAGE,
   LANGUAGE_CODES,
@@ -8,7 +10,6 @@ import {
 } from './config';
 
 import { storage } from '#imports';
-import { StorageKeys } from '@/utils/constants/storageKeys';
 
 // Detect browser language
 /**
