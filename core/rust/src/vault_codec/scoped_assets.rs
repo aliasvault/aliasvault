@@ -1,10 +1,19 @@
-//! Logo identity: one `Logos` row per `(SharedFolderId, Source)` per *manifest*, not per vault.
+//! Logo identity: one `Logos` row per `(SharedFolderId, Kind, Source)` per *manifest*.
+//!
+//! One row shape covers every logo an item can have, and `Items.LogoId` is the single pointer to it:
+//!   - `Kind = "favicon"`, `Source` = the domain the logo was fetched from (`github.com`);
+//!   - `Kind = "builtin"`, `Source` = a key into the shared built-in catalog (`shopping`), no image bytes:
+//!     every platform draws that logo itself;
+//!   - `Kind = "custom"`, `Source` = the sha256 of the image the user uploaded.
 //!
 //! A logo is scoped to the manifest that owns it:
-//!   - `Logos.SharedFolderId` is `NULL` for the root (personal) manifest, else the shared folder's id;
-//!   - `Id` is *derived* from `(scope, Source)` (see [`logo_id_for`]), so every writer independently
-//!     mints the same id for the same domain in the same manifest, the uniqueness invariant is
-//!     self-enforcing rather than repaired after the fact.
+//!   - `SharedFolderId` is `NULL` for the root (personal) manifest, else the shared folder's id;
+//!   - `Id` is *derived* from `(scope, Kind, Source)` (see [`logo_id_for`]), so every writer
+//!     independently mints the same id for the same logo in the same manifest, the uniqueness
+//!     invariant is self-enforcing rather than repaired after the fact.
+//!
+//! Deriving a custom logo's id from its content hash is also what makes an uploaded image reusable:
+//! picking it again resolves to the row that already holds those bytes instead of storing a second copy.
 
 use std::collections::{HashMap, HashSet};
 
@@ -15,32 +24,46 @@ use super::manifest::CodecRecord;
 
 const LOGOS_TABLE: &str = "Logos";
 const ITEMS_TABLE: &str = "Items";
+const LOGO_ID_COL: &str = "LogoId";
+const KIND_COL: &str = "Kind";
 const SOURCE_COL: &str = "Source";
 const ID_COL: &str = "Id";
 const FILE_DATA_COL: &str = "FileData";
-const LOGO_ID_COL: &str = "LogoId";
 const SHARED_FOLDER_ID_COL: &str = "SharedFolderId";
 const UPDATED_AT_COL: &str = "UpdatedAt";
 
-/// Domain-separation prefix for [`logo_id_for`]. Changing it re-mints every logo id, so it is part of
-/// the format contract: every platform that computes a logo id must use this exact string.
-const LOGO_ID_NAMESPACE: &str = "aliasvault:logo:v1";
+/// The kind of a logo fetched automatically from an item's URL. Also what a row that carries no
+/// `Kind` at all means: it was written before the column existed, when every logo was a favicon.
+pub const KIND_FAVICON: &str = "favicon";
+
+/// The kind of a logo picked from the built-in catalog.
+pub const KIND_BUILTIN: &str = "builtin";
+
+/// The kind of a logo the user uploaded.
+pub const KIND_CUSTOM: &str = "custom";
+
+/// Domain-separation prefix for favicon ids. It predates the `Kind` column and is kept verbatim so
+/// every favicon row that already exists keeps its id: changing it would re-mint the logo of every
+/// item in every vault on the next push.
+const FAVICON_ID_NAMESPACE: &str = "aliasvault:logo:v1";
 
 /// Scope label used in the derivation for the root (personal) manifest. A shared folder uses its id,
 /// which is a GUID and so can never collide with this literal.
 const ROOT_SCOPE_LABEL: &str = "root";
 
-/// The deterministic `Logos.Id` for `(scope, source)`: a UUIDv8 (RFC 9562 custom-format) whose bytes
-/// come from `sha256(namespace | scope | source)`.
+/// The `Id` of the logo `(scope, kind, source)`: a UUIDv8 (RFC 9562 custom-format) whose bytes come
+/// from `sha256(namespace | scope | source)`, with a namespace per kind so the three key spaces (a
+/// domain, a catalog key, a content hash) can never collide.
 ///
 /// Deriving the id from the row's natural key is what removes cross-writer identity conflicts: two
-/// devices (or two members of one shared folder) that fetch `github.com` independently produce the
-/// same row, which then merges by ordinary LWW.
+/// devices (or two members of one shared folder) that fetch the same domain, or upload the very same
+/// image, produce the same row, which then merges by ordinary LWW.
 ///
 /// `scope` is the owning shared folder's id, or `None` for the root manifest. `source` is matched
-/// case-insensitively (callers already normalize to a lowercase hostname; this makes it robust anyway).
-pub fn logo_id_for(scope: Option<&str>, source: &str) -> String {
-    let material = format!("{}\n{}\n{}", LOGO_ID_NAMESPACE, scope.unwrap_or(ROOT_SCOPE_LABEL), source.to_lowercase());
+/// case-insensitively (callers already normalize to a lowercase hostname or lowercase hex digest;
+/// this makes it robust anyway).
+pub fn logo_id_for(scope: Option<&str>, kind: &str, source: &str) -> String {
+    let material = format!("{}\n{}\n{}", namespace_for_kind(kind), scope.unwrap_or(ROOT_SCOPE_LABEL), source.to_lowercase());
     let digest = sha256_hex(material.as_bytes());
     // First 16 bytes of the digest, with the UUID version (8 = custom) and RFC 4122 variant bits set.
     let mut bytes = [0u8; 16];
@@ -54,8 +77,34 @@ pub fn logo_id_for(scope: Option<&str>, source: &str) -> String {
     format!("{}-{}-{}-{}-{}", &hex[0..8], &hex[8..12], &hex[12..16], &hex[16..20], &hex[20..32])
 }
 
-/// Normalize one table set's `Logos` rows to `scope`: stamp `SharedFolderId`, re-mint `Id` from
-/// `(scope, Source)`, collapse rows that now share a `Source` (keeping the better row, see
+/// The derivation namespace for a kind. Unknown kinds get one derived from their own name, so a newer
+/// client can add a kind without this one having to know about it: ids stay stable and distinct either
+/// way, and the rows simply round-trip until this client learns to render them.
+fn namespace_for_kind(kind: &str) -> String {
+    match normalize_kind(kind) {
+        k if k == KIND_FAVICON => FAVICON_ID_NAMESPACE.to_string(),
+        k => format!("aliasvault:logo:{}:v1", k),
+    }
+}
+
+/// A row's kind, defaulting to [`KIND_FAVICON`] when absent or empty (pre-`Kind` writers) and
+/// lowercased so `Kind` matching is case-insensitive like the rest of the natural key.
+fn normalize_kind(kind: &str) -> String {
+    let trimmed = kind.trim();
+    if trimmed.is_empty() {
+        return KIND_FAVICON.to_string();
+    }
+    trimmed.to_lowercase()
+}
+
+/// The `(kind, source)` natural key of a row, or `None` when it carries no `Source` to key on.
+fn natural_key(row: &CodecRecord) -> Option<(String, String)> {
+    let source = str_col(row, SOURCE_COL)?.to_lowercase();
+    Some((normalize_kind(str_col(row, KIND_COL).unwrap_or("")), source))
+}
+
+/// Normalize one table set's logo rows to `scope`: stamp `SharedFolderId`, re-mint `Id` from
+/// `(scope, Kind, Source)`, collapse rows that now share a natural key (keeping the better row, see
 /// [`is_better_logo`]), and repoint every `Items.LogoId` at the surviving row.
 ///
 /// This runs per manifest, the root's table set with `scope = None`, each shared partition's with
@@ -75,27 +124,24 @@ fn rewrite_logo_rows(tables: &mut HashMap<String, Vec<CodecRecord>>, scope: Opti
         _ => return remap,
     };
 
-    // Source -> index of the row that survives (deterministic, see `is_better_logo`).
-    let mut survivor_idx: HashMap<String, usize> = HashMap::new();
+    // (kind, source) -> index of the row that survives (deterministic, see `is_better_logo`).
+    let mut survivor_idx: HashMap<(String, String), usize> = HashMap::new();
     for (idx, row) in logos.iter().enumerate() {
-        let source = match str_col(row, SOURCE_COL) {
-            Some(s) => s.to_lowercase(),
-            None => continue,
-        };
-        match survivor_idx.get(&source) {
+        let Some(key) = natural_key(row) else { continue };
+        match survivor_idx.get(&key) {
             Some(&cur) if !is_better_logo(row, &logos[cur]) => {}
             _ => {
-                survivor_idx.insert(source, idx);
+                survivor_idx.insert(key, idx);
             }
         }
     }
 
-    // Every row with a Source maps onto its Source's survivor id, and the survivor itself is rewritten
-    // in place. A row whose id already equals the derived one maps to itself.
+    // Every row with a natural key maps onto that key's survivor id, and the survivor itself is
+    // rewritten in place. A row whose id already equals the derived one maps to itself.
     let survivors: HashSet<usize> = survivor_idx.values().copied().collect();
     for (idx, row) in logos.iter().enumerate() {
-        let (Some(source), Some(old_id)) = (str_col(row, SOURCE_COL), str_col(row, ID_COL)) else { continue };
-        let new_id = logo_id_for(scope, source);
+        let (Some((kind, source)), Some(old_id)) = (natural_key(row), str_col(row, ID_COL)) else { continue };
+        let new_id = logo_id_for(scope, &kind, &source);
         if old_id != new_id || !survivors.contains(&idx) {
             remap.insert(old_id.to_string(), new_id);
         }
@@ -105,14 +151,15 @@ fn rewrite_logo_rows(tables: &mut HashMap<String, Vec<CodecRecord>>, scope: Opti
     let mut kept: Vec<CodecRecord> = Vec::with_capacity(survivors.len());
     for (idx, mut row) in std::mem::take(logos).into_iter().enumerate() {
         // A row with no Source keeps its identity: it has no natural key to derive one from.
-        let Some(source) = str_col(&row, SOURCE_COL).map(str::to_string) else {
+        let Some((kind, source)) = natural_key(&row) else {
             kept.push(row);
             continue;
         };
         if !survivors.contains(&idx) {
             continue;
         }
-        row.insert(ID_COL.to_string(), json!(logo_id_for(scope, &source)));
+        row.insert(ID_COL.to_string(), json!(logo_id_for(scope, &kind, &source)));
+        row.insert(KIND_COL.to_string(), json!(kind));
         row.insert(SHARED_FOLDER_ID_COL.to_string(), scope_value.clone());
         kept.push(row);
     }
@@ -138,17 +185,6 @@ fn repoint_items(tables: &mut HashMap<String, Vec<CodecRecord>>, remap: &HashMap
 
 /// Repair `Items.LogoId` references that point outside this table set's scope, by cloning the
 /// referenced logo into this scope under its scope-local id.
-///
-/// This is what carries an icon across a scope boundary: an item moved into a shared folder still
-/// points at the root-scoped logo row (which routes to the root manifest), and an item moved out of a
-/// shared folder still points at the folder-scoped one. `all_logos` is the pre-routing set of every
-/// logo row in the vault, used to look the referenced row up. Deterministic ids make the clone
-/// identical for every writer, so the first push after a move settles it and later pushes are no-ops.
-///
-/// When this scope already holds a row for the same `Source`, the item adopts it instead of dragging a
-/// second copy in, an item moving into a folder that already shows an icon for that domain keeps the
-/// icon the folder already agreed on. Run this *before* [`normalize_logo_scope`], which then folds the
-/// clones in with everything else.
 pub(super) fn reconcile_logo_references(tables: &mut HashMap<String, Vec<CodecRecord>>, scope: Option<&str>, all_logos: &[CodecRecord]) {
     if !tables.contains_key(ITEMS_TABLE) {
         return;
@@ -171,11 +207,11 @@ pub(super) fn reconcile_logo_references(tables: &mut HashMap<String, Vec<CodecRe
         return;
     }
 
-    // Source -> id of the row already in this scope, so an incoming item adopts it rather than
+    // (kind, source) -> id of the row already in this scope, so an incoming item adopts it rather than
     // cloning a second row onto the same natural key.
-    let mut id_by_source: HashMap<String, String> = tables
+    let mut id_by_key: HashMap<(String, String), String> = tables
         .get(LOGOS_TABLE)
-        .map(|rows| rows.iter().filter_map(|r| Some((str_col(r, SOURCE_COL)?.to_lowercase(), str_col(r, ID_COL)?.to_string()))).collect())
+        .map(|rows| rows.iter().filter_map(|r| Some((natural_key(r)?, str_col(r, ID_COL)?.to_string()))).collect())
         .unwrap_or_default();
 
     let mut remap: HashMap<String, String> = HashMap::new();
@@ -184,20 +220,21 @@ pub(super) fn reconcile_logo_references(tables: &mut HashMap<String, Vec<CodecRe
     for missing_id in missing {
         // The referenced row as it exists in its original scope, if it exists at all.
         let Some(origin) = all_logos.iter().find(|row| str_col(row, ID_COL) == Some(missing_id.as_str())) else { continue };
-        let Some(source) = str_col(origin, SOURCE_COL).map(str::to_lowercase) else { continue };
+        let Some((kind, source)) = natural_key(origin) else { continue };
 
-        if let Some(existing_id) = id_by_source.get(&source).cloned() {
+        if let Some(existing_id) = id_by_key.get(&(kind.clone(), source.clone())).cloned() {
             refill_empty_scope_row(tables, &existing_id, origin);
             remap.insert(missing_id, existing_id);
             continue;
         }
 
-        let scoped_id = logo_id_for(scope, &source);
+        let scoped_id = logo_id_for(scope, &kind, &source);
         let mut clone = origin.clone();
         clone.insert(ID_COL.to_string(), json!(scoped_id));
+        clone.insert(KIND_COL.to_string(), json!(kind.clone()));
         clone.insert(SHARED_FOLDER_ID_COL.to_string(), scope_value.clone());
         clones.push(clone);
-        id_by_source.insert(source, scoped_id.clone());
+        id_by_key.insert((kind, source), scoped_id.clone());
         remap.insert(missing_id, scoped_id);
     }
 
@@ -207,14 +244,8 @@ pub(super) fn reconcile_logo_references(tables: &mut HashMap<String, Vec<CodecRe
     repoint_items(tables, &remap);
 }
 
-/// Refill this scope's row for a domain from the row an incoming item pointed at, when the scope's row
-/// carries no image (or is tombstoned) and the incoming one does.
-///
-/// Adoption keeps the scope's *identity*, the folder's members agreed on that row, and flipping it on
-/// every edit would churn the folder, but it must not keep an *empty* row over one that has bytes. A
-/// member whose pull could not resolve the icon's blob holds exactly such an empty row; publishing it
-/// would drop the last reference to the image and take the icon away from every member, permanently.
-/// This only ever upgrades: a scope row that already has an image is left untouched.
+/// Refill this scope's row for a natural key from the row an incoming item pointed at, when the
+/// scope's row carries no image (or is tombstoned) and the incoming one does.
 fn refill_empty_scope_row(tables: &mut HashMap<String, Vec<CodecRecord>>, existing_id: &str, origin: &CodecRecord) {
     let Some(logos) = tables.get_mut(LOGOS_TABLE) else { return };
     let Some(existing) = logos.iter_mut().find(|r| str_col(r, ID_COL) == Some(existing_id)) else { return };
@@ -247,12 +278,9 @@ fn logo_ids(tables: &HashMap<String, Vec<CodecRecord>>) -> HashSet<String> {
         .unwrap_or_default()
 }
 
-/// Total order used to choose which row's *content* survives a `Source` collision within one scope
-/// (the id is derived either way): a live row beats a tombstoned one, a row with favicon bytes beats
-/// an empty one, and the lexicographically-highest (newest) `Id` breaks the remaining ties.
-///
-/// Only legacy rows collide at all, once ids are derived, one scope holds one row per domain, but
-/// the order still has to be deterministic so every client migrates to the same survivor.
+/// Total order used to choose which row's *content* survives a natural-key collision within one scope
+/// (the id is derived either way): a live row beats a tombstoned one, a row with image bytes beats an
+/// empty one, and the lexicographically-highest (newest) `Id` breaks the remaining ties.
 fn is_better_logo(candidate: &CodecRecord, incumbent: &CodecRecord) -> bool {
     let cand_live = !is_tombstoned(candidate);
     let inc_live = !is_tombstoned(incumbent);

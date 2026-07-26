@@ -66,7 +66,7 @@ pub struct PruneStats {
     pub totp_codes_pruned: u32,
     /// Number of passkeys permanently deleted
     pub passkeys_pruned: u32,
-    /// Number of orphan logos soft-deleted (no remaining active item references them)
+    /// Number of orpha logos soft-deleted (no remaining active item references them)
     #[serde(default)]
     pub logos_pruned: u32,
     /// Number of tombstoned attachments whose blob bytes were cleared.
@@ -76,6 +76,10 @@ pub struct PruneStats {
     #[serde(default)]
     pub logo_blobs_cleared: u32,
 }
+
+/// The `Logos.Kind` of an automatically fetched favicon. A row without
+/// a `Kind` predates the column and is a favicon by definition.
+const KIND_FAVICON: &str = "favicon";
 
 /// Output of the prune operation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -110,7 +114,7 @@ pub fn get_prune_table_queries() -> Vec<PruneTableQuery> {
         ("Attachments", "SELECT Id, ItemId, IsDeleted, substr(Blob, 1, 1) AS Blob FROM Attachments"),
         ("TotpCodes", "SELECT ItemId, IsDeleted FROM TotpCodes"),
         ("Passkeys", "SELECT ItemId, IsDeleted FROM Passkeys"),
-        ("Logos", "SELECT Id, IsDeleted, substr(FileData, 1, 1) AS FileData FROM Logos"),
+        ("Logos", "SELECT Id, Kind, IsDeleted, substr(FileData, 1, 1) AS FileData FROM Logos"),
     ]
     .iter()
     .map(|(name, query)| PruneTableQuery {
@@ -158,7 +162,7 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
     };
     let items = &items_table.records;
 
-    // Pass 1 — find items in trash older than retention period.
+    // Pass 1: find items in trash older than retention period.
     let mut expired_item_ids: Vec<String> = Vec::new();
 
     for item in items {
@@ -187,7 +191,7 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
         }
     }
 
-    // Pass 1 — generate SQL for expired items + related entities.
+    // Pass 1: generate SQL for expired items + related entities.
     for item_id in &expired_item_ids {
         // Mark item as permanently deleted
         statements.push(SqlStatement {
@@ -261,10 +265,16 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
         }
     }
 
-    // Pass 2 — orphan logo cleanup. A Logo is orphan when no Item with
-    // IsDeleted=0 references it. Items being purged in Pass 1 are treated
-    // as effectively deleted so logos they referenced can be reclaimed in
-    // the same call.
+    /*
+     * Pass 2: orpha logo cleanup. A Logo is orphan when no Item with IsDeleted=0 references it.
+     * Items being purged in Pass 1 are treated as effectively deleted so logos they referenced can be
+     * reclaimed in the same call.
+     *
+     * Only `Kind = 'favicon'` rows are swept: a favicon is a per-domain cache the client can always
+     * refetch, while a built-in or uploaded logo is a choice the user made and expects to find again
+     * in their logo library even after the item that first used it is gone. Those are removed only
+     * when the user deletes them, and Pass 4 then reclaims the bytes.
+     */
     if let Some(logos_table) = input.tables.iter().find(|t| t.name == "Logos") {
         let expired_set: std::collections::HashSet<&str> =
             expired_item_ids.iter().map(|s| s.as_str()).collect();
@@ -295,6 +305,11 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
                 continue;
             }
 
+            let kind = logo.get("Kind").and_then(|v| v.as_str()).unwrap_or(KIND_FAVICON);
+            if !kind.trim().is_empty() && !kind.eq_ignore_ascii_case(KIND_FAVICON) {
+                continue;
+            }
+
             if let Some(logo_id) = logo.get("Id").and_then(|v| v.as_str()) {
                 if !referenced_logo_ids.contains(logo_id) {
                     statements.push(SqlStatement {
@@ -310,7 +325,7 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
         }
     }
 
-    // Pass 3 — sweep tombstoned attachments that still carry blob bytes.
+    // Pass 3: sweep tombstoned attachments that still carry blob bytes.
     // Older client versions could leave attachment with IsDeleted=1 but 
     // a non-empty Blob, which inflates  the encrypted vault for no reason.
     // This pass empties those blobs in place. The attachments tombstoned by 
@@ -342,9 +357,10 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
         }
     }
 
-    // Pass 4 — sweep tombstoned logos that still carry FileData bytes. Logos that have
-    // been soft-deleted but still have FileData bytes take up space for no reason.
-    // This behaviour could have occurred in older clients (before 0.29.x).
+    // Pass 4: sweep tombstoned logos that still carry FileData bytes. Rows that have been
+    // soft-deleted but still have FileData bytes take up space for no reason. For favicons this
+    // could have occurred in older clients (before 0.29.x); for an uploaded logo it is the normal
+    // path, a user deleting one from their logo library tombstones the row here.
     if let Some(logos_table) = input.tables.iter().find(|t| t.name == "Logos") {
         for logo in &logos_table.records {
             let is_deleted = logo.get("IsDeleted")

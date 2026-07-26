@@ -72,7 +72,7 @@ export class SqliteClient implements IDatabaseClient {
   }
 
   /**
-   * Repository for Logo management operations.
+   * Repository for item logo operations (favicons, built-in logos and uploaded images alike).
    */
   public get logos(): LogoRepository {
     if (!this._logos) {

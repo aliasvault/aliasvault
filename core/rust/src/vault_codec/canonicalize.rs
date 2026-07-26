@@ -17,7 +17,7 @@ use base64::Engine;
 use serde_json::json;
 
 use super::hash::salted_blob_hash;
-use super::logos::{normalize_logo_scope, reconcile_logo_references};
+use super::scoped_assets::{normalize_logo_scope, reconcile_logo_references};
 use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedVault, CodecOverflow, DataBucket, Manifest, CodecRecord, SharedVault};
 use super::materialize::row_key;
 use super::sharing::partition_for_sharing;
@@ -54,7 +54,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
 
     /*
      * Logos are scoped per manifest. Snapshot the full set before routing so each partition can clone
-     * in the icon of an item that just moved across a scope boundary.
+     * in the logo of an item that just moved across a scope boundary.
      */
     let all_logos: Vec<CodecRecord> = all_tables.get("Logos").cloned().unwrap_or_default();
 

@@ -128,6 +128,21 @@ pub fn vault_codec_logo_id_for_source_js(shared_folder_id: Option<String>, sourc
     vault_codec::logo_id_for_source(shared_folder_id.as_deref(), &source)
 }
 
+/// The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` of a `custom` logo row, and
+/// what `vaultCodecLogoIdFor` then derives the row id from.
+#[wasm_bindgen(js_name = vaultCodecLogoContentHash)]
+pub fn vault_codec_logo_content_hash_js(bytes: Vec<u8>) -> String {
+    vault_codec::logo_content_hash(&bytes)
+}
+
+/// The `Logos.Id` to use for the logo `(kind, source)` inside the manifest scoped to `sharedFolderId`
+/// (null/undefined = the user's own root manifest). `kind` is 'favicon' (source = domain), 'builtin'
+/// (source = catalog key) or 'custom' (source = image content hash).
+#[wasm_bindgen(js_name = vaultCodecLogoIdFor)]
+pub fn vault_codec_logo_id_for_js(shared_folder_id: Option<String>, kind: String, source: String) -> String {
+    vault_codec::logo_id_for(shared_folder_id.as_deref(), &kind, &source)
+}
+
 /// Canonicalize normalized tables into manifest + data buckets.
 /// Input: `CanonicalizeInput`. Output: `CanonicalizedVault`.
 #[wasm_bindgen(js_name = vaultCodecCanonicalizeFromSqlite)]

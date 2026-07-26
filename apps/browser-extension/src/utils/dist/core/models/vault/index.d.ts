@@ -340,6 +340,7 @@ type Item = {
     Name: string | null;
     ItemType: ItemType;
     Logo?: Uint8Array | number[];
+    LogoInfo?: ItemLogo;
     FolderId?: string | null;
     FolderPath?: string[];
     Tags?: ItemTagRef[];
@@ -349,6 +350,45 @@ type Item = {
     HasTotp?: boolean;
     CreatedAt: string;
     UpdatedAt: string;
+};
+/**
+ * Different kinds of logos an item can have.
+ */
+declare const LogoKinds: {
+    /** Fetched automatically from the item's URL; Source is the domain it came from. */
+    readonly Favicon: "favicon";
+    /** Picked from the built-in catalog; Source is the AppIconKey and there are no image bytes. */
+    readonly Builtin: "builtin";
+    /** Uploaded by the user; Source is the sha256 of the image, which is what makes it reusable. */
+    readonly Custom: "custom";
+};
+/**
+ * Logo kind union derived from the LogoKinds constant.
+ */
+type LogoKind = typeof LogoKinds[keyof typeof LogoKinds];
+/**
+ * The logo an item currently shows, as read from the vault.
+ */
+type ItemLogo = {
+    Id: string;
+    Kind: LogoKind;
+    /** The natural key within the kind: a domain, a catalog key, or an image hash. */
+    Source: string;
+    /** Optional user-facing label, set for uploaded logos. */
+    Name?: string | null;
+};
+/**
+ * A logo choice being written to an item: pick one from the library or the catalog by (Kind, Source),
+ * or upload new bytes. Leave unset to let the item keep resolving its favicon from its URL.
+ */
+type LogoSelection = {
+    Kind: LogoKind;
+    /** Required for 'builtin' and when picking an existing logo; derived from Data otherwise. */
+    Source?: string;
+    /** The image bytes, for a new custom logo. */
+    Data?: Uint8Array | number[];
+    MimeType?: string;
+    Name?: string | null;
 };
 /**
  * Field value within an item.
@@ -616,4 +656,4 @@ type FieldHistory = {
  */
 declare const MAX_FIELD_HISTORY_RECORDS = 10;
 
-export { type Alias, type Attachment, type CreateCustomFieldOptions, type CreateSystemFieldOptions, type Credential, type DicewareCapitalization, type DicewareSalt, type DicewareSeparator, type EncryptionKey, FieldCategories, type FieldCategory, type FieldHistory, FieldKey, type FieldKeyValue, type FieldType, FieldTypes, type Item, type ItemField, type ItemTag, type ItemTagRef, type ItemType, type ItemTypeFieldConfig, ItemTypes, MAX_FIELD_HISTORY_RECORDS, type Passkey, type PasswordGeneratorType, type PasswordSettings, type SystemFieldDefinition, SystemFieldRegistry, type Tag, type TotpCode, VaultDataBucketCategory, type VaultDataBucketCategoryValue, createCustomField, createSystemField, fieldAppliesToType, getAllSystemFieldKeys, getDefaultFieldsForItemType, getFieldConfigForType, getFieldValue, getFieldValues, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, groupFields, groupFieldsByCategory, hasField, isFieldShownByDefault, isSystemField, isSystemFieldPrefix, itemToCredential };
+export { type Alias, type Attachment, type CreateCustomFieldOptions, type CreateSystemFieldOptions, type Credential, type DicewareCapitalization, type DicewareSalt, type DicewareSeparator, type EncryptionKey, FieldCategories, type FieldCategory, type FieldHistory, FieldKey, type FieldKeyValue, type FieldType, FieldTypes, type Item, type ItemField, type ItemLogo, type ItemTag, type ItemTagRef, type ItemType, type ItemTypeFieldConfig, ItemTypes, type LogoKind, LogoKinds, type LogoSelection, MAX_FIELD_HISTORY_RECORDS, type Passkey, type PasswordGeneratorType, type PasswordSettings, type SystemFieldDefinition, SystemFieldRegistry, type Tag, type TotpCode, VaultDataBucketCategory, type VaultDataBucketCategoryValue, createCustomField, createSystemField, fieldAppliesToType, getAllSystemFieldKeys, getDefaultFieldsForItemType, getFieldConfigForType, getFieldValue, getFieldValues, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, groupFields, groupFieldsByCategory, hasField, isFieldShownByDefault, isSystemField, isSystemFieldPrefix, itemToCredential };

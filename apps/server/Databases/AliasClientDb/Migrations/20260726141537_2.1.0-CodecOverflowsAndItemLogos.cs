@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AliasClientDb.Migrations
 {
     /// <inheritdoc />
-    public partial class _210CodecOverflowsAndItemIcons : Migration
+    public partial class _210CodecOverflowsAndItemLogos : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

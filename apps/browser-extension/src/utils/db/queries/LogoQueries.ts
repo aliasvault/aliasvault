@@ -1,34 +1,56 @@
 /**
- * SQL query constants for Logo operations.
- * Centralizes all logo-related queries to avoid duplication.
+ * SQL query constants for item logo operations.
+ *
+ * One `Logos` row is one logo, whatever its origin: `Kind` says whether it was fetched from a URL,
+ * picked from the built-in catalog, or uploaded, and `Source` is that kind's natural key. Every query
+ * here is therefore keyed on (Kind, Source) rather than Source alone.
  */
 export class LogoQueries {
   /**
-   * Check if a logo exists in the personal scope for a source. Shared-folder rows are deliberately
-   * excluded: adopting another manifest's row here would drag its icon into the personal cache.
+   * The logo of a given kind and key in the personal scope. Shared-folder rows are deliberately
+   * excluded: adopting another manifest's row here would drag its logo into the personal vault.
    */
-  public static readonly GET_ID_FOR_SOURCE = `
+  public static readonly GET_ID_FOR_KEY = `
     SELECT Id FROM Logos
-    WHERE Source = ? AND SharedFolderId IS NULL AND IsDeleted = 0
+    WHERE Kind = ? AND Source = ? AND SharedFolderId IS NULL AND IsDeleted = 0
     LIMIT 1`;
 
   /**
-   * The source of an existing logo, whatever scope it belongs to. Used to tell whether an item's logo
-   * still matches its URL, so an edit doesn't re-resolve (and thereby re-scope) an unchanged icon.
+   * The kind and key of an existing logo, whatever scope it belongs to. Used to tell whether an item's
+   * logo still matches its URL, so an edit doesn't re-resolve (and thereby re-scope) an unchanged logo.
    */
-  public static readonly GET_SOURCE_FOR_ID = `
-    SELECT Source FROM Logos
-    WHERE Id = ?
+  public static readonly GET_BY_ID = `
+    SELECT Id, Kind, Source, Name FROM Logos
+    WHERE Id = ? AND IsDeleted = 0
     LIMIT 1`;
 
   /**
-   * Insert or update a logo.
+   * Insert or update a logo. Re-inserting a logo that exists refreshes its bytes and revives it if
+   * the user had deleted it, which is what makes re-uploading a previously removed image work.
    */
   public static readonly UPSERT = `
-    INSERT INTO Logos (Id, Source, SharedFolderId, FileData, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, NULL, ?, ?, ?, 0)
+    INSERT INTO Logos (Id, Kind, Source, SharedFolderId, FileData, MimeType, Name, CreatedAt, UpdatedAt, IsDeleted)
+    VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, 0)
     ON CONFLICT(Id) DO UPDATE SET
       FileData = excluded.FileData,
+      MimeType = excluded.MimeType,
+      Name = COALESCE(excluded.Name, Logos.Name),
       UpdatedAt = excluded.UpdatedAt,
       IsDeleted = 0`;
+
+  /**
+   * The user's personal library of uploaded logos, newest first. Favicons are excluded: those are a
+   * cache keyed on domains, not images the user chose and would want to pick again.
+   */
+  public static readonly LIST_CUSTOM = `
+    SELECT Id, Kind, Source, Name, FileData FROM Logos
+    WHERE Kind = 'custom' AND SharedFolderId IS NULL AND IsDeleted = 0
+    ORDER BY UpdatedAt DESC`;
+
+  /**
+   * Soft-delete an uploaded logo, removing it from the library. Items still pointing at it fall back
+   * to their placeholder; the pruner reclaims the bytes on the next run.
+   */
+  public static readonly SOFT_DELETE = `
+    UPDATE Logos SET IsDeleted = 1, UpdatedAt = ? WHERE Id = ?`;
 }

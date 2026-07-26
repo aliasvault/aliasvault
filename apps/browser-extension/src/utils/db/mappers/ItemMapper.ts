@@ -1,4 +1,4 @@
-import type { Item, ItemField, ItemTagRef, ItemType } from '@/utils/dist/core/models/vault';
+import type { LogoKind, Item, ItemField, ItemLogo, ItemTagRef, ItemType } from '@/utils/dist/core/models/vault';
 
 /**
  * Item with optional DeletedAt field for recently deleted items.
@@ -14,6 +14,10 @@ export type ItemRow = {
   ItemType: string;
   FolderId: string | null;
   Logo: Uint8Array | null;
+  LogoId: string | null;
+  LogoKind: string | null;
+  LogoSource: string | null;
+  LogoName: string | null;
   HasPasskey: number;
   HasAttachment: number;
   HasTotp: number;
@@ -55,6 +59,7 @@ export class ItemMapper {
       Name: row.Name,
       ItemType: row.ItemType as ItemType,
       Logo: row.Logo ?? undefined,
+      LogoInfo: this.mapLogo(row),
       FolderId: row.FolderId,
       FolderPath: folderPath,
       Tags: tags,
@@ -87,6 +92,25 @@ export class ItemMapper {
       tagsByItem.get(row.Id) || [],
       row.FolderId && folderPathsByFolderId ? folderPathsByFolderId.get(row.FolderId) : undefined
     ));
+  }
+
+  /**
+   * Map the joined logo columns of a row into the item's logo, or undefined when it has none.
+   * A row written before the Kind column existed reads as a favicon, which is what it was.
+   * @param row - Raw item row from database
+   * @returns The item's logo, or undefined
+   */
+  private static mapLogo(row: ItemRow): ItemLogo | undefined {
+    if (!row.LogoId || !row.LogoSource) {
+      return undefined;
+    }
+
+    return {
+      Id: row.LogoId,
+      Kind: (row.LogoKind ?? 'favicon') as LogoKind,
+      Source: row.LogoSource,
+      Name: row.LogoName
+    };
   }
 
   /**
@@ -141,6 +165,7 @@ export class ItemMapper {
       Name: row.Name,
       ItemType: row.ItemType as ItemType,
       Logo: row.Logo ? new Uint8Array(row.Logo) : undefined,
+      LogoInfo: this.mapLogo(row),
       FolderId: row.FolderId,
       FolderPath: folderPath,
       DeletedAt: row.DeletedAt,

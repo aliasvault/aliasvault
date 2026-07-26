@@ -187,6 +187,21 @@ pub fn vault_codec_logo_id_for_source(shared_folder_id: Option<String>, source: 
     crate::vault_codec::logo_id_for_source(shared_folder_id.as_deref(), &source)
 }
 
+/// The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` of a `custom` logo row, and
+/// what [`vault_codec_logo_id_for`] then derives the row id from.
+#[uniffi::export]
+pub fn vault_codec_logo_content_hash(bytes: Vec<u8>) -> String {
+    crate::vault_codec::logo_content_hash(&bytes)
+}
+
+/// The `Logos.Id` to use for the logo `(kind, source)` inside the manifest scoped to
+/// `shared_folder_id` (`None` = the user's own root manifest). `kind` is 'favicon' (source = domain),
+/// 'builtin' (source = catalog key) or 'custom' (source = image content hash).
+#[uniffi::export]
+pub fn vault_codec_logo_id_for(shared_folder_id: Option<String>, kind: String, source: String) -> String {
+    crate::vault_codec::logo_id_for(shared_folder_id.as_deref(), &kind, &source)
+}
+
 /// Pack a payload JSON string into gzip(envelope{contentHash, payload}). The caller encrypts the result.
 #[uniffi::export]
 pub fn vault_codec_pack_payload(payload_json: String) -> Result<Vec<u8>, VaultError> {

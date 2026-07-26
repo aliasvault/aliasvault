@@ -100,6 +100,14 @@ var ItemTypes = {
   CreditCard: "CreditCard",
   Note: "Note"
 };
+var LogoKinds = {
+  /** Fetched automatically from the item's URL; Source is the domain it came from. */
+  Favicon: "favicon",
+  /** Picked from the built-in catalog; Source is the AppIconKey and there are no image bytes. */
+  Builtin: "builtin",
+  /** Uploaded by the user; Source is the sha256 of the image, which is what makes it reusable. */
+  Custom: "custom"
+};
 var FieldTypes = {
   Text: "Text",
   Password: "Password",
@@ -455,4 +463,4 @@ function createCustomField(options) {
 // src/vault/FieldHistory.ts
 var MAX_FIELD_HISTORY_RECORDS = 10;
 
-export { FieldCategories, FieldKey, FieldTypes, ItemTypes, MAX_FIELD_HISTORY_RECORDS, SystemFieldRegistry, VaultDataBucketCategory, createCustomField, createSystemField, fieldAppliesToType, getAllSystemFieldKeys, getDefaultFieldsForItemType, getFieldConfigForType, getFieldValue, getFieldValues, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, groupFields, groupFieldsByCategory, hasField, isFieldShownByDefault, isSystemField, isSystemFieldPrefix, itemToCredential };
+export { FieldCategories, FieldKey, FieldTypes, ItemTypes, LogoKinds, MAX_FIELD_HISTORY_RECORDS, SystemFieldRegistry, VaultDataBucketCategory, createCustomField, createSystemField, fieldAppliesToType, getAllSystemFieldKeys, getDefaultFieldsForItemType, getFieldConfigForType, getFieldValue, getFieldValues, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, groupFields, groupFieldsByCategory, hasField, isFieldShownByDefault, isSystemField, isSystemFieldPrefix, itemToCredential };

@@ -293,7 +293,7 @@ fn canonicalize_remints_legacy_logo_ids_and_collapses_duplicate_sources() {
     ]))
     .unwrap();
 
-    let expected_id = json!(logos::logo_id_for(None, "github.com"));
+    let expected_id = json!(scoped_assets::logo_id_for(None, scoped_assets::KIND_FAVICON, "github.com"));
     let logos = &out.manifest.tables["Logos"];
     assert_eq!(logos.len(), 1, "duplicate Source collapsed to one row");
     assert_eq!(logos[0]["Id"], expected_id, "id derived from (root scope, source)");
@@ -333,7 +333,7 @@ fn canonicalize_dedup_tiebreak_prefers_the_row_with_favicon_bytes() {
     let logos = &out.manifest.tables["Logos"];
     assert_eq!(logos.len(), 1, "duplicate Source collapsed to one row");
     assert_eq!(logos[0]["MimeType"], json!("image/png"), "the row with bytes supplies the surviving content");
-    assert_eq!(out.manifest.tables["Items"][0]["LogoId"], json!(logos::logo_id_for(None, "github.com")));
+    assert_eq!(out.manifest.tables["Items"][0]["LogoId"], json!(scoped_assets::logo_id_for(None, scoped_assets::KIND_FAVICON, "github.com")));
 }
 
 #[test]
@@ -358,7 +358,7 @@ fn canonicalize_nulls_dangling_logo_reference() {
     let items = &out.manifest.tables["Items"];
     let i1 = items.iter().find(|r| r["Id"] == json!("i1")).unwrap();
     let i2 = items.iter().find(|r| r["Id"] == json!("i2")).unwrap();
-    assert_eq!(i1["LogoId"], json!(logos::logo_id_for(None, "github.com")), "valid reference follows the re-mint");
+    assert_eq!(i1["LogoId"], json!(scoped_assets::logo_id_for(None, scoped_assets::KIND_FAVICON, "github.com")), "valid reference follows the re-mint");
     assert_eq!(i2["LogoId"], serde_json::Value::Null, "dangling reference nulled");
 }
 

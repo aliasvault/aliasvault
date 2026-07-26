@@ -10,9 +10,9 @@
 mod compress;
 mod canonicalize;
 mod hash;
-mod logos;
 mod manifest;
 mod materialize;
+mod scoped_assets;
 mod sharing;
 mod types;
 mod validate;
@@ -28,6 +28,7 @@ pub use manifest::{
     BlobEntry, BucketLayoutEntry, CanonicalizeInput, CanonicalizedVault, CodecOverflow, DataBucket,
     Manifest, MaterializeInput, MaterializedTables, CodecRecord, CodecTableData, SharedFolderSpec, SharedVault,
 };
+pub use scoped_assets::{KIND_BUILTIN as LOGO_KIND_BUILTIN, KIND_CUSTOM as LOGO_KIND_CUSTOM, KIND_FAVICON as LOGO_KIND_FAVICON};
 pub use sharing::extract_encryption_key_for_public_key_from_bucket;
 pub use types::{
     bucket_categories, bucket_category_for, is_personal_table, tables_for_category, BLOB_COLUMNS, BUCKET_TABLES,
@@ -67,15 +68,22 @@ pub fn bucket_layout() -> Vec<BucketLayoutEntry> {
         .collect()
 }
 
-/// The `Logos.Id` a client must use for `source` inside the manifest scoped to `shared_folder_id`
-/// (`None` = the user's own root manifest).
-///
-/// Logo identity is derived: every platform that creates a logo row calls this, so two
-/// devices — or two members of one shared folder — that fetch the same domain independently produce
-/// the same row, preventing duplicates. The same domain in two different manifests deliberately yields
-/// two different ids, so members keep their own icons.
+/// The `Logos.Id` a client must use for the logo `(kind, source)` inside the manifest scoped to
+/// `shared_folder_id` (`None` = the user's own root manifest).
+pub fn logo_id_for(shared_folder_id: Option<&str>, kind: &str, source: &str) -> String {
+    scoped_assets::logo_id_for(shared_folder_id, kind, source)
+}
+
+/// The `Logos.Id` for the automatically fetched favicon of `source`. Shorthand for [`logo_id_for`]
+/// with [`LOGO_KIND_FAVICON`].
 pub fn logo_id_for_source(shared_folder_id: Option<&str>, source: &str) -> String {
-    logos::logo_id_for(shared_folder_id, source)
+    scoped_assets::logo_id_for(shared_folder_id, LOGO_KIND_FAVICON, source)
+}
+
+/// The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` of a
+/// [`LOGO_KIND_CUSTOM`] row. Exposed so we ensure every platform hashes identically.
+pub fn logo_content_hash(bytes: &[u8]) -> String {
+    hash::sha256_hex(bytes)
 }
 
 /// Generate a fresh 32-byte per-user salt as a lowercase hex string.

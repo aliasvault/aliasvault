@@ -5,7 +5,9 @@
 export class ItemQueries {
   /**
    * Base SELECT for items with common fields.
-   * Includes LEFT JOIN to Logos. Folder paths are computed in the repository layer.
+   * Includes LEFT JOIN to the item's logo row, which carries the image bytes for a favicon or an
+   * uploaded image, and the catalog key for a built-in logo (which has no bytes). Folder paths are
+   * computed in the repository layer.
    */
   public static readonly BASE_SELECT = `
     SELECT DISTINCT
@@ -14,6 +16,10 @@ export class ItemQueries {
       i.ItemType,
       i.FolderId,
       l.FileData as Logo,
+      l.Id as LogoId,
+      l.Kind as LogoKind,
+      l.Source as LogoSource,
+      l.Name as LogoName,
       CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
       CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
       CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
@@ -40,6 +46,10 @@ export class ItemQueries {
       i.ItemType,
       i.FolderId,
       l.FileData as Logo,
+      l.Id as LogoId,
+      l.Kind as LogoKind,
+      l.Source as LogoSource,
+      l.Name as LogoName,
       CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
       CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
       CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
@@ -59,6 +69,10 @@ export class ItemQueries {
       i.ItemType,
       i.FolderId,
       l.FileData as Logo,
+      l.Id as LogoId,
+      l.Kind as LogoKind,
+      l.Source as LogoSource,
+      l.Name as LogoName,
       CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
       CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
       CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,

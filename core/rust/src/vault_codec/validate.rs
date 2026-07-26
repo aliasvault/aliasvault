@@ -133,13 +133,17 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
     }
 
     /*
-     * A logo belongs to exactly one manifest, and (SharedFolderId, Source) is UNIQUE in the client
-     * schema. Check for duplicates.
+     * A logo belongs to exactly one manifest, and (SharedFolderId, Kind, Source) is UNIQUE in the
+     * client schema. Check for duplicates; a row without an explicit Kind is a favicon, which is what
+     * the schema's column default resolves it to on materialize.
      */
     let logos = table(manifest, "Logos");
-    let logo_sources: std::collections::HashSet<String> = logos.iter().filter_map(|l| str_field(l, "Source")).map(str::to_lowercase).collect();
+    let logo_keys: std::collections::HashSet<(String, String)> = logos
+        .iter()
+        .filter_map(|l| Some((str_field(l, "Kind").unwrap_or("favicon").to_lowercase(), str_field(l, "Source")?.to_lowercase())))
+        .collect();
     let logos_with_source = logos.iter().filter(|l| str_field(l, "Source").is_some()).count();
-    if logo_sources.len() != logos_with_source {
+    if logo_keys.len() != logos_with_source {
         failed.push("logo-sources-not-unique".to_string());
     }
 

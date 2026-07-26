@@ -8,13 +8,9 @@ import type { WebApiService } from '@/utils/WebApiService';
  * Result of a favicon fetch operation.
  */
 export type FaviconFetchResult = {
-  /** Whether a favicon was successfully fetched */
   success: boolean;
-  /** The decoded favicon image data (if successful) */
   imageData?: Uint8Array;
-  /** Whether the fetch was skipped because a logo already exists */
   skipped?: boolean;
-  /** Error message (if failed) */
   error?: string;
 };
 
@@ -51,7 +47,8 @@ export class FaviconService {
 
   /**
    * Normalize a URL string for favicon fetching.
-   * Prepends https:// if the URL starts with www.
+   * Accepts a scheme-less host ('github.com', 'www.github.com/login') and prepends https://, matching
+   * what extractSourceFromUrl accepts: a URL we store a logo Source for must also be one we fetch for.
    * @param url The URL to normalize
    * @returns The normalized URL, or undefined if invalid
    */
@@ -65,13 +62,12 @@ export class FaviconService {
       return undefined;
     }
 
-    // Check if it's a valid URL format
-    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://') && !trimmed.startsWith('www.')) {
-      return undefined;
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
     }
 
-    // Prepend https:// if starts with www.
-    return trimmed.startsWith('www.') ? `https://${trimmed}` : trimmed;
+    // A bare host: at least two dot-separated labels, optionally followed by a port and/or a path.
+    return /^[a-z0-9-]+(\.[a-z0-9-]+)+(:\d+)?([/?#].*)?$/i.test(trimmed) ? `https://${trimmed}` : undefined;
   }
 
   /**
@@ -86,13 +82,7 @@ export class FaviconService {
 
     const urlList = Array.isArray(urlValue) ? urlValue : [urlValue];
 
-    // Find the first valid URL (starts with http://, https://, or www.)
-    const validUrl = urlList.find(url => {
-      const trimmed = url?.trim();
-      return trimmed && (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('www.'));
-    });
-
-    return FaviconService.normalizeUrl(validUrl);
+    return urlList.map(url => FaviconService.normalizeUrl(url)).find(url => url !== undefined);
   }
 
   /**
@@ -111,7 +101,7 @@ export class FaviconService {
       return false;
     }
 
-    return sqliteClient.logos.hasLogoForSource(source);
+    return sqliteClient.logos.hasFaviconForSource(source);
   }
 
   /**
@@ -142,7 +132,7 @@ export class FaviconService {
     }
 
     // Check if logo already exists (deduplication)
-    if (sqliteClient.logos.hasLogoForSource(source)) {
+    if (sqliteClient.logos.hasFaviconForSource(source)) {
       return { success: false, skipped: true };
     }
 
@@ -198,13 +188,9 @@ export class FaviconService {
 
     const result = await FaviconService.fetchFavicon(urlString, sqliteClient, webApi);
 
-    if (result.success && result.imageData) {
-      return {
-        ...item,
-        Logo: result.imageData
-      };
-    }
-
-    return item;
+    return {
+      ...item,
+      Logo: result.success ? result.imageData : undefined
+    };
   }
 }

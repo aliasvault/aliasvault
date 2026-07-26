@@ -313,12 +313,30 @@ export async function vaultCodecBucketLayout(): Promise<CodecBucketLayoutEntry[]
  *
  * Logo identity is derived: two devices that fetch the same favicon independently produce
  * the same row and merge by LWW. The same domain in two different manifests deliberately yields
- * two different ids, so a shared folder's icon and the user's own icon for that domain never
+ * two different ids, so a shared folder's logo and the user's own logo for that domain never
  * overwrite each other.
  */
 export async function vaultCodecLogoIdForSource(sharedFolderId: string | null, source: string): Promise<string> {
   await initRustCore();
   return core.vaultCodecLogoIdForSource(sharedFolderId ?? undefined, source);
+}
+
+/**
+ * The `Logos.Id` to use for the logo `(kind, source)` inside a given manifest scope (`null` = the
+ * user's own personal vault, otherwise the shared folder's id).
+ */
+export async function vaultCodecLogoIdFor(sharedFolderId: string | null, kind: string, source: string): Promise<string> {
+  await initRustCore();
+  return core.vaultCodecLogoIdFor(sharedFolderId ?? undefined, kind, source);
+}
+
+/**
+ * The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` a `custom` logo row is stored
+ * under, which is what makes picking the same image again reuse the row that already holds it.
+ */
+export async function vaultCodecLogoContentHash(bytes: Uint8Array): Promise<string> {
+  await initRustCore();
+  return core.vaultCodecLogoContentHash(bytes);
 }
 
 /**

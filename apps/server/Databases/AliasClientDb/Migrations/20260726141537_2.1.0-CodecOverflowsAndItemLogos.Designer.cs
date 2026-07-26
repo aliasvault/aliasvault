@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AliasClientDb.Migrations
 {
     [DbContext(typeof(AliasClientDbContext))]
-    [Migration("20260726141537_2.1.0-CodecOverflowsAndItemIcons")]
-    partial class _210CodecOverflowsAndItemIcons
+    [Migration("20260726141537_2.1.0-CodecOverflowsAndItemLogos")]
+    partial class _210CodecOverflowsAndItemLogos
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

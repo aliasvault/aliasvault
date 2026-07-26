@@ -1303,25 +1303,23 @@ VALUES ('20260130221620_2.0.0-MajorVersionBump', '10.0.10');
 COMMIT;
 
 BEGIN TRANSACTION;
-CREATE TABLE IF NOT EXISTS "CodecOverflows" (
+DROP INDEX "IX_Logos_Source";
+
+ALTER TABLE "Logos" ADD "Kind" TEXT NOT NULL DEFAULT 'favicon';
+
+ALTER TABLE "Logos" ADD "Name" TEXT NULL;
+
+ALTER TABLE "Logos" ADD "SharedFolderId" TEXT NULL;
+
+CREATE TABLE "CodecOverflows" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_CodecOverflows" PRIMARY KEY,
     "Data" TEXT NOT NULL
 );
 
-INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260721081936_2.1.0-AddCodecOverflows', '10.0.10');
-
-COMMIT;
-
-BEGIN TRANSACTION;
-DROP INDEX "IX_Logos_Source";
-
-ALTER TABLE "Logos" ADD "SharedFolderId" TEXT NULL;
-
-CREATE UNIQUE INDEX "IX_Logos_SharedFolderId_Source" ON "Logos" ("SharedFolderId", "Source");
+CREATE UNIQUE INDEX "IX_Logos_SharedFolderId_Kind_Source" ON "Logos" ("SharedFolderId", "Kind", "Source");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260725190132_2.2.0-ScopeLogosPerManifest', '10.0.10');
+VALUES ('20260726141537_2.1.0-CodecOverflowsAndItemLogos', '10.0.10');
 
 COMMIT;
 `;

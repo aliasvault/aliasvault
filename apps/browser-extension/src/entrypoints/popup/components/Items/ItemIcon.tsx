@@ -1,10 +1,11 @@
 import React from 'react';
 
 import type { ItemTypeIconKey } from '@/utils/dist/core/models/icons';
-import { ItemTypeIconSvgs } from '@/utils/dist/core/models/icons';
+import { getAppIconSvg, ItemTypeIconSvgs } from '@/utils/dist/core/models/icons';
 import type { Item } from '@/utils/dist/core/models/vault';
 import {
   FieldKey,
+  LogoKinds,
   ItemTypes,
 } from '@/utils/dist/core/models/vault';
 import SqliteClient from '@/utils/SqliteClient';
@@ -64,11 +65,31 @@ const getCardIconSvg = (cardNumber: string | undefined): string => {
 /**
  * ItemIcon component - displays contextually appropriate icons based on item type
  *
+ * An icon the user picked (built-in or uploaded) wins for any item type.
+ * Otherwise:
  * For Login/Alias: Uses the Logo field if available, falls back to placeholder
  * For CreditCard: Shows card brand icons (Visa, Mastercard, Amex, Discover) based on card number
  * For Note: Shows a document/note icon
  */
 const ItemIcon: React.FC<ItemIconProps> = ({ item, className = 'w-8 h-8' }) => {
+  /*
+   * An icon the user picked themselves outranks the item type's own icon: they asked for this
+   * drawing on this item. Automatic favicons do not, so a card keeps showing a card.
+   */
+  const chosen = item.LogoInfo && item.LogoInfo.Kind !== LogoKinds.Favicon ? item.LogoInfo : null;
+  if (chosen?.Kind === LogoKinds.Builtin) {
+    const builtinSvg = getAppIconSvg(chosen.Source);
+    if (builtinSvg) {
+      return <SvgIcon svg={builtinSvg} className={className} />;
+    }
+  }
+  if (chosen?.Kind === LogoKinds.Custom) {
+    const uploadedSrc = item.Logo ? SqliteClient.imgSrcFromBytes(item.Logo) : null;
+    if (uploadedSrc) {
+      return <img src={uploadedSrc} alt={item.Name ?? 'Item'} className={`${className} flex-shrink-0`} />;
+    }
+  }
+
   // For Note type, always show note icon
   if (item.ItemType === ItemTypes.Note) {
     return <SvgIcon svg={ItemTypeIconSvgs.Note} className={className} />;

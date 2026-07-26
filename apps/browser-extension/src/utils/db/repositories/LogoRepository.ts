@@ -1,63 +1,124 @@
-import { vaultCodecLogoIdForSource } from '@/utils/RustCore';
+import type { ItemLogo, LogoKind } from '@/utils/dist/core/models/vault';
+import { LogoKinds } from '@/utils/dist/core/models/vault';
+import { vaultCodecLogoContentHash, vaultCodecLogoIdFor } from '@/utils/RustCore';
 
 import { BaseRepository } from '../BaseRepository';
 import { LogoQueries } from '../queries/LogoQueries';
 
 /**
- * Repository for Logo management operations.
+ * An uploaded logo as shown in the user's logo library.
+ */
+export type CustomLogoEntry = ItemLogo & {
+  FileData: Uint8Array | null;
+};
+
+/**
+ * Repository for item logo operations.
+ *
+ * Every logo an item can have lives in one table, keyed by (Kind, Source): a fetched favicon under its
+ * domain, a built-in logo under its catalog key, an uploaded image under its content hash. Ids are
+ * derived from that key by the Rust core rather than randomly generated, so every device and platform
+ * produces the same row for the same logo instead of minting duplicates that collide on
+ * UNIQUE(SharedFolderId, Kind, Source).
  */
 export class LogoRepository extends BaseRepository {
   /**
-   * Check if a logo exists for the given source domain.
+   * Check if a favicon exists for the given source domain.
    * @param source The normalized source domain (e.g., 'github.com')
-   * @returns True if a logo exists for this source
+   * @returns True if a favicon exists for this domain
    */
-  public hasLogoForSource(source: string): boolean {
-    const existingLogos = this.client.executeQuery<{ Id: string }>(
-      LogoQueries.GET_ID_FOR_SOURCE,
-      [source]
-    );
-    return existingLogos.length > 0;
+  public hasFaviconForSource(source: string): boolean {
+    return this.getIdForKey(LogoKinds.Favicon, source) !== null;
   }
 
   /**
-   * Get the logo ID for a given source domain if it exists.
-   * @param source The normalized source domain (e.g., 'github.com')
-   * @returns The logo ID if found, null otherwise
+   * Get the id of the personal-scope logo with this kind and key, if it exists.
+   * @param kind The logo kind
+   * @param source The natural key within that kind
+   * @returns The logo id if found, null otherwise
    */
-  public getIdForSource(source: string): string | null {
-    const existingLogos = this.client.executeQuery<{ Id: string }>(
-      LogoQueries.GET_ID_FOR_SOURCE,
-      [source]
-    );
-    return existingLogos.length > 0 ? existingLogos[0].Id : null;
+  public getIdForKey(kind: LogoKind, source: string): string | null {
+    const rows = this.client.executeQuery<{ Id: string }>(LogoQueries.GET_ID_FOR_KEY, [kind, source]);
+    return rows.length > 0 ? rows[0].Id : null;
   }
 
   /**
-   * Get the source domain a logo was stored under, or null when the logo no longer exists.
-   * @param logoId The logo ID to look up
-   * @returns The source domain, or null
+   * Get a logo's identity (kind, key, label) by id, or null when it no longer exists.
+   * @param logoId The logo id to look up
+   * @returns The logo, or null
    */
-  public getSourceForId(logoId: string): string | null {
-    const rows = this.client.executeQuery<{ Source: string }>(LogoQueries.GET_SOURCE_FOR_ID, [logoId]);
-    return rows.length > 0 ? rows[0].Source : null;
+  public getById(logoId: string): ItemLogo | null {
+    const rows = this.client.executeQuery<{ Id: string; Kind: LogoKind; Source: string; Name: string | null }>(LogoQueries.GET_BY_ID, [logoId]);
+    return rows.length > 0 ? rows[0] : null;
   }
 
   /**
-   * Get or create the personal-scope logo for the given source domain, refilling its image data.
-   *
-   * The ID is derived from (personal scope, source) by the Rust core rather than randomly generated,
-   * so every device and platform produces the same row for a domain instead of minting duplicates
-   * that collide on UNIQUE(SharedFolderId, Source).
-   * @param source The normalized source domain (e.g., 'github.com')
-   * @param logoData The logo image data as Uint8Array
+   * Get or create the personal-scope logo for a kind and key, refreshing its image data.
+   * @param kind The logo kind
+   * @param source The natural key within that kind
+   * @param fileData The image bytes, or null for a built-in logo which carries none
    * @param currentDateTime The current date/time string for timestamps
-   * @returns The logo ID
+   * @param options Optional MIME type and user-facing label
+   * @returns The logo id
    */
-  public async getOrCreate(source: string, logoData: Uint8Array, currentDateTime: string): Promise<string> {
-    const logoId = await vaultCodecLogoIdForSource(null, source);
-    this.client.executeUpdate(LogoQueries.UPSERT, [logoId, source, logoData, currentDateTime, currentDateTime]);
+  public async getOrCreate(
+    kind: LogoKind,
+    source: string,
+    fileData: Uint8Array | null,
+    currentDateTime: string,
+    options: { mimeType?: string | null; name?: string | null } = {}
+  ): Promise<string> {
+    const logoId = await vaultCodecLogoIdFor(null, kind, source);
+    this.client.executeUpdate(LogoQueries.UPSERT, [
+      logoId,
+      kind,
+      source,
+      fileData,
+      options.mimeType ?? null,
+      options.name ?? null,
+      currentDateTime,
+      currentDateTime
+    ]);
     return logoId;
+  }
+
+  /**
+   * Store an uploaded image as a custom logo, or resolve the existing row when the vault already holds
+   * exactly these bytes. The image's own hash is the key, so re-uploading a picture the user already
+   * has costs nothing and every item that picks it shares one copy.
+   * @param fileData The image bytes (already resized by the caller)
+   * @param currentDateTime The current date/time string for timestamps
+   * @param options Optional MIME type and user-facing label
+   * @returns The logo id
+   */
+  public async storeUpload(
+    fileData: Uint8Array,
+    currentDateTime: string,
+    options: { mimeType?: string | null; name?: string | null } = {}
+  ): Promise<string> {
+    const contentHash = await vaultCodecLogoContentHash(fileData);
+    return this.getOrCreate(LogoKinds.Custom, contentHash, fileData, currentDateTime, options);
+  }
+
+  /**
+   * The user's library of uploaded logos, newest first.
+   * @returns The uploaded logos, with their image data
+   */
+  public listCustom(): CustomLogoEntry[] {
+    const rows = this.client.executeQuery<{ Id: string; Kind: LogoKind; Source: string; Name: string | null; FileData: Uint8Array | null }>(
+      LogoQueries.LIST_CUSTOM
+    );
+    return rows.map(row => ({ ...row, FileData: row.FileData ? new Uint8Array(row.FileData) : null }));
+  }
+
+  /**
+   * Remove an uploaded logo from the library. Items still using it fall back to a placeholder.
+   * @param logoId The logo id to delete
+   * @param currentDateTime The current date/time string for timestamps
+   * @returns The number of rows modified
+   */
+  public softDelete(logoId: string, currentDateTime: string): number {
+    return this.client.executeUpdate(LogoQueries.SOFT_DELETE, [currentDateTime, logoId]);
   }
 
   /**
@@ -81,27 +142,27 @@ export class LogoRepository extends BaseRepository {
   }
 
   /**
-   * Convert logo data from various formats to Uint8Array.
-   * @param logo The logo data in various possible formats
-   * @returns Uint8Array of logo data, or null if conversion fails
+   * Convert image data from various formats to Uint8Array.
+   * @param image The image data in various possible formats
+   * @returns Uint8Array of image data, or null if conversion fails
    */
-  public convertLogoToUint8Array(logo: unknown): Uint8Array | null {
-    if (!logo) {
+  public convertToUint8Array(image: unknown): Uint8Array | null {
+    if (!image) {
       return null;
     }
 
     try {
       // Handle object-like array conversion (from JSON deserialization)
-      if (typeof logo === 'object' && !ArrayBuffer.isView(logo) && !Array.isArray(logo)) {
-        const values = Object.values(logo as Record<string, number>);
+      if (typeof image === 'object' && !ArrayBuffer.isView(image) && !Array.isArray(image)) {
+        const values = Object.values(image as Record<string, number>);
         return new Uint8Array(values);
       }
       // Handle existing array types
-      if (Array.isArray(logo) || logo instanceof ArrayBuffer || logo instanceof Uint8Array) {
-        return new Uint8Array(logo as ArrayLike<number>);
+      if (Array.isArray(image) || image instanceof ArrayBuffer || image instanceof Uint8Array) {
+        return new Uint8Array(image as ArrayLike<number>);
       }
     } catch (error) {
-      console.warn('Failed to convert logo to Uint8Array:', error);
+      console.warn('Failed to convert logo image to Uint8Array:', error);
     }
 
     return null;

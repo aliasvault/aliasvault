@@ -1,5 +1,5 @@
-import type { Item, ItemField, Attachment, TotpCode, FieldHistory } from '@/utils/dist/core/models/vault';
-import { FieldKey, MAX_FIELD_HISTORY_RECORDS } from '@/utils/dist/core/models/vault';
+import type { Item, ItemField, Attachment, TotpCode, FieldHistory, LogoSelection } from '@/utils/dist/core/models/vault';
+import { FieldKey, LogoKinds, MAX_FIELD_HISTORY_RECORDS } from '@/utils/dist/core/models/vault';
 import { getFolderPath } from '@/utils/FolderUtils';
 
 import { BaseRepository, type IDatabaseClient } from '../BaseRepository';
@@ -177,19 +177,21 @@ export class ItemRepository extends BaseRepository {
    * @param item The item object to insert
    * @param attachments Optional attachments to associate with the item
    * @param totpCodes Optional TOTP codes to associate with the item
+   * @param logoSelection A logo the user picked or uploaded; omit to resolve the favicon from the URL
    * @returns The ID of the created item
    */
   public async create(
     item: Item,
     attachments: Attachment[] = [],
-    totpCodes: TotpCode[] = []
+    totpCodes: TotpCode[] = [],
+    logoSelection?: LogoSelection
   ): Promise<string> {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
       const itemId = item.Id || this.generateId();
 
-      // 1. Handle Logo
-      const logoId = await this.resolveLogoId(item, currentDateTime);
+      // 1. Handle the logo
+      const logoId = await this.resolveLogoId(item, currentDateTime, null, logoSelection);
 
       // 2. Insert Item
       this.client.executeUpdate(ItemQueries.INSERT_ITEM, [
@@ -225,6 +227,7 @@ export class ItemRepository extends BaseRepository {
    * @param attachments Current attachments list
    * @param originalTotpCodeIds Original TOTP code IDs for tracking changes
    * @param totpCodes Current TOTP codes list
+   * @param logoSelection A logo the user picked or uploaded; omit to leave the current logo logic alone
    * @returns The number of rows modified
    */
   public async update(
@@ -232,7 +235,8 @@ export class ItemRepository extends BaseRepository {
     originalAttachmentIds: string[] = [],
     attachments: Attachment[] = [],
     originalTotpCodeIds: string[] = [],
-    totpCodes: TotpCode[] = []
+    totpCodes: TotpCode[] = [],
+    logoSelection?: LogoSelection
   ): Promise<number> {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
@@ -245,14 +249,13 @@ export class ItemRepository extends BaseRepository {
         LogoId: string | null;
       }>(ItemQueries.GET_ITEM_FIELDS, [item.Id])[0];
 
-      // 2. Handle Logo
-      const logoId = await this.resolveLogoId(item, currentDateTime, existing?.LogoId ?? null);
+      // 2. Handle the logo
+      const logoId = await this.resolveLogoId(item, currentDateTime, existing?.LogoId ?? null, logoSelection);
 
       if (existing) {
         const nameChanged = (item.Name ?? null) !== existing.Name;
         const itemTypeChanged = String(item.ItemType) !== String(existing.ItemType);
         const folderIdChanged = (item.FolderId ?? null) !== existing.FolderId;
-        // Logo is considered changed if: new logo differs from existing, OR logo was cleared (undefined/null in item.Logo while existing has one)
         const logoIdChanged = logoId !== existing.LogoId;
 
         if (nameChanged || itemTypeChanged || folderIdChanged || logoIdChanged) {
@@ -456,38 +459,98 @@ export class ItemRepository extends BaseRepository {
   }
 
   /**
-   * Resolve the logo ID for an item (create new or reuse existing).
+   * Resolve which logo row an item points at.
    *
-   * An item that already has a logo for the same domain keeps it. That matters for items inside a
-   * shared folder: their logo belongs to the folder's manifest, and re-resolving would swap in the
-   * personal-scope row, which the next push would then copy over the folder's icon, a write every
-   * member sees, every time anyone edits the item.
+   * The rules, in order:
+   *   1. an explicit selection wins: the user picked a built-in logo, uploaded an image, or asked to
+   *      go back to the automatic favicon;
+   *   2. otherwise a logo the user chose earlier (built-in or uploaded) is kept, so editing the URL
+   *      never silently replaces a deliberate choice with a favicon;
+   *   3. otherwise the favicon for the item's current domain, which is looked up rather than carried
+   *      over: an item whose URL changed must not keep the previous site's logo.
+   *
+   * Rule 2 also keeps the logo of an item inside a shared folder pointing at the folder's own row.
+   * Re-resolving would swap in the personal-scope row, which the next push would then copy over the
+   * folder's logo: a write every member sees, every time anyone edits the item.
    * @param item The item being created or updated
    * @param currentDateTime The current date/time string for timestamps
    * @param existingLogoId The logo the item currently has, when updating
+   * @param selection A logo the user explicitly picked or uploaded
    * @returns The logo ID to store on the item, or null when it should have none
    */
-  private async resolveLogoId(item: Item, currentDateTime: string, existingLogoId: string | null = null): Promise<string | null> {
-    const urlField = item.Fields?.find(f => f.FieldKey === 'login.url');
-    const urlValue = urlField?.Value;
-    const urlString = Array.isArray(urlValue) ? urlValue[0] : urlValue;
-    const source = this.logoRepository.extractSourceFromUrl(urlString);
-
-    if (item.Logo) {
-      const logoData = this.logoRepository.convertLogoToUint8Array(item.Logo);
-      if (logoData) {
-        return this.logoRepository.getOrCreate(source, logoData, currentDateTime);
-      }
-    } else if (source !== 'unknown') {
-      // Keep the current logo when it is already the one for this domain, whatever scope it lives in.
-      if (existingLogoId && this.logoRepository.getSourceForId(existingLogoId) === source) {
-        return existingLogoId;
-      }
-
-      return this.logoRepository.getIdForSource(source) ?? existingLogoId;
+  private async resolveLogoId(
+    item: Item,
+    currentDateTime: string,
+    existingLogoId: string | null = null,
+    selection?: LogoSelection
+  ): Promise<string | null> {
+    if (selection && selection.Kind !== LogoKinds.Favicon) {
+      return this.resolveSelectedLogo(selection, currentDateTime);
     }
 
-    return null;
+    const existing = existingLogoId ? this.logoRepository.getById(existingLogoId) : null;
+
+    // A deliberate choice outlives URL edits; only an explicit selection (handled above) replaces it.
+    if (!selection && existing && existing.Kind !== LogoKinds.Favicon) {
+      return existingLogoId;
+    }
+
+    const urlField = item.Fields?.find(f => f.FieldKey === 'login.url');
+    const urlValue = urlField?.Value;
+    const urls = Array.isArray(urlValue) ? urlValue : (urlValue ? [urlValue] : []);
+    // The first URL a domain can be read from, which is the one the favicon was fetched for.
+    const source = urls.map(url => this.logoRepository.extractSourceFromUrl(url)).find(candidate => candidate !== 'unknown') ?? 'unknown';
+
+    /*
+     * Without a domain there is no natural key to store a favicon under: 'unknown' is not one, every
+     * item with an unparseable URL would end up sharing (and overwriting) the same row.
+     */
+    if (source === 'unknown') {
+      return null;
+    }
+
+    // Keep the current favicon when it is already this domain's, whatever scope it lives in.
+    if (existing && existing.Kind === LogoKinds.Favicon && existing.Source === source) {
+      return existingLogoId;
+    }
+
+    /*
+     * Fresh image bytes for this domain: callers only attach Logo after fetching the favicon for the
+     * URL the item now has, so these belong under this Source. Bytes left over from a previous URL
+     * must never reach here, see FaviconService.fetchAndAttachFavicon.
+     */
+    const faviconData = item.Logo ? this.logoRepository.convertToUint8Array(item.Logo) : null;
+    if (faviconData && faviconData.length > 0) {
+      return this.logoRepository.getOrCreate(LogoKinds.Favicon, source, faviconData, currentDateTime, { mimeType: 'image/x-icon' });
+    }
+
+    /*
+     * Otherwise adopt the favicon this domain already has, or none at all. Falling back to the item's
+     * previous logo here is what made an item keep the old site's logo after its URL was changed.
+     */
+    return this.logoRepository.getIdForKey(LogoKinds.Favicon, source);
+  }
+
+  /**
+   * Resolve a logo the user explicitly picked: a catalog key, an image they just uploaded, or one
+   * already in their library.
+   * @param selection The user's choice
+   * @param currentDateTime The current date/time string for timestamps
+   * @returns The logo ID, or null when the selection carries nothing to resolve
+   */
+  private async resolveSelectedLogo(selection: LogoSelection, currentDateTime: string): Promise<string | null> {
+    if (selection.Kind === LogoKinds.Builtin) {
+      // Built-in logos carry no bytes: every platform draws them from the shared catalog.
+      return selection.Source ? this.logoRepository.getOrCreate(LogoKinds.Builtin, selection.Source, null, currentDateTime) : null;
+    }
+
+    const uploaded = selection.Data ? this.logoRepository.convertToUint8Array(selection.Data) : null;
+    if (uploaded && uploaded.length > 0) {
+      return this.logoRepository.storeUpload(uploaded, currentDateTime, { mimeType: selection.MimeType ?? 'image/png', name: selection.Name });
+    }
+
+    // No new bytes: the user picked an image their library already holds, addressed by its hash.
+    return selection.Source ? this.logoRepository.getIdForKey(LogoKinds.Custom, selection.Source) : null;
   }
 
   /**

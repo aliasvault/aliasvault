@@ -12,3 +12,13 @@ export {
 export type {
   ItemTypeIconKey,
 } from './ItemTypeIcons';
+
+export {
+  AppIconSvgs,
+  getAppIconSvg,
+  getAllAppIconKeys,
+} from './AppIcons';
+
+export type {
+  AppIconKey,
+} from './AppIcons';

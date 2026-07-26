@@ -21,6 +21,7 @@ export type Item = {
     Name: string | null;
     ItemType: ItemType;
     Logo?: Uint8Array | number[];
+    LogoInfo?: ItemLogo;
     FolderId?: string | null;
     FolderPath?: string[];
     Tags?: ItemTagRef[];
@@ -30,6 +31,49 @@ export type Item = {
     HasTotp?: boolean;
     CreatedAt: string;
     UpdatedAt: string;
+}
+
+/**
+ * Different kinds of logos an item can have.
+ */
+export const LogoKinds = {
+  /** Fetched automatically from the item's URL; Source is the domain it came from. */
+  Favicon: 'favicon',
+  /** Picked from the built-in catalog; Source is the AppIconKey and there are no image bytes. */
+  Builtin: 'builtin',
+  /** Uploaded by the user; Source is the sha256 of the image, which is what makes it reusable. */
+  Custom: 'custom',
+} as const;
+
+/**
+ * Logo kind union derived from the LogoKinds constant.
+ */
+export type LogoKind = typeof LogoKinds[keyof typeof LogoKinds];
+
+/**
+ * The logo an item currently shows, as read from the vault.
+ */
+export type ItemLogo = {
+    Id: string;
+    Kind: LogoKind;
+    /** The natural key within the kind: a domain, a catalog key, or an image hash. */
+    Source: string;
+    /** Optional user-facing label, set for uploaded logos. */
+    Name?: string | null;
+}
+
+/**
+ * A logo choice being written to an item: pick one from the library or the catalog by (Kind, Source),
+ * or upload new bytes. Leave unset to let the item keep resolving its favicon from its URL.
+ */
+export type LogoSelection = {
+    Kind: LogoKind;
+    /** Required for 'builtin' and when picking an existing logo; derived from Data otherwise. */
+    Source?: string;
+    /** The image bytes, for a new custom logo. */
+    Data?: Uint8Array | number[];
+    MimeType?: string;
+    Name?: string | null;
 }
 
 /**
