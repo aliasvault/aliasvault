@@ -115,6 +115,11 @@ public class AliasClientDbContext : DbContext
     public DbSet<CodecOverflow> CodecOverflows { get; set; }
 
     /// <summary>
+    /// Gets or sets the SharedFolderEncryptionKeys DbSet.
+    /// </summary>
+    public DbSet<SharedFolderEncryptionKey> SharedFolderEncryptionKeys { get; set; }
+
+    /// <summary>
     /// The OnModelCreating method.
     /// </summary>
     /// <param name="modelBuilder">ModelBuilder instance.</param>
@@ -195,6 +200,9 @@ public class AliasClientDbContext : DbContext
         modelBuilder.Entity<Logo>()
             .Property(l => l.Kind)
             .HasDefaultValue(Logo.KindFavicon);
+
+        modelBuilder.Entity<SharedFolderEncryptionKey>()
+            .HasIndex(k => new { k.SharedFolderId, k.IsPrimary });
 
         // Configure FieldValue - Item relationship
         modelBuilder.Entity<FieldValue>()

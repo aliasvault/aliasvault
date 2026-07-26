@@ -40,6 +40,19 @@ public class UserEmailClaim
     public virtual AliasVaultUser? User { get; set; }
 
     /// <summary>
+    /// Gets or sets the encryption key incoming mail for this alias is encrypted with. For most cases this will be null,
+    /// which means the routing owner's primary personal key is used, resolved at delivery time. For aliases that are shared
+    /// with other users, this will be set to the encryption key of the shared folder so all members of the folder can decrypt the mail.
+    /// </summary>
+    public Guid? EncryptionKeyId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the navigation property to the encryption key mail for this alias is encrypted with.
+    /// </summary>
+    [ForeignKey("EncryptionKeyId")]
+    public virtual UserEncryptionKey? EncryptionKey { get; set; }
+
+    /// <summary>
     /// Gets or sets the full email address.
     /// </summary>
     [StringLength(255)]

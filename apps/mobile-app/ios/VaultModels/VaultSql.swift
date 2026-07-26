@@ -1327,6 +1327,25 @@ public struct VaultSql {
         VALUES ('20260726141537_2.1.0-CodecOverflowsAndItemLogos', '10.0.10');
         
         COMMIT;
+        
+        BEGIN TRANSACTION;
+        CREATE TABLE \"SharedFolderEncryptionKeys\" (
+            \"Id\" TEXT NOT NULL CONSTRAINT \"PK_SharedFolderEncryptionKeys\" PRIMARY KEY,
+            \"SharedFolderId\" TEXT NOT NULL,
+            \"PublicKey\" TEXT NOT NULL,
+            \"PrivateKey\" TEXT NOT NULL,
+            \"IsPrimary\" INTEGER NOT NULL,
+            \"CreatedAt\" TEXT NOT NULL,
+            \"UpdatedAt\" TEXT NOT NULL,
+            \"IsDeleted\" INTEGER NOT NULL
+        );
+        
+        CREATE INDEX \"IX_SharedFolderEncryptionKeys_SharedFolderId_IsPrimary\" ON \"SharedFolderEncryptionKeys\" (\"SharedFolderId\", \"IsPrimary\");
+        
+        INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\")
+        VALUES ('20260727043742_2.2.0-AddSharedFolderEncryptionKeys', '10.0.10');
+        
+        COMMIT;
         """
 
     /// Migration SQL scripts indexed by migration number.
