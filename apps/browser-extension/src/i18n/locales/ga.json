@@ -247,7 +247,7 @@
     "includeSpecialChars": "Cuir carachtair speisialta san áireamh",
     "avoidAmbiguousChars": "Seachain carachtair débhríoch (o, 0, srl.)",
     "passwordTypeBasic": "Pasfhocal",
-    "passwordTypeDiceware": "Pasfhocal",
+    "passwordTypeDiceware": "Pas frása",
     "passphraseLanguage": "Teanga pasfhrása",
     "wordCount": "Focail",
     "dicewareCapitalizationOption": {
