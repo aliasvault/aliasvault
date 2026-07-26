@@ -17,6 +17,7 @@ import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons
 import AttachmentUploader from '@/entrypoints/popup/components/Items/Details/AttachmentUploader';
 import PasskeyEditor from '@/entrypoints/popup/components/Items/Details/PasskeyEditor';
 import TotpEditor from '@/entrypoints/popup/components/Items/Details/TotpEditor';
+import ItemLogoPicker from '@/entrypoints/popup/components/Items/ItemLogoPicker';
 import ItemNameInput from '@/entrypoints/popup/components/Items/ItemNameInput';
 import ItemTypeSelector from '@/entrypoints/popup/components/Items/ItemTypeSelector';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
@@ -30,11 +31,12 @@ import useServiceDetection from '@/entrypoints/popup/hooks/useServiceDetection';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
 import { UsernameEmailGenerator, Gender } from '@/utils/dist/core/identity-generator';
-import type { Item, ItemField, ItemType, FieldType, Attachment, TotpCode, PasswordSettings } from '@/utils/dist/core/models/vault';
-import { FieldCategories, FieldTypes, ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType } from '@/utils/dist/core/models/vault';
+import type { Item, ItemField, ItemType, FieldType, Attachment, TotpCode, PasswordSettings, LogoSelection } from '@/utils/dist/core/models/vault';
+import { FieldCategories, FieldTypes, LogoKinds, ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType } from '@/utils/dist/core/models/vault';
 import { FaviconService } from '@/utils/FaviconService';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import SqliteClient from '@/utils/SqliteClient';
 
 import { browser } from '#imports';
 
@@ -114,6 +116,8 @@ const ItemAddEdit: React.FC = () => {
 
   // UI visibility state
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+  const [logoSelection, setLogoSelection] = useState<LogoSelection | undefined>(undefined);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [show2FA, setShow2FA] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
 
@@ -664,6 +668,14 @@ const ItemAddEdit: React.FC = () => {
   }, []);
 
   /**
+   * Handle the user choosing a logo. Changes are only persisted when the item itself is saved.
+   */
+  const handleLogoSelect = useCallback((selection: LogoSelection) => {
+    setLogoSelection(selection);
+    setLogoPreview(selection.Data ? SqliteClient.imgSrcFromBytes(selection.Data) : null);
+  }, []);
+
+  /**
    * After creating a credential from a page's "create new item" flow, autofill the freshly
    * created item back into the originating tab and close this popup window. Returns true when the
    * fill-back path handled the post-save behaviour (so the caller should skip normal navigation).
@@ -781,7 +793,8 @@ const ItemAddEdit: React.FC = () => {
        * Only call if we have a URL value to avoid unnecessary processing.
        */
       const urlValue = fieldValues['login.url'];
-      if (dbContext?.sqliteClient && urlValue) {
+      const usesAutomaticLogo = !logoSelection || logoSelection.Kind === LogoKinds.Favicon;
+      if (dbContext?.sqliteClient && urlValue && usesAutomaticLogo) {
         updatedItem = await FaviconService.fetchAndAttachFavicon(
           updatedItem,
           urlValue,
@@ -809,7 +822,8 @@ const ItemAddEdit: React.FC = () => {
             originalAttachmentIds,
             attachments,
             originalTotpCodeIds,
-            totpCodes
+            totpCodes,
+            logoSelection
           );
 
           // Delete passkeys marked for deletion
@@ -819,7 +833,7 @@ const ItemAddEdit: React.FC = () => {
             }
           }
         } else {
-          await dbContext.sqliteClient!.items.create(updatedItem, attachments, totpCodes);
+          await dbContext.sqliteClient!.items.create(updatedItem, attachments, totpCodes, logoSelection);
         }
       });
 
@@ -849,7 +863,7 @@ const ItemAddEdit: React.FC = () => {
       console.error('Error saving item:', err);
       setIsSaving(false);
     }
-  }, [item, isSaving, fieldValues, applicableSystemFields, customFields, dbContext, isEditMode, executeVaultMutationAsync, navigate, location.state, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyIdsMarkedForDeletion, webApi, clearPersistedValues, fillBackAndCloseWindow]);
+  }, [item, isSaving, fieldValues, applicableSystemFields, customFields, dbContext, isEditMode, executeVaultMutationAsync, navigate, location.state, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyIdsMarkedForDeletion, logoSelection, webApi, clearPersistedValues, fillBackAndCloseWindow]);
 
   /**
    * Handle delete action.
@@ -1373,6 +1387,12 @@ const ItemAddEdit: React.FC = () => {
 
       {/* Item Name and Primary fields block */}
       <FormSection>
+        <ItemLogoPicker
+          item={item}
+          pendingSelection={logoSelection}
+          pendingPreview={logoPreview}
+          onSelect={handleLogoSelect}
+        />
         <ItemNameInput
           inputRef={nameInputRef}
           value={item.Name || ''}
