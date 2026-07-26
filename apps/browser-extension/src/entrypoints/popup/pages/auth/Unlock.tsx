@@ -333,7 +333,7 @@ const Unlock: React.FC = () => {
       }
 
       // Check if there are pending migrations
-      if (await sqliteClient.hasPendingMigrations()) {
+      if (await sqliteClient.requiresLegacySqliteBlobMigration()) {
         navigate('/upgrade', { replace: true });
         hideLoading();
         return;
@@ -456,7 +456,7 @@ const Unlock: React.FC = () => {
       }
 
       // Check if there are pending migrations
-      if (await sqliteClient.hasPendingMigrations()) {
+      if (await sqliteClient.requiresLegacySqliteBlobMigration()) {
         navigate('/upgrade', { replace: true });
         hideLoading();
         return;
@@ -609,7 +609,7 @@ const Unlock: React.FC = () => {
       }
 
       // Check if there are pending migrations
-      if (await sqliteClient.hasPendingMigrations()) {
+      if (await sqliteClient.requiresLegacySqliteBlobMigration()) {
         navigate('/upgrade', { replace: true });
         hideLoading();
         return;

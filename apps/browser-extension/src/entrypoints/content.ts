@@ -816,7 +816,10 @@ export default defineContentScript({
               return;
             }
 
-            if (authStatus.hasPendingMigrations) {
+            /*
+             * Check if the vault requires a migration, if so, show a popup to the user.
+             */
+            if (authStatus.requiresLegacySqliteBlobMigration || authStatus.requiresSchemaMigration) {
               // Show upgrade required popup
               await createUpgradeRequiredPopup(inputElement, container, await t('content.vaultUpgradeRequired'));
               return;

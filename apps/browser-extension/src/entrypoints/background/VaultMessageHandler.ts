@@ -9,6 +9,7 @@ import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/met
 import { FieldKey, ItemTypes, createSystemField, type Item, type PasswordSettings } from '@/utils/dist/core/models/vault';
 import type { VaultResponse, VaultPostResponse, StatusResponseV2, ManifestRevision } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
+import { requiresLegacyVaultKeyMigration } from '@/utils/LegacyVaultKeyMigration';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
@@ -36,6 +37,7 @@ import { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types
 import { type VaultMutationScope, ALL_VAULT_MUTATION_SCOPES, DEFAULT_VAULT_MUTATION_SCOPE, isManifestScope } from '@/utils/types/VaultMutationScope';
 import { VaultCodec } from '@/utils/VaultCodec';
 import { VaultKeyService } from '@/utils/VaultKeyService';
+import { vaultRequiresManifestMigration } from '@/utils/VaultManifestMigration';
 import { vaultMergeService } from '@/utils/VaultMergeService';
 import { vaultSyncService, invalidateCanonicalizeCache } from '@/utils/VaultSyncService';
 import { WebApiService } from '@/utils/WebApiService';
@@ -129,57 +131,37 @@ let isSyncInProgress = false;
 let hasPendingSync = false;
 
 /**
- * Check if the user is logged in and if the vault is locked, and also check for pending migrations.
+ * Check if the user is logged in and if the vault is locked, and also check for both kinds of pending vault.
  */
-export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, isVaultLocked: boolean, hasPendingMigrations: boolean, error?: string }> {
+export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, isVaultLocked: boolean, requiresLegacySqliteBlobMigration: boolean, requiresSchemaMigration: boolean, error?: string }> {
   const [username, accessToken, vaultData, encryptionKey] = await Promise.all([storage.getItem(StorageKeys.USERNAME), storage.getItem(StorageKeys.ACCESS_TOKEN), storage.getItem(StorageKeys.ENCRYPTED_VAULT), handleGetEncryptionKey()]);
 
   const isLoggedIn = username !== null && accessToken !== null;
   const isVaultLocked = isLoggedIn && (vaultData === null || encryptionKey === null);
 
-  // If vault is locked, we can't check for pending migrations
-  if (isVaultLocked) {
-    return {
-      isLoggedIn,
-      isVaultLocked,
-      hasPendingMigrations: false
-    };
-  }
-
-  // If not logged in, no need to check migrations
-  if (!isLoggedIn) {
-    return {
-      isLoggedIn,
-      isVaultLocked,
-      hasPendingMigrations: false
-    };
+  // A locked or logged-out vault can't be opened, so neither upgrade state can be determined.
+  if (isVaultLocked || !isLoggedIn) {
+    return { isLoggedIn, isVaultLocked, requiresLegacySqliteBlobMigration: false, requiresSchemaMigration: false };
   }
 
   // Vault is unlocked, check for pending migrations
   try {
     const sqliteClient = await createVaultSqliteClient();
-    const hasPendingMigrations = await sqliteClient.hasPendingMigrations();
-    return {
-      isLoggedIn,
-      isVaultLocked,
-      hasPendingMigrations
-    };
+    const requiresLegacySqliteBlobMigration = await sqliteClient.requiresLegacySqliteBlobMigration();
+    const requiresSchemaMigration = await sqliteClient.requiresSchemaMigration();
+    return { isLoggedIn, isVaultLocked, requiresLegacySqliteBlobMigration, requiresSchemaMigration };
   } catch (error) {
     // If it's a version incompatibility error, we need to handle it specially
     if (error instanceof VaultVersionIncompatibleError) {
       // Return the error so the UI can handle it appropriately (logout user)
-      return {
-        isLoggedIn,
-        isVaultLocked,
-        hasPendingMigrations: false,
-        error: error.message
-      };
+      return { isLoggedIn, isVaultLocked, requiresLegacySqliteBlobMigration: false, requiresSchemaMigration: false, error: error.message };
     }
 
     return {
       isLoggedIn,
       isVaultLocked,
-      hasPendingMigrations: false,
+      requiresLegacySqliteBlobMigration: false,
+      requiresSchemaMigration: false,
       error: error instanceof Error ? error.message : await t('common.errors.unknownError')
     };
   }
@@ -275,19 +257,13 @@ async function fetchLatestVaultFromServer(): Promise<VaultResponse> {
 }
 
 /**
- * Upload the current SQLite via the v2 storage format.
+ * Push the current SQLite vault to the server.
+ *
  * @param sqliteClient - the in-memory SQLite client to upload
- * @param forceFullWrite - bypass the content-fingerprint gating and rewrite every manifest and bucket (server rollback recovery)
+ * @param options - forceFullWrite bypasses the content-fingerprint gating and rewrites every manifest and bucket
+ *   (server rollback recovery); createVaultKey mints the VEK as part of this push (KEK/VEK migration)
  */
-async function uploadVaultV2(sqliteClient: SqliteClient, forceFullWrite: boolean = false): Promise<VaultPostResponse> {
-  /*
-   * A vault key another device created must be adopted before we decide anything, otherwise this push would try to
-   * migrate an already-migrated vault and the server would reject it.
-   */
-  if (!await adoptRemoteVaultKeyIfNeeded()) {
-    throw new Error(formatErrorWithCode('Vault encryption key out of sync with the server; please log in again', AppErrorCode.VAULT_DECRYPT_FAILED));
-  }
-
+async function pushVaultToServer(sqliteClient: SqliteClient, options: { forceFullWrite: boolean; createVaultKey: boolean }): Promise<VaultPostResponse> {
   const encryptionKey = await handleGetEncryptionKey();
   if (!encryptionKey) {
     throw new Error(formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED));
@@ -296,18 +272,14 @@ async function uploadVaultV2(sqliteClient: SqliteClient, forceFullWrite: boolean
   const username = (await storage.getItem(StorageKeys.USERNAME)) as string;
   const emailAddresses = await getEmailAddressesForVault(sqliteClient);
 
-  /*
-   * KEK/VEK migration: a not-yet-migrated (legacy sqlite-blob) user has no vault key, so their first manifest
-   * upload generates a VEK, re-encrypts everything with it, and creates the vault key server-side (wrapping the
-   * VEK with the current password-derived key). The local wrapped-VEK cache is the source of truth here: it is
-   * exactly "the session key is a VEK", which is the question this decision asks.
-   */
-  const hasVaultKey = await VaultKeyService.hasLocalVaultKey();
-  const result = await vaultSyncService.push(sqliteClient, encryptionKey, username, emailAddresses, { createVaultKey: !hasVaultKey, forceFullWrite });
+  const result = await vaultSyncService.push(sqliteClient, encryptionKey, username, emailAddresses, options);
 
   if (result.status === 'ok') {
     if (result.newEncryptionKey) {
-      // Migration succeeded: from now on the session key is the VEK, not the password-derived key.
+      /*
+       * Migration succeeded: from now on the session key is the VEK, not the password-derived key.
+       * TODO: this can be removed once all users have migrated to the manifest-v1 storage model.
+       */
       await handleStoreEncryptionKey(result.newEncryptionKey);
     }
 
@@ -821,16 +793,6 @@ async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultM
   }
 
   /*
-   * A bucket-only push encrypts with the current session key. A not-yet-migrated user has no vault key yet, so the
-   * full upload path must run instead to re-key the whole vault (KEK/VEK migration) in one atomic request. Answered
-   * from the local wrapped-VEK cache, so the common (migrated) case costs no round-trip.
-   */
-  if (!await VaultKeyService.hasLocalVaultKey()) {
-    devLog('[V2Push] User not yet migrated (no vault key), falling back to full vault upload to run the KEK/VEK migration.');
-    return (await uploadNewVaultToServer(sqliteClient)).response;
-  }
-
-  /*
    * Which tables make up each bucket category is owned by the Rust layer.
    */
   const layout = await vaultCodecBucketLayout();
@@ -840,7 +802,7 @@ async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultM
     const spec = layout.find(entry => entry.category === category);
     if (!spec) {
       devWarn(`[V2Push] Unknown bucket scope "${category}", falling back to full vault upload.`);
-      return (await uploadNewVaultToServer(sqliteClient)).response;
+      return (await uploadNewVaultToServer(sqliteClient, { forceFullWrite: false, createVaultKey: false })).response;
     }
 
     /*
@@ -868,11 +830,13 @@ async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultM
  * Bucket-aware: when every pending mutation is scoped to a data bucket (e.g. Settings), only those buckets
  * are pushed. A dirty 'manifest' scope (or a dirty state with no recorded scopes) triggers the full upload path,
  * whose content-fingerprint gating then narrows the write down to the manifests/buckets that actually changed.
+ *
  * @param options - set forceFullWrite to rewrite every manifest and bucket regardless of change detection
- *   (server rollback recovery)
+ *   (server rollback recovery); set createVaultKey to mint the VEK as part of this push (the explicit storage
+ *   migration passes this, and it is the only caller that should)
  */
 export async function handleUploadVault(
-  options?: { forceFullWrite?: boolean }
+  options?: { forceFullWrite?: boolean; createVaultKey?: boolean }
 ) : Promise<messageVaultUploadResponse> {
   try {
     // Capture mutation sequence at start of upload for race detection
@@ -881,10 +845,20 @@ export async function handleUploadVault(
     // Create sqlite client from the already-stored vault blob.
     const sqliteClient = await createVaultSqliteClient();
 
+    /*
+     * Check if vault key is available on server, if so, adopt it.
+     */
+    if (!await adoptRemoteVaultKeyIfNeeded()) {
+      throw new Error(formatErrorWithCode('Vault encryption key out of sync with the server; please log in again', AppErrorCode.VAULT_DECRYPT_FAILED));
+    }
+    
+    // Handle creating a vault key if it is not available. TODO: delete once all users have migrated to the manifest-v1 storage model.
+    const createVaultKey = options?.createVaultKey === true || !await VaultKeyService.hasLocalVaultKey();
+
     // Upload to the server: bucket-only when possible, full vault otherwise. A forced full write skips the bucket-only shortcut.
     const forceFullWrite = options?.forceFullWrite === true;
     const dirtyScopes = await getDirtyScopes();
-    const bucketOnly = !forceFullWrite && dirtyScopes.length > 0 && !dirtyScopes.some(isManifestScope);
+    const bucketOnly = !forceFullWrite && !createVaultKey && dirtyScopes.length > 0 && !dirtyScopes.some(isManifestScope);
     if (bucketOnly) {
       devLog(`[V2Push] All pending mutations are bucket-scoped (${dirtyScopes.join(', ')}), skipping manifest upload.`);
     }
@@ -894,7 +868,7 @@ export async function handleUploadVault(
       // Bucket-only pushes never prune (settings buckets carry no trash items).
       response = await uploadDirtyBucketsOnly(sqliteClient, dirtyScopes);
     } else {
-      ({ response, vaultPruned } = await uploadNewVaultToServer(sqliteClient, forceFullWrite));
+      ({ response, vaultPruned } = await uploadNewVaultToServer(sqliteClient, { forceFullWrite, createVaultKey }));
     }
 
     return {
@@ -1000,9 +974,9 @@ export async function handleClearPersistedFormValues(): Promise<void> {
  * Upload a new version of the vault to the server using the provided sqlite client.
  * Prunes expired trash items before uploading.
  * @param sqliteClient - the in-memory SQLite client to upload
- * @param forceFullWrite - bypass the content-fingerprint gating and rewrite every manifest and bucket
+ * @param options - forceFullWrite: whether to force a full write of the vault, createVaultKey: whether to create a vault key
  */
-async function uploadNewVaultToServer(sqliteClient: SqliteClient, forceFullWrite: boolean = false) : Promise<{ response: VaultPostResponse; vaultPruned: boolean }> {
+async function uploadNewVaultToServer(sqliteClient: SqliteClient, options: { forceFullWrite: boolean; createVaultKey: boolean }) : Promise<{ response: VaultPostResponse; vaultPruned: boolean }> {
   devLog('[VaultSync] Upload started');
   let vaultPruned = false;
   const encryptionKey = await handleGetEncryptionKey();
@@ -1030,9 +1004,9 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient, forceFullWrite
     console.warn('[VaultSync] Failed to prune vault, continuing with upload:', pruneError);
   }
 
-  let v2Response: VaultPostResponse;
+  let pushResponse: VaultPostResponse;
   try {
-    v2Response = await uploadVaultV2(sqliteClient, forceFullWrite);
+    pushResponse = await pushVaultToServer(sqliteClient, options);
   } catch (err) {
     if (err instanceof ServerUpdateRequiredError) {
       throw new Error(formatErrorWithCode(await t('common.errors.serverVersionNotSupported'), AppErrorCode.SERVER_UPDATE_REQUIRED));
@@ -1053,11 +1027,11 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient, forceFullWrite
     cachedSqliteClient = sqliteClient;
     cachedVaultBlob = reEncrypted;
   }
-  if (v2Response.status === 0) {
-    await storage.setItem(StorageKeys.SERVER_REVISION, v2Response.newRevisionNumber);
+  if (pushResponse.status === 0) {
+    await storage.setItem(StorageKeys.SERVER_REVISION, pushResponse.newRevisionNumber);
   }
 
-  return { response: v2Response, vaultPruned };
+  return { response: pushResponse, vaultPruned };
 }
 
 /**
@@ -1080,6 +1054,25 @@ async function persistLocalVaultMutation(sqliteClient: SqliteClient, encryptionK
   void handleFullVaultSync().catch(error => {
     console.error('Background sync after local vault mutation failed:', error);
   });
+}
+
+/**
+ * Whether a decrypted vault database is still on the pre-manifest-v1 schema.
+ * 
+ * TODO: delete once all users have migrated to the manifest-v1 storage model.
+ * 
+ * @param decryptedBase64 - base64 of the plaintext SQLite database
+ */
+async function isLegacyStorageVault(decryptedBase64: string): Promise<boolean> {
+  const client = new SqliteClient();
+  try {
+    await client.initializeFromBase64(decryptedBase64);
+    return await client.requiresSchemaMigration();
+  } catch {
+    return false;
+  } finally {
+    client.close();
+  }
 }
 
 /**
@@ -1199,6 +1192,83 @@ export async function handleStoreEncryptedVault(request: {
   cachedVaultBlob = null;
 
   return { success: true, mutationSequence };
+}
+
+/**
+ * Result of the manifest migration.
+ */
+export type VaultManifestMigrationResult = {
+  success: boolean;
+  pushed: boolean;
+  error?: string;
+};
+
+/**
+ * Upgrade local manifest-v1 storage model to the current schema (if needed).
+ */
+export async function handleMigrateVaultManifest(): Promise<VaultManifestMigrationResult> {
+  try {
+    const encryptionKey = await handleGetEncryptionKey();
+    if (!encryptionKey) {
+      // E-202: Vault is locked
+      return { success: false, pushed: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
+    }
+
+    const sqliteClient = await createVaultSqliteClient();
+
+    if (await sqliteClient.requiresLegacySqliteBlobMigration()) {
+      // The sqlite-blob upgrade chain has to bring the vault to 2.0.0 first; the codec cannot canonicalize what came before.
+      return { success: false, pushed: false, error: await t('content.vaultUpgradeRequired') };
+    }
+
+    // Check if vault key is available on server, if so, adopt it.
+    if (!await adoptRemoteVaultKeyIfNeeded()) {
+      return { success: false, pushed: false, error: formatErrorWithCode('Vault encryption key out of sync with the server; please log in again', AppErrorCode.VAULT_DECRYPT_FAILED) };
+    }
+
+    const needsSchemaMigration = await sqliteClient.requiresSchemaMigration();
+    const needsVaultKey = await requiresLegacyVaultKeyMigration();
+    if (!needsSchemaMigration && !needsVaultKey) {
+      devLog('[ManifestMigration] Vault is already on the current storage model, nothing to migrate.');
+      return { success: true, pushed: true };
+    }
+
+    // Step 1: local migration. Store it dirty so the vault is usable immediately, with or without a server.
+    if (needsSchemaMigration) {
+      const migratedBase64 = await vaultSyncService.migrateVaultToCurrentSchema(sqliteClient);
+      const migratedEncrypted = await EncryptionUtility.symmetricEncrypt(migratedBase64, encryptionKey);
+      await handleStoreEncryptedVault({ vaultBlob: migratedEncrypted, markDirty: true });
+
+      // Invalidate any local cached results that are now stale.
+      invalidateCanonicalizeCache();
+      devLog('[ManifestMigration] Local vault migrated and stored; pushing the migrated vault to the server...');
+    } else {
+      devLog('[ManifestMigration] Schema is current; pushing to mint the vault key.');
+    }
+
+    /*
+     * Step 2: push the migrated vault to the server.
+     */
+    try {
+      const uploadResponse = await handleUploadVault({ createVaultKey: needsVaultKey });
+      if (uploadResponse.success && uploadResponse.status === 0) {
+        await handleMarkVaultClean({
+          mutationSeqAtStart: uploadResponse.mutationSeqAtStart!,
+          newServerRevision: uploadResponse.newRevisionNumber!
+        });
+        devLog(`[ManifestMigration] Migration pushed, server now at revision ${uploadResponse.newRevisionNumber}.`);
+        return { success: true, pushed: true };
+      }
+      devWarn('[ManifestMigration] Migration push did not succeed, vault stays dirty for the next sync:', uploadResponse.error);
+    } catch (pushError) {
+      devWarn('[ManifestMigration] Migration push failed, vault stays dirty for the next sync:', pushError);
+    }
+
+    return { success: true, pushed: false };
+  } catch (error) {
+    devError('[ManifestMigration] Manifest migration failed:', error);
+    return { success: false, pushed: false, error: error instanceof Error ? error.message : await t('common.errors.unknownError') };
+  }
 }
 
 /**
@@ -1366,17 +1436,12 @@ function broadcastSyncPhase(phase: VaultSyncPhase): void {
  */
 export type FullVaultSyncResult = {
   success: boolean;
-  /** True if a new vault was downloaded from server */
   hasNewVault: boolean;
-  /** True if entered offline mode */
   wasOffline: boolean;
-  /** True if vault upgrade is required */
-  upgradeRequired: boolean;
-  /** Error message if sync failed */
+  sqliteBlobUpgradeRequired: boolean;
+  manifestMigrationRequired?: boolean;
   error?: string;
-  /** Error key for translation (e.g. 'clientVersionNotSupported') */
   errorKey?: string;
-  /** True if user needs to be logged out */
   requiresLogout: boolean;
 };
 
@@ -1426,7 +1491,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     // Mark that we need to sync again after current sync completes
     hasPendingSync = true;
     devLog('[VaultSync] Sync already in progress, queued for retry after completion');
-    return { success: true, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false };
+    return { success: true, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
   }
 
   // Mark sync as in progress
@@ -1441,12 +1506,12 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     // Check if user is logged in
     const authStatus = await handleCheckAuthStatus();
     if (!authStatus.isLoggedIn) {
-      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false };
+      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
     }
 
     if (authStatus.isVaultLocked) {
       // E-202: Vault is locked
-      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
+      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
     }
 
     // Check app status and vault revision
@@ -1467,9 +1532,9 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
       const encryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT);
       if (encryptedVault) {
         await storage.setItem(StorageKeys.IS_OFFLINE_MODE, true);
-        return { success: true, hasNewVault: false, wasOffline: true, upgradeRequired: false, requiresLogout: false };
+        return { success: true, hasNewVault: false, wasOffline: true, sqliteBlobUpgradeRequired: false, requiresLogout: false };
       } else {
-        return { success: false, hasNewVault: false, wasOffline: true, upgradeRequired: false, requiresLogout: false, error: await t('common.errors.serverNotAvailable') };
+        return { success: false, hasNewVault: false, wasOffline: true, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: await t('common.errors.serverNotAvailable') };
       }
     }
 
@@ -1477,15 +1542,15 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     const statusError = webApi.validateStatusResponse(statusResponse);
     if (statusError) {
       if (statusError === 'clientVersionNotSupported' || statusError === 'serverVersionNotSupported') {
-        return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, errorKey: statusError };
+        return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: true, errorKey: statusError };
       }
-      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, errorKey: statusError };
+      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, errorKey: statusError };
     }
 
     // Check if the SRP salt has changed (password change detection)
     const storedEncryptionParams = await handleGetEncryptionKeyDerivationParams();
     if (storedEncryptionParams && statusResponse.srpSalt && statusResponse.srpSalt !== storedEncryptionParams.salt) {
-      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, errorKey: 'passwordChanged' };
+      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: true, errorKey: 'passwordChanged' };
     }
 
     /*
@@ -1493,7 +1558,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
      * another device migrated. An unmigrated device with nothing to pull has nothing to adopt and skips the check.
      */
     if (needsPull && !await adoptRemoteVaultKeyIfNeeded()) {
-      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, errorKey: 'passwordChanged' };
+      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: true, errorKey: 'passwordChanged' };
     }
 
     // Valid connection - exit offline mode if we were in it
@@ -1533,7 +1598,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
 
     const encryptionKey = await handleGetEncryptionKey();
     if (!encryptionKey) {
-      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: await t('common.errors.vaultIsLocked') };
+      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: await t('common.errors.vaultIsLocked') };
     }
 
     if (needsPull) {
@@ -1554,6 +1619,25 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
           if (localEncryptedVault) {
             const localDecrypted = await EncryptionUtility.symmetricDecrypt(localEncryptedVault, encryptionKey);
             const serverDecrypted = await EncryptionUtility.symmetricDecrypt(vaultResponseJson.vault.blob, encryptionKey);
+
+            /*
+             * Guard for the sqlite-blob to manifest-v1 migration window: this device has already migrated its vault onto the current
+             * schema but the push has not landed yet, while another (not-yet-updated) device advanced the server's
+             * legacy sqlite-blob. The two databases have different column sets, so merging them would throw an error.
+             * We assume here the migrated local vault is newer, so it's pushed as-is.
+             */
+            if (await isLegacyStorageVault(serverDecrypted) && !await isLegacyStorageVault(localDecrypted)) {
+              devWarn('[VaultSync] Server vault is still on the legacy storage format while the local vault is migrated; skipping the merge and pushing the local vault.');
+              const uploadResponse = await handleUploadVault({ forceFullWrite: true });
+              if (uploadResponse.success && uploadResponse.status === 0) {
+                await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart!, newServerRevision: uploadResponse.newRevisionNumber! });
+                return { success: true, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
+              }
+              if (uploadResponse.status === 2) {
+                return handleFullVaultSync();
+              }
+              return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: uploadResponse.error };
+            }
 
             const mergeResult = await vaultMergeService.merge(localDecrypted, serverDecrypted);
 
@@ -1593,7 +1677,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
                 return handleFullVaultSync();
               } else {
                 console.error('Failed to upload merged vault:', uploadResponse.error);
-                return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: uploadResponse.error };
+                return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: uploadResponse.error };
               }
 
               // Store metadata
@@ -1605,9 +1689,10 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
 
               // Check for pending migrations
               const sqliteClient = await createVaultSqliteClient();
-              const hasPendingMigrations = await sqliteClient.hasPendingMigrations();
+              const requiresLegacySqliteBlobMigration = await sqliteClient.requiresLegacySqliteBlobMigration();
+              const manifestMigrationRequired = await vaultRequiresManifestMigration(sqliteClient);
 
-              return { success: true, hasNewVault: true, wasOffline: false, upgradeRequired: hasPendingMigrations, requiresLogout: false };
+              return { success: true, hasNewVault: true, wasOffline: false, sqliteBlobUpgradeRequired: requiresLegacySqliteBlobMigration, manifestMigrationRequired, requiresLogout: false };
             } else {
               console.error('Vault merge failed during sync, using server vault');
               // Fall through to use server vault
@@ -1638,12 +1723,13 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
 
         // Check for pending migrations
         const sqliteClient = await createVaultSqliteClient();
-        const hasPendingMigrations = await sqliteClient.hasPendingMigrations();
+        const requiresLegacySqliteBlobMigration = await sqliteClient.requiresLegacySqliteBlobMigration();
+        const manifestMigrationRequired = await vaultRequiresManifestMigration(sqliteClient);
 
-        return { success: true, hasNewVault: true, wasOffline: false, upgradeRequired: hasPendingMigrations, requiresLogout: false };
+        return { success: true, hasNewVault: true, wasOffline: false, sqliteBlobUpgradeRequired: requiresLegacySqliteBlobMigration, manifestMigrationRequired, requiresLogout: false };
       } catch (error) {
         if (error instanceof VaultVersionIncompatibleError) {
-          return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, error: error.message };
+          return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: true, error: error.message };
         }
         // E-501: Vault decryption failed
         throw new Error(formatErrorWithCode(
@@ -1669,7 +1755,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
            * so the popup reloads the pruned vault instead of resurrecting the items
            * from its stale in-memory copy on the next mutation.
            */
-          return { success: true, hasNewVault: uploadResponse.vaultPruned === true, wasOffline: false, upgradeRequired: false, requiresLogout: false };
+          return { success: true, hasNewVault: uploadResponse.vaultPruned === true, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
         } else if (uploadResponse.status === 2) {
           /**
            * Server returned Outdated - another device uploaded first.
@@ -1678,11 +1764,11 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
           return handleFullVaultSync();
         } else {
           console.error('Failed to upload pending vault:', uploadResponse.error);
-          return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: uploadResponse.error };
+          return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: uploadResponse.error };
         }
       }
 
-      return { success: true, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false };
+      return { success: true, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
     } else if (serverManifestRevision < syncState.serverRevision) {
       /**
        * Server revision DECREASED - server data loss/rollback detected.
@@ -1709,7 +1795,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
           `Server recovery complete: rev ${serverManifestRevision} → ${uploadResponse.newRevisionNumber}`
         );
 
-        return { success: true, hasNewVault: uploadResponse.vaultPruned === true, wasOffline: false, upgradeRequired: false, requiresLogout: false };
+        return { success: true, hasNewVault: uploadResponse.vaultPruned === true, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
       } else if (uploadResponse.status === 2) {
         // Another client recovered first
         devLog('[VaultSync] Another client recovered server first, re-syncing...');
@@ -1717,38 +1803,41 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
       } else {
         console.error('Server recovery failed:', uploadResponse.error);
         // E-801: Upload failed during server recovery - preserve the upload error detail when available
-        return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: uploadResponse.error ?? formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_FAILED) };
+        return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: uploadResponse.error ?? formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_FAILED) };
       }
     }
 
     // Check for pending migrations (for paths that didn't initialize a new database)
     try {
       const sqliteClient = await createVaultSqliteClient();
-      const hasPendingMigrations = await sqliteClient.hasPendingMigrations();
-      if (hasPendingMigrations) {
-        return { success: true, hasNewVault: false, wasOffline: false, upgradeRequired: true, requiresLogout: false };
+      const requiresLegacySqliteBlobMigration = await sqliteClient.requiresLegacySqliteBlobMigration();
+      if (requiresLegacySqliteBlobMigration) {
+        return { success: true, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: true, requiresLogout: false };
+      }
+      if (await vaultRequiresManifestMigration(sqliteClient)) {
+        return { success: true, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, manifestMigrationRequired: true, requiresLogout: false };
       }
     } catch {
       // Ignore errors checking migrations
     }
 
-    return { success: true, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false };
+    return { success: true, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
   } catch (err) {
     console.error('Vault sync error:', err);
 
     // Version incompatibility requires logout
     if (err instanceof VaultVersionIncompatibleError) {
-      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, error: err.message };
+      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: true, error: err.message };
     }
 
     // Auth error (session expired) - signal popup to trigger logout
     if (err instanceof ApiAuthError) {
-      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, errorKey: 'sessionExpired' };
+      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: true, errorKey: 'sessionExpired' };
     }
 
     // E-805: Vault transfer timed out - show a targeted error instead of entering offline mode
     if (err instanceof RequestTimeoutError) {
-      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: formatErrorWithCode(await t('common.errors.vaultSyncTimeout'), AppErrorCode.UPLOAD_TIMEOUT) };
+      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: formatErrorWithCode(await t('common.errors.vaultSyncTimeout'), AppErrorCode.UPLOAD_TIMEOUT) };
     }
 
     // Network error - enter offline mode if we have a local vault
@@ -1756,7 +1845,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
       const encryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT);
       if (encryptedVault) {
         await storage.setItem(StorageKeys.IS_OFFLINE_MODE, true);
-        return { success: true, hasNewVault: false, wasOffline: true, upgradeRequired: false, requiresLogout: false };
+        return { success: true, hasNewVault: false, wasOffline: true, sqliteBlobUpgradeRequired: false, requiresLogout: false };
       }
     }
 
@@ -1767,7 +1856,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     const errorMessage = hasErrorCode
       ? baseMessage
       : formatErrorWithCode(baseMessage, AppErrorCode.UNKNOWN_ERROR);
-    return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: errorMessage };
+    return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: errorMessage };
   } finally {
     // Reset sync in progress flag
     isSyncInProgress = false;

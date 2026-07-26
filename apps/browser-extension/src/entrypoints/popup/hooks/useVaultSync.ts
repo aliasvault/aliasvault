@@ -11,7 +11,8 @@ type VaultSyncOptions = {
   onError?: (error: string) => void;
   onStatus?: (message: string) => void;
   onOffline?: () => void;
-  onUpgradeRequired?: () => void;
+  onLegacySqliteBlobUpgradeRequired?: () => void;
+  onManifestMigrationRequired?: () => void;
 }
 
 /**
@@ -36,7 +37,7 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
   const dbContext = useDb();
 
   const syncVault = useCallback(async (options: VaultSyncOptions = {}) => {
-    const { onSuccess, onError, onStatus, onOffline, onUpgradeRequired } = options;
+    const { onSuccess, onError, onStatus, onOffline, onLegacySqliteBlobUpgradeRequired, onManifestMigrationRequired } = options;
 
     try {
       // Check if user is logged in first
@@ -74,9 +75,17 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
         await dbContext.setIsOffline(false);
       }
 
-      // Handle upgrade requirement
-      if (result.upgradeRequired) {
-        onUpgradeRequired?.();
+      // Handle upgrade requirement (sqlite-blob upgrade chain, needs the user to confirm)
+      if (result.sqliteBlobUpgradeRequired) {
+        onLegacySqliteBlobUpgradeRequired?.();
+        return false;
+      }
+
+      /*
+       * Handle the manifest migration.
+       */
+      if (result.manifestMigrationRequired) {
+        onManifestMigrationRequired?.();
         return false;
       }
 

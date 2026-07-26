@@ -7,7 +7,7 @@
 import { defineExtensionMessaging } from '@webext-core/messaging';
 
 import type { TwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
-import type { FullVaultSyncResult, VaultSyncPhase } from '@/entrypoints/background/VaultMessageHandler';
+import type { FullVaultSyncResult, VaultManifestMigrationResult, VaultSyncPhase } from '@/entrypoints/background/VaultMessageHandler';
 
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import type { PasswordSettings } from '@/utils/dist/core/models/vault';
@@ -36,7 +36,7 @@ export interface IExtensionMessageProtocol {
   ADD_URL_TO_CREDENTIAL(data: { itemId: string; url: string }): { success: boolean; error?: string }; 
   AUTOFILL_CREATED_ITEM(data: { item: any; elementIdentifier?: string }): BoolResponse;
   CANCEL_CLIPBOARD_CLEAR(): void;
-  CHECK_AUTH_STATUS(): { isLoggedIn: boolean; isVaultLocked: boolean; hasPendingMigrations: boolean; error?: string };
+  CHECK_AUTH_STATUS(): { isLoggedIn: boolean; isVaultLocked: boolean; requiresLegacySqliteBlobMigration: boolean; requiresSchemaMigration: boolean; error?: string };
   CHECK_LOGIN_DUPLICATE(data: { domain: string; username: string }): DuplicateCheckResponse;
   CLEAR_LAST_AUTOFILLED(): { success: boolean };
   CLEAR_PERSISTED_FORM_VALUES(): void;
@@ -79,6 +79,7 @@ export interface IExtensionMessageProtocol {
   IS_URL_LINKED_TO_CREDENTIAL(data: { itemId: string; url: string }): { linked: boolean };
   LOCK_VAULT(): BoolResponse;
   MARK_VAULT_CLEAN(data: { mutationSeqAtStart: number; newServerRevision: number }): { cleared: boolean; currentMutationSeq: number };
+  MIGRATE_VAULT_MANIFEST(): VaultManifestMigrationResult;
   OPEN_AUTOFILL_POPUP(data: { elementIdentifier: string; popupType?: string }): BoolResponse;
   OPEN_POPUP(): BoolResponse;
   OPEN_POPUP_CREATE_CREDENTIAL(data: { itemTitle?: string; currentUrl?: string; elementIdentifier?: string; left?: number; top?: number }): BoolResponse;

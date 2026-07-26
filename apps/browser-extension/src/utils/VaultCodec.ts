@@ -87,6 +87,15 @@ export class VaultCodec {
   }
 
   /**
+   * The migration ID a freshly created database would be stamped with.
+   * @param schemaSql - the COMPLETE_SCHEMA_SQL string for the target client version
+   */
+  public static getSchemaMigrationId(schemaSql: string): string {
+    const ids = [...schemaSql.matchAll(/INSERT\s+INTO\s+"__EFMigrationsHistory"[^;]*?VALUES\s*\(\s*'([^']+)'/gi)].map(m => m[1]);
+    return ids.length === 0 ? '' : ids.reduce((a, b) => (b > a ? b : a));
+  }
+
+  /**
    * The column set of the local client schema, per table: the input Rust's materialize uses to
    * split off anything a newer writer stored that this schema cannot hold (see `CodecOverflow`).
    * @param schemaSql - the COMPLETE_SCHEMA_SQL string for the target client version

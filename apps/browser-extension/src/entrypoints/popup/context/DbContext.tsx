@@ -8,6 +8,7 @@ import SqliteClient from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
+import { vaultRequiresManifestMigration } from '@/utils/VaultManifestMigration';
 
 import { markOwnEncryptionKey, vaultStateEvents } from '@/events/VaultStateEvents';
 
@@ -86,7 +87,8 @@ type DbContextType = {
    * Refresh sync state (isDirty, serverRevision) from storage.
    */
   refreshSyncState: () => Promise<void>;
-  hasPendingMigrations: () => Promise<boolean>;
+  requiresLegacySqliteBlobMigration: () => Promise<boolean>;
+  requiresManifestMigration: () => Promise<boolean>;
   /**
    * Last sync error message persisted by the background sync. Surfaced as a popup
    * alert. Null when no error is pending. Updated reactively via storage.watch so
@@ -353,11 +355,21 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   /**
    * Check if there are pending migrations.
    */
-  const hasPendingMigrations = useCallback(async () => {
+  const requiresLegacySqliteBlobMigration = useCallback(async () => {
     if (!sqliteClient) {
       return false;
     }
-    return await sqliteClient.hasPendingMigrations();
+    return await sqliteClient.requiresLegacySqliteBlobMigration();
+  }, [sqliteClient]);
+
+  /**
+   * Check if the vault still has to be migrated to the current storage model.
+   */
+  const requiresManifestMigration = useCallback(async () => {
+    if (!sqliteClient) {
+      return false;
+    }
+    return await vaultRequiresManifestMigration(sqliteClient);
   }, [sqliteClient]);
 
   /**
@@ -425,10 +437,11 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     clearDatabase,
     getVaultMetadata,
     refreshSyncState,
-    hasPendingMigrations,
+    requiresLegacySqliteBlobMigration,
+    requiresManifestMigration,
     syncError,
     clearSyncError,
-  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, isDirty, isSyncing, isUploading, serverRevision, setIsOffline, shouldSuppressEmailErrors, loadDatabase, loadStoredDatabase, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, hasPendingMigrations, syncError, clearSyncError]);
+  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, isDirty, isSyncing, isUploading, serverRevision, setIsOffline, shouldSuppressEmailErrors, loadDatabase, loadStoredDatabase, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration, syncError, clearSyncError]);
 
   return (
     <DbContext.Provider value={contextValue}>

@@ -23,6 +23,10 @@ import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 
 /**
  * Upgrade page for handling vault version upgrades.
+ *
+ * TODO: this page walks the sqlite-blob upgrade chain (frozen at 2.0.0) and can be deleted, together with
+ * requiresLegacySqliteBlobMigration, once all users have migrated. New schema changes are handled via the automatic
+ * /manifest-migration flow (requiresSchemaMigration / migrateVaultToCurrentSchema) instead.
  */
 const Upgrade: React.FC = () => {
   const { t } = useTranslation();
@@ -173,6 +177,12 @@ const Upgrade: React.FC = () => {
         onSuccess: () => {
           // Navigate to items page
           navigate('/items');
+        },
+        /**
+         * Handle the manifest migration that follows this upgrade.
+         */
+        onManifestMigrationRequired: () => {
+          navigate('/manifest-migration', { replace: true });
         },
         /**
          * Handle sync error.

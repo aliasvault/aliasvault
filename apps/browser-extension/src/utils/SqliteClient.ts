@@ -3,6 +3,7 @@ import initSqlJs, { Database } from 'sql.js';
 import type { VaultVersion } from '@/utils/dist/core/vault';
 import { VaultSqlGenerator, checkVersionCompatibility, extractVersionFromMigrationId } from '@/utils/dist/core/vault';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
+import { VaultCodec } from '@/utils/VaultCodec';
 
 import { t } from '@/i18n/StandaloneI18n';
 
@@ -312,6 +313,9 @@ export class SqliteClient implements IDatabaseClient {
 
   /**
    * Get the current database version from the migrations history.
+   *
+   * TODO: part of the sqlite-blob upgrade chain (frozen up to 2.0.0); delete once all users
+   * have migrated. New schema changes ship via requiresSchemaMigration / migrateVaultToCurrentSchema instead.
    * @returns The database version information
    */
   public async getDatabaseVersion(): Promise<VaultVersion> {
@@ -366,6 +370,9 @@ export class SqliteClient implements IDatabaseClient {
 
   /**
    * Get the latest available database version.
+   *
+   * TODO: part of the sqlite-blob upgrade chain (frozen up to 2.0.0); delete once all users
+   * have migrated. New schema changes ship via requiresSchemaMigration / migrateVaultToCurrentSchema instead.
    * @returns The latest VaultVersion
    */
   public async getLatestDatabaseVersion(): Promise<VaultVersion> {
@@ -375,10 +382,14 @@ export class SqliteClient implements IDatabaseClient {
   }
 
   /**
-   * Check if there are pending migrations.
+   * Whether the vault still has to walk the sqlite-blob upgrade chain (VAULT_VERSIONS, frozen at 2.0.0) via the /upgrade
+   * page before it is eligible for anything else.
+   *
+   * TODO: this is the legacy sqlite-blob migration path, which we will stop supporting later; delete once all
+   * users have migrated. New schema changes ship via requiresSchemaMigration / migrateVaultToCurrentSchema instead.
    * @returns True if there are pending migrations
    */
-  public async hasPendingMigrations(): Promise<boolean> {
+  public async requiresLegacySqliteBlobMigration(): Promise<boolean> {
     try {
       const currentVersion = await this.getDatabaseVersion();
       const latestVersion = await this.getLatestDatabaseVersion();
@@ -388,6 +399,31 @@ export class SqliteClient implements IDatabaseClient {
       console.error('Error checking pending migrations:', error);
       throw error;
     }
+  }
+
+  /**
+   * Whether the local database schema is older than the current full schema (COMPLETE_SCHEMA_SQL).
+   * 
+   * @returns True when the local schema predates the current full schema
+   */
+  public async requiresSchemaMigration(): Promise<boolean> {
+    if (await this.requiresLegacySqliteBlobMigration()) {
+      /*
+       * Still on the sqlite-blob upgrade chain: that upgrade has to run first, so the migration is not applicable yet.
+       * TODO: delete once all users have migrated.
+       */
+      return false;
+    }
+
+    const localMigrationId = VaultCodec.getLatestMigrationId(this);
+    const schemaMigrationId = VaultCodec.getSchemaMigrationId(new VaultSqlGenerator().getCompleteSchemaSql());
+
+    // An unstamped database or an unreadable schema constant gives no evidence of staleness; don't block on a guess.
+    if (!localMigrationId || !schemaMigrationId) {
+      return false;
+    }
+
+    return localMigrationId < schemaMigrationId;
   }
 
   /**

@@ -17,14 +17,11 @@ import { SharingService, type SessionSharedFolder } from '@/utils/SharingService
 import { SqliteClient } from '@/utils/SqliteClient';
 import { ServerUpdateRequiredError } from '@/utils/types/errors/ServerUpdateRequiredError';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
-import { type BlobEntry, type VaultManifest, type VaultDataBucket, VaultCodec } from '@/utils/VaultCodec';
-import { VaultKeyService } from '@/utils/VaultKeyService';
+import { type VaultManifest, type VaultDataBucket, VaultCodec } from '@/utils/VaultCodec';
 import { WebApiService } from '@/utils/WebApiService';
 
-// Endpoints are relative; WebApiService resolves them under the API's /v2/ prefix.
-const SNAPSHOT_ENDPOINT = 'Vault';
-const UPLOAD_ENDPOINT = 'Vault';
-const BLOBS_UPLOAD_ENDPOINT = 'Vault/blobs';
+const VAULT_ENDPOINT = 'Vault';
+const BLOBS_VAULT_ENDPOINT = 'Vault/blobs';
 const BLOBS_MISSING_ENDPOINT = 'Vault/blobs/missing';
 const BLOBS_DOWNLOAD_ENDPOINT = 'Vault/blobs/download';
 
@@ -78,13 +75,18 @@ async function timedStage<T>(stage: string, fn: () => Promise<T> | T): Promise<T
 }
 
 /**
- * Decrypt a manifest/bucket ciphertext and open it via the Rust codec: gunzip, verify the embedded
- * content hash, and return the inner payload JSON string. Throws if the content hash mismatches
- * (possible application-layer corruption).
- * @param base64Ciphertext - base64(IV ‖ ciphertext ‖ tag) from the server
+ * Verify a ciphertext against the hash the server stored (storage-layer integrity, skipped when the server sent
+ * no hash), then decrypt it and open it via the Rust codec: gunzip, verify the embedded content hash, and return
+ * the inner payload JSON string. Throws on either hash mismatch (storage or application-layer corruption).
+ * @param base64Ciphertext - base64(IV | ciphertext | tag) from the server
  * @param vek - symmetric encryption key
+ * @param expectedCiphertextHash - the ciphertext hash the server stored, when available
+ * @param label - what is being opened, for the mismatch error message (e.g. `manifest`, `"Settings" bucket`)
  */
-async function decryptUnpack(base64Ciphertext: string, vek: string): Promise<string> {
+async function verifyDecryptUnpack(base64Ciphertext: string, vek: string, expectedCiphertextHash: string | null | undefined, label: string): Promise<string> {
+  if (expectedCiphertextHash && await vaultCodecComputeCiphertextHash(base64Ciphertext) !== expectedCiphertextHash) {
+    throw new Error(`VaultSyncService: ${label} ciphertext hash mismatch, refusing to load. Possible storage corruption.`);
+  }
   const encryptedBytes = Uint8Array.from(atob(base64Ciphertext), c => c.charCodeAt(0));
   const plainBytes = await EncryptionUtility.symmetricDecryptBytes(encryptedBytes, vek);
   return vaultCodecUnpackPayload(plainBytes);
@@ -101,26 +103,12 @@ const BLOB_UPLOAD_BATCH_MAX_CHARS = 4 * 1024 * 1024;
 /** Hashes per POST /v2/Vault/blobs/download call. */
 const BLOB_DOWNLOAD_BATCH_SIZE = 100;
 
-/** Bucket category for the encryption-keys data bucket (the user's asymmetric keypair). */
-const ENCRYPTION_KEYS_BUCKET_CATEGORY = VaultDataBucketCategory.EncryptionKeys;
-
 /**
- * Email routing block as returned by the snapshot (server-readable plaintext, used for email delivery).
+ * Result of a pull: the materialized SQLite plus its manifest revision.
  */
-export type EmailRouting = {
-  emailAddressList: string[];
-  privateEmailDomainList: string[];
-  hiddenPrivateEmailDomainList: string[];
-  publicEmailDomainList: string[];
-};
-
-/**
- * Result of a pull: the materialized SQLite plus the side-channel data the caller needs to build a VaultResponse.
- */
-export type PullResult = {
+type PullResult = {
   sqliteBase64: string;
   manifestRevision: number;
-  emailRouting: EmailRouting;
 };
 
 /**
@@ -139,6 +127,9 @@ export type PushResult = {
 
 type BlobRefDto = { hash: string; category: string };
 type BlobDto = { hash: string; category: string; encryptedDataBase64: string };
+
+/** A plaintext blob staged for upload: its bytes plus the key that encrypts it (root VEK or the folder's own VEK). */
+type UploadBlobEntry = { bytes: Uint8Array; kind: 'favicon' | 'attachment'; vek: string };
 
 /**
  * A single manifest as carried in the GET snapshot / single-manifest fetch.
@@ -307,6 +298,50 @@ export class VaultSyncService {
   }
 
   /**
+   * Migrate the local vault onto the current full schema, entirely locally: canonicalize the database into
+   * manifest-v1 form and materialize it straight back out again so it works offline too.
+   *
+   * This is the permanent delivery path for client schema changes (`SqliteClient.requiresSchemaMigration`).
+   * It runs for a legacy `sqlite-blob` vault whose schema stops at the frozen sqlite-blob upgrade chain, and equally for a
+   * manifest-v1 vault materialized by an older client whenever a newer COMPLETE_SCHEMA_SQL ships.
+   * @param sqliteClient - the local vault to migrate
+   * @returns Base64 of the migrated SQLite database (plaintext; the caller encrypts and stores it)
+   */
+  public async migrateVaultToCurrentSchema(sqliteClient: SqliteClient): Promise<string> {
+    devLog('[ManifestMigration] Migrating local vault onto the current schema (local round-trip, no server involved)...');
+
+    try {
+      const { canonicalized } = await this.canonicalizeVault(sqliteClient);
+
+      /*
+       * Canonicalize already handed us every extracted favicon/attachment as plaintext bytes, so materialize can
+       * resolve its blob references without a single fetch.
+       */
+      const blobMap = new Map<string, Uint8Array>();
+      for (const [hash, entry] of Object.entries(canonicalized.blobs)) {
+        blobMap.set(hash, VaultCodec.base64ToBytes(entry.bytesBase64));
+      }
+      for (const sharedVault of canonicalized.sharedVaults ?? []) {
+        for (const [hash, entry] of Object.entries(sharedVault.blobs)) {
+          blobMap.set(hash, VaultCodec.base64ToBytes(entry.bytesBase64));
+        }
+      }
+
+      const schemaSql = new VaultSqlGenerator().getCompleteSchemaSql();
+      const schemaColumns = await VaultCodec.getSchemaColumns(schemaSql);
+      const sharedManifests = (canonicalized.sharedVaults ?? []).map(v => v.manifest);
+      const materialized = await vaultCodecMaterializeAsSqlite(canonicalized.manifest, canonicalized.dataBuckets, schemaColumns, sharedManifests);
+      const sqliteBase64 = await VaultCodec.insertTables(materialized, blobMap, schemaSql);
+
+      devLog(`[ManifestMigration] Migration complete: ${blobMap.size} blobs re-embedded, ${sqliteBase64.length} base64 chars.`);
+      return sqliteBase64;
+    } catch (error) {
+      devError('[ManifestMigration] FAILED to migrate the local vault:', error);
+      throw new VaultProcessingError('vault-storage-migration', error);
+    }
+  }
+
+  /**
    * Run a write against the v2 API and translate the outdated-server 404 into {@link ServerUpdateRequiredError}.
    * TODO: this wrapper can be deleted once enough time has passed since the v2 API was introduced (so all self-hosted installs have had time to upgrade).
    * @param fn - the write to run
@@ -326,15 +361,7 @@ export class VaultSyncService {
    * Fetch the raw snapshot (GET /v2/Vault) without decrypting/reassembling. Throws error if the server predates the v2 API.
    */
   private async fetchSnapshot(): Promise<GetResponseDto> {
-    const webApi = new WebApiService();
-    try {
-      return await webApi.get<GetResponseDto>(SNAPSHOT_ENDPOINT);
-    } catch (e) {
-      if (isNotFoundError(e)) {
-        throw new ServerUpdateRequiredError();
-      }
-      throw e;
-    }
+    return this.withOutdatedServerGuard(() => new WebApiService().get<GetResponseDto>(VAULT_ENDPOINT));
   }
 
   /**
@@ -355,16 +382,8 @@ export class VaultSyncService {
       throw new Error('VaultSyncService: server returned no manifest blob, nothing to assemble.');
     }
 
-    // Storage-layer integrity: verify the ciphertext we received matches the hash the server stored.
-    if (rootManifest.ciphertextHash) {
-      const actual = await vaultCodecComputeCiphertextHash(rootManifest.blob);
-      if (actual !== rootManifest.ciphertextHash) {
-        throw new Error('VaultSyncService: manifest ciphertext hash mismatch, refusing to load. Possible storage corruption.');
-      }
-    }
-
-    devLog('[V2Pull] Manifest ciphertext hash verified; decrypting + opening manifest...');
-    const manifestJson = await decryptUnpack(rootManifest.blob, vek);
+    devLog('[V2Pull] Verifying manifest ciphertext hash; decrypting + opening manifest...');
+    const manifestJson = await verifyDecryptUnpack(rootManifest.blob, vek, rootManifest.ciphertextHash, 'manifest');
     const manifest = JSON.parse(manifestJson) as VaultManifest;
     devLog(`[V2Pull] Manifest opened (content hash verified): schemaVersion=${manifest.schemaVersion}, migrationId=${manifest.migrationId}, tables: ${Object.entries(manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
 
@@ -396,13 +415,7 @@ export class VaultSyncService {
       if (!bucketDto.blob) {
         continue;
       }
-      if (bucketDto.ciphertextHash) {
-        const actual = await vaultCodecComputeCiphertextHash(bucketDto.blob);
-        if (actual !== bucketDto.ciphertextHash) {
-          throw new Error(`VaultSyncService: "${bucketDto.category}" bucket ciphertext hash mismatch, refusing to load.`);
-        }
-      }
-      const bucketJson = await decryptUnpack(bucketDto.blob, vek);
+      const bucketJson = await verifyDecryptUnpack(bucketDto.blob, vek, bucketDto.ciphertextHash, `"${bucketDto.category}" bucket`);
       const bucket = JSON.parse(bucketJson) as VaultDataBucket;
       dataBuckets.push(bucket);
       pulledFingerprints[fingerprintBucketKey(bucketDto.category)] = await vaultCodecComputeContentFingerprint(bucketJson);
@@ -423,7 +436,7 @@ export class VaultSyncService {
     const sharedManifestDtos = (snapshot.manifests ?? []).filter(m => !m.isRoot && m.blob);
     const sharedManifests: VaultManifest[] = [];
     const sessionSharedFolders: Record<string, SessionSharedFolder> = {};
-    const encryptionKeysBucket = dataBuckets.find(b => b.category === ENCRYPTION_KEYS_BUCKET_CATEGORY) ?? null;
+    const encryptionKeysBucket = dataBuckets.find(b => b.category === VaultDataBucketCategory.EncryptionKeys) ?? null;
     for (const dto of sharedManifestDtos) {
       let vek: string | null = null;
       if (dto.wrappedVek && dto.wrapPublicKey) {
@@ -447,13 +460,7 @@ export class VaultSyncService {
       }
 
       try {
-        if (dto.ciphertextHash) {
-          const actual = await vaultCodecComputeCiphertextHash(dto.blob!);
-          if (actual !== dto.ciphertextHash) {
-            throw new Error('ciphertext hash mismatch');
-          }
-        }
-        const sharedManifestJson = await decryptUnpack(dto.blob!, vek);
+        const sharedManifestJson = await verifyDecryptUnpack(dto.blob!, vek, dto.ciphertextHash, `shared manifest ${dto.manifestId}`);
         const sharedManifest = JSON.parse(sharedManifestJson) as VaultManifest;
         const folderId = typeof sharedManifest.sharedFolderId === 'string' ? sharedManifest.sharedFolderId : null;
         sharedManifests.push(sharedManifest);
@@ -582,16 +589,7 @@ export class VaultSyncService {
     const sqliteBase64 = await VaultCodec.insertTables(materialized, blobMap, schemaSql);
     devLog('[V2Pull] Codec reassembly complete.');
 
-    return {
-      sqliteBase64,
-      manifestRevision,
-      emailRouting: {
-        emailAddressList: snapshot.emailRouting?.emailAddressList ?? [],
-        privateEmailDomainList: snapshot.emailRouting?.privateEmailDomainList ?? [],
-        hiddenPrivateEmailDomainList: snapshot.emailRouting?.hiddenPrivateEmailDomainList ?? [],
-        publicEmailDomainList: snapshot.emailRouting?.publicEmailDomainList ?? [],
-      },
-    };
+    return { sqliteBase64, manifestRevision };
   }
 
   /**
@@ -652,8 +650,9 @@ export class VaultSyncService {
    *   which becomes the KEK; on a normal push it is the VEK itself)
    * @param username - the user's username (sent in the upload payload for cross-check)
    * @param emailAddressList - claimed email aliases (server needs these in plaintext for routing)
-   * @param options - set createVaultKey to perform the KEK/VEK migration as part of this push; set forceFullWrite
-   *   to bypass the content-fingerprint gating and rewrite every manifest and bucket (server rollback recovery)
+   * @param options - set createVaultKey to perform the KEK/VEK migration as part of this push (decided once, in
+   *   handleUploadVault); set forceFullWrite to bypass the content-fingerprint gating and
+   *   rewrite every manifest and bucket (server rollback recovery)
    * @returns Push outcome.
    */
   public async push(
@@ -701,12 +700,9 @@ export class VaultSyncService {
     }
     const { canonicalized, sharedFolderRecords } = cachedSet ?? await this.canonicalizeVault(sqliteClient);
 
-    // Plaintext blob bytes held platform-side for encryption/upload.
-    const blobEntries = new Map<string, BlobEntry>(
-      Object.entries(canonicalized.blobs).map(([hash, entry]) => [
-        hash,
-        { kind: entry.kind as 'favicon' | 'attachment', bytes: VaultCodec.base64ToBytes(entry.bytesBase64) },
-      ])
+    // Plaintext blob bytes held platform-side for encryption/upload, each staged with the key that encrypts it.
+    const rootBlobEntries = new Map<string, UploadBlobEntry>(
+      Object.entries(canonicalized.blobs).map(([hash, entry]) => [hash, { kind: entry.kind as 'favicon' | 'attachment', bytes: VaultCodec.base64ToBytes(entry.bytesBase64), vek: contentKey }])
     );
 
     /*
@@ -798,8 +794,7 @@ export class VaultSyncService {
      * the all-or-nothing gate, so another member's update to that folder can't fail an unrelated write.
      */
     const sharedRevisions = ((await storage.getItem(StorageKeys.SERVER_MANIFEST_REVISIONS)) as Record<string, number> | null) ?? {};
-    const rootBlobEntries = blobEntries;
-    const sharedBlobEntries = new Map<string, { bytes: Uint8Array; kind: 'favicon' | 'attachment'; vek: string }>();
+    const sharedBlobEntries = new Map<string, UploadBlobEntry>();
     const sharedManifestWrites: ManifestWriteDto[] = [];
     const writtenSharedFingerprints: Record<string, string> = {};
     for (const sharedVault of canonicalized.sharedVaults ?? []) {
@@ -893,12 +888,9 @@ export class VaultSyncService {
 
     devLog(`[V2Push] Blob diff: ${allBlobHashes.length} blobs across ${1 + sharedManifestWrites.length} manifest(s), uploading ${rootToUpload.length} root + ${sharedToUpload.length} shared${migrateToVaultKey ? ' (root re-encrypted, VEK migration)' : ''}.`);
 
-    /*
-     * Pre-upload the missing bytes so the write below carries references only. Root uses the content key; shared
-     * blobs use their own folder VEK (folded into each entry).
-     */
-    const uploadedCiphertexts = await this.uploadBlobs(webApi, rootBlobEntries, rootToUpload, contentKey, migrateToVaultKey);
-    const uploadedShared = await this.uploadBlobsMultiKey(webApi, sharedBlobEntries, sharedToUpload);
+    // Pre-upload the missing bytes so the write below carries references only; each staged entry carries its own key.
+    const uploadedCiphertexts = await this.uploadBlobs(webApi, rootBlobEntries, rootToUpload, migrateToVaultKey);
+    const uploadedShared = await this.uploadBlobs(webApi, sharedBlobEntries, sharedToUpload);
     for (const [hash, ciphertext] of uploadedShared) {
       uploadedCiphertexts.set(hash, ciphertext);
     }
@@ -932,7 +924,7 @@ export class VaultSyncService {
       encryptionPublicKey: '',
     };
 
-    let resp = await webApi.post<typeof payload, VaultWriteResponseDto>(UPLOAD_ENDPOINT, payload);
+    let resp = await webApi.post<typeof payload, VaultWriteResponseDto>(VAULT_ENDPOINT, payload);
 
     if (resp.missingBlobHashes && resp.missingBlobHashes.length > 0) {
       /*
@@ -946,16 +938,13 @@ export class VaultSyncService {
       }
 
       devWarn(`[V2Sync] Server reported ${resp.missingBlobHashes.length} missing blob(s); uploading and retrying once.`);
-      const retriedRoot = await this.uploadBlobs(webApi, rootBlobEntries, resp.missingBlobHashes.filter(h => rootBlobEntries.has(h)), contentKey, migrateToVaultKey);
-      const retriedShared = await this.uploadBlobsMultiKey(webApi, sharedBlobEntries, resp.missingBlobHashes.filter(h => sharedBlobEntries.has(h)));
-      for (const [hash, ciphertext] of retriedRoot) {
-        uploadedCiphertexts.set(hash, ciphertext);
-      }
-      for (const [hash, ciphertext] of retriedShared) {
+      const retriedRoot = await this.uploadBlobs(webApi, rootBlobEntries, resp.missingBlobHashes.filter(h => rootBlobEntries.has(h)), migrateToVaultKey);
+      const retriedShared = await this.uploadBlobs(webApi, sharedBlobEntries, resp.missingBlobHashes.filter(h => sharedBlobEntries.has(h)));
+      for (const [hash, ciphertext] of [...retriedRoot, ...retriedShared]) {
         uploadedCiphertexts.set(hash, ciphertext);
       }
 
-      resp = await webApi.post<typeof payload, VaultWriteResponseDto>(UPLOAD_ENDPOINT, payload);
+      resp = await webApi.post<typeof payload, VaultWriteResponseDto>(VAULT_ENDPOINT, payload);
       if (resp.missingBlobHashes && resp.missingBlobHashes.length > 0) {
         return { status: 'missing-blobs', newManifestRevision: currentManifestRevision, reasons: resp.missingBlobHashes };
       }
@@ -1093,10 +1082,6 @@ export class VaultSyncService {
    * @param mutationSequence - the current mutation sequence; the cached canonicalize result is handed to the push only while this sequence is unchanged
    */
   public async detectNoOpMutation(sqliteClient: SqliteClient, mutationSequence: number): Promise<boolean> {
-    if (!await VaultKeyService.hasLocalVaultKey()) {
-      return false;
-    }
-
     const canonicalizedSet = await this.canonicalizeVault(sqliteClient);
     canonicalizeCache = { client: sqliteClient, mutationSequence, ...canonicalizedSet };
 
@@ -1161,20 +1146,19 @@ export class VaultSyncService {
     devLog(`[V2Push] Bucket "${category}" (bucket-only): raw ${formatKb(plaintext.length)} → compressed ${formatKb(compressedBytes)} → encrypted ${formatKb(ciphertext.length)}.`);
 
     const webApi = new WebApiService();
-    const bucketEntry = { category, blob: ciphertext, ciphertextHash };
+    /** POST the single-bucket write with the given believed-current revision (called again on the rebase retry). */
+    const postBucket = (currentRevision: number): Promise<VaultWriteResponseDto> => webApi.post<Record<string, unknown>, VaultWriteResponseDto>(VAULT_ENDPOINT, {
+      username, manifests: [], buckets: [{ category, blob: ciphertext, ciphertextHash, currentRevision }], newBlobs: [], emailRouting: null, encryptionPublicKey: '',
+    });
 
     let currentRevision = (((await storage.getItem(bucketRevisionStorageKey(category))) as number | null) ?? 0);
-    let resp = await webApi.post<Record<string, unknown>, VaultWriteResponseDto>(UPLOAD_ENDPOINT, {
-      username, manifests: [], buckets: [{ ...bucketEntry, currentRevision }], newBlobs: [], emailRouting: null, encryptionPublicKey: '',
-    });
+    let resp = await postBucket(currentRevision);
 
     if (resp.status !== 0) {
       const serverRevision = (resp.bucketRevisions ?? []).find(b => b.category === category)?.revision ?? currentRevision;
       devWarn(`[V2Push] Bucket "${category}" outdated (server at revision ${serverRevision}, we assumed ${currentRevision}); rebasing and retrying once.`);
       currentRevision = serverRevision;
-      resp = await webApi.post<Record<string, unknown>, VaultWriteResponseDto>(UPLOAD_ENDPOINT, {
-        username, manifests: [], buckets: [{ ...bucketEntry, currentRevision }], newBlobs: [], emailRouting: null, encryptionPublicKey: '',
-      });
+      resp = await postBucket(currentRevision);
     }
 
     if (resp.status !== 0) {
@@ -1213,15 +1197,16 @@ export class VaultSyncService {
   }
 
   /**
-   * Encrypt + upload blobs that each carry their own VEK (shared-folder blobs, one folder VEK per entry) via
-   * POST /v2/Vault/blobs in size-capped batches. The `overwrite` flag is never needed here: shared-folder blobs
-   * keep their folder VEK across a root KEK/VEK migration, so their ciphertext is never re-keyed.
+   * Encrypt the given blobs (each staged with its own VEK: root VEK or a folder VEK) and upload them via
+   * POST /v2/Vault/blobs in size-capped batches. `overwrite` is set only for root blobs on a KEK/VEK migration;
+   * shared-folder blobs keep their folder VEK across a migration, so their ciphertext is never re-keyed.
    * @param webApi - API client to reuse
-   * @param entries - hash → { bytes, kind, vek } for every candidate blob
-   * @param hashes - the subset of hashes to upload (hashes without an entry are skipped)
+   * @param entries - hash → staged blob for every candidate (hashes without an entry are skipped)
+   * @param hashes - the subset of hashes to upload
+   * @param overwrite - ask the server to replace the ciphertext of blobs it already has (KEK/VEK migration)
    * @returns Map of hash → uploaded ciphertext (base64), for the local encrypted blob cache.
    */
-  private async uploadBlobsMultiKey(webApi: WebApiService, entries: Map<string, { bytes: Uint8Array; kind: 'favicon' | 'attachment'; vek: string }>, hashes: string[]): Promise<Map<string, string>> {
+  private async uploadBlobs(webApi: WebApiService, entries: Map<string, UploadBlobEntry>, hashes: string[], overwrite: boolean = false): Promise<Map<string, string>> {
     const ciphertexts = new Map<string, string>();
     if (hashes.length === 0) {
       return ciphertexts;
@@ -1237,57 +1222,11 @@ export class VaultSyncService {
 
       const ciphertext = await this.encryptBlobBytes(entry.bytes, entry.vek);
       ciphertexts.set(hash, ciphertext);
-      devLog(`[V2Push] Shared blob ${hash.substring(0, 12)}… (${entry.kind}): raw ${formatKb(entry.bytes.length)} → encrypted ${formatKb(ciphertext.length)}.`);
-
-      if (batch.length > 0 && batchChars + ciphertext.length > BLOB_UPLOAD_BATCH_MAX_CHARS) {
-        devLog(`[V2Push] Uploading shared blob batch: ${batch.length} blobs, ${formatKb(batchChars)}.`);
-        await webApi.post(BLOBS_UPLOAD_ENDPOINT, { blobs: batch, overwrite: false });
-        batch = [];
-        batchChars = 0;
-      }
-
-      batch.push({ hash, category: entry.kind, encryptedDataBase64: ciphertext });
-      batchChars += ciphertext.length;
-    }
-
-    if (batch.length > 0) {
-      devLog(`[V2Push] Uploading shared blob batch: ${batch.length} blobs, ${formatKb(batchChars)}.`);
-      await webApi.post(BLOBS_UPLOAD_ENDPOINT, { blobs: batch, overwrite: false });
-    }
-
-    return ciphertexts;
-  }
-
-  /**
-   * Encrypt the given blobs and upload them via POST /v2/Vault/blobs in size-capped batches.
-   * @param blobs - plaintext blob map keyed by content hash (source of the bytes)
-   * @param hashes - the subset of hashes to upload (hashes without an entry in `blobs` are skipped)
-   * @param vek - symmetric encryption key
-   * @param webApi - API client to reuse
-   * @param overwrite - ask the server to replace the ciphertext of blobs it already has (KEK/VEK migration)
-   * @returns Map of hash → uploaded ciphertext (base64), for the local encrypted blob cache.
-   */
-  private async uploadBlobs(webApi: WebApiService, blobs: Map<string, BlobEntry>, hashes: string[], vek: string, overwrite: boolean = false): Promise<Map<string, string>> {
-    const ciphertexts = new Map<string, string>();
-    if (hashes.length === 0) {
-      return ciphertexts;
-    }
-
-    let batch: BlobDto[] = [];
-    let batchChars = 0;
-    for (const hash of hashes) {
-      const entry = blobs.get(hash);
-      if (!entry) {
-        continue;
-      }
-
-      const ciphertext = await this.encryptBlobBytes(entry.bytes, vek);
-      ciphertexts.set(hash, ciphertext);
       devLog(`[V2Push] Blob ${hash.substring(0, 12)}… (${entry.kind}): raw ${formatKb(entry.bytes.length)} → encrypted ${formatKb(ciphertext.length)}.`);
 
       if (batch.length > 0 && batchChars + ciphertext.length > BLOB_UPLOAD_BATCH_MAX_CHARS) {
         devLog(`[V2Push] Uploading blob batch: ${batch.length} blobs, ${formatKb(batchChars)}.`);
-        await webApi.post(BLOBS_UPLOAD_ENDPOINT, { blobs: batch, overwrite });
+        await webApi.post(BLOBS_VAULT_ENDPOINT, { blobs: batch, overwrite });
         batch = [];
         batchChars = 0;
       }
@@ -1298,7 +1237,7 @@ export class VaultSyncService {
 
     if (batch.length > 0) {
       devLog(`[V2Push] Uploading blob batch: ${batch.length} blobs, ${formatKb(batchChars)}.`);
-      await webApi.post(BLOBS_UPLOAD_ENDPOINT, { blobs: batch, overwrite });
+      await webApi.post(BLOBS_VAULT_ENDPOINT, { blobs: batch, overwrite });
     }
 
     return ciphertexts;

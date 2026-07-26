@@ -35,7 +35,7 @@ const Reinitialize: React.FC = () => {
 
   // Auth and DB state
   const { isInitialized: authInitialized, isLoggedIn } = useApp();
-  const { dbInitialized, dbAvailable, refreshSyncState, hasPendingMigrations } = useDb();
+  const { dbInitialized, dbAvailable, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration } = useDb();
 
   // Derived state
   const isFullyInitialized = authInitialized && dbInitialized;
@@ -148,10 +148,16 @@ const Reinitialize: React.FC = () => {
         await refreshSyncState();
       },
       /**
-       * Handle upgrade required - redirect to upgrade page.
+       * Handle sqlite-blob legacy upgrade.
        */
-      onUpgradeRequired: () => {
+      onLegacySqliteBlobUpgradeRequired: () => {
         navigate('/upgrade', { replace: true });
+      },
+      /**
+       * Handle sqlite-blob to manifest-v1 migration.
+       */
+      onManifestMigrationRequired: () => {
+        navigate('/manifest-migration', { replace: true });
       },
       /**
        * Handle sync errors silently - user already has local vault.
@@ -192,10 +198,20 @@ const Reinitialize: React.FC = () => {
         return;
       }
 
-      // Check for pending migrations before navigating
-      if (await hasPendingMigrations()) {
+      /*
+       * Check both vault upgrade gates before navigating. Order matters: a pre-2.0.0 vault has to walk the
+       * sqlite-blob upgrade chain (/upgrade, user-confirmed) before it is eligible for the manifest migration
+       * (/manifest-migration, automatic). The apps queries assume the current schema, so rendering any other page 
+       * before running the migrations would throw on the missing columns.
+       */
+      if (await requiresLegacySqliteBlobMigration()) {
         setIsInitialLoading(false);
         navigate('/upgrade', { replace: true });
+        return;
+      }
+
+      if (await requiresManifestMigration()) {
+        navigate('/manifest-migration', { replace: true });
         return;
       }
 
@@ -222,7 +238,7 @@ const Reinitialize: React.FC = () => {
     };
 
     handleInitialization();
-  }, [isFullyInitialized, requiresAuth, isLoggedIn, dbAvailable, location.key, navigate, setIsInitialLoading, restoreLastPage, hasPendingMigrations, runBackgroundSync]);
+  }, [isFullyInitialized, requiresAuth, isLoggedIn, dbAvailable, location.key, navigate, setIsInitialLoading, restoreLastPage, requiresLegacySqliteBlobMigration, requiresManifestMigration, runBackgroundSync]);
 
   // This component doesn't render anything visible, it only handles initialization logic.
   return null;
