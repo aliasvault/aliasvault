@@ -4,8 +4,8 @@ import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 
-import { getAvailableLanguages } from '@/utils/dist/core/identity-generator';
 import { getLanguageInfo } from '@/utils/dist/core/models/defaults';
+import { getIdentityLanguages } from '@/utils/IdentityGeneratorUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
@@ -29,9 +29,7 @@ export default function IdentityGeneratorLanguageScreen(): React.ReactNode {
   const { executeVaultMutation } = useVaultMutate();
 
   const [language, setLanguage] = useState<string>('en');
-  const [languageOptions] = useState<string[]>(() =>
-    getAvailableLanguages().sort((a, b) => getLanguageInfo(a).label.localeCompare(getLanguageInfo(b).label))
-  );
+  const [languageOptions, setLanguageOptions] = useState<string[]>([]);
 
   // Store pending changes and initial values
   const pendingChanges = useRef<{ language?: string }>({});
@@ -44,7 +42,14 @@ export default function IdentityGeneratorLanguageScreen(): React.ReactNode {
        */
       const loadSettings = async (): Promise<void> => {
         try {
-          const currentLanguage = await dbContext.sqliteClient!.getEffectiveIdentityLanguage();
+          const [currentLanguage, availableLanguages] = await Promise.all([
+            dbContext.sqliteClient!.getEffectiveIdentityLanguage(),
+            getIdentityLanguages()
+          ]);
+
+          setLanguageOptions(
+            [...availableLanguages].sort((a, b) => getLanguageInfo(a).label.localeCompare(getLanguageInfo(b).label))
+          );
           setLanguage(currentLanguage);
           initialValue.current = currentLanguage;
           pendingChanges.current = {};

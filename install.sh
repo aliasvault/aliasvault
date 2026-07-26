@@ -2858,8 +2858,14 @@ set_deployment_mode() {
     update_env_var "DEPLOYMENT_MODE" "$mode" &>/dev/null
 }
 
-# Function to handle database export
-DEV_COMPOSE="docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev"
+# The dev database compose project is named per instance with its published
+# port (e.g. 'aliasvault-dev-5109'); derive that port from dev.env using the
+# same defaults as scripts/dev.sh so db-export/db-import target the right one.
+DEV_DB_PORT=$(
+    [ -f "dev.env" ] && . ./dev.env
+    echo $(( ${AV_BASE_PORT:-5100} + ${AV_INSTANCE:-0} * ${AV_PORT_STRIDE:-10} + 9 ))
+)
+DEV_COMPOSE="docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev-${DEV_DB_PORT}"
 
 # Configure db-export/db-import to talk to an external PostgreSQL server when configured in .env.
 setup_external_pg_client() {

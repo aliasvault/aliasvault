@@ -53,10 +53,8 @@ RUN mkdir -p ./apps/server/AliasVault.Client/wwwroot/wasm && \
     cp ./core/rust/dist/wasm/aliasvault_core_bg.wasm ./apps/server/AliasVault.Client/wwwroot/wasm/ && \
     cp ./core/rust/dist/wasm/aliasvault_core.js ./apps/server/AliasVault.Client/wwwroot/wasm/
 
-# Copy TypeScript core packages (identity-generator, vault) to Client wwwroot/js/dist/core/
-RUN mkdir -p ./apps/server/AliasVault.Client/wwwroot/js/dist/core/identity-generator && \
-    mkdir -p ./apps/server/AliasVault.Client/wwwroot/js/dist/core/vault && \
-    cp -r ./core/typescript/identity-generator/dist/* ./apps/server/AliasVault.Client/wwwroot/js/dist/core/identity-generator/ && \
+# Copy TypeScript core packages to Client wwwroot/js/dist/core/
+RUN mkdir -p ./apps/server/AliasVault.Client/wwwroot/js/dist/core/vault && \
     cp -r ./core/vault/dist/* ./apps/server/AliasVault.Client/wwwroot/js/dist/core/vault/
 
 # Install required .NET workloads and restore packages once for the entire solution

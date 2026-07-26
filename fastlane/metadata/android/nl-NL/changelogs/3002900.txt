@@ -1,0 +1,2 @@
+- Nieuwe "dupliceren" optie toegevoegd aan long-press item menu
+- Sortering aangepast om nu standaard nieuwste credentials eerst te tonen

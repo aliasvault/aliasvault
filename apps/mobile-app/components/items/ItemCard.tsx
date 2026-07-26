@@ -22,13 +22,15 @@ import { getFieldValue, FieldKey } from '@/utils/dist/core/models/vault';
 type ItemCardProps = {
   item: Item;
   onItemDelete?: (itemId: string) => Promise<void>;
+  onItemDuplicate?: (itemId: string) => Promise<void>;
   showFolderPath?: boolean;
+  isHighlighted?: boolean;
 };
 
 /**
  * Item card component for displaying vault items in a list.
  */
-export function ItemCard({ item, onItemDelete, showFolderPath = false }: ItemCardProps): React.ReactNode {
+export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath = false, isHighlighted = false }: ItemCardProps): React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
   const { showConfirm } = useDialog();
@@ -98,6 +100,11 @@ export function ItemCard({ item, onItemDelete, showFolderPath = false }: ItemCar
             params: { id: item.Id }
           });
         });
+        break;
+      case t('items.contextMenu.duplicate'):
+        if (onItemDuplicate) {
+          await onItemDuplicate(item.Id);
+        }
         break;
       case t('items.contextMenu.delete'):
         Keyboard.dismiss();
@@ -205,6 +212,14 @@ export function ItemCard({ item, onItemDelete, showFolderPath = false }: ItemCar
         }),
       },
       {
+        title: t('items.contextMenu.duplicate'),
+        systemIcon: Platform.select({
+          ios: 'plus.square.on.square',
+          android: 'baseline_content_copy',
+          default: 'plus.square.on.square',
+        }),
+      },
+      {
         title: t('items.contextMenu.delete'),
         systemIcon: Platform.select({
           ios: 'trash',
@@ -268,9 +283,14 @@ export function ItemCard({ item, onItemDelete, showFolderPath = false }: ItemCar
   const styles = StyleSheet.create({
     credentialCard: {
       backgroundColor: colors.accentBackground,
+      borderColor: 'transparent',
       borderRadius: 8,
+      borderWidth: 2,
       marginBottom: 8,
-      padding: 12,
+      padding: 10,
+    },
+    credentialCardHighlighted: {
+      borderColor: colors.primary,
     },
     itemContent: {
       alignItems: 'center',
@@ -317,7 +337,7 @@ export function ItemCard({ item, onItemDelete, showFolderPath = false }: ItemCar
       previewBackgroundColor={colors.accentBackground}
     >
         <TouchableOpacity
-          style={styles.credentialCard}
+          style={[styles.credentialCard, isHighlighted && styles.credentialCardHighlighted]}
           onPress={() => {
             navigate(() => {
               Keyboard.dismiss();

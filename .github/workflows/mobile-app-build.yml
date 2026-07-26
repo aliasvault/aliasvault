@@ -65,7 +65,6 @@ jobs:
         run: |
           # Check if files exist and were recently modified
           TARGET_DIRS=(
-            "utils/dist/core/identity-generator"
             "utils/dist/core/models"
             "utils/dist/core/vault"
           )

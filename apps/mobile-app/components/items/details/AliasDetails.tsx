@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import { IdentityHelperUtils } from '@/utils/dist/core/identity-generator';
+import { IdentityHelperUtils } from '@/utils/dist/core/models/identity';
 import type { Item } from '@/utils/dist/core/models/vault';
 import { getFieldValue, FieldKey } from '@/utils/dist/core/models/vault';
 

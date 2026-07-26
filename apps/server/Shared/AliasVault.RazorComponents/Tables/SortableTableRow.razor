@@ -1,4 +1,4 @@
-﻿<tr @onclick="HandleClick" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 @(OnClick.HasDelegate ? "cursor-pointer" : "") @(Class)">
+﻿<tr @onclick="HandleClick" @oncontextmenu="HandleContextMenu" @oncontextmenu:preventDefault="@OnContextMenu.HasDelegate" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 @(OnClick.HasDelegate ? "cursor-pointer" : "") @(Class)">
     @ChildContent
 </tr>
 
@@ -22,6 +22,13 @@
     public EventCallback OnClick { get; set; }
 
     /// <summary>
+    /// Gets or sets the callback to invoke when the row is right-clicked.
+    /// When set, the browser's default context menu is suppressed for this row.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnContextMenu { get; set; }
+
+    /// <summary>
     /// Handles the click event.
     /// </summary>
     private async Task HandleClick()
@@ -29,6 +36,17 @@
         if (OnClick.HasDelegate)
         {
             await OnClick.InvokeAsync();
+        }
+    }
+
+    /// <summary>
+    /// Handles the context menu (right-click) event.
+    /// </summary>
+    private async Task HandleContextMenu(MouseEventArgs e)
+    {
+        if (OnContextMenu.HasDelegate)
+        {
+            await OnContextMenu.InvokeAsync(e);
         }
     }
 }

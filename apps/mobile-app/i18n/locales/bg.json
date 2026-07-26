@@ -533,6 +533,7 @@
     "contextMenu": {
       "title": "Item Options",
       "edit": "Редактиране",
+      "duplicate": "Duplicate",
       "delete": "Изтриване",
       "copyUsername": "Copy Username",
       "copyEmail": "Copy Email",

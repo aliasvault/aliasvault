@@ -98,7 +98,7 @@
   </data>
   <!-- Buttons -->
   <data name="LoginButton" xml:space="preserve">
-    <value>Logáil isteach</value>
+    <value>Logáil Isteach</value>
     <comment>Login button text</comment>
   </data>
   <!-- Links -->

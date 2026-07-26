@@ -1313,6 +1313,73 @@ public class VaultManager: NSObject {
         resolve(languages)
     }
 
+    // MARK: - Identity Generator
+
+    /// Generate a random identity from a JSON-serialized request.
+    /// Returns the generated identity as a JSON string with camelCase fields.
+    @objc
+    func generateIdentity(_ requestJson: String,
+                          resolver resolve: @escaping RCTPromiseResolveBlock,
+                          rejecter reject: @escaping RCTPromiseRejectBlock) {
+        do {
+            let identityJson = try RustCoreFramework.generateIdentity(requestJson: requestJson)
+            resolve(identityJson)
+        } catch {
+            reject("IDENTITY_GENERATOR_ERROR", "Failed to generate identity: \(error.localizedDescription)", error)
+        }
+    }
+
+    /// Generate a username from a JSON-serialized name input (firstName, lastName, birthDate).
+    @objc
+    func generateIdentityUsername(_ inputJson: String,
+                                  resolver resolve: @escaping RCTPromiseResolveBlock,
+                                  rejecter reject: @escaping RCTPromiseRejectBlock) {
+        do {
+            let username = try RustCoreFramework.generateIdentityUsername(inputJson: inputJson)
+            resolve(username)
+        } catch {
+            reject("IDENTITY_GENERATOR_ERROR", "Failed to generate username: \(error.localizedDescription)", error)
+        }
+    }
+
+    /// Generate an email prefix from a JSON-serialized name input (firstName, lastName, birthDate).
+    @objc
+    func generateIdentityEmailPrefix(_ inputJson: String,
+                                     resolver resolve: @escaping RCTPromiseResolveBlock,
+                                     rejecter reject: @escaping RCTPromiseRejectBlock) {
+        do {
+            let emailPrefix = try RustCoreFramework.generateIdentityEmailPrefix(inputJson: inputJson)
+            resolve(emailPrefix)
+        } catch {
+            reject("IDENTITY_GENERATOR_ERROR", "Failed to generate email prefix: \(error.localizedDescription)", error)
+        }
+    }
+
+    /// Generate a random alphanumeric email prefix that is not based on any identity.
+    @objc
+    func generateRandomEmailPrefix(_ length: Double,
+                                   resolver resolve: @escaping RCTPromiseResolveBlock,
+                                   rejecter reject: @escaping RCTPromiseRejectBlock) {
+        let prefix = RustCoreFramework.generateRandomEmailPrefix(length: UInt32(length))
+        resolve(prefix)
+    }
+
+    /// List the bundled identity dictionary language codes.
+    @objc
+    func getIdentityLanguages(_ resolve: @escaping RCTPromiseResolveBlock,
+                              rejecter reject: @escaping RCTPromiseRejectBlock) {
+        let languages = RustCoreFramework.getIdentityLanguages()
+        resolve(languages)
+    }
+
+    /// List the identity age range option values ("random" plus 5-year ranges).
+    @objc
+    func getIdentityAgeRanges(_ resolve: @escaping RCTPromiseResolveBlock,
+                              rejecter reject: @escaping RCTPromiseRejectBlock) {
+        let ageRanges = RustCoreFramework.getIdentityAgeRanges()
+        resolve(ageRanges)
+    }
+
     // MARK: - SRP (Secure Remote Password) Operations
 
     /// Generate a cryptographic salt for SRP.

@@ -1968,4 +1968,102 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
             promise.reject("ERR_GET_DICEWARE_LANGUAGES", "Failed to get diceware languages: ${e.message}", e)
         }
     }
+
+    /**
+     * Generate a random identity from a JSON-serialized request.
+     * @param requestJson The JSON-serialized identity request (language, gender, ageRange).
+     * @param promise The promise to resolve with the identity as a JSON string.
+     */
+    @ReactMethod
+    override fun generateIdentity(requestJson: String, promise: Promise) {
+        try {
+            val identityJson = uniffi.aliasvault_core.generateIdentity(requestJson)
+            promise.resolve(identityJson)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error generating identity", e)
+            promise.reject("ERR_GENERATE_IDENTITY", "Failed to generate identity: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Generate a username from a JSON-serialized name input (firstName, lastName, birthDate).
+     * @param inputJson The JSON-serialized name input.
+     * @param promise The promise to resolve with the generated username.
+     */
+    @ReactMethod
+    override fun generateIdentityUsername(inputJson: String, promise: Promise) {
+        try {
+            val username = uniffi.aliasvault_core.generateIdentityUsername(inputJson)
+            promise.resolve(username)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error generating identity username", e)
+            promise.reject("ERR_GENERATE_IDENTITY_USERNAME", "Failed to generate username: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Generate an email prefix from a JSON-serialized name input (firstName, lastName, birthDate).
+     * @param inputJson The JSON-serialized name input.
+     * @param promise The promise to resolve with the generated email prefix.
+     */
+    @ReactMethod
+    override fun generateIdentityEmailPrefix(inputJson: String, promise: Promise) {
+        try {
+            val emailPrefix = uniffi.aliasvault_core.generateIdentityEmailPrefix(inputJson)
+            promise.resolve(emailPrefix)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error generating identity email prefix", e)
+            promise.reject("ERR_GENERATE_IDENTITY_EMAIL_PREFIX", "Failed to generate email prefix: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Generate a random alphanumeric email prefix that is not based on any identity.
+     * @param length The desired prefix length.
+     * @param promise The promise to resolve with the generated prefix.
+     */
+    @ReactMethod
+    override fun generateRandomEmailPrefix(length: Double, promise: Promise) {
+        try {
+            val prefix = uniffi.aliasvault_core.generateRandomEmailPrefix(length.toUInt())
+            promise.resolve(prefix)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error generating random email prefix", e)
+            promise.reject("ERR_GENERATE_RANDOM_EMAIL_PREFIX", "Failed to generate random email prefix: ${e.message}", e)
+        }
+    }
+
+    /**
+     * List the bundled identity dictionary language codes.
+     * @param promise The promise to resolve with the array of language codes.
+     */
+    @ReactMethod
+    override fun getIdentityLanguages(promise: Promise) {
+        try {
+            val languages = uniffi.aliasvault_core.getIdentityLanguages()
+            val result = Arguments.createArray()
+            languages.forEach { result.pushString(it) }
+            promise.resolve(result)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting identity languages", e)
+            promise.reject("ERR_GET_IDENTITY_LANGUAGES", "Failed to get identity languages: ${e.message}", e)
+        }
+    }
+
+    /**
+     * List the identity age range option values ("random" plus 5-year ranges).
+     * @param promise The promise to resolve with the array of age range values.
+     */
+    @ReactMethod
+    override fun getIdentityAgeRanges(promise: Promise) {
+        try {
+            val ageRanges = uniffi.aliasvault_core.getIdentityAgeRanges()
+            val result = Arguments.createArray()
+            ageRanges.forEach { result.pushString(it) }
+            promise.resolve(result)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting identity age ranges", e)
+            promise.reject("ERR_GET_IDENTITY_AGE_RANGES", "Failed to get identity age ranges: ${e.message}", e)
+        }
+    }
 }

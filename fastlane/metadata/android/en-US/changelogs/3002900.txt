@@ -1,0 +1,2 @@
+- Add new "duplicate credential" option to long-press item menu
+- Update default sort order to show newest credentials first

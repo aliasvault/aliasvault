@@ -51,6 +51,14 @@ Permanently deletes items in trash older than retention period (default: 30 days
 ### credential_matcher
 Priority-based credential filtering for autofill with anti-phishing protection.
 
+### password_generator
+Password and passphrase (Diceware) generation with embedded per-language wordlists.
+
+### identity_generator
+Random identity (alias persona) generation: names from embedded per-language dictionaries
+(decade-based for de/it/ro), birth date, email prefix and username. See
+`src/identity_generator/dictionaries/README.md` for the dictionary format.
+
 ## Building
 
 ```bash
@@ -363,6 +371,12 @@ pub fn my_function() -> VaultResult<String> {
 | `src/credential_matcher/mod.rs` | Autofill filtering algorithm |
 | `src/credential_matcher/domain.rs` | URL/domain extraction utilities |
 | `src/credential_matcher/stop_words.rs` | Text filtering for service name matching |
+| `src/password_generator/mod.rs` | Password/passphrase generation |
+| `src/password_generator/wordlists/` | Embedded Diceware wordlists |
+| `src/identity_generator/mod.rs` | Identity (alias persona) generation |
+| `src/identity_generator/username_email.rs` | Username and email prefix derivation |
+| `src/identity_generator/dictionaries/` | Embedded per-language name dictionaries |
+| `src/rng.rs` | Shared RNG helpers (seeding, unbiased sampling) |
 | `src/wasm.rs` | WASM bindings (browser) |
 | `src/uniffi_api.rs` | UniFFI bindings (iOS/Android) |
 | `src/ffi.rs` | C FFI bindings (.NET) |

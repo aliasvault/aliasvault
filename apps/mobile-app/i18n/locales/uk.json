@@ -533,6 +533,7 @@
     "contextMenu": {
       "title": "Item Options",
       "edit": "Редагувати",
+      "duplicate": "Duplicate",
       "delete": "Видалити",
       "copyUsername": "Копіювати ім'я користувача",
       "copyEmail": "Копіювати електронну адресу",

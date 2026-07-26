@@ -398,6 +398,132 @@ export class ItemRepository extends BaseRepository {
   }
 
   /**
+   * Duplicate an item including all fields except passkeys and field history.
+   * @param itemId - The ID of the item to duplicate
+   * @returns The ID of the newly created item
+   */
+  public async duplicate(itemId: string): Promise<string | null> {
+    return this.withTransaction(async () => {
+      const now = this.now();
+      const newItemId = this.generateId();
+
+      const sourceRows = await this.client.executeQuery<{ Name: string | null }>(
+        `SELECT Name FROM Items WHERE Id = ? AND IsDeleted = 0`,
+        [itemId]
+      );
+      if (sourceRows.length === 0) {
+        throw new Error(`Item not found: ${itemId}`);
+      }
+
+      const existingNames = await this.client.executeQuery<{ Name: string | null }>(
+        `SELECT Name FROM Items WHERE IsDeleted = 0 AND DeletedAt IS NULL`
+      );
+      const newName = ItemRepository.generateCopyName(
+        sourceRows[0].Name,
+        existingNames.map(row => row.Name)
+      );
+
+      // 1. Copy the item row itself (same logo, folder and type).
+      await this.client.executeUpdate(`
+        INSERT INTO Items (Id, Name, ItemType, LogoId, FolderId, CreatedAt, UpdatedAt, IsDeleted)
+        SELECT ?, ?, ItemType, LogoId, FolderId, ?, ?, 0 FROM Items WHERE Id = ?`,
+      [newItemId, newName, now, now, itemId]);
+
+      // 2. Copy custom field definitions so later edits to the duplicate's
+      // custom fields don't affect the original item.
+      const definitionRows = await this.client.executeQuery<{ Id: string }>(
+        `SELECT DISTINCT FieldDefinitionId as Id FROM FieldValues
+         WHERE ItemId = ? AND IsDeleted = 0 AND FieldDefinitionId IS NOT NULL`,
+        [itemId]
+      );
+      const definitionIdMap = new Map<string, string>();
+      for (const definition of definitionRows) {
+        const newDefinitionId = this.generateId();
+        definitionIdMap.set(definition.Id, newDefinitionId);
+        await this.client.executeUpdate(`
+          INSERT INTO FieldDefinitions (Id, FieldType, Label, IsMultiValue, IsHidden, EnableHistory, Weight, ApplicableToTypes, CreatedAt, UpdatedAt, IsDeleted)
+          SELECT ?, FieldType, Label, IsMultiValue, IsHidden, EnableHistory, Weight, ApplicableToTypes, ?, ?, 0 FROM FieldDefinitions WHERE Id = ?`,
+        [newDefinitionId, now, now, definition.Id]);
+      }
+
+      // 3. Copy field values, remapping custom fields to the copied definitions.
+      const fieldValueRows = await this.client.executeQuery<{ Id: string; FieldDefinitionId: string | null }>(
+        `SELECT Id, FieldDefinitionId FROM FieldValues WHERE ItemId = ? AND IsDeleted = 0`,
+        [itemId]
+      );
+      for (const row of fieldValueRows) {
+        await this.client.executeUpdate(`
+          INSERT INTO FieldValues (Id, ItemId, FieldDefinitionId, FieldKey, Value, Weight, CreatedAt, UpdatedAt, IsDeleted)
+          SELECT ?, ?, ?, FieldKey, Value, Weight, ?, ?, 0 FROM FieldValues WHERE Id = ?`,
+        [
+          this.generateId(),
+          newItemId,
+          row.FieldDefinitionId ? definitionIdMap.get(row.FieldDefinitionId) ?? null : null,
+          now,
+          now,
+          row.Id
+        ]);
+      }
+
+      // 4. Copy remaining child rows with fresh IDs.
+      const childCopies = [
+        {
+          table: 'TotpCodes',
+          sql: `INSERT INTO TotpCodes (Id, ItemId, Name, SecretKey, CreatedAt, UpdatedAt, IsDeleted)
+                SELECT ?, ?, Name, SecretKey, ?, ?, 0 FROM TotpCodes WHERE Id = ?`,
+        },
+        {
+          table: 'Attachments',
+          sql: `INSERT INTO Attachments (Id, ItemId, Filename, Blob, CreatedAt, UpdatedAt, IsDeleted)
+                SELECT ?, ?, Filename, Blob, ?, ?, 0 FROM Attachments WHERE Id = ?`,
+        },
+        {
+          table: 'ItemTags',
+          sql: `INSERT INTO ItemTags (Id, ItemId, TagId, CreatedAt, UpdatedAt, IsDeleted)
+                SELECT ?, ?, TagId, ?, ?, 0 FROM ItemTags WHERE Id = ?`,
+          optional: true,
+        },
+      ];
+
+      for (const copy of childCopies) {
+        if (copy.optional && !(await this.tableExists(copy.table))) {
+          continue;
+        }
+
+        const rows = await this.client.executeQuery<{ Id: string }>(
+          `SELECT Id FROM ${copy.table} WHERE ItemId = ? AND IsDeleted = 0`,
+          [itemId]
+        );
+        for (const row of rows) {
+          await this.client.executeUpdate(copy.sql, [this.generateId(), newItemId, now, now, row.Id]);
+        }
+      }
+
+      return newItemId;
+    });
+  }
+
+  /**
+   * Generate a unique name for a duplicated item: "Name (1)", "Name (2)", etc.
+   * If the source name already ends with a "(n)" suffix, the counter is incremented
+   * instead of stacking suffixes.
+   */
+  private static generateCopyName(sourceName: string | null, existingNames: (string | null)[]): string | null {
+    if (!sourceName) {
+      return sourceName;
+    }
+
+    const base = sourceName.replace(/ \(\d+\)$/, '');
+    const taken = new Set(existingNames.filter((name): name is string => name !== null));
+
+    let candidate = `${base} (1)`;
+    for (let counter = 2; taken.has(candidate); counter++) {
+      candidate = `${base} (${counter})`;
+    }
+    return candidate;
+  }
+
+  /**
    * Update an existing item with its fields and related entities.
    * @param item - The item to update
    * @param originalAttachmentIds - IDs of attachments that existed before edit

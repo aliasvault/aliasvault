@@ -533,6 +533,7 @@
     "contextMenu": {
       "title": "Valgmuligheder for element",
       "edit": "Rediger",
+      "duplicate": "Dupliker",
       "delete": "Slet",
       "copyUsername": "Kopier brugernavn",
       "copyEmail": "Kopier e-mail",

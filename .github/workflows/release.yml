@@ -1,19 +1,16 @@
 name: Release
 
+# Browser extension and mobile app release builds. Docker images are built by the separate
+# release-docker.yml workflow, which can target a self-hosted runner.
 on:
   release:
     types: [published]
   workflow_dispatch:
     inputs:
       version_tag:
-        description: 'Version tag for Docker images (e.g., 0.26.2). Auto-detected from release/* branch name if empty.'
+        description: 'Release version (e.g., 0.26.2). Auto-detected from release/* branch name if empty.'
         required: false
         type: string
-      tag_latest:
-        description: 'Also tag images as :latest'
-        required: false
-        default: false
-        type: boolean
       build_browser_extensions:
         description: 'Build browser extensions'
         required: false
@@ -21,16 +18,6 @@ on:
         type: boolean
       build_mobile_apps:
         description: 'Build mobile apps'
-        required: false
-        default: true
-        type: boolean
-      build_multi_container:
-        description: 'Build and push multi-container images'
-        required: false
-        default: true
-        type: boolean
-      build_all_in_one:
-        description: 'Build and push all-in-one image'
         required: false
         default: true
         type: boolean
@@ -67,9 +54,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.detect.outputs.version }}
-      tag_latest: ${{ steps.detect.outputs.tag_latest }}
-      all_in_one_exists: ${{ steps.check-images.outputs.all_in_one_exists }}
-      multi_container_exists: ${{ steps.check-images.outputs.multi_container_exists }}
       browser_extension_version_matches: ${{ steps.check-app-versions.outputs.browser_extension_matches }}
       mobile_app_version_matches: ${{ steps.check-app-versions.outputs.mobile_app_matches }}
       chrome_extension_asset_exists: ${{ steps.check-release-assets.outputs.chrome_extension_asset_exists }}
@@ -81,84 +65,15 @@ jobs:
         uses: actions/checkout@v6
         with:
           sparse-checkout: |
+            .github/actions/detect-release-version
             apps/browser-extension/package.json
             apps/mobile-app/app.json
 
       - name: Detect version
         id: detect
-        run: |
-          # Priority: 1) input version_tag, 2) release tag, 3) branch name pattern
-          if [ -n "${{ inputs.version_tag }}" ]; then
-            VERSION="${{ inputs.version_tag }}"
-            echo "Using input version_tag: $VERSION"
-          elif [ "${{ github.event_name }}" = "release" ]; then
-            VERSION="${{ github.event.release.tag_name }}"
-            echo "Using release tag: $VERSION"
-          elif [[ "${{ github.ref_name }}" =~ ^release/(.+)$ ]]; then
-            VERSION="${BASH_REMATCH[1]}"
-            echo "Extracted version from branch name: $VERSION"
-          else
-            VERSION=""
-            echo "No version detected, will use branch-based tags"
-          fi
-
-          # Normalize version: strip leading 'v' if present for consistent Docker tags
-          VERSION="${VERSION#v}"
-          echo "Normalized version: $VERSION"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-          # Determine if we should tag as latest
-          if [ "${{ github.event_name }}" = "release" ] && [ "${{ github.event.release.prerelease }}" = "false" ]; then
-            echo "tag_latest=true" >> $GITHUB_OUTPUT
-          elif [ "${{ inputs.tag_latest }}" = "true" ]; then
-            echo "tag_latest=true" >> $GITHUB_OUTPUT
-          else
-            echo "tag_latest=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
+        uses: ./.github/actions/detect-release-version
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Check if Docker images already exist
-        id: check-images
-        run: |
-          VERSION="${{ steps.detect.outputs.version }}"
-          if [ -z "$VERSION" ]; then
-            echo "all_in_one_exists=false" >> $GITHUB_OUTPUT
-            echo "multi_container_exists=false" >> $GITHUB_OUTPUT
-            echo "No version specified, images will be built"
-            exit 0
-          fi
-
-          # Check all-in-one image
-          if docker manifest inspect ghcr.io/aliasvault/aliasvault:${VERSION} > /dev/null 2>&1; then
-            echo "all_in_one_exists=true" >> $GITHUB_OUTPUT
-            echo "✅ All-in-one image ghcr.io/aliasvault/aliasvault:${VERSION} exists"
-          else
-            echo "all_in_one_exists=false" >> $GITHUB_OUTPUT
-            echo "❌ All-in-one image does not exist"
-          fi
-
-          # Check multi-container images (check a few key ones)
-          MULTI_IMAGES=(
-            "ghcr.io/aliasvault/api"
-            "ghcr.io/aliasvault/client"
-            "ghcr.io/aliasvault/admin"
-          )
-          MULTI_EXISTS=true
-          for IMAGE in "${MULTI_IMAGES[@]}"; do
-            if ! docker manifest inspect ${IMAGE}:${VERSION} > /dev/null 2>&1; then
-              echo "❌ Multi-container image ${IMAGE}:${VERSION} does not exist"
-              MULTI_EXISTS=false
-              break
-            fi
-            echo "✅ ${IMAGE}:${VERSION} exists"
-          done
-          echo "multi_container_exists=${MULTI_EXISTS}" >> $GITHUB_OUTPUT
+          version_tag: ${{ inputs.version_tag }}
 
       - name: Check app versions match release tag
         id: check-app-versions
@@ -352,235 +267,3 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-
-  build-and-push-docker-multi-container:
-    needs: [valid-release, detect-version]
-    # Skip if images already exist during release (just tag them as latest instead), but allow manual rebuild via workflow_dispatch
-    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container) && (github.event_name != 'release' || needs.detect-version.outputs.multi_container_exists != 'true')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    strategy:
-      # Don't cancel the other images if one fails.
-      fail-fast: false
-      # Cap at 2 concurrent runner slots: the heavy Client build (~55 min: Rust→WASM +
-      # wasm-tools + WASM publish) holds one slot while the remaining light images cycle
-      # through the second slot (~35-45 min total). This frees up the rest of the CI worker
-      # pool for other workflows.
-      max-parallel: 2
-      matrix:
-        # Client is listed first so it claims a slot immediately and runs alongside the rest of the images.
-        include:
-          - image: client
-            dockerfile: apps/server/AliasVault.Client/Dockerfile
-            title: AliasVault Client
-            description: Blazor WebAssembly client UI for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
-          - image: postgres
-            dockerfile: apps/server/Databases/AliasServerDb/Dockerfile
-            title: AliasVault PostgreSQL
-            description: PostgreSQL database for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
-          - image: api
-            dockerfile: apps/server/AliasVault.Api/Dockerfile
-            title: AliasVault API
-            description: REST API backend for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
-          - image: admin
-            dockerfile: apps/server/AliasVault.Admin/Dockerfile
-            title: AliasVault Admin
-            description: Admin portal for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
-          - image: reverse-proxy
-            dockerfile: apps/server/Dockerfile
-            title: AliasVault Reverse Proxy
-            description: Nginx reverse proxy for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
-          - image: smtp
-            dockerfile: apps/server/Services/AliasVault.SmtpService/Dockerfile
-            title: AliasVault SMTP Service
-            description: SMTP service for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
-          - image: task-runner
-            dockerfile: apps/server/Services/AliasVault.TaskRunner/Dockerfile
-            title: AliasVault TaskRunner
-            description: Background task runner for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
-          - image: installcli
-            dockerfile: apps/server/Utilities/AliasVault.InstallCli/Dockerfile
-            title: AliasVault Install CLI
-            description: Installation and configuration CLI for AliasVault. Used by install.sh for setup and configuration, not deployed as part of the application stack
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v6
-        env:
-          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
-        with:
-          images: ghcr.io/aliasvault/${{ matrix.image }}
-          tags: |
-            type=raw,value=${{ needs.detect-version.outputs.version }},enable=${{ needs.detect-version.outputs.version != '' }}
-            type=raw,value=latest,enable=${{ needs.detect-version.outputs.tag_latest == 'true' }}
-            type=ref,event=branch,enable=${{ needs.detect-version.outputs.version == '' }}
-            type=raw,value={{branch}}-{{sha}},enable=${{ needs.detect-version.outputs.version == '' }}
-          labels: |
-            org.opencontainers.image.title=${{ matrix.title }}
-            org.opencontainers.image.description=${{ matrix.description }}
-          annotations: |
-            org.opencontainers.image.description=${{ matrix.description }}
-
-      - name: Build and push image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: ${{ matrix.dockerfile }}
-          platforms: linux/amd64,linux/arm64/v8
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          annotations: ${{ steps.meta.outputs.annotations }}
-
-  build-and-push-docker-all-in-one:
-    needs: [valid-release, detect-version]
-    # Skip if images already exist during release (just tag them as latest instead), but allow manual rebuild via workflow_dispatch
-    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_all_in_one) && (github.event_name != 'release' || needs.detect-version.outputs.all_in_one_exists != 'true')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      # Free up disk space of unused tools on the GitHub runner as the all-in-one build consumes a lot of disk space.
-      - name: Free up disk space
-        run: |
-          echo "Disk before cleanup:"
-          df -h /
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
-          sudo rm -rf /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
-          sudo docker image prune --all --force || true
-          echo "Disk after cleanup:"
-          df -h /
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v4
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Extract metadata for all-in-one image
-        id: meta
-        uses: docker/metadata-action@v6
-        env:
-          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
-        with:
-          images: |
-            ghcr.io/aliasvault/aliasvault
-            aliasvault/aliasvault
-          tags: |
-            type=raw,value=${{ needs.detect-version.outputs.version }},enable=${{ needs.detect-version.outputs.version != '' }}
-            type=raw,value=latest,enable=${{ needs.detect-version.outputs.tag_latest == 'true' }}
-            type=ref,event=branch,enable=${{ needs.detect-version.outputs.version == '' }}
-            type=raw,value={{branch}}-{{sha}},enable=${{ needs.detect-version.outputs.version == '' }}
-          labels: |
-            org.opencontainers.image.title=AliasVault All-in-One
-            org.opencontainers.image.description=Self-contained AliasVault server including web app, with all services bundled using s6-overlay. Single container solution for easy deployment (see docs.aliasvault.com).
-          annotations: |
-            org.opencontainers.image.description=Self-contained AliasVault server including web app, with all services bundled using s6-overlay. Single container solution for easy deployment (see docs.aliasvault.com).
-
-      - name: Build and push all-in-one image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: dockerfiles/all-in-one/Dockerfile
-          platforms: linux/amd64,linux/arm64/v8
-          # Mark this as the official published image (local builds default to "aio-build").
-          build-args: |
-            DEPLOYMENT_MODE=aio
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          annotations: ${{ steps.meta.outputs.annotations }}
-
-  # Tag existing images as :latest without rebuilding (for release events when images already exist)
-  tag-docker-images-latest:
-    needs: [valid-release, detect-version]
-    if: github.event_name == 'release' && needs.valid-release.result == 'success' && needs.detect-version.outputs.tag_latest == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v4
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Tag all-in-one images as latest
-        if: needs.detect-version.outputs.all_in_one_exists == 'true'
-        run: |
-          VERSION="${{ needs.detect-version.outputs.version }}"
-          echo "Tagging ghcr.io/aliasvault/aliasvault:${VERSION} as latest..."
-          docker buildx imagetools create -t ghcr.io/aliasvault/aliasvault:latest ghcr.io/aliasvault/aliasvault:${VERSION}
-          docker buildx imagetools create -t aliasvault/aliasvault:latest aliasvault/aliasvault:${VERSION}
-
-      - name: Tag multi-container images as latest
-        if: needs.detect-version.outputs.multi_container_exists == 'true'
-        run: |
-          VERSION="${{ needs.detect-version.outputs.version }}"
-          IMAGES=(
-            "ghcr.io/aliasvault/postgres"
-            "ghcr.io/aliasvault/api"
-            "ghcr.io/aliasvault/client"
-            "ghcr.io/aliasvault/admin"
-            "ghcr.io/aliasvault/reverse-proxy"
-            "ghcr.io/aliasvault/smtp"
-            "ghcr.io/aliasvault/task-runner"
-            "ghcr.io/aliasvault/installcli"
-          )
-          for IMAGE in "${IMAGES[@]}"; do
-            if docker manifest inspect ${IMAGE}:${VERSION} > /dev/null 2>&1; then
-              echo "Tagging ${IMAGE}:${VERSION} as latest..."
-              docker buildx imagetools create -t ${IMAGE}:latest ${IMAGE}:${VERSION}
-            else
-              echo "⚠️ Skipping ${IMAGE}:${VERSION} (does not exist)"
-            fi
-          done

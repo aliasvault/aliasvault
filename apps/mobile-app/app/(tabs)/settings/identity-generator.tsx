@@ -4,8 +4,8 @@ import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 
-import { getAvailableAgeRanges, IAgeRangeOption } from '@/utils/dist/core/identity-generator';
 import { getLanguageInfo } from '@/utils/dist/core/models/defaults';
+import { getIdentityAgeRanges } from '@/utils/IdentityGeneratorUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
@@ -30,7 +30,7 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
   const [language, setLanguage] = useState<string>('en');
   const [gender, setGender] = useState<string>('random');
   const [ageRange, setAgeRange] = useState<string>('random');
-  const [ageRangeOptions] = useState<IAgeRangeOption[]>(() => getAvailableAgeRanges());
+  const [ageRangeOptions, setAgeRangeOptions] = useState<string[]>([]);
 
   // Store pending changes and initial values (language is managed in subview)
   const pendingChanges = useRef<{ gender?: string; ageRange?: string }>({});
@@ -49,11 +49,14 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
        */
       const loadSettings = async (): Promise<void> => {
         try {
-          const [currentLanguage, currentGender, currentAgeRange] = await Promise.all([
+          const [currentLanguage, currentGender, currentAgeRange, availableAgeRanges] = await Promise.all([
             dbContext.sqliteClient!.getEffectiveIdentityLanguage(),
             dbContext.sqliteClient!.getDefaultIdentityGender(),
-            dbContext.sqliteClient!.getDefaultIdentityAgeRange()
+            dbContext.sqliteClient!.getDefaultIdentityAgeRange(),
+            getIdentityAgeRanges()
           ]);
+
+          setAgeRangeOptions(availableAgeRanges);
 
           setLanguage(currentLanguage);
           setGender(currentGender);
@@ -252,17 +255,17 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
         <View style={styles.optionContainer}>
           {ageRangeOptions.map((option, index) => {
             const isLast = index === ageRangeOptions.length - 1;
-            const displayLabel = option.value === 'random'
+            const displayLabel = option === 'random'
               ? t('settings.identityGeneratorSettings.genderOptions.random')
-              : option.label;
+              : option;
             return (
               <TouchableOpacity
-                key={option.value}
+                key={option}
                 style={[styles.option, isLast && styles.optionLast]}
-                onPress={() => handleAgeRangeChange(option.value)}
+                onPress={() => handleAgeRangeChange(option)}
               >
                 <ThemedText style={styles.optionText}>{displayLabel}</ThemedText>
-                {ageRange === option.value && (
+                {ageRange === option && (
                   <Ionicons name="checkmark" size={20} style={styles.selectedIcon} />
                 )}
               </TouchableOpacity>

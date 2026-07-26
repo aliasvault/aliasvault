@@ -345,6 +345,32 @@
     [vaultManager getDicewareLanguages:resolve rejecter:reject];
 }
 
+// MARK: - Identity Generator
+
+- (void)generateIdentity:(NSString *)requestJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager generateIdentity:requestJson resolver:resolve rejecter:reject];
+}
+
+- (void)generateIdentityUsername:(NSString *)inputJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager generateIdentityUsername:inputJson resolver:resolve rejecter:reject];
+}
+
+- (void)generateIdentityEmailPrefix:(NSString *)inputJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager generateIdentityEmailPrefix:inputJson resolver:resolve rejecter:reject];
+}
+
+- (void)generateRandomEmailPrefix:(double)length resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager generateRandomEmailPrefix:length resolver:resolve rejecter:reject];
+}
+
+- (void)getIdentityLanguages:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getIdentityLanguages:resolve rejecter:reject];
+}
+
+- (void)getIdentityAgeRanges:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getIdentityAgeRanges:resolve rejecter:reject];
+}
+
 // MARK: - SRP (Secure Remote Password) Operations
 
 - (void)srpGenerateSalt:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {

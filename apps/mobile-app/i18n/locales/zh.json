@@ -533,6 +533,7 @@
     "contextMenu": {
       "title": "项目选项",
       "edit": "编辑",
+      "duplicate": "创建副本",
       "delete": "删除",
       "copyUsername": "复制用户名",
       "copyEmail": "复制邮箱",

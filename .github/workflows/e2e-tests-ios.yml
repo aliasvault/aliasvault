@@ -78,7 +78,6 @@ jobs:
       - name: Verify core library distribution
         run: |
           TARGET_DIRS=(
-            "utils/dist/core/identity-generator"
             "utils/dist/core/models"
             "utils/dist/core/vault"
           )

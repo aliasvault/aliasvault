@@ -39,7 +39,7 @@
     }
   },
   "auth": {
-    "login": "Logáil isteach",
+    "login": "Logáil Isteach",
     "logout": "Logáil Amach",
     "username": "Ainm úsáideora nó ríomhphost",
     "password": "Pasfhocal",
@@ -533,6 +533,7 @@
     "contextMenu": {
       "title": "Roghanna Míre",
       "edit": "Cuir in Eagar",
+      "duplicate": "Dúblach",
       "delete": "Scrios",
       "copyUsername": "Cóipeáil Ainm Úsáideora",
       "copyEmail": "Cóipeáil Ríomhphoist",

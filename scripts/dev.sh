@@ -103,10 +103,11 @@ EXPO_PORT=$((   BLOCK_BASE + 4 ))
 # remember. Offsets 5..8 are left free as spare slots inside the block.
 DB_PORT=$((     BLOCK_BASE + 9 ))
 
-# Always one dev DB container, named 'aliasvault-dev'. AV_INSTANCE only shifts
-# the published port (above), not the container identity — so install.sh and any
-# other tooling can find it by a single, stable project name.
-DB_PROJECT="aliasvault-dev"
+# One dev DB container per instance, with the published port in the project
+# name (e.g. 'aliasvault-dev-5109') so multiple instances can run side by side
+# without start/stop/status checks hitting another instance's database.
+# install.sh derives the same name from dev.env for its db-export/db-import.
+DB_PROJECT="aliasvault-dev-$DB_PORT"
 DB_COMPOSE="$ROOT_DIR/dockerfiles/docker-compose.dev.yml"
 CONN_STR="Host=localhost;Port=$DB_PORT;Database=aliasvault;Username=aliasvault;Password=password;Maximum Pool Size=20;Minimum Pool Size=1"
 

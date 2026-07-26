@@ -18,8 +18,8 @@
 
     @if (IsOpen)
     {
-        <div class="fixed inset-0 z-10 bg-black bg-opacity-50" @onclick="CloseMenu"></div>
-        <div class="absolute bottom-full left-0 right-0 mb-1 z-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden max-h-64 overflow-y-auto">
+        <div class="fixed inset-0 z-40 bg-black bg-opacity-50" @onclick="CloseMenu"></div>
+        <div class="absolute bottom-full left-0 right-0 mb-1 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden max-h-64 overflow-y-auto">
             @* Optional system fields that are not currently visible *@
             @foreach (var field in OptionalSystemFields.Where(f => !VisibleFieldKeys.Contains(f.FieldKey)))
             {

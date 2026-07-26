@@ -146,6 +146,22 @@
     <value>编辑</value>
     <comment>Button text for editing an item</comment>
   </data>
+  <data name="Duplicate" xml:space="preserve">
+    <value>创建副本</value>
+    <comment>Button text for duplicating an item</comment>
+  </data>
+  <data name="DuplicateSuccessMessage" xml:space="preserve">
+    <value>项目创建副本成功。</value>
+    <comment>Success message shown after duplicating an item</comment>
+  </data>
+  <data name="DuplicateErrorMessage" xml:space="preserve">
+    <value>项目创建副本失败。</value>
+    <comment>Error message shown when duplicating an item failed</comment>
+  </data>
+  <data name="ItemOptions" xml:space="preserve">
+    <value>项目选项</value>
+    <comment>Accessible label for the ellipsis button that opens the item context menu</comment>
+  </data>
   <data name="Show" xml:space="preserve">
     <value>显示</value>
     <comment>Button text for showing content</comment>

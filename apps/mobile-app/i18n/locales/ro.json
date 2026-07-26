@@ -533,6 +533,7 @@
     "contextMenu": {
       "title": "Opțiuni element",
       "edit": "Editează",
+      "duplicate": "Duplicate",
       "delete": "Șterge",
       "copyUsername": "Copiază utilizatorul",
       "copyEmail": "Copiază e-mailul",

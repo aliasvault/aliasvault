@@ -72,7 +72,8 @@ pwsh apps/server/Tests/AliasVault.E2ETests/bin/Debug/net10.0/playwright.ps1 inst
 ## Troubleshooting
 
 - **Database**: check it's up with `docker ps | grep postgres-dev`, view logs with
-  `docker logs aliasvault-dev-postgres-dev-1`, or restart with
+  `docker logs aliasvault-dev-5109-postgres-dev-1` (the container name includes the
+  instance's DB port), or restart with
   `./scripts/dev.sh db-stop && ./scripts/dev.sh db-start`.
 - **Port conflicts**: run `./scripts/dev.sh ports` to see what's in use. If a port is
   taken, bump `AV_INSTANCE` in `dev.env` to shift the whole block.

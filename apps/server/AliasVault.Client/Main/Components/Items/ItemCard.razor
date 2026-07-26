@@ -3,8 +3,12 @@
 @inject NavigationManager NavigationManager
 
 @* ItemCard component - displays an item in a card format with appropriate icon and information *@
-<div @onclick="ShowDetails" class="credential-card overflow-hidden p-4 space-y-2 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700
+<div @onclick="ShowDetails" @oncontextmenu="OpenContextMenu" @oncontextmenu:preventDefault="true"
+     class="credential-card relative group p-4 space-y-2 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700
  dark:bg-gray-800 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200">
+    <div class="absolute top-2 right-2">
+        <ItemContextMenu @ref="_contextMenu" ItemId="@Obj.Id" ItemName="@Obj.Service" OnMutated="OnMutated" />
+    </div>
     <div class="px-4 py-2 text-gray-400 rounded text-center flex flex-col items-center">
         <div class="mb-2">
             <ItemIcon
@@ -60,6 +64,22 @@
     /// </summary>
     [Parameter]
     public bool ShowFolderPath { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback raised after the item was mutated via the context menu (duplicated or deleted).
+    /// </summary>
+    [Parameter]
+    public EventCallback OnMutated { get; set; }
+
+    private ItemContextMenu? _contextMenu;
+
+    /// <summary>
+    /// Opens the item context menu at the right-click position on the card.
+    /// </summary>
+    private void OpenContextMenu(MouseEventArgs e)
+    {
+        _contextMenu?.Open(e);
+    }
 
     /// <summary>
     /// Gets the display text for the item, showing username by default,

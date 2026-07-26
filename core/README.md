@@ -13,6 +13,8 @@ This folder contains core modules that are used by multiple applications in the 
 Currently implements:
 - **merge** - Merges two SQLite vault databases using Last-Write-Wins (LWW) strategy
 - **credential_matcher** - Cross-platform credential filtering for autofill
+- **password_generator** - Password and passphrase (Diceware) generation
+- **identity_generator** - Random identity (alias persona) generation with per-language name dictionaries
 
 See [rust/README.md](rust/README.md) for detailed documentation.
 
@@ -31,12 +33,3 @@ Vault database schema and SQL utilities for:
 - Mobile apps (React Native)
 - Web client (Blazor)
 
-## typescript/ (Legacy)
-
-Legacy TypeScript implementations that may be migrated to Rust in the future:
-
-### typescript/identity-generator
-
-TypeScript identity generator used by:
-- Browser extension (React and custom TypeScript)
-- Mobile apps (React Native)

@@ -108,8 +108,14 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
   }, [applyChange]);
 
   const styles = useMemo(() => StyleSheet.create({
-    chip: {
+    card: {
       backgroundColor: colors.accentBackground,
+      borderRadius: 10,
+      marginBottom: 16,
+      paddingHorizontal: 16,
+    },
+    chip: {
+      backgroundColor: colors.background,
       borderColor: colors.accentBorder,
       borderRadius: 6,
       borderWidth: 1,
@@ -186,6 +192,10 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
       borderLeftWidth: 1,
       padding: 10,
     },
+    rowDivider: {
+      borderTopColor: colors.accentBorder,
+      borderTopWidth: StyleSheet.hairlineWidth,
+    },
     sectionLabel: {
       color: colors.textMuted,
       fontSize: 13,
@@ -207,6 +217,7 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
     },
     sliderSection: {
       marginBottom: 8,
+      paddingTop: 12,
     },
     sliderValue: {
       color: colors.primary,
@@ -216,19 +227,19 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
     },
     tab: {
       alignItems: 'center',
-      borderBottomColor: 'transparent',
-      borderBottomWidth: 2,
+      borderRadius: 7,
       flex: 1,
-      paddingVertical: 12,
+      paddingVertical: 8,
     },
     tabActive: {
-      borderBottomColor: colors.primary,
+      backgroundColor: colors.primary,
     },
     tabRow: {
-      borderBottomColor: colors.accentBorder,
-      borderBottomWidth: StyleSheet.hairlineWidth,
+      backgroundColor: colors.accentBackground,
+      borderRadius: 10,
       flexDirection: 'row',
       marginBottom: 16,
+      padding: 4,
     },
     tabText: {
       color: colors.textMuted,
@@ -236,7 +247,7 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
       fontWeight: '500',
     },
     tabTextActive: {
-      color: colors.primary,
+      color: colors.primarySurfaceText,
     },
     toggleRow: {
       alignItems: 'center',
@@ -245,7 +256,7 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
       paddingVertical: 10,
     },
     valuePill: {
-      backgroundColor: colors.accentBackground,
+      backgroundColor: colors.background,
       borderColor: colors.accentBorder,
       borderRadius: 6,
       borderWidth: 1,
@@ -268,7 +279,7 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
     value: string,
     onCycle: () => void
   ): React.ReactNode => (
-    <View style={styles.optionRow}>
+    <View style={[styles.optionRow, styles.rowDivider]}>
       <ThemedText style={styles.sliderLabel}>{label}</ThemedText>
       <TouchableOpacity style={styles.valuePill} onPress={onCycle} activeOpacity={0.7}>
         <ThemedText style={styles.valuePillText}>
@@ -310,7 +321,7 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
       </View>
 
       {!isDiceware ? (
-        <View>
+        <View style={styles.card}>
           {/* Length slider. */}
           <View style={styles.sliderSection}>
             <View style={styles.sliderHeader}>
@@ -337,7 +348,7 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
             ['UseSpecialChars', t('items.includeSpecialChars')],
             ['UseNonAmbiguousChars', t('items.avoidAmbiguousChars')],
           ] as [keyof PasswordSettings, string][]).map(([key, label]) => (
-            <View key={key} style={styles.toggleRow}>
+            <View key={key} style={[styles.toggleRow, styles.rowDivider]}>
               <ThemedText style={styles.sliderLabel}>{label}</ThemedText>
               <TouchableOpacity
                 style={[styles.chip, settings[key] ? styles.chipActive : null]}
@@ -352,7 +363,7 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
           ))}
         </View>
       ) : (
-        <View>
+        <View style={styles.card}>
           {/* Word count slider. */}
           <View style={styles.sliderSection}>
             <View style={styles.sliderHeader}>
@@ -393,7 +404,7 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
 
           {/* Language row. */}
           <TouchableOpacity
-            style={styles.languageRow}
+            style={[styles.languageRow, styles.rowDivider]}
             onPress={() => setShowLanguageModal(true)}
             activeOpacity={0.7}
           >

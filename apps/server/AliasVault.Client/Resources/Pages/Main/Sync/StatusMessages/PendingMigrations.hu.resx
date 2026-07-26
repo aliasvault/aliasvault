@@ -63,7 +63,7 @@
     <comment>Title for vault upgrade process</comment>
   </data>
   <data name="UpgradeDescription" xml:space="preserve">
-    <value>AliasVault has been updated and your vault needs to be upgraded. This should only take a few seconds.</value>
+    <value>Az AliasVault frissült, ezért a széfjének is frissülnie kell. Ez csak egy pár másodpercet vesz majd igénybe.</value>
     <comment>Description of vault upgrade process</comment>
   </data>
   <data name="VersionInformationTitle" xml:space="preserve">
@@ -71,7 +71,7 @@
     <comment>Title for version information section</comment>
   </data>
   <data name="UpgradeRequiredDescription" xml:space="preserve">
-    <value>An upgrade is required to support the following changes: {0}</value>
+    <value>A következő változások miatt frissítés szükséges: {0}</value>
     <comment>Description of upgrade requirements with changes placeholder</comment>
   </data>
   <data name="NoDescriptionAvailable" xml:space="preserve">
@@ -87,19 +87,19 @@
     <comment>Label for new vault version</comment>
   </data>
   <data name="StartUpgradeButton" xml:space="preserve">
-    <value>Start upgrade process</value>
+    <value>Frissítési folyamat megkezdése</value>
     <comment>Button text to start the upgrade process</comment>
   </data>
   <data name="UpgradeSuccessMessage" xml:space="preserve">
-    <value>Vault upgrade successful.</value>
+    <value>Sikeres széf frissítés.</value>
     <comment>Success message after successful vault upgrade</comment>
   </data>
   <data name="UpgradeSuccessButSaveFailedError" xml:space="preserve">
-    <value>Database upgrade successful but failed to save to server. Please try again or contact support.</value>
+    <value>Az adatbázis frissítés sikeres volt, de nem sikerült a szerverre menteni. Kérem, próbálja meg újra, vagy vegye fel a kapcsolatot az ügyfélszolgálattal.</value>
     <comment>Error message when upgrade succeeds but save fails</comment>
   </data>
   <data name="UpgradeFailedError" xml:space="preserve">
-    <value>Database upgrade failed. Please try again or contact support.</value>
+    <value>Sikertelen adatbázis frissítés. Próbálja meg újra, vagy vegye fel a kapcsolatot az ügyfélszolgálattal.</value>
     <comment>Error message when upgrade fails</comment>
   </data>
 </root>

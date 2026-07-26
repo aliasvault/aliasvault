@@ -533,6 +533,7 @@
     "contextMenu": {
       "title": "Item Options",
       "edit": "Ubah",
+      "duplicate": "Duplicate",
       "delete": "Hapus",
       "copyUsername": "Copy Username",
       "copyEmail": "Copy Email",

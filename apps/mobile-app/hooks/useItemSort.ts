@@ -46,10 +46,10 @@ export interface UseItemSortReturn {
  * Hook to manage item sorting state and logic.
  * Can be used by both the main items screen and folder view.
  *
- * @param initialSortOrder - Optional initial sort order (default: 'OldestFirst')
+ * @param initialSortOrder - Optional initial sort order (default: 'NewestFirst')
  * @returns Sort state and functions
  */
-export function useItemSort(initialSortOrder: CredentialSortOrder = 'OldestFirst'): UseItemSortReturn {
+export function useItemSort(initialSortOrder: CredentialSortOrder = 'NewestFirst'): UseItemSortReturn {
   const [sortOrder, setSortOrder] = useState<CredentialSortOrder>(initialSortOrder);
   const [showSortMenu, setShowSortMenu] = useState(false);
 

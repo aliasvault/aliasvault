@@ -196,8 +196,8 @@
       "exportDescription": "Biztonsági okokból kérem adja meg a mester jelszót az exportálás engedélyezéséhez."
     },
     "security": "Biztonság",
-    "appVersion": "App version",
-    "serverVersion": "Server version",
+    "appVersion": "App verzió",
+    "serverVersion": "Szerver verzió",
     "autoLockOptions": {
       "never": "Soha",
       "5seconds": "5 másodperc",
@@ -533,6 +533,7 @@
     "contextMenu": {
       "title": "Elem opciók",
       "edit": "Szerkesztés",
+      "duplicate": "Duplicate",
       "delete": "Törlés",
       "copyUsername": "Felhasználónév másolása",
       "copyEmail": "E-mail másolása",

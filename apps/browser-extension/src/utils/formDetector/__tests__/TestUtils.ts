@@ -4,7 +4,7 @@ import { join } from 'path';
 import { JSDOM, DOMWindow } from 'jsdom';
 import { it, expect, vi } from 'vitest';
 
-import { Gender } from '@/utils/dist/core/identity-generator';
+import { Gender } from '@/utils/dist/core/models/identity';
 import type { Credential } from '@/utils/dist/core/models/vault';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { FormFields } from '@/utils/formDetector/types/FormFields';

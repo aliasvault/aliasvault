@@ -11,6 +11,7 @@
 import { browser } from 'wxt/browser';
 
 import { resolveDefaultLanguage } from '@/utils/dist/core/models/defaults';
+import type { Identity } from '@/utils/dist/core/models/identity';
 import type { Item, PasswordSettings } from '@/utils/dist/core/models/vault';
 import { FieldKey } from '@/utils/dist/core/models/vault';
 import initWasm, * as core from '@/utils/dist/core/rust/aliasvault_core.js';
@@ -97,6 +98,80 @@ export async function getDicewareLanguages(): Promise<string[]> {
   await initRustCore();
   const languages = core.getDicewareLanguages() as string[];
   return languages.length > 0 ? languages : ['en'];
+}
+
+/**
+ * Request for {@link generateIdentity}. All fields except `language` are optional.
+ */
+export type IdentityRequest = {
+  /** Dictionary language code (e.g. 'en'); unknown codes fall back to English. */
+  language: string;
+  /** Gender preference: 'male', 'female' or 'random' (default). */
+  gender?: string;
+  /** Age range preference as stored in settings (e.g. '21-25' or 'random'). */
+  ageRange?: string;
+};
+
+/**
+ * Name and birth date input for identity-based username/email prefix generation.
+ */
+export type IdentityNameInput = {
+  firstName: string;
+  lastName: string;
+  /** Birth date; only the leading yyyy year part is used. */
+  birthDate: string;
+};
+
+/**
+ * Generate a random identity (alias persona) in the Rust core.
+ * Returns the identity with a yyyy-MM-dd birth date string.
+ */
+export async function generateIdentity(request: IdentityRequest): Promise<Identity> {
+  await initRustCore();
+  return JSON.parse(core.generateIdentity(JSON.stringify(request))) as Identity;
+}
+
+/**
+ * Generate a username from persona name fields (alphanumeric, 6-20 characters).
+ */
+export async function generateIdentityUsername(input: IdentityNameInput): Promise<string> {
+  await initRustCore();
+  return core.generateIdentityUsername(JSON.stringify(input));
+}
+
+/**
+ * Generate an email prefix from persona name fields (6-20 characters).
+ */
+export async function generateIdentityEmailPrefix(input: IdentityNameInput): Promise<string> {
+  await initRustCore();
+  return core.generateIdentityEmailPrefix(JSON.stringify(input));
+}
+
+/**
+ * Generate a random alphanumeric email prefix that is not based on any identity.
+ * Used for login-type credentials where no persona fields are available.
+ */
+export async function generateRandomEmailPrefix(length: number = 14): Promise<string> {
+  await initRustCore();
+  return core.generateRandomEmailPrefix(length);
+}
+
+/**
+ * Get the list of bundled identity dictionary language ISO codes.
+ * The set is owned by the Rust core; unknown codes fall back to English during generation.
+ */
+export async function getIdentityLanguages(): Promise<string[]> {
+  await initRustCore();
+  const languages = core.getIdentityLanguages() as string[];
+  return languages.length > 0 ? languages : ['en'];
+}
+
+/**
+ * Get the list of identity age range option values ('random' plus 5-year ranges).
+ */
+export async function getIdentityAgeRanges(): Promise<string[]> {
+  await initRustCore();
+  return core.getIdentityAgeRanges() as string[];
 }
 
 /**

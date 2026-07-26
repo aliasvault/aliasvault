@@ -140,7 +140,8 @@ else
                 Credentials="@FilteredAndSortedItems.ToList()"
                 SortColumn="@TableSortColumn"
                 CurrentSortDirection="@TableSortDirection"
-                OnTableSortChanged="HandleTableSortChanged" />
+                OnTableSortChanged="HandleTableSortChanged"
+                OnMutated="LoadItemsAsync" />
         }
         else
         {
@@ -197,7 +198,7 @@ else
                 }
                 @foreach (var item in FilteredAndSortedItems)
                 {
-                    <ItemCard @key="item.Id" Obj="@item" ShowFolderPath="@IsSearching" />
+                    <ItemCard @key="item.Id" Obj="@item" ShowFolderPath="@IsSearching" OnMutated="LoadItemsAsync" />
                 }
             </div>
         }
@@ -450,7 +451,7 @@ else
     /// <summary>
     /// Gets or sets the current table sort direction (for table view column header sorting).
     /// </summary>
-    private SortDirection TableSortDirection { get; set; } = SortDirection.Ascending;
+    private SortDirection TableSortDirection { get; set; } = SortDirection.Descending;
 
     /// <summary>
     /// Gets whether we're currently in a folder view.

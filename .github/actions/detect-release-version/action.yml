@@ -1,0 +1,62 @@
+name: "Detect Release Version"
+description: "Resolves the release version and whether to tag :latest, from the workflow input, release tag, or release/* branch name"
+inputs:
+  version_tag:
+    description: "Explicit version (e.g. 0.26.2). Auto-detected from the release tag or release/* branch name if empty."
+    required: false
+    default: ""
+  tag_latest:
+    description: "Force tagging as :latest. Published non-prerelease releases always tag latest."
+    required: false
+    default: "false"
+
+outputs:
+  version:
+    description: "Version without a leading 'v'. Empty when none could be detected."
+    value: ${{ steps.detect.outputs.version }}
+  tag_latest:
+    description: "Whether images should also be tagged :latest"
+    value: ${{ steps.detect.outputs.tag_latest }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Detect version
+      id: detect
+      shell: bash
+      env:
+        INPUT_VERSION_TAG: ${{ inputs.version_tag }}
+        INPUT_TAG_LATEST: ${{ inputs.tag_latest }}
+        EVENT_NAME: ${{ github.event_name }}
+        RELEASE_TAG: ${{ github.event.release.tag_name }}
+        RELEASE_PRERELEASE: ${{ github.event.release.prerelease }}
+        REF_NAME: ${{ github.ref_name }}
+      run: |
+        # Priority: 1) input version_tag, 2) release tag, 3) branch name pattern
+        if [ -n "$INPUT_VERSION_TAG" ]; then
+          VERSION="$INPUT_VERSION_TAG"
+          echo "Using input version_tag: $VERSION"
+        elif [ "$EVENT_NAME" = "release" ]; then
+          VERSION="$RELEASE_TAG"
+          echo "Using release tag: $VERSION"
+        elif [[ "$REF_NAME" =~ ^release/(.+)$ ]]; then
+          VERSION="${BASH_REMATCH[1]}"
+          echo "Extracted version from branch name: $VERSION"
+        else
+          VERSION=""
+          echo "No version detected, will use branch-based tags"
+        fi
+
+        # Normalize version: strip leading 'v' if present for consistent Docker tags
+        VERSION="${VERSION#v}"
+        echo "Normalized version: $VERSION"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+        # Determine if we should tag as latest
+        if [ "$EVENT_NAME" = "release" ] && [ "$RELEASE_PRERELEASE" = "false" ]; then
+          echo "tag_latest=true" >> $GITHUB_OUTPUT
+        elif [ "$INPUT_TAG_LATEST" = "true" ]; then
+          echo "tag_latest=true" >> $GITHUB_OUTPUT
+        else
+          echo "tag_latest=false" >> $GITHUB_OUTPUT
+        fi

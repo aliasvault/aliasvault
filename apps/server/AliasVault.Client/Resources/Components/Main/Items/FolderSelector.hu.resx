@@ -20,7 +20,7 @@
     </xsd:element>
   </xsd:schema>
   <data name="NoFolder">
-    <value>No folder</value>
+    <value>Nincs kiválasztott mappa</value>
     <comment>Text shown when no folder is selected</comment>
   </data>
   <data name="SelectFolderTitle">
@@ -28,11 +28,11 @@
     <comment>Title of the folder selection modal</comment>
   </data>
   <data name="NoFoldersAvailable">
-    <value>No folders available. Create a folder from the vault home page.</value>
+    <value>Nincs elérhető mappa. Hozzon létre egy mappát a széf főoldalon.</value>
     <comment>Message shown when no folders exist</comment>
   </data>
   <data name="MaxDepth">
-    <value>max depth</value>
+    <value>max alkönyvtárszám</value>
     <comment>Label shown for folders at maximum nesting depth</comment>
   </data>
 </root>

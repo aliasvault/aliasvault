@@ -533,6 +533,7 @@
     "contextMenu": {
       "title": "Item Options",
       "edit": "ترمیم کریں",
+      "duplicate": "Duplicate",
       "delete": "ڈیلیٹ کریں",
       "copyUsername": "Copy Username",
       "copyEmail": "Copy Email",

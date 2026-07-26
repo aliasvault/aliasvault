@@ -146,6 +146,22 @@
     <value>Bewerken</value>
     <comment>Button text for editing an item</comment>
   </data>
+  <data name="Duplicate" xml:space="preserve">
+    <value>Dupliceren</value>
+    <comment>Button text for duplicating an item</comment>
+  </data>
+  <data name="DuplicateSuccessMessage" xml:space="preserve">
+    <value>Item succesvol gedupliceerd.</value>
+    <comment>Success message shown after duplicating an item</comment>
+  </data>
+  <data name="DuplicateErrorMessage" xml:space="preserve">
+    <value>Item dupliceren mislukt.</value>
+    <comment>Error message shown when duplicating an item failed</comment>
+  </data>
+  <data name="ItemOptions" xml:space="preserve">
+    <value>Item opties</value>
+    <comment>Accessible label for the ellipsis button that opens the item context menu</comment>
+  </data>
   <data name="Show" xml:space="preserve">
     <value>Toon</value>
     <comment>Button text for showing content</comment>

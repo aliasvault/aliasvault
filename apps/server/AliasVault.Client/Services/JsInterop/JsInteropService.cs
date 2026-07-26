@@ -26,21 +26,14 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
 
     private readonly string _cacheBuster = AppInfo.GetFullVersion();
 
-    private IJSObjectReference? _identityGeneratorModule;
     private IJSObjectReference? _vaultSqlInteropModule;
 
     /// <summary>
-    /// Initialize the identity generator module.
+    /// Initialize the vault SQL generator module.
     /// </summary>
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task InitializeAsync()
     {
-        _identityGeneratorModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/core/identity-generator/index.mjs?v={_cacheBuster}");
-        if (_identityGeneratorModule == null)
-        {
-            throw new InvalidOperationException("Failed to initialize identity generator module");
-        }
-
         _vaultSqlInteropModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/core/vault/index.mjs?v={_cacheBuster}");
         if (_vaultSqlInteropModule == null)
         {
@@ -425,19 +418,14 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     }
 
     /// <summary>
-    /// Gets all available languages for identity generation.
+    /// Gets all available languages for identity generation from the Rust core.
     /// </summary>
     /// <returns>Array of language options.</returns>
     public async Task<List<LanguageOption>> GetAvailableIdentityGeneratorLanguagesAsync()
     {
         try
         {
-            if (_identityGeneratorModule == null)
-            {
-                await InitializeAsync();
-            }
-
-            var codes = await _identityGeneratorModule!.InvokeAsync<List<string>>("getAvailableLanguages");
+            var codes = await jsRuntime.InvokeAsync<List<string>>("rustCoreGetIdentityLanguages");
             if (codes == null)
             {
                 return new List<LanguageOption>();
@@ -461,20 +449,26 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     }
 
     /// <summary>
-    /// Gets all available age range options from the shared JavaScript utility.
+    /// Gets all available age range options from the Rust core.
     /// </summary>
     /// <returns>Array of age range options.</returns>
     public async Task<List<AgeRangeOption>> GetAvailableIdentityGeneratorAgeRangesAsync()
     {
         try
         {
-            if (_identityGeneratorModule == null)
+            var values = await jsRuntime.InvokeAsync<List<string>>("rustCoreGetIdentityAgeRanges");
+            if (values == null)
             {
-                await InitializeAsync();
+                return new List<AgeRangeOption>();
             }
 
-            var result = await _identityGeneratorModule!.InvokeAsync<List<AgeRangeOption>>("getAvailableAgeRanges");
-            return result ?? new List<AgeRangeOption>();
+            return values
+                .Select(value => new AgeRangeOption
+                {
+                    Value = value,
+                    Label = value == "random" ? "Random" : value,
+                })
+                .ToList();
         }
         catch (JSException ex)
         {
@@ -498,12 +492,7 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
                 return null;
             }
 
-            if (_identityGeneratorModule == null)
-            {
-                await InitializeAsync();
-            }
-
-            var codes = await _identityGeneratorModule!.InvokeAsync<List<string>>("getAvailableLanguages");
+            var codes = await jsRuntime.InvokeAsync<List<string>>("rustCoreGetIdentityLanguages");
             if (codes == null || codes.Count == 0)
             {
                 return null;
@@ -519,57 +508,24 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     }
 
     /// <summary>
-    /// Converts an age range string to birthdate options using the shared JavaScript utility.
-    /// </summary>
-    /// <param name="ageRange">Age range string (e.g., "21-25", "30-35", or "random").</param>
-    /// <returns>Birthdate options object or null if random.</returns>
-    public async Task<object?> ConvertAgeRangeToBirthdateOptionsAsync(string ageRange)
-    {
-        try
-        {
-            if (_identityGeneratorModule == null)
-            {
-                await InitializeAsync();
-            }
-
-            var result = await _identityGeneratorModule!.InvokeAsync<object?>("convertAgeRangeToBirthdateOptions", ageRange);
-            return result;
-        }
-        catch (JSException ex)
-        {
-            await Console.Error.WriteLineAsync($"JavaScript error converting age range: {ex.Message}");
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Generates a random identity using the specified language.
+    /// Generates a random identity using the Rust core.
     /// </summary>
     /// <param name="language">The language to use for generating the identity (e.g. "en", "nl", "de").</param>
     /// <param name="gender">The gender preference for generating the identity (defaults to "random").</param>
-    /// <param name="birthdateOptions">Optional birthdate options (targetYear and yearDeviation).</param>
+    /// <param name="ageRange">Optional age range preference (e.g. "21-25" or "random").</param>
     /// <returns>An AliasVaultIdentity containing the generated identity information.</returns>
-    public async Task<AliasVaultIdentity> GenerateRandomIdentityAsync(string language, string? gender = null, object? birthdateOptions = null)
+    public async Task<AliasVaultIdentity> GenerateRandomIdentityAsync(string language, string? gender = null, string? ageRange = null)
     {
         try
         {
-            if (_identityGeneratorModule == null)
+            var request = new
             {
-                await InitializeAsync();
-            }
+                language,
+                gender = string.IsNullOrEmpty(gender) ? "random" : gender,
+                ageRange = ageRange ?? string.Empty,
+            };
 
-            var generatorInstance = await _identityGeneratorModule!.InvokeAsync<IJSObjectReference>("CreateIdentityGenerator", language);
-
-            // Use "random" as default if gender is null or empty
-            var genderValue = "random";
-            if (!string.IsNullOrEmpty(gender))
-            {
-                genderValue = gender;
-            }
-
-            var result = await generatorInstance.InvokeAsync<AliasVaultIdentity>("generateRandomIdentity", genderValue, birthdateOptions);
-
-            return result;
+            return await jsRuntime.InvokeAsync<AliasVaultIdentity>("rustCoreGenerateIdentity", JsonSerializer.Serialize(request));
         }
         catch (JSException ex)
         {
@@ -579,7 +535,7 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     }
 
     /// <summary>
-    /// Generates a random username.
+    /// Generates a random username based on an identity's name fields.
     /// </summary>
     /// <param name="identity">The identity to use for generating the username.</param>
     /// <returns>The generated username.</returns>
@@ -587,14 +543,7 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     {
         try
         {
-            if (_identityGeneratorModule == null)
-            {
-                await InitializeAsync();
-            }
-
-            var generatorInstance = await _identityGeneratorModule!.InvokeAsync<IJSObjectReference>("CreateUsernameEmailGenerator");
-            var result = await generatorInstance.InvokeAsync<string>("generateUsername", identity);
-            return result;
+            return await jsRuntime.InvokeAsync<string>("rustCoreGenerateIdentityUsername", identity);
         }
         catch (JSException ex)
         {
@@ -613,14 +562,7 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     {
         try
         {
-            if (_identityGeneratorModule == null)
-            {
-                await InitializeAsync();
-            }
-
-            var generatorInstance = await _identityGeneratorModule!.InvokeAsync<IJSObjectReference>("CreateUsernameEmailGenerator");
-            var result = await generatorInstance.InvokeAsync<string>("generateRandomEmailPrefix");
-            return result;
+            return await jsRuntime.InvokeAsync<string>("rustCoreGenerateRandomEmailPrefix", 14);
         }
         catch (JSException ex)
         {
@@ -638,14 +580,7 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     {
         try
         {
-            if (_identityGeneratorModule == null)
-            {
-                await InitializeAsync();
-            }
-
-            var generatorInstance = await _identityGeneratorModule!.InvokeAsync<IJSObjectReference>("CreateUsernameEmailGenerator");
-            var result = await generatorInstance.InvokeAsync<string>("generateEmailPrefix", identity);
-            return result;
+            return await jsRuntime.InvokeAsync<string>("rustCoreGenerateIdentityEmailPrefix", identity);
         }
         catch (JSException ex)
         {
@@ -707,14 +642,14 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
 
         var vaultGenerator = await _vaultSqlInteropModule!.InvokeAsync<IJSObjectReference>(_VAULT_SQL_GENERATOR_FACTORY_FUNCTION);
         var result = await vaultGenerator.InvokeAsync<JsonElement>("getAllVersions");
-        return result.EnumerateArray().Select(x => new SqlVaultVersion
+        return [.. result.EnumerateArray().Select(x => new SqlVaultVersion
         {
             Revision = x.GetProperty("revision").GetInt32(),
             Version = x.GetProperty("version").GetString() ?? string.Empty,
             Description = x.GetProperty("description").GetString() ?? string.Empty,
             ReleaseVersion = x.GetProperty("releaseVersion").GetString() ?? string.Empty,
             CompatibleUpToVersion = x.GetProperty("compatibleUpToVersion").GetString() ?? string.Empty,
-        }).ToList();
+        })];
     }
 
     /// <summary>
