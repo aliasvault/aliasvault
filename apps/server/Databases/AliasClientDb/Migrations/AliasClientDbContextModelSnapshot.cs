@@ -361,8 +361,19 @@ namespace AliasClientDb.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("favicon");
+
                     b.Property<string>("MimeType")
                         .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(255)
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("SharedFolderId")
@@ -378,7 +389,7 @@ namespace AliasClientDb.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SharedFolderId", "Source")
+                    b.HasIndex("SharedFolderId", "Kind", "Source")
                         .IsUnique();
 
                     b.ToTable("Logos");

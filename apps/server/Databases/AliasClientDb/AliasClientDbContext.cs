@@ -184,12 +184,17 @@ public class AliasClientDbContext : DbContext
             .HasForeignKey(f => f.ParentFolderId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Configure Logo unique index on (SharedFolderId, Source): a logo belongs to exactly one
-        // manifest, so the same domain may appear once in the personal vault (SharedFolderId NULL)
-        // and once per shared folder. See core/rust/src/vault_codec/logos.rs.
+        // Configure Logo unique index on (SharedFolderId, Kind, Source): an icon belongs to exactly one
+        // manifest, so the same natural key may appear once in the personal vault (SharedFolderId NULL)
+        // and once per shared folder.
         modelBuilder.Entity<Logo>()
-            .HasIndex(l => new { l.SharedFolderId, l.Source })
+            .HasIndex(l => new { l.SharedFolderId, l.Kind, l.Source })
             .IsUnique();
+
+        // Kind defaults to 'favicon' for legacy reasons and backwards compatibility.
+        modelBuilder.Entity<Logo>()
+            .Property(l => l.Kind)
+            .HasDefaultValue(Logo.KindFavicon);
 
         // Configure FieldValue - Item relationship
         modelBuilder.Entity<FieldValue>()

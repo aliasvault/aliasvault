@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AliasClientDb.Migrations
 {
     [DbContext(typeof(AliasClientDbContext))]
-    [Migration("20260725190132_2.2.0-ScopeLogosPerManifest")]
-    partial class _220ScopeLogosPerManifest
+    [Migration("20260726141537_2.1.0-CodecOverflowsAndItemIcons")]
+    partial class _210CodecOverflowsAndItemIcons
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -364,8 +364,19 @@ namespace AliasClientDb.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("favicon");
+
                     b.Property<string>("MimeType")
                         .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(255)
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("SharedFolderId")
@@ -381,7 +392,7 @@ namespace AliasClientDb.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SharedFolderId", "Source")
+                    b.HasIndex("SharedFolderId", "Kind", "Source")
                         .IsUnique();
 
                     b.ToTable("Logos");
