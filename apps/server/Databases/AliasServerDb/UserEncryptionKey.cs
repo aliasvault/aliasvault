@@ -11,6 +11,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 /// <summary>
 /// UserEncryptionKey object. This object is used for storing user public keys for encryption.
+/// <para>
+/// A row can be either personal (VaultManifestId is null) or folder-scoped (VaultManifestId is set).
+/// Personal private keys live in the user's EncryptionKeys data bucket, folder-scoped private keys live in the shared folder's manifest.
+/// </para>
 /// </summary>
 public class UserEncryptionKey
 {
@@ -33,6 +37,17 @@ public class UserEncryptionKey
     public virtual AliasVaultUser User { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the shared-folder manifest this key belongs to, or null when it is the user's own personal key.
+    /// </summary>
+    public Guid? VaultManifestId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the navigation property to the shared-folder manifest, when this key is folder-scoped.
+    /// </summary>
+    [ForeignKey("VaultManifestId")]
+    public virtual VaultManifest? VaultManifest { get; set; }
+
+    /// <summary>
     /// Gets or sets the public key.
     /// </summary>
     [StringLength(2000)]
@@ -40,6 +55,7 @@ public class UserEncryptionKey
 
     /// <summary>
     /// Gets or sets a value indicating whether this public key is the primary key to use by default.
+    /// Primary is scoped to VaultManifestId: a user has one primary personal key plus one primary key per shared folder they participate in.
     /// </summary>
     public bool IsPrimary { get; set; }
 

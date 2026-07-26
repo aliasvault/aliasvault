@@ -6,27 +6,18 @@
 //-----------------------------------------------------------------------
 namespace AliasServerDb;
 
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
-/// A small, independently-syncable user-scoped data bucket. Each bucket holds one kind of data
-/// that we deliberately keep OUT of the main vault content manifest so it can sync separately and faster.
+/// The current revision of a small, independently-syncable user-scoped data bucket. Each bucket holds one kind of
+/// data that we deliberately keep out of the main vault content manifest so it can sync separately and faster.
 /// </summary>
-public class VaultDataBucket
+public class VaultDataBucket : VaultDataBucketBase
 {
     /// <summary>
-    /// Gets or sets the per-revision primary key. Each row is one revision of the (OwnerUserId, Category) bucket;
-    /// the highest <see cref="RevisionNumber"/> for a given (OwnerUserId, Category) is the current one.
+    /// Gets or sets the user ID foreign key. Part of the composite primary key (OwnerUserId, Category).
     /// </summary>
-    [Key]
-    public Guid RevisionId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the user ID foreign key.
-    /// </summary>
-    [StringLength(255)]
     public string OwnerUserId { get; set; } = null!;
 
     /// <summary>
@@ -36,33 +27,7 @@ public class VaultDataBucket
     public virtual AliasVaultUser User { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the bucket category/kind (e.g. Settings).
+    /// Gets or sets the bucket category/kind (e.g. Settings). Part of the composite primary key.
     /// </summary>
     public required VaultDataBucketCategory Category { get; set; }
-
-    /// <summary>
-    /// Gets or sets the encrypted bucket payload (AES-GCM ciphertext, base64-encoded).
-    /// </summary>
-    public required string EncryptedData { get; set; }
-
-    /// <summary>
-    /// Gets or sets the revision number of this bucket.
-    /// </summary>
-    public required long RevisionNumber { get; set; }
-
-    /// <summary>
-    /// Gets or sets the SHA-256 (hex) of the encrypted ciphertext for storage-layer integrity check.
-    /// </summary>
-    [StringLength(64)]
-    public string? CiphertextHash { get; set; }
-
-    /// <summary>
-    /// Gets or sets the created timestamp.
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// Gets or sets the updated timestamp.
-    /// </summary>
-    public DateTime UpdatedAt { get; set; }
 }

@@ -160,6 +160,12 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<VaultDataBucket> VaultDataBuckets { get; set; }
 
     /// <summary>
+    /// Gets or sets the VaultDataBucketsHistory DbSet. Superseded bucket revisions kept for backup/rollback,
+    /// pruned by the bucket retention policy.
+    /// </summary>
+    public DbSet<VaultDataBucketsHistory> VaultDataBucketsHistory { get; set; }
+
+    /// <summary>
     /// Gets or sets the VaultBlobObjects DbSet. These represent encrypted blobs referenced by one or more vault revisions.
     /// </summary>
     public DbSet<VaultBlobObject> VaultBlobObjects { get; set; }
@@ -353,15 +359,27 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             .HasForeignKey(m => m.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Configure VaultDataBucket - Id PK with a revision history per (UserId, Kind).
+        // Configure VaultDataBucket - the current revision of each (user, category) bucket, updated in place.
         modelBuilder.Entity<VaultDataBucket>(builder =>
         {
-            builder.HasKey(e => e.RevisionId);
+            builder.HasKey(e => new { e.OwnerUserId, e.Category });
+            builder.Property(e => e.OwnerUserId).HasMaxLength(255);
             builder.Property(e => e.Category).HasConversion<string>().HasMaxLength(50);
-            builder.HasIndex(e => new { e.OwnerUserId, e.Category, e.RevisionNumber }).IsUnique();
             builder.HasOne(e => e.User)
                 .WithMany()
                 .HasForeignKey(e => e.OwnerUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure VaultDataBucketsHistory - superseded bucket revisions, pruned by the bucket retention policy.
+        modelBuilder.Entity<VaultDataBucketsHistory>(builder =>
+        {
+            builder.HasKey(e => new { e.OwnerUserId, e.Category, e.RevisionNumber });
+            builder.Property(e => e.OwnerUserId).HasMaxLength(255);
+            builder.Property(e => e.Category).HasConversion<string>().HasMaxLength(50);
+            builder.HasOne(e => e.Bucket)
+                .WithMany()
+                .HasForeignKey(e => new { e.OwnerUserId, e.Category })
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
