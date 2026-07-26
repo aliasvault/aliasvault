@@ -448,7 +448,7 @@
     "includeSpecialChars": "Carachtair Speisialta (!@#)",
     "avoidAmbiguousChars": "Seachain Carachtair Débhríocha",
     "passwordTypeBasic": "Pasfhocal",
-    "passwordTypeDiceware": "Pasfhocal",
+    "passwordTypeDiceware": "Pas frása",
     "passphraseLanguage": "Teanga pasfhrása",
     "wordCount": "Focail",
     "capitalization": "Caipitliú",
