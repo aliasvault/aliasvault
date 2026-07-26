@@ -42,6 +42,7 @@
     "notice": "Notice",
     "error": "Error",
     "cancel": "Cancel",
+    "retry": "Try again",
     "confirm": "Confirm",
     "remove": "Remove",
     "back": "Back",
@@ -594,6 +595,11 @@
       "upgradeFailed": "Upgrade Failed",
       "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})"
     }
+  },
+  "manifestMigration": {
+    "migrating": "Automatically migrating your vault to the new data model. This should only take a few seconds...",
+    "failedTitle": "Vault Migration Failed",
+    "failedDescription": "Your vault could not be migrated to the new data model. Your existing data is untouched. Please try again, or log out and log back in. If the problem persists, please contact support."
   },
   "logout": {
     "unsyncedChangesTitle": "Unsynced Changes",
