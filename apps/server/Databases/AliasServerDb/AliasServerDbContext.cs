@@ -352,6 +352,27 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             .HasForeignKey(l => l.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<UserEncryptionKey>(builder =>
+        {
+            // A folder-scoped key is removed when its manifest is removed; a personal key (null manifest) is unaffected.
+            builder.HasOne(k => k.VaultManifest)
+                .WithMany()
+                .HasForeignKey(k => k.VaultManifestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Delivery resolves the primary key for a scope on every inbound mail, so index the lookup.
+            builder.HasIndex(k => new { k.UserId, k.VaultManifestId, k.IsPrimary });
+        });
+
+        // Configure UserEmailClaim - UserEncryptionKey relationship. Restrict rather than cascade: an
+        // email claim outlives its key on purpose (claims are retained to prevent address re-use), so a
+        // key must be re-pointed or nulled before it can be removed.
+        modelBuilder.Entity<UserEmailClaim>()
+            .HasOne(c => c.EncryptionKey)
+            .WithMany()
+            .HasForeignKey(c => c.EncryptionKeyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Configure MobileLoginRequest - AliasVaultUser relationship
         modelBuilder.Entity<MobileLoginRequest>()
             .HasOne(m => m.User)

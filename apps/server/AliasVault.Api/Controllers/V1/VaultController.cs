@@ -547,9 +547,8 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
     /// <returns>A task representing the asynchronous operation.</returns>
     private async Task UpdateUserPublicKey(AliasServerDbContext context, string userId, string newPublicKey)
     {
-        // Get all existing user public keys.
         var publicKeyExists = await context.UserEncryptionKeys
-            .AnyAsync(x => x.UserId == userId && x.IsPrimary && x.PublicKey == newPublicKey);
+            .AnyAsync(x => x.UserId == userId && x.VaultManifestId == null && x.IsPrimary && x.PublicKey == newPublicKey);
 
         // If the public key already exists and is marked as primary (default), do nothing.
         if (publicKeyExists)
@@ -557,9 +556,9 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             return;
         }
 
-        // Update all existing keys to not be primary.
+        // Update all existing personal keys to not be primary.
         var otherKeys = await context.UserEncryptionKeys
-            .Where(x => x.UserId == userId)
+            .Where(x => x.UserId == userId && x.VaultManifestId == null)
             .ToListAsync();
 
         foreach (var key in otherKeys)
@@ -570,7 +569,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
 
         // Check if the new public key already exists but is not marked as primary.
         var existingPublicKey = await context.UserEncryptionKeys
-            .FirstOrDefaultAsync(x => x.UserId == userId && x.PublicKey == newPublicKey);
+            .FirstOrDefaultAsync(x => x.UserId == userId && x.VaultManifestId == null && x.PublicKey == newPublicKey);
 
         if (existingPublicKey is not null)
         {

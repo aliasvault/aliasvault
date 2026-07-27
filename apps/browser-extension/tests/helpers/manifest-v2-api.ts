@@ -139,7 +139,7 @@ export async function pushManifest(
     newBlobs: [],
     blobReferences,
     emailRouting: { emailAddressList: [] },
-    encryptionPublicKey: '',
+    userEncryptionPublicKey: '',
   };
 
   const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/v2/Vault`, {

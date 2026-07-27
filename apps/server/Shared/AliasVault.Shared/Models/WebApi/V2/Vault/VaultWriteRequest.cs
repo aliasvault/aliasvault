@@ -27,6 +27,12 @@ public class VaultWriteRequest
     /// <summary>Gets or sets the email routing data to update server-side.</summary>
     public EmailRouting? EmailRouting { get; set; }
 
-    /// <summary>Gets or sets the public encryption key.</summary>
-    public string? EncryptionPublicKey { get; set; }
+    /// <summary>Gets or sets the public half of the user's own encryption keypair (client table `EncryptionKeys`).</summary>
+    public string? UserEncryptionPublicKey { get; set; }
+
+    /// <summary>
+    /// Gets or sets the public halves of the shared folders' own encryption keypairs (client table
+    /// `SharedFolderEncryptionKeys`).
+    /// </summary>
+    public List<SharedFolderEncryptionPublicKey> SharedFolderEncryptionPublicKeys { get; set; } = [];
 }

@@ -35,9 +35,9 @@ pub static BUCKET_TABLES: &[(&str, &str)] = &[
 /// are found in a shared manifest anyway.
 pub static PERSONAL_TABLES: &[&str] = &["EncryptionKeys"];
 
-/// Tables that belong exclusively to a *shared-folder* manifest and never to the root. 
-// `SharedFolderEncryptionKeys` carries a folder's own email keypair,  so that every member 
-/// of the folder can decrypt mail addressed to the folder's aliases; it is encrypted under 
+/// Tables that belong exclusively to a *shared-folder* manifest and never to the root.
+/// `SharedFolderEncryptionKeys` carries a folder's own email keypair, so that every member
+/// of the folder can decrypt mail addressed to the folder's aliases; it is encrypted under
 /// the folder VEK and therefore readable by exactly the folder's members.
 pub static SHARED_ONLY_TABLES: &[&str] = &["SharedFolderEncryptionKeys"];
 

@@ -15,6 +15,12 @@ public class EmailRouting
     /// <summary>Gets or sets the user's claimed email addresses (forwarded inbound).</summary>
     public List<string> EmailAddressList { get; set; } = [];
 
+    /// <summary>
+    /// Gets or sets the claimed addresses whose items live in a shared folder, each carrying the manifest
+    /// whose published keypair encrypts its mail.
+    /// </summary>
+    public List<SharedEmailAddress> SharedEmailAddressList { get; set; } = [];
+
     /// <summary>Gets or sets the private email domains available to this user.</summary>
     public List<string> PrivateEmailDomainList { get; set; } = [];
 

@@ -921,7 +921,7 @@ export class VaultSyncService {
       buckets: bucketDtos,
       newBlobs: [] as BlobDto[],
       emailRouting: { emailAddressList },
-      encryptionPublicKey: '',
+      userEncryptionPublicKey: '',
     };
 
     let resp = await webApi.post<typeof payload, VaultWriteResponseDto>(VAULT_ENDPOINT, payload);
@@ -1148,7 +1148,7 @@ export class VaultSyncService {
     const webApi = new WebApiService();
     /** POST the single-bucket write with the given believed-current revision (called again on the rebase retry). */
     const postBucket = (currentRevision: number): Promise<VaultWriteResponseDto> => webApi.post<Record<string, unknown>, VaultWriteResponseDto>(VAULT_ENDPOINT, {
-      username, manifests: [], buckets: [{ category, blob: ciphertext, ciphertextHash, currentRevision }], newBlobs: [], emailRouting: null, encryptionPublicKey: '',
+      username, manifests: [], buckets: [{ category, blob: ciphertext, ciphertextHash, currentRevision }], newBlobs: [], emailRouting: null, userEncryptionPublicKey: '',
     });
 
     let currentRevision = (((await storage.getItem(bucketRevisionStorageKey(category))) as number | null) ?? 0);
