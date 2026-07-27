@@ -64,6 +64,26 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
         }
     }
 
+    /*
+     * A shared-only table (a folder's own email keypair) belongs to exactly one
+     * shared manifest. The root must not carry it at all, and a shared manifest must only carry rows
+     * scoped to its own folder.
+     */
+    let expected_scope = manifest.shared_folder_id.as_deref();
+    for name in super::types::SHARED_ONLY_TABLES {
+        let rows = table(manifest, name);
+        if rows.is_empty() {
+            continue;
+        }
+        if expected_scope.is_none() {
+            failed.push("root-manifest-carries-shared-only-table".to_string());
+            explain.push(format!("Root manifest carries shared-only table {}", name));
+        } else if rows.iter().any(|r| str_field(r, "SharedFolderId") != expected_scope) {
+            failed.push("shared-only-table-scope-mismatch".to_string());
+            explain.push(format!("{} carries rows scoped to another shared folder", name));
+        }
+    }
+
     let items = table(manifest, "Items");
     let folders = table(manifest, "Folders");
     let tags = table(manifest, "Tags");

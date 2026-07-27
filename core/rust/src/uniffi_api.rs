@@ -446,8 +446,9 @@ mod tests {
         assert!(names.contains(&"FieldValues".to_string()));
         assert!(names.contains(&"Settings".to_string()));
         assert!(names.contains(&"EncryptionKeys".to_string()));
+        assert!(names.contains(&"SharedFolderEncryptionKeys".to_string()));
         assert!(!names.contains(&crate::vault_codec::OVERFLOW_TABLE.to_string()), "overflow carrier is not in the merge input; the server base owns it");
-        assert_eq!(names.len(), 13);
+        assert_eq!(names.len(), 14);
     }
 
     #[test]

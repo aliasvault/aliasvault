@@ -29,10 +29,13 @@ pub use manifest::{
     Manifest, MaterializeInput, MaterializedTables, CodecRecord, CodecTableData, SharedFolderSpec, SharedVault,
 };
 pub use scoped_assets::{KIND_BUILTIN as LOGO_KIND_BUILTIN, KIND_CUSTOM as LOGO_KIND_CUSTOM, KIND_FAVICON as LOGO_KIND_FAVICON};
-pub use sharing::extract_encryption_key_for_public_key_from_bucket;
+pub use sharing::{
+    active_shared_folder_encryption_key, extract_encryption_key_for_public_key_from_bucket, extract_shared_folder_encryption_key_for_public_key,
+    SHARED_FOLDER_ENCRYPTION_KEYS_TABLE,
+};
 pub use types::{
-    bucket_categories, bucket_category_for, is_personal_table, tables_for_category, BLOB_COLUMNS, BUCKET_TABLES,
-    OVERFLOW_ROW_ID, OVERFLOW_TABLE, PERSONAL_TABLES, SCHEMA_VERSION, SKIP_TABLES,
+    bucket_categories, bucket_category_for, is_personal_table, is_shared_only_table, tables_for_category, BLOB_COLUMNS,
+    BUCKET_TABLES, OVERFLOW_ROW_ID, OVERFLOW_TABLE, PERSONAL_TABLES, SCHEMA_VERSION, SHARED_ONLY_TABLES, SKIP_TABLES,
 };
 pub use validate::ValidationResult;
 
@@ -161,6 +164,18 @@ pub fn validate_data_bucket(b: &DataBucket) -> ValidationResult {
 pub fn extract_encryption_key_for_public_key_from_bucket_json(bucket_json: &str, public_key: &str) -> VaultResult<String> {
     let b: DataBucket = serde_json::from_str(bucket_json)?;
     Ok(serde_json::to_string(&extract_encryption_key_for_public_key_from_bucket(&b, public_key))?)
+}
+
+/// Extract the shared folder encryption key for the public key from the manifest.
+pub fn extract_shared_folder_encryption_key_for_public_key_json(manifest_json: &str, public_key: &str) -> VaultResult<String> {
+    let m: Manifest = serde_json::from_str(manifest_json)?;
+    Ok(serde_json::to_string(&extract_shared_folder_encryption_key_for_public_key(&m, public_key))?)
+}
+
+/// Extract the active shared folder encryption key from the manifest.
+pub fn active_shared_folder_encryption_key_json(manifest_json: &str) -> VaultResult<String> {
+    let m: Manifest = serde_json::from_str(manifest_json)?;
+    Ok(serde_json::to_string(&active_shared_folder_encryption_key(&m))?)
 }
 
 /// SHA-256 (lowercase hex) of a base64 ciphertext string — storage-layer integrity.

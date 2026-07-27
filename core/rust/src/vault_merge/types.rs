@@ -55,6 +55,7 @@ pub static SYNCABLE_TABLES: &[TableConfig] = &[
     TableConfig::new("FieldHistories"),
     TableConfig::new("Logos"),
     TableConfig::new("EncryptionKeys"),
+    TableConfig::new("SharedFolderEncryptionKeys"),
     TableConfig::new("Settings").with_primary_key("Key"),
 ];
 
@@ -77,5 +78,6 @@ pub const SYNCABLE_TABLE_NAMES: &[&str] = &[
     "FieldHistories",
     "Logos",
     "EncryptionKeys",
+    "SharedFolderEncryptionKeys",
     "Settings",
 ];

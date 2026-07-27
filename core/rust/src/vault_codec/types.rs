@@ -35,6 +35,12 @@ pub static BUCKET_TABLES: &[(&str, &str)] = &[
 /// are found in a shared manifest anyway.
 pub static PERSONAL_TABLES: &[&str] = &["EncryptionKeys"];
 
+/// Tables that belong exclusively to a *shared-folder* manifest and never to the root. 
+// `SharedFolderEncryptionKeys` carries a folder's own email keypair,  so that every member 
+/// of the folder can decrypt mail addressed to the folder's aliases; it is encrypted under 
+/// the folder VEK and therefore readable by exactly the folder's members.
+pub static SHARED_ONLY_TABLES: &[&str] = &["SharedFolderEncryptionKeys"];
+
 /// Manifest / metadata schema version. This is the manifest *wire structure* version and is its own
 /// axis, independent of the data-model version (which readers derive from the manifest's `migrationId`).
 /// It starts at 1 for the first manifest generation; bump only on a breaking structural change
@@ -89,6 +95,11 @@ pub fn tables_for_category(category: &str) -> Vec<&'static str> {
 /// True when a table is personal-only (see [`PERSONAL_TABLES`]): never part of a shared-folder manifest.
 pub fn is_personal_table(table_name: &str) -> bool {
     PERSONAL_TABLES.contains(&table_name) || bucket_category_for(table_name).is_some()
+}
+
+/// True when a table is shared-only (see [`SHARED_ONLY_TABLES`]): never part of the root manifest.
+pub fn is_shared_only_table(table_name: &str) -> bool {
+    SHARED_ONLY_TABLES.contains(&table_name)
 }
 
 /// The single-column primary key that addresses a row in `table_name`, shared with the merge layer
