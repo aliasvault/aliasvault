@@ -162,7 +162,7 @@
     "copyTotpOnFillDescription": "Amikor egy bejegyzést illeszt be amely 2FA-val rendelkezik, automatikusan másolja a jelenlegi TOTP kódot is a vágólapra.",
     "vaultUnlock": "Széf feloldási mód",
     "autoLock": "Auto-zárolás időtúllépés",
-    "clipboardClear": "Vágólap törlése",
+    "clipboardClear": "Vágólap ürítése",
     "clipboardClearDescription": "Bizonyos idő után automatikusan törlésre kerülnek a vágólapról a másolt jelszavak és kényes információk.",
     "clipboardClearAndroidWarning": "Megjegyzés:: Egyes Android eszközöknél be lehet kapcsolva a vágólap történet, amely még a vágólap ürítést követően is tartalmazza az adatokat. Az AliasVault csak a legfrissebb elemet tudja felülírni, de a korábbi adatok hozzáférhetőek lehetnek. Emiatt biztonsági okokból javasoljuk a vágólap történet követésének kikapcsolását eszközén.",
     "clipboardLocalOnly": "Csak helyi vágólap",
@@ -191,7 +191,7 @@
     "exportCsvButton": "Széf exportálása CSV fájlba",
     "exporting": "Exportálás...",
     "exportConfirmTitle": "Széf exportálása",
-    "exportWarning": "Figyelem: Ha egy kódolatlan szöveg formátumba exportálja széfjét, adatai könnyen védtelenné válhatnak. Csak kizárólag megbízható eszközökön végezze ezt el, és bizonyosodjon meg arról, hogy:\n\n• Biztonságos helyre menti az exportot\n• Törölje a fájlt, ha már nincs rá szükség\n• Sose ossza meg az exportált fájlt másokkal\n\nBiztosan folytatni akarja az exportálást?",
+    "exportWarning": "Figyelem: Ha egy kódolatlan szöveg formátumba exportálja széfjét, adatai könnyen védtelenné válhatnak. Csak kizárólag megbízható eszközökön végezze ezt el, és bizonyosodjon meg arról, hogy:\n\n• Biztonságos helyre menti az exportot\n• Törölje a fájlt, ha már nincs rá szüksége\n• Sose ossza meg az exportált fájlt másokkal\n\nBiztosan folytatni akarja az exportálást?",
     "passwordConfirm": {
       "exportDescription": "Biztonsági okokból kérem adja meg a mester jelszót az exportálás engedélyezéséhez."
     },
@@ -223,7 +223,7 @@
       "faceIdTouchId": "Arc ID / Érintés ID",
       "biometricEnabled": "{{biometric}} sikeresen aktiválva",
       "biometricNotAvailable": "{{biometric}} nem elérhető",
-      "biometricDisabledMessage": "{{biometric}} kikapcsolásra kerüt az AliasVault-ban. Ha használni akarja, kapcsolja be az eszközén a beállításokban.",
+      "biometricDisabledMessage": "A {{biometric}} kikapcsolásra kerüt az AliasVault-ban. Ha használni akarja, kapcsolja be az eszközén a beállításokban.",
       "biometricHelp": "A {{keystore}} által biztosított biometria használata a széf feloldáshoz.",
       "biometricUnavailableHelp": "A {{biometric}} nem elérhető. Koppintson a beállításhoz, vagy kézileg menjen be a készülék mbeállítások közé.",
       "featureRequiresPasscode": "Ehhez a funkcióhoz eszközén be kell kapcsolnia a képernyőzárat.",
