@@ -30,6 +30,7 @@ public enum AutofillUrlNormalizer {
         guard var components = URLComponents(string: withScheme) else {
             return withScheme
         }
+        components.path = ""
         components.query = nil
         components.fragment = nil
         let rebuilt = components.url?.absoluteString ?? withScheme

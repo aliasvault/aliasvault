@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppState, StyleSheet, View } from 'react-native';
 
+import { sanitizeServiceUrl } from '@/utils/UrlUtility';
+
 import { useColors } from '@/hooks/useColorScheme';
 
 import { ThemedSafeAreaView } from '@/components/themed/ThemedSafeAreaView';
@@ -33,14 +35,15 @@ export default function AutofillOpenAppScreen(): React.ReactNode {
   const { t } = useTranslation();
   const { itemUrl } = useLocalSearchParams<{ itemUrl?: string }>();
 
+  // Handle itemUrl param (URL passed from search or deep link).
   const decodedAppInfo = useMemo(() => {
     if (!itemUrl) {
       return '';
     }
     try {
-      return decodeURIComponent(itemUrl);
+      return sanitizeServiceUrl(decodeURIComponent(itemUrl));
     } catch {
-      return itemUrl;
+      return sanitizeServiceUrl(itemUrl);
     }
   }, [itemUrl]);
 

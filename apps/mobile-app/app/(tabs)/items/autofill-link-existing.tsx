@@ -13,6 +13,7 @@ import {
   getFieldValue,
   getFieldValues,
 } from '@/utils/dist/core/models/vault';
+import { sanitizeServiceUrl } from '@/utils/UrlUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
@@ -41,14 +42,15 @@ export default function AutofillLinkExistingScreen(): React.ReactNode {
   const { showConfirm } = useDialog();
   const { itemUrl } = useLocalSearchParams<{ itemUrl?: string }>();
 
+  // Handle itemUrl param (URL passed from search or deep link).
   const decodedAppInfo = useMemo(() => {
     if (!itemUrl) {
       return '';
     }
     try {
-      return decodeURIComponent(itemUrl);
+      return sanitizeServiceUrl(decodeURIComponent(itemUrl));
     } catch {
-      return itemUrl;
+      return sanitizeServiceUrl(itemUrl);
     }
   }, [itemUrl]);
 

@@ -19,7 +19,7 @@ import emitter from '@/utils/EventEmitter';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 import * as IdentityGenerator from '@/utils/IdentityGeneratorUtility';
 import * as PasswordGenerator from '@/utils/PasswordGeneratorUtility';
-import { extractServiceNameFromUrl } from '@/utils/UrlUtility';
+import { extractServiceNameFromUrl, sanitizeServiceUrl } from '@/utils/UrlUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
@@ -511,9 +511,9 @@ export default function AddEditItemScreen(): React.ReactNode {
         let serviceName = '';
         let decodedItemUrl = '';
 
-        // Handle itemUrl param (URL passed from search or deep link)
+        // Handle itemUrl param (URL passed from search or deep link).
         if (itemUrl) {
-          decodedItemUrl = decodeURIComponent(itemUrl);
+          decodedItemUrl = sanitizeServiceUrl(decodeURIComponent(itemUrl));
           serviceName = extractServiceNameFromUrl(decodedItemUrl);
         }
 
