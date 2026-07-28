@@ -533,7 +533,7 @@
     "contextMenu": {
       "title": "Elem opciók",
       "edit": "Szerkesztés",
-      "duplicate": "Duplicate",
+      "duplicate": "Duplikálás",
       "delete": "Törlés",
       "copyUsername": "Felhasználónév másolása",
       "copyEmail": "E-mail másolása",
@@ -662,7 +662,7 @@
       "decryptingVault": "Széf dekódolása"
     },
     "navigation": {
-      "login": "Belépés",
+      "login": "Bejelentkezés",
       "loginSettings": "Belépési beállítások"
     },
     "notFound": {
