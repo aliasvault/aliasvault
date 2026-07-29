@@ -302,7 +302,7 @@
         "failedToLoad": "A hitelesítési naplók nem tölthetőek be"
       },
       "deleteAccount": {
-        "headerText": "Fiókjának törlése azonnal és véglegesen törli minden adatát.",
+        "headerText": "Fiókjának törlése azonnali hatállyal és véglegesen törli minden adatát.",
         "warningText": "Figyelem: Ez a művelet nem visszafordítható. Minden adata véglegesen törlésre kerül.",
         "finalWarning": "Utolsó figyelmeztetés: Adja meg jelszavát fiókja végleges törléséhez.",
         "warningVaults": "Minden bejegyzése ami a titkosított széfekben található véglegesen törlésre kerül",
