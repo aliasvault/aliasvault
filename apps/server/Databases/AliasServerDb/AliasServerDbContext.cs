@@ -115,14 +115,24 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<EmailAttachment> EmailAttachments { get; set; }
 
     /// <summary>
-    /// Gets or sets the UserEmailClaims DbSet.
+    /// Gets or sets the EmailClaims DbSet.
     /// </summary>
-    public DbSet<UserEmailClaim> UserEmailClaims { get; set; }
+    public DbSet<EmailClaim> EmailClaims { get; set; }
 
     /// <summary>
-    /// Gets or sets the UserEncryptionKeys DbSet.
+    /// Gets or sets the Groups DbSet.
     /// </summary>
-    public DbSet<UserEncryptionKey> UserEncryptionKeys { get; set; }
+    public DbSet<Group> Groups { get; set; }
+
+    /// <summary>
+    /// Gets or sets the GroupMembers DbSet.
+    /// </summary>
+    public DbSet<GroupMember> GroupMembers { get; set; }
+
+    /// <summary>
+    /// Gets or sets the EncryptionKeys DbSet.
+    /// </summary>
+    public DbSet<EncryptionKey> EncryptionKeys { get; set; }
 
     /// <summary>
     /// Gets or sets the Logs DbSet.
@@ -288,18 +298,48 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             builder.HasIndex(e => e.Application);
         });
 
-        // Configure VaultManifest - one row per logical manifest (current revision), keyed by ManifestId.
+        /*
+         * Configure the user's personal group reference.
+         */
+        modelBuilder.Entity<AliasVaultUser>(builder =>
+        {
+            builder.HasOne(e => e.PersonalGroup)
+                .WithOne()
+                .HasForeignKey<AliasVaultUser>(e => e.PersonalGroupId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(e => e.PersonalGroupId).IsUnique().HasDatabaseName("UX_AliasVaultUsers_PersonalGroupId");
+        });
+
+        // Configure GroupMember, who may be granted access to the group's shared folders.
+        modelBuilder.Entity<GroupMember>(builder =>
+        {
+            builder.HasOne(e => e.Group)
+                .WithMany(g => g.Members)
+                .HasForeignKey(e => e.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Deleting a user removes their memberships everywhere, of their own group and other possibly joined groups.
+            builder.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(e => e.UserId);
+        });
+
+        // Configure VaultManifest: one row per logical manifest (current revision), keyed by ManifestId.
         modelBuilder.Entity<VaultManifest>(builder =>
         {
             builder.HasKey(e => e.ManifestId);
-            builder.HasOne(l => l.User)
-                .WithMany(c => c.VaultManifests)
-                .HasForeignKey(l => l.OwnerUserId)
+
+            builder.HasOne(e => e.OwnerGroup)
+                .WithMany()
+                .HasForeignKey(e => e.OwnerGroupId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Every user has exactly one root manifest (the residual container for everything not carved out
-            // into another manifest).
-            builder.HasIndex(e => e.OwnerUserId).HasFilter("\"IsRoot\"").IsUnique().HasDatabaseName("UX_VaultManifests_OwnerUserId_Root");
+            builder.HasIndex(e => e.OwnerGroupId).HasFilter("\"IsRoot\"").IsUnique().HasDatabaseName("UX_VaultManifests_OwnerGroupId_Root");
+            builder.HasIndex(e => e.OwnerGroupId);
         });
 
         // Configure VaultManifestsHistory - superseded revisions, composite key (ManifestId, RevisionNumber).
@@ -311,9 +351,6 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .WithMany()
                 .HasForeignKey(e => e.ManifestId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            // Denormalized owner id for direct per-user queries (admin statistics, retention).
-            builder.HasIndex(e => e.OwnerUserId);
         });
 
         // Configure VaultKey: a wrapped-VEK grant for (holder, manifest, unlock method).
@@ -329,30 +366,45 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             builder.Property(e => e.Metadata).HasColumnType("jsonb");
         });
 
-        // Configure UserEmailClaim - AliasVaultUser relationship
-        // Note: when a user is deleted the email claims user FK's should be set to NULL
-        // so the claims themselves are preserved to prevent re-use of the email address.
-        modelBuilder.Entity<UserEmailClaim>()
-            .HasOne(e => e.User)
-            .WithMany(u => u.EmailClaims)
-            .HasForeignKey(e => e.UserId)
+        // Configure EmailClaim - Group relationship. SetNull: when the owning group is deleted (its
+        // owner deleted their account) the claim becomes an ownerless tombstone, preserved to prevent
+        // re-use of the email address; delivery rejects mail for it.
+        modelBuilder.Entity<EmailClaim>()
+            .HasOne(e => e.OwnerGroup)
+            .WithMany()
+            .HasForeignKey(e => e.OwnerGroupId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // Configure Email - UserEncryptionKey relationship
+        /*
+         * Configure EmailClaim - VaultManifest relationship. SetNull for the same reason the user FK is:
+         * the claim outlives the folder so the address cannot be re-registered by someone else. A claim left
+         * with a null manifest is an orphaned shared alias, which reconciliation then disables.
+         */
+        modelBuilder.Entity<EmailClaim>(builder =>
+        {
+            builder.HasOne(e => e.VaultManifest)
+                .WithMany()
+                .HasForeignKey(e => e.VaultManifestId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.HasIndex(e => e.VaultManifestId);
+        });
+
+        // Configure Email - EncryptionKey relationship
         modelBuilder.Entity<Email>()
             .HasOne(l => l.EncryptionKey)
             .WithMany(c => c.Emails)
-            .HasForeignKey(l => l.UserEncryptionKeyId)
+            .HasForeignKey(l => l.EncryptionKeyId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Configure UserEncryptionKey - AliasVaultUser relationship
-        modelBuilder.Entity<UserEncryptionKey>()
+        // Configure EncryptionKey - AliasVaultUser relationship
+        modelBuilder.Entity<EncryptionKey>()
             .HasOne(l => l.User)
             .WithMany(c => c.EncryptionKeys)
             .HasForeignKey(l => l.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<UserEncryptionKey>(builder =>
+        modelBuilder.Entity<EncryptionKey>(builder =>
         {
             // A folder-scoped key is removed when its manifest is removed; a personal key (null manifest) is unaffected.
             builder.HasOne(k => k.VaultManifest)
@@ -364,10 +416,10 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             builder.HasIndex(k => new { k.UserId, k.VaultManifestId, k.IsPrimary });
         });
 
-        // Configure UserEmailClaim - UserEncryptionKey relationship. Restrict rather than cascade: an
+        // Configure EmailClaim - EncryptionKey relationship. Restrict rather than cascade: an
         // email claim outlives its key on purpose (claims are retained to prevent address re-use), so a
         // key must be re-pointed or nulled before it can be removed.
-        modelBuilder.Entity<UserEmailClaim>()
+        modelBuilder.Entity<EmailClaim>()
             .HasOne(c => c.EncryptionKey)
             .WithMany()
             .HasForeignKey(c => c.EncryptionKeyId)

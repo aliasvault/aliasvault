@@ -95,7 +95,7 @@ public class AliasVaultUser : IdentityUser
     /// <summary>
     /// Gets or sets the collection of EncryptionKeys.
     /// </summary>
-    public virtual ICollection<UserEncryptionKey> EncryptionKeys { get; set; } = [];
+    public virtual ICollection<EncryptionKey> EncryptionKeys { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the collection of vault unlock keys (KEK/VEK model). Empty for users still on the legacy

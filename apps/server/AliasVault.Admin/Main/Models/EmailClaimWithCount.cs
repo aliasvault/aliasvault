@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="UserEmailClaimWithCount.cs" company="aliasvault">
+// <copyright file="EmailClaimWithCount.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
@@ -10,7 +10,7 @@ namespace AliasVault.Admin.Main.Models;
 /// <summary>
 /// User email claim view model with count.
 /// </summary>
-public class UserEmailClaimWithCount
+public class EmailClaimWithCount
 {
     /// <summary>
     /// Gets or sets the id.

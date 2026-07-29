@@ -30,14 +30,14 @@ public class Email
     /// Gets or sets encryption key foreign key.
     /// </summary>
     [StringLength(255)]
-    public Guid UserEncryptionKeyId { get; set; }
+    public Guid EncryptionKeyId { get; set; }
 
     /// <summary>
-    /// Gets or sets foreign key to the UserEncryptionKey object which contains the public key used for encrypting
+    /// Gets or sets foreign key to the EncryptionKey object which contains the public key used for encrypting
     /// the symmetric encryption key.
     /// </summary>
-    [ForeignKey("UserEncryptionKeyId")]
-    public virtual UserEncryptionKey EncryptionKey { get; set; } = null!;
+    [ForeignKey("EncryptionKeyId")]
+    public virtual EncryptionKey EncryptionKey { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the encrypted symmetric key which was used to encrypt the email message.

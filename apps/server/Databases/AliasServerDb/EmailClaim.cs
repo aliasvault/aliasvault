@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="UserEmailClaim.cs" company="aliasvault">
+// <copyright file="EmailClaim.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
@@ -12,12 +12,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
-/// UserEmailClaim object. This object is used to reserve an email address for a user.
+/// EmailClaim object. This object is used to reserve an email address for a user.
 /// </summary>
 [Index(nameof(Address), IsUnique = true)]
-[Index(nameof(UserId), nameof(Disabled))]
-[Index(nameof(UserId), nameof(CreatedAt))]
-public class UserEmailClaim
+[Index(nameof(OwnerGroupId), nameof(Disabled))]
+[Index(nameof(OwnerGroupId), nameof(CreatedAt))]
+public class EmailClaim
 {
     /// <summary>
     /// Gets or sets the ID.
@@ -26,18 +26,37 @@ public class UserEmailClaim
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Gets or sets user ID foreign key. This can be null if the email claim was associated with a user that has since been deleted.
-    /// Email claims are meant to be preserved even if the user is deleted to prevent re-use of the email address.
+    /// Gets or sets the shared folder this alias lives in, or null for a personal alias.
+    /// <para>
+    /// This is what makes a shared alias belong to the <em>folder</em> rather than to whichever member happened
+    /// to create it. Without it, revoking that member disables an alias sitting in someone else's folder (their
+    /// next push no longer lists it), and their account deletion strands the address permanently. Read access
+    /// and routing reconciliation both key off this column.
+    /// </para>
     /// </summary>
-    [StringLength(255)]
-    public string? UserId { get; set; }
+    public Guid? VaultManifestId { get; set; }
 
     /// <summary>
-    /// Gets or sets foreign key to the AliasVaultUser object. This can be null if the email claim was associated with a user that has since been deleted.
-    /// Email claims are meant to be preserved even if the user is deleted to prevent re-use of the email address.
+    /// Gets or sets the navigation property to the shared folder this alias lives in.
     /// </summary>
-    [ForeignKey("UserId")]
-    public virtual AliasVaultUser? User { get; set; }
+    [ForeignKey("VaultManifestId")]
+    public virtual VaultManifest? VaultManifest { get; set; }
+
+    /// <summary>
+    /// Gets or sets the group this alias is owned by and billed to — like every manifest, an alias is owned by
+    /// a group, never by a user. For a personal alias that is the claimer's Personal group; for an alias in a
+    /// shared folder it is the group that owns the folder, so a family's aliases draw on the family owner's
+    /// allowance no matter which member created them, and stay correct when the folder is transferred.
+    /// Null when the owning group has been deleted (the user deleted their account): the claim is then a
+    /// tombstone kept solely to prevent re-use of the address, and delivery rejects its mail.
+    /// </summary>
+    public Guid? OwnerGroupId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the navigation property to the owning group.
+    /// </summary>
+    [ForeignKey("OwnerGroupId")]
+    public virtual Group? OwnerGroup { get; set; }
 
     /// <summary>
     /// Gets or sets the encryption key incoming mail for this alias is encrypted with. For most cases this will be null,
@@ -50,7 +69,7 @@ public class UserEmailClaim
     /// Gets or sets the navigation property to the encryption key mail for this alias is encrypted with.
     /// </summary>
     [ForeignKey("EncryptionKeyId")]
-    public virtual UserEncryptionKey? EncryptionKey { get; set; }
+    public virtual EncryptionKey? EncryptionKey { get; set; }
 
     /// <summary>
     /// Gets or sets the full email address.
