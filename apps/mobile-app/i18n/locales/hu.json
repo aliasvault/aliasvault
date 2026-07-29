@@ -280,7 +280,7 @@
         "failedToChange": "Sikertelen jelszó módosítás. Próbálja meg újra."
       },
       "activeSessions": {
-        "headerText": "Az alábbi listán található meg, hol van jelenleg bejelentkezve, vagy aktív a munkamenete. Itt bármelyikből ki tudja magát jelentkeztetni.",
+        "headerText": "Az alábbi listán látható, hol van jelenleg bejelentkezve, vagy aktív a munkamenete. Itt bármelyikből ki tudja magát jelentkeztetni.",
         "noSessions": "Nincs aktív munkamenet",
         "revoke": "Visszavonás",
         "revokeSession": "Munkafolyamat visszavonása",
