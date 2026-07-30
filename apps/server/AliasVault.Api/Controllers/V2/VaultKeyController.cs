@@ -28,7 +28,7 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
     /// Get the wrapped VEK and KEK derivation parameters for the given key type. Always returns HTTP 200;
     /// the payload's VaultKey is null when the user has no such vault key (legacy user, or unknown key type).
     /// </summary>
-    /// <param name="keyType">The unlock method type, e.g. "password".</param>
+    /// <param name="keyType">The unlock method type, e.g. "password" — the <see cref="VaultKeyType"/> member name, case-insensitive.</param>
     /// <returns>The vault key envelope DTO.</returns>
     [HttpGet("{keyType}")]
     public async Task<IActionResult> Get(string keyType)
@@ -40,21 +40,32 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
             return Unauthorized();
         }
 
-        var vaultKey = await context.VaultKeys.FirstOrDefaultAsync(x => x.UserId == user.Id && x.KeyType == keyType);
+        // A method this build does not know about is "no such key" rather than an error, so a newer client asking
+        // for one it supports and this server does not degrades to the same path as a legacy user with no key.
+        if (!Enum.TryParse<VaultKeyType>(keyType, true, out var parsedKeyType) || !Enum.IsDefined(parsedKeyType))
+        {
+            return Ok(new VaultKeyGetResponse { VaultKey = null });
+        }
+
+        var vaultKey = await context.VaultKeys.FirstOrDefaultAsync(x => x.UserId == user.Id && x.KeyType == parsedKeyType);
         if (vaultKey == null)
         {
             return Ok(new VaultKeyGetResponse { VaultKey = null });
         }
 
+        // The verifier stays server-side; only the KEK derivation inputs are served.
+        var (salt, _, encryptionType, encryptionSettings) = VaultKeyMetadata.Parse(vaultKey.Metadata).RequireSrpCredentials();
+
         return Ok(new VaultKeyGetResponse
         {
             VaultKey = new VaultKeyResponse
             {
-                KeyType = vaultKey.KeyType,
+                // The wire contract is the lowercased member name; clients match on the literal "password".
+                KeyType = vaultKey.KeyType.ToString().ToLowerInvariant(),
                 WrappedVek = vaultKey.WrappedVek,
-                Salt = vaultKey.Salt!,
-                EncryptionType = vaultKey.EncryptionType!,
-                EncryptionSettings = vaultKey.EncryptionSettings!,
+                Salt = salt,
+                EncryptionType = encryptionType,
+                EncryptionSettings = encryptionSettings,
             },
         });
     }

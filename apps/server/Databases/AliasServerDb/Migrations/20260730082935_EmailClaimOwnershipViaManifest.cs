@@ -67,9 +67,6 @@ namespace AliasServerDb.Migrations
                 type: "uuid",
                 nullable: true);
 
-            // Repopulate the owning group from each claim's manifest, then restore the previous convention in
-            // which a personal alias carried no manifest at all — otherwise the reverted code would read every
-            // personal claim as if it lived in a shared folder.
             migrationBuilder.Sql(@"
                 UPDATE ""EmailClaims"" c
                 SET ""OwnerGroupId"" = m.""OwnerGroupId""

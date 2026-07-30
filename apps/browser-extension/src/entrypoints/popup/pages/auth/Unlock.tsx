@@ -582,7 +582,7 @@ const Unlock: React.FC = () => {
        * the mobile app predates the KEK/VEK model). Refresh the local wrapped-VEK cache so offline password unlock
        * keeps working, then upgrade the received key to the VEK when it turns out to be the KEK.
        */
-      await VaultKeyService.cacheWrappedVekFromServer(webApi);
+      await VaultKeyService.cacheEncryptedVekFromServer(webApi);
       const mobileKey = await VaultKeyService.resolveStoredUnlockKey(result.decryptionKey);
 
       // Store the encryption key and derivation params

@@ -24,30 +24,24 @@ public class VaultManifest : VaultManifestBase
     public Guid ManifestId { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether this manifest is the user's root manifest: the residual container that
-    /// holds everything not carved out into another manifest. Every user has exactly one root manifest (enforced by a
-    /// partial unique index). Note: this describes the manifest's role in client-side vault composition only — access
-    /// and sharing are tracked separately (R2 access table); a non-root manifest is not necessarily shared.
+    /// Gets or sets a value indicating whether this manifest is the user's root manifest.
     /// </summary>
     public required bool IsRoot { get; set; }
 
     /// <summary>
-    /// Gets or sets the display name of a shared folder manifest. Null for the root manifest (the user's main vault
-    /// has no name). Set only for non-root manifests, which — by definition — are shareable folders. This is stored
-    /// in plaintext so the sharing/ACL UI can list folders and pending shares without decrypting their content.
+    /// Gets or sets the optional display name of a manifest. Used in e.g. sharing UI.
     /// </summary>
     [StringLength(255)]
     public string? Name { get; set; }
 
     /// <summary>
-    /// Gets or sets the ID of the owning user.
+    /// Gets or sets the group that owns this manifest.
     /// </summary>
-    [StringLength(255)]
-    public string OwnerUserId { get; set; } = null!;
+    public Guid OwnerGroupId { get; set; }
 
     /// <summary>
-    /// Gets or sets foreign key to the AliasVaultUser object.
+    /// Gets or sets the navigation property to the owning group.
     /// </summary>
-    [ForeignKey("OwnerUserId")]
-    public virtual AliasVaultUser User { get; set; } = null!;
+    [ForeignKey("OwnerGroupId")]
+    public virtual Group OwnerGroup { get; set; } = null!;
 }

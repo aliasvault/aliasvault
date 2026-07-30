@@ -49,7 +49,7 @@ public class Manifest
     /// </summary>
     public string? WrappedVek { get; set; }
 
-    /// <summary>Gets or sets the wrap scheme of <see cref="WrappedVek"/> (e.g. "rsa-oaep"). Null when <see cref="WrappedVek"/> is null.</summary>
+    /// <summary>Gets or sets the wrap scheme of <see cref="WrappedVek"/> (e.g. "rsa-oaep-sha256"). Null when <see cref="WrappedVek"/> is null.</summary>
     public string? WrapScheme { get; set; }
 
     /// <summary>

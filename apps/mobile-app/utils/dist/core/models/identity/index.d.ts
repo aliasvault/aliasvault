@@ -10,7 +10,6 @@ declare enum Gender {
 
 /**
  * A generated identity as returned by the Rust core identity generator
- * (JSON with camelCase fields).
  */
 type Identity = {
     firstName: string;

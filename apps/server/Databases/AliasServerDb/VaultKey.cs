@@ -10,10 +10,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 /// <summary>
-/// A vault unlock key for a user (KEK/VEK model). The vault content is encrypted with a random Vault Encryption Key
-/// (VEK) that never changes; this entity stores that VEK wrapped (AES-GCM encrypted) with a Key Encryption Key (KEK)
-/// derived from an unlock method. One row per user per unlock method. Users without any VaultKey rows are on the legacy
-/// model where the SRP credentials live on the root vault manifest and the password-derived key encrypts the vault directly.
+/// A key unlock key (KEK) for a user, used to encrypt/decrypt the vault encryption key (VEK) which then encrypts/decrypts the vault content.
 /// </summary>
 public class VaultKey
 {
@@ -36,60 +33,41 @@ public class VaultKey
     public virtual AliasVaultUser User { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the manifest this key unlocks. Null means the user's main (root) vault.
+    /// Gets or sets the manifest this key unlocks.
     /// </summary>
-    public Guid? VaultManifestId { get; set; }
+    public required Guid VaultManifestId { get; set; }
 
     /// <summary>
-    /// Gets or sets the unlock method type: "password" (R1). Extensible for R2+: "webauthn", "recovery", "shared".
+    /// Gets or sets the unlock method this key represents, i.e. what its holder proves to obtain the KEK.
     /// </summary>
-    [StringLength(50)]
-    public required string KeyType { get; set; }
+    public required VaultKeyType Type { get; set; }
 
     /// <summary>
-    /// Gets or sets which wrap scheme was used to encrypt the wrapped VEK.
+    /// Gets or sets the algorithm <see cref="EncryptedVek"/> is encrypted with.
     /// </summary>
     [StringLength(30)]
-    public required string WrapScheme { get; set; }
+    public required VaultKeyAlgorithm Algorithm { get; set; }
 
     /// <summary>
-    /// Gets or sets the wrapped VEK: base64(IV | ciphertext | authTag) of the VEK encrypted with the KEK (AES-256-GCM).
+    /// Gets or sets the encrypted VEK (which is encrypted with this KEK record).
     /// </summary>
-    public required string WrappedVek { get; set; }
+    public required string EncryptedVek { get; set; }
 
     /// <summary>
-    /// Gets or sets the salt used both for KEK derivation and SRP authentication. Set for SRP-authenticating self
-    /// methods (password); null for methods that don't authenticate via SRP (webauthn, recovery) or shared keys.
+    /// Gets or sets the navigation property to the encryption key that encrypted the VEK. This value is only set for
+    /// shared vault keys (Type = <see cref="VaultKeyType.PublicKey"/>) which means a registered user's public key is used for encryption.
     /// </summary>
-    [StringLength(100)]
-    public string? Salt { get; set; }
+    public Guid? EncryptionKeyId { get; set; }
 
     /// <summary>
-    /// Gets or sets the verifier used for SRP authentication. Null for non-SRP key types (see <see cref="Salt"/>).
+    /// Gets or sets the navigation property to the encryption key that encrypted the VEK. This value is only set for
+    /// shared vault keys (Type = <see cref="VaultKeyType.PublicKey"/>) which means a registered user's public key is used for encryption.
     /// </summary>
-    [StringLength(1000)]
-    public string? Verifier { get; set; }
+    public virtual EncryptionKey? EncryptionKey { get; set; }
 
     /// <summary>
-    /// Gets or sets the encryption (key derivation) type. Null for non-SRP key types (see <see cref="Salt"/>).
-    /// </summary>
-    public string? EncryptionType { get; set; }
-
-    /// <summary>
-    /// Gets or sets the encryption (key derivation) settings. Null for non-SRP key types (see <see cref="Salt"/>).
-    /// </summary>
-    public string? EncryptionSettings { get; set; }
-
-    /// <summary>
-    /// Gets or sets, for a shared (asymmetric) key, the foreign key to the recipient <see cref="UserEncryptionKey"/>
-    /// whose public key wrapped this VEK.
-    /// </summary>
-    public Guid? RecipientPublicKeyId { get; set; }
-
-    /// <summary>
-    /// Gets or sets an optional per-key-type extension bag (JSON) for fields the server never evaluates, e.g. a
-    /// WebAuthn credential id + transports + PRF salt, or recovery-code derivation params. A new unlock method can
-    /// add fields here with no schema migration. Null when the key type needs no extra fields.
+    /// Gets or sets optional per-key-type fields as JSON, e.g. SRP salt and verifier, KDF parameters etc. Read and written
+    /// through <see cref="VaultKeyMetadata"/>.
     /// </summary>
     public string? Metadata { get; set; }
 

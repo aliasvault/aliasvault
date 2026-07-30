@@ -207,15 +207,11 @@ namespace AliasServerDb.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    VaultManifestId = table.Column<Guid>(type: "uuid", nullable: true),
-                    KeyType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    WrapScheme = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
-                    WrappedVek = table.Column<string>(type: "text", nullable: false),
-                    Salt = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    Verifier = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    EncryptionType = table.Column<string>(type: "text", nullable: true),
-                    EncryptionSettings = table.Column<string>(type: "text", nullable: true),
-                    RecipientPublicKeyId = table.Column<Guid>(type: "uuid", nullable: true),
+                    VaultManifestId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    Algorithm = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
+                    EncryptedVek = table.Column<string>(type: "text", nullable: false),
+                    EncryptionKeyId = table.Column<Guid>(type: "uuid", nullable: true),
                     Metadata = table.Column<string>(type: "jsonb", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -230,6 +226,12 @@ namespace AliasServerDb.Migrations
                         principalTable: "AliasVaultUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_VaultKeys_UserEncryptionKeys_EncryptionKeyId",
+                        column: x => x.EncryptionKeyId,
+                        principalTable: "UserEncryptionKeys",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -262,9 +264,14 @@ namespace AliasServerDb.Migrations
                 column: "VaultManifestId");
 
             migrationBuilder.CreateIndex(
-                name: "UX_VaultKeys_UserId_KeyType_Manifest",
+                name: "IX_VaultKeys_EncryptionKeyId",
                 table: "VaultKeys",
-                columns: new[] { "UserId", "KeyType", "VaultManifestId" },
+                column: "EncryptionKeyId");
+
+            migrationBuilder.CreateIndex(
+                name: "UX_VaultKeys_UserId_Type_Manifest",
+                table: "VaultKeys",
+                columns: new[] { "UserId", "Type", "VaultManifestId" },
                 unique: true);
 
             // --- 7. Email encryption keys become per-manifest, and claims record which key they were issued under. ---

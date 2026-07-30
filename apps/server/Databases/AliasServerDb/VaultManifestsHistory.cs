@@ -6,7 +6,6 @@
 //-----------------------------------------------------------------------
 namespace AliasServerDb;
 
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 /// <summary>
@@ -29,13 +28,6 @@ public class VaultManifestsHistory : VaultManifestBase
     public virtual VaultManifest Manifest { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the ID of the owning user. Denormalized from <see cref="VaultManifest.OwnerUserId"/> for direct
-    /// per-user queries; intentionally has no FK of its own — history rows cascade via the ManifestId FK.
-    /// </summary>
-    [StringLength(255)]
-    public string OwnerUserId { get; set; } = null!;
-
-    /// <summary>
     /// Creates a history row from the current revision of a manifest. Called right before the current row is updated
     /// in place with a newer revision.
     /// </summary>
@@ -46,7 +38,6 @@ public class VaultManifestsHistory : VaultManifestBase
         var history = new VaultManifestsHistory
         {
             ManifestId = current.ManifestId,
-            OwnerUserId = current.OwnerUserId,
             VaultBlob = current.VaultBlob,
             StorageFormat = current.StorageFormat,
             Version = current.Version,

@@ -29,6 +29,6 @@ public class CreateSharedFolderRequest
     /// <summary>Gets or sets the id of the caller's own public key used to wrap (from GET /v2/Sharing/recipient for their own username).</summary>
     public required Guid SelfPublicKeyId { get; set; }
 
-    /// <summary>Gets or sets the asymmetric wrap scheme used, e.g. "rsa-oaep".</summary>
+    /// <summary>Gets or sets the asymmetric wrap scheme used, e.g. "rsa-oaep-sha256". See AliasServerDb.VaultKeyWrapScheme for the supported tokens.</summary>
     public required string WrapScheme { get; set; }
 }

@@ -932,29 +932,17 @@ namespace AliasServerDb.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("EncryptionSettings")
-                        .HasColumnType("text");
+                    b.Property<Guid?>("EncryptionKeyId")
+                        .HasColumnType("uuid");
 
-                    b.Property<string>("EncryptionType")
-                        .HasColumnType("text");
-
-                    b.Property<string>("KeyType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("LastUsedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Metadata")
                         .HasColumnType("jsonb");
-
-                    b.Property<Guid?>("RecipientPublicKeyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Salt")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -964,30 +952,28 @@ namespace AliasServerDb.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<Guid?>("VaultManifestId")
+                    b.Property<Guid>("VaultManifestId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Verifier")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<string>("WrapScheme")
+                    b.Property<string>("Algorithm")
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
-                    b.Property<string>("WrappedVek")
+                    b.Property<string>("EncryptedVek")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EncryptionKeyId");
+
                     b.HasIndex("VaultManifestId")
                         .HasDatabaseName("IX_VaultKeys_VaultManifestId");
 
-                    b.HasIndex("UserId", "KeyType", "VaultManifestId")
+                    b.HasIndex("UserId", "Type", "VaultManifestId")
                         .IsUnique()
-                        .HasDatabaseName("UX_VaultKeys_UserId_KeyType_Manifest");
+                        .HasDatabaseName("UX_VaultKeys_UserId_Type_Manifest");
 
                     b.ToTable("VaultKeys");
                 });
@@ -1438,11 +1424,18 @@ namespace AliasServerDb.Migrations
 
             modelBuilder.Entity("AliasServerDb.VaultKey", b =>
                 {
+                    b.HasOne("AliasServerDb.EncryptionKey", "EncryptionKey")
+                        .WithMany()
+                        .HasForeignKey("EncryptionKeyId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("AliasServerDb.AliasVaultUser", "User")
                         .WithMany("VaultKeys")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("EncryptionKey");
 
                     b.Navigation("User");
                 });

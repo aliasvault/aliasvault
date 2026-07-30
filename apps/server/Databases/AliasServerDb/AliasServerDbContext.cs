@@ -191,8 +191,8 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<RateLimit> RateLimits { get; set; }
 
     /// <summary>
-    /// Gets or sets the VaultKeys DbSet. These hold the wrapped vault encryption key (VEK) plus SRP credentials
-    /// per user per unlock method (KEK/VEK model). Users without rows here are on the legacy single-derived-key model.
+    /// Gets or sets the VaultKeys DbSet. These hold the encrypted vault encryption key (VEK) and metadata
+    /// per user per unlock method (KEK/VEK model).
     /// </summary>
     public DbSet<VaultKey> VaultKeys { get; set; }
 
@@ -353,7 +353,7 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Configure VaultKey: a wrapped-VEK grant for (holder, manifest, unlock method).
+        // Configure VaultKey: an encrypted-VEK grant for (holder, manifest, unlock method).
         modelBuilder.Entity<VaultKey>(builder =>
         {
             builder.HasOne(e => e.User)
@@ -361,9 +361,14 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex(e => new { e.UserId, e.KeyType, e.VaultManifestId }).IsUnique().HasDatabaseName("UX_VaultKeys_UserId_KeyType_Manifest");
+            builder.HasIndex(e => new { e.UserId, e.Type, e.VaultManifestId }).IsUnique().HasDatabaseName("UX_VaultKeys_UserId_Type_Manifest");
             builder.HasIndex(e => e.VaultManifestId).HasDatabaseName("IX_VaultKeys_VaultManifestId");
             builder.Property(e => e.Metadata).HasColumnType("jsonb");
+            builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
+            builder.HasOne(e => e.EncryptionKey)
+                .WithMany()
+                .HasForeignKey(e => e.EncryptionKeyId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         /*

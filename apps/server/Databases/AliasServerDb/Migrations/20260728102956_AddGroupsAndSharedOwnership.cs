@@ -33,6 +33,7 @@ namespace AliasServerDb.Migrations
             migrationBuilder.Sql("""
                 ALTER TABLE "EmailClaims" RENAME CONSTRAINT "PK_UserEmailClaims" TO "PK_EmailClaims";
                 ALTER TABLE "EncryptionKeys" RENAME CONSTRAINT "PK_UserEncryptionKeys" TO "PK_EncryptionKeys";
+                ALTER TABLE "VaultKeys" RENAME CONSTRAINT "FK_VaultKeys_UserEncryptionKeys_EncryptionKeyId" TO "FK_VaultKeys_EncryptionKeys_EncryptionKeyId";
                 """);
             migrationBuilder.RenameIndex(name: "IX_UserEmailClaims_Address", table: "EmailClaims", newName: "IX_EmailClaims_Address");
             migrationBuilder.RenameIndex(name: "IX_UserEmailClaims_EncryptionKeyId", table: "EmailClaims", newName: "IX_EmailClaims_EncryptionKeyId");
