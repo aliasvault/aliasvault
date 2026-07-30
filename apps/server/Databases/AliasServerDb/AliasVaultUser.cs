@@ -15,11 +15,22 @@ using Microsoft.AspNetCore.Identity;
 public class AliasVaultUser : IdentityUser
 {
     /// <summary>
-    /// Gets or sets the SRP identity used for authentication. This is a fixed value (typically a random GUID)
-    /// that is used for all SRP operations, is set during registration, and never changes.
+    /// Gets or sets the SRP identity used for authentication. This is a fixed value that is used for all SRP operations,
+    /// is set during registration, and never changes.
     /// </summary>
     [System.ComponentModel.DataAnnotations.StringLength(255)]
     public string? SrpIdentity { get; set; }
+
+    /// <summary>
+    /// Gets or sets the user's personal <see cref="Group"/>: the group that owns their root vault and personal
+    /// email claims.
+    /// </summary>
+    public Guid PersonalGroupId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the navigation property to the user's personal group.
+    /// </summary>
+    public virtual Group PersonalGroup { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets created timestamp.
@@ -81,16 +92,6 @@ public class AliasVaultUser : IdentityUser
     /// even when emails are deleted. Used for abuse detection and usage statistics.
     /// </summary>
     public int EmailsReceived { get; set; } = 0;
-
-    /// <summary>
-    /// Gets or sets the collection of vault manifest revisions owned by this user (across all manifests and kinds).
-    /// </summary>
-    public virtual ICollection<VaultManifest> VaultManifests { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets the collection of EmailClaims.
-    /// </summary>
-    public virtual ICollection<UserEmailClaim> EmailClaims { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the collection of EncryptionKeys.

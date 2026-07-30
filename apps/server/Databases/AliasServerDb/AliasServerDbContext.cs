@@ -366,29 +366,14 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             builder.Property(e => e.Metadata).HasColumnType("jsonb");
         });
 
-        // Configure EmailClaim - Group relationship. SetNull: when the owning group is deleted (its
-        // owner deleted their account) the claim becomes an ownerless tombstone, preserved to prevent
-        // re-use of the email address; delivery rejects mail for it.
-        modelBuilder.Entity<EmailClaim>()
-            .HasOne(e => e.OwnerGroup)
-            .WithMany()
-            .HasForeignKey(e => e.OwnerGroupId)
-            .OnDelete(DeleteBehavior.SetNull);
-
         /*
-         * Configure EmailClaim - VaultManifest relationship. SetNull for the same reason the user FK is:
-         * the claim outlives the folder so the address cannot be re-registered by someone else. A claim left
-         * with a null manifest is an orphaned shared alias, which reconciliation then disables.
+         * Configure EmailClaim - VaultManifest relationship, the claim's ownership reference.
          */
-        modelBuilder.Entity<EmailClaim>(builder =>
-        {
-            builder.HasOne(e => e.VaultManifest)
-                .WithMany()
-                .HasForeignKey(e => e.VaultManifestId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            builder.HasIndex(e => e.VaultManifestId);
-        });
+        modelBuilder.Entity<EmailClaim>()
+            .HasOne(e => e.VaultManifest)
+            .WithMany()
+            .HasForeignKey(e => e.VaultManifestId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         // Configure Email - EncryptionKey relationship
         modelBuilder.Entity<Email>()

@@ -44,7 +44,7 @@ public class SharedFolderEncryptionKey : SyncableEntity
     public Guid SharedFolderId { get; set; }
 
     /// <summary>
-    /// Gets or sets the public key. Published to the server (as a manifest-scoped UserEncryptionKey) so
+    /// Gets or sets the public key. Published to the server (as a manifest-scoped EncryptionKey) so
     /// the SMTP service can encrypt incoming mail for the folder's aliases without decrypting anything.
     /// </summary>
     [Required]

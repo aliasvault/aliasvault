@@ -12,11 +12,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
-/// EmailClaim object. This object is used to reserve an email address for a user.
+/// EmailClaim object. This object is used to reserve an email address. The claim is filed against the manifest
+/// the alias lives in (see <see cref="VaultManifestId"/>), which is what its owning group is resolved from.
 /// </summary>
 [Index(nameof(Address), IsUnique = true)]
-[Index(nameof(OwnerGroupId), nameof(Disabled))]
-[Index(nameof(OwnerGroupId), nameof(CreatedAt))]
+[Index(nameof(VaultManifestId), nameof(Disabled))]
+[Index(nameof(VaultManifestId), nameof(CreatedAt))]
 public class EmailClaim
 {
     /// <summary>
@@ -26,37 +27,15 @@ public class EmailClaim
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the shared folder this alias lives in, or null for a personal alias.
-    /// <para>
-    /// This is what makes a shared alias belong to the <em>folder</em> rather than to whichever member happened
-    /// to create it. Without it, revoking that member disables an alias sitting in someone else's folder (their
-    /// next push no longer lists it), and their account deletion strands the address permanently. Read access
-    /// and routing reconciliation both key off this column.
-    /// </para>
+    /// Gets or sets the manifest this alias lives in (and from which owner group can be derived from).
     /// </summary>
     public Guid? VaultManifestId { get; set; }
 
     /// <summary>
-    /// Gets or sets the navigation property to the shared folder this alias lives in.
+    /// Gets or sets the navigation property to the manifest this alias lives in.
     /// </summary>
     [ForeignKey("VaultManifestId")]
     public virtual VaultManifest? VaultManifest { get; set; }
-
-    /// <summary>
-    /// Gets or sets the group this alias is owned by and billed to — like every manifest, an alias is owned by
-    /// a group, never by a user. For a personal alias that is the claimer's Personal group; for an alias in a
-    /// shared folder it is the group that owns the folder, so a family's aliases draw on the family owner's
-    /// allowance no matter which member created them, and stay correct when the folder is transferred.
-    /// Null when the owning group has been deleted (the user deleted their account): the claim is then a
-    /// tombstone kept solely to prevent re-use of the address, and delivery rejects its mail.
-    /// </summary>
-    public Guid? OwnerGroupId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the navigation property to the owning group.
-    /// </summary>
-    [ForeignKey("OwnerGroupId")]
-    public virtual Group? OwnerGroup { get; set; }
 
     /// <summary>
     /// Gets or sets the encryption key incoming mail for this alias is encrypted with. For most cases this will be null,
