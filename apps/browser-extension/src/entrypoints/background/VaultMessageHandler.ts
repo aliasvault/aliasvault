@@ -429,7 +429,7 @@ export async function handleClearVaultData(): Promise<messageBoolResponse> {
   // Clear vault data and every piece of state derived from it (sync bookkeeping, dirty flags, bucket revisions)
   await storage.removeItems(allVaultDataStorageKeys());
 
-  // Clear the cached vault key and wrapped VEK.
+  // Clear the cached vault key and encrypted VEK.
   VaultKeyService.clearCache();
 
   // Clear all local preferences (site settings, login save settings, etc.)
@@ -1352,9 +1352,9 @@ export async function handleGetServerRevision(): Promise<number> {
 /**
  * Adopt a server-side vault key this device does not know about yet.
  *
- * A missing local wrapped-VEK cache means one of two things: this user is genuinely still legacy (their next full
+ * A missing local encrypted-VEK cache means one of two things: this user is genuinely still legacy (their next full
  * push performs the KEK/VEK migration), or another device migrated while this one held the old password-derived key.
- * Every path that adopts a VEK as the session key writes the wrapped-VEK cache first, so a session key that is
+ * Every path that adopts a VEK as the session key writes the encrypted-VEK cache first, so a session key that is
  * already the VEK without a cache is not a reachable state -- it can only come from torn storage, which a re-login fixes.
  *
  * TODO: this method can be removed once all users have migrated to the KEK/VEK model and we don't support legacy users anymore.
@@ -1388,11 +1388,11 @@ async function adoptRemoteVaultKeyIfNeeded(): Promise<boolean> {
     return true;
   }
 
-  const serverWrappedVek = fetchResult.vaultKey.wrappedVek;
+  const serverEncryptedVek = fetchResult.vaultKey.encryptedVek;
   const encryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string | null;
 
   try {
-    const vek = await EncryptionUtility.unwrapVaultEncryptionKey(serverWrappedVek, sessionKey);
+    const vek = await EncryptionUtility.unwrapVaultEncryptionKey(serverEncryptedVek, sessionKey);
 
     // The session key was the KEK: re-encrypt the locally persisted vault with the VEK before swapping the session key.
     if (encryptedVault) {
@@ -1400,7 +1400,7 @@ async function adoptRemoteVaultKeyIfNeeded(): Promise<boolean> {
       await storage.setItem(StorageKeys.ENCRYPTED_VAULT, await EncryptionUtility.symmetricEncrypt(decrypted, vek));
     }
 
-    await storage.setItem(StorageKeys.WRAPPED_VEK, serverWrappedVek);
+    await storage.setItem(StorageKeys.ENCRYPTED_VEK, serverEncryptedVek);
     await handleStoreEncryptionKey(vek);
     cachedSqliteClient = null;
     cachedVaultBlob = null;

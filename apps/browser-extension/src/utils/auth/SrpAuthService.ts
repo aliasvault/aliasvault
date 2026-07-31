@@ -22,8 +22,8 @@ export type RegisterRequest = {
   encryptionSettings: string;
   /** The SRP identity used for authentication (a random GUID generated at registration). */
   srpIdentity: string;
-  /** The wrapped VEK (KEK/VEK model): base64 of the freshly generated VEK encrypted with the password-derived KEK. */
-  wrappedVek: string;
+  /** The encrypted VEK (KEK/VEK model): base64 of the freshly generated VEK encrypted with the password-derived KEK. */
+  encryptedVek: string;
 };
 
 /**
@@ -45,8 +45,8 @@ export type RegistrationResult = {
   token?: TokenModel;
   /** The vault encryption key (VEK, base64) to use for all vault encryption after successful registration. */
   encryptionKey?: string;
-  /** The wrapped VEK to cache locally for offline unlock. */
-  wrappedVek?: string;
+  /** The encrypted VEK to cache locally for offline unlock. */
+  encryptedVek?: string;
   error?: string;
 };
 
@@ -327,11 +327,11 @@ export class SrpAuthService {
     const verifier = await SrpAuthService.deriveVerifier(privateKey);
 
     /*
-     * KEK/VEK: generate a random VEK that will encrypt the vault content, wrapped with the password-derived KEK.
+     * KEK/VEK: generate a random VEK that will encrypt the vault content, encrypted with the password-derived KEK.
      * The server stores only the wrapped form; the VEK itself stays client-side.
      */
     const vaultEncryptionKey = EncryptionUtility.generateVaultEncryptionKey();
-    const wrappedVek = await EncryptionUtility.wrapVaultEncryptionKey(vaultEncryptionKey, credentials.passwordHashBase64);
+    const encryptedVek = await EncryptionUtility.wrapVaultEncryptionKey(vaultEncryptionKey, credentials.passwordHashBase64);
 
     return {
       request: {
@@ -341,7 +341,7 @@ export class SrpAuthService {
         encryptionType: DEFAULT_ENCRYPTION.type,
         encryptionSettings: DEFAULT_ENCRYPTION.settings,
         srpIdentity,
-        wrappedVek,
+        encryptedVek,
       },
       vaultEncryptionKey,
       derivedKey: credentials.passwordHashBase64,
@@ -390,7 +390,7 @@ export class SrpAuthService {
       }
 
       const tokenModel = (await response.json()) as TokenModel;
-      return { success: true, token: tokenModel, encryptionKey: prepared.vaultEncryptionKey, wrappedVek: prepared.request.wrappedVek };
+      return { success: true, token: tokenModel, encryptionKey: prepared.vaultEncryptionKey, encryptedVek: prepared.request.encryptedVek };
     } catch (error) {
       return {
         success: false,

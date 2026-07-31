@@ -2,6 +2,7 @@ import { Buffer } from 'buffer';
 
 import argon2 from 'argon2-browser/dist/argon2-bundled.min.js';
 
+import { devWarn } from '@/utils/devLogger/DevLogger';
 import type { EncryptionKey } from '@/utils/dist/core/models/vault';
 import type { Email, MailboxEmail } from '@/utils/dist/core/models/webapi';
 
@@ -204,10 +205,10 @@ export class EncryptionUtility {
   }
 
   /**
-   * Unwraps (decrypts) a wrapped VEK with a KEK. Returns the VEK as base64.
+   * Unwraps (decrypts) an encrypted VEK with a KEK. Returns the VEK as base64.
    */
-  public static async unwrapVaultEncryptionKey(wrappedVekBase64: string, kekBase64: string): Promise<string> {
-    const wrappedBytes = Uint8Array.from(atob(wrappedVekBase64), c => c.charCodeAt(0));
+  public static async unwrapVaultEncryptionKey(encryptedVekBase64: string, kekBase64: string): Promise<string> {
+    const wrappedBytes = Uint8Array.from(atob(encryptedVekBase64), c => c.charCodeAt(0));
     const vekBytes = await this.symmetricDecryptBytes(wrappedBytes, kekBase64);
     return btoa(String.fromCharCode(...vekBytes));
   }
@@ -408,12 +409,16 @@ export class EncryptionUtility {
 
   /**
    * Decrypts a list of emails based on the provided public/private key pairs.
+   *
+   * Emails that cannot be decrypted are skipped rather than failing the batch. The server only serves mail the
+   * caller holds a key for, so this should not happen but we handle it gracefully to prevent one unreadable record
+   * from breaking the whole list view.
    */
   public static async decryptEmailList(
     emails: MailboxEmail[],
     encryptionKeys: EncryptionKey[]
   ): Promise<MailboxEmail[]> {
-    return Promise.all(emails.map(async email => {
+    const results = await Promise.all(emails.map(async email => {
       try {
         const encryptionKey = encryptionKeys.find(key => key.PublicKey === email.encryptionKey);
 
@@ -444,9 +449,12 @@ export class EncryptionUtility {
 
         return decryptedEmail;
       } catch (err) {
-        throw new Error(err instanceof Error ? err.message : 'Failed to decrypt email');
+        devWarn(`[Email] Skipping email ${email.id}, it could not be decrypted:`, err);
+        return null;
       }
     }));
+
+    return results.filter((email): email is MailboxEmail => email !== null);
   }
 
   /**

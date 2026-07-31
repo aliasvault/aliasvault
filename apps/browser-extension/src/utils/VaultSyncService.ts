@@ -145,12 +145,12 @@ type ManifestDto = {
   name?: string | null;
   /** Username of the manifest owner; set only on manifests granted to the caller by another user. */
   ownerUsername?: string | null;
-  /** The manifest VEK wrapped with the caller's public key; set only on manifests granted by another user. */
-  wrappedVek?: string | null;
-  /** Wrap scheme of `wrappedVek` (e.g. "rsa-oaep"). */
-  wrapScheme?: string | null;
-  /** The public key `wrappedVek` was wrapped with. Selects which of the caller's keypairs unwraps the grant. */
-  wrapPublicKey?: string | null;
+  /** The manifest VEK encrypted with the caller's public key; set only on manifests granted by another user. */
+  encryptedVek?: string | null;
+  /** Algorithm of `encryptedVek` (e.g. "rsa-oaep-sha256"). */
+  algorithm?: string | null;
+  /** The public key `encryptedVek` was encrypted with. Selects which of the caller's keypairs decrypts the grant. */
+  encryptionPublicKey?: string | null;
 };
 
 /** A data bucket as carried in the GET snapshot / bundled upload. `category` matches the server enum name (e.g. "Settings"). */
@@ -209,10 +209,10 @@ type ManifestWriteDto = {
   credentialsCount: number;
   blobReferences: BlobRefDto[];
   /** 
-   * The newly generated VEK wrapped with the password-derived KEK. Set on the root write of a legacy user's first manifest-v1 push.
+   * The newly generated VEK encrypted with the password-derived KEK. Set on the root write of a legacy user's first manifest-v1 push.
    * TODO: can be deleted once all users have migrated to manifest-v1.
    */
-  wrappedVek?: string;
+  encryptedVek?: string;
 };
 
 /** Per-manifest result of a write: the new revision (Ok) or the current server revision (Outdated). */
@@ -430,7 +430,7 @@ export class VaultSyncService {
     }
 
     /*
-     * Resolve every non-root (shared-folder) manifest in the snapshot. The snapshot carries the folder VEK wrapped with the user's public key.
+     * Resolve every non-root (shared-folder) manifest in the snapshot. The snapshot carries the folder VEK encrypted with the user's public key.
      * Unwrap it with the private key, read from the small EncryptionKeys data bucket. A manifest whose key can't be resolved is skipped.
      */
     const sharedManifestDtos = (snapshot.manifests ?? []).filter(m => !m.isRoot && m.blob);
@@ -439,16 +439,16 @@ export class VaultSyncService {
     const encryptionKeysBucket = dataBuckets.find(b => b.category === VaultDataBucketCategory.EncryptionKeys) ?? null;
     for (const dto of sharedManifestDtos) {
       let vek: string | null = null;
-      if (dto.wrappedVek && dto.wrapPublicKey) {
+      if (dto.encryptedVek && dto.encryptionPublicKey) {
         /*
-         * Each grant was wrapped for a specific public key; select the matching private key so a grant wrapped
-         * before a key rotation still unwraps (the current primary is never assumed). A grant without a wrap
-         * public key can't be resolved, so it falls through and the manifest is skipped below.
+         * Each grant was encrypted for a specific public key; select the matching private key so a grant encrypted
+         * before a key rotation still decrypts (the current primary is never assumed). A grant without an encryption
+         * public key cannot be resolved, so it falls through and the manifest is skipped below.
          */
-        const privateKeyJwk = await this.resolvePrivateKeyJwk(encryptionKeysBucket, dto.wrapPublicKey);
+        const privateKeyJwk = await this.resolvePrivateKeyJwk(encryptionKeysBucket, dto.encryptionPublicKey);
         if (privateKeyJwk) {
           try {
-            vek = await SharingService.unwrapFolderVek(dto.wrappedVek, privateKeyJwk);
+            vek = await SharingService.unwrapFolderVek(dto.encryptedVek, privateKeyJwk);
           } catch (e) {
             devWarn(`[V2Pull] Failed to unwrap VEK of shared manifest ${dto.manifestId}, skipping it.`, e);
           }
@@ -595,16 +595,16 @@ export class VaultSyncService {
   /**
    * Resolve the user's asymmetric private key (JWK string) for unwrapping a shared-folder VEK. The keypair lives
    * in the small EncryptionKeys data bucket, decryptable on its own without materializing the root manifest. The
-   * keypair matching `wrapPublicKey` is selected, so a grant wrapped before a key rotation still unwraps even
+   * keypair matching `encryptionPublicKey` is selected, so a grant encrypted before a key rotation still decrypts even
    * though that key is no longer primary. Returns null when no matching key is available.
    * @param encryptionKeysBucket - the decrypted EncryptionKeys data bucket, or null when absent
-   * @param wrapPublicKey - the public key the grant's VEK was wrapped with
+   * @param encryptionPublicKey - the public key the grant's VEK was encrypted with
    */
-  private async resolvePrivateKeyJwk(encryptionKeysBucket: VaultDataBucket | null, wrapPublicKey: string): Promise<string | null> {
+  private async resolvePrivateKeyJwk(encryptionKeysBucket: VaultDataBucket | null, encryptionPublicKey: string): Promise<string | null> {
     if (!encryptionKeysBucket) {
       return null;
     }
-    const keyRow = await vaultCodecExtractEncryptionKeyForPublicKeyFromBucket(encryptionKeysBucket, wrapPublicKey);
+    const keyRow = await vaultCodecExtractEncryptionKeyForPublicKeyFromBucket(encryptionKeysBucket, encryptionPublicKey);
     return typeof keyRow?.PrivateKey === 'string' ? keyRow.PrivateKey : null;
   }
 
@@ -687,7 +687,7 @@ export class VaultSyncService {
      */
     const migrateToVaultKey = options?.createVaultKey === true;
     const contentKey = migrateToVaultKey ? EncryptionUtility.generateVaultEncryptionKey() : vek;
-    const wrappedVek = migrateToVaultKey ? await EncryptionUtility.wrapVaultEncryptionKey(contentKey, vek) : null;
+    const encryptedVek = migrateToVaultKey ? await EncryptionUtility.wrapVaultEncryptionKey(contentKey, vek) : null;
     if (migrateToVaultKey) {
       devLog('[V2Push] KEK/VEK migration: generated new VEK, vault content and all blobs will be re-encrypted and re-uploaded.');
     }
@@ -910,7 +910,7 @@ export class VaultSyncService {
          * Set only on the KEK/VEK migration push, where the server creates the vault key alongside this root revision.
          * A migration always forces a root write (see writeRoot), so the key can never be stranded without one.
          */
-        ...(wrappedVek ? { wrappedVek } : {}),
+        ...(encryptedVek ? { encryptedVek } : {}),
       }] : []),
       ...sharedManifestWrites,
     ];
@@ -1015,12 +1015,12 @@ export class VaultSyncService {
     await this.saveBlobCache(newCache);
 
     /*
-     * KEK/VEK migration completed: cache the wrapped VEK for offline unlock and hand the new VEK to the caller,
+     * KEK/VEK migration completed: cache the encrypted VEK for offline unlock and hand the new VEK to the caller,
      * which must adopt it as the session encryption key and re-encrypt the locally stored vault with it.
      */
-    if (migrateToVaultKey && wrappedVek) {
-      await storage.setItem(StorageKeys.WRAPPED_VEK, wrappedVek);
-      devLog('[V2Push] KEK/VEK migration complete: vault key created server-side, wrapped VEK cached locally.');
+    if (migrateToVaultKey && encryptedVek) {
+      await storage.setItem(StorageKeys.ENCRYPTED_VEK, encryptedVek);
+      devLog('[V2Push] KEK/VEK migration complete: vault key created server-side, encrypted VEK cached locally.');
     }
 
     const uploadedBlobChars = Array.from(uploadedCiphertexts.values()).reduce((sum, c) => sum + c.length, 0);

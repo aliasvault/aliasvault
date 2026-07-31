@@ -44,8 +44,8 @@ export const StorageKeys = {
   HIDDEN_PRIVATE_EMAIL_DOMAINS: 'local:hiddenPrivateEmailDomains',
   /** Argon2 parameters used to derive the KEK from the master password. */
   ENCRYPTION_KEY_DERIVATION_PARAMS: 'local:encryptionKeyDerivationParams',
-  /** The VEK wrapped with the KEK, as returned by the server. */
-  WRAPPED_VEK: 'local:wrappedVek',
+  /** The VEK encrypted with the KEK, as returned by the server. */
+  ENCRYPTED_VEK: 'local:encryptedVek',
 
   /*
    * -- Sync state --
@@ -268,7 +268,7 @@ export const allVaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.MUTATION_SEQUENCE,
   StorageKeys.IS_OFFLINE_MODE,
   StorageKeys.ENCRYPTION_KEY_DERIVATION_PARAMS,
-  StorageKeys.WRAPPED_VEK,
+  StorageKeys.ENCRYPTED_VEK,
   StorageKeys.USERNAME,
   ...ALL_VAULT_MUTATION_SCOPES.map(scope => dirtyScopeStorageKey(scope)),
   ...ALL_VAULT_BUCKET_SCOPES.map(category => bucketRevisionStorageKey(category)),

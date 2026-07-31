@@ -196,6 +196,38 @@ describe('email RSA private key cache', () => {
     }
   });
 
+  it('skips undecryptable emails instead of failing the whole batch', async () => {
+    /*
+     * A mailbox can legitimately contain a message this user has no key for — mail delivered to an alias before
+     * it moved into a shared folder is encrypted with the owner's personal key. The server filters those out,
+     * but if one slips through it must cost that single row, not blank the entire mailbox.
+     */
+    const keyPair = await EncryptionUtility.generateRsaKeyPair();
+    const strangerKeyPair = await EncryptionUtility.generateRsaKeyPair();
+    const encryptionKey: EncryptionKey = {
+      Id: 'key-a',
+      PublicKey: keyPair.publicKey,
+      PrivateKey: keyPair.privateKey,
+      IsPrimary: true,
+    };
+    const strangerKey: EncryptionKey = {
+      Id: 'key-stranger',
+      PublicKey: strangerKeyPair.publicKey,
+      PrivateKey: strangerKeyPair.privateKey,
+      IsPrimary: false,
+    };
+    const emails = [
+      await createMailboxEmail(1, encryptionKey, '0123456789abcdef0123456789abcdef', 'Readable'),
+      await createMailboxEmail(2, strangerKey, 'abcdef0123456789abcdef0123456789', 'Unreadable'),
+      await createMailboxEmail(3, encryptionKey, 'fedcba9876543210fedcba9876543210', 'Also readable'),
+    ];
+
+    // Only the own key is held, so email 2 cannot be decrypted.
+    const decryptedEmails = await EncryptionUtility.decryptEmailList(emails, [encryptionKey]);
+
+    expect(decryptedEmails.map(email => email.subject)).toEqual(['Readable', 'Also readable']);
+  });
+
   it('reuses cached private keys when decrypting attachments', async () => {
     const keyPair = await EncryptionUtility.generateRsaKeyPair();
     const encryptionKey: EncryptionKey = {
