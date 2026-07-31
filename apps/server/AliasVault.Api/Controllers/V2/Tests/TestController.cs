@@ -427,12 +427,12 @@ public class TestController(
     private static async Task<object> BuildRevisionInfoAsync(AliasServerDbContext context, string userId)
     {
         var current = await context.VaultManifests
-            .Where(v => v.OwnerUserId == userId && v.IsRoot)
+            .Where(v => v.IsRoot && context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == v.OwnerGroupId))
             .Select(v => new { v.RevisionNumber, v.CreatedAt, v.UpdatedAt })
             .FirstOrDefaultAsync();
 
         var history = await context.VaultManifestsHistory
-            .Where(v => v.OwnerUserId == userId)
+            .Where(v => context.VaultManifests.Any(m => m.ManifestId == v.ManifestId && context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == m.OwnerGroupId)))
             .OrderByDescending(v => v.RevisionNumber)
             .Select(v => new { v.RevisionNumber, v.CreatedAt, v.UpdatedAt })
             .ToListAsync();
@@ -461,7 +461,7 @@ public class TestController(
     private static async Task<List<long>> PopNewestRevisionsAsync(AliasServerDbContext context, string userId, int count)
     {
         var deletedRevisions = new List<long>();
-        var current = await context.VaultManifests.FirstOrDefaultAsync(v => v.OwnerUserId == userId && v.IsRoot);
+        var current = await context.VaultManifests.FirstOrDefaultAsync(v => v.IsRoot && context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == v.OwnerGroupId));
 
         for (var i = 0; i < count && current != null; i++)
         {

@@ -8,7 +8,7 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Auth;
 
 /// <summary>
-/// Request for POST /v2/Auth/change-password. Carries the new SRP credentials plus the VEK rewrapped
+/// Request for POST /v2/Auth/change-password. Carries the new SRP credentials plus the VEK re-encrypted
 /// with the new password-derived KEK.
 /// </summary>
 public class PasswordChangeRequest
@@ -25,6 +25,6 @@ public class PasswordChangeRequest
     /// <summary>Gets or sets the new SRP verifier.</summary>
     public required string NewPasswordVerifier { get; set; }
 
-    /// <summary>Gets or sets the VEK rewrapped with the KEK derived from the new password and new salt.</summary>
-    public required string NewWrappedVek { get; set; }
+    /// <summary>Gets or sets the VEK re-encrypted with the KEK derived from the new password and new salt.</summary>
+    public required string NewEncryptedVek { get; set; }
 }

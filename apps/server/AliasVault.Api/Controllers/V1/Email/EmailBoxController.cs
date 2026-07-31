@@ -51,7 +51,8 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         var sanitizedEmail = to.Trim().ToLower();
 
         // See if this user has a valid claim to the email address.
-        var emailClaim = await context.UserEmailClaims
+        var emailClaim = await context.EmailClaims
+            .Include(x => x.VaultManifest)
             .FirstOrDefaultAsync(x => x.Address == sanitizedEmail);
 
         if (emailClaim is null || emailClaim.Disabled)
@@ -66,7 +67,8 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             });
         }
 
-        if (emailClaim.UserId != user.Id)
+        // An orphaned claim (no manifest) has no owner, so it matches nobody.
+        if (emailClaim.VaultManifest?.OwnerGroupId != user.PersonalGroupId)
         {
             return BadRequest(new ApiErrorResponse
             {
@@ -140,8 +142,8 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         model.PageSize = Math.Min(model.PageSize, 50);
 
         // Load all email addresses that the user has a claim to where the address is in the list.
-        var validAddresses = await context.UserEmailClaims
-            .Where(claim => claim.UserId == user.Id && model.Addresses.Contains(claim.Address) && !claim.Disabled)
+        var validAddresses = await context.EmailClaims
+            .Where(claim => model.Addresses.Contains(claim.Address) && !claim.Disabled && claim.VaultManifest!.OwnerGroupId == user.PersonalGroupId)
             .Select(claim => claim.Address)
             .ToListAsync();
 

@@ -199,14 +199,14 @@ else
                     u.TwoFactorEnabled,
                     u.Blocked,
                     u.LastActivityDate,
-                    Vaults = u.VaultManifests.Select(v => new
+                    Vaults = dbContext.VaultManifests.Where(m => m.OwnerGroupId == u.PersonalGroupId).Select(v => new
                     {
                         v.FileSize,
                         v.CreatedAt,
                         v.RevisionNumber,
                         CredentialCount = v.CredentialsCount,
                     }),
-                    EmailClaimCount = u.EmailClaims.Count(),
+                    EmailClaimCount = dbContext.EmailClaims.Count(c => c.VaultManifest!.OwnerGroupId == u.PersonalGroupId),
                 })
                 .ToListAsync(cancellationToken);
 
@@ -342,23 +342,23 @@ else
                 break;
             case "VaultCount":
                 query = SortDirection == SortDirection.Ascending
-                    ? query.OrderBy(x => x.VaultManifests.Count)
-                    : query.OrderByDescending(x => x.VaultManifests.Count);
+                    ? query.OrderBy(x => dbContext.VaultManifests.Count(m => m.OwnerGroupId == x.PersonalGroupId))
+                    : query.OrderByDescending(x => dbContext.VaultManifests.Count(m => m.OwnerGroupId == x.PersonalGroupId));
                 break;
             case "CredentialCount":
                 query = SortDirection == SortDirection.Ascending
-                    ? query.OrderBy(x => x.VaultManifests.Sum(v => v.CredentialsCount))
-                    : query.OrderByDescending(x => x.VaultManifests.Sum(v => v.CredentialsCount));
+                    ? query.OrderBy(x => dbContext.VaultManifests.Where(m => m.OwnerGroupId == x.PersonalGroupId).Sum(v => v.CredentialsCount))
+                    : query.OrderByDescending(x => dbContext.VaultManifests.Where(m => m.OwnerGroupId == x.PersonalGroupId).Sum(v => v.CredentialsCount));
                 break;
             case "EmailClaimCount":
                 query = SortDirection == SortDirection.Ascending
-                    ? query.OrderBy(x => x.EmailClaims.Count)
-                    : query.OrderByDescending(x => x.EmailClaims.Count);
+                    ? query.OrderBy(x => dbContext.EmailClaims.Count(c => c.VaultManifest!.OwnerGroupId == x.PersonalGroupId))
+                    : query.OrderByDescending(x => dbContext.EmailClaims.Count(c => c.VaultManifest!.OwnerGroupId == x.PersonalGroupId));
                 break;
             case "VaultStorageInKb":
                 query = SortDirection == SortDirection.Ascending
-                    ? query.OrderBy(x => x.VaultManifests.Sum(v => v.FileSize))
-                    : query.OrderByDescending(x => x.VaultManifests.Sum(v => v.FileSize));
+                    ? query.OrderBy(x => dbContext.VaultManifests.Where(m => m.OwnerGroupId == x.PersonalGroupId).Sum(v => v.FileSize))
+                    : query.OrderByDescending(x => dbContext.VaultManifests.Where(m => m.OwnerGroupId == x.PersonalGroupId).Sum(v => v.FileSize));
                 break;
             case "LastActivityDate":
                 query = SortDirection == SortDirection.Ascending

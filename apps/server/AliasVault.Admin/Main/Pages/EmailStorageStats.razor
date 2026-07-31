@@ -364,8 +364,8 @@
                 break;
             case "UserEmail":
                 query = SortDirection == SortDirection.Ascending
-                    ? query.OrderBy(x => x.Email.EncryptionKey.User.Email)
-                    : query.OrderByDescending(x => x.Email.EncryptionKey.User.Email);
+                    ? query.OrderBy(x => x.Email.EncryptionKey.User!.Email)
+                    : query.OrderByDescending(x => x.Email.EncryptionKey.User!.Email);
                 break;
             default:
                 query = query.OrderByDescending(x => x.Filesize);

@@ -21,8 +21,8 @@ public class ShareMember
     /// <summary>Gets or sets a value indicating whether this member is the folder owner.</summary>
     public required bool IsOwner { get; set; }
 
-    /// <summary>Gets or sets the wrap scheme of the member's grant (null for the owner, whose key is held client-side).</summary>
-    public string? WrapScheme { get; set; }
+    /// <summary>Gets or sets the algorithm of the member's grant (null for the owner, whose key is held client-side).</summary>
+    public string? Algorithm { get; set; }
 
     /// <summary>Gets or sets the timestamp the member's grant was created (null for the owner).</summary>
     public DateTime? GrantedAt { get; set; }

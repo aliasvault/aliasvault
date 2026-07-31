@@ -309,14 +309,14 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(CancellationToken.None);
         var toAddressLocal = toAddress.User.ToLowerInvariant();
         var toAddressDomain = toAddress.Host.ToLowerInvariant();
-        var userEmailClaim = await dbContext.UserEmailClaims
+        var emailClaim = await dbContext.EmailClaims
             .FirstOrDefaultAsync(
                 x =>
                     x.AddressLocal == toAddressLocal &&
                     x.AddressDomain == toAddressDomain,
                 CancellationToken.None);
 
-        if (userEmailClaim is null)
+        if (emailClaim is null)
         {
             // Email address has no user claim with corresponding encryption key, so we cannot process it.
             logger.LogInformation(
@@ -325,18 +325,18 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
             return false;
         }
 
-        if (userEmailClaim.UserId is null)
+        if (emailClaim.VaultManifestId is null)
         {
-            // This email claim has no user attached to it (anymore), which most likely means the user has deleted
-            // its account. We cannot process this email.
+            // The claim is orphaned: the manifest it was associated with no longer exists (owner deleted account),
+            // leaving the claim as a tombstone record that is designed to block re-use of the address. We cannot process this email.
             logger.LogInformation(
-                "Rejected email: email for {ToAddress} is claimed but has no user associated with it. User has most likely deleted their account.",
+                "Rejected email: email for {ToAddress} is claimed but its owning vault no longer exists. The owner has most likely deleted their account.",
                 toAddress.User + "@" + toAddress.Host);
             return false;
         }
 
         // Check if the email claim is disabled.
-        if (userEmailClaim.Disabled)
+        if (emailClaim.Disabled)
         {
             // Email claim is disabled, so we cannot process this email.
             logger.LogInformation(

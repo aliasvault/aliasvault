@@ -9,7 +9,7 @@ namespace AliasVault.Shared.Models.WebApi.V2.Sharing;
 
 /// <summary>
 /// Request for POST /v2/Sharing/folders. Creates a new non-root (shareable) manifest owned by the caller. The
-/// folder's VEK is generated client-side and wrapped for the caller's *own* public key, persisted as a
+/// folder's VEK is generated client-side and encrypted for the caller's *own* public key, persisted as a
 /// <c>shared</c> grant in the same call.
 /// </summary>
 public class CreateSharedFolderRequest
@@ -23,12 +23,12 @@ public class CreateSharedFolderRequest
     /// <summary>Gets or sets the SHA-256 (hex) of the manifest ciphertext, for storage-layer integrity verification.</summary>
     public string? ManifestCiphertextHash { get; set; }
 
-    /// <summary>Gets or sets the folder VEK wrapped with the caller's own public key (base64), decryptable only by the caller.</summary>
-    public required string SelfWrappedVek { get; set; }
+    /// <summary>Gets or sets the folder VEK encrypted with the caller's own public key (base64), decryptable only by the caller.</summary>
+    public required string SelfEncryptedVek { get; set; }
 
-    /// <summary>Gets or sets the id of the caller's own public key used to wrap (from GET /v2/Sharing/recipient for their own username).</summary>
+    /// <summary>Gets or sets the id of the caller's own public key used to encrypt (from GET /v2/Sharing/recipient for their own username).</summary>
     public required Guid SelfPublicKeyId { get; set; }
 
-    /// <summary>Gets or sets the asymmetric wrap scheme used, e.g. "rsa-oaep-sha256". See AliasServerDb.VaultKeyWrapScheme for the supported tokens.</summary>
-    public required string WrapScheme { get; set; }
+    /// <summary>Gets or sets the asymmetric algorithm used.</summary>
+    public required string Algorithm { get; set; }
 }

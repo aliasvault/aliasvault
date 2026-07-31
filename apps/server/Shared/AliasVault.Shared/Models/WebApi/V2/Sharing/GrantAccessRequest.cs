@@ -9,7 +9,7 @@ namespace AliasVault.Shared.Models.WebApi.V2.Sharing;
 
 /// <summary>
 /// Request for POST /v2/Sharing/grant. Grants a recipient access to a shared folder manifest the caller owns, by
-/// persisting the folder's VEK wrapped with the recipient's public key. The server never sees the plaintext VEK.
+/// persisting the folder's VEK encrypted with the recipient's public key. The server never sees the plaintext VEK.
 /// </summary>
 public class GrantAccessRequest
 {
@@ -19,12 +19,12 @@ public class GrantAccessRequest
     /// <summary>Gets or sets the recipient user id (from GET /v2/Sharing/recipient).</summary>
     public required string RecipientUserId { get; set; }
 
-    /// <summary>Gets or sets the folder VEK wrapped with the recipient's public key (base64), decryptable only by the recipient.</summary>
-    public required string WrappedVek { get; set; }
+    /// <summary>Gets or sets the folder VEK encrypted with the recipient's public key (base64), decryptable only by the recipient.</summary>
+    public required string EncryptedVek { get; set; }
 
-    /// <summary>Gets or sets the id of the recipient public key used to wrap (from GET /v2/Sharing/recipient).</summary>
+    /// <summary>Gets or sets the id of the recipient public key used to encrypt (from GET /v2/Sharing/recipient).</summary>
     public required Guid RecipientPublicKeyId { get; set; }
 
-    /// <summary>Gets or sets the asymmetric wrap scheme used, e.g. "rsa-oaep-sha256". See AliasServerDb.VaultKeyWrapScheme for the supported tokens.</summary>
-    public required string WrapScheme { get; set; }
+    /// <summary>Gets or sets the assymetric algorithm used..</summary>
+    public required string Algorithm { get; set; }
 }

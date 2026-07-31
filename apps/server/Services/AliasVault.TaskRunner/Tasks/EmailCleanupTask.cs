@@ -78,8 +78,8 @@ public class EmailCleanupTask : IMaintenanceTask
             var userCutoffDate = DateTime.UtcNow.AddDays(-user.MaxEmailAgeDays);
 
             // Get all email addresses for this user
-            var userAddresses = await dbContext.UserEmailClaims
-                .Where(c => c.UserId == user.Id)
+            var userAddresses = await dbContext.EmailClaims
+                .Where(c => dbContext.AliasVaultUsers.Any(u => u.Id == user.Id && u.PersonalGroupId == c.VaultManifest!.OwnerGroupId))
                 .Select(c => c.Address)
                 .ToListAsync(cancellationToken);
 

@@ -33,7 +33,7 @@ public static class VaultStatusHelper
     }
 
     /// <summary>
-    /// The revision entries for every manifest owned by <paramref name="userId"/>, across all storage formats.
+    /// The revision entries for every manifest owned groups that the user is owner of>.
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="userId">The id of the user to build owned manifest revisions for.</param>
@@ -41,7 +41,7 @@ public static class VaultStatusHelper
     private static async Task<List<ManifestRevision>> GetOwnedManifestRevisionsAsync(AliasServerDbContext context, string userId)
     {
         return await context.VaultManifests
-            .Where(x => x.OwnerUserId == userId)
+            .Where(x => context.GroupMembers.Any(m => m.GroupId == x.OwnerGroupId && m.UserId == userId && m.Role == GroupRole.Owner))
             .Select(x => new ManifestRevision { ManifestId = x.ManifestId, IsRoot = x.IsRoot, Revision = x.RevisionNumber })
             .ToListAsync();
     }
@@ -75,9 +75,9 @@ public static class VaultStatusHelper
     private static async Task<List<Guid>> GetGrantedManifestIdsAsync(AliasServerDbContext context, string userId)
     {
         return await context.VaultKeys
-            .Where(k => k.UserId == userId && k.KeyType == AuthHelper.VaultKeyTypeShared && k.VaultManifestId != null
-                && context.VaultManifests.Any(m => m.ManifestId == k.VaultManifestId && m.OwnerUserId != userId))
-            .Select(k => k.VaultManifestId!.Value)
+            .Where(k => k.UserId == userId && k.Type == VaultKeyType.PublicKey
+                && context.VaultManifests.Any(m => m.ManifestId == k.VaultManifestId && !context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == userId && gm.Role == GroupRole.Owner)))
+            .Select(k => k.VaultManifestId)
             .ToListAsync();
     }
 }

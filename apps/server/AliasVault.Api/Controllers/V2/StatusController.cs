@@ -62,7 +62,7 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
             .ToListAsync();
 
         // Current SRP salt: lives on the password VaultKey for v2 migrated users, on the root manifest for legacy users.
-        var encryptionSettings = AuthHelper.GetUserLatestVaultEncryptionSettings(user);
+        var encryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, user);
 
         // Check client version compatibility if the header is provided.
         var clientSupported = false;

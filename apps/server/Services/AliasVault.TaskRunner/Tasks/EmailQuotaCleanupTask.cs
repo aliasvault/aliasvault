@@ -47,7 +47,8 @@ public class EmailQuotaCleanupTask : IMaintenanceTask
 
         // Get all users with their email claims and limits
         var usersWithClaims = await (from u in dbContext.AliasVaultUsers
-                                     join c in dbContext.UserEmailClaims on u.Id equals c.UserId
+                                     join m in dbContext.VaultManifests on u.PersonalGroupId equals m.OwnerGroupId
+                                     join c in dbContext.EmailClaims on (Guid?)m.ManifestId equals c.VaultManifestId
                                      select new { u.Id, u.UserName, u.MaxEmails, u.LastActivityDate, u.CreatedAt, c.Address })
             .ToListAsync(cancellationToken);
 

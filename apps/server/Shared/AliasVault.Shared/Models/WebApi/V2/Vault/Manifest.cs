@@ -43,17 +43,17 @@ public class Manifest
     public string? OwnerUsername { get; set; }
 
     /// <summary>
-    /// Gets or sets the manifest VEK wrapped with the caller's public key. Set only on manifests granted to the
-    /// caller by another user; the caller unwraps it with their private key. Null on manifests the caller owns
+    /// Gets or sets the manifest VEK encrypted with the caller's public key. Set only on manifests granted to the
+    /// caller by another user; the caller decrypts it with their private key. Null on manifests the caller owns
     /// (the owner keeps their own copy of the folder VEK inside their root vault).
     /// </summary>
-    public string? WrappedVek { get; set; }
+    public string? EncryptedVek { get; set; }
 
-    /// <summary>Gets or sets the wrap scheme of <see cref="WrappedVek"/> (e.g. "rsa-oaep-sha256"). Null when <see cref="WrappedVek"/> is null.</summary>
-    public string? WrapScheme { get; set; }
+    /// <summary>Gets or sets the algorithm of <see cref="EncryptedVek"/> (e.g. "rsa-oaep-sha256"). Null when <see cref="EncryptedVek"/> is null.</summary>
+    public string? Algorithm { get; set; }
 
     /// <summary>
-    /// Gets or sets the public key <see cref="WrappedVek"/> was wrapped with.
+    /// Gets or sets the public key <see cref="EncryptedVek"/> was encrypted with.
     /// </summary>
-    public string? WrapPublicKey { get; set; }
+    public string? EncryptionPublicKey { get; set; }
 }

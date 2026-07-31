@@ -18,9 +18,9 @@ public static class EmailEncryption
     /// Encrypt the email contents with the user's public key.
     /// </summary>
     /// <param name="email">The plain text email object to encrypt.</param>
-    /// <param name="userEncryptionKey">The user public encryption key to use for the encryption.</param>
+    /// <param name="encryptionKey">The user public encryption key to use for the encryption.</param>
     /// <returns>Email object with all sensitive fields encrypted.</returns>
-    public static Email EncryptEmail(Email email, UserEncryptionKey userEncryptionKey)
+    public static Email EncryptEmail(Email email, EncryptionKey encryptionKey)
     {
         // Generate symmetric key for email encryption.
         var symmetricKey = Encryption.GenerateRandomSymmetricKey();
@@ -54,8 +54,8 @@ public static class EmailEncryption
         }
 
         // Encrypt the symmetric key with the user's public key.
-        email.EncryptedSymmetricKey = Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, userEncryptionKey.PublicKey);
-        email.UserEncryptionKeyId = userEncryptionKey.Id;
+        email.EncryptedSymmetricKey = Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, encryptionKey.PublicKey);
+        email.EncryptionKeyId = encryptionKey.Id;
 
         return email;
     }

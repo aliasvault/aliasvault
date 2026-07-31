@@ -166,8 +166,8 @@ else
             }
 
             // Get all usernames for the emails in the current list
-            var encryptionKeyIds = emailList.Select(x => x.UserEncryptionKeyId).Distinct().ToList();
-            var encryptionKeyUsernames = await dbContext.UserEncryptionKeys
+            var encryptionKeyIds = emailList.Select(x => x.EncryptionKeyId).Distinct().ToList();
+            var encryptionKeyUsernames = await dbContext.EncryptionKeys
                         .Where(x => encryptionKeyIds.Contains(x.Id))
                         .Join(dbContext.AliasVaultUsers, x => x.UserId, y => y.Id, (x, y) => new { EncryptionKeyId = x.Id, UserId = y.Id, y.UserName, y.Blocked })
                         .ToListAsync(cancellationToken);
@@ -177,7 +177,7 @@ else
 
             foreach (var email in emailList)
             {
-                var encryptionKey = encryptionKeyUsernames.FirstOrDefault(x => x.EncryptionKeyId == email.UserEncryptionKeyId);
+                var encryptionKey = encryptionKeyUsernames.FirstOrDefault(x => x.EncryptionKeyId == email.EncryptionKeyId);
                 EmailViewModelList.Add(new EmailViewModel
                 {
                     Email = email,

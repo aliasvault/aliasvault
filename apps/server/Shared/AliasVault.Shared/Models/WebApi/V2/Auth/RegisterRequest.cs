@@ -8,8 +8,8 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Auth;
 
 /// <summary>
-/// Register request model for the v2 endpoint. Includes the wrapped VEK so registration can create the user's
-/// VaultKey (KEK/VEK model) atomically. When <see cref="WrappedVek"/> is omitted the user is registered on the
+/// Register request model for the v2 endpoint. Includes the encrypted VEK so registration can create the user's
+/// VaultKey (KEK/VEK model) atomically. When <see cref="EncryptedVek"/> is omitted the user is registered on the
 /// legacy model and migrates on their first vault upload from a KEK/VEK-capable client.
 /// </summary>
 public class RegisterRequest
@@ -23,8 +23,8 @@ public class RegisterRequest
     /// <param name="encryptionType">The encryption type.</param>
     /// <param name="encryptionSettings">The encryption settings.</param>
     /// <param name="srpIdentity">The SRP identity.</param>
-    /// <param name="wrappedVek">The wrapped VEK.</param>
-    public RegisterRequest(string username, string salt, string verifier, string encryptionType, string encryptionSettings, string? srpIdentity = null, string? wrappedVek = null)
+    /// <param name="encryptedVek">The encrypted VEK.</param>
+    public RegisterRequest(string username, string salt, string verifier, string encryptionType, string encryptionSettings, string? srpIdentity = null, string? encryptedVek = null)
     {
         Username = username.ToLowerInvariant().Trim();
         Salt = salt;
@@ -32,7 +32,7 @@ public class RegisterRequest
         EncryptionType = encryptionType;
         EncryptionSettings = encryptionSettings;
         SrpIdentity = srpIdentity;
-        WrappedVek = wrappedVek;
+        EncryptedVek = encryptedVek;
     }
 
     /// <summary>
@@ -68,8 +68,8 @@ public class RegisterRequest
     public string? SrpIdentity { get; }
 
     /// <summary>
-    /// Gets the wrapped VEK: base64(IV ‖ ciphertext ‖ authTag) of the freshly generated VEK encrypted with the
+    /// Gets the encrypted VEK: base64(IV ‖ ciphertext ‖ authTag) of the freshly generated VEK encrypted with the
     /// password-derived KEK using AES-256-GCM. Null for legacy registrations.
     /// </summary>
-    public string? WrappedVek { get; }
+    public string? EncryptedVek { get; }
 }

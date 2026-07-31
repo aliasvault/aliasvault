@@ -180,12 +180,12 @@ public enum ApiErrorCode
     SHARE_NOT_FOUND,
 
     /// <summary>
-    /// The recipient has no usable public key to wrap a shared vault key for, or the referenced key is invalid.
+    /// The recipient has no usable public key to encrypt a shared vault key for, or the referenced key is invalid.
     /// </summary>
     RECIPIENT_KEY_NOT_FOUND,
 
     /// <summary>
-    /// The supplied wrap scheme is not valid for the requested operation.
+    /// The supplied algorithm is not valid for the requested operation.
     /// </summary>
-    INVALID_WRAP_SCHEME,
+    INVALID_ALGORITHM,
 }

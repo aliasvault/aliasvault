@@ -97,7 +97,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // Get latest vault revision number and salt.
         await using var context = await dbContextFactory.CreateDbContextAsync();
         var latestVault = await context.VaultManifests
-            .Where(x => x.OwnerUserId == user.Id && x.IsRoot)
+            .Where(x => x.IsRoot && x.OwnerGroupId == user.PersonalGroupId)
             .Select(x => new { x.RevisionNumber, x.Salt })
             .FirstOrDefaultAsync();
 
@@ -154,7 +154,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Retrieve latest vault of user which contains the current salt and verifier.
-        var latestVaultEncryptionSettings = AuthHelper.GetUserLatestVaultEncryptionSettings(user);
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var latestVaultEncryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, user);
 
         // Get or create SRP identity. For existing users without SrpIdentity, fall back to username (lowercase).
         var srpIdentity = user.SrpIdentity ?? user.UserName!.ToLowerInvariant();
@@ -455,7 +456,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Retrieve latest vault of user which contains the current salt and verifier.
-        var latestVaultEncryptionSettings = AuthHelper.GetUserLatestVaultEncryptionSettings(user);
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var latestVaultEncryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, user);
 
         // Get or create SRP identity. For existing users without SrpIdentity, fall back to username (lowercase).
         var srpIdentity = user.SrpIdentity ?? user.UserName!.ToLowerInvariant();
@@ -532,7 +534,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Retrieve latest vault of user which contains the current salt and verifier.
-        var latestVaultEncryptionSettings = AuthHelper.GetUserLatestVaultEncryptionSettings(user);
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var latestVaultEncryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, user);
 
         // Get or create SRP identity. For existing users without SrpIdentity, fall back to username (lowercase).
         var srpIdentity = user.SrpIdentity ?? user.UserName!.ToLowerInvariant();
@@ -772,7 +775,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Validate the SRP session (actual password check).
-        var serverSession = AuthHelper.ValidateSrpSession(cache, user, model.ClientPublicEphemeral, model.ClientSessionProof);
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var serverSession = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.ClientPublicEphemeral, model.ClientSessionProof);
         if (serverSession is null)
         {
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.AccountDeletion, AuthFailureReason.InvalidPassword);
@@ -782,9 +786,10 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // Log the successful account deletion.
         await authLoggingService.LogAuthEventSuccessAsync(user.UserName!, AuthEventType.AccountDeletion);
 
-        // Delete the user and their data.
-        await using var context = await dbContextFactory.CreateDbContextAsync();
+        // Delete the user and their personal group.
+        var personalGroup = await context.Groups.FirstAsync(g => g.Id == user.PersonalGroupId);
         context.AliasVaultUsers.Remove(user);
+        context.Groups.Remove(personalGroup);
         await context.SaveChangesAsync();
 
         return Ok(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_SUCCESSFULLY_DELETED, 200));
@@ -935,7 +940,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Validate the SRP session (actual password check).
-        var serverSession = AuthHelper.ValidateSrpSession(cache, user, model.ClientPublicEphemeral, model.ClientSessionProof);
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var serverSession = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.ClientPublicEphemeral, model.ClientSessionProof);
         if (serverSession is null)
         {
             // Increment failed login attempts in order to lock out the account when the limit is reached.

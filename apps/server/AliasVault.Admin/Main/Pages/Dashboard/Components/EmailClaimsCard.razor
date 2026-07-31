@@ -99,7 +99,7 @@
 
         // Get email claims statistics
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
-        var emailClaimsQuery = dbContext.UserEmailClaims.AsQueryable();
+        var emailClaimsQuery = dbContext.EmailClaims.AsQueryable();
         EmailClaimsStats = new EmailClaimsStatistics
         {
             Hours24 = await emailClaimsQuery.CountAsync(e => e.CreatedAt >= hours24),
@@ -121,7 +121,7 @@
             var dateFrom = DateTime.UtcNow.AddDays(-DaysToShow);
 
             // Get daily email claim counts for the chart
-            DailyEmailClaimCounts = await dbContext.UserEmailClaims
+            DailyEmailClaimCounts = await dbContext.EmailClaims
                 .Where(e => e.CreatedAt >= dateFrom)
                 .GroupBy(e => e.CreatedAt.Date)
                 .Select(g => new DailyEmailClaimCount

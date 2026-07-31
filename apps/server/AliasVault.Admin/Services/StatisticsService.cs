@@ -138,18 +138,20 @@ public class StatisticsService
 
         // Get total count
         var totalCount = await context.VaultManifests
-            .GroupBy(v => v.OwnerUserId)
+            .Join(context.AliasVaultUsers, m => m.OwnerGroupId, u => u.PersonalGroupId, (m, u) => u.Id)
+            .Distinct()
             .CountAsync();
 
         // Get paginated data
         var topUsers = await context.VaultManifests
-            .GroupBy(v => v.OwnerUserId)
+            .Join(context.AliasVaultUsers, m => m.OwnerGroupId, u => u.PersonalGroupId, (m, u) => new { Manifest = m, u.Id, u.UserName, u.Blocked })
+            .GroupBy(x => new { x.Id, x.UserName, x.Blocked })
             .Select(g => new
             {
-                UserId = g.Key,
-                Username = g.First().User.UserName,
-                Blocked = g.First().User.Blocked,
-                TotalStorageBytes = g.Sum(v => v.FileSize),
+                UserId = g.Key.Id,
+                Username = g.Key.UserName,
+                Blocked = g.Key.Blocked,
+                TotalStorageBytes = g.Sum(v => v.Manifest.FileSize),
             })
             .OrderByDescending(u => u.TotalStorageBytes)
             .Skip((page - 1) * pageSize)
@@ -182,20 +184,20 @@ public class StatisticsService
         await using var context = await _contextFactory.CreateDbContextAsync();
 
         // Get total count
-        var totalCount = await context.UserEmailClaims
-            .Where(uec => uec.UserId != null)
-            .GroupBy(uec => uec.UserId)
+        var totalCount = await context.EmailClaims
+            .Join(context.AliasVaultUsers, c => (Guid?)c.VaultManifest!.OwnerGroupId, u => (Guid?)u.PersonalGroupId, (c, u) => u.Id)
+            .Distinct()
             .CountAsync();
 
         // Get paginated data
-        var topUsers = await context.UserEmailClaims
-            .Where(uec => uec.UserId != null)
-            .GroupBy(uec => uec.UserId)
+        var topUsers = await context.EmailClaims
+            .Join(context.AliasVaultUsers, c => (Guid?)c.VaultManifest!.OwnerGroupId, u => (Guid?)u.PersonalGroupId, (c, u) => new { u.Id, u.UserName, u.Blocked })
+            .GroupBy(x => new { x.Id, x.UserName, x.Blocked })
             .Select(g => new
             {
-                UserId = g.Key,
-                Username = g.First().User!.UserName,
-                Blocked = g.First().User!.Blocked,
+                UserId = g.Key.Id,
+                Username = g.Key.UserName,
+                Blocked = g.Key.Blocked,
                 AliasCount = g.Count(),
             })
             .OrderByDescending(u => u.AliasCount)
@@ -273,18 +275,20 @@ public class StatisticsService
 
         // Get total count - using latest vault for each user
         var totalCount = await context.VaultManifests
-            .GroupBy(v => v.OwnerUserId)
+            .Join(context.AliasVaultUsers, m => m.OwnerGroupId, u => u.PersonalGroupId, (m, u) => u.Id)
+            .Distinct()
             .CountAsync();
 
         // Get paginated data - using latest vault version for each user
         var topUsers = await context.VaultManifests
-            .GroupBy(v => v.OwnerUserId)
+            .Join(context.AliasVaultUsers, m => m.OwnerGroupId, u => u.PersonalGroupId, (m, u) => new { Manifest = m, u.Id, u.UserName, u.Blocked })
+            .GroupBy(x => new { x.Id, x.UserName, x.Blocked })
             .Select(g => new
             {
-                UserId = g.Key,
-                Username = g.First().User.UserName,
-                Blocked = g.First().User.Blocked,
-                CredentialCount = g.Sum(v => v.CredentialsCount),
+                UserId = g.Key.Id,
+                Username = g.Key.UserName,
+                Blocked = g.Key.Blocked,
+                CredentialCount = g.Sum(v => v.Manifest.CredentialsCount),
             })
             .OrderByDescending(u => u.CredentialCount)
             .Skip((page - 1) * pageSize)
@@ -319,7 +323,7 @@ public class StatisticsService
 
         // Get latest vault for this user to get credential and email claim counts
         var latestVault = await context.VaultManifests
-            .Where(v => v.OwnerUserId == userId)
+            .Where(v => context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == v.OwnerGroupId))
             .OrderByDescending(v => v.RevisionNumber)
             .FirstOrDefaultAsync();
 
@@ -329,12 +333,12 @@ public class StatisticsService
             stats.TotalActiveEmailClaims = latestVault.EmailClaimsCount;
         }
 
-        // Get total disabled email claims (all-time) - query UserEmailClaims directly
-        stats.TotalDisabledEmailClaims = await context.UserEmailClaims
-            .Where(uec => uec.UserId == userId && uec.Disabled)
+        // Get total disabled email claims (all-time) - query EmailClaims directly
+        stats.TotalDisabledEmailClaims = await context.EmailClaims
+            .Where(uec => uec.Disabled && context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == uec.VaultManifest!.OwnerGroupId))
             .CountAsync();
 
-        // Get total received emails (all-time) - using UserEncryptionKey relationship
+        // Get total received emails (all-time) - using EncryptionKey relationship
         stats.TotalReceivedEmails = await context.Emails
             .Where(e => e.EncryptionKey.UserId == userId)
             .CountAsync();
@@ -345,11 +349,11 @@ public class StatisticsService
 
         // Get recent statistics (last 72 hours).
         var recentCurrentRevisions = await context.VaultManifests
-            .Where(v => v.OwnerUserId == userId && v.CreatedAt >= cutoffDate)
+            .Where(v => v.CreatedAt >= cutoffDate && context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == v.OwnerGroupId))
             .Select(v => new { v.RevisionNumber, v.CredentialsCount, v.EmailClaimsCount })
             .ToListAsync();
         var recentHistoryRevisions = await context.VaultManifestsHistory
-            .Where(v => v.OwnerUserId == userId && v.CreatedAt >= cutoffDate)
+            .Where(v => v.CreatedAt >= cutoffDate && context.VaultManifests.Any(m => m.ManifestId == v.ManifestId && context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == m.OwnerGroupId)))
             .Select(v => new { v.RevisionNumber, v.CredentialsCount, v.EmailClaimsCount })
             .ToListAsync();
         var recentVaultVersions = recentCurrentRevisions.Concat(recentHistoryRevisions).ToList();
@@ -447,7 +451,7 @@ public class StatisticsService
     private async Task<int> GetTotalAliasesAsync()
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
-        return await context.UserEmailClaims.CountAsync();
+        return await context.EmailClaims.CountAsync();
     }
 
     /// <summary>
@@ -511,12 +515,13 @@ public class StatisticsService
         await using var context = await _contextFactory.CreateDbContextAsync();
         var cutoffDate = DateTime.UtcNow.AddHours(-72);
 
-        var topUsers = await context.UserEmailClaims
-            .Where(uec => uec.UserId != null && uec.CreatedAt >= cutoffDate)
-            .GroupBy(uec => new { uec.UserId, uec.User!.UserName, uec.User.Blocked, uec.User.CreatedAt })
+        var topUsers = await context.EmailClaims
+            .Where(uec => uec.CreatedAt >= cutoffDate)
+            .Join(context.AliasVaultUsers, c => (Guid?)c.VaultManifest!.OwnerGroupId, u => (Guid?)u.PersonalGroupId, (c, u) => u)
+            .GroupBy(u => new { u.Id, u.UserName, u.Blocked, u.CreatedAt })
             .Select(g => new
             {
-                UserId = g.Key.UserId,
+                UserId = g.Key.Id,
                 Username = g.Key.UserName,
                 IsDisabled = g.Key.Blocked,
                 RegistrationDate = g.Key.CreatedAt,

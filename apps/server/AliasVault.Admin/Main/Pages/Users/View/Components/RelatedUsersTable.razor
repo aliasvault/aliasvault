@@ -157,13 +157,14 @@ else
         // Get vault statistics for all related users (from their latest vault)
         var userIds = users.Select(u => u.Id).ToList();
         var vaultStats = await dbContext.VaultManifests
-            .Where(v => userIds.Contains(v.OwnerUserId))
-            .GroupBy(v => v.OwnerUserId)
+            .Join(dbContext.AliasVaultUsers, m => m.OwnerGroupId, u => u.PersonalGroupId, (m, u) => new { Manifest = m, OwnerUserId = u.Id })
+            .Where(x => userIds.Contains(x.OwnerUserId))
+            .GroupBy(x => x.OwnerUserId)
             .Select(g => new
             {
                 UserId = g.Key,
-                CredentialsCount = g.Sum(v => v.CredentialsCount),
-                EmailClaimsCount = g.Sum(v => v.EmailClaimsCount)
+                CredentialsCount = g.Sum(v => v.Manifest.CredentialsCount),
+                EmailClaimsCount = g.Sum(v => v.Manifest.EmailClaimsCount)
             })
             .ToListAsync();
 

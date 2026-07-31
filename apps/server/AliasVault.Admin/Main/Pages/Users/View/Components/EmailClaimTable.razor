@@ -64,7 +64,7 @@ else
     /// <summary>
     /// Gets or sets the list of email claims to display.
     /// </summary>
-    private List<UserEmailClaimWithCount> EmailClaimList { get; set; } = [];
+    private List<EmailClaimWithCount> EmailClaimList { get; set; } = [];
 
     private bool IsLoading { get; set; } = true;
 
@@ -81,7 +81,7 @@ else
         new TableColumn { Title = "Actions", PropertyName = "" },
     ];
 
-    private IEnumerable<UserEmailClaimWithCount> SortedEmailClaimList =>
+    private IEnumerable<EmailClaimWithCount> SortedEmailClaimList =>
         SortList(ShowDisabled ? EmailClaimList : EmailClaimList.Where(e => !e.Disabled).ToList(), SortColumn, SortDirection);
 
     /// <inheritdoc />
@@ -110,8 +110,8 @@ else
         }
 
         // Load all email claims for this user
-        var claims = await dbContext.UserEmailClaims
-            .Where(x => x.UserId == User.Id)
+        var claims = await dbContext.EmailClaims
+            .Where(x => x.VaultManifest!.OwnerGroupId == User.PersonalGroupId)
             .OrderBy(x => x.CreatedAt)
             .ToListAsync();
 
@@ -127,7 +127,7 @@ else
 
         var emailCountDict = emailCounts.ToDictionary(x => x.Address, x => x.Count);
 
-        EmailClaimList = claims.Select(x => new UserEmailClaimWithCount
+        EmailClaimList = claims.Select(x => new EmailClaimWithCount
         {
             Id = x.Id,
             Address = x.Address,
@@ -159,14 +159,14 @@ else
     /// <summary>
     /// This method will toggle the disabled status of an email claim.
     /// </summary>
-    private async Task ToggleEmailClaimStatus(UserEmailClaimWithCount entry)
+    private async Task ToggleEmailClaimStatus(EmailClaimWithCount entry)
     {
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
 
         if (entry.Disabled)
         {
             // Enable email claim without confirmation.
-            var emailClaim = await dbContext.UserEmailClaims.FindAsync(entry.Id);
+            var emailClaim = await dbContext.EmailClaims.FindAsync(entry.Id);
             if (emailClaim != null)
             {
                 // Re-enable the email claim.
@@ -189,7 +189,7 @@ Important notes:
 Do you want to proceed with disabling this claim?"))
             {
                 // Load email claim
-                var emailClaim = await dbContext.UserEmailClaims.FindAsync(entry.Id);
+                var emailClaim = await dbContext.EmailClaims.FindAsync(entry.Id);
                 if (emailClaim != null)
                 {
                     // Set the disabled status to true.
@@ -217,7 +217,7 @@ Do you want to proceed with disabling all email claims?"))
             await using var dbContext = await DbContextFactory.CreateDbContextAsync();
 
             // Load email claims
-            var emailClaims = await dbContext.UserEmailClaims.Where(x => x.UserId == User.Id).ToListAsync();
+            var emailClaims = await dbContext.EmailClaims.Where(x => x.VaultManifest!.OwnerGroupId == User.PersonalGroupId).ToListAsync();
 
             // Disable all email claims.
             foreach (var emailClaim in emailClaims)
@@ -231,7 +231,7 @@ Do you want to proceed with disabling all email claims?"))
         }
     }
 
-    private static IEnumerable<UserEmailClaimWithCount> SortList(List<UserEmailClaimWithCount> emailClaims, string sortColumn, SortDirection sortDirection)
+    private static IEnumerable<EmailClaimWithCount> SortList(List<EmailClaimWithCount> emailClaims, string sortColumn, SortDirection sortDirection)
     {
         return sortColumn switch
         {

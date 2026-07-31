@@ -51,7 +51,7 @@ public class IdentityController(UserManager<AliasVaultUser> userManager, IAliasS
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
         var sanitizedEmail = EmailHelper.SanitizeEmail(email);
-        var claimExists = await context.UserEmailClaims.FirstOrDefaultAsync(c => c.Address == sanitizedEmail);
+        var claimExists = await context.EmailClaims.FirstOrDefaultAsync(c => c.Address == sanitizedEmail);
 
         return claimExists != null;
     }

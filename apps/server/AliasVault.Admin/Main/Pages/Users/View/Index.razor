@@ -384,7 +384,7 @@ else
 
         // Load all vault revisions for this user: the current revision per manifest plus the history revisions
         // (do not load the actual file content for performance reasons).
-        var currentManifests = await dbContext.VaultManifests.Where(x => x.OwnerUserId == User.Id).Select(x => new VaultManifest
+        var currentManifests = await dbContext.VaultManifests.Where(x => x.OwnerGroupId == User.PersonalGroupId).Select(x => new VaultManifest
             {
                 ManifestId = x.ManifestId,
                 IsRoot = x.IsRoot,
@@ -405,10 +405,9 @@ else
             })
             .ToListAsync();
 
-        var historyRevisions = await dbContext.VaultManifestsHistory.Where(x => x.OwnerUserId == User.Id).Select(x => new VaultManifestsHistory
+        var historyRevisions = await dbContext.VaultManifestsHistory.Where(x => x.Manifest.OwnerGroupId == User.PersonalGroupId).Select(x => new VaultManifestsHistory
             {
                 ManifestId = x.ManifestId,
-                OwnerUserId = x.OwnerUserId,
                 StorageFormat = x.StorageFormat,
                 Version = x.Version,
                 RevisionNumber = x.RevisionNumber,

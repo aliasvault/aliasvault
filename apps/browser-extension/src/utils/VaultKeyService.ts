@@ -29,7 +29,7 @@ const VAULT_KEY_CACHE_TTL_MS = 1000;
 /**
  * Process-wide (background service worker) cache of the last successful password vault key response.
  *
- * This exists for NOT-yet-migrated users. A migrated device answers "do I have a vault key" from its local wrapped-VEK
+ * This exists for NOT-yet-migrated users. A migrated device answers "do I have a vault key" from its local encrypted-VEK
  * cache and never probes at all, but a legacy device has nothing to cache, so every caller that asks would otherwise
  * issue its own GET — several per sync across the status check and the push path.
  */
@@ -41,8 +41,8 @@ let cachedVaultKey: { data: FetchVaultKeyResult; timestamp: number } | null = nu
 export type ResolvedEncryptionKey = {
   /** The key to use for all vault encryption/decryption: the VEK for migrated users, the derived key for legacy users. */
   encryptionKey: string;
-  /** The wrapped VEK when the user is on the KEK/VEK model, null for legacy users. */
-  wrappedVek: string | null;
+  /** The encrypted VEK when the user is on the KEK/VEK model, null for legacy users. */
+  encryptedVek: string | null;
 };
 
 /**
@@ -91,50 +91,50 @@ export class VaultKeyService {
 
   /**
    * Resolve the vault encryption key right after authentication: fetch the vault key from the server, unwrap the
-   * VEK with the password-derived key (KEK), and cache the wrapped VEK for offline unlock. For legacy users
+   * VEK with the password-derived key (KEK), and cache the encrypted VEK for offline unlock. For legacy users
    * (server explicitly reports no vault key) the derived key itself is the encryption key and any stale cached
-   * wrapped VEK is cleared.
+   * encrypted VEK is cleared.
    * @param derivedKeyBase64 - the password-derived key (the KEK)
    * @param webApi - the API client to use
-   * @throws Error with {@link AppErrorCode.VAULT_DECRYPT_FAILED} when the wrapped VEK cannot be unwrapped with the
+   * @throws Error with {@link AppErrorCode.VAULT_DECRYPT_FAILED} when the encrypted VEK cannot be unwrapped with the
    *   derived key (wrong password, or key material out of sync).
    */
   public static async resolveEncryptionKey(derivedKeyBase64: string, webApi?: WebApiService): Promise<ResolvedEncryptionKey> {
     const result = await VaultKeyService.fetchVaultKey(webApi);
 
     if (!result.supported) {
-      // Older server: trust the local cache. Legacy accounts have no cached wrapped VEK and use the derived key.
-      const cachedWrappedVek = await storage.getItem(StorageKeys.WRAPPED_VEK) as string | null;
-      if (!cachedWrappedVek) {
-        return { encryptionKey: derivedKeyBase64, wrappedVek: null };
+      // Older server: trust the local cache. Legacy accounts have no cached encrypted VEK and use the derived key.
+      const cachedEncryptedVek = await storage.getItem(StorageKeys.ENCRYPTED_VEK) as string | null;
+      if (!cachedEncryptedVek) {
+        return { encryptionKey: derivedKeyBase64, encryptedVek: null };
       }
 
-      return { encryptionKey: await VaultKeyService.unwrapOrThrow(cachedWrappedVek, derivedKeyBase64), wrappedVek: cachedWrappedVek };
+      return { encryptionKey: await VaultKeyService.unwrapOrThrow(cachedEncryptedVek, derivedKeyBase64), encryptedVek: cachedEncryptedVek };
     }
 
     if (!result.vaultKey) {
-      await storage.removeItem(StorageKeys.WRAPPED_VEK);
-      return { encryptionKey: derivedKeyBase64, wrappedVek: null };
+      await storage.removeItem(StorageKeys.ENCRYPTED_VEK);
+      return { encryptionKey: derivedKeyBase64, encryptedVek: null };
     }
 
-    const vek = await VaultKeyService.unwrapOrThrow(result.vaultKey.wrappedVek, derivedKeyBase64);
-    await storage.setItem(StorageKeys.WRAPPED_VEK, result.vaultKey.wrappedVek);
-    return { encryptionKey: vek, wrappedVek: result.vaultKey.wrappedVek };
+    const vek = await VaultKeyService.unwrapOrThrow(result.vaultKey.encryptedVek, derivedKeyBase64);
+    await storage.setItem(StorageKeys.ENCRYPTED_VEK, result.vaultKey.encryptedVek);
+    return { encryptionKey: vek, encryptedVek: result.vaultKey.encryptedVek };
   }
 
   /**
-   * Resolve the vault encryption key offline: unwrap the locally cached wrapped VEK with the derived key. For
-   * legacy users (no cached wrapped VEK) the derived key itself is returned.
+   * Resolve the vault encryption key offline: unwrap the locally cached encrypted VEK with the derived key. For
+   * legacy users (no cached encrypted VEK) the derived key itself is returned.
    * @param derivedKeyBase64 - the password-derived key
    * @throws Error with {@link AppErrorCode.VAULT_DECRYPT_FAILED} when unwrapping fails (wrong password).
    */
   public static async resolveEncryptionKeyOffline(derivedKeyBase64: string): Promise<string> {
-    const wrappedVek = await storage.getItem(StorageKeys.WRAPPED_VEK) as string | null;
-    if (!wrappedVek) {
+    const encryptedVek = await storage.getItem(StorageKeys.ENCRYPTED_VEK) as string | null;
+    if (!encryptedVek) {
       return derivedKeyBase64;
     }
 
-    return VaultKeyService.unwrapOrThrow(wrappedVek, derivedKeyBase64);
+    return VaultKeyService.unwrapOrThrow(encryptedVek, derivedKeyBase64);
   }
 
   /**
@@ -153,19 +153,19 @@ export class VaultKeyService {
    * login), which the background sync resolves by adopting the remote key before any vault work happens.
    */
   public static async hasLocalVaultKey(): Promise<boolean> {
-    return (await storage.getItem(StorageKeys.WRAPPED_VEK) as string | null) !== null;
+    return (await storage.getItem(StorageKeys.ENCRYPTED_VEK) as string | null) !== null;
   }
 
   /**
-   * Refresh the local wrapped-VEK cache from the server without needing the KEK.
+   * Refresh the local encrypted-VEK cache from the server without needing the KEK.
    * @param webApi - the API client to use
    */
-  public static async cacheWrappedVekFromServer(webApi?: WebApiService): Promise<void> {
+  public static async cacheEncryptedVekFromServer(webApi?: WebApiService): Promise<void> {
     const result = await VaultKeyService.fetchVaultKey(webApi);
     if (result.vaultKey) {
-      await storage.setItem(StorageKeys.WRAPPED_VEK, result.vaultKey.wrappedVek);
+      await storage.setItem(StorageKeys.ENCRYPTED_VEK, result.vaultKey.encryptedVek);
     } else if (result.supported) {
-      await storage.removeItem(StorageKeys.WRAPPED_VEK);
+      await storage.removeItem(StorageKeys.ENCRYPTED_VEK);
     }
   }
 
@@ -188,13 +188,13 @@ export class VaultKeyService {
    * @param storedKey - the key restored from the auxiliary unlock method
    */
   private static async upgradeStoredKeyIfNeeded(storedKey: string): Promise<{ key: string; upgraded: boolean }> {
-    const wrappedVek = await storage.getItem(StorageKeys.WRAPPED_VEK) as string | null;
-    if (!wrappedVek) {
+    const encryptedVek = await storage.getItem(StorageKeys.ENCRYPTED_VEK) as string | null;
+    if (!encryptedVek) {
       return { key: storedKey, upgraded: false };
     }
 
     try {
-      const vek = await EncryptionUtility.unwrapVaultEncryptionKey(wrappedVek, storedKey);
+      const vek = await EncryptionUtility.unwrapVaultEncryptionKey(encryptedVek, storedKey);
       return { key: vek, upgraded: true };
     } catch {
       return { key: storedKey, upgraded: false };
@@ -202,14 +202,14 @@ export class VaultKeyService {
   }
 
   /**
-   * Unwrap a wrapped VEK, mapping an AES-GCM authentication failure onto the standard decrypt-failed error code so
+   * Unwrap an encrypted VEK, mapping an AES-GCM authentication failure onto the standard decrypt-failed error code so
    * existing wrong-password handling applies.
-   * @param wrappedVek - base64(IV ‖ ciphertext ‖ tag) of the wrapped VEK
+   * @param encryptedVek - base64(IV ‖ ciphertext ‖ tag) of the encrypted VEK
    * @param kekBase64 - the password-derived KEK
    */
-  private static async unwrapOrThrow(wrappedVek: string, kekBase64: string): Promise<string> {
+  private static async unwrapOrThrow(encryptedVek: string, kekBase64: string): Promise<string> {
     try {
-      return await EncryptionUtility.unwrapVaultEncryptionKey(wrappedVek, kekBase64);
+      return await EncryptionUtility.unwrapVaultEncryptionKey(encryptedVek, kekBase64);
     } catch {
       // E-203: unwrap failed, which for the password key type means the entered password is wrong.
       throw new Error(formatErrorWithCode('Failed to unwrap vault encryption key', AppErrorCode.VAULT_DECRYPT_FAILED));

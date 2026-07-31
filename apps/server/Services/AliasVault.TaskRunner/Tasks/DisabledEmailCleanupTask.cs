@@ -53,7 +53,7 @@ public class DisabledEmailCleanupTask : IMaintenanceTask
         var cutoffDate = DateTime.UtcNow.AddDays(-settings.DisabledEmailRetentionDays);
 
         // Find all aliases that are currently disabled and last modified before the cutoff date.
-        var disabledAliasAddresses = await dbContext.UserEmailClaims
+        var disabledAliasAddresses = await dbContext.EmailClaims
             .Where(x => x.Disabled)
             .Select(x => x.Address)
             .ToListAsync(cancellationToken);
