@@ -8,14 +8,14 @@
 namespace AliasServerDb;
 
 /// <summary>
-/// Group roles.
+/// Group roles. Lower values mean more privileges: the highest role is 0.
 /// </summary>
 public enum GroupRole
 {
     /// <summary>
-    /// Can use shared folders they hold a grant on.
+    /// The group's owner: everything an admin can do, plus managing the group's plan and deleting the group itself.
     /// </summary>
-    Member = 0,
+    Owner = 0,
 
     /// <summary>
     /// Can invite and remove members and administer the group's shared folders.
@@ -23,7 +23,7 @@ public enum GroupRole
     Admin = 1,
 
     /// <summary>
-    /// The group's owner: everything an admin can do, plus managing the group's plan and deleting the group itself.
+    /// Can use shared folders they hold a grant on.
     /// </summary>
-    Owner = 2,
+    Member = 2,
 }

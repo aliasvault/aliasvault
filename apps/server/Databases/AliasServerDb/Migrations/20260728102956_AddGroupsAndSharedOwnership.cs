@@ -137,7 +137,7 @@ namespace AliasServerDb.Migrations
                 WHERE NOT EXISTS (SELECT 1 FROM "Groups" g WHERE g."Id" = u."PersonalGroupId");
 
                 INSERT INTO "GroupMembers" ("Id", "GroupId", "UserId", "Role", "CreatedAt", "UpdatedAt")
-                SELECT gen_random_uuid(), u."PersonalGroupId", u."Id", 2, now(), now()
+                SELECT gen_random_uuid(), u."PersonalGroupId", u."Id", 0, now(), now()
                 FROM "AliasVaultUsers" u
                 WHERE NOT EXISTS (SELECT 1 FROM "GroupMembers" m WHERE m."GroupId" = u."PersonalGroupId" AND m."UserId" = u."Id");
 
