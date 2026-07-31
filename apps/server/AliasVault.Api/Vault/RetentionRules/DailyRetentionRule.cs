@@ -10,20 +10,20 @@ namespace AliasVault.Api.Vault.RetentionRules;
 using AliasServerDb;
 
 /// <summary>
-/// Daily retention rule that keeps the latest vault for each day.
+/// Daily retention rule that keeps the latest revision for each day.
 /// </summary>
 public class DailyRetentionRule : IRetentionRule
 {
     /// <summary>
-    /// Gets the amount of days to keep vault.
+    /// Gets the amount of days to keep a revision for.
     /// </summary>
     public int DaysToKeep { get; init; }
 
    /// <inheritdoc cref="IRetentionRule.ApplyRule"/>
-    public IEnumerable<VaultManifestBase> ApplyRule(List<VaultManifestBase> vaults, DateTime now)
+    public IEnumerable<IVaultRevision> ApplyRule(List<IVaultRevision> revisions, DateTime now)
     {
-        // For the specified amount of days, take last vault per day.
-        return vaults
+        // For the specified amount of days, take the last revision per day.
+        return revisions
             .GroupBy(x => x.UpdatedAt.Date)
             .Select(g => g.OrderByDescending(x => x.UpdatedAt).First())
             .OrderByDescending(x => x.UpdatedAt)

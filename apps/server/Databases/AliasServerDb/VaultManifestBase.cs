@@ -12,7 +12,7 @@ using System.ComponentModel.DataAnnotations;
 /// Shared revision payload columns for a vault manifest. <see cref="VaultManifest"/> holds the current revision of
 /// each logical manifest (one row per manifest); <see cref="VaultManifestsHistory"/> holds superseded revisions.
 /// </summary>
-public abstract class VaultManifestBase
+public abstract class VaultManifestBase : IVaultRevision
 {
     /// <summary>
     /// Gets or sets the encrypted vault blob (only used by legacy sqlite-blob format). Not used anymore in new format.

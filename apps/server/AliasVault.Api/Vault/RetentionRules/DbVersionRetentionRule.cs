@@ -10,7 +10,8 @@ namespace AliasVault.Api.Vault.RetentionRules;
 using AliasServerDb;
 
 /// <summary>
-/// Version retention rule that keeps the latest X unique db versions of the vault.
+/// Version retention rule that keeps the latest X unique db versions of the vault. Only applies to manifest
+/// revisions (other revision types carry no db version); it keeps nothing extra for other types.
 /// </summary>
 public class DbVersionRetentionRule : IRetentionRule
 {
@@ -20,10 +21,11 @@ public class DbVersionRetentionRule : IRetentionRule
     public int VersionsToKeep { get; init; }
 
    /// <inheritdoc cref="IRetentionRule.ApplyRule"/>
-    public IEnumerable<VaultManifestBase> ApplyRule(List<VaultManifestBase> vaults, DateTime now)
+    public IEnumerable<IVaultRevision> ApplyRule(List<IVaultRevision> revisions, DateTime now)
     {
         // For the specified amount of versions, take last vault per version.
-        return vaults
+        return revisions
+            .OfType<VaultManifestBase>()
             .GroupBy(x => x.Version)
             .Select(g => g.OrderByDescending(x => x.UpdatedAt).First())
             .OrderByDescending(x => x.UpdatedAt)

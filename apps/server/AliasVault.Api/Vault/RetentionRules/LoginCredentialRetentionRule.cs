@@ -10,7 +10,8 @@ namespace AliasVault.Api.Vault.RetentionRules;
 using AliasServerDb;
 
 /// <summary>
-/// Credential retention rule that keeps the latest X unique login credentials and vaults associated with it.
+/// Credential retention rule that keeps the latest X unique login credentials and vaults associated with it. Only
+/// applies to manifest revisions (other revision types carry no credentials); it keeps nothing extra for other types.
 /// </summary>
 public class LoginCredentialRetentionRule : IRetentionRule
 {
@@ -20,10 +21,11 @@ public class LoginCredentialRetentionRule : IRetentionRule
     public int CredentialsToKeep { get; set; }
 
    /// <inheritdoc cref="IRetentionRule.ApplyRule"/>
-    public IEnumerable<VaultManifestBase> ApplyRule(List<VaultManifestBase> vaults, DateTime now)
+    public IEnumerable<IVaultRevision> ApplyRule(List<IVaultRevision> revisions, DateTime now)
     {
         // For the specified amount of versions, take last vault per version.
-        return vaults
+        return revisions
+            .OfType<VaultManifestBase>()
             .GroupBy(x => new { x.Salt, x.Verifier })
             .Select(g => g.OrderByDescending(x => x.UpdatedAt).First())
             .OrderByDescending(x => x.UpdatedAt)

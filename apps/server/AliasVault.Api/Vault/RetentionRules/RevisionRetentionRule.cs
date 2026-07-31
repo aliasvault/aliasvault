@@ -10,20 +10,20 @@ namespace AliasVault.Api.Vault.RetentionRules;
 using AliasServerDb;
 
 /// <summary>
-/// Revision retention rule that keeps the latest X unique revisions of the vault.
+/// Revision retention rule that keeps the latest X unique revisions.
 /// </summary>
 public class RevisionRetentionRule : IRetentionRule
 {
     /// <summary>
-    /// Gets the amount of revisions to keep the vault.
+    /// Gets the amount of revisions to keep.
     /// </summary>
     public int RevisionsToKeep { get; init; }
 
    /// <inheritdoc cref="IRetentionRule.ApplyRule"/>
-    public IEnumerable<VaultManifestBase> ApplyRule(List<VaultManifestBase> vaults, DateTime now)
+    public IEnumerable<IVaultRevision> ApplyRule(List<IVaultRevision> revisions, DateTime now)
     {
-        // For the specified amount of versions, take last vault per version.
-        return vaults
+        // For the specified amount of revisions, take the last one per revision number.
+        return revisions
             .GroupBy(x => x.RevisionNumber)
             .Select(g => g.OrderByDescending(x => x.UpdatedAt).First())
             .OrderByDescending(x => x.UpdatedAt)

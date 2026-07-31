@@ -13,24 +13,26 @@ using System.Linq;
 using AliasServerDb;
 
 /// <summary>
-/// History manager for vault manifests that applies retention rules to determine how many superseded revisions to
-/// keep as backups and returns the history revisions that should be deleted.
+/// History manager for revisioned vault storage entities (manifests, data buckets) that applies retention rules to
+/// determine how many superseded revisions to keep as backups and returns the history revisions that should be deleted.
 /// </summary>
 public static class VaultRetentionManager
 {
     /// <summary>
-    /// Applies retention policies to the superseded (history) revisions of a manifest. The current revision is
-    /// passed in so the rules see the full revision timeline, but it is never eligible for deletion — only history
-    /// revisions are returned.
+    /// Applies retention policies to the superseded (history) revisions of a revisioned entity. The current revision
+    /// can be passed in so the rules see the full revision timeline, but it is never eligible for deletion — only
+    /// history revisions are returned.
     /// </summary>
+    /// <typeparam name="THistory">The history row type of the entity (e.g. <see cref="VaultManifestsHistory"/> or <see cref="VaultDataBucketsHistory"/>).</typeparam>
     /// <param name="retentionPolicy">List of retention policies to apply.</param>
-    /// <param name="historyRevisions">Superseded revisions of the manifest (including the one just archived).</param>
+    /// <param name="historyRevisions">Superseded revisions of the entity (including the one just archived).</param>
     /// <param name="now">DateTime which represents current time.</param>
-    /// <param name="currentRevision">The current revision of the manifest, taken into account by the rules but always kept.</param>
+    /// <param name="currentRevision">The current revision of the entity, taken into account by the rules but always kept.</param>
     /// <returns>List of history revisions to delete according to the retention policies.</returns>
-    public static List<VaultManifestsHistory> ApplyRetention(RetentionPolicy retentionPolicy, List<VaultManifestsHistory> historyRevisions, DateTime now, VaultManifest? currentRevision = null)
+    public static List<THistory> ApplyRetention<THistory>(RetentionPolicy retentionPolicy, List<THistory> historyRevisions, DateTime now, IVaultRevision? currentRevision = null)
+        where THistory : class, IVaultRevision
     {
-        var allRevisions = new List<VaultManifestBase>(historyRevisions);
+        var allRevisions = new List<IVaultRevision>(historyRevisions);
         if (currentRevision is not null)
         {
             allRevisions.Add(currentRevision);
@@ -39,7 +41,7 @@ public static class VaultRetentionManager
         // Sort revisions by UpdatedAt in descending order.
         allRevisions = allRevisions.OrderByDescending(v => v.UpdatedAt).ToList();
 
-        var revisionsToKeep = new HashSet<VaultManifestBase>();
+        var revisionsToKeep = new HashSet<IVaultRevision>();
 
         // Process retention rules.
         foreach (var rule in retentionPolicy.Rules)
@@ -57,6 +59,6 @@ public static class VaultRetentionManager
         }
 
         // Only history revisions are deletable; the current revision is always kept implicitly.
-        return allRevisions.Except(revisionsToKeep).OfType<VaultManifestsHistory>().ToList();
+        return allRevisions.Except(revisionsToKeep).OfType<THistory>().ToList();
     }
 }

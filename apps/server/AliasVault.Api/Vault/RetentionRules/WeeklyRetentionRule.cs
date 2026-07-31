@@ -10,17 +10,17 @@ namespace AliasVault.Api.Vault.RetentionRules;
 using AliasServerDb;
 
 /// <summary>
-/// Weekly retention rule that keeps the latest vault for each week.
+/// Weekly retention rule that keeps the latest revision for each week.
 /// </summary>
 public class WeeklyRetentionRule : IRetentionRule
 {
     /// <summary>
-    /// Gets the amount of weeks to keep vault.
+    /// Gets the amount of weeks to keep a revision for.
     /// </summary>
     public int WeeksToKeep { get; init; }
 
     /// <inheritdoc cref="IRetentionRule.ApplyRule"/>
-    public IEnumerable<VaultManifestBase> ApplyRule(List<VaultManifestBase> vaults, DateTime now)
+    public IEnumerable<IVaultRevision> ApplyRule(List<IVaultRevision> revisions, DateTime now)
     {
         // Helper function to get the start of the week with Monday as the first day of the week.
         DateTime GetStartOfWeek(DateTime date)
@@ -29,7 +29,7 @@ public class WeeklyRetentionRule : IRetentionRule
             return date.Date.AddDays(-1 * diff).Date;
         }
 
-        return vaults
+        return revisions
             .GroupBy(x => GetStartOfWeek(x.UpdatedAt))
             .Select(g => g.OrderByDescending(x => x.UpdatedAt).First())
             .OrderByDescending(x => x.UpdatedAt)

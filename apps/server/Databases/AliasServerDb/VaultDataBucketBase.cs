@@ -13,7 +13,7 @@ using System.ComponentModel.DataAnnotations;
 /// <see cref="VaultDataBucket"/> holds the current revision of each (owner, category) bucket.
 /// <see cref="VaultDataBucketsHistory"/> holds superseded revisions.
 /// </summary>
-public abstract class VaultDataBucketBase
+public abstract class VaultDataBucketBase : IVaultRevision
 {
     /// <summary>
     /// Gets or sets the encrypted bucket payload (AES-GCM ciphertext, base64-encoded).
