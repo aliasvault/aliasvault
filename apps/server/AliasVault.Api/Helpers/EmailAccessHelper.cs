@@ -65,7 +65,7 @@ public static class EmailAccessHelper
             return [];
         }
 
-        // Holding any access key on the manifest is proof of access: AccountKey on a root manifest, GrantKey on a shared folder 
+        // Holding any access key on the manifest is proof of access: AccountKey on a root manifest, GrantKey on a shared folder
         // (owner self-grant and recipient alike).
         var manifestIds = claims.Select(c => c.ManifestId).Distinct().ToList();
         var keyedManifestIds = (await context.VaultManifestAccessKeys

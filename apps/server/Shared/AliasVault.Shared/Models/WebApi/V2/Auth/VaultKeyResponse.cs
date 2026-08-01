@@ -18,6 +18,12 @@ public class VaultKeyResponse
     /// <summary>Gets or sets the Account Key encrypted with the KEK derived from the unlock method.</summary>
     public required string EncryptedAccountKey { get; set; }
 
+    /// <summary>Gets or sets the account private key encrypted with the Account Key.</summary>
+    public string? EncryptedAccountPrivateKey { get; set; }
+
+    /// <summary>Gets or sets the account public key.</summary>
+    public string? AccountPublicKey { get; set; }
+
     /// <summary>
     /// Gets or sets the encrypted VEK.
     /// </summary>
