@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="PasswordChangeRequest.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -25,6 +25,7 @@ public class PasswordChangeRequest
     /// <summary>Gets or sets the new SRP verifier.</summary>
     public required string NewPasswordVerifier { get; set; }
 
-    /// <summary>Gets or sets the VEK re-encrypted with the KEK derived from the new password and new salt.</summary>
-    public required string NewEncryptedVek { get; set; }
+    /// <summary>Gets or sets the Account Key rewrapped with the KEK derived from the new password. The VEK,
+    /// account keypair and grants are untouched by a password change.</summary>
+    public required string NewEncryptedAccountKey { get; set; }
 }

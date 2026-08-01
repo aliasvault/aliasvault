@@ -1,5 +1,5 @@
-//-----------------------------------------------------------------------
-// <copyright file="VaultKey.cs" company="aliasvault">
+﻿//-----------------------------------------------------------------------
+// <copyright file="VaultManifestAccessKey.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
@@ -10,9 +10,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 /// <summary>
-/// A key unlock key (KEK) for a user, used to encrypt/decrypt the vault encryption key (VEK) which then encrypts/decrypts the vault content.
+/// A per-(user, manifest) VEK access path.
 /// </summary>
-public class VaultKey
+public class VaultManifestAccessKey
 {
     /// <summary>
     /// Gets or sets the primary key.
@@ -38,9 +38,9 @@ public class VaultKey
     public required Guid VaultManifestId { get; set; }
 
     /// <summary>
-    /// Gets or sets the unlock method this key represents, i.e. what its holder proves to obtain the KEK.
+    /// Gets or sets what encrypts this row's VEK.
     /// </summary>
-    public required VaultKeyType Type { get; set; }
+    public required ManifestKeyType Type { get; set; }
 
     /// <summary>
     /// Gets or sets the algorithm <see cref="EncryptedVek"/> is encrypted with.
@@ -49,21 +49,19 @@ public class VaultKey
     public required VaultKeyAlgorithm Algorithm { get; set; }
 
     /// <summary>
-    /// Gets or sets the encrypted VEK (which is encrypted with this KEK record).
+    /// Gets or sets the manifest's VEK, encrypted per <see cref="Type"/>.
     /// </summary>
     public required string EncryptedVek { get; set; }
 
     /// <summary>
-    /// Gets or sets the navigation property to the encryption key that encrypted the VEK. This value is only set for
-    /// shared vault keys (Type = <see cref="VaultKeyType.PublicKey"/>) which means a registered user's public key is used for encryption.
+    /// Gets or sets the id of the account keypair (<see cref="UserGrantKey"/>) the VEK was encrypted to.
     /// </summary>
-    public Guid? EncryptionKeyId { get; set; }
+    public Guid? UserGrantKeyId { get; set; }
 
     /// <summary>
-    /// Gets or sets the navigation property to the encryption key that encrypted the VEK. This value is only set for
-    /// shared vault keys (Type = <see cref="VaultKeyType.PublicKey"/>) which means a registered user's public key is used for encryption.
+    /// Gets or sets the navigation property to the account keypair the VEK was encrypted to (grant rows only).
     /// </summary>
-    public virtual EncryptionKey? EncryptionKey { get; set; }
+    public virtual UserGrantKey? UserGrantKey { get; set; }
 
     /// <summary>
     /// Gets or sets optional per-key-type fields as JSON, e.g. SRP salt and verifier, KDF parameters etc. Read and written

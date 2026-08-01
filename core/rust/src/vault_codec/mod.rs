@@ -29,13 +29,10 @@ pub use manifest::{
     Manifest, MaterializeInput, MaterializedTables, CodecRecord, CodecTableData, SharedFolderSpec, SharedVault,
 };
 pub use scoped_assets::{KIND_BUILTIN as LOGO_KIND_BUILTIN, KIND_CUSTOM as LOGO_KIND_CUSTOM, KIND_FAVICON as LOGO_KIND_FAVICON};
-pub use sharing::{
-    active_shared_folder_encryption_key, extract_encryption_key_for_public_key_from_bucket, extract_shared_folder_encryption_key_for_public_key,
-    SHARED_FOLDER_ENCRYPTION_KEYS_TABLE,
-};
+pub use sharing::{active_encryption_key, extract_encryption_key_for_public_key};
 pub use types::{
-    bucket_categories, bucket_category_for, is_personal_table, is_shared_only_table, tables_for_category, BLOB_COLUMNS,
-    BUCKET_TABLES, OVERFLOW_ROW_ID, OVERFLOW_TABLE, PERSONAL_TABLES, SCHEMA_VERSION, SHARED_ONLY_TABLES, SKIP_TABLES,
+    bucket_categories, bucket_category_for, is_personal_table, tables_for_category, BLOB_COLUMNS, BUCKET_TABLES,
+    ENCRYPTION_KEYS_TABLE, MANIFESTS_TABLE, MANIFEST_ID_COL, OVERFLOW_ROW_ID, OVERFLOW_TABLE, PERSONAL_TABLES, SCHEMA_VERSION, SKIP_TABLES,
 };
 pub use validate::ValidationResult;
 
@@ -71,16 +68,16 @@ pub fn bucket_layout() -> Vec<BucketLayoutEntry> {
         .collect()
 }
 
-/// The `Logos.Id` a client must use for the logo `(kind, source)` inside the manifest scoped to
-/// `shared_folder_id` (`None` = the user's own root manifest).
-pub fn logo_id_for(shared_folder_id: Option<&str>, kind: &str, source: &str) -> String {
-    scoped_assets::logo_id_for(shared_folder_id, kind, source)
+/// The `Logos.Id` a client must use for the logo `(kind, source)` inside the manifest with id
+/// `manifest_id`.
+pub fn logo_id_for(manifest_id: &str, kind: &str, source: &str) -> String {
+    scoped_assets::logo_id_for(manifest_id, kind, source)
 }
 
 /// The `Logos.Id` for the automatically fetched favicon of `source`. Shorthand for [`logo_id_for`]
 /// with [`LOGO_KIND_FAVICON`].
-pub fn logo_id_for_source(shared_folder_id: Option<&str>, source: &str) -> String {
-    scoped_assets::logo_id_for(shared_folder_id, LOGO_KIND_FAVICON, source)
+pub fn logo_id_for_source(manifest_id: &str, source: &str) -> String {
+    scoped_assets::logo_id_for(manifest_id, LOGO_KIND_FAVICON, source)
 }
 
 /// The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` of a
@@ -159,23 +156,17 @@ pub fn validate_data_bucket(b: &DataBucket) -> ValidationResult {
     validate::validate_data_bucket(b)
 }
 
-/// Extract the encryption-key row whose `PublicKey` matches `public_key` from the decrypted
-/// `EncryptionKeys` data bucket.
-pub fn extract_encryption_key_for_public_key_from_bucket_json(bucket_json: &str, public_key: &str) -> VaultResult<String> {
-    let b: DataBucket = serde_json::from_str(bucket_json)?;
-    Ok(serde_json::to_string(&extract_encryption_key_for_public_key_from_bucket(&b, public_key))?)
+/// Extract the encryption-key row whose `PublicKey` matches `public_key` from a decrypted manifest's
+/// `EncryptionKeys` table (scoped to the manifest itself; see [`extract_encryption_key_for_public_key`]).
+pub fn extract_encryption_key_for_public_key_json(manifest_json: &str, public_key: &str) -> VaultResult<String> {
+    let m: Manifest = serde_json::from_str(manifest_json)?;
+    Ok(serde_json::to_string(&extract_encryption_key_for_public_key(&m, public_key))?)
 }
 
-/// Extract the shared folder encryption key for the public key from the manifest.
-pub fn extract_shared_folder_encryption_key_for_public_key_json(manifest_json: &str, public_key: &str) -> VaultResult<String> {
+/// Extract the manifest's active (primary, manifest-scoped) encryption key row.
+pub fn active_encryption_key_json(manifest_json: &str) -> VaultResult<String> {
     let m: Manifest = serde_json::from_str(manifest_json)?;
-    Ok(serde_json::to_string(&extract_shared_folder_encryption_key_for_public_key(&m, public_key))?)
-}
-
-/// Extract the active shared folder encryption key from the manifest.
-pub fn active_shared_folder_encryption_key_json(manifest_json: &str) -> VaultResult<String> {
-    let m: Manifest = serde_json::from_str(manifest_json)?;
-    Ok(serde_json::to_string(&active_shared_folder_encryption_key(&m))?)
+    Ok(serde_json::to_string(&active_encryption_key(&m))?)
 }
 
 /// SHA-256 (lowercase hex) of a base64 ciphertext string — storage-layer integrity.

@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="StatusController.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -61,7 +61,7 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
             .Select(g => new BucketRevision { Category = g.Key, Revision = g.Max(b => b.RevisionNumber) })
             .ToListAsync();
 
-        // Current SRP salt: lives on the password VaultKey for v2 migrated users, on the root manifest for legacy users.
+        // Current SRP salt: lives on the password VaultManifestAccessKey for v2 migrated users, on the root manifest for legacy users.
         var encryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, user);
 
         // Check client version compatibility if the header is provided.

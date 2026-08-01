@@ -130,9 +130,9 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<GroupMember> GroupMembers { get; set; }
 
     /// <summary>
-    /// Gets or sets the EncryptionKeys DbSet.
+    /// Gets or sets the VaultManifestDeliveryKeys DbSet.
     /// </summary>
-    public DbSet<EncryptionKey> EncryptionKeys { get; set; }
+    public DbSet<VaultManifestDeliveryKey> VaultManifestDeliveryKeys { get; set; }
 
     /// <summary>
     /// Gets or sets the Logs DbSet.
@@ -191,10 +191,19 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<RateLimit> RateLimits { get; set; }
 
     /// <summary>
-    /// Gets or sets the VaultKeys DbSet. These hold the encrypted vault encryption key (VEK) and metadata
-    /// per user per unlock method (KEK/VEK model).
+    /// Gets or sets the UserUnlockKeys DbSet.
     /// </summary>
-    public DbSet<VaultKey> VaultKeys { get; set; }
+    public DbSet<UserUnlockKey> UserUnlockKeys { get; set; }
+
+    /// <summary>
+    /// Gets or sets the UserGrantKeys DbSet.
+    /// </summary>
+    public DbSet<UserGrantKey> UserGrantKeys { get; set; }
+
+    /// <summary>
+    /// Gets or sets the VaultManifestAccessKeys DbSet.
+    /// </summary>
+    public DbSet<VaultManifestAccessKey> VaultManifestAccessKeys { get; set; }
 
     /// <summary>
     /// Sets up the connection string if it is not already configured.
@@ -353,22 +362,46 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Configure VaultKey: an encrypted-VEK grant for (holder, manifest, unlock method).
-        modelBuilder.Entity<VaultKey>(builder =>
+        // Configure VaultManifestAccessKey: a per-(holder, manifest) encrypted-VEK access path (AccountKey row or grant).
+        modelBuilder.Entity<VaultManifestAccessKey>(builder =>
         {
             builder.HasOne(e => e.User)
-                .WithMany(u => u.VaultKeys)
+                .WithMany(u => u.VaultManifestAccessKeys)
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex(e => new { e.UserId, e.Type, e.VaultManifestId }).IsUnique().HasDatabaseName("UX_VaultKeys_UserId_Type_Manifest");
-            builder.HasIndex(e => e.VaultManifestId).HasDatabaseName("IX_VaultKeys_VaultManifestId");
+            builder.HasIndex(e => new { e.UserId, e.Type, e.VaultManifestId }).IsUnique().HasDatabaseName("UX_VaultManifestAccessKeys_UserId_Type_Manifest");
+            builder.HasIndex(e => e.VaultManifestId).HasDatabaseName("IX_VaultManifestAccessKeys_VaultManifestId");
             builder.Property(e => e.Metadata).HasColumnType("jsonb");
             builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
-            builder.HasOne(e => e.EncryptionKey)
+            builder.HasOne(e => e.UserGrantKey)
                 .WithMany()
-                .HasForeignKey(e => e.EncryptionKeyId)
+                .HasForeignKey(e => e.UserGrantKeyId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configure UserUnlockKey: one row per enrolled unlock method, each encrypting the user's Account Key.
+        modelBuilder.Entity<UserUnlockKey>(builder =>
+        {
+            builder.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(e => new { e.UserId, e.Type }).IsUnique().HasDatabaseName("UX_UserUnlockKeys_UserId_Type");
+            builder.Property(e => e.Metadata).HasColumnType("jsonb");
+            builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
+        });
+
+        // Configure UserGrantKey: the account-level keypair for grant encryption; one primary per user.
+        modelBuilder.Entity<UserGrantKey>(builder =>
+        {
+            builder.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(e => e.UserId).IsUnique().HasFilter("\"IsPrimary\"").HasDatabaseName("UX_UserGrantKeys_User_Primary");
         });
 
         /*
@@ -380,40 +413,28 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             .HasForeignKey(e => e.VaultManifestId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // Configure Email - EncryptionKey relationship
+        // Configure Email - VaultManifestDeliveryKey relationship
         modelBuilder.Entity<Email>()
             .HasOne(l => l.EncryptionKey)
             .WithMany(c => c.Emails)
             .HasForeignKey(l => l.EncryptionKeyId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Configure EncryptionKey - AliasVaultUser relationship
-        modelBuilder.Entity<EncryptionKey>()
-            .HasOne(l => l.User)
-            .WithMany(c => c.EncryptionKeys)
-            .HasForeignKey(l => l.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<EncryptionKey>(builder =>
+        modelBuilder.Entity<VaultManifestDeliveryKey>(builder =>
         {
-            // A folder-scoped key is removed when its manifest is removed; a personal key (null manifest) is unaffected.
+            // A key is removed with its manifest: for a folder that is the folder's delivery keys, for a
+            // root manifest the user's personal keys (root manifests only disappear with the account).
             builder.HasOne(k => k.VaultManifest)
                 .WithMany()
                 .HasForeignKey(k => k.VaultManifestId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Delivery resolves the primary key for a scope on every inbound mail, so index the lookup.
-            builder.HasIndex(k => new { k.UserId, k.VaultManifestId, k.IsPrimary });
-        });
+            // Delivery resolves the primary key for a manifest on every inbound mail, so index the lookup.
+            builder.HasIndex(k => new { k.VaultManifestId, k.IsPrimary });
 
-        // Configure EmailClaim - EncryptionKey relationship. Restrict rather than cascade: an
-        // email claim outlives its key on purpose (claims are retained to prevent address re-use), so a
-        // key must be re-pointed or nulled before it can be removed.
-        modelBuilder.Entity<EmailClaim>()
-            .HasOne(c => c.EncryptionKey)
-            .WithMany()
-            .HasForeignKey(c => c.EncryptionKeyId)
-            .OnDelete(DeleteBehavior.Restrict);
+            // One active delivery key per manifest.
+            builder.HasIndex(k => k.VaultManifestId).IsUnique().HasFilter("\"IsPrimary\"").HasDatabaseName("UX_VaultManifestDeliveryKeys_Manifest_Primary");
+        });
 
         // Configure MobileLoginRequest - AliasVaultUser relationship
         modelBuilder.Entity<MobileLoginRequest>()

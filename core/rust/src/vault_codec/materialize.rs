@@ -17,8 +17,10 @@
 
 use std::collections::{HashMap, HashSet};
 
-use super::manifest::{CodecOverflow, CodecRecord, CodecTableData, MaterializeInput, MaterializedTables};
-use super::types::{is_skip_table, primary_key_for, OVERFLOW_TABLE};
+use serde_json::json;
+
+use super::manifest::{CodecOverflow, CodecRecord, CodecTableData, Manifest, MaterializeInput, MaterializedTables};
+use super::types::{is_skip_table, primary_key_for, MANIFESTS_TABLE, OVERFLOW_TABLE};
 use crate::error::VaultResult;
 
 /// Materialize the manifest + its data buckets into the table set the platform inserts. Shared-folder
@@ -27,9 +29,9 @@ use crate::error::VaultResult;
 pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<MaterializedTables> {
     let MaterializeInput { manifest, data_buckets, schema_columns, shared_manifests } = input;
 
-    // Always goes through combine: even with no shared manifests it normalizes the root's logos to
-    // the root scope, which is what heals a vault written before logos carried one.
-    let combined = super::sharing::combine_manifest_tables(manifest.tables, shared_manifests);
+    let manifest_records = manifest_bookkeeping_records(&manifest, &shared_manifests);
+    let root_manifest_id = manifest.manifest_id.clone();
+    let combined = super::sharing::combine_manifest_tables(manifest.tables, &root_manifest_id, shared_manifests);
 
     let mut overflow = CodecOverflow::default();
     let mut tables: Vec<CodecTableData> = Vec::with_capacity(combined.len() + data_buckets.len());
@@ -69,11 +71,36 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
         tables.push(CodecTableData { name: OVERFLOW_TABLE.to_string(), records: overflow.to_table_records() });
     }
 
+    if !manifest_records.is_empty() && schema_columns.as_ref().map(|s| s.contains_key(MANIFESTS_TABLE)).unwrap_or(true) {
+        tables.push(CodecTableData { name: MANIFESTS_TABLE.to_string(), records: manifest_records });
+    }
+
     Ok(MaterializedTables {
         tables,
         migration_id: manifest.migration_id,
         overflow,
     })
+}
+
+/// One `Manifests` row per materialized manifest: `{ Id, IsRoot, AnchorFolderId }`.
+fn manifest_bookkeeping_records(root: &Manifest, shared: &[Manifest]) -> Vec<CodecRecord> {
+    let mut records: Vec<CodecRecord> = Vec::with_capacity(1 + shared.len());
+    let mut push = |manifest: &Manifest, is_root: bool| {
+        let id = manifest.manifest_id.as_str();
+        if id.is_empty() {
+            return;
+        }
+        let mut row: CodecRecord = HashMap::new();
+        row.insert("Id".to_string(), json!(id));
+        row.insert("IsRoot".to_string(), json!(if is_root { 1 } else { 0 }));
+        row.insert("AnchorFolderId".to_string(), manifest.shared_folder_id.as_deref().map(|f| json!(f)).unwrap_or(serde_json::Value::Null));
+        records.push(row);
+    };
+    push(root, true);
+    for manifest in shared {
+        push(manifest, false);
+    }
+    records
 }
 
 /// Outcome of fitting one table's rows to the caller's schema.

@@ -14,12 +14,13 @@ pub static BLOB_COLUMNS: &[(&str, &str, &str)] = &[
     ("Attachments", "Blob", "attachment"),
 ];
 
-/// Tables never serialized into the manifest: internal SQLite, platform, or EF bookkeeping.
+/// Tables never serialized into the server-stored manifest: internal SQLite, platform, or EF bookkeeping.
 pub static SKIP_TABLES: &[&str] = &[
     "__EFMigrationsHistory",
     "__EFMigrationsLock",
     "sqlite_sequence",
     "android_metadata",
+    "Manifests",
 ];
 
 /// Tables split out of the manifest into a data bucket, keyed by category, so each bucket syncs on its
@@ -27,19 +28,24 @@ pub static SKIP_TABLES: &[&str] = &[
 /// `category` mirrors the server `VaultDataBucketCategory`. Several tables may share a category to sync together.
 pub static BUCKET_TABLES: &[(&str, &str)] = &[
     ("Settings", "Settings"),
-    ("EncryptionKeys", "EncryptionKeys"),
 ];
 
 /// Tables that belong exclusively to the user's own (root) vault, never to a shared-folder manifest.
 /// Canonicalize never routes these into a shared partition and will refuse to materialize if they
-/// are found in a shared manifest anyway.
-pub static PERSONAL_TABLES: &[&str] = &["EncryptionKeys"];
+/// are found in a shared manifest anyway. Empty today (bucketed tables are implicitly personal, see
+/// [`is_personal_table`]); kept as the declaration point for future personal-only tables.
+pub static PERSONAL_TABLES: &[&str] = &[];
 
-/// Tables that belong exclusively to a *shared-folder* manifest and never to the root.
-/// `SharedFolderEncryptionKeys` carries a folder's own email keypair, so that every member
-/// of the folder can decrypt mail addressed to the folder's aliases; it is encrypted under
-/// the folder VEK and therefore readable by exactly the folder's members.
-pub static SHARED_ONLY_TABLES: &[&str] = &["SharedFolderEncryptionKeys"];
+/// The per-manifest delivery-keypair table. Every manifest carries its own asymmetric keypair(s),
+/// stamped with that manifest's id (`ManifestId`).
+pub const ENCRYPTION_KEYS_TABLE: &str = "EncryptionKeys";
+
+/// The scope column every stamped table carries: the id of the manifest that owns the row.
+pub const MANIFEST_ID_COL: &str = "ManifestId";
+
+/// Local bookkeeping table materialize writes into the vault DB: one row per manifest this 
+/// vault is materialized from (`Id`, `IsRoot`, `AnchorFolderId`).
+pub const MANIFESTS_TABLE: &str = "Manifests";
 
 /// Manifest / metadata schema version. This is the manifest *wire structure* version and is its own
 /// axis, independent of the data-model version (which readers derive from the manifest's `migrationId`).
@@ -95,11 +101,6 @@ pub fn tables_for_category(category: &str) -> Vec<&'static str> {
 /// True when a table is personal-only (see [`PERSONAL_TABLES`]): never part of a shared-folder manifest.
 pub fn is_personal_table(table_name: &str) -> bool {
     PERSONAL_TABLES.contains(&table_name) || bucket_category_for(table_name).is_some()
-}
-
-/// True when a table is shared-only (see [`SHARED_ONLY_TABLES`]): never part of the root manifest.
-pub fn is_shared_only_table(table_name: &str) -> bool {
-    SHARED_ONLY_TABLES.contains(&table_name)
 }
 
 /// The single-column primary key that addresses a row in `table_name`, shared with the merge layer

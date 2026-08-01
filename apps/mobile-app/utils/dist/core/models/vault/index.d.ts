@@ -1,8 +1,12 @@
 /**
- * Encryption key SQLite database type.
+ * Encryption key SQLite database type: a manifest's email delivery keypair, stamped with the id of
+ * the manifest that carries it (the root manifest's own id for personal keys — resolve it from the
+ * Manifests bookkeeping table; there is no NULL-scope convention). Only nullable as write tolerance:
+ * the Rust codec adopts and restamps unstamped rows at the next sync boundary.
  */
 type EncryptionKey = {
     Id: string;
+    ManifestId?: string | null;
     PublicKey: string;
     PrivateKey: string;
     IsPrimary: boolean;
@@ -290,10 +294,6 @@ declare const VaultDataBucketCategory: {
      * User client settings (sort order, autofill prefs, identity defaults, etc.).
      */
     readonly Settings: "Settings";
-    /**
-     * The user's asymmetric keypairs, which are used for both email decryption and to unwrap shared-folder VEKs.
-     */
-    readonly EncryptionKeys: "EncryptionKeys";
 };
 /**
  * Type representing all valid vault data bucket category values.

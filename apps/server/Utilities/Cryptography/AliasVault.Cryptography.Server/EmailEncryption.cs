@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="EmailEncryption.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -20,7 +20,7 @@ public static class EmailEncryption
     /// <param name="email">The plain text email object to encrypt.</param>
     /// <param name="encryptionKey">The user public encryption key to use for the encryption.</param>
     /// <returns>Email object with all sensitive fields encrypted.</returns>
-    public static Email EncryptEmail(Email email, EncryptionKey encryptionKey)
+    public static Email EncryptEmail(Email email, VaultManifestDeliveryKey encryptionKey)
     {
         // Generate symmetric key for email encryption.
         var symmetricKey = Encryption.GenerateRandomSymmetricKey();

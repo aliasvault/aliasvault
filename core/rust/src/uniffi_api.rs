@@ -232,11 +232,11 @@ pub fn vault_codec_generate_user_salt() -> String {
     crate::vault_codec::generate_user_salt()
 }
 
-/// The `Logos.Id` to use for `source` inside the manifest scoped to `shared_folder_id` (`None` = the
-/// user's own root manifest). Every platform derives logo ids via this method to prevent duplicates.
+/// The `Logos.Id` to use for `source` inside the manifest with id `manifest_id`. 
+/// Every platform derives logo ids via this method to prevent duplicates.
 #[uniffi::export]
-pub fn vault_codec_logo_id_for_source(shared_folder_id: Option<String>, source: String) -> String {
-    crate::vault_codec::logo_id_for_source(shared_folder_id.as_deref(), &source)
+pub fn vault_codec_logo_id_for_source(manifest_id: String, source: String) -> String {
+    crate::vault_codec::logo_id_for_source(&manifest_id, &source)
 }
 
 /// The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` of a `custom` logo row, and
@@ -246,12 +246,11 @@ pub fn vault_codec_logo_content_hash(bytes: Vec<u8>) -> String {
     crate::vault_codec::logo_content_hash(&bytes)
 }
 
-/// The `Logos.Id` to use for the logo `(kind, source)` inside the manifest scoped to
-/// `shared_folder_id` (`None` = the user's own root manifest). `kind` is 'favicon' (source = domain),
-/// 'builtin' (source = catalog key) or 'custom' (source = image content hash).
+/// The `Logos.Id` to use for the logo `(kind, source)` inside the manifest with id `manifest_id`.
+/// `kind` is 'favicon' (source = domain), 'builtin' (source = catalog key) or 'custom' (source = image content hash).
 #[uniffi::export]
-pub fn vault_codec_logo_id_for(shared_folder_id: Option<String>, kind: String, source: String) -> String {
-    crate::vault_codec::logo_id_for(shared_folder_id.as_deref(), &kind, &source)
+pub fn vault_codec_logo_id_for(manifest_id: String, kind: String, source: String) -> String {
+    crate::vault_codec::logo_id_for(&manifest_id, &kind, &source)
 }
 
 /// Pack a payload JSON string into gzip(envelope{contentHash, payload}). The caller encrypts the result.
@@ -291,13 +290,11 @@ pub fn vault_codec_compute_content_fingerprint(payload_json: String) -> String {
     crate::vault_codec::compute_content_fingerprint(&payload_json)
 }
 
-/// Extract the encryption-key row whose `PublicKey` matches `public_key` from the decrypted `EncryptionKeys`
-/// data bucket. Input: `DataBucket` JSON + the target public key. Output: the matching row JSON object, or
-/// `null` when no live row carries that key. Chosen over the primary key so a shared-folder VEK wrapped for
-/// an older key still unwraps after key rotation.
+/// Extract the encryption-key row whose `PublicKey` matches `public_key` from a decrypted manifest's
+/// `EncryptionKeys` table.
 #[uniffi::export]
-pub fn vault_codec_extract_encryption_key_for_public_key_from_bucket(bucket_json: String, public_key: String) -> Result<String, VaultError> {
-    crate::vault_codec::extract_encryption_key_for_public_key_from_bucket_json(&bucket_json, &public_key)
+pub fn vault_codec_extract_encryption_key_for_public_key(manifest_json: String, public_key: String) -> Result<String, VaultError> {
+    crate::vault_codec::extract_encryption_key_for_public_key_json(&manifest_json, &public_key)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -446,9 +443,8 @@ mod tests {
         assert!(names.contains(&"FieldValues".to_string()));
         assert!(names.contains(&"Settings".to_string()));
         assert!(names.contains(&"EncryptionKeys".to_string()));
-        assert!(names.contains(&"SharedFolderEncryptionKeys".to_string()));
         assert!(!names.contains(&crate::vault_codec::OVERFLOW_TABLE.to_string()), "overflow carrier is not in the merge input; the server base owns it");
-        assert_eq!(names.len(), 14);
+        assert_eq!(names.len(), 13);
     }
 
     #[test]

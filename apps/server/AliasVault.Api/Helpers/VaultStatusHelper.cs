@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="VaultStatusHelper.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -74,8 +74,8 @@ public static class VaultStatusHelper
     /// <returns>The list of granted manifest ids.</returns>
     private static async Task<List<Guid>> GetGrantedManifestIdsAsync(AliasServerDbContext context, string userId)
     {
-        return await context.VaultKeys
-            .Where(k => k.UserId == userId && k.Type == VaultKeyType.PublicKey
+        return await context.VaultManifestAccessKeys
+            .Where(k => k.UserId == userId && k.Type == ManifestKeyType.GrantKey
                 && context.VaultManifests.Any(m => m.ManifestId == k.VaultManifestId && !context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == userId && gm.Role == GroupRole.Owner)))
             .Select(k => k.VaultManifestId)
             .ToListAsync();

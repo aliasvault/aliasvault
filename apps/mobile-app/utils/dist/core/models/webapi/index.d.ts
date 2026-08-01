@@ -443,15 +443,25 @@ type MobileLoginPollResponse = {
 };
 
 /**
- * Vault key response type (KEK/VEK model). Returned by GET /v2/VaultKey/{type}.
- * Carries the encrypted VEK plus the KEK derivation parameters so an authenticated client can derive the KEK from
- * the unlock secret and unwrap the vault encryption key. The SRP verifier is never returned.
+ * Vault key response type (account-key model). Returned by GET /v2/VaultKey/{type}.
+ * Carries the whole unwrap chain for one unlock method: the client derives the KEK from the unlock secret,
+ * unwraps the Account Key (AK), and with it unwraps the root VEK and the account (tier-1) private key.
+ * The SRP verifier is never returned.
  */
 type VaultKeyResponse = {
     /** The unlock method type, e.g. "password". */
     type: string;
-    /** The encrypted VEK: base64(IV ‖ ciphertext ‖ authTag) of the VEK encrypted with the KEK (AES-256-GCM). */
-    encryptedVek: string;
+    /** The Account Key wrapped with this method's KEK: base64(IV ‖ ciphertext ‖ authTag), AES-256-GCM. */
+    encryptedAccountKey: string;
+    /**
+     * The root VEK wrapped under the Account Key, or null for a transitional account converted from the
+     * pre-AK model — there the Account Key IS the VEK until the client performs the account-key split.
+     */
+    encryptedVek: string | null;
+    /** The account public key (tier-1, grant wrapping), or null before the account-key split. */
+    accountPublicKey: string | null;
+    /** The account private key wrapped under the Account Key, or null before the account-key split. */
+    encryptedAccountPrivateKey: string | null;
     /** The salt used for KEK derivation (same value as the SRP salt for the password key type). */
     salt: string;
     /** The key derivation type, e.g. "Argon2Id". */

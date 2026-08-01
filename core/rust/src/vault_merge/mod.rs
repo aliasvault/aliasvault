@@ -526,10 +526,10 @@ mod tests {
     fn logos_merge_by_id_so_same_domain_in_two_scopes_survives() {
         // A personal logo and a shared-folder logo for the same domain are different rows by design
         // (see vault_codec::logos). Merging Logos by Id keeps both.
-        let mut personal = logo(&crate::vault_codec::logo_id_for_source(None, "github.com"), "github.com", "2024-01-01T00:00:00Z");
-        personal.insert("SharedFolderId".to_string(), serde_json::Value::Null);
-        let mut shared = logo(&crate::vault_codec::logo_id_for_source(Some("f-1"), "github.com"), "github.com", "2024-01-02T00:00:00Z");
-        shared.insert("SharedFolderId".to_string(), serde_json::json!("f-1"));
+        let mut personal = logo(&crate::vault_codec::logo_id_for_source("m-root", "github.com"), "github.com", "2024-01-01T00:00:00Z");
+        personal.insert("ManifestId".to_string(), serde_json::json!("m-root"));
+        let mut shared = logo(&crate::vault_codec::logo_id_for_source("m-1", "github.com"), "github.com", "2024-01-02T00:00:00Z");
+        shared.insert("ManifestId".to_string(), serde_json::json!("m-1"));
 
         let output = merge_vaults(MergeInput {
             local_tables: vec![TableData { name: "Logos".to_string(), records: vec![personal.clone(), shared.clone()] }],
@@ -548,7 +548,7 @@ mod tests {
     fn logos_merge_resolves_same_scope_rows_by_lww() {
         // Within one scope, two writers produce the SAME derived Id, so an ordinary by-Id LWW settles
         // whose favicon bytes win.
-        let id = crate::vault_codec::logo_id_for_source(None, "github.com");
+        let id = crate::vault_codec::logo_id_for_source("m-root", "github.com");
         let base = vec![logo(&id, "github.com", "2024-01-01T00:00:00Z")];
         let incoming = vec![logo(&id, "github.com", "2024-01-02T00:00:00Z")];
         let mut stats = MergeStats::default();

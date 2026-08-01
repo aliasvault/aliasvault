@@ -3,6 +3,7 @@ using System;
 using AliasClientDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AliasClientDb.Migrations
 {
     [DbContext(typeof(AliasClientDbContext))]
-    partial class AliasClientDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260731141636_2.2.0-ScopeEncryptionKeysPerManifest")]
+    partial class _220ScopeEncryptionKeysPerManifest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -85,9 +88,6 @@ namespace AliasClientDb.Migrations
                     b.Property<bool>("IsPrimary")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("ManifestId")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("PrivateKey")
                         .IsRequired()
                         .HasMaxLength(2000)
@@ -98,12 +98,15 @@ namespace AliasClientDb.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("SharedFolderId")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ManifestId", "IsPrimary");
+                    b.HasIndex("SharedFolderId", "IsPrimary");
 
                     b.ToTable("EncryptionKeys");
                 });
@@ -252,9 +255,6 @@ namespace AliasClientDb.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("ManifestId")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -300,9 +300,6 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("LogoId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("ManifestId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -379,15 +376,15 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValue("favicon");
 
-                    b.Property<Guid?>("ManifestId")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("MimeType")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .HasMaxLength(255)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("SharedFolderId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Source")
@@ -400,27 +397,10 @@ namespace AliasClientDb.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ManifestId", "Kind", "Source")
+                    b.HasIndex("SharedFolderId", "Kind", "Source")
                         .IsUnique();
 
                     b.ToTable("Logos");
-                });
-
-            modelBuilder.Entity("AliasClientDb.Manifest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("AnchorFolderId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsRoot")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Manifests");
                 });
 
             modelBuilder.Entity("AliasClientDb.Passkey", b =>

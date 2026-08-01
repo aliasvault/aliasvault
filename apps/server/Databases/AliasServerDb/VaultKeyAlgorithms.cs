@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="VaultKeyAlgorithms.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -72,7 +72,7 @@ public static class VaultKeyAlgorithms
     }
 
     /// <summary>
-    /// Whether an algorithm encrypts to a public key, i.e. is valid on a <see cref="VaultKeyType.PublicKey"/> grant. A
+    /// Whether an algorithm encrypts to a public key, i.e. is valid on a <see cref="ManifestKeyType.GrantKey"/> grant. A
     /// symmetric algorithm there would mean the sharer and the recipient share a secret, which they never do.
     /// </summary>
     /// <param name="algorithm">The algorithm to check.</param>

@@ -22,8 +22,8 @@ pub struct Manifest {
     pub user_salt: String,
     /// Timestamp when this canonical snapshot was produced (ISO-8601).
     pub canonicalized_at: String,
-    /// Set on a shared-folder manifest: the `Folders.Id` of the folder this manifest carries. `None`
-    /// for a root (personal) manifest.
+    /// The server-side id of the manifest this snapshot belongs to.
+    pub manifest_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub shared_folder_id: Option<String>,
     /// Tables mapped to arrays of row objects. Blob columns replaced with `{ "__blobRef", "__blobKind" }`.
@@ -75,12 +75,12 @@ pub struct BlobEntry {
     pub bytes_base64: String,
 }
 
-/// Identifies one shared folder for the canonicalize split: the folder whose subtree is written into
-/// its own manifest, and the per-manifest salt used for that manifest's blob hashing (the salt is
-/// shared by every participant of the folder and travels inside the encrypted shared manifest).
+/// Identifies one shared folder for the canonicalize split: the manifest it becomes, the folder
+/// whose subtree is written into it, and the per-manifest salt used for that manifest's blob hashing.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SharedFolderSpec {
+    pub manifest_id: String,
     pub folder_id: String,
     pub user_salt: String,
 }
@@ -190,6 +190,8 @@ pub struct CanonicalizeInput {
     pub user_salt: String,
     pub migration_id: String,
     pub canonicalized_at: String,
+    #[serde(default)]
+    pub root_manifest_id: String,
     #[serde(default)]
     pub shared_folders: Vec<SharedFolderSpec>,
 }

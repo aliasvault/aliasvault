@@ -7,12 +7,18 @@
  */
 export class LogoQueries {
   /**
-   * The logo of a given kind and key in the personal scope. Shared-folder rows are deliberately
+   * SQL fragment resolving the personal scope: rows stamped with the root manifest's id (from the
+   * Manifests bookkeeping table), plus unstamped legacy rows the codec has not adopted yet.
+   */
+  private static readonly PERSONAL_SCOPE = `(ManifestId = (SELECT Id FROM Manifests WHERE IsRoot = 1) OR ManifestId IS NULL)`;
+
+  /**
+   * The logo of a given kind and key in the personal scope. Shared-manifest rows are deliberately
    * excluded: adopting another manifest's row here would drag its logo into the personal vault.
    */
   public static readonly GET_ID_FOR_KEY = `
     SELECT Id FROM Logos
-    WHERE Kind = ? AND Source = ? AND SharedFolderId IS NULL AND IsDeleted = 0
+    WHERE Kind = ? AND Source = ? AND ${LogoQueries.PERSONAL_SCOPE} AND IsDeleted = 0
     LIMIT 1`;
 
   /**
@@ -29,8 +35,8 @@ export class LogoQueries {
    * the user had deleted it, which is what makes re-uploading a previously removed image work.
    */
   public static readonly UPSERT = `
-    INSERT INTO Logos (Id, Kind, Source, SharedFolderId, FileData, MimeType, Name, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, 0)
+    INSERT INTO Logos (Id, Kind, Source, ManifestId, FileData, MimeType, Name, CreatedAt, UpdatedAt, IsDeleted)
+    VALUES (?, ?, ?, (SELECT Id FROM Manifests WHERE IsRoot = 1), ?, ?, ?, ?, ?, 0)
     ON CONFLICT(Id) DO UPDATE SET
       FileData = excluded.FileData,
       MimeType = excluded.MimeType,
@@ -44,7 +50,7 @@ export class LogoQueries {
    */
   public static readonly LIST_CUSTOM = `
     SELECT Id, Kind, Source, Name, FileData FROM Logos
-    WHERE Kind = 'custom' AND SharedFolderId IS NULL AND IsDeleted = 0
+    WHERE Kind = 'custom' AND ${LogoQueries.PERSONAL_SCOPE} AND IsDeleted = 0
     ORDER BY UpdatedAt DESC`;
 
   /**

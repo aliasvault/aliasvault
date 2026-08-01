@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="VaultKeyMetadata.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -11,7 +11,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 /// <summary>
-/// The per-method specific fields of a <see cref="VaultKey"/> stored in a JSON column.
+/// The per-method specific fields of a <see cref="VaultManifestAccessKey"/> stored in a JSON column.
 /// </summary>
 public sealed class VaultKeyMetadata
 {

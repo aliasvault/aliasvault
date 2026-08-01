@@ -63,6 +63,12 @@ export const StorageKeys = {
   SERVER_MANIFEST_REVISIONS: 'local:serverManifestRevisions',
   /** Per-user salt used to canonicalize the vault into the manifest-v1 format. */
   VAULT_V2_USER_SALT: 'local:vaultV2UserSalt',
+
+  /**
+   * The server-side id of the user's root manifest, learned from GET /v2/Vault. Fallback source for
+   * canonicalize when the vault DB's Manifests bookkeeping row is absent (legacy migration push). 
+   */
+  VAULT_V2_ROOT_MANIFEST_ID: 'local:vaultV2RootManifestId',
   /** Content fingerprints of the last pushed manifests and buckets, used for changed-only writes. */
   VAULT_V2_CONTENT_FINGERPRINTS: 'local:vaultV2ContentFingerprints',
   /** Local cache of encrypted blobs (hash to base64 AES-GCM ciphertext). Never stores plaintext at rest. */
@@ -261,6 +267,7 @@ export const allVaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.LEGACY_VAULT_REVISION_NUMBER,
   StorageKeys.SERVER_MANIFEST_REVISIONS,
   StorageKeys.VAULT_V2_USER_SALT,
+  StorageKeys.VAULT_V2_ROOT_MANIFEST_ID,
   StorageKeys.VAULT_V2_CONTENT_FINGERPRINTS,
   StorageKeys.VAULT_V2_BLOB_CIPHER_CACHE,
   StorageKeys.VAULT_V2_SERVER_BLOB_HASHES,

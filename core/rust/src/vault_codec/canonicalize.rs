@@ -27,6 +27,11 @@ use crate::error::VaultResult;
 /// Canonicalize normalized tables into the split resources: the manifest, one data bucket per declared
 /// category (see [`BUCKET_TABLES`](super::types::BUCKET_TABLES)), and the content-addressed blob map.
 pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<CanonicalizedVault> {
+    // Every row is stamped with its owning manifest's id.
+    if input.root_manifest_id.is_empty() {
+        return Err(crate::error::VaultError::General("canonicalize requires rootManifestId".to_string()));
+    }
+
     // Collect every non-skip table into a name > rows map (row order preserved per table). Blob
     // extraction and bucket-splitting happen below.
     let mut all_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
@@ -59,11 +64,10 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
     let all_logos: Vec<CodecRecord> = all_tables.get("Logos").cloned().unwrap_or_default();
 
     // Split each shared folder's subtree into its own partition; `all_tables` keeps the root's rows.
-    let shared_partitions = partition_for_sharing(&mut all_tables, &input.shared_folders, &all_logos)?;
+    let shared_partitions = partition_for_sharing(&mut all_tables, &input.shared_folders, &all_logos, &input.root_manifest_id)?;
 
-    // The root manifest is a scope like any other: `SharedFolderId` NULL, ids derived against it.
-    reconcile_logo_references(&mut all_tables, None, &all_logos);
-    normalize_logo_scope(&mut all_tables, None);
+    reconcile_logo_references(&mut all_tables, &input.root_manifest_id, &all_logos);
+    normalize_logo_scope(&mut all_tables, &input.root_manifest_id);
 
     let mut blobs: HashMap<String, BlobEntry> = HashMap::new();
     let mut manifest_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
@@ -121,6 +125,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
                 migration_id: input.migration_id.clone(),
                 user_salt: partition.user_salt,
                 canonicalized_at: input.canonicalized_at.clone(),
+                manifest_id: partition.manifest_id,
                 shared_folder_id: Some(partition.folder_id),
                 tables: shared_tables,
                 extra: HashMap::new(),
@@ -134,6 +139,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         migration_id: input.migration_id,
         user_salt: input.user_salt,
         canonicalized_at: input.canonicalized_at,
+        manifest_id: input.root_manifest_id,
         shared_folder_id: None,
         tables: manifest_tables,
         extra: HashMap::new(),

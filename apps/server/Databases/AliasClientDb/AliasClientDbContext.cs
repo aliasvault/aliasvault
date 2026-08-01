@@ -115,9 +115,9 @@ public class AliasClientDbContext : DbContext
     public DbSet<CodecOverflow> CodecOverflows { get; set; }
 
     /// <summary>
-    /// Gets or sets the SharedFolderEncryptionKeys DbSet.
+    /// Gets or sets the Manifests DbSet.
     /// </summary>
-    public DbSet<SharedFolderEncryptionKey> SharedFolderEncryptionKeys { get; set; }
+    public DbSet<Manifest> Manifests { get; set; }
 
     /// <summary>
     /// The OnModelCreating method.
@@ -189,11 +189,10 @@ public class AliasClientDbContext : DbContext
             .HasForeignKey(f => f.ParentFolderId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Configure Logo unique index on (SharedFolderId, Kind, Source): an icon belongs to exactly one
-        // manifest, so the same natural key may appear once in the personal vault (SharedFolderId NULL)
-        // and once per shared folder.
+        // Configure Logo unique index on (ManifestId, Kind, Source): an icon belongs to exactly one
+        // manifest, so the same natural key may appear once per manifest.
         modelBuilder.Entity<Logo>()
-            .HasIndex(l => new { l.SharedFolderId, l.Kind, l.Source })
+            .HasIndex(l => new { l.ManifestId, l.Kind, l.Source })
             .IsUnique();
 
         // Kind defaults to 'favicon' for legacy reasons and backwards compatibility.
@@ -201,8 +200,9 @@ public class AliasClientDbContext : DbContext
             .Property(l => l.Kind)
             .HasDefaultValue(Logo.KindFavicon);
 
-        modelBuilder.Entity<SharedFolderEncryptionKey>()
-            .HasIndex(k => new { k.SharedFolderId, k.IsPrimary });
+        // Encryption key lookups resolve a manifest's primary keypair.
+        modelBuilder.Entity<EncryptionKey>()
+            .HasIndex(k => new { k.ManifestId, k.IsPrimary });
 
         // Configure FieldValue - Item relationship
         modelBuilder.Entity<FieldValue>()

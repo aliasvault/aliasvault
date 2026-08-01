@@ -36,7 +36,7 @@ public class Logo : SyncableEntity
     public const string KindCustom = "custom";
 
     /// <summary>
-    /// Gets or sets the logo ID. Deterministically derived from (SharedFolderId, Kind, Source) via Rust core.
+    /// Gets or sets the logo ID. Deterministically derived from (ManifestId, Kind, Source) via Rust core.
     /// </summary>
     [Key]
     public Guid Id { get; set; }
@@ -54,19 +54,21 @@ public class Logo : SyncableEntity
     /// Gets or sets this icon's natural key within its <see cref="Kind"/>: the source domain
     /// ('github.com') for a favicon, the catalog key ('shopping') for a built-in icon, or the image's
     /// sha256 for an uploaded one.
-    /// Unique per manifest scope (see <see cref="SharedFolderId"/>), so logos are deduplicated within
-    /// the personal vault and within each shared folder, but never across them.
+    /// Unique per manifest (see <see cref="ManifestId"/>), so logos are deduplicated within
+    /// each manifest — the root vault included — but never across them.
     /// </summary>
     [Required]
     [StringLength(255)]
     public string Source { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the shared folder this logo belongs to, or null when it belongs to the user's own
-    /// (personal) vault. An icon lives in exactly one manifest: two members of a shared folder each keep
-    /// their own personal icon for a domain while the folder keeps the one its items use.
+    /// Gets or sets the id of the manifest this logo belongs to — the root manifest's own id for
+    /// personal logos (see the Manifests bookkeeping table; there is no NULL-scope convention). An
+    /// icon lives in exactly one manifest: two members of a shared folder each keep their own personal
+    /// icon for a domain while the folder keeps the one its items use. Nullable only as write
+    /// tolerance: the Rust codec adopts and restamps unstamped rows at the next sync boundary.
     /// </summary>
-    public Guid? SharedFolderId { get; set; }
+    public Guid? ManifestId { get; set; }
 
     /// <summary>
     /// Gets or sets the logo image data. Null for <see cref="KindBuiltin"/>, which carries no bytes.

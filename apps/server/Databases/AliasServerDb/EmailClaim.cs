@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="EmailClaim.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 
 /// <summary>
 /// EmailClaim object. This object is used to reserve an email address. The claim is filed against the manifest
-/// the alias lives in (see <see cref="VaultManifestId"/>), which is what its owning group is resolved from.
+/// the alias lives in (see <see cref="VaultManifestId"/>).
 /// </summary>
 [Index(nameof(Address), IsUnique = true)]
 [Index(nameof(VaultManifestId), nameof(Disabled))]
@@ -36,19 +36,6 @@ public class EmailClaim
     /// </summary>
     [ForeignKey("VaultManifestId")]
     public virtual VaultManifest? VaultManifest { get; set; }
-
-    /// <summary>
-    /// Gets or sets the encryption key incoming mail for this alias is encrypted with. For most cases this will be null,
-    /// which means the routing owner's primary personal key is used, resolved at delivery time. For aliases that are shared
-    /// with other users, this will be set to the encryption key of the shared folder so all members of the folder can decrypt the mail.
-    /// </summary>
-    public Guid? EncryptionKeyId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the navigation property to the encryption key mail for this alias is encrypted with.
-    /// </summary>
-    [ForeignKey("EncryptionKeyId")]
-    public virtual EncryptionKey? EncryptionKey { get; set; }
 
     /// <summary>
     /// Gets or sets the full email address.

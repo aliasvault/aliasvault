@@ -22,12 +22,16 @@ fn bucket_rows<'a>(out: &'a CanonicalizedVault, category: &str, table: &str) -> 
         .unwrap_or(&[])
 }
 
+/// The root manifest id every basic-input test canonicalizes against.
+const ROOT_MANIFEST: &str = "00000000-0000-0000-0000-00000000r00t";
+
 fn basic_input(tables: Vec<CodecTableData>) -> CanonicalizeInput {
     CanonicalizeInput {
         tables,
         user_salt: "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff".to_string(),
         migration_id: "20250101000000_Init".to_string(),
         canonicalized_at: "2026-01-01T00:00:00.000Z".to_string(),
+        root_manifest_id: ROOT_MANIFEST.to_string(),
         shared_folders: Vec::new(),
     }
 }
@@ -56,7 +60,7 @@ fn bucket_layout_matches_bucket_tables_source_of_truth() {
             assert_eq!(bucket_category_for(table), Some(entry.category.as_str()));
         }
     }
-    assert_eq!(layout.iter().map(|e| e.category.as_str()).collect::<Vec<_>>(), vec!["Settings", "EncryptionKeys"]);
+    assert_eq!(layout.iter().map(|e| e.category.as_str()).collect::<Vec<_>>(), vec!["Settings"]);
     assert_eq!(bucket_layout_json().unwrap(), serde_json::to_string(&layout).unwrap());
 }
 
@@ -259,6 +263,7 @@ fn forward_compat_unknown_manifest_fields_preserved() {
         "migrationId": "m",
         "userSalt": "00112233445566778899aabbccddeeff",
         "canonicalizedAt": "2026-01-01T00:00:00.000Z",
+        "manifestId": "m-1",
         "tables": { "Items": [] },
         "futureField": { "nested": true }
     })
@@ -293,11 +298,11 @@ fn canonicalize_remints_legacy_logo_ids_and_collapses_duplicate_sources() {
     ]))
     .unwrap();
 
-    let expected_id = json!(scoped_assets::logo_id_for(None, scoped_assets::KIND_FAVICON, "github.com"));
+    let expected_id = json!(scoped_assets::logo_id_for(ROOT_MANIFEST, scoped_assets::KIND_FAVICON, "github.com"));
     let logos = &out.manifest.tables["Logos"];
     assert_eq!(logos.len(), 1, "duplicate Source collapsed to one row");
-    assert_eq!(logos[0]["Id"], expected_id, "id derived from (root scope, source)");
-    assert_eq!(logos[0]["SharedFolderId"], serde_json::Value::Null, "root manifest is the null scope");
+    assert_eq!(logos[0]["Id"], expected_id, "id derived from (root manifest id, source)");
+    assert_eq!(logos[0]["ManifestId"], json!(ROOT_MANIFEST), "root rows are stamped with the root manifest's own id");
     // The row carrying favicon bytes is the one that survived, not the empty one.
     assert!(logos[0]["FileData"].get("__blobRef").is_some());
 
@@ -333,7 +338,7 @@ fn canonicalize_dedup_tiebreak_prefers_the_row_with_favicon_bytes() {
     let logos = &out.manifest.tables["Logos"];
     assert_eq!(logos.len(), 1, "duplicate Source collapsed to one row");
     assert_eq!(logos[0]["MimeType"], json!("image/png"), "the row with bytes supplies the surviving content");
-    assert_eq!(out.manifest.tables["Items"][0]["LogoId"], json!(scoped_assets::logo_id_for(None, scoped_assets::KIND_FAVICON, "github.com")));
+    assert_eq!(out.manifest.tables["Items"][0]["LogoId"], json!(scoped_assets::logo_id_for(ROOT_MANIFEST, scoped_assets::KIND_FAVICON, "github.com")));
 }
 
 #[test]
@@ -358,7 +363,7 @@ fn canonicalize_nulls_dangling_logo_reference() {
     let items = &out.manifest.tables["Items"];
     let i1 = items.iter().find(|r| r["Id"] == json!("i1")).unwrap();
     let i2 = items.iter().find(|r| r["Id"] == json!("i2")).unwrap();
-    assert_eq!(i1["LogoId"], json!(scoped_assets::logo_id_for(None, scoped_assets::KIND_FAVICON, "github.com")), "valid reference follows the re-mint");
+    assert_eq!(i1["LogoId"], json!(scoped_assets::logo_id_for(ROOT_MANIFEST, scoped_assets::KIND_FAVICON, "github.com")), "valid reference follows the re-mint");
     assert_eq!(i2["LogoId"], serde_json::Value::Null, "dangling reference nulled");
 }
 
@@ -609,11 +614,58 @@ fn content_fingerprint_matches_serialized_manifest_roundtrip() {
         migration_id: "20250101000000_Test".into(),
         user_salt: "00ff".into(),
         canonicalized_at: "2026-01-01T00:00:00.000Z".into(),
+        manifest_id: "m-fp".into(),
         shared_folder_id: None,
         tables: std::collections::HashMap::from([(String::from("Items"), vec![])]),
         extra: std::collections::HashMap::new(),
     };
     let serialized = serde_json::to_string(&manifest).unwrap();
-    let reordered = r#"{"tables":{"Items":[]},"userSalt":"00ff","migrationId":"20250101000000_Test","schemaVersion":1,"canonicalizedAt":"1999-12-31T23:59:59.000Z"}"#;
+    let reordered = r#"{"tables":{"Items":[]},"userSalt":"00ff","migrationId":"20250101000000_Test","schemaVersion":1,"manifestId":"m-fp","canonicalizedAt":"1999-12-31T23:59:59.000Z"}"#;
     assert_eq!(compute_content_fingerprint(&serialized), compute_content_fingerprint(reordered));
+}
+
+#[test]
+fn canonicalize_requires_root_manifest_id() {
+    let mut input = basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![] }]);
+    input.root_manifest_id = String::new();
+    assert!(canonicalize_from_sqlite(input).is_err());
+}
+
+#[test]
+fn canonicalize_stamps_root_manifest_id_on_metadata_and_content_rows() {
+    let out = canonicalize_from_sqlite(basic_input(vec![
+        CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i1"))])] },
+        CodecTableData { name: "Folders".to_string(), records: vec![row(&[("Id", json!("f1"))])] },
+    ]))
+    .unwrap();
+    assert_eq!(out.manifest.manifest_id, ROOT_MANIFEST);
+    assert_eq!(out.manifest.tables["Items"][0]["ManifestId"], json!(ROOT_MANIFEST));
+    assert_eq!(out.manifest.tables["Folders"][0]["ManifestId"], json!(ROOT_MANIFEST));
+}
+
+#[test]
+fn materialize_emits_manifests_bookkeeping_table() {
+    // The vault DB carries one Manifests row per materialized manifest so app queries can resolve the
+    // root manifest id; the table is local bookkeeping and must never round-trip into a manifest.
+    let out = canonicalize_from_sqlite(basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i1"))])] }])).unwrap();
+    let re = materialize_as_sqlite(MaterializeInput { manifest: out.manifest, data_buckets: out.data_buckets, schema_columns: None, shared_manifests: vec![] }).unwrap();
+    let manifests = re.tables.iter().find(|t| t.name == "Manifests").expect("Manifests bookkeeping table emitted");
+    assert_eq!(manifests.records.len(), 1);
+    assert_eq!(manifests.records[0]["Id"], json!(ROOT_MANIFEST));
+    assert_eq!(manifests.records[0]["IsRoot"], json!(1));
+    assert_eq!(manifests.records[0]["AnchorFolderId"], serde_json::Value::Null);
+
+    // Feeding the materialized tables back into canonicalize must consume the bookkeeping table (skip-table).
+    let pushed = canonicalize_from_sqlite(basic_input(re.tables)).unwrap();
+    assert!(!pushed.manifest.tables.contains_key("Manifests"));
+}
+
+#[test]
+fn validate_manifest_requires_manifest_id() {
+    let mut manifest = canonicalize_from_sqlite(basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![] }])).unwrap().manifest;
+    assert!(validate_manifest(&manifest).ok);
+    manifest.manifest_id = String::new();
+    let result = validate_manifest(&manifest);
+    assert!(!result.ok);
+    assert!(result.failed_rules.iter().any(|r| r == "manifestId-missing"));
 }

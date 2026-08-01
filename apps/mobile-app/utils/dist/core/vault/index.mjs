@@ -1324,21 +1324,40 @@ VALUES ('20260726141537_2.1.0-CodecOverflowsAndItemLogos', '10.0.10');
 COMMIT;
 
 BEGIN TRANSACTION;
-CREATE TABLE "SharedFolderEncryptionKeys" (
-    "Id" TEXT NOT NULL CONSTRAINT "PK_SharedFolderEncryptionKeys" PRIMARY KEY,
-    "SharedFolderId" TEXT NOT NULL,
-    "PublicKey" TEXT NOT NULL,
-    "PrivateKey" TEXT NOT NULL,
-    "IsPrimary" INTEGER NOT NULL,
-    "CreatedAt" TEXT NOT NULL,
-    "UpdatedAt" TEXT NOT NULL,
-    "IsDeleted" INTEGER NOT NULL
-);
+ALTER TABLE "EncryptionKeys" ADD "SharedFolderId" TEXT NULL;
 
-CREATE INDEX "IX_SharedFolderEncryptionKeys_SharedFolderId_IsPrimary" ON "SharedFolderEncryptionKeys" ("SharedFolderId", "IsPrimary");
+CREATE INDEX "IX_EncryptionKeys_SharedFolderId_IsPrimary" ON "EncryptionKeys" ("SharedFolderId", "IsPrimary");
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260727043742_2.2.0-AddSharedFolderEncryptionKeys', '10.0.10');
+VALUES ('20260731141636_2.2.0-ScopeEncryptionKeysPerManifest', '10.0.10');
+
+COMMIT;
+
+BEGIN TRANSACTION;
+ALTER TABLE "Logos" RENAME COLUMN "SharedFolderId" TO "ManifestId";
+
+DROP INDEX "IX_Logos_SharedFolderId_Kind_Source";
+
+CREATE UNIQUE INDEX "IX_Logos_ManifestId_Kind_Source" ON "Logos" ("ManifestId", "Kind", "Source");
+
+ALTER TABLE "EncryptionKeys" RENAME COLUMN "SharedFolderId" TO "ManifestId";
+
+DROP INDEX "IX_EncryptionKeys_SharedFolderId_IsPrimary";
+
+CREATE INDEX "IX_EncryptionKeys_ManifestId_IsPrimary" ON "EncryptionKeys" ("ManifestId", "IsPrimary");
+
+ALTER TABLE "Items" ADD "ManifestId" TEXT NULL;
+
+ALTER TABLE "Folders" ADD "ManifestId" TEXT NULL;
+
+CREATE TABLE "Manifests" (
+    "Id" TEXT NOT NULL CONSTRAINT "PK_Manifests" PRIMARY KEY,
+    "IsRoot" INTEGER NOT NULL,
+    "AnchorFolderId" TEXT NULL
+);
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260801094716_2.2.0-ManifestScopedStorage', '10.0.10');
 
 COMMIT;
 `;

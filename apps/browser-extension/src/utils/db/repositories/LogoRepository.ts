@@ -4,6 +4,7 @@ import { vaultCodecLogoContentHash, vaultCodecLogoIdFor } from '@/utils/RustCore
 
 import { BaseRepository } from '../BaseRepository';
 import { LogoQueries } from '../queries/LogoQueries';
+import { SettingsQueries } from '../queries/SettingsQueries';
 
 /**
  * An uploaded logo as shown in the user's logo library.
@@ -19,7 +20,7 @@ export type CustomLogoEntry = ItemLogo & {
  * domain, a built-in logo under its catalog key, an uploaded image under its content hash. Ids are
  * derived from that key by the Rust core rather than randomly generated, so every device and platform
  * produces the same row for the same logo instead of minting duplicates that collide on
- * UNIQUE(SharedFolderId, Kind, Source).
+ * UNIQUE(ManifestId, Kind, Source).
  */
 export class LogoRepository extends BaseRepository {
   /**
@@ -68,7 +69,7 @@ export class LogoRepository extends BaseRepository {
     currentDateTime: string,
     options: { mimeType?: string | null; name?: string | null } = {}
   ): Promise<string> {
-    const logoId = await vaultCodecLogoIdFor(null, kind, source);
+    const logoId = await vaultCodecLogoIdFor(this.rootManifestId(), kind, source);
     this.client.executeUpdate(LogoQueries.UPSERT, [
       logoId,
       kind,
@@ -119,6 +120,17 @@ export class LogoRepository extends BaseRepository {
    */
   public softDelete(logoId: string, currentDateTime: string): number {
     return this.client.executeUpdate(LogoQueries.SOFT_DELETE, [currentDateTime, logoId]);
+  }
+
+  /**
+   * The vault's root manifest id, used as the derivation scope of personal logo ids. Empty for a
+   * legacy vault whose Manifests row was not written yet — the codec re-mints such ids at the next
+   * sync boundary, so a temporary placeholder scope is self-healing.
+   * @returns The root manifest id, or an empty string when absent
+   */
+  private rootManifestId(): string {
+    const rows = this.client.executeQuery<{ Id: string }>(SettingsQueries.GET_ROOT_MANIFEST_ID);
+    return rows.length > 0 ? rows[0].Id : '';
   }
 
   /**

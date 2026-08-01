@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="AliasVaultUser.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -94,13 +94,8 @@ public class AliasVaultUser : IdentityUser
     public int EmailsReceived { get; set; } = 0;
 
     /// <summary>
-    /// Gets or sets the collection of EncryptionKeys.
-    /// </summary>
-    public virtual ICollection<EncryptionKey> EncryptionKeys { get; set; } = [];
-
-    /// <summary>
     /// Gets or sets the collection of vault unlock keys (KEK/VEK model). Empty for users still on the legacy
     /// model where the password-derived key encrypts the vault directly.
     /// </summary>
-    public virtual ICollection<VaultKey> VaultKeys { get; set; } = [];
+    public virtual ICollection<VaultManifestAccessKey> VaultManifestAccessKeys { get; set; } = [];
 }

@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="Email.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -33,11 +33,11 @@ public class Email
     public Guid EncryptionKeyId { get; set; }
 
     /// <summary>
-    /// Gets or sets foreign key to the EncryptionKey object which contains the public key used for encrypting
+    /// Gets or sets foreign key to the VaultManifestDeliveryKey object which contains the public key used for encrypting
     /// the symmetric encryption key.
     /// </summary>
     [ForeignKey("EncryptionKeyId")]
-    public virtual EncryptionKey EncryptionKey { get; set; } = null!;
+    public virtual VaultManifestDeliveryKey EncryptionKey { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the encrypted symmetric key which was used to encrypt the email message.

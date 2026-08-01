@@ -120,12 +120,12 @@ fn codec_to_js<T: serde::Serialize>(value: &T) -> Result<JsValue, JsValue> {
         .map_err(|e| JsValue::from_str(&format!("Failed to serialize codec output: {}", e)))
 }
 
-/// The `Logos.Id` to use for `source` inside the manifest scoped to `sharedFolderId` (null/undefined =
-/// the user's own root manifest). Every platform derives logo ids through this so independent writers
-/// produce the same row instead of colliding on `UNIQUE(SharedFolderId, Source)`.
+/// The `Logos.Id` to use for `source` inside the manifest with id `manifestId`. Every platform derives
+/// logo ids through this so independent writers produce the same row instead of colliding on
+/// `UNIQUE(ManifestId, Kind, Source)`.
 #[wasm_bindgen(js_name = vaultCodecLogoIdForSource)]
-pub fn vault_codec_logo_id_for_source_js(shared_folder_id: Option<String>, source: String) -> String {
-    vault_codec::logo_id_for_source(shared_folder_id.as_deref(), &source)
+pub fn vault_codec_logo_id_for_source_js(manifest_id: String, source: String) -> String {
+    vault_codec::logo_id_for_source(&manifest_id, &source)
 }
 
 /// The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` of a `custom` logo row, and
@@ -135,12 +135,11 @@ pub fn vault_codec_logo_content_hash_js(bytes: Vec<u8>) -> String {
     vault_codec::logo_content_hash(&bytes)
 }
 
-/// The `Logos.Id` to use for the logo `(kind, source)` inside the manifest scoped to `sharedFolderId`
-/// (null/undefined = the user's own root manifest). `kind` is 'favicon' (source = domain), 'builtin'
-/// (source = catalog key) or 'custom' (source = image content hash).
+/// The `Logos.Id` to use for the logo `(kind, source)` inside the manifest with id `manifestId`
+/// `kind` is 'favicon' (source = domain), 'builtin' (source = catalog key) or 'custom' (source = image content hash).
 #[wasm_bindgen(js_name = vaultCodecLogoIdFor)]
-pub fn vault_codec_logo_id_for_js(shared_folder_id: Option<String>, kind: String, source: String) -> String {
-    vault_codec::logo_id_for(shared_folder_id.as_deref(), &kind, &source)
+pub fn vault_codec_logo_id_for_js(manifest_id: String, kind: String, source: String) -> String {
+    vault_codec::logo_id_for(&manifest_id, &kind, &source)
 }
 
 /// Canonicalize normalized tables into manifest + data buckets.
@@ -244,14 +243,14 @@ pub fn vault_codec_compute_content_fingerprint_js(payload_json: &str) -> String 
     vault_codec::compute_content_fingerprint(payload_json)
 }
 
-/// Extract the encryption-key row whose `PublicKey` matches `public_key` from the decrypted `EncryptionKeys`
-/// data bucket. Input: `DataBucket` + the target public key. Output: the matching row object, or null when
-/// no live row carries that key.
-#[wasm_bindgen(js_name = vaultCodecExtractEncryptionKeyForPublicKeyFromBucket)]
-pub fn vault_codec_extract_encryption_key_for_public_key_from_bucket_js(bucket: JsValue, public_key: &str) -> Result<JsValue, JsValue> {
-    let b: DataBucket = serde_wasm_bindgen::from_value(bucket)
-        .map_err(|e| JsValue::from_str(&format!("Failed to parse data bucket: {}", e)))?;
-    codec_to_js(&vault_codec::extract_encryption_key_for_public_key_from_bucket(&b, public_key))
+/// Extract the encryption-key row whose `PublicKey` matches `public_key` from a decrypted manifest's
+/// `EncryptionKeys` table (scoped to the manifest itself: personal keys on the root manifest, the folder's
+/// delivery keypair on a shared manifest).
+#[wasm_bindgen(js_name = vaultCodecExtractEncryptionKeyForPublicKey)]
+pub fn vault_codec_extract_encryption_key_for_public_key_js(manifest: JsValue, public_key: &str) -> Result<JsValue, JsValue> {
+    let m: Manifest = serde_wasm_bindgen::from_value(manifest)
+        .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest: {}", e)))?;
+    codec_to_js(&vault_codec::extract_encryption_key_for_public_key(&m, public_key))
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

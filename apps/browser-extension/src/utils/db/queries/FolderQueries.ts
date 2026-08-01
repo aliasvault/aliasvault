@@ -21,11 +21,12 @@ export class FolderQueries {
     WHERE Id = ? AND IsDeleted = 0`;
 
   /**
-   * Insert a new folder.
+   * Insert a new folder, stamped best-effort with the root manifest id (the codec restamps membership
+   * authoritatively from the folder tree at every sync boundary).
    */
   public static readonly INSERT = `
-    INSERT INTO Folders (Id, Name, ParentFolderId, Weight, IsDeleted, CreatedAt, UpdatedAt)
-    VALUES (?, ?, ?, 0, 0, ?, ?)`;
+    INSERT INTO Folders (Id, Name, ParentFolderId, ManifestId, Weight, IsDeleted, CreatedAt, UpdatedAt)
+    VALUES (?, ?, ?, (SELECT Id FROM Manifests WHERE IsRoot = 1), 0, 0, ?, ?)`;
 
   /**
    * Update folder name.

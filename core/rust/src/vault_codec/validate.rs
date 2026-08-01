@@ -42,6 +42,10 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
     if manifest.user_salt.len() < 32 {
         failed.push("userSalt-missing-or-short".to_string());
     }
+    // Every manifest carries its own id: rows inside are stamped with it.
+    if manifest.manifest_id.is_empty() {
+        failed.push("manifestId-missing".to_string());
+    }
 
     if manifest.tables.is_empty() {
         failed.push("tables-missing".to_string());
@@ -65,22 +69,20 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
     }
 
     /*
-     * A shared-only table (a folder's own email keypair) belongs to exactly one
-     * shared manifest. The root must not carry it at all, and a shared manifest must only carry rows
-     * scoped to its own folder.
+     * Every EncryptionKeys row must be stamped with the manifest's own id.
      */
-    let expected_scope = manifest.shared_folder_id.as_deref();
-    for name in super::types::SHARED_ONLY_TABLES {
-        let rows = table(manifest, name);
-        if rows.is_empty() {
-            continue;
-        }
-        if expected_scope.is_none() {
-            failed.push("root-manifest-carries-shared-only-table".to_string());
-            explain.push(format!("Root manifest carries shared-only table {}", name));
-        } else if rows.iter().any(|r| str_field(r, "SharedFolderId") != expected_scope) {
-            failed.push("shared-only-table-scope-mismatch".to_string());
-            explain.push(format!("{} carries rows scoped to another shared folder", name));
+    let expected_scope = Some(manifest.manifest_id.as_str());
+    if table(manifest, super::types::ENCRYPTION_KEYS_TABLE).iter().any(|r| str_field(r, super::types::MANIFEST_ID_COL) != expected_scope) {
+        failed.push("encryption-keys-scope-mismatch".to_string());
+        explain.push("EncryptionKeys carries rows stamped for another manifest".to_string());
+    }
+
+    // Items and Folders are restamped by canonicalize: a mismatched stamp here means a codec bug.
+    for name in ["Items", "Folders"] {
+        if table(manifest, name).iter().any(|r| str_field(r, super::types::MANIFEST_ID_COL) != expected_scope) {
+            failed.push("content-scope-mismatch".to_string());
+            explain.push(format!("{} carries rows stamped for another manifest", name));
+            break;
         }
     }
 
@@ -153,9 +155,8 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
     }
 
     /*
-     * A logo belongs to exactly one manifest, and (SharedFolderId, Kind, Source) is UNIQUE in the
-     * client schema. Check for duplicates; a row without an explicit Kind is a favicon, which is what
-     * the schema's column default resolves it to on materialize.
+     * A logo belongs to exactly one manifest: (ManifestId, Kind, Source) must be UNIQUE in the
+     * client schema.
      */
     let logos = table(manifest, "Logos");
     let logo_keys: std::collections::HashSet<(String, String)> = logos
@@ -169,10 +170,9 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
 
     // Every logo in a manifest must claim that manifest's scope, otherwise the row would materialize
     // into the wrong uniqueness bucket and could collide with the reader's own rows.
-    let expected_scope = manifest.shared_folder_id.as_deref();
-    if logos.iter().any(|l| str_field(l, "SharedFolderId") != expected_scope) {
+    if logos.iter().any(|l| str_field(l, super::types::MANIFEST_ID_COL) != expected_scope) {
         failed.push("logo-scope-mismatch".to_string());
-        explain.push("Logos carry a SharedFolderId that is not this manifest's scope".to_string());
+        explain.push("Logos carry a ManifestId that is not this manifest's own id".to_string());
     }
 
     ValidationResult {

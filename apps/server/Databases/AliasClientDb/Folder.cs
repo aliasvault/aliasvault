@@ -30,6 +30,14 @@ public class Folder : SyncableEntity
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the id of the manifest this folder belongs to (the root manifest's own id for
+    /// personal folders; see the Manifests bookkeeping table). A maintained cache of membership like
+    /// Item.ManifestId: the folder tree stays authoritative and the Rust codec restamps the value at
+    /// every sync boundary.
+    /// </summary>
+    public Guid? ManifestId { get; set; }
+
+    /// <summary>
     /// Gets or sets the parent folder ID foreign key.
     /// </summary>
     public Guid? ParentFolderId { get; set; }

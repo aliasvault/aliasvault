@@ -8,9 +8,7 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Auth;
 
 /// <summary>
-/// Register request model for the v2 endpoint. Includes the encrypted VEK so registration can create the user's
-/// VaultKey (KEK/VEK model) atomically. When <see cref="EncryptedVek"/> is omitted the user is registered on the
-/// legacy model and migrates on their first vault upload from a KEK/VEK-capable client.
+/// Register request model for the v2 endpoint.
 /// </summary>
 public class RegisterRequest
 {
@@ -23,8 +21,11 @@ public class RegisterRequest
     /// <param name="encryptionType">The encryption type.</param>
     /// <param name="encryptionSettings">The encryption settings.</param>
     /// <param name="srpIdentity">The SRP identity.</param>
-    /// <param name="encryptedVek">The encrypted VEK.</param>
-    public RegisterRequest(string username, string salt, string verifier, string encryptionType, string encryptionSettings, string? srpIdentity = null, string? encryptedVek = null)
+    /// <param name="encryptedVek">The AK encrypted VEK.</param>
+    /// <param name="encryptedAccountKey">The KEK encrypted Account Key.</param>
+    /// <param name="accountPublicKey">The account public key.</param>
+    /// <param name="encryptedAccountPrivateKey">The AK encrypted account private key.</param>
+    public RegisterRequest(string username, string salt, string verifier, string encryptionType, string encryptionSettings, string? srpIdentity = null, string? encryptedVek = null, string? encryptedAccountKey = null, string? accountPublicKey = null, string? encryptedAccountPrivateKey = null)
     {
         Username = username.ToLowerInvariant().Trim();
         Salt = salt;
@@ -33,6 +34,9 @@ public class RegisterRequest
         EncryptionSettings = encryptionSettings;
         SrpIdentity = srpIdentity;
         EncryptedVek = encryptedVek;
+        EncryptedAccountKey = encryptedAccountKey;
+        AccountPublicKey = accountPublicKey;
+        EncryptedAccountPrivateKey = encryptedAccountPrivateKey;
     }
 
     /// <summary>
@@ -61,15 +65,27 @@ public class RegisterRequest
     public string EncryptionSettings { get; }
 
     /// <summary>
-    /// Gets the SRP identity used for authentication. This is a fixed value (typically a GUID) that
-    /// is used for all SRP operations. If not provided, defaults to the lowercase username for
-    /// backward compatibility.
+    /// Gets the SRP identity used for authentication.
     /// </summary>
     public string? SrpIdentity { get; }
 
     /// <summary>
-    /// Gets the encrypted VEK: base64(IV ‖ ciphertext ‖ authTag) of the freshly generated VEK encrypted with the
-    /// password-derived KEK using AES-256-GCM. Null for legacy registrations.
+    /// Gets the encrypted VEK.
     /// </summary>
     public string? EncryptedVek { get; }
+
+    /// <summary>
+    /// Gets the Account Key encrypted with the password-derived KEK.
+    /// </summary>
+    public string? EncryptedAccountKey { get; }
+
+    /// <summary>
+    /// Gets the account public key.
+    /// </summary>
+    public string? AccountPublicKey { get; }
+
+    /// <summary>
+    /// Gets the account private key encrypted with the Account Key.
+    /// </summary>
+    public string? EncryptedAccountPrivateKey { get; }
 }
