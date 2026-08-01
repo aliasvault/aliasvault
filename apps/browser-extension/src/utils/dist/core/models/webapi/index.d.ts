@@ -444,36 +444,19 @@ type MobileLoginPollResponse = {
 
 /**
  * Vault key response type (account-key model). Returned by GET /v2/VaultKey/{type}.
- * Carries the whole unwrap chain for one unlock method: the client derives the KEK from the unlock secret,
- * unwraps the Account Key (AK), and with it unwraps the root VEK and the account (tier-1) private key.
- * The SRP verifier is never returned.
  */
 type VaultKeyResponse = {
-    /** The unlock method type, e.g. "password". */
     type: string;
-    /** The Account Key wrapped with this method's KEK: base64(IV ‖ ciphertext ‖ authTag), AES-256-GCM. */
     encryptedAccountKey: string;
-    /**
-     * The root VEK wrapped under the Account Key, or null for a transitional account converted from the
-     * pre-AK model — there the Account Key IS the VEK until the client performs the account-key split.
-     */
-    encryptedVek: string | null;
-    /** The account public key (tier-1, grant wrapping), or null before the account-key split. */
-    accountPublicKey: string | null;
-    /** The account private key wrapped under the Account Key, or null before the account-key split. */
     encryptedAccountPrivateKey: string | null;
-    /** The salt used for KEK derivation (same value as the SRP salt for the password key type). */
+    accountPublicKey: string | null;
+    encryptedVek: string | null;
     salt: string;
-    /** The key derivation type, e.g. "Argon2Id". */
     encryptionType: string;
-    /** The key derivation settings as a JSON string. */
     encryptionSettings: string;
 };
 /**
- * Envelope returned by GET /v2/VaultKey/{type} with HTTP 200. A null vaultKey means the user has no vault key
- * of the requested type (legacy user). An HTTP 404 on the endpoint itself means the server does not implement
- * vault keys at all (older server version) and must be treated differently: fall back to any locally cached
- * encrypted VEK instead of assuming a legacy account.
+ * Envelope returned by GET /v2/VaultKey/{type} with HTTP 200.
  */
 type VaultKeyGetResponse = {
     vaultKey: VaultKeyResponse | null;

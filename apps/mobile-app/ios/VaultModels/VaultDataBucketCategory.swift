@@ -10,9 +10,6 @@ public struct VaultDataBucketCategory {
     /// User client settings (sort order, autofill prefs, identity defaults, etc.).
     public static let settings = "Settings"
 
-    /// The user's asymmetric keypairs, which are used for both email decryption and to unwrap shared-folder VEKs.
-    public static let encryptionKeys = "EncryptionKeys"
-
     /// All known data bucket categories.
-    public static let all = [settings, encryptionKeys]
+    public static let all = [settings]
 }

@@ -1,8 +1,5 @@
 /**
- * Encryption key SQLite database type: a manifest's email delivery keypair, stamped with the id of
- * the manifest that carries it (the root manifest's own id for personal keys — resolve it from the
- * Manifests bookkeeping table; there is no NULL-scope convention). Only nullable as write tolerance:
- * the Rust codec adopts and restamps unstamped rows at the next sync boundary.
+ * Encryption key SQLite database type.
  */
 type EncryptionKey = {
     Id: string;
