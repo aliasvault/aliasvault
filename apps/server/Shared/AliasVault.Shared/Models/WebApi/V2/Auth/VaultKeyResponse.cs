@@ -8,15 +8,20 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Auth;
 
 /// <summary>
-/// Response for GET /v2/VaultKey/{type}.
+/// Response for GET /v2/VaultKey/{type}: the encrypted Account Key and KEK derivation parameters for the given unlock method.
 /// </summary>
 public class VaultKeyResponse
 {
     /// <summary>Gets or sets the unlock method type.</summary>
     public required string Type { get; set; }
 
-    /// <summary>Gets or sets the encrypted VEK: base64(IV | ciphertext | authTag) of the VEK encrypted with the KEK.</summary>
-    public required string EncryptedVek { get; set; }
+    /// <summary>Gets or sets the Account Key encrypted with the KEK derived from the unlock method.</summary>
+    public required string EncryptedAccountKey { get; set; }
+
+    /// <summary>
+    /// Gets or sets the encrypted VEK.
+    /// </summary>
+    public string? EncryptedVek { get; set; }
 
     /// <summary>Gets or sets the salt used for KEK derivation.</summary>
     public required string Salt { get; set; }

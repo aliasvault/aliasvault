@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="AuthController.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -64,12 +64,6 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// <summary>
     /// Access token validity in minutes.
     /// </summary>
-    /// <remarks>
-    /// This is the time period for which the access token is valid.
-    /// It is used to authenticate the user for a limited time
-    /// and is short-lived by design. With the separate refresh token, the user can request a new access token
-    /// when this access token expires.
-    /// </remarks>
     private const int AccessTokenValiditySeconds = 600;
 
     /// <summary>
@@ -110,7 +104,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Retrieve latest vault of user which contains the current salt and verifier.
-        var latestVaultEncryptionSettings = AuthHelper.GetUserLatestVaultEncryptionSettings(user);
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var latestVaultEncryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, user);
 
         // Get or create SRP identity. For existing users without SrpIdentity, fall back to username (lowercase).
         var srpIdentity = user.SrpIdentity ?? user.UserName!.ToLowerInvariant();
@@ -431,51 +426,98 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             PasswordChangedAt = timeProvider.UtcNow,
         };
 
-        // KEK/VEK registration: the SRP credentials live on the VaultKey row and the manifest row carries none.
-        // Legacy registration (no wrapped VEK supplied): the SRP credentials live on the manifest row.
-        var createsVaultKey = !string.IsNullOrEmpty(model.WrappedVek);
-
-        var rootManifest = new AliasServerDb.VaultManifest
+        // Check if all account key fields are provided.
+        var accountKeyFields = new[] { model.EncryptedAccountKey, model.EncryptedVek, model.AccountPublicKey, model.EncryptedAccountPrivateKey };
+        var createsVaultKey = accountKeyFields.Any(f => !string.IsNullOrEmpty(f));
+        if (createsVaultKey && accountKeyFields.Any(string.IsNullOrEmpty))
         {
-            ManifestId = Guid.NewGuid(),
-            IsRoot = true,
-            VaultBlob = string.Empty,
-            StorageFormat = "sqlite-blob",
-            Version = "0.0.0",
-            RevisionNumber = 0,
-            Salt = createsVaultKey ? string.Empty : model.Salt,
-            Verifier = createsVaultKey ? string.Empty : model.Verifier,
-            EncryptionType = createsVaultKey ? string.Empty : model.EncryptionType,
-            EncryptionSettings = createsVaultKey ? string.Empty : model.EncryptionSettings,
-            FileSize = 0,
-            CreatedAt = timeProvider.UtcNow,
-            UpdatedAt = timeProvider.UtcNow,
-        };
-        user.VaultManifests.Add(rootManifest);
+            return BadRequest(ServerValidationErrorResponse.Create(["Account key registration requires encryptedAccountKey, encryptedVek, accountPublicKey and encryptedAccountPrivateKey."], 400));
+        }
 
-        if (createsVaultKey)
+        var rootManifestId = Guid.NewGuid();
+
+        // Create the personal group before the user row.
+        var personalGroup = GroupHelper.CreatePersonalGroup(user, timeProvider.UtcNow);
+        await using (var context = await dbContextFactory.CreateDbContextAsync())
         {
-            user.VaultKeys.Add(new VaultKey
-            {
-                Id = Guid.NewGuid(),
-                UserId = user.Id,
-                VaultManifestId = rootManifest.ManifestId,
-                KeyType = AuthHelper.VaultKeyTypePassword,
-                WrapScheme = AuthHelper.WrapSchemeAesGcmKek,
-                WrappedVek = model.WrappedVek!,
-                Salt = model.Salt,
-                Verifier = model.Verifier,
-                EncryptionType = model.EncryptionType,
-                EncryptionSettings = model.EncryptionSettings,
-                CreatedAt = timeProvider.UtcNow,
-                UpdatedAt = timeProvider.UtcNow,
-            });
+            context.Groups.Add(personalGroup);
+            await context.SaveChangesAsync();
         }
 
         var result = await userManager.CreateAsync(user);
 
         if (result.Succeeded)
         {
+            // Create the owner membership and root manifest.
+            await using (var context = await dbContextFactory.CreateDbContextAsync())
+            {
+                context.GroupMembers.Add(GroupHelper.CreateOwnerMembership(personalGroup, user.Id, timeProvider.UtcNow));
+
+                context.VaultManifests.Add(new AliasServerDb.VaultManifest
+                {
+                    ManifestId = rootManifestId,
+                    IsRoot = true,
+                    OwnerGroupId = personalGroup.Id,
+                    VaultBlob = string.Empty,
+                    StorageFormat = "sqlite-blob",
+                    Version = "0.0.0",
+                    RevisionNumber = 0,
+                    Salt = createsVaultKey ? string.Empty : model.Salt,
+                    Verifier = createsVaultKey ? string.Empty : model.Verifier,
+                    EncryptionType = createsVaultKey ? string.Empty : model.EncryptionType,
+                    EncryptionSettings = createsVaultKey ? string.Empty : model.EncryptionSettings,
+                    FileSize = 0,
+                    CreatedAt = timeProvider.UtcNow,
+                    UpdatedAt = timeProvider.UtcNow,
+                });
+
+                if (createsVaultKey)
+                {
+                    context.UserUnlockKeys.Add(new UserUnlockKey
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = user.Id,
+                        Type = UnlockMethodType.Password,
+                        Algorithm = VaultKeyAlgorithm.Aes256Gcm,
+                        EncryptedAccountKey = model.EncryptedAccountKey!,
+                        Metadata = new VaultKeyMetadata
+                        {
+                            Salt = model.Salt,
+                            SrpVerifier = model.Verifier,
+                            EncryptionType = model.EncryptionType,
+                            EncryptionSettings = model.EncryptionSettings,
+                        }.ToJson(),
+                        CreatedAt = timeProvider.UtcNow,
+                        UpdatedAt = timeProvider.UtcNow,
+                    });
+
+                    context.UserGrantKeys.Add(new UserGrantKey
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = user.Id,
+                        PublicKey = model.AccountPublicKey!,
+                        EncryptedPrivateKey = model.EncryptedAccountPrivateKey!,
+                        IsPrimary = true,
+                        CreatedAt = timeProvider.UtcNow,
+                        UpdatedAt = timeProvider.UtcNow,
+                    });
+
+                    context.VaultManifestAccessKeys.Add(new VaultManifestAccessKey
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = user.Id,
+                        VaultManifestId = rootManifestId,
+                        Type = ManifestKeyType.AccountKey,
+                        Algorithm = VaultKeyAlgorithm.Aes256Gcm,
+                        EncryptedVek = model.EncryptedVek!,
+                        CreatedAt = timeProvider.UtcNow,
+                        UpdatedAt = timeProvider.UtcNow,
+                    });
+                }
+
+                await context.SaveChangesAsync();
+            }
+
             await authLoggingService.LogAuthEventSuccessAsync(model.Username, AuthEventType.Register);
 
             // When a user is registered, they are automatically signed in.
@@ -484,6 +526,12 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             // Return the token.
             var tokenModel = await GenerateNewTokensForUser(user, extendedLifetime: true);
             return Ok(tokenModel);
+        }
+
+        // Identity creation failed: remove the personal group written ahead of the user row above.
+        await using (var context = await dbContextFactory.CreateDbContextAsync())
+        {
+            await context.Groups.Where(g => g.Id == personalGroup.Id).ExecuteDeleteAsync();
         }
 
         var errors = result.Errors.Select(e => e.Description).ToArray();
@@ -505,7 +553,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Retrieve latest vault of user which contains the current salt and verifier.
-        var latestVaultEncryptionSettings = AuthHelper.GetUserLatestVaultEncryptionSettings(user);
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var latestVaultEncryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, user);
 
         // Get or create SRP identity. For existing users without SrpIdentity, fall back to username (lowercase).
         var srpIdentity = user.SrpIdentity ?? user.UserName!.ToLowerInvariant();
@@ -521,8 +570,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     }
 
     /// <summary>
-    /// Password change submit. Verifies the current password via SRP, then atomically updates the
-    /// password VaultKey row with the new salt/verifier and the rewrapped VEK.
+    /// Password change submit. Verifies the current password via SRP, then atomically updates the password
+    /// unlock-method row with the new salt/verifier and the Account Key re-encrypted with the new KEK.
     /// </summary>
     /// <param name="model">Password change request model.</param>
     /// <returns>IActionResult.</returns>
@@ -537,15 +586,15 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         await using var context = await dbContextFactory.CreateDbContextAsync();
-        var vaultKey = await context.VaultKeys.FirstOrDefaultAsync(x => x.UserId == user.Id && x.KeyType == AuthHelper.VaultKeyTypePassword);
-        if (vaultKey == null)
+        var unlockKey = await context.UserUnlockKeys.FirstOrDefaultAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password);
+        if (unlockKey == null)
         {
             // Legacy users that have not migrated to v2 yet need to use the v1 flow (or migrate first).
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
         }
 
         // Validate the SRP session (actual current password check).
-        var serverSession = AuthHelper.ValidateSrpSession(cache, user, model.CurrentClientPublicEphemeral, model.CurrentClientSessionProof);
+        var serverSession = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.CurrentClientPublicEphemeral, model.CurrentClientSessionProof);
         if (serverSession is null)
         {
             // Increment failed login attempts in order to lock out the account when the limit is reached.
@@ -555,12 +604,15 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PASSWORD_MISMATCH, 400));
         }
 
-        vaultKey.Salt = model.NewPasswordSalt;
-        vaultKey.Verifier = model.NewPasswordVerifier;
-        vaultKey.WrappedVek = model.NewWrappedVek;
-        vaultKey.EncryptionType = Defaults.EncryptionType;
-        vaultKey.EncryptionSettings = Defaults.EncryptionSettings;
-        vaultKey.UpdatedAt = timeProvider.UtcNow;
+        // Read-modify-write so any per-method fields this build does not know about survive the credential swap.
+        var unlockKeyMetadata = VaultKeyMetadata.Parse(unlockKey.Metadata);
+        unlockKeyMetadata.Salt = model.NewPasswordSalt;
+        unlockKeyMetadata.SrpVerifier = model.NewPasswordVerifier;
+        unlockKeyMetadata.EncryptionType = Defaults.EncryptionType;
+        unlockKeyMetadata.EncryptionSettings = Defaults.EncryptionSettings;
+        unlockKey.Metadata = unlockKeyMetadata.ToJson();
+        unlockKey.EncryptedAccountKey = model.NewEncryptedAccountKey;
+        unlockKey.UpdatedAt = timeProvider.UtcNow;
         await context.SaveChangesAsync();
 
         // Update the password last changed at timestamp for user.
@@ -570,7 +622,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         await authLoggingService.LogAuthEventSuccessAsync(user.UserName!, AuthEventType.PasswordChange);
 
         // Force revoke all logged-in sessions except the current one so other clients re-authenticate with the
-        // new password and rederive their KEK. Their locally cached vault stays decryptable: the VEK is unchanged.
+        // new password and rederive their KEK. Their locally cached vault stays decryptable: the AK is unchanged.
         var deviceIdentifier = AuthHelper.GenerateDeviceIdentifier(Request);
         await context.AliasVaultUserRefreshTokens.Where(x => x.UserId == user.Id && x.DeviceIdentifier != deviceIdentifier).ExecuteDeleteAsync();
 
@@ -639,7 +691,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Retrieve latest vault of user which contains the current salt and verifier.
-        var latestVaultEncryptionSettings = AuthHelper.GetUserLatestVaultEncryptionSettings(user);
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var latestVaultEncryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, user);
 
         // Get or create SRP identity. For existing users without SrpIdentity, fall back to username (lowercase).
         var srpIdentity = user.SrpIdentity ?? user.UserName!.ToLowerInvariant();
@@ -879,7 +932,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Validate the SRP session (actual password check).
-        var serverSession = AuthHelper.ValidateSrpSession(cache, user, model.ClientPublicEphemeral, model.ClientSessionProof);
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var serverSession = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.ClientPublicEphemeral, model.ClientSessionProof);
         if (serverSession is null)
         {
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.AccountDeletion, AuthFailureReason.InvalidPassword);
@@ -890,7 +944,10 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         await authLoggingService.LogAuthEventSuccessAsync(user.UserName!, AuthEventType.AccountDeletion);
 
         // Delete the user and their data.
-        await using var context = await dbContextFactory.CreateDbContextAsync();
+
+        // Delete the personal group and user.
+        var personalGroup = await context.Groups.FirstAsync(g => g.Id == user.PersonalGroupId);
+        context.Groups.Remove(personalGroup);
         context.AliasVaultUsers.Remove(user);
         await context.SaveChangesAsync();
 
@@ -1042,7 +1099,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Validate the SRP session (actual password check).
-        var serverSession = AuthHelper.ValidateSrpSession(cache, user, model.ClientPublicEphemeral, model.ClientSessionProof);
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var serverSession = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.ClientPublicEphemeral, model.ClientSessionProof);
         if (serverSession is null)
         {
             // Increment failed login attempts in order to lock out the account when the limit is reached.

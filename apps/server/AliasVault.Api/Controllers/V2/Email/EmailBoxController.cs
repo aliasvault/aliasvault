@@ -9,6 +9,7 @@ namespace AliasVault.Api.Controllers.V2.Email;
 
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
+using AliasVault.Api.Helpers;
 using AliasVault.Auth.IpAddress;
 using AliasVault.Shared.Models.Spamok;
 using AliasVault.Shared.Models.WebApi;
@@ -51,7 +52,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         var sanitizedEmail = to.Trim().ToLower();
 
         // See if this user has a valid claim to the email address.
-        var emailClaim = await context.UserEmailClaims
+        var emailClaim = await context.EmailClaims
             .FirstOrDefaultAsync(x => x.Address == sanitizedEmail);
 
         if (emailClaim is null || emailClaim.Disabled)
@@ -66,7 +67,8 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             });
         }
 
-        if (emailClaim.UserId != user.Id)
+        // Check if the user has access to the email address.
+        if (!await EmailAccessHelper.CanReadClaimAsync(context, emailClaim, user.Id))
         {
             return BadRequest(new ApiErrorResponse
             {
@@ -78,8 +80,9 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             });
         }
 
-        // Retrieve emails from database (excluding any received after a shadow-block took effect).
-        var emailQuery = context.Emails.AsNoTracking().Where(x => x.To == sanitizedEmail);
+        // Retrieve emails from database.
+        var decryptableKeyIds = await EmailAccessHelper.ResolveDecryptableKeyIdsAsync(context, user.Id);
+        var emailQuery = context.Emails.AsNoTracking().Where(x => x.To == sanitizedEmail && decryptableKeyIds.Contains(x.EncryptionKeyId));
         if (shadowCutoff is not null)
         {
             emailQuery = emailQuery.Where(x => x.DateSystem <= shadowCutoff.Value);
@@ -139,23 +142,22 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         model.Addresses = model.Addresses.Select(x => x.Trim().ToLower()).ToList();
         model.PageSize = Math.Min(model.PageSize, 50);
 
-        // Load all email addresses that the user has a claim to where the address is in the list.
-        var validAddresses = await context.UserEmailClaims
-            .Where(claim => claim.UserId == user.Id && model.Addresses.Contains(claim.Address) && !claim.Disabled)
-            .Select(claim => claim.Address)
-            .ToListAsync();
+        // Check if the user has access to the email addresses.
+        var validAddresses = await EmailAccessHelper.FilterReadableAddressesAsync(context, model.Addresses, user.Id);
 
         var page = Math.Max(model.Page, 1);
 
-        // Fetch the newest emails for each address individually via a LATERAL join. This lets
-        // PostgreSQL use the (To, DateSystem) index to read only the top rows per address.
+        // Restrict to emails this user holds a key for.
+        var decryptableKeyIds = await EmailAccessHelper.ResolveDecryptableKeyIdsAsync(context, user.Id);
+
+        // Fetch the newest emails for each address individually.
         var cutoffClause = shadowCutoff is null ? string.Empty : @" AND e2.""DateSystem"" <= @cutoff";
         var pageSql = $@"
             SELECT e.*
             FROM unnest(@addresses) AS addr(email)
             CROSS JOIN LATERAL (
                 SELECT * FROM ""Emails"" AS e2
-                WHERE e2.""To"" = addr.email{cutoffClause}
+                WHERE e2.""To"" = addr.email AND e2.""EncryptionKeyId"" = ANY(@keyids){cutoffClause}
                 ORDER BY e2.""DateSystem"" DESC
                 LIMIT @limit
             ) AS e";
@@ -163,6 +165,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         List<NpgsqlParameter> parameters =
         [
             new("addresses", validAddresses.ToArray()),
+            new("keyids", decryptableKeyIds.ToArray()),
             new("limit", page * model.PageSize),
         ];
 
@@ -197,8 +200,8 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             })
             .ToListAsync();
 
-        // Total count for pagination
-        var countQuery = context.Emails.Where(email => validAddresses.Contains(email.To));
+        // Count the total number of emails.
+        var countQuery = context.Emails.Where(email => validAddresses.Contains(email.To) && decryptableKeyIds.Contains(email.EncryptionKeyId));
         if (shadowCutoff is not null)
         {
             countQuery = countQuery.Where(email => email.DateSystem <= shadowCutoff.Value);

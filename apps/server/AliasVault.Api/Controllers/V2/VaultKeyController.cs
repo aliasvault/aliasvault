@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="VaultKeyController.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -9,6 +9,7 @@ namespace AliasVault.Api.Controllers.V2;
 
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
+using AliasVault.Api.Helpers;
 using AliasVault.Shared.Models.WebApi.V2.Auth;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
@@ -16,8 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
-/// Vault key controller. Serves the encrypted VEK for an authenticated user so a client that has derived the KEK
-/// from the unlock secret can decrypt the vault encryption key.
+/// Vault key controller. Serves the encrypted Account Key for an authenticated user.
 /// </summary>
 /// <param name="dbContextFactory">DbContext factory.</param>
 /// <param name="userManager">UserManager.</param>
@@ -25,10 +25,9 @@ using Microsoft.EntityFrameworkCore;
 public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
-    /// Get the encrypted VEK and KEK derivation parameters for the given key type. Always returns HTTP 200;
-    /// the payload's VaultKey is null when the user has no such vault key (legacy user, or unknown key type).
+    /// Get the encrypted Account Key and KEK derivation parameters for the given unlock method.
     /// </summary>
-    /// <param name="type">The unlock method type, e.g. "password" — the <see cref="VaultKeyType"/> member name, case-insensitive.</param>
+    /// <param name="type">The unlock method type, e.g. "password".</param>
     /// <returns>The vault key envelope DTO.</returns>
     [HttpGet("{type}")]
     public async Task<IActionResult> Get(string type)
@@ -40,29 +39,41 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
             return Unauthorized();
         }
 
-        // A method this build does not know about is "no such key" rather than an error, so a newer client asking
-        // for one it supports and this server does not degrades to the same path as a legacy user with no key.
-        if (!Enum.TryParse<VaultKeyType>(type, true, out var parsedType) || !Enum.IsDefined(parsedType))
+        // Check if the unlock method type is valid.
+        if (!Enum.TryParse<UnlockMethodType>(type, true, out var parsedType) || !Enum.IsDefined(parsedType))
         {
             return Ok(new VaultKeyGetResponse { VaultKey = null });
         }
 
-        var vaultKey = await context.VaultKeys.FirstOrDefaultAsync(x => x.UserId == user.Id && x.Type == parsedType);
-        if (vaultKey == null)
+        var unlockKey = await context.UserUnlockKeys.FirstOrDefaultAsync(x => x.UserId == user.Id && x.Type == parsedType);
+        if (unlockKey == null)
         {
             return Ok(new VaultKeyGetResponse { VaultKey = null });
         }
 
-        // The verifier stays server-side; only the KEK derivation inputs are served.
-        var (salt, _, encryptionType, encryptionSettings) = VaultKeyMetadata.Parse(vaultKey.Metadata).RequireSrpCredentials();
+        // Get the encrypted VEK and account keypair.
+        var rootManifestId = await GroupHelper.GetRootManifestIdAsync(context, user.PersonalGroupId);
+        var encryptedVek = rootManifestId is null ? null : await context.VaultManifestAccessKeys
+            .Where(x => x.UserId == user.Id && x.Type == ManifestKeyType.AccountKey && x.VaultManifestId == rootManifestId.Value)
+            .Select(x => x.EncryptedVek)
+            .FirstOrDefaultAsync();
+        var accountKeypair = await context.UserGrantKeys
+            .Where(x => x.UserId == user.Id && x.IsPrimary)
+            .Select(x => new { x.PublicKey, x.EncryptedPrivateKey })
+            .FirstOrDefaultAsync();
+
+        // Get the KEK derivation parameters.
+        var (salt, _, encryptionType, encryptionSettings) = VaultKeyMetadata.Parse(unlockKey.Metadata).RequireSrpCredentials();
 
         return Ok(new VaultKeyGetResponse
         {
             VaultKey = new VaultKeyResponse
             {
-                // The wire contract is the lowercased member name; clients match on the literal "password".
-                Type = vaultKey.Type.ToString().ToLowerInvariant(),
-                EncryptedVek = vaultKey.EncryptedVek,
+                Type = unlockKey.Type.ToString().ToLowerInvariant(),
+                EncryptedAccountKey = unlockKey.EncryptedAccountKey,
+                EncryptedVek = encryptedVek,
+                AccountPublicKey = accountKeypair?.PublicKey,
+                EncryptedAccountPrivateKey = accountKeypair?.EncryptedPrivateKey,
                 Salt = salt,
                 EncryptionType = encryptionType,
                 EncryptionSettings = encryptionSettings,

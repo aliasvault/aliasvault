@@ -9,6 +9,7 @@ namespace AliasVault.Api.Controllers.V2.Email;
 
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
+using AliasVault.Api.Helpers;
 using AliasVault.Auth.IpAddress;
 using AliasVault.Shared.Models.Spamok;
 using Asp.Versioning;
@@ -172,13 +173,20 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
             return (null, NotFound());
         }
 
-        // See if this user has a valid claim to the email address.
+        // Check if the user has access to the email address.
         var normalizedEmailAddress = email.To.Trim().ToLower();
-        var emailClaim = await context.UserEmailClaims.FirstOrDefaultAsync(x => x.UserId == user.Id && x.Address == normalizedEmailAddress && !x.Disabled);
+        var emailClaim = await context.EmailClaims.FirstOrDefaultAsync(x => x.Address == normalizedEmailAddress && !x.Disabled);
 
-        if (emailClaim is null)
+        if (emailClaim is null || !await EmailAccessHelper.CanReadClaimAsync(context, emailClaim, user.Id))
         {
             return (null, Unauthorized("User does not have a claim to this email address."));
+        }
+
+        // Check if the user has access to the email.
+        var decryptableKeyIds = await EmailAccessHelper.ResolveDecryptableKeyIdsAsync(context, user.Id);
+        if (!decryptableKeyIds.Contains(email.EncryptionKeyId))
+        {
+            return (null, NotFound("Email not found."));
         }
 
         return (email, null);

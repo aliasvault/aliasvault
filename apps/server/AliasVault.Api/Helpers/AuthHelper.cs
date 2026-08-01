@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="AuthHelper.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -70,23 +70,21 @@ public static class AuthHelper
     }
 
     /// <summary>
-    /// Get the user's current SRP salt/verifier and key derivation settings. For users migrated to the KEK/VEK
-    /// model these live on the password VaultKey row; for legacy users they live on the root vault manifest,
-    /// which is resolved through the user's personal group — the group is the only ownership path to a manifest.
+    /// Get the user's current SRP salt/verifier and key derivation settings.
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="user">User object.</param>
     /// <returns>Tuple with salt, verifier, encryption type and encryption settings.</returns>
     public static async Task<(string Salt, string Verifier, string EncryptionType, string EncryptionSettings)> GetUserLatestVaultEncryptionSettingsAsync(AliasServerDbContext context, AliasVaultUser user)
     {
-        // KEK/VEK model: the password VaultKey row is the authority for SRP credentials once it exists.
-        var passwordKey = await context.VaultKeys.FirstOrDefaultAsync(x => x.UserId == user.Id && x.Type == VaultKeyType.Password);
+        // Get the user's current SRP salt/verifier and key derivation settings for the account-key KEK/VEK model.
+        var passwordKey = await context.UserUnlockKeys.FirstOrDefaultAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password);
         if (passwordKey is not null)
         {
             return VaultKeyMetadata.Parse(passwordKey.Metadata).RequireSrpCredentials();
         }
 
-        // Legacy model: the root manifest carries the current encryption settings. TODO: delete once all users have migrated to the KEK/VEK model.
+        // Get the user's current SRP salt/verifier and key derivation settings for the legacy model.
         var latestVault = await context.VaultManifests
             .Where(m => m.IsRoot && m.OwnerGroupId == user.PersonalGroupId)
             .Select(x => new { x.Salt, x.Verifier, x.EncryptionType, x.EncryptionSettings })

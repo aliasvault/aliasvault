@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="GetResponse.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -30,6 +30,11 @@ public class GetResponse
 
     /// <summary>Gets or sets the legacy sqlite-blob revision number. Set only when StorageFormat = SqliteBlob.</summary>
     public long? LegacyRevision { get; set; }
+
+    /// <summary>
+    /// Gets or sets the caller's root manifest id.
+    /// </summary>
+    public Guid? RootManifestId { get; set; }
 
     /// <summary>
     /// Gets or sets the manifests that make up the user's logical vault. Empty for legacy sqlite-blobs.

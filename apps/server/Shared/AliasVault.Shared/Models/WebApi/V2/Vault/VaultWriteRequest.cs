@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="VaultWriteRequest.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -27,12 +27,18 @@ public class VaultWriteRequest
     /// <summary>Gets or sets the email routing data to update server-side.</summary>
     public EmailRouting? EmailRouting { get; set; }
 
-    /// <summary>Gets or sets the public half of the user's own encryption keypair (client table `EncryptionKeys`).</summary>
+    /// <summary>
+    /// Gets or sets the user's public encryption key.
+    /// </summary>
     public string? UserEncryptionPublicKey { get; set; }
 
     /// <summary>
-    /// Gets or sets the public halves of the shared folders' own encryption keypairs (client table
-    /// `SharedFolderEncryptionKeys`).
+    /// Gets or sets the shared folders' public encryption keys.
     /// </summary>
     public List<SharedFolderEncryptionPublicKey> SharedFolderEncryptionPublicKeys { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the encrypted Account Key and KEK derivation parameters for the given unlock method.
+    /// </summary>
+    public AccountKeysUpload? AccountKeys { get; set; }
 }
