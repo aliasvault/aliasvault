@@ -343,9 +343,8 @@ public class StatisticsService
             .Where(e => e.EncryptionKey.UserId == userId)
             .CountAsync();
 
-        // Get persistent emails received counter from user record (never decremented, even when emails are deleted)
-        var user = await context.AliasVaultUsers.FindAsync(userId);
-        stats.TotalEmailsReceivedPersistent = user?.EmailsReceived ?? 0;
+        // Get persistent emails received counter from the user's personal group (never decremented, even when emails are deleted)
+        stats.TotalEmailsReceivedPersistent = await context.AliasVaultUsers.Where(u => u.Id == userId).Select(u => u.PersonalGroup.EmailsReceived).FirstOrDefaultAsync();
 
         // Get recent statistics (last 72 hours).
         var recentCurrentRevisions = await context.VaultManifests

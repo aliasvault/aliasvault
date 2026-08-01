@@ -67,10 +67,10 @@ public class EmailCleanupTask : IMaintenanceTask
             }
         }
 
-        // Now handle per-user age limits
+        // Now handle per-user age limits. The email age limit is stored on the user's personal group.
         var usersWithAgeLimits = await dbContext.AliasVaultUsers
-            .Where(u => u.MaxEmailAgeDays > 0)
-            .Select(u => new { u.Id, u.UserName, u.MaxEmailAgeDays })
+            .Where(u => u.PersonalGroup.MaxEmailAgeDays > 0)
+            .Select(u => new { u.Id, u.UserName, u.PersonalGroup.MaxEmailAgeDays })
             .ToListAsync(cancellationToken);
 
         foreach (var user in usersWithAgeLimits)

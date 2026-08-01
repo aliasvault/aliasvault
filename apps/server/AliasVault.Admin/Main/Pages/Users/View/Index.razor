@@ -185,12 +185,12 @@ else
                                                 <div class="flex flex-col space-y-2">
                                                     <div class="flex items-center space-x-2">
                                                         <span class="text-gray-700 dark:text-gray-300">
-                                                            <strong>Max Emails:</strong> @(User.MaxEmails == 0 ? "Unlimited" : User.MaxEmails.ToString("N0"))
+                                                            <strong>Max Emails:</strong> @(User.PersonalGroup.MaxEmails == 0 ? "Unlimited" : User.PersonalGroup.MaxEmails.ToString("N0"))
                                                         </span>
                                                     </div>
                                                     <div class="flex items-center space-x-2">
                                                         <span class="text-gray-700 dark:text-gray-300">
-                                                            <strong>Max Age:</strong> @(User.MaxEmailAgeDays == 0 ? "Unlimited" : User.MaxEmailAgeDays + " days")
+                                                            <strong>Max Age:</strong> @(User.PersonalGroup.MaxEmailAgeDays == 0 ? "Unlimited" : User.PersonalGroup.MaxEmailAgeDays + " days")
                                                         </span>
                                                     </div>
                                                     <div class="mt-2">
@@ -354,9 +354,9 @@ else
         IsLoading = true;
         StateHasChanged();
 
-        // Load the aliases from the webapi via AliasService.
+        // Load the aliases from the webapi via AliasService. Eager-load the personal group as it holds the user's email limits.
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
-        User = await dbContext.AliasVaultUsers.FindAsync(Id);
+        User = await dbContext.AliasVaultUsers.Include(u => u.PersonalGroup).FirstOrDefaultAsync(u => u.Id == Id);
 
         // Get count of user authenticator tokens.
         TwoFactorKeysCount = await dbContext.UserTokens.CountAsync(x => x.UserId == User!.Id && x.Name == "AuthenticatorKey");
@@ -642,8 +642,8 @@ Do you want to proceed with the restoration?")) {
     private void StartEditingEmailLimits()
     {
         IsEditingEmailLimits = true;
-        EditMaxEmails = User!.MaxEmails;
-        EditMaxEmailAgeDays = User.MaxEmailAgeDays;
+        EditMaxEmails = User!.PersonalGroup.MaxEmails;
+        EditMaxEmailAgeDays = User.PersonalGroup.MaxEmailAgeDays;
     }
 
     /// <summary>
@@ -662,12 +662,12 @@ Do you want to proceed with the restoration?")) {
     private async Task SaveEmailLimits()
     {
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
-        User = await dbContext.AliasVaultUsers.FindAsync(Id);
+        var personalGroup = await dbContext.Groups.FirstOrDefaultAsync(g => dbContext.AliasVaultUsers.Any(u => u.Id == Id && u.PersonalGroupId == g.Id));
 
-        if (User != null)
+        if (personalGroup != null)
         {
-            User.MaxEmails = EditMaxEmails;
-            User.MaxEmailAgeDays = EditMaxEmailAgeDays;
+            personalGroup.MaxEmails = EditMaxEmails;
+            personalGroup.MaxEmailAgeDays = EditMaxEmailAgeDays;
             await dbContext.SaveChangesAsync();
             IsEditingEmailLimits = false;
             await RefreshData();

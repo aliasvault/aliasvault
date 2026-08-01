@@ -54,44 +54,15 @@ public class AliasVaultUser : IdentityUser
     public DateTime? BlockedAt { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the user is marked as shadow-blocked.
-    /// </summary>
-    public bool ShadowBlocked { get; set; }
-
-    /// <summary>
-    /// Gets or sets the UTC timestamp when the user was shadow-blocked. Used to only hide emails received after the
-    /// block occurred. Null when the user has never been shadow-blocked (in which case all emails are hidden while
-    /// ShadowBlocked is true, as a conservative fallback).
-    /// </summary>
-    public DateTime? ShadowBlockedAt { get; set; }
-
-    /// <summary>
     /// Gets or sets updated timestamp.
     /// </summary>
     public DateTime UpdatedAt { get; set; }
-
-    /// <summary>
-    /// Gets or sets the maximum number of emails for all of user's aliases. 0 means unlimited.
-    /// </summary>
-    public int MaxEmails { get; set; } = 0;
-
-    /// <summary>
-    /// Gets or sets the maximum age of emails in days. Emails older than this will be deleted. 0 means unlimited.
-    /// </summary>
-    public int MaxEmailAgeDays { get; set; } = 0;
 
     /// <summary>
     /// Gets or sets the date of the user's last activity (login, API call, etc.).
     /// Updated automatically on successful authentication events.
     /// </summary>
     public DateTime? LastActivityDate { get; set; }
-
-    /// <summary>
-    /// Gets or sets the total count of emails received by this user across all time.
-    /// This is a persistent counter that is incremented when emails are received and is never decremented,
-    /// even when emails are deleted. Used for abuse detection and usage statistics.
-    /// </summary>
-    public int EmailsReceived { get; set; } = 0;
 
     /// <summary>
     /// Gets or sets the collection of vault unlock keys (KEK/VEK model). Empty for users still on the legacy

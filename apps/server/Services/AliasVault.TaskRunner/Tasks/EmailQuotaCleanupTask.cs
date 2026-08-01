@@ -45,11 +45,12 @@ public class EmailQuotaCleanupTask : IMaintenanceTask
         var settings = await _settingsService.GetAllSettingsAsync();
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-        // Get all users with their email claims and limits
+        // Get all users with their email claims and limits. The email limit is stored on the user's personal group.
         var usersWithClaims = await (from u in dbContext.AliasVaultUsers
-                                     join m in dbContext.VaultManifests on u.PersonalGroupId equals m.OwnerGroupId
+                                     join g in dbContext.Groups on u.PersonalGroupId equals g.Id
+                                     join m in dbContext.VaultManifests on g.Id equals m.OwnerGroupId
                                      join c in dbContext.EmailClaims on (Guid?)m.ManifestId equals c.VaultManifestId
-                                     select new { u.Id, u.UserName, u.MaxEmails, u.LastActivityDate, u.CreatedAt, c.Address })
+                                     select new { u.Id, u.UserName, g.MaxEmails, u.LastActivityDate, u.CreatedAt, c.Address })
             .ToListAsync(cancellationToken);
 
         // Get minimum activity date which is used to determine if user is active.
