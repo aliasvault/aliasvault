@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="DatabaseMessageStore.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -345,26 +345,22 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
             return false;
         }
 
-        // Retrieve user public encryption key from database
-        var userPublicKey = await dbContext.UserEncryptionKeys.FirstOrDefaultAsync(
-            x =>
-            x.UserId == userEmailClaim.UserId && x.IsPrimary,
-            CancellationToken.None);
-
-        if (userPublicKey is null)
+        // Every alias is associated with a manifest. The email is encrypted with the manifest's primary public delivery key.
+        var deliveryKey = await dbContext.VaultManifestDeliveryKeys.FirstOrDefaultAsync(x => x.VaultManifestId == emailClaim.VaultManifestId && x.IsPrimary, CancellationToken.None);
+        if (deliveryKey is null)
         {
-            // Email address has no user claim with corresponding encryption key, so we cannot process it.
+            // The manifest has no published primary delivery key, so we cannot process this email.
             logger.LogCritical(
-                "Rejected email: email for {ToAddress} cannot be processed. No primary encryption key found for this user.",
+                "Rejected email: email for {ToAddress} cannot be processed. No primary delivery encryption key found for its manifest.",
                 toAddress.User + "@" + toAddress.Host);
             return false;
         }
 
-        var insertedId = await InsertEmailIntoDatabase(message, new MailAddress(toAddress.AsAddress()), userPublicKey);
-        logger.LogDebug(
-            "Email for {ToAddress} successfully saved into database with ID {InsertedId}.",
-            toAddress.User + "@" + toAddress.Host,
-            insertedId);
+        // Resolve the group that owns the manifest, only used to increment its EmailsReceived abuse counter.
+        var recipientGroupId = await dbContext.VaultManifests.Where(m => m.ManifestId == emailClaim.VaultManifestId).Select(m => (Guid?)m.OwnerGroupId).FirstOrDefaultAsync(CancellationToken.None);
+
+        var insertedId = await InsertEmailIntoDatabase(message, new MailAddress(toAddress.AsAddress()), deliveryKey, recipientGroupId);
+        logger.LogDebug("Email for {ToAddress} successfully saved into database with ID {InsertedId}.", toAddress.User + "@" + toAddress.Host, insertedId);
         return true;
     }
 
@@ -373,22 +369,23 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
     /// </summary>
     /// <param name="message">MimeMessage to save into database.</param>
     /// <param name="toAddress">The recipient for this mail.</param>
-    /// <param name="userEncryptionKey">The public key of the user to encrypt the mail contents with.</param>
-    private async Task<int> InsertEmailIntoDatabase(MimeMessage message, MailAddress toAddress, UserEncryptionKey userEncryptionKey)
+    /// <param name="encryptionKey">The public key to encrypt the mail contents with.</param>
+    /// <param name="recipientGroupId">The group that owns the manifest this alias is referenced by.</param>
+    private async Task<int> InsertEmailIntoDatabase(MimeMessage message, MailAddress toAddress, VaultManifestDeliveryKey encryptionKey, Guid? recipientGroupId)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
         var newEmail = ConvertMimeMessageToEmail(message, toAddress);
-        newEmail = EmailEncryption.EncryptEmail(newEmail, userEncryptionKey);
+        newEmail = EmailEncryption.EncryptEmail(newEmail, encryptionKey);
 
         // Insert the email into the database.
         dbContext.Emails.Add(newEmail);
 
-        // Increment the user's EmailsReceived counter (persistent counter for abuse detection)
-        var user = await dbContext.AliasVaultUsers.FindAsync(userEncryptionKey.UserId);
-        if (user != null)
+        // Increment the recipient group's EmailsReceived counter (persistent counter for abuse detection).
+        var group = recipientGroupId is not null ? await dbContext.Groups.FindAsync(recipientGroupId) : null;
+        if (group != null)
         {
-            user.EmailsReceived++;
+            group.EmailsReceived++;
         }
 
         await dbContext.SaveChangesAsync();
