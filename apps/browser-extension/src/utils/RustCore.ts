@@ -263,14 +263,14 @@ export type CodecManifest = {
   migrationId: string;
   userSalt: string;
   canonicalizedAt: string;
-  /** Set on a shared-folder manifest: the Folders.Id this manifest carries. Absent on a root manifest. */
+  manifestId: string;
   sharedFolderId?: string | null;
   tables: Record<string, Array<Record<string, unknown>>>;
   [key: string]: unknown;
 };
 
-/** One shared folder to split out during canonicalize: the folder id + that manifest's own blob salt. */
-export type CodecSharedFolderSpec = { folderId: string; userSalt: string };
+/** One shared folder to split out during canonicalize: its manifest id, folder id, and that manifest's own blob salt. */
+export type CodecSharedFolderSpec = { manifestId: string; folderId: string; userSalt: string };
 
 /** One shared-folder manifest produced by the canonicalize split, with its own blob map. */
 export type CodecSharedVault = { folderId: string; manifest: CodecManifest; blobs: Record<string, CodecBlobEntry> };
@@ -315,6 +315,7 @@ export type CodecCanonicalizeInput = {
   tables: CodecTableData[];
   userSalt: string;
   migrationId: string;
+  rootManifestId: string;
   sharedFolders?: CodecSharedFolderSpec[];
   canonicalizedAt: string;
 };
@@ -348,12 +349,11 @@ export async function vaultCodecMaterializeAsSqlite(manifest: CodecManifest, dat
 }
 
 /**
- * Extract the encryption-key row whose `PublicKey` matches `publicKey` from the decrypted `EncryptionKeys`
- * data bucket. Returns null when no live row carries that key.
+ * Extract the encryption-key row whose `PublicKey` matches `publicKey` from a decrypted manifest.
  */
-export async function vaultCodecExtractEncryptionKeyForPublicKeyFromBucket(bucket: CodecDataBucket, publicKey: string): Promise<Record<string, unknown> | null> {
+export async function vaultCodecExtractEncryptionKeyForPublicKey(manifest: CodecManifest, publicKey: string): Promise<Record<string, unknown> | null> {
   await initRustCore();
-  return (core.vaultCodecExtractEncryptionKeyForPublicKeyFromBucket(bucket, publicKey) ?? null) as Record<string, unknown> | null;
+  return (core.vaultCodecExtractEncryptionKeyForPublicKey(manifest, publicKey) ?? null) as Record<string, unknown> | null;
 }
 
 /**
@@ -383,30 +383,29 @@ export async function vaultCodecBucketLayout(): Promise<CodecBucketLayoutEntry[]
 }
 
 /**
- * The `Logos.Id` to use for a source domain inside a given manifest scope (`null` = the user's own
- * personal vault, otherwise the shared folder's id).
+ * The `Logos.Id` to use for a source domain inside the manifest with id `manifestId` (pass the root
+ * manifest's own id for personal logos).
  *
  * Logo identity is derived: two devices that fetch the same favicon independently produce
  * the same row and merge by LWW. The same domain in two different manifests deliberately yields
  * two different ids, so a shared folder's logo and the user's own logo for that domain never
  * overwrite each other.
  */
-export async function vaultCodecLogoIdForSource(sharedFolderId: string | null, source: string): Promise<string> {
+export async function vaultCodecLogoIdForSource(manifestId: string, source: string): Promise<string> {
   await initRustCore();
-  return core.vaultCodecLogoIdForSource(sharedFolderId ?? undefined, source);
+  return core.vaultCodecLogoIdForSource(manifestId, source);
 }
 
 /**
- * The `Logos.Id` to use for the logo `(kind, source)` inside a given manifest scope (`null` = the
- * user's own personal vault, otherwise the shared folder's id).
+ * The `Logos.Id` to use for the logo `(kind, source)` inside the manifest with id `manifestId`.
  */
-export async function vaultCodecLogoIdFor(sharedFolderId: string | null, kind: string, source: string): Promise<string> {
+export async function vaultCodecLogoIdFor(manifestId: string, kind: string, source: string): Promise<string> {
   await initRustCore();
-  return core.vaultCodecLogoIdFor(sharedFolderId ?? undefined, kind, source);
+  return core.vaultCodecLogoIdFor(manifestId, kind, source);
 }
 
 /**
- * The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` a `custom` logo row is stored
+ * The SHA-256 (lowercase hex) of an uploaded logo's bytes: the `Source` a `custom` logo row is stored
  * under, which is what makes picking the same image again reuse the row that already holds it.
  */
 export async function vaultCodecLogoContentHash(bytes: Uint8Array): Promise<string> {
