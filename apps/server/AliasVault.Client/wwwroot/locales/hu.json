@@ -1,23 +1,23 @@
 {
   "loading": {
     "title": "AliasVault betöltés alatt",
-    "message": "Biztonságos környezet elindítása. Az AliasVault teljes mértékben a böngészőben fut, ezáltal szem előtt tartva a magánéletét. Az első indulás tovább tarthat.",
+    "message": "Biztonságos környezet létrehozása. Az AliasVault teljes mértékben a böngészőben fut, ezáltal szem előtt tartva a magán adatait. Az első indulás tovább tarthat.",
     "refreshText": "Ha úgy tűnik, hogy elakadt a betöltés, kattintson a lenti frissítés gombra az oldal újratöltéséhez.",
     "refreshButtonText": "Oldal frissítése"
   },
   "errors": {
-    "unhandledError": "Egy kezeletlen hiba lépett fel. Próbálja meg újra betölteni az oldalt. Ha továbbra is fennáll, lépjen kapcsolatba az ügyfélszolgálattal.",
+    "unhandledError": "Egy nem kezelt hiba lépett fel. Próbálja meg újra betölteni az oldalt. Ha továbbra is fennáll, lépjen kapcsolatba az ügyfélszolgálattal.",
     "webAssemblyError": "Ez a böngésző nem támogatja a WebAssembly-t, mely szükséges az AliasVault működéséhez. Próbáljon ki egy modernebb böngészőt, amely már támogatja azt.",
-    "reloadPageText": "Oldal újratöltése"
+    "reloadPageText": "Oldal frissítése"
   },
   "quotes": {
     "security": [
-      "A személyazonossága a legfontosabb kincse. Kezelje hát ennek megfelelően.",
-      "A digitális világban az erős jelszó a védelem első vonala.",
+      "A személyazonossága a legfontosabb kincse. Kezelje ennek megfelelően.",
+      "A digitális világban az erős jelszó a védelem első védővonala.",
       "A biztonság nem egy termék, hanem egy folyamat.",
       "A biztonsági lánc leggyengébb láncszeme maga az ember.",
-      "A biztonság túlzónak tűnhet addig a pontig, amikor már nem elég.",
-      "Bízzon meg benne, de előtte igazolja vissza - legfőképp az interneten.",
+      "A biztonság mindaddig túlzónak tűnhet, amíg már nem is elég.",
+      "Ellenőrizze mielőtt megbízik benne - különösképp az interneten.",
       "Az adata pont annyira biztonságos, mint a leggyengébb jelszava.",
       "A legbiztonságosabb jelszó az, amire nem is emlékezhet."
     ]

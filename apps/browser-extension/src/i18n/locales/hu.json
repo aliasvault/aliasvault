@@ -96,14 +96,14 @@
     "offline": "Offline",
     "offlineMode": "Kapcsolat nélküli működés",
     "pendingSync": "Szinkronizálás...",
-    "mergingVaultChanges": "Széf módosítások egyesítése...",
+    "mergingVaultChanges": "Széf módosítások összefésülése...",
     "uploadingVault": "Széf feltöltése...",
     "errors": {
       "serverNotAvailable": "Az AliasVault szerver nem elérhető. Kérem próbálkozzon újra később, és forduljon az ügyfélszolgálathoz ha továbbra is fennáll a hiba.",
       "clientVersionNotSupported": "A szerver nem támogatja ezt a verziószámú bővítményt. Kérem, frissítse a legújabb verzióra a bővítményét.",
       "browserExtensionOutdated": "A bővítmény verziója túl régi, ahhoz hogy be tudjon lépni a széfjébe. Kérem frissítse a bővítményét a folytatáshoz.",
       "serverVersionNotSupported": "A bővítmény használatához a szervert frissíteni kell. Vegye fel az ügyfélszolgálattal a kapcsolatot, ha szüksége van segítségre.",
-      "serverVersionTooOld": "Az AliasVault szerverét frissíteni kell egy új verzióra ha akarja használni ezt a funkciót. Kérem lépjen kapcsolatba szerver adminjával további segítségért.",
+      "serverVersionTooOld": "A funkció használatához az AliasVault szerverét frissíteni kell egy új verzióra. Kérem, lépjen kapcsolatba szerver rendszergazdájával a további segítségért.",
       "unknownError": "Ismeretlen hiba lépett fel",
       "unknownErrorTryAgain": "Egy ismeretlen hiba lépett fel. Próbálkozzon újra.",
       "vaultNotAvailable": "Széf nem elérhető",
@@ -121,7 +121,7 @@
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Egy ismeretlen hiba lépett fel. Próbálkozzon újra.",
-      "ACCOUNT_LOCKED": "A fiók ideiglenesen zárolásra került a túlzott sikertelen próbálkozás miatt. Kérem próbálja meg később.",
+      "ACCOUNT_LOCKED": "A fiók ideiglenesen zárolásra került a túl sok sikertelen próbálkozás miatt. Kérem próbálja meg később.",
       "ACCOUNT_BLOCKED": "A fiókja letiltásra került. Ha úgy gondolja, hogy indokolatlan volt, vegye fel a kapcsolatot az ügyfélszolgálattal.",
       "USER_NOT_FOUND": "Helytelen felhasználónév vagy jelszó. Kérem próbálja meg újra.",
       "INVALID_AUTHENTICATOR_CODE": "Helytelen hitelesítő kód. Kérem próbálja meg újra.",
@@ -212,7 +212,7 @@
     "currentSiteMatch": "{{domain}} tartományhoz",
     "numberOfItemMatchesFound": "{{count}} talált elem",
     "noMatchingItems": "Egyetlen elem sem felel meg a kiválasztott szűrőnek.",
-    "noMatchingItemsSearch": "Egyetlen elem sem felel meg a \"{{search}}\" szűrőnek",
+    "noMatchingItemsSearch": "Egyetlen elem sem felel meg a \"{{search}}\" keresési feltételnek",
     "noMatchingItemsWithFilter": "A \"{{search}}\" keresésre egy {{filter}} szűrő sem érvényes",
     "clearSearch": "Keresés törlése",
     "clearFilter": "Szűrő törlése",
@@ -225,12 +225,12 @@
     "deleteFolderAndItemsDescription": "{{count}} elem kerül a korábban töröltek közé.",
     "filters": {
       "folders": "Mappák",
-      "totp": "2FA kódok"
+      "totp": "Kétlépcsős kódok"
     },
     "sort": {
       "title": "Rendezés",
-      "oldestFirst": "Legrégebbi először",
-      "newestFirst": "Legújabb először",
+      "oldestFirst": "Legrégebbi elől",
+      "newestFirst": "Legújabb elől",
       "alphabetical": "Betűrendben (A-Z)"
     },
     "deleteItemTitle": "Elem törlése",
@@ -329,7 +329,7 @@
     "card.pin": "PIN kód"
   },
   "totp": {
-    "addCode": "2FA kód hozzáadása",
+    "addCode": "Kétlépcsős kód hozzáadása",
     "instructions": "Adja meg a weboldal által megjelenített titkos kulcsot a kétlépcsős hitelesítőjébe.",
     "nameOptional": "Név (nem kötelező)",
     "addName": "Név hozzáadása (tetszőleges)",
@@ -353,8 +353,8 @@
     "title": "E-mailek",
     "deleteEmailTitle": "E-mai törlése",
     "deleteEmailConfirm": "Biztosan véglegesen törölni akarja ezt az e-mailt?",
-    "from": "Feladó",
-    "to": "Címzett",
+    "from": "Feladó:",
+    "to": "Címzett:",
     "date": "Dátum",
     "emailContent": "E-mail tartalom",
     "emailNotFound": "E-mail nem található",
@@ -555,7 +555,7 @@
     "description": "Ezek az elemek {{days}} napot követően végleg törlésre kerülnek. Addig visszaállíthatja őket, vagy akár törölheti is végleg.",
     "restore": "Visszaállítás",
     "deletePermanently": "Végleges törlés",
-    "emptyAll": "Mind ürítése",
+    "emptyAll": "Összes ürítése",
     "daysRemaining_one": "{{count}} nap van hátra",
     "daysRemaining_other": "{{count}} nap van hátra",
     "expiringSoon": "Hamarosan lejár",
@@ -574,9 +574,9 @@
     "upgrading": "Frissítés...",
     "whatsNew": "Újdonságok",
     "whatsNewDescription": "Frissítés szükséges a következő változások támogatása érdekében:",
-    "noDescriptionAvailable": "Nem elérhető leírás ehhez a verzióhoz.",
+    "noDescriptionAvailable": "Nincs leírás ehhez a verzióhoz.",
     "alerts": {
-      "unableToGetVersionInfo": "Sikertelen verzió lekérés. Próbálja meg újra.",
+      "unableToGetVersionInfo": "Sikertelen verzió lekérés. Kérem, próbálja meg újra.",
       "selfHostedServer": "Saját üzemeltetésű szerver",
       "selfHostedWarning": "Ha saját üzemetetésű szervere van, bizonyosodjon meg, hogy naprakész szervert használ, mert máskülönben a web kliensbe való belépés nem fog működni.",
       "continueUpgrade": "Frissítés folytatása",

@@ -64,13 +64,13 @@
     "errors": {
       "credentialsRequired": "Felhasználónév és jelszó szükséges",
       "invalidAuthCode": "Kérem adjon meg egy valós 6 számjegyű kódot",
-      "incorrectPassword": "Hibás jelszó. Próbálkozzon újra.",
-      "enterPassword": "Kérem adja meg a jelszavát",
-      "serverError": "Az AliasVault szerverek nem elérhetőek. Kérem próbálkozzon később, vagy keresse fel az ügyfélszolgálatot ha a probléma továbbra is fent áll.",
+      "incorrectPassword": "Hibás jelszó. Kérem, próbálkozzon újra.",
+      "enterPassword": "Kérem, adja meg a jelszavát",
+      "serverError": "Az AliasVault szerverek nem elérhetőek. Kérem, próbálkozzon később, vagy keresse fel az ügyfélszolgálatot ha a probléma továbbra is fent áll.",
       "serverErrorSelfHosted": "Az API nem elérhető. A saját szerveren üzemeltetés esetén igazolja vissza az API végpont elérést a böngészőn keresztül: 'OK'-nak kell megjelennie.",
-      "networkError": "A hálózati kérés sikertelen. Ellenőrizze internet kapcsolatát, és próbálkozzon újra.",
+      "networkError": "A hálózati kérés sikertelen. Kérem, ellenőrizze internet kapcsolatát, és próbálkozzon újra.",
       "networkErrorSelfHosted": "A hálózati kérés sikertelen. Ellenőrizze hálózati kapcsolatát és a szerver elérhetőséget. Saját szerver üzemeltetés esetén győződjön meg, hogy telepített fel érvényes SSL tanúsítványt. Saját aláírású tanúsítványok nem támogatottak a mobileszközön biztonsági okokból.",
-      "sessionExpired": "Munkaszakasza lejárt. Jelentkezzen be újra.",
+      "sessionExpired": "Munkamenete lejárt. Kérem, jelentkezzen be újra.",
       "httpError": "HTTP hiba: {{status}}"
     },
     "confirmLogout": "Biztosan ki akar jelentkezni? Újra bejelentkezés esetén a mester jelszavával kell belépnie széfjébe.",
@@ -97,13 +97,13 @@
     "errors": {
       "failedToGetEncryptedDatabase": "Adatbázis titkosítása sikertelen",
       "usernameNotFound": "Felhasználónév nem található",
-      "vaultOutdated": "A széfje túl régi. Lépjen be az AliasVault weboldalra és kövesse a lépéseket.",
+      "vaultOutdated": "A széfje túl régi. Lépjen be az AliasVault weboldalra és kövesse az utasításokat.",
       "failedToSyncVault": "Sikertelen széf szinkronizálás",
-      "versionNotSupported": "A szerver már nem támogatja ezt a mobil app verziót. Frissítse applikációját a legfrissebb verzióra.",
-      "serverVersionNotSupported": "A mobil app használatához frissítenie kell a szervert. Lépjen kapcsolatba az ügyfélszolgálattal ha segítségre van szüksége.",
-      "appOutdated": "Nem tudja használni ezt (az újabb) széf verziót mert mobil applikációja túl régi. Frissítse az AliasVault applikációt a folytatáshoz.",
-      "passwordChanged": "A jelszava megváltozott a legutóbbi bejelentkezés óta. Jelentkezzen be újra biztonsági okokból.",
-      "passwordChangeRequiresOnline": "A jelszó változtatás internet kapcsolat szükséges. Próbálja újra ha már online."
+      "versionNotSupported": "A szerver már nem támogatja ezt a mobil app verziót. Kérem, frissítse applikációját a legfrissebb verzióra.",
+      "serverVersionNotSupported": "A mobil app használatához frissítenie kell a szervert. Kérem, lépjen kapcsolatba az ügyfélszolgálattal ha segítségre van szüksége.",
+      "appOutdated": "Nem tudja használni ezt (az újabb) széf verziót mert mobil applikációja túl régi. Kérem, frissítse az AliasVault applikációt a folytatáshoz.",
+      "passwordChanged": "A jelszava megváltozott a legutóbbi bejelentkezés óta. Kérem, jelentkezzen be újra biztonsági okokból.",
+      "passwordChangeRequiresOnline": "A jelszó változtatás internet kapcsolat szükséges. Kérem, próbálja újra ha már online."
     }
   },
   "passkeys": {
@@ -124,7 +124,7 @@
     "enterManually": "Titkos kulcs magadása",
     "errors": {
       "invalidSecretKey": "Hibás titkos kulcs formátum.",
-      "scanFailed": "QR kód beolvasása sikertelen. Próbálja meg újra."
+      "scanFailed": "QR kód beolvasása sikertelen. Kérem, próbálja meg újra."
     }
   },
   "settings": {
@@ -162,7 +162,7 @@
     "copyTotpOnFillDescription": "Amikor egy bejegyzést illeszt be amely 2FA-val rendelkezik, automatikusan másolja a jelenlegi TOTP kódot is a vágólapra.",
     "vaultUnlock": "Széf feloldási mód",
     "autoLock": "Auto-zárolás időtúllépés",
-    "clipboardClear": "Vágólap törlése",
+    "clipboardClear": "Vágólap ürítése",
     "clipboardClearDescription": "Bizonyos idő után automatikusan törlésre kerülnek a vágólapról a másolt jelszavak és kényes információk.",
     "clipboardClearAndroidWarning": "Megjegyzés:: Egyes Android eszközöknél be lehet kapcsolva a vágólap történet, amely még a vágólap ürítést követően is tartalmazza az adatokat. Az AliasVault csak a legfrissebb elemet tudja felülírni, de a korábbi adatok hozzáférhetőek lehetnek. Emiatt biztonsági okokból javasoljuk a vágólap történet követésének kikapcsolását eszközén.",
     "clipboardLocalOnly": "Csak helyi vágólap",
@@ -191,7 +191,7 @@
     "exportCsvButton": "Széf exportálása CSV fájlba",
     "exporting": "Exportálás...",
     "exportConfirmTitle": "Széf exportálása",
-    "exportWarning": "Figyelem: Ha egy kódolatlan szöveg formátumba exportálja széfjét, adatai könnyen védtelenné válhatnak. Csak kizárólag megbízható eszközökön végezze ezt el, és bizonyosodjon meg arról, hogy:\n\n• Biztonságos helyre menti az exportot\n• Törölje a fájlt, ha már nincs rá szükség\n• Sose ossza meg az exportált fájlt másokkal\n\nBiztosan folytatni akarja az exportálást?",
+    "exportWarning": "Figyelem: Ha egy kódolatlan szöveg formátumba exportálja széfjét, adatai könnyen védtelenné válhatnak. Csak kizárólag megbízható eszközökön végezze ezt el, és bizonyosodjon meg arról, hogy:\n\n• Biztonságos helyre menti az exportot\n• Törölje a fájlt, ha már nincs rá szüksége\n• Sose ossza meg az exportált fájlt másokkal\n\nBiztosan folytatni akarja az exportálást?",
     "passwordConfirm": {
       "exportDescription": "Biztonsági okokból kérem adja meg a mester jelszót az exportálás engedélyezéséhez."
     },
@@ -223,7 +223,7 @@
       "faceIdTouchId": "Arc ID / Érintés ID",
       "biometricEnabled": "{{biometric}} sikeresen aktiválva",
       "biometricNotAvailable": "{{biometric}} nem elérhető",
-      "biometricDisabledMessage": "{{biometric}} kikapcsolásra kerüt az AliasVault-ban. Ha használni akarja, kapcsolja be az eszközén a beállításokban.",
+      "biometricDisabledMessage": "A {{biometric}} kikapcsolásra kerüt az AliasVault-ban. Ha használni akarja, kapcsolja be az eszközén a beállításokban.",
       "biometricHelp": "A {{keystore}} által biztosított biometria használata a széf feloldáshoz.",
       "biometricUnavailableHelp": "A {{biometric}} nem elérhető. Koppintson a beállításhoz, vagy kézileg menjen be a készülék mbeállítások közé.",
       "featureRequiresPasscode": "Ehhez a funkcióhoz eszközén be kell kapcsolnia a képernyőzárat.",
@@ -280,7 +280,7 @@
         "failedToChange": "Sikertelen jelszó módosítás. Próbálja meg újra."
       },
       "activeSessions": {
-        "headerText": "Az alábbi listán található meg, hol van jelenleg bejelentkezve, vagy aktív a munkamenete. Itt bármelyikből ki tudja magát jelentkeztetni.",
+        "headerText": "Az alábbi listán látható, hol van jelenleg bejelentkezve, vagy aktív a munkamenete. Itt bármelyikből ki tudja magát jelentkeztetni.",
         "noSessions": "Nincs aktív munkamenet",
         "revoke": "Visszavonás",
         "revokeSession": "Munkafolyamat visszavonása",
@@ -302,7 +302,7 @@
         "failedToLoad": "A hitelesítési naplók nem tölthetőek be"
       },
       "deleteAccount": {
-        "headerText": "Fiókjának törlése azonnal és véglegesen törli minden adatát.",
+        "headerText": "Fiókjának törlése azonnali hatállyal és véglegesen törli minden adatát.",
         "warningText": "Figyelem: Ez a művelet nem visszafordítható. Minden adata véglegesen törlésre kerül.",
         "finalWarning": "Utolsó figyelmeztetés: Adja meg jelszavát fiókja végleges törléséhez.",
         "warningVaults": "Minden bejegyzése ami a titkosított széfekben található véglegesen törlésre kerül",
