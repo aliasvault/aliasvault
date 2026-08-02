@@ -16,6 +16,7 @@ import kotlinx.coroutines.withContext
 import net.aliasvault.app.R
 import net.aliasvault.app.utils.ErrorScreenView
 import net.aliasvault.app.utils.Helpers
+import net.aliasvault.app.utils.TotpClipboard
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.passkey.PasskeyAuthenticator
@@ -260,6 +261,16 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
                     assertion = assertion,
                     clientDataJson = clientDataJson,
                 )
+
+                // If the item behind this passkey also has a TOTP code and the user has the
+                // copy-on-fill setting enabled (default), write the current code to the clipboard.
+                if (TotpClipboard.isCopyOnFillEnabled(this@PasskeyAuthenticationActivity)) {
+                    TotpClipboard.copyCodeForItem(
+                        context = this@PasskeyAuthenticationActivity,
+                        store = vaultStore,
+                        itemId = passkey.parentItemId.toString(),
+                    )
+                }
 
                 val resultIntent = Intent()
                 try {

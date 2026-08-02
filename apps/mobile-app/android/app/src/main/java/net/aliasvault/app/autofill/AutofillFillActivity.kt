@@ -1,14 +1,9 @@
 package net.aliasvault.app.autofill
 
 import android.app.Activity
-import android.content.ClipData
-import android.content.ClipDescription
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.service.autofill.Dataset
 import android.util.Log
 import android.view.autofill.AutofillId
@@ -17,7 +12,7 @@ import android.widget.RemoteViews
 import net.aliasvault.app.R
 import net.aliasvault.app.autofill.models.FieldType
 import net.aliasvault.app.autofill.utils.AutofillFieldMapper
-import net.aliasvault.app.utils.TotpGenerator
+import net.aliasvault.app.utils.TotpClipboard
 import net.aliasvault.app.vaultstore.VaultStore
 
 /**
@@ -80,7 +75,7 @@ class AutofillFillActivity : Activity() {
             }
 
             if (copyTotp) {
-                tryCopyTotpToClipboard(store, itemId)
+                TotpClipboard.copyCodeForItem(this, store, itemId)
             }
 
             val fields = pairFields(autofillIds, fieldTypeOrdinals)
@@ -120,27 +115,6 @@ class AutofillFillActivity : Activity() {
         val types = FieldType.values()
         return autofillIds.mapIndexed { i, id ->
             id to (types.getOrNull(fieldTypeOrdinals[i]) ?: FieldType.UNKNOWN)
-        }
-    }
-
-    private fun tryCopyTotpToClipboard(store: VaultStore, itemId: String) {
-        val secret = store.getTotpSecretForItem(itemId) ?: return
-        val code = TotpGenerator.generateCode(secret) ?: return
-        if (code.isEmpty()) return
-
-        try {
-            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText("AliasVault", code)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                val extras = PersistableBundle().apply {
-                    putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true)
-                }
-                clip.description.extras = extras
-            }
-            clipboard.setPrimaryClip(clip)
-            Log.d(TAG, "TOTP code copied to clipboard during autofill")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to copy TOTP code to clipboard", e)
         }
     }
 }
