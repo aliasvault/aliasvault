@@ -119,5 +119,6 @@ export default defineConfig({
   }),
   zip: {
     includeSources: ['README.md'],
+    // output that must never end up in the AMO source upload.
   },
 });
