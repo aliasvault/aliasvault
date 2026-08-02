@@ -87,7 +87,7 @@
     <comment>Toggle button that reveals the optional name field in the add form</comment>
   </data>
   <data name="SecretKeyLabel" xml:space="preserve">
-    <value>Geheime sleutel</value>
+    <value>Secret key</value>
     <comment>Label for secret key field</comment>
   </data>
   <data name="SecretKeyPlaceholder" xml:space="preserve">
