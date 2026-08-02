@@ -10,6 +10,8 @@
  * shouldn't be encouraged (e.g. AliasVault's own login form).
  */
 
+import { getComposedParentElement } from '@/utils/ShadowDom';
+
 /**
  * Walk up the DOM from the given element and determine whether AliasVault
  * autofill is allowed. The nearest ancestor (or the element itself) carrying
@@ -28,7 +30,7 @@ export function isAvAutofillAllowed(element: Element | null): boolean {
     if (current.getAttribute('av-disable') === 'true') {
       return false;
     }
-    current = current.parentElement;
+    current = getComposedParentElement(current);
   }
   return true;
 }
@@ -56,7 +58,7 @@ export function isAvSuppressSave(element: Element | null): boolean {
     if (value === 'false') {
       return false;
     }
-    current = current.parentElement;
+    current = getComposedParentElement(current);
   }
   return false;
 }

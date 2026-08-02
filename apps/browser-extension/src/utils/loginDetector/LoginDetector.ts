@@ -1,6 +1,7 @@
 import { isAvAutofillAllowed, isAvSuppressSave } from '@/utils/autofill/Autofill';
 import { extractFaviconUrlSimple } from '@/utils/favicon';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
+import { closestAcrossShadow, collectShadowRoots, queryAllDeep } from '@/utils/ShadowDom';
 
 import type { CapturedLogin, LoginSubmissionEvent, LoginCaptureCallback } from './types';
 
@@ -26,6 +27,9 @@ export class LoginDetector {
 
   /** MutationObserver for dynamically added forms */
   private mutationObserver: MutationObserver | null = null;
+
+  /** Shadow roots already handed to the MutationObserver, to avoid observing them twice */
+  private readonly observedShadowRoots: WeakSet<ShadowRoot> = new WeakSet();
 
   /** Debounce timer to prevent duplicate captures */
   private captureDebounceTimer: number | null = null;
@@ -97,8 +101,7 @@ export class LoginDetector {
    * Find and monitor all existing forms on the page.
    */
   private monitorExistingForms(): void {
-    const forms = this.document.querySelectorAll('form');
-    forms.forEach(form => this.monitorForm(form));
+    queryAllDeep<HTMLFormElement>(this.document, 'form').forEach(form => this.monitorForm(form));
   }
 
   /**
@@ -112,11 +115,17 @@ export class LoginDetector {
             this.monitorForm(node);
           } else if (node instanceof HTMLElement) {
             // Check for forms inside added elements
-            const forms = node.querySelectorAll('form');
-            forms.forEach(form => this.monitorForm(form));
+            queryAllDeep<HTMLFormElement>(node, 'form').forEach(form => this.monitorForm(form));
 
             // Check for buttons added to existing forms
             this.checkForNewButtonsInForms(node);
+
+            /*
+             * A newly added web component often attaches its shadow root only after
+             * the host lands in the DOM, so rescan on the next tick as well as right away.
+             */
+            this.observeShadowRoots(node);
+            setTimeout(() => this.observeShadowRootsAndForms(node), 0);
           }
         }
       }
@@ -126,6 +135,35 @@ export class LoginDetector {
       childList: true,
       subtree: true,
     });
+
+    // Observe every open shadow root reachable from the document
+    this.observeShadowRoots(this.document);
+  }
+
+  /**
+   * Observe every open shadow root reachable from the given root.
+   */
+  private observeShadowRoots(root: Document | HTMLElement): void {
+    if (!this.mutationObserver) {
+      return;
+    }
+
+    for (const shadowRoot of collectShadowRoots(root)) {
+      if (this.observedShadowRoots.has(shadowRoot)) {
+        continue;
+      }
+
+      this.observedShadowRoots.add(shadowRoot);
+      this.mutationObserver.observe(shadowRoot, { childList: true, subtree: true });
+    }
+  }
+
+  /**
+   * Observe newly reachable shadow roots and monitor any forms they already contain.
+   */
+  private observeShadowRootsAndForms(root: Document | HTMLElement): void {
+    this.observeShadowRoots(root);
+    queryAllDeep<HTMLFormElement>(root, 'form').forEach(form => this.monitorForm(form));
   }
 
   /**
@@ -134,19 +172,20 @@ export class LoginDetector {
   private checkForNewButtonsInForms(element: HTMLElement): void {
     // Check if the element itself is a button
     if (this.isSubmitButton(element)) {
-      const form = element.closest('form');
+      const form = closestAcrossShadow(element, 'form') as HTMLFormElement | null;
       if (form && this.monitoredForms.has(form)) {
         this.monitorButton(element, form);
       }
     }
 
     // Check for buttons inside the element
-    const buttons = element.querySelectorAll<HTMLElement>(
+    const buttons = queryAllDeep<HTMLElement>(
+      element,
       'button[type="submit"], input[type="submit"], button:not([type]), [role="button"]'
     );
 
     for (const button of buttons) {
-      const form = button.closest('form');
+      const form = closestAcrossShadow(button, 'form') as HTMLFormElement | null;
       if (form && this.monitoredForms.has(form)) {
         this.monitorButton(button, form);
       }

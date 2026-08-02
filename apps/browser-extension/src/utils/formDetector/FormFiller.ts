@@ -3,6 +3,7 @@ import type { Credential } from "@/utils/dist/core/models/vault";
 import { CombinedDateOptionPatterns, CombinedGenderOptionPatterns } from "@/utils/formDetector/FieldPatterns";
 import { type FormFields } from "@/utils/formDetector/types/FormFields";
 import { ClickValidator } from "@/utils/security/ClickValidator";
+import { composedContains } from "@/utils/ShadowDom";
 /**
  * Class to fill the fields of a form with the given credential.
  */
@@ -168,12 +169,15 @@ export class FormFiller {
         return false;
       }
 
-      // Check if our field is in the element stack (or its parents/children)
-      const fieldFound = elementsAtPoint.some(element =>
-        element === field ||
-        field.contains(element) ||
-        element.contains(field)
-      );
+      /**
+       * Check if our field is in the element stack (or its parents/children)
+       * @param element - The element to check.
+       * @returns True when the element belongs to the field's own composed subtree or its ancestors.
+       */
+      const isFieldOrRelated = (element: Element): boolean =>
+        element === field || composedContains(field, element) || composedContains(element, field);
+
+      const fieldFound = elementsAtPoint.some(isFieldOrRelated);
 
       if (!fieldFound) {
         console.warn('[AliasVault Security] Field is obstructed by other elements');
@@ -182,7 +186,7 @@ export class FormFiller {
 
       // Check for suspicious covering elements
       const suspiciousCovering = elementsAtPoint.slice(0, 3).some(element => {
-        if (element === field || field.contains(element) || element.contains(field)) {
+        if (isFieldOrRelated(element)) {
           return false; // This is our field or related element
         }
 

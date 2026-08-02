@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shadow Root Login Form Test 3</title>
+</head>
+<body>
+    <!--
+        Variant of shadow-root-1.html nested two shadow roots deep: an app shell component renders
+        another component, which owns the actual form. Only a recursive traversal reaches these
+        fields.
+    -->
+    <outer-shell></outer-shell>
+
+    <script>
+        class InnerLogin extends HTMLElement {
+            connectedCallback() {
+                if (this.shadowRoot) {
+                    return;
+                }
+
+                const shadowRoot = this.attachShadow({ mode: 'open' });
+                shadowRoot.innerHTML = `
+      <form id="login-form">
+        <input id="username" name="username" type="text" autocomplete="username" placeholder=" ">
+        <label for="username">Username</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" placeholder=" ">
+        <label for="password">Password</label>
+      </form>
+                `;
+            }
+        }
+
+        class OuterShell extends HTMLElement {
+            connectedCallback() {
+                if (this.shadowRoot) {
+                    return;
+                }
+
+                this.attachShadow({ mode: 'open' }).innerHTML = '<inner-login></inner-login>';
+            }
+        }
+
+        customElements.define('inner-login', InnerLogin);
+        customElements.define('outer-shell', OuterShell);
+    </script>
+</body>
+</html>
