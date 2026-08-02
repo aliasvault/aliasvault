@@ -1,0 +1,4 @@
+- Copy TOTP after autofilling a passkey (if available)
+- Add multi-URL support to web app and mobile app CSV export/import
+- Update credential create to only prefill base domain from website (UI tweak)
+- Show full password value instead of truncating it because of longer passwords in "plain text" view mode
