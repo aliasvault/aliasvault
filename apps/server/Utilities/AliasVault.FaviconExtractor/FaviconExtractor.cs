@@ -26,6 +26,7 @@ using SkiaSharp;
 public static class FaviconExtractor
 {
     private const int MaxSizeBytes = 20 * 1024; // 20KB max size; images above this are resized/re-encoded.
+    private const int MaxResponseBytes = 5 * 1024 * 1024; // 5MB cap per response body, measured after decompression.
     private static readonly int[] _resizeWidths = [96, 64, 48, 32];
     private static readonly int[] _jpegFallbackQualities = [80, 65, 50];
     private static readonly string[] _allowedSchemes = ["http", "https"];
@@ -441,7 +442,8 @@ public static class FaviconExtractor
 
         var client = new HttpClient(handler)
         {
-            Timeout = TimeSpan.FromSeconds(5), // Keep original timeout
+            Timeout = TimeSpan.FromSeconds(5),
+            MaxResponseContentBufferSize = MaxResponseBytes,
         };
 
         var random = new Random();
