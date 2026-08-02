@@ -1615,12 +1615,97 @@ public class ImportExportTests
     }
 
     /// <summary>
+    /// Test case for round-tripping an item with multiple service URLs through CSV export and import.
+    /// Multiple URLs are exported as a single comma separated value and split again on import.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task ExportAndImportMultipleServiceUrlsFromCsv()
+    {
+        // Arrange: add the URLs out of order to verify they are exported ordered by weight.
+        var item = new Item
+        {
+            Id = new Guid("00000000-0000-0000-0000-000000000001"),
+            Name = "Multi url service",
+            ItemType = ItemType.Login,
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now,
+        };
+
+        AddFieldValue(item, FieldKey.LoginUsername, "testuser");
+        AddFieldValue(item, FieldKey.LoginUrl, "https://downloads.aliasvault.com", 2);
+        AddFieldValue(item, FieldKey.LoginUrl, "https://www.aliasvault.com", 0);
+        AddFieldValue(item, FieldKey.LoginUrl, "https://app.aliasvault.com", 1);
+
+        // Act
+        var csvString = System.Text.Encoding.Default.GetString(ItemCsvService.ExportItemsToCsv([item]));
+        var importedCredentials = await ItemCsvService.ImportItemsFromCsv(csvString);
+
+        // Assert: the CSV holds all URLs in a single quoted comma separated column.
+        Assert.That(csvString, Does.Contain("\"https://www.aliasvault.com,https://app.aliasvault.com,https://downloads.aliasvault.com\""));
+
+        Assert.That(importedCredentials, Has.Count.EqualTo(1));
+        var importedCredential = importedCredentials[0];
+        Assert.Multiple(() =>
+        {
+            Assert.That(importedCredential.ServiceUrls, Has.Count.EqualTo(3));
+            Assert.That(importedCredential.ServiceUrls![0], Is.EqualTo("https://www.aliasvault.com"));
+            Assert.That(importedCredential.ServiceUrls[1], Is.EqualTo("https://app.aliasvault.com"));
+            Assert.That(importedCredential.ServiceUrls[2], Is.EqualTo("https://downloads.aliasvault.com"));
+        });
+
+        // Assert: converting back to an item results in one field value per URL with ascending weights.
+        var convertedItem = BaseImporter.ConvertToItem(importedCredentials)[0];
+        var urlFieldValues = convertedItem.FieldValues.Where(fv => fv.FieldKey == FieldKey.LoginUrl).OrderBy(fv => fv.Weight).ToList();
+        Assert.Multiple(() =>
+        {
+            Assert.That(urlFieldValues, Has.Count.EqualTo(3));
+            Assert.That(urlFieldValues[0].Value, Is.EqualTo("https://www.aliasvault.com"));
+            Assert.That(urlFieldValues[1].Value, Is.EqualTo("https://app.aliasvault.com"));
+            Assert.That(urlFieldValues[2].Value, Is.EqualTo("https://downloads.aliasvault.com"));
+        });
+    }
+
+    /// <summary>
+    /// Test case for importing a CSV where the ServiceUrl column contains multiple URLs separated by
+    /// a comma with optional whitespace, as can happen when the file is edited by hand or by a spreadsheet.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task ImportCsvWithMultipleServiceUrls()
+    {
+        // Arrange
+        var csv =
+            "ServiceName,FolderPath,ServiceUrl,Username,CurrentPassword,AliasEmail,TwoFactorSecret,AliasGender,AliasFirstName,AliasLastName,AliasNickName,AliasBirthDate,Notes,CreatedAt,UpdatedAt\n"
+            + "Multi url service,,\"https://example.com, https://www.example.com\",user,pass,,,,,,,,,2024-01-01 00:00:00,2024-01-01 00:00:00\n"
+            + "Single url service,,https://single.example,user,pass,,,,,,,,,2024-01-01 00:00:00,2024-01-01 00:00:00\n";
+
+        // Act
+        var importedCredentials = await ItemCsvService.ImportItemsFromCsv(csv);
+
+        // Assert
+        Assert.That(importedCredentials, Has.Count.EqualTo(2));
+
+        var multiUrlCredential = importedCredentials.First(c => c.ServiceName == "Multi url service");
+        var singleUrlCredential = importedCredentials.First(c => c.ServiceName == "Single url service");
+        Assert.Multiple(() =>
+        {
+            Assert.That(multiUrlCredential.ServiceUrls, Has.Count.EqualTo(2));
+            Assert.That(multiUrlCredential.ServiceUrls![0], Is.EqualTo("https://example.com"));
+            Assert.That(multiUrlCredential.ServiceUrls[1], Is.EqualTo("https://www.example.com"));
+            Assert.That(singleUrlCredential.ServiceUrls, Has.Count.EqualTo(1));
+            Assert.That(singleUrlCredential.ServiceUrls![0], Is.EqualTo("https://single.example"));
+        });
+    }
+
+    /// <summary>
     /// Helper method to add a field value to an item.
     /// </summary>
     /// <param name="item">The item to add the field value to.</param>
     /// <param name="fieldKey">The field key.</param>
     /// <param name="value">The field value.</param>
-    private static void AddFieldValue(Item item, string fieldKey, string value)
+    /// <param name="weight">The weight used to order multiple values of the same field key.</param>
+    private static void AddFieldValue(Item item, string fieldKey, string value, int weight = 0)
     {
         item.FieldValues.Add(new FieldValue
         {
@@ -1628,7 +1713,7 @@ public class ImportExportTests
             ItemId = item.Id,
             FieldKey = fieldKey,
             Value = value,
-            Weight = 0,
+            Weight = weight,
             CreatedAt = item.CreatedAt,
             UpdatedAt = item.UpdatedAt,
         });
