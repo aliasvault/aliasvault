@@ -261,13 +261,7 @@ private struct AutofillCredentialCardWithSelection: View {
                 // copy-on-fill setting enabled (default), put the current
                 // TOTP code on the clipboard so they can paste it into the
                 // 2FA field after the autofill completes.
-                if credential.hasTotp,
-                   let secret = credential.totpSecret,
-                   AutofillSettings.shouldCopyTotpOnFill,
-                   let code = TotpGenerator.generateCode(secret: secret),
-                   !code.isEmpty {
-                    UIPasteboard.general.string = code
-                }
+                TotpClipboard.copyCodeIfEnabled(secret: credential.totpSecret)
 
                 // Fill both username and password immediately for normal autofill
                 onSelect(identifier, credential.password ?? "")

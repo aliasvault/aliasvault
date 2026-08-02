@@ -128,13 +128,7 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
                 // copy-on-fill setting enabled (default), put the current
                 // TOTP code on the clipboard so they can paste it into the
                 // 2FA field after the autofill completes.
-                if matchingCredential.hasTotp,
-                   let secret = matchingCredential.totpSecret,
-                   AutofillSettings.shouldCopyTotpOnFill,
-                   let code = TotpGenerator.generateCode(secret: secret),
-                   !code.isEmpty {
-                    UIPasteboard.general.string = code
-                }
+                TotpClipboard.copyCodeIfEnabled(secret: matchingCredential.totpSecret)
 
                 // Use the identifier that matches the credential identity
                 let identifier = request.credentialIdentity.user
