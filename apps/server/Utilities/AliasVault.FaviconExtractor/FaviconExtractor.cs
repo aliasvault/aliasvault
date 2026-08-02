@@ -526,7 +526,8 @@ public static class FaviconExtractor
         };
 
         // Use random User-Agent
-        client.DefaultRequestHeaders.Add("User-Agent", userAgents[random.Next(userAgents.Length)]);
+        var userAgent = userAgents[random.Next(userAgents.Length)];
+        client.DefaultRequestHeaders.Add("User-Agent", userAgent);
 
         // More comprehensive Accept header with image types prioritized
         client.DefaultRequestHeaders.Add(
@@ -540,17 +541,17 @@ public static class FaviconExtractor
         client.DefaultRequestHeaders.Add("Upgrade-Insecure-Requests", "1");
         client.DefaultRequestHeaders.Add("Cache-Control", "max-age=0");
 
-        // Add Sec-Fetch headers to mimic modern browsers
-        if (random.Next(2) == 0)
-        {
-            client.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "document");
-            client.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "navigate");
-            client.DefaultRequestHeaders.Add("Sec-Fetch-Site", "none");
-            client.DefaultRequestHeaders.Add("Sec-Fetch-User", "?1");
-        }
+        // Sec-Fetch headers to mimic modern browsers. Every real browser sends these on a top-level
+        // navigation, and some sites (facebook.com among them) answer a request without them with an
+        // HTTP 400, so they are always sent rather than randomly.
+        client.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "document");
+        client.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "navigate");
+        client.DefaultRequestHeaders.Add("Sec-Fetch-Site", "none");
+        client.DefaultRequestHeaders.Add("Sec-Fetch-User", "?1");
 
-        // Add Chrome-specific headers randomly
-        if (random.Next(3) == 0)
+        // Chrome client hints, but only when the picked User-Agent is actually Chrome: announcing Chrome
+        // hints alongside the Firefox User-Agent is exactly the mismatch bot protection screens for.
+        if (userAgent.Contains("Chrome", StringComparison.Ordinal))
         {
             client.DefaultRequestHeaders.Add("Sec-CH-UA", "\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"120\", \"Google Chrome\";v=\"120\"");
             client.DefaultRequestHeaders.Add("Sec-CH-UA-Mobile", "?0");
