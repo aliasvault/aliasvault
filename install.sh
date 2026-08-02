@@ -1,5 +1,5 @@
 #!/bin/bash
-# @version 20260714
+# @version 20260803
 
 # Repository information used for downloading files and images from GitHub
 REPO_OWNER="aliasvault"
