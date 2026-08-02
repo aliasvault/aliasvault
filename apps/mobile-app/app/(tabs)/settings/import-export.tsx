@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 
 import type { Item } from '@/utils/dist/core/models/vault';
-import { getFieldValue } from '@/utils/dist/core/models/vault';
+import { getFieldValue, getFieldValues } from '@/utils/dist/core/models/vault';
 import { VaultUnlockHelper } from '@/utils/VaultUnlockHelper';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -103,6 +103,16 @@ export default function ImportExportScreen(): React.ReactNode {
   };
 
   /**
+   * Helper to extract all values of a multi-value field as a comma separated string.
+   */
+  const getFieldValuesAsString = (item: Item, fieldKey: string): string => {
+    return getFieldValues(item, fieldKey)
+      .map(value => value?.trim() ?? '')
+      .filter(value => value.length > 0)
+      .join(',');
+  };
+
+  /**
    * Convert items to CSV format.
    * Matches the server's ItemCsvService.ExportItemsToCsv format.
    */
@@ -124,7 +134,7 @@ export default function ImportExportScreen(): React.ReactNode {
       const folderPath = item.FolderPath?.join('/') ?? '';
 
       // Get field values using the same FieldKey constants as server
-      const serviceUrl = getFieldValueAsString(item, 'login.url');
+      const serviceUrl = getFieldValuesAsString(item, 'login.url');
       const username = getFieldValueAsString(item, 'login.username');
       const password = getFieldValueAsString(item, 'login.password');
       const aliasEmail = getFieldValueAsString(item, 'login.email');
