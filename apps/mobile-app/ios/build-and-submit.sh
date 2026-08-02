@@ -24,7 +24,7 @@ if [ ! -d "$MOBILE_CORE_DIST/models" ] || [ ! -d "$MOBILE_CORE_DIST/vault" ]; th
   echo "Building core libraries..."
   pushd "$CORE_DIR" > /dev/null
   chmod +x build-and-distribute.sh
-  ./build-and-distribute.sh
+  ./build-and-distribute.sh --ios
   popd > /dev/null
   echo "Core libraries built successfully"
 fi
