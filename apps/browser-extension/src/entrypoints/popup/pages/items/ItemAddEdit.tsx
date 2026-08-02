@@ -34,6 +34,7 @@ import { FieldCategories, FieldTypes, ItemTypes, getSystemFieldsForItemType, get
 import { FaviconService } from '@/utils/FaviconService';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import { NavigationStateService } from '@/utils/NavigationStateService';
 import * as RustCore from '@/utils/RustCore';
 
 import { browser } from '#imports';
@@ -677,6 +678,16 @@ const ItemAddEdit: React.FC = () => {
       }, tabId);
     } catch (err) {
       console.error('Error autofilling created item into page:', err);
+    }
+
+    /*
+     * Drop the navigation state persisted by this window (NavigationContext stored '/items/add') so the
+     * next regular popup open starts fresh instead of restoring the completed create page.
+     */
+    try {
+      await NavigationStateService.clearNavigationState();
+    } catch (err) {
+      console.error('Error clearing persisted navigation state:', err);
     }
 
     // Close this popup window (it was opened as a standalone window from the content script).

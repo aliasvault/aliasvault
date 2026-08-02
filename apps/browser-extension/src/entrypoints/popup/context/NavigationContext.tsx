@@ -5,17 +5,8 @@ import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { AUTH_FLOW_PATHS } from '@/entrypoints/popup/utils/routes';
 
-import { storage } from '#imports';
-
-const LAST_VISITED_PAGE_KEY = 'session:lastVisitedPage';
-const LAST_VISITED_TIME_KEY = 'session:lastVisitedTime';
-const NAVIGATION_HISTORY_KEY = 'session:navigationHistory';
-
-type NavigationHistoryEntry = {
-  pathname: string;
-  search: string;
-  hash: string;
-};
+import type { NavigationHistoryEntry } from '@/utils/NavigationStateService';
+import { NavigationStateService } from '@/utils/NavigationStateService';
 
 type NavigationContextType = {
   storeCurrentPage: () => Promise<void>;
@@ -75,11 +66,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         });
       }
 
-      await Promise.all([
-        storage.setItem(LAST_VISITED_PAGE_KEY, location.pathname),
-        storage.setItem(LAST_VISITED_TIME_KEY, Date.now()),
-        storage.setItem(NAVIGATION_HISTORY_KEY, historyEntries),
-      ]);
+      await NavigationStateService.storeNavigationState(location.pathname, historyEntries);
     }
   }, [location, isFullyInitialized, requiresAuth]);
 

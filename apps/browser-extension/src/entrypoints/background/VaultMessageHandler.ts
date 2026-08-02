@@ -9,6 +9,7 @@ import { FieldKey, ItemTypes, createSystemField, type Item, type PasswordSetting
 import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { NavigationStateService } from '@/utils/NavigationStateService';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
 import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword } from '@/utils/RustCore';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
@@ -294,10 +295,8 @@ export async function handleClearSession(): Promise<messageBoolResponse> {
   await storage.removeItems([
     'session:encryptionKey',
     'session:persistedFormValues',
-    'session:lastVisitedPage',
-    'session:lastVisitedTime',
-    'session:navigationHistory',
   ]);
+  await NavigationStateService.clearNavigationState();
 
   // Reset password unlock failed attempts counter on logout
   await LocalPreferencesService.resetPasswordUnlockFailedAttempts();
