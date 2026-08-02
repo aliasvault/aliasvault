@@ -694,6 +694,10 @@ video {
   top: 0px;
 }
 
+.top-1 {
+  top: 0.25rem;
+}
+
 .top-1\/2 {
   top: 50%;
 }
@@ -1115,6 +1119,10 @@ video {
 
 .min-h-\[40px\] {
   min-height: 40px;
+}
+
+.min-h-\[42px\] {
+  min-height: 42px;
 }
 
 .min-h-\[600px\] {

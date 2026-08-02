@@ -302,7 +302,8 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
 
                 return (
                   <View key={idx} style={styles.historyValue}>
-                    <Text style={styles.valueText} numberOfLines={1} ellipsizeMode="tail">
+                    {/* Revealed values wrap across lines so long secrets stay fully readable instead of being truncated. */}
+                    <Text style={styles.valueText} numberOfLines={shouldMaskByDefault && isVisible ? 0 : 1} ellipsizeMode="tail" selectable={shouldMaskByDefault && isVisible}>
                       {displayValue}
                     </Text>
                     <View style={styles.actions}>
