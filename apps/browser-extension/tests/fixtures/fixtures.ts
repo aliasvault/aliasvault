@@ -4,6 +4,8 @@ import { fileURLToPath } from 'url';
 
 import { createTestUser, type TestUser } from '../helpers/test-api';
 
+import { waitForPopupReady as waitForPopupReadyState, Timeouts } from './waits';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -126,20 +128,13 @@ export async function closeCachedContext(): Promise<void> {
  * Helper to wait for the popup to finish initial loading.
  *
  * The popup shows a loading spinner overlay (with z-50) during initial load.
- * This function waits for actual content to be visible, indicating loading is complete.
+ * This function waits for that overlay to disappear and for actual content to be visible.
  *
  * @param popup - The popup page
  * @param timeout - Maximum time to wait in milliseconds (default: 10000)
  */
-export async function waitForPopupReady(popup: Page, timeout: number = 10000): Promise<void> {
-  // Wait for the loading overlay to disappear by waiting for actual content to be interactable.
-  // The login form has input fields that only become visible after loading completes.
-  // We wait for either the login form inputs OR the settings button (visible on login page).
-  // Using CSS-only selectors to avoid mixing with Playwright-specific selectors.
-  await popup.waitForSelector(
-    'input[type="text"], input[type="password"], button#settings',
-    { state: 'visible', timeout }
-  );
+export async function waitForPopupReady(popup: Page, timeout: number = Timeouts.MEDIUM): Promise<void> {
+  await waitForPopupReadyState(popup, timeout);
 }
 
 /**
@@ -184,9 +179,11 @@ export async function waitForLoggedIn(popup: Page, timeout: number = 30000): Pro
  * @param apiUrl - The API URL to configure
  */
 export async function configureApiUrl(popup: Page, apiUrl: string): Promise<void> {
-  // Click settings button
-  const settingsButton = await popup.waitForSelector('button#settings');
-  await settingsButton.click();
+  // Make sure the popup has settled on the login page before touching the header.
+  await waitForPopupReady(popup);
+
+  // Click settings button. Use a locator so it is re-resolved if the app re-renders mid-click.
+  await popup.locator('button#settings').click();
 
   // Select "Self-hosted" (custom) option
   await popup.selectOption('select', ['custom']);
