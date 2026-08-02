@@ -320,7 +320,7 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             builder.HasIndex(e => e.PersonalGroupId).IsUnique().HasDatabaseName("UX_AliasVaultUsers_PersonalGroupId");
         });
 
-        // Configure GroupMember, who may be granted access to the group's shared folders.
+        // Configure GroupMember, who may be granted access to the group's shared manifests.
         modelBuilder.Entity<GroupMember>(builder =>
         {
             builder.HasOne(e => e.Group)

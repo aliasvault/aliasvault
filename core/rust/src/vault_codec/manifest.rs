@@ -16,7 +16,7 @@ pub struct Manifest {
     pub schema_version: u32,
     /// Latest EF migration ID.
     pub migration_id: String,
-    /// Per-manifest salt for blob hashing (hex). For a shared-folder manifest this salt is shared by
+    /// Per-manifest salt for blob hashing (hex). For a shared manifest this salt is shared by
     /// every participant (it lives inside the encrypted manifest itself) so all of them compute the
     /// same content-addressed blob hashes.
     pub user_salt: String,
@@ -24,8 +24,10 @@ pub struct Manifest {
     pub canonicalized_at: String,
     /// The server-side id of the manifest this snapshot belongs to.
     pub manifest_id: String,
+    /// The folder this shared manifest is anchored at (the root of the subtree it carries), or `None`
+    /// for the root manifest.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub shared_folder_id: Option<String>,
+    pub anchor_folder_id: Option<String>,
     /// Tables mapped to arrays of row objects. Blob columns replaced with `{ "__blobRef", "__blobKind" }`.
     pub tables: HashMap<String, Vec<CodecRecord>>,
     /// Forward-compat: unknown top-level keys preserved on round-trip.
@@ -75,29 +77,29 @@ pub struct BlobEntry {
     pub bytes_base64: String,
 }
 
-/// Identifies one shared folder for the canonicalize split: the manifest it becomes, the folder
+/// Identifies one shared manifest for the canonicalize split: the manifest id, the anchor folder
 /// whose subtree is written into it, and the per-manifest salt used for that manifest's blob hashing.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SharedFolderSpec {
+pub struct SharedManifestSpec {
     pub manifest_id: String,
-    pub folder_id: String,
+    pub anchor_folder_id: String,
     pub user_salt: String,
 }
 
-/// One shared-folder manifest produced by the canonicalize split: the folder it represents, the
+/// One shared manifest produced by the canonicalize split: the anchor folder it represents, the
 /// manifest carrying its subtree, and the blob map hashed with that manifest's own salt.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SharedVault {
-    pub folder_id: String,
+    pub anchor_folder_id: String,
     pub manifest: Manifest,
     /// hash > blob plaintext (base64), hashed with this manifest's salt.
     pub blobs: HashMap<String, BlobEntry>,
 }
 
 /// Result of canonicalizing a vault: the root manifest, its data buckets (one per category, e.g.
-/// Settings), the root content-addressed blob map, and one [`SharedVault`] per requested shared folder.
+/// Settings), the root content-addressed blob map, and one [`SharedVault`] per requested shared manifest.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CanonicalizedVault {
@@ -105,7 +107,7 @@ pub struct CanonicalizedVault {
     pub data_buckets: Vec<DataBucket>,
     /// hash > blob plaintext (base64).
     pub blobs: HashMap<String, BlobEntry>,
-    /// One entry per [`CanonicalizeInput::shared_folders`] spec, in spec order.
+    /// One entry per [`CanonicalizeInput::shared_manifests`] spec, in spec order.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub shared_vaults: Vec<SharedVault>,
 }
@@ -193,7 +195,7 @@ pub struct CanonicalizeInput {
     #[serde(default)]
     pub root_manifest_id: String,
     #[serde(default)]
-    pub shared_folders: Vec<SharedFolderSpec>,
+    pub shared_manifests: Vec<SharedManifestSpec>,
 }
 
 /// Input for [`crate::vault_codec::materialize_as_sqlite`].

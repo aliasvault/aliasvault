@@ -30,7 +30,7 @@ public static class EmailAccessHelper
             return false;
         }
 
-        // Holding any access key on the manifest is proof of access: AccountKey on a root manifest, GrantKey on a shared folder (owner self-grant and recipient alike).
+        // Holding any access key on the manifest is proof of access: AccountKey on a root manifest, GrantKey on a shared manifest (owner self-grant and recipient alike).
         var hasAccessKey = await context.VaultManifestAccessKeys.AnyAsync(k => k.UserId == userId && k.VaultManifestId == claim.VaultManifestId);
         if (hasAccessKey)
         {
@@ -65,7 +65,7 @@ public static class EmailAccessHelper
             return [];
         }
 
-        // Holding any access key on the manifest is proof of access: AccountKey on a root manifest, GrantKey on a shared folder
+        // Holding any access key on the manifest is proof of access: AccountKey on a root manifest, GrantKey on a shared manifest
         // (owner self-grant and recipient alike).
         var manifestIds = claims.Select(c => c.ManifestId).Distinct().ToList();
         var keyedManifestIds = (await context.VaultManifestAccessKeys
@@ -82,7 +82,7 @@ public static class EmailAccessHelper
 
     /// <summary>
     /// Get the ids of the encryption keys the user holds the private half of: their own personal
-    /// keys, plus the keypair of every shared folder they can open.
+    /// keys, plus the keypair of every shared manifest they can open.
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="userId">The user requesting access.</param>

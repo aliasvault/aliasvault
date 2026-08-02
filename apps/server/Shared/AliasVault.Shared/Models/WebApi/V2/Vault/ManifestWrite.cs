@@ -15,7 +15,7 @@ public class ManifestWrite
     /// <summary>Gets or sets a value indicating whether this write targets the caller's root manifest.</summary>
     public bool IsRoot { get; set; }
 
-    /// <summary>Gets or sets the target shared-folder manifest id.</summary>
+    /// <summary>Gets or sets the target shared manifest id.</summary>
     public Guid? ManifestId { get; set; }
 
     /// <summary>Gets or sets the encrypted manifest blob.</summary>

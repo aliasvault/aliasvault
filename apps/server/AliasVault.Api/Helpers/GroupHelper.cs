@@ -92,10 +92,10 @@ public static class GroupHelper
     }
 
     /// <summary>
-    /// Check if the user may administer the shared folder.
+    /// Check if the user may administer the shared manifest.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="manifestId">The shared folder manifest.</param>
+    /// <param name="manifestId">The shared manifest.</param>
     /// <param name="userId">The user.</param>
     /// <returns>True when the user can administer the folder.</returns>
     public static async Task<bool> CanAdministerManifestAsync(AliasServerDbContext context, Guid manifestId, string userId)
@@ -109,10 +109,10 @@ public static class GroupHelper
     }
 
     /// <summary>
-    /// Get the ownership of a shared folder.
+    /// Get the ownership of a shared manifest.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="manifestIds">The shared folder manifests to get the ownership of.</param>
+    /// <param name="manifestIds">The shared manifests to get the ownership of.</param>
     /// <returns>Manifest id to (owning group id, owning user id).</returns>
     public static async Task<Dictionary<Guid, (Guid GroupId, string OwnerUserId)>> ResolveQuotaOwnersAsync(AliasServerDbContext context, IEnumerable<Guid> manifestIds)
     {

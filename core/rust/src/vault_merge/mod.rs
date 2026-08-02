@@ -524,7 +524,7 @@ mod tests {
 
     #[test]
     fn logos_merge_by_id_so_same_domain_in_two_scopes_survives() {
-        // A personal logo and a shared-folder logo for the same domain are different rows by design
+        // A personal logo and a shared manifest's logo for the same domain are different rows by design
         // (see vault_codec::logos). Merging Logos by Id keeps both.
         let mut personal = logo(&crate::vault_codec::logo_id_for_source("m-root", "github.com"), "github.com", "2024-01-01T00:00:00Z");
         personal.insert("ManifestId".to_string(), serde_json::json!("m-root"));

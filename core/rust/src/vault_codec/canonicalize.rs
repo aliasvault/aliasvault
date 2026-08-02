@@ -63,8 +63,8 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
      */
     let all_logos: Vec<CodecRecord> = all_tables.get("Logos").cloned().unwrap_or_default();
 
-    // Split each shared folder's subtree into its own partition; `all_tables` keeps the root's rows.
-    let shared_partitions = partition_for_sharing(&mut all_tables, &input.shared_folders, &all_logos, &input.root_manifest_id)?;
+    // Split each shared manifest's subtree into its own partition; `all_tables` keeps the root's rows.
+    let shared_partitions = partition_for_sharing(&mut all_tables, &input.shared_manifests, &all_logos, &input.root_manifest_id)?;
 
     reconcile_logo_references(&mut all_tables, &input.root_manifest_id, &all_logos);
     normalize_logo_scope(&mut all_tables, &input.root_manifest_id);
@@ -119,14 +119,14 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
             })
             .collect();
         shared_vaults.push(SharedVault {
-            folder_id: partition.folder_id.clone(),
+            anchor_folder_id: partition.anchor_folder_id.clone(),
             manifest: Manifest {
                 schema_version: SCHEMA_VERSION,
                 migration_id: input.migration_id.clone(),
                 user_salt: partition.user_salt,
                 canonicalized_at: input.canonicalized_at.clone(),
                 manifest_id: partition.manifest_id,
-                shared_folder_id: Some(partition.folder_id),
+                anchor_folder_id: Some(partition.anchor_folder_id),
                 tables: shared_tables,
                 extra: HashMap::new(),
             },
@@ -140,7 +140,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         user_salt: input.user_salt,
         canonicalized_at: input.canonicalized_at,
         manifest_id: input.root_manifest_id,
-        shared_folder_id: None,
+        anchor_folder_id: None,
         tables: manifest_tables,
         extra: HashMap::new(),
     };

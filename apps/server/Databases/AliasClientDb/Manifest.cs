@@ -30,7 +30,7 @@ public class Manifest
     public bool IsRoot { get; set; }
 
     /// <summary>
-    /// Gets or sets the folder this manifest is anchored at (a shared folder's root folder), or null
+    /// Gets or sets the folder this manifest is anchored at (a shared manifest's anchor folder), or null
     /// for the root manifest. Presentation and routing hint only — the manifest's identity is
     /// <see cref="Id"/>.
     /// </summary>

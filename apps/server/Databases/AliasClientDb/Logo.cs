@@ -64,7 +64,7 @@ public class Logo : SyncableEntity
     /// <summary>
     /// Gets or sets the id of the manifest this logo belongs to — the root manifest's own id for
     /// personal logos (see the Manifests bookkeeping table; there is no NULL-scope convention). An
-    /// icon lives in exactly one manifest: two members of a shared folder each keep their own personal
+    /// icon lives in exactly one manifest: two members of a shared manifest each keep their own personal
     /// icon for a domain while the folder keeps the one its items use. Nullable only as write
     /// tolerance: the Rust codec adopts and restamps unstamped rows at the next sync boundary.
     /// </summary>

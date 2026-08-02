@@ -8,7 +8,7 @@
 //!
 //! A logo is scoped to the manifest that owns it:
 //!   - `ManifestId` is the owning manifest's id: the root manifest's id for personal logos, the
-//!     shared manifest's id inside a shared folder (no NULL convention);
+//!     owning shared manifest's id for logos living in a shared manifest (no NULL convention);
 //!   - `Id` is derived from `(manifest id, Kind, Source)` (see [`logo_id_for`]), so every writer
 //!     independently mints the same id for the same logo in the same manifest, the uniqueness
 //!     invariant is self-enforcing rather than repaired after the fact.
@@ -53,7 +53,7 @@ const FAVICON_ID_NAMESPACE: &str = "aliasvault:logo:v1";
 /// spaces (a domain, a catalog key, a content hash) can never collide.
 ///
 /// Deriving the id from the row's natural key is what removes cross-writer identity conflicts: two
-/// devices (or two members of one shared folder) that fetch the same domain, or upload the very same
+/// devices (or two members of one shared manifest) that fetch the same domain, or upload the very same
 /// image, produce the same row, which then merges by ordinary LWW.
 ///
 /// `manifest_id` is the owning manifest's id — the root manifest's own id for personal logos (every

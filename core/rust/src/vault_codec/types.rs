@@ -30,7 +30,7 @@ pub static BUCKET_TABLES: &[(&str, &str)] = &[
     ("Settings", "Settings"),
 ];
 
-/// Tables that belong exclusively to the user's own (root) vault, never to a shared-folder manifest.
+/// Tables that belong exclusively to the user's own (root) vault, never to a shared manifest.
 /// Canonicalize never routes these into a shared partition and will refuse to materialize if they
 /// are found in a shared manifest anyway. Empty today (bucketed tables are implicitly personal, see
 /// [`is_personal_table`]); kept as the declaration point for future personal-only tables.
@@ -98,7 +98,7 @@ pub fn tables_for_category(category: &str) -> Vec<&'static str> {
     BUCKET_TABLES.iter().filter(|(_, c)| *c == category).map(|(t, _)| *t).collect()
 }
 
-/// True when a table is personal-only (see [`PERSONAL_TABLES`]): never part of a shared-folder manifest.
+/// True when a table is personal-only (see [`PERSONAL_TABLES`]): never part of a shared manifest.
 pub fn is_personal_table(table_name: &str) -> bool {
     PERSONAL_TABLES.contains(&table_name) || bucket_category_for(table_name).is_some()
 }

@@ -8,7 +8,7 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Sharing;
 
 /// <summary>
-/// One member of a shared folder: the owner plus every recipient holding a grant.
+/// One member of a shared manifest: the owner plus every recipient holding a grant.
 /// </summary>
 public class ShareMember
 {

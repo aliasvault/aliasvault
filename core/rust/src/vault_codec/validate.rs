@@ -56,9 +56,9 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
         };
     }
 
-    // A shared-folder manifest is readable by other users: it must never carry personal tables
+    // A shared manifest is readable by other users: it must never carry personal tables
     // (key material, bucketed settings). See `types::is_personal_table`.
-    if manifest.shared_folder_id.is_some() {
+    if manifest.anchor_folder_id.is_some() {
         for name in manifest.tables.keys() {
             if super::types::is_personal_table(name) && !manifest.tables[name].is_empty() {
                 failed.push("shared-manifest-carries-personal-table".to_string());

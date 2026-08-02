@@ -36,7 +36,7 @@ public class Manifest
     /// <summary>Gets or sets the blob references this manifest revision needs (so the client can detect cache misses).</summary>
     public List<BlobReference> BlobReferences { get; set; } = [];
 
-    /// <summary>Gets or sets the plaintext display name of a shared-folder manifest. Null for the root manifest.</summary>
+    /// <summary>Gets or sets the plaintext display name of a shared manifest. Null for the root manifest.</summary>
     public string? Name { get; set; }
 
     /// <summary>Gets or sets the username of the manifest owner. Set only on manifests granted to the caller by another user.</summary>

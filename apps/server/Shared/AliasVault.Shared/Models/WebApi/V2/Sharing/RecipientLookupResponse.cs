@@ -8,7 +8,7 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Sharing;
 
 /// <summary>
-/// Response for GET /v2/Sharing/recipient. Returns the primary public key a granter uses to encrypt a shared folder's
+/// Response for GET /v2/Sharing/recipient. Returns the primary public key a granter uses to encrypt a shared manifest's
 /// VEK for the recipient.
 /// </summary>
 public class RecipientLookupResponse

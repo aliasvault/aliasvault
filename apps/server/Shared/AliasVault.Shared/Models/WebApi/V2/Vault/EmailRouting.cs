@@ -16,7 +16,7 @@ public class EmailRouting
     public List<string> EmailAddressList { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets the claimed addresses whose items live in a shared folder, each carrying the manifest
+    /// Gets or sets the claimed addresses whose items live in a shared manifest, each carrying the manifest
     /// whose published keypair encrypts its mail.
     /// </summary>
     public List<SharedEmailAddress> SharedEmailAddressList { get; set; } = [];

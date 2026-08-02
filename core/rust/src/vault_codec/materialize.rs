@@ -93,7 +93,7 @@ fn manifest_bookkeeping_records(root: &Manifest, shared: &[Manifest]) -> Vec<Cod
         let mut row: CodecRecord = HashMap::new();
         row.insert("Id".to_string(), json!(id));
         row.insert("IsRoot".to_string(), json!(if is_root { 1 } else { 0 }));
-        row.insert("AnchorFolderId".to_string(), manifest.shared_folder_id.as_deref().map(|f| json!(f)).unwrap_or(serde_json::Value::Null));
+        row.insert("AnchorFolderId".to_string(), manifest.anchor_folder_id.as_deref().map(|f| json!(f)).unwrap_or(serde_json::Value::Null));
         records.push(row);
     };
     push(root, true);

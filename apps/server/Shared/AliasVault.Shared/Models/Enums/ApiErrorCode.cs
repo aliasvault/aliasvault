@@ -165,7 +165,7 @@ public enum ApiErrorCode
     VAULT_KEY_NOT_FOUND,
 
     /// <summary>
-    /// The referenced shared folder manifest does not exist or is not owned by the caller.
+    /// The referenced shared manifest does not exist or is not owned by the caller.
     /// </summary>
     SHARED_MANIFEST_NOT_FOUND,
 

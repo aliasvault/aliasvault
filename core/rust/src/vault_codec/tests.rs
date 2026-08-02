@@ -32,7 +32,7 @@ fn basic_input(tables: Vec<CodecTableData>) -> CanonicalizeInput {
         migration_id: "20250101000000_Init".to_string(),
         canonicalized_at: "2026-01-01T00:00:00.000Z".to_string(),
         root_manifest_id: ROOT_MANIFEST.to_string(),
-        shared_folders: Vec::new(),
+        shared_manifests: Vec::new(),
     }
 }
 
@@ -615,7 +615,7 @@ fn content_fingerprint_matches_serialized_manifest_roundtrip() {
         user_salt: "00ff".into(),
         canonicalized_at: "2026-01-01T00:00:00.000Z".into(),
         manifest_id: "m-fp".into(),
-        shared_folder_id: None,
+        anchor_folder_id: None,
         tables: std::collections::HashMap::from([(String::from("Items"), vec![])]),
         extra: std::collections::HashMap::new(),
     };

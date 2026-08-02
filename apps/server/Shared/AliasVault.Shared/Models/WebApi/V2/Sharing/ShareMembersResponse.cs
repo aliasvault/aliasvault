@@ -8,10 +8,10 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Sharing;
 
 /// <summary>
-/// Response for GET /v2/Sharing/folders/{manifestId}/members. Lists the owner and every recipient of a shared folder.
+/// Response for GET /v2/Sharing/manifests/{manifestId}/members. Lists the owner and every recipient of a shared manifest.
 /// </summary>
 public class ShareMembersResponse
 {
-    /// <summary>Gets or sets the members of the shared folder (owner first, then recipients).</summary>
+    /// <summary>Gets or sets the members of the shared manifest (owner first, then recipients).</summary>
     public List<ShareMember> Members { get; set; } = [];
 }

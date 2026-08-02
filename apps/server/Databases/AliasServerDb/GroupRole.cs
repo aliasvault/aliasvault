@@ -18,12 +18,12 @@ public enum GroupRole
     Owner = 0,
 
     /// <summary>
-    /// Can invite and remove members and administer the group's shared folders.
+    /// Can invite and remove members and administer the group's shared manifests.
     /// </summary>
     Admin = 1,
 
     /// <summary>
-    /// Can use shared folders they hold a grant on.
+    /// Can use shared manifests they hold a grant on.
     /// </summary>
     Member = 2,
 }
