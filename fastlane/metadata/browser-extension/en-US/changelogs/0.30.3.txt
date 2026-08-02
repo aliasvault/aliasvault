@@ -1,0 +1,4 @@
+- Copy TOTP after autofilling a passkey (if available)
+- Update credential create to only prefill base domain from website (UI tweak)
+- Fix redirect issue that could sometimes occur when opening the popup
+- Show full password value instead of truncating it because of longer passwords in "plain text" view mode
