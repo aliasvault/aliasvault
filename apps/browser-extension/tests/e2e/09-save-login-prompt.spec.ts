@@ -135,6 +135,41 @@ async function fillServiceName(page: Page, serviceName: string): Promise<void> {
 }
 
 /**
+ * Helper to check if the autofill credential popup is open.
+ * Requires E2E test mode (open shadow DOM); reports false when the shadow root is closed.
+ */
+async function isAutofillPopupOpen(page: Page): Promise<boolean> {
+  return page.evaluate(() => {
+    const ui = document.querySelector('aliasvault-ui');
+    return ui?.shadowRoot?.querySelector('#aliasvault-credential-popup') != null;
+  });
+}
+
+/**
+ * Helper to dismiss the autofill credential popup, which is anchored under the password field and
+ * covers the submit button while it is open.
+ *
+ * Focusing an input opens the popup asynchronously, so a single outside click can land before the
+ * popup exists: its outside-click handler then finds nothing to close and the popup shows up right
+ * afterwards. Click outside until it is gone and stays gone.
+ */
+async function dismissAutofillPopup(page: Page, timeout: number = 10000): Promise<void> {
+  const deadline = Date.now() + timeout;
+  while (Date.now() < deadline) {
+    // Click on the form title, which sits safely above the input fields.
+    await page.click('h1');
+
+    // Give any in-flight popup open time to land before concluding it is dismissed.
+    await page.waitForTimeout(300);
+    if (!await isAutofillPopupOpen(page)) {
+      return;
+    }
+  }
+
+  throw new Error(`Autofill popup stayed open after ${timeout}ms and would block the submit button`);
+}
+
+/**
  * Helper to submit the login form on the test page.
  * Waits for the content script to initialize before filling and submitting.
  */
@@ -145,10 +180,8 @@ async function submitLoginForm(page: Page, username: string, password: string): 
   await page.fill('input#username', username);
   await page.fill('input#password', password);
 
-  // Click outside the form fields to dismiss any autofill popup that might be blocking the submit button
-  // We click on the form title which is safely above the input fields
-  await page.click('h1');
-  await page.waitForTimeout(200);
+  // Dismiss the autofill popup so it cannot swallow the click meant for the submit button.
+  await dismissAutofillPopup(page);
 
   // Click the submit button - this triggers the LoginDetector's button click handler
   await page.click('button[type="submit"]');

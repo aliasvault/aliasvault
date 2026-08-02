@@ -30,6 +30,7 @@ import net.aliasvault.app.autofill.utils.AutofillDatasetBuilder
 import net.aliasvault.app.autofill.utils.FieldFinder
 import net.aliasvault.app.autofill.utils.InlinePresentationHelper
 import net.aliasvault.app.autofill.utils.RustItemMatcher
+import net.aliasvault.app.utils.TotpClipboard
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.interfaces.ItemOperationCallback
 import net.aliasvault.app.vaultstore.models.Item
@@ -181,7 +182,7 @@ class AutofillService : AutofillService() {
                             // Add debug dataset if enabled in settings
                             val sharedPreferences = getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
                             val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
-                            val copyTotpOnFill = sharedPreferences.getBoolean("autofill_copy_totp_on_fill", true)
+                            val copyTotpOnFill = TotpClipboard.isCopyOnFillEnabled(this@AutofillService)
                             if (showSearchText) {
                                 responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown", inlinePool))
                             }
