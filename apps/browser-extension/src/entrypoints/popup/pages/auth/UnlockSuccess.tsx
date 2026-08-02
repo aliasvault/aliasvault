@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import { CountdownBar, ICountdownBarHandle } from '@/entrypoints/popup/components/CountdownBar';
+import { CountdownBar, type ICountdownBarHandle } from '@/entrypoints/popup/components/CountdownBar';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 

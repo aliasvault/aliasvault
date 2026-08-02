@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Credential } from '@/utils/dist/core/models/vault';
 
 import { FormFiller } from '../FormFiller';
-import { FormFields } from '../types/FormFields';
+import { type FormFields } from '../types/FormFields';
 
 import { setupTestDOM, createMockFormFields, createMockCredential, wasTriggerCalledFor, createDateSelects } from './TestUtils';
 

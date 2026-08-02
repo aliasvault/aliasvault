@@ -353,8 +353,8 @@ export class TestClient {
         const input = document.querySelector(sel) as HTMLInputElement | HTMLTextAreaElement;
         return input?.value === expected;
       },
-      { timeout },
-      { sel: selector, expected: expectedValue }
+      { sel: selector, expected: expectedValue },
+      { timeout }
     );
     return this;
   }
