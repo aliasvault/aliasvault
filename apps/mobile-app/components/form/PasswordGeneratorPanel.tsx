@@ -312,7 +312,8 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
 
       {/* Preview. */}
       <View style={styles.previewContainer}>
-        <ThemedText style={styles.previewText} numberOfLines={1} ellipsizeMode="tail">
+        {/* Wraps across lines so long generated passwords stay fully readable. */}
+        <ThemedText style={styles.previewText} selectable>
           {previewPassword}
         </ThemedText>
         <TouchableOpacity style={styles.refreshButton} onPress={handleRefreshPreview} activeOpacity={0.7}>

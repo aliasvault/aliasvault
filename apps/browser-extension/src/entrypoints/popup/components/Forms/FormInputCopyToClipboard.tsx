@@ -100,6 +100,8 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
     }
   };
 
+  const isRevealedPassword = type === 'password' && showPassword;
+
   return (
     <div>
       <label htmlFor={id} className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -107,19 +109,32 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
         {labelSuffix}
       </label>
       <div className="relative">
-        <input
-          type={type === 'password' && !showPassword ? 'password' : 'text'}
-          id={id}
-          readOnly
-          value={value}
-          onClick={copyToClipboard}
-          className={`w-full pl-3 py-2.5 bg-white border ${
-            copied ? 'border-green-500 border-2' : 'border-gray-300'
-          } text-gray-900 text-sm rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 truncate ${
-            type === 'password' ? 'pr-16' : 'pr-10'
-          }`}
-        />
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+        {isRevealedPassword ? (
+          /* Revealed passwords are rendered as wrapping text so long values stay fully readable instead of being truncated. */
+          <div
+            id={id}
+            onClick={copyToClipboard}
+            className={`w-full pl-3 py-2.5 pr-16 bg-white border ${
+              copied ? 'border-green-500 border-2' : 'border-gray-300'
+            } text-gray-900 text-sm rounded-lg shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white break-all whitespace-pre-wrap cursor-pointer min-h-[42px]`}
+          >
+            {value}
+          </div>
+        ) : (
+          <input
+            type={type === 'password' ? 'password' : 'text'}
+            id={id}
+            readOnly
+            value={value}
+            onClick={copyToClipboard}
+            className={`w-full pl-3 py-2.5 bg-white border ${
+              copied ? 'border-green-500 border-2' : 'border-gray-300'
+            } text-gray-900 text-sm rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 truncate ${
+              type === 'password' ? 'pr-16' : 'pr-10'
+            }`}
+          />
+        )}
+        <div className={`absolute right-2 flex items-center gap-2 ${isRevealedPassword ? 'top-2' : 'top-1/2 -translate-y-1/2'}`}>
           {copied ? (
             <button
               type="button"
