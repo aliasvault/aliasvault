@@ -7,6 +7,8 @@
 
 namespace AliasVault.UnitTests.Utilities;
 
+using System.Net;
+
 /// <summary>
 /// Tests for the AliasVault.FaviconExtractor class.
 /// </summary>
@@ -90,5 +92,18 @@ public class FaviconExtractorTests
             var faviconBytes = await FaviconExtractor.FaviconExtractor.GetFaviconAsync(url);
             Assert.That(faviconBytes, Is.Null, $"Should block non-standard port URL: {url}");
         }
+    }
+
+    /// <summary>
+    /// Check that a mixed set of public and private IP addresses is rejected as only fully public sets are allowed.
+    /// </summary>
+    [Test]
+    public void RejectsAddressSetMixingPublicAndPrivate()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(FaviconExtractor.FaviconExtractor.AreIpAddressesPublic([IPAddress.Parse("8.8.8.8"), IPAddress.Parse("10.0.0.1")]), Is.False, "A mixed set must be rejected");
+            Assert.That(FaviconExtractor.FaviconExtractor.AreIpAddressesPublic([IPAddress.Parse("8.8.8.8"), IPAddress.Parse("1.1.1.1")]), Is.True, "An all-public set must be allowed");
+        });
     }
 }

@@ -9,10 +9,13 @@ namespace AliasVault.FaviconExtractor;
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using SkiaSharp;
@@ -88,21 +91,29 @@ public static class FaviconExtractor
         url = NormalizeUrl(url);
         Uri uri = new(url);
 
-        if (!IsValidUri(uri))
+        if (!IsAllowedSchemeAndPort(uri))
         {
             return null;
         }
 
         using HttpClient client = CreateHttpClient();
 
-        // Attempt the operation up to two times to handle common cookiewall redirects or transient issues.
-        for (int attempt = 0; attempt < 2; attempt++)
+        try
         {
-            var result = await TryGetFaviconAsync(client, uri);
-            if (result != null)
+            // Attempt the operation up to two times to handle common cookiewall redirects or transient issues.
+            for (int attempt = 0; attempt < 2; attempt++)
             {
-                return result;
+                var result = await TryGetFaviconAsync(client, uri);
+                if (result != null)
+                {
+                    return result;
+                }
             }
+        }
+        catch (HttpRequestException)
+        {
+            // Abort on any request exception.
+            return null;
         }
 
         // Return null if the favicon extraction failed.
@@ -203,6 +214,51 @@ public static class FaviconExtractor
         }
 
         return ImageFormatSignature.Unknown;
+    }
+
+    /// <summary>
+    /// Checks whether a set of IP addresses are all publicly routable.
+    /// </summary>
+    /// <param name="addresses">The addresses returned by one DNS resolution.</param>
+    /// <returns>True if all addresses are publicly routable, false otherwise.</returns>
+    internal static bool AreIpAddressesPublic(IPAddress[] addresses)
+    {
+        foreach (var address in addresses)
+        {
+            if (!IPAddressValidator.IsPublicIPAddress(address))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Opens the TCP connection for an outgoing request and resolve a hostname only once.
+    /// </summary>
+    /// <param name="context">Connection context supplied by the HTTP stack.</param>
+    /// <param name="cancellationToken">Token to cancel the connection attempt.</param>
+    /// <returns>A stream over the established connection.</returns>
+    private static async ValueTask<Stream> ConnectToValidatedAddressAsync(SocketsHttpConnectionContext context, CancellationToken cancellationToken)
+    {
+        var addresses = await Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, cancellationToken);
+        if (!AreIpAddressesPublic(addresses))
+        {
+            throw new HttpRequestException("Blocked connection to a non-public address.");
+        }
+
+        var socket = new Socket(SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
+        try
+        {
+            await socket.ConnectAsync(addresses, context.DnsEndPoint.Port, cancellationToken);
+            return new NetworkStream(socket, ownsSocket: true);
+        }
+        catch
+        {
+            socket.Dispose();
+            throw;
+        }
     }
 
     private static async Task<byte[]?> SafeGetFaviconAsync(string url)
@@ -320,7 +376,7 @@ public static class FaviconExtractor
         try
         {
             // Validate the favicon URL before fetching
-            if (!Uri.TryCreate(url, UriKind.Absolute, out var faviconUri) || !IsValidUri(faviconUri))
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var faviconUri) || !IsAllowedSchemeAndPort(faviconUri))
             {
                 return null;
             }
@@ -374,12 +430,13 @@ public static class FaviconExtractor
     /// <returns>The HTTP client.</returns>
     private static HttpClient CreateHttpClient()
     {
-        var handler = new HttpClientHandler
+        var handler = new SocketsHttpHandler
         {
             AllowAutoRedirect = false, // Handle redirects manually
             UseCookies = true,         // Enable cookie handling for session management
             CookieContainer = new System.Net.CookieContainer(),
             AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate | System.Net.DecompressionMethods.Brotli,
+            ConnectCallback = ConnectToValidatedAddressAsync,
         };
 
         var client = new HttpClient(handler)
@@ -447,37 +504,13 @@ public static class FaviconExtractor
     }
 
     /// <summary>
-    /// Checks if the URI is valid and not pointing to internal/private IPs.
+    /// Checks the URI scheme and port.
     /// </summary>
     /// <param name="uri">The URI to check.</param>
-    /// <returns>True if the URI is valid and safe, false otherwise.</returns>
-    private static bool IsValidUri(Uri uri)
+    /// <returns>True if the scheme and port are both allowed, false otherwise.</returns>
+    private static bool IsAllowedSchemeAndPort(Uri uri)
     {
-        // Check scheme and port
-        if (!_allowedSchemes.Contains(uri.Scheme) || !uri.IsDefaultPort)
-        {
-            return false;
-        }
-
-        // Resolve hostname to IP and validate
-        try
-        {
-            var addresses = Dns.GetHostAddresses(uri.Host);
-            foreach (var address in addresses)
-            {
-                if (!IPAddressValidator.IsPublicIPAddress(address))
-                {
-                    return false;
-                }
-            }
-        }
-        catch
-        {
-            // If DNS resolution fails, block the request
-            return false;
-        }
-
-        return true;
+        return _allowedSchemes.Contains(uri.Scheme) && uri.IsDefaultPort;
     }
 
     /// <summary>
@@ -498,12 +531,12 @@ public static class FaviconExtractor
             var request = new HttpRequestMessage(HttpMethod.Get, currentUri);
             if (redirectCount == 0)
             {
-                // First request - add Google referer to appear like navigation
+                // First request: add Google referer to appear like navigation
                 request.Headers.Add("Referer", "https://www.google.com/");
             }
             else
             {
-                // Subsequent redirects - use original URL as referer
+                // Subsequent redirects: use original URL as referer
                 request.Headers.Add("Referer", uri.ToString());
             }
 
@@ -523,10 +556,10 @@ public static class FaviconExtractor
                     location = new Uri(currentUri, location);
                 }
 
-                // Validate the redirect target
-                if (!IsValidUri(location))
+                // Validate the target URL scheme and port.
+                if (!IsAllowedSchemeAndPort(location))
                 {
-                    return null; // Block redirect to internal IPs
+                    return null;
                 }
 
                 currentUri = location;
