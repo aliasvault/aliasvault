@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AVAILABLE_LANGUAGES, getLanguageConfig, ILanguageConfig } from '../../../i18n/config';
+import { AVAILABLE_LANGUAGES, getLanguageConfig, type ILanguageConfig } from '../../../i18n/config';
 
 import { storage } from '#imports';
 

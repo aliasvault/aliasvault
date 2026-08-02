@@ -1,7 +1,7 @@
 import { devLog } from "@/utils/DevLogger";
 
-import { CombinedEmailVerificationPatterns, CombinedFieldExclusionPatterns, CombinedFieldPatterns, CombinedGenderOptionPatterns, CombinedStopWords, FieldPatternEntry, includeTerms, specificIncludeTerms } from "./FieldPatterns";
-import { DetectedFieldType, FormFields } from "./types/FormFields";
+import { CombinedEmailVerificationPatterns, CombinedFieldExclusionPatterns, CombinedFieldPatterns, CombinedGenderOptionPatterns, CombinedStopWords, type FieldPatternEntry, includeTerms, specificIncludeTerms } from "./FieldPatterns";
+import { DetectedFieldType, type FormFields } from "./types/FormFields";
 
 /**
  * Short human-readable identifier for an element, used in devLog traces.

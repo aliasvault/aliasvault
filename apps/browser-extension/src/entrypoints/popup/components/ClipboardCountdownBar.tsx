@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 
 import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
-import { CountdownBar, ICountdownBarHandle } from './CountdownBar';
+import { CountdownBar, type ICountdownBarHandle } from './CountdownBar';
 
 /**
  * Clipboard countdown bar component.
