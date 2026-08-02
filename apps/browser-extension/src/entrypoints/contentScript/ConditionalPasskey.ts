@@ -14,6 +14,7 @@
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import type { ConditionalPasskeyOption, PasskeyGetCredentialResponse, WebAuthnPublicKeyGetPayload } from '@/utils/passkey/types';
 import type { WebAuthnGetEventDetail } from '@/utils/passkey/webauthn.types';
+import { copyTotpToClipboardIfEnabled } from '@/utils/TotpClipboard';
 
 /**
  * The response detail dispatched back to the page to settle the pending `get()` promise.
@@ -156,6 +157,14 @@ export async function completeConditionalWithPasskey(passkeyId: string): Promise
     });
 
     if (result.success && result.credential) {
+      /*
+       * Copy the linked TOTP code to the clipboard (if any).
+       */
+      const selected = request.passkeys.find((passkey) => passkey.id === passkeyId);
+      if (selected) {
+        await copyTotpToClipboardIfEnabled(selected.itemId);
+      }
+
       request.respond({ requestId: request.requestId, credential: result.credential });
       return true;
     }
