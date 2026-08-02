@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shadow Root Login Form Test 4</title>
+</head>
+<body>
+    <!--
+        A login form built entirely from custom elements, with not a single <input> in the normal
+        DOM: <x-text-input> renders the real input inside its shadow root and keeps every
+        identifying attribute (id, name, autocomplete) plus the visible label
+        (<span slot="label">) on the host in the normal DOM.
+
+        Note that <x-form> is a custom element, not a <form>, so there is no form wrapper to scope
+        detection to either.
+    -->
+    <x-auth-flow class="relative" step-name="login">
+      <span slot="login" feature-name="LoginStep">
+        <x-partial name="LoginStep" src="/svc/partial/login-step">
+          <x-auth-login device-type="desktop" oidc-enabled="true">
+            <x-tabpanel pagenames="login_username_and_password,login_otp_app" pageindex="1">
+              <x-form id="login" method="post" action="/svc/account/login" slot="login_username_and_password">
+                <x-auth-modal class="shadow-sm" pagename="login_username_and_password">
+                  <div class="font-sans bg-ui-modalbackground">
+                    <h1 class="text-24 text-center font-bold">Log In</h1>
+                    <fieldset class="relative p-0 border-0 flex flex-col grow bg-transparent">
+                      <x-text-input id="login-username" name="username" autocomplete="username webauthn" required="" helper-text-placeholder="&nbsp;" value="" aria-disabled="false" appearance="secondary">
+                        <span slot="label">
+                          Email or username
+                        </span>
+                      </x-text-input>
+                    </fieldset>
+                    <fieldset class="relative p-0 border-0 flex flex-col grow bg-transparent">
+                      <x-text-input id="login-password" class="oidc oidc-hide" name="password" type="password" autocomplete="current-password" helper-text-placeholder="&nbsp;" required="" aria-disabled="false" appearance="secondary">
+                        <span slot="label">
+                          Password
+                        </span>
+                        <span slot="trailingIconButton">
+                          <button id="login-password-visibility-toggle" type="button">Show password</button>
+                        </span>
+                      </x-text-input>
+                    </fieldset>
+                  </div>
+                  <div slot="primaryButton" class="w-100">
+                    <button class="login w-100 oidc oidc-hide" type="button">Log In</button>
+                  </div>
+                </x-auth-modal>
+              </x-form>
+            </x-tabpanel>
+          </x-auth-login>
+        </x-partial>
+      </span>
+    </x-auth-flow>
+
+    <script>
+        /*
+         * The shadow root deliberately renders a bare <input> that carries nothing but its type:
+         * the component keeps name/id/autocomplete/label on the host, so detection has to look
+         * outward through the shadow boundary to recognise the field at all.
+         */
+        class XTextInput extends HTMLElement {
+            connectedCallback() {
+                if (this.shadowRoot) {
+                    return;
+                }
+
+                const shadowRoot = this.attachShadow({ mode: 'open' });
+                shadowRoot.innerHTML = `
+                  <div class="input-container">
+                    <label part="label"><slot name="label"></slot></label>
+                    <div class="input-wrapper">
+                      <input part="input" type="${this.getAttribute('type') || 'text'}">
+                      <slot name="trailingIconButton"></slot>
+                    </div>
+                    <div class="helper-text"><slot name="helper-text"></slot></div>
+                  </div>
+                `;
+            }
+        }
+
+        customElements.define('x-text-input', XTextInput);
+    </script>
+</body>
+</html>

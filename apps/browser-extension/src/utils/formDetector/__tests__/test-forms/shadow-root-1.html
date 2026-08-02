@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shadow Root Login Form Test 1</title>
+</head>
+<body>
+    <!--
+        A whole login form (both inputs plus its own <form>) inside a single open shadow root,
+        rather than the one-custom-element-per-input pattern in slot-based-form.html.
+
+        Markup taken from Gramps Web, which is Lit based, including the lit marker comments and
+        the Material web component buttons.
+    -->
+    <gramps-jslogin tree="test"></gramps-jslogin>
+
+    <script>
+        class GrampsJsLogin extends HTMLElement {
+            connectedCallback() {
+                if (this.shadowRoot) {
+                    return;
+                }
+
+                const shadowRoot = this.attachShadow({ mode: 'open' });
+                shadowRoot.innerHTML = `
+      <div id="login-container">
+        <form id="login-form">
+          <h2><!--?lit$999198365$-->Log in to Gramps Web</h2>
+          <!--?lit$999198365$-->
+                <div class="text-field-wrapper">
+                  <input id="username" name="username" type="text" autocomplete="username" autocapitalize="off" placeholder=" " required="">
+                  <label for="username"><!--?lit$999198365$-->Username</label>
+                </div>
+                <div class="text-field-wrapper">
+                  <input id="password" name="password" type="password" autocomplete="current-password" placeholder=" " required="">
+                  <label for="password"><!--?lit$999198365$-->Password</label>
+                </div>
+                <div class="button-container">
+                  <!--?lit$999198365$-->
+                        <md-outlined-button value="">
+                          <!--?lit$999198365$-->Register new account
+                        </md-outlined-button>
+
+                  <md-filled-button type="submit" value="">
+                    <!--?lit$999198365$-->login
+                  </md-filled-button>
+                </div>
+                <mwc-circular-progress indeterminate="" density="-7" closed="" id="login-progress" style="display:none; margin-top: 0.5em;" progress="0">
+                </mwc-circular-progress>
+                <p class="forgot-password">
+                  <span class="link"><!--?lit$999198365$-->Lost password?</span>
+                </p>
+
+          <!--?lit$999198365$-->
+          <!--?lit$999198365$-->
+        </form>
+      </div>
+                `;
+            }
+        }
+
+        customElements.define('gramps-jslogin', GrampsJsLogin);
+    </script>
+</body>
+</html>

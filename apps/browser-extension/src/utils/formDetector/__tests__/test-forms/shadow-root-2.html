@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shadow Root Login Form Test 2</title>
+</head>
+<body>
+    <!--
+        Variant of shadow-root-1.html where the component skips the <form> element entirely and
+        submits through a click handler, so the detector has no wrapper to scope its search to.
+    -->
+    <my-login></my-login>
+
+    <script>
+        class MyLogin extends HTMLElement {
+            connectedCallback() {
+                if (this.shadowRoot) {
+                    return;
+                }
+
+                const shadowRoot = this.attachShadow({ mode: 'open' });
+                shadowRoot.innerHTML = `
+      <div class="login">
+        <h2>Sign in</h2>
+        <input id="username" name="username" type="text" autocomplete="username" placeholder=" ">
+        <label for="username">Username</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" placeholder=" ">
+        <label for="password">Password</label>
+        <button type="submit">Log in</button>
+      </div>
+                `;
+            }
+        }
+
+        customElements.define('my-login', MyLogin);
+    </script>
+</body>
+</html>

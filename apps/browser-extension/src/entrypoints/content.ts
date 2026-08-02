@@ -18,6 +18,7 @@ import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { LoginDetector } from '@/utils/loginDetector';
 import type { CapturedLogin } from '@/utils/loginDetector';
 import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import { getDeepActiveElement, getDeepElementById, getDeepEventTarget } from '@/utils/ShadowDom';
 
 import { t } from '@/i18n/StandaloneI18n';
 
@@ -503,14 +504,16 @@ export default defineContentScript({
            * can globally disable autofill via av-disable="true" on <body> while still opting specific
            * subtrees back in with av-enable="true".
            */
-          if (!isAvAutofillAllowed(e.target as Element)) {
-            devLog('[Autofill] focusin skipped: av-disable marker active for', e.target);
+          const focusedElement = getDeepEventTarget(e);
+
+          if (!isAvAutofillAllowed(focusedElement)) {
+            devLog('[Autofill] focusin skipped: av-disable marker active for', focusedElement);
             return;
           }
 
-          const { isValid, inputElement } = validateInputField(e.target as Element);
+          const { isValid, inputElement } = validateInputField(focusedElement);
           if (!isValid) {
-            devLog('[Autofill] focusin skipped: not a fillable input field', e.target);
+            devLog('[Autofill] focusin skipped: not a fillable input field', focusedElement);
           }
           if (isValid && inputElement) {
             /**
@@ -588,7 +591,7 @@ export default defineContentScript({
           if (ctx.isInvalid) {
             return;
           }
-          const activeElement = document.activeElement;
+          const activeElement = getDeepActiveElement(document);
           if (activeElement) {
             void showPopupForElement(activeElement);
           }
@@ -603,7 +606,7 @@ export default defineContentScript({
         });
 
         // Check if currently something is focused, if so, apply check for that element
-        const currentFocusedElement = document.activeElement;
+        const currentFocusedElement = getDeepActiveElement(document);
         if (currentFocusedElement) {
           showPopupForElement(currentFocusedElement);
         }
@@ -631,7 +634,7 @@ export default defineContentScript({
             return { success: false, error: 'No element identifier provided' };
           }
 
-          const target = document.getElementById(elementIdentifier) ?? document.getElementsByName(elementIdentifier)[0];
+          const target = getDeepElementById(document, elementIdentifier) ?? document.getElementsByName(elementIdentifier)[0];
 
           if (isPopupType(popupType)) {
             const { isValid, inputElement } = validateInputField(target);
@@ -665,7 +668,7 @@ export default defineContentScript({
            */
           let resolvedInput: HTMLInputElement | null = null;
           if (elementIdentifier) {
-            const target = document.getElementById(elementIdentifier) ?? document.getElementsByName(elementIdentifier)[0] ?? null;
+            const target = getDeepElementById(document, elementIdentifier) ?? document.getElementsByName(elementIdentifier)[0] ?? null;
             const { isValid, inputElement } = validateInputField(target);
             if (isValid && inputElement) {
               resolvedInput = inputElement;

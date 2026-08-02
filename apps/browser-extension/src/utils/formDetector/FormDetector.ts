@@ -1,4 +1,5 @@
 import { devLog } from "@/utils/DevLogger";
+import { closestAcrossShadow, collectShadowRoots, getComposedParentElement, getQueryRoot, getShadowHostChain, queryAllDeep } from "@/utils/ShadowDom";
 
 import { CombinedEmailVerificationPatterns, CombinedFieldExclusionPatterns, CombinedFieldPatterns, CombinedGenderOptionPatterns, CombinedStopWords, type FieldPatternEntry, includeTerms, specificIncludeTerms } from "./FieldPatterns";
 import { DetectedFieldType, type FormFields } from "./types/FormFields";
@@ -24,6 +25,13 @@ export class FormDetector {
   private readonly clickedElement: HTMLElement | null;
   private readonly visibilityCache: Map<HTMLElement, boolean>;
 
+  /**
+   * Shadow roots per search root, cached for the lifetime of this detector. Field lookup runs once
+   * per field type (a dozen times or more for a full form scan) and each scan walks every element
+   * below the root, which is far too expensive to repeat on a component-heavy page.
+   */
+  private readonly shadowRootCache: Map<Document | HTMLElement, ShadowRoot[]> = new Map();
+
   /** Which element/check caused the last isElementVisible() call to return false (devLog diagnostics). */
   private lastHiddenReason: string | null = null;
 
@@ -39,7 +47,7 @@ export class FormDetector {
      */
     if (clickedElement) {
       // Check parents strictly (including opacity)
-      let parent = clickedElement.parentElement;
+      let parent = getComposedParentElement(clickedElement) as HTMLElement | null;
       let parentVisible = true;
 
       while (parent && parent !== this.document.body) {
@@ -47,7 +55,7 @@ export class FormDetector {
           parentVisible = false;
           break;
         }
-        parent = parent.parentElement;
+        parent = getComposedParentElement(parent) as HTMLElement | null;
       }
 
       // Check element itself without opacity check (allow opacity:0 for transitions)
@@ -232,8 +240,7 @@ export class FormDetector {
    * Get the form wrapper element.
    */
   private getFormWrapper(): HTMLElement | null {
-    const wrapper = this.clickedElement?.closest('form, [role="dialog"]') as HTMLElement | null;
-    return wrapper;
+    return closestAcrossShadow(this.clickedElement, 'form, [role="dialog"]');
   }
 
   /**
@@ -302,7 +309,7 @@ export class FormDetector {
 
     // Also check associated labels
     if (input.id || input.getAttribute('name')) {
-      const label = this.document.querySelector(`label[for="${input.id || input.getAttribute('name')}"]`);
+      const label = getQueryRoot(input).querySelector(`label[for="${input.id || input.getAttribute('name')}"]`);
       if (label) {
         attributesToCheck.push(label.textContent?.toLowerCase() ?? '');
       }
@@ -346,7 +353,7 @@ export class FormDetector {
       .filter(a => a.length > 0);
 
     if (input.id || input.getAttribute('name')) {
-      const label = this.document.querySelector(`label[for="${input.id || input.getAttribute('name')}"]`);
+      const label = getQueryRoot(input).querySelector(`label[for="${input.id || input.getAttribute('name')}"]`);
       if (label) {
         attributesToCheck.push(label.textContent?.toLowerCase() ?? '');
       }
@@ -475,6 +482,41 @@ export class FormDetector {
 
     // Return the original element if no nested input found
     return element;
+  }
+
+  /**
+   * Get every open shadow root below the given search root, reusing the result within this detector.
+   * @param root - The root to scan.
+   * @returns The reachable shadow roots.
+   */
+  private getShadowRoots(root: Document | HTMLElement): ShadowRoot[] {
+    let shadowRoots = this.shadowRootCache.get(root);
+    if (!shadowRoots) {
+      shadowRoots = collectShadowRoots(root);
+      this.shadowRootCache.set(root, shadowRoots);
+    }
+    return shadowRoots;
+  }
+
+  /**
+   * Get the custom-element hosts that describe the given input, innermost first.
+   *
+   * This is the inverse of {@link getActualInputElement}: a text field component such as
+   * `<x-text-input id="login-username" name="username" autocomplete="username">` keeps every
+   * identifying attribute (and the `<span slot="label">` text) on the host, while the real `<input>`
+   * it renders inside its shadow root carries none of it. Without the host, that input is
+   * indistinguishable from an unlabelled text box.
+   *
+   * Only hosts wrapping exactly one input are returned, so attributes are never borrowed from a
+   * component that renders several fields at once.
+   * @param input - The input to resolve the describing hosts for.
+   * @returns The describing hosts, innermost first; empty when the input is not shadow-hosted.
+   */
+  private getDescribingHosts(input: HTMLElement): HTMLElement[] {
+    return getShadowHostChain(input).filter(host => {
+      const shadowRoot = (host as HTMLElement & { shadowRoot?: ShadowRoot }).shadowRoot;
+      return shadowRoot != null && shadowRoot.querySelectorAll('input, textarea').length === 1;
+    }) as HTMLElement[];
   }
 
   /**
@@ -650,7 +692,8 @@ export class FormDetector {
         return true;
       }
 
-      current = current.parentElement;
+      // Crosses open shadow boundaries to find the actual form element.
+      current = getComposedParentElement(current) as HTMLElement | null;
     }
 
     // Cache and return true for the original element
@@ -671,28 +714,25 @@ export class FormDetector {
     checkVisibility: boolean = true
   ): HTMLInputElement[] {
     const patterns = includeTerms(entry);
-    // Query for standard input elements, select elements, and elements with type attributes
-    const standardCandidates = form
-      ? Array.from(form.querySelectorAll<HTMLElement>('input, select, [type]'))
-      : Array.from(this.document.querySelectorAll<HTMLElement>('input, select, [type]'));
 
-    /**
-     * Also find any custom elements that might contain shadow DOM inputs
-     * Look for elements with shadow roots that contain input elements
+    /*
+     * Search the normal DOM plus every open shadow root below it. Web components frequently render
+     * the real fields inside their shadow root, where a plain querySelectorAll never reaches.
+     * The roots are collected once and reused for both queries below.
      */
-    const allElements = form
-      ? Array.from(form.querySelectorAll<HTMLElement>('*'))
-      : Array.from(this.document.querySelectorAll<HTMLElement>('*'));
+    const searchRoot: Document | HTMLFormElement = form ?? this.document;
+    const searchRoots: (Document | ShadowRoot | HTMLElement)[] = [searchRoot, ...this.getShadowRoots(searchRoot)];
 
-    const shadowDOMCandidates = allElements.filter(el => {
-      // Check if element has shadow DOM with input elements
-      const elementWithShadow = el as HTMLElement & { shadowRoot?: ShadowRoot };
-      if (elementWithShadow.shadowRoot) {
-        const shadowInput = elementWithShadow.shadowRoot.querySelector('input, textarea');
-        return shadowInput !== null;
-      }
-      return false;
-    });
+    // Query for standard input elements, select elements, and elements with type attributes
+    const standardCandidates = searchRoots.flatMap(root => Array.from(root.querySelectorAll<HTMLElement>('input, select, [type]')));
+
+    /*
+     * Also consider the custom elements that render inputs inside their shadow root. Every such
+     * element is the host of one of the roots collected above.
+     */
+    const shadowDOMCandidates = this.getShadowRoots(searchRoot)
+      .filter(shadowRoot => shadowRoot.querySelector('input, textarea') !== null)
+      .map(shadowRoot => shadowRoot.host as HTMLElement);
 
     // Combine and deduplicate candidates
     const allCandidates = [...standardCandidates, ...shadowDOMCandidates];
@@ -782,28 +822,52 @@ export class FormDetector {
         continue;
       }
 
+      /*
+       * Hosts that describe this input (empty unless the input is rendered inside a web component's
+       * element's shadow root). Their attributes and slotted labels are treated as the input's own.
+       */
+      const describingHosts = this.getDescribingHosts(input);
+
+      /**
+       * Read an attribute from the input, falling back to the describing hosts.
+       * @param names - The attribute names to try, in order of preference.
+       * @returns The first value found, or an empty string.
+       */
+      const readAttribute = (...names: string[]): string => {
+        for (const element of [input, ...describingHosts]) {
+          for (const name of names) {
+            const value = element.getAttribute(name);
+            if (value) {
+              return value.toLowerCase();
+            }
+          }
+        }
+        return '';
+      };
+
       /**
        * Check autocomplete attribute for direct field type matching.
        * First check our custom data-av-autocomplete attribute (set by AliasVault when disabling
        * native browser autofill), then fall back to the regular autocomplete attribute.
        */
-      const autocomplete = (input.getAttribute('data-av-autocomplete') ?? input.getAttribute('autocomplete'))?.toLowerCase() ?? '';
+      const autocomplete = readAttribute('data-av-autocomplete', 'autocomplete');
 
-      // Direct autocomplete matches take highest priority (score -2, higher than type=email at -1)
-      if (autocomplete) {
+      // Check for direct autocomplete matches
+      const autocompleteTokens = new Set(autocomplete.split(/\s+/).filter(Boolean));
+      if (autocompleteTokens.size > 0) {
         // Match autocomplete="username" for username patterns
-        if (entry === CombinedFieldPatterns.username && autocomplete === 'username') {
+        if (entry === CombinedFieldPatterns.username && autocompleteTokens.has('username')) {
           matches.push({ input: input as HTMLInputElement, score: -2 });
           continue;
         }
         // Match autocomplete="email" for email patterns
-        if (entry === CombinedFieldPatterns.email && autocomplete === 'email') {
+        if (entry === CombinedFieldPatterns.email && autocompleteTokens.has('email')) {
           matches.push({ input: input as HTMLInputElement, score: -2 });
           continue;
         }
         // Match autocomplete="current-password" or "new-password" for password patterns
         if (entry === CombinedFieldPatterns.password &&
-            (autocomplete === 'current-password' || autocomplete === 'new-password')) {
+            (autocompleteTokens.has('current-password') || autocompleteTokens.has('new-password'))) {
           matches.push({ input: input as HTMLInputElement, score: -2 });
           continue;
         }
@@ -813,7 +877,7 @@ export class FormDetector {
        * Check aria-describedby ID for direct field type matching (e.g., aria-describedby="usernameMessage")
        * Only match if it's a clear username indicator (not usernameConfirm, etc.)
        */
-      const ariaDescribedById = input.getAttribute('aria-describedby')?.toLowerCase() ?? '';
+      const ariaDescribedById = readAttribute('aria-describedby');
       if (ariaDescribedById) {
         // Match aria-describedby containing "username" for username patterns
         if (entry === CombinedFieldPatterns.username &&
@@ -823,31 +887,38 @@ export class FormDetector {
         }
       }
 
-      // Collect all text attributes to check
-      const attributesToCheck = [
-        input.id,
-        input.getAttribute('name'),
-        input.getAttribute('placeholder'),
-        input.getAttribute('class'),
-        autocomplete
-      ]
+      /*
+       * Collect all text attributes to check.
+       */
+      const attributesToCheck = [input, ...describingHosts]
+        .flatMap(element => [
+          element.id,
+          element.getAttribute('name'),
+          element.getAttribute('placeholder'),
+          element.getAttribute('class'),
+        ])
+        .concat(autocomplete)
         .map(a => a?.toLowerCase() ?? '');
 
-      // Check for associated labels if input has an ID or name
-      if (input.id || input.getAttribute('name')) {
-        const label = this.document.querySelector(`label[for="${input.id || input.getAttribute('name')}"]`);
-        if (label) {
-          attributesToCheck.push(label.textContent?.toLowerCase() ?? '');
+      // Check for associated labels if the input (or a describing host) has an ID or name
+      for (const element of [input, ...describingHosts]) {
+        const labelTarget = element.id || element.getAttribute('name');
+        if (labelTarget) {
+          const label = getQueryRoot(element).querySelector(`label[for="${labelTarget}"]`);
+          if (label) {
+            attributesToCheck.push(label.textContent?.toLowerCase() ?? '');
+          }
         }
       }
 
       // Check aria-describedby for additional field hints
-      const ariaDescribedBy = input.getAttribute('aria-describedby');
+      const ariaDescribedBy = readAttribute('aria-describedby');
       if (ariaDescribedBy) {
         // aria-describedby can contain multiple space-separated IDs
         const describedByIds = ariaDescribedBy.split(/\s+/);
         for (const descId of describedByIds) {
-          const describedByElement = this.document.getElementById(descId);
+          // IDs are scoped to the tree the input lives in, so resolve them against its own root.
+          const describedByElement = getQueryRoot(input).getElementById(descId) ?? this.document.getElementById(descId);
           if (describedByElement) {
             attributesToCheck.push(describedByElement.textContent?.toLowerCase() ?? '');
           }
@@ -855,17 +926,28 @@ export class FormDetector {
       }
 
       // Check aria-label attribute
-      const ariaLabel = input.getAttribute('aria-label');
+      const ariaLabel = readAttribute('aria-label');
       if (ariaLabel) {
-        attributesToCheck.push(ariaLabel.toLowerCase());
+        attributesToCheck.push(ariaLabel);
       }
 
       /**
        * Check for slot-based labels (e.g., <span slot="label">Email or username</span>)
-       * Look for slot elements within the input's parent hierarchy
+       * Look for slot elements within the input's parent hierarchy.
        */
-      let slotParent: HTMLElement | null = input;
-      for (let depth = 0; depth < 3 && slotParent; depth++) {
+      const slotSearchRoots: HTMLElement[] = [];
+      let slotWalker: HTMLElement | null = input;
+      for (let depth = 0; depth < 3 && slotWalker; depth++) {
+        slotSearchRoots.push(slotWalker);
+        slotWalker = getComposedParentElement(slotWalker) as HTMLElement | null;
+      }
+      for (const host of describingHosts) {
+        if (!slotSearchRoots.includes(host)) {
+          slotSearchRoots.push(host);
+        }
+      }
+
+      for (const slotParent of slotSearchRoots) {
         const slotElements = slotParent.querySelectorAll('[slot="label"], [slot="helper-text"]');
         for (const slotEl of Array.from(slotElements)) {
           const slotText = slotEl.textContent?.toLowerCase() ?? '';
@@ -885,7 +967,6 @@ export class FormDetector {
             }
           }
         }
-        slotParent = slotParent.parentElement;
       }
 
       // Check for sibling elements with class containing "label"
@@ -1030,7 +1111,7 @@ export class FormDetector {
        */
       let labelText = '';
       if (field.id || fieldName) {
-        const label = this.document.querySelector(`label[for="${field.id || fieldName}"]`);
+        const label = getQueryRoot(field).querySelector(`label[for="${field.id || fieldName}"]`);
         if (label) {
           labelText = (label.textContent || '').toLowerCase();
         }
@@ -1396,9 +1477,11 @@ export class FormDetector {
     let searchRoot: HTMLElement = this.clickedElement;
     let depth = 0;
 
-    // Go up to find a reasonable container (max 15 levels)
-    while (searchRoot.parentElement && depth < 15) {
-      searchRoot = searchRoot.parentElement;
+    // Go up to find a reasonable container (max 15 levels).
+    let searchParent = getComposedParentElement(searchRoot) as HTMLElement | null;
+    while (searchParent && depth < 15) {
+      searchRoot = searchParent;
+      searchParent = getComposedParentElement(searchRoot) as HTMLElement | null;
       depth++;
 
       // Stop if we found a form, dialog, or main container
@@ -1467,7 +1550,7 @@ export class FormDetector {
     // Additional heuristics for TOTP fields that may not match patterns
     const allInputs = form
       ? Array.from(form.querySelectorAll<HTMLInputElement>('input'))
-      : Array.from(this.document.querySelectorAll<HTMLInputElement>('input'));
+      : queryAllDeep<HTMLInputElement>(this.document, 'input');
 
     for (const input of allInputs) {
       if (!this.isElementVisible(input)) {
@@ -1654,9 +1737,8 @@ export class FormDetector {
     const formWrapper = this.getFormWrapper();
 
     // Check both the clicked element and the actual input element
-    const elementsToCheck = [this.clickedElement, actualElement].filter((el, index, arr) =>
-      el && arr.indexOf(el) === index // Remove duplicates
-    );
+    const elementsToCheck = [this.clickedElement, actualElement, ...this.getDescribingHosts(actualElement)]
+      .filter((el, index, arr) => el && arr.indexOf(el) === index);
 
     /*
      * When detecting field type from a clicked element, skip visibility checks
