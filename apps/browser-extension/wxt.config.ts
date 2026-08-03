@@ -97,6 +97,9 @@ export default defineConfig({
   srcDir: 'src',
   outDir: 'dist',
   vite: () => ({
+    optimizeDeps: {
+      entries: ['src/**/*.html', 'public/**/*.html'],
+    },
     plugins: [
       asciiOnlyJsPlugin(),
       viteStaticCopy({
