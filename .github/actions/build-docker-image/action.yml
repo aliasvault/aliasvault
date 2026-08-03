@@ -1,0 +1,94 @@
+name: "Build and Push Docker Image"
+description: "Builds a multi-arch AliasVault image and pushes it to GHCR, reusing the persistent buildx builder on self-hosted runners"
+inputs:
+  image:
+    description: "Image name under ghcr.io/aliasvault/ (e.g. client)"
+    required: true
+  dockerfile:
+    description: "Path to the Dockerfile, relative to the repository root"
+    required: true
+  title:
+    description: "Value for the org.opencontainers.image.title label"
+    required: true
+  description:
+    description: "Value for the org.opencontainers.image.description label and annotation"
+    required: true
+  version:
+    description: "Version tag to publish. Empty falls back to branch-based tags."
+    required: false
+    default: ""
+  tag_latest:
+    description: "Whether to also tag the image as :latest"
+    required: false
+    default: "false"
+  github_token:
+    description: "Token used to log in to the GitHub Container Registry"
+    required: true
+  runner_environment:
+    description: "Pass runner.environment from the calling job. Anything other than 'self-hosted' uses the GitHub-hosted (throwaway builder) path."
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v4
+
+    # Deliberately the fallback branch: a multi-platform build needs a docker-container builder, so an
+    # unexpected runner_environment must still end up with a working one rather than no builder at all.
+    - name: Set up Docker Buildx (GitHub-hosted)
+      if: inputs.runner_environment != 'self-hosted'
+      uses: docker/setup-buildx-action@v4
+
+    # On self-hosted we reuse a named builder across runs so its build cache survives, which is
+    # what makes building the images back-to-back on a single machine fast. setup-buildx-action
+    # deletes its builder in a post-step, throwing away exactly that cache.
+    - name: Set up Docker Buildx (self-hosted)
+      if: inputs.runner_environment == 'self-hosted'
+      shell: bash
+      run: |
+        docker buildx inspect aliasvault >/dev/null 2>&1 \
+          || docker buildx create --name aliasvault --driver docker-container --bootstrap
+        docker buildx use aliasvault
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v4
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ inputs.github_token }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v6
+      env:
+        DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
+      with:
+        images: ghcr.io/aliasvault/${{ inputs.image }}
+        tags: |
+          type=raw,value=${{ inputs.version }},enable=${{ inputs.version != '' }}
+          type=raw,value=latest,enable=${{ inputs.tag_latest == 'true' }}
+          type=ref,event=branch,enable=${{ inputs.version == '' }}
+          type=raw,value={{branch}}-{{sha}},enable=${{ inputs.version == '' }}
+        labels: |
+          org.opencontainers.image.title=${{ inputs.title }}
+          org.opencontainers.image.description=${{ inputs.description }}
+        annotations: |
+          org.opencontainers.image.description=${{ inputs.description }}
+
+    - name: Build and push image
+      uses: docker/build-push-action@v7
+      with:
+        context: .
+        file: ${{ inputs.dockerfile }}
+        platforms: linux/amd64,linux/arm64/v8
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        annotations: ${{ steps.meta.outputs.annotations }}
+
+    # Keep the persistent builder cache from growing without bound on our own hardware.
+    - name: Prune stale build cache
+      if: always() && inputs.runner_environment == 'self-hosted'
+      shell: bash
+      run: docker buildx prune --force --keep-storage=50GB

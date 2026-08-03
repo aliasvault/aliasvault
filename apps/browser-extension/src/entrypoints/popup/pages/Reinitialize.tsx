@@ -8,18 +8,10 @@ import useCurrentTabMatching from '@/entrypoints/popup/hooks/useCurrentTabMatchi
 import { consumePendingRedirectUrl } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 
-import { StorageKeys } from '@/utils/constants/storageKeys';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-
-import { storage } from '#imports';
+import { NavigationStateService } from '@/utils/NavigationStateService';
 
 const PAGE_MEMORY_DURATION = 120 * 1000; // 2 minutes in milliseconds
-
-type NavigationHistoryEntry = {
-  pathname: string;
-  search: string;
-  hash: string;
-};
 
 /**
  * Initialize component that handles initial application setup, authentication checks,
@@ -59,11 +51,9 @@ const Reinitialize: React.FC = () => {
      */
     const matchResult = await matchCurrentTab();
 
-    const [lastPage, lastVisitTime, savedHistory, lastTabUrl] = await Promise.all([
-      storage.getItem(StorageKeys.LAST_VISITED_PAGE) as Promise<string>,
-      storage.getItem(StorageKeys.LAST_VISITED_TIME) as Promise<number>,
-      storage.getItem(StorageKeys.NAVIGATION_HISTORY) as Promise<NavigationHistoryEntry[]>,
-      storage.getItem(StorageKeys.LAST_TAB_URL) as Promise<string>,
+    const [{ lastPage, lastVisitTime, history: savedHistory }, lastTabUrl] = await Promise.all([
+      NavigationStateService.getNavigationState(),
+      NavigationStateService.getLastTabUrl(),
     ]);
 
     // Check if user switched to a different tab (different URL)
@@ -89,7 +79,7 @@ const Reinitialize: React.FC = () => {
 
         if (!shouldUseFreshMatch) {
           // Restore user's navigation since they navigated away from auto-matched page
-          if (savedHistory?.length > 1) {
+          if (savedHistory && savedHistory.length > 1) {
             // Navigate to the base route first
             const firstEntry = savedHistory[0];
             const firstPath = firstEntry.pathname + (firstEntry.search || '');
@@ -109,15 +99,13 @@ const Reinitialize: React.FC = () => {
 
     // Clear stored navigation data since we're using fresh URL matching
     await Promise.all([
-      storage.removeItem(StorageKeys.LAST_VISITED_PAGE),
-      storage.removeItem(StorageKeys.LAST_VISITED_TIME),
-      storage.removeItem(StorageKeys.NAVIGATION_HISTORY),
+      NavigationStateService.clearNavigationState(),
       sendMessage('CLEAR_PERSISTED_FORM_VALUES'),
     ]);
 
     // Save current tab URL for future tab-switch detection
     if (currentTabUrl) {
-      await storage.setItem(StorageKeys.LAST_TAB_URL, currentTabUrl);
+      await NavigationStateService.setLastTabUrl(currentTabUrl);
     }
 
     // Navigate to the items index: any current-site match is shown as a suggestion there.

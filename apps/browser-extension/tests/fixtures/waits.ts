@@ -4,9 +4,8 @@
  * This module provides condition-based waiting functions that replace
  * fixed timeouts with intelligent waits for specific UI states.
  */
-import type { Page, Locator } from '@playwright/test';
+import { expect, type Page, type Locator } from '@playwright/test';
 
-import { expect } from './fixtures';
 import { FieldSelectors } from './selectors';
 
 /**
@@ -17,6 +16,12 @@ export const Timeouts = {
   MEDIUM: 10000,
   LONG: 30000,
 } as const;
+
+/**
+ * Full-screen overlays the popup renders while it is busy: the initial load overlay in App.tsx
+ * and the shared LoadingSpinnerFullScreen. Both cover the whole popup and swallow clicks.
+ */
+const LOADING_OVERLAY = 'div.fixed.inset-0.z-50';
 
 /**
  * Generic wait helper that waits for a locator to be visible.
@@ -37,6 +42,35 @@ export async function waitFor(locator: Locator, timeout: number = Timeouts.MEDIU
  */
 export async function waitForHidden(locator: Locator, timeout: number = Timeouts.MEDIUM): Promise<void> {
   await locator.waitFor({ state: 'hidden', timeout });
+}
+
+/**
+ * Wait for the full-screen loading overlay to disappear.
+ *
+ * @param popup - The popup page
+ * @param timeout - Timeout in milliseconds
+ */
+export async function waitForLoadingOverlayGone(popup: Page, timeout: number = Timeouts.MEDIUM): Promise<void> {
+  await popup.locator(LOADING_OVERLAY).first().waitFor({ state: 'detached', timeout });
+}
+
+/**
+ * Wait for the popup to finish its initial load and settle on its destination page.
+ *
+ * The popup boots on `/`, hops through `/reinitialize` and only then lands on `/login`, `/unlock`
+ * or the vault. The loading overlay stays up across that whole hop, so waiting only for content to
+ * be visible returns while the app is still routing: the click then lands on the overlay, and the
+ * layout swap that follows replaces the header, detaching anything the test grabbed beforehand.
+ * Waiting for the overlay first guarantees the destination page is mounted before we touch it.
+ *
+ * @param popup - The popup page
+ * @param timeout - Timeout in milliseconds
+ */
+export async function waitForPopupReady(popup: Page, timeout: number = Timeouts.MEDIUM): Promise<void> {
+  await waitForLoadingOverlayGone(popup, timeout);
+
+  // Auth form inputs (login/unlock) or the settings button (login page header) indicate content is interactable.
+  await popup.locator('input[type="text"], input[type="password"], button#settings').first().waitFor({ state: 'visible', timeout });
 }
 
 /**

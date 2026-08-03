@@ -1,0 +1,4 @@
+- Kopieer 2FA code bij inloggen met een Passkey (als beschikbaar)
+- Multi-URL support voor de web app en mobiele app CSV export/import
+- Vul alleen het base domain in bij het aanmaken van een nieuwe credential (UI tweak)
+- Toon volledig wachtwoord bij lange wachtwoorden i.p.v. deze af te kappen wanneer de knop "toon wachtwoord" wordt gebruikt

@@ -64,6 +64,17 @@ compute_source_checksum() {
     fi
 }
 
+# Cargo profile this invocation produces. The incremental checksum embeds it so a
+# debug (--fast) build never satisfies a later release build: sources are identical,
+# but the distributed artifacts are not, and they share one output path.
+current_cargo_profile() {
+    if $FAST_MODE; then
+        echo "debug"
+    else
+        echo "release"
+    fi
+}
+
 echo -e "${YELLOW}Checking prerequisites...${NC}"
 check_tool "rustc" "Visit https://rustup.rs"
 check_tool "cargo" "Visit https://rustup.rs"
@@ -341,7 +352,7 @@ build_ios() {
     # Incremental build check
     local checksum_file="$IOS_APP_DIST/.rust-core-checksum"
     local current_checksum=""
-    current_checksum=$(compute_source_checksum "$SCRIPT_DIR/src")
+    current_checksum="$(compute_source_checksum "$SCRIPT_DIR/src")-$(current_cargo_profile)"
 
     if $INCREMENTAL && [ "$FORCE_BUILD" = false ] && [ -f "$checksum_file" ] && [ -f "$IOS_APP_DIST/lib/device/libaliasvault_core.a" ]; then
         local stored_checksum=$(cat "$checksum_file" 2>/dev/null || echo "")
@@ -468,7 +479,7 @@ EOF
 
     # Save checksum for incremental builds
     local current_checksum=""
-    current_checksum=$(compute_source_checksum "$SCRIPT_DIR/src")
+    current_checksum="$(compute_source_checksum "$SCRIPT_DIR/src")-$(current_cargo_profile)"
     echo "$current_checksum" > "$IOS_APP_DIST/.rust-core-checksum"
 
     # Create README
@@ -516,7 +527,7 @@ build_android() {
     # Incremental build check
     local checksum_file="$ANDROID_APP_DIST/.rust-core-checksum"
     local current_checksum=""
-    current_checksum=$(compute_source_checksum "$SCRIPT_DIR/src")
+    current_checksum="$(compute_source_checksum "$SCRIPT_DIR/src")-$(current_cargo_profile)"
 
     if $INCREMENTAL && [ "$FORCE_BUILD" = false ] && [ -f "$checksum_file" ] && [ -f "$ANDROID_APP_DIST/arm64-v8a/libaliasvault_core.so" ]; then
         local stored_checksum=$(cat "$checksum_file" 2>/dev/null || echo "")
@@ -708,7 +719,7 @@ distribute_android() {
 
     # Save checksum for incremental builds
     local current_checksum=""
-    current_checksum=$(compute_source_checksum "$SCRIPT_DIR/src")
+    current_checksum="$(compute_source_checksum "$SCRIPT_DIR/src")-$(current_cargo_profile)"
     echo "$current_checksum" > "$ANDROID_APP_DIST/.rust-core-checksum"
 
     echo -e "${GREEN}Distributed to: $ANDROID_APP_DIST${NC}"

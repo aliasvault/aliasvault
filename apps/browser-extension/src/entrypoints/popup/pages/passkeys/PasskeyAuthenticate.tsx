@@ -15,6 +15,7 @@ import { buildPasskeyAssertion } from '@/utils/passkey/PasskeyAssertionService';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type { PendingPasskeyGetRequest } from '@/utils/passkey/types';
 import { extractDomain } from '@/utils/RustCore';
+import { copyTotpToClipboardIfEnabled } from '@/utils/TotpClipboard';
 
 /**
  * PasskeyAuthenticate
@@ -27,7 +28,7 @@ const PasskeyAuthenticate: React.FC = () => {
   const [request, setRequest] = useState<PendingPasskeyGetRequest | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [availablePasskeys, setAvailablePasskeys] = useState<Array<{ id: string; displayName: string; rpId: string; serviceName?: string | null }>>([]);
+  const [availablePasskeys, setAvailablePasskeys] = useState<Array<{ id: string; itemId: string; displayName: string; rpId: string; serviceName?: string | null }>>([]);
   const [showBypassDialog, setShowBypassDialog] = useState(false);
   const { isLocked } = useVaultLockRedirect();
   const firstPasskeyRef = useRef<HTMLDivElement>(null);
@@ -81,8 +82,9 @@ const PasskeyAuthenticate: React.FC = () => {
             }
 
             // Map to display format
-            setAvailablePasskeys(filteredPasskeys.map((pk: { Id: string; DisplayName: string; ServiceName?: string | null; RpId: string; Username?: string | null }) => ({
+            setAvailablePasskeys(filteredPasskeys.map((pk: { Id: string; ItemId: string; DisplayName: string; ServiceName?: string | null; RpId: string; Username?: string | null }) => ({
               id: pk.Id,
+              itemId: pk.ItemId,
               displayName: pk.DisplayName,
               serviceName: pk.ServiceName,
               rpId: pk.RpId,
@@ -146,6 +148,14 @@ const PasskeyAuthenticate: React.FC = () => {
     try {
       // Build the assertion from the selected passkey using the shared service.
       const credential = await buildPasskeyAssertion(dbContext.sqliteClient, request, passkeyId);
+
+      /*
+       * Copy the linked TOTP code to the clipboard (if any).
+       */
+      const selected = availablePasskeys.find((pk) => pk.id === passkeyId);
+      if (selected) {
+        await copyTotpToClipboardIfEnabled(selected.itemId);
+      }
 
       /*
        * Send response back

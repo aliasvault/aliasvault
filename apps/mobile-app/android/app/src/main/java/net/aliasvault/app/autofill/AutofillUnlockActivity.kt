@@ -19,6 +19,7 @@ import net.aliasvault.app.autofill.utils.AutofillDatasetBuilder
 import net.aliasvault.app.autofill.utils.RustItemMatcher
 import net.aliasvault.app.credentialprovider.UnlockCoordinator
 import net.aliasvault.app.utils.ErrorScreenView
+import net.aliasvault.app.utils.TotpClipboard
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
@@ -149,8 +150,7 @@ class AutofillUnlockActivity : FragmentActivity() {
             "Post-unlock items: app matches=${filteredByApp.size}, with data=${matchingItems.size}",
         )
 
-        val copyTotpOnFill = getSharedPreferences("AliasVaultPrefs", MODE_PRIVATE)
-            .getBoolean("autofill_copy_totp_on_fill", true)
+        val copyTotpOnFill = TotpClipboard.isCopyOnFillEnabled(this)
 
         val responseBuilder = FillResponse.Builder()
         if (matchingItems.isEmpty()) {

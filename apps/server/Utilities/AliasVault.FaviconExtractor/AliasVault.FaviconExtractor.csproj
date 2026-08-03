@@ -18,6 +18,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <InternalsVisibleTo Include="AliasVault.UnitTests" />
+    </ItemGroup>
+
+    <ItemGroup>
       <AdditionalFiles Include="..\..\stylecop.json" Link="stylecop.json" />
     </ItemGroup>
 

@@ -118,6 +118,17 @@ export default defineConfig({
     ],
   }),
   zip: {
-    includeSources: ['README.md'],
+    includeSources: ['**/*'],
+    excludeSources: [
+      'safari-xcode/build/**',
+      '**/xcuserdata/**',
+      'playwright-report/**',
+      'test-results/**',
+      'tests/**',
+      'stats.html',
+      'stats-*.json',
+      '**/*.log',
+      'build-and-submit.sh'
+    ],
   },
 });

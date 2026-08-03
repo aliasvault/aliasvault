@@ -127,8 +127,50 @@ jobs:
           done
           echo "multi_container_exists=${MULTI_EXISTS}" >> $GITHUB_OUTPUT
 
-  build-and-push-docker-multi-container:
+  # The Client image takes the longest time to build, so we build it in its own job instead of a matrix slot,
+  # as jobs in a matrix are queued at once and picked up in an order we don't control, making the full build run
+  # longer than it needs to be.
+  build-and-push-docker-client:
     needs: [valid-release, detect-version]
+    # Skip if images already exist during release (just tag them as latest instead), but allow manual rebuild via workflow_dispatch
+    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container) && (github.event_name != 'release' || needs.detect-version.outputs.multi_container_exists != 'true')
+    runs-on: ${{ inputs.runner == 'self-hosted' && 'docker-build' || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Build and push Client image
+        uses: ./.github/actions/build-docker-image
+        with:
+          image: client
+          dockerfile: apps/server/AliasVault.Client/Dockerfile
+          title: AliasVault Client
+          description: Blazor WebAssembly client UI for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
+          version: ${{ needs.detect-version.outputs.version }}
+          tag_latest: ${{ needs.detect-version.outputs.tag_latest }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          runner_environment: ${{ runner.environment }}
+
+  # Head start for the two heavy builds (Client and all-in-one) so they, and not the cheap images,
+  # claim the runners first.
+  stagger-light-images:
+    needs: [valid-release, detect-version]
+    if: always() && inputs.runner == 'self-hosted' && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container) && (github.event_name != 'release' || needs.detect-version.outputs.multi_container_exists != 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Let the heavy builds claim a runner first
+        run: sleep 60
+
+  build-and-push-docker-multi-container:
+    # stagger-light-images is only in "needs" for its ordering effect: this job waits for it to finish
+    # regardless of its outcome (the "always()" below), it does not gate whether these images build.
+    # It is skipped entirely on GitHub-hosted runs, which is also fine -- always() ignores that too.
+    needs: [valid-release, detect-version, stagger-light-images]
     # Skip if images already exist during release (just tag them as latest instead), but allow manual rebuild via workflow_dispatch
     if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container) && (github.event_name != 'release' || needs.detect-version.outputs.multi_container_exists != 'true')
     runs-on: ${{ inputs.runner == 'self-hosted' && 'docker-build' || 'ubuntu-latest' }}
@@ -138,23 +180,18 @@ jobs:
     strategy:
       # Don't cancel the other images if one fails.
       fail-fast: false
-      # On GitHub-hosted runners: cap at 2 concurrent runner slots. The heavy Client build
-      # (~55 min: Rust→WASM + wasm-tools + WASM publish) holds one slot while the remaining
-      # light images cycle through the second slot (~35-45 min total). This frees up the rest
+      # On GitHub-hosted runners: cap at 1 concurrent runner slot, which together with the separate
+      # Client and all-in-one jobs keeps this workflow to 3 concurrent runners. This frees up the rest
       # of the CI worker pool for other workflows.
       # On self-hosted: no meaningful cap, the size of our own "docker-build" runner pool is the
       # real limit, so let every image queue and fill whatever runners are free. This is what lets
-      # the pool pick these up the moment the all-in-one job finishes, instead of leaving a runner
-      # idle. Each runner keeps its own persistent buildx cache, which carries the shared .NET
-      # layers from one image to the next.
-      max-parallel: ${{ inputs.runner == 'self-hosted' && 8 || 2 }}
+      # the pool pick these up the moment the Client or all-in-one job finishes, instead of leaving a
+      # runner idle. Each runner keeps its own persistent buildx cache, which carries the shared .NET
+      # layers from one image to the next. The value is deliberately well above the number of matrix
+      # entries so that adding an image never silently turns this into a real cap.
+      max-parallel: ${{ inputs.runner == 'self-hosted' && 32 || 1 }}
       matrix:
-        # Client is listed first so it claims a slot immediately and runs alongside the rest of the images.
         include:
-          - image: client
-            dockerfile: apps/server/AliasVault.Client/Dockerfile
-            title: AliasVault Client
-            description: Blazor WebAssembly client UI for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
           - image: postgres
             dockerfile: apps/server/Databases/AliasServerDb/Dockerfile
             title: AliasVault PostgreSQL
@@ -188,63 +225,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-
-      - name: Set up Docker Buildx (GitHub-hosted)
-        if: runner.environment == 'github-hosted'
-        uses: docker/setup-buildx-action@v4
-
-      # On self-hosted we reuse a named builder across runs so its build cache survives, which is
-      # what makes building the images back-to-back on a single machine fast. setup-buildx-action
-      # deletes its builder in a post-step, throwing away exactly that cache.
-      - name: Set up Docker Buildx (self-hosted)
-        if: runner.environment == 'self-hosted'
-        run: |
-          docker buildx inspect aliasvault >/dev/null 2>&1 \
-            || docker buildx create --name aliasvault --driver docker-container --bootstrap
-          docker buildx use aliasvault
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v6
-        env:
-          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
-        with:
-          images: ghcr.io/aliasvault/${{ matrix.image }}
-          tags: |
-            type=raw,value=${{ needs.detect-version.outputs.version }},enable=${{ needs.detect-version.outputs.version != '' }}
-            type=raw,value=latest,enable=${{ needs.detect-version.outputs.tag_latest == 'true' }}
-            type=ref,event=branch,enable=${{ needs.detect-version.outputs.version == '' }}
-            type=raw,value={{branch}}-{{sha}},enable=${{ needs.detect-version.outputs.version == '' }}
-          labels: |
-            org.opencontainers.image.title=${{ matrix.title }}
-            org.opencontainers.image.description=${{ matrix.description }}
-          annotations: |
-            org.opencontainers.image.description=${{ matrix.description }}
-
       - name: Build and push image
-        uses: docker/build-push-action@v7
+        uses: ./.github/actions/build-docker-image
         with:
-          context: .
-          file: ${{ matrix.dockerfile }}
-          platforms: linux/amd64,linux/arm64/v8
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          annotations: ${{ steps.meta.outputs.annotations }}
-
-      # Keep the persistent builder cache from growing without bound on our own hardware.
-      - name: Prune stale build cache
-        if: always() && runner.environment == 'self-hosted'
-        run: docker buildx prune --force --keep-storage=50GB
+          image: ${{ matrix.image }}
+          dockerfile: ${{ matrix.dockerfile }}
+          title: ${{ matrix.title }}
+          description: ${{ matrix.description }}
+          version: ${{ needs.detect-version.outputs.version }}
+          tag_latest: ${{ needs.detect-version.outputs.tag_latest }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          runner_environment: ${{ runner.environment }}
 
   build-and-push-docker-all-in-one:
     needs: [valid-release, detect-version]

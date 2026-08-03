@@ -9,10 +9,13 @@ namespace AliasVault.FaviconExtractor;
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using SkiaSharp;
@@ -23,6 +26,11 @@ using SkiaSharp;
 public static class FaviconExtractor
 {
     private const int MaxSizeBytes = 20 * 1024; // 20KB max size; images above this are resized/re-encoded.
+    private const int MaxResponseBytes = 5 * 1024 * 1024; // 5MB cap per response body, measured after decompression.
+    private const int MaxDecodedPixels = 2048 * 2048; // Pixel budget per image; see IsWithinDecodePixelBudget.
+    private const int MaxFaviconCandidates = 10; // Distinct favicon URLs fetched per page; see TryExtractFaviconFromNodes.
+    private static readonly TimeSpan _extractionDeadline = TimeSpan.FromSeconds(5); // Wall-clock budget for one full extraction.
+    private static readonly TimeSpan _requestTimeout = TimeSpan.FromSeconds(3); // Per-request budget, so one slow host still leaves room for another candidate.
     private static readonly int[] _resizeWidths = [96, 64, 48, 32];
     private static readonly int[] _jpegFallbackQualities = [80, 65, 50];
     private static readonly string[] _allowedSchemes = ["http", "https"];
@@ -88,21 +96,37 @@ public static class FaviconExtractor
         url = NormalizeUrl(url);
         Uri uri = new(url);
 
-        if (!IsValidUri(uri))
+        if (!IsAllowedSchemeAndPort(uri))
         {
             return null;
         }
 
         using HttpClient client = CreateHttpClient();
 
-        // Attempt the operation up to two times to handle common cookiewall redirects or transient issues.
-        for (int attempt = 0; attempt < 2; attempt++)
+        // Set a limit for how long the extraction can take.
+        using var deadline = new CancellationTokenSource(_extractionDeadline);
+
+        try
         {
-            var result = await TryGetFaviconAsync(client, uri);
-            if (result != null)
+            // Attempt the operation up to two times to handle common cookiewall redirects or transient issues.
+            for (int attempt = 0; attempt < 2; attempt++)
             {
-                return result;
+                var result = await TryGetFaviconAsync(client, uri, deadline.Token);
+                if (result != null)
+                {
+                    return result;
+                }
             }
+        }
+        catch (HttpRequestException)
+        {
+            // Abort on any request exception.
+            return null;
+        }
+        catch (OperationCanceledException)
+        {
+            // Overall deadline hit: give up rather than letting the favicon extraction result in a too long client side hang.
+            return null;
         }
 
         // Return null if the favicon extraction failed.
@@ -205,6 +229,83 @@ public static class FaviconExtractor
         return ImageFormatSignature.Unknown;
     }
 
+    /// <summary>
+    /// Checks whether a set of IP addresses are all publicly routable.
+    /// </summary>
+    /// <param name="addresses">The addresses returned by one DNS resolution.</param>
+    /// <returns>True if all addresses are publicly routable, false otherwise.</returns>
+    internal static bool AreIpAddressesPublic(IPAddress[] addresses)
+    {
+        // An empty set has nothing to vouch for, so it must never be treated as validated.
+        if (addresses.Length == 0)
+        {
+            return false;
+        }
+
+        foreach (var address in addresses)
+        {
+            if (!IPAddressValidator.IsPublicIPAddress(address))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Checks that an image's declared pixel dimensions fit within the decode budget to prevent
+    /// potential memory exhaustion for very large images.
+    /// </summary>
+    /// <param name="imageBytes">The raw image bytes.</param>
+    /// <returns>True if the image is a decodable raster image within the pixel budget, false otherwise.</returns>
+    internal static bool IsWithinDecodePixelBudget(byte[] imageBytes)
+    {
+        using var data = SKData.CreateCopy(imageBytes);
+        using var codec = SKCodec.Create(data);
+
+        // Not a decodable raster image at all; nothing downstream can render it either.
+        if (codec is null)
+        {
+            return false;
+        }
+
+        var info = codec.Info;
+        if (info.Width <= 0 || info.Height <= 0)
+        {
+            return false;
+        }
+
+        return (long)info.Width * info.Height <= MaxDecodedPixels;
+    }
+
+    /// <summary>
+    /// Opens the TCP connection for an outgoing request and resolve a hostname only once.
+    /// </summary>
+    /// <param name="context">Connection context supplied by the HTTP stack.</param>
+    /// <param name="cancellationToken">Token to cancel the connection attempt.</param>
+    /// <returns>A stream over the established connection.</returns>
+    private static async ValueTask<Stream> ConnectToValidatedAddressAsync(SocketsHttpConnectionContext context, CancellationToken cancellationToken)
+    {
+        var addresses = await Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, cancellationToken);
+        if (!AreIpAddressesPublic(addresses))
+        {
+            throw new HttpRequestException("Blocked connection to a non-public address.");
+        }
+
+        var socket = new Socket(SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
+        try
+        {
+            await socket.ConnectAsync(addresses, context.DnsEndPoint.Port, cancellationToken);
+            return new NetworkStream(socket, ownsSocket: true);
+        }
+        catch
+        {
+            socket.Dispose();
+            throw;
+        }
+    }
+
     private static async Task<byte[]?> SafeGetFaviconAsync(string url)
     {
         try
@@ -222,18 +323,19 @@ public static class FaviconExtractor
     /// </summary>
     /// <param name="client">The HTTP client.</param>
     /// <param name="uri">The URI to get the favicon from.</param>
+    /// <param name="cancellationToken">Token maxing the overall extraction.</param>
     /// <returns>The favicon bytes.</returns>
-    private static async Task<byte[]?> TryGetFaviconAsync(HttpClient client, Uri uri)
+    private static async Task<byte[]?> TryGetFaviconAsync(HttpClient client, Uri uri, CancellationToken cancellationToken)
     {
-        var response = await FollowRedirectsAsync(client, uri);
+        var response = await FollowRedirectsAsync(client, uri, cancellationToken);
 
         if (response == null || !response.IsSuccessStatusCode)
         {
             return null;
         }
 
-        var faviconNodes = await GetFaviconNodesFromHtml(response, uri);
-        return await TryExtractFaviconFromNodes(faviconNodes, client, uri);
+        var faviconNodes = await GetFaviconNodesFromHtml(response, uri, cancellationToken);
+        return await TryExtractFaviconFromNodes(faviconNodes, client, uri, cancellationToken);
     }
 
     /// <summary>
@@ -241,10 +343,11 @@ public static class FaviconExtractor
     /// </summary>
     /// <param name="response">The response to get the favicon nodes from.</param>
     /// <param name="uri">The URI to get the favicon nodes from.</param>
+    /// <param name="cancellationToken">Token maxing the overall extraction.</param>
     /// <returns>The favicon nodes.</returns>
-    private static async Task<HtmlNodeCollection[]> GetFaviconNodesFromHtml(HttpResponseMessage response, Uri uri)
+    private static async Task<HtmlNodeCollection[]> GetFaviconNodesFromHtml(HttpResponseMessage response, Uri uri, CancellationToken cancellationToken)
     {
-        string htmlContent = await response.Content.ReadAsStringAsync();
+        string htmlContent = await response.Content.ReadAsStringAsync(cancellationToken);
         HtmlDocument htmlDoc = new();
         htmlDoc.LoadHtml(htmlContent);
 
@@ -275,9 +378,12 @@ public static class FaviconExtractor
     /// <param name="faviconNodes">The favicon nodes.</param>
     /// <param name="client">The HTTP client.</param>
     /// <param name="baseUri">The base URI.</param>
+    /// <param name="cancellationToken">Token maxing the overall extraction.</param>
     /// <returns>The favicon bytes.</returns>
-    private static async Task<byte[]?> TryExtractFaviconFromNodes(HtmlNodeCollection[] faviconNodes, HttpClient client, Uri baseUri)
+    private static async Task<byte[]?> TryExtractFaviconFromNodes(HtmlNodeCollection[] faviconNodes, HttpClient client, Uri baseUri, CancellationToken cancellationToken)
     {
+        var seenUrls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         foreach (var nodeCollection in faviconNodes)
         {
             if (nodeCollection == null || nodeCollection.Count == 0)
@@ -298,7 +404,17 @@ public static class FaviconExtractor
                     faviconUrl = new Uri(baseUri, faviconUrl).ToString();
                 }
 
-                var faviconBytes = await FetchAndProcessFaviconAsync(client, faviconUrl);
+                if (!seenUrls.Add(faviconUrl))
+                {
+                    continue;
+                }
+
+                if (seenUrls.Count > MaxFaviconCandidates)
+                {
+                    return null;
+                }
+
+                var faviconBytes = await FetchAndProcessFaviconAsync(client, faviconUrl, cancellationToken);
                 if (faviconBytes != null)
                 {
                     return faviconBytes;
@@ -314,19 +430,20 @@ public static class FaviconExtractor
     /// </summary>
     /// <param name="client">The HTTP client.</param>
     /// <param name="url">The URL to fetch the favicon from.</param>
+    /// <param name="cancellationToken">Token maxing the overall extraction.</param>
     /// <returns>The favicon bytes.</returns>
-    private static async Task<byte[]?> FetchAndProcessFaviconAsync(HttpClient client, string url)
+    private static async Task<byte[]?> FetchAndProcessFaviconAsync(HttpClient client, string url, CancellationToken cancellationToken)
     {
         try
         {
             // Validate the favicon URL before fetching
-            if (!Uri.TryCreate(url, UriKind.Absolute, out var faviconUri) || !IsValidUri(faviconUri))
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var faviconUri) || !IsAllowedSchemeAndPort(faviconUri))
             {
                 return null;
             }
 
             // Follow redirects with validation
-            var response = await FollowRedirectsAsync(client, faviconUri);
+            var response = await FollowRedirectsAsync(client, faviconUri, cancellationToken);
 
             if (response == null || !response.IsSuccessStatusCode)
             {
@@ -339,16 +456,21 @@ public static class FaviconExtractor
                 return null;
             }
 
-            var imageBytes = await response.Content.ReadAsByteArrayAsync();
+            var imageBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
             if (imageBytes.Length == 0)
             {
                 return null;
             }
 
             // Don't rely on the HTTP Content-Type header: sniff the real format from the file's
-            // magic bytes. Servers frequently mislabel favicons (e.g. a PNG served as image/x-icon),
-            // and some serve formats clients can't safely render.
+            // magic bytes. Servers frequently mislabel favicons and some serve formats clients can't safely render.
             var format = DetectImageFormat(imageBytes);
+
+            // Reject oversized images.
+            if (format != ImageFormatSignature.Svg && !IsWithinDecodePixelBudget(imageBytes))
+            {
+                return null;
+            }
 
             if (_clientSafeFormats.Contains(format))
             {
@@ -362,6 +484,11 @@ public static class FaviconExtractor
             // something a client might fail to render.
             return ReencodeWithinCap(imageBytes);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // The overall deadline expired: abort the extraction.
+            throw;
+        }
         catch
         {
             return null;
@@ -374,17 +501,19 @@ public static class FaviconExtractor
     /// <returns>The HTTP client.</returns>
     private static HttpClient CreateHttpClient()
     {
-        var handler = new HttpClientHandler
+        var handler = new SocketsHttpHandler
         {
             AllowAutoRedirect = false, // Handle redirects manually
             UseCookies = true,         // Enable cookie handling for session management
             CookieContainer = new System.Net.CookieContainer(),
             AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate | System.Net.DecompressionMethods.Brotli,
+            ConnectCallback = ConnectToValidatedAddressAsync,
         };
 
         var client = new HttpClient(handler)
         {
-            Timeout = TimeSpan.FromSeconds(5), // Keep original timeout
+            Timeout = _requestTimeout,
+            MaxResponseContentBufferSize = MaxResponseBytes,
         };
 
         var random = new Random();
@@ -397,7 +526,8 @@ public static class FaviconExtractor
         };
 
         // Use random User-Agent
-        client.DefaultRequestHeaders.Add("User-Agent", userAgents[random.Next(userAgents.Length)]);
+        var userAgent = userAgents[random.Next(userAgents.Length)];
+        client.DefaultRequestHeaders.Add("User-Agent", userAgent);
 
         // More comprehensive Accept header with image types prioritized
         client.DefaultRequestHeaders.Add(
@@ -411,17 +541,17 @@ public static class FaviconExtractor
         client.DefaultRequestHeaders.Add("Upgrade-Insecure-Requests", "1");
         client.DefaultRequestHeaders.Add("Cache-Control", "max-age=0");
 
-        // Add Sec-Fetch headers to mimic modern browsers
-        if (random.Next(2) == 0)
-        {
-            client.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "document");
-            client.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "navigate");
-            client.DefaultRequestHeaders.Add("Sec-Fetch-Site", "none");
-            client.DefaultRequestHeaders.Add("Sec-Fetch-User", "?1");
-        }
+        // Sec-Fetch headers to mimic modern browsers. Every real browser sends these on a top-level
+        // navigation, and some sites (facebook.com among them) answer a request without them with an
+        // HTTP 400, so they are always sent rather than randomly.
+        client.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "document");
+        client.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "navigate");
+        client.DefaultRequestHeaders.Add("Sec-Fetch-Site", "none");
+        client.DefaultRequestHeaders.Add("Sec-Fetch-User", "?1");
 
-        // Add Chrome-specific headers randomly
-        if (random.Next(3) == 0)
+        // Chrome client hints, but only when the picked User-Agent is actually Chrome: announcing Chrome
+        // hints alongside the Firefox User-Agent is exactly the mismatch bot protection screens for.
+        if (userAgent.Contains("Chrome", StringComparison.Ordinal))
         {
             client.DefaultRequestHeaders.Add("Sec-CH-UA", "\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"120\", \"Google Chrome\";v=\"120\"");
             client.DefaultRequestHeaders.Add("Sec-CH-UA-Mobile", "?0");
@@ -447,37 +577,13 @@ public static class FaviconExtractor
     }
 
     /// <summary>
-    /// Checks if the URI is valid and not pointing to internal/private IPs.
+    /// Checks the URI scheme and port.
     /// </summary>
     /// <param name="uri">The URI to check.</param>
-    /// <returns>True if the URI is valid and safe, false otherwise.</returns>
-    private static bool IsValidUri(Uri uri)
+    /// <returns>True if the scheme and port are both allowed, false otherwise.</returns>
+    private static bool IsAllowedSchemeAndPort(Uri uri)
     {
-        // Check scheme and port
-        if (!_allowedSchemes.Contains(uri.Scheme) || !uri.IsDefaultPort)
-        {
-            return false;
-        }
-
-        // Resolve hostname to IP and validate
-        try
-        {
-            var addresses = Dns.GetHostAddresses(uri.Host);
-            foreach (var address in addresses)
-            {
-                if (!IPAddressValidator.IsPublicIPAddress(address))
-                {
-                    return false;
-                }
-            }
-        }
-        catch
-        {
-            // If DNS resolution fails, block the request
-            return false;
-        }
-
-        return true;
+        return _allowedSchemes.Contains(uri.Scheme) && uri.IsDefaultPort;
     }
 
     /// <summary>
@@ -485,8 +591,9 @@ public static class FaviconExtractor
     /// </summary>
     /// <param name="client">The HTTP client.</param>
     /// <param name="uri">The initial URI to request.</param>
+    /// <param name="cancellationToken">Token maxing the overall extraction.</param>
     /// <returns>The final HTTP response after following redirects, or null if blocked/failed.</returns>
-    private static async Task<HttpResponseMessage?> FollowRedirectsAsync(HttpClient client, Uri uri)
+    private static async Task<HttpResponseMessage?> FollowRedirectsAsync(HttpClient client, Uri uri, CancellationToken cancellationToken)
     {
         var currentUri = uri;
         int redirectCount = 0;
@@ -498,16 +605,16 @@ public static class FaviconExtractor
             var request = new HttpRequestMessage(HttpMethod.Get, currentUri);
             if (redirectCount == 0)
             {
-                // First request - add Google referer to appear like navigation
+                // First request: add Google referer to appear like navigation
                 request.Headers.Add("Referer", "https://www.google.com/");
             }
             else
             {
-                // Subsequent redirects - use original URL as referer
+                // Subsequent redirects: use original URL as referer
                 request.Headers.Add("Referer", uri.ToString());
             }
 
-            var response = await client.SendAsync(request);
+            var response = await client.SendAsync(request, cancellationToken);
 
             if ((int)response.StatusCode >= 300 && (int)response.StatusCode < 400)
             {
@@ -523,10 +630,10 @@ public static class FaviconExtractor
                     location = new Uri(currentUri, location);
                 }
 
-                // Validate the redirect target
-                if (!IsValidUri(location))
+                // Validate the target URL scheme and port.
+                if (!IsAllowedSchemeAndPort(location))
                 {
-                    return null; // Block redirect to internal IPs
+                    return null;
                 }
 
                 currentUri = location;

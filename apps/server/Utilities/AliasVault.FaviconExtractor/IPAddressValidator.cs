@@ -28,12 +28,14 @@ internal static class IPAddressValidator
         (new byte[] { 100, 64, 0, 0 }, 10),      // CGNAT
         (new byte[] { 192, 0, 0, 0 }, 24),       // IETF Protocol Assignments
         (new byte[] { 192, 0, 2, 0 }, 24),       // TEST-NET-1
+        (new byte[] { 192, 88, 99, 0 }, 24),     // 6to4 relay anycast
         (new byte[] { 198, 18, 0, 0 }, 15),      // benchmarking
         (new byte[] { 198, 51, 100, 0 }, 24),    // TEST-NET-2
         (new byte[] { 203, 0, 113, 0 }, 24),     // TEST-NET-3
         (new byte[] { 224, 0, 0, 0 }, 4),        // multicast
         (new byte[] { 240, 0, 0, 0 }, 4),        // reserved
         (new byte[] { 0, 0, 0, 0 }, 8),          // local
+        (new byte[] { 127, 0, 0, 0 }, 8),        // loopback
     };
 
     /// <summary>
@@ -41,8 +43,14 @@ internal static class IPAddressValidator
     /// </summary>
     private static readonly (byte[] Net, int Prefix)[] PrivateV6Blocks = new[]
     {
-        (new byte[] { 0xfc, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 7),         // ULA
-        (new byte[] { 0x20, 0x01, 0x0d, 0xb8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 32), // documentation
+        (new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 96),                // IPv4-compatible (deprecated), unspecified and loopback
+        (new byte[] { 0, 0x64, 0xff, 0x9b, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 96),       // NAT64 well-known prefix
+        (new byte[] { 0, 0x64, 0xff, 0x9b, 0, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 48),    // NAT64 local-use prefix
+        (new byte[] { 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 64),             // discard-only
+        (new byte[] { 0x20, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 32),          // Teredo
+        (new byte[] { 0x20, 0x01, 0x0d, 0xb8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 32),    // documentation
+        (new byte[] { 0x20, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 16),          // 6to4
+        (new byte[] { 0xfc, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 7),              // ULA
     };
 
     /// <summary>

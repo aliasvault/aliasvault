@@ -320,7 +320,7 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
     override public func prepareCredentialList(for serviceIdentifiers: [ASCredentialServiceIdentifier]) {
         let matchedDomains = serviceIdentifiers.map { $0.identifier.lowercased() }
         if let firstDomain = matchedDomains.first {
-            // Normalize URL to remove query parameters and trailing slashes
+            // Handle itemUrl param (URL passed from search or deep link).
             let normalized = AutofillUrlNormalizer.normalize(firstDomain)
             print("CredentialProviderViewController: First domain: \(firstDomain) → normalized: \(normalized)")
 

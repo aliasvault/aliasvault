@@ -63,8 +63,8 @@
     "@types/react-dom": "^19.0.3",
     "@types/sql.js": "^1.4.9",
     "@types/yup": "^0.29.14",
-    "@typescript-eslint/eslint-plugin": "^8.21.0",
-    "@typescript-eslint/parser": "^8.21.0",
+    "@typescript-eslint/eslint-plugin": "^8.65.0",
+    "@typescript-eslint/parser": "^8.65.0",
     "@vitest/coverage-v8": "^4.1.8",
     "@wxt-dev/module-react": "^1.2.2",
     "argon2": "^0.44.0",
@@ -77,12 +77,12 @@
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.1.0",
     "jsdom": "^26.0.0",
-    "postcss": "^8.5.15",
+    "postcss": "^8.5.24",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.6.3",
     "vite": "^8.0.0",
     "vite-plugin-static-copy": "^3.4.0",
-    "wxt": "^0.20.26"
+    "wxt": "^0.21.3"
   },
   "overrides": {
     "shell-quote": "1.8.4",

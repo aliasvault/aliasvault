@@ -1,4 +1,4 @@
-import initSqlJs, { Database } from 'sql.js';
+import initSqlJs from 'sql.js';
 
 import type { VaultVersion } from '@/utils/dist/core/vault';
 import { VaultSqlGenerator, checkVersionCompatibility, extractVersionFromMigrationId } from '@/utils/dist/core/vault';
@@ -16,6 +16,7 @@ import {
 } from './db';
 
 import type { IDatabaseClient, SqliteBindValue } from './db/BaseRepository';
+import type { Database } from 'sql.js';
 
 /**
  * Core SQLite database client.

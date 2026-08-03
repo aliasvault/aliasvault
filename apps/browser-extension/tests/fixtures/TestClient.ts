@@ -25,6 +25,7 @@ import {
   waitForUnlockPage,
   waitForOfflineIndicator,
   waitForLoginForm,
+  waitForPopupReady,
   Timeouts,
 } from './waits';
 
@@ -70,10 +71,7 @@ export class TestClient {
     // Open popup
     const popup = await context.newPage();
     await popup.goto(`chrome-extension://${extensionId}/popup.html`);
-    await popup.waitForSelector('input[type="text"], input[type="password"], button#settings', {
-      state: 'visible',
-      timeout: Timeouts.MEDIUM,
-    });
+    await waitForPopupReady(popup, Timeouts.MEDIUM);
 
     return new TestClient(context, extensionId, popup);
   }
@@ -84,10 +82,7 @@ export class TestClient {
   static async fromContext(context: BrowserContext, extensionId: string): Promise<TestClient> {
     const popup = await context.newPage();
     await popup.goto(`chrome-extension://${extensionId}/popup.html`);
-    await popup.waitForSelector('input[type="text"], input[type="password"], button#settings', {
-      state: 'visible',
-      timeout: Timeouts.MEDIUM,
-    });
+    await waitForPopupReady(popup, Timeouts.MEDIUM);
     return new TestClient(context, extensionId, popup);
   }
 
@@ -96,8 +91,11 @@ export class TestClient {
    * Verifies the URL is displayed on the login page after configuration.
    */
   async configureApiUrl(apiUrl: string): Promise<this> {
-    const settingsButton = await this.popup.waitForSelector('button#settings');
-    await settingsButton.click();
+    // Make sure the popup has settled on the login page before touching the header.
+    await waitForPopupReady(this.popup);
+
+    // Use a locator so the button is re-resolved if the app re-renders mid-click.
+    await this.popup.locator('button#settings').click();
     await this.popup.selectOption('select', ['custom']);
     await this.popup.fill('input#custom-api-url', apiUrl);
     await this.popup.click('button#back');
@@ -118,6 +116,7 @@ export class TestClient {
    * Open the login settings page (before authentication).
    */
   async openLoginSettings(): Promise<this> {
+    await waitForPopupReady(this.popup);
     const settingsButton = this.popup.locator('button#settings');
     await settingsButton.click();
     await expect(this.popup.locator('select')).toBeVisible();
@@ -353,8 +352,8 @@ export class TestClient {
         const input = document.querySelector(sel) as HTMLInputElement | HTMLTextAreaElement;
         return input?.value === expected;
       },
-      { timeout },
-      { sel: selector, expected: expectedValue }
+      { sel: selector, expected: expectedValue },
+      { timeout }
     );
     return this;
   }

@@ -3,7 +3,7 @@ import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
-import { BoolResponse } from '@/utils/types/messaging/BoolResponse';
+import type { BoolResponse } from '@/utils/types/messaging/BoolResponse';
 
 import { browser } from '#imports';
 

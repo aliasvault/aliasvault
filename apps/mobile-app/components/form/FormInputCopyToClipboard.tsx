@@ -105,6 +105,7 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
     }
   };
 
+  const isRevealedPassword = type === 'password' && isPasswordVisible;
   const displayValue = type === 'password' && !isPasswordVisible
     ? '•'.repeat(value?.length || 0)
     : value;
@@ -185,7 +186,8 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
               {labelSuffix}
             </View>
           )}
-          <Text style={styles.value} numberOfLines={1} ellipsizeMode="tail">
+          {/* Revealed passwords wrap across lines so long values stay fully readable instead of being truncated. */}
+          <Text style={styles.value} numberOfLines={isRevealedPassword ? 0 : 1} ellipsizeMode="tail" selectable={isRevealedPassword}>
             {displayValue}
           </Text>
         </View>

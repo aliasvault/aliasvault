@@ -85,6 +85,13 @@ fi
 # Build
 # ------------------------------------------
 
+# Make sure the Rust core is built.
+echo ""
+echo "🦀 Building Rust core (WASM)…"
+pushd "$SCRIPT_DIR" > /dev/null
+npm run build:rust
+popd > /dev/null
+
 for browser in "${BROWSERS[@]}"; do
   echo ""
   echo "🔨 Building $browser…"

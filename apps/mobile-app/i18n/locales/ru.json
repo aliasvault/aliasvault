@@ -533,7 +533,7 @@
     "contextMenu": {
       "title": "Параметры записи",
       "edit": "Редактировать",
-      "duplicate": "Duplicate",
+      "duplicate": "Продублировать",
       "delete": "Удалить",
       "copyUsername": "Скопировать имя пользователя",
       "copyEmail": "Скопировать Email",

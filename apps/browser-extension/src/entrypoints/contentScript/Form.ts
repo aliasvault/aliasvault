@@ -6,11 +6,11 @@ import { itemToCredential, FieldKey } from '@/utils/dist/core/models/vault';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { FormFiller } from '@/utils/formDetector/FormFiller';
 import { DetectedFieldType } from '@/utils/formDetector/types/FormFields';
-import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import type { LastAutofilledCredential } from '@/utils/loginDetector';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 import { SqliteClient } from '@/utils/SqliteClient';
+import { copyTotpToClipboardIfEnabled } from '@/utils/TotpClipboard';
 
 /**
  * Global timestamp to track popup debounce time.
@@ -146,25 +146,7 @@ export async function fillItem(item: Item, input: HTMLInputElement): Promise<voi
   });
 
   // Auto-copy TOTP to clipboard if enabled and item has TOTP after autofill.
-  const autoCopyTotpEnabled = await LocalPreferencesService.getAutoCopyTotpOnAutofill();
-  if (autoCopyTotpEnabled) {
-    try {
-      // Generate TOTP code via background
-      const response = await sendMessage('GENERATE_TOTP_CODE', { itemId: item.Id });
-
-      if (response.success && response.code) {
-        // Copy TOTP code to clipboard
-        await navigator.clipboard.writeText(response.code);
-
-        // Notify background script that clipboard was copied to start countdown
-        sendMessage('CLIPBOARD_COPIED').catch(() => {
-          // Ignore errors as background script might not be ready
-        });
-      }
-    } catch {
-      // Silently fail in case TOTP code is not available which is possible.
-    }
-  }
+  await copyTotpToClipboardIfEnabled(item.Id);
 }
 
 /**

@@ -1,13 +1,14 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-import { JSDOM, DOMWindow } from 'jsdom';
+import { JSDOM, type DOMWindow } from 'jsdom';
 import { it, expect, vi } from 'vitest';
 
 import { Gender } from '@/utils/dist/core/models/identity';
 import type { Credential } from '@/utils/dist/core/models/vault';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
-import { FormFields } from '@/utils/formDetector/types/FormFields';
+import { type FormFields } from '@/utils/formDetector/types/FormFields';
+import { getDeepElementById } from '@/utils/ShadowDom';
 
 export enum FormField {
   Username = 'username',
@@ -78,8 +79,8 @@ export const testField = (fieldName: FormField, elementId: string, htmlFile: str
   it(`should detect ${fieldName} field`, () => {
     const { document, result } = setupFormTest(htmlFile, elementId);
 
-    // First verify the test element exists
-    const expectedElement = document.getElementById(elementId);
+    // First verify the test element exists (may live inside a component's shadow root)
+    const expectedElement = getDeepElementById(document, elementId);
     if (!expectedElement) {
       throw new Error(`Test setup failed: Element with id "${elementId}" not found in test HTML. Check if the element is present in the test HTML file: ${htmlFile}`);
     }
@@ -140,8 +141,8 @@ const setupFormTest = (htmlFile: string, focusedElementId: string) : { document:
   });
   const document = dom.window.document;
 
-  // Set focus on specified element if provided
-  let focusedElement = document.getElementById(focusedElementId);
+  // Set focus on specified element if provided (may live inside a component's shadow root)
+  let focusedElement = getDeepElementById(document, focusedElementId);
   if (!focusedElement) {
     throw new Error(`Focus element with id "${focusedElementId}" not found in test HTML`);
   }

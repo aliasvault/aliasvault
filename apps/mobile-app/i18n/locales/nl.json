@@ -121,7 +121,7 @@
     "instructions": "Voer de secret key in die door de website wordt weergegeven waar je tweestapsverificatie wilt toevoegen.",
     "saveToViewCode": "Opslaan om code te bekijken",
     "scanQrCode": "Scan QR code",
-    "enterManually": "Voer geheime sleutel in",
+    "enterManually": "Voer secret key in",
     "errors": {
       "invalidSecretKey": "Ongeldig formaat.",
       "scanFailed": "Kon QR-code niet scannen. Probeer het opnieuw."

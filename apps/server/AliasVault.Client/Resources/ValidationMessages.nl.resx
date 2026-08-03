@@ -81,7 +81,7 @@
     <comment>Error message when password is required</comment>
   </data>
   <data name="SecretKeyRequired" xml:space="preserve">
-    <value>Sleutel is vereist</value>
+    <value>Secret key is vereist</value>
     <comment>Error message when secret key is required</comment>
   </data>
   <data name="ServiceNameRequired" xml:space="preserve">

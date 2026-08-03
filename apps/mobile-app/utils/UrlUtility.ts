@@ -3,6 +3,27 @@
  */
 
 /**
+ * Reduce a service URL to its origin (scheme + host + port), dropping path, query and fragment.
+ * @param raw The raw URL, bare domain or app package identifier
+ * @returns The origin, or the input unchanged when there is no path to strip
+ */
+export function sanitizeServiceUrl(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return '';
+  }
+
+  const scheme = /^[a-z][a-z0-9+.-]*:\/\//i.exec(trimmed)?.[0] ?? '';
+  const authority = trimmed.slice(scheme.length).split(/[/?#]/)[0];
+
+  if (!authority) {
+    return trimmed;
+  }
+
+  return scheme + authority;
+}
+
+/**
  * Extract the service name from a service URL.
  * @param url The service URL to extract the name from
  * @returns The extracted service name

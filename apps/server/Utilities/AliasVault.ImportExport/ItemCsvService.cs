@@ -35,7 +35,7 @@ public static class ItemCsvService
             {
                 ServiceName = item.Name ?? string.Empty,
                 FolderPath = BuildFolderPath(item.Folder),
-                ServiceUrl = GetFieldValue(item, FieldKey.LoginUrl),
+                ServiceUrl = GetJoinedFieldValues(item, FieldKey.LoginUrl),
                 Username = GetFieldValue(item, FieldKey.LoginUsername),
                 CurrentPassword = GetFieldValue(item, FieldKey.LoginPassword),
                 AliasEmail = GetFieldValue(item, FieldKey.LoginEmail),
@@ -182,6 +182,22 @@ public static class ItemCsvService
     }
 
     /// <summary>
+    /// Gets all values of a multi-value field from an item as a single comma separated string, ordered by weight.
+    /// </summary>
+    /// <param name="item">The item to get the field values from.</param>
+    /// <param name="fieldKey">The field key to look up.</param>
+    /// <returns>The comma separated field values, or empty string if none are found.</returns>
+    private static string GetJoinedFieldValues(Item item, string fieldKey)
+    {
+        var values = item.FieldValues
+            .Where(fv => fv.FieldKey == fieldKey && !fv.IsDeleted && !string.IsNullOrWhiteSpace(fv.Value))
+            .OrderBy(fv => fv.Weight)
+            .Select(fv => fv.Value!.Trim());
+
+        return string.Join(",", values);
+    }
+
+    /// <summary>
     /// Returns true if the CSV record has any credit card field populated.
     /// </summary>
     /// <param name="record">The CSV record to inspect.</param>
@@ -234,7 +250,7 @@ public class ItemCsvRecord
     public string FolderPath { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the service URL.
+    /// Gets or sets the service URL(s). Multiple URLs are stored as a comma separated string.
     /// </summary>
     public string ServiceUrl { get; set; } = string.Empty;
 
