@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="SharingController.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -21,24 +21,21 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
-/// Vault sharing. A shared folder is a non-root <see cref="VaultManifest"/> owned by a user and
-/// encrypted with its own VEK. Access is granted by persisting that VEK wrapped with a member's public key as a
-/// <c>shared</c> <see cref="VaultKey"/> row.
+/// Vault sharing. A shared manifest is a non-root <see cref="VaultManifest"/> owned by a <see cref="Group"/> and
+/// encrypted with its own VEK. Access is granted by persisting that VEK encrypted with a member's public key as a
+/// <c>shared</c> <see cref="VaultManifestAccessKey"/> row.
 /// </summary>
 /// <param name="dbContextFactory">DbContext factory.</param>
 /// <param name="userManager">UserManager.</param>
 /// <param name="timeProvider">Time provider.</param>
 [ApiVersion("2")]
-public class SharingController(
-    IAliasServerDbContextFactory dbContextFactory,
-    UserManager<AliasVaultUser> userManager,
-    ITimeProvider timeProvider) : AuthenticatedRequestController(userManager)
+public class SharingController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, ITimeProvider timeProvider) : AuthenticatedRequestController(userManager)
 {
     private const string ManifestFormat = "manifest-v1";
 
     /// <summary>
-    /// Look up a recipient by username and return their primary public key, which the caller uses to wrap a shared
-    /// folder's VEK before granting access.
+    /// Look up a recipient by username and return their primary public key, which the caller uses to encrypt a shared
+    /// manifest's VEK before granting access.
     /// </summary>
     /// <param name="username">The recipient's username.</param>
     /// <returns>The recipient's id and primary public key.</returns>
@@ -58,8 +55,9 @@ public class SharingController(
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404));
         }
 
-        var key = await context.UserEncryptionKeys.FirstOrDefaultAsync(x => x.UserId == recipient.Id && x.IsPrimary);
-        if (key == null)
+        // The recipient's grant public key.
+        var key = await context.UserGrantKeys.FirstOrDefaultAsync(x => x.UserId == recipient.Id && x.IsPrimary);
+        if (key is null)
         {
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 404));
         }
@@ -68,14 +66,13 @@ public class SharingController(
     }
 
     /// <summary>
-    /// Create a new shared folder manifest owned by the caller, plus the caller's own <c>shared</c> grant (the
-    /// folder VEK wrapped with their own public key).
+    /// Create a new shared manifest owned by the caller, plus the caller's own grant (the manifest VEK encrypted with their grant public key).
     /// </summary>
     /// <param name="model">The create request.</param>
     /// <param name="clientHeader">The client identifier header.</param>
     /// <returns>The created manifest id.</returns>
-    [HttpPost("folders")]
-    public async Task<IActionResult> CreateFolder([FromBody] CreateSharedFolderRequest model, [FromHeader(Name = "X-AliasVault-Client")] string? clientHeader)
+    [HttpPost("manifests")]
+    public async Task<IActionResult> CreateManifest([FromBody] CreateSharedManifestRequest model, [FromHeader(Name = "X-AliasVault-Client")] string? clientHeader)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
         var me = await GetCurrentUserAsync();
@@ -84,31 +81,40 @@ public class SharingController(
             return Unauthorized();
         }
 
-        // The owner's self-grant must be wrapped asymmetrically for their own public key.
-        if (!AuthHelper.AsymmetricWrapSchemes.Contains(model.WrapScheme))
+        // The owner's self-grant must be encrypted asymmetrically for their own public key.
+        if (!VaultKeyAlgorithms.TryParse(model.Algorithm, out var selfAlgorithm) || !VaultKeyAlgorithms.IsAsymmetric(selfAlgorithm))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_WRAP_SCHEME, 400));
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_ALGORITHM, 400));
         }
 
-        // The key wrapped for must be the caller's own public key.
-        var keyOwnedByMe = await context.UserEncryptionKeys.AnyAsync(x => x.Id == model.SelfPublicKeyId && x.UserId == me.Id);
+        // The public key encrypted for must be an account keypair the caller owns.
+        var keyOwnedByMe = await context.UserGrantKeys.AnyAsync(x => x.Id == model.SelfPublicKeyId && x.UserId == me.Id);
         if (!keyOwnedByMe)
         {
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 404));
         }
 
+        /*
+         * The manifest id is generated by the client: the encrypted placeholder manifest already carries it as its
+         * identity (the codec refuses id-less manifests), and the server cannot rewrite an encrypted blob.
+         * Uniqueness is enforced here (and by the primary key) so a colliding id cannot hijack an existing
+         * manifest.
+         */
+        if (model.ManifestId == Guid.Empty || await context.VaultManifests.AnyAsync(x => x.ManifestId == model.ManifestId))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
+        }
+
         var manifest = new VaultManifest
         {
-            ManifestId = Guid.NewGuid(),
+            ManifestId = model.ManifestId,
             IsRoot = false,
-            OwnerUserId = me.Id,
+            OwnerGroupId = me.PersonalGroupId,
             Name = model.Name,
             VaultBlob = string.Empty,
             StorageFormat = ManifestFormat,
             ManifestBlob = model.ManifestBlob,
             ManifestCiphertextHash = model.ManifestCiphertextHash,
-
-            // Deprecated column: manifest-v1 revisions no longer carry a data-model version (see VaultManifestBase.Version).
             Version = string.Empty,
             RevisionNumber = 1,
             Salt = string.Empty,
@@ -121,26 +127,26 @@ public class SharingController(
             UpdatedAt = timeProvider.UtcNow,
         };
         context.VaultManifests.Add(manifest);
-        context.VaultKeys.Add(new VaultKey
+        context.VaultManifestAccessKeys.Add(new VaultManifestAccessKey
         {
             Id = Guid.NewGuid(),
             UserId = me.Id,
             VaultManifestId = manifest.ManifestId,
-            KeyType = AuthHelper.VaultKeyTypeShared,
-            WrapScheme = model.WrapScheme,
-            WrappedVek = model.SelfWrappedVek,
-            RecipientPublicKeyId = model.SelfPublicKeyId,
+            Type = ManifestKeyType.GrantKey,
+            Algorithm = selfAlgorithm,
+            EncryptedVek = model.SelfEncryptedVek,
+            UserGrantKeyId = model.SelfPublicKeyId,
             CreatedAt = timeProvider.UtcNow,
             UpdatedAt = timeProvider.UtcNow,
         });
         await context.SaveChangesAsync();
 
-        return Ok(new CreateSharedFolderResponse { ManifestId = manifest.ManifestId, RevisionNumber = manifest.RevisionNumber });
+        return Ok(new CreateSharedManifestResponse { ManifestId = manifest.ManifestId, RevisionNumber = manifest.RevisionNumber });
     }
 
     /// <summary>
-    /// Grant a recipient access to a shared folder the caller owns, by persisting the folder VEK wrapped with the
-    /// recipient's public key.
+    /// Grant a recipient access to a shared manifest the caller owns, by persisting the manifest VEK encrypted with the
+    /// recipient's grant public key.
     /// </summary>
     /// <param name="model">The grant request.</param>
     /// <returns>Ok on success.</returns>
@@ -154,41 +160,46 @@ public class SharingController(
             return Unauthorized();
         }
 
-        // A shared folder's VEK must be wrapped for the recipient asymmetrically; a symmetric self-unlock scheme is invalid here.
-        if (!AuthHelper.AsymmetricWrapSchemes.Contains(model.WrapScheme))
+        // A shared manifest's VEK must be encrypted for the recipient asymmetrically.
+        if (!VaultKeyAlgorithms.TryParse(model.Algorithm, out var grantAlgorithm) || !VaultKeyAlgorithms.IsAsymmetric(grantAlgorithm))
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_WRAP_SCHEME, 400));
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_ALGORITHM, 400));
         }
 
-        // The caller must own the (non-root) manifest being shared.
-        var ownsManifest = await context.VaultManifests.AnyAsync(x => x.ManifestId == model.ManifestId && x.OwnerUserId == me.Id && !x.IsRoot);
-        if (!ownsManifest)
+        // The caller must be an admin of the group that owns the (non-root) manifest being shared.
+        var manifest = await context.VaultManifests.FirstOrDefaultAsync(x => x.ManifestId == model.ManifestId && !x.IsRoot);
+        if (manifest is null || !await GroupHelper.IsGroupAdminAsync(context, manifest.OwnerGroupId, me.Id))
         {
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
         }
 
-        // The referenced public key must exist and belong to the named recipient (guards against wrapping for the wrong key).
-        var keyOwnedByRecipient = await context.UserEncryptionKeys.AnyAsync(x => x.Id == model.RecipientPublicKeyId && x.UserId == model.RecipientUserId);
+        // The referenced public key must exist and be an account keypair of the named recipient (guards against
+        // encrypting for the wrong key, or for a manifest delivery key every member of that manifest could decrypt).
+        var keyOwnedByRecipient = await context.UserGrantKeys.AnyAsync(x => x.Id == model.RecipientPublicKeyId && x.UserId == model.RecipientUserId);
         if (!keyOwnedByRecipient)
         {
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 404));
         }
 
-        var alreadyGranted = await context.VaultKeys.AnyAsync(x => x.UserId == model.RecipientUserId && x.VaultManifestId == model.ManifestId && x.KeyType == AuthHelper.VaultKeyTypeShared);
+        var alreadyGranted = await context.VaultManifestAccessKeys.AnyAsync(x => x.UserId == model.RecipientUserId && x.VaultManifestId == model.ManifestId && x.Type == ManifestKeyType.GrantKey);
         if (alreadyGranted)
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARE_ALREADY_EXISTS, 400));
         }
 
-        context.VaultKeys.Add(new VaultKey
+        // Receiving a manifest implies belonging to the group that owns it, so keep membership in step with the
+        // grant.
+        await GroupHelper.EnsureMembershipAsync(context, manifest.OwnerGroupId, model.RecipientUserId, timeProvider.UtcNow);
+
+        context.VaultManifestAccessKeys.Add(new VaultManifestAccessKey
         {
             Id = Guid.NewGuid(),
             UserId = model.RecipientUserId,
             VaultManifestId = model.ManifestId,
-            KeyType = AuthHelper.VaultKeyTypeShared,
-            WrapScheme = model.WrapScheme,
-            WrappedVek = model.WrappedVek,
-            RecipientPublicKeyId = model.RecipientPublicKeyId,
+            Type = ManifestKeyType.GrantKey,
+            Algorithm = grantAlgorithm,
+            EncryptedVek = model.EncryptedVek,
+            UserGrantKeyId = model.RecipientPublicKeyId,
             CreatedAt = timeProvider.UtcNow,
             UpdatedAt = timeProvider.UtcNow,
         });
@@ -198,8 +209,8 @@ public class SharingController(
     }
 
     /// <summary>
-    /// Revoke a recipient's access to a shared folder the caller owns. Deleting the grant stops the recipient from
-    /// fetching a usable wrapped VEK. TODO: implement enforced VEK rotation policy on every shared folder revocation.
+    /// Revoke a recipient's access to a shared manifest the caller owns. Deleting the grant stops the recipient from
+    /// fetching a usable encrypted VEK. TODO: implement enforced VEK rotation policy on every shared manifest revocation.
     /// </summary>
     /// <param name="model">The revoke request.</param>
     /// <returns>Ok on success.</returns>
@@ -213,30 +224,29 @@ public class SharingController(
             return Unauthorized();
         }
 
-        var ownsManifest = await context.VaultManifests.AnyAsync(x => x.ManifestId == model.ManifestId && x.OwnerUserId == me.Id && !x.IsRoot);
-        if (!ownsManifest)
+        if (!await GroupHelper.CanAdministerManifestAsync(context, model.ManifestId, me.Id))
         {
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
         }
 
-        var grant = await context.VaultKeys.FirstOrDefaultAsync(x => x.UserId == model.RecipientUserId && x.VaultManifestId == model.ManifestId && x.KeyType == AuthHelper.VaultKeyTypeShared);
+        var grant = await context.VaultManifestAccessKeys.FirstOrDefaultAsync(x => x.UserId == model.RecipientUserId && x.VaultManifestId == model.ManifestId && x.Type == ManifestKeyType.GrantKey);
         if (grant == null)
         {
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARE_NOT_FOUND, 404));
         }
 
-        context.VaultKeys.Remove(grant);
+        context.VaultManifestAccessKeys.Remove(grant);
         await context.SaveChangesAsync();
 
         return Ok();
     }
 
     /// <summary>
-    /// List the members of a shared folder the caller owns: the owner plus every recipient holding a grant.
+    /// List who has access to a shared manifest: the owner of the group that owns it, plus every recipient holding a grant.
     /// </summary>
-    /// <param name="manifestId">The shared folder manifest id.</param>
+    /// <param name="manifestId">The shared manifest id.</param>
     /// <returns>The member list.</returns>
-    [HttpGet("folders/{manifestId:guid}/members")]
+    [HttpGet("manifests/{manifestId:guid}/members")]
     public async Task<IActionResult> Members(Guid manifestId)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
@@ -246,25 +256,31 @@ public class SharingController(
             return Unauthorized();
         }
 
-        var ownsManifest = await context.VaultManifests.AnyAsync(x => x.ManifestId == manifestId && x.OwnerUserId == me.Id && !x.IsRoot);
-        if (!ownsManifest)
+        if (!await GroupHelper.CanAdministerManifestAsync(context, manifestId, me.Id))
         {
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
         }
 
-        // The owner holds a self-grant too (their own wrapped VEK), but it is surfaced as the synthetic owner
-        // entry below, not as a recipient. So exclude it from the recipient list.
-        var grants = await context.VaultKeys
-            .Where(x => x.VaultManifestId == manifestId && x.KeyType == AuthHelper.VaultKeyTypeShared && x.UserId != me.Id)
+        // The owner is the group's owner, which is not necessarily the caller: an admin may be listing a manifest belonging to a group someone else owns.
+        var ownerUserId = await context.VaultManifests
+            .Where(m => m.ManifestId == manifestId)
+            .Join(context.GroupMembers.Where(gm => gm.Role == GroupRole.Owner), m => m.OwnerGroupId, gm => gm.GroupId, (m, gm) => new { gm.UserId, gm.CreatedAt })
+            .OrderBy(x => x.CreatedAt).ThenBy(x => x.UserId)
+            .Select(x => x.UserId)
+            .FirstAsync();
+
+        // The owner holds a self-grant too (their own encrypted VEK), but it is surfaced as the owner entry below, not as a recipient. So exclude it from the recipient list.
+        var grants = await context.VaultManifestAccessKeys
+            .Where(x => x.VaultManifestId == manifestId && x.Type == ManifestKeyType.GrantKey && x.UserId != ownerUserId)
             .ToListAsync();
 
-        var recipientIds = grants.Select(g => g.UserId).ToList();
+        var lookupIds = grants.Select(g => g.UserId).Append(ownerUserId).ToList();
         var usernamesById = await context.AliasVaultUsers
-            .Where(u => recipientIds.Contains(u.Id))
+            .Where(u => lookupIds.Contains(u.Id))
             .ToDictionaryAsync(u => u.Id, u => u.UserName);
 
         var response = new ShareMembersResponse();
-        response.Members.Add(new ShareMember { UserId = me.Id, Username = me.UserName, IsOwner = true });
+        response.Members.Add(new ShareMember { UserId = ownerUserId, Username = usernamesById.GetValueOrDefault(ownerUserId), IsOwner = true });
         foreach (var g in grants)
         {
             response.Members.Add(new ShareMember
@@ -272,7 +288,7 @@ public class SharingController(
                 UserId = g.UserId,
                 Username = usernamesById.GetValueOrDefault(g.UserId),
                 IsOwner = false,
-                WrapScheme = g.WrapScheme,
+                Algorithm = VaultKeyAlgorithms.ToToken(g.Algorithm),
                 GrantedAt = g.CreatedAt,
             });
         }
