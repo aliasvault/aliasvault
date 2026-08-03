@@ -463,9 +463,9 @@ const Login: React.FC = () => {
       await app.setAuthTokens(result.username, result.token, result.refreshToken);
 
       /*
-       * The mobile device sends the vault encryption key (the VEK for migrated accounts, or the derived key when
-       * the mobile app predates the KEK/VEK model). Refresh the local wrapped-VEK cache so offline password unlock
-       * keeps working, then upgrade the received key to the VEK when it turns out to be the KEK.
+       * The mobile device sends the vault encryption key (the encrypted VEK for migrated accounts, or the derived key when
+       * the mobile app predates the KEK/VEK model). Refresh the local encrypted VEK cache so offline password unlock
+       * keeps working, then upgrade the received key to the encrypted VEK when it turns out to be the KEK.
        */
       await VaultKeyService.cacheEncryptedVekFromServer(webApi);
       const mobileKey = await VaultKeyService.resolveStoredUnlockKey(result.decryptionKey);

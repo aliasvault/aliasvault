@@ -199,7 +199,7 @@ describe('email RSA private key cache', () => {
   it('skips undecryptable emails instead of failing the whole batch', async () => {
     /*
      * A mailbox can legitimately contain a message this user has no key for — mail delivered to an alias before
-     * it moved into a shared folder is encrypted with the owner's personal key. The server filters those out,
+     * it moved into a shared manifest is encrypted with the owner's personal key. The server filters those out,
      * but if one slips through it must cost that single row, not blank the entire mailbox.
      */
     const keyPair = await EncryptionUtility.generateRsaKeyPair();
