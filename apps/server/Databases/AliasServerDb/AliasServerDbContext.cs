@@ -489,11 +489,11 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Configure RateLimit - AliasVaultUser relationship
+        // Configure RateLimit - Group relationship: quotas are charged to the group that owns the content.
         modelBuilder.Entity<RateLimit>()
-            .HasOne(r => r.User)
+            .HasOne(r => r.Group)
             .WithMany()
-            .HasForeignKey(r => r.UserId)
+            .HasForeignKey(r => r.GroupId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

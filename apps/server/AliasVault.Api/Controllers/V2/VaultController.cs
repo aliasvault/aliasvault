@@ -1054,7 +1054,7 @@ public class VaultController(
     private async Task UpdateEmailClaimsAsync(AliasServerDbContext context, AliasVaultUser user, EmailRouting routing)
     {
         var accessibleManifests = await GetEmailClaimableManifestIdsAsync(context, user.Id, routing.SharedEmailAddressList.Select(x => x.ManifestId));
-        var quotaOwnerByManifest = await GroupHelper.ResolveQuotaOwnersAsync(context, accessibleManifests);
+        var ownerGroupByManifest = await GroupHelper.ResolveOwnerGroupsAsync(context, accessibleManifests);
 
         var rootManifestId = await context.VaultManifests.Where(m => m.IsRoot && m.OwnerGroupId == user.PersonalGroupId).Select(m => (Guid?)m.ManifestId).FirstOrDefaultAsync();
         if (rootManifestId is null)
@@ -1101,7 +1101,7 @@ public class VaultController(
         var supportedDomains = config.PrivateEmailDomains;
 
         // Max-alias check: how many new aliases each quota subject (the group owning the manifest) may still create.
-        var remainingAliases = await GetRemainingAliasAllowancesAsync(context, user, quotaOwnerByManifest.Values);
+        var remainingAliases = await GetRemainingAliasAllowancesAsync(context, user, ownerGroupByManifest.Values);
         var limitLoggedFor = new HashSet<Guid>();
 
         foreach (var email in newEmailAddresses)
@@ -1127,7 +1127,7 @@ public class VaultController(
             var resolvedManifestId = sharedManifestId ?? rootManifestId.Value;
 
             // The quota subject is the group owning that manifest: the shared manifest's group, or the caller's personal group.
-            var quotaGroupId = sharedManifestId is not null && quotaOwnerByManifest.TryGetValue(sharedManifestId.Value, out var sharedOwner) ? sharedOwner.GroupId : user.PersonalGroupId;
+            var quotaGroupId = sharedManifestId is not null && ownerGroupByManifest.TryGetValue(sharedManifestId.Value, out var sharedGroupId) ? sharedGroupId : user.PersonalGroupId;
 
             var existing = userOwnedEmailClaims.FirstOrDefault(x => x.Address == sanitized);
             if (existing != null)
@@ -1196,46 +1196,28 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Gets how many new aliases each quota subject may still create. Every alias is charged to the group that owns
-    /// the manifest it is filed under: the caller's personal group for personal aliases, and the owning group of each
-    /// shared manifest this push adds aliases to. The rate-limit rules themselves are still scoped per user/tier/global
-    /// (see <see cref="RateLimit"/>), so the rules of a group are resolved from its owner, while the consumption they
-    /// are measured against is counted per group. When multiple limits apply to a group the strictest one wins. Groups
-    /// without any configured limit are absent from the result (unlimited).
+    /// Gets how many new aliases each quota subject may still create. The subject is the group that owns the manifest
+    /// the alias is filed under: the caller's personal group for personal aliases, and the owning group of each shared
+    /// manifest this push adds aliases to. Both the rules (see <see cref="RateLimit"/>) and the consumption they are
+    /// measured against are scoped to that group, so a shared group's aliases never drain the caller's personal
+    /// allowance. When multiple limits apply to a group the strictest one wins. Groups without any configured limit
+    /// are absent from the result (unlimited).
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="caller">The pushing user; their personal group is always a subject via their personal aliases.</param>
-    /// <param name="quotaGroups">The owning group and its owner for each shared manifest in this push.</param>
+    /// <param name="sharedGroupIds">The owning group of each shared manifest in this push.</param>
     /// <returns>Remaining alias amount per quota group, for the groups that have limits at all.</returns>
-    private async Task<Dictionary<Guid, int>> GetRemainingAliasAllowancesAsync(AliasServerDbContext context, AliasVaultUser caller, IEnumerable<(Guid GroupId, string OwnerUserId)> quotaGroups)
+    private async Task<Dictionary<Guid, int>> GetRemainingAliasAllowancesAsync(AliasServerDbContext context, AliasVaultUser caller, IEnumerable<Guid> sharedGroupIds)
     {
         // The caller's personal group is always in play; the shared manifests add their owning groups on top.
-        var ownerByGroup = new Dictionary<Guid, string> { [caller.PersonalGroupId] = caller.Id };
-        foreach (var (groupId, ownerUserId) in quotaGroups)
-        {
-            ownerByGroup[groupId] = ownerUserId;
-        }
-
-        // The caller is already materialized; fetch only the group owners that are somebody else.
-        var otherOwnerIds = ownerByGroup.Values.Where(id => id != caller.Id).Distinct().ToList();
-        var ownersById = new Dictionary<string, AliasVaultUser> { [caller.Id] = caller };
-        if (otherOwnerIds.Count > 0)
-        {
-            foreach (var owner in await context.AliasVaultUsers.Where(u => otherOwnerIds.Contains(u.Id)).ToListAsync())
-            {
-                ownersById[owner.Id] = owner;
-            }
-        }
+        var subjectIds = sharedGroupIds.Append(caller.PersonalGroupId).Distinct().ToList();
+        var subjects = await context.Groups.Where(g => subjectIds.Contains(g.Id)).ToListAsync();
 
         var remaining = new Dictionary<Guid, int>();
-        foreach (var (groupId, ownerUserId) in ownerByGroup)
+        foreach (var group in subjects)
         {
-            if (!ownersById.TryGetValue(ownerUserId, out var owner))
-            {
-                continue;
-            }
-
-            foreach (var limit in await rateLimitService.ResolveAsync(owner, RateLimitType.AliasCreation))
+            var groupId = group.Id;
+            foreach (var limit in await rateLimitService.ResolveAsync(group, RateLimitType.AliasCreation))
             {
                 int currentCount;
                 if (limit.WindowSeconds == 0)

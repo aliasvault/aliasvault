@@ -97,7 +97,7 @@ public static class GroupHelper
     /// <param name="context">Database context.</param>
     /// <param name="manifestId">The shared manifest.</param>
     /// <param name="userId">The user.</param>
-    /// <returns>True when the user can administer the folder.</returns>
+    /// <returns>True when the user can administer the manifest.</returns>
     public static async Task<bool> CanAdministerManifestAsync(AliasServerDbContext context, Guid manifestId, string userId)
     {
         var groupId = await context.VaultManifests
@@ -109,12 +109,13 @@ public static class GroupHelper
     }
 
     /// <summary>
-    /// Get the ownership of a shared manifest.
+    /// Get the owning group of each manifest. That group is the quota subject for everything filed under the manifest:
+    /// both the rate-limit rules and the usage they are measured against are scoped to it.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="manifestIds">The shared manifests to get the ownership of.</param>
-    /// <returns>Manifest id to (owning group id, owning user id).</returns>
-    public static async Task<Dictionary<Guid, (Guid GroupId, string OwnerUserId)>> ResolveQuotaOwnersAsync(AliasServerDbContext context, IEnumerable<Guid> manifestIds)
+    /// <param name="manifestIds">The manifests to resolve the owning group of.</param>
+    /// <returns>Manifest id to owning group id.</returns>
+    public static async Task<Dictionary<Guid, Guid>> ResolveOwnerGroupsAsync(AliasServerDbContext context, IEnumerable<Guid> manifestIds)
     {
         var ids = manifestIds.Distinct().ToList();
         if (ids.Count == 0)
@@ -122,14 +123,9 @@ public static class GroupHelper
             return [];
         }
 
-        var rows = await context.VaultManifests
+        return await context.VaultManifests
             .Where(m => ids.Contains(m.ManifestId))
-            .Join(context.GroupMembers.Where(gm => gm.Role == GroupRole.Owner), m => m.OwnerGroupId, gm => gm.GroupId, (m, gm) => new { m.ManifestId, gm.GroupId, gm.UserId, gm.CreatedAt })
-            .ToListAsync();
-
-        return rows
-            .GroupBy(r => r.ManifestId)
-            .ToDictionary(g => g.Key, g => g.OrderBy(r => r.CreatedAt).ThenBy(r => r.UserId).Select(r => (r.GroupId, r.UserId)).First());
+            .ToDictionaryAsync(m => m.ManifestId, m => m.OwnerGroupId);
     }
 
     /// <summary>
