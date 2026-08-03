@@ -189,7 +189,7 @@ export class EncryptionUtility {
 
   /**
    * Generates a random 256-bit Vault Encryption Key (VEK) as base64. The VEK encrypts the vault content and never
-   * changes; it is stored server-side only in wrapped form (encrypted with a KEK derived from an unlock method).
+   * changes; it is stored server-side only in encryped form (encrypted with a KEK derived from an unlock method).
    */
   public static generateVaultEncryptionKey(): string {
     const vek = crypto.getRandomValues(new Uint8Array(32));
@@ -208,8 +208,8 @@ export class EncryptionUtility {
    * Unwraps (decrypts) an encrypted VEK with a KEK. Returns the VEK as base64.
    */
   public static async unwrapVaultEncryptionKey(encryptedVekBase64: string, kekBase64: string): Promise<string> {
-    const wrappedBytes = Uint8Array.from(atob(encryptedVekBase64), c => c.charCodeAt(0));
-    const vekBytes = await this.symmetricDecryptBytes(wrappedBytes, kekBase64);
+    const encryptedBytes = Uint8Array.from(atob(encryptedVekBase64), c => c.charCodeAt(0));
+    const vekBytes = await this.symmetricDecryptBytes(encryptedBytes, kekBase64);
     return btoa(String.fromCharCode(...vekBytes));
   }
 

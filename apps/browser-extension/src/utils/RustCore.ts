@@ -264,16 +264,16 @@ export type CodecManifest = {
   userSalt: string;
   canonicalizedAt: string;
   manifestId: string;
-  sharedFolderId?: string | null;
+  anchorFolderId?: string | null;
   tables: Record<string, Array<Record<string, unknown>>>;
   [key: string]: unknown;
 };
 
-/** One shared folder to split out during canonicalize: its manifest id, folder id, and that manifest's own blob salt. */
-export type CodecSharedFolderSpec = { manifestId: string; folderId: string; userSalt: string };
+/** One shared manifest to split out during canonicalize: its manifest id, anchor folder id, and that manifest's own blob salt. */
+export type CodecSharedManifestSpec = { manifestId: string; anchorFolderId: string; userSalt: string };
 
-/** One shared-folder manifest produced by the canonicalize split, with its own blob map. */
-export type CodecSharedVault = { folderId: string; manifest: CodecManifest; blobs: Record<string, CodecBlobEntry> };
+/** One shared manifest produced by the canonicalize split, with its own blob map. */
+export type CodecSharedVault = { anchorFolderId: string; manifest: CodecManifest; blobs: Record<string, CodecBlobEntry> };
 
 /**
  * A manifest-v1 data bucket.
@@ -316,7 +316,7 @@ export type CodecCanonicalizeInput = {
   userSalt: string;
   migrationId: string;
   rootManifestId: string;
-  sharedFolders?: CodecSharedFolderSpec[];
+  sharedManifests?: CodecSharedManifestSpec[];
   canonicalizedAt: string;
 };
 
@@ -388,7 +388,7 @@ export async function vaultCodecBucketLayout(): Promise<CodecBucketLayoutEntry[]
  *
  * Logo identity is derived: two devices that fetch the same favicon independently produce
  * the same row and merge by LWW. The same domain in two different manifests deliberately yields
- * two different ids, so a shared folder's logo and the user's own logo for that domain never
+ * two different ids, so a shared manifest's logo and the user's own logo for that domain never
  * overwrite each other.
  */
 export async function vaultCodecLogoIdForSource(manifestId: string, source: string): Promise<string> {

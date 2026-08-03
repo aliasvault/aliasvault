@@ -594,9 +594,9 @@ export class ItemRepository extends BaseRepository {
    *   3. otherwise the favicon for the item's current domain, which is looked up rather than carried
    *      over: an item whose URL changed must not keep the previous site's logo.
    *
-   * Rule 2 also keeps the logo of an item inside a shared folder pointing at the folder's own row.
+   * Rule 2 also keeps the logo of an item inside a shared manifest pointing at the manifest's own row.
    * Re-resolving would swap in the personal-scope row, which the next push would then copy over the
-   * folder's logo: a write every member sees, every time anyone edits the item.
+   * shared manifest's logo: a write every member sees, every time anyone edits the item.
    * @param item The item being created or updated
    * @param currentDateTime The current date/time string for timestamps
    * @param existingLogoId The logo the item currently has, when updating
