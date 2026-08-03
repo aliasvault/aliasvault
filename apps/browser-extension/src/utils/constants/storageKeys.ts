@@ -44,8 +44,14 @@ export const StorageKeys = {
   HIDDEN_PRIVATE_EMAIL_DOMAINS: 'local:hiddenPrivateEmailDomains',
   /** Argon2 parameters used to derive the KEK from the master password. */
   ENCRYPTION_KEY_DERIVATION_PARAMS: 'local:encryptionKeyDerivationParams',
-  /** The VEK encrypted with the KEK, as returned by the server. */
+  /** The VEK encrypted with the Account Key, as returned by the server. */
   ENCRYPTED_VEK: 'local:encryptedVek',
+  /** The Account Key encrypted with the password-derived KEK, as returned by the server. */
+  ENCRYPTED_ACCOUNT_KEY: 'local:encryptedAccountKey',
+  /** The account public key, used for wrapping shared-manifest VEK grants. */
+  ACCOUNT_PUBLIC_KEY: 'local:accountPublicKey',
+  /** The account private key encrypted with the Account Key. */
+  ENCRYPTED_ACCOUNT_PRIVATE_KEY: 'local:encryptedAccountPrivateKey',
 
   /*
    * -- Sync state --
@@ -59,7 +65,7 @@ export const StorageKeys = {
   IS_OFFLINE_MODE: 'local:isOfflineMode',
   /** Message of the last failed sync attempt, shown in the UI. */
   LAST_SYNC_ERROR: 'local:lastSyncError',
-  /** The client's last known revision per non-root (shared folder) manifest. */
+  /** The client's last known revision per non-root (shared) manifest. */
   SERVER_MANIFEST_REVISIONS: 'local:serverManifestRevisions',
   /** Per-user salt used to canonicalize the vault into the manifest-v1 format. */
   VAULT_V2_USER_SALT: 'local:vaultV2UserSalt',
@@ -82,6 +88,8 @@ export const StorageKeys = {
 
   /** The decrypted vault encryption key. Session-only: it must never persist to disk. */
   ENCRYPTION_KEY: 'session:encryptionKey',
+  /** The decrypted account private key (JWK). Session-only: it must never persist to disk. */
+  ACCOUNT_PRIVATE_KEY: 'session:accountPrivateKey',
   /** Legacy (pre-v0.19) encryption key location, only read as a fallback. */
   LEGACY_DERIVED_KEY: 'session:derivedKey',
   /** Encrypted form values persisted while the popup is closed. */
@@ -94,8 +102,8 @@ export const StorageKeys = {
   NAVIGATION_HISTORY: 'session:navigationHistory',
   /** URL of the tab the popup was opened from. */
   LAST_TAB_URL: 'session:lastTabUrl',
-  /** Shared folder records from the last pull, needed to push shared manifests back. */
-  SHARED_FOLDERS: 'session:sharedFolders',
+  /** Shared manifest records from the last pull, needed to push shared manifests back. */
+  SHARED_MANIFESTS: 'session:sharedManifests',
   /** The item that was most recently autofilled, used to prioritize it in the list. */
   RECENTLY_SELECTED_ITEM: 'session:aliasvault_recently_selected_item',
 
@@ -216,6 +224,7 @@ export const AUTH_STORAGE_KEYS: readonly StorageKey[] = [
 /** Keys that must not survive a vault lock: the encryption key plus anything derived from decrypted data. */
 export const VAULT_LOCK_STORAGE_KEYS: readonly StorageKey[] = [
   StorageKeys.ENCRYPTION_KEY,
+  StorageKeys.ACCOUNT_PRIVATE_KEY,
   StorageKeys.PERSISTED_FORM_VALUES,
 ];
 
@@ -276,6 +285,9 @@ export const allVaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.IS_OFFLINE_MODE,
   StorageKeys.ENCRYPTION_KEY_DERIVATION_PARAMS,
   StorageKeys.ENCRYPTED_VEK,
+  StorageKeys.ENCRYPTED_ACCOUNT_KEY,
+  StorageKeys.ACCOUNT_PUBLIC_KEY,
+  StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY,
   StorageKeys.USERNAME,
   ...ALL_VAULT_MUTATION_SCOPES.map(scope => dirtyScopeStorageKey(scope)),
   ...ALL_VAULT_BUCKET_SCOPES.map(category => bucketRevisionStorageKey(category)),
