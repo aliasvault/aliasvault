@@ -144,7 +144,7 @@ public class VaultController(
             .GroupBy(x => x.ManifestId)
             .ToDictionary(g => g.Key, g => g.Select(x => new BlobReference { Hash = x.Hash, Category = x.Category }).ToList());
 
-        // The caller's own grants on the non-root manifests they own: the folder VEK encrypted with their own public key.
+        // The caller's own grants on the non-root manifests they own: the manifest VEK encrypted with their own public key.
         var ownedNonRootIds = latestManifests.Where(m => !m.IsRoot).Select(m => m.ManifestId).ToList();
         var selfGrantsByManifest = ownedNonRootIds.Count == 0
             ? new Dictionary<Guid, VaultManifestAccessKey>()
@@ -529,7 +529,7 @@ public class VaultController(
             }
 
             // 6) Root-scoped email routing + public keys. The personal key is published scoped to the caller's
-            // root manifest, the exact same flow as a folder's delivery key below.
+            // root manifest, the exact same flow as a shared manifest's delivery key below.
             if (!string.IsNullOrEmpty(model.UserEncryptionPublicKey))
             {
                 var rootManifestId = await GroupHelper.GetRootManifestIdAsync(context, user.PersonalGroupId);
@@ -1045,38 +1045,64 @@ public class VaultController(
         }
     }
 
-    private async Task UpdateUserEmailClaimsAsync(AliasServerDbContext context, AliasVaultUser user, List<string> newEmailAddresses)
+    /// <summary>
+    /// Updates the email claims based on the routing data pushed by the client.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="user">The calling user.</param>
+    /// <param name="routing">The pushed routing data: personal addresses plus shared addresses with their manifest.</param>
+    private async Task UpdateEmailClaimsAsync(AliasServerDbContext context, AliasVaultUser user, EmailRouting routing)
     {
-        newEmailAddresses = newEmailAddresses.Select(EmailHelper.SanitizeEmail).Distinct().ToList();
-        var userOwnedEmailClaims = await context.UserEmailClaims.Where(x => x.UserId == user.Id).ToListAsync();
+        var accessibleManifests = await GetEmailClaimableManifestIdsAsync(context, user.Id, routing.SharedEmailAddressList.Select(x => x.ManifestId));
+        var quotaOwnerByManifest = await GroupHelper.ResolveQuotaOwnersAsync(context, accessibleManifests);
+
+        var rootManifestId = await context.VaultManifests.Where(m => m.IsRoot && m.OwnerGroupId == user.PersonalGroupId).Select(m => (Guid?)m.ManifestId).FirstOrDefaultAsync();
+        if (rootManifestId is null)
+        {
+            logger.LogError("No root manifest found for {User}; skipping email claim update.", user.UserName);
+            return;
+        }
+
+        // Get the manifests with a delivery key.
+        var manifestsWithDeliveryKey = (await context.VaultManifestDeliveryKeys
+            .Where(k => accessibleManifests.Contains(k.VaultManifestId) && k.IsPrimary)
+            .Select(k => k.VaultManifestId)
+            .ToListAsync()).ToHashSet();
+
+        var manifestByAddress = new Dictionary<string, Guid>();
+        foreach (var shared in routing.SharedEmailAddressList)
+        {
+            var sanitizedShared = EmailHelper.SanitizeEmail(shared.Address);
+            if (!accessibleManifests.Contains(shared.ManifestId))
+            {
+                logger.LogWarning("{User} claimed shared alias {Email} for manifest {Manifest} they cannot access; treating it as a personal alias.", user.UserName, sanitizedShared, shared.ManifestId);
+                continue;
+            }
+
+            manifestByAddress[sanitizedShared] = shared.ManifestId;
+            if (!manifestsWithDeliveryKey.Contains(shared.ManifestId))
+            {
+                logger.LogWarning("{User} claimed shared alias {Email} for manifest {Manifest} with no published delivery key; its mail stays readable by the routing owner alone until a delivery key is published.", user.UserName, sanitizedShared, shared.ManifestId);
+            }
+        }
+
+        var newEmailAddresses = routing.EmailAddressList
+            .Concat(routing.SharedEmailAddressList.Select(x => x.Address))
+            .Select(EmailHelper.SanitizeEmail)
+            .Distinct()
+            .ToList();
+
+        // Get the claims this push may update: every claim whose manifest is owned by a group the caller owns, plus every claim belonging to a shared manifest they can currently access.
+        var userOwnedEmailClaims = await context.EmailClaims
+            .Where(x => context.GroupMembers.Any(gm => gm.GroupId == x.VaultManifest!.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner)
+                || (x.VaultManifestId != null && accessibleManifests.Contains(x.VaultManifestId.Value)))
+            .ToListAsync();
         var processed = new List<string>();
         var supportedDomains = config.PrivateEmailDomains;
 
-        // Resolve the alias creation limits for this user.
-        var rateLimits = await rateLimitService.ResolveAsync(user, RateLimitType.AliasCreation);
-
-        // Calculate the current usage baseline per limit. addedThisSync is then added to each in the loop.
-        var limitUsages = new List<(int MaxCount, int BaseCount)>();
-        foreach (var limit in rateLimits)
-        {
-            int baseCount;
-            if (limit.WindowSeconds == 0)
-            {
-                // Global absolute cap: every claim the user has ever made (including disabled ones).
-                baseCount = userOwnedEmailClaims.Count;
-            }
-            else
-            {
-                // Time-based cap: aliases created within the rolling window (create-then-delete still counts).
-                var windowStart = timeProvider.UtcNow.AddSeconds(-limit.WindowSeconds);
-                baseCount = await context.UserEmailClaims.CountAsync(x => x.UserId == user.Id && x.CreatedAt >= windowStart);
-            }
-
-            limitUsages.Add((limit.MaxCount, baseCount));
-        }
-
-        var addedThisSync = 0;
-        var aliasLimitLogged = false;
+        // Max-alias check: how many new aliases each quota subject (the group owning the manifest) may still create.
+        var remainingAliases = await GetRemainingAliasAllowancesAsync(context, user, quotaOwnerByManifest.Values);
+        var limitLoggedFor = new HashSet<Guid>();
 
         foreach (var email in newEmailAddresses)
         {
@@ -1096,6 +1122,13 @@ public class VaultController(
                 continue;
             }
 
+            // Check which manifest the alias is filed against.
+            var sharedManifestId = manifestByAddress.TryGetValue(sanitized, out var mappedManifestId) ? mappedManifestId : (Guid?)null;
+            var resolvedManifestId = sharedManifestId ?? rootManifestId.Value;
+
+            // The quota subject is the group owning that manifest: the shared manifest's group, or the caller's personal group.
+            var quotaGroupId = sharedManifestId is not null && quotaOwnerByManifest.TryGetValue(sharedManifestId.Value, out var sharedOwner) ? sharedOwner.GroupId : user.PersonalGroupId;
+
             var existing = userOwnedEmailClaims.FirstOrDefault(x => x.Address == sanitized);
             if (existing != null)
             {
@@ -1105,66 +1138,156 @@ public class VaultController(
                     existing.UpdatedAt = timeProvider.UtcNow;
                 }
 
-                continue;
-            }
-
-            var foreignClaim = await context.UserEmailClaims.FirstOrDefaultAsync(x => x.Address == sanitized);
-            if (foreignClaim != null && foreignClaim.UserId != user.Id)
-            {
-                logger.LogWarning("{User} tried to claim email already owned by another user: {Email}", user.UserName, sanitized);
-                continue;
-            }
-
-            // Once any limit is reached, silently skip creating further aliases (logged once for audits).
-            if (limitUsages.Any(u => u.BaseCount + addedThisSync >= u.MaxCount))
-            {
-                if (!aliasLimitLogged)
+                // Re-point the claim when the alias moved into or out of a shared manifest.
+                if (existing.VaultManifestId != resolvedManifestId)
                 {
-                    logger.LogWarning("{User} exceeded alias creation limit. Skipping creation of additional aliases.", user.UserName);
-                    aliasLimitLogged = true;
+                    existing.VaultManifestId = resolvedManifestId;
+                    existing.UpdatedAt = timeProvider.UtcNow;
                 }
 
                 continue;
             }
 
-            context.UserEmailClaims.Add(new UserEmailClaim
+            var foreignClaim = await context.EmailClaims.FirstOrDefaultAsync(x => x.Address == sanitized);
+            if (foreignClaim != null)
             {
-                UserId = user.Id,
+                // The address already exists: either a genuine attempt on someone else's address, or a shared alias of a manifest this caller cannot access. Neither may touch the claim.
+                logger.LogWarning("{User} tried to claim email already owned by another user: {Email}", user.UserName, sanitized);
+                continue;
+            }
+
+            // Once the quota group's max is reached, silently skip creating further aliases charged to it
+            // (logged once per group for audits), while aliases charged to other groups in the same push carry on.
+            if (remainingAliases.TryGetValue(quotaGroupId, out var remaining))
+            {
+                if (remaining <= 0)
+                {
+                    if (limitLoggedFor.Add(quotaGroupId))
+                    {
+                        logger.LogWarning("Alias creation limit reached for group {QuotaGroup} (pushed by {User}). Skipping creation of additional aliases charged to it.", quotaGroupId, user.UserName);
+                    }
+
+                    continue;
+                }
+
+                remainingAliases[quotaGroupId] = remaining - 1;
+            }
+
+            context.EmailClaims.Add(new EmailClaim
+            {
+                VaultManifestId = resolvedManifestId,
                 Address = sanitized,
                 AddressLocal = sanitized.Split('@')[0],
                 AddressDomain = sanitized.Split('@')[1],
                 CreatedAt = timeProvider.UtcNow,
                 UpdatedAt = timeProvider.UtcNow,
             });
-            addedThisSync++;
         }
 
-        foreach (var existing in userOwnedEmailClaims.Where(x => !x.Disabled).ToList())
+        // Disable claims that were not processed in this push and the user had access to (all active claims should be pushed on every change.)
+        var disabledClaims = userOwnedEmailClaims.Where(x => !x.Disabled && !processed.Contains(x.Address)).ToList();
+        foreach (var claim in disabledClaims)
         {
-            if (!processed.Contains(existing.Address))
-            {
-                existing.Disabled = true;
-                existing.UpdatedAt = timeProvider.UtcNow;
-            }
+            claim.Disabled = true;
+            claim.UpdatedAt = timeProvider.UtcNow;
         }
+
+        context.EmailClaims.UpdateRange(disabledClaims);
     }
 
-    private async Task UpdateUserPublicKeyAsync(AliasServerDbContext context, string userId, string newPublicKey)
+    /// <summary>
+    /// Gets how many new aliases each quota subject may still create. Every alias is charged to the group that owns
+    /// the manifest it is filed under: the caller's personal group for personal aliases, and the owning group of each
+    /// shared manifest this push adds aliases to. The rate-limit rules themselves are still scoped per user/tier/global
+    /// (see <see cref="RateLimit"/>), so the rules of a group are resolved from its owner, while the consumption they
+    /// are measured against is counted per group. When multiple limits apply to a group the strictest one wins. Groups
+    /// without any configured limit are absent from the result (unlimited).
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="caller">The pushing user; their personal group is always a subject via their personal aliases.</param>
+    /// <param name="quotaGroups">The owning group and its owner for each shared manifest in this push.</param>
+    /// <returns>Remaining alias amount per quota group, for the groups that have limits at all.</returns>
+    private async Task<Dictionary<Guid, int>> GetRemainingAliasAllowancesAsync(AliasServerDbContext context, AliasVaultUser caller, IEnumerable<(Guid GroupId, string OwnerUserId)> quotaGroups)
     {
-        var exists = await context.UserEncryptionKeys.AnyAsync(x => x.UserId == userId && x.IsPrimary && x.PublicKey == newPublicKey);
+        // The caller's personal group is always in play; the shared manifests add their owning groups on top.
+        var ownerByGroup = new Dictionary<Guid, string> { [caller.PersonalGroupId] = caller.Id };
+        foreach (var (groupId, ownerUserId) in quotaGroups)
+        {
+            ownerByGroup[groupId] = ownerUserId;
+        }
+
+        // The caller is already materialized; fetch only the group owners that are somebody else.
+        var otherOwnerIds = ownerByGroup.Values.Where(id => id != caller.Id).Distinct().ToList();
+        var ownersById = new Dictionary<string, AliasVaultUser> { [caller.Id] = caller };
+        if (otherOwnerIds.Count > 0)
+        {
+            foreach (var owner in await context.AliasVaultUsers.Where(u => otherOwnerIds.Contains(u.Id)).ToListAsync())
+            {
+                ownersById[owner.Id] = owner;
+            }
+        }
+
+        var remaining = new Dictionary<Guid, int>();
+        foreach (var (groupId, ownerUserId) in ownerByGroup)
+        {
+            if (!ownersById.TryGetValue(ownerUserId, out var owner))
+            {
+                continue;
+            }
+
+            foreach (var limit in await rateLimitService.ResolveAsync(owner, RateLimitType.AliasCreation))
+            {
+                int currentCount;
+                if (limit.WindowSeconds == 0)
+                {
+                    // Global absolute cap: every claim ever charged to this group (including disabled ones).
+                    currentCount = await context.EmailClaims.CountAsync(x => x.VaultManifest!.OwnerGroupId == groupId);
+                }
+                else
+                {
+                    // Time-based cap: aliases created within the rolling window (create-then-delete still counts).
+                    var windowStart = timeProvider.UtcNow.AddSeconds(-limit.WindowSeconds);
+                    currentCount = await context.EmailClaims.CountAsync(x => x.CreatedAt >= windowStart && x.VaultManifest!.OwnerGroupId == groupId);
+                }
+
+                var allowed = limit.MaxCount - currentCount;
+                remaining[groupId] = remaining.TryGetValue(groupId, out var existing) ? Math.Min(existing, allowed) : allowed;
+            }
+        }
+
+        return remaining;
+    }
+
+    /// <summary>
+    /// Publishes <paramref name="newPublicKey"/> as the primary key of a manifest and demotes the previous one.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="vaultManifestId">
+    /// The manifest this key belongs to: the caller's root manifest for their personal key, a shared manifest
+    /// for its delivery key. Everything here is scoped by it, promoting a shared manifest's key must never demote
+    /// the user's personal key, and rotating the personal key must never demote a shared manifest's delivery key. The key
+    /// carries no user owner at all: it must survive the publishing admin deleting their account, and a later
+    /// admin republishing must land on the same scope rather than a per-user copy.
+    /// </param>
+    /// <param name="newPublicKey">The public key to publish.</param>
+    private async Task PublishManifestPublicKeyAsync(AliasServerDbContext context, Guid vaultManifestId, string newPublicKey)
+    {
+        var scope = context.VaultManifestDeliveryKeys.Where(x => x.VaultManifestId == vaultManifestId);
+
+        var exists = await scope.AnyAsync(x => x.IsPrimary && x.PublicKey == newPublicKey);
         if (exists)
         {
             return;
         }
 
-        var others = await context.UserEncryptionKeys.Where(x => x.UserId == userId).ToListAsync();
+        var others = await scope.ToListAsync();
         foreach (var key in others)
         {
             key.IsPrimary = false;
             key.UpdatedAt = timeProvider.UtcNow;
         }
 
-        var existingKey = await context.UserEncryptionKeys.FirstOrDefaultAsync(x => x.UserId == userId && x.PublicKey == newPublicKey);
+        var existingKey = others.FirstOrDefault(x => x.PublicKey == newPublicKey);
         if (existingKey != null)
         {
             existingKey.IsPrimary = true;
@@ -1172,9 +1295,9 @@ public class VaultController(
             return;
         }
 
-        context.UserEncryptionKeys.Add(new UserEncryptionKey
+        context.VaultManifestDeliveryKeys.Add(new VaultManifestDeliveryKey
         {
-            UserId = userId,
+            VaultManifestId = vaultManifestId,
             PublicKey = newPublicKey,
             IsPrimary = true,
             CreatedAt = timeProvider.UtcNow,
