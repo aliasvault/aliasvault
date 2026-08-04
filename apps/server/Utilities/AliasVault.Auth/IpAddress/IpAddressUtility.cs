@@ -11,7 +11,7 @@ using System.Net;
 using Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// Ip address utility class to extract IP address from HttpContext.
+/// Ip address utility class to extract the client IP address from HttpContext.
 /// </summary>
 public static class IpAddressUtility
 {
@@ -19,6 +19,11 @@ public static class IpAddressUtility
     /// Fully anonymized IP address constant used when IP logging is disabled.
     /// </summary>
     public const string AnonymizedIp = "xxx.xxx.xxx.xxx";
+
+    /// <summary>
+    /// The header which contains the resolved client IP address. This is set by nginx (which ships with AliasVault).
+    /// </summary>
+    private const string RealIpHeader = "X-Real-IP";
 
     /// <summary>
     /// Extracts the anonymized IP address (IPv4 last octet masked) from the HttpContext for persistence/logging.
@@ -38,7 +43,7 @@ public static class IpAddressUtility
             return string.Empty;
         }
 
-        var ipAddress = ExtractRawIpString(httpContext) ?? "0.0.0.0";
+        var ipAddress = ExtractIpAddress(httpContext)?.ToString() ?? "0.0.0.0";
 
         // Anonymize the last octet of the IP address (IPv4 only).
         if (ipAddress.Contains('.'))
@@ -71,20 +76,39 @@ public static class IpAddressUtility
             return null;
         }
 
-        return IPAddress.TryParse(ExtractRawIpString(httpContext), out var parsed) ? parsed : null;
+        return ExtractIpAddress(httpContext);
     }
 
     /// <summary>
-    /// Extracts the raw IP address string from the request, honoring the X-Forwarded-For header (first entry) when
-    /// present and otherwise falling back to the connection's remote IP address.
+    /// Resolves the client IP address for the request.
+    /// </summary>
+    /// <param name="httpContext">HttpContext to extract the IP address from.</param>
+    /// <returns>The parsed IP address, or null when it cannot be determined.</returns>
+    private static IPAddress? ExtractIpAddress(HttpContext httpContext)
+    {
+        if (!IPAddress.TryParse(ExtractRawIpString(httpContext), out var parsed))
+        {
+            return null;
+        }
+
+        return IpRangeUtility.NormalizeAddress(parsed);
+    }
+
+    /// <summary>
+    /// Extracts the raw IP address string from the X-Real-IP header set by nginx, falling back to the connection's
+    /// remote IP address when the header is not set (direct access in development and tests).
     /// </summary>
     /// <param name="httpContext">HttpContext to extract the IP address from.</param>
     /// <returns>The raw IP address string, or null when it cannot be determined.</returns>
     private static string? ExtractRawIpString(HttpContext httpContext)
     {
-        if (httpContext.Request.Headers.TryGetValue("X-Forwarded-For", out var xForwardedFor))
+        if (httpContext.Request.Headers.TryGetValue(RealIpHeader, out var realIp))
         {
-            return xForwardedFor.ToString().Split(',')[0].Trim();
+            var lastEntry = realIp.ToString().Split(',')[^1].Trim();
+            if (lastEntry.Length > 0)
+            {
+                return lastEntry;
+            }
         }
 
         return httpContext.Connection.RemoteIpAddress?.ToString();
