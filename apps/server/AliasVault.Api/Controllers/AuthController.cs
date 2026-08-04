@@ -133,6 +133,13 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginInitiateRequest model)
     {
+        // Check the IP blocklist.
+        if (await ipBlockListService.IsBlockedForLoginAsync(IpAddressUtility.GetRawIpAddressFromContext(HttpContext)))
+        {
+            await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Login, AuthFailureReason.IpBlocked);
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 400));
+        }
+
         var user = await userManager.FindByNameAsync(model.Username);
 
         // If user doesn't exist, generate or retrieve fake data to prevent user enumeration attacks.
@@ -339,6 +346,13 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 401));
         }
 
+        // Check the IP blocklist.
+        if (await ipBlockListService.IsBlockedForLoginAsync(IpAddressUtility.GetRawIpAddressFromContext(HttpContext)))
+        {
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.TokenRefresh, AuthFailureReason.IpBlocked);
+            return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 401));
+        }
+
         // Generate new tokens for the user.
         var token = await GenerateNewTokensForUser(user, tokenModel.RefreshToken);
         if (token == null)
@@ -442,7 +456,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PUBLIC_REGISTRATION_DISABLED, 400));
         }
 
-        // Check the IP blocklist using the raw IP address.
+        // Check the IP blocklist.
         var rawIpAddress = IpAddressUtility.GetRawIpAddressFromContext(HttpContext);
         if (await ipBlockListService.IsBlockedForRegistrationAsync(rawIpAddress))
         {
@@ -636,6 +650,13 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     public async Task<IActionResult> InitiateMobileLogin([FromBody] MobileLoginInitiateRequest model)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
+
+        // Check the IP blocklist.
+        if (await ipBlockListService.IsBlockedForLoginAsync(IpAddressUtility.GetRawIpAddressFromContext(HttpContext)))
+        {
+            await authLoggingService.LogAuthEventFailAsync("n/a", AuthEventType.MobileLogin, AuthFailureReason.IpBlocked);
+            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 400));
+        }
 
         // Generate a unique request ID
         var requestId = Guid.NewGuid().ToString("N");
