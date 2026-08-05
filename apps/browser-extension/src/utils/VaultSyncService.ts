@@ -145,8 +145,10 @@ type ManifestDto = {
   blobReferences?: BlobRefDto[];
   /** Plaintext display name of a shared manifest (null for the root manifest). */
   name?: string | null;
-  /** Username of the manifest owner; set only on manifests granted to the caller by another user. */
+  /** Username of the manifest owner; set only when the caller is not an owner of the group owning it. Display only. */
   ownerUsername?: string | null;
+  /** Whether the caller may grant/revoke access to this manifest and publish its email delivery key. */
+  canAdminister?: boolean;
   /** The manifest VEK encrypted with the caller's public key; set only on manifests granted by another user. */
   encryptedVek?: string | null;
   /** Algorithm of `encryptedVek` (e.g. "rsa-oaep-sha256"). */
@@ -481,9 +483,9 @@ export class VaultSyncService {
         pulledFingerprints[fingerprintManifestKey(dto.manifestId)] = await vaultCodecComputeContentFingerprint(sharedManifestJson);
         devLog(`[V2Pull] Shared manifest ${dto.manifestId} opened (folder ${folderId ?? 'unassigned'}): tables: ${Object.entries(sharedManifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
         if (folderId) {
-          // A folder the user owns (ownerUsername null) must win over any shared-with-me entry for the same id.
+          // A manifest the user administers must win over one they only have read access to for the same folder id.
           const existing = sessionSharedManifests[folderId];
-          if (!(existing && !existing.ownerUsername && dto.ownerUsername)) {
+          if (!(existing?.canAdminister && !dto.canAdminister)) {
             sessionSharedManifests[folderId] = {
               folderId,
               manifestId: dto.manifestId,
@@ -492,6 +494,7 @@ export class VaultSyncService {
               revision: dto.revision,
               name: dto.name ?? null,
               ownerUsername: dto.ownerUsername ?? null,
+              canAdminister: dto.canAdminister ?? false,
             };
           }
         }
@@ -947,14 +950,14 @@ export class VaultSyncService {
     const primaryKey = sqliteClient.settings.getPrimaryEncryptionKey();
 
     /*
-     * Publish the public half of each *owned* shared manifest's email keypair, which is e.g. used by SMTP services to encrypt mail for the 
-     * manifest's aliases. Only the owner publishes: the server records the delivery key per manifest, so two members publishing the same manifest 
-     * would leave it ambiguous which row is the manifest's active key. Members still *claim* shared aliases (below). They just resolve the key 
-     * the owner published.
+     * Publish the public half of each shared manifest's email keypair that this user administers, which is e.g. used by SMTP services to encrypt
+     * mail for the manifest's aliases. Only an admin of the owning group publishes: the server records the delivery key per manifest, so a plain
+     * member publishing too would leave it ambiguous which row is the manifest's active key. Members still *claim* shared aliases (below). They
+     * just resolve the key the admin published.
      */
     const sharedManifestEncryptionPublicKeys: Array<{ manifestId: string; publicKey: string }> = [];
     for (const record of Object.values(sharedManifestRecords)) {
-      if (record.ownerUsername) {
+      if (!record.canAdminister) {
         continue;
       }
       const manifestKey = sqliteClient.settings.getActiveManifestEncryptionKey(record.manifestId);
