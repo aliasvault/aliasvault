@@ -417,7 +417,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         // Resolve the alias creation limits for the caller's personal group: v1 only files claims in the root manifest,
         // which that group owns, so it is the only quota subject a v1 push can charge.
         var personalGroup = await context.Groups.FirstAsync(g => g.Id == user.PersonalGroupId);
-        var rateLimits = await rateLimitService.ResolveAsync(personalGroup, RateLimitType.AliasCreation);
+        var rateLimits = await rateLimitService.GetLimitsAsync(personalGroup, RateLimitType.AliasCreation);
 
         // Calculate the current usage baseline per limit. addedThisSync is then added to each in the loop.
         var limitUsages = new List<(int MaxCount, int BaseCount)>();

@@ -51,7 +51,7 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
 
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        // Manifest revisions (own manifests plus those shared with this user) are built via the shared helper.
+        // Manifest revisions for every manifest this user can access, built via the shared helper.
         var manifestRevisions = await VaultStatusHelper.GetManifestRevisionsAsync(context, user.Id);
 
         // Latest revision per bucket kind.

@@ -90,13 +90,12 @@ public class VaultController(
         var emailRouting = await BuildEmailRoutingAsync(context, user);
         var ownedGroupIds = await GroupHelper.GetOwnedGroupIdsAsync(context, user.Id);
 
-        // Current revision per logical manifest.
-        var latestManifests = await context.VaultManifests
-            .Where(x => ownedGroupIds.Contains(x.OwnerGroupId) && x.StorageFormat == ManifestFormat)
-            .Select(x => new { x.ManifestId, x.IsRoot, x.Name, x.ManifestBlob, x.ManifestCiphertextHash, x.RevisionNumber })
+        // Every manifest the caller can open.
+        var latestManifests = await AccessibleManifests(context, user.Id)
+            .Select(x => new { x.ManifestId, x.IsRoot, x.Name, x.ManifestBlob, x.ManifestCiphertextHash, x.RevisionNumber, x.OwnerGroupId })
             .ToListAsync();
 
-        if (latestManifests.Count == 0)
+        if (!latestManifests.Any(m => m.IsRoot && ownedGroupIds.Contains(m.OwnerGroupId)))
         {
             // User hasn't migrated to manifest-v1 yet, return the latest legacy SQLite blob.
             var legacy = await context.VaultManifests

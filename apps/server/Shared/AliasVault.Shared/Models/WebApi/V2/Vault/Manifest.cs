@@ -39,13 +39,23 @@ public class Manifest
     /// <summary>Gets or sets the plaintext display name of a shared manifest. Null for the root manifest.</summary>
     public string? Name { get; set; }
 
-    /// <summary>Gets or sets the username of the manifest owner. Set only on manifests granted to the caller by another user.</summary>
+    /// <summary>
+    /// Gets or sets the username of the manifest owner.
+    /// <see cref="CanAdminister"/>).
+    /// </summary>
     public string? OwnerUsername { get; set; }
 
     /// <summary>
-    /// Gets or sets the manifest VEK encrypted with the caller's public key. Set only on manifests granted to the
-    /// caller by another user; the caller decrypts it with their private key. Null on manifests the caller owns
-    /// (the owner keeps their own copy of the folder VEK inside their root vault).
+    /// Gets or sets a value indicating whether the caller may administer this manifest's sharing: grant and revoke
+    /// access and publish its email delivery key. True when the caller is an owner or admin of the group that owns
+    /// the manifest.
+    /// </summary>
+    public bool CanAdminister { get; set; }
+
+    /// <summary>
+    /// Gets or sets the manifest VEK encrypted with the caller's public key, which they decrypt with their private
+    /// key. Set on every non-root manifest the caller can open, whether they own it (their self-grant) or another
+    /// user granted it to them. Null on the root manifest, which is unlocked through the account key hierarchy.
     /// </summary>
     public string? EncryptedVek { get; set; }
 

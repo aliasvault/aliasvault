@@ -16,68 +16,16 @@ using Microsoft.EntityFrameworkCore;
 /// </summary>
 public static class VaultStatusHelper
 {
-    private const string ManifestFormat = "manifest-v1";
-
     /// <summary>
-    /// The full manifest-revision list a status endpoint reports: the user's own manifests (all storage formats)
-    /// plus every manifest shared with them.
+    /// The full manifest-revision list a status endpoint reports: every manifest the user can access.
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="userId">The id of the user to build manifest revisions for.</param>
-    /// <returns>The combined owned + shared-with-me manifest revision list.</returns>
+    /// <returns>The accessible manifest revision list.</returns>
     public static async Task<List<ManifestRevision>> GetManifestRevisionsAsync(AliasServerDbContext context, string userId)
     {
-        var revisions = await GetOwnedManifestRevisionsAsync(context, userId);
-        revisions.AddRange(await GetGrantedManifestRevisionsAsync(context, userId));
-        return revisions;
-    }
-
-    /// <summary>
-    /// The revision entries for every manifest owned groups that the user is owner of>.
-    /// </summary>
-    /// <param name="context">Database context.</param>
-    /// <param name="userId">The id of the user to build owned manifest revisions for.</param>
-    /// <returns>The list of owned manifest revisions.</returns>
-    private static async Task<List<ManifestRevision>> GetOwnedManifestRevisionsAsync(AliasServerDbContext context, string userId)
-    {
-        return await context.VaultManifests
-            .Where(x => context.GroupMembers.Any(m => m.GroupId == x.OwnerGroupId && m.UserId == userId && m.Role == GroupRole.Owner))
+        return await ManifestAccessHelper.AccessibleManifests(context, userId)
             .Select(x => new ManifestRevision { ManifestId = x.ManifestId, IsRoot = x.IsRoot, Revision = x.RevisionNumber })
-            .ToListAsync();
-    }
-
-    /// <summary>
-    /// The revision entries for every manifest another user has shared with <paramref name="userId"/>.
-    /// </summary>
-    /// <param name="context">Database context.</param>
-    /// <param name="userId">The id of the user to build granted manifest revisions for.</param>
-    /// <returns>The list of shared-with-me manifest revisions (empty when the user has no grants).</returns>
-    private static async Task<List<ManifestRevision>> GetGrantedManifestRevisionsAsync(AliasServerDbContext context, string userId)
-    {
-        var grantedManifestIds = await GetGrantedManifestIdsAsync(context, userId);
-        if (grantedManifestIds.Count == 0)
-        {
-            return [];
-        }
-
-        return await context.VaultManifests
-            .Where(m => grantedManifestIds.Contains(m.ManifestId) && m.StorageFormat == ManifestFormat)
-            .Select(m => new ManifestRevision { ManifestId = m.ManifestId, IsRoot = false, Revision = m.RevisionNumber })
-            .ToListAsync();
-    }
-
-    /// <summary>
-    /// The ids of manifests <b>other</b> users have granted to <paramref name="userId"/>.
-    /// </summary>
-    /// <param name="context">Database context.</param>
-    /// <param name="userId">The id of the user to resolve granted manifest ids for.</param>
-    /// <returns>The list of granted manifest ids.</returns>
-    private static async Task<List<Guid>> GetGrantedManifestIdsAsync(AliasServerDbContext context, string userId)
-    {
-        return await context.VaultManifestAccessKeys
-            .Where(k => k.UserId == userId && k.Type == ManifestKeyType.GrantKey
-                && context.VaultManifests.Any(m => m.ManifestId == k.VaultManifestId && !context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == userId && gm.Role == GroupRole.Owner)))
-            .Select(k => k.VaultManifestId)
             .ToListAsync();
     }
 }

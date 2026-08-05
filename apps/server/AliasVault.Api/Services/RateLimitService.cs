@@ -27,12 +27,12 @@ public class RateLimitService(IAliasServerDbContextFactory dbContextFactory, IMe
     private const string EnabledRulesCacheKey = "RateLimits_EnabledRules";
 
     /// <summary>
-    /// Resolves the limits that apply to the given group for the given limit type.
+    /// Gets the limits that apply to the given group for the given limit type.
     /// </summary>
-    /// <param name="group">The group to resolve limits for.</param>
-    /// <param name="limitType">The limit type to resolve.</param>
+    /// <param name="group">The group to get limits for.</param>
+    /// <param name="limitType">The limit type to get limits for.</param>
     /// <returns>The limits that must all be satisfied. Empty means no limit applies.</returns>
-    public async Task<IReadOnlyList<EffectiveRateLimit>> ResolveAsync(Group group, RateLimitType limitType)
+    public async Task<IReadOnlyList<EffectiveRateLimit>> GetLimitsAsync(Group group, RateLimitType limitType)
     {
         var rules = await GetEnabledRulesAsync();
         return RateLimitResolver.Resolve(rules, group, limitType, timeProvider.UtcNow);

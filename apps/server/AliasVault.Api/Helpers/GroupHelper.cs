@@ -27,6 +27,17 @@ public static class GroupHelper
     }
 
     /// <summary>
+    /// Get the ids of every group the user may administer.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="userId">The user.</param>
+    /// <returns>The administered group ids.</returns>
+    public static async Task<List<Guid>> GetAdministeredGroupIdsAsync(AliasServerDbContext context, string userId)
+    {
+        return await context.GroupMembers.Where(m => m.UserId == userId && (m.Role == GroupRole.Owner || m.Role == GroupRole.Admin)).Select(m => m.GroupId).ToListAsync();
+    }
+
+    /// <summary>
     /// Create a new user's personal group in memory.
     /// </summary>
     /// <param name="user">The user the group belongs to.</param>
@@ -113,9 +124,9 @@ public static class GroupHelper
     /// both the rate-limit rules and the usage they are measured against are scoped to it.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="manifestIds">The manifests to resolve the owning group of.</param>
+    /// <param name="manifestIds">The manifests to get the owning group of.</param>
     /// <returns>Manifest id to owning group id.</returns>
-    public static async Task<Dictionary<Guid, Guid>> ResolveOwnerGroupsAsync(AliasServerDbContext context, IEnumerable<Guid> manifestIds)
+    public static async Task<Dictionary<Guid, Guid>> GetOwnerGroupsAsync(AliasServerDbContext context, IEnumerable<Guid> manifestIds)
     {
         var ids = manifestIds.Distinct().ToList();
         if (ids.Count == 0)
