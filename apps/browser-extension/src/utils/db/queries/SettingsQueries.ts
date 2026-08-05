@@ -36,16 +36,6 @@ export class SettingsQueries {
     VALUES (?, ?, ?, ?, ?)`;
 
   /**
-   * Get all encryption keys.
-   */
-  public static readonly GET_ENCRYPTION_KEYS = `
-    SELECT
-      x.PublicKey,
-      x.PrivateKey,
-      x.IsPrimary
-    FROM EncryptionKeys x`;
-
-  /**
    * Get TOTP codes for an item.
    */
   public static readonly GET_TOTP_FOR_ITEM = `

@@ -1,3 +1,5 @@
+import { BaseQueries } from './BaseQueries';
+
 /**
  * SQL query constants for item logo operations.
  *
@@ -7,10 +9,9 @@
  */
 export class LogoQueries {
   /**
-   * SQL fragment resolving the personal scope: rows stamped with the root manifest's id (from the
-   * Manifests bookkeeping table), plus unstamped legacy rows the codec has not adopted yet.
+   * The scope of personal rows in this file's queries, which address Logos unaliased.
    */
-  private static readonly PERSONAL_SCOPE = `(ManifestId = (SELECT Id FROM Manifests WHERE IsRoot = 1) OR ManifestId IS NULL)`;
+  private static readonly PERSONAL_SCOPE = BaseQueries.personalScope();
 
   /**
    * The logo of a given kind and key in the personal scope. Shared-manifest rows are deliberately
@@ -36,7 +37,7 @@ export class LogoQueries {
    */
   public static readonly UPSERT = `
     INSERT INTO Logos (Id, Kind, Source, ManifestId, FileData, MimeType, Name, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, (SELECT Id FROM Manifests WHERE IsRoot = 1), ?, ?, ?, ?, ?, 0)
+    VALUES (?, ?, ?, ${BaseQueries.ROOT_MANIFEST_ID}, ?, ?, ?, ?, ?, 0)
     ON CONFLICT(Id) DO UPDATE SET
       FileData = excluded.FileData,
       MimeType = excluded.MimeType,

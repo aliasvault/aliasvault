@@ -3,6 +3,8 @@ import type { EncryptionKey, PasswordSettings, TotpCode, Attachment } from '@/ut
 import { getIdentityLanguages } from '@/utils/RustCore';
 
 import { BaseRepository } from '../BaseRepository';
+import { BaseQueries } from '../queries/BaseQueries';
+import { EncryptionKeyQueries } from '../queries/EncryptionKeyQueries';
 import { SettingsQueries } from '../queries/SettingsQueries';
 
 /**
@@ -101,7 +103,7 @@ export class SettingsRepository extends BaseRepository {
    * @returns Array of encryption keys
    */
   public getAllEncryptionKeys(): EncryptionKey[] {
-    return this.client.executeQuery<EncryptionKey>(SettingsQueries.GET_ENCRYPTION_KEYS);
+    return this.client.executeQuery<EncryptionKey>(EncryptionKeyQueries.GET_ALL);
   }
 
   /**
@@ -118,7 +120,7 @@ export class SettingsRepository extends BaseRepository {
    * @param manifestId - The server-side id of the root manifest
    */
   public setRootManifestId(manifestId: string): void {
-    this.client.executeUpdate(SettingsQueries.INSERT_ROOT_MANIFEST, [manifestId]);
+    this.client.executeUpdate(BaseQueries.INSERT_ROOT_MANIFEST, [manifestId]);
   }
 
   /**
@@ -128,7 +130,7 @@ export class SettingsRepository extends BaseRepository {
    * @returns The active personal keypair, or null when absent
    */
   public getPrimaryEncryptionKey(): EncryptionKey | null {
-    const results = this.client.executeQuery<EncryptionKey>(SettingsQueries.GET_PRIMARY_ENCRYPTION_KEY);
+    const results = this.client.executeQuery<EncryptionKey>(EncryptionKeyQueries.GET_PRIMARY);
     return results.length > 0 ? results[0] : null;
   }
 
@@ -139,7 +141,7 @@ export class SettingsRepository extends BaseRepository {
    * @returns The active keypair, or null when the manifest has none
    */
   public getActiveManifestEncryptionKey(manifestId: string): EncryptionKey | null {
-    const results = this.client.executeQuery<EncryptionKey>(SettingsQueries.GET_ACTIVE_MANIFEST_ENCRYPTION_KEY, [manifestId]);
+    const results = this.client.executeQuery<EncryptionKey>(EncryptionKeyQueries.GET_ACTIVE_FOR_MANIFEST, [manifestId]);
     return results.length > 0 ? results[0] : null;
   }
 
@@ -152,8 +154,8 @@ export class SettingsRepository extends BaseRepository {
    */
   public setActiveManifestEncryptionKey(manifestId: string, publicKey: string, privateKey: string): void {
     const now = this.now();
-    this.client.executeUpdate(SettingsQueries.DEMOTE_MANIFEST_ENCRYPTION_KEYS, [now, manifestId]);
-    this.client.executeUpdate(SettingsQueries.INSERT_MANIFEST_ENCRYPTION_KEY, [this.generateId(), manifestId, publicKey, privateKey, now, now]);
+    this.client.executeUpdate(EncryptionKeyQueries.DEMOTE_FOR_MANIFEST, [now, manifestId]);
+    this.client.executeUpdate(EncryptionKeyQueries.INSERT_FOR_MANIFEST, [this.generateId(), manifestId, publicKey, privateKey, now, now]);
   }
 
   /**
@@ -166,13 +168,13 @@ export class SettingsRepository extends BaseRepository {
    * @param privateKey - The private half
    */
   public retainNonPrimaryEncryptionKey(publicKey: string, privateKey: string): void {
-    const existing = this.client.executeQuery<{ count: number }>(SettingsQueries.COUNT_ENCRYPTION_KEYS_BY_PUBLIC_KEY, [publicKey]);
+    const existing = this.client.executeQuery<{ count: number }>(EncryptionKeyQueries.COUNT_BY_PUBLIC_KEY, [publicKey]);
     if ((existing[0]?.count ?? 0) > 0) {
       return;
     }
 
     const now = this.now();
-    this.client.executeUpdate(SettingsQueries.INSERT_NON_PRIMARY_ENCRYPTION_KEY, [this.generateId(), publicKey, privateKey, now, now]);
+    this.client.executeUpdate(EncryptionKeyQueries.INSERT_NON_PRIMARY, [this.generateId(), publicKey, privateKey, now, now]);
   }
 
   /**

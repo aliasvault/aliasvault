@@ -1,6 +1,6 @@
 import * as dateFormatter from '@/utils/DateFormatter';
 
-import { SettingsQueries } from './queries/SettingsQueries';
+import { BaseQueries } from './queries/BaseQueries';
 
 import type { Database } from 'sql.js';
 
@@ -123,7 +123,7 @@ export abstract class BaseRepository {
     if (!this.tableExists('Manifests')) {
       return null;
     }
-    const results = this.client.executeQuery<{ Id: string }>(SettingsQueries.GET_ROOT_MANIFEST_ID);
+    const results = this.client.executeQuery<{ Id: string }>(BaseQueries.GET_ROOT_MANIFEST_ID);
     return results.length > 0 ? results[0].Id : null;
   }
 

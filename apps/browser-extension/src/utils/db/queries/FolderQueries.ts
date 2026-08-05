@@ -1,3 +1,5 @@
+import { BaseQueries } from './BaseQueries';
+
 /**
  * SQL query constants for Folder operations.
  * Centralizes all folder-related queries to avoid duplication.
@@ -26,7 +28,7 @@ export class FolderQueries {
    */
   public static readonly INSERT = `
     INSERT INTO Folders (Id, Name, ParentFolderId, ManifestId, Weight, IsDeleted, CreatedAt, UpdatedAt)
-    VALUES (?, ?, ?, (SELECT Id FROM Manifests WHERE IsRoot = 1), 0, 0, ?, ?)`;
+    VALUES (?, ?, ?, ${BaseQueries.ROOT_MANIFEST_ID}, 0, 0, ?, ?)`;
 
   /**
    * Update folder name.
