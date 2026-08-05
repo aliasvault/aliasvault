@@ -7,7 +7,6 @@ import { SettingsQueries } from '../queries/SettingsQueries';
 
 /**
  * Sort order options for credentials list.
- * Values must match the C# CredentialSortOrder enum in the Blazor client for cross-platform sync.
  */
 export type CredentialSortOrder = 'OldestFirst' | 'NewestFirst' | 'Alphabetical';
 
@@ -98,11 +97,90 @@ export class SettingsRepository extends BaseRepository {
   }
 
   /**
-   * Fetch all encryption keys.
+   * Fetch every keypair that can decrypt inbound mail (both root manifest and optional shared manifest keys).
    * @returns Array of encryption keys
    */
   public getAllEncryptionKeys(): EncryptionKey[] {
     return this.client.executeQuery<EncryptionKey>(SettingsQueries.GET_ENCRYPTION_KEYS);
+  }
+
+  /**
+   * Get the vault's root manifest id from the Manifests bookkeeping table. Returns null for a non-migrated
+   * legacy account.
+   * @returns The root manifest id, or null when the account is legacy
+   */
+  public getRootManifestId(): string | null {
+    /*
+     * A legacy account that predates the Manifests table (mid-schema-migration) has no
+     * no root manifest id (yet).
+     */
+    if (!this.tableExists('Manifests')) {
+      return null;
+    }
+    const results = this.client.executeQuery<{ Id: string }>(SettingsQueries.GET_ROOT_MANIFEST_ID);
+    return results.length > 0 ? results[0].Id : null;
+  }
+
+  /**
+   * Register the vault's root manifest row at vault creation (idempotent).
+   * @param manifestId - The server-side id of the root manifest
+   */
+  public setRootManifestId(manifestId: string): void {
+    this.client.executeUpdate(SettingsQueries.INSERT_ROOT_MANIFEST, [manifestId]);
+  }
+
+  /**
+   * Get the user's active personal keypair (the primary row stamped with the root manifest's id), whose public
+   * half is published to the server as the root manifest's delivery key. Returns null when the vault has no
+   * personal keypair yet.
+   * @returns The active personal keypair, or null when absent
+   */
+  public getPrimaryEncryptionKey(): EncryptionKey | null {
+    const results = this.client.executeQuery<EncryptionKey>(SettingsQueries.GET_PRIMARY_ENCRYPTION_KEY);
+    return results.length > 0 ? results[0] : null;
+  }
+
+  /**
+   * Get a manifest's active keypair, whose public half is published to the server as that manifest's delivery
+   * key. Returns null for a manifest that has no keypair in this vault.
+   * @param manifestId - The manifest id the keypair is stamped with
+   * @returns The active keypair, or null when the manifest has none
+   */
+  public getActiveManifestEncryptionKey(manifestId: string): EncryptionKey | null {
+    const results = this.client.executeQuery<EncryptionKey>(SettingsQueries.GET_ACTIVE_MANIFEST_ENCRYPTION_KEY, [manifestId]);
+    return results.length > 0 ? results[0] : null;
+  }
+
+  /**
+   * Make the given keypair the manifest's active one, demoting (never deleting) whatever it supersedes so
+   * mail received before the rotation stays decryptable.
+   * @param manifestId - The manifest id to stamp the keypair with
+   * @param publicKey - The public half, published to the server for delivery
+   * @param privateKey - The private half, which never leaves the manifest
+   */
+  public setActiveManifestEncryptionKey(manifestId: string, publicKey: string, privateKey: string): void {
+    const now = this.now();
+    this.client.executeUpdate(SettingsQueries.DEMOTE_MANIFEST_ENCRYPTION_KEYS, [now, manifestId]);
+    this.client.executeUpdate(SettingsQueries.INSERT_MANIFEST_ENCRYPTION_KEY, [this.generateId(), manifestId, publicKey, privateKey, now, now]);
+  }
+
+  /**
+   * Retain a copy of a keypair among the personal keys as a non-primary row.
+   *
+   * Used by the owner of a shared manifest to keep its delivery keys. The originals live only in the
+   * shared manifest itself, so unsharing or deleting the anchor folder takes them out of the vault and would leave the
+   * owner unable to decrypt mail their own alias received while it was shared.
+   * @param publicKey - The public half, used as the identity of the key
+   * @param privateKey - The private half
+   */
+  public retainNonPrimaryEncryptionKey(publicKey: string, privateKey: string): void {
+    const existing = this.client.executeQuery<{ count: number }>(SettingsQueries.COUNT_ENCRYPTION_KEYS_BY_PUBLIC_KEY, [publicKey]);
+    if ((existing[0]?.count ?? 0) > 0) {
+      return;
+    }
+
+    const now = this.now();
+    this.client.executeUpdate(SettingsQueries.INSERT_NON_PRIMARY_ENCRYPTION_KEY, [this.generateId(), publicKey, privateKey, now, now]);
   }
 
   /**
