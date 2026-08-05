@@ -133,42 +133,44 @@ public class VaultController(
         var currentRevisionByManifest = latestManifests.ToDictionary(m => m.ManifestId, m => m.RevisionNumber);
         var refsByManifest = (await context.VaultBlobReferences
                 .Where(r => manifestIds.Contains(r.ManifestId))
-                .Join(
-                    context.VaultBlobObjects.Where(b => b.OwnerUserId == user.Id),
-                    r => r.BlobHash,
-                    b => b.Hash,
-                    (r, b) => new { r.ManifestId, r.RevisionNumber, b.Hash, b.Category })
+                .Join(context.VaultBlobObjects, r => r.BlobHash, b => b.Hash, (r, b) => new { r.ManifestId, r.RevisionNumber, b.Hash, b.Category })
                 .ToListAsync())
             .Where(x => currentRevisionByManifest.TryGetValue(x.ManifestId, out var rev) && rev == x.RevisionNumber)
             .GroupBy(x => x.ManifestId)
-            .ToDictionary(g => g.Key, g => g.Select(x => new BlobReference { Hash = x.Hash, Category = x.Category }).ToList());
+            .ToDictionary(g => g.Key, g => g.GroupBy(x => x.Hash, StringComparer.Ordinal).Select(h => new BlobReference { Hash = h.Key, Category = h.First().Category }).ToList());
 
-        // The caller's own grants on the non-root manifests they own: the manifest VEK encrypted with their own public key.
-        var ownedNonRootIds = latestManifests.Where(m => !m.IsRoot).Select(m => m.ManifestId).ToList();
-        var selfGrantsByManifest = ownedNonRootIds.Count == 0
-            ? new Dictionary<Guid, VaultManifestAccessKey>()
-            : await context.VaultManifestAccessKeys
-                .Where(k => k.UserId == user.Id && k.Type == ManifestKeyType.GrantKey && ownedNonRootIds.Contains(k.VaultManifestId))
-                .ToDictionaryAsync(k => k.VaultManifestId);
+        // The caller's grant on each non-root manifest: the manifest VEK encrypted with one of their public keys.
+        var nonRootIds = latestManifests.Where(m => !m.IsRoot).Select(m => m.ManifestId).ToList();
+        var grantsByManifest = await GetGrantsAsync(context, user.Id, nonRootIds);
+        var encryptionPublicKeys = await GetEncryptionPublicKeysAsync(context, grantsByManifest.Values.Where(g => g.UserGrantKeyId != null).Select(g => g.UserGrantKeyId!.Value));
 
-        var selfEncryptionPublicKeys = await ResolveEncryptionPublicKeysAsync(context, selfGrantsByManifest.Values.Where(g => g.UserGrantKeyId != null).Select(g => g.UserGrantKeyId!.Value));
+        // A manifest owned by a group the caller does not own is one shared with them: stamp the owning user's name.
+        var foreignGroupIds = latestManifests.Where(m => !ownedGroupIds.Contains(m.OwnerGroupId)).Select(m => m.OwnerGroupId).Distinct().ToList();
+        var ownerUsernamesByGroupId = await GetGroupOwnerUsernamesAsync(context, foreignGroupIds);
 
-        var manifests = latestManifests.Select(m => new Manifest
+        // Administering a manifest's shares follows group role, not owner identity: an admin of someone else's group
+        // may manage it, and heading a group means managing the manifests filed under it (see GrantAccess).
+        var administeredGroupIds = await GroupHelper.GetAdministeredGroupIdsAsync(context, user.Id);
+
+        var manifests = latestManifests.Select(m =>
         {
-            ManifestId = m.ManifestId,
-            IsRoot = m.IsRoot,
-            Name = m.Name,
-            Blob = m.ManifestBlob,
-            CiphertextHash = m.ManifestCiphertextHash,
-            Revision = m.RevisionNumber,
-            BlobReferences = refsByManifest.TryGetValue(m.ManifestId, out var refs) ? refs : [],
-            EncryptedVek = selfGrantsByManifest.TryGetValue(m.ManifestId, out var selfGrant) ? selfGrant.EncryptedVek : null,
-            Algorithm = selfGrantsByManifest.TryGetValue(m.ManifestId, out var selfGrant2) ? VaultKeyAlgorithms.ToToken(selfGrant2.Algorithm) : null,
-            EncryptionPublicKey = selfGrantsByManifest.TryGetValue(m.ManifestId, out var selfGrant3) && selfGrant3.UserGrantKeyId != null ? selfEncryptionPublicKeys.GetValueOrDefault(selfGrant3.UserGrantKeyId.Value) : null,
+            grantsByManifest.TryGetValue(m.ManifestId, out var grant);
+            return new Manifest
+            {
+                ManifestId = m.ManifestId,
+                IsRoot = m.IsRoot,
+                Name = m.Name,
+                Blob = m.ManifestBlob,
+                CiphertextHash = m.ManifestCiphertextHash,
+                Revision = m.RevisionNumber,
+                BlobReferences = refsByManifest.TryGetValue(m.ManifestId, out var refs) ? refs : [],
+                OwnerUsername = ownerUsernamesByGroupId.GetValueOrDefault(m.OwnerGroupId),
+                CanAdminister = !m.IsRoot && administeredGroupIds.Contains(m.OwnerGroupId),
+                EncryptedVek = grant?.EncryptedVek,
+                Algorithm = grant != null ? VaultKeyAlgorithms.ToToken(grant.Algorithm) : null,
+                EncryptionPublicKey = grant?.UserGrantKeyId != null ? encryptionPublicKeys.GetValueOrDefault(grant.UserGrantKeyId.Value) : null,
+            };
         }).ToList();
-
-        // Append manifests shared with this user by other owners, each carrying the encrypted VEK the caller decrypts with its private key.
-        manifests.AddRange(await BuildSharedWithMeManifestsAsync(context, user.Id));
 
         return Ok(new GetResponse
         {
@@ -197,9 +199,7 @@ public class VaultController(
         }
 
         // The caller can fetch a manifest owned by a group they own, or one granted to them (a shared manifest).
-        var latest = await context.VaultManifests
-            .Where(x => x.StorageFormat == ManifestFormat && x.ManifestId == manifestId && (context.GroupMembers.Any(gm => gm.GroupId == x.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner) || context.VaultManifestAccessKeys.Any(k => k.UserId == user.Id && k.Type == ManifestKeyType.GrantKey && k.VaultManifestId == x.ManifestId)))
-            .FirstOrDefaultAsync();
+        var latest = await AccessibleManifests(context, user.Id).FirstOrDefaultAsync(x => x.ManifestId == manifestId);
 
         if (latest == null)
         {
@@ -237,11 +237,14 @@ public class VaultController(
                 manifest.EncryptionPublicKey = await context.UserGrantKeys.Where(k => k.Id == grant.UserGrantKeyId).Select(k => k.PublicKey).FirstOrDefaultAsync();
             }
 
-            var ownerUserId = await context.GroupMembers.Where(gm => gm.GroupId == latest.OwnerGroupId && gm.Role == GroupRole.Owner).OrderBy(gm => gm.CreatedAt).ThenBy(gm => gm.UserId).Select(gm => gm.UserId).FirstAsync();
-            if (ownerUserId != user.Id)
+            // Set owner username for shared manifests for display purposes.
+            var isOwnedByCaller = await context.GroupMembers.AnyAsync(gm => gm.GroupId == latest.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner);
+            if (!isOwnedByCaller)
             {
-                manifest.OwnerUsername = await context.AliasVaultUsers.Where(u => u.Id == ownerUserId).Select(u => u.UserName).FirstOrDefaultAsync();
+                manifest.OwnerUsername = (await GetGroupOwnerUsernamesAsync(context, [latest.OwnerGroupId])).GetValueOrDefault(latest.OwnerGroupId);
             }
+
+            manifest.CanAdminister = isOwnedByCaller || await GroupHelper.IsGroupAdminAsync(context, latest.OwnerGroupId, user.Id);
         }
 
         return Ok(manifest);
@@ -338,9 +341,8 @@ public class VaultController(
                 return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
             }
 
-            var row = await context.VaultManifests.FirstOrDefaultAsync(x => x.ManifestId == mw.ManifestId && !x.IsRoot);
-            var canWrite = row != null && (await context.GroupMembers.AnyAsync(gm => gm.GroupId == row.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner) || await context.VaultManifestAccessKeys.AnyAsync(k => k.UserId == user.Id && k.Type == ManifestKeyType.GrantKey && k.VaultManifestId == mw.ManifestId));
-            if (row == null || !canWrite)
+            var row = await AccessibleManifests(context, user.Id).FirstOrDefaultAsync(x => x.ManifestId == mw.ManifestId && !x.IsRoot);
+            if (row == null)
             {
                 return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
             }
@@ -669,8 +671,8 @@ public class VaultController(
         var missing = wanted.Except(rows.Select(r => r.Hash), StringComparer.Ordinal).ToList();
         if (missing.Count > 0)
         {
-            var accessibleManifests = await context.VaultManifests
-                .Where(m => m.StorageFormat == ManifestFormat && !m.IsRoot && (context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner) || context.VaultManifestAccessKeys.Any(k => k.UserId == user.Id && k.Type == ManifestKeyType.GrantKey && k.VaultManifestId == m.ManifestId)))
+            var accessibleManifests = await AccessibleManifests(context, user.Id)
+                .Where(m => !m.IsRoot)
                 .Select(m => new { m.ManifestId, m.RevisionNumber })
                 .ToListAsync();
             var accessibleIds = accessibleManifests.Select(m => m.ManifestId).ToList();
@@ -730,7 +732,7 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Resolves the manifest ids that a user has admin access to.
+    /// Gets the manifest ids that a user has admin access to.
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="userId">The calling user.</param>
@@ -754,9 +756,9 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Resolves the account public key each grant's VEK was encrypted with (see <see cref="UserGrantKey"/>).
+    /// Gets the account public key each grant's VEK was encrypted with (see <see cref="UserGrantKey"/>).
     /// </summary>
-    private static async Task<Dictionary<Guid, string>> ResolveEncryptionPublicKeysAsync(AliasServerDbContext context, IEnumerable<Guid> publicKeyIds)
+    private static async Task<Dictionary<Guid, string>> GetEncryptionPublicKeysAsync(AliasServerDbContext context, IEnumerable<Guid> publicKeyIds)
     {
         var ids = publicKeyIds.Distinct().ToList();
         if (ids.Count == 0)
@@ -770,74 +772,58 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Builds the manifest DTOs for every shared manifest granted to <paramref name="userId"/> by other users: the
-    /// encrypted manifest blob plus the grant's encrypted VEK, algorithm, and owner identity. Blob references are
-    /// taken straight from the manifest's current revision, unscoped by store owner (see DownloadBlobs).
+    /// The manifest-v1 manifests a user can access.
     /// </summary>
-    private static async Task<List<Manifest>> BuildSharedWithMeManifestsAsync(AliasServerDbContext context, string userId)
+    /// <param name="context">Database context.</param>
+    /// <param name="userId">The calling user.</param>
+    /// <returns>Query over the accessible manifest-v1 manifests.</returns>
+    private static IQueryable<VaultManifest> AccessibleManifests(AliasServerDbContext context, string userId)
     {
-        // Only manifests owned by groups other than the users own, as owner's self-grant is already returned as owned manifests.
-        var grants = await context.VaultManifestAccessKeys
-            .Where(k => k.UserId == userId && k.Type == ManifestKeyType.GrantKey
-                && context.VaultManifests.Any(m => m.ManifestId == k.VaultManifestId && !context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == userId && gm.Role == GroupRole.Owner)))
-            .ToListAsync();
-        if (grants.Count == 0)
+        return ManifestAccessHelper.AccessibleManifests(context, userId).Where(m => m.StorageFormat == ManifestFormat);
+    }
+
+    /// <summary>
+    /// Gets the caller's grant on each of the given manifests: the manifest VEK encrypted to one of their account public keys.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="userId">The calling user.</param>
+    /// <param name="manifestIds">The manifests to get grants for.</param>
+    /// <returns>The grant per manifest id, empty when the caller holds none.</returns>
+    private static async Task<Dictionary<Guid, VaultManifestAccessKey>> GetGrantsAsync(AliasServerDbContext context, string userId, IEnumerable<Guid> manifestIds)
+    {
+        var ids = manifestIds.Distinct().ToList();
+        if (ids.Count == 0)
         {
             return [];
         }
 
-        var manifestIds = grants.Select(g => g.VaultManifestId).ToList();
-        var manifestsById = await context.VaultManifests
-            .Where(m => manifestIds.Contains(m.ManifestId) && m.StorageFormat == ManifestFormat)
-            .ToDictionaryAsync(m => m.ManifestId);
+        return (await context.VaultManifestAccessKeys
+                .Where(k => k.UserId == userId && k.Type == ManifestKeyType.GrantKey && ids.Contains(k.VaultManifestId))
+                .ToListAsync())
+            .GroupBy(k => k.VaultManifestId)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(k => k.CreatedAt).ThenBy(k => k.Id).First());
+    }
 
-        // The displayed owner of a shared manifest is the owner of the group that owns it.
-        var ownerGroupIds = manifestsById.Values.Select(m => m.OwnerGroupId).Distinct().ToList();
-        var ownerUsernamesByGroupId = (await context.GroupMembers
-            .Where(gm => ownerGroupIds.Contains(gm.GroupId) && gm.Role == GroupRole.Owner)
-            .Join(context.AliasVaultUsers, gm => gm.UserId, u => u.Id, (gm, u) => new { gm.GroupId, gm.CreatedAt, gm.UserId, u.UserName })
-            .ToListAsync())
-            .GroupBy(x => x.GroupId)
-            .ToDictionary(g => g.Key, g => g.OrderBy(x => x.CreatedAt).ThenBy(x => x.UserId).First().UserName);
-
-        var refRows = await context.VaultBlobReferences
-            .Where(r => manifestIds.Contains(r.ManifestId))
-            .Join(context.VaultBlobObjects, r => r.BlobHash, b => b.Hash, (r, b) => new { r.ManifestId, r.RevisionNumber, b.Hash, b.Category })
-            .ToListAsync();
-
-        var encryptionPublicKeys = await ResolveEncryptionPublicKeysAsync(context, grants.Where(g => g.UserGrantKeyId != null).Select(g => g.UserGrantKeyId!.Value));
-
-        var result = new List<Manifest>();
-        foreach (var grant in grants)
+    /// <summary>
+    /// Gets the display owner of each group: the user who owns it, oldest membership first when co-owned.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="groupIds">The groups to resolve.</param>
+    /// <returns>The owner's username per group id.</returns>
+    private static async Task<Dictionary<Guid, string?>> GetGroupOwnerUsernamesAsync(AliasServerDbContext context, IEnumerable<Guid> groupIds)
+    {
+        var ids = groupIds.Distinct().ToList();
+        if (ids.Count == 0)
         {
-            if (!manifestsById.TryGetValue(grant.VaultManifestId, out var manifestRow))
-            {
-                continue;
-            }
-
-            var blobRefs = refRows
-                .Where(r => r.ManifestId == manifestRow.ManifestId && r.RevisionNumber == manifestRow.RevisionNumber)
-                .GroupBy(r => r.Hash, StringComparer.Ordinal)
-                .Select(g => new BlobReference { Hash = g.Key, Category = g.First().Category })
-                .ToList();
-
-            result.Add(new Manifest
-            {
-                ManifestId = manifestRow.ManifestId,
-                IsRoot = false,
-                Name = manifestRow.Name,
-                Blob = manifestRow.ManifestBlob,
-                CiphertextHash = manifestRow.ManifestCiphertextHash,
-                Revision = manifestRow.RevisionNumber,
-                BlobReferences = blobRefs,
-                OwnerUsername = ownerUsernamesByGroupId.GetValueOrDefault(manifestRow.OwnerGroupId),
-                EncryptedVek = grant.EncryptedVek,
-                Algorithm = VaultKeyAlgorithms.ToToken(grant.Algorithm),
-                EncryptionPublicKey = grant.UserGrantKeyId != null ? encryptionPublicKeys.GetValueOrDefault(grant.UserGrantKeyId.Value) : null,
-            });
+            return [];
         }
 
-        return result;
+        return (await context.GroupMembers
+                .Where(gm => ids.Contains(gm.GroupId) && gm.Role == GroupRole.Owner)
+                .Join(context.AliasVaultUsers, gm => gm.UserId, u => u.Id, (gm, u) => new { gm.GroupId, gm.CreatedAt, gm.UserId, u.UserName })
+                .ToListAsync())
+            .GroupBy(x => x.GroupId)
+            .ToDictionary(g => g.Key, g => g.OrderBy(x => x.CreatedAt).ThenBy(x => x.UserId).First().UserName);
     }
 
     /// <summary>
@@ -1053,7 +1039,7 @@ public class VaultController(
     private async Task UpdateEmailClaimsAsync(AliasServerDbContext context, AliasVaultUser user, EmailRouting routing)
     {
         var accessibleManifests = await GetEmailClaimableManifestIdsAsync(context, user.Id, routing.SharedEmailAddressList.Select(x => x.ManifestId));
-        var ownerGroupByManifest = await GroupHelper.ResolveOwnerGroupsAsync(context, accessibleManifests);
+        var ownerGroupByManifest = await GroupHelper.GetOwnerGroupsAsync(context, accessibleManifests);
 
         var rootManifestId = await context.VaultManifests.Where(m => m.IsRoot && m.OwnerGroupId == user.PersonalGroupId).Select(m => (Guid?)m.ManifestId).FirstOrDefaultAsync();
         if (rootManifestId is null)
@@ -1216,7 +1202,7 @@ public class VaultController(
         foreach (var group in subjects)
         {
             var groupId = group.Id;
-            foreach (var limit in await rateLimitService.ResolveAsync(group, RateLimitType.AliasCreation))
+            foreach (var limit in await rateLimitService.GetLimitsAsync(group, RateLimitType.AliasCreation))
             {
                 int currentCount;
                 if (limit.WindowSeconds == 0)
