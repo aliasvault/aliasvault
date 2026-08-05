@@ -7,9 +7,9 @@
 //! Rust does not handle actual SQLite operations. It only emits the destination table rows as-is
 //! to the caller and let the caller handle the actual SQLite database creation and data insertion.
 //!
-//! Forward compatibility: when the caller supplies its local schema (`schema_columns`), anything a
+//! Forward compatibility: the caller supplies its local schema (`schema_columns`), and anything a
 //! newer writer put in the manifest that this schema cannot hold (whole unknown tables or unknown
-//! columns on known tables is split into [`CodecOverflow`] instead of being emitted (which would
+//! columns on known tables) is split into [`CodecOverflow`] instead of being emitted (which would
 //! crash the platform insert). The overflow is emitted as a regular table row (`OVERFLOW_TABLE`),
 //! so it lives inside the vault DB itself and `canonicalize_from_sqlite` re-merges it from the
 //! ordinary table read, this client's next push never drops the data, and no platform has to wire
@@ -21,17 +21,35 @@ use serde_json::json;
 
 use super::manifest::{CodecOverflow, CodecRecord, CodecTableData, Manifest, MaterializeInput, MaterializedTables};
 use super::types::{is_skip_table, primary_key_for, MANIFESTS_TABLE, OVERFLOW_TABLE};
-use crate::error::VaultResult;
+use crate::error::{VaultError, VaultResult};
 
-/// Materialize the manifest + its data buckets into the table set the platform inserts. Shared-folder
-/// manifests (if any) are combined into the root's table set first, root-wins primary-key dedup,
-/// personal-table stripping, dangling-parent repair, and per-manifest logo scoping.
+/// Materialize the vault's manifests + data buckets into the table set the platform inserts. Every
+/// manifest arrives in one list; the root one is pulled out and the rest are combined into its table
+/// set, root-wins primary-key dedup, personal-table stripping, dangling-parent repair, and
+/// per-manifest logo scoping.
 pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<MaterializedTables> {
-    let MaterializeInput { manifest, data_buckets, schema_columns, shared_manifests } = input;
+    let MaterializeInput { mut manifests, data_buckets, schema_columns } = input;
 
-    let manifest_records = manifest_bookkeeping_records(&manifest, &shared_manifests);
-    let root_manifest_id = manifest.manifest_id.clone();
-    let combined = super::sharing::combine_manifest_tables(manifest.tables, &root_manifest_id, shared_manifests);
+    // Check for a non-empty schema.
+    if schema_columns.is_empty() {
+        return Err(VaultError::General("materialize input carries an empty schema_columns map".to_string()));
+    }
+
+    // Check for exactly one root manifest.
+    let root_positions: Vec<usize> = manifests.iter().enumerate().filter(|(_, e)| e.is_root).map(|(i, _)| i).collect();
+    let root_index = match root_positions.as_slice() {
+        [index] => *index,
+        [] => return Err(VaultError::General("materialize input carries no root manifest".to_string())),
+        _ => return Err(VaultError::General(format!("materialize input carries {} root manifests, expected exactly one", root_positions.len()))),
+    };
+
+    let root = manifests.remove(root_index).manifest;
+    let others: Vec<Manifest> = manifests.into_iter().map(|entry| entry.manifest).collect();
+
+    let manifest_records = manifest_bookkeeping_records(&root, &others);
+    let root_manifest_id = root.manifest_id.clone();
+    let migration_id = root.migration_id;
+    let combined = super::sharing::combine_manifest_tables(root.tables, &root_manifest_id, others);
 
     let mut overflow = CodecOverflow::default();
     let mut tables: Vec<CodecTableData> = Vec::with_capacity(combined.len() + data_buckets.len());
@@ -42,7 +60,7 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
         if is_skip_table(&name) || name == OVERFLOW_TABLE {
             continue;
         }
-        match split_for_schema(&name, records, schema_columns.as_ref(), &mut overflow.columns) {
+        match split_for_schema(&name, records, &schema_columns, &mut overflow.columns) {
             SplitResult::Fits(records) => tables.push(CodecTableData { name, records }),
             SplitResult::UnknownTable(records) => {
                 overflow.tables.insert(name, records);
@@ -57,7 +75,7 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
             if is_skip_table(&name) || name == OVERFLOW_TABLE {
                 continue;
             }
-            match split_for_schema(&name, records, schema_columns.as_ref(), &mut overflow.columns) {
+            match split_for_schema(&name, records, &schema_columns, &mut overflow.columns) {
                 SplitResult::Fits(records) => tables.push(CodecTableData { name, records }),
                 SplitResult::UnknownTable(records) => {
                     overflow.bucket_tables.entry(bucket.category.clone()).or_default().insert(name, records);
@@ -71,20 +89,20 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
         tables.push(CodecTableData { name: OVERFLOW_TABLE.to_string(), records: overflow.to_table_records() });
     }
 
-    if !manifest_records.is_empty() && schema_columns.as_ref().map(|s| s.contains_key(MANIFESTS_TABLE)).unwrap_or(true) {
+    if !manifest_records.is_empty() && schema_columns.contains_key(MANIFESTS_TABLE) {
         tables.push(CodecTableData { name: MANIFESTS_TABLE.to_string(), records: manifest_records });
     }
 
     Ok(MaterializedTables {
         tables,
-        migration_id: manifest.migration_id,
+        migration_id,
         overflow,
     })
 }
 
 /// One `Manifests` row per materialized manifest: `{ Id, IsRoot, AnchorFolderId }`.
-fn manifest_bookkeeping_records(root: &Manifest, shared: &[Manifest]) -> Vec<CodecRecord> {
-    let mut records: Vec<CodecRecord> = Vec::with_capacity(1 + shared.len());
+fn manifest_bookkeeping_records(root: &Manifest, others: &[Manifest]) -> Vec<CodecRecord> {
+    let mut records: Vec<CodecRecord> = Vec::with_capacity(1 + others.len());
     let mut push = |manifest: &Manifest, is_root: bool| {
         let id = manifest.manifest_id.as_str();
         if id.is_empty() {
@@ -97,7 +115,7 @@ fn manifest_bookkeeping_records(root: &Manifest, shared: &[Manifest]) -> Vec<Cod
         records.push(row);
     };
     push(root, true);
-    for manifest in shared {
+    for manifest in others {
         push(manifest, false);
     }
     records
@@ -111,22 +129,17 @@ enum SplitResult {
     UnknownTable(Vec<CodecRecord>),
 }
 
-/// Fit `records` to the caller's schema. Without a schema, rows pass through verbatim. With one,
-/// unknown columns are stashed in `column_overflow` keyed by the row's primary-key value; a row
-/// whose primary key the schema doesn't know cannot be re-merged later, so its unknown columns are
-/// unavoidably dropped (real tables always keep their PK across schema versions).
+/// Fit `records` to the caller's schema. Unknown columns are stashed in `column_overflow` keyed by
+/// the row's primary-key value.
 fn split_for_schema(
     table_name: &str,
     records: Vec<CodecRecord>,
-    schema_columns: Option<&HashMap<String, Vec<String>>>,
+    schema_columns: &HashMap<String, Vec<String>>,
     column_overflow: &mut HashMap<String, HashMap<String, CodecRecord>>,
 ) -> SplitResult {
-    let known_columns: HashSet<&str> = match schema_columns {
-        None => return SplitResult::Fits(records),
-        Some(schema) => match schema.get(table_name) {
-            None => return SplitResult::UnknownTable(records),
-            Some(columns) => columns.iter().map(String::as_str).collect(),
-        },
+    let known_columns: HashSet<&str> = match schema_columns.get(table_name) {
+        None => return SplitResult::UnknownTable(records),
+        Some(columns) => columns.iter().map(String::as_str).collect(),
     };
 
     let pk_column = primary_key_for(table_name);

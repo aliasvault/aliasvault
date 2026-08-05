@@ -272,6 +272,9 @@ export type CodecManifest = {
 /** One shared manifest to split out during canonicalize: its manifest id, anchor folder id, and that manifest's own blob salt. */
 export type CodecSharedManifestSpec = { manifestId: string; anchorFolderId: string; userSalt: string };
 
+/** One manifest of a materialize input. */
+export type CodecManifestEntry = { manifest: CodecManifest; isRoot: boolean };
+
 /** One shared manifest produced by the canonicalize split, with its own blob map. */
 export type CodecSharedVault = { anchorFolderId: string; manifest: CodecManifest; blobs: Record<string, CodecBlobEntry> };
 
@@ -338,14 +341,11 @@ export async function vaultCodecCanonicalizeFromSqlite(input: CodecCanonicalizeI
 }
 
 /**
- * Materialize the manifest + its data buckets into the table set the platform inserts.
- * `schemaColumns` (table > column names of the local schema) makes Rust split anything the schema
- * can't hold into the `CodecOverflows` carrier row (included in the returned tables) instead of
- * emitting it, so unknown newer-client data survives the round trip inside the vault DB itself.
+ * Materialize the vault's manifests + data buckets into the table set the platform inserts.
  */
-export async function vaultCodecMaterializeAsSqlite(manifest: CodecManifest, dataBuckets: CodecDataBucket[], schemaColumns?: Record<string, string[]>, sharedManifests?: CodecManifest[]): Promise<CodecMaterialized> {
+export async function vaultCodecMaterializeAsSqlite(manifests: CodecManifestEntry[], dataBuckets: CodecDataBucket[], schemaColumns: Record<string, string[]>): Promise<CodecMaterialized> {
   await initRustCore();
-  return core.vaultCodecMaterializeAsSqlite({ manifest, dataBuckets, schemaColumns, sharedManifests }) as CodecMaterialized;
+  return core.vaultCodecMaterializeAsSqlite({ manifests, dataBuckets, schemaColumns }) as CodecMaterialized;
 }
 
 /**

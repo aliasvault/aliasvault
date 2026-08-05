@@ -26,7 +26,7 @@ use crate::error::{VaultError, VaultResult};
 pub use hash::{canonical_json, content_hash};
 pub use manifest::{
     BlobEntry, BucketLayoutEntry, CanonicalizeInput, CanonicalizedVault, CodecOverflow, DataBucket,
-    Manifest, MaterializeInput, MaterializedTables, CodecRecord, CodecTableData, SharedManifestSpec, SharedVault,
+    Manifest, ManifestEntry, MaterializeInput, MaterializedTables, CodecRecord, CodecTableData, SharedManifestSpec, SharedVault,
 };
 pub use scoped_assets::{KIND_BUILTIN as LOGO_KIND_BUILTIN, KIND_CUSTOM as LOGO_KIND_CUSTOM, KIND_FAVICON as LOGO_KIND_FAVICON};
 pub use sharing::{active_encryption_key, extract_encryption_key_for_public_key};
@@ -45,7 +45,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
     canonicalize::canonicalize_from_sqlite(input)
 }
 
-/// Materialize the manifest + data buckets into the table set the platform inserts into a fresh schema DB.
+/// Materialize the vault's manifests + data buckets into the table set the platform inserts into a fresh schema DB.
 pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<MaterializedTables> {
     materialize::materialize_as_sqlite(input)
 }

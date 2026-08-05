@@ -198,18 +198,35 @@ pub struct CanonicalizeInput {
     pub shared_manifests: Vec<SharedManifestSpec>,
 }
 
+/// One manifest of a materialize input: the manifest itself plus whether it is the vault's root.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ManifestEntry {
+    pub manifest: Manifest,
+    #[serde(default)]
+    pub is_root: bool,
+}
+
 /// Input for [`crate::vault_codec::materialize_as_sqlite`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterializeInput {
-    pub manifest: Manifest,
+    /// Every manifest making up the logical vault, root included. Exactly one entry must carry
+    /// `is_root`; the others are combined into it in list order.
+    pub manifests: Vec<ManifestEntry>,
     #[serde(default)]
     pub data_buckets: Vec<DataBucket>,
-    #[serde(default)]
-    pub shared_manifests: Vec<Manifest>,
-    /// The caller's local SQLite schema: table > column names. When present, rows are filtered down
-    /// to what the schema can hold and the remainder lands in [`MaterializedTables::overflow`];
-    /// when absent, rows pass through verbatim (legacy behavior — unknown columns crash the insert).
-    #[serde(default)]
-    pub schema_columns: Option<HashMap<String, Vec<String>>>,
+    /// The caller's local SQLite schema: table > column names. Rows are filtered down to what this
+    /// schema can hold and the remainder lands in [`MaterializedTables::overflow`].
+    pub schema_columns: HashMap<String, Vec<String>>,
+}
+
+impl MaterializeInput {
+    /// Build an input from a root manifest plus the non-root manifests combined into it.
+    pub fn new(root: Manifest, others: Vec<Manifest>, data_buckets: Vec<DataBucket>, schema_columns: HashMap<String, Vec<String>>) -> Self {
+        let mut manifests = Vec::with_capacity(1 + others.len());
+        manifests.push(ManifestEntry { manifest: root, is_root: true });
+        manifests.extend(others.into_iter().map(|manifest| ManifestEntry { manifest, is_root: false }));
+        Self { manifests, data_buckets, schema_columns }
+    }
 }

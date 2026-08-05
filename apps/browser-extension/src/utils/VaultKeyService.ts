@@ -285,7 +285,7 @@ export class VaultKeyService {
    */
   private static async unwrapOrThrow(encryptedKey: string, decryptingKeyBase64: string): Promise<string> {
     try {
-      return await EncryptionUtility.symmetricDecrypt(encryptedKey, decryptingKeyBase64);
+      return await EncryptionUtility.unwrapVaultEncryptionKey(encryptedKey, decryptingKeyBase64);
     } catch {
       // E-203: decrypt failed, which for the password key type means the entered password is wrong.
       throw new Error(formatErrorWithCode('Failed to decrypt vault encryption key', AppErrorCode.VAULT_DECRYPT_FAILED));

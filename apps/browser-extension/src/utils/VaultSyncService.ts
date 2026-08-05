@@ -12,7 +12,7 @@ import type { VaultResponse } from '@/utils/dist/core/models/webapi';
 import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 import { buildEmailRouting } from '@/utils/EmailRouting';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateUserSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecCanonicalized, type CodecManifest, type CodecSharedManifestSpec} from '@/utils/RustCore';
+import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateUserSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecBlobEntry, type CodecCanonicalized, type CodecManifest, type CodecSharedManifestSpec} from '@/utils/RustCore';
 import { SharingService, type SessionSharedManifest } from '@/utils/SharingService';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
@@ -94,8 +94,7 @@ async function verifyDecryptUnpack(base64Ciphertext: string, vek: string, expect
   return vaultCodecUnpackPayload(plainBytes);
 }
 
-const FINGERPRINT_ROOT_KEY = 'root';
-/** Fingerprint record key for a non-root (shared) manifest. */
+/** Fingerprint record key for a manifest. */
 const fingerprintManifestKey = (manifestId: string): string => `manifest:${manifestId}`;
 /** Fingerprint record key for a data bucket. */
 const fingerprintBucketKey = (category: string): string => `bucket:${category}`;
@@ -130,8 +129,23 @@ export type PushResult = {
 type BlobRefDto = { hash: string; category: string };
 type BlobDto = { hash: string; category: string; encryptedDataBase64: string };
 
-/** A plaintext blob staged for upload: its bytes plus the key that encrypts it (root VEK or the folder's own VEK). */
-type UploadBlobEntry = { bytes: Uint8Array; kind: 'favicon' | 'attachment'; vek: string };
+/** A plaintext blob staged for upload: its bytes plus the key that encrypts it. */
+type UploadBlobEntry = { bytes: Uint8Array; kind: 'favicon' | 'attachment'; vek: string; fromRoot: boolean };
+
+/**
+ * One manifest of a pull.
+ */
+type ResolvedManifest = {
+  manifestId: string;
+  isRoot: boolean;
+  manifest: VaultManifest;
+  /** The key that decrypts this manifest and every blob it references. */
+  vek: string;
+  revision: number;
+  blobReferences: BlobRefDto[];
+  /** Fingerprint of the plaintext exactly as the server served it: the push-side change-detection baseline. */
+  contentFingerprint: string;
+};
 
 /**
  * A single manifest as carried in the GET snapshot / single-manifest fetch.
@@ -232,6 +246,20 @@ type VaultWriteResponseDto = {
 };
 
 type MissingBlobsResponseDto = { missing: string[] };
+
+/**
+ * One manifest canonicalize produced, staged as a write candidate.
+ */
+type PushManifest = {
+  manifestId: string;
+  isRoot: boolean;
+  manifest: CodecManifest;
+  /** The key this manifest and its blobs encrypt with: the vault's content key for the root, the grant's VEK otherwise. */
+  vek: string;
+  blobs: Record<string, CodecBlobEntry>;
+  /** The revision this write rebases on; the server rejects the whole batch when any is stale. */
+  currentRevision: number;
+};
 
 /** The canonicalized vault plus the resolved shared-manifest session records it was split against. */
 type CanonicalizedVaultSet = { canonicalized: CodecCanonicalized; sharedManifestRecords: Record<string, SessionSharedManifest> };
@@ -341,8 +369,11 @@ export class VaultSyncService {
 
       const schemaSql = new VaultSqlGenerator().getCompleteSchemaSql();
       const schemaColumns = await VaultCodec.getSchemaColumns(schemaSql);
-      const sharedManifests = (canonicalized.sharedVaults ?? []).map(v => v.manifest);
-      const materialized = await vaultCodecMaterializeAsSqlite(canonicalized.manifest, canonicalized.dataBuckets, schemaColumns, sharedManifests);
+      const manifests = [
+        { manifest: canonicalized.manifest, isRoot: true },
+        ...(canonicalized.sharedVaults ?? []).map(v => ({ manifest: v.manifest, isRoot: false })),
+      ];
+      const materialized = await vaultCodecMaterializeAsSqlite(manifests, canonicalized.dataBuckets, schemaColumns);
       const sqliteBase64 = await VaultCodec.insertTables(materialized, blobMap, schemaSql);
 
       devLog(`[ManifestMigration] Migration complete: ${blobMap.size} blobs re-embedded, ${sqliteBase64.length} base64 chars.`);
@@ -378,52 +409,36 @@ export class VaultSyncService {
 
   /**
    * Materialize a local SQLite database from an already-fetched manifest-v1 snapshot: verify ciphertext integrity,
-   * decrypt + unwrap the manifest/metadata, fetch any missing referenced blobs, then run the codec.
+   * decrypt every manifest and the data buckets, fetch any missing referenced blobs, then run the codec.
    * @param snapshot - the raw GET /v2/Vault response
-   * @param vek - the symmetric key used to decrypt the manifest + metadata + blobs
+   * @param vek - the root manifest's symmetric key (from the unlock chain); decrypts the root manifest and the data buckets
    */
   private async materializeFromSnapshot(snapshot: GetResponseDto, vek: string): Promise<PullResult> {
     const webApi = new WebApiService();
 
-    const rootManifest = selectRootManifest(snapshot.manifests);
-    if (!rootManifest) {
+    const rootDto = selectRootManifest(snapshot.manifests);
+    if (!rootDto) {
       throw new Error('VaultSyncService: server returned no root manifest, refusing to assemble.');
     }
 
-    if (!rootManifest.blob) {
+    if (!rootDto.blob) {
       throw new Error('VaultSyncService: server returned no manifest blob, nothing to assemble.');
     }
 
     devLog('[V2Pull] Verifying manifest ciphertext hash; decrypting + opening manifest...');
-    const manifestJson = await verifyDecryptUnpack(rootManifest.blob, vek, rootManifest.ciphertextHash, 'manifest');
-    const manifest = JSON.parse(manifestJson) as VaultManifest;
-    devLog(`[V2Pull] Manifest opened (content hash verified): schemaVersion=${manifest.schemaVersion}, migrationId=${manifest.migrationId}, tables: ${Object.entries(manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
-
-    // Content baselines for the push-side change detection: fingerprint every target as served by the server.
-    const pulledFingerprints: Record<string, string> = {};
-    pulledFingerprints[FINGERPRINT_ROOT_KEY] = await vaultCodecComputeContentFingerprint(manifestJson);
+    const root = await this.openManifest(rootDto, vek);
+    const resolved: ResolvedManifest[] = [root];
+    devLog(`[V2Pull] Manifest opened (content hash verified): schemaVersion=${root.manifest.schemaVersion}, migrationId=${root.manifest.migrationId}, tables: ${Object.entries(root.manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
 
     /*
      * Persist the user salt locally so subsequent canonicalizes hash blobs the same way, and the root
      * manifest id so a push can resolve it even when the vault DB predates the Manifests bookkeeping table.
      */
-    await storage.setItem(StorageKeys.VAULT_V2_USER_SALT, manifest.userSalt);
-    await storage.setItem(StorageKeys.VAULT_V2_ROOT_MANIFEST_ID, rootManifest.manifestId);
-    const manifestRevision = typeof rootManifest.revision === 'number' ? rootManifest.revision : 0;
-    await storage.setItem(StorageKeys.SERVER_REVISION, manifestRevision);
+    await storage.setItem(StorageKeys.VAULT_V2_USER_SALT, root.manifest.userSalt);
+    await storage.setItem(StorageKeys.VAULT_V2_ROOT_MANIFEST_ID, root.manifestId);
 
-    /*
-     * Persist the revision of every non-root manifest (e.g. shared manifests) so sync can detect when one is added or
-     * updated server-side. The root manifest is excluded on purpose, it's tracked via local:serverRevision above.
-     */
-    const sharedManifestRevisions: Record<string, number> = {};
-    for (const m of (snapshot.manifests ?? [])) {
-      if (!m.isRoot && typeof m.revision === 'number') {
-        sharedManifestRevisions[m.manifestId] = m.revision;
-      }
-    }
-    await storage.setItem(StorageKeys.SERVER_MANIFEST_REVISIONS, sharedManifestRevisions);
-    devLog(`[V2Pull] Stored local shared-manifest revisions from snapshot: ${Object.keys(sharedManifestRevisions).length === 0 ? '(none)' : Object.entries(sharedManifestRevisions).map(([id, rev]) => `${id}=${rev}`).join(', ')}. Next status check compares against these.`);
+    // Content baselines for the push-side change detection: fingerprint every target as served by the server.
+    const pulledFingerprints: Record<string, string> = {};
 
     // Decrypt every data bucket in the snapshot (Settings today; more categories later).
     const dataBuckets: VaultDataBucket[] = [];
@@ -445,43 +460,23 @@ export class VaultSyncService {
       devLog('[V2Pull] No data buckets in snapshot.');
     }
 
-    /*
-     * Resolve every non-root (shared) manifest in the snapshot. The snapshot carries the manifest VEK encrypted with the user's public key.
-     * Unwrap it with the private key, read from the already-decrypted root manifest's EncryptionKeys table.
-     * A manifest whose key can't be resolved is skipped.
-     */
-    const sharedManifestDtos = (snapshot.manifests ?? []).filter(m => !m.isRoot && m.blob);
-    const sharedManifests: VaultManifest[] = [];
+    // Open every remaining manifest.
     const sessionSharedManifests: Record<string, SessionSharedManifest> = {};
-    for (const dto of sharedManifestDtos) {
-      let vek: string | null = null;
-      if (dto.encryptedVek && dto.encryptionPublicKey) {
-        /*
-         * Each grant was encrypted for a specific public key; select the matching private key so a grant encrypted
-         * before a key rotation still decrypts (the current primary is never assumed). A grant without an encryption
-         * public key cannot be resolved, so it falls through and the manifest is skipped below.
-         */
-        const privateKeyJwk = await this.resolvePrivateKeyJwk(manifest, dto.encryptionPublicKey);
-        if (privateKeyJwk) {
-          try {
-            vek = await SharingService.unwrapManifestVek(dto.encryptedVek, privateKeyJwk);
-          } catch (e) {
-            devWarn(`[V2Pull] Failed to unwrap VEK of shared manifest ${dto.manifestId}, skipping it.`, e);
-          }
-        }
+    for (const dto of (snapshot.manifests ?? [])) {
+      if (dto.isRoot || !dto.blob) {
+        continue;
       }
-      if (!vek) {
-        devWarn(`[V2Pull] No key available for shared manifest ${dto.manifestId}, skipping it.`);
+
+      const grantedVek = await this.resolveGrantedVek(root.manifest, dto);
+      if (!grantedVek) {
         continue;
       }
 
       try {
-        const sharedManifestJson = await verifyDecryptUnpack(dto.blob!, vek, dto.ciphertextHash, `shared manifest ${dto.manifestId}`);
-        const sharedManifest = JSON.parse(sharedManifestJson) as VaultManifest;
-        const folderId = typeof sharedManifest.anchorFolderId === 'string' ? sharedManifest.anchorFolderId : null;
-        sharedManifests.push(sharedManifest);
-        pulledFingerprints[fingerprintManifestKey(dto.manifestId)] = await vaultCodecComputeContentFingerprint(sharedManifestJson);
-        devLog(`[V2Pull] Shared manifest ${dto.manifestId} opened (folder ${folderId ?? 'unassigned'}): tables: ${Object.entries(sharedManifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
+        const entry = await this.openManifest(dto, grantedVek);
+        resolved.push(entry);
+        const folderId = typeof entry.manifest.anchorFolderId === 'string' ? entry.manifest.anchorFolderId : null;
+        devLog(`[V2Pull] Shared manifest ${dto.manifestId} opened (folder ${folderId ?? 'unassigned'}): tables: ${Object.entries(entry.manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
         if (folderId) {
           // A manifest the user administers must win over one they only have read access to for the same folder id.
           const existing = sessionSharedManifests[folderId];
@@ -489,9 +484,9 @@ export class VaultSyncService {
             sessionSharedManifests[folderId] = {
               folderId,
               manifestId: dto.manifestId,
-              vek,
-              salt: sharedManifest.userSalt,
-              revision: dto.revision,
+              vek: grantedVek,
+              salt: entry.manifest.userSalt,
+              revision: entry.revision,
               name: dto.name ?? null,
               ownerUsername: dto.ownerUsername ?? null,
               canAdminister: dto.canAdminister ?? false,
@@ -504,26 +499,27 @@ export class VaultSyncService {
     }
     await SharingService.setSessionSharedManifests(sessionSharedManifests);
 
-    /*
-     * Fetch any referenced blobs that aren't already in the local (encrypted) cache. Refs of the root manifest
-     * decrypt with the root VEK; refs of a shared manifest decrypt with that folder's VEK.
-     */
-    const refVeks = new Map<string, string>();
-    const refs: BlobRefDto[] = [];
-    for (const r of rootManifest.blobReferences ?? []) {
-      refs.push(r);
-      refVeks.set(r.hash, vek);
+    // One fingerprint baseline per opened manifest, addressed by manifest id (root included).
+    for (const entry of resolved) {
+      pulledFingerprints[fingerprintManifestKey(entry.manifestId)] = entry.contentFingerprint;
     }
-    for (const dto of sharedManifestDtos) {
-      const folder = Object.values(sessionSharedManifests).find(f => f.manifestId === dto.manifestId);
-      if (!folder) {
-        continue;
-      }
-      for (const r of dto.blobReferences ?? []) {
-        if (!refVeks.has(r.hash)) {
-          refs.push(r);
-          refVeks.set(r.hash, folder.vek);
+
+    // Persist the revision of every manifest so sync can detect when one is added or updated server-side.
+    await storage.setItem(StorageKeys.SERVER_REVISION, root.revision);
+    const sharedManifestRevisions = Object.fromEntries(resolved.filter(m => !m.isRoot).map(m => [m.manifestId, m.revision]));
+    await storage.setItem(StorageKeys.SERVER_MANIFEST_REVISIONS, sharedManifestRevisions);
+    devLog(`[V2Pull] Stored local shared-manifest revisions from snapshot: ${Object.keys(sharedManifestRevisions).length === 0 ? '(none)' : Object.entries(sharedManifestRevisions).map(([id, rev]) => `${id}=${rev}`).join(', ')}. Next status check compares against these.`);
+
+    // Fetch any referenced blobs that aren't already in the local (encrypted) cache.
+    const refOwners = new Map<string, ResolvedManifest>();
+    const refs: BlobRefDto[] = [];
+    for (const entry of resolved) {
+      for (const r of entry.blobReferences) {
+        if (refOwners.has(r.hash)) {
+          continue;
         }
+        refs.push(r);
+        refOwners.set(r.hash, entry);
       }
     }
     const cache = await this.loadBlobCache();
@@ -549,13 +545,14 @@ export class VaultSyncService {
     const blobMap = new Map<string, Uint8Array>();
     for (const r of refs) {
       const ciphertext = cache[r.hash];
-      const blobKey = refVeks.get(r.hash) ?? vek;
+      const owner = refOwners.get(r.hash);
+      const blobKey = owner?.vek ?? vek;
       /*
        * Root-manifest attachments are load-bearing (a NULL insert would propagate data loss on the next push);
        * shared-manifest blob gaps only degrade that folder, so they are logged and skipped. TODO: revisit once
        * cross-member blob availability is guaranteed (shared attachment gaps currently degrade like favicons).
        */
-      const strict = r.category === 'attachment' && blobKey === vek;
+      const strict = r.category === 'attachment' && owner?.isRoot === true;
       if (!ciphertext) {
         if (strict) {
           throw new Error(`VaultSyncService: attachment blob ${r.hash} is referenced by the manifest but missing on the server, refusing to assemble an incomplete vault.`);
@@ -586,11 +583,11 @@ export class VaultSyncService {
     await storage.setItem(StorageKeys.VAULT_V2_CONTENT_FINGERPRINTS, pulledFingerprints);
     devLog(`[V2Pull] Stored ${Object.keys(pulledFingerprints).length} content fingerprint baseline(s) for push-side change detection.`);
 
-    devLog(`[V2Pull] ${blobMap.size} blobs decrypted; running codec reassembly into a fresh SQLite (${sharedManifests.length} shared manifest(s) combined)...`);
+    devLog(`[V2Pull] ${blobMap.size} blobs decrypted; running codec reassembly into a fresh SQLite (${resolved.length} manifest(s) combined)...`);
     const sqlGen = new VaultSqlGenerator();
     const schemaSql = sqlGen.getCompleteSchemaSql();
     const schemaColumns = await VaultCodec.getSchemaColumns(schemaSql);
-    const materialized = await vaultCodecMaterializeAsSqlite(manifest, dataBuckets, schemaColumns, sharedManifests);
+    const materialized = await vaultCodecMaterializeAsSqlite(resolved.map(m => ({ manifest: m.manifest, isRoot: m.isRoot })), dataBuckets, schemaColumns);
 
     /*
      * Anything a newer client wrote that our schema can't hold was split off the insert set into the
@@ -606,7 +603,51 @@ export class VaultSyncService {
     const sqliteBase64 = await VaultCodec.insertTables(materialized, blobMap, schemaSql);
     devLog('[V2Pull] Codec reassembly complete.');
 
-    return { sqliteBase64, manifestRevision };
+    return { sqliteBase64, manifestRevision: root.revision };
+  }
+
+  /**
+   * Verify one snapshot manifest's ciphertext, decrypt and open it into a {@link ResolvedManifest}.
+   * @param dto - the snapshot manifest (must carry a blob)
+   * @param vek - the key that decrypts it
+   */
+  private async openManifest(dto: ManifestDto, vek: string): Promise<ResolvedManifest> {
+    const isRoot = dto.isRoot === true;
+    const manifestJson = await verifyDecryptUnpack(dto.blob!, vek, dto.ciphertextHash, isRoot ? 'manifest' : `shared manifest ${dto.manifestId}`);
+    return {
+      manifestId: dto.manifestId,
+      isRoot,
+      manifest: JSON.parse(manifestJson) as VaultManifest,
+      vek,
+      revision: typeof dto.revision === 'number' ? dto.revision : 0,
+      blobReferences: dto.blobReferences ?? [],
+      contentFingerprint: await vaultCodecComputeContentFingerprint(manifestJson),
+    };
+  }
+
+  /**
+   * Decrypt the VEK the server granted the caller on a non-root manifest.
+   * @param rootManifest - the already-decrypted root manifest, the durable home of rotated private keys
+   * @param dto - the snapshot manifest carrying the grant
+   */
+  private async resolveGrantedVek(rootManifest: CodecManifest, dto: ManifestDto): Promise<string | null> {
+    if (!dto.encryptedVek || !dto.encryptionPublicKey) {
+      devWarn(`[V2Pull] No key available for shared manifest ${dto.manifestId}, skipping it.`);
+      return null;
+    }
+
+    const privateKeyJwk = await this.resolvePrivateKeyJwk(rootManifest, dto.encryptionPublicKey);
+    if (!privateKeyJwk) {
+      devWarn(`[V2Pull] No key available for shared manifest ${dto.manifestId}, skipping it.`);
+      return null;
+    }
+
+    try {
+      return await SharingService.unwrapManifestVek(dto.encryptedVek, privateKeyJwk);
+    } catch (e) {
+      devWarn(`[V2Pull] Failed to unwrap VEK of shared manifest ${dto.manifestId}, skipping it.`, e);
+      return null;
+    }
   }
 
   /**
@@ -683,7 +724,7 @@ export class VaultSyncService {
   }
 
   /**
-   * The push implementation; {@link push} wraps it with the outdated-server guard.
+   * The push implementation; {@link push} encrypts it with the outdated-server guard.
    * @param sqliteClient - the in-memory SQLite the user has been editing
    * @param vek - the symmetric encryption key
    * @param username - the user's username
@@ -729,11 +770,6 @@ export class VaultSyncService {
     const privateEmailDomains = (await getItemWithFallback<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS)) ?? [];
     const emailRouting = buildEmailRouting(canonicalized.manifest, (canonicalized.sharedVaults ?? []).map(v => v.manifest), privateEmailDomains);
 
-    // Plaintext blob bytes held platform-side for encryption/upload, each staged with the key that encrypts it.
-    const rootBlobEntries = new Map<string, UploadBlobEntry>(
-      Object.entries(canonicalized.blobs).map(([hash, entry]) => [hash, { kind: entry.kind as 'favicon' | 'attachment', bytes: VaultCodec.base64ToBytes(entry.bytesBase64), vek: contentKey }])
-    );
-
     /*
      * Debug: manifest-set summary + full unencrypted manifests + data buckets, inspectable in the console.
      * TODO: delete the unencrypted-content logs below before release: they print plaintext vault data.
@@ -746,31 +782,47 @@ export class VaultSyncService {
     }
 
     /*
-     * 2) Content-fingerprint gating: compare every canonicalized target (root manifest, each data bucket, each
-     * shared manifest below) against the fingerprint of its last-known server state and only write the targets
-     * that actually changed. A missing baseline means "server state unknown" and always writes. Two cases force
-     * a blanket write: a KEK/VEK migration re-keys the root manifest and all buckets (their ciphertext must be
-     * re-encrypted with the new VEK even when the content is unchanged), and forceFullWrite (server rollback
-     * recovery) rewrites everything so the server is restored from the client's state.
+     * 2) Content-fingerprint gating: compare every canonicalized target (each manifest below, each data bucket)
+     * against the fingerprint of its last-known server state and only write the targets that actually changed. A
+     * missing baseline means "server state unknown" and always writes. Two cases force a blanket write: a KEK/VEK
+     * migration re-keys the root manifest and all buckets (their ciphertext must be re-encrypted with the new VEK
+     * even when the content is unchanged), and forceFullWrite (server rollback recovery) rewrites everything so
+     * the server is restored from the client's state.
      */
     const forceFullWrite = options?.forceFullWrite === true;
     const fingerprints = await this.loadContentFingerprints();
-    const manifestPlaintext = await timedStage('stringify-manifest', () => JSON.stringify(canonicalized.manifest));
-    const rootFingerprint = await vaultCodecComputeContentFingerprint(manifestPlaintext);
-    const writeRoot = forceFullWrite || migrateToVaultKey || fingerprints[FINGERPRINT_ROOT_KEY] !== rootFingerprint;
-    if (!writeRoot) {
-      devLog('[V2Push] Root manifest unchanged versus server baseline, leaving it out of this write.');
-    }
+    const currentManifestRevision = ((await storage.getItem(StorageKeys.SERVER_REVISION)) as number | null) ?? 0;
+    const sharedRevisions = ((await storage.getItem(StorageKeys.SERVER_MANIFEST_REVISIONS)) as Record<string, number> | null) ?? {};
 
-    // 3) Pre-upload structural validation (write set only), then pack + AES-GCM encrypt.
-    if (writeRoot) {
-      const manifestValidation = await timedStage('validate-manifest (incl. JS→Rust conversion)', () => vaultCodecValidateManifest(canonicalized.manifest));
-      if (!manifestValidation.ok) {
-        return {
-          status: 'rejected',
-          newManifestRevision: null,
-          reasons: [`Manifest validation failed: ${manifestValidation.failedRules.join(', ')}. ${manifestValidation.message}`.trim()],
-        };
+    /*
+     * Every manifest canonicalize produced, as one candidate list the write is derived from.
+     */
+    const candidates: PushManifest[] = [
+      { manifestId: canonicalized.manifest.manifestId, isRoot: true, manifest: canonicalized.manifest, vek: contentKey, blobs: canonicalized.blobs, currentRevision: currentManifestRevision },
+      ...(canonicalized.sharedVaults ?? []).flatMap(sharedVault => {
+        const record = sharedManifestRecords[sharedVault.anchorFolderId];
+        if (!record) {
+          return [];
+        }
+        return [{
+          manifestId: record.manifestId,
+          isRoot: false,
+          manifest: sharedVault.manifest,
+          vek: record.vek,
+          blobs: sharedVault.blobs,
+          currentRevision: sharedRevisions[record.manifestId] ?? record.revision ?? 0,
+        }];
+      }),
+    ];
+
+    // Set up the blob entries for the write.
+    const blobEntries = new Map<string, UploadBlobEntry>();
+    for (const candidate of candidates) {
+      for (const [hash, blob] of Object.entries(candidate.blobs)) {
+        if (blobEntries.has(hash)) {
+          continue;
+        }
+        blobEntries.set(hash, { kind: blob.kind as 'favicon' | 'attachment', bytes: VaultCodec.base64ToBytes(blob.bytesBase64), vek: candidate.vek, fromRoot: candidate.isRoot });
       }
     }
 
@@ -806,80 +858,67 @@ export class VaultSyncService {
       devLog(`[V2Push] Data bucket "${bucket.category}": raw ${formatKb(bucketPlaintext.length)} → compressed ${formatKb(compressedBytes)} → encrypted ${formatKb(ciphertext.length)}.`);
     }
 
-    // Pack + encrypt the root manifest when it is part of the write (reuses the plaintext the fingerprint hashed).
-    let rootManifestWrite: Omit<ManifestWriteDto, 'blobReferences' | 'currentRevision' | 'credentialsCount'> | null = null;
-    if (writeRoot) {
-      const { ciphertext: manifestCiphertext, compressedBytes: manifestCompressedBytes } = await packEncrypt(manifestPlaintext, contentKey);
-      const manifestCiphertextHash = await vaultCodecComputeCiphertextHash(manifestCiphertext);
-      devLog(`[V2Push] Manifest blob: raw ${formatKb(manifestPlaintext.length)} → compressed ${formatKb(manifestCompressedBytes)} → encrypted ${formatKb(manifestCiphertext.length)}.`);
-      rootManifestWrite = { isRoot: true, manifestBlob: manifestCiphertext, manifestCiphertextHash };
-    }
-
     /*
-     * Encrypt each changed shared manifest with its own VEK and add it to the batch. Blob bytes for
-     * every manifest are pre-uploaded together further down. A malformed shared manifest is dropped from the batch
-     * (logged) rather than failing the whole write: that manifest just isn't updated this round. An unchanged shared
-     * manifest is skipped entirely: this both avoids re-uploading it and keeps its (possibly stale) revision out of
-     * the all-or-nothing gate, so another member's update to that folder can't fail an unrelated write.
+     * Gate, validate, pack and encrypt every candidate manifest into the write batch, each with its own VEK. An
+     * unchanged manifest is skipped entirely: that avoids re-uploading it and keeps its (possibly stale) revision
+     * out of the all-or-nothing gate, so another member's update to a shared folder can't fail an unrelated write.
      */
-    const sharedRevisions = ((await storage.getItem(StorageKeys.SERVER_MANIFEST_REVISIONS)) as Record<string, number> | null) ?? {};
-    const sharedBlobEntries = new Map<string, UploadBlobEntry>();
-    const sharedManifestWrites: ManifestWriteDto[] = [];
-    const writtenSharedFingerprints: Record<string, string> = {};
-    for (const sharedVault of canonicalized.sharedVaults ?? []) {
-      const record = sharedManifestRecords[sharedVault.anchorFolderId];
-      if (!record) {
-        continue;
-      }
+    const manifestWrites: ManifestWriteDto[] = [];
+    const writtenManifestFingerprints: Record<string, string> = {};
+    for (const candidate of candidates) {
+      const label = candidate.isRoot ? 'Root manifest' : `Shared manifest "${candidate.manifestId}" (folder ${candidate.manifest.anchorFolderId ?? 'unassigned'})`;
+      const plaintext = await timedStage(`stringify-manifest ${candidate.manifestId}`, () => JSON.stringify(candidate.manifest));
+      const fingerprint = await vaultCodecComputeContentFingerprint(plaintext);
 
       /*
-       * Blob bytes are collected for every resolved folder, written or not: the blob-cache/server-hash
-       * bookkeeping below covers all referenced blobs, and the missing-diff only uploads genuine gaps anyway.
-       * Folder blob hashes are salt-unique per folder, so they never collide with root or other folders' hashes.
+       * A KEK/VEK migration re-keys the root manifest and all buckets (their ciphertext must be re-encrypted with
+       * the new VEK even when the content is unchanged) but not the shared manifests, which keep their own VEK.
        */
-      for (const [hash, entry] of Object.entries(sharedVault.blobs)) {
-        if (rootBlobEntries.has(hash) || sharedBlobEntries.has(hash)) {
-          continue;
-        }
-        sharedBlobEntries.set(hash, { kind: entry.kind as 'favicon' | 'attachment', bytes: VaultCodec.base64ToBytes(entry.bytesBase64), vek: record.vek });
-      }
-
-      const sharedPlaintext = JSON.stringify(sharedVault.manifest);
-      const sharedFingerprint = await vaultCodecComputeContentFingerprint(sharedPlaintext);
-      if (!forceFullWrite && fingerprints[fingerprintManifestKey(record.manifestId)] === sharedFingerprint) {
-        devLog(`[V2Push] Shared manifest "${record.manifestId}" (folder ${sharedVault.anchorFolderId}) unchanged versus server baseline, leaving it out of this write.`);
+      if (!forceFullWrite && !(migrateToVaultKey && candidate.isRoot) && fingerprints[fingerprintManifestKey(candidate.manifestId)] === fingerprint) {
+        devLog(`[V2Push] ${label} unchanged versus server baseline, leaving it out of this write.`);
         continue;
       }
 
-      const validation = await vaultCodecValidateManifest(sharedVault.manifest);
+      const validation = await timedStage(`validate-manifest ${candidate.manifestId} (incl. JS→Rust conversion)`, () => vaultCodecValidateManifest(candidate.manifest));
       if (!validation.ok) {
-        devWarn(`[V2Push] Shared manifest for folder ${sharedVault.anchorFolderId} failed validation (${validation.failedRules.join(', ')}), dropping it from this write.`);
+        if (candidate.isRoot) {
+          return {
+            status: 'rejected',
+            newManifestRevision: null,
+            reasons: [`Manifest validation failed: ${validation.failedRules.join(', ')}. ${validation.message}`.trim()],
+          };
+        }
+        devWarn(`[V2Push] ${label} failed validation (${validation.failedRules.join(', ')}), dropping it from this write.`);
         continue;
       }
 
-      const { ciphertext: sharedCiphertext, compressedBytes: sharedCompressedBytes } = await packEncrypt(sharedPlaintext, record.vek);
-      const sharedCiphertextHash = await vaultCodecComputeCiphertextHash(sharedCiphertext);
-      devLog(`[V2Push] Shared manifest "${record.manifestId}" (folder ${sharedVault.anchorFolderId}): raw ${formatKb(sharedPlaintext.length)} → compressed ${formatKb(sharedCompressedBytes)} → encrypted ${formatKb(sharedCiphertext.length)}.`);
+      const { ciphertext, compressedBytes } = await packEncrypt(plaintext, candidate.vek);
+      const ciphertextHash = await vaultCodecComputeCiphertextHash(ciphertext);
+      devLog(`[V2Push] ${label}: raw ${formatKb(plaintext.length)} → compressed ${formatKb(compressedBytes)} → encrypted ${formatKb(ciphertext.length)}.`);
 
-      sharedManifestWrites.push({
-        manifestId: record.manifestId,
-        manifestBlob: sharedCiphertext,
-        manifestCiphertextHash: sharedCiphertextHash,
-        currentRevision: sharedRevisions[record.manifestId] ?? record.revision ?? 0,
-        credentialsCount: (sharedVault.manifest.tables.Items ?? []).length,
-        blobReferences: Object.entries(sharedVault.blobs).map(([hash, entry]) => ({ hash, category: entry.kind })),
+      manifestWrites.push({
+        // The root target is addressed by the flag alone (the server resolves it from the auth session), see ManifestWriteDto.
+        ...(candidate.isRoot ? { isRoot: true } : { manifestId: candidate.manifestId }),
+        manifestBlob: ciphertext,
+        manifestCiphertextHash: ciphertextHash,
+        currentRevision: candidate.currentRevision,
+        credentialsCount: (candidate.manifest.tables.Items ?? []).length,
+        blobReferences: Object.entries(candidate.blobs).map(([hash, blob]) => ({ hash, category: blob.kind })),
+        /*
+         * Set only on the KEK/VEK migration push, where the server creates the vault key alongside this root revision.
+         * A migration always forces a root write (see the gate above), so the key can never be stranded without one.
+         */
+        ...(candidate.isRoot && encryptedVek ? { encryptedVek } : {}),
       });
-      writtenSharedFingerprints[record.manifestId] = sharedFingerprint;
+      writtenManifestFingerprints[candidate.manifestId] = fingerprint;
     }
-
-    const currentManifestRevision = ((await storage.getItem(StorageKeys.SERVER_REVISION)) as number | null) ?? 0;
 
     /*
      * Nothing changed versus the server baselines: skip the write (and the blob diff) entirely. Reachable when a
      * mutation was recorded but produced no canonical content change (e.g. an edit reverted to the original value).
      */
-    if (rootManifestWrite === null && sharedManifestWrites.length === 0 && bucketDtos.length === 0) {
-      devLog('[V2Push] No content changes detected (root manifest, shared manifests and data buckets all match the server baselines); skipping upload.');
+    if (manifestWrites.length === 0 && bucketDtos.length === 0) {
+      devLog('[V2Push] No content changes detected (every manifest and data bucket matches the server baselines); skipping upload.');
       return { status: 'ok', newManifestRevision: currentManifestRevision };
     }
 
@@ -889,9 +928,9 @@ export class VaultSyncService {
      * overwritten in place; shared-manifest blobs keep their own (unchanged) VEK and only fill genuine gaps.
      */
     const webApi = new WebApiService();
-    const rootHashes = Array.from(rootBlobEntries.keys());
-    const sharedHashes = Array.from(sharedBlobEntries.keys());
-    const allBlobHashes = [...rootHashes, ...sharedHashes];
+    const rootHashes = Array.from(blobEntries).filter(([, entry]) => entry.fromRoot).map(([hash]) => hash);
+    const sharedHashes = Array.from(blobEntries).filter(([, entry]) => !entry.fromRoot).map(([hash]) => hash);
+    const allBlobHashes = Array.from(blobEntries.keys());
     const knownServerHashes = new Set(((await storage.getItem(StorageKeys.VAULT_V2_SERVER_BLOB_HASHES)) as string[] | null) ?? []);
 
     let rootToUpload: string[] = [];
@@ -904,10 +943,10 @@ export class VaultSyncService {
         sharedToUpload = missingResp.missing ?? [];
       }
     } else {
-      const candidates = allBlobHashes.filter(h => !knownServerHashes.has(h));
+      const uploadCandidates = allBlobHashes.filter(h => !knownServerHashes.has(h));
       let toUpload: string[] = [];
-      if (candidates.length > 0) {
-        const missingResp = await webApi.post<{ hashes: string[] }, MissingBlobsResponseDto>(BLOBS_MISSING_ENDPOINT, { hashes: candidates });
+      if (uploadCandidates.length > 0) {
+        const missingResp = await webApi.post<{ hashes: string[] }, MissingBlobsResponseDto>(BLOBS_MISSING_ENDPOINT, { hashes: uploadCandidates });
         toUpload = missingResp.missing ?? [];
       }
       const toUploadSet = new Set(toUpload);
@@ -915,34 +954,13 @@ export class VaultSyncService {
       sharedToUpload = sharedHashes.filter(h => toUploadSet.has(h));
     }
 
-    devLog(`[V2Push] Blob diff: ${allBlobHashes.length} blobs across ${1 + sharedManifestWrites.length} manifest(s), uploading ${rootToUpload.length} root + ${sharedToUpload.length} shared${migrateToVaultKey ? ' (root re-encrypted, VEK migration)' : ''}.`);
+    devLog(`[V2Push] Blob diff: ${allBlobHashes.length} blobs across ${candidates.length} manifest(s), uploading ${rootToUpload.length} root + ${sharedToUpload.length} shared${migrateToVaultKey ? ' (root re-encrypted, VEK migration)' : ''}.`);
 
     // Pre-upload the missing bytes so the write below carries references only; each staged entry carries its own key.
-    const uploadedCiphertexts = await this.uploadBlobs(webApi, rootBlobEntries, rootToUpload, migrateToVaultKey);
-    const uploadedShared = await this.uploadBlobs(webApi, sharedBlobEntries, sharedToUpload);
-    for (const [hash, ciphertext] of uploadedShared) {
+    const uploadedCiphertexts = await this.uploadBlobs(webApi, blobEntries, rootToUpload, migrateToVaultKey);
+    for (const [hash, ciphertext] of await this.uploadBlobs(webApi, blobEntries, sharedToUpload)) {
       uploadedCiphertexts.set(hash, ciphertext);
     }
-
-    const rootBlobReferences: BlobRefDto[] = rootHashes.map(hash => ({ hash, category: rootBlobEntries.get(hash)!.kind }));
-
-    const itemCount = (canonicalized.manifest.tables.Items ?? []).length;
-
-    const manifests: ManifestWriteDto[] = [
-      // Explicit root target (no manifestId): the server resolves the root from the auth session (see ManifestWriteDto).
-      ...(rootManifestWrite ? [{
-        ...rootManifestWrite,
-        currentRevision: currentManifestRevision,
-        credentialsCount: itemCount,
-        blobReferences: rootBlobReferences,
-        /*
-         * Set only on the KEK/VEK migration push, where the server creates the vault key alongside this root revision.
-         * A migration always forces a root write (see writeRoot), so the key can never be stranded without one.
-         */
-        ...(encryptedVek ? { encryptedVek } : {}),
-      }] : []),
-      ...sharedManifestWrites,
-    ];
 
     /*
      * Publish the public half of the vault's active personal keypair, which is e.g. used by SMTP services to encrypt mail for personal aliases.
@@ -975,7 +993,7 @@ export class VaultSyncService {
 
     const payload = {
       username,
-      manifests,
+      manifests: manifestWrites,
       buckets: bucketDtos,
       newBlobs: [] as BlobDto[],
       emailRouting,
@@ -992,14 +1010,14 @@ export class VaultSyncService {
        * Upload the bytes it asked for (each with its correct key) and retry the write once. Nothing was committed
        * (all-or-nothing), so the retry sends the identical payload.
        */
-      const unsatisfiable = resp.missingBlobHashes.filter(h => !rootBlobEntries.has(h) && !sharedBlobEntries.has(h));
+      const unsatisfiable = resp.missingBlobHashes.filter(h => !blobEntries.has(h));
       if (unsatisfiable.length > 0) {
         return { status: 'missing-blobs', newManifestRevision: currentManifestRevision, reasons: unsatisfiable };
       }
 
       devWarn(`[V2Sync] Server reported ${resp.missingBlobHashes.length} missing blob(s); uploading and retrying once.`);
-      const retriedRoot = await this.uploadBlobs(webApi, rootBlobEntries, resp.missingBlobHashes.filter(h => rootBlobEntries.has(h)), migrateToVaultKey);
-      const retriedShared = await this.uploadBlobs(webApi, sharedBlobEntries, resp.missingBlobHashes.filter(h => sharedBlobEntries.has(h)));
+      const retriedRoot = await this.uploadBlobs(webApi, blobEntries, resp.missingBlobHashes.filter(h => blobEntries.get(h)?.fromRoot === true), migrateToVaultKey);
+      const retriedShared = await this.uploadBlobs(webApi, blobEntries, resp.missingBlobHashes.filter(h => blobEntries.get(h)?.fromRoot === false));
       for (const [hash, ciphertext] of [...retriedRoot, ...retriedShared]) {
         uploadedCiphertexts.set(hash, ciphertext);
       }
@@ -1047,13 +1065,10 @@ export class VaultSyncService {
      * Record the new content baselines for every target this write actually carried, so the next push can skip
      * them again when unchanged. Targets left out of the write keep their existing baselines.
      */
-    if (rootManifestWrite) {
-      fingerprints[FINGERPRINT_ROOT_KEY] = rootFingerprint;
-    }
     for (const [category, fingerprint] of Object.entries(writtenBucketFingerprints)) {
       fingerprints[fingerprintBucketKey(category)] = fingerprint;
     }
-    for (const [manifestId, fingerprint] of Object.entries(writtenSharedFingerprints)) {
+    for (const [manifestId, fingerprint] of Object.entries(writtenManifestFingerprints)) {
       fingerprints[fingerprintManifestKey(manifestId)] = fingerprint;
     }
     await this.saveContentFingerprints(fingerprints);
@@ -1092,10 +1107,9 @@ export class VaultSyncService {
 
     const uploadedBlobChars = Array.from(uploadedCiphertexts.values()).reduce((sum, c) => sum + c.length, 0);
     const bucketChars = bucketDtos.reduce((sum, b) => sum + b.blob.length, 0);
-    const sharedManifestChars = sharedManifestWrites.reduce((sum, m) => sum + m.manifestBlob.length, 0);
-    const rootManifestChars = rootManifestWrite?.manifestBlob.length ?? 0;
-    const totalChars = rootManifestChars + sharedManifestChars + bucketChars + uploadedBlobChars;
-    devLog(`[V2Push] Total pushed (encrypted): root manifest ${formatKb(rootManifestChars)} + ${sharedManifestWrites.length} shared manifest(s) ${formatKb(sharedManifestChars)} + ${bucketDtos.length} buckets ${formatKb(bucketChars)} + ${uploadedCiphertexts.size} blobs ${formatKb(uploadedBlobChars)} = ${formatKb(totalChars)}.`);
+    const manifestChars = manifestWrites.reduce((sum, m) => sum + m.manifestBlob.length, 0);
+    const totalChars = manifestChars + bucketChars + uploadedBlobChars;
+    devLog(`[V2Push] Total pushed (encrypted): ${manifestWrites.length} manifest(s) ${formatKb(manifestChars)} + ${bucketDtos.length} buckets ${formatKb(bucketChars)} + ${uploadedCiphertexts.size} blobs ${formatKb(uploadedBlobChars)} = ${formatKb(totalChars)}.`);
 
     return { status: 'ok', newManifestRevision: newRootRevision, newEncryptionKey: migrateToVaultKey ? contentKey : undefined };
   }
@@ -1164,21 +1178,21 @@ export class VaultSyncService {
 
     const { canonicalized, sharedManifestRecords } = canonicalizedSet;
     const fingerprints = await this.loadContentFingerprints();
-    if (fingerprints[FINGERPRINT_ROOT_KEY] !== await vaultCodecComputeContentFingerprint(JSON.stringify(canonicalized.manifest))) {
-      return false;
-    }
-    for (const bucket of canonicalized.dataBuckets) {
-      if (fingerprints[fingerprintBucketKey(bucket.category)] !== await vaultCodecComputeContentFingerprint(JSON.stringify(bucket))) {
+
+    const manifests: Array<{ manifestId: string; manifest: CodecManifest }> = [
+      { manifestId: canonicalized.manifest.manifestId, manifest: canonicalized.manifest },
+      ...(canonicalized.sharedVaults ?? []).flatMap(v => {
+        const record = sharedManifestRecords[v.anchorFolderId];
+        return record ? [{ manifestId: record.manifestId, manifest: v.manifest }] : [];
+      }),
+    ];
+    for (const { manifestId, manifest } of manifests) {
+      if (fingerprints[fingerprintManifestKey(manifestId)] !== await vaultCodecComputeContentFingerprint(JSON.stringify(manifest))) {
         return false;
       }
     }
-    for (const sharedVault of canonicalized.sharedVaults ?? []) {
-      // A folder without a resolved session record is dropped from the push write set too, so it cannot make the push a non-no-op.
-      const record = sharedManifestRecords[sharedVault.anchorFolderId];
-      if (!record) {
-        continue;
-      }
-      if (fingerprints[fingerprintManifestKey(record.manifestId)] !== await vaultCodecComputeContentFingerprint(JSON.stringify(sharedVault.manifest))) {
+    for (const bucket of canonicalized.dataBuckets) {
+      if (fingerprints[fingerprintBucketKey(bucket.category)] !== await vaultCodecComputeContentFingerprint(JSON.stringify(bucket))) {
         return false;
       }
     }

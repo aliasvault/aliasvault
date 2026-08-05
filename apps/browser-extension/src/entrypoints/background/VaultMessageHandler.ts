@@ -68,7 +68,7 @@ function rootManifestRevision(status: StatusResponseV2): number {
   return root?.revision ?? 0;
 }
 
-/** The client's last-known revision per non-root manifest (manifestId → revision); empty when no shared folders. */
+/** The client's last-known revision per non-root manifest (manifestId → revision); empty when no shared manifests. */
 async function getLocalSharedManifestRevisions(): Promise<Record<string, number>> {
   return (await storage.getItem(StorageKeys.SERVER_MANIFEST_REVISIONS)) as Record<string, number> | null ?? {};
 }
@@ -102,7 +102,7 @@ function serverManifestsNeedPull(serverManifests: ManifestRevision[], localMainR
     return true;
   }
 
-  // Any shared-folder manifest added or with a changed revision on the server.
+  // Any shared manifest added or with a changed revision on the server.
   for (const [manifestId, revision] of serverShared) {
     const local = localSharedRevisions[manifestId];
     if (local !== revision) {
@@ -112,7 +112,7 @@ function serverManifestsNeedPull(serverManifests: ManifestRevision[], localMainR
     }
   }
 
-  // Any shared-folder manifest the client still tracks but the server no longer lists (removed / revoked).
+  // Any shared manifest the client still tracks but the server no longer lists (removed / revoked).
   const removed = Object.keys(localSharedRevisions).find(manifestId => !serverShared.has(manifestId));
   if (removed) {
     devLog(`[VaultSync] Pull needed: shared manifest ${removed} (local rev ${localSharedRevisions[removed]}) no longer listed by the server (revoked/removed).`);
@@ -270,9 +270,8 @@ async function pushVaultToServer(sqliteClient: SqliteClient, options: { forceFul
   }
 
   const username = (await storage.getItem(StorageKeys.USERNAME)) as string;
-  const emailAddresses = await getEmailAddressesForVault(sqliteClient);
 
-  const result = await vaultSyncService.push(sqliteClient, encryptionKey, username, emailAddresses, options);
+  const result = await vaultSyncService.push(sqliteClient, encryptionKey, username, options);
 
   if (result.status === 'ok') {
     if (result.newEncryptionKey) {
@@ -627,23 +626,6 @@ export async function handleGetSearchItems(
     // E-304: Item read failed during search
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
   }
-}
-
-/**
- * Get the email addresses for a vault.
- */
-export async function getEmailAddressesForVault(
-  sqliteClient: SqliteClient
-): Promise<string[]> {
-  const emailAddresses = sqliteClient.items.getAllEmailAddresses();
-
-  // Get metadata from local: storage
-  const privateEmailDomains = await getItemWithFallback<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS) ?? [];
-
-  return emailAddresses.filter(email => {
-    const domain = email?.split('@')[1];
-    return domain && privateEmailDomains.includes(domain);
-  });
 }
 
 /**
@@ -1388,19 +1370,20 @@ async function adoptRemoteVaultKeyIfNeeded(): Promise<boolean> {
     return true;
   }
 
-  const serverEncryptedVek = fetchResult.vaultKey.encryptedVek;
   const encryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string | null;
 
   try {
-    const vek = await EncryptionUtility.unwrapVaultEncryptionKey(serverEncryptedVek, sessionKey);
+    // Decrypt the encrypted Account Key and VEK.
+    const accountKey = await EncryptionUtility.unwrapVaultEncryptionKey(fetchResult.vaultKey.encryptedAccountKey, sessionKey);
+    const vek = fetchResult.vaultKey.encryptedVek ? await EncryptionUtility.unwrapVaultEncryptionKey(fetchResult.vaultKey.encryptedVek, accountKey) : accountKey;
 
-    // The session key was the KEK: re-encrypt the locally persisted vault with the VEK before swapping the session key.
+    // Re-encrypt the locally persisted vault with the VEK before swapping the session key.
     if (encryptedVault) {
       const decrypted = await EncryptionUtility.symmetricDecrypt(encryptedVault, sessionKey);
       await storage.setItem(StorageKeys.ENCRYPTED_VAULT, await EncryptionUtility.symmetricEncrypt(decrypted, vek));
     }
 
-    await storage.setItem(StorageKeys.ENCRYPTED_VEK, serverEncryptedVek);
+    await VaultKeyService.cacheEncryptedVekFromServer();
     await handleStoreEncryptionKey(vek);
     cachedSqliteClient = null;
     cachedVaultBlob = null;
@@ -1408,7 +1391,7 @@ async function adoptRemoteVaultKeyIfNeeded(): Promise<boolean> {
     return true;
   } catch (error) {
     /*
-     * Unwrap failed, so this device holds key material that is not the KEK the server wrapped the VEK with.
+     * Decryption failed, so this device holds key material that is not the KEK the server encrypted the VEK with.
      * We trigger a re-login to fix the problem.
      */
     devError('[VaultSync] Session key matches neither the KEK nor the VEK, forcing re-login:', error);
@@ -1482,7 +1465,7 @@ export async function handleFullVaultSync(): Promise<FullVaultSyncResult> {
 }
 
 /**
- * Internal implementation of the full vault sync. Wrapped by handleFullVaultSync
+ * Internal implementation of the full vault sync. Encrypted by handleFullVaultSync
  * so the result can be persisted to local storage for the popup to surface.
  */
 async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
@@ -1604,7 +1587,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     if (needsPull) {
       /*
        * Server has a manifest we haven't materialized yet. Either the Main vault advanced, or a manifest was
-       * added/updated (e.g. a newly shared folder). Pull and re-materialize so the new/updated content appears.
+       * added/updated (e.g. a newly shared manifest). Pull and re-materialize so the new/updated content appears.
        */
       const vaultResponseJson = await fetchLatestVaultFromServer();
 
