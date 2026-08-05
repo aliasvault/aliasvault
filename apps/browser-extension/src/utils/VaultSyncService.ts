@@ -10,11 +10,12 @@ import { bucketRevisionStorageKey, StorageKeys } from '@/utils/constants/storage
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
 import type { VaultResponse } from '@/utils/dist/core/models/webapi';
 import { VaultSqlGenerator } from '@/utils/dist/core/vault';
+import { buildEmailRouting } from '@/utils/EmailRouting';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateUserSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecCanonicalized, type CodecManifest, type CodecSharedManifestSpec} from '@/utils/RustCore';
 import { SharingService, type SessionSharedManifest } from '@/utils/SharingService';
 import { SqliteClient } from '@/utils/SqliteClient';
-import type { EmailRoutingPush } from '@/utils/types/EmailRoutingPush';
+import { getItemWithFallback } from '@/utils/StorageUtility';
 import { ServerUpdateRequiredError } from '@/utils/types/errors/ServerUpdateRequiredError';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
 import { type VaultManifest, type VaultDataBucket, VaultCodec } from '@/utils/VaultCodec';
@@ -664,8 +665,6 @@ export class VaultSyncService {
    * @param vek - the symmetric encryption key (on a KEK/VEK migration push this is the password-derived key,
    *   which becomes the KEK; on a normal push it is the VEK itself)
    * @param username - the user's username (sent in the upload payload for cross-check)
-   * @param emailRouting - claimed email aliases, split into personal and shared-manifest ones (the server needs
-   *   these in plaintext for routing, and the split decides which key each alias's mail is encrypted with)
    * @param options - set createVaultKey to perform the KEK/VEK migration as part of this push (decided once, in
    *   handleUploadVault); set forceFullWrite to bypass the content-fingerprint gating and
    *   rewrite every manifest and bucket (server rollback recovery)
@@ -675,10 +674,9 @@ export class VaultSyncService {
     sqliteClient: SqliteClient,
     vek: string,
     username: string,
-    emailRouting: EmailRoutingPush,
     options?: { createVaultKey?: boolean; forceFullWrite?: boolean }
   ): Promise<PushResult> {
-    return this.withOutdatedServerGuard(() => this.pushInternal(sqliteClient, vek, username, emailRouting, options));
+    return this.withOutdatedServerGuard(() => this.pushInternal(sqliteClient, vek, username, options));
   }
 
   /**
@@ -686,14 +684,12 @@ export class VaultSyncService {
    * @param sqliteClient - the in-memory SQLite the user has been editing
    * @param vek - the symmetric encryption key
    * @param username - the user's username
-   * @param emailRouting - claimed email aliases, split into personal and shared-manifest ones
    * @param options - see {@link push}
    */
   private async pushInternal(
     sqliteClient: SqliteClient,
     vek: string,
     username: string,
-    emailRouting: EmailRoutingPush,
     options?: { createVaultKey?: boolean; forceFullWrite?: boolean }
   ): Promise<PushResult> {
     /*
@@ -727,6 +723,8 @@ export class VaultSyncService {
       devLog('[V2Push] Reusing the canonicalize result from the pre-push no-op check.');
     }
     const { canonicalized, sharedManifestRecords } = cachedSet ?? await this.canonicalizeVault(sqliteClient);
+    const privateEmailDomains = (await getItemWithFallback<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS)) ?? [];
+    const emailRouting = buildEmailRouting(canonicalized.manifest, (canonicalized.sharedVaults ?? []).map(v => v.manifest), privateEmailDomains);
 
     // Plaintext blob bytes held platform-side for encryption/upload, each staged with the key that encrypts it.
     const rootBlobEntries = new Map<string, UploadBlobEntry>(

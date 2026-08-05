@@ -1,3 +1,5 @@
+import { BaseQueries } from './BaseQueries';
+
 /**
  * SQL query constants for Item operations.
  * Centralizes all item-related queries to avoid duplication.
@@ -170,11 +172,12 @@ export class ItemQueries {
     ORDER BY t.DisplayOrder, t.Name`;
 
   /**
-   * Insert a new item.
+   * Insert a new item, stamped best-effort with the root manifest id (the codec restamps membership
+   * authoritatively from the folder chain at every sync boundary).
    */
   public static readonly INSERT_ITEM = `
-    INSERT INTO Items (Id, Name, ItemType, LogoId, FolderId, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    INSERT INTO Items (Id, Name, ItemType, LogoId, FolderId, ManifestId, CreatedAt, UpdatedAt, IsDeleted)
+    VALUES (?, ?, ?, ?, ?, ${BaseQueries.ROOT_MANIFEST_ID}, ?, ?, ?)`;
 
   /**
    * Update an existing item (preserves LogoId if null is passed).
