@@ -1,5 +1,7 @@
 import * as dateFormatter from '@/utils/DateFormatter';
 
+import { SettingsQueries } from './queries/SettingsQueries';
+
 import type { Database } from 'sql.js';
 
 export type SqliteBindValue = string | number | null | Uint8Array;
@@ -109,6 +111,20 @@ export abstract class BaseRepository {
       [tableName]
     );
     return results.length > 0;
+  }
+
+  /**
+   * Get the vault's root manifest id from the Manifests bookkeeping table, the scope every personal row
+   * belongs to. Returns null for a legacy vault whose Manifests row was not written yet (mid-schema
+   * migration); the codec adopts such rows at the next sync boundary.
+   * @returns The root manifest id, or null when absent
+   */
+  protected rootManifestId(): string | null {
+    if (!this.tableExists('Manifests')) {
+      return null;
+    }
+    const results = this.client.executeQuery<{ Id: string }>(SettingsQueries.GET_ROOT_MANIFEST_ID);
+    return results.length > 0 ? results[0].Id : null;
   }
 
   /**

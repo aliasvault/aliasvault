@@ -110,15 +110,7 @@ export class SettingsRepository extends BaseRepository {
    * @returns The root manifest id, or null when the account is legacy
    */
   public getRootManifestId(): string | null {
-    /*
-     * A legacy account that predates the Manifests table (mid-schema-migration) has no
-     * no root manifest id (yet).
-     */
-    if (!this.tableExists('Manifests')) {
-      return null;
-    }
-    const results = this.client.executeQuery<{ Id: string }>(SettingsQueries.GET_ROOT_MANIFEST_ID);
-    return results.length > 0 ? results[0].Id : null;
+    return this.rootManifestId();
   }
 
   /**

@@ -4,7 +4,6 @@ import { vaultCodecLogoContentHash, vaultCodecLogoIdFor } from '@/utils/RustCore
 
 import { BaseRepository } from '../BaseRepository';
 import { LogoQueries } from '../queries/LogoQueries';
-import { SettingsQueries } from '../queries/SettingsQueries';
 
 /**
  * An uploaded logo as shown in the user's logo library.
@@ -69,7 +68,11 @@ export class LogoRepository extends BaseRepository {
     currentDateTime: string,
     options: { mimeType?: string | null; name?: string | null } = {}
   ): Promise<string> {
-    const logoId = await vaultCodecLogoIdFor(this.rootManifestId(), kind, source);
+    /*
+     * A legacy vault without a Manifests row derives its ids under an empty scope; the codec re-mints
+     * them at the next sync boundary, so the placeholder scope is self-healing.
+     */
+    const logoId = await vaultCodecLogoIdFor(this.rootManifestId() ?? '', kind, source);
     this.client.executeUpdate(LogoQueries.UPSERT, [
       logoId,
       kind,
@@ -120,17 +123,6 @@ export class LogoRepository extends BaseRepository {
    */
   public softDelete(logoId: string, currentDateTime: string): number {
     return this.client.executeUpdate(LogoQueries.SOFT_DELETE, [currentDateTime, logoId]);
-  }
-
-  /**
-   * The vault's root manifest id, used as the derivation scope of personal logo ids. Empty for a
-   * legacy vault whose Manifests row was not written yet — the codec re-mints such ids at the next
-   * sync boundary, so a temporary placeholder scope is self-healing.
-   * @returns The root manifest id, or an empty string when absent
-   */
-  private rootManifestId(): string {
-    const rows = this.client.executeQuery<{ Id: string }>(SettingsQueries.GET_ROOT_MANIFEST_ID);
-    return rows.length > 0 ? rows[0].Id : '';
   }
 
   /**
