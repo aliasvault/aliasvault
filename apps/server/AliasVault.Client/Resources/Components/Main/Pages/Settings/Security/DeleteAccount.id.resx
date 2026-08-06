@@ -60,7 +60,7 @@
   </resheader>
   <!-- Page title and breadcrumbs -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Delete Account</value>
+    <value>Hapus akun</value>
     <comment>Page title for the delete account page</comment>
   </data>
   <data name="BreadcrumbSecuritySettings" xml:space="preserve">
@@ -68,7 +68,7 @@
     <comment>Breadcrumb text for security settings</comment>
   </data>
   <data name="BreadcrumbDeleteAccount" xml:space="preserve">
-    <value>Delete Account</value>
+    <value>Hapus akun</value>
     <comment>Breadcrumb text for delete account</comment>
   </data>
   <!-- Warning messages -->
@@ -77,7 +77,7 @@
     <comment>Warning message about permanent deletion</comment>
   </data>
   <data name="FinalWarning" xml:space="preserve">
-    <value>Final warning: Enter your password to permanently delete your account.</value>
+    <value>Peringatan terakhir: Masukkan kata sandi Anda untuk menghapus akun Anda secara permanen.</value>
     <comment>Final warning message before account deletion</comment>
   </data>
   <!-- Note sections -->
@@ -86,15 +86,15 @@
     <comment>Header for note section</comment>
   </data>
   <data name="VaultsDeletedNote" xml:space="preserve">
-    <value>All encrypted vaults which includes all of your credentials will be permanently deleted</value>
+    <value>Semua brankas terenkripsi yang berisi seluruh kredensial Anda akan dihapus secara permanen</value>
     <comment>Note about vault deletion</comment>
   </data>
   <data name="EmailAliasesOrphanedNote" xml:space="preserve">
-    <value>Your email aliases will be orphaned and cannot be claimed by other users</value>
+    <value>Email alias Anda akan menjadi alias yang tidak terpakai dan tidak dapat diklaim oleh pengguna lain</value>
     <comment>Note about email aliases being orphaned</comment>
   </data>
   <data name="AccountCannotBeRecoveredNote" xml:space="preserve">
-    <value>Your account cannot be recovered after deletion</value>
+    <value>Akun Anda tidak dapat dipulihkan setelah dihapus</value>
     <comment>Note about account recovery</comment>
   </data>
   <data name="DeletionIrreversibleNote" xml:space="preserve">
