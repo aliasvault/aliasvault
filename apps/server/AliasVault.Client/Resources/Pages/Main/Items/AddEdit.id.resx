@@ -157,7 +157,7 @@
     <comment>Success message when item is updated</comment>
   </data>
   <data name="ItemCreatedSuccess">
-    <value>Item created successfully.</value>
+    <value>Item berhasil dibuat.</value>
     <comment>Success message when item is created</comment>
   </data>
   <!-- Passkey labels -->
