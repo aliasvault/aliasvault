@@ -139,25 +139,64 @@ public class AliasClientDbContext : DbContext
             }
         }
 
+        /*
+         * Manifest-scoped entities are keyed by (ManifestId, Id): a manifest is a namespace, and Ids are
+         * client-generated, so duplicate Ids alone are possible and should be allowed. Therefore we use
+         * a composite key for these entities.
+         */
+        modelBuilder.Entity<Item>().HasKey(e => new { e.ManifestId, e.Id });
+        modelBuilder.Entity<Folder>().HasKey(e => new { e.ManifestId, e.Id });
+        modelBuilder.Entity<Logo>().HasKey(e => new { e.ManifestId, e.Id });
+        modelBuilder.Entity<EncryptionKey>().HasKey(e => new { e.ManifestId, e.Id });
+        modelBuilder.Entity<FieldValue>().HasKey(e => new { e.ManifestId, e.Id });
+        modelBuilder.Entity<FieldHistory>().HasKey(e => new { e.ManifestId, e.Id });
+        modelBuilder.Entity<ItemTag>().HasKey(e => new { e.ManifestId, e.Id });
+        modelBuilder.Entity<Tag>().HasKey(e => new { e.ManifestId, e.Id });
+        modelBuilder.Entity<FieldDefinition>().HasKey(e => new { e.ManifestId, e.Id });
+        modelBuilder.Entity<Attachment>().HasKey(e => new { e.ManifestId, e.Id });
+        modelBuilder.Entity<Passkey>().HasKey(e => new { e.ManifestId, e.Id });
+        modelBuilder.Entity<TotpCode>().HasKey(e => new { e.ManifestId, e.Id });
+
         // Configure Attachment - Item relationship
         modelBuilder.Entity<Attachment>()
             .HasOne(l => l.Item)
             .WithMany(c => c.Attachments)
-            .HasForeignKey(l => l.ItemId)
+            .HasForeignKey(l => new { l.ManifestId, l.ItemId })
             .OnDelete(DeleteBehavior.Cascade);
 
         // Configure TotpCode - Item relationship
         modelBuilder.Entity<TotpCode>()
             .HasOne(l => l.Item)
             .WithMany(c => c.TotpCodes)
-            .HasForeignKey(l => l.ItemId)
+            .HasForeignKey(l => new { l.ManifestId, l.ItemId })
             .OnDelete(DeleteBehavior.Cascade);
 
         // Configure Passkey - Item relationship
         modelBuilder.Entity<Passkey>()
             .HasOne(p => p.Item)
             .WithMany(c => c.Passkeys)
-            .HasForeignKey(p => p.ItemId)
+            .HasForeignKey(p => new { p.ManifestId, p.ItemId })
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure FieldValue - Item relationship
+        modelBuilder.Entity<FieldValue>()
+            .HasOne(fv => fv.Item)
+            .WithMany(i => i.FieldValues)
+            .HasForeignKey(fv => new { fv.ManifestId, fv.ItemId })
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure FieldHistory - Item relationship
+        modelBuilder.Entity<FieldHistory>()
+            .HasOne(fh => fh.Item)
+            .WithMany()
+            .HasForeignKey(fh => new { fh.ManifestId, fh.ItemId })
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure ItemTag - Item relationship
+        modelBuilder.Entity<ItemTag>()
+            .HasOne(it => it.Item)
+            .WithMany(i => i.ItemTags)
+            .HasForeignKey(it => new { it.ManifestId, it.ItemId })
             .OnDelete(DeleteBehavior.Cascade);
 
         // Configure Passkey indexes
@@ -168,25 +207,23 @@ public class AliasClientDbContext : DbContext
             .Property(e => e.RpId)
             .UseCollation("NOCASE");
 
-        // Configure Item - Logo relationship
         modelBuilder.Entity<Item>()
             .HasOne(i => i.Logo)
             .WithMany(l => l.Items)
-            .HasForeignKey(i => i.LogoId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .HasForeignKey(i => new { i.ManifestId, i.LogoId })
+            .OnDelete(DeleteBehavior.ClientSetNull);
 
-        // Configure Item - Folder relationship
         modelBuilder.Entity<Item>()
             .HasOne(i => i.Folder)
             .WithMany(f => f.Items)
-            .HasForeignKey(i => i.FolderId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .HasForeignKey(i => new { i.ManifestId, i.FolderId })
+            .OnDelete(DeleteBehavior.ClientSetNull);
 
         // Configure Folder - ParentFolder relationship
         modelBuilder.Entity<Folder>()
             .HasOne(f => f.ParentFolder)
             .WithMany(f => f.ChildFolders)
-            .HasForeignKey(f => f.ParentFolderId)
+            .HasForeignKey(f => new { f.ManifestId, f.ParentFolderId })
             .OnDelete(DeleteBehavior.Cascade);
 
         // Configure Logo unique index on (ManifestId, Kind, Source): an icon belongs to exactly one
@@ -204,18 +241,11 @@ public class AliasClientDbContext : DbContext
         modelBuilder.Entity<EncryptionKey>()
             .HasIndex(k => new { k.ManifestId, k.IsPrimary });
 
-        // Configure FieldValue - Item relationship
-        modelBuilder.Entity<FieldValue>()
-            .HasOne(fv => fv.Item)
-            .WithMany(i => i.FieldValues)
-            .HasForeignKey(fv => fv.ItemId)
-            .OnDelete(DeleteBehavior.Cascade);
-
         // Configure FieldValue - FieldDefinition relationship (nullable for system fields)
         modelBuilder.Entity<FieldValue>()
             .HasOne(fv => fv.FieldDefinition)
             .WithMany(fd => fd.FieldValues)
-            .HasForeignKey(fv => fv.FieldDefinitionId)
+            .HasForeignKey(fv => new { fv.ManifestId, fv.FieldDefinitionId })
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired(false); // Nullable for system fields
 
@@ -223,7 +253,7 @@ public class AliasClientDbContext : DbContext
         modelBuilder.Entity<FieldHistory>()
             .HasOne(fh => fh.FieldDefinition)
             .WithMany(fd => fd.FieldHistories)
-            .HasForeignKey(fh => fh.FieldDefinitionId)
+            .HasForeignKey(fh => new { fh.ManifestId, fh.FieldDefinitionId })
             .OnDelete(DeleteBehavior.Cascade);
 
         // Configure indexes for FieldValue
@@ -255,23 +285,16 @@ public class AliasClientDbContext : DbContext
         modelBuilder.Entity<Folder>()
             .HasIndex(f => f.ParentFolderId);
 
-        // Configure ItemTag - Item relationship
-        modelBuilder.Entity<ItemTag>()
-            .HasOne(it => it.Item)
-            .WithMany(i => i.ItemTags)
-            .HasForeignKey(it => it.ItemId)
-            .OnDelete(DeleteBehavior.Cascade);
-
         // Configure ItemTag - Tag relationship
         modelBuilder.Entity<ItemTag>()
             .HasOne(it => it.Tag)
             .WithMany(t => t.ItemTags)
-            .HasForeignKey(it => it.TagId)
+            .HasForeignKey(it => new { it.ManifestId, it.TagId })
             .OnDelete(DeleteBehavior.Cascade);
 
         // Configure indexes for Tag
         modelBuilder.Entity<Tag>()
-            .HasIndex(t => t.Name);
+            .HasIndex(t => new { t.ManifestId, t.Name });
 
         // Configure indexes for ItemTag
         modelBuilder.Entity<ItemTag>()
@@ -280,9 +303,8 @@ public class AliasClientDbContext : DbContext
         modelBuilder.Entity<ItemTag>()
             .HasIndex(it => it.TagId);
 
-        // Configure unique index for ItemTag to prevent duplicate tag assignments
         modelBuilder.Entity<ItemTag>()
-            .HasIndex(it => new { it.ItemId, it.TagId })
+            .HasIndex(it => new { it.ManifestId, it.ItemId, it.TagId })
             .IsUnique();
     }
 

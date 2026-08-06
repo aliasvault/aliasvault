@@ -43,8 +43,8 @@ pub const ENCRYPTION_KEYS_TABLE: &str = "EncryptionKeys";
 /// The scope column every stamped table carries: the id of the manifest that owns the row.
 pub const MANIFEST_ID_COL: &str = "ManifestId";
 
-/// Local bookkeeping table materialize writes into the vault DB: one row per manifest this 
-/// vault is materialized from (`Id`, `IsRoot`, `Name`).
+/// Local bookkeeping table materialize writes into the vault DB: one row per manifest this
+/// vault is materialized from (`Id`, `Name`).
 pub const MANIFESTS_TABLE: &str = "Manifests";
 
 /// Manifest / metadata schema version. This is the manifest *wire structure* version and is its own
@@ -98,14 +98,53 @@ pub fn tables_for_category(category: &str) -> Vec<&'static str> {
     BUCKET_TABLES.iter().filter(|(_, c)| *c == category).map(|(t, _)| *t).collect()
 }
 
+/// True when a `ManifestId` value names no manifest: absent or empty.
+pub fn is_unstamped_scope(scope: Option<&str>) -> bool {
+    match scope {
+        None => true,
+        Some(value) => value.is_empty(),
+    }
+}
+
 /// True when a table is personal-only (see [`PERSONAL_TABLES`]): never part of a shared manifest.
 pub fn is_personal_table(table_name: &str) -> bool {
     PERSONAL_TABLES.contains(&table_name) || bucket_category_for(table_name).is_some()
 }
 
-/// The single-column primary key that addresses a row in `table_name`, shared with the merge layer
-/// (see `vault_merge::types::SYNCABLE_TABLES`) so overflow keying and LWW merge agree on row identity.
-/// Defaults to "Id" for tables outside the registry.
+/// Get the primary key column for a table.
 pub fn primary_key_for(table_name: &str) -> &'static str {
     crate::vault_merge::SYNCABLE_TABLES.iter().find(|t| t.name == table_name).map(|t| t.primary_key).unwrap_or("Id")
+}
+
+/// True when `table_name`'s rows are namespaced per manifest.
+pub fn is_manifest_scoped(table_name: &str) -> bool {
+    crate::vault_merge::SYNCABLE_TABLES.iter().any(|t| t.name == table_name && t.manifest_scoped)
+}
+
+/// Every manifest-scoped table, in registry order.
+pub fn manifest_scoped_tables() -> Vec<&'static str> {
+    crate::vault_merge::SYNCABLE_TABLES.iter().filter(|t| t.manifest_scoped).map(|t| t.name).collect()
+}
+
+/// The columns that together identify one row of `table_name`.
+pub fn identity_columns_for(table_name: &str) -> Vec<&'static str> {
+    crate::vault_merge::SYNCABLE_TABLES
+        .iter()
+        .find(|t| t.name == table_name)
+        .map(|t| t.identity_columns())
+        .unwrap_or_else(|| vec!["Id"])
+}
+
+/// Stable string key identifying `row` within `table_name`.
+pub fn row_identity(table_name: &str, row: &super::manifest::CodecRecord) -> Option<String> {
+    let columns = identity_columns_for(table_name);
+    // A row with no primary key cannot be addressed at all.
+    row.get(primary_key_for(table_name))?;
+    Some(
+        columns
+            .iter()
+            .filter_map(|column| row.get(*column).filter(|v| !v.is_null()).map(super::materialize::row_key))
+            .collect::<Vec<_>>()
+            .join("\u{1f}"),
+    )
 }

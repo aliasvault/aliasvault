@@ -31,11 +31,12 @@ pub use vault_merge::{
     SYNCABLE_TABLE_NAMES,
 };
 pub use vault_codec::{
+    backfill_manifest_stamps, count_unstamped_rows, StampBackfillInput, StampBackfillOutput,
     compute_ciphertext_hash, compute_content_fingerprint, canonicalize_from_sqlite,
     extract_bucket, generate_user_salt, unpack_payload, materialize_as_sqlite, pack_payload,
     validate_manifest, validate_data_bucket, BlobEntry,
     CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecRecord, CodecTableData, DataBucket, Manifest,
-    ManifestEntry, MaterializeInput, MaterializedTables, ManifestSpec, ValidationResult,
+    MaterializeInput, MaterializedTables, ManifestSpec, ValidationResult,
 };
 pub use vault_pruner::{
     prune_vault, PruneInput, PruneOutput, PruneStats,

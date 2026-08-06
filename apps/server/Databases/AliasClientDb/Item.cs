@@ -8,19 +8,17 @@
 namespace AliasClientDb;
 
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using AliasClientDb.Abstracts;
 
 /// <summary>
 /// Item entity (renamed from Credential).
 /// Represents a vault item that can be of various types (Login, CreditCard, Identity, etc.).
 /// </summary>
-public class Item : SyncableEntity
+public class Item : ManifestScopedEntity
 {
     /// <summary>
     /// Gets or sets the item ID.
     /// </summary>
-    [Key]
     public Guid Id { get; set; }
 
     /// <summary>
@@ -44,7 +42,6 @@ public class Item : SyncableEntity
     /// <summary>
     /// Gets or sets the logo object.
     /// </summary>
-    [ForeignKey("LogoId")]
     public virtual Logo? Logo { get; set; }
 
     /// <summary>
@@ -56,14 +53,6 @@ public class Item : SyncableEntity
     public DateTime? DeletedAt { get; set; }
 
     /// <summary>
-    /// Gets or sets the id of the manifest this item belongs to (the root manifest's own id for
-    /// personal items; see the Manifests bookkeeping table). This is a maintained cache of membership:
-    /// for folder-anchored manifests the folder chain stays authoritative and the Rust codec restamps
-    /// the value at every sync boundary, so app writers stamp best-effort (root id by default).
-    /// </summary>
-    public Guid? ManifestId { get; set; }
-
-    /// <summary>
     /// Gets or sets the folder ID foreign key.
     /// </summary>
     public Guid? FolderId { get; set; }
@@ -71,7 +60,6 @@ public class Item : SyncableEntity
     /// <summary>
     /// Gets or sets the folder object.
     /// </summary>
-    [ForeignKey("FolderId")]
     public virtual Folder? Folder { get; set; }
 
     /// <summary>

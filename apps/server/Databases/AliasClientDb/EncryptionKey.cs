@@ -13,18 +13,12 @@ using AliasClientDb.Abstracts;
 /// <summary>
 /// The EncryptionKey entity.
 /// </summary>
-public class EncryptionKey : SyncableEntity
+public class EncryptionKey : ManifestScopedEntity
 {
     /// <summary>
     /// Gets or sets the encryption key primary key.
     /// </summary>
-    [Key]
     public Guid Id { get; set; }
-
-    /// <summary>
-    /// Gets or sets the id of the manifest this keypair belongs to.
-    /// </summary>
-    public Guid? ManifestId { get; set; }
 
     /// <summary>
     /// Gets or sets the public key. The primary row's public half is published to the server (as a

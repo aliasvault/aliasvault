@@ -14,6 +14,7 @@ export class ItemQueries {
   public static readonly BASE_SELECT = `
     SELECT DISTINCT
       i.Id,
+      i.ManifestId,
       i.Name,
       i.ItemType,
       i.FolderId,
@@ -22,13 +23,13 @@ export class ItemQueries {
       l.Kind as LogoKind,
       l.Source as LogoSource,
       l.Name as LogoName,
-      CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
-      CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
-      CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
+      CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.ManifestId = i.ManifestId AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
+      CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.ManifestId = i.ManifestId AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
+      CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.ManifestId = i.ManifestId AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
       i.CreatedAt,
       i.UpdatedAt
     FROM Items i
-    LEFT JOIN Logos l ON i.LogoId = l.Id`;
+    LEFT JOIN Logos l ON i.LogoId = l.Id AND l.ManifestId = i.ManifestId`;
 
   /**
    * Get all active items (not deleted, not in trash).
@@ -44,6 +45,7 @@ export class ItemQueries {
   public static readonly GET_BY_ID = `
     SELECT
       i.Id,
+      i.ManifestId,
       i.Name,
       i.ItemType,
       i.FolderId,
@@ -52,13 +54,13 @@ export class ItemQueries {
       l.Kind as LogoKind,
       l.Source as LogoSource,
       l.Name as LogoName,
-      CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
-      CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
-      CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
+      CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.ManifestId = i.ManifestId AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
+      CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.ManifestId = i.ManifestId AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
+      CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.ManifestId = i.ManifestId AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
       i.CreatedAt,
       i.UpdatedAt
     FROM Items i
-    LEFT JOIN Logos l ON i.LogoId = l.Id
+    LEFT JOIN Logos l ON i.LogoId = l.Id AND l.ManifestId = i.ManifestId
     WHERE i.Id = ? AND i.IsDeleted = 0`;
 
   /**
@@ -67,6 +69,7 @@ export class ItemQueries {
   public static readonly GET_RECENTLY_DELETED = `
     SELECT
       i.Id,
+      i.ManifestId,
       i.Name,
       i.ItemType,
       i.FolderId,
@@ -75,14 +78,14 @@ export class ItemQueries {
       l.Kind as LogoKind,
       l.Source as LogoSource,
       l.Name as LogoName,
-      CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
-      CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
-      CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
+      CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.ManifestId = i.ManifestId AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
+      CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.ManifestId = i.ManifestId AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
+      CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.ManifestId = i.ManifestId AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
       i.CreatedAt,
       i.UpdatedAt,
       i.DeletedAt
     FROM Items i
-    LEFT JOIN Logos l ON i.LogoId = l.Id
+    LEFT JOIN Logos l ON i.LogoId = l.Id AND l.ManifestId = i.ManifestId
     WHERE i.IsDeleted = 0 AND i.DeletedAt IS NOT NULL
     ORDER BY i.DeletedAt DESC`;
 
@@ -95,15 +98,20 @@ export class ItemQueries {
     WHERE IsDeleted = 0 AND DeletedAt IS NOT NULL`;
 
   /**
-   * Get field values for multiple items.
+   * Get field values for multiple items, matched on the whole item key.
+   *
+   * The caller passes `(ManifestId, Id)` pairs rather than bare ids: items are keyed by both, so two
+   * manifests may hold an item with the same Id and matching on the Id alone would hand each one the
+   * other's fields.
    * @param itemCount - Number of items (for placeholder generation)
-   * @returns Query with placeholders
+   * @returns Query with one (?, ?) placeholder pair per item, bound as [manifestId, itemId, ...]
    */
   public static getFieldValuesForItems(itemCount: number): string {
-    const placeholders = Array(itemCount).fill('?').join(',');
+    const placeholders = ItemQueries.itemKeyPlaceholders(itemCount);
     return `
       SELECT
         fv.ItemId,
+        fv.ManifestId,
         fv.FieldKey,
         fv.FieldDefinitionId,
         fd.Label as CustomLabel,
@@ -114,7 +122,7 @@ export class ItemQueries {
         fv.Weight as DisplayOrder
       FROM FieldValues fv
       LEFT JOIN FieldDefinitions fd ON fv.FieldDefinitionId = fd.Id
-      WHERE fv.ItemId IN (${placeholders})
+      WHERE (fv.ManifestId, fv.ItemId) IN (VALUES ${placeholders})
         AND fv.IsDeleted = 0
       ORDER BY fv.ItemId, fv.Weight`;
   }
@@ -134,28 +142,33 @@ export class ItemQueries {
       fv.Weight as DisplayOrder
     FROM FieldValues fv
     LEFT JOIN FieldDefinitions fd ON fv.FieldDefinitionId = fd.Id
-    WHERE fv.ItemId = ? AND fv.IsDeleted = 0
+    WHERE fv.ItemId = ? AND fv.ManifestId = ? AND fv.IsDeleted = 0
     ORDER BY fv.Weight`;
 
   /**
-   * Get tags for multiple items.
+   * Get tags for multiple items, matched on the whole item key (see {@link getFieldValuesForItems}).
    * @param itemCount - Number of items (for placeholder generation)
-   * @returns Query with placeholders
+   * @returns Query with one (?, ?) placeholder pair per item, bound as [manifestId, itemId, ...]
    */
   public static getTagsForItems(itemCount: number): string {
-    const placeholders = Array(itemCount).fill('?').join(',');
+    const placeholders = ItemQueries.itemKeyPlaceholders(itemCount);
     return `
       SELECT
         it.ItemId,
+        it.ManifestId,
         t.Id,
         t.Name,
         t.Color
       FROM ItemTags it
       INNER JOIN Tags t ON it.TagId = t.Id
-      WHERE it.ItemId IN (${placeholders})
+      WHERE (it.ManifestId, it.ItemId) IN (VALUES ${placeholders})
         AND it.IsDeleted = 0
         AND t.IsDeleted = 0
       ORDER BY t.DisplayOrder, t.Name`;
+  }
+
+  private static itemKeyPlaceholders(itemCount: number): string {
+    return Array(itemCount).fill('(?, ?)').join(', ');
   }
 
   /**
@@ -168,16 +181,16 @@ export class ItemQueries {
       t.Color
     FROM ItemTags it
     INNER JOIN Tags t ON it.TagId = t.Id
-    WHERE it.ItemId = ? AND it.IsDeleted = 0 AND t.IsDeleted = 0
+    WHERE it.ItemId = ? AND it.ManifestId = ? AND it.IsDeleted = 0 AND t.IsDeleted = 0
     ORDER BY t.DisplayOrder, t.Name`;
 
   /**
-   * Insert a new item, stamped best-effort with the root manifest id (the codec restamps membership
-   * authoritatively from the folder chain at every sync boundary).
+   * Insert a new item, stamped with the manifest of the folder it is placed in (the root manifest when
+   * it sits outside any folder). The stamp is the item's membership: nothing derives it later.
    */
   public static readonly INSERT_ITEM = `
     INSERT INTO Items (Id, Name, ItemType, LogoId, FolderId, ManifestId, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, ?, ?, ${BaseQueries.ROOT_MANIFEST_ID}, ?, ?, ?)`;
+    VALUES (?, ?, ?, ?, ?, ${BaseQueries.MANIFEST_OF_FOLDER}, ?, ?, ?)`;
 
   /**
    * Update an existing item (preserves LogoId if null is passed).
@@ -187,9 +200,10 @@ export class ItemQueries {
     SET Name = ?,
         ItemType = ?,
         FolderId = ?,
+        ManifestId = ${BaseQueries.MANIFEST_OF_FOLDER},
         LogoId = COALESCE(?, LogoId),
         UpdatedAt = ?
-    WHERE Id = ?`;
+    WHERE Id = ? AND ManifestId = ?`;
 
   /**
    * Update an existing item with explicit LogoId setting (can clear LogoId to null).
@@ -199,9 +213,10 @@ export class ItemQueries {
     SET Name = ?,
         ItemType = ?,
         FolderId = ?,
+        ManifestId = ${BaseQueries.MANIFEST_OF_FOLDER},
         LogoId = ?,
         UpdatedAt = ?
-    WHERE Id = ?`;
+    WHERE Id = ? AND ManifestId = ?`;
 
   /**
    * Move item to trash (set DeletedAt).
@@ -210,7 +225,7 @@ export class ItemQueries {
     UPDATE Items
     SET DeletedAt = ?,
         UpdatedAt = ?
-    WHERE Id = ? AND IsDeleted = 0`;
+    WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0`;
 
   /**
    * Restore item from trash (clear DeletedAt).
@@ -219,7 +234,7 @@ export class ItemQueries {
     UPDATE Items
     SET DeletedAt = NULL,
         UpdatedAt = ?
-    WHERE Id = ? AND IsDeleted = 0 AND DeletedAt IS NOT NULL`;
+    WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0 AND DeletedAt IS NOT NULL`;
 
   /**
    * Convert item to tombstone for permanent deletion.
@@ -231,7 +246,7 @@ export class ItemQueries {
         LogoId = NULL,
         FolderId = NULL,
         UpdatedAt = ?
-    WHERE Id = ?`;
+    WHERE Id = ? AND ManifestId = ?`;
 
   /**
    * Get all unique email addresses from field values.
@@ -239,7 +254,7 @@ export class ItemQueries {
   public static readonly GET_ALL_EMAIL_ADDRESSES = `
     SELECT DISTINCT fv.Value as Email
     FROM FieldValues fv
-    INNER JOIN Items i ON fv.ItemId = i.Id
+    INNER JOIN Items i ON fv.ItemId = i.Id AND fv.ManifestId = i.ManifestId
     WHERE fv.FieldKey = ?
       AND fv.Value IS NOT NULL
       AND fv.Value != ''
@@ -253,7 +268,7 @@ export class ItemQueries {
   public static readonly GET_ITEM_BY_EMAIL = `
     SELECT i.Id as Id, i.Name as Name
     FROM FieldValues fv
-    INNER JOIN Items i ON fv.ItemId = i.Id
+    INNER JOIN Items i ON fv.ItemId = i.Id AND fv.ManifestId = i.ManifestId
     WHERE fv.FieldKey = ?
       AND fv.Value = ?
       AND fv.IsDeleted = 0
@@ -267,7 +282,7 @@ export class ItemQueries {
   public static readonly GET_ITEM_FIELDS = `
     SELECT Name, ItemType, FolderId, LogoId
     FROM Items
-    WHERE Id = ?`;
+    WHERE Id = ? AND ManifestId = ?`;
 }
 
 /**
@@ -280,14 +295,14 @@ export class FieldValueQueries {
   public static readonly GET_EXISTING_FOR_ITEM = `
     SELECT Id, FieldKey, FieldDefinitionId, Value, Weight
     FROM FieldValues
-    WHERE ItemId = ? AND IsDeleted = 0`;
+    WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0`;
 
   /**
-   * Insert a new field value.
+   * Insert a new field value, stamped with the manifest of the item it hangs off.
    */
   public static readonly INSERT = `
-    INSERT INTO FieldValues (Id, ItemId, FieldDefinitionId, FieldKey, Value, Weight, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    INSERT INTO FieldValues (Id, ItemId, ManifestId, FieldDefinitionId, FieldKey, Value, Weight, CreatedAt, UpdatedAt, IsDeleted)
+    VALUES (?, ?, ${BaseQueries.MANIFEST_OF_ITEM}, ?, ?, ?, ?, ?, ?, ?)`;
 
   /**
    * Update an existing field value.
@@ -297,7 +312,7 @@ export class FieldValueQueries {
     SET Value = ?,
         Weight = ?,
         UpdatedAt = ?
-    WHERE Id = ?`;
+    WHERE Id = ? AND ManifestId = ?`;
 
   /**
    * Soft delete a field value.
@@ -306,7 +321,7 @@ export class FieldValueQueries {
     UPDATE FieldValues
     SET IsDeleted = 1,
         UpdatedAt = ?
-    WHERE Id = ?`;
+    WHERE Id = ? AND ManifestId = ?`;
 
   /**
    * Get existing field values for history tracking.
@@ -314,7 +329,7 @@ export class FieldValueQueries {
   public static readonly GET_FOR_HISTORY = `
     SELECT FieldKey, Value
     FROM FieldValues
-    WHERE ItemId = ? AND IsDeleted = 0 AND FieldKey IS NOT NULL`;
+    WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0 AND FieldKey IS NOT NULL`;
 }
 
 /**
@@ -358,11 +373,11 @@ export class FieldDefinitionQueries {
  */
 export class FieldHistoryQueries {
   /**
-   * Insert a history record.
+   * Insert a history record, stamped with the manifest of the item it hangs off.
    */
   public static readonly INSERT = `
-    INSERT INTO FieldHistories (Id, ItemId, FieldDefinitionId, FieldKey, ValueSnapshot, ChangedAt, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    INSERT INTO FieldHistories (Id, ItemId, ManifestId, FieldDefinitionId, FieldKey, ValueSnapshot, ChangedAt, CreatedAt, UpdatedAt, IsDeleted)
+    VALUES (?, ?, ${BaseQueries.MANIFEST_OF_ITEM}, ?, ?, ?, ?, ?, ?, ?)`;
 
   /**
    * Get history records for a field.
@@ -377,7 +392,7 @@ export class FieldHistoryQueries {
       CreatedAt,
       UpdatedAt
     FROM FieldHistories
-    WHERE ItemId = ? AND FieldKey = ? AND IsDeleted = 0
+    WHERE ItemId = ? AND ManifestId = ? AND FieldKey = ? AND IsDeleted = 0
     ORDER BY ChangedAt DESC
     LIMIT ?`;
 
@@ -387,7 +402,7 @@ export class FieldHistoryQueries {
   public static readonly GET_FOR_PRUNING = `
     SELECT Id, ChangedAt
     FROM FieldHistories
-    WHERE ItemId = ? AND FieldKey = ? AND IsDeleted = 0
+    WHERE ItemId = ? AND ManifestId = ? AND FieldKey = ? AND IsDeleted = 0
     ORDER BY ChangedAt DESC`;
 
   /**
@@ -400,7 +415,7 @@ export class FieldHistoryQueries {
     return `
       UPDATE FieldHistories
       SET IsDeleted = 1, UpdatedAt = ?
-      WHERE Id IN (${placeholders})`;
+      WHERE ManifestId = ? AND Id IN (${placeholders})`;
   }
 
   /**
@@ -409,7 +424,7 @@ export class FieldHistoryQueries {
   public static readonly SOFT_DELETE = `
     UPDATE FieldHistories
     SET IsDeleted = 1, UpdatedAt = ?
-    WHERE Id = ?`;
+    WHERE Id = ? AND ManifestId = ?`;
 }
 
 /**
@@ -422,14 +437,14 @@ export class TotpCodeQueries {
   public static readonly GET_BY_ITEM_ID = `
     SELECT Id, Name, SecretKey
     FROM TotpCodes
-    WHERE ItemId = ? AND IsDeleted = 0`;
+    WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0`;
 
   /**
-   * Insert a new TOTP code.
+   * Insert a new TOTP code, stamped with the manifest of the item it hangs off.
    */
   public static readonly INSERT = `
-    INSERT INTO TotpCodes (Id, Name, SecretKey, ItemId, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    INSERT INTO TotpCodes (Id, Name, SecretKey, ItemId, ManifestId, CreatedAt, UpdatedAt, IsDeleted)
+    VALUES (?, ?, ?, ?, ${BaseQueries.MANIFEST_OF_ITEM}, ?, ?, ?)`;
 
   /**
    * Update an existing TOTP code.
@@ -439,7 +454,7 @@ export class TotpCodeQueries {
     SET Name = ?,
         SecretKey = ?,
         UpdatedAt = ?
-    WHERE Id = ?`;
+    WHERE Id = ? AND ManifestId = ?`;
 
   /**
    * Soft delete a TOTP code.
@@ -448,7 +463,7 @@ export class TotpCodeQueries {
     UPDATE TotpCodes
     SET IsDeleted = 1,
         UpdatedAt = ?
-    WHERE Id = ?`;
+    WHERE Id = ? AND ManifestId = ?`;
 }
 
 /**
@@ -456,11 +471,11 @@ export class TotpCodeQueries {
  */
 export class AttachmentQueries {
   /**
-   * Insert a new attachment.
+   * Insert a new attachment, stamped with the manifest of the item it hangs off.
    */
   public static readonly INSERT = `
-    INSERT INTO Attachments (Id, Filename, Blob, ItemId, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    INSERT INTO Attachments (Id, Filename, Blob, ItemId, ManifestId, CreatedAt, UpdatedAt, IsDeleted)
+    VALUES (?, ?, ?, ?, ${BaseQueries.MANIFEST_OF_ITEM}, ?, ?, ?)`;
 
   /**
    * Soft delete an attachment. Also zeroes the Blob bytes so storage is reclaimed
@@ -471,5 +486,5 @@ export class AttachmentQueries {
     SET IsDeleted = 1,
         Blob = X'',
         UpdatedAt = ?
-    WHERE Id = ?`;
+    WHERE Id = ? AND ManifestId = ?`;
 }

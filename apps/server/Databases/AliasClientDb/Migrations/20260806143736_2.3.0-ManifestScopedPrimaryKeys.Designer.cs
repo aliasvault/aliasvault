@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AliasClientDb.Migrations
 {
     [DbContext(typeof(AliasClientDbContext))]
-    [Migration("20260801094716_2.2.0-ManifestScopedStorage")]
-    partial class _220ManifestScopedStorage
+    [Migration("20260806143736_2.3.0-ManifestScopedPrimaryKeys")]
+    partial class _230ManifestScopedPrimaryKeys
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,8 +26,10 @@ namespace AliasClientDb.Migrations
 
             modelBuilder.Entity("AliasClientDb.Attachment", b =>
                 {
+                    b.Property<Guid>("ManifestId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<byte[]>("Blob")
@@ -51,9 +53,9 @@ namespace AliasClientDb.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.HasKey("ManifestId", "Id");
 
-                    b.HasIndex("ItemId");
+                    b.HasIndex("ManifestId", "ItemId");
 
                     b.ToTable("Attachments");
                 });
@@ -75,8 +77,10 @@ namespace AliasClientDb.Migrations
 
             modelBuilder.Entity("AliasClientDb.EncryptionKey", b =>
                 {
+                    b.Property<Guid>("ManifestId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -87,9 +91,6 @@ namespace AliasClientDb.Migrations
 
                     b.Property<bool>("IsPrimary")
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid?>("ManifestId")
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("PrivateKey")
                         .IsRequired()
@@ -104,7 +105,7 @@ namespace AliasClientDb.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.HasKey("ManifestId", "Id");
 
                     b.HasIndex("ManifestId", "IsPrimary");
 
@@ -113,8 +114,10 @@ namespace AliasClientDb.Migrations
 
             modelBuilder.Entity("AliasClientDb.FieldDefinition", b =>
                 {
+                    b.Property<Guid>("ManifestId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ApplicableToTypes")
@@ -151,15 +154,17 @@ namespace AliasClientDb.Migrations
                     b.Property<int>("Weight")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("Id");
+                    b.HasKey("ManifestId", "Id");
 
                     b.ToTable("FieldDefinitions");
                 });
 
             modelBuilder.Entity("AliasClientDb.FieldHistory", b =>
                 {
+                    b.Property<Guid>("ManifestId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("ChangedAt")
@@ -188,19 +193,25 @@ namespace AliasClientDb.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.HasKey("ManifestId", "Id");
 
                     b.HasIndex("FieldDefinitionId");
 
                     b.HasIndex("ItemId");
+
+                    b.HasIndex("ManifestId", "FieldDefinitionId");
+
+                    b.HasIndex("ManifestId", "ItemId");
 
                     b.ToTable("FieldHistories");
                 });
 
             modelBuilder.Entity("AliasClientDb.FieldValue", b =>
                 {
+                    b.Property<Guid>("ManifestId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -228,7 +239,7 @@ namespace AliasClientDb.Migrations
                     b.Property<int>("Weight")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("Id");
+                    b.HasKey("ManifestId", "Id");
 
                     b.HasIndex("FieldDefinitionId");
 
@@ -238,6 +249,10 @@ namespace AliasClientDb.Migrations
 
                     b.HasIndex("ItemId", "FieldKey");
 
+                    b.HasIndex("ManifestId", "FieldDefinitionId");
+
+                    b.HasIndex("ManifestId", "ItemId");
+
                     b.HasIndex("ItemId", "FieldDefinitionId", "Weight");
 
                     b.ToTable("FieldValues");
@@ -245,8 +260,10 @@ namespace AliasClientDb.Migrations
 
             modelBuilder.Entity("AliasClientDb.Folder", b =>
                 {
+                    b.Property<Guid>("ManifestId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -254,9 +271,6 @@ namespace AliasClientDb.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid?>("ManifestId")
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -272,17 +286,21 @@ namespace AliasClientDb.Migrations
                     b.Property<int>("Weight")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("Id");
+                    b.HasKey("ManifestId", "Id");
 
                     b.HasIndex("ParentFolderId");
+
+                    b.HasIndex("ManifestId", "ParentFolderId");
 
                     b.ToTable("Folders");
                 });
 
             modelBuilder.Entity("AliasClientDb.Item", b =>
                 {
+                    b.Property<Guid>("ManifestId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -305,9 +323,6 @@ namespace AliasClientDb.Migrations
                     b.Property<Guid?>("LogoId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("ManifestId")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Name")
                         .HasMaxLength(255)
                         .HasColumnType("TEXT");
@@ -315,19 +330,21 @@ namespace AliasClientDb.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.HasKey("ManifestId", "Id");
 
-                    b.HasIndex("FolderId");
+                    b.HasIndex("ManifestId", "FolderId");
 
-                    b.HasIndex("LogoId");
+                    b.HasIndex("ManifestId", "LogoId");
 
                     b.ToTable("Items");
                 });
 
             modelBuilder.Entity("AliasClientDb.ItemTag", b =>
                 {
+                    b.Property<Guid>("ManifestId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -345,13 +362,15 @@ namespace AliasClientDb.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.HasKey("ManifestId", "Id");
 
                     b.HasIndex("ItemId");
 
                     b.HasIndex("TagId");
 
-                    b.HasIndex("ItemId", "TagId")
+                    b.HasIndex("ManifestId", "TagId");
+
+                    b.HasIndex("ManifestId", "ItemId", "TagId")
                         .IsUnique();
 
                     b.ToTable("ItemTags");
@@ -359,8 +378,10 @@ namespace AliasClientDb.Migrations
 
             modelBuilder.Entity("AliasClientDb.Logo", b =>
                 {
+                    b.Property<Guid>("ManifestId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -382,9 +403,6 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValue("favicon");
 
-                    b.Property<Guid?>("ManifestId")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("MimeType")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
@@ -401,7 +419,7 @@ namespace AliasClientDb.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.HasKey("ManifestId", "Id");
 
                     b.HasIndex("ManifestId", "Kind", "Source")
                         .IsUnique();
@@ -425,8 +443,10 @@ namespace AliasClientDb.Migrations
 
             modelBuilder.Entity("AliasClientDb.Passkey", b =>
                 {
+                    b.Property<Guid>("ManifestId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<byte[]>("AdditionalData")
@@ -471,11 +491,11 @@ namespace AliasClientDb.Migrations
                         .IsRequired()
                         .HasColumnType("BLOB");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("ItemId");
+                    b.HasKey("ManifestId", "Id");
 
                     b.HasIndex("RpId");
+
+                    b.HasIndex("ManifestId", "ItemId");
 
                     b.ToTable("Passkeys");
                 });
@@ -505,8 +525,10 @@ namespace AliasClientDb.Migrations
 
             modelBuilder.Entity("AliasClientDb.Tag", b =>
                 {
+                    b.Property<Guid>("ManifestId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Color")
@@ -530,15 +552,18 @@ namespace AliasClientDb.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.HasKey("ManifestId", "Id");
 
-                    b.HasIndex("Name");
+                    b.HasIndex("ManifestId", "Name");
 
                     b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("AliasClientDb.TotpCode", b =>
                 {
+                    b.Property<Guid>("ManifestId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
@@ -565,9 +590,9 @@ namespace AliasClientDb.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.HasKey("ManifestId", "Id");
 
-                    b.HasIndex("ItemId");
+                    b.HasIndex("ManifestId", "ItemId");
 
                     b.ToTable("TotpCodes");
                 });
@@ -576,7 +601,7 @@ namespace AliasClientDb.Migrations
                 {
                     b.HasOne("AliasClientDb.Item", "Item")
                         .WithMany("Attachments")
-                        .HasForeignKey("ItemId")
+                        .HasForeignKey("ManifestId", "ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -587,12 +612,12 @@ namespace AliasClientDb.Migrations
                 {
                     b.HasOne("AliasClientDb.FieldDefinition", "FieldDefinition")
                         .WithMany("FieldHistories")
-                        .HasForeignKey("FieldDefinitionId")
+                        .HasForeignKey("ManifestId", "FieldDefinitionId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("AliasClientDb.Item", "Item")
                         .WithMany()
-                        .HasForeignKey("ItemId")
+                        .HasForeignKey("ManifestId", "ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -605,12 +630,12 @@ namespace AliasClientDb.Migrations
                 {
                     b.HasOne("AliasClientDb.FieldDefinition", "FieldDefinition")
                         .WithMany("FieldValues")
-                        .HasForeignKey("FieldDefinitionId")
+                        .HasForeignKey("ManifestId", "FieldDefinitionId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("AliasClientDb.Item", "Item")
                         .WithMany("FieldValues")
-                        .HasForeignKey("ItemId")
+                        .HasForeignKey("ManifestId", "ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -623,7 +648,7 @@ namespace AliasClientDb.Migrations
                 {
                     b.HasOne("AliasClientDb.Folder", "ParentFolder")
                         .WithMany("ChildFolders")
-                        .HasForeignKey("ParentFolderId")
+                        .HasForeignKey("ManifestId", "ParentFolderId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("ParentFolder");
@@ -633,13 +658,11 @@ namespace AliasClientDb.Migrations
                 {
                     b.HasOne("AliasClientDb.Folder", "Folder")
                         .WithMany("Items")
-                        .HasForeignKey("FolderId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("ManifestId", "FolderId");
 
                     b.HasOne("AliasClientDb.Logo", "Logo")
                         .WithMany("Items")
-                        .HasForeignKey("LogoId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("ManifestId", "LogoId");
 
                     b.Navigation("Folder");
 
@@ -650,13 +673,13 @@ namespace AliasClientDb.Migrations
                 {
                     b.HasOne("AliasClientDb.Item", "Item")
                         .WithMany("ItemTags")
-                        .HasForeignKey("ItemId")
+                        .HasForeignKey("ManifestId", "ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("AliasClientDb.Tag", "Tag")
                         .WithMany("ItemTags")
-                        .HasForeignKey("TagId")
+                        .HasForeignKey("ManifestId", "TagId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -669,7 +692,7 @@ namespace AliasClientDb.Migrations
                 {
                     b.HasOne("AliasClientDb.Item", "Item")
                         .WithMany("Passkeys")
-                        .HasForeignKey("ItemId")
+                        .HasForeignKey("ManifestId", "ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -680,7 +703,7 @@ namespace AliasClientDb.Migrations
                 {
                     b.HasOne("AliasClientDb.Item", "Item")
                         .WithMany("TotpCodes")
-                        .HasForeignKey("ItemId")
+                        .HasForeignKey("ManifestId", "ItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

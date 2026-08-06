@@ -49,8 +49,7 @@ namespace AliasClientDb.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    IsRoot = table.Column<bool>(type: "INTEGER", nullable: false),
-                    AnchorFolderId = table.Column<Guid>(type: "TEXT", nullable: true)
+                    Name = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {

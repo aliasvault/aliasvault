@@ -8,6 +8,9 @@ export type Passkey = {
     /** The item ID foreign key */
     ItemId: string;
 
+    /** The manifest this passkey belongs to. */
+    ManifestId: string;
+
     /** The relying party identifier */
     RpId: string;
 

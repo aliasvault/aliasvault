@@ -116,12 +116,12 @@ export class LogoRepository extends BaseRepository {
   }
 
   /**
-   * Remove an uploaded logo from the library. Items still using it fall back to a placeholder.
+   * Remove an uploaded logo from the library (soft delete). Items still using it fall back to a placeholder.
    * @param logoId The logo id to delete
    * @param currentDateTime The current date/time string for timestamps
    * @returns The number of rows modified
    */
-  public softDelete(logoId: string, currentDateTime: string): number {
+  public deleteById(logoId: string, currentDateTime: string): number {
     return this.client.executeUpdate(LogoQueries.SOFT_DELETE, [currentDateTime, logoId]);
   }
 

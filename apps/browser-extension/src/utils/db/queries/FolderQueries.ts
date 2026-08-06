@@ -9,7 +9,7 @@ export class FolderQueries {
    * Get all active folders.
    */
   public static readonly GET_ALL = `
-    SELECT Id, Name, ParentFolderId, Weight
+    SELECT Id, Name, ParentFolderId, Weight, ManifestId
     FROM Folders
     WHERE IsDeleted = 0
     ORDER BY Weight, Name`;
@@ -18,17 +18,16 @@ export class FolderQueries {
    * Get folder by ID.
    */
   public static readonly GET_BY_ID = `
-    SELECT Id, Name, ParentFolderId
+    SELECT Id, Name, ParentFolderId, ManifestId
     FROM Folders
     WHERE Id = ? AND IsDeleted = 0`;
 
   /**
-   * Insert a new folder, stamped best-effort with the root manifest id (the codec restamps membership
-   * authoritatively from the folder tree at every sync boundary).
+   * Insert a new folder, stamped with its parent folder's manifest.
    */
   public static readonly INSERT = `
     INSERT INTO Folders (Id, Name, ParentFolderId, ManifestId, Weight, IsDeleted, CreatedAt, UpdatedAt)
-    VALUES (?, ?, ?, ${BaseQueries.ROOT_MANIFEST_ID}, 0, 0, ?, ?)`;
+    VALUES (?, ?, ?, ${BaseQueries.MANIFEST_OF_FOLDER}, 0, 0, ?, ?)`;
 
   /**
    * Update folder name.
@@ -54,6 +53,7 @@ export class FolderQueries {
   public static readonly CLEAR_ITEMS_FOLDER = `
     UPDATE Items
     SET FolderId = NULL,
+        ManifestId = ${BaseQueries.ROOT_MANIFEST_ID},
         UpdatedAt = ?
     WHERE FolderId = ?`;
 
@@ -63,6 +63,7 @@ export class FolderQueries {
   public static readonly MOVE_ITEMS_TO_FOLDER = `
     UPDATE Items
     SET FolderId = ?,
+        ManifestId = ${BaseQueries.MANIFEST_OF_FOLDER},
         UpdatedAt = ?
     WHERE FolderId = ?`;
 
@@ -99,6 +100,7 @@ export class FolderQueries {
   public static readonly MOVE_ITEM = `
     UPDATE Items
     SET FolderId = ?,
+        ManifestId = ${BaseQueries.MANIFEST_OF_FOLDER},
         UpdatedAt = ?
     WHERE Id = ?`;
 }

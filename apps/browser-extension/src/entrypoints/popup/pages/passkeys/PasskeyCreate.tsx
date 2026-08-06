@@ -21,6 +21,7 @@ import { PasskeyAuthenticator } from '@/utils/passkey/PasskeyAuthenticator';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type { CreateRequest, PasskeyCreateCredentialResponse, PendingPasskeyCreateRequest } from '@/utils/passkey/types';
 import { extractDomain, filterItems, AutofillMatchingMode } from '@/utils/RustCore';
+import type { DraftItem } from '@/utils/db/ItemRef';
 
 /**
  * PasskeyCreate
@@ -391,7 +392,7 @@ const PasskeyCreate: React.FC = () => {
           });
         } else {
           // Create new item and passkey
-          const newItem: Item = {
+          const newItem: DraftItem = {
             Id: '',
             Name: displayName,
             ItemType: ItemTypes.Login,

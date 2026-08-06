@@ -1,5 +1,7 @@
 import { FieldKey } from '@/utils/dist/core/models/vault';
 
+import { BaseQueries } from './BaseQueries';
+
 /**
  * SQL query constants for Passkey operations.
  * Centralizes all passkey-related queries to avoid duplication.
@@ -12,6 +14,7 @@ export class PasskeyQueries {
     SELECT
       p.Id,
       p.ItemId,
+      p.ManifestId,
       p.RpId,
       p.UserHandle,
       p.PublicKey,
@@ -23,9 +26,9 @@ export class PasskeyQueries {
       p.UpdatedAt,
       p.IsDeleted,
       i.Name as ServiceName,
-      (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.FieldKey = '${FieldKey.LoginUsername}' AND fv.IsDeleted = 0 LIMIT 1) as Username
+      (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.ManifestId = i.ManifestId AND fv.FieldKey = '${FieldKey.LoginUsername}' AND fv.IsDeleted = 0 LIMIT 1) as Username
     FROM Passkeys p
-    INNER JOIN Items i ON p.ItemId = i.Id`;
+    INNER JOIN Items i ON p.ItemId = i.Id AND i.ManifestId = p.ManifestId`;
 
   /**
    * Base SELECT for passkeys without item information.
@@ -34,6 +37,7 @@ export class PasskeyQueries {
     SELECT
       p.Id,
       p.ItemId,
+      p.ManifestId,
       p.RpId,
       p.UserHandle,
       p.PublicKey,
@@ -53,6 +57,7 @@ export class PasskeyQueries {
     SELECT
       p.Id,
       p.ItemId,
+      p.ManifestId,
       p.RpId,
       p.UserHandle,
       p.PublicKey,
@@ -64,9 +69,9 @@ export class PasskeyQueries {
       p.UpdatedAt,
       p.IsDeleted,
       i.Name as ServiceName,
-      (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.FieldKey = '${FieldKey.LoginUsername}' AND fv.IsDeleted = 0 LIMIT 1) as Username
+      (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.ManifestId = i.ManifestId AND fv.FieldKey = '${FieldKey.LoginUsername}' AND fv.IsDeleted = 0 LIMIT 1) as Username
     FROM Passkeys p
-    INNER JOIN Items i ON p.ItemId = i.Id
+    INNER JOIN Items i ON p.ItemId = i.Id AND i.ManifestId = p.ManifestId
     WHERE p.RpId = ? AND p.IsDeleted = 0
       AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
     ORDER BY p.CreatedAt DESC`;
@@ -78,6 +83,7 @@ export class PasskeyQueries {
     SELECT
       p.Id,
       p.ItemId,
+      p.ManifestId,
       p.RpId,
       p.UserHandle,
       p.PublicKey,
@@ -89,9 +95,9 @@ export class PasskeyQueries {
       p.UpdatedAt,
       p.IsDeleted,
       i.Name as ServiceName,
-      (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.FieldKey = '${FieldKey.LoginUsername}' AND fv.IsDeleted = 0 LIMIT 1) as Username
+      (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.ManifestId = i.ManifestId AND fv.FieldKey = '${FieldKey.LoginUsername}' AND fv.IsDeleted = 0 LIMIT 1) as Username
     FROM Passkeys p
-    INNER JOIN Items i ON p.ItemId = i.Id
+    INNER JOIN Items i ON p.ItemId = i.Id AND i.ManifestId = p.ManifestId
     WHERE p.Id = ? AND p.IsDeleted = 0
       AND i.IsDeleted = 0 AND i.DeletedAt IS NULL`;
 
@@ -102,6 +108,7 @@ export class PasskeyQueries {
     SELECT
       p.Id,
       p.ItemId,
+      p.ManifestId,
       p.RpId,
       p.UserHandle,
       p.PublicKey,
@@ -113,18 +120,19 @@ export class PasskeyQueries {
       p.UpdatedAt,
       p.IsDeleted
     FROM Passkeys p
-    WHERE p.ItemId = ? AND p.IsDeleted = 0
+    WHERE p.ItemId = ? AND p.ManifestId = ? AND p.IsDeleted = 0
     ORDER BY p.CreatedAt DESC`;
 
   /**
-   * Insert a new passkey.
+   * Insert a new passkey, stamped with the manifest of the item it hangs off. Binds the item id
+   * twice — once for the column, once for {@link BaseQueries.MANIFEST_OF_ITEM}.
    */
   public static readonly INSERT = `
     INSERT INTO Passkeys (
-      Id, ItemId, RpId, UserHandle, PublicKey, PrivateKey,
+      Id, ItemId, ManifestId, RpId, UserHandle, PublicKey, PrivateKey,
       PrfKey, DisplayName, AdditionalData, CreatedAt, UpdatedAt, IsDeleted
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    VALUES (?, ?, ${BaseQueries.MANIFEST_OF_ITEM}, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   /**
    * Update passkey display name.
@@ -133,7 +141,7 @@ export class PasskeyQueries {
     UPDATE Passkeys
     SET DisplayName = ?,
         UpdatedAt = ?
-    WHERE Id = ?`;
+    WHERE Id = ? AND ManifestId = ?`;
 
   /**
    * Soft delete passkey by ID.
@@ -142,7 +150,7 @@ export class PasskeyQueries {
     UPDATE Passkeys
     SET IsDeleted = 1,
         UpdatedAt = ?
-    WHERE Id = ?`;
+    WHERE Id = ? AND ManifestId = ?`;
 
   /**
    * Soft delete passkeys by item ID.
@@ -151,5 +159,5 @@ export class PasskeyQueries {
     UPDATE Passkeys
     SET IsDeleted = 1,
         UpdatedAt = ?
-    WHERE ItemId = ?`;
+    WHERE ItemId = ? AND ManifestId = ?`;
 }

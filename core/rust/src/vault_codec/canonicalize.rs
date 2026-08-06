@@ -19,30 +19,20 @@ use serde_json::json;
 use super::hash::salted_blob_hash;
 use super::scoped_assets::{normalize_logo_scope, reconcile_logo_references};
 use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecOverflow, DataBucket, Manifest, ManifestSpec, CodecRecord};
-use super::materialize::row_key;
-use super::sharing::partition_by_manifest;
-use super::types::{blob_spec_for, bucket_categories, bucket_category_for, is_skip_table, primary_key_for, OVERFLOW_TABLE, SCHEMA_VERSION};
+use super::sharing::{clone_referenced_rows, partition_by_manifest, prune_unreferenced_logos, referenced_tables};
+use super::types::{blob_spec_for, bucket_categories, bucket_category_for, is_skip_table, row_identity, OVERFLOW_TABLE, SCHEMA_VERSION};
 use crate::error::VaultResult;
 
 /// Canonicalize normalized tables into the split resources: the manifest, one data bucket per declared
 /// category (see [`BUCKET_TABLES`](super::types::BUCKET_TABLES)), and the content-addressed blob map.
 pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<CanonicalizedVault> {
-    /*
-     * Exactly one manifest is the user's own. In the steady state that changes nothing about routing
-     * — every row names its manifest — but a vault predating the `ManifestId` column has none, and
-     * those rows are adopted here rather than dropped. See `ManifestSpec::is_root`.
-     */
-    let root_positions: Vec<usize> = input.manifests.iter().enumerate().filter(|(_, s)| s.is_root).map(|(i, _)| i).collect();
-    let root_index = match root_positions.as_slice() {
-        [index] => *index,
-        [] => return Err(crate::error::VaultError::General("canonicalize input declares no root manifest".to_string())),
-        _ => return Err(crate::error::VaultError::General(format!("canonicalize input declares {} root manifests, expected exactly one", root_positions.len()))),
+    let base_spec = match input.manifests.first() {
+        Some(spec) if !spec.manifest_id.is_empty() => spec.clone(),
+        Some(_) => return Err(crate::error::VaultError::General("canonicalize requires a manifest id on every manifest".to_string())),
+        None => return Err(crate::error::VaultError::General("canonicalize input declares no manifests".to_string())),
     };
-    if input.manifests[root_index].manifest_id.is_empty() {
-        return Err(crate::error::VaultError::General("canonicalize requires a manifest id on the root manifest".to_string()));
-    }
-    let root_manifest_id = input.manifests[root_index].manifest_id.clone();
-    let root_user_salt = input.manifests[root_index].user_salt.clone();
+    let base_manifest_id = base_spec.manifest_id.clone();
+    let base_user_salt = base_spec.user_salt.clone();
 
     // Collect every non-skip table into a name > rows map (row order preserved per table). Blob
     // extraction and bucket-splitting happen below.
@@ -70,20 +60,30 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
     }
 
     /*
-     * Logos are scoped per manifest. Snapshot the full set before routing so each partition can clone
-     * in the logo of an item that just moved across a scope boundary.
+     * Snapshot the tables one manifest's rows can point at (logos, tags, field definitions) before
+     * routing, so each manifest can clone in the row an item that just crossed a scope boundary
+     * references. See `REFERENCED_TABLES`.
      */
-    let all_logos: Vec<CodecRecord> = all_tables.get("Logos").cloned().unwrap_or_default();
+    let snapshots: HashMap<String, Vec<CodecRecord>> = referenced_tables()
+        .into_iter()
+        .filter_map(|name| all_tables.get(name).map(|rows| (name.to_string(), rows.clone())))
+        .collect();
+    let no_rows: Vec<CodecRecord> = Vec::new();
+    let all_logos = snapshots.get("Logos").unwrap_or(&no_rows);
 
     /*
-     * Route every row to the manifest that owns it; `all_tables` keeps what falls to the root. The
-     * non-root specs are passed in their original order so the emitted list mirrors the input.
+     * Route every row to the manifest that owns it; `all_tables` keeps the base manifest's rows plus
+     * whatever belongs to no namespace. The remaining specs are passed in their original order so the
+     * emitted list mirrors the input.
      */
-    let other_specs: Vec<ManifestSpec> = input.manifests.iter().enumerate().filter(|(i, _)| *i != root_index).map(|(_, s)| s.clone()).collect();
-    let partitions = partition_by_manifest(&mut all_tables, &other_specs, &all_logos, &root_manifest_id)?;
+    let other_specs: Vec<ManifestSpec> = input.manifests.iter().skip(1).cloned().collect();
+    let partitions = partition_by_manifest(&mut all_tables, &other_specs, &snapshots, &base_manifest_id)?;
 
-    reconcile_logo_references(&mut all_tables, &root_manifest_id, &all_logos);
-    normalize_logo_scope(&mut all_tables, &root_manifest_id);
+    // The base manifest is finished exactly like every partition.
+    reconcile_logo_references(&mut all_tables, &base_manifest_id, all_logos);
+    normalize_logo_scope(&mut all_tables, &base_manifest_id);
+    prune_unreferenced_logos(&mut all_tables);
+    clone_referenced_rows(&mut all_tables, &base_manifest_id, &snapshots);
 
     let mut blobs: HashMap<String, BlobEntry> = HashMap::new();
     let mut manifest_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
@@ -106,7 +106,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         }
 
         // Manifest table: extract any blob column into the content-addressed map.
-        let out_rows = extract_table_blobs(&name, records, &root_user_salt, &mut blobs);
+        let out_rows = extract_table_blobs(&name, records, &base_user_salt, &mut blobs);
         manifest_tables.insert(name, out_rows);
     }
 
@@ -122,29 +122,23 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         }
     }
 
-    let mut root_buckets: Vec<DataBucket> = bucketed
-        .into_iter()
-        .map(|(category, tables)| DataBucket::new(&root_manifest_id, category, tables))
-        .collect();
+    let mut data_buckets: Vec<DataBucket> = bucketed.into_iter().map(|(category, tables)| DataBucket::new(category, tables)).collect();
     // Deterministic bucket order (HashMap iteration is unordered) so canonicalize is reproducible.
-    root_buckets.sort_by(|a, b| a.category.cmp(&b.category));
+    data_buckets.sort_by(|a, b| a.category.cmp(&b.category));
 
-    // Start with the root manifest.
-    let root_spec = &input.manifests[root_index];
+    // Start with the manifest the caller wrote from, which the input lists first.
     let mut manifests: Vec<CanonicalizedManifest> = Vec::with_capacity(1 + partitions.len());
     manifests.push(CanonicalizedManifest {
         manifest: Manifest {
             schema_version: SCHEMA_VERSION,
             migration_id: input.migration_id.clone(),
-            user_salt: root_user_salt,
+            user_salt: base_user_salt,
             canonicalized_at: input.canonicalized_at.clone(),
-            manifest_id: root_manifest_id,
-            name: root_spec.name.clone(),
+            manifest_id: base_manifest_id,
+            name: base_spec.name.clone(),
             tables: manifest_tables,
             extra: HashMap::new(),
         },
-        is_root: true,
-        data_buckets: root_buckets,
         blobs,
     });
 
@@ -170,13 +164,11 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
                 tables: partition_tables,
                 extra: HashMap::new(),
             },
-            is_root: false,
-            data_buckets: Vec::new(),
             blobs: partition_blobs,
         });
     }
 
-    Ok(CanonicalizedVault { manifests })
+    Ok(CanonicalizedVault { manifests, data_buckets })
 }
 
 /// Extract `table`'s blob column (if it owns one) into `blobs`, returning the rewritten rows.
@@ -220,29 +212,40 @@ fn extract_blob_cell(
     json!({ "__blobRef": hash, "__blobKind": kind })
 }
 
-/// Re-attach overflow columns (split off at materialize time because the local schema didn't know
-/// them) to their rows, matched by the table's primary-key value. A row deleted locally simply has
-/// no match and its overflow is dropped with it, which is the correct outcome. Locally-known
-/// columns always win on a (theoretical) name collision.
+/// Re-attach overflow columns.
 fn remerge_overflow_columns(tables: &mut HashMap<String, Vec<CodecRecord>>, overflow: &CodecOverflow) {
-    for (table_name, by_pk) in &overflow.columns {
+    for (table_name, by_identity) in &overflow.columns {
         let rows = match tables.get_mut(table_name) {
             Some(rows) => rows,
             None => continue,
         };
-        let pk_column = primary_key_for(table_name);
+
+        let mut by_primary_key: HashMap<&str, Option<&CodecRecord>> = HashMap::new();
+        for (identity, extra_columns) in by_identity {
+            let primary_key = primary_key_of(identity);
+            by_primary_key.entry(primary_key).and_modify(|entry| *entry = None).or_insert(Some(extra_columns));
+        }
+
         for row in rows {
-            let pk_value = match row.get(pk_column).map(row_key) {
+            let identity = match row_identity(table_name, row) {
                 Some(v) => v,
                 None => continue,
             };
-            if let Some(extra_columns) = by_pk.get(&pk_value) {
+            let extra_columns = by_identity
+                .get(&identity)
+                .or_else(|| by_primary_key.get(primary_key_of(&identity)).copied().flatten());
+            if let Some(extra_columns) = extra_columns {
                 for (column, value) in extra_columns {
                     row.entry(column.clone()).or_insert_with(|| value.clone());
                 }
             }
         }
     }
+}
+
+/// The primary-key half of a row identity.
+fn primary_key_of(identity: &str) -> &str {
+    identity.rsplit('\u{1f}').next().unwrap_or(identity)
 }
 
 /// Build a single data bucket for `category` from its already-normalized tables (name > rows).
@@ -254,7 +257,7 @@ fn remerge_overflow_columns(tables: &mut HashMap<String, Vec<CodecRecord>>, over
 /// unknown columns re-attach to this bucket's rows, and whole unknown tables recorded under this
 /// bucket's category are re-emitted, so a bucket-only push from an older client never drops a
 /// newer writer's data either.
-pub fn extract_bucket(manifest_id: String, category: String, mut tables: HashMap<String, Vec<CodecRecord>>) -> DataBucket {
+pub fn extract_bucket(category: String, mut tables: HashMap<String, Vec<CodecRecord>>) -> DataBucket {
     let overflow = tables.remove(OVERFLOW_TABLE).map(|records| CodecOverflow::from_table_records(&records)).unwrap_or_default();
     remerge_overflow_columns(&mut tables, &overflow);
     if let Some(ov_tables) = overflow.bucket_tables.get(&category) {
@@ -262,5 +265,5 @@ pub fn extract_bucket(manifest_id: String, category: String, mut tables: HashMap
             tables.entry(name.clone()).or_insert_with(|| rows.clone());
         }
     }
-    DataBucket::new(manifest_id, category, tables)
+    DataBucket::new(category, tables)
 }

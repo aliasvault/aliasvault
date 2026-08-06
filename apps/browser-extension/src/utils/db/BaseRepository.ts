@@ -30,6 +30,15 @@ export abstract class BaseRepository {
   public constructor(protected client: IDatabaseClient) {}
 
   /**
+   * Sync the manifest of every item-scoped row based on the item it hangs off.
+   * This method should be called after anything that moves items between manifests, inside the same transaction.
+   * @returns The number of child rows re-stamped
+   */
+  protected resyncItemChildManifests(): number {
+    return BaseQueries.RESYNC_ITEM_CHILD_MANIFESTS.reduce((total, sql) => total + this.client.executeUpdate(sql), 0);
+  }
+
+  /**
    * Execute a function within a transaction.
    * Automatically handles begin, commit, and rollback.
    * @param fn - The function to execute within the transaction
@@ -101,6 +110,21 @@ export abstract class BaseRepository {
   }
 
   /**
+   * Hard delete manifest-scoped records by a foreign key, within one manifest.
+   * @param table - The table name
+   * @param foreignKey - The foreign key column name
+   * @param foreignKeyValue - The foreign key value
+   * @param manifestId - The manifest whose rows may be deleted
+   * @returns Number of rows affected
+   */
+  protected hardDeleteByScopedForeignKey(table: string, foreignKey: string, foreignKeyValue: string, manifestId: string): number {
+    return this.client.executeUpdate(
+      `DELETE FROM ${table} WHERE ${foreignKey} = ? AND ManifestId = ?`,
+      [foreignKeyValue, manifestId]
+    );
+  }
+
+  /**
    * Check if a table exists in the database.
    * @param tableName - The name of the table to check
    * @returns True if the table exists
@@ -114,9 +138,27 @@ export abstract class BaseRepository {
   }
 
   /**
-   * Get the vault's root manifest id from the Manifests bookkeeping table, the scope every personal row
-   * belongs to. Returns null for a legacy vault whose Manifests row was not written yet (mid-schema
-   * migration); the codec adopts such rows at the next sync boundary.
+   * The manifest a manifest-scoped row belongs to, looked up from the row itself.
+   * @param table - The manifest-scoped table to look in
+   * @param id - The row id
+   * @param column - The column `id` names, when it is not the primary key
+   * @returns The manifest id, or null when no such row exists
+   */
+  protected resolveRowManifestId(table: string, id: string, column: string = 'Id'): string | null {
+    const rows = this.client.executeQuery<{ ManifestId: string }>(
+      `SELECT ManifestId FROM ${table} WHERE ${column} = ? ORDER BY ManifestId`,
+      [id]
+    );
+    if (rows.length === 0) {
+      return null;
+    }
+
+    const rootId = this.rootManifestId();
+    return (rows.find(row => row.ManifestId === rootId) ?? rows[0]).ManifestId;
+  }
+
+  /**
+   * Get the vault's root manifest id from the Manifests bookkeeping table.
    * @returns The root manifest id, or null when absent
    */
   protected rootManifestId(): string | null {

@@ -1,5 +1,7 @@
 import type { LogoKind, Item, ItemField, ItemLogo, ItemTagRef, ItemType } from '@/utils/dist/core/models/vault';
 
+import { scopedKey } from '../ItemRef';
+
 /**
  * Item with optional DeletedAt field for recently deleted items.
  */
@@ -10,6 +12,8 @@ export type ItemWithDeletedAt = Item & { DeletedAt?: string };
  */
 export type ItemRow = {
   Id: string;
+  /** The manifest the item belongs to; the other half of its key. */
+  ManifestId: string;
   Name: string;
   ItemType: string;
   FolderId: string | null;
@@ -31,6 +35,8 @@ export type ItemRow = {
  */
 export type TagRow = {
   ItemId: string;
+  /** The manifest of the item this tag is attached to. */
+  ManifestId: string;
   Id: string;
   Name: string;
   Color: string | null;
@@ -56,6 +62,7 @@ export class ItemMapper {
   ): Item {
     return {
       Id: row.Id,
+      ManifestId: row.ManifestId,
       Name: row.Name,
       ItemType: row.ItemType as ItemType,
       Logo: row.Logo ?? undefined,
@@ -75,9 +82,9 @@ export class ItemMapper {
   /**
    * Map multiple database rows to Item objects with their fields and tags.
    * @param rows - Raw item rows from database
-   * @param fieldsByItem - Map of ItemId to array of fields
-   * @param tagsByItem - Map of ItemId to array of tags
-   * @param folderPathsByFolderId - Map of FolderId to folder path array (optional)
+   * @param fieldsByItem - Map of scoped item key to array of fields
+   * @param tagsByItem - Map of scoped item key to array of tags
+   * @param folderPathsByFolderId - Map of scoped folder key to folder path array (optional)
    * @returns Array of Item objects
    */
   public static mapRows(
@@ -88,9 +95,9 @@ export class ItemMapper {
   ): Item[] {
     return rows.map(row => this.mapRow(
       row,
-      fieldsByItem.get(row.Id) || [],
-      tagsByItem.get(row.Id) || [],
-      row.FolderId && folderPathsByFolderId ? folderPathsByFolderId.get(row.FolderId) : undefined
+      fieldsByItem.get(scopedKey(row.ManifestId, row.Id)) || [],
+      tagsByItem.get(scopedKey(row.ManifestId, row.Id)) || [],
+      row.FolderId && folderPathsByFolderId ? folderPathsByFolderId.get(scopedKey(row.ManifestId, row.FolderId)) : undefined
     ));
   }
 
@@ -114,18 +121,19 @@ export class ItemMapper {
   }
 
   /**
-   * Group tag rows by ItemId into a map.
+   * Group tag rows by their item's scoped key into a map.
    * @param tagRows - Raw tag rows from database
-   * @returns Map of ItemId to array of ItemTagRef
+   * @returns Map of scoped item key to array of ItemTagRef
    */
   public static groupTagsByItem(tagRows: TagRow[]): Map<string, ItemTagRef[]> {
     const tagsByItem = new Map<string, ItemTagRef[]>();
 
     for (const tag of tagRows) {
-      if (!tagsByItem.has(tag.ItemId)) {
-        tagsByItem.set(tag.ItemId, []);
+      const key = scopedKey(tag.ManifestId, tag.ItemId);
+      if (!tagsByItem.has(key)) {
+        tagsByItem.set(key, []);
       }
-      tagsByItem.get(tag.ItemId)!.push({
+      tagsByItem.get(key)!.push({
         Id: tag.Id,
         Name: tag.Name,
         Color: tag.Color || undefined
@@ -140,7 +148,7 @@ export class ItemMapper {
    * @param tagRows - Raw tag rows without ItemId
    * @returns Array of ItemTagRef
    */
-  public static mapTagRows(tagRows: Omit<TagRow, 'ItemId'>[]): ItemTagRef[] {
+  public static mapTagRows(tagRows: Omit<TagRow, 'ItemId' | 'ManifestId'>[]): ItemTagRef[] {
     return tagRows.map(tag => ({
       Id: tag.Id,
       Name: tag.Name,
@@ -162,6 +170,7 @@ export class ItemMapper {
   ): ItemWithDeletedAt {
     return {
       Id: row.Id,
+      ManifestId: row.ManifestId,
       Name: row.Name,
       ItemType: row.ItemType as ItemType,
       Logo: row.Logo ? new Uint8Array(row.Logo) : undefined,

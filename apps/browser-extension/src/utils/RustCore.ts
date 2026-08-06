@@ -25,10 +25,7 @@ export enum AutofillMatchingMode {
 let initPromise: Promise<void> | null = null;
 
 /**
- * Initialize the Rust core. Safe to call multiple times — subsequent calls
- * return the same in-flight promise. Callers that want to pay the WASM load
- * cost up front (e.g. background startup) can `await initRustCore()` once;
- * everything else lazily inits on first use.
+ * Initialize the Rust core.
  */
 export function initRustCore(): Promise<void> {
   if (!initPromise) {
@@ -218,9 +215,6 @@ export async function filterItems(
  * host-only comparison (scheme, `www.`, path, query, fragment, trailing
  * slash all ignored). Falls back to lowercased exact-match when the Rust
  * extractor returns no domain (app bundle identifiers).
- *
- * Performs one async init, then a synchronous loop — Rust core calls are
- * sync once WASM is loaded.
  */
 export async function isUrlAlreadyLinked(existingUrls: string[], newUrl: string): Promise<boolean> {
   await initRustCore();
@@ -264,16 +258,19 @@ export type CodecManifest = {
   userSalt: string;
   canonicalizedAt: string;
   manifestId: string;
-  anchorFolderId?: string | null;
+  name?: string | null;
   tables: Record<string, Array<Record<string, unknown>>>;
   [key: string]: unknown;
 };
 
-/** One shared manifest to split out during canonicalize: its manifest id, anchor folder id, and that manifest's own blob salt. */
-export type CodecSharedManifestSpec = { manifestId: string; anchorFolderId: string; userSalt: string };
-
-/** One manifest of a materialize input. */
-export type CodecManifestEntry = { manifest: CodecManifest; isRoot: boolean };
+/**
+ * One manifest canonicalize should emit.
+ */
+export type CodecManifestSpec = {
+  manifestId: string;
+  userSalt: string;
+  name?: string | null;
+};
 
 /**
  * A manifest-v1 data bucket.
@@ -288,13 +285,11 @@ export type CodecDataBucket = {
 /** A decoded blob entry: kind + plaintext bytes (base64). */
 export type CodecBlobEntry = { kind: string; bytesBase64: string };
 
-/**
- * One manifest produced by canonicaliz.
- */
-export type CodecCanonicalizedManifest = CodecManifestEntry & { blobs: Record<string, CodecBlobEntry> };
+/** One manifest produced by canonicalize: the manifest and the blobs hashed with its own salt. */
+export type CodecCanonicalizedManifest = { manifest: CodecManifest; blobs: Record<string, CodecBlobEntry> };
 
 /**
- * Result of canonicalize.
+ * Result of canonicalize: one entry per spec, in spec order, plus the vault's data buckets.
  */
 export type CodecCanonicalized = {
   manifests: CodecCanonicalizedManifest[];
@@ -304,10 +299,7 @@ export type CodecCanonicalized = {
 /**
  * Data a newer writer put in the manifest that this client's local SQLite schema cannot hold:
  * whole unknown manifest tables, whole unknown bucket tables (per category), and unknown columns
- * keyed by table > row primary-key value. Materialize carries it INSIDE the vault DB as a regular
- * `CodecOverflows` table row, and canonicalize/extractBucket consume that row from the ordinary
- * table read — so a push never drops the data and no separate persistence is needed. This type only
- * describes the diagnostics copy on `CodecMaterialized` (used for logging).
+ * keyed by table > row primary-key value.
  */
 export type CodecOverflow = {
   tables: Record<string, Array<Record<string, unknown>>>;
@@ -318,11 +310,9 @@ export type CodecOverflow = {
 /** Input for canonicalize. */
 export type CodecCanonicalizeInput = {
   tables: CodecTableData[];
-  userSalt: string;
   migrationId: string;
-  rootManifestId: string;
-  sharedManifests?: CodecSharedManifestSpec[];
   canonicalizedAt: string;
+  manifests: CodecManifestSpec[];
 };
 
 /** Materialized tables the platform inserts into a fresh SQLite DB (`overflow` is a diagnostics copy). */
@@ -345,7 +335,11 @@ export async function vaultCodecCanonicalizeFromSqlite(input: CodecCanonicalizeI
 /**
  * Materialize the vault's manifests + data buckets into the table set the platform inserts.
  */
-export async function vaultCodecMaterializeAsSqlite(manifests: CodecManifestEntry[], dataBuckets: CodecDataBucket[], schemaColumns: Record<string, string[]>): Promise<CodecMaterialized> {
+export async function vaultCodecMaterializeAsSqlite(
+  manifests: CodecManifest[],
+  dataBuckets: CodecDataBucket[],
+  schemaColumns: Record<string, string[]>
+): Promise<CodecMaterialized> {
   await initRustCore();
   return core.vaultCodecMaterializeAsSqlite({ manifests, dataBuckets, schemaColumns }) as CodecMaterialized;
 }
@@ -366,6 +360,15 @@ export async function vaultCodecExtractEncryptionKeyForPublicKey(manifest: Codec
 export async function vaultCodecExtractBucket(category: string, tables: Record<string, Array<Record<string, unknown>>>): Promise<CodecDataBucket> {
   await initRustCore();
   return core.vaultCodecExtractBucket({ category, tables }) as CodecDataBucket;
+}
+
+/**
+ * The tables whose rows carry a `ManifestId` stamp. The codec owns this list; a client converting a
+ * vault written before the column existed backfills exactly these.
+ */
+export async function vaultCodecStampedTables(): Promise<string[]> {
+  await initRustCore();
+  return core.vaultCodecStampedTables() as string[];
 }
 
 /**

@@ -15,12 +15,11 @@ using AliasClientDb.Abstracts;
 /// FieldValue entity that stores encrypted field values.
 /// Supports both system fields (with FieldKey) and custom fields (with FieldDefinitionId).
 /// </summary>
-public class FieldValue : SyncableEntity
+public class FieldValue : ManifestScopedEntity
 {
     /// <summary>
     /// Gets or sets the field value ID.
     /// </summary>
-    [Key]
     public Guid Id { get; set; }
 
     /// <summary>
@@ -32,7 +31,6 @@ public class FieldValue : SyncableEntity
     /// <summary>
     /// Gets or sets the item object.
     /// </summary>
-    [ForeignKey("ItemId")]
     public virtual Item Item { get; set; } = null!;
 
     /// <summary>

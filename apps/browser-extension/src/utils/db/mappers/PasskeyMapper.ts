@@ -6,6 +6,7 @@ import type { Passkey } from '@/utils/dist/core/models/vault';
 export type PasskeyRow = {
   Id: string;
   ItemId: string;
+  ManifestId: string;
   RpId: string;
   UserHandle: Uint8Array | null;
   PublicKey: string;
@@ -56,6 +57,7 @@ export class PasskeyMapper {
     return {
       Id: row.Id,
       ItemId: row.ItemId,
+      ManifestId: row.ManifestId,
       RpId: row.RpId,
       UserHandle: row.UserHandle ? new Uint8Array(row.UserHandle) : undefined,
       PublicKey: row.PublicKey,

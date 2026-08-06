@@ -95,6 +95,13 @@ fn normalize_kind(kind: &str) -> String {
     trimmed.to_lowercase()
 }
 
+/// True when a row holds an image the user supplied themselves ([`KIND_CUSTOM`]) rather than one the
+/// client can produce again on its own — a favicon it can refetch from the domain, a built-in logo it
+/// draws from the catalog. Only that first group is worth keeping around once nothing references it.
+pub(super) fn is_custom_logo(row: &CodecRecord) -> bool {
+    normalize_kind(str_col(row, KIND_COL).unwrap_or("")) == KIND_CUSTOM
+}
+
 /// The `(kind, source)` natural key of a row, or `None` when it carries no `Source` to key on.
 fn natural_key(row: &CodecRecord) -> Option<(String, String)> {
     let source = str_col(row, SOURCE_COL)?.to_lowercase();

@@ -42,21 +42,30 @@ export class PasskeyRepository extends BaseRepository {
   /**
    * Get all passkeys for a specific item.
    * @param itemId - The item ID
+   * @param manifestId - The manifest the item belongs to, when known
    * @returns Array of passkey objects
    */
-  public getByItemId(itemId: string): Passkey[] {
+  public getByItemId(itemId: string, manifestId?: string): Passkey[] {
+    const scope = manifestId ?? this.resolveRowManifestId('Items', itemId);
+    if (!scope) {
+      return [];
+    }
+
     const results = this.client.executeQuery<PasskeyRow>(
       PasskeyQueries.GET_BY_ITEM_ID,
-      [itemId]
+      [itemId, scope]
     );
     return PasskeyMapper.mapRows(results);
   }
 
   /**
    * Create a new passkey linked to an item.
+   *
+   * The manifest is not passed in: a passkey belongs to whichever manifest its item is in, and the
+   * INSERT reads it from there (see {@link BaseQueries.MANIFEST_OF_ITEM}).
    * @param passkey - The passkey object to create
    */
-  public async create(passkey: Omit<Passkey, 'CreatedAt' | 'UpdatedAt' | 'IsDeleted'>): Promise<void> {
+  public async create(passkey: Omit<Passkey, 'CreatedAt' | 'UpdatedAt' | 'IsDeleted' | 'ManifestId'>): Promise<void> {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
 
@@ -79,6 +88,7 @@ export class PasskeyRepository extends BaseRepository {
       this.client.executeUpdate(PasskeyQueries.INSERT, [
         passkey.Id,
         passkey.ItemId,
+        passkey.ItemId,
         passkey.RpId,
         userHandleData,
         passkey.PublicKey,
@@ -96,14 +106,20 @@ export class PasskeyRepository extends BaseRepository {
   /**
    * Delete a passkey by its ID (soft delete).
    * @param passkeyId - The ID of the passkey to delete
+   * @param manifestId - The manifest the passkey belongs to, when known
    * @returns The number of rows updated
    */
-  public async deleteById(passkeyId: string): Promise<number> {
+  public async deleteById(passkeyId: string, manifestId?: string): Promise<number> {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
+      const scope = manifestId ?? this.resolveRowManifestId('Passkeys', passkeyId);
+      if (!scope) {
+        return 0;
+      }
       return this.client.executeUpdate(PasskeyQueries.SOFT_DELETE, [
         currentDateTime,
-        passkeyId
+        passkeyId,
+        scope
       ]);
     });
   }
@@ -111,14 +127,20 @@ export class PasskeyRepository extends BaseRepository {
   /**
    * Delete all passkeys for a specific item (soft delete).
    * @param itemId - The ID of the item
+   * @param manifestId - The manifest the item belongs to, when known
    * @returns The number of rows updated
    */
-  public async deleteByItemId(itemId: string): Promise<number> {
+  public async deleteByItemId(itemId: string, manifestId?: string): Promise<number> {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
+      const scope = manifestId ?? this.resolveRowManifestId('Items', itemId);
+      if (!scope) {
+        return 0;
+      }
       return this.client.executeUpdate(PasskeyQueries.SOFT_DELETE_BY_ITEM, [
         currentDateTime,
-        itemId
+        itemId,
+        scope
       ]);
     });
   }
@@ -127,15 +149,21 @@ export class PasskeyRepository extends BaseRepository {
    * Update a passkey's display name.
    * @param passkeyId - The ID of the passkey to update
    * @param displayName - The new display name
+   * @param manifestId - The manifest the passkey belongs to, when known
    * @returns The number of rows updated
    */
-  public async updateDisplayName(passkeyId: string, displayName: string): Promise<number> {
+  public async updateDisplayName(passkeyId: string, displayName: string, manifestId?: string): Promise<number> {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
+      const scope = manifestId ?? this.resolveRowManifestId('Passkeys', passkeyId);
+      if (!scope) {
+        return 0;
+      }
       return this.client.executeUpdate(PasskeyQueries.UPDATE_DISPLAY_NAME, [
         displayName,
         currentDateTime,
-        passkeyId
+        passkeyId,
+        scope
       ]);
     });
   }

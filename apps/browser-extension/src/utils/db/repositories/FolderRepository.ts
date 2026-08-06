@@ -1,4 +1,5 @@
 import { BaseRepository } from '../BaseRepository';
+import { BaseQueries } from '../queries/BaseQueries';
 import { FolderQueries } from '../queries/FolderQueries';
 
 /**
@@ -9,6 +10,7 @@ export type Folder = {
   Name: string;
   ParentFolderId: string | null;
   Weight: number;
+  ManifestId?: string | null;
 }
 
 /**
@@ -31,6 +33,8 @@ export class FolderRepository extends BaseRepository {
       this.client.executeUpdate(FolderQueries.INSERT, [
         folderId,
         name,
+        parentFolderId || null,
+        // Second bind of the parent id: resolves the manifest this folder belongs to (see INSERT).
         parentFolderId || null,
         currentDateTime,
         currentDateTime
@@ -131,6 +135,8 @@ export class FolderRepository extends BaseRepository {
         // Has parent: move items to parent folder
         this.client.executeUpdate(FolderQueries.MOVE_ITEMS_TO_FOLDER, [
           targetParentId,
+          // Second bind of the destination: the items adopt that folder's manifest.
+          targetParentId,
           currentDateTime,
           folderId
         ]);
@@ -141,6 +147,8 @@ export class FolderRepository extends BaseRepository {
           folderId
         ]);
       }
+
+      this.resyncItemChildManifests();
 
       // Move direct child folders to the parent of the deleted folder
       this.client.executeUpdate(FolderQueries.UPDATE_PARENT_FOLDER, [
@@ -209,6 +217,31 @@ export class FolderRepository extends BaseRepository {
   }
 
   /**
+   * Re-stamp a folder's whole subtree into `manifestId`.
+   * @param folderId - The root of the subtree to re-stamp
+   * @param manifestId - The manifest the subtree now belongs to
+   * @returns The number of folder + item rows re-stamped
+   */
+  public async restampSubtree(folderId: string, manifestId: string): Promise<number> {
+    return this.withTransaction(async () => {
+      const folders = this.client.executeUpdate(BaseQueries.RESTAMP_SUBTREE_FOLDERS, [manifestId, folderId]);
+      const items = this.client.executeUpdate(BaseQueries.RESTAMP_SUBTREE_ITEMS, [manifestId, folderId]);
+      this.resyncItemChildManifests();
+      return folders + items;
+    });
+  }
+
+  /**
+   * Re-stamp a folder's whole subtree back into the vault's own (root) manifest.
+   * @param folderId - The root of the subtree to re-stamp
+   * @returns The number of rows re-stamped, or 0 when the root manifest is not registered yet
+   */
+  public async restampSubtreeToRoot(folderId: string): Promise<number> {
+    const rootId = this.rootManifestId();
+    return rootId ? this.restampSubtree(folderId, rootId) : 0;
+  }
+
+  /**
    * Move an item to a folder.
    * @param itemId - The ID of the item to move
    * @param folderId - The ID of the destination folder (null to remove from folder)
@@ -217,11 +250,15 @@ export class FolderRepository extends BaseRepository {
   public async moveItem(itemId: string, folderId: string | null): Promise<number> {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
-      return this.client.executeUpdate(FolderQueries.MOVE_ITEM, [
+      const moved = this.client.executeUpdate(FolderQueries.MOVE_ITEM, [
+        folderId,
+        // Second bind of the destination: the item adopts that folder's manifest.
         folderId,
         currentDateTime,
         itemId
       ]);
+      this.resyncItemChildManifests();
+      return moved;
     });
   }
 }

@@ -14,12 +14,11 @@ using AliasClientDb.Abstracts;
 /// <summary>
 /// Many-to-many junction entity linking items to tags.
 /// </summary>
-public class ItemTag : SyncableEntity
+public class ItemTag : ManifestScopedEntity
 {
     /// <summary>
     /// Gets or sets the item-tag relationship ID.
     /// </summary>
-    [Key]
     public Guid Id { get; set; }
 
     /// <summary>
@@ -31,7 +30,6 @@ public class ItemTag : SyncableEntity
     /// <summary>
     /// Gets or sets the item object.
     /// </summary>
-    [ForeignKey("ItemId")]
     public virtual Item Item { get; set; } = null!;
 
     /// <summary>

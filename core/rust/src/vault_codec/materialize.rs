@@ -19,8 +19,8 @@ use std::collections::{HashMap, HashSet};
 
 use serde_json::json;
 
-use super::manifest::{CodecOverflow, CodecRecord, CodecTableData, DataBucket, Manifest, ManifestEntry, MaterializeInput, MaterializedTables};
-use super::types::{is_skip_table, primary_key_for, MANIFESTS_TABLE, OVERFLOW_TABLE};
+use super::manifest::{CodecOverflow, CodecRecord, CodecTableData, Manifest, MaterializeInput, MaterializedTables};
+use super::types::{is_skip_table, row_identity, MANIFESTS_TABLE, OVERFLOW_TABLE};
 use crate::error::{VaultError, VaultResult};
 
 /// Materialize the vault's manifests into the table set the platform inserts. Every manifest arrives
@@ -28,36 +28,29 @@ use crate::error::{VaultError, VaultResult};
 /// per-manifest logo scoping, key-scope filtering, and earlier-manifest-wins primary-key dedup. 
 /// Every manifest's buckets merge into the same local tables.
 pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<MaterializedTables> {
-    let MaterializeInput { mut manifests, schema_columns } = input;
+    let MaterializeInput { mut manifests, data_buckets, schema_columns } = input;
 
     // Check for a non-empty schema.
     if schema_columns.is_empty() {
         return Err(VaultError::General("materialize input carries an empty schema_columns map".to_string()));
     }
+    if manifests.is_empty() {
+        return Err(VaultError::General("materialize input carries no manifests".to_string()));
+    }
 
-    // Check for exactly one root manifest.
-    let root_positions: Vec<usize> = manifests.iter().enumerate().filter(|(_, e)| e.is_root).map(|(i, _)| i).collect();
-    let root_index = match root_positions.as_slice() {
-        [index] => *index,
-        [] => return Err(VaultError::General("materialize input carries no root manifest".to_string())),
-        _ => return Err(VaultError::General(format!("materialize input carries {} root manifests, expected exactly one", root_positions.len()))),
-    };
+    let manifest_records = manifest_bookkeeping_records(&manifests);
 
     /*
-     * Every manifest's buckets are merged into the same local table set, so a category one manifest
-     * owns privately and a category several manifests each contribute to (a shared last-used-at
-     * bucket, say) land in one joined table the app queries without caring which namespace a row
-     * came from. Collected before the root is split out so the order matches `manifests`.
+     * The caller's own manifest comes first (see `MaterializeInput::manifests`): it is the base every
+     * other manifest is combined into, so on a collision in a table keyed by `Id` alone its row is the
+     * one that survives, and its `migration_id` is the data-model version the vault reports.
      */
-    let manifest_records = manifest_bookkeeping_records(&manifests);
-    let data_buckets: Vec<DataBucket> = manifests.iter_mut().flat_map(|entry| std::mem::take(&mut entry.data_buckets)).collect();
+    let base = manifests.remove(0);
+    let others: Vec<Manifest> = manifests;
 
-    let root = manifests.remove(root_index).manifest;
-    let others: Vec<Manifest> = manifests.into_iter().map(|entry| entry.manifest).collect();
-
-    let root_manifest_id = root.manifest_id.clone();
-    let migration_id = root.migration_id;
-    let combined = super::sharing::combine_manifest_tables(root.tables, &root_manifest_id, others);
+    let base_manifest_id = base.manifest_id.clone();
+    let migration_id = base.migration_id;
+    let combined = super::sharing::combine_manifest_tables(base.tables, &base_manifest_id, others);
 
     let mut overflow = CodecOverflow::default();
     let mut tables: Vec<CodecTableData> = Vec::with_capacity(combined.len() + data_buckets.len());
@@ -108,18 +101,17 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     })
 }
 
-/// One `Manifests` row per materialized manifest: `{ Id, IsRoot, Name }`.
-fn manifest_bookkeeping_records(manifests: &[ManifestEntry]) -> Vec<CodecRecord> {
+/// One `Manifests` row per materialized manifest: `{ Id, Name }`.
+fn manifest_bookkeeping_records(manifests: &[Manifest]) -> Vec<CodecRecord> {
     let mut records: Vec<CodecRecord> = Vec::with_capacity(manifests.len());
-    for entry in manifests {
-        let id = entry.manifest.manifest_id.as_str();
+    for manifest in manifests {
+        let id = manifest.manifest_id.as_str();
         if id.is_empty() {
             continue;
         }
         let mut row: CodecRecord = HashMap::new();
         row.insert("Id".to_string(), json!(id));
-        row.insert("IsRoot".to_string(), json!(if entry.is_root { 1 } else { 0 }));
-        row.insert("Name".to_string(), entry.manifest.name.as_deref().map(|n| json!(n)).unwrap_or(serde_json::Value::Null));
+        row.insert("Name".to_string(), manifest.name.as_deref().map(|n| json!(n)).unwrap_or(serde_json::Value::Null));
         records.push(row);
     }
     records
@@ -146,13 +138,12 @@ fn split_for_schema(
         Some(columns) => columns.iter().map(String::as_str).collect(),
     };
 
-    let pk_column = primary_key_for(table_name);
     let mut fitted: Vec<CodecRecord> = Vec::with_capacity(records.len());
     for row in records {
         let (known, unknown): (CodecRecord, CodecRecord) = row.into_iter().partition(|(column, _)| known_columns.contains(column.as_str()));
         if !unknown.is_empty() {
-            if let Some(pk_value) = known.get(pk_column).map(row_key) {
-                column_overflow.entry(table_name.to_string()).or_default().insert(pk_value, unknown);
+            if let Some(identity) = row_identity(table_name, &known) {
+                column_overflow.entry(table_name.to_string()).or_default().insert(identity, unknown);
             }
         }
         // A row with no insertable columns would produce invalid SQL (`INSERT INTO t () VALUES ()`); skip it.

@@ -151,6 +151,8 @@ type Passkey = {
     Id: string;
     /** The item ID foreign key */
     ItemId: string;
+    /** The manifest this passkey belongs to. */
+    ManifestId: string;
     /** The relying party identifier */
     RpId: string;
     /** The user handle (user ID) provided by the relying party - stored as byte array (BLOB) */
@@ -334,6 +336,7 @@ type ItemType = typeof ItemTypes[keyof typeof ItemTypes];
  */
 type Item = {
     Id: string;
+    ManifestId: string;
     Name: string | null;
     ItemType: ItemType;
     Logo?: Uint8Array | number[];

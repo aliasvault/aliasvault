@@ -38,7 +38,7 @@ export class LogoQueries {
   public static readonly UPSERT = `
     INSERT INTO Logos (Id, Kind, Source, ManifestId, FileData, MimeType, Name, CreatedAt, UpdatedAt, IsDeleted)
     VALUES (?, ?, ?, ${BaseQueries.ROOT_MANIFEST_ID}, ?, ?, ?, ?, ?, 0)
-    ON CONFLICT(Id) DO UPDATE SET
+    ON CONFLICT(ManifestId, Id) DO UPDATE SET
       FileData = excluded.FileData,
       MimeType = excluded.MimeType,
       Name = COALESCE(excluded.Name, Logos.Name),

@@ -14,12 +14,11 @@ using AliasClientDb.Abstracts;
 /// <summary>
 /// The TotpCode class that stores 2FA information associated with a credential.
 /// </summary>
-public class TotpCode : SyncableEntity
+public class TotpCode : ManifestScopedEntity
 {
     /// <summary>
     /// Gets or sets the ID.
     /// </summary>
-    [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
 
@@ -43,6 +42,5 @@ public class TotpCode : SyncableEntity
     /// <summary>
     /// Gets or sets the item.
     /// </summary>
-    [ForeignKey("ItemId")]
     public virtual Item? Item { get; set; }
 }

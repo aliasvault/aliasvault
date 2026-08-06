@@ -34,16 +34,12 @@ pub struct Manifest {
     pub extra: HashMap<String, serde_json::Value>,
 }
 
-/// One data bucket: a slice of one manifest kept OUT of the manifest blob so it can sync on its own
-/// server revision without rewriting the manifest. `category` mirrors the server
-/// `VaultDataBucketCategory` (e.g. "Settings"). `tables` holds the bucket's tables (name > rows).
+/// One data bucket: a part of the vault (one or more tables) kept out of the manifest blobs so it can 
+/// sync on its own server revision without rewriting a manifest.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DataBucket {
     pub schema_version: u32,
-    /// The manifest this bucket belongs to.
-    #[serde(default)]
-    pub manifest_id: String,
     pub category: String,
     pub tables: HashMap<String, Vec<CodecRecord>>,
     #[serde(flatten)]
@@ -51,11 +47,10 @@ pub struct DataBucket {
 }
 
 impl DataBucket {
-    /// Build a data bucket for `category`, owned by `manifest_id`, from its already-normalized tables.
-    pub fn new(manifest_id: impl Into<String>, category: impl Into<String>, tables: HashMap<String, Vec<CodecRecord>>) -> Self {
+    /// Build the `category` data bucket from its already-normalized tables.
+    pub fn new(category: impl Into<String>, tables: HashMap<String, Vec<CodecRecord>>) -> Self {
         Self {
             schema_version: SCHEMA_VERSION,
-            manifest_id: manifest_id.into(),
             category: category.into(),
             tables,
             extra: HashMap::new(),
@@ -80,8 +75,7 @@ pub struct BlobEntry {
     pub bytes_base64: String,
 }
 
-/// One manifest the caller wants canonicalize to emit. Every manifest in the vault gets a spec,
-/// root included: they are the same kind of thing and are described the same way.
+/// One manifest the caller wants canonicalize to emit.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ManifestSpec {
@@ -91,66 +85,41 @@ pub struct ManifestSpec {
     /// Display name written into the manifest. See [`Manifest::name`].
     #[serde(default)]
     pub name: Option<String>,
-    /// Marks the user's own manifest. Exactly one spec may set it. It is a property of the *user's*
-    /// relationship to the manifest, not a structural role: the codec treats every manifest as the
-    /// same kind of namespace, and clients read the flag back from `Manifests.IsRoot` to decide
-    /// which manifest new rows go into and whose settings are theirs.
-    ///
-    /// The codec itself uses it in exactly two places:
-    ///  - its `Logos` table doubles as the local favicon cache, so unreferenced rows are kept rather
-    ///    than pruned (a product rule about the user's own vault, permanent);
-    ///  - it adopts rows carrying no `ManifestId` stamp (TRANSITIONAL, see below).
-    ///
-    /// There is no residual set in the steady state: every row names its manifest, and materialize
-    /// stamps every row it writes, so any vault that has been materialized once is fully stamped.
-    /// Unstamped rows appear only on the one-shot legacy conversion, where a vault predating the
-    /// `ManifestId` column is canonicalized for the first time. Once that conversion backfills the
-    /// stamps itself, an unstamped row becomes a validation error and this clause goes away —
-    /// leaving `is_root` as pure client-facing bookkeeping.
-    #[serde(default)]
-    pub is_root: bool,
 }
 
-/// One manifest produced by canonicalize: the manifest blob, the buckets that sync beside it, and
-/// the blob map hashed with its own salt. Shaped as a superset of [`ManifestEntry`], so a
-/// canonicalize result feeds straight back into [`MaterializeInput`] with no per-manifest mapping.
+/// One manifest produced by canonicalize: the manifest blob and the blob map hashed with its own salt.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CanonicalizedManifest {
     pub manifest: Manifest,
-    pub is_root: bool,
-    /// The buckets this manifest owns, one per category it carries rows for.
-    #[serde(default)]
-    pub data_buckets: Vec<DataBucket>,
     /// hash > blob plaintext (base64), hashed with this manifest's salt.
     pub blobs: HashMap<String, BlobEntry>,
 }
 
-/// Result of canonicalizing a vault: one entry per manifest, in the order the specs were given.
+/// Result of canonicalizing a vault: one entry per manifest, in the order the specs were given, plus
+/// the data buckets, which belong to the vault rather than to any one manifest.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CanonicalizedVault {
     pub manifests: Vec<CanonicalizedManifest>,
+    #[serde(default)]
+    pub data_buckets: Vec<DataBucket>,
 }
 
 impl CanonicalizedVault {
-    /// The manifest flagged as root. Canonicalize refuses input that does not declare exactly one,
-    /// so a result always has it.
-    pub fn root(&self) -> &CanonicalizedManifest {
-        self.manifests.iter().find(|m| m.is_root).expect("canonicalize rejects input without exactly one root manifest")
+    /// The first manifest, which is the one the caller wrote this vault from. Canonicalize refuses empty input, so it always exists.
+    pub fn first(&self) -> &CanonicalizedManifest {
+        self.manifests.first().expect("canonicalize rejects input declaring no manifests")
     }
 
-    /// The non-root manifests, in the order their specs were passed to canonicalize.
-    pub fn shared(&self) -> Vec<&CanonicalizedManifest> {
-        self.manifests.iter().filter(|m| !m.is_root).collect()
+    /// Every manifest after the first, in spec order.
+    pub fn rest(&self) -> Vec<&CanonicalizedManifest> {
+        self.manifests.iter().skip(1).collect()
     }
 
-    /// Every manifest as a [`ManifestEntry`], ready to hand back to [`crate::vault_codec::materialize_as_sqlite`].
-    pub fn manifest_entries(&self) -> Vec<ManifestEntry> {
-        self.manifests
-            .iter()
-            .map(|m| ManifestEntry { manifest: m.manifest.clone(), is_root: m.is_root, data_buckets: m.data_buckets.clone() })
-            .collect()
+    /// Every manifest, in spec order, ready to hand back to [`crate::vault_codec::materialize_as_sqlite`].
+    pub fn to_manifests(&self) -> Vec<Manifest> {
+        self.manifests.iter().map(|m| m.manifest.clone()).collect()
     }
 }
 
@@ -233,42 +202,26 @@ pub struct CanonicalizeInput {
     pub tables: Vec<CodecTableData>,
     pub migration_id: String,
     pub canonicalized_at: String,
-    /// Every manifest to emit, root included. Rows are routed to these by their `ManifestId` stamp;
-    /// a row whose stamp matches no spec falls to the `is_root` one.
     pub manifests: Vec<ManifestSpec>,
-}
-
-/// One manifest of a materialize input: the manifest, the buckets that belong to it, and whether it
-/// is the vault's root (bookkeeping the clients read back; see [`ManifestSpec::is_root`]).
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ManifestEntry {
-    pub manifest: Manifest,
-    #[serde(default)]
-    pub is_root: bool,
-    #[serde(default)]
-    pub data_buckets: Vec<DataBucket>,
 }
 
 /// Input for [`crate::vault_codec::materialize_as_sqlite`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterializeInput {
-    /// Every manifest making up the logical vault. They are combined in list order, so the caller
-    /// puts its own manifest first: on a primary-key collision between two manifests the earlier one
-    /// wins. At most one entry may carry `is_root`.
-    pub manifests: Vec<ManifestEntry>,
-    /// The caller's local SQLite schema: table > column names. Rows are filtered down to what this
-    /// schema can hold and the remainder lands in [`MaterializedTables::overflow`].
+    pub manifests: Vec<Manifest>,
+    #[serde(default)]
+    pub data_buckets: Vec<DataBucket>,
     pub schema_columns: HashMap<String, Vec<String>>,
 }
 
 impl MaterializeInput {
-    /// Build an input from a root manifest plus the non-root manifests combined into it.
-    pub fn new(root: Manifest, others: Vec<Manifest>, data_buckets: Vec<DataBucket>, schema_columns: HashMap<String, Vec<String>>) -> Self {
+    /// Build an input from the caller's own manifest, the other manifests combined into it, and the
+    /// vault's data buckets.
+    pub fn new(own: Manifest, others: Vec<Manifest>, data_buckets: Vec<DataBucket>, schema_columns: HashMap<String, Vec<String>>) -> Self {
         let mut manifests = Vec::with_capacity(1 + others.len());
-        manifests.push(ManifestEntry { manifest: root, is_root: true, data_buckets });
-        manifests.extend(others.into_iter().map(|manifest| ManifestEntry { manifest, is_root: false, data_buckets: Vec::new() }));
-        Self { manifests, schema_columns }
+        manifests.push(own);
+        manifests.extend(others);
+        Self { manifests, data_buckets, schema_columns }
     }
 }

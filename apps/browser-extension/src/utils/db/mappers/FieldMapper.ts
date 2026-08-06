@@ -1,11 +1,15 @@
 import type { ItemField, FieldType } from '@/utils/dist/core/models/vault';
 import { FieldTypes, getSystemField } from '@/utils/dist/core/models/vault';
 
+import { scopedKey } from '../ItemRef';
+
 /**
  * Raw field row from database query.
  */
 export type FieldRow = {
   ItemId: string;
+  /** The manifest of the item this value belongs to; the other half of the item's key. */
+  ManifestId: string;
   FieldKey: string | null;
   FieldDefinitionId: string | null;
   CustomLabel: string | null;
@@ -21,6 +25,7 @@ export type FieldRow = {
  */
 export type ProcessedField = {
   ItemId: string;
+  ManifestId: string;
   FieldKey: string;
   Label: string;
   FieldType: string;
@@ -37,10 +42,10 @@ export type ProcessedField = {
  */
 export class FieldMapper {
   /**
-   * Process raw field rows from database into a map of ItemId -> ItemField[].
+   * Process raw field rows from database into a map of scoped item key -> ItemField[].
    * Handles system vs custom fields and multi-value field grouping.
    * @param rows - Raw field rows from database
-   * @returns Map of ItemId to array of ItemField objects
+   * @returns Map of scoped item key (see {@link scopedKey}) to array of ItemField objects
    */
   public static processFieldRows(rows: FieldRow[]): Map<string, ItemField[]> {
     // First, convert rows to processed fields with proper metadata
@@ -51,7 +56,12 @@ export class FieldMapper {
     const fieldValuesByKey = new Map<string, string[]>();
 
     for (const field of processedFields) {
-      const key = `${field.ItemId}_${field.FieldKey}`;
+      /*
+       * Grouped per item *and* manifest: two manifests may hold an item with the same Id, and their
+       * fields must not pool together.
+       */
+      const itemKey = scopedKey(field.ManifestId, field.ItemId);
+      const key = `${itemKey}_${field.FieldKey}`;
 
       // Accumulate values for the same field
       if (!fieldValuesByKey.has(key)) {
@@ -60,11 +70,11 @@ export class FieldMapper {
       fieldValuesByKey.get(key)!.push(field.Value);
 
       // Create ItemField entry only once per unique FieldKey per item
-      if (!fieldsByItem.has(field.ItemId)) {
-        fieldsByItem.set(field.ItemId, []);
+      if (!fieldsByItem.has(itemKey)) {
+        fieldsByItem.set(itemKey, []);
       }
 
-      const itemFields = fieldsByItem.get(field.ItemId)!;
+      const itemFields = fieldsByItem.get(itemKey)!;
       const existingField = itemFields.find(f => f.FieldKey === field.FieldKey);
 
       if (!existingField) {
@@ -111,6 +121,7 @@ export class FieldMapper {
       const systemField = getSystemField(row.FieldKey);
       return {
         ItemId: row.ItemId,
+        ManifestId: row.ManifestId,
         FieldKey: row.FieldKey,
         Label: row.FieldKey, // Use FieldKey as label; UI layer translates via fieldLabels.*
         FieldType: systemField?.FieldType || FieldTypes.Text,
@@ -124,6 +135,7 @@ export class FieldMapper {
       // Custom field: has FieldDefinitionId, get metadata from FieldDefinitions
       return {
         ItemId: row.ItemId,
+        ManifestId: row.ManifestId,
         FieldKey: row.FieldDefinitionId || '', // Use FieldDefinitionId (UUID) as the key for custom fields
         Label: row.CustomLabel || '',
         FieldType: row.CustomFieldType || FieldTypes.Text,
@@ -142,7 +154,7 @@ export class FieldMapper {
    * @param rows - Raw field rows for a single item
    * @returns Array of ItemField objects
    */
-  public static processFieldRowsForSingleItem(rows: Omit<FieldRow, 'ItemId'>[]): ItemField[] {
+  public static processFieldRowsForSingleItem(rows: Omit<FieldRow, 'ItemId' | 'ManifestId'>[]): ItemField[] {
     const fieldValuesByKey = new Map<string, string[]>();
     const uniqueFields = new Map<string, {
       FieldKey: string;

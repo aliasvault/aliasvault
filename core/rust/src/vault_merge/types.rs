@@ -1,18 +1,21 @@
 //! Common types used across the AliasVault core library.
 
+use crate::vault_codec::MANIFEST_ID_COL;
+
 /// Configuration for a syncable table.
 #[derive(Debug, Clone)]
 pub struct TableConfig {
     /// Table name in the database
     pub name: &'static str,
     /// Columns to use for composite key matching (if any).
-    /// When empty, uses "Id" column for matching.
+    /// When empty, matching falls back to the table's [`identity_columns`](TableConfig::identity_columns).
     /// When set, these columns are concatenated to form the composite key.
     pub composite_key_columns: &'static [&'static str],
-    /// The single-column primary key used to address a row in generated UPDATE statements
-    /// (the WHERE clause) and to identify local rows. Defaults to "Id"; tables whose primary
-    /// key is a different column (e.g. Settings keyed by "Key") override this.
+    /// The column that names a row within its manifest. Defaults to "Id"; tables keyed by a
+    /// different column (e.g. Settings keyed by "Key") override this.
     pub primary_key: &'static str,
+    /// True when the table's rows are namespaced per manifest.
+    pub manifest_scoped: bool,
 }
 
 impl TableConfig {
@@ -21,6 +24,7 @@ impl TableConfig {
             name,
             composite_key_columns: &[],
             primary_key: "Id",
+            manifest_scoped: false,
         }
     }
 
@@ -34,27 +38,43 @@ impl TableConfig {
         self
     }
 
+    pub const fn manifest_scoped(mut self) -> Self {
+        self.manifest_scoped = true;
+        self
+    }
+
     /// Returns true if this table uses composite key matching.
     pub const fn uses_composite_key(&self) -> bool {
         !self.composite_key_columns.is_empty()
     }
+
+    /// The columns that together identify one row of this table: `(ManifestId, primary_key)` for a
+    /// manifest-scoped table, the primary key alone otherwise. This is what a generated UPDATE
+    /// addresses a row by, so it must match the table's declared PRIMARY KEY.
+    pub fn identity_columns(&self) -> Vec<&'static str> {
+        if self.manifest_scoped {
+            vec![MANIFEST_ID_COL, self.primary_key]
+        } else {
+            vec![self.primary_key]
+        }
+    }
 }
 
 /// All tables that need LWW merge.
-/// Allows for specifying optional (custom) composite key columns and primary key columns for each table.
+/// Allows for specifying manifest_scoped(), custom composite key columns and primary key columns for each table.
 pub static SYNCABLE_TABLES: &[TableConfig] = &[
-    TableConfig::new("Items"),
-    TableConfig::new("FieldValues").with_composite_key(&["ItemId", "FieldKey"]),
-    TableConfig::new("Folders"),
-    TableConfig::new("Tags"),
-    TableConfig::new("ItemTags"),
-    TableConfig::new("Attachments"),
-    TableConfig::new("TotpCodes"),
-    TableConfig::new("Passkeys"),
-    TableConfig::new("FieldDefinitions"),
-    TableConfig::new("FieldHistories"),
-    TableConfig::new("Logos"),
-    TableConfig::new("EncryptionKeys"),
+    TableConfig::new("Items").manifest_scoped(),
+    TableConfig::new("FieldValues").manifest_scoped().with_composite_key(&[MANIFEST_ID_COL, "ItemId", "FieldKey"]),
+    TableConfig::new("Folders").manifest_scoped(),
+    TableConfig::new("Tags").manifest_scoped(),
+    TableConfig::new("ItemTags").manifest_scoped(),
+    TableConfig::new("Attachments").manifest_scoped(),
+    TableConfig::new("TotpCodes").manifest_scoped(),
+    TableConfig::new("Passkeys").manifest_scoped(),
+    TableConfig::new("FieldDefinitions").manifest_scoped(),
+    TableConfig::new("FieldHistories").manifest_scoped(),
+    TableConfig::new("Logos").manifest_scoped(),
+    TableConfig::new("EncryptionKeys").manifest_scoped(),
     TableConfig::new("Settings").with_primary_key("Key"),
 ];
 

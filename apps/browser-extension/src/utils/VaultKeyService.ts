@@ -106,6 +106,13 @@ export class VaultKeyService {
    * @param derivedKeyBase64 - the password-derived key
    * @throws Error with {@link AppErrorCode.VAULT_DECRYPT_FAILED} when decryption fails (wrong password).
    */
+  public static async resolveEncryptionKeyOffline(derivedKeyBase64: string): Promise<string> {
+    return (await VaultKeyService.resolveFromLocalCache(derivedKeyBase64)).encryptionKey;
+  }
+
+  /**
+   * Drop the cached vault-key response so the next resolve re-fetches it from the server.
+   */
   public static clearCache(): void {
     cachedVaultKey = null;
   }

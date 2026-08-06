@@ -13,6 +13,7 @@ mod hash;
 mod manifest;
 mod materialize;
 mod scoped_assets;
+mod legacy;
 mod sharing;
 mod types;
 mod validate;
@@ -26,8 +27,9 @@ use crate::error::{VaultError, VaultResult};
 pub use hash::{canonical_json, content_hash};
 pub use manifest::{
     BlobEntry, BucketLayoutEntry, CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecOverflow, DataBucket,
-    Manifest, ManifestEntry, MaterializeInput, MaterializedTables, CodecRecord, CodecTableData, ManifestSpec,
+    Manifest, MaterializeInput, MaterializedTables, CodecRecord, CodecTableData, ManifestSpec,
 };
+pub use legacy::stamp_backfill::{backfill_manifest_stamps, count_unstamped_rows, stamped_tables, StampBackfillInput, StampBackfillOutput};
 pub use scoped_assets::{KIND_BUILTIN as LOGO_KIND_BUILTIN, KIND_CUSTOM as LOGO_KIND_CUSTOM, KIND_FAVICON as LOGO_KIND_FAVICON};
 pub use sharing::{active_encryption_key, extract_encryption_key_for_public_key};
 pub use types::{
@@ -50,11 +52,11 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     materialize::materialize_as_sqlite(input)
 }
 
-/// Build the `category` data bucket owned by `manifest_id` from its tables (bucket-only push path).
+/// Build the `category` data bucket from its tables (bucket-only push path).
 /// Include the [`OVERFLOW_TABLE`] row in `tables` (read it alongside the bucket's tables) so a newer
 /// writer's columns/tables re-merge and survive; it is consumed and never emitted into the bucket.
-pub fn extract_bucket(manifest_id: String, category: String, tables: std::collections::HashMap<String, Vec<CodecRecord>>) -> DataBucket {
-    canonicalize::extract_bucket(manifest_id, category, tables)
+pub fn extract_bucket(category: String, tables: std::collections::HashMap<String, Vec<CodecRecord>>) -> DataBucket {
+    canonicalize::extract_bucket(category, tables)
 }
 
 /// The bucket layout: every category and the tables it owns, in declaration order.
@@ -213,19 +215,23 @@ pub fn materialize_as_sqlite_json(input_json: &str) -> VaultResult<String> {
 }
 
 /// JSON-string sibling of [`extract_bucket`].
-/// Input: `{ "manifestId": <str>, "category": <str>, "tables": { <name>: [rows] } }`.
+/// Input: `{ "category": <str>, "tables": { <name>: [rows] } }`.
 pub fn extract_bucket_json(input_json: &str) -> VaultResult<String> {
     #[derive(serde::Deserialize)]
     #[serde(rename_all = "camelCase")]
     struct Input {
-        #[serde(default)]
-        manifest_id: String,
         category: String,
         #[serde(default)]
         tables: std::collections::HashMap<String, Vec<CodecRecord>>,
     }
     let input: Input = serde_json::from_str(input_json)?;
-    Ok(serde_json::to_string(&extract_bucket(input.manifest_id, input.category, input.tables))?)
+    Ok(serde_json::to_string(&extract_bucket(input.category, input.tables))?)
+}
+
+/// JSON-string sibling of [`backfill_manifest_stamps`].
+pub fn backfill_manifest_stamps_json(input_json: &str) -> VaultResult<String> {
+    let input: StampBackfillInput = serde_json::from_str(input_json)?;
+    Ok(serde_json::to_string(&backfill_manifest_stamps(input))?)
 }
 
 /// JSON-string sibling of [`bucket_layout`]. Output: `[{ "category": <str>, "tables": [<str>] }]`.

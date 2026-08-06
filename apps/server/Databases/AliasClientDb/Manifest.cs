@@ -10,11 +10,8 @@ namespace AliasClientDb;
 using System.ComponentModel.DataAnnotations;
 
 /// <summary>
-/// Local bookkeeping: one row per manifest this vault is materialized from, written by the Rust codec
-/// on every materialize (and by the app at fresh-vault creation for the root row). Never synced — the
-/// codec treats it as a skip-table and derives it from the manifest set — it exists so queries can
-/// resolve "the root manifest id" (WHERE IsRoot = 1) without a NULL-scope convention, and so every
-/// stamped row's ManifestId terminates at a real parent row.
+/// Local bookkeeping: one row per manifest this vault is materialized from filled by the
+/// Rust codec on every materialize.
 /// </summary>
 public class Manifest
 {
@@ -25,14 +22,7 @@ public class Manifest
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether this is the vault's root (personal) manifest.
+    /// Gets or sets the display name of this manifest, or null when it has none.
     /// </summary>
-    public bool IsRoot { get; set; }
-
-    /// <summary>
-    /// Gets or sets the folder this manifest is anchored at (a shared manifest's anchor folder), or null
-    /// for the root manifest. Presentation and routing hint only — the manifest's identity is
-    /// <see cref="Id"/>.
-    /// </summary>
-    public Guid? AnchorFolderId { get; set; }
+    public string? Name { get; set; }
 }

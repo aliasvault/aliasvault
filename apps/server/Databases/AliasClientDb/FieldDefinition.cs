@@ -17,7 +17,7 @@ using AliasClientDb.Abstracts;
 /// This table is ONLY for custom fields that users create themselves.
 /// Custom fields are always referenced by their GUID (Id), never by FieldKey.
 /// </summary>
-public class FieldDefinition : SyncableEntity
+public class FieldDefinition : ManifestScopedEntity
 {
     /// <summary>
     /// Gets or sets the field definition ID.

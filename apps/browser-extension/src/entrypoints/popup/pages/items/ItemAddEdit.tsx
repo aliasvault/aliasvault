@@ -30,6 +30,7 @@ import useFormPersistence from '@/entrypoints/popup/hooks/useFormPersistence';
 import useServiceDetection from '@/entrypoints/popup/hooks/useServiceDetection';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
+import type { Folder } from '@/utils/db/repositories/FolderRepository';
 import type { Item, ItemField, ItemType, FieldType, Attachment, TotpCode, PasswordSettings, LogoSelection } from '@/utils/dist/core/models/vault';
 import { FieldCategories, FieldTypes, LogoKinds, ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType } from '@/utils/dist/core/models/vault';
 import { FaviconService } from '@/utils/FaviconService';
@@ -40,6 +41,7 @@ import * as RustCore from '@/utils/RustCore';
 import SqliteClient from '@/utils/SqliteClient';
 
 import { browser } from '#imports';
+import type { DraftItem } from '@/utils/db/ItemRef';
 
 // Valid item types from the shared model
 const VALID_ITEM_TYPES: ItemType[] = [ItemTypes.Login, ItemTypes.Alias, ItemTypes.CreditCard, ItemTypes.Note];
@@ -101,7 +103,8 @@ const ItemAddEdit: React.FC = () => {
   const [localLoading, setLocalLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [item, setItem] = useState<Item | null>(null);
+  // A draft until the vault writes it: a new item's manifest follows from the folder it lands in.
+  const [item, setItem] = useState<DraftItem | null>(null);
 
   // Form state for dynamic fields
   const [fieldValues, setFieldValues] = useState<Record<string, string | string[]>>({});
@@ -110,7 +113,7 @@ const ItemAddEdit: React.FC = () => {
   const [customFields, setCustomFields] = useState<CustomFieldDefinition[]>([]);
 
   // Folder selection state
-  const [folders, setFolders] = useState<Array<{ Id: string; Name: string }>>([]);
+  const [folders, setFolders] = useState<Folder[]>([]);
 
   // Alternative service-name suggestions (create mode) derived from the page title/domain.
   const [suggestedNames, setSuggestedNames] = useState<string[]>([]);
@@ -352,7 +355,7 @@ const ItemAddEdit: React.FC = () => {
         setSuggestedNames(detectedSuggestedNames);
 
         // Create the new item with detected values
-        const newItem: Item = {
+        const newItem: DraftItem = {
           Id: crypto.randomUUID().toUpperCase(),
           Name: serviceName,
           ItemType: effectiveType,

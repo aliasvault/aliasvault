@@ -79,7 +79,7 @@ const LogoPickerModal: React.FC<LogoPickerModalProps> = ({ isOpen, onClose, curr
 
     try {
       await executeVaultMutationAsync(async () => {
-        dbContext.sqliteClient!.logos.softDelete(logoId, new Date().toISOString());
+        dbContext.sqliteClient!.logos.deleteById(logoId, new Date().toISOString());
       });
       setLibrary(dbContext.sqliteClient.logos.listCustom());
     } catch (error) {

@@ -8,18 +8,16 @@
 namespace AliasClientDb;
 
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using AliasClientDb.Abstracts;
 
 /// <summary>
 /// Attachment entity.
 /// </summary>
-public class Attachment : SyncableEntity
+public class Attachment : ManifestScopedEntity
 {
     /// <summary>
     /// Gets or sets the attachment primary key.
     /// </summary>
-    [Key]
     public Guid Id { get; set; }
 
     /// <summary>
@@ -41,6 +39,5 @@ public class Attachment : SyncableEntity
     /// <summary>
     /// Gets or sets the item navigation property.
     /// </summary>
-    [ForeignKey("ItemId")]
     public virtual Item Item { get; set; } = null!;
 }

@@ -18,6 +18,7 @@ export type ItemType = typeof ItemTypes[keyof typeof ItemTypes];
  */
 export type Item = {
     Id: string;
+    ManifestId: string;
     Name: string | null;
     ItemType: ItemType;
     Logo?: Uint8Array | number[];
