@@ -89,7 +89,7 @@
     <comment>Label for gender field</comment>
   </data>
   <data name="FieldLabel_alias_birthdate" xml:space="preserve">
-    <value>Birth Date</value>
+    <value>Tanggal Lahir</value>
     <comment>Label for birthdate field</comment>
   </data>
   <!-- Card Field Labels -->
