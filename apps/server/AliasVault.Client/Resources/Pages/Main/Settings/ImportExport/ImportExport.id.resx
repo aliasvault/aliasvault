@@ -63,93 +63,93 @@
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>On this page you can import and export your vault.</value>
+    <value>Di halaman ini, Anda dapat mengimpor dan mengekspor vault Anda.</value>
     <comment>Page description</comment>
   </data>
   <data name="ImportSectionTitle" xml:space="preserve">
-    <value>Import passwords</value>
+    <value>Impor kata sandi</value>
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Select a service to import from.</value>
+    <value>Pilih layanan yang akan dijadikan sumber impor.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
-    <value>Export vault</value>
+    <value>Ekspor Brankas</value>
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Export your vault to move credentials between AliasVault servers or to another password manager.</value>
+    <value>Ekspor vault Anda untuk memindahkan kredensial antar server AliasVault atau ke pengelola kata sandi lainnya.</value>
     <comment>Export section description</comment>
   </data>
   <data name="RecommendedLabel" xml:space="preserve">
-    <value>Recommended</value>
+    <value>Direkomendasikan</value>
     <comment>Label for recommended option</comment>
   </data>
   <data name="ExportAvexTitle" xml:space="preserve">
-    <value>Encrypted full vault export</value>
+    <value>Ekspor seluruh brankas yang terenkripsi</value>
     <comment>Title for encrypted export option</comment>
   </data>
   <data name="ExportAvexDescription" xml:space="preserve">
-    <value>Password-protected backup of your entire vault. Includes all items, passkeys, and attachments. Use as manual backup and/or to restore to another AliasVault server.</value>
+    <value>Cadangan seluruh vault Anda yang dilindungi kata sandi. Termasuk semua item, kunci akses, dan lampiran. Gunakan sebagai cadangan manual dan/atau untuk memulihkan data ke server AliasVault lainnya.</value>
     <comment>Description for encrypted export option</comment>
   </data>
   <data name="ExportAvuxTitle" xml:space="preserve">
-    <value>Unencrypted full vault export</value>
+    <value>Ekspor seluruh brankas yang tidak terenkripsi</value>
     <comment>Title for unencrypted full export option</comment>
   </data>
   <data name="ExportAvuxDescription" xml:space="preserve">
-    <value>Complete vault export as unencrypted ZIP-compatible archive. Includes all items, passkeys and attachments.</value>
+    <value>Ekspor seluruh isi brankas sebagai arsip yang kompatibel dengan ZIP dan tidak terenkripsi. Termasuk semua item, kunci akses, dan lampiran.</value>
     <comment>Description for unencrypted full export option</comment>
   </data>
   <data name="ExportCsvTitle" xml:space="preserve">
-    <value>CSV export</value>
+    <value>Ekspor CSV</value>
     <comment>Title for CSV export option</comment>
   </data>
   <data name="ExportCsvDescription" xml:space="preserve">
-    <value>Basic export for importing into other password managers. Does not include passkeys or attachments.</value>
+    <value>Ekspor dasar untuk diimpor ke pengelola kata sandi lainnya. Tidak mencakup passkey atau lampiran.</value>
     <comment>Description for CSV export option</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>Export to CSV</value>
+    <value>Ekspor ke CSV</value>
     <comment>Button to export as CSV</comment>
   </data>
   <data name="ExportAvuxButton" xml:space="preserve">
-    <value>Export unencrypted vault (.avux)</value>
+    <value>Ekspor brankas yang tidak terenkripsi (.avux)</value>
     <comment>Button to export full vault as .avux archive</comment>
   </data>
   <data name="ExportingVaultMessage" xml:space="preserve">
-    <value>Exporting vault...</value>
+    <value>Mengekspor Brankas...</value>
     <comment>Message shown while exporting vault</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
-    <value>Export vault</value>
+    <value>Ekspor Brankas</value>
     <comment>Export confirmation dialog title</comment>
   </data>
   <data name="ExportWarningMessage" xml:space="preserve">
-    <value>Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted computers and ensure you:
+    <value>Peringatan: Mengekspor vault Anda ke berkas yang tidak terenkripsi akan membuat semua kata sandi dan informasi sensitif Anda terpapar dalam bentuk teks biasa. Lakukan hal ini hanya pada komputer yang tepercaya dan pastikan Anda:
 
-• Store the exported file in a secure location
-• Delete the file when you no longer need it
-• Never share the exported file with others
+• Menyimpan berkas hasil ekspor di lokasi yang aman
+• Menghapus berkas tersebut saat Anda tidak lagi membutuhkannya
+• Jangan pernah membagikan berkas hasil ekspor kepada orang lain
 
-Are you sure you want to continue with the export?</value>
+Apakah Anda yakin ingin melanjutkan proses ekspor?</value>
     <comment>Export warning confirmation message</comment>
   </data>
   <data name="ResetVaultSectionTitle" xml:space="preserve">
-    <value>Setel ulang brankas</value>
+    <value>Reset brankas</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="ResetVaultSectionDescription" xml:space="preserve">
-    <value>Opsi ini memungkinkan Kamu untuk mengosongkan brankas sepenuhnya sambil tetap mempertahankan akun dan alias email Kamu. Gunakan ini jika Kamu ingin memulai dari awal setelah mengimpor data dari pengelola kata sandi lain atau jika Kamu ingin menghapus semua kredensial yang ada untuk memulai dari awal.</value>
+    <value>Opsi ini memungkinkan Anda untuk mengosongkan brankas Anda sepenuhnya sambil tetap mempertahankan akun dan alias email Anda. Gunakan opsi ini jika Anda ingin memulai dari awal setelah mengimpor data dari pengelola kata sandi lain, atau jika Anda ingin menghapus semua kredensial yang ada untuk memulai dari awal.</value>
     <comment>Reset vault section description</comment>
   </data>
   <data name="ExportPasswordConfirmTitle" xml:space="preserve">
-    <value>Confirm Export</value>
+    <value>Konfirmasi ekspor</value>
     <comment>Title for password confirmation modal during export</comment>
   </data>
   <data name="ExportPasswordConfirmDescription" xml:space="preserve">
-    <value>For security reasons, please enter your master password to confirm this export.</value>
+    <value>Demi alasan keamanan, silakan masukkan kata sandi utama Anda untuk mengonfirmasi proses ekspor ini.</value>
     <comment>Description for password confirmation modal during export</comment>
   </data>
   <data name="VerifyingPasswordMessage" xml:space="preserve">
@@ -165,25 +165,25 @@ Are you sure you want to continue with the export?</value>
     <comment>Generic error message for password verification failure</comment>
   </data>
   <data name="ExportAvexButton" xml:space="preserve">
-    <value>Export encrypted vault (.avex)</value>
+    <value>Ekspor brankas yang terenkripsi (.avux)</value>
     <comment>Button to export encrypted vault as .avex archive</comment>
   </data>
   <data name="ExportEncryptedWarningMessage" xml:space="preserve">
-    <value>This will create an encrypted export of your entire vault. You will need to provide a password to encrypt the export file.
+    <value>Tindakan ini akan membuat salinan ekspor terenkripsi dari seluruh vault Anda. Anda harus memasukkan kata sandi untuk mengenkripsi berkas ekspor tersebut.
 
-Are you sure you want to continue?</value>
+Apakah Anda yakin ingin melanjutkan?</value>
     <comment>Warning message for encrypted export confirmation</comment>
   </data>
   <data name="ExportEncryptedPasswordTitle" xml:space="preserve">
-    <value>Set Export Password</value>
+    <value>Atur Kata sandi ekspor</value>
     <comment>Title for export password modal</comment>
   </data>
   <data name="ExportEncryptedPasswordDescription" xml:space="preserve">
-    <value>Choose a strong, unique password to encrypt this export. This password is required to decrypt the export. If you lose this password, you will not be able to recover the exported data.</value>
+    <value>Pilih kata sandi yang kuat dan unik untuk mengenkripsi ekspor ini. Kata sandi ini diperlukan untuk mendekripsi ekspor tersebut. Jika Anda kehilangan kata sandi ini, Anda tidak akan dapat memulihkan data yang diekspor.</value>
     <comment>Description for export password modal with security warning</comment>
   </data>
   <data name="ExportSuccessMessage" xml:space="preserve">
-    <value>Your vault has been exported successfully.</value>
+    <value>Brankas Anda telah diekspor dengan sukses.</value>
     <comment>Success message after vault export completes</comment>
   </data>
 </root>
