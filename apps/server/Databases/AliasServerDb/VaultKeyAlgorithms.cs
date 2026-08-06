@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="VaultKeyAlgorithms.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -13,26 +13,60 @@ namespace AliasServerDb;
 public static class VaultKeyAlgorithms
 {
     /// <summary>
-    /// The token for <see cref="VaultKeyAlgorithm.Aes256Gcm"/>.
+    /// Every algorithm this build supports.
     /// </summary>
-    public const string Aes256GcmToken = "aes256-gcm";
+    private static readonly VaultKeyAlgorithmDefinition[] Definitions =
+    [
+        new VaultKeyAlgorithmDefinition
+        {
+            Algorithm = VaultKeyAlgorithm.Aes256Gcm,
+            Token = "aes256-gcm",
+            IsAsymmetric = false,
+        },
+        new VaultKeyAlgorithmDefinition
+        {
+            Algorithm = VaultKeyAlgorithm.RsaOaepSha256,
+            Token = "rsa-oaep-sha256",
+            IsAsymmetric = true,
+        },
+    ];
+
+    private static readonly Dictionary<VaultKeyAlgorithm, VaultKeyAlgorithmDefinition> ByAlgorithm = Definitions.ToDictionary(x => x.Algorithm);
+    private static readonly Dictionary<string, VaultKeyAlgorithmDefinition> ByToken = Definitions.ToDictionary(x => x.Token, StringComparer.Ordinal);
 
     /// <summary>
-    /// The token for <see cref="VaultKeyAlgorithm.RsaOaepSha256"/>.
+    /// Initializes static members of the <see cref="VaultKeyAlgorithms"/> class.
     /// </summary>
-    public const string RsaOaepSha256Token = "rsa-oaep-sha256";
+    static VaultKeyAlgorithms()
+    {
+        var undefined = Enum.GetValues<VaultKeyAlgorithm>().Where(x => !ByAlgorithm.ContainsKey(x)).ToList();
+        if (undefined.Count > 0)
+        {
+            throw new InvalidOperationException($"Vault key algorithm(s) without a definition: {string.Join(", ", undefined)}.");
+        }
+    }
+
+    /// <summary>
+    /// Returns the definition of an algorithm.
+    /// </summary>
+    /// <param name="algorithm">The algorithm to look up.</param>
+    /// <returns>The definition.</returns>
+    public static VaultKeyAlgorithmDefinition GetDefinition(VaultKeyAlgorithm algorithm)
+    {
+        if (!ByAlgorithm.TryGetValue(algorithm, out var definition))
+        {
+            throw new ArgumentOutOfRangeException(nameof(algorithm), algorithm, "Unknown vault key algorithm.");
+        }
+
+        return definition;
+    }
 
     /// <summary>
     /// Returns the token for an algorithm.
     /// </summary>
     /// <param name="algorithm">The algorithm to convert.</param>
     /// <returns>The token.</returns>
-    public static string ToToken(VaultKeyAlgorithm algorithm) => algorithm switch
-    {
-        VaultKeyAlgorithm.Aes256Gcm => Aes256GcmToken,
-        VaultKeyAlgorithm.RsaOaepSha256 => RsaOaepSha256Token,
-        _ => throw new ArgumentOutOfRangeException(nameof(algorithm), algorithm, "Unknown vault key algorithm."),
-    };
+    public static string ToToken(VaultKeyAlgorithm algorithm) => GetDefinition(algorithm).Token;
 
     /// <summary>
     /// Parses a token.
@@ -42,18 +76,14 @@ public static class VaultKeyAlgorithms
     /// <returns>True when the token names an algorithm this build supports.</returns>
     public static bool TryParse(string? token, out VaultKeyAlgorithm algorithm)
     {
-        switch (token)
+        if (token is null || !ByToken.TryGetValue(token, out var definition))
         {
-            case Aes256GcmToken:
-                algorithm = VaultKeyAlgorithm.Aes256Gcm;
-                return true;
-            case RsaOaepSha256Token:
-                algorithm = VaultKeyAlgorithm.RsaOaepSha256;
-                return true;
-            default:
-                algorithm = default;
-                return false;
+            algorithm = default;
+            return false;
         }
+
+        algorithm = definition.Algorithm;
+        return true;
     }
 
     /// <summary>
@@ -72,10 +102,9 @@ public static class VaultKeyAlgorithms
     }
 
     /// <summary>
-    /// Whether an algorithm encrypts to a public key, i.e. is valid on a <see cref="ManifestKeyType.GrantKey"/> grant. A
-    /// symmetric algorithm there would mean the sharer and the recipient share a secret, which they never do.
+    /// Whether an algorithm encrypts to a public key, i.e. is valid on a <see cref="ManifestKeyType.GrantKey"/> grant.
     /// </summary>
     /// <param name="algorithm">The algorithm to check.</param>
     /// <returns>True for asymmetric algorithms.</returns>
-    public static bool IsAsymmetric(VaultKeyAlgorithm algorithm) => algorithm == VaultKeyAlgorithm.RsaOaepSha256;
+    public static bool IsAsymmetric(VaultKeyAlgorithm algorithm) => GetDefinition(algorithm).IsAsymmetric;
 }
