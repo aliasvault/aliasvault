@@ -17,7 +17,7 @@
     "copied": "Telah disalin ke papan klip",
     "loadMore": "Muat lebih banyak",
     "use": "Gunakan",
-    "none": "None",
+    "none": "Tidak ada",
     "confirm": "Konfirmasi",
     "next": "Berikutnya",
     "notice": "Perhatian",
@@ -182,8 +182,8 @@
     "disableBatteryOptimization": "Nonaktifkan optimasi baterai",
     "identityGenerator": "Pembuat identitas",
     "passwordGenerator": "Pembuat Kata Sandi",
-    "importExport": "Import / Export",
-    "importSectionTitle": "Import",
+    "importExport": "Impor / Ekspor",
+    "importSectionTitle": "Impor",
     "importSectionDescription": "Impor kata sandi Anda dari pengelola kata sandi lain atau dari file ekspor AliasVault sebelumnya.",
     "importWebNote": "Untuk mengimpor kredensial dari pengelola kata sandi yang sudah ada, silakan masuk ke aplikasi web. Fitur impor saat ini hanya tersedia di versi web.",
     "exportSectionTitle": "Ekspor",
@@ -254,7 +254,7 @@
     },
     "passwordGeneratorSettings": {
       "description": "Konfigurasikan pengaturan default yang digunakan saat membuat kata sandi baru. Pengaturan ini akan diterapkan pada semua kata sandi baru, kecuali jika diganti untuk entri tertentu.",
-      "preview": "Preview"
+      "preview": "Pratinjau"
     },
     "securitySettings": {
       "title": "Keamanan",
@@ -355,10 +355,10 @@
       "cardInformation": "Informasi kartu"
     },
     "note": {
-      "title": "Note"
+      "title": "Catatan"
     },
     "addField": "Tambah kolom",
-    "addCustomField": "Add Custom Field",
+    "addCustomField": "Tambah Kolom Khusus",
     "customFields": "Kolom Kustom",
     "fieldLabel": "Bidang Label",
     "fieldType": "Tipe Field",
@@ -366,7 +366,7 @@
     "fieldTypes": {
       "text": "Teks",
       "password": "Kata sandi",
-      "hidden": "Hidden",
+      "hidden": "Tersembunyi",
       "email": "Email",
       "url": "URL",
       "phone": "Telepon",
@@ -565,7 +565,7 @@
       "deleteFolderAndItems": "Hapus folder dan semua item",
       "deleteFolderAndItemsDescription": "Sebanyak {{count}} item akan dipindahkan ke Baru Dihapus.",
       "emptyFolderHint": "Folder ini kosong. Untuk memindahkan item ke folder ini, edit item tersebut dan pilih folder ini.",
-      "selectFolder": "Select Folder"
+      "selectFolder": "Pilih Folder"
     },
     "recentlyDeleted": {
       "title": "Baru-baru ini dihapus",
