@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Import / Export</value>
+    <value>Impor / Ekspor</value>
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
@@ -157,11 +157,11 @@ Are you sure you want to continue with the export?</value>
     <comment>Message shown while verifying password</comment>
   </data>
   <data name="PasswordIncorrect" xml:space="preserve">
-    <value>The password you entered is incorrect. Please try again.</value>
+    <value>Kata sandi yang Anda masukkan salah. Silahkan coba lagi.</value>
     <comment>Error message when password verification fails</comment>
   </data>
   <data name="PasswordVerificationFailed" xml:space="preserve">
-    <value>An error occurred while verifying your password. Please try again.</value>
+    <value>Terjadi kesalahan saat memverifikasi kata sandi Anda. Silakan coba lagi.</value>
     <comment>Generic error message for password verification failure</comment>
   </data>
   <data name="ExportAvexButton" xml:space="preserve">
