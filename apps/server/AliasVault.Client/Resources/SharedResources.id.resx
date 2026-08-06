@@ -147,7 +147,7 @@
     <comment>Button text for editing an item</comment>
   </data>
   <data name="Duplicate" xml:space="preserve">
-    <value>Duplicate</value>
+    <value>Duplikasi</value>
     <comment>Button text for duplicating an item</comment>
   </data>
   <data name="DuplicateSuccessMessage" xml:space="preserve">
@@ -159,7 +159,7 @@
     <comment>Error message shown when duplicating an item failed</comment>
   </data>
   <data name="ItemOptions" xml:space="preserve">
-    <value>Item options</value>
+    <value>Opsi Item</value>
     <comment>Accessible label for the ellipsis button that opens the item context menu</comment>
   </data>
   <data name="Show" xml:space="preserve">
