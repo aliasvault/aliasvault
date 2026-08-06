@@ -275,9 +275,6 @@ export type CodecSharedManifestSpec = { manifestId: string; anchorFolderId: stri
 /** One manifest of a materialize input. */
 export type CodecManifestEntry = { manifest: CodecManifest; isRoot: boolean };
 
-/** One shared manifest produced by the canonicalize split, with its own blob map. */
-export type CodecSharedVault = { anchorFolderId: string; manifest: CodecManifest; blobs: Record<string, CodecBlobEntry> };
-
 /**
  * A manifest-v1 data bucket.
  */
@@ -291,12 +288,17 @@ export type CodecDataBucket = {
 /** A decoded blob entry: kind + plaintext bytes (base64). */
 export type CodecBlobEntry = { kind: string; bytesBase64: string };
 
-/** Result of canonicalize: root manifest + data buckets + blob map + optional shared vaults. */
+/**
+ * One manifest produced by canonicaliz.
+ */
+export type CodecCanonicalizedManifest = CodecManifestEntry & { blobs: Record<string, CodecBlobEntry> };
+
+/**
+ * Result of canonicalize.
+ */
 export type CodecCanonicalized = {
-  manifest: CodecManifest;
+  manifests: CodecCanonicalizedManifest[];
   dataBuckets: CodecDataBucket[];
-  blobs: Record<string, CodecBlobEntry>;
-  sharedVaults?: CodecSharedVault[];
 };
 
 /**

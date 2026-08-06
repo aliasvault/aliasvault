@@ -18,7 +18,7 @@ use serde_json::json;
 
 use super::hash::salted_blob_hash;
 use super::scoped_assets::{normalize_logo_scope, reconcile_logo_references};
-use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedVault, CodecOverflow, DataBucket, Manifest, CodecRecord, SharedVault};
+use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecOverflow, DataBucket, Manifest, CodecRecord};
 use super::materialize::row_key;
 use super::sharing::partition_for_sharing;
 use super::types::{blob_spec_for, bucket_categories, bucket_category_for, is_skip_table, primary_key_for, OVERFLOW_TABLE, SCHEMA_VERSION};
@@ -106,8 +106,24 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         }
     }
 
+    // Start with the root manifest.
+    let mut manifests: Vec<CanonicalizedManifest> = Vec::with_capacity(1 + shared_partitions.len());
+    manifests.push(CanonicalizedManifest {
+        manifest: Manifest {
+            schema_version: SCHEMA_VERSION,
+            migration_id: input.migration_id.clone(),
+            user_salt: input.user_salt,
+            canonicalized_at: input.canonicalized_at.clone(),
+            manifest_id: input.root_manifest_id,
+            anchor_folder_id: None,
+            tables: manifest_tables,
+            extra: HashMap::new(),
+        },
+        is_root: true,
+        blobs,
+    });
+
     // Each shared partition becomes its own manifest, its blobs hashed with its own per-manifest salt.
-    let mut shared_vaults: Vec<SharedVault> = Vec::with_capacity(shared_partitions.len());
     for partition in shared_partitions {
         let mut shared_blobs: HashMap<String, BlobEntry> = HashMap::new();
         let shared_tables: HashMap<String, Vec<CodecRecord>> = partition
@@ -118,8 +134,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
                 (name, out_rows)
             })
             .collect();
-        shared_vaults.push(SharedVault {
-            anchor_folder_id: partition.anchor_folder_id.clone(),
+        manifests.push(CanonicalizedManifest {
             manifest: Manifest {
                 schema_version: SCHEMA_VERSION,
                 migration_id: input.migration_id.clone(),
@@ -130,20 +145,10 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
                 tables: shared_tables,
                 extra: HashMap::new(),
             },
+            is_root: false,
             blobs: shared_blobs,
         });
     }
-
-    let manifest = Manifest {
-        schema_version: SCHEMA_VERSION,
-        migration_id: input.migration_id,
-        user_salt: input.user_salt,
-        canonicalized_at: input.canonicalized_at,
-        manifest_id: input.root_manifest_id,
-        anchor_folder_id: None,
-        tables: manifest_tables,
-        extra: HashMap::new(),
-    };
 
     // Deterministic bucket order (HashMap iteration is unordered) so canonicalize is reproducible.
     let mut data_buckets: Vec<DataBucket> = bucketed
@@ -152,12 +157,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         .collect();
     data_buckets.sort_by(|a, b| a.category.cmp(&b.category));
 
-    Ok(CanonicalizedVault {
-        manifest,
-        data_buckets,
-        blobs,
-        shared_vaults,
-    })
+    Ok(CanonicalizedVault { manifests, data_buckets })
 }
 
 /// Extract `table`'s blob column (if it owns one) into `blobs`, returning the rewritten rows.

@@ -87,29 +87,39 @@ pub struct SharedManifestSpec {
     pub user_salt: String,
 }
 
-/// One shared manifest produced by the canonicalize split: the anchor folder it represents, the
-/// manifest carrying its subtree, and the blob map hashed with that manifest's own salt.
+/// One manifest produced by canonicalize.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SharedVault {
-    pub anchor_folder_id: String,
+pub struct CanonicalizedManifest {
     pub manifest: Manifest,
+    pub is_root: bool,
     /// hash > blob plaintext (base64), hashed with this manifest's salt.
     pub blobs: HashMap<String, BlobEntry>,
 }
 
-/// Result of canonicalizing a vault: the root manifest, its data buckets (one per category, e.g.
-/// Settings), the root content-addressed blob map, and one [`SharedVault`] per requested shared manifest.
+/// Result of canonicalizing a vault.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CanonicalizedVault {
-    pub manifest: Manifest,
+    pub manifests: Vec<CanonicalizedManifest>,
     pub data_buckets: Vec<DataBucket>,
-    /// hash > blob plaintext (base64).
-    pub blobs: HashMap<String, BlobEntry>,
-    /// One entry per [`CanonicalizeInput::shared_manifests`] spec, in spec order.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub shared_vaults: Vec<SharedVault>,
+}
+
+impl CanonicalizedVault {
+    /// The vault's root manifest. Canonicalize always emits exactly one, first in `manifests`.
+    pub fn root(&self) -> &CanonicalizedManifest {
+        self.manifests.iter().find(|m| m.is_root).expect("canonicalize always emits exactly one root manifest")
+    }
+
+    /// The non-root manifests, in the order their specs were passed to canonicalize.
+    pub fn shared(&self) -> Vec<&CanonicalizedManifest> {
+        self.manifests.iter().filter(|m| !m.is_root).collect()
+    }
+
+    /// Every manifest as a [`ManifestEntry`], ready to hand back to [`crate::vault_codec::materialize_as_sqlite`].
+    pub fn manifest_entries(&self) -> Vec<ManifestEntry> {
+        self.manifests.iter().map(|m| ManifestEntry { manifest: m.manifest.clone(), is_root: m.is_root }).collect()
+    }
 }
 
 /// A single table's rows for reassembly.

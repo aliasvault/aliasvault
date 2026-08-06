@@ -3,6 +3,7 @@ use super::*;
 use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
 use serde_json::json;
+use std::collections::{HashMap, HashSet};
 
 fn b64(bytes: &[u8]) -> String {
     BASE64.encode(bytes)
@@ -43,8 +44,8 @@ fn canonicalize_from_sqlite_splits_settings_into_data_bucket() {
         CodecTableData { name: "Settings".to_string(), records: vec![row(&[("Key", json!("k")), ("Value", json!("v"))])] },
     ]);
     let out = canonicalize_from_sqlite(input).unwrap();
-    assert!(out.manifest.tables.contains_key("Items"));
-    assert!(!out.manifest.tables.contains_key("Settings"));
+    assert!(out.root().manifest.tables.contains_key("Items"));
+    assert!(!out.root().manifest.tables.contains_key("Settings"));
     assert_eq!(bucket_rows(&out, "Settings", "Settings").len(), 1);
 }
 
@@ -74,10 +75,10 @@ fn canonicalize_from_sqlite_skips_internal_tables() {
         CodecTableData { name: "sqlite_sequence".to_string(), records: vec![] },
     ]);
     let out = canonicalize_from_sqlite(input).unwrap();
-    assert!(out.manifest.tables.contains_key("Items"));
-    assert!(!out.manifest.tables.contains_key("__EFMigrationsHistory"));
-    assert!(!out.manifest.tables.contains_key("android_metadata"));
-    assert!(!out.manifest.tables.contains_key("sqlite_sequence"));
+    assert!(out.root().manifest.tables.contains_key("Items"));
+    assert!(!out.root().manifest.tables.contains_key("__EFMigrationsHistory"));
+    assert!(!out.root().manifest.tables.contains_key("android_metadata"));
+    assert!(!out.root().manifest.tables.contains_key("sqlite_sequence"));
 }
 
 #[test]
@@ -88,12 +89,12 @@ fn canonicalize_from_sqlite_extracts_blob_columns_and_hashes() {
         records: vec![row(&[("Id", json!("l1")), ("FileData", json!({ "__b64": b64(&favicon) }))])],
     }]);
     let out = canonicalize_from_sqlite(input).unwrap();
-    assert_eq!(out.blobs.len(), 1);
-    let (hash, entry) = out.blobs.iter().next().unwrap();
+    assert_eq!(out.root().blobs.len(), 1);
+    let (hash, entry) = out.root().blobs.iter().next().unwrap();
     assert_eq!(entry.kind, "favicon");
     assert_eq!(hash, &hash::salted_blob_hash(&favicon, "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"));
 
-    let logos = &out.manifest.tables["Logos"][0];
+    let logos = &out.root().manifest.tables["Logos"][0];
     let cell = &logos["FileData"];
     assert_eq!(cell["__blobRef"], json!(hash));
     assert_eq!(cell["__blobKind"], json!("favicon"));
@@ -109,9 +110,9 @@ fn canonicalize_from_sqlite_nulls_empty_blob_cells() {
         ],
     }]);
     let out = canonicalize_from_sqlite(input).unwrap();
-    assert_eq!(out.blobs.len(), 0);
-    assert_eq!(out.manifest.tables["Attachments"][0]["Blob"], serde_json::Value::Null);
-    assert_eq!(out.manifest.tables["Attachments"][1]["Blob"], serde_json::Value::Null);
+    assert_eq!(out.root().blobs.len(), 0);
+    assert_eq!(out.root().manifest.tables["Attachments"][0]["Blob"], serde_json::Value::Null);
+    assert_eq!(out.root().manifest.tables["Attachments"][1]["Blob"], serde_json::Value::Null);
 }
 
 #[test]
@@ -123,10 +124,10 @@ fn inline_b64_columns_survive_roundtrip() {
         records: vec![row(&[("Id", json!("i1")), ("Secret", json!({ "__b64": b64(&secret) }))])],
     }]);
     let out = canonicalize_from_sqlite(input).unwrap();
-    let cell = &out.manifest.tables["Items"][0]["Secret"];
+    let cell = &out.root().manifest.tables["Items"][0]["Secret"];
     assert_eq!(cell["__b64"], json!(b64(&secret)));
 
-    let re = materialize_as_sqlite(materialize_input(out.manifest, vec![], out.data_buckets)).unwrap();
+    let re = materialize_as_sqlite(materialize_input(out.root().manifest.clone(), vec![], out.data_buckets)).unwrap();
     let items = re.tables.iter().find(|t| t.name == "Items").unwrap();
     assert_eq!(items.records[0]["Secret"]["__b64"], json!(b64(&secret)));
 }
@@ -139,7 +140,7 @@ fn materialize_as_sqlite_emits_settings_table_and_migration_id() {
         CodecTableData { name: "Settings".to_string(), records: vec![row(&[("Key", json!("k"))])] },
     ]);
     let out = canonicalize_from_sqlite(input).unwrap();
-    let re = materialize_as_sqlite(materialize_input(out.manifest, vec![], out.data_buckets)).unwrap();
+    let re = materialize_as_sqlite(materialize_input(out.root().manifest.clone(), vec![], out.data_buckets)).unwrap();
     assert_eq!(re.migration_id, "20250101000000_Init");
     assert!(re.tables.iter().any(|t| t.name == "Settings" && t.records.len() == 1));
     assert!(re.tables.iter().any(|t| t.name == "Items"));
@@ -150,7 +151,9 @@ fn materialize_as_sqlite_drops_skip_tables() {
     // A manifest carrying a platform bookkeeping table (android_metadata) must not be re-emitted.
     let mut manifest = canonicalize_from_sqlite(basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![] }]))
         .unwrap()
-        .manifest;
+        .root()
+        .manifest
+        .clone();
     manifest
         .tables
         .insert("android_metadata".to_string(), vec![row(&[("locale", json!("en_US"))])]);
@@ -169,9 +172,9 @@ fn full_roundtrip_with_blobs_is_semantically_equal() {
         CodecTableData { name: "Settings".to_string(), records: vec![row(&[("Key", json!("theme")), ("Value", json!("dark"))])] },
     ];
     let out = canonicalize_from_sqlite(basic_input(tables)).unwrap();
-    assert_eq!(out.blobs.len(), 2);
+    assert_eq!(out.root().blobs.len(), 2);
 
-    let re = materialize_as_sqlite(materialize_input(out.manifest.clone(), vec![], out.data_buckets.clone())).unwrap();
+    let re = materialize_as_sqlite(materialize_input(out.root().manifest.clone(), vec![], out.data_buckets.clone())).unwrap();
     // Items/Logos/Attachments/Settings all present (skip tables aside).
     for name in ["Items", "Logos", "Attachments", "Settings"] {
         assert!(re.tables.iter().any(|t| t.name == name), "missing table {name}");
@@ -231,7 +234,9 @@ fn validate_manifest_catches_broken_fk() {
         CodecTableData { name: "Folders".to_string(), records: vec![] },
     ]))
     .unwrap()
-    .manifest;
+    .root()
+    .manifest
+    .clone();
     manifest.tables.entry("Folders".to_string()).or_default();
     let result = validate_manifest(&manifest);
     assert!(!result.ok);
@@ -245,7 +250,9 @@ fn validate_manifest_ok_for_clean_vault() {
         CodecTableData { name: "Folders".to_string(), records: vec![row(&[("Id", json!("f1"))])] },
     ]))
     .unwrap()
-    .manifest;
+    .root()
+    .manifest
+    .clone();
     assert!(validate_manifest(&manifest).ok);
 }
 
@@ -299,20 +306,20 @@ fn canonicalize_remints_legacy_logo_ids_and_collapses_duplicate_sources() {
     .unwrap();
 
     let expected_id = json!(scoped_assets::logo_id_for(ROOT_MANIFEST, scoped_assets::KIND_FAVICON, "github.com"));
-    let logos = &out.manifest.tables["Logos"];
+    let logos = &out.root().manifest.tables["Logos"];
     assert_eq!(logos.len(), 1, "duplicate Source collapsed to one row");
     assert_eq!(logos[0]["Id"], expected_id, "id derived from (root manifest id, source)");
     assert_eq!(logos[0]["ManifestId"], json!(ROOT_MANIFEST), "root rows are stamped with the root manifest's own id");
     // The row carrying favicon bytes is the one that survived, not the empty one.
     assert!(logos[0]["FileData"].get("__blobRef").is_some());
 
-    let items = &out.manifest.tables["Items"];
+    let items = &out.root().manifest.tables["Items"];
     for item in items {
         assert_eq!(item["LogoId"], expected_id, "every Item repointed at the derived row");
     }
 
     // No orphan blob: exactly the survivor's favicon is registered.
-    assert_eq!(out.blobs.len(), 1);
+    assert_eq!(out.root().blobs.len(), 1);
 }
 
 #[test]
@@ -335,10 +342,10 @@ fn canonicalize_dedup_tiebreak_prefers_the_row_with_favicon_bytes() {
     ]))
     .unwrap();
 
-    let logos = &out.manifest.tables["Logos"];
+    let logos = &out.root().manifest.tables["Logos"];
     assert_eq!(logos.len(), 1, "duplicate Source collapsed to one row");
     assert_eq!(logos[0]["MimeType"], json!("image/png"), "the row with bytes supplies the surviving content");
-    assert_eq!(out.manifest.tables["Items"][0]["LogoId"], json!(scoped_assets::logo_id_for(ROOT_MANIFEST, scoped_assets::KIND_FAVICON, "github.com")));
+    assert_eq!(out.root().manifest.tables["Items"][0]["LogoId"], json!(scoped_assets::logo_id_for(ROOT_MANIFEST, scoped_assets::KIND_FAVICON, "github.com")));
 }
 
 #[test]
@@ -360,7 +367,7 @@ fn canonicalize_nulls_dangling_logo_reference() {
     ]))
     .unwrap();
 
-    let items = &out.manifest.tables["Items"];
+    let items = &out.root().manifest.tables["Items"];
     let i1 = items.iter().find(|r| r["Id"] == json!("i1")).unwrap();
     let i2 = items.iter().find(|r| r["Id"] == json!("i2")).unwrap();
     assert_eq!(i1["LogoId"], json!(scoped_assets::logo_id_for(ROOT_MANIFEST, scoped_assets::KIND_FAVICON, "github.com")), "valid reference follows the re-mint");
@@ -382,16 +389,16 @@ fn canonicalize_logo_normalization_is_idempotent() {
     .unwrap();
 
     // Feed the normalized rows back in (bytes restored, as the platform read would).
-    let mut logo_row = first.manifest.tables["Logos"][0].clone();
+    let mut logo_row = first.root().manifest.tables["Logos"][0].clone();
     logo_row.insert("FileData".to_string(), json!({ "__b64": b64(&favicon) }));
     let second = canonicalize_from_sqlite(basic_input(vec![
         CodecTableData { name: "Logos".to_string(), records: vec![logo_row] },
-        CodecTableData { name: "Items".to_string(), records: first.manifest.tables["Items"].clone() },
+        CodecTableData { name: "Items".to_string(), records: first.root().manifest.tables["Items"].clone() },
     ]))
     .unwrap();
 
-    assert_eq!(second.manifest.tables["Logos"], first.manifest.tables["Logos"]);
-    assert_eq!(second.manifest.tables["Items"], first.manifest.tables["Items"]);
+    assert_eq!(second.root().manifest.tables["Logos"], first.root().manifest.tables["Logos"]);
+    assert_eq!(second.root().manifest.tables["Items"], first.root().manifest.tables["Items"]);
 }
 
 #[test]
@@ -401,7 +408,9 @@ fn validate_manifest_rejects_duplicate_logo_sources() {
         CodecTableData { name: "Items".to_string(), records: vec![] },
     ]))
     .unwrap()
-    .manifest;
+    .root()
+    .manifest
+    .clone();
     manifest.tables.insert(
         "Logos".to_string(),
         vec![
@@ -443,7 +452,7 @@ fn materialize_splits_unknown_columns_into_overflow_table_and_canonicalize_remer
     }]))
     .unwrap();
 
-    let re = materialize_as_sqlite(MaterializeInput::new(out.manifest, vec![], out.data_buckets, old_client_schema())).unwrap();
+    let re = materialize_as_sqlite(MaterializeInput::new(out.root().manifest.clone(), vec![], out.data_buckets, old_client_schema())).unwrap();
     let items = re.tables.iter().find(|t| t.name == "Items").unwrap();
     assert!(!items.records[0].contains_key("AliasEnabled"), "unknown column filtered out of the insert set");
     assert_eq!(items.records[0]["Name"], json!("GitHub"));
@@ -460,10 +469,10 @@ fn materialize_splits_unknown_columns_into_overflow_table_and_canonicalize_remer
         overflow_table.clone(),
     ]))
     .unwrap();
-    let item = &pushed.manifest.tables["Items"][0];
+    let item = &pushed.root().manifest.tables["Items"][0];
     assert_eq!(item["Name"], json!("GitHub (renamed)"));
     assert_eq!(item["AliasEnabled"], json!(true), "newer writer's column survives the old client's push");
-    assert!(!pushed.manifest.tables.contains_key(OVERFLOW_TABLE), "carrier table consumed, never emitted into the manifest");
+    assert!(!pushed.root().manifest.tables.contains_key(OVERFLOW_TABLE), "carrier table consumed, never emitted into the manifest");
 }
 
 #[test]
@@ -478,7 +487,7 @@ fn overflow_of_locally_deleted_row_is_dropped_on_canonicalize() {
         CodecTableData { name: OVERFLOW_TABLE.to_string(), records: overflow.to_table_records() },
     ]))
     .unwrap();
-    assert!(!out.manifest.tables["Items"][0].contains_key("AliasEnabled"));
+    assert!(!out.root().manifest.tables["Items"][0].contains_key("AliasEnabled"));
 }
 
 #[test]
@@ -486,11 +495,11 @@ fn materialize_splits_unknown_tables_into_overflow_and_canonicalize_reemits() {
     // A newer client added a whole table (manifest-level) and a whole bucket table. Neither exists
     // in this client's schema; both must round-trip through the overflow row back to their original place.
     let mut out = canonicalize_from_sqlite(basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i1"))])] }])).unwrap();
-    out.manifest.tables.insert("NewTable".to_string(), vec![row(&[("Id", json!("n1")), ("Data", json!("x"))])]);
+    out.manifests[0].manifest.tables.insert("NewTable".to_string(), vec![row(&[("Id", json!("n1")), ("Data", json!("x"))])]);
     let settings_bucket = out.data_buckets.iter_mut().find(|b| b.category == "Settings").expect("Settings bucket");
     settings_bucket.tables.insert("Preferences".to_string(), vec![row(&[("Key", json!("p1"))])]);
 
-    let re = materialize_as_sqlite(MaterializeInput::new(out.manifest, vec![], out.data_buckets, old_client_schema())).unwrap();
+    let re = materialize_as_sqlite(MaterializeInput::new(out.root().manifest.clone(), vec![], out.data_buckets, old_client_schema())).unwrap();
     assert!(!re.tables.iter().any(|t| t.name == "NewTable" || t.name == "Preferences"), "unknown tables never reach the insert set");
     assert_eq!(re.overflow.tables["NewTable"].len(), 1);
     assert_eq!(re.overflow.bucket_tables["Settings"]["Preferences"].len(), 1);
@@ -501,7 +510,7 @@ fn materialize_splits_unknown_tables_into_overflow_and_canonicalize_reemits() {
         overflow_table.clone(),
     ]))
     .unwrap();
-    assert_eq!(pushed.manifest.tables["NewTable"].len(), 1, "unknown manifest table re-emitted");
+    assert_eq!(pushed.root().manifest.tables["NewTable"].len(), 1, "unknown manifest table re-emitted");
     assert_eq!(bucket_rows(&pushed, "Settings", "Preferences").len(), 1, "unknown bucket table re-emitted into its category");
 
     // Bucket-only push path: extract_bucket consumes the overflow row read alongside the bucket's tables.
@@ -549,7 +558,7 @@ fn materialize_with_a_fitting_schema_splits_nothing_off() {
         records: vec![row(&[("Id", json!("i1")), ("AliasEnabled", json!(true))])],
     }]))
     .unwrap();
-    let re = materialize_as_sqlite(materialize_input(out.manifest, vec![], out.data_buckets)).unwrap();
+    let re = materialize_as_sqlite(materialize_input(out.root().manifest.clone(), vec![], out.data_buckets)).unwrap();
     let items = re.tables.iter().find(|t| t.name == "Items").unwrap();
     assert_eq!(items.records[0]["AliasEnabled"], json!(true));
     assert!(re.overflow.is_empty());
@@ -561,9 +570,9 @@ fn materialize_drops_overflow_table_smuggled_into_a_manifest() {
     // Defense: OVERFLOW_TABLE is local-only bookkeeping. A manifest that somehow carries one (corrupt
     // or malicious) must not pass through, it would collide with the row materialize emits itself.
     let mut out = canonicalize_from_sqlite(basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i1")), ("AliasEnabled", json!(true))])] }])).unwrap();
-    out.manifest.tables.insert(OVERFLOW_TABLE.to_string(), vec![row(&[("Id", json!("smuggled")), ("Data", json!("{}"))])]);
+    out.manifests[0].manifest.tables.insert(OVERFLOW_TABLE.to_string(), vec![row(&[("Id", json!("smuggled")), ("Data", json!("{}"))])]);
 
-    let re = materialize_as_sqlite(MaterializeInput::new(out.manifest, vec![], out.data_buckets, old_client_schema())).unwrap();
+    let re = materialize_as_sqlite(MaterializeInput::new(out.root().manifest.clone(), vec![], out.data_buckets, old_client_schema())).unwrap();
     let overflow_table = overflow_table_of(&re).expect("legitimate overflow row still emitted");
     assert_eq!(overflow_table.records.len(), 1);
     assert_eq!(overflow_table.records[0]["Id"], json!(OVERFLOW_ROW_ID), "smuggled row dropped, only the codec's own row remains");
@@ -575,10 +584,10 @@ fn json_siblings_roundtrip() {
     let input_json = serde_json::to_string(&input).unwrap();
     let canonicalized_json = canonicalize_from_sqlite_json(&input_json).unwrap();
     let canonicalized: CanonicalizedVault = serde_json::from_str(&canonicalized_json).unwrap();
-    assert!(canonicalized.manifest.tables.contains_key("Items"));
+    assert!(canonicalized.root().manifest.tables.contains_key("Items"));
 
-    let schema = fitting_schema(std::iter::once(&canonicalized.manifest), &canonicalized.data_buckets);
-    let input_value = json!({ "manifests": [{ "manifest": canonicalized.manifest, "isRoot": true }], "dataBuckets": canonicalized.data_buckets, "schemaColumns": schema });
+    let schema = fitting_schema(std::iter::once(&canonicalized.root().manifest), &canonicalized.data_buckets);
+    let input_value = json!({ "manifests": [{ "manifest": canonicalized.root().manifest, "isRoot": true }], "dataBuckets": canonicalized.data_buckets, "schemaColumns": schema });
     let materialized_json = materialize_as_sqlite_json(&input_value.to_string()).unwrap();
     let materialized: MaterializedTables = serde_json::from_str(&materialized_json).unwrap();
     assert!(materialized.tables.iter().any(|t| t.name == "Items"));
@@ -641,9 +650,9 @@ fn canonicalize_stamps_root_manifest_id_on_metadata_and_content_rows() {
         CodecTableData { name: "Folders".to_string(), records: vec![row(&[("Id", json!("f1"))])] },
     ]))
     .unwrap();
-    assert_eq!(out.manifest.manifest_id, ROOT_MANIFEST);
-    assert_eq!(out.manifest.tables["Items"][0]["ManifestId"], json!(ROOT_MANIFEST));
-    assert_eq!(out.manifest.tables["Folders"][0]["ManifestId"], json!(ROOT_MANIFEST));
+    assert_eq!(out.root().manifest.manifest_id, ROOT_MANIFEST);
+    assert_eq!(out.root().manifest.tables["Items"][0]["ManifestId"], json!(ROOT_MANIFEST));
+    assert_eq!(out.root().manifest.tables["Folders"][0]["ManifestId"], json!(ROOT_MANIFEST));
 }
 
 #[test]
@@ -651,7 +660,7 @@ fn materialize_emits_manifests_bookkeeping_table() {
     // The vault DB carries one Manifests row per materialized manifest so app queries can resolve the
     // root manifest id; the table is local bookkeeping and must never round-trip into a manifest.
     let out = canonicalize_from_sqlite(basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i1"))])] }])).unwrap();
-    let re = materialize_as_sqlite(materialize_input(out.manifest, vec![], out.data_buckets)).unwrap();
+    let re = materialize_as_sqlite(materialize_input(out.root().manifest.clone(), vec![], out.data_buckets)).unwrap();
     let manifests = re.tables.iter().find(|t| t.name == "Manifests").expect("Manifests bookkeeping table emitted");
     assert_eq!(manifests.records.len(), 1);
     assert_eq!(manifests.records[0]["Id"], json!(ROOT_MANIFEST));
@@ -660,12 +669,12 @@ fn materialize_emits_manifests_bookkeeping_table() {
 
     // Feeding the materialized tables back into canonicalize must consume the bookkeeping table (skip-table).
     let pushed = canonicalize_from_sqlite(basic_input(re.tables)).unwrap();
-    assert!(!pushed.manifest.tables.contains_key("Manifests"));
+    assert!(!pushed.root().manifest.tables.contains_key("Manifests"));
 }
 
 #[test]
 fn validate_manifest_requires_manifest_id() {
-    let mut manifest = canonicalize_from_sqlite(basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![] }])).unwrap().manifest;
+    let mut manifest = canonicalize_from_sqlite(basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![] }])).unwrap().root().manifest.clone();
     assert!(validate_manifest(&manifest).ok);
     manifest.manifest_id = String::new();
     let result = validate_manifest(&manifest);
