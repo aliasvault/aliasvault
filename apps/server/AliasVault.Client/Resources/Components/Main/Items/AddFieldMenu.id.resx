@@ -62,7 +62,7 @@
     <comment>Gender field label</comment>
   </data>
   <data name="FieldAliasBirthdate">
-    <value>Birth Date</value>
+    <value>Tanggal Lahir</value>
     <comment>Birth date field label</comment>
   </data>
   <data name="FieldCardNumber">
