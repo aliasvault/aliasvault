@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Section options -->
   <data name="TwoFactorAuthentication">
-    <value>Two-Factor Authentication</value>
+    <value>Otentikasi Dua-Faktor</value>
     <comment>Option to add 2FA section</comment>
   </data>
   <data name="Attachments">
@@ -29,7 +29,7 @@
     <comment>Option to add attachments section</comment>
   </data>
   <data name="AddCustomField">
-    <value>Add Custom Field</value>
+    <value>Tambah Kolom Khusus</value>
     <comment>Option to add a custom field</comment>
   </data>
   <!-- Field labels -->
@@ -99,11 +99,11 @@
     <comment>Label for field label input</comment>
   </data>
   <data name="EnterFieldName">
-    <value>Masukkan nama field</value>
+    <value>Masukkan nama kolom</value>
     <comment>Placeholder for field name input</comment>
   </data>
   <data name="FieldType">
-    <value>Tipe Field</value>
+    <value>Tipe kolom</value>
     <comment>Label for field type selector</comment>
   </data>
   <data name="FieldTypeText">
@@ -115,7 +115,7 @@
     <comment>Password field type option</comment>
   </data>
   <data name="FieldTypeHidden">
-    <value>Hidden</value>
+    <value>Tersembunyi</value>
     <comment>Hidden field type option</comment>
   </data>
   <data name="FieldTypeEmail">
@@ -153,7 +153,7 @@
   </data>
   <!-- Default field label -->
   <data name="DefaultFieldLabel">
-    <value>Field {0}</value>
+    <value>Kolom {0}</value>
     <comment>Default label for custom field, {0} is the field number</comment>
   </data>
 </root>
