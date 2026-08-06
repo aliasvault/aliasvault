@@ -14,25 +14,28 @@ use std::collections::HashMap;
 
 use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
-use serde_json::json;
+use serde_json::{json, Value};
 
 use super::hash::salted_blob_hash;
 use super::scoped_assets::{normalize_logo_scope, reconcile_logo_references};
 use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecOverflow, DataBucket, Manifest, ManifestSpec, CodecRecord};
 use super::sharing::{clone_referenced_rows, partition_by_manifest, prune_unreferenced_logos, referenced_tables};
-use super::types::{blob_spec_for, bucket_categories, bucket_category_for, is_skip_table, row_identity, OVERFLOW_TABLE, SCHEMA_VERSION};
+use super::types::{
+    blob_spec_for, bucket_categories, bucket_category_for, is_skip_table, is_unstamped_scope, manifest_scoped_tables, row_identity, MANIFEST_ID_COL,
+    OVERFLOW_TABLE, SCHEMA_VERSION,
+};
 use crate::error::VaultResult;
 
 /// Canonicalize normalized tables into the split resources: the manifest, one data bucket per declared
 /// category (see [`BUCKET_TABLES`](super::types::BUCKET_TABLES)), and the content-addressed blob map.
 pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<CanonicalizedVault> {
-    let base_spec = match input.manifests.first() {
+    let writing_spec = match input.manifests.first() {
         Some(spec) if !spec.manifest_id.is_empty() => spec.clone(),
         Some(_) => return Err(crate::error::VaultError::General("canonicalize requires a manifest id on every manifest".to_string())),
         None => return Err(crate::error::VaultError::General("canonicalize input declares no manifests".to_string())),
     };
-    let base_manifest_id = base_spec.manifest_id.clone();
-    let base_user_salt = base_spec.user_salt.clone();
+    let writing_manifest_id = writing_spec.manifest_id.clone();
+    let writing_user_salt = writing_spec.user_salt.clone();
 
     // Collect every non-skip table into a name > rows map (row order preserved per table). Blob
     // extraction and bucket-splitting happen below.
@@ -59,6 +62,13 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         all_tables.entry(name.clone()).or_insert_with(|| rows.clone());
     }
 
+    // Legacy migration: adopt unstamped rows into the manifest if specified by the caller.
+    // TODO: delete this once the migration is complete.
+    if let Some(adopt_into) = input.adopt_unstamped_into.as_deref() {
+        adopt_unstamped_rows(&mut all_tables, adopt_into);
+    }
+    reject_unstamped_rows(&all_tables)?;
+
     /*
      * Snapshot the tables one manifest's rows can point at (logos, tags, field definitions) before
      * routing, so each manifest can clone in the row an item that just crossed a scope boundary
@@ -72,18 +82,18 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
     let all_logos = snapshots.get("Logos").unwrap_or(&no_rows);
 
     /*
-     * Route every row to the manifest that owns it; `all_tables` keeps the base manifest's rows plus
-     * whatever belongs to no namespace. The remaining specs are passed in their original order so the
-     * emitted list mirrors the input.
+     * Route every row to the manifest that owns it; `all_tables` keeps the writing manifest's rows plus
+     * every table that carries no stamp column. The remaining specs are passed in their original order
+     * so the emitted list mirrors the input.
      */
     let other_specs: Vec<ManifestSpec> = input.manifests.iter().skip(1).cloned().collect();
-    let partitions = partition_by_manifest(&mut all_tables, &other_specs, &snapshots, &base_manifest_id)?;
+    let partitions = partition_by_manifest(&mut all_tables, &other_specs, &snapshots, &writing_manifest_id)?;
 
-    // The base manifest is finished exactly like every partition.
-    reconcile_logo_references(&mut all_tables, &base_manifest_id, all_logos);
-    normalize_logo_scope(&mut all_tables, &base_manifest_id);
+    // The writing manifest is finished exactly like every partition.
+    reconcile_logo_references(&mut all_tables, &writing_manifest_id, all_logos);
+    normalize_logo_scope(&mut all_tables, &writing_manifest_id);
     prune_unreferenced_logos(&mut all_tables);
-    clone_referenced_rows(&mut all_tables, &base_manifest_id, &snapshots);
+    clone_referenced_rows(&mut all_tables, &writing_manifest_id, &snapshots);
 
     let mut blobs: HashMap<String, BlobEntry> = HashMap::new();
     let mut manifest_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
@@ -106,7 +116,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         }
 
         // Manifest table: extract any blob column into the content-addressed map.
-        let out_rows = extract_table_blobs(&name, records, &base_user_salt, &mut blobs);
+        let out_rows = extract_table_blobs(&name, records, &writing_user_salt, &mut blobs);
         manifest_tables.insert(name, out_rows);
     }
 
@@ -132,10 +142,10 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         manifest: Manifest {
             schema_version: SCHEMA_VERSION,
             migration_id: input.migration_id.clone(),
-            user_salt: base_user_salt,
+            user_salt: writing_user_salt,
             canonicalized_at: input.canonicalized_at.clone(),
-            manifest_id: base_manifest_id,
-            name: base_spec.name.clone(),
+            manifest_id: writing_manifest_id,
+            name: writing_spec.name.clone(),
             tables: manifest_tables,
             extra: HashMap::new(),
         },
@@ -169,6 +179,41 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
     }
 
     Ok(CanonicalizedVault { manifests, data_buckets })
+}
+
+/// For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into. 
+/// TODO: delete this function once the migration is complete.
+///
+/// Stamp every unstamped row of a manifest-scoped table with `manifest_id`. A row that already names a
+/// manifest keeps it, so a vault that has been converted once pays nothing on later runs.
+fn adopt_unstamped_rows(tables: &mut HashMap<String, Vec<CodecRecord>>, manifest_id: &str) {
+    for name in manifest_scoped_tables() {
+        let Some(rows) = tables.get_mut(name) else { continue };
+        for row in rows.iter_mut().filter(|row| is_unstamped(row)) {
+            row.insert(MANIFEST_ID_COL.to_string(), json!(manifest_id));
+        }
+    }
+}
+
+/// Reject the whole push when any row of a manifest-scoped table names no manifest.
+fn reject_unstamped_rows(tables: &HashMap<String, Vec<CodecRecord>>) -> VaultResult<()> {
+    for name in manifest_scoped_tables() {
+        let Some(rows) = tables.get(name) else { continue };
+        let unstamped = rows.iter().filter(|row| is_unstamped(row)).count();
+        if unstamped > 0 {
+            let first = rows.iter().find(|row| is_unstamped(row)).and_then(|row| row.get("Id")).cloned().unwrap_or(Value::Null);
+            return Err(crate::error::VaultError::General(format!(
+                "canonicalize refuses to write {} row(s) of {} that name no manifest (first: Id {}); every row must carry the manifest it belongs to",
+                unstamped, name, first
+            )));
+        }
+    }
+    Ok(())
+}
+
+/// True when a row carries no usable `ManifestId`: absent, JSON null, a non-string, or the empty string.
+fn is_unstamped(row: &CodecRecord) -> bool {
+    is_unstamped_scope(row.get(MANIFEST_ID_COL).and_then(|value| value.as_str()))
 }
 
 /// Extract `table`'s blob column (if it owns one) into `blobs`, returning the rewritten rows.

@@ -238,8 +238,9 @@ export class ItemRepository extends BaseRepository {
         item.ItemType,
         logoId,
         item.FolderId ?? null,
-        // Second bind of the folder id: resolves the manifest this item belongs to (see INSERT_ITEM).
+        // Second bind of the folder id, then the manifest an item outside any folder joins (see INSERT_ITEM).
         item.FolderId ?? null,
+        this.activeManifestId(),
         currentDateTime,
         currentDateTime,
         0
@@ -313,9 +314,10 @@ export class ItemRepository extends BaseRepository {
         const newDefinitionId = this.generateId();
         definitionIdMap.set(definition.Id, newDefinitionId);
         this.client.executeUpdate(`
-          INSERT INTO FieldDefinitions (Id, FieldType, Label, IsMultiValue, IsHidden, EnableHistory, Weight, ApplicableToTypes, CreatedAt, UpdatedAt, IsDeleted)
-          SELECT ?, FieldType, Label, IsMultiValue, IsHidden, EnableHistory, Weight, ApplicableToTypes, ?, ?, 0 FROM FieldDefinitions WHERE Id = ?`,
-        [newDefinitionId, currentDateTime, currentDateTime, definition.Id]);
+          INSERT INTO FieldDefinitions (Id, ManifestId, FieldType, Label, IsMultiValue, IsHidden, EnableHistory, Weight, ApplicableToTypes, CreatedAt, UpdatedAt, IsDeleted)
+          SELECT ?, ManifestId, FieldType, Label, IsMultiValue, IsHidden, EnableHistory, Weight, ApplicableToTypes, ?, ?, 0
+          FROM FieldDefinitions WHERE Id = ? AND ManifestId = ?`,
+        [newDefinitionId, currentDateTime, currentDateTime, definition.Id, ref.ManifestId]);
       }
 
       // 3. Copy field values, remapping custom fields to the copied definitions.
@@ -445,6 +447,7 @@ export class ItemRepository extends BaseRepository {
             item.FolderId ?? null,
             // Moving an item across a folder boundary moves it across a manifest boundary: re-stamp it.
             item.FolderId ?? null,
+            this.activeManifestId(),
             logoId,
             currentDateTime,
             ref.Id,
@@ -700,15 +703,15 @@ export class ItemRepository extends BaseRepository {
     existingLogoId: string | null = null,
     selection?: LogoSelection
   ): Promise<string | null> {
+    const scope = this.manifestOfFolder(item.FolderId ?? null);
+
     if (selection && selection.Kind !== LogoKinds.Favicon) {
-      return this.resolveSelectedLogo(selection, currentDateTime);
+      return this.resolveSelectedLogo(selection, scope, currentDateTime);
     }
 
     const existing = existingLogoId ? this.logoRepository.getById(existingLogoId) : null;
-
-    // A deliberate choice outlives URL edits; only an explicit selection (handled above) replaces it.
     if (!selection && existing && existing.Kind !== LogoKinds.Favicon) {
-      return existingLogoId;
+      return this.logoRepository.adoptIntoScope(scope, existing.Kind, existing.Source, currentDateTime);
     }
 
     const urlField = item.Fields?.find(f => f.FieldKey === 'login.url');
@@ -727,7 +730,7 @@ export class ItemRepository extends BaseRepository {
 
     // Keep the current favicon when it is already this domain's, whatever scope it lives in.
     if (existing && existing.Kind === LogoKinds.Favicon && existing.Source === source) {
-      return existingLogoId;
+      return this.logoRepository.adoptIntoScope(scope, LogoKinds.Favicon, source, currentDateTime);
     }
 
     /*
@@ -737,36 +740,39 @@ export class ItemRepository extends BaseRepository {
      */
     const faviconData = item.Logo ? this.logoRepository.convertToUint8Array(item.Logo) : null;
     if (faviconData && faviconData.length > 0) {
-      return this.logoRepository.getOrCreate(LogoKinds.Favicon, source, faviconData, currentDateTime, { mimeType: 'image/x-icon' });
+      return this.logoRepository.getOrCreate(scope, LogoKinds.Favicon, source, faviconData, currentDateTime, { mimeType: 'image/x-icon' });
     }
 
     /*
      * Otherwise adopt the favicon this domain already has, or none at all. Falling back to the item's
      * previous logo here is what made an item keep the old site's logo after its URL was changed.
      */
-    return this.logoRepository.getIdForKey(LogoKinds.Favicon, source);
+    return this.logoRepository.adoptIntoScope(scope, LogoKinds.Favicon, source, currentDateTime);
   }
 
   /**
    * Resolve a logo the user explicitly picked: a catalog key, an image they just uploaded, or one
    * already in their library.
    * @param selection The user's choice
+   * @param scope The manifest the item is being written into, which the logo has to live in too
    * @param currentDateTime The current date/time string for timestamps
    * @returns The logo ID, or null when the selection carries nothing to resolve
    */
-  private async resolveSelectedLogo(selection: LogoSelection, currentDateTime: string): Promise<string | null> {
+  private async resolveSelectedLogo(selection: LogoSelection, scope: string, currentDateTime: string): Promise<string | null> {
     if (selection.Kind === LogoKinds.Builtin) {
       // Built-in logos carry no bytes: every platform draws them from the shared catalog.
-      return selection.Source ? this.logoRepository.getOrCreate(LogoKinds.Builtin, selection.Source, null, currentDateTime) : null;
+      return selection.Source ? this.logoRepository.getOrCreate(scope, LogoKinds.Builtin, selection.Source, null, currentDateTime) : null;
     }
 
     const uploaded = selection.Data ? this.logoRepository.convertToUint8Array(selection.Data) : null;
     if (uploaded && uploaded.length > 0) {
-      return this.logoRepository.storeUpload(uploaded, currentDateTime, { mimeType: selection.MimeType ?? 'image/png', name: selection.Name });
+      return this.logoRepository.storeUpload(scope, uploaded, currentDateTime, { mimeType: selection.MimeType ?? 'image/png', name: selection.Name });
     }
 
-    // No new bytes: the user picked an image their library already holds, addressed by its hash.
-    return selection.Source ? this.logoRepository.getIdForKey(LogoKinds.Custom, selection.Source) : null;
+    /*
+     * No new bytes: the user picked an image from their library, addressed by its hash.
+     */
+    return selection.Source ? this.logoRepository.adoptIntoScope(scope, LogoKinds.Custom, selection.Source, currentDateTime) : null;
   }
 
   /**
@@ -790,7 +796,7 @@ export class ItemRepository extends BaseRepository {
 
       // For custom fields, create or get FieldDefinition
       if (field.IsCustomField) {
-        fieldDefinitionId = this.ensureFieldDefinition(field, itemType, currentDateTime);
+        fieldDefinitionId = this.ensureFieldDefinition(field, itemId, itemType, currentDateTime);
       }
 
       // Handle multi-value fields
@@ -807,6 +813,7 @@ export class ItemRepository extends BaseRepository {
           this.generateId(),
           itemId,
           itemId,
+          this.activeManifestId(),
           fieldDefinitionId,
           field.IsCustomField ? null : field.FieldKey,
           value,
@@ -826,6 +833,7 @@ export class ItemRepository extends BaseRepository {
           historyId,
           itemId,
           itemId,
+          this.activeManifestId(),
           null,
           field.FieldKey,
           valueSnapshot,
@@ -843,17 +851,20 @@ export class ItemRepository extends BaseRepository {
    */
   private ensureFieldDefinition(
     field: ItemField,
+    itemId: string,
     itemType: string,
     currentDateTime: string
   ): string {
     const existingDef = this.client.executeQuery<{ Id: string }>(
       FieldDefinitionQueries.EXISTS,
-      [field.FieldKey]
+      [field.FieldKey, itemId, this.activeManifestId()]
     );
 
     if (existingDef.length === 0) {
       this.client.executeUpdate(FieldDefinitionQueries.INSERT, [
         field.FieldKey,
+        itemId,
+        this.activeManifestId(),
         field.FieldType,
         field.Label,
         0, // IsMultiValue
@@ -908,7 +919,7 @@ export class ItemRepository extends BaseRepository {
         let fieldDefinitionId = null;
 
         if (field.IsCustomField) {
-          fieldDefinitionId = this.ensureOrUpdateFieldDefinition(field, item.ItemType, currentDateTime);
+          fieldDefinitionId = this.ensureOrUpdateFieldDefinition(field, item.Id, item.ItemType, currentDateTime);
         }
 
         const values = Array.isArray(field.Value) ? field.Value : [field.Value];
@@ -943,6 +954,7 @@ export class ItemRepository extends BaseRepository {
               this.generateId(),
               item.Id,
               item.Id,
+              this.activeManifestId(),
               fieldDefinitionId,
               field.IsCustomField ? null : field.FieldKey,
               value,
@@ -969,17 +981,20 @@ export class ItemRepository extends BaseRepository {
    */
   private ensureOrUpdateFieldDefinition(
     field: ItemField,
+    itemId: string,
     itemType: string,
     currentDateTime: string
   ): string {
     const existingDef = this.client.executeQuery<{ Id: string }>(
       FieldDefinitionQueries.EXISTS_ACTIVE,
-      [field.FieldKey]
+      [field.FieldKey, itemId, this.activeManifestId()]
     );
 
     if (existingDef.length === 0) {
       this.client.executeUpdate(FieldDefinitionQueries.INSERT, [
         field.FieldKey,
+        itemId,
+        this.activeManifestId(),
         field.FieldType,
         field.Label,
         0,
@@ -998,7 +1013,9 @@ export class ItemRepository extends BaseRepository {
         field.IsHidden ? 1 : 0,
         field.DisplayOrder ?? 0,
         currentDateTime,
-        field.FieldKey
+        field.FieldKey,
+        itemId,
+        this.activeManifestId()
       ]);
     }
 
@@ -1061,6 +1078,7 @@ export class ItemRepository extends BaseRepository {
           historyId,
           itemId,
           itemId,
+          this.activeManifestId(),
           null,
           newField.FieldKey,
           valueSnapshot,
@@ -1115,6 +1133,7 @@ export class ItemRepository extends BaseRepository {
           totpCode.SecretKey,
           itemId,
           itemId,
+          this.activeManifestId(),
           currentDateTime,
           currentDateTime,
           0
@@ -1170,6 +1189,7 @@ export class ItemRepository extends BaseRepository {
             totpCode.SecretKey,
             itemId,
             itemId,
+            this.activeManifestId(),
             currentDateTime,
             currentDateTime,
             0
@@ -1196,6 +1216,7 @@ export class ItemRepository extends BaseRepository {
           blobData,
           itemId,
           itemId,
+          this.activeManifestId(),
           currentDateTime,
           currentDateTime,
           0
@@ -1251,6 +1272,7 @@ export class ItemRepository extends BaseRepository {
             blobData,
             itemId,
             itemId,
+            this.activeManifestId(),
             currentDateTime,
             currentDateTime,
             0

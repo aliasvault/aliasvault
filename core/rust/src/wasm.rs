@@ -179,22 +179,6 @@ pub fn vault_codec_extract_bucket_js(input: JsValue) -> Result<JsValue, JsValue>
     codec_to_js(&vault_codec::extract_bucket(input.category, input.tables))
 }
 
-/// The tables whose rows carry a `ManifestId` stamp, so a client converting a legacy vault knows
-/// which ones to backfill.
-#[wasm_bindgen(js_name = vaultCodecStampedTables)]
-pub fn vault_codec_stamped_tables_js() -> Vec<String> {
-    vault_codec::stamped_tables()
-}
-
-/// Stamp every unstamped row with the manifest the vault is being written from.
-/// Input: `{ tables, manifestId }`. Output: `{ tables, adopted }`.
-#[wasm_bindgen(js_name = vaultCodecBackfillManifestStamps)]
-pub fn vault_codec_backfill_manifest_stamps_js(input: JsValue) -> Result<JsValue, JsValue> {
-    let input: vault_codec::StampBackfillInput = serde_wasm_bindgen::from_value(input)
-        .map_err(|e| JsValue::from_str(&format!("Failed to parse stamp-backfill input: {}", e)))?;
-    codec_to_js(&vault_codec::backfill_manifest_stamps(input))
-}
-
 /// The bucket layout: `[{ category, tables: [<name>] }]`. Source of truth for platform bucket-only sync.
 #[wasm_bindgen(js_name = vaultCodecBucketLayout)]
 pub fn vault_codec_bucket_layout_js() -> Result<JsValue, JsValue> {

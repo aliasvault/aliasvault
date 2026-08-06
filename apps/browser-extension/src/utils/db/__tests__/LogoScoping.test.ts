@@ -50,10 +50,10 @@ function rows(db: Database, sql: string, params: unknown[] = []): Record<string,
 describe('logo manifest scoping', () => {
   it('GET_MANIFEST_OF_FOLDER agrees with what an insert would stamp', async () => {
     const db = await makeDb();
-    expect(rows(db, BaseQueries.GET_MANIFEST_OF_FOLDER, ['FOLDER-SHARED'])[0].ManifestId).toBe(SHARED);
-    expect(rows(db, BaseQueries.GET_MANIFEST_OF_FOLDER, ['FOLDER-MINE'])[0].ManifestId).toBe(ROOT);
-    // Outside any folder: falls back to the root manifest, like MANIFEST_OF_FOLDER inside INSERT_ITEM.
-    expect(rows(db, BaseQueries.GET_MANIFEST_OF_FOLDER, [null])[0].ManifestId).toBe(ROOT);
+    expect(rows(db, BaseQueries.GET_MANIFEST_OF_FOLDER, ['FOLDER-SHARED', ROOT])[0].ManifestId).toBe(SHARED);
+    expect(rows(db, BaseQueries.GET_MANIFEST_OF_FOLDER, ['FOLDER-MINE', ROOT])[0].ManifestId).toBe(ROOT);
+    expect(rows(db, BaseQueries.GET_MANIFEST_OF_FOLDER, [null, ROOT])[0].ManifestId).toBe(ROOT);
+    expect(rows(db, BaseQueries.GET_MANIFEST_OF_FOLDER, [null, SHARED])[0].ManifestId).toBe(SHARED);
   });
 
   it('GET_BEST_FOR_KEY prefers the copy that actually carries bytes', async () => {

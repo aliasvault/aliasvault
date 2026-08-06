@@ -72,7 +72,7 @@ export const StorageKeys = {
 
   /**
    * The server-side id of the user's root manifest, learned from GET /v2/Vault. Fallback source for
-   * canonicalize when the vault DB's Manifests bookkeeping row is absent (legacy migration push). 
+   * canonicalize when the vault DB does not record it yet (legacy migration push).
    */
   VAULT_V2_ROOT_MANIFEST_ID: 'local:vaultV2RootManifestId',
   /** Content fingerprints of the last pushed manifests and buckets, used for changed-only writes. */

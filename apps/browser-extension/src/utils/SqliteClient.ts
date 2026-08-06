@@ -26,12 +26,37 @@ export class SqliteClient implements IDatabaseClient {
   private db: Database | null = null;
   private isInTransaction: boolean = false;
 
+  /**
+   * The manifest this client writes new rows into, when the user has switched to one explicitly.
+   * Null means "not chosen" and the user's personal manifest applies.
+   */
+  private activeManifestId: string | null = null;
+
   // Lazy-initialized repositories
   private _items: ItemRepository | null = null;
   private _passkeys: PasskeyRepository | null = null;
   private _folders: FolderRepository | null = null;
   private _settings: SettingsRepository | null = null;
   private _logos: LogoRepository | null = null;
+
+  /**
+   * The manifest new rows are stamped with when they cannot inherit one from a parent row, or null when
+   * the client has not switched vaults and the personal manifest applies.
+   * @returns The active manifest id, or null when none is set
+   */
+  public getActiveManifestId(): string | null {
+    return this.activeManifestId;
+  }
+
+  /**
+   * Switch the manifest this client writes into. Pass null to go back to the personal manifest.
+   *
+   * TODO: this method is not called yet, as a null manifestId will default to the personal manifest
+   * which is what we want for now.
+   */
+  public setActiveManifestId(manifestId: string | null): void {
+    this.activeManifestId = manifestId;
+  }
 
   /**
    * Repository for Item CRUD operations.
@@ -58,7 +83,7 @@ export class SqliteClient implements IDatabaseClient {
    */
   public get folders(): FolderRepository {
     if (!this._folders) {
-      this._folders = new FolderRepository(this);
+      this._folders = new FolderRepository(this, this.logos);
     }
     return this._folders;
   }

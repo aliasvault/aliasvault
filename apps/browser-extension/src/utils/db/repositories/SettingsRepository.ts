@@ -3,7 +3,6 @@ import type { EncryptionKey, PasswordSettings, TotpCode, Attachment } from '@/ut
 import { getIdentityLanguages } from '@/utils/RustCore';
 
 import { BaseRepository } from '../BaseRepository';
-import { BaseQueries } from '../queries/BaseQueries';
 import { EncryptionKeyQueries } from '../queries/EncryptionKeyQueries';
 import { SettingsQueries } from '../queries/SettingsQueries';
 
@@ -107,31 +106,20 @@ export class SettingsRepository extends BaseRepository {
   }
 
   /**
-   * Get the vault's root manifest id from the Manifests bookkeeping table. Returns null for a non-migrated
-   * legacy account.
-   * @returns The root manifest id, or null when the account is legacy
+   * Get the id of the root/default manifest.
+   * @returns The root manifest id, or null when not known yet
    */
   public getRootManifestId(): string | null {
     return this.rootManifestId();
   }
 
   /**
-   * Register the vault's root manifest row at vault creation (idempotent).
-   * @param manifestId - The server-side id of the root manifest
-   */
-  public setRootManifestId(manifestId: string): void {
-    this.client.executeUpdate(BaseQueries.INSERT_ROOT_MANIFEST, [manifestId]);
-  }
-
-  /**
-   * Get the user's active personal keypair (the primary row stamped with the root manifest's id), whose public
-   * half is published to the server as the root manifest's delivery key. Returns null when the vault has no
-   * personal keypair yet.
+   * Get the user's active personal keypair.
    * @returns The active personal keypair, or null when absent
    */
   public getPrimaryEncryptionKey(): EncryptionKey | null {
-    const results = this.client.executeQuery<EncryptionKey>(EncryptionKeyQueries.GET_PRIMARY);
-    return results.length > 0 ? results[0] : null;
+    const rootManifestId = this.rootManifestId();
+    return rootManifestId ? this.getActiveManifestEncryptionKey(rootManifestId) : null;
   }
 
   /**
@@ -168,13 +156,18 @@ export class SettingsRepository extends BaseRepository {
    * @param privateKey - The private half
    */
   public retainNonPrimaryEncryptionKey(publicKey: string, privateKey: string): void {
-    const existing = this.client.executeQuery<{ count: number }>(EncryptionKeyQueries.COUNT_BY_PUBLIC_KEY, [publicKey]);
+    const rootManifestId = this.rootManifestId();
+    if (!rootManifestId) {
+      return;
+    }
+
+    const existing = this.client.executeQuery<{ count: number }>(EncryptionKeyQueries.COUNT_BY_PUBLIC_KEY, [rootManifestId, publicKey]);
     if ((existing[0]?.count ?? 0) > 0) {
       return;
     }
 
     const now = this.now();
-    this.client.executeUpdate(EncryptionKeyQueries.INSERT_NON_PRIMARY, [this.generateId(), publicKey, privateKey, now, now]);
+    this.client.executeUpdate(EncryptionKeyQueries.INSERT_NON_PRIMARY, [this.generateId(), rootManifestId, publicKey, privateKey, now, now]);
   }
 
   /**

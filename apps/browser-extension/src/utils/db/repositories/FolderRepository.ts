@@ -2,6 +2,9 @@ import { BaseRepository } from '../BaseRepository';
 import { BaseQueries } from '../queries/BaseQueries';
 import { FolderQueries } from '../queries/FolderQueries';
 
+import type { IDatabaseClient } from '../BaseRepository';
+import type { LogoRepository } from './LogoRepository';
+
 /**
  * Folder entity type.
  */
@@ -17,6 +20,15 @@ export type Folder = {
  * Repository for Folder CRUD operations.
  */
 export class FolderRepository extends BaseRepository {
+  /**
+   * Constructor for the FolderRepository class.
+   * @param client - The database client to use for the repository
+   * @param logoRepository - The logo repository, to follow items across manifest boundaries
+   */
+  public constructor(client: IDatabaseClient, private logoRepository: LogoRepository) {
+    super(client);
+  }
+
   /**
    * Create a new folder.
    * @param name - The name of the folder
@@ -34,8 +46,9 @@ export class FolderRepository extends BaseRepository {
         folderId,
         name,
         parentFolderId || null,
-        // Second bind of the parent id: resolves the manifest this folder belongs to (see INSERT).
+        // Second bind of the parent id, then the manifest a top-level folder joins (see INSERT).
         parentFolderId || null,
+        this.activeManifestId(),
         currentDateTime,
         currentDateTime
       ]);
@@ -137,12 +150,15 @@ export class FolderRepository extends BaseRepository {
           targetParentId,
           // Second bind of the destination: the items adopt that folder's manifest.
           targetParentId,
+          this.activeManifestId(),
           currentDateTime,
           folderId
         ]);
       } else {
         // No parent: move items to root (NULL)
         this.client.executeUpdate(FolderQueries.CLEAR_ITEMS_FOLDER, [
+          // Out of every folder means into the default manifest.
+          this.activeManifestId(),
           currentDateTime,
           folderId
         ]);
@@ -227,6 +243,8 @@ export class FolderRepository extends BaseRepository {
       const folders = this.client.executeUpdate(BaseQueries.RESTAMP_SUBTREE_FOLDERS, [manifestId, folderId]);
       const items = this.client.executeUpdate(BaseQueries.RESTAMP_SUBTREE_ITEMS, [manifestId, folderId]);
       this.resyncItemChildManifests();
+      // The items moved; the images they point at have to follow them into the new manifest.
+      await this.logoRepository.reconcileItemLogoScopes(this.now());
       return folders + items;
     });
   }
@@ -254,10 +272,13 @@ export class FolderRepository extends BaseRepository {
         folderId,
         // Second bind of the destination: the item adopts that folder's manifest.
         folderId,
+        this.activeManifestId(),
         currentDateTime,
         itemId
       ]);
       this.resyncItemChildManifests();
+      // The destination folder may sit in another manifest; the item's logo has to follow it there.
+      await this.logoRepository.reconcileItemLogoScopes(currentDateTime);
       return moved;
     });
   }

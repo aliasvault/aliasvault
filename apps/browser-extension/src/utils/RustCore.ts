@@ -313,6 +313,8 @@ export type CodecCanonicalizeInput = {
   migrationId: string;
   canonicalizedAt: string;
   manifests: CodecManifestSpec[];
+  /** For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into. TODO: delete this field once the migration is complete. */
+  adoptUnstampedInto?: string | null;
 };
 
 /** Materialized tables the platform inserts into a fresh SQLite DB (`overflow` is a diagnostics copy). */
@@ -360,15 +362,6 @@ export async function vaultCodecExtractEncryptionKeyForPublicKey(manifest: Codec
 export async function vaultCodecExtractBucket(category: string, tables: Record<string, Array<Record<string, unknown>>>): Promise<CodecDataBucket> {
   await initRustCore();
   return core.vaultCodecExtractBucket({ category, tables }) as CodecDataBucket;
-}
-
-/**
- * The tables whose rows carry a `ManifestId` stamp. The codec owns this list; a client converting a
- * vault written before the column existed backfills exactly these.
- */
-export async function vaultCodecStampedTables(): Promise<string[]> {
-  await initRustCore();
-  return core.vaultCodecStampedTables() as string[];
 }
 
 /**

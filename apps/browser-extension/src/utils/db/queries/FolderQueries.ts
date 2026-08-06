@@ -53,7 +53,7 @@ export class FolderQueries {
   public static readonly CLEAR_ITEMS_FOLDER = `
     UPDATE Items
     SET FolderId = NULL,
-        ManifestId = ${BaseQueries.ROOT_MANIFEST_ID},
+        ManifestId = ?,
         UpdatedAt = ?
     WHERE FolderId = ?`;
 

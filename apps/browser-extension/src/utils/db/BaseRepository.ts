@@ -16,6 +16,7 @@ export interface IDatabaseClient {
   beginTransaction(): void;
   commitTransaction(): Promise<void>;
   rollbackTransaction(): void;
+  getActiveManifestId(): string | null;
 }
 
 /**
@@ -153,16 +154,46 @@ export abstract class BaseRepository {
       return null;
     }
 
-    const rootId = this.rootManifestId();
-    return (rows.find(row => row.ManifestId === rootId) ?? rows[0]).ManifestId;
+    const activeId = this.client.getActiveManifestId() ?? this.rootManifestId();
+    return (rows.find(row => row.ManifestId === activeId) ?? rows[0]).ManifestId;
   }
 
   /**
-   * Get the vault's root manifest id from the Manifests bookkeeping table.
-   * @returns The root manifest id, or null when absent
+   * The manifest a row placed in the given folder belongs to: that folder's, or the active manifest when
+   * the row sits outside any folder. This is the value the write path stamps onto the row itself (see
+   * {@link BaseQueries.MANIFEST_OF_FOLDER}), resolved here for callers that need it a step earlier.
+   * @param folderId - The folder the row is placed in, or null for none
+   * @returns The manifest id to stamp the row with
+   */
+  protected manifestOfFolder(folderId: string | null): string {
+    const rows = this.client.executeQuery<{ ManifestId: string | null }>(BaseQueries.GET_MANIFEST_OF_FOLDER, [folderId, this.activeManifestId()]);
+    const manifestId = rows[0]?.ManifestId;
+    if (!manifestId) {
+      throw new Error('BaseRepository: could not resolve the manifest for this write; refusing to write a row that names no manifest.');
+    }
+    return manifestId;
+  }
+
+  /**
+   * The manifest this client is writing into: whichever one it has been switched to, falling back to the
+   * user's personal manifest. Every write that cannot inherit a manifest from a parent row (an item
+   * outside any folder, a folder at the top level) is stamped with this.
+   * @returns The manifest id new rows are stamped with
+   */
+  protected activeManifestId(): string {
+    const manifestId = this.client.getActiveManifestId() ?? this.rootManifestId();
+    if (!manifestId) {
+      throw new Error('BaseRepository: the vault has no manifest recorded yet (no active manifest and no personal manifest); sync once before writing.');
+    }
+    return manifestId;
+  }
+
+  /**
+   * Get the id of the user's personal manifest, as recorded by the last pull.
+   * @returns The personal manifest id, or null when absent
    */
   protected rootManifestId(): string | null {
-    if (!this.tableExists('Manifests')) {
+    if (!this.tableExists('Settings')) {
       return null;
     }
     const results = this.client.executeQuery<{ Id: string }>(BaseQueries.GET_ROOT_MANIFEST_ID);

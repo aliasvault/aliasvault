@@ -1,30 +1,35 @@
-import { BaseQueries } from './BaseQueries';
-
 /**
  * SQL query constants for item logo operations.
- *
- * One `Logos` row is one logo, whatever its origin: `Kind` says whether it was fetched from a URL,
- * picked from the built-in catalog, or uploaded, and `Source` is that kind's natural key. Every query
- * here is therefore keyed on (Kind, Source) rather than Source alone.
  */
 export class LogoQueries {
   /**
-   * The scope of personal rows in this file's queries, which address Logos unaliased.
-   */
-  private static readonly PERSONAL_SCOPE = BaseQueries.personalScope();
-
-  /**
-   * The logo of a given kind and key in the personal scope. Shared-manifest rows are deliberately
-   * excluded: adopting another manifest's row here would drag its logo into the personal vault.
+   * The logo of a given kind and key within one manifest.
    */
   public static readonly GET_ID_FOR_KEY = `
     SELECT Id FROM Logos
-    WHERE Kind = ? AND Source = ? AND ${LogoQueries.PERSONAL_SCOPE} AND IsDeleted = 0
+    WHERE ManifestId = ? AND Kind = ? AND Source = ? AND IsDeleted = 0
     LIMIT 1`;
 
   /**
-   * The kind and key of an existing logo, whatever scope it belongs to. Used to tell whether an item's
-   * logo still matches its URL, so an edit doesn't re-resolve (and thereby re-scope) an unchanged logo.
+   * The id of a logo for this kind and key in ANY manifest, used only to answer "does this vault already
+   * hold this image somewhere" before paying for a network fetch.
+   */
+  public static readonly FIND_ANY_ID_FOR_KEY = `
+    SELECT Id FROM Logos
+    WHERE Kind = ? AND Source = ? AND IsDeleted = 0
+    LIMIT 1`;
+
+  /**
+   * The best row to copy from when a manifest needs a logo it does not have but the vault does.
+   */
+  public static readonly GET_BEST_FOR_KEY = `
+    SELECT FileData, MimeType, Name FROM Logos
+    WHERE Kind = ? AND Source = ? AND IsDeleted = 0
+    ORDER BY (FileData IS NOT NULL AND LENGTH(FileData) > 0) DESC, UpdatedAt DESC
+    LIMIT 1`;
+
+  /**
+   * The kind and key of an existing logo.
    */
   public static readonly GET_BY_ID = `
     SELECT Id, Kind, Source, Name FROM Logos
@@ -32,12 +37,11 @@ export class LogoQueries {
     LIMIT 1`;
 
   /**
-   * Insert or update a logo. Re-inserting a logo that exists refreshes its bytes and revives it if
-   * the user had deleted it, which is what makes re-uploading a previously removed image work.
+   * Insert or update a logo.
    */
   public static readonly UPSERT = `
     INSERT INTO Logos (Id, Kind, Source, ManifestId, FileData, MimeType, Name, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, ${BaseQueries.ROOT_MANIFEST_ID}, ?, ?, ?, ?, ?, 0)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
     ON CONFLICT(ManifestId, Id) DO UPDATE SET
       FileData = excluded.FileData,
       MimeType = excluded.MimeType,
@@ -46,17 +50,32 @@ export class LogoQueries {
       IsDeleted = 0`;
 
   /**
-   * The user's personal library of uploaded logos, newest first. Favicons are excluded: those are a
-   * cache keyed on domains, not images the user chose and would want to pick again.
+   * One manifest's library of uploaded logos, newest first. Favicons are excluded.
    */
   public static readonly LIST_CUSTOM = `
     SELECT Id, Kind, Source, Name, FileData FROM Logos
-    WHERE Kind = 'custom' AND ${LogoQueries.PERSONAL_SCOPE} AND IsDeleted = 0
+    WHERE ManifestId = ? AND Kind = 'custom' AND IsDeleted = 0
     ORDER BY UpdatedAt DESC`;
 
   /**
-   * Soft-delete an uploaded logo, removing it from the library. Items still pointing at it fall back
-   * to their placeholder; the pruner reclaims the bytes on the next run.
+   * Every item whose logo lives outside the item's own manifest, with the kind and key needed to bring a
+   * copy in.
+   */
+  public static readonly FIND_ITEMS_WITH_FOREIGN_LOGO = `
+    SELECT i.Id, i.ManifestId, origin.Kind, origin.Source
+    FROM Items i
+    INNER JOIN Logos origin ON origin.Id = i.LogoId
+    LEFT JOIN Logos own ON own.Id = i.LogoId AND own.ManifestId = i.ManifestId
+    WHERE i.LogoId IS NOT NULL AND own.Id IS NULL AND i.IsDeleted = 0`;
+
+  /**
+   * Point an item at the copy of its logo that lives in its own manifest.
+   */
+  public static readonly REPOINT_ITEM_LOGO = `
+    UPDATE Items SET LogoId = ? WHERE Id = ? AND ManifestId = ?`;
+
+  /**
+   * Soft-delete an uploaded logo, removing it from the library.
    */
   public static readonly SOFT_DELETE = `
     UPDATE Logos SET IsDeleted = 1, UpdatedAt = ? WHERE Id = ?`;

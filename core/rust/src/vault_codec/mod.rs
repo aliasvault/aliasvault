@@ -13,7 +13,6 @@ mod hash;
 mod manifest;
 mod materialize;
 mod scoped_assets;
-mod legacy;
 mod sharing;
 mod types;
 mod validate;
@@ -29,7 +28,6 @@ pub use manifest::{
     BlobEntry, BucketLayoutEntry, CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecOverflow, DataBucket,
     Manifest, MaterializeInput, MaterializedTables, CodecRecord, CodecTableData, ManifestSpec,
 };
-pub use legacy::stamp_backfill::{backfill_manifest_stamps, count_unstamped_rows, stamped_tables, StampBackfillInput, StampBackfillOutput};
 pub use scoped_assets::{KIND_BUILTIN as LOGO_KIND_BUILTIN, KIND_CUSTOM as LOGO_KIND_CUSTOM, KIND_FAVICON as LOGO_KIND_FAVICON};
 pub use sharing::{active_encryption_key, extract_encryption_key_for_public_key};
 pub use types::{
@@ -226,12 +224,6 @@ pub fn extract_bucket_json(input_json: &str) -> VaultResult<String> {
     }
     let input: Input = serde_json::from_str(input_json)?;
     Ok(serde_json::to_string(&extract_bucket(input.category, input.tables))?)
-}
-
-/// JSON-string sibling of [`backfill_manifest_stamps`].
-pub fn backfill_manifest_stamps_json(input_json: &str) -> VaultResult<String> {
-    let input: StampBackfillInput = serde_json::from_str(input_json)?;
-    Ok(serde_json::to_string(&backfill_manifest_stamps(input))?)
 }
 
 /// JSON-string sibling of [`bucket_layout`]. Output: `[{ "category": <str>, "tables": [<str>] }]`.

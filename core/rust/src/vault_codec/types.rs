@@ -98,11 +98,14 @@ pub fn tables_for_category(category: &str) -> Vec<&'static str> {
     BUCKET_TABLES.iter().filter(|(_, c)| *c == category).map(|(t, _)| *t).collect()
 }
 
-/// True when a `ManifestId` value names no manifest: absent or empty.
+/// All zero GUID used for default values which indicate unstamped rows.
+pub const UNSTAMPED_SCOPE_SENTINEL: &str = "00000000-0000-0000-0000-000000000000";
+
+/// True when a `ManifestId` value names no manifest.
 pub fn is_unstamped_scope(scope: Option<&str>) -> bool {
     match scope {
         None => true,
-        Some(value) => value.is_empty(),
+        Some(value) => value.is_empty() || value.eq_ignore_ascii_case(UNSTAMPED_SCOPE_SENTINEL),
     }
 }
 

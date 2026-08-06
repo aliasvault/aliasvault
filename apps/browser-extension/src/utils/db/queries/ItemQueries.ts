@@ -40,7 +40,8 @@ export class ItemQueries {
     ORDER BY i.CreatedAt DESC`;
 
   /**
-   * Get a single item by ID.
+   * Get a single item by its manifest-qualified key: an id alone does not identify a row, since the
+   * same id can exist in two or more manifests.
    */
   public static readonly GET_BY_ID = `
     SELECT
@@ -61,7 +62,7 @@ export class ItemQueries {
       i.UpdatedAt
     FROM Items i
     LEFT JOIN Logos l ON i.LogoId = l.Id AND l.ManifestId = i.ManifestId
-    WHERE i.Id = ? AND i.IsDeleted = 0`;
+    WHERE i.Id = ? AND i.ManifestId = ? AND i.IsDeleted = 0`;
 
   /**
    * Get all recently deleted items (in trash).
@@ -121,7 +122,7 @@ export class ItemQueries {
         fv.Value,
         fv.Weight as DisplayOrder
       FROM FieldValues fv
-      LEFT JOIN FieldDefinitions fd ON fv.FieldDefinitionId = fd.Id
+      LEFT JOIN FieldDefinitions fd ON fd.ManifestId = fv.ManifestId AND fd.Id = fv.FieldDefinitionId
       WHERE (fv.ManifestId, fv.ItemId) IN (VALUES ${placeholders})
         AND fv.IsDeleted = 0
       ORDER BY fv.ItemId, fv.Weight`;
@@ -141,7 +142,7 @@ export class ItemQueries {
       fv.Value,
       fv.Weight as DisplayOrder
     FROM FieldValues fv
-    LEFT JOIN FieldDefinitions fd ON fv.FieldDefinitionId = fd.Id
+    LEFT JOIN FieldDefinitions fd ON fd.ManifestId = fv.ManifestId AND fd.Id = fv.FieldDefinitionId
     WHERE fv.ItemId = ? AND fv.ManifestId = ? AND fv.IsDeleted = 0
     ORDER BY fv.Weight`;
 
@@ -160,7 +161,7 @@ export class ItemQueries {
         t.Name,
         t.Color
       FROM ItemTags it
-      INNER JOIN Tags t ON it.TagId = t.Id
+      INNER JOIN Tags t ON t.ManifestId = it.ManifestId AND t.Id = it.TagId
       WHERE (it.ManifestId, it.ItemId) IN (VALUES ${placeholders})
         AND it.IsDeleted = 0
         AND t.IsDeleted = 0
@@ -180,13 +181,12 @@ export class ItemQueries {
       t.Name,
       t.Color
     FROM ItemTags it
-    INNER JOIN Tags t ON it.TagId = t.Id
+    INNER JOIN Tags t ON t.ManifestId = it.ManifestId AND t.Id = it.TagId
     WHERE it.ItemId = ? AND it.ManifestId = ? AND it.IsDeleted = 0 AND t.IsDeleted = 0
     ORDER BY t.DisplayOrder, t.Name`;
 
   /**
-   * Insert a new item, stamped with the manifest of the folder it is placed in (the root manifest when
-   * it sits outside any folder). The stamp is the item's membership: nothing derives it later.
+   * Insert a new item, stamped with the manifest of the folder it is placed in.
    */
   public static readonly INSERT_ITEM = `
     INSERT INTO Items (Id, Name, ItemType, LogoId, FolderId, ManifestId, CreatedAt, UpdatedAt, IsDeleted)
@@ -337,23 +337,23 @@ export class FieldValueQueries {
  */
 export class FieldDefinitionQueries {
   /**
-   * Check if a field definition exists.
+   * Check if a field definition exists in the item's manifest. Binds [definitionId, itemId].
    */
   public static readonly EXISTS = `
-    SELECT Id FROM FieldDefinitions WHERE Id = ?`;
+    SELECT Id FROM FieldDefinitions WHERE Id = ? AND ManifestId = ${BaseQueries.MANIFEST_OF_ITEM}`;
 
   /**
-   * Check if a field definition exists and is not deleted.
+   * Check if a field definition exists in the item's manifest and is not deleted. Binds [definitionId, itemId].
    */
   public static readonly EXISTS_ACTIVE = `
-    SELECT Id FROM FieldDefinitions WHERE Id = ? AND IsDeleted = 0`;
+    SELECT Id FROM FieldDefinitions WHERE Id = ? AND ManifestId = ${BaseQueries.MANIFEST_OF_ITEM} AND IsDeleted = 0`;
 
   /**
-   * Insert a new field definition.
+   * Insert a new field definition into the item's manifest. Binds [definitionId, itemId, ...].
    */
   public static readonly INSERT = `
-    INSERT INTO FieldDefinitions (Id, FieldType, Label, IsMultiValue, IsHidden, EnableHistory, Weight, ApplicableToTypes, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    INSERT INTO FieldDefinitions (Id, ManifestId, FieldType, Label, IsMultiValue, IsHidden, EnableHistory, Weight, ApplicableToTypes, CreatedAt, UpdatedAt, IsDeleted)
+    VALUES (?, ${BaseQueries.MANIFEST_OF_ITEM}, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   /**
    * Update an existing field definition.
@@ -365,7 +365,7 @@ export class FieldDefinitionQueries {
         IsHidden = ?,
         Weight = ?,
         UpdatedAt = ?
-    WHERE Id = ?`;
+    WHERE Id = ? AND ManifestId = ${BaseQueries.MANIFEST_OF_ITEM}`;
 }
 
 /**

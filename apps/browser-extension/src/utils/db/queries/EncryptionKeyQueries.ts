@@ -1,5 +1,3 @@
-import { BaseQueries } from './BaseQueries';
-
 /**
  * SQL query constants for encryption keypair operations.
  */
@@ -17,36 +15,24 @@ export class EncryptionKeyQueries {
     WHERE x.IsDeleted = 0`;
 
   /**
-   * Get the user's active personal keypair: the primary row stamped with the root manifest's id.
-   */
-  public static readonly GET_PRIMARY = `
-    SELECT
-      x.Id,
-      x.PublicKey,
-      x.PrivateKey,
-      x.IsPrimary
-    FROM EncryptionKeys x
-    WHERE ${BaseQueries.personalScope('x')} AND x.IsPrimary = 1 AND x.IsDeleted = 0
-    LIMIT 1`;
-
-  /**
-   * Count the personal (root-stamped) encryption keys carrying a given public key, to keep retained copies
-   * idempotent.
+   * Count one manifest's encryption keys carrying a given public key, to keep retained copies idempotent.
    */
   public static readonly COUNT_BY_PUBLIC_KEY = `
     SELECT COUNT(*) as count
     FROM EncryptionKeys x
-    WHERE x.PublicKey = ? AND ${BaseQueries.personalScope('x')}`;
+    WHERE x.ManifestId = ? AND x.PublicKey = ?`;
 
   /**
-   * Retain a copy of a key in the personal keys, explicitly NOT primary, stamped with the root manifest's id.
+   * Retain a copy of a key in a manifest, explicitly NOT primary.
    */
   public static readonly INSERT_NON_PRIMARY = `
     INSERT INTO EncryptionKeys (Id, ManifestId, PublicKey, PrivateKey, IsPrimary, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ${BaseQueries.ROOT_MANIFEST_ID}, ?, ?, 0, ?, ?, 0)`;
+    VALUES (?, ?, ?, ?, 0, ?, ?, 0)`;
 
   /**
-   * Get one manifest's active keypair: the key whose public half is published for SMTP delivery.
+   * Get one manifest's active keypair: the key whose public half is published for SMTP delivery. Passed
+   * the root manifest's id, this is the user's personal keypair — `IsPrimary` alone would not identify it,
+   * as every manifest has a primary row of its own.
    */
   public static readonly GET_ACTIVE_FOR_MANIFEST = `
     SELECT

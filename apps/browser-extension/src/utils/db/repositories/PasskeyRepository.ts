@@ -89,6 +89,7 @@ export class PasskeyRepository extends BaseRepository {
         passkey.Id,
         passkey.ItemId,
         passkey.ItemId,
+        this.activeManifestId(),
         passkey.RpId,
         userHandleData,
         passkey.PublicKey,
