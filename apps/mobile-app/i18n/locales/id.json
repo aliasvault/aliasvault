@@ -193,7 +193,7 @@
     "exportConfirmTitle": "Ekspor Brankas",
     "exportWarning": "Peringatan: Mengekspor vault Anda ke berkas yang tidak terenkripsi akan membuat semua kata sandi dan informasi sensitif Anda terpapar dalam bentuk teks biasa. Lakukan hal ini hanya pada perangkat yang tepercaya dan pastikan Anda:\n\n• Menyimpan berkas hasil ekspor di lokasi yang aman\n• Menghapus berkas tersebut saat Anda tidak lagi membutuhkannya\n• Jangan pernah membagikan berkas hasil ekspor kepada orang lain\n\nApakah Anda yakin ingin melanjutkan proses ekspor?",
     "passwordConfirm": {
-      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+      "exportDescription": "Demi alasan keamanan, silakan masukkan kata sandi utama Anda untuk mengonfirmasi proses ekspor ini."
     },
     "security": "Keamanan",
     "appVersion": "Versi Aplikasi",
@@ -383,7 +383,7 @@
     "alias.first_name": "Nama Depan",
     "alias.last_name": "Nama Belakang",
     "alias.gender": "Jenis kelamin",
-    "alias.birthdate": "Birth Date",
+    "alias.birthdate": "Tanggal Lahir",
     "card.cardholder_name": "Nama Pemilik Kartu",
     "card.number": "Nomor kartu",
     "card.expiry_month": "Bulan Kedaluwarsa",
@@ -413,7 +413,7 @@
     "firstName": "Nama Depan",
     "lastName": "Nama Belakang",
     "fullName": "Nama Lengkap",
-    "birthDate": "Birth Date",
+    "birthDate": "Tanggal Lahir",
     "birthDatePlaceholder": "YYYY-MM-DD",
     "notes": "Catatan",
     "randomAlias": "Alias acak",
@@ -441,7 +441,7 @@
     "emailUnexpectedError": "Terjadi kesalahan yang tidak terduga saat memuat email. Silakan coba lagi nanti.",
     "password": "Kata sandi",
     "passwordLength": "Panjang Kata Sandi",
-    "changePasswordComplexity": "Password Settings",
+    "changePasswordComplexity": "Pengaturan kata sandi",
     "includeLowercase": "Huruf kecil (a-z)",
     "includeUppercase": "Huruf kapital(A-Z)",
     "includeNumbers": "Angka (0-9)",
