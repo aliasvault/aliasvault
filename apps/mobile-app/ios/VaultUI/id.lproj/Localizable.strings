@@ -78,10 +78,10 @@
 "pin_incorrect_attempts_remaining" = "PIN salah. Tersisa %d kali percobaan";
 
 /* Password Unlock */
-"enter_password_to_unlock" = "Enter your master password";
+"enter_password_to_unlock" = "Masukkan kata sandi utama Anda";
 "unlock" = "Buka";
 "incorrect_password" = "Kata sandi salah. Silakan coba lagi.";
-"attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
+"attempts_warning" = "Kata sandi salah. Anda akan dikeluarkan dari sistem jika memasukkan kata sandi yang salah %d kali lagi.";
 "max_attempts_reached" = "Terlalu banyak percobaan untuk membuka. Kamu di-logout dengan alasan keamanan";
 
 /* PIN Setup */
