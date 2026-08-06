@@ -14,7 +14,7 @@
     "error": "Kesalahan",
     "success": "Berhasil",
     "never": "Jangan pernah",
-    "copied": "Tersalin ke papan klip",
+    "copied": "Telah disalin ke papan klip",
     "loadMore": "Muat lebih banyak",
     "use": "Gunakan",
     "none": "None",
@@ -47,8 +47,8 @@
     "unlocking": "Membuka...",
     "loggingIn": "Sedang login",
     "validatingCredentials": "Memvalidasi kredensial",
-    "syncingVault": "Menyinkronkan vault",
-    "verifyingAuthCode": "Verifikasi kode autentikasi",
+    "syncingVault": "Menyinkronkan brankas",
+    "verifyingAuthCode": "Memverifikasi kode autentikasi",
     "verify": "Verifikasi",
     "unlockVault": "Buka Brankas",
     "unlockWithBiometric": "Buka kunci dengan {{biometric}}",
@@ -57,19 +57,19 @@
     "enterPassword": "Masukkan kata sandi Anda untuk membuka kunci brankas",
     "enterAuthCode": "Masukkan kode 6 digit",
     "usernamePlaceholder": "nama / nama@perusahaan.com",
-    "passwordPlaceholder": "Masukkan kata sandi Anda",
+    "passwordPlaceholder": "Masukkan kata sandi anda",
     "enableBiometric": "Aktifkan {{biometric}}?",
-    "biometricPrompt": "Apakah Anda ingin menggunakan {{biometric}} untuk membuka kunci brankas Anda?",
-    "authCodeNote": "Catatan: Jika kamu tidak punya akses ke perangkat autentikator-mu, kamu bisa me-reset 2FA dengan kode recovery dengan cara login melalui website.",
+    "biometricPrompt": "Apakah anda ingin menggunakan {{biometric}} untuk membuka kunci brankas anda?",
+    "authCodeNote": "Catatan: Jika anda tidak punya akses ke perangkat autentikator-mu, anda bisa me-reset 2FA dengan kode recovery dengan cara login melalui website.",
     "errors": {
       "credentialsRequired": "Nama Pengguna dan Kata Sandi diperlukan",
       "invalidAuthCode": "Mohon masukkan 6-digit kode autentikasi yang valid",
       "incorrectPassword": "Kata sandi salah. Silakan coba lagi.",
       "enterPassword": "Silakan masukkan kata sandi Anda",
       "serverError": "Tidak dapat menjangkau Server AliasVault. Silakan coba lagi nanti atau hubungi layanan pelanggan jika masalah berlanjut.",
-      "serverErrorSelfHosted": "Tidak dapat menjangkau API. Untuk instans yang di-host mandiri, pastikan endpoint API dapat dijangkau dengan membukanya di browser: halaman tersebut harus menampilkan 'OK'.",
+      "serverErrorSelfHosted": "Tidak dapat mengakses API. Untuk instans yang dihosting sendiri, silakan periksa apakah titik akhir API dapat diakses dengan membukanya di peramban: seharusnya muncul tulisan ‘OK’.",
       "networkError": "Permintaan jaringan gagal. Silakan periksa koneksi internet Anda dan coba lagi.",
-      "networkErrorSelfHosted": "Permintaan jaringan gagal. Periksa koneksi jaringan Anda dan ketersediaan server. Untuk instans yang di-host sendiri, pastikan Anda telah memasang sertifikat SSL yang valid. Sertifikatself-signed tidak didukung pada perangkat seluler karena alasan keamanan.",
+      "networkErrorSelfHosted": "Permintaan jaringan gagal. Periksa koneksi jaringan dan ketersediaan server Anda. Untuk instans yang dihosting sendiri, pastikan Anda telah menginstal sertifikat SSL yang valid. Sertifikat yang ditandatangani sendiri tidak didukung di perangkat seluler karena alasan keamanan.",
       "sessionExpired": "Sesi Anda telah berakhir. Silakan masuk kembali.",
       "httpError": "Kesalahan HTTP: {{status}}"
     },
@@ -92,7 +92,7 @@
     "executingOperation": "Menjalankan operasi...",
     "checkingVaultUpdates": "Memeriksa pembaruan brankas",
     "syncingUpdatedVault": "Menyinkronkan vault terbaru",
-    "mergingVault": "Menyatukan perubahan vault",
+    "mergingVault": "Menggabungkan perubahan pada brankas",
     "uploadingChanges": "Mengunggah perubahan",
     "errors": {
       "failedToGetEncryptedDatabase": "Gagal mendapatkan database terenkripsi",
@@ -176,9 +176,9 @@
       "30seconds": "30 detik"
     },
     "batteryOptimizationHelpTitle": "Aktifkan Pembersihan Papan Klip di Latar Belakang",
-    "batteryOptimizationActive": "Optimasi baterai memblokir task background",
-    "batteryOptimizationDisabled": "Aktifkan Pembersihan Papan Klip di Latar Belakang",
-    "batteryOptimizationHelpDescription": "Optimasi baterai Android mencegah pembersihan papan klip yang andal saat aplikasi berada di latar belakang. Menonaktifkan optimasi baterai untuk AliasVault memungkinkan pembersihan papan klip di latar belakang secara akurat dan secara otomatis memberikan izin alarm yang diperlukan.",
+    "batteryOptimizationActive": "Optimasi baterai memblokir task latar belakang",
+    "batteryOptimizationDisabled": "Fitur penghapusan clipboard latar belakang diaktifkan",
+    "batteryOptimizationHelpDescription": "Fitur pengoptimalan baterai Android menghalangi penghapusan clipboard yang andal saat aplikasi berada di latar belakang. Menonaktifkan pengoptimalan baterai untuk AliasVault memungkinkan penghapusan clipboard di latar belakang secara akurat dan secara otomatis memberikan izin alarm yang diperlukan.",
     "disableBatteryOptimization": "Nonaktifkan optimasi baterai",
     "identityGenerator": "Pembuat identitas",
     "passwordGenerator": "Pembuat Kata Sandi",
@@ -239,9 +239,9 @@
       "description": "Pilih berapa lama aplikasi dapat tetap berjalan di latar belakang sebelum memerlukan otentikasi ulang. Anda harus menggunakan Face ID atau memasukkan kata sandi untuk membuka kembali brankas tersebut."
     },
     "identityGeneratorSettings": {
-      "description": "Konfigurasikan bahasa default dan preferensi jenis kelamin untuk membuat identitas baru.",
+      "description": "Atur bahasa default dan preferensi jenis kelamin untuk pembuatan identitas baru.",
       "languageSection": "Bahasa",
-      "languageDescription": "Atur bahasa yang akan digunakan saat membuat identitas baru.",
+      "languageDescription": "Tentukan bahasa yang akan digunakan saat membuat identitas baru.",
       "genderSection": "Jenis kelamin",
       "genderDescription": "Atur preferensi jenis kelamin untuk membuat identitas baru.",
       "ageRangeSection": "Rentang usia",
@@ -435,7 +435,7 @@
     "clearFilter": "Bersihkan filter",
     "recentEmails": "Email terbaru",
     "loadingEmails": "Memuat Email...",
-    "noEmailsYet": "No emails received yet.",
+    "noEmailsYet": "Belum ada email yang diterima",
     "offlineEmailsMessage": "Anda sedang offline. Silakan hubungkan ke internet untuk memuat email Anda.",
     "emailLoadError": "Terjadi kesalahan saat memuat email. Mohon coba lagi nanti.",
     "emailUnexpectedError": "Terjadi kesalahan yang tidak terduga saat memuat email. Silakan coba lagi nanti.",
@@ -474,26 +474,26 @@
     "vaultSyncFailed": "Sinkronisasi brankas gagal",
     "vaultSyncedSuccessfully": "Brankas berhasil tersinkronisasi",
     "vaultUpToDate": "Brankas sudah diperbarui",
-    "offlineMessage": "You are offline. Please connect to the internet to sync your vault.",
-    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "offlineMessage": "Anda sedang offline. Silakan terhubung ke internet untuk menyinkronkan vault Anda.",
+    "switchBackToOriginalApp": "Kembali ke aplikasi semula untuk melanjutkan.",
     "autofillOpenApp": {
-      "title": "Autofill request",
-      "description": "Choose an action for the app or website that requested autofill.",
-      "appOrUrlLabel": "App or URL",
-      "findExistingTitle": "Link to existing credential",
-      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
-      "createNewTitle": "Create new credential",
-      "createNewDescription": "Add a new credential to your vault for this app or URL."
+      "title": "Permintaan pengisian otomatis",
+      "description": "Pilih tindakan untuk aplikasi atau situs web yang meminta pengisian otomatis.",
+      "appOrUrlLabel": "Aplikasi atau URL",
+      "findExistingTitle": "Tautan ke kredensial yang sudah ada",
+      "findExistingDescription": "Pilih kredensial yang sudah ada dari brankas Anda untuk dihubungkan ke alamat di atas.",
+      "createNewTitle": "Buat kredensial baru",
+      "createNewDescription": "Tambahkan kredensial baru ke brankas Anda untuk aplikasi atau URL ini."
     },
     "autofillLinkExisting": {
-      "title": "Link to existing credential",
-      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
+      "title": "Tautan ke kredensial yang sudah ada",
+      "intro": "Pilih kredensial yang sudah ada dari brankas Anda untuk ditautkan ke “{{target}}”.",
       "confirmTitle": "Tautkan ke kredensial?",
-      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+      "confirmMessage": "Apakah Anda yakin ingin menautkan “{{url}}” ke kredensial ini?"
     },
     "autofillUrlAdded": {
-      "title": "Credential linked",
-      "message": "Autofill should now offer this credential the next time you open the app."
+      "title": "Kredensial tertaut",
+      "message": "Fitur pengisian otomatis seharusnya sudah menampilkan kredensial ini saat Anda membuka aplikasi berikutnya."
     },
     "filters": {
       "all": "Items",
@@ -508,63 +508,63 @@
       "newestFirst": "Terbaru dahulu",
       "alphabetical": "Abjad (A-Z)"
     },
-    "totpCode": "TOTP Code",
+    "totpCode": "Kode TOTP",
     "attachments": "Lampiran",
     "deleteAttachment": "Hapus",
-    "fileSavedTo": "File saved to",
-    "previewNotSupported": "Preview not supported",
-    "downloadToView": "Download the file to view it",
+    "fileSavedTo": "File disimpan ke",
+    "previewNotSupported": "Pratinjau tidak didukung",
+    "downloadToView": "Unduh berkas tersebut untuk melihatnya",
     "unsavedChanges": {
-      "title": "Discard Changes?",
-      "message": "You have unsaved changes. Are you sure you want to discard them?",
-      "discard": "Discard"
+      "title": "Buang perubahan?",
+      "message": "Anda memiliki perubahan yang belum disimpan. Apakah Anda yakin ingin membatalkan perubahan tersebut?",
+      "discard": "Buang"
     },
     "toasts": {
-      "itemUpdated": "Item updated successfully",
-      "itemCreated": "Item created successfully",
-      "itemDeleted": "Item deleted successfully",
-      "usernameCopied": "Username copied to clipboard",
-      "emailCopied": "Email copied to clipboard",
+      "itemUpdated": "Item berhasil diperbarui",
+      "itemCreated": "Item berhasil dibuat",
+      "itemDeleted": "Item berhasil dihapus",
+      "usernameCopied": "Nama pengguna disalin ke papan klip",
+      "emailCopied": "Email disalin ke papan klip",
       "passwordCopied": "Kata sandi disalin ke papan klip",
-      "totpCodeCopied": "TOTP code copied to clipboard",
-      "urlCopied": "URL copied to clipboard"
+      "totpCodeCopied": "Nama pengguna disalin ke papan klip",
+      "urlCopied": "URL disalin ke clipboard"
     },
-    "createNewAliasFor": "Create new alias for",
+    "createNewAliasFor": "Buat alias baru untuk",
     "contextMenu": {
-      "title": "Item Options",
+      "title": "Opsi Item",
       "edit": "Ubah",
       "duplicate": "Duplikasi",
       "delete": "Hapus",
       "copyUsername": "Salin Nama Pengguna",
       "copyEmail": "Salin email",
       "copyPassword": "Salin Kata Sandi",
-      "copyTotpCode": "Copy TOTP Code"
+      "copyTotpCode": "Salin kode TOTP"
     },
     "urlContextMenu": {
-      "title": "URL Options",
-      "copyLink": "Copy Link",
-      "openLink": "Open Link",
-      "shareLink": "Share Link"
+      "title": "Opsi URL",
+      "copyLink": "Salin Tautan",
+      "openLink": "Buka tautan",
+      "shareLink": "Bagi Link"
     },
     "viewHistory": "Lihat Riwayat",
     "history": "Riwayat",
     "noHistoryAvailable": "Tidak ada riwayat yang tersedia",
-    "deleteHistoryConfirm": "Are you sure you want to delete this history record?",
-    "deleteConfirm": "Are you sure you want to delete this item? This action cannot be undone.",
+    "deleteHistoryConfirm": "Apakah Anda yakin ingin menghapus riwayat ini?",
+    "deleteConfirm": "Apakah Anda yakin ingin menghapus item ini? Tindakan ini tidak dapat dibatalkan.",
     "folders": {
       "folder": "Folder",
       "newFolder": "Folder baru",
       "createFolder": "Buat Folder",
       "editFolder": "Edit Folder",
       "folderName": "Nama Folder",
-      "folderNamePlaceholder": "e.g., Work, Personal",
+      "folderNamePlaceholder": "e.g., Kerja, Personal",
       "folderNameRequired": "Nama Folder diperlukan",
       "deleteFolder": "Hapus folder",
       "deleteFolderKeepItems": "Hapus folder saja",
       "deleteFolderKeepItemsDescription": "Item akan dipindahkan ke folder induk.",
       "deleteFolderAndItems": "Hapus folder dan semua item",
       "deleteFolderAndItemsDescription": "Sebanyak {{count}} item akan dipindahkan ke Baru Dihapus.",
-      "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
+      "emptyFolderHint": "Folder ini kosong. Untuk memindahkan item ke folder ini, edit item tersebut dan pilih folder ini.",
       "selectFolder": "Select Folder"
     },
     "recentlyDeleted": {
@@ -582,21 +582,21 @@
       "confirmDeleteMessage": "Item ini akan dihapus secara permanen dan tidak dapat dipulihkan.",
       "confirmEmptyAllTitle": "Kosongkan Item yang Baru Saja Dihapus?",
       "confirmEmptyAllMessage": "Semua {{count}} item akan dihapus secara permanen dan tidak dapat dipulihkan.",
-      "itemRestored": "Item restored",
-      "itemDeleted": "Item permanently deleted",
-      "allItemsDeleted": "All items permanently deleted"
+      "itemRestored": "Item telah dipulihkan",
+      "itemDeleted": "Item dihapus secara permanen",
+      "allItemsDeleted": "Semua item dihapus secara permanen"
     }
   },
   "emails": {
     "title": "Email",
-    "emailDetails": "Email Details",
-    "subject": "Subject:",
+    "emailDetails": "Rincian email",
+    "subject": "Perihal:",
     "date": "Tanggal:",
     "from": "Dari:",
     "to": "Kepada:",
     "attachments": "Lampiran",
     "deleteEmail": "Hapus Email",
-    "deleteEmailConfirm": "Are you sure you want to delete this email? This action is permanent and cannot be undone.",
+    "deleteEmailConfirm": "Apakah Anda yakin ingin menghapus email ini? Tindakan ini bersifat permanen dan tidak dapat dibatalkan.",
     "emailNotFound": "Email tidak ditemukan",
     "formatHtml": "HTML",
     "formatPlain": "Teks",
@@ -617,9 +617,9 @@
   },
   "validation": {
     "required": "Bagian ini perlu diisi",
-    "serviceNameRequired": "Service name is required",
-    "invalidDateFormat": "Date must be in YYYY-MM-DD format",
-    "invalidEmailFormat": "Invalid email format"
+    "serviceNameRequired": "Nama layanan diperlukan",
+    "invalidDateFormat": "Penanggalan harus dalam format YYYY-MM-DD",
+    "invalidEmailFormat": "Format email tidak valid"
   },
   "apiErrors": {
     "CLAIM_DOES_NOT_MATCH_USER": "Alamat email yang dipilih saat ini sudah digunakan. Silakan ubah alamat email dengan mengedit kredensial ini.",
@@ -651,49 +651,49 @@
   "sync": {
     "offline": "Offline",
     "syncing": "Menyinkronkan...",
-    "pending": "Pending sync",
-    "backOnline": "Back online",
-    "stillOffline": "Still offline",
-    "syncFailed": "Sync failed"
+    "pending": "Sinkronisasi tertunda",
+    "backOnline": "Kembali online",
+    "stillOffline": "Tetap offline",
+    "syncFailed": "Sinkronisasi gagal"
   },
   "app": {
     "status": {
-      "unlockingVault": "Unlocking vault",
-      "decryptingVault": "Decrypting vault"
+      "unlockingVault": "Membuka Brankas",
+      "decryptingVault": "Mendekripsi brankas"
     },
     "navigation": {
       "login": "Masuk",
-      "loginSettings": "Login Settings"
+      "loginSettings": "Pengaturan Masuk"
     },
     "notFound": {
-      "title": "Page not found",
-      "message": "This page has been moved or deleted.",
-      "goHome": "Go back to the start"
+      "title": "Halaman tidak ditemukan",
+      "message": "Halaman ini telah dipindahkan atau dihapus.",
+      "goHome": "Kembali ke awal"
     },
     "appName": "AliasVault",
     "reinitialize": {
-      "vaultAutoLockedMessage": "Vault auto-locked after timeout.",
-      "attemptingToUnlockMessage": "Attempting to unlock."
+      "vaultAutoLockedMessage": "Vault terkunci secara otomatis setelah waktu tunggu habis.",
+      "attemptingToUnlockMessage": "Sedang mencoba membuka kunci."
     },
     "vaultError": {
-      "title": "Vault Error",
-      "description": "An error occurred while loading your vault. If this problem persists, please contact support.",
-      "showDetails": "Show error details",
-      "hideDetails": "Hide error details",
-      "copyErrorDetails": "Copy error details"
+      "title": "Brankas Error",
+      "description": "Terjadi kesalahan saat memuat brankas Anda. Jika masalah ini terus berlanjut, silakan hubungi bagian dukungan.",
+      "showDetails": "Tampilkan rincian eror",
+      "hideDetails": "Sembunyikan rincian eror",
+      "copyErrorDetails": "Salin rincian eror"
     },
     "loginSettings": {
-      "title": "API Connection",
-      "selfHosted": "Self-hosted",
-      "customApiUrl": "Custom API URL",
+      "title": "Sambungan API",
+      "selfHosted": "Hosting mandiri",
+      "customApiUrl": "URL API Khusus",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
-      "version": "Version: {{version}}",
-      "advancedSettings": "Advanced settings",
-      "customProxyHeaders": "Custom proxy headers",
-      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
-      "headerName": "Header name",
+      "version": "Versi: {{version}}",
+      "advancedSettings": "Pengaturan lanjutan",
+      "customProxyHeaders": "Header proxy khusus",
+      "customProxyHeadersDescription": "Tambahkan header HTTP yang akan dikirimkan bersama setiap permintaan ke server AliasVault Anda. Fitur ini dapat digunakan untuk konfigurasi self-hosted yang berada di belakang proxy terbalik yang memeriksa keberadaan header khusus (misalnya, Pangolin, Cloudflare Access).",
+      "headerName": "Nama Header",
       "headerNamePlaceholder": "X-Custom-Header",
-      "headerValue": "Header value"
+      "headerValue": "Nilai header"
     }
   },
   "upgrade": {
@@ -702,18 +702,18 @@
     "versionInformation": "Informasi Versi",
     "yourVault": "Versi brankas Anda:",
     "newVersion": "Versi baru yang tersedia:",
-    "upgrade": "Upgrade",
+    "upgrade": "Pembaruan",
     "upgrading": "Memperbarui...",
     "logout": "Keluar",
     "whatsNew": "Apa yang baru",
     "whatsNewDescription": "Pembaruan diperlukan untuk mendukung perubahan berikut:",
     "noDescriptionAvailable": "Tidak ada deskripsi yang tersedia untuk versi ini.",
     "status": {
-      "preparingUpgrade": "Preparing upgrade...",
-      "vaultAlreadyUpToDate": "Vault is already up to date",
-      "applyingDatabaseMigrations": "Applying database migrations...",
-      "applyingMigration": "Applying migration {{current}} of {{total}}...",
-      "committingChanges": "Committing changes..."
+      "preparingUpgrade": "Menyiapkan pembaruan...",
+      "vaultAlreadyUpToDate": "Brankas sudah diperbarui",
+      "applyingDatabaseMigrations": "Sedang menerapkan migrasi database...",
+      "applyingMigration": "Menerapkan migrasi {{current}} dari {{total}}...",
+      "committingChanges": "Menerapkan perubahan..."
     },
     "alerts": {
       "unableToGetVersionInfo": "Tidak dapat memperoleh informasi versi. Silakan coba lagi.",
