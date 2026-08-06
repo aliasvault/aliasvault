@@ -60,36 +60,36 @@
   </resheader>
   <!-- Login Field Labels -->
   <data name="FieldLabel_login_username" xml:space="preserve">
-    <value>Username</value>
+    <value></value>
     <comment>Label for username field</comment>
   </data>
   <data name="FieldLabel_login_password" xml:space="preserve">
-    <value>Kata sandi</value>
+    <value></value>
     <comment>Label for password field</comment>
   </data>
   <data name="FieldLabel_login_email" xml:space="preserve">
-    <value>E-mail</value>
+    <value></value>
     <comment>Label for email field</comment>
   </data>
   <data name="FieldLabel_login_url" xml:space="preserve">
-    <value>Website</value>
+    <value>Situs Web</value>
     <comment>Label for URL field</comment>
   </data>
   <!-- Alias Field Labels -->
   <data name="FieldLabel_alias_first_name" xml:space="preserve">
-    <value>Nama Depan</value>
+    <value></value>
     <comment>Label for first name field</comment>
   </data>
   <data name="FieldLabel_alias_last_name" xml:space="preserve">
-    <value>Nama Belakang</value>
+    <value></value>
     <comment>Label for last name field</comment>
   </data>
   <data name="FieldLabel_alias_gender" xml:space="preserve">
-    <value>Jenis kelamin</value>
+    <value></value>
     <comment>Label for gender field</comment>
   </data>
   <data name="FieldLabel_alias_birthdate" xml:space="preserve">
-    <value>Birth Date</value>
+    <value>Tanggal Lahir</value>
     <comment>Label for birthdate field</comment>
   </data>
   <!-- Card Field Labels -->
@@ -119,12 +119,12 @@
   </data>
   <!-- Notes Field Labels -->
   <data name="FieldLabel_notes_content" xml:space="preserve">
-    <value>Catatan</value>
+    <value></value>
     <comment>Label for notes content field</comment>
   </data>
   <!-- History -->
   <data name="ViewHistory" xml:space="preserve">
-    <value>Lihat Riwayat</value>
+    <value></value>
     <comment>Tooltip for history icon button</comment>
   </data>
 </root>

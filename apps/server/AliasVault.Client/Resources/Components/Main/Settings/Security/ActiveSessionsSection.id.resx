@@ -59,47 +59,47 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Active Sessions</value>
+    <value>Sesi Aktif</value>
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Below is a list of devices where your account is currently logged in or has an active session. You can log out from any of these sessions here.</value>
+    <value>Di bawah ini adalah daftar perangkat yang saat ini sedang digunakan untuk masuk ke akun Anda atau memiliki sesi aktif. Anda dapat keluar dari salah satu sesi tersebut di sini.</value>
     <comment>Description of active sessions</comment>
   </data>
   <data name="NoSessionsMessage" xml:space="preserve">
-    <value>No active sessions found.</value>
+    <value>Tidak ada sesi aktif ditemukan.</value>
     <comment>Message when no active sessions are available</comment>
   </data>
   <data name="DeviceColumn" xml:space="preserve">
-    <value>Device</value>
+    <value>Perangkat</value>
     <comment>Table column header</comment>
   </data>
   <data name="LastActiveColumn" xml:space="preserve">
-    <value>Last active</value>
+    <value>Terakhir aktif</value>
     <comment>Table column header</comment>
   </data>
   <data name="ExpiresColumn" xml:space="preserve">
-    <value>Expires</value>
+    <value>Berlaku hingga</value>
     <comment>Table column header</comment>
   </data>
   <data name="ActionColumn" xml:space="preserve">
-    <value>Action</value>
+    <value>Tindakan</value>
     <comment>Table column header</comment>
   </data>
   <data name="RevokeButton" xml:space="preserve">
-    <value>Revoke</value>
+    <value>Cabut izin</value>
     <comment>Button to revoke session</comment>
   </data>
   <data name="RevokeSuccessMessage" xml:space="preserve">
-    <value>Session revoked successfully.</value>
+    <value>Sesi berhasil dicabut.</value>
     <comment>Success message when session is revoked</comment>
   </data>
   <data name="RevokeErrorMessage" xml:space="preserve">
-    <value>Failed to revoke session.</value>
+    <value>Gagal mencabut sesi.</value>
     <comment>Error message when session revocation fails</comment>
   </data>
   <data name="RevokeExceptionMessage" xml:space="preserve">
-    <value>Failed to revoke session: {0}.</value>
+    <value>Gagal mencabut sesi: {0}.</value>
     <comment>Exception message when session revocation fails. {0} is placeholder for error details</comment>
   </data>
 </root>
