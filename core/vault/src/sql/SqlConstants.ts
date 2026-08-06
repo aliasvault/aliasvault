@@ -1354,7 +1354,7 @@ ALTER TABLE "Folders" ADD "ManifestId" TEXT NULL;
 CREATE TABLE "Manifests" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_Manifests" PRIMARY KEY,
     "IsRoot" INTEGER NOT NULL,
-    "AnchorFolderId" TEXT NULL
+    "Name" TEXT NULL
 );
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")

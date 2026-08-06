@@ -29,11 +29,14 @@ const ROOT_MANIFEST: &str = "00000000-0000-0000-0000-00000000r00t";
 fn basic_input(tables: Vec<CodecTableData>) -> CanonicalizeInput {
     CanonicalizeInput {
         tables,
-        user_salt: "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff".to_string(),
         migration_id: "20250101000000_Init".to_string(),
         canonicalized_at: "2026-01-01T00:00:00.000Z".to_string(),
-        root_manifest_id: ROOT_MANIFEST.to_string(),
-        shared_manifests: Vec::new(),
+        manifests: vec![ManifestSpec {
+            manifest_id: ROOT_MANIFEST.to_string(),
+            user_salt: "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff".to_string(),
+            name: None,
+            is_root: true,
+        }],
     }
 }
 
@@ -128,6 +131,7 @@ fn inline_b64_columns_survive_roundtrip() {
     assert_eq!(cell["__b64"], json!(b64(&secret)));
 
     let re = materialize_as_sqlite(materialize_input(out.root().manifest.clone(), vec![], out.data_buckets)).unwrap();
+    let re = materialize_as_sqlite(materialize_input(out.root().manifest.clone(), vec![], out.root().data_buckets.clone())).unwrap();
     let items = re.tables.iter().find(|t| t.name == "Items").unwrap();
     assert_eq!(items.records[0]["Secret"]["__b64"], json!(b64(&secret)));
 }
@@ -141,6 +145,7 @@ fn materialize_as_sqlite_emits_settings_table_and_migration_id() {
     ]);
     let out = canonicalize_from_sqlite(input).unwrap();
     let re = materialize_as_sqlite(materialize_input(out.root().manifest.clone(), vec![], out.data_buckets)).unwrap();
+    let re = materialize_as_sqlite(materialize_input(out.root().manifest.clone(), vec![], out.root().data_buckets.clone())).unwrap();
     assert_eq!(re.migration_id, "20250101000000_Init");
     assert!(re.tables.iter().any(|t| t.name == "Settings" && t.records.len() == 1));
     assert!(re.tables.iter().any(|t| t.name == "Items"));
@@ -175,6 +180,7 @@ fn full_roundtrip_with_blobs_is_semantically_equal() {
     assert_eq!(out.root().blobs.len(), 2);
 
     let re = materialize_as_sqlite(materialize_input(out.root().manifest.clone(), vec![], out.data_buckets.clone())).unwrap();
+    let re = materialize_as_sqlite(materialize_input(out.root().manifest.clone(), vec![], out.root().data_buckets.clone())).unwrap();
     // Items/Logos/Attachments/Settings all present (skip tables aside).
     for name in ["Items", "Logos", "Attachments", "Settings"] {
         assert!(re.tables.iter().any(|t| t.name == name), "missing table {name}");
@@ -453,6 +459,7 @@ fn materialize_splits_unknown_columns_into_overflow_table_and_canonicalize_remer
     .unwrap();
 
     let re = materialize_as_sqlite(MaterializeInput::new(out.root().manifest.clone(), vec![], out.data_buckets, old_client_schema())).unwrap();
+    let re = materialize_as_sqlite(MaterializeInput::new(out.root().manifest.clone(), vec![], out.root().data_buckets.clone(), old_client_schema())).unwrap();
     let items = re.tables.iter().find(|t| t.name == "Items").unwrap();
     assert!(!items.records[0].contains_key("AliasEnabled"), "unknown column filtered out of the insert set");
     assert_eq!(items.records[0]["Name"], json!("GitHub"));

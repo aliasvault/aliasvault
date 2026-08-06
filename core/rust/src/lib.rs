@@ -35,7 +35,7 @@ pub use vault_codec::{
     extract_bucket, generate_user_salt, unpack_payload, materialize_as_sqlite, pack_payload,
     validate_manifest, validate_data_bucket, BlobEntry,
     CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecRecord, CodecTableData, DataBucket, Manifest,
-    ManifestEntry, MaterializeInput, MaterializedTables, SharedManifestSpec, ValidationResult,
+    ManifestEntry, MaterializeInput, MaterializedTables, ManifestSpec, ValidationResult,
 };
 pub use vault_pruner::{
     prune_vault, PruneInput, PruneOutput, PruneStats,

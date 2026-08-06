@@ -19,16 +19,16 @@ use std::collections::{HashMap, HashSet};
 
 use serde_json::json;
 
-use super::manifest::{CodecOverflow, CodecRecord, CodecTableData, Manifest, MaterializeInput, MaterializedTables};
+use super::manifest::{CodecOverflow, CodecRecord, CodecTableData, DataBucket, Manifest, ManifestEntry, MaterializeInput, MaterializedTables};
 use super::types::{is_skip_table, primary_key_for, MANIFESTS_TABLE, OVERFLOW_TABLE};
 use crate::error::{VaultError, VaultResult};
 
-/// Materialize the vault's manifests + data buckets into the table set the platform inserts. Every
-/// manifest arrives in one list; the root one is pulled out and the rest are combined into its table
-/// set, root-wins primary-key dedup, personal-table stripping, dangling-parent repair, and
-/// per-manifest logo scoping.
+/// Materialize the vault's manifests into the table set the platform inserts. Every manifest arrives
+/// in one list, each carrying its own data buckets; they are combined into a single table set with
+/// per-manifest logo scoping, key-scope filtering, and earlier-manifest-wins primary-key dedup. 
+/// Every manifest's buckets merge into the same local tables.
 pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<MaterializedTables> {
-    let MaterializeInput { mut manifests, data_buckets, schema_columns } = input;
+    let MaterializeInput { mut manifests, schema_columns } = input;
 
     // Check for a non-empty schema.
     if schema_columns.is_empty() {
@@ -43,10 +43,18 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
         _ => return Err(VaultError::General(format!("materialize input carries {} root manifests, expected exactly one", root_positions.len()))),
     };
 
+    /*
+     * Every manifest's buckets are merged into the same local table set, so a category one manifest
+     * owns privately and a category several manifests each contribute to (a shared last-used-at
+     * bucket, say) land in one joined table the app queries without caring which namespace a row
+     * came from. Collected before the root is split out so the order matches `manifests`.
+     */
+    let manifest_records = manifest_bookkeeping_records(&manifests);
+    let data_buckets: Vec<DataBucket> = manifests.iter_mut().flat_map(|entry| std::mem::take(&mut entry.data_buckets)).collect();
+
     let root = manifests.remove(root_index).manifest;
     let others: Vec<Manifest> = manifests.into_iter().map(|entry| entry.manifest).collect();
 
-    let manifest_records = manifest_bookkeeping_records(&root, &others);
     let root_manifest_id = root.manifest_id.clone();
     let migration_id = root.migration_id;
     let combined = super::sharing::combine_manifest_tables(root.tables, &root_manifest_id, others);
@@ -100,23 +108,19 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     })
 }
 
-/// One `Manifests` row per materialized manifest: `{ Id, IsRoot, AnchorFolderId }`.
-fn manifest_bookkeeping_records(root: &Manifest, others: &[Manifest]) -> Vec<CodecRecord> {
-    let mut records: Vec<CodecRecord> = Vec::with_capacity(1 + others.len());
-    let mut push = |manifest: &Manifest, is_root: bool| {
-        let id = manifest.manifest_id.as_str();
+/// One `Manifests` row per materialized manifest: `{ Id, IsRoot, Name }`.
+fn manifest_bookkeeping_records(manifests: &[ManifestEntry]) -> Vec<CodecRecord> {
+    let mut records: Vec<CodecRecord> = Vec::with_capacity(manifests.len());
+    for entry in manifests {
+        let id = entry.manifest.manifest_id.as_str();
         if id.is_empty() {
-            return;
+            continue;
         }
         let mut row: CodecRecord = HashMap::new();
         row.insert("Id".to_string(), json!(id));
-        row.insert("IsRoot".to_string(), json!(if is_root { 1 } else { 0 }));
-        row.insert("AnchorFolderId".to_string(), manifest.anchor_folder_id.as_deref().map(|f| json!(f)).unwrap_or(serde_json::Value::Null));
+        row.insert("IsRoot".to_string(), json!(if entry.is_root { 1 } else { 0 }));
+        row.insert("Name".to_string(), entry.manifest.name.as_deref().map(|n| json!(n)).unwrap_or(serde_json::Value::Null));
         records.push(row);
-    };
-    push(root, true);
-    for manifest in others {
-        push(manifest, false);
     }
     records
 }

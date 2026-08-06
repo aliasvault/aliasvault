@@ -56,15 +56,12 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
         };
     }
 
-    // A shared manifest is readable by other users: it must never carry personal tables
-    // (key material, bucketed settings). See `types::is_personal_table`.
-    if manifest.anchor_folder_id.is_some() {
-        for name in manifest.tables.keys() {
-            if super::types::is_personal_table(name) && !manifest.tables[name].is_empty() {
-                failed.push("shared-manifest-carries-personal-table".to_string());
-                explain.push(format!("Shared manifest carries personal table {}", name));
-                break;
-            }
+    // Bucketed tables sync as their own resource beside the manifest, so no manifest may carry them.
+    for name in manifest.tables.keys() {
+        if super::types::is_personal_table(name) && !manifest.tables[name].is_empty() {
+            failed.push("manifest-carries-personal-table".to_string());
+            explain.push(format!("Manifest carries personal table {}", name));
+            break;
         }
     }
 

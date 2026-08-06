@@ -44,7 +44,7 @@ pub const ENCRYPTION_KEYS_TABLE: &str = "EncryptionKeys";
 pub const MANIFEST_ID_COL: &str = "ManifestId";
 
 /// Local bookkeeping table materialize writes into the vault DB: one row per manifest this 
-/// vault is materialized from (`Id`, `IsRoot`, `AnchorFolderId`).
+/// vault is materialized from (`Id`, `IsRoot`, `Name`).
 pub const MANIFESTS_TABLE: &str = "Manifests";
 
 /// Manifest / metadata schema version. This is the manifest *wire structure* version and is its own
