@@ -67,11 +67,11 @@
     <comment>Page description</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
-    <value>Auto-refresh enabled</value>
+    <value>Fitur penyegaran otomatis diaktifkan</value>
     <comment>Tooltip for auto-refresh indicator</comment>
   </data>
   <data name="RefreshButton" xml:space="preserve">
-    <value>Refresh</value>
+    <value>Segarkan</value>
     <comment>Refresh button text</comment>
   </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
