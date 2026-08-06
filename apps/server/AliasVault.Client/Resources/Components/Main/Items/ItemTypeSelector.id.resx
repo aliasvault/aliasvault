@@ -47,7 +47,7 @@
   </data>
   <!-- Buttons -->
   <data name="RegenerateAlias">
-    <value>Regenerate Alias</value>
+    <value>Buat ulang alias</value>
     <comment>Tooltip for regenerate alias button</comment>
   </data>
 </root>
