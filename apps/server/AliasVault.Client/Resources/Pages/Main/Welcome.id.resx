@@ -25,7 +25,7 @@
     <comment>Title for the welcome step</comment>
   </data>
   <data name="HowAliasVaultWorksStepTitle">
-    <value>How AliasVault Works</value>
+    <value>Bagaimana AliasVault bekerja</value>
     <comment>Title for the how it works step</comment>
   </data>
   <data name="TipsStepTitle">
@@ -33,7 +33,7 @@
     <comment>Title for the tips step</comment>
   </data>
   <data name="GetStartedStepTitle">
-    <value>Get Started</value>
+    <value>Memulai</value>
     <comment>Title for the get started step</comment>
   </data>
   <data name="TutorialStepTitle">
@@ -42,66 +42,66 @@
   </data>
   <!-- Welcome step content -->
   <data name="WelcomeMessage">
-    <value>Your vault has been successfully created! Protect your online privacy by creating unique aliases for each service you sign up for. Let's learn how AliasVault works and then create your first secure alias.</value>
+    <value>Brankas Anda telah berhasil dibuat! Lindungi privasi online Anda dengan membuat alias unik untuk setiap layanan yang Anda daftarkan. Mari pelajari cara kerja AliasVault, lalu buat alias aman pertama Anda.</value>
     <comment>Welcome message on the first tutorial step</comment>
   </data>
   <!-- How it works step content -->
   <data name="HowItWorksIntro">
-    <value>When you need to sign up for a new service:</value>
+    <value>Saat Anda perlu mendaftar untuk layanan baru:</value>
     <comment>Introduction text for how it works step</comment>
   </data>
   <data name="HowItWorksStep1">
-    <value>AliasVault generates a random identity with a secure private email address</value>
+    <value>AliasVault menghasilkan identitas acak beserta alamat email pribadi yang aman</value>
     <comment>First step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep2">
-    <value>Use this information to sign up for the service</value>
+    <value>Gunakan informasi ini untuk mendaftar ke layanan tersebut</value>
     <comment>Second step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep3">
-    <value>Received emails show up in this app and can be opened in your browser</value>
+    <value>Email yang diterima akan muncul di aplikasi ini dan dapat dibuka di browser Anda</value>
     <comment>Third step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep4">
-    <value>Your real email address and other personal information stay private</value>
+    <value>Alamat email asli Anda dan informasi pribadi lainnya tetap dirahasiakan</value>
     <comment>Fourth step in how it works explanation</comment>
   </data>
   <!-- Tips step content -->
   <data name="MasterPasswordTipTitle">
-    <value>Keep Your Master Password Safe</value>
+    <value>Jaga Keamanan Kata Sandi Utama Anda</value>
     <comment>Title for master password tip</comment>
   </data>
   <data name="MasterPasswordTipContent">
-    <value>Your master password is required to decrypt your vault. Never share it with anyone and store it in a secure location. Warning: If you lose your master password, your data cannot be recovered - not even by our team.</value>
+    <value>Kata sandi utama Anda diperlukan untuk mendekripsi brankas Anda. Jangan pernah membagikannya kepada siapa pun dan simpanlah di tempat yang aman. Peringatan: Jika Anda kehilangan kata sandi utama Anda, data Anda tidak dapat dipulihkan — bahkan oleh tim kami sekalipun.</value>
     <comment>Content for master password tip</comment>
   </data>
   <data name="TwoFactorTipTitle">
-    <value>Enable Two-Factor Authentication In Security Settings</value>
+    <value>Aktifkan Otentikasi Dua Faktor di Pengaturan Keamanan</value>
     <comment>Title for two-factor authentication tip</comment>
   </data>
   <data name="TwoFactorTipContent">
-    <value>Two-factor authentication adds an extra layer of security to your account. It requires you to enter a code from your authenticator app or provide a recovery code before your encrypted vault can be accessed.</value>
+    <value>Otentikasi dua faktor menambah lapisan keamanan tambahan pada akun Anda. Anda diharuskan memasukkan kode dari aplikasi otentikator Anda atau memberikan kode pemulihan sebelum brankas terenkripsi Anda dapat diakses.</value>
     <comment>Content for two-factor authentication tip</comment>
   </data>
   <data name="ExtensionsAppsTipTitle">
-    <value>Browser Extensions and Mobile Apps</value>
+    <value>Ekstensi Browser dan Aplikasi Seluler</value>
     <comment>Title for browser extensions and mobile apps tip</comment>
   </data>
   <data name="ExtensionsAppsTipContent">
-    <value>Install the AliasVault browser extension and mobile app to create aliases and autofill forms directly from your browser and smartphone.</value>
+    <value>Pasang ekstensi browser dan aplikasi seluler AliasVault untuk membuat alias dan mengisi formulir secara otomatis langsung dari browser dan ponsel cerdas Anda.</value>
     <comment>Content for browser extensions and mobile apps tip</comment>
   </data>
   <!-- Create first identity step content -->
   <data name="ReadyToStartTitle">
-    <value>Ready to Start?</value>
+    <value>Siap untuk memulai?</value>
     <comment>Title for ready to start section</comment>
   </data>
   <data name="ReadyToStartMessage">
-    <value>Now that you know how AliasVault works, let's create your first secure identity!</value>
+    <value>Sekarang setelah Anda mengetahui cara kerja AliasVault, mari kita buat identitas aman pertama Anda!</value>
     <comment>Message encouraging user to create first identity</comment>
   </data>
   <data name="CreateFirstIdentityButton">
-    <value>Create Your First Identity</value>
+    <value>Buat identitas pertama Anda</value>
     <comment>Button text for creating first identity</comment>
   </data>
   <!-- Navigation buttons -->
@@ -110,21 +110,21 @@
     <comment>Continue button text</comment>
   </data>
   <data name="GetStartedButton">
-    <value>Get Started</value>
+    <value>Memulai</value>
     <comment>Get started button text</comment>
   </data>
   <!-- Loading and status messages -->
   <data name="FinishingTutorialMessage">
-    <value>Finishing tutorial...</value>
+    <value>Menyudahi tutorial...</value>
     <comment>Loading message when finishing tutorial</comment>
   </data>
   <!-- Extension and app labels -->
   <data name="ComingSoonLabel">
-    <value>Coming Soon</value>
+    <value>Segera Hadir</value>
     <comment>Label for features coming soon</comment>
   </data>
   <data name="SoonSuffix">
-    <value>(Soon)</value>
+    <value>(Segera)</value>
     <comment>Suffix indicating feature coming soon</comment>
   </data>
 </root>
