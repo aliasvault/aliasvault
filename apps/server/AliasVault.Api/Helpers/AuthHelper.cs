@@ -86,7 +86,7 @@ public static class AuthHelper
 
         // Get the user's current SRP salt/verifier and key derivation settings for the legacy model.
         var latestVault = await context.VaultManifests
-            .Where(m => m.IsRoot && m.OwnerGroupId == user.PersonalGroupId)
+            .Where(m => m.OwnerGroupId == user.PersonalGroupId)
             .Select(x => new { x.Salt, x.Verifier, x.EncryptionType, x.EncryptionSettings })
             .FirstAsync();
 

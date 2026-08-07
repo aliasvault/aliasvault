@@ -7,7 +7,7 @@
 //!   - `Kind = "custom"`, `Source` = the sha256 of the image the user uploaded.
 //!
 //! A logo is scoped to the manifest that owns it:
-//!   - `ManifestId` is the owning manifest's id: the root manifest's id for personal logos, the
+//!   - `ManifestId` is the owning manifest's id: the personal manifest's id for personal logos, the
 //!     owning shared manifest's id for logos living in a shared manifest (no NULL convention);
 //!   - `Id` is derived from `(manifest id, Kind, Source)` (see [`logo_id_for`]), so every writer
 //!     independently mints the same id for the same logo in the same manifest, the uniqueness
@@ -56,7 +56,7 @@ const FAVICON_ID_NAMESPACE: &str = "aliasvault:logo:v1";
 /// devices (or two members of one shared manifest) that fetch the same domain, or upload the very same
 /// image, produce the same row, which then merges by ordinary LWW.
 ///
-/// `manifest_id` is the owning manifest's id — the root manifest's own id for personal logos (every
+/// `manifest_id` is the owning manifest's id — the personal manifest's own id for personal logos (every
 /// vault derives distinct ids for the same domain, so two vaults materialized side by side can never
 /// collide). `source` is matched case-insensitively (callers already normalize to a lowercase
 /// hostname or lowercase hex digest; this makes it robust anyway).
@@ -112,7 +112,7 @@ fn natural_key(row: &CodecRecord) -> Option<(String, String)> {
 /// re-mint `Id` from `(scope, Kind, Source)`, collapse rows that now share a natural key (keeping
 /// the better row, see [`is_better_logo`]), and repoint every `Items.LogoId` at the surviving row.
 ///
-/// This runs per manifest — the root's table set with the root manifest id, each shared partition's
+/// This runs per manifest — the personal manifest's table set with its own id, each shared partition's
 /// with its own manifest id — so it never merges a personal logo with a shared one. It both migrates
 /// legacy rows (random GUIDs, folder-id or NULL scopes) and heals a writer that stamped the wrong scope.
 pub(super) fn normalize_logo_scope(tables: &mut HashMap<String, Vec<CodecRecord>>, scope: &str) {

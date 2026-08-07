@@ -188,4 +188,19 @@ public enum ApiErrorCode
     /// The supplied algorithm is not valid for the requested operation.
     /// </summary>
     INVALID_ALGORITHM,
+
+    /// <summary>
+    /// The supplied manifest id is missing or malformed. Retrying the request unchanged cannot succeed.
+    /// </summary>
+    MANIFEST_ID_INVALID,
+
+    /// <summary>
+    /// The supplied manifest id is already in use by a different manifest. The client must mint a fresh id and retry.
+    /// </summary>
+    MANIFEST_ID_TAKEN,
+
+    /// <summary>
+    /// The referenced group does not exist, is not a shared group, or is not one the caller may administer.
+    /// </summary>
+    GROUP_NOT_FOUND,
 }

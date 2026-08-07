@@ -55,7 +55,6 @@ public class UserManagementTests : AdminPlaywrightTest
         var testVault = new VaultManifest
         {
             ManifestId = Guid.NewGuid(),
-            IsRoot = true,
             OwnerUserId = _testUserId,
             StorageFormat = "sqlite-blob",
             Version = "1.0.0",

@@ -32,7 +32,7 @@ export const StorageKeys = {
 
   /** The encrypted vault blob. */
   ENCRYPTED_VAULT: 'local:encryptedVault',
-  /** Revision number of the root manifest as known by the server. */
+  /** Revision number of the personal manifest as known by the server. */
   SERVER_REVISION: 'local:serverRevision',
   /** Legacy (pre-v0.20) revision key, only read during migration to {@link StorageKeys.SERVER_REVISION}. */
   LEGACY_VAULT_REVISION_NUMBER: 'local:vaultRevisionNumber',
@@ -65,16 +65,17 @@ export const StorageKeys = {
   IS_OFFLINE_MODE: 'local:isOfflineMode',
   /** Message of the last failed sync attempt, shown in the UI. */
   LAST_SYNC_ERROR: 'local:lastSyncError',
-  /** The client's last known revision per non-root (shared) manifest. */
+  /** The client's last known revision per shared manifest. */
   SERVER_MANIFEST_REVISIONS: 'local:serverManifestRevisions',
-  /** The root manifest's blob-hashing salt, cached from the last pull; see `CodecManifest.manifestSalt`. */
+  /** The personal manifest's blob-hashing salt, cached from the last pull; see `CodecManifest.manifestSalt`. */
   VAULT_MANIFEST_SALT: 'local:vaultManifestSalt',
 
   /**
-   * The server-side id of the user's root manifest, learned from GET /v2/Vault. Fallback source for
+   * The server-side id of the user's personal manifest, learned from GET /v2/Vault. Fallback source for
    * canonicalize when the vault DB does not record it yet (legacy migration push).
    */
-  VAULT_ROOT_MANIFEST_ID: 'local:vaultRootManifestId',
+  VAULT_PERSONAL_MANIFEST_ID: 'local:vaultPersonalManifestId',
+
   /** Content fingerprints of the last pushed manifests and buckets, used for changed-only writes. */
   VAULT_CONTENT_FINGERPRINTS: 'local:vaultContentFingerprints',
   /** Local cache of encrypted blobs (hash to base64 AES-GCM ciphertext). Never stores plaintext at rest. */
@@ -276,7 +277,7 @@ export const allVaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.LEGACY_VAULT_REVISION_NUMBER,
   StorageKeys.SERVER_MANIFEST_REVISIONS,
   StorageKeys.VAULT_MANIFEST_SALT,
-  StorageKeys.VAULT_ROOT_MANIFEST_ID,
+  StorageKeys.VAULT_PERSONAL_MANIFEST_ID,
   StorageKeys.VAULT_CONTENT_FINGERPRINTS,
   StorageKeys.VAULT_BLOB_CIPHER_CACHE,
   StorageKeys.VAULT_SERVER_BLOB_HASHES,

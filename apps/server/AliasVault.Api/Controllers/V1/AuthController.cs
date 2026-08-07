@@ -97,7 +97,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // Get latest vault revision number and salt.
         await using var context = await dbContextFactory.CreateDbContextAsync();
         var latestVault = await context.VaultManifests
-            .Where(x => x.IsRoot && x.OwnerGroupId == user.PersonalGroupId)
+            .Where(x => x.OwnerGroupId == user.PersonalGroupId)
             .Select(x => new { x.RevisionNumber, x.Salt })
             .FirstOrDefaultAsync();
 

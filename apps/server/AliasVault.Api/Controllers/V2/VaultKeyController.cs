@@ -52,9 +52,9 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
         }
 
         // Get the encrypted VEK and account keypair.
-        var rootManifestId = await GroupHelper.GetRootManifestIdAsync(context, user.PersonalGroupId);
-        var encryptedVek = rootManifestId is null ? null : await context.VaultManifestAccessKeys
-            .Where(x => x.UserId == user.Id && x.Type == ManifestKeyType.AccountKey && x.VaultManifestId == rootManifestId.Value)
+        var personalManifestId = await GroupHelper.GetPersonalManifestIdAsync(context, user.PersonalGroupId);
+        var encryptedVek = personalManifestId is null ? null : await context.VaultManifestAccessKeys
+            .Where(x => x.UserId == user.Id && x.Type == ManifestKeyType.AccountKey && x.VaultManifestId == personalManifestId.Value)
             .Select(x => x.EncryptedVek)
             .FirstOrDefaultAsync();
         var accountKeypair = await context.UserGrantKeys

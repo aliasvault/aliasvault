@@ -10,7 +10,7 @@ namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 /// <summary>
 /// An email alias the client claims, together with the manifest holding the item it belongs to. The manifest
 /// decides how the alias's mail is encrypted: a shared manifest's published keypair (readable by every member)
-/// or, for the caller's root manifest, their own primary personal key.
+/// or, for the caller's personal manifest, their own primary personal key.
 /// </summary>
 public class ClaimedEmailAddress
 {

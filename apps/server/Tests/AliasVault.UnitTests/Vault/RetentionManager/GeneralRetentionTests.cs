@@ -242,7 +242,6 @@ public class GeneralRetentionTests
         var now = DateTime.Now;
         var newVault = new VaultManifest
         {
-            IsRoot = true,
             VaultBlob = string.Empty,
             StorageFormat = "sqlite-blob",
             Version = string.Empty,

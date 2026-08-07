@@ -387,7 +387,6 @@ else
         var currentManifests = await dbContext.VaultManifests.Where(x => x.OwnerGroupId == User.PersonalGroupId).Select(x => new VaultManifest
             {
                 ManifestId = x.ManifestId,
-                IsRoot = x.IsRoot,
                 StorageFormat = x.StorageFormat,
                 Version = x.Version,
                 RevisionNumber = x.RevisionNumber,

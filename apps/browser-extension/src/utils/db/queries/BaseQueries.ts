@@ -10,14 +10,15 @@ export class BaseQueries {
    * of the vault. The codec treats every manifest alike and a user may own several; which of them is
    * *this* client's home is the client's own state, told to it by the server on each pull.
    */
-  public static readonly ROOT_MANIFEST_SETTING_KEY = 'RootManifestId';
+  public static readonly PERSONAL_MANIFEST_SETTING_KEY = 'PersonalManifestId';
 
   /**
    * The vault's personal manifest id, written by the sync service from what the server reports on each
    * pull. It is the default the active manifest falls back to.
    */
-  public static readonly GET_ROOT_MANIFEST_ID = `
-    SELECT Value AS Id FROM Settings WHERE Key = '${BaseQueries.ROOT_MANIFEST_SETTING_KEY}' AND IsDeleted = 0 LIMIT 1`;
+  public static readonly GET_PERSONAL_MANIFEST_ID = `
+    SELECT Value AS Id FROM Settings
+    WHERE Key = '${BaseQueries.PERSONAL_MANIFEST_SETTING_KEY}' AND IsDeleted = 0 LIMIT 1`;
 
   /**
    * SQL fragment resolving the manifest a row placed in the folder bound to its first `?` (possibly
@@ -55,7 +56,7 @@ export class BaseQueries {
   /**
    * Re-stamp a folder's whole subtree with `?` (a manifest id).
    * Used when a folder is shared (its subtree joins that manifest's namespace) and when the share is
-   * removed (the subtree returns to the root manifest).
+   * removed (the subtree returns to the personal manifest).
    */
   public static readonly RESTAMP_SUBTREE_FOLDERS = `
     UPDATE Folders SET ManifestId = ?

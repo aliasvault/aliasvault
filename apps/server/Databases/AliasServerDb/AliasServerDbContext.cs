@@ -347,7 +347,6 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .HasForeignKey(e => e.OwnerGroupId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex(e => e.OwnerGroupId).HasFilter("\"IsRoot\"").IsUnique().HasDatabaseName("UX_VaultManifests_OwnerGroupId_Root");
             builder.HasIndex(e => e.OwnerGroupId);
         });
 
@@ -423,7 +422,7 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
         modelBuilder.Entity<VaultManifestDeliveryKey>(builder =>
         {
             // A key is removed with its manifest: for a folder that is the folder's delivery keys, for a
-            // root manifest the user's personal keys (root manifests only disappear with the account).
+            // personal manifest the user's personal keys (personal manifests only disappear with the account).
             builder.HasOne(k => k.VaultManifest)
                 .WithMany()
                 .HasForeignKey(k => k.VaultManifestId)

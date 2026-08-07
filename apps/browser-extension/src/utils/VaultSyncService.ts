@@ -105,6 +105,15 @@ function topLevelFolderId(manifest: VaultManifest): string | null {
   return roots.length === 1 ? roots[0] : null;
 }
 
+/**
+ * Whether two manifest ids match.
+ * @param a - first manifest id
+ * @param b - second manifest id
+ */
+function manifestIdsEqual(a: string | null | undefined, b: string | null | undefined): boolean {
+  return typeof a === 'string' && typeof b === 'string' && a.toLowerCase() === b.toLowerCase();
+}
+
 /** Fingerprint record key for a manifest. */
 const fingerprintManifestKey = (manifestId: string): string => `manifest:${manifestId}`;
 /** Fingerprint record key for a data bucket. */
@@ -141,14 +150,14 @@ type BlobRefDto = { hash: string; category: string };
 type BlobDto = { hash: string; category: string; encryptedDataBase64: string };
 
 /** A plaintext blob staged for upload: its bytes plus the key that encrypts it. */
-type UploadBlobEntry = { bytes: Uint8Array; kind: 'favicon' | 'attachment'; vek: string; fromRoot: boolean };
+type UploadBlobEntry = { bytes: Uint8Array; kind: 'favicon' | 'attachment'; vek: string; fromPersonal: boolean };
 
 /**
  * One manifest of a pull.
  */
 type ResolvedManifest = {
   manifestId: string;
-  isRoot: boolean;
+  isPersonal: boolean;
   manifest: VaultManifest;
   /** The key that decrypts this manifest and every blob it references. */
   vek: string;
@@ -163,12 +172,11 @@ type ResolvedManifest = {
  */
 type ManifestDto = {
   manifestId: string;
-  isRoot: boolean;
   blob?: string | null;
   ciphertextHash?: string | null;
   revision: number;
   blobReferences?: BlobRefDto[];
-  /** Plaintext display name of a shared manifest (null for the root manifest). */
+  /** Plaintext display name of a shared manifest (null for the personal manifest). */
   name?: string | null;
   /** Username of the manifest owner; set only when the caller is not an owner of the group owning it. Display only. */
   ownerUsername?: string | null;
@@ -191,12 +199,14 @@ type BucketDto = { category: string; blob?: string | null; ciphertextHash?: stri
 type BucketRevisionDto = { category: string; revision: number };
 
 /**
- * Pick the user's root manifest from a snapshot's manifest list. Strict on purpose: when no manifest is flagged as
- * root there is no safe fallback (grabbing an arbitrary manifest could assemble the wrong vault), so callers that
- * require a root manifest must fail loudly on `undefined`.
+ * Pick the user's personal manifest out of a snapshot. The server names it by id rather than flagging each entry, so
+ * that one id is the only thing that decides which manifest is the caller's own. Strict on purpose: with no id, or an
+ * id matching nothing, there is no safe fallback (grabbing an arbitrary manifest could assemble the wrong vault), so
+ * callers that require a personal manifest must fail loudly on `undefined`.
  */
-function selectRootManifest(manifests: ManifestDto[] | undefined | null): ManifestDto | undefined {
-  return (manifests ?? []).find(m => m.isRoot);
+function selectPersonalManifest(snapshot: GetResponseDto | undefined | null): ManifestDto | undefined {
+  const personalId = snapshot?.personalManifestId;
+  return personalId ? (snapshot?.manifests ?? []).find(m => m.manifestId === personalId) : undefined;
 }
 
 /**
@@ -222,8 +232,11 @@ export type GetResponseDto = {
   version?: string | null;
   /** The legacy sqlite-blob revision (set only on the sqlite-blob path). */
   legacyRevision?: number | null;
-  /** The caller's root manifest id; set on the sqlite-blob path where the manifests list is empty. */
-  rootManifestId?: string | null;
+  /**
+   * The caller's personal manifest id: the one manifest owned by their personal group, every other entry being a
+   * shared one. Also set on the sqlite-blob path, where the manifests list is empty.
+   */
+  personalManifestId?: string | null;
   /** The manifests making up the logical vault. Each carries its own blob references. */
   manifests?: ManifestDto[];
   buckets?: BucketDto[];
@@ -236,26 +249,25 @@ export type GetResponseDto = {
 };
 
 /**
- * One manifest element in a POST /v2/Vault write. Every manifest is addressed by `manifestId`, root included; `isRoot`
- * asserts what kind of target that id is and the server rejects the write when the two disagree.
+ * One manifest element in a POST /v2/Vault write. Every manifest is addressed by `manifestId`, the personal manifest
+ * included, so the server never has to infer the target; it authorizes each id against what the caller may write.
  */
 type ManifestWriteDto = {
-  isRoot?: boolean;
-  manifestId?: string;
+  manifestId: string;
   manifestBlob: string;
   manifestCiphertextHash: string;
   currentRevision: number;
   credentialsCount: number;
   blobReferences: BlobRefDto[];
   /** 
-   * The newly generated VEK encrypted with the password-derived KEK. Set on the root write of a legacy user's first manifest-v1 push.
+   * The newly generated VEK encrypted with the password-derived KEK. Set on the personal-manifest write of a legacy user's first manifest-v1 push.
    * TODO: can be deleted once all users have migrated to manifest-v1.
    */
   encryptedVek?: string;
 };
 
 /** Per-manifest result of a write: the new revision (Ok) or the current server revision (Outdated). */
-type ManifestWriteResultDto = { isRoot: boolean; manifestId: string | null; revision: number };
+type ManifestWriteResultDto = { manifestId: string; revision: number };
 
 type VaultWriteResponseDto = {
   status: number;
@@ -271,9 +283,9 @@ type MissingBlobsResponseDto = { missing: string[] };
  */
 type PushManifest = {
   manifestId: string;
-  isRoot: boolean;
+  isPersonal: boolean;
   manifest: CodecManifest;
-  /** The key this manifest and its blobs encrypt with: the vault's content key for the root, the grant's VEK otherwise. */
+  /** The key this manifest and its blobs encrypt with: the vault's content key for the personal manifest, the grant's VEK otherwise. */
   vek: string;
   blobs: Record<string, CodecBlobEntry>;
   /** The revision this write rebases on; the server rejects the whole batch when any is stale. */
@@ -282,28 +294,28 @@ type PushManifest = {
 
 /**
  * One manifest this vault can write, as resolved from local state before canonicalizing. The list is uniform on
- * purpose: the codec treats every manifest alike and the push drives one loop over all of them. `isRoot` marks the
+ * purpose: the codec treats every manifest alike and the push drives one loop over all of them. `isPersonal` marks the
  * few places where the user's own manifest genuinely differs (see {@link resolveManifestRecords}).
  */
 type ManifestRecord = {
   manifestId: string;
-  isRoot: boolean;
+  isPersonal: boolean;
   /** Salt this manifest's blob hashes are derived with. */
   salt: string;
-  /** The folder this manifest is anchored at; null for the root, which anchors nowhere. */
+  /** The folder this manifest is anchored at; null for the personal manifest, which anchors nowhere. */
   folderId: string | null;
-  /** The key this manifest encrypts with; null for the root, whose content key the push supplies (it can be freshly minted). */
+  /** The key this manifest encrypts with; null for the personal manifest, whose content key the push supplies (it can be freshly minted). */
   vek: string | null;
   /** Last-known server revision as of this resolve; the push overlays anything newer it has recorded since. */
   revision: number;
-  /** Plaintext display name; null for the root. */
+  /** Plaintext display name; null for the personal manifest. */
   name: string | null;
   /** Whether the caller may publish this manifest's email delivery key. */
   canAdminister: boolean;
 };
 
 /**
- * The canonicalized vault plus the manifest records it was split against, root first (the order canonicalize
+ * The canonicalized vault plus the manifest records it was split against, personal manifest first (the order canonicalize
  * requires: the first spec is the manifest being written from).
  */
 type CanonicalizedVaultSet = {
@@ -326,17 +338,18 @@ function recordOwnManifestId(materialized: CodecMaterialized, manifestId: string
     materialized.tables.push(settings);
   }
 
-  const existing = settings.records.find(r => r.Key === BaseQueries.ROOT_MANIFEST_SETTING_KEY);
+  const now = new Date().toISOString();
+
+  const existing = settings.records.find(r => r.Key === BaseQueries.PERSONAL_MANIFEST_SETTING_KEY);
   if (existing && existing.Value === manifestId && !existing.IsDeleted) {
     return;
   }
 
-  const now = new Date().toISOString();
   if (existing) {
     Object.assign(existing, { Value: manifestId, UpdatedAt: now, IsDeleted: 0 });
     return;
   }
-  settings.records.push({ Key: BaseQueries.ROOT_MANIFEST_SETTING_KEY, Value: manifestId, CreatedAt: now, UpdatedAt: now, IsDeleted: 0 });
+  settings.records.push({ Key: BaseQueries.PERSONAL_MANIFEST_SETTING_KEY, Value: manifestId, CreatedAt: now, UpdatedAt: now, IsDeleted: 0 });
 }
 
 let canonicalizeCache: ({ client: SqliteClient; mutationSequence: number } & CanonicalizedVaultSet) | null = null;
@@ -368,8 +381,8 @@ export class VaultSyncService {
      */
     devLog('[V2Pull] Step 1/4: fetching vault snapshot (GET /v2/Vault)...');
     const snapshot = await this.fetchSnapshot();
-    const rootManifest = selectRootManifest(snapshot.manifests);
-    devLog(`[V2Pull] Step 1/4 done: storageFormat=${snapshot.storageFormat}, manifests=${snapshot.manifests?.length ?? 0}, rootRevision=${rootManifest?.revision}, manifestBlob=${rootManifest?.blob?.length ?? 0} chars, buckets=${snapshot.buckets?.length ?? 0}, blobRefs=${rootManifest?.blobReferences?.length ?? 0}`);
+    const personalManifest = selectPersonalManifest(snapshot);
+    devLog(`[V2Pull] Step 1/4 done: storageFormat=${snapshot.storageFormat}, manifests=${snapshot.manifests?.length ?? 0}, personalRevision=${personalManifest?.revision}, manifestBlob=${personalManifest?.blob?.length ?? 0} chars, buckets=${snapshot.buckets?.length ?? 0}, blobRefs=${personalManifest?.blobReferences?.length ?? 0}`);
 
     /*
      * Steps 2–4: decrypt, materialize, and re-encrypt. Any failure here is a client-side vault-processing error
@@ -398,8 +411,8 @@ export class VaultSyncService {
        * Legacy user: the vault has never been materialized, so it carries no record of which manifest is
        * ours. Persist it in local storage so the first migration canonicalize step can stamp rows with it.
        */
-      if (snapshot.rootManifestId) {
-        await storage.setItem(StorageKeys.VAULT_ROOT_MANIFEST_ID, snapshot.rootManifestId);
+      if (snapshot.personalManifestId) {
+        await storage.setItem(StorageKeys.VAULT_PERSONAL_MANIFEST_ID, snapshot.personalManifestId);
       }
       devLog('[V2Pull] Step 2/4: legacy blob pass-through (user not yet migrated), returning as-is.');
       return this.buildResponse(
@@ -432,7 +445,7 @@ export class VaultSyncService {
        * For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into.
        * TODO: delete this field once the migration is complete.
        */
-      const ownManifestId = await this.resolveRootManifestId(sqliteClient);
+      const ownManifestId = await this.resolvePersonalManifestId(sqliteClient);
       const { canonicalized, manifestRecords } = await this.canonicalizeVault(sqliteClient, { adoptUnstampedInto: ownManifestId });
 
       /*
@@ -453,7 +466,7 @@ export class VaultSyncService {
       /*
        * Record which manifest is ours in the migrated vault, exactly as a pull does. A legacy vault has
        * never been materialized and so carries no such row, while the write path resolves the stamp for
-       * a new row from it (see `BaseQueries.ROOT_MANIFEST_ID`). Without this, every root-level insert
+       * a new row from it (see `BaseQueries.GET_PERSONAL_MANIFEST_ID`). Without this, every top-level insert
        * between the migration and the next pull resolves its stamp to NULL and is rejected outright by
        * the column's NOT NULL constraint.
        */
@@ -496,17 +509,17 @@ export class VaultSyncService {
    * Materialize a local SQLite database from an already-fetched manifest-v1 snapshot: verify ciphertext integrity,
    * decrypt every manifest and the data buckets, fetch any missing referenced blobs, then run the codec.
    * @param snapshot - the raw GET /v2/Vault response
-   * @param vek - the root manifest's symmetric key (from the unlock chain); decrypts the root manifest and the data buckets
+   * @param vek - the personal manifest's symmetric key (from the unlock chain); decrypts the personal manifest and the data buckets
    */
   private async materializeFromSnapshot(snapshot: GetResponseDto, vek: string): Promise<PullResult> {
     const webApi = new WebApiService();
 
-    const rootDto = selectRootManifest(snapshot.manifests);
-    if (!rootDto) {
-      throw new Error('VaultSyncService: server returned no root manifest, refusing to assemble.');
+    const personalDto = selectPersonalManifest(snapshot);
+    if (!personalDto) {
+      throw new Error('VaultSyncService: server returned no personal manifest, refusing to assemble.');
     }
 
-    if (!rootDto.blob) {
+    if (!personalDto.blob) {
       throw new Error('VaultSyncService: server returned no manifest blob, nothing to assemble.');
     }
 
@@ -514,9 +527,9 @@ export class VaultSyncService {
     const pulledFingerprints: Record<string, string> = {};
 
     /*
-     * Open every manifest in the snapshot through one path, root first.
+     * Open every manifest in the snapshot through one path, personal manifest first.
      */
-    const accountKeyVeks = new Map<string, string>([[rootDto.manifestId, vek]]);
+    const accountKeyVeks = new Map<string, string>([[personalDto.manifestId, vek]]);
     const resolved: ResolvedManifest[] = [];
     const sessionSharedManifests: Record<string, SessionSharedManifest> = {};
     /*
@@ -524,11 +537,12 @@ export class VaultSyncService {
      * but not yet split into) still resolves to the folder the client renders it at.
      */
     const priorFolderIds = new Map(Object.values(await SharingService.getSessionSharedManifests()).map(r => [r.manifestId, r.folderId]));
-    for (const dto of [rootDto, ...(snapshot.manifests ?? []).filter(m => m.manifestId !== rootDto.manifestId)]) {
-      const manifestKey = await this.resolveManifestVek(dto, accountKeyVeks, resolved[0]?.manifest ?? null);
+    for (const dto of [personalDto, ...(snapshot.manifests ?? []).filter(m => m.manifestId !== personalDto.manifestId)]) {
+      const isPersonal = dto.manifestId === personalDto.manifestId;
+      const manifestKey = await this.resolveManifestVek(dto, accountKeyVeks, isPersonal, resolved[0]?.manifest ?? null);
       if (!manifestKey || !dto.blob) {
         // Same policy as a manifest that fails to open: a shared one only costs us that folder, the home one is the vault.
-        if (dto.manifestId === rootDto.manifestId) {
+        if (dto.manifestId === personalDto.manifestId) {
           throw new Error(`VaultSyncService: no key resolved for the home manifest ${dto.manifestId} (key type "${dto.keyType ?? 'unspecified'}"), refusing to assemble.`);
         }
         continue;
@@ -536,10 +550,10 @@ export class VaultSyncService {
 
       let entry: ResolvedManifest;
       try {
-        devLog(`[V2Pull] Verifying ciphertext hash; decrypting + opening ${dto.isRoot ? 'root manifest' : `shared manifest ${dto.manifestId}`}...`);
-        entry = await this.openManifest(dto, manifestKey);
+        devLog(`[V2Pull] Verifying ciphertext hash; decrypting + opening ${isPersonal ? 'personal manifest' : `shared manifest ${dto.manifestId}`}...`);
+        entry = await this.openManifest(dto, manifestKey, isPersonal);
       } catch (e) {
-        if (dto.isRoot) {
+        if (isPersonal) {
           throw e;
         }
         devWarn(`[V2Pull] Failed to open shared manifest ${dto.manifestId}, skipping it.`, e);
@@ -547,16 +561,16 @@ export class VaultSyncService {
       }
       resolved.push(entry);
 
-      const folderId = dto.isRoot ? null : (topLevelFolderId(entry.manifest) ?? priorFolderIds.get(dto.manifestId) ?? null);
-      devLog(`[V2Pull] Manifest ${entry.manifestId} opened (content hash verified, ${dto.isRoot ? 'root' : `folder ${folderId ?? 'unassigned'}`}): tables: ${Object.entries(entry.manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
+      const folderId = isPersonal ? null : (topLevelFolderId(entry.manifest) ?? priorFolderIds.get(dto.manifestId) ?? null);
+      devLog(`[V2Pull] Manifest ${entry.manifestId} opened (content hash verified, ${isPersonal ? 'personal' : `folder ${folderId ?? 'unassigned'}`}): tables: ${Object.entries(entry.manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
 
-      if (dto.isRoot) {
+      if (isPersonal) {
         /*
-         * Persist the root manifest's blob salt locally so subsequent canonicalizes hash blobs the same way, and the root
+         * Persist the personal manifest's blob salt locally so subsequent canonicalizes hash blobs the same way, and the personal
          * manifest id so a push can resolve it even before the vault DB records it (see `recordOwnManifestId`).
          */
         await storage.setItem(StorageKeys.VAULT_MANIFEST_SALT, entry.manifest.manifestSalt);
-        await storage.setItem(StorageKeys.VAULT_ROOT_MANIFEST_ID, entry.manifestId);
+        await storage.setItem(StorageKeys.VAULT_PERSONAL_MANIFEST_ID, entry.manifestId);
         continue;
       }
 
@@ -579,11 +593,11 @@ export class VaultSyncService {
     }
     await SharingService.setSessionSharedManifests(sessionSharedManifests);
 
-    const root = resolved[0];
+    const personal = resolved[0];
 
     /*
-     * Decrypt every data bucket in the snapshot (Settings today; more categories later). Buckets belong to the root
-     * manifest alone (personal tables are stripped out of every shared manifest), so they all open with the root VEK.
+     * Decrypt every data bucket in the snapshot (Settings today; more categories later). Buckets belong to the personal
+     * manifest alone (personal tables are stripped out of every shared manifest), so they all open with its VEK.
      */
     const dataBuckets: VaultDataBucket[] = [];
     for (const bucketDto of (snapshot.buckets ?? [])) {
@@ -604,14 +618,14 @@ export class VaultSyncService {
       devLog('[V2Pull] No data buckets in snapshot.');
     }
 
-    // One fingerprint baseline per opened manifest, addressed by manifest id (root included).
+    // One fingerprint baseline per opened manifest, addressed by manifest id (the personal manifest included).
     for (const entry of resolved) {
       pulledFingerprints[fingerprintManifestKey(entry.manifestId)] = entry.contentFingerprint;
     }
 
     // Persist the revision of every manifest so sync can detect when one is added or updated server-side.
-    await storage.setItem(StorageKeys.SERVER_REVISION, root.revision);
-    const sharedManifestRevisions = Object.fromEntries(resolved.filter(m => !m.isRoot).map(m => [m.manifestId, m.revision]));
+    await storage.setItem(StorageKeys.SERVER_REVISION, personal.revision);
+    const sharedManifestRevisions = Object.fromEntries(resolved.filter(m => !m.isPersonal).map(m => [m.manifestId, m.revision]));
     await storage.setItem(StorageKeys.SERVER_MANIFEST_REVISIONS, sharedManifestRevisions);
     devLog(`[V2Pull] Stored local shared-manifest revisions from snapshot: ${Object.keys(sharedManifestRevisions).length === 0 ? '(none)' : Object.entries(sharedManifestRevisions).map(([id, rev]) => `${id}=${rev}`).join(', ')}. Next status check compares against these.`);
 
@@ -653,11 +667,11 @@ export class VaultSyncService {
       const owner = refOwners.get(r.hash);
       const blobKey = owner?.vek ?? vek;
       /*
-       * Root-manifest attachments are load-bearing (a NULL insert would propagate data loss on the next push);
+       * Personal-manifest attachments are load-bearing (a NULL insert would propagate data loss on the next push);
        * shared-manifest blob gaps only degrade that folder, so they are logged and skipped. TODO: revisit once
        * cross-member blob availability is guaranteed (shared attachment gaps currently degrade like favicons).
        */
-      const strict = r.category === 'attachment' && owner?.isRoot === true;
+      const strict = r.category === 'attachment' && owner?.isPersonal === true;
       if (!ciphertext) {
         if (strict) {
           throw new Error(`VaultSyncService: attachment blob ${r.hash} is referenced by the manifest but missing on the server, refusing to assemble an incomplete vault.`);
@@ -709,28 +723,46 @@ export class VaultSyncService {
      * Record which of these manifests is ours, inside the vault we are assembling. The codec treats
      * every manifest alike: a user may own several, and which one a client calls home is its own
      * state. So this comes from what the server reported in this snapshot, and it is what the local
-     * write path stamps new rows with (see `BaseQueries.ROOT_MANIFEST_ID`).
+     * write path stamps new rows with (see `BaseQueries.GET_PERSONAL_MANIFEST_ID`).
      */
-    recordOwnManifestId(materialized, root.manifestId);
+    recordOwnManifestId(materialized, personal.manifestId);
 
     const sqliteBase64 = await VaultCodec.insertTables(materialized, blobMap, schemaSql);
     devLog('[V2Pull] Codec reassembly complete.');
 
-    return { sqliteBase64, manifestRevision: root.revision };
+    return { sqliteBase64, manifestRevision: personal.revision };
   }
 
   /**
    * Verify one snapshot manifest's ciphertext, decrypt and open it into a {@link ResolvedManifest}.
    * @param dto - the snapshot manifest (must carry a blob)
    * @param vek - the key that decrypts it
+   * @param isPersonal - whether this is the manifest the snapshot named as the caller's own
    */
-  private async openManifest(dto: ManifestDto, vek: string): Promise<ResolvedManifest> {
-    const isRoot = dto.isRoot === true;
-    const manifestJson = await verifyDecryptUnpack(dto.blob!, vek, dto.ciphertextHash, isRoot ? 'manifest' : `shared manifest ${dto.manifestId}`);
+  private async openManifest(dto: ManifestDto, vek: string, isPersonal: boolean): Promise<ResolvedManifest> {
+    const manifestJson = await verifyDecryptUnpack(dto.blob!, vek, dto.ciphertextHash, isPersonal ? 'manifest' : `shared manifest ${dto.manifestId}`);
+    const manifest = JSON.parse(manifestJson) as VaultManifest;
+
+    /*
+     * Bind the payload's self-declared identity to the row the server served it from. This is the only place the
+     * two meet: the id inside the blob is what the codec stamps every row of this manifest with (see
+     * `claim_manifest_scope`), and the server can never check it — the blob is opaque to it and the id on the row
+     * is simply what the creating client sent alongside (POST /v2/Sharing/manifests).
+     *
+     * Without this check, anyone could create a manifest of their own, embed *another* manifest's id inside it and
+     * share it with one of that manifest's members: the recipient would stamp the attacker's rows with the embedded
+     * id, and their next push would split those rows straight into a manifest the attacker holds no key for. A
+     * revoked member still knows the id (it is stamped on every row of the copy they kept), so revocation alone
+     * does not close that door.
+     */
+    if (!manifestIdsEqual(manifest.manifestId, dto.manifestId)) {
+      throw new Error(`VaultSyncService: manifest ${dto.manifestId} declares a different id (${manifest.manifestId}) inside its encrypted payload, refusing to open it.`);
+    }
+
     return {
       manifestId: dto.manifestId,
-      isRoot,
-      manifest: JSON.parse(manifestJson) as VaultManifest,
+      isPersonal,
+      manifest,
       vek,
       revision: typeof dto.revision === 'number' ? dto.revision : 0,
       blobReferences: dto.blobReferences ?? [],
@@ -742,12 +774,13 @@ export class VaultSyncService {
    * The key that opens one snapshot manifest.
    * @param dto - the snapshot manifest
    * @param accountKeyVeks - the VEKs already held per manifest id, keyed by the account key hierarchy
-   * @param rootManifest - the already-decrypted root manifest (the durable home of rotated private keys), or null when none is open yet
+   * @param isPersonal - whether this is the manifest the snapshot named as the caller's own
+   * @param personalManifest - the already-decrypted personal manifest (the durable home of rotated private keys), or null when none is open yet
    * @returns The manifest's VEK, or null when this client holds no key for it.
    */
-  private async resolveManifestVek(dto: ManifestDto, accountKeyVeks: Map<string, string>, rootManifest: CodecManifest | null): Promise<string | null> {
+  private async resolveManifestVek(dto: ManifestDto, accountKeyVeks: Map<string, string>, isPersonal: boolean, personalManifest: CodecManifest | null): Promise<string | null> {
     // A server that predates the field says nothing, and there the home manifest is the account-key one by definition.
-    const keyType = dto.keyType ?? (dto.isRoot ? MANIFEST_KEY_TYPE_ACCOUNT : MANIFEST_KEY_TYPE_GRANT);
+    const keyType = dto.keyType ?? (isPersonal ? MANIFEST_KEY_TYPE_ACCOUNT : MANIFEST_KEY_TYPE_GRANT);
 
     if (keyType === MANIFEST_KEY_TYPE_ACCOUNT) {
       const accountKeyVek = accountKeyVeks.get(dto.manifestId);
@@ -764,26 +797,26 @@ export class VaultSyncService {
       return null;
     }
 
-    if (!rootManifest) {
-      devWarn(`[V2Pull] Manifest ${dto.manifestId} is opened through a grant, but no root manifest is open to resolve the private key from; skipping it.`);
+    if (!personalManifest) {
+      devWarn(`[V2Pull] Manifest ${dto.manifestId} is opened through a grant, but no personal manifest is open to resolve the private key from; skipping it.`);
       return null;
     }
 
-    return this.resolveGrantedVek(rootManifest, dto);
+    return this.resolveGrantedVek(personalManifest, dto);
   }
 
   /**
    * Decrypt the VEK the server granted the caller on a manifest.
-   * @param rootManifest - the already-decrypted root manifest, the durable home of rotated private keys
+   * @param personalManifest - the already-decrypted personal manifest, the durable home of rotated private keys
    * @param dto - the snapshot manifest carrying the grant
    */
-  private async resolveGrantedVek(rootManifest: CodecManifest, dto: ManifestDto): Promise<string | null> {
+  private async resolveGrantedVek(personalManifest: CodecManifest, dto: ManifestDto): Promise<string | null> {
     if (!dto.encryptedVek || !dto.encryptionPublicKey) {
       devWarn(`[V2Pull] No key available for shared manifest ${dto.manifestId}, skipping it.`);
       return null;
     }
 
-    const privateKeyJwk = await this.resolvePrivateKeyJwk(rootManifest, dto.encryptionPublicKey);
+    const privateKeyJwk = await this.resolvePrivateKeyJwk(personalManifest, dto.encryptionPublicKey);
     if (!privateKeyJwk) {
       devWarn(`[V2Pull] No key available for shared manifest ${dto.manifestId}, skipping it.`);
       return null;
@@ -799,10 +832,10 @@ export class VaultSyncService {
 
   /**
    * Resolve the user's asymmetric private key (JWK string) for decrypting a shared manifest's VEK.
-   * @param rootManifest - the decrypted root manifest
+   * @param personalManifest - the decrypted personal manifest
    * @param encryptionPublicKey - the public key the grant's VEK was encrypted with
    */
-  private async resolvePrivateKeyJwk(rootManifest: CodecManifest, encryptionPublicKey: string): Promise<string | null> {
+  private async resolvePrivateKeyJwk(personalManifest: CodecManifest, encryptionPublicKey: string): Promise<string | null> {
     const accountPublicKey = await VaultKeyService.getAccountPublicKey();
     if (accountPublicKey === encryptionPublicKey) {
       const sessionPrivateKey = await VaultKeyService.getSessionAccountPrivateKey();
@@ -811,7 +844,7 @@ export class VaultSyncService {
       }
     }
 
-    const keyRow = await vaultCodecExtractEncryptionKeyForPublicKey(rootManifest, encryptionPublicKey);
+    const keyRow = await vaultCodecExtractEncryptionKeyForPublicKey(personalManifest, encryptionPublicKey);
     return typeof keyRow?.PrivateKey === 'string' ? keyRow.PrivateKey : null;
   }
 
@@ -846,7 +879,7 @@ export class VaultSyncService {
   /**
    * Canonicalize the current SQLite vault, validate, encrypt, and POST /v2/Vault. The write is as narrow as
    * possible: content-fingerprint gating keeps every manifest and bucket whose canonical content still matches
-   * its last-known server state OUT of the write, so a credential edit uploads the root manifest alone and a
+   * its last-known server state OUT of the write, so a credential edit uploads the personal manifest alone and a
    * shared-manifest edit uploads that manifest alone. Only blobs the server doesn't
    * already have are encrypted and pre-uploaded (in size-capped batches) before the manifest POST, so a routine
    * save of a vault with hundreds of attachments uploads kilobytes, not the whole blob set. If the manifest POST
@@ -914,10 +947,10 @@ export class VaultSyncService {
       devLog('[V2Push] Reusing the canonicalize result from the pre-push no-op check.');
     }
     const { canonicalized, manifestRecords } = cachedSet ?? await this.canonicalizeVault(sqliteClient);
-    // Root first by construction (see `resolveManifestRecords`), which is also the order canonicalize requires.
-    const [rootRecord, ...sharedRecords] = manifestRecords;
+    // Personal manifest first by construction (see `resolveManifestRecords`), which is also the order canonicalize requires.
+    const [personalRecord, ...sharedRecords] = manifestRecords;
     const privateEmailDomains = (await getItemWithFallback<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS)) ?? [];
-    const emailRouting = buildEmailRouting(canonicalized.manifests.map(m => m.manifest), rootRecord.manifestId, privateEmailDomains);
+    const emailRouting = buildEmailRouting(canonicalized.manifests.map(m => m.manifest), personalRecord.manifestId, privateEmailDomains);
 
     /*
      * Debug: manifest-set summary + full unencrypted manifests + data buckets, inspectable in the console.
@@ -927,15 +960,15 @@ export class VaultSyncService {
     devLog(`[V2Push] Canonicalize produced ${canonicalized.manifests.length} manifest(s) + ${canonicalizedBuckets.length} data bucket(s).`);
     devLog(`[V2Push] Unencrypted data buckets (${canonicalizedBuckets.length}):`, canonicalizedBuckets);
     for (const { manifest } of canonicalized.manifests) {
-      const isRoot = manifest.manifestId === rootRecord.manifestId;
-      devLog(`[V2Push] Unencrypted ${isRoot ? 'root manifest' : `manifest "${manifest.name ?? manifest.manifestId}"`}: tables: ${Object.entries(manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`, manifest);
+      const isPersonal = manifest.manifestId === personalRecord.manifestId;
+      devLog(`[V2Push] Unencrypted ${isPersonal ? 'personal manifest' : `manifest "${manifest.name ?? manifest.manifestId}"`}: tables: ${Object.entries(manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`, manifest);
     }
 
     /*
      * 2) Content-fingerprint gating: compare every canonicalized target (each manifest below, each data bucket)
      * against the fingerprint of its last-known server state and only write the targets that actually changed. A
      * missing baseline means "server state unknown" and always writes. Two cases force a blanket write: a KEK/VEK
-     * migration re-keys the root manifest and all buckets (their ciphertext must be re-encrypted with the new VEK
+     * migration re-keys the personal manifest and all buckets (their ciphertext must be re-encrypted with the new VEK
      * even when the content is unchanged), and forceFullWrite (server rollback recovery) rewrites everything so
      * the server is restored from the client's state.
      */
@@ -946,13 +979,13 @@ export class VaultSyncService {
      * The revision each manifest rebases on, re-read here rather than taken off the records: canonicalize may have
      * run earlier (the pre-push no-op check caches its result) and a write in between advances them.
      */
-    const currentManifestRevision = await this.currentRootRevision();
+    const currentManifestRevision = await this.currentPersonalRevision();
     const storedSharedRevisions = ((await storage.getItem(StorageKeys.SERVER_MANIFEST_REVISIONS)) as Record<string, number> | null) ?? {};
     /**
      * The revision one manifest's write rebases on, falling back to the revision its grant was resolved at.
      * @param record - the manifest record
      */
-    const revisionOf = (record: ManifestRecord): number => record.isRoot ? currentManifestRevision : storedSharedRevisions[record.manifestId] ?? record.revision;
+    const revisionOf = (record: ManifestRecord): number => record.isPersonal ? currentManifestRevision : storedSharedRevisions[record.manifestId] ?? record.revision;
 
     /*
      * Every manifest canonicalize produced, joined to its record: one candidate list the whole write is derived
@@ -967,9 +1000,9 @@ export class VaultSyncService {
       }
       return [{
         manifestId: record.manifestId,
-        isRoot: record.isRoot,
+        isPersonal: record.isPersonal,
         manifest,
-        // Only the root leaves its key open, for the content key resolved above.
+        // Only the personal manifest leaves its key open, for the content key resolved above.
         vek: record.vek ?? contentKey,
         blobs,
         currentRevision: revisionOf(record),
@@ -983,7 +1016,7 @@ export class VaultSyncService {
         if (blobEntries.has(hash)) {
           continue;
         }
-        blobEntries.set(hash, { kind: blob.kind as 'favicon' | 'attachment', bytes: VaultCodec.base64ToBytes(blob.bytesBase64), vek: candidate.vek, fromRoot: candidate.isRoot });
+        blobEntries.set(hash, { kind: blob.kind as 'favicon' | 'attachment', bytes: VaultCodec.base64ToBytes(blob.bytesBase64), vek: candidate.vek, fromPersonal: candidate.isPersonal });
       }
     }
 
@@ -1027,22 +1060,22 @@ export class VaultSyncService {
     const manifestWrites: ManifestWriteDto[] = [];
     const writtenManifestFingerprints: Record<string, string> = {};
     for (const candidate of candidates) {
-      const label = candidate.isRoot ? 'Root manifest' : `Shared manifest "${candidate.manifest.name ?? candidate.manifestId}"`;
+      const label = candidate.isPersonal ? 'Personal manifest' : `Shared manifest "${candidate.manifest.name ?? candidate.manifestId}"`;
       const plaintext = await timedStage(`stringify-manifest ${candidate.manifestId}`, () => JSON.stringify(candidate.manifest));
       const fingerprint = await vaultCodecComputeContentFingerprint(plaintext);
 
       /*
-       * A KEK/VEK migration re-keys the root manifest and all buckets (their ciphertext must be re-encrypted with
+       * A KEK/VEK migration re-keys the personal manifest and all buckets (their ciphertext must be re-encrypted with
        * the new VEK even when the content is unchanged) but not the shared manifests, which keep their own VEK.
        */
-      if (!forceFullWrite && !(migrateToVaultKey && candidate.isRoot) && fingerprints[fingerprintManifestKey(candidate.manifestId)] === fingerprint) {
+      if (!forceFullWrite && !(migrateToVaultKey && candidate.isPersonal) && fingerprints[fingerprintManifestKey(candidate.manifestId)] === fingerprint) {
         devLog(`[V2Push] ${label} unchanged versus server baseline, leaving it out of this write.`);
         continue;
       }
 
       const validation = await timedStage(`validate-manifest ${candidate.manifestId} (incl. JS→Rust conversion)`, () => vaultCodecValidateManifest(candidate.manifest));
       if (!validation.ok) {
-        if (candidate.isRoot) {
+        if (candidate.isPersonal) {
           return {
             status: 'rejected',
             newManifestRevision: null,
@@ -1059,17 +1092,16 @@ export class VaultSyncService {
 
       manifestWrites.push({
         manifestId: candidate.manifestId,
-        isRoot: candidate.isRoot,
         manifestBlob: ciphertext,
         manifestCiphertextHash: ciphertextHash,
         currentRevision: candidate.currentRevision,
         credentialsCount: (candidate.manifest.tables.Items ?? []).length,
         blobReferences: Object.entries(candidate.blobs).map(([hash, blob]) => ({ hash, category: blob.kind })),
         /*
-         * Set only on the KEK/VEK migration push, where the server creates the vault key alongside this root revision.
-         * A migration always forces a root write (see the gate above), so the key can never be stranded without one.
+         * Set only on the KEK/VEK migration push, where the server creates the vault key alongside this personal-manifest revision.
+         * A migration always forces a personal-manifest write (see the gate above), so the key can never be stranded without one.
          */
-        ...(candidate.isRoot && encryptedVek ? { encryptedVek } : {}),
+        ...(candidate.isPersonal && encryptedVek ? { encryptedVek } : {}),
       });
       writtenManifestFingerprints[candidate.manifestId] = fingerprint;
     }
@@ -1084,20 +1116,20 @@ export class VaultSyncService {
     }
 
     /*
-     * 4) Blob diff across the root manifest and every shared manifest in this write: only encrypt + upload blobs the
-     * server doesn't already have. On a KEK/VEK migration all ROOT blobs are re-encrypted with the new VEK and
+     * 4) Blob diff across the personal manifest and every shared manifest in this write: only encrypt + upload blobs the
+     * server doesn't already have. On a KEK/VEK migration all personal-manifest blobs are re-encrypted with the new VEK and
      * overwritten in place; shared-manifest blobs keep their own (unchanged) VEK and only fill genuine gaps.
      */
     const webApi = new WebApiService();
-    const rootHashes = Array.from(blobEntries).filter(([, entry]) => entry.fromRoot).map(([hash]) => hash);
-    const sharedHashes = Array.from(blobEntries).filter(([, entry]) => !entry.fromRoot).map(([hash]) => hash);
+    const personalHashes = Array.from(blobEntries).filter(([, entry]) => entry.fromPersonal).map(([hash]) => hash);
+    const sharedHashes = Array.from(blobEntries).filter(([, entry]) => !entry.fromPersonal).map(([hash]) => hash);
     const allBlobHashes = Array.from(blobEntries.keys());
     const knownServerHashes = new Set(((await storage.getItem(StorageKeys.VAULT_SERVER_BLOB_HASHES)) as string[] | null) ?? []);
 
-    let rootToUpload: string[] = [];
+    let personalToUpload: string[] = [];
     let sharedToUpload: string[] = [];
     if (migrateToVaultKey) {
-      rootToUpload = rootHashes;
+      personalToUpload = personalHashes;
       const sharedCandidates = sharedHashes.filter(h => !knownServerHashes.has(h));
       if (sharedCandidates.length > 0) {
         const missingResp = await webApi.post<{ hashes: string[] }, MissingBlobsResponseDto>(BLOBS_MISSING_ENDPOINT, { hashes: sharedCandidates });
@@ -1111,14 +1143,14 @@ export class VaultSyncService {
         toUpload = missingResp.missing ?? [];
       }
       const toUploadSet = new Set(toUpload);
-      rootToUpload = rootHashes.filter(h => toUploadSet.has(h));
+      personalToUpload = personalHashes.filter(h => toUploadSet.has(h));
       sharedToUpload = sharedHashes.filter(h => toUploadSet.has(h));
     }
 
-    devLog(`[V2Push] Blob diff: ${allBlobHashes.length} blobs across ${candidates.length} manifest(s), uploading ${rootToUpload.length} root + ${sharedToUpload.length} shared${migrateToVaultKey ? ' (root re-encrypted, VEK migration)' : ''}.`);
+    devLog(`[V2Push] Blob diff: ${allBlobHashes.length} blobs across ${candidates.length} manifest(s), uploading ${personalToUpload.length} personal + ${sharedToUpload.length} shared${migrateToVaultKey ? ' (personal manifest re-encrypted, VEK migration)' : ''}.`);
 
     // Pre-upload the missing bytes so the write below carries references only; each staged entry carries its own key.
-    const uploadedCiphertexts = await this.uploadBlobs(webApi, blobEntries, rootToUpload, migrateToVaultKey);
+    const uploadedCiphertexts = await this.uploadBlobs(webApi, blobEntries, personalToUpload, migrateToVaultKey);
     for (const [hash, ciphertext] of await this.uploadBlobs(webApi, blobEntries, sharedToUpload)) {
       uploadedCiphertexts.set(hash, ciphertext);
     }
@@ -1177,9 +1209,9 @@ export class VaultSyncService {
       }
 
       devWarn(`[V2Sync] Server reported ${resp.missingBlobHashes.length} missing blob(s); uploading and retrying once.`);
-      const retriedRoot = await this.uploadBlobs(webApi, blobEntries, resp.missingBlobHashes.filter(h => blobEntries.get(h)?.fromRoot === true), migrateToVaultKey);
-      const retriedShared = await this.uploadBlobs(webApi, blobEntries, resp.missingBlobHashes.filter(h => blobEntries.get(h)?.fromRoot === false));
-      for (const [hash, ciphertext] of [...retriedRoot, ...retriedShared]) {
+      const retriedPersonal = await this.uploadBlobs(webApi, blobEntries, resp.missingBlobHashes.filter(h => blobEntries.get(h)?.fromPersonal === true), migrateToVaultKey);
+      const retriedShared = await this.uploadBlobs(webApi, blobEntries, resp.missingBlobHashes.filter(h => blobEntries.get(h)?.fromPersonal === false));
+      for (const [hash, ciphertext] of [...retriedPersonal, ...retriedShared]) {
         uploadedCiphertexts.set(hash, ciphertext);
       }
 
@@ -1189,16 +1221,16 @@ export class VaultSyncService {
       }
     }
 
-    const rootResult = (resp.manifestRevisions ?? []).find(r => r.isRoot);
-    const newRootRevision = rootResult?.revision ?? currentManifestRevision;
+    const personalResult = (resp.manifestRevisions ?? []).find(r => r.manifestId === personalRecord.manifestId);
+    const newPersonalRevision = personalResult?.revision ?? currentManifestRevision;
 
     if (resp.status !== 0) {
       // All-or-nothing: a single stale manifest or bucket rejected the whole write; the orchestrator pulls/merges/retries.
-      return { status: 'outdated', newManifestRevision: newRootRevision };
+      return { status: 'outdated', newManifestRevision: newPersonalRevision };
     }
 
     // 5) Update local persisted state on success.
-    await storage.setItem(StorageKeys.SERVER_REVISION, newRootRevision);
+    await storage.setItem(StorageKeys.SERVER_REVISION, newPersonalRevision);
     for (const br of (resp.bucketRevisions ?? [])) {
       await storage.setItem(bucketRevisionStorageKey(br.category), br.revision);
     }
@@ -1209,7 +1241,7 @@ export class VaultSyncService {
      */
     const persistedSharedRevisions = ((await storage.getItem(StorageKeys.SERVER_MANIFEST_REVISIONS)) as Record<string, number> | null) ?? {};
     const sessionShared = await SharingService.getSessionSharedManifests();
-    const writtenRevisions = new Map((resp.manifestRevisions ?? []).filter(r => !r.isRoot && r.manifestId != null).map(r => [r.manifestId as string, r.revision]));
+    const writtenRevisions = new Map((resp.manifestRevisions ?? []).filter(r => r.manifestId !== personalRecord.manifestId).map(r => [r.manifestId, r.revision]));
     for (const [manifestId, revision] of writtenRevisions) {
       persistedSharedRevisions[manifestId] = revision;
     }
@@ -1272,7 +1304,7 @@ export class VaultSyncService {
     const totalChars = manifestChars + bucketChars + uploadedBlobChars;
     devLog(`[V2Push] Total pushed (encrypted): ${manifestWrites.length} manifest(s) ${formatKb(manifestChars)} + ${bucketDtos.length} buckets ${formatKb(bucketChars)} + ${uploadedCiphertexts.size} blobs ${formatKb(uploadedBlobChars)} = ${formatKb(totalChars)}.`);
 
-    return { status: 'ok', newManifestRevision: newRootRevision, newEncryptionKey: migrateToVaultKey ? contentKey : undefined };
+    return { status: 'ok', newManifestRevision: newPersonalRevision, newEncryptionKey: migrateToVaultKey ? contentKey : undefined };
   }
 
   /**
@@ -1289,7 +1321,7 @@ export class VaultSyncService {
     const manifestRecords = await this.resolveManifestRecords(sqliteClient);
     /*
      * Membership is the ManifestId stamp on each row (written by the repositories at insert, move and share time),
-     * so a spec only has to name the manifest and supply its blob salt. The root goes first: the codec reads the
+     * so a spec only has to name the manifest and supply its blob salt. The personal manifest goes first: the codec reads the
      * first spec as the manifest being written from, which is the routing key every row is matched against and
      * which keeps any table the registry does not scope per manifest.
      */
@@ -1410,7 +1442,7 @@ export class VaultSyncService {
   }
 
   /**
-   * Resolve every manifest this vault can write, root first, as one uniform list.
+   * Resolve every manifest this vault can write, personal manifest first, as one uniform list.
    * @param sqliteClient - the open local vault DB
    */
   private async resolveManifestRecords(sqliteClient: SqliteClient): Promise<ManifestRecord[]> {
@@ -1421,14 +1453,14 @@ export class VaultSyncService {
     }
 
     const records: ManifestRecord[] = [{
-      manifestId: await this.resolveRootManifestId(sqliteClient),
-      isRoot: true,
+      manifestId: await this.resolvePersonalManifestId(sqliteClient),
+      isPersonal: true,
       salt: manifestSalt,
       folderId: null,
       vek: null,
-      revision: await this.currentRootRevision(),
+      revision: await this.currentPersonalRevision(),
       name: null,
-      // The root's own delivery key is published as the account-level key, not per manifest.
+      // The personal manifest's own delivery key is published as the account-level key, not per manifest.
       canAdminister: false,
     }];
 
@@ -1439,7 +1471,7 @@ export class VaultSyncService {
       }
       records.push({
         manifestId: record.manifestId,
-        isRoot: false,
+        isPersonal: false,
         salt: record.salt,
         folderId: record.folderId,
         vek: record.vek,
@@ -1453,30 +1485,30 @@ export class VaultSyncService {
   }
 
   /**
-   * The root manifest's last-known server revision. It lives under its own storage key rather than in the
-   * per-manifest revision map: the server addresses the root by the auth session, never by id.
+   * The personal manifest's last-known server revision. It lives under its own storage key rather than in the
+   * per-manifest revision map: the server addresses it by the auth session, never by id.
    */
-  private async currentRootRevision(): Promise<number> {
+  private async currentPersonalRevision(): Promise<number> {
     return ((await storage.getItem(StorageKeys.SERVER_REVISION)) as number | null) ?? 0;
   }
 
   /**
-   * The id of this vault's own (root) manifest. The vault DB's own setting is the durable source (written on each
+   * The id of this vault's own (personal) manifest. The vault DB's own setting is the durable source (written on each
    * materialize); the storage copy covers the one case where no materialize has run yet: the local schema
    * migration of a legacy sqlite-blob vault, which canonicalizes before it records the setting row.
    * @param sqliteClient - the open local vault DB
    */
-  private async resolveRootManifestId(sqliteClient: SqliteClient): Promise<string> {
-    const rootManifestId = sqliteClient.settings.getRootManifestId() ?? ((await storage.getItem(StorageKeys.VAULT_ROOT_MANIFEST_ID)) as string | null);
-    if (!rootManifestId) {
-      throw new Error('VaultSyncService: no root manifest id available (no vault setting and no snapshot baseline); pull once before pushing.');
+  private async resolvePersonalManifestId(sqliteClient: SqliteClient): Promise<string> {
+    const personalManifestId = sqliteClient.settings.getPersonalManifestId() ?? ((await storage.getItem(StorageKeys.VAULT_PERSONAL_MANIFEST_ID)) as string | null);
+    if (!personalManifestId) {
+      throw new Error('VaultSyncService: no personal manifest id available (no vault setting and no snapshot baseline); pull once before pushing.');
     }
-    return rootManifestId;
+    return personalManifestId;
   }
 
   /**
-   * Encrypt the given blobs (each staged with its own VEK: root VEK or a folder VEK) and upload them via
-   * POST /v2/Vault/blobs in size-capped batches. `overwrite` is set only for root blobs on a KEK/VEK migration;
+   * Encrypt the given blobs (each staged with its own VEK: the personal VEK or a folder VEK) and upload them via
+   * POST /v2/Vault/blobs in size-capped batches. `overwrite` is set only for personal-manifest blobs on a KEK/VEK migration;
    * shared-manifest blobs keep their own VEK across a migration, so their ciphertext is never re-keyed.
    * @param webApi - API client to reuse
    * @param entries - hash → staged blob for every candidate (hashes without an entry are skipped)

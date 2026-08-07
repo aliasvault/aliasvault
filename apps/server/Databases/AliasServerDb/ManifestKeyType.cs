@@ -13,7 +13,7 @@ namespace AliasServerDb;
 public enum ManifestKeyType
 {
     /// <summary>
-    /// The user's own root-manifest VEK, encrypted by their Account Key (see <see cref="UserUnlockKey"/>).
+    /// The user's own personal-manifest VEK, encrypted by their Account Key (see <see cref="UserUnlockKey"/>).
     /// </summary>
     AccountKey = 1,
 

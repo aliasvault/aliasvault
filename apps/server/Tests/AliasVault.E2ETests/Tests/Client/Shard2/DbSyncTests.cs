@@ -242,7 +242,7 @@ public class DbSyncTests : ClientPlaywrightTest
     }
 
     /// <summary>
-    /// Returns a detached snapshot of the current (root) vault manifest row.
+    /// Returns a detached snapshot of the current (personal) vault manifest row.
     /// </summary>
     private async Task<AliasServerDb.VaultManifest> SnapshotCurrentVault()
     {

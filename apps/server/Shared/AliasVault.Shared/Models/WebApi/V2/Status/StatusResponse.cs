@@ -39,6 +39,12 @@ public class StatusResponse
     /// </summary>
     public List<ManifestRevision> ManifestRevisions { get; set; } = [];
 
+    /// <summary>
+    /// Gets or sets the caller's personal manifest id: the single manifest owned by their personal group. Every other
+    /// entry in <see cref="ManifestRevisions"/> is a shared one. Null for a user still on the legacy sqlite-blob format.
+    /// </summary>
+    public Guid? PersonalManifestId { get; set; }
+
     /// <summary>Gets or sets the latest revision for each data-bucket kind the user has. Empty when none stored.</summary>
     public List<BucketRevision> BucketRevisions { get; set; } = [];
 }

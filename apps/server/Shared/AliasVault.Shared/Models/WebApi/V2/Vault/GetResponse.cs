@@ -32,9 +32,10 @@ public class GetResponse
     public long? LegacyRevision { get; set; }
 
     /// <summary>
-    /// Gets or sets the caller's root manifest id.
+    /// Gets or sets the caller's personal manifest id: the single manifest owned by their personal group. Every other
+    /// entry in <see cref="Manifests"/> is a shared one. Also set on the legacy sqlite-blob path, where the list is empty.
     /// </summary>
-    public Guid? RootManifestId { get; set; }
+    public Guid? PersonalManifestId { get; set; }
 
     /// <summary>
     /// Gets or sets the manifests that make up the user's logical vault. Empty for legacy sqlite-blobs.

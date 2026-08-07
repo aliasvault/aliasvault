@@ -98,7 +98,7 @@ export class SettingsRepository extends BaseRepository {
   }
 
   /**
-   * Fetch every keypair that can decrypt inbound mail (both root manifest and optional shared manifest keys).
+   * Fetch every keypair that can decrypt inbound mail (both personal manifest and optional shared manifest keys).
    * @returns Array of encryption keys
    */
   public getAllEncryptionKeys(): EncryptionKey[] {
@@ -106,11 +106,11 @@ export class SettingsRepository extends BaseRepository {
   }
 
   /**
-   * Get the id of the root/default manifest.
-   * @returns The root manifest id, or null when not known yet
+   * Get the id of the vault's own (personal) manifest.
+   * @returns The personal manifest id, or null when not known yet
    */
-  public getRootManifestId(): string | null {
-    return this.rootManifestId();
+  public getPersonalManifestId(): string | null {
+    return this.personalManifestId();
   }
 
   /**
@@ -118,8 +118,8 @@ export class SettingsRepository extends BaseRepository {
    * @returns The active personal keypair, or null when absent
    */
   public getPrimaryEncryptionKey(): EncryptionKey | null {
-    const rootManifestId = this.rootManifestId();
-    return rootManifestId ? this.getActiveManifestEncryptionKey(rootManifestId) : null;
+    const personalManifestId = this.personalManifestId();
+    return personalManifestId ? this.getActiveManifestEncryptionKey(personalManifestId) : null;
   }
 
   /**
@@ -156,18 +156,18 @@ export class SettingsRepository extends BaseRepository {
    * @param privateKey - The private half
    */
   public retainNonPrimaryEncryptionKey(publicKey: string, privateKey: string): void {
-    const rootManifestId = this.rootManifestId();
-    if (!rootManifestId) {
+    const personalManifestId = this.personalManifestId();
+    if (!personalManifestId) {
       return;
     }
 
-    const existing = this.client.executeQuery<{ count: number }>(EncryptionKeyQueries.COUNT_BY_PUBLIC_KEY, [rootManifestId, publicKey]);
+    const existing = this.client.executeQuery<{ count: number }>(EncryptionKeyQueries.COUNT_BY_PUBLIC_KEY, [personalManifestId, publicKey]);
     if ((existing[0]?.count ?? 0) > 0) {
       return;
     }
 
     const now = this.now();
-    this.client.executeUpdate(EncryptionKeyQueries.INSERT_NON_PRIMARY, [this.generateId(), rootManifestId, publicKey, privateKey, now, now]);
+    this.client.executeUpdate(EncryptionKeyQueries.INSERT_NON_PRIMARY, [this.generateId(), personalManifestId, publicKey, privateKey, now, now]);
   }
 
   /**

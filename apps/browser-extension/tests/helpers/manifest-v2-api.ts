@@ -2,7 +2,7 @@
  * Node-side manifest-v1 vault client for E2E tests.
  *
  * Lets a test act as a second, "newer" client against the v2 Vault API: pull the snapshot,
- * decrypt + unpack the root manifest, modify it (e.g. inject columns/tables an older client's
+ * decrypt + unpack the personal manifest, modify it (e.g. inject columns/tables an older client's
  * schema doesn't know), and push it back as a new revision. Pack/unpack goes through the real
  * Rust WASM codec so the integrity envelope's canonical content hash matches exactly what the
  * extension verifies on pull.
@@ -19,7 +19,6 @@ import { normalizeUsername, symmetricDecryptBytes, symmetricEncryptBytes } from 
 /** One manifest entry in the v2 GET snapshot. */
 export type SnapshotManifest = {
   manifestId: string;
-  isRoot: boolean;
   blob: string;
   ciphertextHash: string;
   revision: number;
@@ -32,6 +31,8 @@ export type VaultSnapshot = {
   /** Server StorageFormat enum: 0 = legacy sqlite-blob, 1 = manifest-v1. */
   storageFormat: number;
   manifests?: SnapshotManifest[];
+  /** The manifest owned by the caller's personal group; every other entry is a shared one. */
+  personalManifestId?: string | null;
   buckets?: Array<{ category: string; blob: string; ciphertextHash: string; revision: number }>;
 };
 
@@ -76,17 +77,17 @@ export async function getVaultSnapshot(apiBaseUrl: string, token: string): Promi
 }
 
 /**
- * Returns the root manifest entry of a snapshot, or throws if the user isn't on manifest-v1 yet.
+ * Returns the personal manifest entry of a snapshot, or throws if the user isn't on manifest-v1 yet.
  *
  * @param snapshot - The v2 snapshot
- * @returns The root manifest entry
+ * @returns The personal manifest entry
  */
-export function requireRootManifest(snapshot: VaultSnapshot): SnapshotManifest {
-  const root = (snapshot.manifests ?? []).find((m) => m.isRoot);
-  if (snapshot.storageFormat !== 1 || !root?.blob) {
+export function requirePersonalManifest(snapshot: VaultSnapshot): SnapshotManifest {
+  const personal = (snapshot.manifests ?? []).find((m) => m.manifestId === snapshot.personalManifestId);
+  if (snapshot.storageFormat !== 1 || !personal?.blob) {
     throw new Error(`Snapshot is not manifest-v1 yet (storageFormat=${snapshot.storageFormat}, manifests=${snapshot.manifests?.length ?? 0}).`);
   }
-  return root;
+  return personal;
 }
 
 /**
@@ -110,6 +111,7 @@ export async function openManifest(blobBase64: string, encryptionKey: Uint8Array
  * @param token - Bearer token
  * @param username - The vault owner's username
  * @param manifest - The (modified) manifest object to upload
+ * @param manifestId - The manifest this write targets
  * @param currentRevision - The revision this upload is based on (server assigns currentRevision + 1)
  * @param blobReferences - Blob references to carry over to the new revision
  * @param encryptionKey - The user's derived vault encryption key
@@ -119,6 +121,7 @@ export async function pushManifest(
   apiBaseUrl: string,
   token: string,
   username: string,
+  manifestId: string,
   manifest: DecryptedManifest,
   currentRevision: number,
   blobReferences: Array<{ hash: string; category: string }>,
@@ -129,15 +132,22 @@ export async function pushManifest(
   const manifestBlob = await symmetricEncryptBytes(packedBytes, encryptionKey);
   const manifestCiphertextHash = createHash('sha256').update(Buffer.from(manifestBlob, 'base64')).digest('hex');
 
+  /*
+   * POST /v2/Vault is one atomic write over a list of manifests; every entry names the manifest it targets, so this
+   * simulated "newer client" addresses the personal manifest by id exactly as a real client does.
+   */
   const payload = {
     username: normalizeUsername(username),
-    manifestBlob,
-    manifestCiphertextHash,
-    currentManifestRevision: currentRevision,
-    credentialsCount: (manifest.tables.Items ?? []).length,
+    manifests: [{
+      manifestId,
+      manifestBlob,
+      manifestCiphertextHash,
+      currentRevision,
+      credentialsCount: (manifest.tables.Items ?? []).length,
+      blobReferences,
+    }],
     buckets: [],
     newBlobs: [],
-    blobReferences,
     emailRouting: { emailAddressList: [] },
     userEncryptionPublicKey: '',
   };
@@ -151,11 +161,20 @@ export async function pushManifest(
     throw new Error(`POST /v2/Vault failed with status ${response.status}: ${await response.text()}`);
   }
 
-  const result = (await response.json()) as { status: number; newManifestRevision: number; missingBlobHashes?: string[] };
+  const result = (await response.json()) as {
+    status: number;
+    manifestRevisions?: Array<{ manifestId: string; revision: number }>;
+    missingBlobHashes?: string[];
+  };
   if (result.status !== 0 || (result.missingBlobHashes?.length ?? 0) > 0) {
     throw new Error(`Manifest push rejected: status=${result.status}, missingBlobs=${result.missingBlobHashes?.join(',') ?? 'none'}`);
   }
-  return result.newManifestRevision;
+
+  const written = (result.manifestRevisions ?? []).find((r) => r.manifestId === manifestId);
+  if (!written) {
+    throw new Error(`Manifest push returned no revision for ${manifestId}.`);
+  }
+  return written.revision;
 }
 
 /**

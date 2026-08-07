@@ -10,11 +10,11 @@ import type { EmailRoutingPush } from '@/utils/types/EmailRoutingPush';
  * shared alias and everything in the user's own manifest is personal.
  *
  * @param manifests - every manifest one canonicalize run produced, the user's own included
- * @param rootManifestId - the id of the user's own manifest; its addresses stay personal
+ * @param personalManifestId - the id of the user's own manifest; its addresses stay personal
  * @param privateEmailDomains - domains the server hosts mail for; addresses outside them are not claimed
  * @returns The addresses to claim, each against the manifest that owns it
  */
-export function buildEmailRouting(manifests: CodecManifest[], rootManifestId: string, privateEmailDomains: string[]): EmailRoutingPush {
+export function buildEmailRouting(manifests: CodecManifest[], personalManifestId: string, privateEmailDomains: string[]): EmailRoutingPush {
   const manifestIdByAddress = new Map<string, string>();
 
   /**
@@ -41,8 +41,8 @@ export function buildEmailRouting(manifests: CodecManifest[], rootManifestId: st
         continue;
       }
 
-      // A shared manifest always wins the address; the root manifest only claims one nothing else has.
-      if (manifestId !== rootManifestId || !manifestIdByAddress.has(address)) {
+      // A shared manifest always wins the address; the personal manifest only claims one nothing else has.
+      if (manifestId !== personalManifestId || !manifestIdByAddress.has(address)) {
         manifestIdByAddress.set(address, manifestId);
       }
     }
@@ -53,7 +53,7 @@ export function buildEmailRouting(manifests: CodecManifest[], rootManifestId: st
    * @param manifest - the manifest to test
    * @returns True when it is the manifest this vault is written from
    */
-  const isOwn = (manifest: CodecManifest): boolean => manifest.manifestId === rootManifestId;
+  const isOwn = (manifest: CodecManifest): boolean => manifest.manifestId === personalManifestId;
 
   /*
    * The user's own manifest first: an address it also carries stays personal only while no shared manifest

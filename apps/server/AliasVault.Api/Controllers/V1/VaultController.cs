@@ -81,8 +81,8 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             return UpgradeRequired();
         }
 
-        // Logic to retrieve vault for the user: the current revision of the user's root manifest.
-        var vault = await context.VaultManifests.FirstOrDefaultAsync(x => x.IsRoot && x.OwnerGroupId == user.PersonalGroupId);
+        // Logic to retrieve vault for the user: the current revision of the user's personal manifest.
+        var vault = await context.VaultManifests.FirstOrDefaultAsync(x => x.OwnerGroupId == user.PersonalGroupId);
 
         // If no vault is found on server, return an empty object. This means the client will use an empty vault
         // as starting point.
@@ -163,8 +163,8 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USERNAME_MISMATCH, 400));
         }
 
-        // Retrieve the current revision of the user's root manifest, which contains the current encryption settings.
-        var currentManifest = await context.VaultManifests.FirstAsync(x => x.IsRoot && x.OwnerGroupId == user.PersonalGroupId);
+        // Retrieve the current revision of the user's personal manifest, which contains the current encryption settings.
+        var currentManifest = await context.VaultManifests.FirstAsync(x => x.OwnerGroupId == user.PersonalGroupId);
 
         // Reject vaults with a version that is lower than the last vault version.
         if (VersionHelper.IsVersionOlder(model.Version, currentManifest.Version ?? string.Empty))
@@ -209,7 +209,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             await UpdateEmailClaims(context, user, currentManifest.ManifestId, model.EmailAddressList);
         }
 
-        // Sync user public key if supplied, scoped to the root manifest (every key row is manifest-scoped).
+        // Sync user public key if supplied, scoped to the personal manifest (every key row is manifest-scoped).
         if (!string.IsNullOrEmpty(model.EncryptionPublicKey))
         {
             await UpdateUserPublicKey(context, currentManifest.ManifestId, model.EncryptionPublicKey);
@@ -264,7 +264,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
 
         // Check if the provided revision number is equal to the latest revision number.
         // If not, then the client is trying to update an older vault which we don't allow to prevent data loss.
-        var currentManifest = await context.VaultManifests.FirstAsync(x => x.IsRoot && x.OwnerGroupId == user.PersonalGroupId);
+        var currentManifest = await context.VaultManifests.FirstAsync(x => x.OwnerGroupId == user.PersonalGroupId);
         if (VersionHelper.IsVersionOlder(model.Version, currentManifest.Version ?? string.Empty))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
@@ -394,18 +394,18 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
     /// </summary>
     /// <param name="context">The database context.</param>
     /// <param name="user">The user object.</param>
-    /// <param name="rootManifestId">The caller's root manifest, which every claim is filed against.</param>
+    /// <param name="personalManifestId">The caller's personal manifest, which every claim is filed against.</param>
     /// <param name="newEmailAddresses">The list of new email addresses to claim.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    private async Task UpdateEmailClaims(AliasServerDbContext context, AliasVaultUser user, Guid rootManifestId, List<string> newEmailAddresses)
+    private async Task UpdateEmailClaims(AliasServerDbContext context, AliasVaultUser user, Guid personalManifestId, List<string> newEmailAddresses)
     {
         // Deduplicate email addresses to prevent unique constraint violations when
         // multiple credentials share the same private email address.
         newEmailAddresses = newEmailAddresses.Select(EmailHelper.SanitizeEmail).Distinct().ToList();
 
-        // Get list of email claims owned by the user (v1 only supports personal claims in the root manifest).
+        // Get list of email claims owned by the user (v1 only supports personal claims in the personal manifest).
         var userOwnedEmailClaims = await context.EmailClaims
-            .Where(x => x.VaultManifestId == rootManifestId)
+            .Where(x => x.VaultManifestId == personalManifestId)
             .ToListAsync();
 
         // Keep track of processed and sanitized email addresses to know which ones still exist.
@@ -414,7 +414,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         // Get list of supported private domains from config
         var supportedPrivateDomains = config.PrivateEmailDomains;
 
-        // Resolve the alias creation limits for the caller's personal group: v1 only files claims in the root manifest,
+        // Resolve the alias creation limits for the caller's personal group: v1 only files claims in the personal manifest,
         // which that group owns, so it is the only quota subject a v1 push can charge.
         var personalGroup = await context.Groups.FirstAsync(g => g.Id == user.PersonalGroupId);
         var rateLimits = await rateLimitService.GetLimitsAsync(personalGroup, RateLimitType.AliasCreation);
@@ -507,7 +507,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             {
                 context.EmailClaims.Add(new EmailClaim
                     {
-                        VaultManifestId = rootManifestId,
+                        VaultManifestId = personalManifestId,
                         Address = sanitizedEmail,
                         AddressLocal = sanitizedEmail.Split('@')[0],
                         AddressDomain = sanitizedEmail.Split('@')[1],
@@ -544,13 +544,13 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
     /// Updates the user's public key based on the provided public key. If it already exists, do nothing.
     /// </summary>
     /// <param name="context">The database context.</param>
-    /// <param name="rootManifestId">The caller's root manifest, which their personal keys are scoped to.</param>
+    /// <param name="personalManifestId">The caller's personal manifest, which their personal keys are scoped to.</param>
     /// <param name="newPublicKey">The new public key to sync and set as default.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    private async Task UpdateUserPublicKey(AliasServerDbContext context, Guid rootManifestId, string newPublicKey)
+    private async Task UpdateUserPublicKey(AliasServerDbContext context, Guid personalManifestId, string newPublicKey)
     {
         var publicKeyExists = await context.VaultManifestDeliveryKeys
-            .AnyAsync(x => x.VaultManifestId == rootManifestId && x.IsPrimary && x.PublicKey == newPublicKey);
+            .AnyAsync(x => x.VaultManifestId == personalManifestId && x.IsPrimary && x.PublicKey == newPublicKey);
 
         // If the public key already exists and is marked as primary (default), do nothing.
         if (publicKeyExists)
@@ -560,7 +560,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
 
         // Update all existing personal keys to not be primary.
         var otherKeys = await context.VaultManifestDeliveryKeys
-            .Where(x => x.VaultManifestId == rootManifestId)
+            .Where(x => x.VaultManifestId == personalManifestId)
             .ToListAsync();
 
         foreach (var key in otherKeys)
@@ -583,7 +583,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         // Public key is new, so create it.
         var newPublicKeyEntry = new VaultManifestDeliveryKey
         {
-            VaultManifestId = rootManifestId,
+            VaultManifestId = personalManifestId,
             PublicKey = newPublicKey,
             IsPrimary = true,
             CreatedAt = timeProvider.UtcNow,

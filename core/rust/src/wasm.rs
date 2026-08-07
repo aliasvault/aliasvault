@@ -245,7 +245,7 @@ pub fn vault_codec_compute_content_fingerprint_js(payload_json: &str) -> String 
 }
 
 /// Extract the encryption-key row whose `PublicKey` matches `public_key` from a decrypted manifest's
-/// `EncryptionKeys` table (scoped to the manifest itself: personal keys on the root manifest, the folder's
+/// `EncryptionKeys` table (scoped to the manifest itself: personal keys on the personal manifest, the folder's
 /// delivery keypair on a shared manifest).
 #[wasm_bindgen(js_name = vaultCodecExtractEncryptionKeyForPublicKey)]
 pub fn vault_codec_extract_encryption_key_for_public_key_js(manifest: JsValue, public_key: &str) -> Result<JsValue, JsValue> {

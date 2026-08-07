@@ -73,7 +73,6 @@ type StatusResponse = {
  */
 type ManifestRevision = {
     manifestId: string;
-    isRoot: boolean;
     revision: number;
 };
 /**
@@ -83,6 +82,7 @@ type StatusResponseV2 = {
     clientVersionSupported: boolean;
     serverVersion: string;
     manifestRevisions: ManifestRevision[];
+    personalManifestId: string | null;
     srpSalt: string;
 };
 

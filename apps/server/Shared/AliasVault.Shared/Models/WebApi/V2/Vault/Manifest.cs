@@ -9,18 +9,14 @@ namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
 /// A single vault manifest as carried in list-based payloads. A user's logical vault is assembled from one or more
-/// manifests: exactly one root manifest plus, any number of non-root manifests the user owns or has been
-/// granted access to. Each manifest is independently encrypted and revisioned, and carries its own blob references.
+/// manifests: the one owned by their personal group plus any number owned by shared groups they belong to.
+/// Which is which follows from <see cref="GetResponse.PersonalManifestId"/>, not from a flag on each entry. Each
+/// manifest is independently encrypted and revisioned, and carries its own blob references.
 /// </summary>
 public class Manifest
 {
     /// <summary>Gets or sets the stable identifier of the logical manifest (constant across its revisions).</summary>
     public required Guid ManifestId { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether this is the user's root manifest.
-    /// </summary>
-    public required bool IsRoot { get; set; }
 
     /// <summary>Gets or sets the encrypted manifest blob (base64 of AES-GCM ciphertext) — null on empty vault.</summary>
     public string? Blob { get; set; }
@@ -34,7 +30,7 @@ public class Manifest
     /// <summary>Gets or sets the blob references this manifest revision needs (so the client can detect cache misses).</summary>
     public List<BlobReference> BlobReferences { get; set; } = [];
 
-    /// <summary>Gets or sets the plaintext display name of a shared manifest. Null for the root manifest.</summary>
+    /// <summary>Gets or sets the plaintext display name of a shared manifest. Null for the personal manifest.</summary>
     public string? Name { get; set; }
 
     /// <summary>

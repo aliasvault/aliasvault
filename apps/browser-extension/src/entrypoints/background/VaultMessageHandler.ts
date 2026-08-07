@@ -61,15 +61,15 @@ let cachedSqliteClient: SqliteClient | null = null;
 let cachedVaultBlob: string | null = null;
 
 /**
- * The server revision of the user's root manifest.
+ * The server revision of the user's personal manifest.
  * @param status - the status response from the server
  */
-function rootManifestRevision(status: StatusResponseV2): number {
-  const root = (status.manifestRevisions ?? []).find(m => m.isRoot);
-  return root?.revision ?? 0;
+function personalManifestRevision(status: StatusResponseV2): number {
+  const personal = (status.manifestRevisions ?? []).find(m => m.manifestId === status.personalManifestId);
+  return personal?.revision ?? 0;
 }
 
-/** The client's last-known revision per non-root manifest (manifestId → revision); empty when no shared manifests. */
+/** The client's last-known revision per shared manifest (manifestId → revision); empty when no shared manifests. */
 async function getLocalSharedManifestRevisions(): Promise<Record<string, number>> {
   return (await storage.getItem(StorageKeys.SERVER_MANIFEST_REVISIONS)) as Record<string, number> | null ?? {};
 }
@@ -81,15 +81,16 @@ async function getLocalSharedManifestRevisions(): Promise<Record<string, number>
  * the server, so this returns false until the next server-side change.
  *
  * @param serverManifests - the per-manifest revisions from the status response
- * @param localMainRevision - the client's last-known root manifest revision (local:serverRevision)
- * @param localSharedRevisions - the client's last-known revision per non-root manifest
+ * @param personalManifestId - the id the server names as the caller's own; every other entry is a shared manifest
+ * @param localMainRevision - the client's last-known personal manifest revision (local:serverRevision)
+ * @param localSharedRevisions - the client's last-known revision per shared manifest
  */
-function serverManifestsNeedPull(serverManifests: ManifestRevision[], localMainRevision: number, localSharedRevisions: Record<string, number>): boolean {
+function serverManifestsNeedPull(serverManifests: ManifestRevision[], personalManifestId: string | null, localMainRevision: number, localSharedRevisions: Record<string, number>): boolean {
   const serverShared = new Map<string, number>();
-  let serverRootRevision: number | null = null;
+  let serverPersonalRevision: number | null = null;
   for (const m of (serverManifests ?? [])) {
-    if (m.isRoot) {
-      serverRootRevision = m.revision;
+    if (personalManifestId !== null && m.manifestId === personalManifestId) {
+      serverPersonalRevision = m.revision;
     } else {
       serverShared.set(m.manifestId, m.revision);
     }
@@ -98,8 +99,8 @@ function serverManifestsNeedPull(serverManifests: ManifestRevision[], localMainR
   /*
    * Decide whether to pull and log the concrete reason.
    */
-  if (serverRootRevision !== null && serverRootRevision > localMainRevision) {
-    devLog(`[VaultSync] Pull needed: root manifest server rev ${serverRootRevision} > local rev ${localMainRevision}.`);
+  if (serverPersonalRevision !== null && serverPersonalRevision > localMainRevision) {
+    devLog(`[VaultSync] Pull needed: personal manifest server rev ${serverPersonalRevision} > local rev ${localMainRevision}.`);
     return true;
   }
 
@@ -120,7 +121,7 @@ function serverManifestsNeedPull(serverManifests: ManifestRevision[], localMainR
     return true;
   }
 
-  devLog(`[VaultSync] No pull needed: root rev ${serverRootRevision ?? 'n/a'} (local ${localMainRevision}), ${serverShared.size} shared manifest(s) all match local revisions.`);
+  devLog(`[VaultSync] No pull needed: personal rev ${serverPersonalRevision ?? 'n/a'} (local ${localMainRevision}), ${serverShared.size} shared manifest(s) all match local revisions.`);
   return false;
 }
 
@@ -319,7 +320,7 @@ export async function handleSyncVault(
   const localServerRevision = await storage.getItem(StorageKeys.SERVER_REVISION) as number | null ?? 0;
   const localSharedRevisions = await getLocalSharedManifestRevisions();
 
-  if (serverManifestsNeedPull(statusResponse.manifestRevisions, localServerRevision, localSharedRevisions)) {
+  if (serverManifestsNeedPull(statusResponse.manifestRevisions, statusResponse.personalManifestId, localServerRevision, localSharedRevisions)) {
     /*
      * Retrieve the latest vault from the server.
      */
@@ -1504,9 +1505,9 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     // Get current sync state
     const syncState = await handleGetSyncState();
 
-    const serverManifestRevision = rootManifestRevision(statusResponse);
+    const serverManifestRevision = personalManifestRevision(statusResponse);
     const localSharedRevisions = await getLocalSharedManifestRevisions();
-    const needsPull = serverManifestsNeedPull(statusResponse.manifestRevisions, syncState.serverRevision, localSharedRevisions);
+    const needsPull = serverManifestsNeedPull(statusResponse.manifestRevisions, statusResponse.personalManifestId, syncState.serverRevision, localSharedRevisions);
 
     devLog(`[VaultSync] Status received (server main rev ${serverManifestRevision}, local rev ${syncState.serverRevision}, needsPull ${needsPull}, isDirty ${syncState.isDirty})`);
 

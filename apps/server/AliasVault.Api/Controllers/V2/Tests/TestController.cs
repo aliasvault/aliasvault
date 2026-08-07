@@ -421,13 +421,13 @@ public class TestController(
     }
 
     /// <summary>
-    /// Builds the revision info payload for a user: the current revision of the root manifest plus all history
+    /// Builds the revision info payload for a user: the current revision of the personal manifest plus all history
     /// revisions, newest first.
     /// </summary>
     private static async Task<object> BuildRevisionInfoAsync(AliasServerDbContext context, string userId)
     {
         var current = await context.VaultManifests
-            .Where(v => v.IsRoot && context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == v.OwnerGroupId))
+            .Where(v => context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == v.OwnerGroupId))
             .Select(v => new { v.RevisionNumber, v.CreatedAt, v.UpdatedAt })
             .FirstOrDefaultAsync();
 
@@ -454,14 +454,14 @@ public class TestController(
     }
 
     /// <summary>
-    /// Deletes the newest <paramref name="count"/> revisions of the user's root manifest by rolling the current row
+    /// Deletes the newest <paramref name="count"/> revisions of the user's personal manifest by rolling the current row
     /// back to the newest history revision each time (the inverse of the archive-then-update upload flow). When no
     /// history remains, the manifest row itself is deleted. Returns the revision numbers that were discarded.
     /// </summary>
     private static async Task<List<long>> PopNewestRevisionsAsync(AliasServerDbContext context, string userId, int count)
     {
         var deletedRevisions = new List<long>();
-        var current = await context.VaultManifests.FirstOrDefaultAsync(v => v.IsRoot && context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == v.OwnerGroupId));
+        var current = await context.VaultManifests.FirstOrDefaultAsync(v => context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == v.OwnerGroupId));
 
         for (var i = 0; i < count && current != null; i++)
         {

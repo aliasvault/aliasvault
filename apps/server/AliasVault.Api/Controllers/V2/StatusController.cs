@@ -51,8 +51,10 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
 
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        // Manifest revisions for every manifest this user can access, built via the shared helper.
+        // Manifest revisions for every manifest this user can access, built via the shared helper, plus which of them
+        // is their own: the client needs the id to tell its personal vault from the shared ones it syncs alongside.
         var manifestRevisions = await VaultStatusHelper.GetManifestRevisionsAsync(context, user.Id);
+        var personalManifestId = await GroupHelper.GetPersonalManifestIdAsync(context, user.PersonalGroupId);
 
         // Latest revision per bucket kind.
         var bucketRevisions = await context.VaultDataBuckets
@@ -61,7 +63,7 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
             .Select(g => new BucketRevision { Category = g.Key, Revision = g.Max(b => b.RevisionNumber) })
             .ToListAsync();
 
-        // Current SRP salt: lives on the password VaultManifestAccessKey for v2 migrated users, on the root manifest for legacy users.
+        // Current SRP salt: lives on the password VaultManifestAccessKey for v2 migrated users, on the personal manifest for legacy users.
         var encryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, user);
 
         // Check client version compatibility if the header is provided.
@@ -81,6 +83,7 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
             ServerVersion = AppInfo.GetFullVersion(),
             SrpSalt = encryptionSettings.Salt,
             ManifestRevisions = manifestRevisions,
+            PersonalManifestId = personalManifestId,
             BucketRevisions = bucketRevisions,
         });
     }

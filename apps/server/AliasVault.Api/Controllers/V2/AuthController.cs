@@ -434,7 +434,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return BadRequest(ServerValidationErrorResponse.Create(["Account key registration requires encryptedAccountKey, encryptedVek, accountPublicKey and encryptedAccountPrivateKey."], 400));
         }
 
-        var rootManifestId = Guid.NewGuid();
+        var personalManifestId = Guid.NewGuid();
 
         // Create the personal group before the user row.
         var personalGroup = GroupHelper.CreatePersonalGroup(user, timeProvider.UtcNow);
@@ -448,15 +448,14 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         if (result.Succeeded)
         {
-            // Create the owner membership and root manifest.
+            // Create the owner membership and personal manifest.
             await using (var context = await dbContextFactory.CreateDbContextAsync())
             {
                 context.GroupMembers.Add(GroupHelper.CreateOwnerMembership(personalGroup, user.Id, timeProvider.UtcNow));
 
                 context.VaultManifests.Add(new AliasServerDb.VaultManifest
                 {
-                    ManifestId = rootManifestId,
-                    IsRoot = true,
+                    ManifestId = personalManifestId,
                     OwnerGroupId = personalGroup.Id,
                     StorageFormat = "sqlite-blob",
                     Version = "0.0.0",
@@ -505,7 +504,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
                     {
                         Id = Guid.NewGuid(),
                         UserId = user.Id,
-                        VaultManifestId = rootManifestId,
+                        VaultManifestId = personalManifestId,
                         Type = ManifestKeyType.AccountKey,
                         Algorithm = VaultKeyAlgorithm.Aes256Gcm,
                         EncryptedVek = model.EncryptedVek!,

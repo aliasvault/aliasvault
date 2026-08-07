@@ -330,6 +330,7 @@ export class WebApiService {
         clientVersionSupported: true,
         serverVersion: '0.0.0',
         manifestRevisions: [],
+        personalManifestId: null,
         srpSalt: ''
       };
     }

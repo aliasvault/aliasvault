@@ -92,14 +92,14 @@ public class VaultController(
 
         // Every manifest the caller can open.
         var latestManifests = await AccessibleManifests(context, user.Id)
-            .Select(x => new { x.ManifestId, x.IsRoot, x.Name, x.ManifestBlob, x.ManifestCiphertextHash, x.RevisionNumber, x.OwnerGroupId })
+            .Select(x => new { x.ManifestId, x.Name, x.ManifestBlob, x.ManifestCiphertextHash, x.RevisionNumber, x.OwnerGroupId, OwnerGroupType = x.OwnerGroup.Type })
             .ToListAsync();
 
-        if (!latestManifests.Any(m => m.IsRoot && ownedGroupIds.Contains(m.OwnerGroupId)))
+        if (!latestManifests.Any(m => m.OwnerGroupId == user.PersonalGroupId))
         {
             // User hasn't migrated to manifest-v1 yet, return the latest legacy SQLite blob.
             var legacy = await context.VaultManifests
-                .Where(x => ownedGroupIds.Contains(x.OwnerGroupId) && x.IsRoot)
+                .Where(x => x.OwnerGroupId == user.PersonalGroupId)
                 .OrderByDescending(x => x.RevisionNumber)
                 .FirstOrDefaultAsync();
 
@@ -110,7 +110,7 @@ public class VaultController(
                 LegacyVaultBlob = legacy?.VaultBlob ?? string.Empty,
                 Version = legacy?.Version ?? string.Empty,
                 LegacyRevision = legacy?.RevisionNumber ?? 0,
-                RootManifestId = legacy?.ManifestId,
+                PersonalManifestId = legacy?.ManifestId,
                 EmailRouting = emailRouting,
             });
         }
@@ -159,14 +159,13 @@ public class VaultController(
             return new Manifest
             {
                 ManifestId = m.ManifestId,
-                IsRoot = m.IsRoot,
                 Name = m.Name,
                 Blob = m.ManifestBlob,
                 CiphertextHash = m.ManifestCiphertextHash,
                 Revision = m.RevisionNumber,
                 BlobReferences = refsByManifest.TryGetValue(m.ManifestId, out var refs) ? refs : [],
                 OwnerUsername = ownerUsernamesByGroupId.GetValueOrDefault(m.OwnerGroupId),
-                CanAdminister = !m.IsRoot && administeredGroupIds.Contains(m.OwnerGroupId),
+                CanAdminister = m.OwnerGroupType == GroupType.Shared && administeredGroupIds.Contains(m.OwnerGroupId),
                 KeyType = accessKey != null ? ManifestKeyTypes.ToToken(accessKey.Type) : null,
                 EncryptedVek = grant?.EncryptedVek,
                 Algorithm = grant != null ? VaultKeyAlgorithms.ToToken(grant.Algorithm) : null,
@@ -179,6 +178,7 @@ public class VaultController(
             Status = VaultStatus.Ok,
             StorageFormat = StorageFormat.Manifest,
             Manifests = manifests,
+            PersonalManifestId = latestManifests.First(m => m.OwnerGroupId == user.PersonalGroupId).ManifestId,
             Buckets = buckets,
             EmailRouting = emailRouting,
         });
@@ -219,7 +219,6 @@ public class VaultController(
         var manifest = new Manifest
         {
             ManifestId = latest.ManifestId,
-            IsRoot = latest.IsRoot,
             Name = latest.Name,
             Blob = latest.ManifestBlob,
             CiphertextHash = latest.ManifestCiphertextHash,
@@ -241,7 +240,7 @@ public class VaultController(
         }
 
         // Ownership display and administer rights are only meaningful on a manifest that is not the caller's own home one.
-        if (!latest.IsRoot)
+        if (latest.OwnerGroupId != user.PersonalGroupId)
         {
             // Set owner username for shared manifests for display purposes.
             var isOwnedByCaller = await context.GroupMembers.AnyAsync(gm => gm.GroupId == latest.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner);
@@ -257,7 +256,7 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Unified atomic write. Applies any number of changed manifests (root and/or shared manifests), changed data
+    /// Unified atomic write. Applies any number of changed manifests (the personal manifest and/or shared manifests), changed data
     /// buckets, and new blobs in a single all-or-nothing DB transaction.
     /// </summary>
     /// <param name="model">Vault write request DTO.</param>
@@ -285,28 +284,41 @@ public class VaultController(
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
         }
 
-        var rootWrite = model.Manifests.FirstOrDefault(m => m.IsRoot);
+        var resolved = new List<(ManifestWrite Write, VaultManifest Row)>();
+        foreach (var mw in model.Manifests)
+        {
+            var row = await ManifestAccessHelper.AccessibleManifests(context, user.Id).FirstOrDefaultAsync(x => x.ManifestId == mw.ManifestId);
+            if (row == null)
+            {
+                return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+            }
+
+            resolved.Add((mw, row));
+        }
+
+        // The caller's own manifest is the one owned by their personal group; a personal group owns no other.
+        var personalWrite = resolved.FirstOrDefault(r => r.Row.OwnerGroupId == user.PersonalGroupId).Write;
 
         /*
-         * Account-key migration: when writing the root manifest the first time, the client needs to generate a VEK,
-         * encrypt it with the AccountKey, and store it in the root manifest. AccountKeys blobs (KEK-encrypted AK + AK-encrypted account keypair).
-         * A non-root write must never carry one. We reject rather than silently ignore, so a misdirected key can never be dropped unnoticed.
+         * Account-key migration: when writing the personal manifest the first time, the client needs to generate a VEK,
+         * encrypt it with the AccountKey, and store it in the personal manifest. AccountKeys blobs (KEK-encrypted AK + AK-encrypted account keypair).
+         * A shared-manifest write must never carry one. We reject rather than silently ignore, so a misdirected key can never be dropped unnoticed.
          * TODO: these guards can be removed once all users have migrated and we don't support legacy users anymore.
          */
-        if (model.Manifests.Any(m => !m.IsRoot && !string.IsNullOrEmpty(m.EncryptedVek)))
+        if (resolved.Any(r => r.Row.OwnerGroupId != user.PersonalGroupId && !string.IsNullOrEmpty(r.Write.EncryptedVek)))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
         }
 
-        var migrationEncryptedVek = rootWrite?.EncryptedVek;
+        var migrationEncryptedVek = personalWrite?.EncryptedVek;
         var hasExistingUnlockKey = await context.UserUnlockKeys.AnyAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password);
         if (!string.IsNullOrEmpty(migrationEncryptedVek) && hasExistingUnlockKey)
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400));
         }
 
-        // A root push from a not-yet-migrated user must carry the encrypted VEK to migrate the vault into the manifest-v1 format.
-        if (rootWrite != null && string.IsNullOrEmpty(migrationEncryptedVek) && !hasExistingUnlockKey)
+        // A personal-manifest push from a not-yet-migrated user must carry the encrypted VEK to migrate the vault into the manifest-v1 format.
+        if (personalWrite != null && string.IsNullOrEmpty(migrationEncryptedVek) && !hasExistingUnlockKey)
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
         }
@@ -317,45 +329,6 @@ public class VaultController(
         if (!string.IsNullOrEmpty(migrationEncryptedVek) && !accountKeysComplete)
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
-        }
-
-        /*
-         * Resolve + authorize each manifest write to its stored row.
-         */
-        var resolved = new List<(ManifestWrite Write, VaultManifest Row)>();
-        foreach (var mw in model.Manifests)
-        {
-            VaultManifest? row;
-            if (mw.ManifestId != null)
-            {
-                row = await ManifestAccessHelper.AccessibleManifests(context, user.Id).FirstOrDefaultAsync(x => x.ManifestId == mw.ManifestId);
-            }
-            else if (mw.IsRoot)
-            {
-                row = await context.VaultManifests.FirstOrDefaultAsync(x => x.IsRoot && x.OwnerGroupId == user.PersonalGroupId);
-            }
-            else
-            {
-                // A non-root write must name its manifest; a missing id must never fall through to the root.
-                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
-            }
-
-            if (row == null)
-            {
-                // A missing root is a state error on the caller's own vault; a missing shared manifest is a bad target.
-                return mw.IsRoot
-                    ? BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400))
-                    : NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
-            }
-
-            // The target must agree with what its id resolved to, and a root write only ever means the caller's own
-            // personal root: refuse rather than guess which manifest was intended.
-            if (row.IsRoot != mw.IsRoot || (mw.IsRoot && row.OwnerGroupId != user.PersonalGroupId))
-            {
-                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
-            }
-
-            resolved.Add((mw, row));
         }
 
         // All-or-nothing revision gate: every manifest and bucket must be exactly one ahead of the server's current.
@@ -371,7 +344,7 @@ public class VaultController(
             return Ok(new VaultWriteResponse
             {
                 Status = VaultStatus.Outdated,
-                ManifestRevisions = resolved.Select(r => new ManifestWriteResult { IsRoot = r.Write.IsRoot, ManifestId = r.Write.ManifestId, Revision = r.Row.RevisionNumber }).ToList(),
+                ManifestRevisions = resolved.Select(r => new ManifestWriteResult { ManifestId = r.Write.ManifestId, Revision = r.Row.RevisionNumber }).ToList(),
                 BucketRevisions = model.Buckets.Select(b => new BucketRevision { Category = b.Category, Revision = bucketCurrentRevisions[b.Category] }).ToList(),
             });
         }
@@ -396,8 +369,8 @@ public class VaultController(
             }
 
             // 2) Validate every referenced hash exists.
-            var ownScopeHashes = resolved.Where(r => r.Write.IsRoot).SelectMany(r => r.Write.BlobReferences).Select(br => br.Hash).Distinct().ToList();
-            var anyScopeHashes = resolved.Where(r => !r.Write.IsRoot).SelectMany(r => r.Write.BlobReferences).Select(br => br.Hash).Distinct().ToList();
+            var ownScopeHashes = resolved.Where(r => r.Row.OwnerGroupId == user.PersonalGroupId).SelectMany(r => r.Write.BlobReferences).Select(br => br.Hash).Distinct().ToList();
+            var anyScopeHashes = resolved.Where(r => r.Row.OwnerGroupId != user.PersonalGroupId).SelectMany(r => r.Write.BlobReferences).Select(br => br.Hash).Distinct().ToList();
             var missing = new List<string>();
             if (ownScopeHashes.Count > 0)
             {
@@ -419,12 +392,12 @@ public class VaultController(
                 {
                     Status = VaultStatus.Ok,
                     MissingBlobHashes = missing,
-                    ManifestRevisions = resolved.Select(r => new ManifestWriteResult { IsRoot = r.Write.IsRoot, ManifestId = r.Write.ManifestId, Revision = r.Row.RevisionNumber }).ToList(),
+                    ManifestRevisions = resolved.Select(r => new ManifestWriteResult { ManifestId = r.Write.ManifestId, Revision = r.Row.RevisionNumber }).ToList(),
                 });
             }
 
             // 3) Apply each manifest: archive the current revision into history, update the row in place, run the
-            // root-only side effects (email claims count + KEK/VEK key creation), and prune history per retention.
+            // personal-only side effects (email claims count + KEK/VEK key creation), and prune history per retention.
             var manifestResults = new List<ManifestWriteResult>();
             foreach (var (mw, row) in resolved)
             {
@@ -450,7 +423,7 @@ public class VaultController(
                     row.EmailClaimsCount = model.EmailRouting.EmailAddressList.Count(x => x.ManifestId == row.ManifestId);
                 }
 
-                if (row.IsRoot)
+                if (row.OwnerGroupId == user.PersonalGroupId)
                 {
                     row.CreatedAt = timeProvider.UtcNow;
 
@@ -507,7 +480,7 @@ public class VaultController(
                 }
 
                 await ApplyVaultRetention(context, row, archivedRevision);
-                manifestResults.Add(new ManifestWriteResult { IsRoot = mw.IsRoot, ManifestId = mw.ManifestId, Revision = row.RevisionNumber });
+                manifestResults.Add(new ManifestWriteResult { ManifestId = mw.ManifestId, Revision = row.RevisionNumber });
             }
 
             await context.SaveChangesAsync();
@@ -539,14 +512,14 @@ public class VaultController(
                 newBucketRevisions.Add(new BucketRevision { Category = bucket.Category, Revision = rev });
             }
 
-            // 6) Root-scoped email routing + public keys. The personal key is published scoped to the caller's
-            // root manifest, the exact same flow as a shared manifest's delivery key below.
+            // 6) Personal-scoped email routing + public keys. The personal key is published scoped to the caller's
+            // personal manifest, the exact same flow as a shared manifest's delivery key below.
             if (!string.IsNullOrEmpty(model.UserEncryptionPublicKey))
             {
-                var rootManifestId = await GroupHelper.GetRootManifestIdAsync(context, user.PersonalGroupId);
-                if (rootManifestId is not null)
+                var personalManifestId = await GroupHelper.GetPersonalManifestIdAsync(context, user.PersonalGroupId);
+                if (personalManifestId is not null)
                 {
-                    await PublishManifestPublicKeyAsync(context, rootManifestId.Value, model.UserEncryptionPublicKey);
+                    await PublishManifestPublicKeyAsync(context, personalManifestId.Value, model.UserEncryptionPublicKey);
                 }
             }
 
@@ -682,7 +655,7 @@ public class VaultController(
         if (missing.Count > 0)
         {
             var accessibleManifests = await AccessibleManifests(context, user.Id)
-                .Where(m => !m.IsRoot)
+                .Where(m => m.OwnerGroup.Type == GroupType.Shared)
                 .Select(m => new { m.ManifestId, m.RevisionNumber })
                 .ToListAsync();
             var accessibleIds = accessibleManifests.Select(m => m.ManifestId).ToList();
@@ -734,7 +707,7 @@ public class VaultController(
         }
 
         var administered = await context.VaultManifests
-            .Where(m => ids.Contains(m.ManifestId) && !m.IsRoot
+            .Where(m => ids.Contains(m.ManifestId) && m.OwnerGroup.Type == GroupType.Shared
                 && context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == userId && (gm.Role == GroupRole.Admin || gm.Role == GroupRole.Owner)))
             .Select(m => m.ManifestId)
             .ToListAsync();
@@ -1037,10 +1010,10 @@ public class VaultController(
         var ownerGroupByManifest = await GroupHelper.GetOwnerGroupsAsync(context, accessibleManifests);
 
         // Resolved server-side and never read off the push: this is what stops a client filing an alias under a manifest it merely named.
-        var rootManifestId = await context.VaultManifests.Where(m => m.IsRoot && m.OwnerGroupId == user.PersonalGroupId).Select(m => (Guid?)m.ManifestId).FirstOrDefaultAsync();
-        if (rootManifestId is null)
+        var personalManifestId = await GroupHelper.GetPersonalManifestIdAsync(context, user.PersonalGroupId);
+        if (personalManifestId is null)
         {
-            logger.LogError("No root manifest found for {User}; skipping email claim update.", user.UserName);
+            logger.LogError("No personal manifest found for {User}; skipping email claim update.", user.UserName);
             return;
         }
 
@@ -1056,12 +1029,12 @@ public class VaultController(
             var sanitizedClaimed = EmailHelper.SanitizeEmail(claimed.Address);
             if (!accessibleManifests.Contains(claimed.ManifestId))
             {
-                logger.LogWarning("{User} claimed alias {Email} for manifest {Manifest} they cannot access; filing it under their own root manifest instead.", user.UserName, sanitizedClaimed, claimed.ManifestId);
+                logger.LogWarning("{User} claimed alias {Email} for manifest {Manifest} they cannot access; filing it under their own personal manifest instead.", user.UserName, sanitizedClaimed, claimed.ManifestId);
                 continue;
             }
 
             manifestByAddress[sanitizedClaimed] = claimed.ManifestId;
-            if (claimed.ManifestId != rootManifestId.Value && !manifestsWithDeliveryKey.Contains(claimed.ManifestId))
+            if (claimed.ManifestId != personalManifestId.Value && !manifestsWithDeliveryKey.Contains(claimed.ManifestId))
             {
                 logger.LogWarning("{User} claimed shared alias {Email} for manifest {Manifest} with no published delivery key; its mail stays readable by the routing owner alone until a delivery key is published.", user.UserName, sanitizedClaimed, claimed.ManifestId);
             }
@@ -1102,8 +1075,8 @@ public class VaultController(
                 continue;
             }
 
-            // Which manifest the alias is filed against: the one the push named when the caller may claim for it, their own root otherwise.
-            var resolvedManifestId = manifestByAddress.TryGetValue(sanitized, out var claimedManifestId) ? claimedManifestId : rootManifestId.Value;
+            // Which manifest the alias is filed against: the one the push named when the caller may claim for it, their own personal manifest otherwise.
+            var resolvedManifestId = manifestByAddress.TryGetValue(sanitized, out var claimedManifestId) ? claimedManifestId : personalManifestId.Value;
 
             // The quota subject is the group owning that manifest: the shared manifest's group, or the caller's personal group.
             var quotaGroupId = ownerGroupByManifest.TryGetValue(resolvedManifestId, out var ownerGroupId) ? ownerGroupId : user.PersonalGroupId;
@@ -1224,7 +1197,7 @@ public class VaultController(
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="vaultManifestId">
-    /// The manifest this key belongs to: the caller's root manifest for their personal key, a shared manifest
+    /// The manifest this key belongs to: the caller's personal manifest for their personal key, a shared manifest
     /// for its delivery key. Everything here is scoped by it, promoting a shared manifest's key must never demote
     /// the user's personal key, and rotating the personal key must never demote a shared manifest's delivery key. The key
     /// carries no user owner at all: it must survive the publishing admin deleting their account, and a later

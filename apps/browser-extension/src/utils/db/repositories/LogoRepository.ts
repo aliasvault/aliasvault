@@ -27,7 +27,7 @@ export class LogoRepository extends BaseRepository {
    * @returns The manifest id, or the empty scope when it is not known yet
    */
   private ownScope(): string {
-    return this.rootManifestId() ?? '';
+    return this.personalManifestId() ?? '';
   }
 
   /**

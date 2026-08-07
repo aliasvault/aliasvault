@@ -250,13 +250,13 @@ export class FolderRepository extends BaseRepository {
   }
 
   /**
-   * Re-stamp a folder's whole subtree back into the vault's own (root) manifest.
+   * Re-stamp a folder's whole subtree back into the vault's own (personal) manifest.
    * @param folderId - The root of the subtree to re-stamp
-   * @returns The number of rows re-stamped, or 0 when the root manifest is not registered yet
+   * @returns The number of rows re-stamped, or 0 when the personal manifest is not registered yet
    */
-  public async restampSubtreeToRoot(folderId: string): Promise<number> {
-    const rootId = this.rootManifestId();
-    return rootId ? this.restampSubtree(folderId, rootId) : 0;
+  public async restampSubtreeToPersonal(folderId: string): Promise<number> {
+    const personalId = this.personalManifestId();
+    return personalId ? this.restampSubtree(folderId, personalId) : 0;
   }
 
   /**

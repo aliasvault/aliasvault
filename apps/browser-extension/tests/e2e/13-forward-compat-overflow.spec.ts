@@ -16,7 +16,7 @@
  * 5. The newer client pulls again — the rename is applied AND the unknown column/table are intact
  */
 import { test, expect, TestClient, FieldSelectors } from '../fixtures';
-import { getVaultSnapshot, openManifest, pushManifest, pollUntil, requireRootManifest, type DecryptedManifest } from '../helpers/manifest-v2-api';
+import { getVaultSnapshot, openManifest, pushManifest, pollUntil, requirePersonalManifest, type DecryptedManifest } from '../helpers/manifest-v2-api';
 import type { TestUser } from '../helpers/test-api';
 
 test.describe.serial('13. Forward-compat overflow', () => {
@@ -58,7 +58,7 @@ test.describe.serial('13. Forward-compat overflow', () => {
 
   test('13.2 a newer client should inject an unknown column and table into the server manifest', async () => {
     const token = user.token!.token;
-    const { manifest, root } = await openLatestManifest(baseApiUrl, token, user.encryptionKey!);
+    const { manifest, personal } = await openLatestManifest(baseApiUrl, token, user.encryptionKey!);
 
     // Simulate a newer client's schema additions: a column this extension build doesn't know on an
     // existing row, and a whole table it doesn't know at all.
@@ -67,8 +67,8 @@ test.describe.serial('13. Forward-compat overflow', () => {
     item!.AliasEnabled = true;
     manifest.tables.FutureFeatures = [futureTableRow];
 
-    injectedRevision = await pushManifest(baseApiUrl, token, user.username, manifest, root.revision, root.blobReferences, user.encryptionKey!);
-    expect(injectedRevision).toBeGreaterThan(root.revision);
+    injectedRevision = await pushManifest(baseApiUrl, token, user.username, personal.manifestId, manifest, personal.revision, personal.blobReferences, user.encryptionKey!);
+    expect(injectedRevision).toBeGreaterThan(personal.revision);
   });
 
   test('13.3 extension should load the newer manifest without crashing', async () => {
@@ -93,9 +93,9 @@ test.describe.serial('13. Forward-compat overflow', () => {
   test('13.5 the newer client data should survive the extension push (no data loss)', async () => {
     // Wait for the extension's push to land: a revision beyond the injected one, carrying the rename.
     const manifest = await pollUntil(async (): Promise<DecryptedManifest | undefined> => {
-      const { manifest: m, root } = await openLatestManifest(baseApiUrl, user.token!.token, user.encryptionKey!);
+      const { manifest: m, personal } = await openLatestManifest(baseApiUrl, user.token!.token, user.encryptionKey!);
       const renamed = (m.tables.Items ?? []).some((row) => row.Name === renamedCredentialName);
-      return root.revision > injectedRevision && renamed ? m : undefined;
+      return personal.revision > injectedRevision && renamed ? m : undefined;
     });
 
     // The unknown column re-attached to the row the extension itself rewrote (rename bumps the row).
@@ -109,17 +109,17 @@ test.describe.serial('13. Forward-compat overflow', () => {
 });
 
 /**
- * Polls until the server snapshot is manifest-v1, then decrypts and returns its root manifest.
+ * Polls until the server snapshot is manifest-v1, then decrypts and returns its personal manifest.
  *
  * @param apiUrl - The base URL of the API
  * @param token - Bearer token
  * @param encryptionKey - The user's derived vault encryption key
  * @returns The decrypted manifest and its snapshot entry
  */
-async function openLatestManifest(apiUrl: string, token: string, encryptionKey: Uint8Array): Promise<{ manifest: DecryptedManifest; root: ReturnType<typeof requireRootManifest> }> {
+async function openLatestManifest(apiUrl: string, token: string, encryptionKey: Uint8Array): Promise<{ manifest: DecryptedManifest; personal: ReturnType<typeof requirePersonalManifest> }> {
   return pollUntil(async () => {
     const snapshot = await getVaultSnapshot(apiUrl, token);
-    const root = requireRootManifest(snapshot);
-    return { manifest: await openManifest(root.blob, encryptionKey), root };
+    const personal = requirePersonalManifest(snapshot);
+    return { manifest: await openManifest(personal.blob, encryptionKey), personal };
   });
 }

@@ -30,14 +30,14 @@ public static class EmailAccessHelper
             return false;
         }
 
-        // Holding any access key on the manifest is proof of access: AccountKey on a root manifest, GrantKey on a shared manifest (owner self-grant and recipient alike).
+        // Holding any access key on the manifest is proof of access: AccountKey on a personal manifest, GrantKey on a shared manifest (owner self-grant and recipient alike).
         var hasAccessKey = await context.VaultManifestAccessKeys.AnyAsync(k => k.UserId == userId && k.VaultManifestId == claim.VaultManifestId);
         if (hasAccessKey)
         {
             return true;
         }
 
-        // TODO: legacy fallback — pre-KEK/VEK accounts have no AccountKey row on their root manifest yet, so owning the manifest's group is their only proof of access. Delete once all clients have migrated.
+        // TODO: legacy fallback — pre-KEK/VEK accounts have no AccountKey row on their personal manifest yet, so owning the manifest's group is their only proof of access. Delete once all clients have migrated.
         return await context.VaultManifests.AnyAsync(m => m.ManifestId == claim.VaultManifestId && context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == userId && gm.Role == GroupRole.Owner));
     }
 
@@ -65,7 +65,7 @@ public static class EmailAccessHelper
             return [];
         }
 
-        // Holding any access key on the manifest is proof of access: AccountKey on a root manifest, GrantKey on a shared manifest
+        // Holding any access key on the manifest is proof of access: AccountKey on a personal manifest, GrantKey on a shared manifest
         // (owner self-grant and recipient alike).
         var manifestIds = claims.Select(c => c.ManifestId).Distinct().ToList();
         var keyedManifestIds = (await context.VaultManifestAccessKeys
@@ -73,7 +73,7 @@ public static class EmailAccessHelper
             .Select(k => k.VaultManifestId)
             .ToListAsync()).ToHashSet();
 
-        // Legacy fallback: pre-KEK/VEK accounts have no AccountKey row on their root manifest yet
+        // Legacy fallback: pre-KEK/VEK accounts have no AccountKey row on their personal manifest yet
         // so owning the manifest's group is their only proof of access. TODO: delete once all clients have migrated.
         var ownedGroupIds = (await GroupHelper.GetOwnedGroupIdsAsync(context, userId)).ToHashSet();
 
@@ -91,7 +91,7 @@ public static class EmailAccessHelper
     {
         // Get the ids of the user's personal keys.
         var personalKeyIds = await context.VaultManifestDeliveryKeys
-            .Where(k => context.VaultManifests.Any(m => m.ManifestId == k.VaultManifestId && m.IsRoot && context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == m.OwnerGroupId)))
+            .Where(k => context.VaultManifests.Any(m => m.ManifestId == k.VaultManifestId && context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == m.OwnerGroupId)))
             .Select(k => k.Id)
             .ToListAsync();
 

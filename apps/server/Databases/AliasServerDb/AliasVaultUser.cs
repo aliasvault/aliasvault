@@ -22,7 +22,7 @@ public class AliasVaultUser : IdentityUser
     public string? SrpIdentity { get; set; }
 
     /// <summary>
-    /// Gets or sets the user's personal <see cref="Group"/>: the group that owns their root vault and personal
+    /// Gets or sets the user's personal <see cref="Group"/>: the group that owns their personal vault and personal
     /// email claims.
     /// </summary>
     public Guid PersonalGroupId { get; set; }

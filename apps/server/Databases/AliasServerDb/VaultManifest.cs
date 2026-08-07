@@ -12,8 +12,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 /// <summary>
 /// The current revision of a logical vault manifest. Exactly one row per logical manifest; superseded revisions are
 /// archived in <see cref="VaultManifestsHistory"/> before this row is updated in place, so this table can never hold
-/// two rows for the same manifest. A user's logical vault is assembled from one or more manifests: exactly one root
-/// manifest plus (from R2, FamilyVault sharing) any number of non-root manifests.
+/// two rows for the same manifest. A user's logical vault is assembled from one or more manifests: the single manifest
+/// owned by their personal group, plus any number owned by the shared groups they belong to.
 /// </summary>
 public class VaultManifest : VaultManifestBase
 {
@@ -22,11 +22,6 @@ public class VaultManifest : VaultManifestBase
     /// </summary>
     [Key]
     public Guid ManifestId { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether this manifest is the user's root manifest.
-    /// </summary>
-    public required bool IsRoot { get; set; }
 
     /// <summary>
     /// Gets or sets the optional display name of a manifest. Used in e.g. sharing UI.

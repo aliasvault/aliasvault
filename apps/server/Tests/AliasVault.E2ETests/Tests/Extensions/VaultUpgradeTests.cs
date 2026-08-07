@@ -52,7 +52,7 @@ public class VaultUpgradeTests : BrowserExtensionPlaywrightTest
 
         // Overwrite the user's current vault with the static 1.0.0 vault (the current row is updated in place;
         // the VaultManifests table holds exactly one row per manifest).
-        var currentVault = ApiDbContext.VaultManifests.First(x => x.OwnerUserId == user.Id && x.IsRoot);
+        var currentVault = ApiDbContext.VaultManifests.First(x => x.OwnerUserId == user.Id);
         currentVault.CopyPayloadFrom(
             new VaultManifestsHistory
             {

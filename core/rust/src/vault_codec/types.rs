@@ -30,7 +30,7 @@ pub static BUCKET_TABLES: &[(&str, &str)] = &[
     ("Settings", "Settings"),
 ];
 
-/// Tables that belong exclusively to the user's own (root) vault, never to a shared manifest.
+/// Tables that belong exclusively to the user's own (personal) vault, never to a shared manifest.
 /// Canonicalize never routes these into a shared partition and will refuse to materialize if they
 /// are found in a shared manifest anyway. Empty today (bucketed tables are implicitly personal, see
 /// [`is_personal_table`]); kept as the declaration point for future personal-only tables.

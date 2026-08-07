@@ -154,7 +154,7 @@ export abstract class BaseRepository {
       return null;
     }
 
-    const activeId = this.client.getActiveManifestId() ?? this.rootManifestId();
+    const activeId = this.client.getActiveManifestId() ?? this.personalManifestId();
     return (rows.find(row => row.ManifestId === activeId) ?? rows[0]).ManifestId;
   }
 
@@ -181,7 +181,7 @@ export abstract class BaseRepository {
    * @returns The manifest id new rows are stamped with
    */
   protected activeManifestId(): string {
-    const manifestId = this.client.getActiveManifestId() ?? this.rootManifestId();
+    const manifestId = this.client.getActiveManifestId() ?? this.personalManifestId();
     if (!manifestId) {
       throw new Error('BaseRepository: the vault has no manifest recorded yet (no active manifest and no personal manifest); sync once before writing.');
     }
@@ -192,11 +192,11 @@ export abstract class BaseRepository {
    * Get the id of the user's personal manifest, as recorded by the last pull.
    * @returns The personal manifest id, or null when absent
    */
-  protected rootManifestId(): string | null {
+  protected personalManifestId(): string | null {
     if (!this.tableExists('Settings')) {
       return null;
     }
-    const results = this.client.executeQuery<{ Id: string }>(BaseQueries.GET_ROOT_MANIFEST_ID);
+    const results = this.client.executeQuery<{ Id: string }>(BaseQueries.GET_PERSONAL_MANIFEST_ID);
     return results.length > 0 ? results[0].Id : null;
   }
 

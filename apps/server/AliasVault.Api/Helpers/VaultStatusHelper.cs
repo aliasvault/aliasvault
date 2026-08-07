@@ -25,7 +25,7 @@ public static class VaultStatusHelper
     public static async Task<List<ManifestRevision>> GetManifestRevisionsAsync(AliasServerDbContext context, string userId)
     {
         return await ManifestAccessHelper.AccessibleManifests(context, userId)
-            .Select(x => new ManifestRevision { ManifestId = x.ManifestId, IsRoot = x.IsRoot, Revision = x.RevisionNumber })
+            .Select(x => new ManifestRevision { ManifestId = x.ManifestId, Revision = x.RevisionNumber })
             .ToListAsync();
     }
 }

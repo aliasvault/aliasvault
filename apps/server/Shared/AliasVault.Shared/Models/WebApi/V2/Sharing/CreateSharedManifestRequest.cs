@@ -8,7 +8,7 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Sharing;
 
 /// <summary>
-/// Request for POST /v2/Sharing/manifests. Creates a new non-root (shareable) manifest owned by the caller. The
+/// Request for POST /v2/Sharing/manifests. Creates a new shared (non-personal) manifest owned by the caller. The
 /// manifest's VEK is generated client-side and encrypted for the caller's *own* public key, persisted as a
 /// <c>shared</c> grant in the same call.
 /// </summary>
@@ -20,6 +20,11 @@ public class CreateSharedManifestRequest
 
     /// <summary>Gets or sets the plaintext display name of the manifest (server-visible for the sharing UI).</summary>
     public required string Name { get; set; }
+
+    /// <summary>
+    /// Gets or sets the shared group to file this manifest under.
+    /// </summary>
+    public required Guid GroupId { get; set; }
 
     /// <summary>Gets or sets the encrypted manifest blob (AES-GCM ciphertext under the manifest VEK, base64).</summary>
     public required string ManifestBlob { get; set; }
