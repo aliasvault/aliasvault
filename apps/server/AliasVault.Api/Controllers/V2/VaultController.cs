@@ -436,13 +436,15 @@ public class VaultController(
                 row.Client = clientHeader;
                 row.UpdatedAt = timeProvider.UtcNow;
 
+                // Every manifest counts the aliases the push filed against it, shared manifests included.
+                if (model.EmailRouting != null)
+                {
+                    row.EmailClaimsCount = model.EmailRouting.EmailAddressList.Count(x => x.ManifestId == row.ManifestId);
+                }
+
                 if (row.IsRoot)
                 {
                     row.CreatedAt = timeProvider.UtcNow;
-                    if (model.EmailRouting != null)
-                    {
-                        row.EmailClaimsCount = model.EmailRouting.EmailAddressList.Count;
-                    }
 
                     // Create the account-key hierarchy atomically with this write on the migration (first push after
                     // the client re-encrypted the vault under a fresh VEK). Move the SRP credentials off the manifest row.
@@ -553,7 +555,7 @@ public class VaultController(
                 await context.SaveChangesAsync();
             }
 
-            if (model.EmailRouting != null && (model.EmailRouting.EmailAddressList.Count > 0 || model.EmailRouting.SharedEmailAddressList.Count > 0))
+            if (model.EmailRouting is { EmailAddressList.Count: > 0 })
             {
                 await UpdateEmailClaimsAsync(context, user, model.EmailRouting);
             }
@@ -709,7 +711,9 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Gets the (shared) manifestIds that user has access to and may claim new aliases for.
+    /// Gets the manifestIds that user has access to and may claim aliases for. A push files personal aliases
+    /// against the caller's own root manifest, which they reach by owning its group rather than by holding a
+    /// grant on it, so both arms of <see cref="ManifestAccessHelper"/> count here.
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="userId">The calling user.</param>
@@ -723,12 +727,12 @@ public class VaultController(
             return [];
         }
 
-        var granted = await context.VaultManifestAccessKeys
-            .Where(k => k.UserId == userId && k.Type == ManifestKeyType.GrantKey && ids.Contains(k.VaultManifestId))
-            .Select(k => k.VaultManifestId)
+        var accessible = await ManifestAccessHelper.AccessibleManifests(context, userId)
+            .Where(m => ids.Contains(m.ManifestId))
+            .Select(m => m.ManifestId)
             .ToListAsync();
 
-        return [.. granted];
+        return [.. accessible];
     }
 
     /// <summary>
@@ -1035,12 +1039,13 @@ public class VaultController(
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="user">The calling user.</param>
-    /// <param name="routing">The pushed routing data: personal addresses plus shared addresses with their manifest.</param>
-    private async Task UpdateEmailClaimsAsync(AliasServerDbContext context, AliasVaultUser user, EmailRouting routing)
+    /// <param name="routing">The pushed routing data: every claimed address with the manifest it is filed under.</param>
+    private async Task UpdateEmailClaimsAsync(AliasServerDbContext context, AliasVaultUser user, EmailRoutingPush routing)
     {
-        var accessibleManifests = await GetEmailClaimableManifestIdsAsync(context, user.Id, routing.SharedEmailAddressList.Select(x => x.ManifestId));
+        var accessibleManifests = await GetEmailClaimableManifestIdsAsync(context, user.Id, routing.EmailAddressList.Select(x => x.ManifestId));
         var ownerGroupByManifest = await GroupHelper.GetOwnerGroupsAsync(context, accessibleManifests);
 
+        // Resolved server-side and never read off the push: this is what stops a client filing an alias under a manifest it merely named.
         var rootManifestId = await context.VaultManifests.Where(m => m.IsRoot && m.OwnerGroupId == user.PersonalGroupId).Select(m => (Guid?)m.ManifestId).FirstOrDefaultAsync();
         if (rootManifestId is null)
         {
@@ -1055,25 +1060,24 @@ public class VaultController(
             .ToListAsync()).ToHashSet();
 
         var manifestByAddress = new Dictionary<string, Guid>();
-        foreach (var shared in routing.SharedEmailAddressList)
+        foreach (var claimed in routing.EmailAddressList)
         {
-            var sanitizedShared = EmailHelper.SanitizeEmail(shared.Address);
-            if (!accessibleManifests.Contains(shared.ManifestId))
+            var sanitizedClaimed = EmailHelper.SanitizeEmail(claimed.Address);
+            if (!accessibleManifests.Contains(claimed.ManifestId))
             {
-                logger.LogWarning("{User} claimed shared alias {Email} for manifest {Manifest} they cannot access; treating it as a personal alias.", user.UserName, sanitizedShared, shared.ManifestId);
+                logger.LogWarning("{User} claimed alias {Email} for manifest {Manifest} they cannot access; filing it under their own root manifest instead.", user.UserName, sanitizedClaimed, claimed.ManifestId);
                 continue;
             }
 
-            manifestByAddress[sanitizedShared] = shared.ManifestId;
-            if (!manifestsWithDeliveryKey.Contains(shared.ManifestId))
+            manifestByAddress[sanitizedClaimed] = claimed.ManifestId;
+            if (claimed.ManifestId != rootManifestId.Value && !manifestsWithDeliveryKey.Contains(claimed.ManifestId))
             {
-                logger.LogWarning("{User} claimed shared alias {Email} for manifest {Manifest} with no published delivery key; its mail stays readable by the routing owner alone until a delivery key is published.", user.UserName, sanitizedShared, shared.ManifestId);
+                logger.LogWarning("{User} claimed shared alias {Email} for manifest {Manifest} with no published delivery key; its mail stays readable by the routing owner alone until a delivery key is published.", user.UserName, sanitizedClaimed, claimed.ManifestId);
             }
         }
 
         var newEmailAddresses = routing.EmailAddressList
-            .Concat(routing.SharedEmailAddressList.Select(x => x.Address))
-            .Select(EmailHelper.SanitizeEmail)
+            .Select(x => EmailHelper.SanitizeEmail(x.Address))
             .Distinct()
             .ToList();
 
@@ -1107,12 +1111,11 @@ public class VaultController(
                 continue;
             }
 
-            // Check which manifest the alias is filed against.
-            var sharedManifestId = manifestByAddress.TryGetValue(sanitized, out var mappedManifestId) ? mappedManifestId : (Guid?)null;
-            var resolvedManifestId = sharedManifestId ?? rootManifestId.Value;
+            // Which manifest the alias is filed against: the one the push named when the caller may claim for it, their own root otherwise.
+            var resolvedManifestId = manifestByAddress.TryGetValue(sanitized, out var claimedManifestId) ? claimedManifestId : rootManifestId.Value;
 
             // The quota subject is the group owning that manifest: the shared manifest's group, or the caller's personal group.
-            var quotaGroupId = sharedManifestId is not null && ownerGroupByManifest.TryGetValue(sharedManifestId.Value, out var sharedGroupId) ? sharedGroupId : user.PersonalGroupId;
+            var quotaGroupId = ownerGroupByManifest.TryGetValue(resolvedManifestId, out var ownerGroupId) ? ownerGroupId : user.PersonalGroupId;
 
             var existing = userOwnedEmailClaims.FirstOrDefault(x => x.Address == sanitized);
             if (existing != null)

@@ -7,22 +7,22 @@ import type { EmailRoutingPush } from '@/utils/types/EmailRoutingPush';
  *
  * Which manifest an alias belongs to decides how its mail is encrypted. Every row has already been 
  * routed into the manifest that owns it by the codec, so an address found in a shared manifest is a 
- * shared alias and everything left in the root manifest is personal.
+ * shared alias and everything in the user's own manifest is personal.
  *
- * @param rootManifest - the canonicalized root manifest
- * @param sharedManifests - the shared manifests produced by the same canonicalize run
+ * @param manifests - every manifest one canonicalize run produced, the user's own included
+ * @param rootManifestId - the id of the user's own manifest; its addresses stay personal
  * @param privateEmailDomains - domains the server hosts mail for; addresses outside them are not claimed
- * @returns The addresses to claim, split into personal and shared-manifest ones
+ * @returns The addresses to claim, each against the manifest that owns it
  */
-export function buildEmailRouting(rootManifest: CodecManifest, sharedManifests: CodecManifest[], privateEmailDomains: string[]): EmailRoutingPush {
-  const manifestIdByAddress = new Map<string, string | null>();
+export function buildEmailRouting(manifests: CodecManifest[], rootManifestId: string, privateEmailDomains: string[]): EmailRoutingPush {
+  const manifestIdByAddress = new Map<string, string>();
 
   /**
    * Record every claimable address one manifest carries against that manifest.
    * @param manifest - the manifest to read the items and their login-email fields from
-   * @param manifestId - the manifest's id, or null for the root manifest (its addresses stay personal)
+   * @param manifestId - the manifest's id
    */
-  const collect = (manifest: CodecManifest, manifestId: string | null): void => {
+  const collect = (manifest: CodecManifest, manifestId: string): void => {
     const liveItemIds = new Set(
       rowsOf(manifest, 'Items').filter(row => !row.IsDeleted && row.DeletedAt == null).map(row => String(row.Id))
     );
@@ -41,27 +41,29 @@ export function buildEmailRouting(rootManifest: CodecManifest, sharedManifests: 
         continue;
       }
 
-      if (manifestId !== null || !manifestIdByAddress.has(address)) {
+      // A shared manifest always wins the address; the root manifest only claims one nothing else has.
+      if (manifestId !== rootManifestId || !manifestIdByAddress.has(address)) {
         manifestIdByAddress.set(address, manifestId);
       }
     }
   };
 
-  collect(rootManifest, null);
-  for (const manifest of sharedManifests) {
+  /**
+   * Whether a manifest is the user's own.
+   * @param manifest - the manifest to test
+   * @returns True when it is the manifest this vault is written from
+   */
+  const isOwn = (manifest: CodecManifest): boolean => manifest.manifestId === rootManifestId;
+
+  /*
+   * The user's own manifest first: an address it also carries stays personal only while no shared manifest
+   * claims it, and `collect` lets a later shared claim override that (but never the reverse).
+   */
+  for (const manifest of [...manifests].sort((a, b) => Number(isOwn(b)) - Number(isOwn(a)))) {
     collect(manifest, manifest.manifestId);
   }
 
-  const routing: EmailRoutingPush = { emailAddressList: [], sharedEmailAddressList: [] };
-  for (const [address, manifestId] of manifestIdByAddress) {
-    if (manifestId) {
-      routing.sharedEmailAddressList.push({ address, manifestId });
-    } else {
-      routing.emailAddressList.push(address);
-    }
-  }
-
-  return routing;
+  return { emailAddressList: [...manifestIdByAddress].map(([address, manifestId]) => ({ address, manifestId })) };
 }
 
 /**

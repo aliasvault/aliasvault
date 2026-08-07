@@ -25,7 +25,7 @@ public class VaultWriteRequest
     public List<Blob> NewBlobs { get; set; } = [];
 
     /// <summary>Gets or sets the email routing data to update server-side.</summary>
-    public EmailRouting? EmailRouting { get; set; }
+    public EmailRoutingPush? EmailRouting { get; set; }
 
     /// <summary>
     /// Gets or sets the user's public encryption key.

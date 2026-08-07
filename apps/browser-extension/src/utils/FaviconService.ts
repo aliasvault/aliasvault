@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer';
 
-import type { Item } from '@/utils/dist/core/models/vault';
+import type { DraftItem } from '@/utils/db/ItemRef';
 import type { SqliteClient } from '@/utils/SqliteClient';
 import type { WebApiService } from '@/utils/WebApiService';
 
@@ -171,11 +171,11 @@ export class FaviconService {
    * @returns The updated item with Logo attached (if favicon was fetched), cleared (if URL is empty), or the original item
    */
   public static async fetchAndAttachFavicon(
-    item: Item,
+    item: DraftItem,
     urlFieldValue: string | string[] | undefined | null,
     sqliteClient: SqliteClient,
     webApi: WebApiService
-  ): Promise<Item> {
+  ): Promise<DraftItem> {
     const urlString = FaviconService.extractFirstValidUrl(urlFieldValue);
 
     // If URL is empty or invalid, explicitly clear logo to signal that any existing logo should be removed
