@@ -7,12 +7,13 @@
 import { storage } from 'wxt/utils/storage';
 
 import { bucketRevisionStorageKey, StorageKeys } from '@/utils/constants/storageKeys';
+import { BaseQueries } from '@/utils/db/queries/BaseQueries';
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
 import type { VaultResponse } from '@/utils/dist/core/models/webapi';
 import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 import { buildEmailRouting } from '@/utils/EmailRouting';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateUserSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecBlobEntry, type CodecCanonicalized, type CodecManifest, type CodecSharedManifestSpec} from '@/utils/RustCore';
+import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateUserSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecBlobEntry, type CodecCanonicalized, type CodecManifest, type CodecManifestSpec, type CodecMaterialized} from '@/utils/RustCore';
 import { SharingService, type SessionSharedManifest } from '@/utils/SharingService';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
@@ -92,6 +93,16 @@ async function verifyDecryptUnpack(base64Ciphertext: string, vek: string, expect
   const encryptedBytes = Uint8Array.from(atob(base64Ciphertext), c => c.charCodeAt(0));
   const plainBytes = await EncryptionUtility.symmetricDecryptBytes(encryptedBytes, vek);
   return vaultCodecUnpackPayload(plainBytes);
+}
+
+/**
+ * The folder a client renders a manifest at: the single top-level folder inside it (the one whose
+ * parent lives in a namespace this manifest cannot see, so canonicalize nulled it).
+ * @param manifest - the decrypted manifest
+ */
+function topLevelFolderId(manifest: VaultManifest): string | null {
+  const roots = (manifest.tables.Folders ?? []).filter(row => row.ParentFolderId == null && !row.IsDeleted).map(row => String(row.Id));
+  return roots.length === 1 ? roots[0] : null;
 }
 
 /** Fingerprint record key for a manifest. */
@@ -261,8 +272,44 @@ type PushManifest = {
   currentRevision: number;
 };
 
-/** The canonicalized vault plus the resolved shared-manifest session records it was split against. */
-type CanonicalizedVaultSet = { canonicalized: CodecCanonicalized; sharedManifestRecords: Record<string, SessionSharedManifest> };
+/**
+ * The canonicalized vault, the resolved shared-manifest session records it was split against, and the id of the
+ * manifest it was written from. The codec treats every manifest alike, so which one is the user's own is ours to
+ * remember: it is the manifest the caller listed first, and the one the push writes as the root.
+ */
+type CanonicalizedVaultSet = {
+  canonicalized: CodecCanonicalized;
+  sharedManifestRecords: Record<string, SessionSharedManifest>;
+  rootManifestId: string;
+};
+
+/**
+ * Write the caller's own manifest id into the `Settings` rows of a materialized vault, so every later
+ * local query and write can resolve it offline. Left untouched when it is already correct: the row is
+ * ordinary synced user data, and rewriting its timestamp on every pull would make each pull look like
+ * a change and trigger a push.
+ * @param materialized - the table set about to be inserted into the fresh vault DB
+ * @param manifestId - the id of the manifest the server reported as the caller's own
+ */
+function recordOwnManifestId(materialized: CodecMaterialized, manifestId: string): void {
+  let settings = materialized.tables.find(t => t.name === 'Settings');
+  if (!settings) {
+    settings = { name: 'Settings', records: [] };
+    materialized.tables.push(settings);
+  }
+
+  const existing = settings.records.find(r => r.Key === BaseQueries.ROOT_MANIFEST_SETTING_KEY);
+  if (existing && existing.Value === manifestId && !existing.IsDeleted) {
+    return;
+  }
+
+  const now = new Date().toISOString();
+  if (existing) {
+    Object.assign(existing, { Value: manifestId, UpdatedAt: now, IsDeleted: 0 });
+    return;
+  }
+  settings.records.push({ Key: BaseQueries.ROOT_MANIFEST_SETTING_KEY, Value: manifestId, CreatedAt: now, UpdatedAt: now, IsDeleted: 0 });
+}
 
 let canonicalizeCache: ({ client: SqliteClient; mutationSequence: number } & CanonicalizedVaultSet) | null = null;
 
@@ -319,8 +366,10 @@ export class VaultSyncService {
        */
       await storage.removeItem(StorageKeys.VAULT_V2_CONTENT_FINGERPRINTS);
 
-      // Legacy user: vault has no Manifests bookkeeping table, so we need to persist the root manifest id into
-      // local storage so the first migration canonicalize step can stamp root rows with it.
+      /*
+       * Legacy user: the vault has never been materialized, so it carries no record of which manifest is
+       * ours. Persist it in local storage so the first migration canonicalize step can stamp rows with it.
+       */
       if (snapshot.rootManifestId) {
         await storage.setItem(StorageKeys.VAULT_V2_ROOT_MANIFEST_ID, snapshot.rootManifestId);
       }
@@ -351,29 +400,37 @@ export class VaultSyncService {
     devLog('[ManifestMigration] Migrating local vault onto the current schema (local round-trip, no server involved)...');
 
     try {
-      const { canonicalized } = await this.canonicalizeVault(sqliteClient);
+      /*
+       * For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into. 
+       * TODO: delete this field once the migration is complete.
+       */
+      const ownManifestId = sqliteClient.settings.getRootManifestId() ?? ((await storage.getItem(StorageKeys.VAULT_V2_ROOT_MANIFEST_ID)) as string | null);
+      const { canonicalized, rootManifestId } = await this.canonicalizeVault(sqliteClient, { adoptUnstampedInto: ownManifestId });
 
       /*
        * Canonicalize already handed us every extracted favicon/attachment as plaintext bytes, so materialize can
        * resolve its blob references without a single fetch.
        */
       const blobMap = new Map<string, Uint8Array>();
-      for (const [hash, entry] of Object.entries(canonicalized.blobs)) {
-        blobMap.set(hash, VaultCodec.base64ToBytes(entry.bytesBase64));
-      }
-      for (const sharedVault of canonicalized.sharedVaults ?? []) {
-        for (const [hash, entry] of Object.entries(sharedVault.blobs)) {
+      for (const { blobs } of canonicalized.manifests) {
+        for (const [hash, entry] of Object.entries(blobs)) {
           blobMap.set(hash, VaultCodec.base64ToBytes(entry.bytesBase64));
         }
       }
 
       const schemaSql = new VaultSqlGenerator().getCompleteSchemaSql();
       const schemaColumns = await VaultCodec.getSchemaColumns(schemaSql);
-      const manifests = [
-        { manifest: canonicalized.manifest, isRoot: true },
-        ...(canonicalized.sharedVaults ?? []).map(v => ({ manifest: v.manifest, isRoot: false })),
-      ];
-      const materialized = await vaultCodecMaterializeAsSqlite(manifests, canonicalized.dataBuckets, schemaColumns);
+      const materialized = await vaultCodecMaterializeAsSqlite(canonicalized.manifests.map(m => m.manifest), canonicalized.dataBuckets, schemaColumns);
+
+      /*
+       * Record which manifest is ours in the migrated vault, exactly as a pull does. A legacy vault has
+       * never been materialized and so carries no such row, while the write path resolves the stamp for
+       * a new row from it (see `BaseQueries.ROOT_MANIFEST_ID`). Without this, every root-level insert
+       * between the migration and the next pull resolves its stamp to NULL and is rejected outright by
+       * the column's NOT NULL constraint.
+       */
+      recordOwnManifestId(materialized, rootManifestId);
+
       const sqliteBase64 = await VaultCodec.insertTables(materialized, blobMap, schemaSql);
 
       devLog(`[ManifestMigration] Migration complete: ${blobMap.size} blobs re-embedded, ${sqliteBase64.length} base64 chars.`);
@@ -425,22 +482,77 @@ export class VaultSyncService {
       throw new Error('VaultSyncService: server returned no manifest blob, nothing to assemble.');
     }
 
-    devLog('[V2Pull] Verifying manifest ciphertext hash; decrypting + opening manifest...');
-    const root = await this.openManifest(rootDto, vek);
-    const resolved: ResolvedManifest[] = [root];
-    devLog(`[V2Pull] Manifest opened (content hash verified): schemaVersion=${root.manifest.schemaVersion}, migrationId=${root.manifest.migrationId}, tables: ${Object.entries(root.manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
-
-    /*
-     * Persist the user salt locally so subsequent canonicalizes hash blobs the same way, and the root
-     * manifest id so a push can resolve it even when the vault DB predates the Manifests bookkeeping table.
-     */
-    await storage.setItem(StorageKeys.VAULT_V2_USER_SALT, root.manifest.userSalt);
-    await storage.setItem(StorageKeys.VAULT_V2_ROOT_MANIFEST_ID, root.manifestId);
-
     // Content baselines for the push-side change detection: fingerprint every target as served by the server.
     const pulledFingerprints: Record<string, string> = {};
 
-    // Decrypt every data bucket in the snapshot (Settings today; more categories later).
+    /*
+     * Open every manifest in the snapshot through one path, root first.
+     */
+    const resolved: ResolvedManifest[] = [];
+    const sessionSharedManifests: Record<string, SessionSharedManifest> = {};
+    /*
+     * Folder id of each manifest as of the last pull, so a manifest that is currently empty (created
+     * but not yet split into) still resolves to the folder the client renders it at.
+     */
+    const priorFolderIds = new Map(Object.values(await SharingService.getSessionSharedManifests()).map(r => [r.manifestId, r.folderId]));
+    for (const dto of [rootDto, ...(snapshot.manifests ?? []).filter(m => !m.isRoot)]) {
+      // Safe on the non-root passes: the root is opened first and throws rather than leaving `resolved` empty.
+      const manifestKey = dto.isRoot ? vek : await this.resolveGrantedVek(resolved[0].manifest, dto);
+      if (!manifestKey || !dto.blob) {
+        continue;
+      }
+
+      let entry: ResolvedManifest;
+      try {
+        devLog(`[V2Pull] Verifying ciphertext hash; decrypting + opening ${dto.isRoot ? 'root manifest' : `shared manifest ${dto.manifestId}`}...`);
+        entry = await this.openManifest(dto, manifestKey);
+      } catch (e) {
+        if (dto.isRoot) {
+          throw e;
+        }
+        devWarn(`[V2Pull] Failed to open shared manifest ${dto.manifestId}, skipping it.`, e);
+        continue;
+      }
+      resolved.push(entry);
+
+      const folderId = dto.isRoot ? null : (topLevelFolderId(entry.manifest) ?? priorFolderIds.get(dto.manifestId) ?? null);
+      devLog(`[V2Pull] Manifest ${entry.manifestId} opened (content hash verified, ${dto.isRoot ? 'root' : `folder ${folderId ?? 'unassigned'}`}): tables: ${Object.entries(entry.manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
+
+      if (dto.isRoot) {
+        /*
+         * Persist the user salt locally so subsequent canonicalizes hash blobs the same way, and the root
+         * manifest id so a push can resolve it even before the vault DB records it (see `recordOwnManifestId`).
+         */
+        await storage.setItem(StorageKeys.VAULT_V2_USER_SALT, entry.manifest.userSalt);
+        await storage.setItem(StorageKeys.VAULT_V2_ROOT_MANIFEST_ID, entry.manifestId);
+        continue;
+      }
+
+      if (folderId) {
+        // A manifest the user administers must win over one they only have read access to for the same folder id.
+        const existing = sessionSharedManifests[folderId];
+        if (!(existing?.canAdminister && !dto.canAdminister)) {
+          sessionSharedManifests[folderId] = {
+            folderId,
+            manifestId: dto.manifestId,
+            vek: manifestKey,
+            salt: entry.manifest.userSalt,
+            revision: entry.revision,
+            name: entry.manifest.name ?? dto.name ?? null,
+            ownerUsername: dto.ownerUsername ?? null,
+            canAdminister: dto.canAdminister ?? false,
+          };
+        }
+      }
+    }
+    await SharingService.setSessionSharedManifests(sessionSharedManifests);
+
+    const root = resolved[0];
+
+    /*
+     * Decrypt every data bucket in the snapshot (Settings today; more categories later). Buckets belong to the root
+     * manifest alone (personal tables are stripped out of every shared manifest), so they all open with the root VEK.
+     */
     const dataBuckets: VaultDataBucket[] = [];
     for (const bucketDto of (snapshot.buckets ?? [])) {
       if (!bucketDto.blob) {
@@ -459,45 +571,6 @@ export class VaultSyncService {
     if (dataBuckets.length === 0) {
       devLog('[V2Pull] No data buckets in snapshot.');
     }
-
-    // Open every remaining manifest.
-    const sessionSharedManifests: Record<string, SessionSharedManifest> = {};
-    for (const dto of (snapshot.manifests ?? [])) {
-      if (dto.isRoot || !dto.blob) {
-        continue;
-      }
-
-      const grantedVek = await this.resolveGrantedVek(root.manifest, dto);
-      if (!grantedVek) {
-        continue;
-      }
-
-      try {
-        const entry = await this.openManifest(dto, grantedVek);
-        resolved.push(entry);
-        const folderId = typeof entry.manifest.anchorFolderId === 'string' ? entry.manifest.anchorFolderId : null;
-        devLog(`[V2Pull] Shared manifest ${dto.manifestId} opened (folder ${folderId ?? 'unassigned'}): tables: ${Object.entries(entry.manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
-        if (folderId) {
-          // A manifest the user administers must win over one they only have read access to for the same folder id.
-          const existing = sessionSharedManifests[folderId];
-          if (!(existing?.canAdminister && !dto.canAdminister)) {
-            sessionSharedManifests[folderId] = {
-              folderId,
-              manifestId: dto.manifestId,
-              vek: grantedVek,
-              salt: entry.manifest.userSalt,
-              revision: entry.revision,
-              name: dto.name ?? null,
-              ownerUsername: dto.ownerUsername ?? null,
-              canAdminister: dto.canAdminister ?? false,
-            };
-          }
-        }
-      } catch (e) {
-        devWarn(`[V2Pull] Failed to open shared manifest ${dto.manifestId}, skipping it.`, e);
-      }
-    }
-    await SharingService.setSessionSharedManifests(sessionSharedManifests);
 
     // One fingerprint baseline per opened manifest, addressed by manifest id (root included).
     for (const entry of resolved) {
@@ -587,7 +660,7 @@ export class VaultSyncService {
     const sqlGen = new VaultSqlGenerator();
     const schemaSql = sqlGen.getCompleteSchemaSql();
     const schemaColumns = await VaultCodec.getSchemaColumns(schemaSql);
-    const materialized = await vaultCodecMaterializeAsSqlite(resolved.map(m => ({ manifest: m.manifest, isRoot: m.isRoot })), dataBuckets, schemaColumns);
+    const materialized = await vaultCodecMaterializeAsSqlite(resolved.map(m => m.manifest), dataBuckets, schemaColumns);
 
     /*
      * Anything a newer client wrote that our schema can't hold was split off the insert set into the
@@ -599,6 +672,14 @@ export class VaultSyncService {
     if (overflowTableCount > 0 || overflowColumnTables.length > 0) {
       devWarn(`[V2Pull] Newer-schema data preserved as overflow: ${overflowTableCount} unknown table(s), unknown columns on [${overflowColumnTables.join(', ')}]. It will round-trip on push but is not usable locally until the app is updated.`);
     }
+
+    /*
+     * Record which of these manifests is ours, inside the vault we are assembling. The codec treats
+     * every manifest alike: a user may own several, and which one a client calls home is its own
+     * state. So this comes from what the server reported in this snapshot, and it is what the local
+     * write path stamps new rows with (see `BaseQueries.ROOT_MANIFEST_ID`).
+     */
+    recordOwnManifestId(materialized, root.manifestId);
 
     const sqliteBase64 = await VaultCodec.insertTables(materialized, blobMap, schemaSql);
     devLog('[V2Pull] Codec reassembly complete.');
@@ -766,19 +847,20 @@ export class VaultSyncService {
     if (cachedSet) {
       devLog('[V2Push] Reusing the canonicalize result from the pre-push no-op check.');
     }
-    const { canonicalized, sharedManifestRecords } = cachedSet ?? await this.canonicalizeVault(sqliteClient);
+    const { canonicalized, sharedManifestRecords, rootManifestId } = cachedSet ?? await this.canonicalizeVault(sqliteClient);
     const privateEmailDomains = (await getItemWithFallback<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS)) ?? [];
-    const emailRouting = buildEmailRouting(canonicalized.manifest, (canonicalized.sharedVaults ?? []).map(v => v.manifest), privateEmailDomains);
+    const emailRouting = buildEmailRouting(canonicalized.manifests.map(m => m.manifest), rootManifestId, privateEmailDomains);
 
     /*
      * Debug: manifest-set summary + full unencrypted manifests + data buckets, inspectable in the console.
      * TODO: delete the unencrypted-content logs below before release: they print plaintext vault data.
      */
-    devLog(`[V2Push] Canonicalize produced 1 root manifest + ${canonicalized.sharedVaults?.length ?? 0} shared manifest(s) + ${canonicalized.dataBuckets.length} data bucket(s).`);
-    devLog('[V2Push] Unencrypted manifest:', canonicalized.manifest);
-    devLog(`[V2Push] Unencrypted data buckets (${canonicalized.dataBuckets.length}):`, canonicalized.dataBuckets);
-    for (const sharedVault of canonicalized.sharedVaults ?? []) {
-      devLog(`[V2Push] Unencrypted shared manifest (folder ${sharedVault.anchorFolderId}): tables: ${Object.entries(sharedVault.manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`, sharedVault.manifest);
+    const canonicalizedBuckets = canonicalized.dataBuckets;
+    devLog(`[V2Push] Canonicalize produced ${canonicalized.manifests.length} manifest(s) + ${canonicalizedBuckets.length} data bucket(s).`);
+    devLog(`[V2Push] Unencrypted data buckets (${canonicalizedBuckets.length}):`, canonicalizedBuckets);
+    for (const { manifest } of canonicalized.manifests) {
+      const isRoot = manifest.manifestId === rootManifestId;
+      devLog(`[V2Push] Unencrypted ${isRoot ? 'root manifest' : `manifest "${manifest.name ?? manifest.manifestId}"`}: tables: ${Object.entries(manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`, manifest);
     }
 
     /*
@@ -795,25 +877,29 @@ export class VaultSyncService {
     const sharedRevisions = ((await storage.getItem(StorageKeys.SERVER_MANIFEST_REVISIONS)) as Record<string, number> | null) ?? {};
 
     /*
-     * Every manifest canonicalize produced, as one candidate list the write is derived from.
+     * Every manifest canonicalize produced, as one candidate list the write is derived from. Root and shared
+     * differ only in where their two per-manifest inputs come from: the root encrypts with the vault content key
+     * (freshly generated on a KEK/VEK migration, so it can never be read back from a session record) and rebases
+     * on the vault revision; a shared manifest uses the VEK and revision of the grant resolved on the last pull.
      */
-    const candidates: PushManifest[] = [
-      { manifestId: canonicalized.manifest.manifestId, isRoot: true, manifest: canonicalized.manifest, vek: contentKey, blobs: canonicalized.blobs, currentRevision: currentManifestRevision },
-      ...(canonicalized.sharedVaults ?? []).flatMap(sharedVault => {
-        const record = sharedManifestRecords[sharedVault.anchorFolderId];
-        if (!record) {
-          return [];
-        }
-        return [{
-          manifestId: record.manifestId,
-          isRoot: false,
-          manifest: sharedVault.manifest,
-          vek: record.vek,
-          blobs: sharedVault.blobs,
-          currentRevision: sharedRevisions[record.manifestId] ?? record.revision ?? 0,
-        }];
-      }),
-    ];
+    const recordByManifestId = new Map(Object.values(sharedManifestRecords).map(r => [r.manifestId, r]));
+    const candidates: PushManifest[] = canonicalized.manifests.flatMap(({ manifest, blobs }): PushManifest[] => {
+      if (manifest.manifestId === rootManifestId) {
+        return [{ manifestId: manifest.manifestId, isRoot: true, manifest, vek: contentKey, blobs, currentRevision: currentManifestRevision }];
+      }
+      const record = recordByManifestId.get(manifest.manifestId);
+      if (!record) {
+        return [];
+      }
+      return [{
+        manifestId: record.manifestId,
+        isRoot: false,
+        manifest,
+        vek: record.vek,
+        blobs,
+        currentRevision: sharedRevisions[record.manifestId] ?? record.revision ?? 0,
+      }];
+    });
 
     // Set up the blob entries for the write.
     const blobEntries = new Map<string, UploadBlobEntry>();
@@ -833,7 +919,7 @@ export class VaultSyncService {
      */
     const bucketDtos: Array<{ category: string; blob: string; ciphertextHash: string; currentRevision: number }> = [];
     const writtenBucketFingerprints: Record<string, string> = {};
-    for (const bucket of canonicalized.dataBuckets) {
+    for (const bucket of canonicalizedBuckets) {
       const bucketPlaintext = JSON.stringify(bucket);
       const bucketFingerprint = await vaultCodecComputeContentFingerprint(bucketPlaintext);
       if (!forceFullWrite && !migrateToVaultKey && fingerprints[fingerprintBucketKey(bucket.category)] === bucketFingerprint) {
@@ -866,7 +952,7 @@ export class VaultSyncService {
     const manifestWrites: ManifestWriteDto[] = [];
     const writtenManifestFingerprints: Record<string, string> = {};
     for (const candidate of candidates) {
-      const label = candidate.isRoot ? 'Root manifest' : `Shared manifest "${candidate.manifestId}" (folder ${candidate.manifest.anchorFolderId ?? 'unassigned'})`;
+      const label = candidate.isRoot ? 'Root manifest' : `Shared manifest "${candidate.manifest.name ?? candidate.manifestId}"`;
       const plaintext = await timedStage(`stringify-manifest ${candidate.manifestId}`, () => JSON.stringify(candidate.manifest));
       const fingerprint = await vaultCodecComputeContentFingerprint(plaintext);
 
@@ -1048,14 +1134,14 @@ export class VaultSyncService {
      */
     const persistedSharedRevisions = ((await storage.getItem(StorageKeys.SERVER_MANIFEST_REVISIONS)) as Record<string, number> | null) ?? {};
     const sessionShared = await SharingService.getSessionSharedManifests();
-    for (const r of (resp.manifestRevisions ?? [])) {
-      if (r.isRoot || r.manifestId == null) {
-        continue;
-      }
-      persistedSharedRevisions[r.manifestId] = r.revision;
-      const folder = Object.values(sessionShared).find(f => f.manifestId === r.manifestId);
-      if (folder && sessionShared[folder.folderId]) {
-        sessionShared[folder.folderId].revision = r.revision;
+    const writtenRevisions = new Map((resp.manifestRevisions ?? []).filter(r => !r.isRoot && r.manifestId != null).map(r => [r.manifestId as string, r.revision]));
+    for (const [manifestId, revision] of writtenRevisions) {
+      persistedSharedRevisions[manifestId] = revision;
+    }
+    for (const record of Object.values(sessionShared)) {
+      const revision = writtenRevisions.get(record.manifestId);
+      if (revision !== undefined) {
+        record.revision = revision;
       }
     }
     await storage.setItem(StorageKeys.SERVER_MANIFEST_REVISIONS, persistedSharedRevisions);
@@ -1120,7 +1206,7 @@ export class VaultSyncService {
    * @param sqliteClient - the in-memory SQLite database to canonicalize
    * @returns The canonicalized set plus the resolved shared-manifest session records
    */
-  private async canonicalizeVault(sqliteClient: SqliteClient): Promise<CanonicalizedVaultSet> {
+  private async canonicalizeVault(sqliteClient: SqliteClient, options?: { adoptUnstampedInto?: string | null }): Promise<CanonicalizedVaultSet> {
     let userSalt = (await storage.getItem(StorageKeys.VAULT_V2_USER_SALT)) as string | null;
     if (!userSalt) {
       userSalt = await vaultCodecGenerateUserSalt();
@@ -1138,28 +1224,37 @@ export class VaultSyncService {
      * failed to materialize on pull must not be re-pushed as an empty manifest.
      */
     const sharedManifestRecords = await this.resolveSharedManifestRecords(sqliteClient);
-    const sharedManifestSpecs: CodecSharedManifestSpec[] = Object.values(sharedManifestRecords).map(r => ({ manifestId: r.manifestId, anchorFolderId: r.folderId, userSalt: r.salt }));
+    /*
+     * Membership is the ManifestId stamp on each row (written by the repositories at insert, move and
+     * share time), so a spec only has to name the manifest and supply its blob salt.
+     */
+    const sharedManifestSpecs: CodecManifestSpec[] = Object.values(sharedManifestRecords).map(r => ({
+      manifestId: r.manifestId,
+      userSalt: r.salt,
+      name: r.name ?? null,
+    }));
 
     /*
-     * The root manifest id every root row is stamped with. The vault DB's Manifests bookkeeping table is the
-     * durable source (written by every materialize); the storage copy from the last snapshot covers a vault
-     * that predates the table (the legacy sqlite-blob migration push).
+     * The manifest this push is written from, which owns the tables that carry no stamp column at all. The
+     * vault DB's own setting is the durable source (written on each pull from what the server reports); the
+     * storage copy from the last snapshot covers a vault that has never been materialized (the legacy
+     * sqlite-blob migration push).
      */
     const rootManifestId = sqliteClient.settings.getRootManifestId() ?? ((await storage.getItem(StorageKeys.VAULT_V2_ROOT_MANIFEST_ID)) as string | null);
     if (!rootManifestId) {
-      throw new Error('VaultSyncService: no root manifest id available (no Manifests row and no snapshot baseline); pull once before pushing.');
+      throw new Error('VaultSyncService: no root manifest id available (no vault setting and no snapshot baseline); pull once before pushing.');
     }
 
     const canonicalized = await timedStage('canonicalize (incl. Rust→JS conversion)', () => vaultCodecCanonicalizeFromSqlite({
       tables,
-      userSalt,
       migrationId,
-      rootManifestId,
-      sharedManifests: sharedManifestSpecs,
       canonicalizedAt: new Date().toISOString(),
+      // The manifest being written from goes first; the rest are the shared manifests split out of it.
+      manifests: [{ manifestId: rootManifestId, userSalt }, ...sharedManifestSpecs],
+      adoptUnstampedInto: options?.adoptUnstampedInto ?? null,
     }));
 
-    return { canonicalized, sharedManifestRecords };
+    return { canonicalized, sharedManifestRecords, rootManifestId };
   }
 
   /**
@@ -1176,16 +1271,20 @@ export class VaultSyncService {
     const canonicalizedSet = await this.canonicalizeVault(sqliteClient);
     canonicalizeCache = { client: sqliteClient, mutationSequence, ...canonicalizedSet };
 
-    const { canonicalized, sharedManifestRecords } = canonicalizedSet;
+    const { canonicalized, sharedManifestRecords, rootManifestId } = canonicalizedSet;
     const fingerprints = await this.loadContentFingerprints();
 
-    const manifests: Array<{ manifestId: string; manifest: CodecManifest }> = [
-      { manifestId: canonicalized.manifest.manifestId, manifest: canonicalized.manifest },
-      ...(canonicalized.sharedVaults ?? []).flatMap(v => {
-        const record = sharedManifestRecords[v.anchorFolderId];
-        return record ? [{ manifestId: record.manifestId, manifest: v.manifest }] : [];
-      }),
-    ];
+    /*
+     * Same manifest-id resolution the push uses (see the candidate list there): a shared manifest with no session
+     * record is not pushed, so it cannot make this push non-empty either.
+     */
+    const knownManifestIds = new Set(Object.values(sharedManifestRecords).map(r => r.manifestId));
+    const manifests: Array<{ manifestId: string; manifest: CodecManifest }> = canonicalized.manifests.flatMap(({ manifest }) => {
+      if (manifest.manifestId === rootManifestId || knownManifestIds.has(manifest.manifestId)) {
+        return [{ manifestId: manifest.manifestId, manifest }];
+      }
+      return [];
+    });
     for (const { manifestId, manifest } of manifests) {
       if (fingerprints[fingerprintManifestKey(manifestId)] !== await vaultCodecComputeContentFingerprint(JSON.stringify(manifest))) {
         return false;
