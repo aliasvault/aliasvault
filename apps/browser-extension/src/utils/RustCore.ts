@@ -255,7 +255,7 @@ export type CodecManifest = {
   schemaVersion: number;
   /** Latest EF migration ID; readers derive the data-model version label from it. */
   migrationId: string;
-  userSalt: string;
+  manifestSalt: string;
   canonicalizedAt: string;
   manifestId: string;
   name?: string | null;
@@ -268,7 +268,7 @@ export type CodecManifest = {
  */
 export type CodecManifestSpec = {
   manifestId: string;
-  userSalt: string;
+  manifestSalt: string;
   name?: string | null;
 };
 
@@ -412,11 +412,11 @@ export async function vaultCodecLogoContentHash(bytes: Uint8Array): Promise<stri
 }
 
 /**
- * Generate a fresh 32-byte per-user salt (lowercase hex).
+ * Generate a fresh 32-byte per-manifest blob-hashing salt (lowercase hex).
  */
-export async function vaultCodecGenerateUserSalt(): Promise<string> {
+export async function vaultCodecGenerateManifestSalt(): Promise<string> {
   await initRustCore();
-  return core.vaultCodecGenerateUserSalt();
+  return core.vaultCodecGenerateManifestSalt();
 }
 
 /**

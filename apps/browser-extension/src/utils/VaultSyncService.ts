@@ -13,7 +13,7 @@ import type { VaultResponse } from '@/utils/dist/core/models/webapi';
 import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 import { buildEmailRouting } from '@/utils/EmailRouting';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateUserSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecBlobEntry, type CodecCanonicalized, type CodecManifest, type CodecManifestSpec, type CodecMaterialized} from '@/utils/RustCore';
+import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateManifestSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecBlobEntry, type CodecCanonicalized, type CodecManifest, type CodecManifestSpec, type CodecMaterialized} from '@/utils/RustCore';
 import { SharingService, type SessionSharedManifest } from '@/utils/SharingService';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
@@ -520,10 +520,10 @@ export class VaultSyncService {
 
       if (dto.isRoot) {
         /*
-         * Persist the user salt locally so subsequent canonicalizes hash blobs the same way, and the root
+         * Persist the root manifest's blob salt locally so subsequent canonicalizes hash blobs the same way, and the root
          * manifest id so a push can resolve it even before the vault DB records it (see `recordOwnManifestId`).
          */
-        await storage.setItem(StorageKeys.VAULT_V2_USER_SALT, entry.manifest.userSalt);
+        await storage.setItem(StorageKeys.VAULT_V2_MANIFEST_SALT, entry.manifest.manifestSalt);
         await storage.setItem(StorageKeys.VAULT_V2_ROOT_MANIFEST_ID, entry.manifestId);
         continue;
       }
@@ -536,7 +536,7 @@ export class VaultSyncService {
             folderId,
             manifestId: dto.manifestId,
             vek: manifestKey,
-            salt: entry.manifest.userSalt,
+            salt: entry.manifest.manifestSalt,
             revision: entry.revision,
             name: entry.manifest.name ?? dto.name ?? null,
             ownerUsername: dto.ownerUsername ?? null,
@@ -1201,16 +1201,16 @@ export class VaultSyncService {
   }
 
   /**
-   * Canonicalize the local vault into the manifest-v1 format using the persisted user salt (generated on first
+   * Canonicalize the local vault into the manifest-v1 format using the root manifest's persisted blob salt (generated on first
    * save), splitting off each shared manifest's anchor subtree into its own manifest.
    * @param sqliteClient - the in-memory SQLite database to canonicalize
    * @returns The canonicalized set plus the resolved shared-manifest session records
    */
   private async canonicalizeVault(sqliteClient: SqliteClient, options?: { adoptUnstampedInto?: string | null }): Promise<CanonicalizedVaultSet> {
-    let userSalt = (await storage.getItem(StorageKeys.VAULT_V2_USER_SALT)) as string | null;
-    if (!userSalt) {
-      userSalt = await vaultCodecGenerateUserSalt();
-      await storage.setItem(StorageKeys.VAULT_V2_USER_SALT, userSalt);
+    let manifestSalt = (await storage.getItem(StorageKeys.VAULT_V2_MANIFEST_SALT)) as string | null;
+    if (!manifestSalt) {
+      manifestSalt = await vaultCodecGenerateManifestSalt();
+      await storage.setItem(StorageKeys.VAULT_V2_MANIFEST_SALT, manifestSalt);
     }
 
     // Read tables from the SQLite database and apply the manifest-v1 format rules.
@@ -1230,7 +1230,7 @@ export class VaultSyncService {
      */
     const sharedManifestSpecs: CodecManifestSpec[] = Object.values(sharedManifestRecords).map(r => ({
       manifestId: r.manifestId,
-      userSalt: r.salt,
+      manifestSalt: r.salt,
       name: r.name ?? null,
     }));
 
@@ -1250,7 +1250,7 @@ export class VaultSyncService {
       migrationId,
       canonicalizedAt: new Date().toISOString(),
       // The manifest being written from goes first; the rest are the shared manifests split out of it.
-      manifests: [{ manifestId: rootManifestId, userSalt }, ...sharedManifestSpecs],
+      manifests: [{ manifestId: rootManifestId, manifestSalt }, ...sharedManifestSpecs],
       adoptUnstampedInto: options?.adoptUnstampedInto ?? null,
     }));
 

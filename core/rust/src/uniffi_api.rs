@@ -226,10 +226,10 @@ pub fn vault_codec_bucket_layout() -> Result<String, VaultError> {
     crate::vault_codec::bucket_layout_json()
 }
 
-/// Generate a fresh 32-byte per-user salt (lowercase hex).
+/// Generate a fresh 32-byte per-manifest blob-hashing salt (lowercase hex).
 #[uniffi::export]
-pub fn vault_codec_generate_user_salt() -> String {
-    crate::vault_codec::generate_user_salt()
+pub fn vault_codec_generate_manifest_salt() -> String {
+    crate::vault_codec::generate_manifest_salt()
 }
 
 /// The `Logos.Id` to use for `source` inside the manifest with id `manifest_id`. 

@@ -86,8 +86,8 @@ pub fn logo_content_hash(bytes: &[u8]) -> String {
     hash::sha256_hex(bytes)
 }
 
-/// Generate a fresh 32-byte per-user salt as a lowercase hex string.
-pub fn generate_user_salt() -> String {
+/// Generate a fresh 32-byte per-manifest blob-hashing salt as a lowercase hex string.
+pub fn generate_manifest_salt() -> String {
     use rand::RngCore;
     let mut bytes = [0u8; 32];
     rand::rng().fill_bytes(&mut bytes);

@@ -39,7 +39,7 @@ export type VaultSnapshot = {
 export type DecryptedManifest = {
   schemaVersion: number;
   migrationId: string;
-  userSalt: string;
+  manifestSalt: string;
   canonicalizedAt: string;
   tables: Record<string, Array<Record<string, unknown>>>;
   [key: string]: unknown;

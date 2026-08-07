@@ -19,7 +19,7 @@ pub struct Manifest {
     /// Per-manifest salt for blob hashing (hex). For a shared manifest this salt is shared by
     /// every participant (it lives inside the encrypted manifest itself) so all of them compute the
     /// same content-addressed blob hashes.
-    pub user_salt: String,
+    pub manifest_salt: String,
     /// Timestamp when this canonical snapshot was produced (ISO-8601).
     pub canonicalized_at: String,
     /// The server-side id of the manifest this snapshot belongs to.
@@ -81,7 +81,7 @@ pub struct BlobEntry {
 pub struct ManifestSpec {
     pub manifest_id: String,
     /// Per-manifest salt for this manifest's blob hashing.
-    pub user_salt: String,
+    pub manifest_salt: String,
     /// Display name written into the manifest. See [`Manifest::name`].
     #[serde(default)]
     pub name: Option<String>,

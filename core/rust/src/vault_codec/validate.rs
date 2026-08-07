@@ -39,8 +39,8 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
     if manifest.schema_version < 1 {
         failed.push("schemaVersion-missing-or-too-low".to_string());
     }
-    if manifest.user_salt.len() < 32 {
-        failed.push("userSalt-missing-or-short".to_string());
+    if manifest.manifest_salt.len() < 32 {
+        failed.push("manifestSalt-missing-or-short".to_string());
     }
     // Every manifest carries its own id: rows inside are stamped with it.
     if manifest.manifest_id.is_empty() {

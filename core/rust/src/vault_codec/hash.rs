@@ -94,12 +94,9 @@ pub fn content_hash(value: &serde_json::Value) -> String {
     sha256_hex(canonical_json(value).as_bytes())
 }
 
-/// Per-user salted blob hash `sha256(salt_bytes ‖ plaintext_bytes)`, lowercase hex.
-///
-/// `user_salt` is a hex string (decoded to bytes before concatenation). 
-/// Per-user salt means the server cannot enumerate which blobs a user has across users.
-pub fn salted_blob_hash(bytes: &[u8], user_salt: &str) -> String {
-    let salt_bytes = hex_to_bytes(user_salt).unwrap_or_default();
+/// Per-manifest salted blob hash `sha256(salt_bytes ‖ plaintext_bytes)`, lowercase hex.
+pub fn salted_blob_hash(bytes: &[u8], manifest_salt: &str) -> String {
+    let salt_bytes = hex_to_bytes(manifest_salt).unwrap_or_default();
     let mut hasher = Sha256::new();
     hasher.update(&salt_bytes);
     hasher.update(bytes);

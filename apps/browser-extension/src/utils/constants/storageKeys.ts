@@ -67,8 +67,8 @@ export const StorageKeys = {
   LAST_SYNC_ERROR: 'local:lastSyncError',
   /** The client's last known revision per non-root (shared) manifest. */
   SERVER_MANIFEST_REVISIONS: 'local:serverManifestRevisions',
-  /** Per-user salt used to canonicalize the vault into the manifest-v1 format. */
-  VAULT_V2_USER_SALT: 'local:vaultV2UserSalt',
+  /** The root manifest's blob-hashing salt, cached from the last pull; see `CodecManifest.manifestSalt`. */
+  VAULT_V2_MANIFEST_SALT: 'local:vaultV2ManifestSalt',
 
   /**
    * The server-side id of the user's root manifest, learned from GET /v2/Vault. Fallback source for
@@ -275,7 +275,7 @@ export const allVaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.SERVER_REVISION,
   StorageKeys.LEGACY_VAULT_REVISION_NUMBER,
   StorageKeys.SERVER_MANIFEST_REVISIONS,
-  StorageKeys.VAULT_V2_USER_SALT,
+  StorageKeys.VAULT_V2_MANIFEST_SALT,
   StorageKeys.VAULT_V2_ROOT_MANIFEST_ID,
   StorageKeys.VAULT_V2_CONTENT_FINGERPRINTS,
   StorageKeys.VAULT_V2_BLOB_CIPHER_CACHE,

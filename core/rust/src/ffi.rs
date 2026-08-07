@@ -298,13 +298,13 @@ pub extern "C" fn vault_codec_bucket_layout_ffi() -> *mut c_char {
     }
 }
 
-/// Generate a fresh per-user salt (lowercase hex).
+/// Generate a fresh per-manifest blob-hashing salt (lowercase hex).
 ///
 /// # Safety
 /// Free the result with `free_string`.
 #[no_mangle]
-pub extern "C" fn vault_codec_generate_user_salt_ffi() -> *mut c_char {
-    string_to_c_char(crate::vault_codec::generate_user_salt())
+pub extern "C" fn vault_codec_generate_manifest_salt_ffi() -> *mut c_char {
+    string_to_c_char(crate::vault_codec::generate_manifest_salt())
 }
 
 /// SHA-256 (lowercase hex) of a base64 ciphertext string.

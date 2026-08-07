@@ -193,10 +193,10 @@ pub fn vault_codec_overflow_table_js() -> String {
     vault_codec::OVERFLOW_TABLE.to_string()
 }
 
-/// Generate a fresh 32-byte per-user salt (lowercase hex).
-#[wasm_bindgen(js_name = vaultCodecGenerateUserSalt)]
-pub fn vault_codec_generate_user_salt_js() -> String {
-    vault_codec::generate_user_salt()
+/// Generate a fresh 32-byte per-manifest blob-hashing salt (lowercase hex).
+#[wasm_bindgen(js_name = vaultCodecGenerateManifestSalt)]
+pub fn vault_codec_generate_manifest_salt_js() -> String {
+    vault_codec::generate_manifest_salt()
 }
 
 /// Pack a payload JSON string into gzip(envelope{contentHash, payload}). Encryption is done by platform.

@@ -35,7 +35,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         None => return Err(crate::error::VaultError::General("canonicalize input declares no manifests".to_string())),
     };
     let writing_manifest_id = writing_spec.manifest_id.clone();
-    let writing_user_salt = writing_spec.user_salt.clone();
+    let writing_manifest_salt = writing_spec.manifest_salt.clone();
 
     // Collect every non-skip table into a name > rows map (row order preserved per table). Blob
     // extraction and bucket-splitting happen below.
@@ -116,7 +116,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         }
 
         // Manifest table: extract any blob column into the content-addressed map.
-        let out_rows = extract_table_blobs(&name, records, &writing_user_salt, &mut blobs);
+        let out_rows = extract_table_blobs(&name, records, &writing_manifest_salt, &mut blobs);
         manifest_tables.insert(name, out_rows);
     }
 
@@ -142,7 +142,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         manifest: Manifest {
             schema_version: SCHEMA_VERSION,
             migration_id: input.migration_id.clone(),
-            user_salt: writing_user_salt,
+            manifest_salt: writing_manifest_salt,
             canonicalized_at: input.canonicalized_at.clone(),
             manifest_id: writing_manifest_id,
             name: writing_spec.name.clone(),
@@ -159,7 +159,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
             .tables
             .into_iter()
             .map(|(name, records)| {
-                let out_rows = extract_table_blobs(&name, records, &partition.user_salt, &mut partition_blobs);
+                let out_rows = extract_table_blobs(&name, records, &partition.manifest_salt, &mut partition_blobs);
                 (name, out_rows)
             })
             .collect();
@@ -167,7 +167,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
             manifest: Manifest {
                 schema_version: SCHEMA_VERSION,
                 migration_id: input.migration_id.clone(),
-                user_salt: partition.user_salt,
+                manifest_salt: partition.manifest_salt,
                 canonicalized_at: input.canonicalized_at.clone(),
                 manifest_id: partition.manifest_id,
                 name: partition.name,
@@ -217,12 +217,12 @@ fn is_unstamped(row: &CodecRecord) -> bool {
 }
 
 /// Extract `table`'s blob column (if it owns one) into `blobs`, returning the rewritten rows.
-fn extract_table_blobs(table: &str, records: Vec<CodecRecord>, user_salt: &str, blobs: &mut HashMap<String, BlobEntry>) -> Vec<CodecRecord> {
+fn extract_table_blobs(table: &str, records: Vec<CodecRecord>, manifest_salt: &str, blobs: &mut HashMap<String, BlobEntry>) -> Vec<CodecRecord> {
     let blob_spec = blob_spec_for(table);
     let mut out_rows: Vec<CodecRecord> = Vec::with_capacity(records.len());
     for mut row in records {
         if let Some((_, blob_col, kind)) = blob_spec {
-            let extracted = extract_blob_cell(row.get(*blob_col), user_salt, kind, blobs);
+            let extracted = extract_blob_cell(row.get(*blob_col), manifest_salt, kind, blobs);
             row.insert((*blob_col).to_string(), extracted);
         }
         out_rows.push(row);
@@ -234,7 +234,7 @@ fn extract_table_blobs(table: &str, records: Vec<CodecRecord>, user_salt: &str, 
 /// return a blob-ref; otherwise return JSON null.
 fn extract_blob_cell(
     cell: Option<&serde_json::Value>,
-    user_salt: &str,
+    manifest_salt: &str,
     kind: &str,
     blobs: &mut HashMap<String, BlobEntry>,
 ) -> serde_json::Value {
@@ -248,7 +248,7 @@ fn extract_blob_cell(
         _ => return serde_json::Value::Null,
     };
 
-    let hash = salted_blob_hash(&bytes, user_salt);
+    let hash = salted_blob_hash(&bytes, manifest_salt);
     blobs.entry(hash.clone()).or_insert_with(|| BlobEntry {
         kind: kind.to_string(),
         bytes_base64: b64.to_string(),
