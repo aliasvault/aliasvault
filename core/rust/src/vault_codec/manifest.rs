@@ -213,6 +213,10 @@ pub struct CanonicalizeInput {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterializeInput {
+    /// Every manifest to materialize, the caller's own first. Order carries no privilege between
+    /// namespaces (each row routes by its own `ManifestId`); the first entry only supplies the
+    /// reported `migration_id`. Deserialization is positional, so a caller that skips
+    /// [`MaterializeInput::new`] must keep that order itself.
     pub manifests: Vec<Manifest>,
     #[serde(default)]
     pub data_buckets: Vec<DataBucket>,

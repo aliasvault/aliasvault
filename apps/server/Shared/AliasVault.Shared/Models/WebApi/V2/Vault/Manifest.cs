@@ -18,9 +18,7 @@ public class Manifest
     public required Guid ManifestId { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether this is the user's root manifest: the residual container that holds
-    /// everything not carved out into another manifest. Sharing status is not encoded here — it is tracked
-    /// separately (R2 access table); a non-root manifest is not necessarily shared.
+    /// Gets or sets a value indicating whether this is the user's root manifest.
     /// </summary>
     public required bool IsRoot { get; set; }
 
@@ -53,9 +51,12 @@ public class Manifest
     public bool CanAdminister { get; set; }
 
     /// <summary>
-    /// Gets or sets the manifest VEK encrypted with the caller's public key, which they decrypt with their private
-    /// key. Set on every non-root manifest the caller can open, whether they own it (their self-grant) or another
-    /// user granted it to them. Null on the root manifest, which is unlocked through the account key hierarchy.
+    /// Gets or sets how the caller's access to this manifest's VEK is wrapped.
+    /// </summary>
+    public string? KeyType { get; set; }
+
+    /// <summary>
+    /// Gets or sets the manifest VEK encrypted with the caller's public key.
     /// </summary>
     public string? EncryptedVek { get; set; }
 

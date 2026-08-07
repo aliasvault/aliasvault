@@ -174,7 +174,9 @@ type ManifestDto = {
   ownerUsername?: string | null;
   /** Whether the caller may grant/revoke access to this manifest and publish its email delivery key. */
   canAdminister?: boolean;
-  /** The manifest VEK encrypted with the caller's public key; set only on manifests granted by another user. */
+  /** How the caller's access to this manifest's VEK is wrapped. */
+  keyType?: string | null;
+  /** The manifest VEK encrypted with the caller's public key; set only on manifests we open through a grant. */
   encryptedVek?: string | null;
   /** Algorithm of `encryptedVek` (e.g. "rsa-oaep-sha256"). */
   algorithm?: string | null;
@@ -202,6 +204,12 @@ function selectRootManifest(manifests: ManifestDto[] | undefined | null): Manife
  */
 export const STORAGE_FORMAT_MANIFEST = 1;
 
+/** The manifest's VEK hangs off the account key hierarchy: the unlock chain produced it, nothing travels on the wire. */
+const MANIFEST_KEY_TYPE_ACCOUNT = 'accountkey';
+
+/** The manifest's VEK is encrypted to one of our public keys and carried on the manifest itself. */
+const MANIFEST_KEY_TYPE_GRANT = 'grantkey';
+
 /**
  * Raw snapshot returned by GET /v2/Vault.
  */
@@ -228,8 +236,8 @@ export type GetResponseDto = {
 };
 
 /**
- * One manifest element in a POST /v2/Vault write. Root targeting is explicit: set `isRoot: true` (and no `manifestId`) to write
- * the caller's root manifest or set `manifestId` (with `isRoot` false/omitted) to write a shared manifest.
+ * One manifest element in a POST /v2/Vault write. Every manifest is addressed by `manifestId`, root included; `isRoot`
+ * asserts what kind of target that id is and the server rejects the write when the two disagree.
  */
 type ManifestWriteDto = {
   isRoot?: boolean;
@@ -508,6 +516,7 @@ export class VaultSyncService {
     /*
      * Open every manifest in the snapshot through one path, root first.
      */
+    const accountKeyVeks = new Map<string, string>([[rootDto.manifestId, vek]]);
     const resolved: ResolvedManifest[] = [];
     const sessionSharedManifests: Record<string, SessionSharedManifest> = {};
     /*
@@ -515,10 +524,13 @@ export class VaultSyncService {
      * but not yet split into) still resolves to the folder the client renders it at.
      */
     const priorFolderIds = new Map(Object.values(await SharingService.getSessionSharedManifests()).map(r => [r.manifestId, r.folderId]));
-    for (const dto of [rootDto, ...(snapshot.manifests ?? []).filter(m => !m.isRoot)]) {
-      // Safe on the non-root passes: the root is opened first and throws rather than leaving `resolved` empty.
-      const manifestKey = dto.isRoot ? vek : await this.resolveGrantedVek(resolved[0].manifest, dto);
+    for (const dto of [rootDto, ...(snapshot.manifests ?? []).filter(m => m.manifestId !== rootDto.manifestId)]) {
+      const manifestKey = await this.resolveManifestVek(dto, accountKeyVeks, resolved[0]?.manifest ?? null);
       if (!manifestKey || !dto.blob) {
+        // Same policy as a manifest that fails to open: a shared one only costs us that folder, the home one is the vault.
+        if (dto.manifestId === rootDto.manifestId) {
+          throw new Error(`VaultSyncService: no key resolved for the home manifest ${dto.manifestId} (key type "${dto.keyType ?? 'unspecified'}"), refusing to assemble.`);
+        }
         continue;
       }
 
@@ -727,7 +739,41 @@ export class VaultSyncService {
   }
 
   /**
-   * Decrypt the VEK the server granted the caller on a non-root manifest.
+   * The key that opens one snapshot manifest.
+   * @param dto - the snapshot manifest
+   * @param accountKeyVeks - the VEKs already held per manifest id, keyed by the account key hierarchy
+   * @param rootManifest - the already-decrypted root manifest (the durable home of rotated private keys), or null when none is open yet
+   * @returns The manifest's VEK, or null when this client holds no key for it.
+   */
+  private async resolveManifestVek(dto: ManifestDto, accountKeyVeks: Map<string, string>, rootManifest: CodecManifest | null): Promise<string | null> {
+    // A server that predates the field says nothing, and there the home manifest is the account-key one by definition.
+    const keyType = dto.keyType ?? (dto.isRoot ? MANIFEST_KEY_TYPE_ACCOUNT : MANIFEST_KEY_TYPE_GRANT);
+
+    if (keyType === MANIFEST_KEY_TYPE_ACCOUNT) {
+      const accountKeyVek = accountKeyVeks.get(dto.manifestId);
+      if (!accountKeyVek) {
+        // Our unlock chain produced a VEK for a different manifest than the one this key is filed under.
+        devWarn(`[V2Pull] Manifest ${dto.manifestId} is unlocked by the account key hierarchy, but this session holds no key for it; skipping it.`);
+        return null;
+      }
+      return accountKeyVek;
+    }
+
+    if (keyType !== MANIFEST_KEY_TYPE_GRANT) {
+      devWarn(`[V2Pull] Manifest ${dto.manifestId} states an unknown key type "${keyType}" (newer server?), skipping it.`);
+      return null;
+    }
+
+    if (!rootManifest) {
+      devWarn(`[V2Pull] Manifest ${dto.manifestId} is opened through a grant, but no root manifest is open to resolve the private key from; skipping it.`);
+      return null;
+    }
+
+    return this.resolveGrantedVek(rootManifest, dto);
+  }
+
+  /**
+   * Decrypt the VEK the server granted the caller on a manifest.
    * @param rootManifest - the already-decrypted root manifest, the durable home of rotated private keys
    * @param dto - the snapshot manifest carrying the grant
    */
@@ -1012,8 +1058,8 @@ export class VaultSyncService {
       devLog(`[V2Push] ${label}: raw ${formatKb(plaintext.length)} → compressed ${formatKb(compressedBytes)} → encrypted ${formatKb(ciphertext.length)}.`);
 
       manifestWrites.push({
-        // The root target is addressed by the flag alone (the server resolves it from the auth session), see ManifestWriteDto.
-        ...(candidate.isRoot ? { isRoot: true } : { manifestId: candidate.manifestId }),
+        manifestId: candidate.manifestId,
+        isRoot: candidate.isRoot,
         manifestBlob: ciphertext,
         manifestCiphertextHash: ciphertextHash,
         currentRevision: candidate.currentRevision,

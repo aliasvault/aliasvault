@@ -25,8 +25,7 @@ use crate::error::{VaultError, VaultResult};
 
 /// Materialize the vault's manifests into the table set the platform inserts. Every manifest arrives
 /// in one list, each carrying its own data buckets; they are combined into a single table set with
-/// per-manifest logo scoping, key-scope filtering, and earlier-manifest-wins primary-key dedup. 
-/// Every manifest's buckets merge into the same local tables.
+/// per-manifest logo scoping and key-scope filtering.
 pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<MaterializedTables> {
     let MaterializeInput { mut manifests, data_buckets, schema_columns } = input;
 
@@ -40,11 +39,7 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
 
     let manifest_records = manifest_bookkeeping_records(&manifests);
 
-    /*
-     * The caller's own manifest comes first (see `MaterializeInput::manifests`): it is the base every
-     * other manifest is combined into, so on a collision in a table keyed by `Id` alone its row is the
-     * one that survives, and its `migration_id` is the data-model version the vault reports.
-     */
+    // The first manifest is the caller's own (see `MaterializeInput::new`).
     let base = manifests.remove(0);
     let others: Vec<Manifest> = manifests;
 

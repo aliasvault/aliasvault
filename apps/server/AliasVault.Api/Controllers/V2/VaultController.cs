@@ -139,10 +139,8 @@ public class VaultController(
             .GroupBy(x => x.ManifestId)
             .ToDictionary(g => g.Key, g => g.GroupBy(x => x.Hash, StringComparer.Ordinal).Select(h => new BlobReference { Hash = h.Key, Category = h.First().Category }).ToList());
 
-        // The caller's grant on each non-root manifest: the manifest VEK encrypted with one of their public keys.
-        var nonRootIds = latestManifests.Where(m => !m.IsRoot).Select(m => m.ManifestId).ToList();
-        var grantsByManifest = await GetGrantsAsync(context, user.Id, nonRootIds);
-        var encryptionPublicKeys = await GetEncryptionPublicKeysAsync(context, grantsByManifest.Values.Where(g => g.UserGrantKeyId != null).Select(g => g.UserGrantKeyId!.Value));
+        var accessKeysByManifest = await GetAccessKeysAsync(context, user.Id, manifestIds);
+        var encryptionPublicKeys = await GetEncryptionPublicKeysAsync(context, accessKeysByManifest.Values.Where(g => g.UserGrantKeyId != null).Select(g => g.UserGrantKeyId!.Value));
 
         // A manifest owned by a group the caller does not own is one shared with them: stamp the owning user's name.
         var foreignGroupIds = latestManifests.Where(m => !ownedGroupIds.Contains(m.OwnerGroupId)).Select(m => m.OwnerGroupId).Distinct().ToList();
@@ -154,7 +152,10 @@ public class VaultController(
 
         var manifests = latestManifests.Select(m =>
         {
-            grantsByManifest.TryGetValue(m.ManifestId, out var grant);
+            accessKeysByManifest.TryGetValue(m.ManifestId, out var accessKey);
+
+            // An account-key row's ciphertext is not sent: the caller unwrapped that VEK from their password chain before this call.
+            var grant = accessKey != null && ManifestKeyTypes.CarriesEncryptedVek(accessKey.Type) ? accessKey : null;
             return new Manifest
             {
                 ManifestId = m.ManifestId,
@@ -166,6 +167,7 @@ public class VaultController(
                 BlobReferences = refsByManifest.TryGetValue(m.ManifestId, out var refs) ? refs : [],
                 OwnerUsername = ownerUsernamesByGroupId.GetValueOrDefault(m.OwnerGroupId),
                 CanAdminister = !m.IsRoot && administeredGroupIds.Contains(m.OwnerGroupId),
+                KeyType = accessKey != null ? ManifestKeyTypes.ToToken(accessKey.Type) : null,
                 EncryptedVek = grant?.EncryptedVek,
                 Algorithm = grant != null ? VaultKeyAlgorithms.ToToken(grant.Algorithm) : null,
                 EncryptionPublicKey = grant?.UserGrantKeyId != null ? encryptionPublicKeys.GetValueOrDefault(grant.UserGrantKeyId.Value) : null,
@@ -225,18 +227,22 @@ public class VaultController(
             BlobReferences = blobRefs,
         };
 
-        // A non-root manifest is unlocked via the caller's grant (their encrypted VEK), whether they own it (self-grant)
-        // or another user shared it with them. Attach that grant; only stamp OwnerUsername when it is shared with them.
+        // How this manifest's VEK reaches the caller.
+        var accessKey = (await GetAccessKeysAsync(context, user.Id, [latest.ManifestId])).GetValueOrDefault(latest.ManifestId);
+        manifest.KeyType = accessKey != null ? ManifestKeyTypes.ToToken(accessKey.Type) : null;
+        if (accessKey != null && ManifestKeyTypes.CarriesEncryptedVek(accessKey.Type))
+        {
+            manifest.EncryptedVek = accessKey.EncryptedVek;
+            manifest.Algorithm = VaultKeyAlgorithms.ToToken(accessKey.Algorithm);
+            if (accessKey.UserGrantKeyId != null)
+            {
+                manifest.EncryptionPublicKey = await context.UserGrantKeys.Where(k => k.Id == accessKey.UserGrantKeyId).Select(k => k.PublicKey).FirstOrDefaultAsync();
+            }
+        }
+
+        // Ownership display and administer rights are only meaningful on a manifest that is not the caller's own home one.
         if (!latest.IsRoot)
         {
-            var grant = await context.VaultManifestAccessKeys.FirstOrDefaultAsync(k => k.UserId == user.Id && k.Type == ManifestKeyType.GrantKey && k.VaultManifestId == latest.ManifestId);
-            manifest.EncryptedVek = grant?.EncryptedVek;
-            manifest.Algorithm = grant != null ? VaultKeyAlgorithms.ToToken(grant.Algorithm) : null;
-            if (grant?.UserGrantKeyId != null)
-            {
-                manifest.EncryptionPublicKey = await context.UserGrantKeys.Where(k => k.Id == grant.UserGrantKeyId).Select(k => k.PublicKey).FirstOrDefaultAsync();
-            }
-
             // Set owner username for shared manifests for display purposes.
             var isOwnedByCaller = await context.GroupMembers.AnyAsync(gm => gm.GroupId == latest.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner);
             if (!isOwnedByCaller)
@@ -313,38 +319,40 @@ public class VaultController(
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
         }
 
-        // Resolve + authorize each manifest write to its stored row.
+        /*
+         * Resolve + authorize each manifest write to its stored row.
+         */
         var resolved = new List<(ManifestWrite Write, VaultManifest Row)>();
         foreach (var mw in model.Manifests)
         {
-            if (mw.IsRoot)
+            VaultManifest? row;
+            if (mw.ManifestId != null)
             {
-                if (mw.ManifestId != null)
-                {
-                    // Contradictory target (root + an id): refuse rather than guess which was intended.
-                    return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
-                }
-
-                var rootRow = await context.VaultManifests.FirstOrDefaultAsync(x => x.IsRoot && x.OwnerGroupId == user.PersonalGroupId);
-                if (rootRow == null)
-                {
-                    return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
-                }
-
-                resolved.Add((mw, rootRow));
-                continue;
+                row = await WritableManifests(context, user.Id).FirstOrDefaultAsync(x => x.ManifestId == mw.ManifestId);
             }
-
-            if (mw.ManifestId == null)
+            else if (mw.IsRoot)
+            {
+                row = await context.VaultManifests.FirstOrDefaultAsync(x => x.IsRoot && x.OwnerGroupId == user.PersonalGroupId);
+            }
+            else
             {
                 // A non-root write must name its manifest; a missing id must never fall through to the root.
                 return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
             }
 
-            var row = await AccessibleManifests(context, user.Id).FirstOrDefaultAsync(x => x.ManifestId == mw.ManifestId && !x.IsRoot);
             if (row == null)
             {
-                return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+                // A missing root is a state error on the caller's own vault; a missing shared manifest is a bad target.
+                return mw.IsRoot
+                    ? BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400))
+                    : NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+            }
+
+            // The target must agree with what its id resolved to, and a root write only ever means the caller's own
+            // personal root: refuse rather than guess which manifest was intended.
+            if (row.IsRoot != mw.IsRoot || (mw.IsRoot && row.OwnerGroupId != user.PersonalGroupId))
+            {
+                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
             }
 
             resolved.Add((mw, row));
@@ -787,13 +795,26 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Gets the caller's grant on each of the given manifests: the manifest VEK encrypted to one of their account public keys.
+    /// The manifests a user can write to.
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="userId">The calling user.</param>
-    /// <param name="manifestIds">The manifests to get grants for.</param>
-    /// <returns>The grant per manifest id, empty when the caller holds none.</returns>
-    private static async Task<Dictionary<Guid, VaultManifestAccessKey>> GetGrantsAsync(AliasServerDbContext context, string userId, IEnumerable<Guid> manifestIds)
+    /// <returns>Query over the manifests the user may write to, in any storage format.</returns>
+    private static IQueryable<VaultManifest> WritableManifests(AliasServerDbContext context, string userId)
+    {
+        return ManifestAccessHelper.AccessibleManifests(context, userId);
+    }
+
+    /// <summary>
+    /// Gets the caller's key row on each of the given manifests, whichever way that manifest's VEK is wrapped for
+    /// them: an account-key row (unlocked through their password chain) or a grant encrypted to one of their public
+    /// keys. An account-key row wins when a manifest has both, being the caller's own direct path to it.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="userId">The calling user.</param>
+    /// <param name="manifestIds">The manifests to get key rows for.</param>
+    /// <returns>The key row per manifest id, empty when the caller holds none.</returns>
+    private static async Task<Dictionary<Guid, VaultManifestAccessKey>> GetAccessKeysAsync(AliasServerDbContext context, string userId, IEnumerable<Guid> manifestIds)
     {
         var ids = manifestIds.Distinct().ToList();
         if (ids.Count == 0)
@@ -802,10 +823,10 @@ public class VaultController(
         }
 
         return (await context.VaultManifestAccessKeys
-                .Where(k => k.UserId == userId && k.Type == ManifestKeyType.GrantKey && ids.Contains(k.VaultManifestId))
+                .Where(k => k.UserId == userId && ids.Contains(k.VaultManifestId))
                 .ToListAsync())
             .GroupBy(k => k.VaultManifestId)
-            .ToDictionary(g => g.Key, g => g.OrderByDescending(k => k.CreatedAt).ThenBy(k => k.Id).First());
+            .ToDictionary(g => g.Key, g => g.OrderBy(k => k.Type == ManifestKeyType.AccountKey ? 0 : 1).ThenByDescending(k => k.CreatedAt).ThenBy(k => k.Id).First());
     }
 
     /// <summary>
