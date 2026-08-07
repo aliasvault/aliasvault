@@ -33,7 +33,7 @@ export type PreparedRegistration = {
   request: RegisterRequest;
   /** The generated VEK (base64): the vault encryption key to store in session after successful registration. */
   vaultEncryptionKey: string;
-  /** The password-derived key (base64): the KEK, only needed for wrapping/SRP, never for vault content. */
+  /** The password-derived key (base64): the KEK, only needed for key encryption/SRP, never for vault content. */
   derivedKey: string;
 };
 
@@ -328,10 +328,10 @@ export class SrpAuthService {
 
     /*
      * KEK/VEK: generate a random VEK that will encrypt the vault content, encrypted with the password-derived KEK.
-     * The server stores only the wrapped form; the VEK itself stays client-side.
+     * The server stores only the encrypted form; the VEK itself stays client-side.
      */
     const vaultEncryptionKey = EncryptionUtility.generateVaultEncryptionKey();
-    const encryptedVek = await EncryptionUtility.wrapVaultEncryptionKey(vaultEncryptionKey, credentials.passwordHashBase64);
+    const encryptedVek = await EncryptionUtility.encryptVaultEncryptionKey(vaultEncryptionKey, credentials.passwordHashBase64);
 
     return {
       request: {

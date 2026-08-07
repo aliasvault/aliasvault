@@ -197,17 +197,17 @@ export class EncryptionUtility {
   }
 
   /**
-   * Wraps (encrypts) a VEK with a KEK using AES-256-GCM. Returns base64(IV | ciphertext | authTag).
+   * Encrypts a VEK with a KEK using AES-256-GCM. Returns base64(IV | ciphertext | authTag).
    */
-  public static async wrapVaultEncryptionKey(vekBase64: string, kekBase64: string): Promise<string> {
+  public static async encryptVaultEncryptionKey(vekBase64: string, kekBase64: string): Promise<string> {
     const vekBytes = Uint8Array.from(atob(vekBase64), c => c.charCodeAt(0));
     return this.symmetricEncryptBytes(vekBytes, kekBase64);
   }
 
   /**
-   * Unwraps (decrypts) an encrypted VEK with a KEK. Returns the VEK as base64.
+   * Decrypts an encrypted VEK with a KEK. Returns the VEK as base64.
    */
-  public static async unwrapVaultEncryptionKey(encryptedVekBase64: string, kekBase64: string): Promise<string> {
+  public static async decryptVaultEncryptionKey(encryptedVekBase64: string, kekBase64: string): Promise<string> {
     const encryptedBytes = Uint8Array.from(atob(encryptedVekBase64), c => c.charCodeAt(0));
     const vekBytes = await this.symmetricDecryptBytes(encryptedBytes, kekBase64);
     return btoa(String.fromCharCode(...vekBytes));

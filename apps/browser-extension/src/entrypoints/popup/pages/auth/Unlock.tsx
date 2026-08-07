@@ -285,7 +285,7 @@ const Unlock: React.FC = () => {
         });
 
         /*
-         * KEK/VEK: for migrated accounts the derived key is only the KEK; unwrap the VEK which is the actual
+         * KEK/VEK: for migrated accounts the derived key is only the KEK; decrypt the VEK which is the actual
          * vault encryption key. Throws a decrypt-failed (E-203) error on a wrong password. Legacy accounts keep
          * using the derived key directly.
          */
@@ -310,8 +310,8 @@ const Unlock: React.FC = () => {
         );
 
         /*
-         * KEK/VEK offline: unwrap the locally cached wrapped VEK with the derived key. Throws a decrypt-failed
-         * (E-203) error on a wrong password. Legacy accounts (no cached wrapped VEK) use the derived key directly.
+         * KEK/VEK offline: decrypt the locally cached encrypted VEK with the derived key. Throws a decrypt-failed
+         * (E-203) error on a wrong password. Legacy accounts (no cached encrypted VEK) use the derived key directly.
          */
         passwordHashBase64 = await VaultKeyService.resolveEncryptionKeyOffline(credentials.passwordHashBase64);
 
@@ -579,7 +579,7 @@ const Unlock: React.FC = () => {
 
       /*
        * The mobile device sends the vault encryption key (the VEK for migrated accounts, or the derived key when
-       * the mobile app predates the KEK/VEK model). Refresh the local wrapped-VEK cache so offline password unlock
+       * the mobile app predates the KEK/VEK model). Refresh the local encrypted-VEK cache so offline password unlock
        * keeps working, then upgrade the received key to the VEK when it turns out to be the KEK.
        */
       await VaultKeyService.cacheEncryptedVekFromServer(webApi);

@@ -174,7 +174,7 @@ type ManifestDto = {
   ownerUsername?: string | null;
   /** Whether the caller may grant/revoke access to this manifest and publish its email delivery key. */
   canAdminister?: boolean;
-  /** How the caller's access to this manifest's VEK is wrapped. */
+  /** How the caller's access to this manifest's VEK is encrypted. */
   keyType?: string | null;
   /** The manifest VEK encrypted with the caller's public key; set only on manifests we open through a grant. */
   encryptedVek?: string | null;
@@ -790,9 +790,9 @@ export class VaultSyncService {
     }
 
     try {
-      return await SharingService.unwrapManifestVek(dto.encryptedVek, privateKeyJwk);
+      return await SharingService.decryptManifestVek(dto.encryptedVek, privateKeyJwk);
     } catch (e) {
-      devWarn(`[V2Pull] Failed to unwrap VEK of shared manifest ${dto.manifestId}, skipping it.`, e);
+      devWarn(`[V2Pull] Failed to decrypt VEK of shared manifest ${dto.manifestId}, skipping it.`, e);
       return null;
     }
   }
@@ -885,7 +885,7 @@ export class VaultSyncService {
   ): Promise<PushResult> {
     /*
      * KEK/VEK migration: on the first push after this feature ships, generate a fresh VEK and encrypt everything
-     * with it; the passed-in password-derived key becomes the KEK that wraps the VEK. On a normal push the
+     * with it; the passed-in password-derived key becomes the KEK that encrypts the VEK. On a normal push the
      * passed-in key IS the VEK and is used directly.
      */
     const migrateToVaultKey = options?.createVaultKey === true;
@@ -897,9 +897,9 @@ export class VaultSyncService {
      */
     const accountKey = migrateToVaultKey ? EncryptionUtility.generateVaultEncryptionKey() : null;
     const accountKeyPair = migrateToVaultKey ? await EncryptionUtility.generateRsaKeyPair() : null;
-    const encryptedVek = accountKey ? await EncryptionUtility.wrapVaultEncryptionKey(contentKey, accountKey) : null;
+    const encryptedVek = accountKey ? await EncryptionUtility.encryptVaultEncryptionKey(contentKey, accountKey) : null;
     const accountKeys = accountKey && accountKeyPair ? {
-      encryptedAccountKey: await EncryptionUtility.wrapVaultEncryptionKey(accountKey, vek),
+      encryptedAccountKey: await EncryptionUtility.encryptVaultEncryptionKey(accountKey, vek),
       accountPublicKey: accountKeyPair.publicKey,
       encryptedAccountPrivateKey: await EncryptionUtility.symmetricEncrypt(accountKeyPair.privateKey, accountKey),
     } : null;

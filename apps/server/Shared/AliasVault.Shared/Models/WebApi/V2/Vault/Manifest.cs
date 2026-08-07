@@ -51,7 +51,7 @@ public class Manifest
     public bool CanAdminister { get; set; }
 
     /// <summary>
-    /// Gets or sets how the caller's access to this manifest's VEK is wrapped.
+    /// Gets or sets how the caller's access to this manifest's VEK is encrypted.
     /// </summary>
     public string? KeyType { get; set; }
 

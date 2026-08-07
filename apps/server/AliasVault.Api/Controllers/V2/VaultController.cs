@@ -154,7 +154,7 @@ public class VaultController(
         {
             accessKeysByManifest.TryGetValue(m.ManifestId, out var accessKey);
 
-            // An account-key row's ciphertext is not sent: the caller unwrapped that VEK from their password chain before this call.
+            // An account-key row's ciphertext is not sent: the caller decrypted that VEK from their password chain before this call.
             var grant = accessKey != null && ManifestKeyTypes.CarriesEncryptedVek(accessKey.Type) ? accessKey : null;
             return new Manifest
             {
@@ -436,7 +436,7 @@ public class VaultController(
                 row.ManifestBlob = mw.ManifestBlob;
                 row.ManifestCiphertextHash = mw.ManifestCiphertextHash;
 
-                // Deprecated column: manifest-v1 revisions no longer carry a data-model version (see VaultManifestBase.Version).
+                // Manifest revisions carry no data-model version, so we make it empty instead.
                 row.Version = string.Empty;
                 row.RevisionNumber = mw.CurrentRevision + 1;
                 row.FileSize = FileHelper.Base64StringToKilobytes(mw.ManifestBlob);
@@ -806,7 +806,7 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Gets the caller's key row on each of the given manifests, whichever way that manifest's VEK is wrapped for
+    /// Gets the caller's key row on each of the given manifests, whichever way that manifest's VEK is encrypted for
     /// them: an account-key row (unlocked through their password chain) or a grant encrypted to one of their public
     /// keys. An account-key row wins when a manifest has both, being the caller's own direct path to it.
     /// </summary>

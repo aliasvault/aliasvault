@@ -1375,8 +1375,8 @@ async function adoptRemoteVaultKeyIfNeeded(): Promise<boolean> {
 
   try {
     // Decrypt the encrypted Account Key and VEK.
-    const accountKey = await EncryptionUtility.unwrapVaultEncryptionKey(fetchResult.vaultKey.encryptedAccountKey, sessionKey);
-    const vek = fetchResult.vaultKey.encryptedVek ? await EncryptionUtility.unwrapVaultEncryptionKey(fetchResult.vaultKey.encryptedVek, accountKey) : accountKey;
+    const accountKey = await EncryptionUtility.decryptVaultEncryptionKey(fetchResult.vaultKey.encryptedAccountKey, sessionKey);
+    const vek = fetchResult.vaultKey.encryptedVek ? await EncryptionUtility.decryptVaultEncryptionKey(fetchResult.vaultKey.encryptedVek, accountKey) : accountKey;
 
     // Re-encrypt the locally persisted vault with the VEK before swapping the session key.
     if (encryptedVault) {

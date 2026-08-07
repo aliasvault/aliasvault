@@ -95,7 +95,7 @@ export class VaultKeyService {
       return { encryptionKey: derivedKeyBase64, encryptedVek: null };
     }
 
-    const vek = await VaultKeyService.unwrapChainOrThrow(result.vaultKey, derivedKeyBase64);
+    const vek = await VaultKeyService.decryptKeyChainOrThrow(result.vaultKey, derivedKeyBase64);
     await VaultKeyService.cacheVaultKeyBlobs(result.vaultKey);
     return { encryptionKey: vek, encryptedVek: result.vaultKey.encryptedAccountKey };
   }
@@ -218,15 +218,15 @@ export class VaultKeyService {
     const encryptedVek = (await storage.getItem(StorageKeys.ENCRYPTED_VEK)) as string | null;
 
     if (encryptedAccountKey) {
-      const accountKey = await VaultKeyService.unwrapOrThrow(encryptedAccountKey, derivedKeyBase64);
-      const vek = encryptedVek ? await VaultKeyService.unwrapOrThrow(encryptedVek, accountKey) : accountKey;
+      const accountKey = await VaultKeyService.decryptKeyOrThrow(encryptedAccountKey, derivedKeyBase64);
+      const vek = encryptedVek ? await VaultKeyService.decryptKeyOrThrow(encryptedVek, accountKey) : accountKey;
       await VaultKeyService.stageSessionPrivateKey(accountKey, (await storage.getItem(StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY)) as string | null);
       return { encryptionKey: vek, encryptedVek: encryptedAccountKey };
     }
 
     if (encryptedVek) {
       // Pre-encrypted VEK cache: the VEK was encrypted directly with the KEK.
-      return { encryptionKey: await VaultKeyService.unwrapOrThrow(encryptedVek, derivedKeyBase64), encryptedVek };
+      return { encryptionKey: await VaultKeyService.decryptKeyOrThrow(encryptedVek, derivedKeyBase64), encryptedVek };
     }
 
     return { encryptionKey: derivedKeyBase64, encryptedVek: null };
@@ -238,9 +238,9 @@ export class VaultKeyService {
    * @param vaultKey - the server's vault key response
    * @param derivedKeyBase64 - the password-derived KEK
    */
-  private static async unwrapChainOrThrow(vaultKey: VaultKeyResponse, derivedKeyBase64: string): Promise<string> {
-    const accountKey = await VaultKeyService.unwrapOrThrow(vaultKey.encryptedAccountKey, derivedKeyBase64);
-    const vek = vaultKey.encryptedVek ? await VaultKeyService.unwrapOrThrow(vaultKey.encryptedVek, accountKey) : accountKey;
+  private static async decryptKeyChainOrThrow(vaultKey: VaultKeyResponse, derivedKeyBase64: string): Promise<string> {
+    const accountKey = await VaultKeyService.decryptKeyOrThrow(vaultKey.encryptedAccountKey, derivedKeyBase64);
+    const vek = vaultKey.encryptedVek ? await VaultKeyService.decryptKeyOrThrow(vaultKey.encryptedVek, accountKey) : accountKey;
     await VaultKeyService.stageSessionPrivateKey(accountKey, vaultKey.encryptedAccountPrivateKey ?? null);
     return vek;
   }
@@ -290,9 +290,9 @@ export class VaultKeyService {
    * @param encryptedKey - encrypted key blob
    * @param decryptingKeyBase64 - the key that decrypts it (the KEK derived from the unlock method)
    */
-  private static async unwrapOrThrow(encryptedKey: string, decryptingKeyBase64: string): Promise<string> {
+  private static async decryptKeyOrThrow(encryptedKey: string, decryptingKeyBase64: string): Promise<string> {
     try {
-      return await EncryptionUtility.unwrapVaultEncryptionKey(encryptedKey, decryptingKeyBase64);
+      return await EncryptionUtility.decryptVaultEncryptionKey(encryptedKey, decryptingKeyBase64);
     } catch {
       // E-203: decrypt failed, which for the password key type means the entered password is wrong.
       throw new Error(formatErrorWithCode('Failed to decrypt vault encryption key', AppErrorCode.VAULT_DECRYPT_FAILED));

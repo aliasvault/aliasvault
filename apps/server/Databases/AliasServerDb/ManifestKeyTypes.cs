@@ -69,7 +69,7 @@ public static class ManifestKeyTypes
     public static string ToToken(ManifestKeyType type) => GetDefinition(type).Token;
 
     /// <summary>
-    /// Whether a key type's wrapped VEK is carried to the client alongside the manifest.
+    /// Whether a key type's encrypted VEK is carried to the client alongside the manifest.
     /// </summary>
     /// <param name="type">The key type to check.</param>
     /// <returns>True when the manifest carries the encrypted VEK.</returns>

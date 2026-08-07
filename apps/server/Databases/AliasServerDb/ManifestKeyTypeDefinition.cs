@@ -23,7 +23,7 @@ public sealed class ManifestKeyTypeDefinition
     public required string Token { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether the wrapped VEK travels to the client along with the manifest.
+    /// Gets a value indicating whether the encrypted VEK travels to the client along with the manifest.
     /// </summary>
     public required bool CarriesEncryptedVek { get; init; }
 }
