@@ -68,19 +68,19 @@ export const StorageKeys = {
   /** The client's last known revision per non-root (shared) manifest. */
   SERVER_MANIFEST_REVISIONS: 'local:serverManifestRevisions',
   /** The root manifest's blob-hashing salt, cached from the last pull; see `CodecManifest.manifestSalt`. */
-  VAULT_V2_MANIFEST_SALT: 'local:vaultV2ManifestSalt',
+  VAULT_MANIFEST_SALT: 'local:vaultManifestSalt',
 
   /**
    * The server-side id of the user's root manifest, learned from GET /v2/Vault. Fallback source for
    * canonicalize when the vault DB does not record it yet (legacy migration push).
    */
-  VAULT_V2_ROOT_MANIFEST_ID: 'local:vaultV2RootManifestId',
+  VAULT_ROOT_MANIFEST_ID: 'local:vaultRootManifestId',
   /** Content fingerprints of the last pushed manifests and buckets, used for changed-only writes. */
-  VAULT_V2_CONTENT_FINGERPRINTS: 'local:vaultV2ContentFingerprints',
+  VAULT_CONTENT_FINGERPRINTS: 'local:vaultContentFingerprints',
   /** Local cache of encrypted blobs (hash to base64 AES-GCM ciphertext). Never stores plaintext at rest. */
-  VAULT_V2_BLOB_CIPHER_CACHE: 'local:vaultV2BlobCipherCache',
+  VAULT_BLOB_CIPHER_CACHE: 'local:vaultBlobCipherCache',
   /** Blob hashes the server has stored (refreshed on every pull/push). */
-  VAULT_V2_SERVER_BLOB_HASHES: 'local:vaultV2ServerBlobHashes',
+  VAULT_SERVER_BLOB_HASHES: 'local:vaultServerBlobHashes',
 
   /*
    * -- Session state (cleared when the vault locks) --
@@ -209,7 +209,7 @@ export const dirtyScopeStorageKey = (scope: VaultMutationScope): `local:${string
  * Storage key holding the local revision number of a single data bucket.
  * @param category - the data bucket category
  */
-export const bucketRevisionStorageKey = (category: string): `local:${string}` => `local:vaultV2BucketRev:${category}`;
+export const bucketRevisionStorageKey = (category: string): `local:${string}` => `local:vaultBucketRev:${category}`;
 
 /**
  * Keys that hold auth tokens and ephemeral error state. Cleared on logout; safe to clear during a forced
@@ -275,11 +275,11 @@ export const allVaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.SERVER_REVISION,
   StorageKeys.LEGACY_VAULT_REVISION_NUMBER,
   StorageKeys.SERVER_MANIFEST_REVISIONS,
-  StorageKeys.VAULT_V2_MANIFEST_SALT,
-  StorageKeys.VAULT_V2_ROOT_MANIFEST_ID,
-  StorageKeys.VAULT_V2_CONTENT_FINGERPRINTS,
-  StorageKeys.VAULT_V2_BLOB_CIPHER_CACHE,
-  StorageKeys.VAULT_V2_SERVER_BLOB_HASHES,
+  StorageKeys.VAULT_MANIFEST_SALT,
+  StorageKeys.VAULT_ROOT_MANIFEST_ID,
+  StorageKeys.VAULT_CONTENT_FINGERPRINTS,
+  StorageKeys.VAULT_BLOB_CIPHER_CACHE,
+  StorageKeys.VAULT_SERVER_BLOB_HASHES,
   StorageKeys.IS_DIRTY,
   StorageKeys.MUTATION_SEQUENCE,
   StorageKeys.IS_OFFLINE_MODE,

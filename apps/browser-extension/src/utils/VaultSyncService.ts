@@ -392,14 +392,14 @@ export class VaultSyncService {
        * format (encrypted SQLite), so we pass it through unchanged: the on-open schema upgrade handles the rest.
        * There is no manifest-v1 server state, so drop any stale content fingerprints.
        */
-      await storage.removeItem(StorageKeys.VAULT_V2_CONTENT_FINGERPRINTS);
+      await storage.removeItem(StorageKeys.VAULT_CONTENT_FINGERPRINTS);
 
       /*
        * Legacy user: the vault has never been materialized, so it carries no record of which manifest is
        * ours. Persist it in local storage so the first migration canonicalize step can stamp rows with it.
        */
       if (snapshot.rootManifestId) {
-        await storage.setItem(StorageKeys.VAULT_V2_ROOT_MANIFEST_ID, snapshot.rootManifestId);
+        await storage.setItem(StorageKeys.VAULT_ROOT_MANIFEST_ID, snapshot.rootManifestId);
       }
       devLog('[V2Pull] Step 2/4: legacy blob pass-through (user not yet migrated), returning as-is.');
       return this.buildResponse(
@@ -555,8 +555,8 @@ export class VaultSyncService {
          * Persist the root manifest's blob salt locally so subsequent canonicalizes hash blobs the same way, and the root
          * manifest id so a push can resolve it even before the vault DB records it (see `recordOwnManifestId`).
          */
-        await storage.setItem(StorageKeys.VAULT_V2_MANIFEST_SALT, entry.manifest.manifestSalt);
-        await storage.setItem(StorageKeys.VAULT_V2_ROOT_MANIFEST_ID, entry.manifestId);
+        await storage.setItem(StorageKeys.VAULT_MANIFEST_SALT, entry.manifest.manifestSalt);
+        await storage.setItem(StorageKeys.VAULT_ROOT_MANIFEST_ID, entry.manifestId);
         continue;
       }
 
@@ -679,13 +679,13 @@ export class VaultSyncService {
     await this.saveBlobCache(prunedCache);
 
     // The server demonstrably has every blob it just served or referenced, seed the upload diff with them.
-    await storage.setItem(StorageKeys.VAULT_V2_SERVER_BLOB_HASHES, refs.map(r => r.hash));
+    await storage.setItem(StorageKeys.VAULT_SERVER_BLOB_HASHES, refs.map(r => r.hash));
 
     /*
      * Replace (not merge) the content-fingerprint baselines: the record must mirror exactly the manifests and
      * buckets the server holds right now, so entries of revoked/removed manifests drop out.
      */
-    await storage.setItem(StorageKeys.VAULT_V2_CONTENT_FINGERPRINTS, pulledFingerprints);
+    await storage.setItem(StorageKeys.VAULT_CONTENT_FINGERPRINTS, pulledFingerprints);
     devLog(`[V2Pull] Stored ${Object.keys(pulledFingerprints).length} content fingerprint baseline(s) for push-side change detection.`);
 
     devLog(`[V2Pull] ${blobMap.size} blobs decrypted; running codec reassembly into a fresh SQLite (${resolved.length} manifest(s) combined)...`);
@@ -1092,7 +1092,7 @@ export class VaultSyncService {
     const rootHashes = Array.from(blobEntries).filter(([, entry]) => entry.fromRoot).map(([hash]) => hash);
     const sharedHashes = Array.from(blobEntries).filter(([, entry]) => !entry.fromRoot).map(([hash]) => hash);
     const allBlobHashes = Array.from(blobEntries.keys());
-    const knownServerHashes = new Set(((await storage.getItem(StorageKeys.VAULT_V2_SERVER_BLOB_HASHES)) as string[] | null) ?? []);
+    const knownServerHashes = new Set(((await storage.getItem(StorageKeys.VAULT_SERVER_BLOB_HASHES)) as string[] | null) ?? []);
 
     let rootToUpload: string[] = [];
     let sharedToUpload: string[] = [];
@@ -1235,7 +1235,7 @@ export class VaultSyncService {
     await this.saveContentFingerprints(fingerprints);
 
     // Every referenced hash is now known to be on the server, refresh the diff baseline.
-    await storage.setItem(StorageKeys.VAULT_V2_SERVER_BLOB_HASHES, allBlobHashes);
+    await storage.setItem(StorageKeys.VAULT_SERVER_BLOB_HASHES, allBlobHashes);
 
     /*
      * Refresh the encrypted blob cache: keep entries still referenced by the new manifests, add the ciphertexts we just uploaded.
@@ -1414,10 +1414,10 @@ export class VaultSyncService {
    * @param sqliteClient - the open local vault DB
    */
   private async resolveManifestRecords(sqliteClient: SqliteClient): Promise<ManifestRecord[]> {
-    let manifestSalt = (await storage.getItem(StorageKeys.VAULT_V2_MANIFEST_SALT)) as string | null;
+    let manifestSalt = (await storage.getItem(StorageKeys.VAULT_MANIFEST_SALT)) as string | null;
     if (!manifestSalt) {
       manifestSalt = await vaultCodecGenerateManifestSalt();
-      await storage.setItem(StorageKeys.VAULT_V2_MANIFEST_SALT, manifestSalt);
+      await storage.setItem(StorageKeys.VAULT_MANIFEST_SALT, manifestSalt);
     }
 
     const records: ManifestRecord[] = [{
@@ -1467,7 +1467,7 @@ export class VaultSyncService {
    * @param sqliteClient - the open local vault DB
    */
   private async resolveRootManifestId(sqliteClient: SqliteClient): Promise<string> {
-    const rootManifestId = sqliteClient.settings.getRootManifestId() ?? ((await storage.getItem(StorageKeys.VAULT_V2_ROOT_MANIFEST_ID)) as string | null);
+    const rootManifestId = sqliteClient.settings.getRootManifestId() ?? ((await storage.getItem(StorageKeys.VAULT_ROOT_MANIFEST_ID)) as string | null);
     if (!rootManifestId) {
       throw new Error('VaultSyncService: no root manifest id available (no vault setting and no snapshot baseline); pull once before pushing.');
     }
@@ -1551,10 +1551,10 @@ export class VaultSyncService {
   }
 
   /**
-   * Load the per-target content-fingerprint baselines (see {@link StorageKeys.VAULT_V2_CONTENT_FINGERPRINTS}).
+   * Load the per-target content-fingerprint baselines (see {@link StorageKeys.VAULT_CONTENT_FINGERPRINTS}).
    */
   private async loadContentFingerprints(): Promise<Record<string, string>> {
-    return ((await storage.getItem(StorageKeys.VAULT_V2_CONTENT_FINGERPRINTS)) as Record<string, string> | null) ?? {};
+    return ((await storage.getItem(StorageKeys.VAULT_CONTENT_FINGERPRINTS)) as Record<string, string> | null) ?? {};
   }
 
   /**
@@ -1562,7 +1562,7 @@ export class VaultSyncService {
    * @param fingerprints - fingerprint record to persist
    */
   private async saveContentFingerprints(fingerprints: Record<string, string>): Promise<void> {
-    await storage.setItem(StorageKeys.VAULT_V2_CONTENT_FINGERPRINTS, fingerprints);
+    await storage.setItem(StorageKeys.VAULT_CONTENT_FINGERPRINTS, fingerprints);
   }
 
   /**
@@ -1570,7 +1570,7 @@ export class VaultSyncService {
    * Entries are stored as served to/from the server, so nothing in the cache is plaintext at rest.
    */
   private async loadBlobCache(): Promise<Record<string, string>> {
-    return ((await storage.getItem(StorageKeys.VAULT_V2_BLOB_CIPHER_CACHE)) as Record<string, string> | null) ?? {};
+    return ((await storage.getItem(StorageKeys.VAULT_BLOB_CIPHER_CACHE)) as Record<string, string> | null) ?? {};
   }
 
   /**
@@ -1578,7 +1578,7 @@ export class VaultSyncService {
    * @param cache - cache to persist
    */
   private async saveBlobCache(cache: Record<string, string>): Promise<void> {
-    await storage.setItem(StorageKeys.VAULT_V2_BLOB_CIPHER_CACHE, cache);
+    await storage.setItem(StorageKeys.VAULT_BLOB_CIPHER_CACHE, cache);
   }
 
 }
