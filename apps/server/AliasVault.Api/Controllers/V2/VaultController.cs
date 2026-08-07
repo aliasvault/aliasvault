@@ -328,7 +328,7 @@ public class VaultController(
             VaultManifest? row;
             if (mw.ManifestId != null)
             {
-                row = await WritableManifests(context, user.Id).FirstOrDefaultAsync(x => x.ManifestId == mw.ManifestId);
+                row = await ManifestAccessHelper.AccessibleManifests(context, user.Id).FirstOrDefaultAsync(x => x.ManifestId == mw.ManifestId);
             }
             else if (mw.IsRoot)
             {
@@ -719,31 +719,6 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Gets the manifestIds that user has access to and may claim aliases for. A push files personal aliases
-    /// against the caller's own root manifest, which they reach by owning its group rather than by holding a
-    /// grant on it, so both arms of <see cref="ManifestAccessHelper"/> count here.
-    /// </summary>
-    /// <param name="context">Database context.</param>
-    /// <param name="userId">The calling user.</param>
-    /// <param name="manifestIds">Candidate manifest ids from the request.</param>
-    /// <returns>The subset of <paramref name="manifestIds"/> the user may act on.</returns>
-    private static async Task<HashSet<Guid>> GetEmailClaimableManifestIdsAsync(AliasServerDbContext context, string userId, IEnumerable<Guid> manifestIds)
-    {
-        var ids = manifestIds.Distinct().ToList();
-        if (ids.Count == 0)
-        {
-            return [];
-        }
-
-        var accessible = await ManifestAccessHelper.AccessibleManifests(context, userId)
-            .Where(m => ids.Contains(m.ManifestId))
-            .Select(m => m.ManifestId)
-            .ToListAsync();
-
-        return [.. accessible];
-    }
-
-    /// <summary>
     /// Gets the manifest ids that a user has admin access to.
     /// </summary>
     /// <param name="context">Database context.</param>
@@ -784,7 +759,8 @@ public class VaultController(
     }
 
     /// <summary>
-    /// The manifest-v1 manifests a user can access.
+    /// The manifests a user can access, narrowed to the manifest-v1 storage format this controller serves.
+    /// Same access rule as <see cref="ManifestAccessHelper.AccessibleManifests"/>; only the format differs.
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="userId">The calling user.</param>
@@ -792,17 +768,6 @@ public class VaultController(
     private static IQueryable<VaultManifest> AccessibleManifests(AliasServerDbContext context, string userId)
     {
         return ManifestAccessHelper.AccessibleManifests(context, userId).Where(m => m.StorageFormat == ManifestFormat);
-    }
-
-    /// <summary>
-    /// The manifests a user can write to.
-    /// </summary>
-    /// <param name="context">Database context.</param>
-    /// <param name="userId">The calling user.</param>
-    /// <returns>Query over the manifests the user may write to, in any storage format.</returns>
-    private static IQueryable<VaultManifest> WritableManifests(AliasServerDbContext context, string userId)
-    {
-        return ManifestAccessHelper.AccessibleManifests(context, userId);
     }
 
     /// <summary>
@@ -1063,7 +1028,12 @@ public class VaultController(
     /// <param name="routing">The pushed routing data: every claimed address with the manifest it is filed under.</param>
     private async Task UpdateEmailClaimsAsync(AliasServerDbContext context, AliasVaultUser user, EmailRoutingPush routing)
     {
-        var accessibleManifests = await GetEmailClaimableManifestIdsAsync(context, user.Id, routing.EmailAddressList.Select(x => x.ManifestId));
+        var claimedManifestIds = routing.EmailAddressList.Select(x => x.ManifestId).Distinct().ToList();
+        var accessibleManifests = (await ManifestAccessHelper.AccessibleManifests(context, user.Id)
+            .Where(m => claimedManifestIds.Contains(m.ManifestId))
+            .Select(m => m.ManifestId)
+            .ToListAsync()).ToHashSet();
+
         var ownerGroupByManifest = await GroupHelper.GetOwnerGroupsAsync(context, accessibleManifests);
 
         // Resolved server-side and never read off the push: this is what stops a client filing an alias under a manifest it merely named.
