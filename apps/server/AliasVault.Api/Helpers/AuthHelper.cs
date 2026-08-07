@@ -90,7 +90,8 @@ public static class AuthHelper
             .Select(x => new { x.Salt, x.Verifier, x.EncryptionType, x.EncryptionSettings })
             .FirstAsync();
 
-        return (latestVault.Salt, latestVault.Verifier, latestVault.EncryptionType, latestVault.EncryptionSettings);
+        // The SRP columns are null once a user moved to the unlock-key model, which the branch above already covers.
+        return (latestVault.Salt ?? string.Empty, latestVault.Verifier ?? string.Empty, latestVault.EncryptionType ?? string.Empty, latestVault.EncryptionSettings ?? string.Empty);
     }
 
     /// <summary>

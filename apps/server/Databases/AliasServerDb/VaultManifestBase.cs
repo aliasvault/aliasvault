@@ -11,13 +11,19 @@ using System.ComponentModel.DataAnnotations;
 /// <summary>
 /// Shared revision payload columns for a vault manifest. <see cref="VaultManifest"/> holds the current revision of
 /// each logical manifest (one row per manifest); <see cref="VaultManifestsHistory"/> holds superseded revisions.
+/// <para>
+/// The columns the manifest-v1 format no longer uses are nullable so null reads as "not applicable to this revision":
+/// a revision with a null <see cref="VaultBlob"/>/<see cref="Version"/> is manifest-v1, and null SRP columns mean the
+/// login credentials moved to the unlock-key model. Only legacy sqlite-blob revisions carry values there.
+/// </para>
 /// </summary>
 public abstract class VaultManifestBase : IVaultRevision
 {
     /// <summary>
-    /// Gets or sets the encrypted vault blob (only used by legacy sqlite-blob format). Not used anymore in new format.
+    /// Gets or sets the encrypted vault blob. Only the legacy sqlite-blob format populates this; on manifest-v1
+    /// revisions it is null. TODO: remove this column once the legacy model is fully deprecated.
     /// </summary>
-    public required string VaultBlob { get; set; }
+    public string? VaultBlob { get; set; }
 
     /// <summary>
     /// Gets or sets the storage format identifier: "sqlite-blob" (legacy v1) or "manifest-v1" (v2).
@@ -38,13 +44,12 @@ public abstract class VaultManifestBase : IVaultRevision
     public string? ManifestCiphertextHash { get; set; }
 
     /// <summary>
-    /// Gets or sets the vault data model version. Only the legacy sqlite-blob format populates this; manifest-v1
-    /// revisions leave it empty as the version is carried inside the manifest naming scheme instead. Kept so
-    /// not-yet-migrated users' manifests retain their historic value. TODO: remove this column once the legacy
-    /// model is fully deprecated.
+    /// Gets or sets the vault data model version. Only the legacy sqlite-blob format populates this; on manifest-v1
+    /// revisions it is null as the version is carried inside the manifest itself instead. Kept so not-yet-migrated
+    /// users' manifests retain their historic value. TODO: remove this column once the legacy model is fully deprecated.
     /// </summary>
     [StringLength(255)]
-    public required string Version { get; set; }
+    public string? Version { get; set; }
 
     /// <summary>
     /// Gets or sets the revision number of the vault manifest. This number is incremented with each change.
@@ -61,18 +66,18 @@ public abstract class VaultManifestBase : IVaultRevision
     /// Gets or sets the salt used for SRP authentication. On the legacy model the login
     /// credentials are stored with the vault manifest because the manifest is encrypted with the key derived from
     /// the user's password, keeping login and vault password in sync across backup restores. Once a user has a VaultManifestAccessKey
-    /// the SRP credentials live there instead and this column is empty on current revisions (history revisions keep
+    /// the SRP credentials live there instead and this column is null on current revisions (history revisions keep
     /// their at-the-time values). TODO: remove this column once the legacy model is fully deprecated.
     /// </summary>
     [StringLength(100)]
-    public required string Salt { get; set; }
+    public string? Salt { get; set; }
 
     /// <summary>
     /// Gets or sets the verifier used for SRP authentication. See the remarks on
     /// <see cref="Salt"/> for how this relates to the VaultManifestAccessKey model. TODO: remove this column once the legacy model is fully deprecated.
     /// </summary>
     [StringLength(1000)]
-    public required string Verifier { get; set; }
+    public string? Verifier { get; set; }
 
     /// <summary>
     /// Gets or sets the number of credentials stored in the vault. This anonymous data is used in case a vault back-up
@@ -90,13 +95,13 @@ public abstract class VaultManifestBase : IVaultRevision
     /// Gets or sets the encryption type. See remarks on <see cref="Salt"/> for how this relates to the VaultManifestAccessKey model.
     /// TODO: remove this column once the legacy model is fully deprecated.
     /// </summary>
-    public required string EncryptionType { get; set; }
+    public string? EncryptionType { get; set; }
 
     /// <summary>
     /// Gets or sets the encryption settings. See remarks on <see cref="Salt"/> for how this relates to the VaultManifestAccessKey model.
     /// TODO: remove this column once the legacy model is fully deprecated.
     /// </summary>
-    public required string EncryptionSettings { get; set; }
+    public string? EncryptionSettings { get; set; }
 
     /// <summary>
     /// Gets or sets the client that created the vault.

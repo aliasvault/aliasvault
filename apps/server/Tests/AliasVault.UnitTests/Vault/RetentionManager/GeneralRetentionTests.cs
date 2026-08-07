@@ -119,6 +119,31 @@ public class GeneralRetentionTests
     }
 
     /// <summary>
+    /// Test that the DbVersionRetentionRule treats manifest-v1 revisions (null Version) as their own group, so the
+    /// last legacy sqlite-blob revision before a user's migration is still retained next to the manifest revisions.
+    /// </summary>
+    [Test]
+    public void VersionRetentionRuleTreatsNullVersionAsOwnGroupTest()
+    {
+        var revisions = new List<VaultManifestsHistory>(testVaults)
+        {
+            new VaultManifestsHistory { Version = null, UpdatedAt = new DateTime(2023, 6, 1, 10, 0, 0), StorageFormat = "manifest-v1", RevisionNumber = 10 },
+            new VaultManifestsHistory { Version = null, UpdatedAt = new DateTime(2023, 6, 1, 11, 0, 0), StorageFormat = "manifest-v1", RevisionNumber = 11 },
+        };
+
+        var rule = new DbVersionRetentionRule { VersionsToKeep = 2 };
+        var result = rule.ApplyRule([.. revisions], now).ToList();
+
+        // The latest manifest-v1 revision plus the latest revision of the newest legacy version.
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Has.Count.EqualTo(2));
+            Assert.That(result[0].RevisionNumber, Is.EqualTo(11));
+            Assert.That(result[1].UpdatedAt, Is.EqualTo(new DateTime(2023, 5, 31, 12, 0, 0)));
+        });
+    }
+
+    /// <summary>
     /// Test the LoginCredentialRetentionRule.
     /// </summary>
     [Test]

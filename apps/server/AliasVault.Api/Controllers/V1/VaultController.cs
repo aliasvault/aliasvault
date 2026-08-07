@@ -118,8 +118,8 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             Vault = new Shared.Models.WebApi.V1.Vault.Vault
             {
                 Username = user.UserName!,
-                Blob = vault.VaultBlob,
-                Version = vault.Version,
+                Blob = vault.VaultBlob ?? string.Empty,
+                Version = vault.Version ?? string.Empty,
                 CurrentRevisionNumber = vault.RevisionNumber,
                 EncryptionPublicKey = string.Empty,
                 CredentialsCount = 0,
@@ -167,7 +167,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         var currentManifest = await context.VaultManifests.FirstAsync(x => x.IsRoot && x.OwnerGroupId == user.PersonalGroupId);
 
         // Reject vaults with a version that is lower than the last vault version.
-        if (VersionHelper.IsVersionOlder(model.Version, currentManifest.Version))
+        if (VersionHelper.IsVersionOlder(model.Version, currentManifest.Version ?? string.Empty))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
         }
@@ -265,7 +265,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         // Check if the provided revision number is equal to the latest revision number.
         // If not, then the client is trying to update an older vault which we don't allow to prevent data loss.
         var currentManifest = await context.VaultManifests.FirstAsync(x => x.IsRoot && x.OwnerGroupId == user.PersonalGroupId);
-        if (VersionHelper.IsVersionOlder(model.Version, currentManifest.Version))
+        if (VersionHelper.IsVersionOlder(model.Version, currentManifest.Version ?? string.Empty))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
         }
@@ -359,7 +359,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             .Select(x => new AliasServerDb.VaultManifestsHistory
             {
                 ManifestId = x.ManifestId,
-                VaultBlob = string.Empty,
+                VaultBlob = null,
                 ManifestBlob = null,
                 StorageFormat = x.StorageFormat,
                 Version = x.Version,

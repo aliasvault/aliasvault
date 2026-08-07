@@ -431,13 +431,13 @@ public class VaultController(
                 var archivedRevision = VaultManifestsHistory.CreateFrom(row);
                 context.VaultManifestsHistory.Add(archivedRevision);
 
-                row.VaultBlob = string.Empty;
+                row.VaultBlob = null;
                 row.StorageFormat = ManifestFormat;
                 row.ManifestBlob = mw.ManifestBlob;
                 row.ManifestCiphertextHash = mw.ManifestCiphertextHash;
 
-                // Manifest revisions carry no data-model version, so we make it empty instead.
-                row.Version = string.Empty;
+                // Manifest revisions carry no data-model version, so we null it instead.
+                row.Version = null;
                 row.RevisionNumber = mw.CurrentRevision + 1;
                 row.FileSize = FileHelper.Base64StringToKilobytes(mw.ManifestBlob);
                 row.CredentialsCount = mw.CredentialsCount;
@@ -499,10 +499,10 @@ public class VaultController(
                             UpdatedAt = timeProvider.UtcNow,
                         });
 
-                        row.Salt = string.Empty;
-                        row.Verifier = string.Empty;
-                        row.EncryptionType = string.Empty;
-                        row.EncryptionSettings = string.Empty;
+                        row.Salt = null;
+                        row.Verifier = null;
+                        row.EncryptionType = null;
+                        row.EncryptionSettings = null;
                     }
                 }
 
@@ -1025,7 +1025,7 @@ public class VaultController(
             .Select(x => new VaultManifestsHistory
             {
                 ManifestId = x.ManifestId,
-                VaultBlob = string.Empty,
+                VaultBlob = null,
                 ManifestBlob = null,
                 StorageFormat = x.StorageFormat,
                 Version = x.Version,
