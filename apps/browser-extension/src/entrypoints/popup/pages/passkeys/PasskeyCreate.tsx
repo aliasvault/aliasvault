@@ -13,6 +13,7 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
+import type { DraftItem } from '@/utils/db/ItemRef';
 import type { Item, Passkey } from '@/utils/dist/core/models/vault';
 import { FieldKey, ItemTypes, getFieldValue, createSystemField } from '@/utils/dist/core/models/vault';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -21,7 +22,6 @@ import { PasskeyAuthenticator } from '@/utils/passkey/PasskeyAuthenticator';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type { CreateRequest, PasskeyCreateCredentialResponse, PendingPasskeyCreateRequest } from '@/utils/passkey/types';
 import { extractDomain, filterItems, AutofillMatchingMode } from '@/utils/RustCore';
-import type { DraftItem } from '@/utils/db/ItemRef';
 
 /**
  * PasskeyCreate
@@ -335,7 +335,7 @@ const PasskeyCreate: React.FC = () => {
             }
 
             // Delete the old passkey
-            await dbContext.sqliteClient!.passkeys.deleteById(selectedPasskeyToReplace);
+            await dbContext.sqliteClient!.passkeys.deleteById(selectedPasskeyToReplace, existingPasskey?.ManifestId);
 
             /**
              * Create new passkey with same item

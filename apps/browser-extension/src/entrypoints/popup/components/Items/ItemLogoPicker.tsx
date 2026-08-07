@@ -3,15 +3,16 @@ import { useTranslation } from 'react-i18next';
 
 import LogoPickerModal from '@/entrypoints/popup/components/Items/LogoPickerModal';
 
+import type { DraftItem } from '@/utils/db/ItemRef';
 import { getAppIconSvg } from '@/utils/dist/core/models/icons';
-import type { LogoSelection, Item, ItemLogo } from '@/utils/dist/core/models/vault';
+import type { LogoSelection, ItemLogo } from '@/utils/dist/core/models/vault';
 import { LogoKinds } from '@/utils/dist/core/models/vault';
 import SqliteClient from '@/utils/SqliteClient';
 
 import ItemIconComponent from './ItemIcon';
 
 type ItemLogoPickerProps = {
-  item: Item;
+  item: DraftItem;
   pendingSelection?: LogoSelection;
   pendingPreview?: string | null;
   onSelect: (selection: LogoSelection) => void;

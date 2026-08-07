@@ -30,8 +30,9 @@ import useFormPersistence from '@/entrypoints/popup/hooks/useFormPersistence';
 import useServiceDetection from '@/entrypoints/popup/hooks/useServiceDetection';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
+import type { DraftItem } from '@/utils/db/ItemRef';
 import type { Folder } from '@/utils/db/repositories/FolderRepository';
-import type { Item, ItemField, ItemType, FieldType, Attachment, TotpCode, PasswordSettings, LogoSelection } from '@/utils/dist/core/models/vault';
+import type { ItemField, ItemType, FieldType, Attachment, TotpCode, PasswordSettings, LogoSelection } from '@/utils/dist/core/models/vault';
 import { FieldCategories, FieldTypes, LogoKinds, ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType } from '@/utils/dist/core/models/vault';
 import { FaviconService } from '@/utils/FaviconService';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -41,7 +42,6 @@ import * as RustCore from '@/utils/RustCore';
 import SqliteClient from '@/utils/SqliteClient';
 
 import { browser } from '#imports';
-import type { DraftItem } from '@/utils/db/ItemRef';
 
 // Valid item types from the shared model
 const VALID_ITEM_TYPES: ItemType[] = [ItemTypes.Login, ItemTypes.Alias, ItemTypes.CreditCard, ItemTypes.Note];
@@ -54,7 +54,7 @@ const DEFAULT_ITEM_TYPE: ItemType = ItemTypes.Login;
  * This is the data portion stored via useFormPersistence hook.
  */
 type PersistedFormData = {
-  item: Item | null;
+  item: DraftItem | null;
   fieldValues: Record<string, string | string[]>;
   customFields: CustomFieldDefinition[];
   totpEditorState?: {
@@ -674,7 +674,7 @@ const ItemAddEdit: React.FC = () => {
    * created item back into the originating tab and close this popup window. Returns true when the
    * fill-back path handled the post-save behaviour (so the caller should skip normal navigation).
    */
-  const fillBackAndCloseWindow = useCallback(async (savedItem: Item): Promise<boolean> => {
+  const fillBackAndCloseWindow = useCallback(async (savedItem: DraftItem): Promise<boolean> => {
     if (isEditMode || !sourceTabIdParam) {
       return false;
     }
@@ -781,7 +781,7 @@ const ItemAddEdit: React.FC = () => {
         });
       });
 
-      let updatedItem: Item = {
+      let updatedItem: DraftItem = {
         ...item,
         /*
          * For create mode, always generate a fresh ID to prevent UNIQUE constraint
@@ -833,7 +833,7 @@ const ItemAddEdit: React.FC = () => {
           // Delete passkeys marked for deletion
           if (passkeyIdsMarkedForDeletion.length > 0) {
             for (const passkeyId of passkeyIdsMarkedForDeletion) {
-              await dbContext.sqliteClient!.passkeys.deleteById(passkeyId);
+              await dbContext.sqliteClient!.passkeys.deleteById(passkeyId, item.ManifestId);
             }
           }
         } else {

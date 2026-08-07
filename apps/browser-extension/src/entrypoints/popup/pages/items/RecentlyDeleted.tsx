@@ -101,7 +101,7 @@ const RecentlyDeleted: React.FC = () => {
 
     await executeVaultMutationAsync(async () => {
       for (const item of items) {
-        await dbContext.sqliteClient!.items.permanentlyDelete(item.Id);
+        await dbContext.sqliteClient!.items.permanentlyDelete(item.Id, item.ManifestId);
       }
     });
 

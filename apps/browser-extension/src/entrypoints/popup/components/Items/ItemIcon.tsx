@@ -1,8 +1,8 @@
 import React from 'react';
 
+import type { DraftItem } from '@/utils/db/ItemRef';
 import type { ItemTypeIconKey } from '@/utils/dist/core/models/icons';
 import { getAppIconSvg, ItemTypeIconSvgs } from '@/utils/dist/core/models/icons';
-import type { Item } from '@/utils/dist/core/models/vault';
 import {
   FieldKey,
   LogoKinds,
@@ -11,7 +11,7 @@ import {
 import SqliteClient from '@/utils/SqliteClient';
 
 type ItemIconProps = {
-  item: Item;
+  item: DraftItem;
   className?: string;
 };
 
