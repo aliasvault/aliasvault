@@ -721,8 +721,8 @@ public class VaultController(
             return [];
         }
 
-        var administered = await context.VaultManifests
-            .Where(m => ids.Contains(m.ManifestId) && m.OwnerGroup.Type == GroupType.Shared
+        var administered = await GroupHelper.SharedManifests(context)
+            .Where(m => ids.Contains(m.ManifestId)
                 && context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == userId && (gm.Role == GroupRole.Admin || gm.Role == GroupRole.Owner)))
             .Select(m => m.ManifestId)
             .ToListAsync();

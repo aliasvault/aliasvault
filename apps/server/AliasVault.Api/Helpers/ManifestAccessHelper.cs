@@ -15,7 +15,7 @@ using AliasServerDb;
 public static class ManifestAccessHelper
 {
     /// <summary>
-    /// Every manifest the user can access.
+    /// Every manifest the user can access: their own personal manifest, plus every shared manifest they hold a grant on.
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="userId">The calling user.</param>
@@ -23,7 +23,7 @@ public static class ManifestAccessHelper
     public static IQueryable<VaultManifest> AccessibleManifests(AliasServerDbContext context, string userId)
     {
         return context.VaultManifests
-            .Where(m => context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == userId && gm.Role == GroupRole.Owner)
+            .Where(m => context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == m.OwnerGroupId)
                 || context.VaultManifestAccessKeys.Any(k => k.UserId == userId && k.Type == ManifestKeyType.GrantKey && k.VaultManifestId == m.ManifestId));
     }
 }

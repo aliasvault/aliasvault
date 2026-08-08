@@ -37,8 +37,10 @@ public static class EmailAccessHelper
             return true;
         }
 
-        // TODO: legacy fallback — pre-KEK/VEK accounts have no AccountKey row on their personal manifest yet, so owning the manifest's group is their only proof of access. Delete once all clients have migrated.
-        return await context.VaultManifests.AnyAsync(m => m.ManifestId == claim.VaultManifestId && context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == userId && gm.Role == GroupRole.Owner));
+        // TODO: legacy fallback: pre-KEK/VEK accounts have no AccountKey row on their personal manifest yet, so the manifest being filed
+        // under their personal group is their only proof of access. Personal groups only: a shared manifest is grants-only, so a group owner
+        // whose grant was revoked must not read its mail. Delete once all clients have migrated.
+        return await context.VaultManifests.AnyAsync(m => m.ManifestId == claim.VaultManifestId && context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == m.OwnerGroupId));
     }
 
     /// <summary>
@@ -73,11 +75,12 @@ public static class EmailAccessHelper
             .Select(k => k.VaultManifestId)
             .ToListAsync()).ToHashSet();
 
-        // Legacy fallback: pre-KEK/VEK accounts have no AccountKey row on their personal manifest yet
-        // so owning the manifest's group is their only proof of access. TODO: delete once all clients have migrated.
-        var ownedGroupIds = (await GroupHelper.GetOwnedGroupIdsAsync(context, userId)).ToHashSet();
+        // Legacy fallback: pre-KEK/VEK accounts have no AccountKey row on their personal manifest yet, so the manifest being filed under
+        // their personal group is their only proof of access. Personal group only: a shared manifest is grants-only, so a group owner whose
+        // grant was revoked must not read its mail. TODO: delete once all clients have migrated.
+        var personalGroupId = await GroupHelper.GetPersonalGroupIdAsync(context, userId);
 
-        return claims.Where(c => keyedManifestIds.Contains(c.ManifestId) || ownedGroupIds.Contains(c.OwnerGroupId)).Select(c => c.Address).ToList();
+        return claims.Where(c => keyedManifestIds.Contains(c.ManifestId) || c.OwnerGroupId == personalGroupId).Select(c => c.Address).ToList();
     }
 
     /// <summary>
