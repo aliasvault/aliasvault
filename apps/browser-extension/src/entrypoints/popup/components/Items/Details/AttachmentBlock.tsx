@@ -57,7 +57,7 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ itemId }) => {
       }
 
       try {
-        const attachmentList = dbContext.sqliteClient.settings.getAttachmentsForItem(itemId);
+        const attachmentList = dbContext.sqliteClient.items.getAttachmentsForItem(itemId);
         setAttachments(attachmentList);
       } catch (error) {
         console.error('Error loading attachments:', error);

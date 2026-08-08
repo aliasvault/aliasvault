@@ -1,9 +1,8 @@
 import { DEFAULT_PASSWORD_LENGTH, DEFAULT_WORD_COUNT, DEFAULT_LANGUAGE_CODE, matchAvailableLanguage } from '@/utils/dist/core/models/defaults';
-import type { EncryptionKey, PasswordSettings, TotpCode, Attachment } from '@/utils/dist/core/models/vault';
+import type { PasswordSettings } from '@/utils/dist/core/models/vault';
 import { getIdentityLanguages } from '@/utils/RustCore';
 
 import { BaseRepository } from '../BaseRepository';
-import { EncryptionKeyQueries } from '../queries/EncryptionKeyQueries';
 import { SettingsQueries } from '../queries/SettingsQueries';
 
 /**
@@ -12,7 +11,7 @@ import { SettingsQueries } from '../queries/SettingsQueries';
 export type CredentialSortOrder = 'OldestFirst' | 'NewestFirst' | 'Alphabetical';
 
 /**
- * Repository for Settings and auxiliary data operations.
+ * Repository for the vault's user preferences: the manifest-scoped key/value rows of the Settings table.
  */
 export class SettingsRepository extends BaseRepository {
   /**
@@ -95,110 +94,6 @@ export class SettingsRepository extends BaseRepository {
    */
   public setPasswordSettings(settings: PasswordSettings): void {
     this.updateSetting('PasswordGenerationSettings', JSON.stringify(settings));
-  }
-
-  /**
-   * Fetch every keypair that can decrypt inbound mail (both personal manifest and optional shared manifest keys).
-   * @returns Array of encryption keys
-   */
-  public getAllEncryptionKeys(): EncryptionKey[] {
-    return this.client.executeQuery<EncryptionKey>(EncryptionKeyQueries.GET_ALL);
-  }
-
-  /**
-   * Get the user's active personal keypair.
-   * @returns The active personal keypair, or null when absent
-   */
-  public getPrimaryEncryptionKey(): EncryptionKey | null {
-    const personalManifestId = this.personalManifestId();
-    return personalManifestId ? this.getActiveManifestEncryptionKey(personalManifestId) : null;
-  }
-
-  /**
-   * Get a manifest's active keypair, whose public half is published to the server as that manifest's delivery
-   * key. Returns null for a manifest that has no keypair in this vault.
-   * @param manifestId - The manifest id the keypair is stamped with
-   * @returns The active keypair, or null when the manifest has none
-   */
-  public getActiveManifestEncryptionKey(manifestId: string): EncryptionKey | null {
-    const results = this.client.executeQuery<EncryptionKey>(EncryptionKeyQueries.GET_ACTIVE_FOR_MANIFEST, [manifestId]);
-    return results.length > 0 ? results[0] : null;
-  }
-
-  /**
-   * Make the given keypair the manifest's active one, demoting (never deleting) whatever it supersedes so
-   * mail received before the rotation stays decryptable.
-   * @param manifestId - The manifest id to stamp the keypair with
-   * @param publicKey - The public half, published to the server for delivery
-   * @param privateKey - The private half, which never leaves the manifest
-   */
-  public setActiveManifestEncryptionKey(manifestId: string, publicKey: string, privateKey: string): void {
-    const now = this.now();
-    this.client.executeUpdate(EncryptionKeyQueries.DEMOTE_FOR_MANIFEST, [now, manifestId]);
-    this.client.executeUpdate(EncryptionKeyQueries.INSERT_FOR_MANIFEST, [this.generateId(), manifestId, publicKey, privateKey, now, now]);
-  }
-
-  /**
-   * Retain a copy of a keypair among the personal keys as a non-primary row.
-   *
-   * Used by the owner of a shared manifest to keep its delivery keys. The originals live only in the
-   * shared manifest itself, so unsharing or deleting the anchor folder takes them out of the vault and would leave the
-   * owner unable to decrypt mail their own alias received while it was shared.
-   * @param publicKey - The public half, used as the identity of the key
-   * @param privateKey - The private half
-   */
-  public retainNonPrimaryEncryptionKey(publicKey: string, privateKey: string): void {
-    const personalManifestId = this.personalManifestId();
-    if (!personalManifestId) {
-      return;
-    }
-
-    const existing = this.client.executeQuery<{ count: number }>(EncryptionKeyQueries.COUNT_BY_PUBLIC_KEY, [personalManifestId, publicKey]);
-    if ((existing[0]?.count ?? 0) > 0) {
-      return;
-    }
-
-    const now = this.now();
-    this.client.executeUpdate(EncryptionKeyQueries.INSERT_NON_PRIMARY, [this.generateId(), personalManifestId, publicKey, privateKey, now, now]);
-  }
-
-  /**
-   * Get TOTP codes for an item.
-   * @param itemId - The ID of the item to get TOTP codes for
-   * @returns Array of TotpCode objects
-   */
-  public getTotpCodesForItem(itemId: string): TotpCode[] {
-    try {
-      if (!this.tableExists('TotpCodes')) {
-        return [];
-      }
-
-      return this.client.executeQuery<TotpCode>(SettingsQueries.GET_TOTP_FOR_ITEM, [itemId]);
-    } catch (error) {
-      console.error('Error getting TOTP codes for item:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Get attachments for an item.
-   * @param itemId - The ID of the item
-   * @returns Array of attachments for the item
-   */
-  public getAttachmentsForItem(itemId: string): Attachment[] {
-    try {
-      if (!this.tableExists('Attachments')) {
-        return [];
-      }
-
-      return this.client.executeQuery<Attachment>(
-        SettingsQueries.GET_ATTACHMENTS_FOR_ITEM,
-        [itemId]
-      );
-    } catch (error) {
-      console.error('Error getting attachments for item:', error);
-      return [];
-    }
   }
 
   /**

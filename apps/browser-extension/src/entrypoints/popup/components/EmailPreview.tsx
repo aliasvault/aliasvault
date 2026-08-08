@@ -148,7 +148,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
                 // Loop through all emails and decrypt them locally
                 const decryptedEmails: MailboxEmail[] = await EncryptionUtility.decryptEmailList(
                   allMails,
-                  dbContext.sqliteClient!.settings.getAllEncryptionKeys()
+                  dbContext.sqliteClient!.encryptionKeys.getAll()
                 );
 
                 if (loading && decryptedEmails.length > 0) {

@@ -432,10 +432,11 @@ export class FieldHistoryQueries {
  */
 export class TotpCodeQueries {
   /**
-   * Get existing TOTP codes for an item.
+   * Get an item's TOTP codes. Scoped by manifest as well as item: an id alone does not name one item,
+   * so a bare `ItemId` match would pull in a same-id item's codes from another manifest.
    */
   public static readonly GET_BY_ITEM_ID = `
-    SELECT Id, Name, SecretKey
+    SELECT Id, Name, SecretKey, ItemId
     FROM TotpCodes
     WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0`;
 
@@ -470,6 +471,22 @@ export class TotpCodeQueries {
  * SQL query constants for Attachment operations.
  */
 export class AttachmentQueries {
+  /**
+   * Get an item's attachments. Scoped by manifest as well as item, for the same reason as
+   * {@link TotpCodeQueries.GET_BY_ITEM_ID}.
+   */
+  public static readonly GET_BY_ITEM_ID = `
+    SELECT
+      Id,
+      Filename,
+      Blob,
+      ItemId,
+      CreatedAt,
+      UpdatedAt,
+      IsDeleted
+    FROM Attachments
+    WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0`;
+
   /**
    * Insert a new attachment, stamped with the manifest of the item it hangs off.
    */

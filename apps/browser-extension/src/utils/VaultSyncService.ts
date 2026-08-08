@@ -1130,7 +1130,7 @@ export class VaultSyncService {
     /*
      * Publish the public half of the vault's active personal keypair, which is e.g. used by SMTP services to encrypt mail for personal aliases.
      */
-    const primaryKey = sqliteClient.settings.getPrimaryEncryptionKey();
+    const primaryKey = sqliteClient.encryptionKeys.getPrimary();
 
     /*
      * Publish the public half of each shared manifest's email keypair that this user administers, which is e.g. used by SMTP services to encrypt
@@ -1143,7 +1143,7 @@ export class VaultSyncService {
       if (!record.canAdminister) {
         continue;
       }
-      const manifestKey = sqliteClient.settings.getActiveManifestEncryptionKey(record.manifestId);
+      const manifestKey = sqliteClient.encryptionKeys.getActiveForManifest(record.manifestId);
       if (manifestKey) {
         sharedManifestEncryptionPublicKeys.push({ manifestId: record.manifestId, publicKey: manifestKey.PublicKey });
       } else {

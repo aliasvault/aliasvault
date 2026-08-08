@@ -14,6 +14,7 @@ import {
   PasskeyRepository,
   FolderRepository,
   SettingsRepository,
+  EncryptionKeyRepository,
   LogoRepository
 } from './db';
 
@@ -47,6 +48,7 @@ export class SqliteClient implements IDatabaseClient {
   private _passkeys: PasskeyRepository | null = null;
   private _folders: FolderRepository | null = null;
   private _settings: SettingsRepository | null = null;
+  private _encryptionKeys: EncryptionKeyRepository | null = null;
   private _logos: LogoRepository | null = null;
 
   /**
@@ -118,13 +120,23 @@ export class SqliteClient implements IDatabaseClient {
   }
 
   /**
-   * Repository for Settings and auxiliary data operations.
+   * Repository for the vault's user preferences.
    */
   public get settings(): SettingsRepository {
     if (!this._settings) {
       this._settings = new SettingsRepository(this);
     }
     return this._settings;
+  }
+
+  /**
+   * Repository for the per-manifest keypairs that receive mail.
+   */
+  public get encryptionKeys(): EncryptionKeyRepository {
+    if (!this._encryptionKeys) {
+      this._encryptionKeys = new EncryptionKeyRepository(this);
+    }
+    return this._encryptionKeys;
   }
 
   /**

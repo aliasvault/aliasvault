@@ -623,6 +623,34 @@ export class ItemRepository extends BaseRepository {
   }
 
   /**
+   * Get an item's TOTP codes.
+   * @param itemId - The ID of the item to get TOTP codes for
+   * @param manifestId - The manifest the item belongs to, when known
+   * @returns Array of TotpCode objects
+   */
+  public getTotpCodesForItem(itemId: string, manifestId?: string): TotpCode[] {
+    const ref = this.resolveItemRef(itemId, manifestId);
+    if (!ref) {
+      return [];
+    }
+    return this.client.executeQuery<TotpCode>(TotpCodeQueries.GET_BY_ITEM_ID, [ref.Id, ref.ManifestId]);
+  }
+
+  /**
+   * Get an item's attachments.
+   * @param itemId - The ID of the item
+   * @param manifestId - The manifest the item belongs to, when known
+   * @returns Array of attachments for the item
+   */
+  public getAttachmentsForItem(itemId: string, manifestId?: string): Attachment[] {
+    const ref = this.resolveItemRef(itemId, manifestId);
+    if (!ref) {
+      return [];
+    }
+    return this.client.executeQuery<Attachment>(AttachmentQueries.GET_BY_ITEM_ID, [ref.Id, ref.ManifestId]);
+  }
+
+  /**
    * Get field history for a specific field.
    * @param itemId - The ID of the item
    * @param fieldKey - The field key to get history for
@@ -1153,11 +1181,7 @@ export class ItemRepository extends BaseRepository {
     currentDateTime: string
   ): void {
     // Fetch existing TOTP codes to compare values
-    const existingTotpCodes = this.client.executeQuery<{
-      Id: string;
-      Name: string;
-      SecretKey: string;
-    }>(TotpCodeQueries.GET_BY_ITEM_ID, [itemId, manifestId]);
+    const existingTotpCodes = this.client.executeQuery<TotpCode>(TotpCodeQueries.GET_BY_ITEM_ID, [itemId, manifestId]);
 
     const existingByIdMap = new Map(existingTotpCodes.map(tc => [tc.Id, tc]));
 

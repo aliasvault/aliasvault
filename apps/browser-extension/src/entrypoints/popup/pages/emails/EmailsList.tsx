@@ -73,7 +73,7 @@ const EmailsList: React.FC = () => {
         });
 
         // Decrypt emails locally using private key associated with the email address.
-        const encryptionKeys = dbContext.sqliteClient.settings.getAllEncryptionKeys();
+        const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
 
         // Decrypt emails locally using public/private key pairs.
         const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, encryptionKeys);
@@ -117,7 +117,7 @@ const EmailsList: React.FC = () => {
       });
 
       // Decrypt emails locally
-      const encryptionKeys = dbContext.sqliteClient.settings.getAllEncryptionKeys();
+      const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
       const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, encryptionKeys);
 
       // Append to existing emails

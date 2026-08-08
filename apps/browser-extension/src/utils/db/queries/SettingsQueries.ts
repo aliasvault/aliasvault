@@ -44,31 +44,4 @@ export class SettingsQueries {
   public static readonly INSERT_SETTING = `
     INSERT INTO Settings (ManifestId, Key, Value, CreatedAt, UpdatedAt, IsDeleted)
     VALUES (?, ?, ?, ?, ?, ?)`;
-
-  /**
-   * Get TOTP codes for an item.
-   */
-  public static readonly GET_TOTP_FOR_ITEM = `
-    SELECT
-      Id,
-      Name,
-      SecretKey,
-      ItemId
-    FROM TotpCodes
-    WHERE ItemId = ? AND IsDeleted = 0`;
-
-  /**
-   * Get attachments for an item.
-   */
-  public static readonly GET_ATTACHMENTS_FOR_ITEM = `
-    SELECT
-      Id,
-      Filename,
-      Blob,
-      ItemId,
-      CreatedAt,
-      UpdatedAt,
-      IsDeleted
-    FROM Attachments
-    WHERE ItemId = ? AND IsDeleted = 0`;
 }

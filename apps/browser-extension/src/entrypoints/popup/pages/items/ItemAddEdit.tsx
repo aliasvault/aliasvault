@@ -464,7 +464,7 @@ const ItemAddEdit: React.FC = () => {
         setInitiallyVisibleFields(fieldsWithValues);
 
         // Load TOTP codes for this item
-        const itemTotpCodes = sqliteClient.settings.getTotpCodesForItem(id);
+        const itemTotpCodes = sqliteClient.items.getTotpCodesForItem(id, result.ManifestId);
         setTotpCodes(itemTotpCodes);
         setOriginalTotpCodeIds(itemTotpCodes.map((tc) => tc.Id));
         if (itemTotpCodes.length > 0) {
@@ -472,7 +472,7 @@ const ItemAddEdit: React.FC = () => {
         }
 
         // Load attachments for this item
-        const itemAttachments = sqliteClient.settings.getAttachmentsForItem(id);
+        const itemAttachments = sqliteClient.items.getAttachmentsForItem(id, result.ManifestId);
         setAttachments(itemAttachments);
         setOriginalAttachmentIds(itemAttachments.map((a) => a.Id));
         if (itemAttachments.length > 0) {
