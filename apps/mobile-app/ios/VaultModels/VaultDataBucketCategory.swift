@@ -10,6 +10,9 @@ public struct VaultDataBucketCategory {
     /// User client settings (sort order, autofill prefs, identity defaults, etc.).
     public static let settings = "Settings"
 
+    /// Per-item usage statistics (last used, use counts).
+    public static let stats = "Stats"
+
     /// All known data bucket categories.
-    public static let all = [settings]
+    public static let all = [settings, stats]
 }

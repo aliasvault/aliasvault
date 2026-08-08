@@ -15,6 +15,11 @@ export const VaultDataBucketCategory = {
    * User client settings (sort order, autofill prefs, identity defaults, etc.).
    */
   Settings: 'Settings',
+
+  /**
+   * Per-item usage statistics (last used, use counts).
+   */
+  Stats: 'Stats',
 } as const;
 
 /**

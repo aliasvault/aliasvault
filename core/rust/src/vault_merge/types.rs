@@ -64,6 +64,9 @@ impl TableConfig {
 /// Allows for specifying manifest_scoped(), custom composite key columns and primary key columns for each table.
 pub static SYNCABLE_TABLES: &[TableConfig] = &[
     TableConfig::new("Items").manifest_scoped(),
+    // Keyed by the item it describes: `Id` *is* the item's id, so recording a use is an upsert and two
+    // devices never mint competing rows. Listed after Items so a merge inserts the item first.
+    TableConfig::new("ItemStats").manifest_scoped(),
     TableConfig::new("FieldValues").manifest_scoped().with_composite_key(&[MANIFEST_ID_COL, "ItemId", "FieldKey"]),
     TableConfig::new("Folders").manifest_scoped(),
     TableConfig::new("Tags").manifest_scoped(),
@@ -86,6 +89,7 @@ pub fn merge_table_names() -> Vec<&'static str> {
 /// List of syncable table names (for clients to know which tables to read).
 pub const SYNCABLE_TABLE_NAMES: &[&str] = &[
     "Items",
+    "ItemStats",
     "FieldValues",
     "Folders",
     "Tags",

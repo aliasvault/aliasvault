@@ -66,6 +66,9 @@ pub struct PruneStats {
     pub totp_codes_pruned: u32,
     /// Number of passkeys permanently deleted
     pub passkeys_pruned: u32,
+    /// Number of per-item statistics rows soft-deleted along with their item.
+    #[serde(default)]
+    pub item_stats_pruned: u32,
     /// Number of orpha logos soft-deleted (no remaining active item references them)
     #[serde(default)]
     pub logos_pruned: u32,
@@ -114,6 +117,7 @@ pub fn get_prune_table_queries() -> Vec<PruneTableQuery> {
         ("Attachments", "SELECT Id, ItemId, IsDeleted, substr(Blob, 1, 1) AS Blob FROM Attachments"),
         ("TotpCodes", "SELECT ItemId, IsDeleted FROM TotpCodes"),
         ("Passkeys", "SELECT ItemId, IsDeleted FROM Passkeys"),
+        ("ItemStats", "SELECT Id, IsDeleted FROM ItemStats"),
         ("Logos", "SELECT Id, Kind, IsDeleted, substr(FileData, 1, 1) AS FileData FROM Logos"),
     ]
     .iter()
@@ -261,6 +265,21 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
                     ],
                 });
                 stats.passkeys_pruned += related_count;
+            }
+        }
+
+        // Tombstone the item's statistics row.
+        if let Some(item_stats_table) = input.tables.iter().find(|t| t.name == "ItemStats") {
+            let related_count = count_related_records(&item_stats_table.records, "Id", item_id);
+            if related_count > 0 {
+                statements.push(SqlStatement {
+                    sql: "UPDATE ItemStats SET IsDeleted = 1, UpdatedAt = ? WHERE Id = ? AND IsDeleted = 0".to_string(),
+                    params: vec![
+                        serde_json::json!(now_str),
+                        serde_json::json!(item_id),
+                    ],
+                });
+                stats.item_stats_pruned += related_count;
             }
         }
     }

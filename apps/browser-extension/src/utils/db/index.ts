@@ -20,3 +20,4 @@ export { PasskeyRepository } from './repositories/PasskeyRepository';
 export { FolderRepository, type Folder } from './repositories/FolderRepository';
 export { SettingsRepository } from './repositories/SettingsRepository';
 export { LogoRepository } from './repositories/LogoRepository';
+export { ItemStatsRepository, type ItemStats, type ItemUsageAction } from './repositories/ItemStatsRepository';

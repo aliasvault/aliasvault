@@ -20,7 +20,6 @@ use std::collections::{HashMap, HashSet};
 
 use serde_json::{json, Value};
 
-use super::hash::{bytes_to_hex, sha256_hex};
 use super::manifest::CodecRecord;
 use super::types::MANIFEST_ID_COL;
 
@@ -61,18 +60,7 @@ const FAVICON_ID_NAMESPACE: &str = "aliasvault:logo:v1";
 /// collide). `source` is matched case-insensitively (callers already normalize to a lowercase
 /// hostname or lowercase hex digest; this makes it robust anyway).
 pub fn logo_id_for(manifest_id: &str, kind: &str, source: &str) -> String {
-    let material = format!("{}\n{}\n{}", namespace_for_kind(kind), manifest_id, source.to_lowercase());
-    let digest = sha256_hex(material.as_bytes());
-    // First 16 bytes of the digest, with the UUID version (8 = custom) and RFC 4122 variant bits set.
-    let mut bytes = [0u8; 16];
-    for (i, byte) in bytes.iter_mut().enumerate() {
-        *byte = u8::from_str_radix(&digest[i * 2..i * 2 + 2], 16).unwrap_or(0);
-    }
-    bytes[6] = (bytes[6] & 0x0f) | 0x80;
-    bytes[8] = (bytes[8] & 0x3f) | 0x80;
-
-    let hex = bytes_to_hex(&bytes);
-    format!("{}-{}-{}-{}-{}", &hex[0..8], &hex[8..12], &hex[12..16], &hex[16..20], &hex[20..32])
+    super::hash::derived_uuid(&format!("{}\n{}\n{}", namespace_for_kind(kind), manifest_id, source.to_lowercase()))
 }
 
 /// The derivation namespace for a kind. Unknown kinds get one derived from their own name, so a newer

@@ -14,6 +14,8 @@ type FormInputCopyToClipboardProps = {
   value: string;
   type?: 'text' | 'password';
   labelSuffix?: React.ReactNode;
+  /** The item this field belongs to. Copying it counts as a use; omit where the value has no item. */
+  itemId?: string;
 }
 
 const clipboardService = new ClipboardCopyService();
@@ -63,7 +65,8 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
   label,
   value,
   type = 'text',
-  labelSuffix
+  labelSuffix,
+  itemId
 }) => {
   const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
@@ -88,6 +91,13 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
 
       // Notify background script that clipboard was copied
       await sendMessage('CLIPBOARD_COPIED');
+
+      // Record the use against the item this field belongs to, where one is known.
+      if (itemId) {
+        sendMessage('RECORD_ITEM_USAGE', { itemId, action: 'copy' }).catch(() => {
+          // Ignore errors
+        });
+      }
 
       // Reset copied state after 2 seconds
       setTimeout(() => {

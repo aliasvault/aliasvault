@@ -3,8 +3,7 @@
 //!
 //! The input rows are already JSON-normalized by the platform read. Every SQLite byte column
 //! arrives as `{ "__b64": <base64> }`. This module applies the *format* rules:
-//!   - each bucketed table (see `BUCKET_TABLES`; `Settings` today) is split out into a data bucket per
-//!     manifest: rows route by their own `ManifestId`.
+//!   - each bucketed table is split out into a data bucket per manifest: rows route by their own `ManifestId`.
 //!   - skip-tables are dropped;
 //!   - the two blob columns (`Logos.FileData`, `Attachments.Blob`) have their bytes extracted into a
 //!     content-addressed blob map (hash = `sha256(salt ‖ bytes)`) and the cell replaced with

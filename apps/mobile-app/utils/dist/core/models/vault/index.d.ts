@@ -293,6 +293,10 @@ declare const VaultDataBucketCategory: {
      * User client settings (sort order, autofill prefs, identity defaults, etc.).
      */
     readonly Settings: "Settings";
+    /**
+     * Per-item usage statistics (last used, use counts).
+     */
+    readonly Stats: "Stats";
 };
 /**
  * Type representing all valid vault data bucket category values.

@@ -75,6 +75,11 @@ public class AliasClientDbContext : DbContext
     public DbSet<Item> Items { get; set; }
 
     /// <summary>
+    /// Gets or sets the ItemStats DbSet.
+    /// </summary>
+    public DbSet<ItemStat> ItemStats { get; set; }
+
+    /// <summary>
     /// Gets or sets the Folders DbSet.
     /// </summary>
     public DbSet<Folder> Folders { get; set; }
@@ -156,6 +161,7 @@ public class AliasClientDbContext : DbContext
         modelBuilder.Entity<Attachment>().HasKey(e => new { e.ManifestId, e.Id });
         modelBuilder.Entity<Passkey>().HasKey(e => new { e.ManifestId, e.Id });
         modelBuilder.Entity<TotpCode>().HasKey(e => new { e.ManifestId, e.Id });
+        modelBuilder.Entity<ItemStat>().HasKey(e => new { e.ManifestId, e.Id });
 
         // Settings are named by Key rather than Id.
         modelBuilder.Entity<Setting>().HasKey(e => new { e.ManifestId, e.Key });

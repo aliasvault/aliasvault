@@ -86,7 +86,11 @@ var VaultDataBucketCategory = {
   /**
    * User client settings (sort order, autofill prefs, identity defaults, etc.).
    */
-  Settings: "Settings"
+  Settings: "Settings",
+  /**
+   * Per-item usage statistics (last used, use counts).
+   */
+  Stats: "Stats"
 };
 
 // src/vault/Item.ts

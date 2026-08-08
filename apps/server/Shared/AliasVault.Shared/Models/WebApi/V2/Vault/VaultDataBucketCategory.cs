@@ -18,4 +18,7 @@ public enum VaultDataBucketCategory
 {
     /// <summary>User client settings (sort order, autofill prefs, identity defaults, etc.).</summary>
     Settings = 0,
+
+    /// <summary>Per-item usage statistics (last used, use counts).</summary>
+    Stats = 1,
 }

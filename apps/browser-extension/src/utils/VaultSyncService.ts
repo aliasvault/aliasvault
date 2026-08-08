@@ -1425,6 +1425,35 @@ export class VaultSyncService {
   }
 
   /**
+   * The key each manifest's data buckets are encrypted with: the personal VEK for the personal manifest,
+   * and its own folder VEK for every shared manifest this session can open.
+   * @param personalVek - the personal manifest's symmetric key
+   * @returns manifest id → the key its buckets are written under
+   */
+  public async resolveBucketWriteKeys(personalVek: string): Promise<Map<string, string>> {
+    const keys = new Map<string, string>([[await this.resolvePersonalManifestId(), personalVek]]);
+    for (const record of Object.values(await SharingService.getSessionSharedManifests())) {
+      if (record.vek) {
+        keys.set(record.manifestId, record.vek);
+      }
+    }
+    return keys;
+  }
+
+  /**
+   * The manifests this client has already pushed a bucket of `category` for.
+   * @param category - the bucket category
+   * @returns the manifest ids with a recorded revision for that category
+   */
+  public async manifestsWithBucketRevision(category: string): Promise<string[]> {
+    const suffix = `:${category}`;
+    return Object.keys(await this.loadBucketRevisions())
+      .filter(key => key.endsWith(suffix))
+      .map(key => key.slice(0, -suffix.length))
+      .filter(manifestId => manifestId.length > 0);
+  }
+
+  /**
    * Resolve every manifest this vault can write, personal manifest first, as one uniform list.
    * @param sqliteClient - the open local vault DB
    */

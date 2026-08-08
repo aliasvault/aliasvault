@@ -9,6 +9,7 @@ import { defineExtensionMessaging } from '@webext-core/messaging';
 import type { TwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
 import type { FullVaultSyncResult, VaultManifestMigrationResult, VaultSyncPhase } from '@/entrypoints/background/VaultMessageHandler';
 
+import type { ItemUsageAction } from '@/utils/db';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import type { PasswordSettings } from '@/utils/dist/core/models/vault';
 import type { LoginResponse } from '@/utils/dist/core/models/webapi';
@@ -87,6 +88,7 @@ export interface IExtensionMessageProtocol {
   PASSKEY_POPUP_RESPONSE(data: any): { success: boolean };
   PERSIST_FORM_VALUES(data: any): void;
   POPUP_HEARTBEAT(): void;
+  RECORD_ITEM_USAGE(data: { itemId: string; action: ItemUsageAction }): { success: boolean };
   RESET_AUTO_LOCK_TIMER(): void;
   SAVE_LOGIN_CREDENTIAL(data: { serviceName: string; username: string; password: string; url: string; domain: string; logoBase64?: string; faviconUrl?: string }): SaveLoginResponse;
   SEARCH_ITEMS_WITH_TOTP(data: { searchTerm: string }): ItemsResponse;

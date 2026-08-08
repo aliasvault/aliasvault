@@ -1824,3 +1824,26 @@ PRAGMA foreign_keys = 1;
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
 VALUES ('20260808095315_2.4.0-ManifestScopedSettings', '10.0.10');
 
+BEGIN TRANSACTION;
+CREATE TABLE "ItemStats" (
+    "ManifestId" TEXT NOT NULL,
+    "Id" TEXT NOT NULL,
+    "LastUsedAt" TEXT NULL,
+    "UseCount" INTEGER NOT NULL,
+    "LastAutofilledAt" TEXT NULL,
+    "AutofillCount" INTEGER NOT NULL,
+    "LastCopiedAt" TEXT NULL,
+    "CopyCount" INTEGER NOT NULL,
+    "LastPasskeyAuthAt" TEXT NULL,
+    "PasskeyAuthCount" INTEGER NOT NULL,
+    "CreatedAt" TEXT NOT NULL,
+    "UpdatedAt" TEXT NOT NULL,
+    "IsDeleted" INTEGER NOT NULL,
+    CONSTRAINT "PK_ItemStats" PRIMARY KEY ("ManifestId", "Id")
+);
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260808132139_2.5.0-AddItemStats', '10.0.10');
+
+COMMIT;
+

@@ -15,7 +15,12 @@ object VaultDataBucketCategory {
     const val SETTINGS = "Settings"
 
     /**
+     * Per-item usage statistics (last used, use counts).
+     */
+    const val STATS = "Stats"
+
+    /**
      * All known data bucket categories.
      */
-    val all = listOf(SETTINGS)
+    val all = listOf(SETTINGS, STATS)
 }

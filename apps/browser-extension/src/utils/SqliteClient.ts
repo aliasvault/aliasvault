@@ -10,6 +10,7 @@ import { t } from '@/i18n/StandaloneI18n';
 
 import {
   ItemRepository,
+  ItemStatsRepository,
   PasskeyRepository,
   FolderRepository,
   SettingsRepository,
@@ -42,6 +43,7 @@ export class SqliteClient implements IDatabaseClient {
 
   // Lazy-initialized repositories
   private _items: ItemRepository | null = null;
+  private _itemStats: ItemStatsRepository | null = null;
   private _passkeys: PasskeyRepository | null = null;
   private _folders: FolderRepository | null = null;
   private _settings: SettingsRepository | null = null;
@@ -83,6 +85,16 @@ export class SqliteClient implements IDatabaseClient {
       this._items = new ItemRepository(this, this.logos);
     }
     return this._items;
+  }
+
+  /**
+   * Repository for per-item usage statistics (last used, use counts).
+   */
+  public get itemStats(): ItemStatsRepository {
+    if (!this._itemStats) {
+      this._itemStats = new ItemStatsRepository(this);
+    }
+    return this._itemStats;
   }
 
   /**

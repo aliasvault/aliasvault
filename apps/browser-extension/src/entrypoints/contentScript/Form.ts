@@ -137,12 +137,17 @@ export async function fillItem(item: Item, input: HTMLInputElement): Promise<voi
   };
 
   sendMessage('STORE_LAST_AUTOFILLED', lastAutofilled).catch(() => {
-    // Ignore errors as background script might not be ready
+    // Ignore errors
   });
 
   // Store recently selected item for smart autofill prioritization
   sendMessage('SET_RECENTLY_SELECTED', { itemId: item.Id, domain: window.location.hostname }).catch(() => {
-    // Ignore errors as background script might not be ready
+    // Ignore errors
+  });
+
+  // Record the use in the vault's Stats bucket (last used + counts).
+  sendMessage('RECORD_ITEM_USAGE', { itemId: item.Id, action: 'autofill' }).catch(() => {
+    // Ignore errors
   });
 
   // Auto-copy TOTP to clipboard if enabled and item has TOTP after autofill.
@@ -433,6 +438,11 @@ export async function fillTotpCode(itemId: string, input: HTMLInputElement): Pro
 
   // Store recently selected item for smart autofill prioritization
   sendMessage('SET_RECENTLY_SELECTED', { itemId, domain: window.location.hostname }).catch(() => {
+    // Ignore errors as background script might not be ready
+  });
+
+  // Record the use in the vault's Stats bucket (last used + counts).
+  sendMessage('RECORD_ITEM_USAGE', { itemId, action: 'autofill' }).catch(() => {
     // Ignore errors as background script might not be ready
   });
 }

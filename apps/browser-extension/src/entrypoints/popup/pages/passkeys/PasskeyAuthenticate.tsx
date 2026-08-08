@@ -154,6 +154,11 @@ const PasskeyAuthenticate: React.FC = () => {
        */
       const selected = availablePasskeys.find((pk) => pk.id === passkeyId);
       if (selected) {
+        // Signing an assertion is a use of the item the passkey hangs off.
+        sendMessage('RECORD_ITEM_USAGE', { itemId: selected.itemId, action: 'passkey' }).catch(() => {
+          // Ignore errors
+        });
+
         await copyTotpToClipboardIfEnabled(selected.itemId);
       }
 

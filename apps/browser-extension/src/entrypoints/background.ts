@@ -9,7 +9,7 @@ import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, han
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
 import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState, handleStoreLastAutofilled, handleGetLastAutofilled, handleClearLastAutofilled } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleStoreTwoFactorState, handleGetTwoFactorState, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
-import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGeneratePassword, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleMigrateVaultManifest, handleGetServerRevision, handleFullVaultSync, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleSetLoginSaveEnabled, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode, handleSetRecentlySelected, handleGetRecentlySelected } from '@/entrypoints/background/VaultMessageHandler';
+import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGeneratePassword, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleMigrateVaultManifest, handleGetServerRevision, handleFullVaultSync, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleSetLoginSaveEnabled, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode, handleSetRecentlySelected, handleGetRecentlySelected, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { onMessage, sendMessage } from "@/utils/messaging/ExtensionMessaging";
@@ -275,6 +275,9 @@ export default defineBackground({
     onMessage('SEARCH_ITEMS_WITH_TOTP', ({ data }) => handleSearchItemsWithTotp(data));
     onMessage('GET_TOTP_SECRETS', ({ data }) => handleGetTotpSecrets(data));
     onMessage('GENERATE_TOTP_CODE', ({ data }) => handleGenerateTotpCode(data));
+
+    // Record item usage (last used + counts) into the Stats data bucket
+    onMessage('RECORD_ITEM_USAGE', ({ data }) => handleRecordItemUsage(data));
 
     // Track recently selected items for autofill prioritization
     onMessage('SET_RECENTLY_SELECTED', ({ data }) => handleSetRecentlySelected(data));

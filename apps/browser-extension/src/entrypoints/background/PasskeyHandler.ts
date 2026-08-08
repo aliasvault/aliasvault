@@ -3,7 +3,7 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createVaultSqliteClient, handleGetEncryptionKey } from '@/entrypoints/background/VaultMessageHandler';
+import { createVaultSqliteClient, handleGetEncryptionKey, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { buildPasskeyAssertion } from '@/utils/passkey/PasskeyAssertionService';
@@ -244,6 +244,13 @@ export async function handleWebAuthnGetAssertion(
   try {
     const sqliteClient = await createVaultSqliteClient();
     const credential = await buildPasskeyAssertion(sqliteClient, { origin, publicKey }, passkeyId);
+
+    // Signing an assertion is a use of the item the passkey hangs off.
+    const itemId = sqliteClient.passkeys.getById(passkeyId)?.ItemId;
+    if (itemId) {
+      void handleRecordItemUsage({ itemId, action: 'passkey' });
+    }
+
     return { success: true, credential };
   } catch (error) {
     console.error('Error building passkey assertion:', error);

@@ -26,6 +26,20 @@ pub fn bytes_to_hex(bytes: &[u8]) -> String {
     s
 }
 
+/// Generate a GUID derived from a string.
+pub fn derived_uuid(material: &str) -> String {
+    let digest = sha256_hex(material.as_bytes());
+    let mut bytes = [0u8; 16];
+    for (i, byte) in bytes.iter_mut().enumerate() {
+        *byte = u8::from_str_radix(&digest[i * 2..i * 2 + 2], 16).unwrap_or(0);
+    }
+    bytes[6] = (bytes[6] & 0x0f) | 0x80;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+    let hex = bytes_to_hex(&bytes);
+    format!("{}-{}-{}-{}-{}", &hex[0..8], &hex[8..12], &hex[12..16], &hex[16..20], &hex[20..32])
+}
+
 /// Decode a lowercase/uppercase hex string into bytes. Returns `None` on malformed input.
 pub fn hex_to_bytes(hex: &str) -> Option<Vec<u8>> {
     if hex.len() % 2 != 0 {

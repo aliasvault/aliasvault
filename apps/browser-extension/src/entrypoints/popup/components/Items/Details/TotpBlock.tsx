@@ -86,6 +86,14 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId }) => {
       // Notify background script that clipboard was copied
       await sendMessage('CLIPBOARD_COPIED');
 
+      /*
+       * Record the use against the item. The auto-copy that follows an autofill deliberately does not go
+       * through here: that interaction is already counted as an autofill, and would otherwise count twice.
+       */
+      sendMessage('RECORD_ITEM_USAGE', { itemId, action: 'copy' }).catch(() => {
+        // Ignore errors
+      });
+
       // Reset copied state after 2 seconds
       setTimeout(() => {
         setCopiedId(null);
