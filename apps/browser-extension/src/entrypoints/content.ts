@@ -555,10 +555,9 @@ export default defineContentScript({
 
             /*
              * Honour av-suppress-save: skip the popup (and the icon) when there is no stored entry
-             * that would actually fill this specific field — credentials for the credentials popup,
-             * TOTP-enabled credentials for the TOTP popup — so we don't invite the user to
-             * "create new" on pages where storing isn't desired by default (e.g. AliasVault's own
-             * login / unlock / Enable 2FA forms).
+             * that would actually fill this specific field. TOTP-enabled credentials for the TOTP 
+             * popup so we don't invite the user to create new TOTP codes on pages where storing 
+             * isn't desired by default (e.g. AliasVault's own login / unlock / Enable 2FA forms).
              */
             if (isAvSuppressSave(inputElement) && !await hasMatchForCurrentUrl(popupType)) {
               devLog('[Autofill] focusin skipped: av-suppress-save active and no matching vault items');

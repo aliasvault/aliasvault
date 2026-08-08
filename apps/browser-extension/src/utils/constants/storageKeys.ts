@@ -3,6 +3,7 @@
  * change the key names without breaking the code and track shared storage keys in one place.
  */
 
+import { LEGACY_VAULT_DATA_STORAGE_KEYS } from '@/utils/constants/legacyStorageKeys';
 import { ALL_VAULT_MUTATION_SCOPES, type VaultMutationScope } from '@/utils/types/VaultMutationScope';
 
 /** A WXT storage key, scoped to either the persisted (local) or the memory-only (session) area. */
@@ -34,8 +35,6 @@ export const StorageKeys = {
   ENCRYPTED_VAULT: 'local:encryptedVault',
   /** Revision number of the personal manifest as known by the server. */
   SERVER_REVISION: 'local:serverRevision',
-  /** Legacy (pre-v0.20) revision key, only read during migration to {@link StorageKeys.SERVER_REVISION}. */
-  LEGACY_VAULT_REVISION_NUMBER: 'local:vaultRevisionNumber',
   /** Public email domains supported by the server. */
   PUBLIC_EMAIL_DOMAINS: 'local:publicEmailDomains',
   /** Private email domains supported by the server. */
@@ -93,8 +92,6 @@ export const StorageKeys = {
   ENCRYPTION_KEY: 'session:encryptionKey',
   /** The decrypted account private key (JWK). Session-only: it must never persist to disk. */
   ACCOUNT_PRIVATE_KEY: 'session:accountPrivateKey',
-  /** Legacy (pre-v0.19) encryption key location, only read as a fallback. */
-  LEGACY_DERIVED_KEY: 'session:derivedKey',
   /** Encrypted form values persisted while the popup is closed. */
   PERSISTED_FORM_VALUES: 'session:persistedFormValues',
   /** Route the popup was on when it was last closed. */
@@ -109,19 +106,6 @@ export const StorageKeys = {
   SHARED_MANIFESTS: 'session:sharedManifests',
   /** The item that was most recently autofilled, used to prioritize it in the list. */
   RECENTLY_SELECTED_ITEM: 'session:aliasvault_recently_selected_item',
-
-  /*
-   * -- Legacy session locations, migrated to local: in v0.26.0 (see StorageUtility) --
-   */
-
-  /** @deprecated Fallback for {@link StorageKeys.PUBLIC_EMAIL_DOMAINS}, removable in v0.27.0+. */
-  LEGACY_SESSION_PUBLIC_EMAIL_DOMAINS: 'session:publicEmailDomains',
-  /** @deprecated Fallback for {@link StorageKeys.PRIVATE_EMAIL_DOMAINS}, removable in v0.27.0+. */
-  LEGACY_SESSION_PRIVATE_EMAIL_DOMAINS: 'session:privateEmailDomains',
-  /** @deprecated Fallback for {@link StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS}, removable in v0.27.0+. */
-  LEGACY_SESSION_HIDDEN_PRIVATE_EMAIL_DOMAINS: 'session:hiddenPrivateEmailDomains',
-  /** @deprecated Fallback for {@link StorageKeys.ENCRYPTION_KEY_DERIVATION_PARAMS}, removable in v0.27.0+. */
-  LEGACY_SESSION_ENCRYPTION_KEY_DERIVATION_PARAMS: 'session:encryptionKeyDerivationParams',
 
   /*
    * -- App preferences --
@@ -277,7 +261,6 @@ export const allVaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.PRIVATE_EMAIL_DOMAINS,
   StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS,
   StorageKeys.SERVER_REVISION,
-  StorageKeys.LEGACY_VAULT_REVISION_NUMBER,
   StorageKeys.SERVER_MANIFEST_REVISIONS,
   StorageKeys.VAULT_BUCKET_REVISIONS,
   StorageKeys.VAULT_MANIFEST_SALT,
@@ -295,4 +278,5 @@ export const allVaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY,
   StorageKeys.USERNAME,
   ...ALL_VAULT_MUTATION_SCOPES.map(scope => dirtyScopeStorageKey(scope)),
+  ...LEGACY_VAULT_DATA_STORAGE_KEYS,
 ];

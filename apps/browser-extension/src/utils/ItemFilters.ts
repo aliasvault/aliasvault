@@ -38,7 +38,7 @@ export function parseItemFilterType(value: string | null | undefined): ItemFilte
 /**
  * Apply the active type/feature filter to a list of items.
  * Used both for the visible item list and for computing folder badge counts so they
- * stay consistent — when a filter is active, folder counts only include matching items.
+ * stay consistent when a filter is active, folder counts only include matching items.
  */
 export function applyTypeFilter(items: Item[], filterType: ItemFilterType): Item[] {
   if (filterType === 'all') {

@@ -12,11 +12,11 @@ import type { VaultResponse } from '@/utils/dist/core/models/webapi';
 import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 import { buildEmailRouting } from '@/utils/EmailRouting';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
+import { completeLegacyAccountKeyMigration, isLegacySqliteBlobSnapshot, legacyUnstampedRowAdoption, openLegacySqliteBlobSnapshot, prepareLegacyAccountKeyMigration, withOutdatedServerGuard, type LegacyAccountKeyMigration, type LegacySqliteBlobSnapshot } from '@/utils/legacy/LegacyStorageModelMigration';
 import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateManifestSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecBlobEntry, type CodecCanonicalized, type CodecManifest, type CodecManifestSpec} from '@/utils/RustCore';
 import { SharingService, type SessionSharedManifest } from '@/utils/SharingService';
 import { SqliteClient } from '@/utils/SqliteClient';
-import { getItemWithFallback } from '@/utils/StorageUtility';
-import { ServerUpdateRequiredError } from '@/utils/types/errors/ServerUpdateRequiredError';
+import { getStorageItem } from '@/utils/StorageUtility';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
 import { type VaultManifest, type VaultDataBucket, VaultCodec } from '@/utils/VaultCodec';
 import { VaultKeyService } from '@/utils/VaultKeyService';
@@ -26,16 +26,6 @@ const VAULT_ENDPOINT = 'Vault';
 const BLOBS_VAULT_ENDPOINT = 'Vault/blobs';
 const BLOBS_MISSING_ENDPOINT = 'Vault/blobs/missing';
 const BLOBS_DOWNLOAD_ENDPOINT = 'Vault/blobs/download';
-
-/**
- * True when an error from WebApiService is an HTTP 404. WebApiService surfaces non-2xx responses as a generic
- * Error whose message carries the status code (`HTTP error! status: 404`). A 404 on a v2 endpoint means the
- * server does not support the v2 API (outdated self-hosted install), surfaced as {@link ServerUpdateRequiredError}.
- * @param e - the caught error
- */
-function isNotFoundError(e: unknown): boolean {
-  return e instanceof Error && e.message.includes('status: 404');
-}
 
 /**
  * Human-readable size for the push/pull size logs. Lengths are base64/JSON characters, which map ~1:1 to
@@ -138,10 +128,7 @@ export type PushResult = {
   status: 'ok' | 'outdated' | 'missing-blobs' | 'rejected';
   newManifestRevision: number | null;
   reasons?: string[];
-  /**
-   * Set when this push performed the KEK/VEK migration: the freshly generated VEK the caller must adopt as the
-   * session encryption key (the old password-derived key is now only the KEK).
-   */
+  /** The new encryption key (set by legacy migration). */
   newEncryptionKey?: string;
 };
 
@@ -208,11 +195,6 @@ function selectPersonalManifest(snapshot: GetResponseDto | undefined | null): Ma
   return personalId ? (snapshot?.manifests ?? []).find(m => m.manifestId === personalId) : undefined;
 }
 
-/**
- * Numeric value of the server StorageFormat enum for the manifest-v1 format (SqliteBlob = 0, Manifest = 1).
- */
-export const STORAGE_FORMAT_MANIFEST = 1;
-
 /** The manifest's VEK hangs off the account key hierarchy: the unlock chain produced it, nothing travels on the wire. */
 const MANIFEST_KEY_TYPE_ACCOUNT = 'accountkey';
 
@@ -220,17 +202,11 @@ const MANIFEST_KEY_TYPE_ACCOUNT = 'accountkey';
 const MANIFEST_KEY_TYPE_GRANT = 'grantkey';
 
 /**
- * Raw snapshot returned by GET /v2/Vault.
+ * Raw snapshot returned by GET /v2/Vault. The `storageFormat` / `legacyVaultBlob` / `legacyRevision` / `version`
+ * fields are only populated for a not-yet-migrated user and are declared by {@link LegacySqliteBlobSnapshot}.
  */
-export type GetResponseDto = {
+export type GetResponseDto = LegacySqliteBlobSnapshot & {
   status: number;
-  /** The server's storage format (0 = sqlite-blob, 1 = manifest-v1). */
-  storageFormat?: number;
-  /** The legacy encrypted SQLite blob (for not-yet-migrated users). */
-  legacyVaultBlob?: string | null;
-  version?: string | null;
-  /** The legacy sqlite-blob revision (set only on the sqlite-blob path). */
-  legacyRevision?: number | null;
   /**
    * The caller's personal manifest id: the one manifest owned by their personal group, every other entry being a
    * shared one. Also set on the sqlite-blob path, where the manifests list is empty.
@@ -258,10 +234,7 @@ type ManifestWriteDto = {
   currentRevision: number;
   credentialsCount: number;
   blobReferences: BlobRefDto[];
-  /** 
-   * The newly generated VEK encrypted with the password-derived KEK. Set on the personal-manifest write of a legacy user's first manifest-v1 push.
-   * TODO: can be deleted once all users have migrated to manifest-v1.
-   */
+  /** The new VEK (set by legacy migration). */
   encryptedVek?: string;
 };
 
@@ -360,37 +333,19 @@ export class VaultSyncService {
      * can surface the real technical detail in a copyable report instead of a misleading "server unreachable".
      */
     try {
-      if (snapshot.storageFormat === STORAGE_FORMAT_MANIFEST) {
-        // Manifest-v1 user: materialize the manifest + metadata + blobs into a SQLite blob, then encrypt it.
-        devLog('[V2Pull] Step 2/4: manifest format: decrypting and reassembling local SQLite...');
-        const pull = await this.materializeFromSnapshot(snapshot, encryptionKey);
-        devLog(`[V2Pull] Step 3/4: materialized SQLite (${pull.sqliteBase64.length} base64 chars); re-encrypting for local storage...`);
-        const encryptedVault = await EncryptionUtility.symmetricEncrypt(pull.sqliteBase64, encryptionKey);
-        devLog('[V2Pull] Step 4/4: re-encryption done, returning VaultResponse.');
-        return this.buildResponse(encryptedVault, '2.0.0', pull.manifestRevision, snapshot);
+      // LEGACY: a not-yet-migrated user's blob is passed through unchanged.
+      if (isLegacySqliteBlobSnapshot(snapshot)) {
+        const legacy = await openLegacySqliteBlobSnapshot(snapshot);
+        return this.buildResponse(legacy.encryptedBlob, legacy.version, legacy.revision, snapshot);
       }
 
-      /*
-       * Not-yet-migrated (sqlite-blob fallback) user: the server returned the legacy encrypted SQLite blob. It's already in the stored
-       * format (encrypted SQLite), so we pass it through unchanged: the on-open schema upgrade handles the rest.
-       * There is no manifest-v1 server state, so drop any stale content fingerprints.
-       */
-      await storage.removeItem(StorageKeys.VAULT_CONTENT_FINGERPRINTS);
-
-      /*
-       * Legacy user: the vault has never been materialized, so it carries no record of which manifest is
-       * ours. Persist it in local storage so the first migration canonicalize step can stamp rows with it.
-       */
-      if (snapshot.personalManifestId) {
-        await storage.setItem(StorageKeys.VAULT_PERSONAL_MANIFEST_ID, snapshot.personalManifestId);
-      }
-      devLog('[V2Pull] Step 2/4: legacy blob pass-through (user not yet migrated), returning as-is.');
-      return this.buildResponse(
-        snapshot.legacyVaultBlob ?? '',
-        snapshot.version ?? '',
-        typeof snapshot.legacyRevision === 'number' ? snapshot.legacyRevision : 0,
-        snapshot
-      );
+      // Manifest-v1 user: materialize the manifest + metadata + blobs into a SQLite blob, then encrypt it.
+      devLog('[V2Pull] Step 2/4: manifest format: decrypting and reassembling local SQLite...');
+      const pull = await this.materializeFromSnapshot(snapshot, encryptionKey);
+      devLog(`[V2Pull] Step 3/4: materialized SQLite (${pull.sqliteBase64.length} base64 chars); re-encrypting for local storage...`);
+      const encryptedVault = await EncryptionUtility.symmetricEncrypt(pull.sqliteBase64, encryptionKey);
+      devLog('[V2Pull] Step 4/4: re-encryption done, returning VaultResponse.');
+      return this.buildResponse(encryptedVault, '2.0.0', pull.manifestRevision, snapshot);
     } catch (error) {
       devError('[V2Pull] FAILED: the last logged step above is where it broke:', error);
       throw new VaultProcessingError('vault-pull', error);
@@ -411,12 +366,8 @@ export class VaultSyncService {
     devLog('[ManifestMigration] Migrating local vault onto the current schema (local round-trip, no server involved)...');
 
     try {
-      /*
-       * For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into.
-       * TODO: delete this field once the migration is complete.
-       */
-      const ownManifestId = await this.resolvePersonalManifestId();
-      const { canonicalized } = await this.canonicalizeVault(sqliteClient, { adoptUnstampedInto: ownManifestId });
+      // LEGACY: a sqlite-blob vault's rows carry no ManifestId yet, so this one canonicalize adopts them.
+      const { canonicalized } = await this.canonicalizeVault(sqliteClient, legacyUnstampedRowAdoption(await this.resolvePersonalManifestId()));
 
       /*
        * Canonicalize already handed us every extracted favicon/attachment as plaintext bytes, so materialize can
@@ -444,26 +395,10 @@ export class VaultSyncService {
   }
 
   /**
-   * Run a write against the v2 API and translate the outdated-server 404 into {@link ServerUpdateRequiredError}.
-   * TODO: this wrapper can be deleted once enough time has passed since the v2 API was introduced (so all self-hosted installs have had time to upgrade).
-   * @param fn - the write to run
-   */
-  private async withOutdatedServerGuard<T>(fn: () => Promise<T>): Promise<T> {
-    try {
-      return await fn();
-    } catch (e) {
-      if (isNotFoundError(e)) {
-        throw new ServerUpdateRequiredError();
-      }
-      throw e;
-    }
-  }
-
-  /**
    * Fetch the raw snapshot (GET /v2/Vault) without decrypting/reassembling. Throws error if the server predates the v2 API.
    */
   private async fetchSnapshot(): Promise<GetResponseDto> {
-    return this.withOutdatedServerGuard(() => new WebApiService().get<GetResponseDto>(VAULT_ENDPOINT));
+    return withOutdatedServerGuard(() => new WebApiService().get<GetResponseDto>(VAULT_ENDPOINT));
   }
 
   /**
@@ -704,18 +639,6 @@ export class VaultSyncService {
     const manifestJson = await verifyDecryptUnpack(dto.blob!, vek, dto.ciphertextHash, isPersonal ? 'manifest' : `shared manifest ${dto.manifestId}`);
     const manifest = JSON.parse(manifestJson) as VaultManifest;
 
-    /*
-     * Bind the payload's self-declared identity to the row the server served it from. This is the only place the
-     * two meet: the id inside the blob is what the codec stamps every row of this manifest with (see
-     * `claim_manifest_scope`), and the server can never check it — the blob is opaque to it and the id on the row
-     * is simply what the creating client sent alongside (POST /v2/Sharing/manifests).
-     *
-     * Without this check, anyone could create a manifest of their own, embed *another* manifest's id inside it and
-     * share it with one of that manifest's members: the recipient would stamp the attacker's rows with the embedded
-     * id, and their next push would split those rows straight into a manifest the attacker holds no key for. A
-     * revoked member still knows the id (it is stamped on every row of the copy they kept), so revocation alone
-     * does not close that door.
-     */
     if (!manifestIdsEqual(manifest.manifestId, dto.manifestId)) {
       throw new Error(`VaultSyncService: manifest ${dto.manifestId} declares a different id (${manifest.manifestId}) inside its encrypted payload, refusing to open it.`);
     }
@@ -861,7 +784,7 @@ export class VaultSyncService {
     username: string,
     options?: { createVaultKey?: boolean; forceFullWrite?: boolean }
   ): Promise<PushResult> {
-    return this.withOutdatedServerGuard(() => this.pushInternal(sqliteClient, vek, username, options));
+    return withOutdatedServerGuard(() => this.pushInternal(sqliteClient, vek, username, options));
   }
 
   /**
@@ -877,27 +800,9 @@ export class VaultSyncService {
     username: string,
     options?: { createVaultKey?: boolean; forceFullWrite?: boolean }
   ): Promise<PushResult> {
-    /*
-     * KEK/VEK migration: on the first push after this feature ships, generate a fresh VEK and encrypt everything
-     * with it; the passed-in password-derived key becomes the KEK that encrypts the VEK. On a normal push the
-     * passed-in key IS the VEK and is used directly.
-     */
-    const migrateToVaultKey = options?.createVaultKey === true;
-    const contentKey = migrateToVaultKey ? EncryptionUtility.generateVaultEncryptionKey() : vek;
-
-    /*
-     * The full account-key hierarchy is created in one shot: a random Account Key encrypted with the KEK, the VEK
-     * encrypted with the AK, and the account keypair whose private half is encrypted with the AK too.
-     */
-    const accountKey = migrateToVaultKey ? EncryptionUtility.generateVaultEncryptionKey() : null;
-    const accountKeyPair = migrateToVaultKey ? await EncryptionUtility.generateRsaKeyPair() : null;
-    const encryptedVek = accountKey ? await EncryptionUtility.encryptVaultEncryptionKey(contentKey, accountKey) : null;
-    const accountKeys = accountKey && accountKeyPair ? {
-      encryptedAccountKey: await EncryptionUtility.encryptVaultEncryptionKey(accountKey, vek),
-      accountPublicKey: accountKeyPair.publicKey,
-      encryptedAccountPrivateKey: await EncryptionUtility.symmetricEncrypt(accountKeyPair.privateKey, accountKey),
-    } : null;
-    if (migrateToVaultKey) {
+    const migration: LegacyAccountKeyMigration | null = options?.createVaultKey === true ? await prepareLegacyAccountKeyMigration(vek) : null;
+    const contentKey = migration?.contentKey ?? vek;
+    if (migration) {
       devLog('[V2Push] Account-key migration: generated new VEK, AK and account keypair; vault content and all blobs will be re-encrypted and re-uploaded.');
     }
 
@@ -910,7 +815,7 @@ export class VaultSyncService {
     const { canonicalized, manifestRecords } = cachedSet ?? await this.canonicalizeVault(sqliteClient);
     // Personal manifest first by construction (see `resolveManifestRecords`), which is also the order canonicalize requires.
     const [personalRecord, ...sharedRecords] = manifestRecords;
-    const privateEmailDomains = (await getItemWithFallback<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS)) ?? [];
+    const privateEmailDomains = (await getStorageItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS)) ?? [];
     const emailRouting = buildEmailRouting(canonicalized.manifests.map(m => m.manifest), personalRecord.manifestId, privateEmailDomains);
 
     /*
@@ -948,11 +853,9 @@ export class VaultSyncService {
      */
     const revisionOf = (record: ManifestRecord): number => record.isPersonal ? currentManifestRevision : storedSharedRevisions[record.manifestId] ?? record.revision;
 
-    /*
-     * Every manifest canonicalize produced, joined to its record: one candidate list the whole write is derived
-     * from. A canonicalized manifest with no record is one this vault cannot write — its grant was not resolved on
-     * the last pull — and is dropped rather than pushed with a key or revision we would have to invent.
-     */
+    // Every manifest canonicalize produced, joined to its record: one candidate list the whole write is derived from.
+    // A canonicalized manifest with no record is one this vault cannot write and is dropped rather than pushed with a 
+    // key or revision we would have to invent.
     const recordByManifestId = new Map(manifestRecords.map(r => [r.manifestId, r]));
     const candidates: PushManifest[] = canonicalized.manifests.flatMap(({ manifest, blobs }): PushManifest[] => {
       const record = recordByManifestId.get(manifest.manifestId);
@@ -995,7 +898,7 @@ export class VaultSyncService {
       const fingerprintKey = fingerprintBucketKey(bucket.manifestId, bucket.category);
       const bucketPlaintext = JSON.stringify(bucket);
       const bucketFingerprint = await vaultCodecComputeContentFingerprint(bucketPlaintext);
-      if (!forceFullWrite && !migrateToVaultKey && fingerprints[fingerprintKey] === bucketFingerprint) {
+      if (!forceFullWrite && !migration && fingerprints[fingerprintKey] === bucketFingerprint) {
         devLog(`[V2Push] ${label} unchanged versus server baseline, leaving it out of this write.`);
         continue;
       }
@@ -1040,7 +943,7 @@ export class VaultSyncService {
        * A KEK/VEK migration re-keys the personal manifest and all buckets (their ciphertext must be re-encrypted with
        * the new VEK even when the content is unchanged) but not the shared manifests, which keep their own VEK.
        */
-      if (!forceFullWrite && !(migrateToVaultKey && candidate.isPersonal) && fingerprints[fingerprintManifestKey(candidate.manifestId)] === fingerprint) {
+      if (!forceFullWrite && !(migration && candidate.isPersonal) && fingerprints[fingerprintManifestKey(candidate.manifestId)] === fingerprint) {
         devLog(`[V2Push] ${label} unchanged versus server baseline, leaving it out of this write.`);
         continue;
       }
@@ -1073,7 +976,7 @@ export class VaultSyncService {
          * Set only on the KEK/VEK migration push, where the server creates the vault key alongside this personal-manifest revision.
          * A migration always forces a personal-manifest write (see the gate above), so the key can never be stranded without one.
          */
-        ...(candidate.isPersonal && encryptedVek ? { encryptedVek } : {}),
+        ...(candidate.isPersonal && migration ? { encryptedVek: migration.encryptedVek } : {}),
       });
       writtenManifestFingerprints[candidate.manifestId] = fingerprint;
     }
@@ -1100,7 +1003,7 @@ export class VaultSyncService {
 
     let personalToUpload: string[] = [];
     let sharedToUpload: string[] = [];
-    if (migrateToVaultKey) {
+    if (migration) {
       personalToUpload = personalHashes;
       const sharedCandidates = sharedHashes.filter(h => !knownServerHashes.has(h));
       if (sharedCandidates.length > 0) {
@@ -1119,10 +1022,10 @@ export class VaultSyncService {
       sharedToUpload = sharedHashes.filter(h => toUploadSet.has(h));
     }
 
-    devLog(`[V2Push] Blob diff: ${allBlobHashes.length} blobs across ${candidates.length} manifest(s), uploading ${personalToUpload.length} personal + ${sharedToUpload.length} shared${migrateToVaultKey ? ' (personal manifest re-encrypted, VEK migration)' : ''}.`);
+    devLog(`[V2Push] Blob diff: ${allBlobHashes.length} blobs across ${candidates.length} manifest(s), uploading ${personalToUpload.length} personal + ${sharedToUpload.length} shared${migration ? ' (personal manifest re-encrypted, VEK migration)' : ''}.`);
 
     // Pre-upload the missing bytes so the write below carries references only; each staged entry carries its own key.
-    const uploadedCiphertexts = await this.uploadBlobs(webApi, blobEntries, personalToUpload, migrateToVaultKey);
+    const uploadedCiphertexts = await this.uploadBlobs(webApi, blobEntries, personalToUpload, migration !== null);
     for (const [hash, ciphertext] of await this.uploadBlobs(webApi, blobEntries, sharedToUpload)) {
       uploadedCiphertexts.set(hash, ciphertext);
     }
@@ -1164,7 +1067,8 @@ export class VaultSyncService {
       emailRouting,
       userEncryptionPublicKey: primaryKey?.PublicKey ?? '',
       sharedManifestEncryptionPublicKeys,
-      accountKeys,
+      // LEGACY: only the one-time KEK/VEK migration push carries a key hierarchy for the server to store.
+      accountKeys: migration?.accountKeys ?? null,
     };
 
     let resp = await webApi.post<typeof payload, VaultWriteResponseDto>(VAULT_ENDPOINT, payload);
@@ -1181,7 +1085,7 @@ export class VaultSyncService {
       }
 
       devWarn(`[V2Sync] Server reported ${resp.missingBlobHashes.length} missing blob(s); uploading and retrying once.`);
-      const retriedPersonal = await this.uploadBlobs(webApi, blobEntries, resp.missingBlobHashes.filter(h => blobEntries.get(h)?.fromPersonal === true), migrateToVaultKey);
+      const retriedPersonal = await this.uploadBlobs(webApi, blobEntries, resp.missingBlobHashes.filter(h => blobEntries.get(h)?.fromPersonal === true), migration !== null);
       const retriedShared = await this.uploadBlobs(webApi, blobEntries, resp.missingBlobHashes.filter(h => blobEntries.get(h)?.fromPersonal === false));
       for (const [hash, ciphertext] of [...retriedPersonal, ...retriedShared]) {
         uploadedCiphertexts.set(hash, ciphertext);
@@ -1258,19 +1162,8 @@ export class VaultSyncService {
     }
     await this.saveBlobCache(newCache);
 
-    /*
-     * Account-key migration completed: cache the whole blob chain for offline unlock, stage the session account
-     * private key, and hand the new VEK to the caller, which must adopt it as the session encryption key and
-     * re-encrypt the locally stored vault with it.
-     */
-    if (migrateToVaultKey && encryptedVek && accountKeys && accountKeyPair) {
-      await VaultKeyService.adoptLocalAccountKeys({
-        encryptedAccountKey: accountKeys.encryptedAccountKey,
-        encryptedVek,
-        accountPublicKey: accountKeys.accountPublicKey,
-        encryptedAccountPrivateKey: accountKeys.encryptedAccountPrivateKey,
-        accountPrivateKey: accountKeyPair.privateKey,
-      });
+    if (migration) {
+      await completeLegacyAccountKeyMigration(migration);
       devLog('[V2Push] Account-key migration complete: hierarchy created server-side, blob chain cached locally.');
     }
 
@@ -1280,7 +1173,7 @@ export class VaultSyncService {
     const totalChars = manifestChars + bucketChars + uploadedBlobChars;
     devLog(`[V2Push] Total pushed (encrypted): ${manifestWrites.length} manifest(s) ${formatKb(manifestChars)} + ${bucketDtos.length} buckets ${formatKb(bucketChars)} + ${uploadedCiphertexts.size} blobs ${formatKb(uploadedBlobChars)} = ${formatKb(totalChars)}.`);
 
-    return { status: 'ok', newManifestRevision: newPersonalRevision, newEncryptionKey: migrateToVaultKey ? contentKey : undefined };
+    return { status: 'ok', newManifestRevision: newPersonalRevision, newEncryptionKey: migration ? contentKey : undefined };
   }
 
   /**
@@ -1360,7 +1253,7 @@ export class VaultSyncService {
    * @param username - the user's username (the unified write cross-checks it against the auth session)
    */
   public async pushDataBucketOnly(bucket: VaultDataBucket, vek: string, username: string): Promise<{ status: 'ok' | 'outdated'; revision: number }> {
-    return this.withOutdatedServerGuard(() => this.pushDataBucketOnlyInternal(bucket, vek, username));
+    return withOutdatedServerGuard(() => this.pushDataBucketOnlyInternal(bucket, vek, username));
   }
 
   /**

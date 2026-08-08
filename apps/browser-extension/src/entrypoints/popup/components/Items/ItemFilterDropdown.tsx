@@ -15,7 +15,7 @@ type ItemFilterDropdownProps = {
   title: string;
   /** Count shown next to the title on the trigger. Pass undefined to hide. */
   count?: number;
-  /** Currently active selection — used to highlight the matching menu row. */
+  /** Currently active selection used to highlight the matching menu row. */
   activeFilter: ItemFilterSelection;
   /** Number of items currently in the Recently Deleted page (badge). */
   recentlyDeletedCount: number;

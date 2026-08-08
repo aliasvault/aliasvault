@@ -5,7 +5,7 @@ import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/met
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import SqliteClient from '@/utils/SqliteClient';
-import { getItemWithFallback } from '@/utils/StorageUtility';
+import { getStorageItem } from '@/utils/StorageUtility';
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 import { vaultRequiresManifestMigration } from '@/utils/VaultManifestMigration';
@@ -319,9 +319,9 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const getVaultMetadata = useCallback(async () : Promise<VaultMetadata | null> => {
     try {
       // Use fallback for keys migrated from session: to local: in v0.26.0
-      const publicEmailDomains = await getItemWithFallback<string[]>(StorageKeys.PUBLIC_EMAIL_DOMAINS);
-      const privateEmailDomains = await getItemWithFallback<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS);
-      const hiddenPrivateEmailDomains = await getItemWithFallback<string[]>(StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS);
+      const publicEmailDomains = await getStorageItem<string[]>(StorageKeys.PUBLIC_EMAIL_DOMAINS);
+      const privateEmailDomains = await getStorageItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS);
+      const hiddenPrivateEmailDomains = await getStorageItem<string[]>(StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS);
       const revision = await storage.getItem(StorageKeys.SERVER_REVISION) as number | null;
 
       if (!publicEmailDomains && !privateEmailDomains) {

@@ -1,53 +1,18 @@
 import { storage } from 'wxt/utils/storage';
 
-import { type StorageKey, StorageKeys } from '@/utils/constants/storageKeys';
+import type { StorageKey } from '@/utils/constants/storageKeys';
+import { readLegacyStorageFallback } from '@/utils/legacy/LegacyStorageKeyFallbacks';
 
 /**
- * Storage keys that were migrated from session: to local: storage in v0.26.0 for offline mode support.
- * This mapping enables backward compatibility for users upgrading from older versions where data
- * was stored in session: storage. The fallback can be removed in v0.27.0+.
- *
- * Format: local key -> session fallback key
+ * Read a storage item, including legacy fallback for keys that have ever lived somewhere else.
+ * @param key - the storage key to read
  */
-const MIGRATED_STORAGE_KEYS: Record<string, StorageKey> = {
-  [StorageKeys.PUBLIC_EMAIL_DOMAINS]: StorageKeys.LEGACY_SESSION_PUBLIC_EMAIL_DOMAINS,
-  [StorageKeys.PRIVATE_EMAIL_DOMAINS]: StorageKeys.LEGACY_SESSION_PRIVATE_EMAIL_DOMAINS,
-  [StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS]: StorageKeys.LEGACY_SESSION_HIDDEN_PRIVATE_EMAIL_DOMAINS,
-  [StorageKeys.ENCRYPTION_KEY_DERIVATION_PARAMS]: StorageKeys.LEGACY_SESSION_ENCRYPTION_KEY_DERIVATION_PARAMS,
-};
-
-/**
- * Get a storage item with fallback to the legacy session: storage location.
- * This is used for keys that were migrated from session: to local: storage in v0.26.0.
- *
- * @param key The local: storage key to retrieve
- * @returns The value from local: storage, or from session: storage as fallback, or null if not found
- *
- * @example
- * // Instead of:
- * const domains = await storage.getItem(StorageKeys.PUBLIC_EMAIL_DOMAINS);
- *
- * // Use:
- * const domains = await getItemWithFallback(StorageKeys.PUBLIC_EMAIL_DOMAINS);
- *
- * @note This fallback can be removed in v0.27.0+ after users have had time to upgrade
- */
-export async function getItemWithFallback<T>(key: StorageKey): Promise<T | null> {
-  // Try the current (local:) key first
-  let value = await storage.getItem(key) as T | null;
-
-  // If not found and this is a migrated key, try the fallback
-  if (value === null && key in MIGRATED_STORAGE_KEYS) {
-    const fallbackKey = MIGRATED_STORAGE_KEYS[key];
-    value = await storage.getItem(fallbackKey) as T | null;
-
-    // If found in fallback, migrate to new location for future use
-    if (value !== null) {
-      await storage.setItem(key, value);
-      // Remove the fallback key
-      await storage.removeItem(fallbackKey);
-    }
+export async function getStorageItem<T>(key: StorageKey): Promise<T | null> {
+  const value = await storage.getItem(key) as T | null;
+  if (value !== null) {
+    return value;
   }
 
-  return value;
+  // LEGACY: delete this line later together with `@/utils/legacy/LegacyStorageKeyFallbacks`.
+  return readLegacyStorageFallback<T>(key);
 }
