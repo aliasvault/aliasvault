@@ -59,6 +59,21 @@ public static class GroupHelper
     }
 
     /// <summary>
+    /// Resolve the <see cref="GroupType.Shared"/> group a new shared manifest is filed under. The caller always names
+    /// the group and it must already exist: creating a group is an explicit action of its own, never a side effect of
+    /// sharing something, so there is no implicit "the caller's own family group" to fall back to.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="userId">The caller.</param>
+    /// <param name="groupId">The shared group named by the caller.</param>
+    /// <returns>The group to own the manifest, or null when it does not exist, is not a shared group, or the caller may not administer it.</returns>
+    public static async Task<Group?> ResolveShareTargetGroupAsync(AliasServerDbContext context, string userId, Guid groupId)
+    {
+        var group = await context.Groups.FirstOrDefaultAsync(g => g.Id == groupId && g.Type == GroupType.Shared);
+        return group is not null && await IsGroupAdminAsync(context, group.Id, userId) ? group : null;
+    }
+
+    /// <summary>
     /// Create the owner's membership row for a group in memory.
     /// </summary>
     /// <param name="group">The group.</param>
@@ -91,19 +106,32 @@ public static class GroupHelper
     }
 
     /// <summary>
-    /// Get the root manifest of a personal group, i.e. the manifest a user's personal keys and
-    /// personal aliases are scoped to.
+    /// The manifests owned by a <see cref="GroupType.Shared"/> group, i.e. every manifest that is somebody's shared
+    /// vault rather than somebody's personal one.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="personalGroupId">The user's personal group.</param>
-    /// <returns>The root manifest id, or null when the group has none.</returns>
-    public static async Task<Guid?> GetRootManifestIdAsync(AliasServerDbContext context, Guid personalGroupId)
+    /// <returns>Query over the shared manifests.</returns>
+    public static IQueryable<VaultManifest> SharedManifests(AliasServerDbContext context)
     {
-        return await context.VaultManifests.Where(m => m.IsRoot && m.OwnerGroupId == personalGroupId).Select(m => (Guid?)m.ManifestId).FirstOrDefaultAsync();
+        return context.VaultManifests.Where(m => m.OwnerGroup.Type == GroupType.Shared);
     }
 
     /// <summary>
-    /// Check if the user may administer the shared manifest.
+    /// Get the personal manifest of a personal group, i.e. the manifest a user's personal keys and
+    /// personal aliases are scoped to. A personal group owns exactly one manifest by construction.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="personalGroupId">The user's personal group.</param>
+    /// <returns>The personal manifest id, or null when the group has none.</returns>
+    public static async Task<Guid?> GetPersonalManifestIdAsync(AliasServerDbContext context, Guid personalGroupId)
+    {
+        return await context.VaultManifests.Where(m => m.OwnerGroupId == personalGroupId).Select(m => (Guid?)m.ManifestId).FirstOrDefaultAsync();
+    }
+
+    /// <summary>
+    /// Check if the user may administer the shared manifest. Only a shared manifest can be administered: a personal
+    /// manifest has no sharing to manage, and refusing it here is what stops the sharing endpoints from ever being
+    /// pointed at somebody's own vault.
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="manifestId">The shared manifest.</param>
@@ -111,8 +139,8 @@ public static class GroupHelper
     /// <returns>True when the user can administer the manifest.</returns>
     public static async Task<bool> CanAdministerManifestAsync(AliasServerDbContext context, Guid manifestId, string userId)
     {
-        var groupId = await context.VaultManifests
-            .Where(m => m.ManifestId == manifestId && !m.IsRoot)
+        var groupId = await SharedManifests(context)
+            .Where(m => m.ManifestId == manifestId)
             .Select(m => (Guid?)m.OwnerGroupId)
             .FirstOrDefaultAsync();
 
