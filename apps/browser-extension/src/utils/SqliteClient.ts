@@ -1,5 +1,6 @@
 import initSqlJs from 'sql.js';
 
+import { StorageKeys } from '@/utils/constants/storageKeys';
 import type { VaultVersion } from '@/utils/dist/core/vault';
 import { VaultSqlGenerator, checkVersionCompatibility, extractVersionFromMigrationId } from '@/utils/dist/core/vault';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
@@ -18,6 +19,8 @@ import {
 import type { IDatabaseClient, SqliteBindValue } from './db/BaseRepository';
 import type { Database } from 'sql.js';
 
+import { storage } from '#imports';
+
 /**
  * Core SQLite database client.
  * Provides low-level database operations and exposes repositories for domain-specific operations.
@@ -31,6 +34,11 @@ export class SqliteClient implements IDatabaseClient {
    * Null means "not chosen" and the user's personal manifest applies.
    */
   private activeManifestId: string | null = null;
+
+  /**
+   * The id of the user's personal manifest.
+   */
+  private personalManifestId: string | null = null;
 
   // Lazy-initialized repositories
   private _items: ItemRepository | null = null;
@@ -56,6 +64,15 @@ export class SqliteClient implements IDatabaseClient {
    */
   public setActiveManifestId(manifestId: string | null): void {
     this.activeManifestId = manifestId;
+  }
+
+  /**
+   * The id of the user's personal manifest, as reported by the last pull. Every write that cannot inherit a
+   * manifest from a parent row falls back to it.
+   * @returns The personal manifest id, or null when no pull has recorded one yet
+   */
+  public getPersonalManifestId(): string | null {
+    return this.personalManifestId;
   }
 
   /**
@@ -142,6 +159,9 @@ export class SqliteClient implements IDatabaseClient {
 
       // Create database from the binary data
       this.db = new SQL.Database(bytes);
+
+      // Get the personal manifest id from local storage
+      this.personalManifestId = (await storage.getItem(StorageKeys.VAULT_PERSONAL_MANIFEST_ID)) as string | null;
 
       // Reset repository instances when database changes
       this._items = null;

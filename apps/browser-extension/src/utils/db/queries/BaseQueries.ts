@@ -3,24 +3,6 @@
  */
 export class BaseQueries {
   /**
-   * The settings key holding the id of the manifest this client treats as its personal one: the vault
-   * the server hands the user at registration, and the default target for anything they create.
-   *
-   * It lives in Settings rather than in the Manifests bookkeeping table because it is not a property
-   * of the vault. The codec treats every manifest alike and a user may own several; which of them is
-   * *this* client's home is the client's own state, told to it by the server on each pull.
-   */
-  public static readonly PERSONAL_MANIFEST_SETTING_KEY = 'PersonalManifestId';
-
-  /**
-   * The vault's personal manifest id, written by the sync service from what the server reports on each
-   * pull. It is the default the active manifest falls back to.
-   */
-  public static readonly GET_PERSONAL_MANIFEST_ID = `
-    SELECT Value AS Id FROM Settings
-    WHERE Key = '${BaseQueries.PERSONAL_MANIFEST_SETTING_KEY}' AND IsDeleted = 0 LIMIT 1`;
-
-  /**
    * SQL fragment resolving the manifest a row placed in the folder bound to its first `?` (possibly
    * NULL) belongs to: that folder's manifest, or the manifest bound to its second `?` when the row sits
    * outside any folder.

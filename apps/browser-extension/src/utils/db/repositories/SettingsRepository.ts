@@ -106,14 +106,6 @@ export class SettingsRepository extends BaseRepository {
   }
 
   /**
-   * Get the id of the vault's own (personal) manifest.
-   * @returns The personal manifest id, or null when not known yet
-   */
-  public getPersonalManifestId(): string | null {
-    return this.personalManifestId();
-  }
-
-  /**
    * Get the user's active personal keypair.
    * @returns The active personal keypair, or null when absent
    */

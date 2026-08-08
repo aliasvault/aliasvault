@@ -17,6 +17,7 @@ export interface IDatabaseClient {
   commitTransaction(): Promise<void>;
   rollbackTransaction(): void;
   getActiveManifestId(): string | null;
+  getPersonalManifestId(): string | null;
 }
 
 /**
@@ -183,21 +184,18 @@ export abstract class BaseRepository {
   protected activeManifestId(): string {
     const manifestId = this.client.getActiveManifestId() ?? this.personalManifestId();
     if (!manifestId) {
-      throw new Error('BaseRepository: the vault has no manifest recorded yet (no active manifest and no personal manifest); sync once before writing.');
+      throw new Error('BaseRepository: this client has no manifest recorded yet (no active manifest and no personal manifest); sync once before writing.');
     }
     return manifestId;
   }
 
   /**
-   * Get the id of the user's personal manifest, as recorded by the last pull.
+   * Get the id of the user's personal manifest, as recorded by the last pull. It is client state rather than
+   * vault content, so it is read off the client instead of out of the database.
    * @returns The personal manifest id, or null when absent
    */
   protected personalManifestId(): string | null {
-    if (!this.tableExists('Settings')) {
-      return null;
-    }
-    const results = this.client.executeQuery<{ Id: string }>(BaseQueries.GET_PERSONAL_MANIFEST_ID);
-    return results.length > 0 ? results[0].Id : null;
+    return this.client.getPersonalManifestId();
   }
 
   /**

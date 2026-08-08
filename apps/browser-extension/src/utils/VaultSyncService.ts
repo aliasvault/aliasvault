@@ -7,13 +7,12 @@
 import { storage } from 'wxt/utils/storage';
 
 import { bucketRevisionStorageKey, StorageKeys } from '@/utils/constants/storageKeys';
-import { BaseQueries } from '@/utils/db/queries/BaseQueries';
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
 import type { VaultResponse } from '@/utils/dist/core/models/webapi';
 import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 import { buildEmailRouting } from '@/utils/EmailRouting';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateManifestSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecBlobEntry, type CodecCanonicalized, type CodecManifest, type CodecManifestSpec, type CodecMaterialized} from '@/utils/RustCore';
+import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateManifestSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecBlobEntry, type CodecCanonicalized, type CodecManifest, type CodecManifestSpec} from '@/utils/RustCore';
 import { SharingService, type SessionSharedManifest } from '@/utils/SharingService';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
@@ -323,35 +322,6 @@ type CanonicalizedVaultSet = {
   manifestRecords: ManifestRecord[];
 };
 
-/**
- * Write the caller's own manifest id into the `Settings` rows of a materialized vault, so every later
- * local query and write can resolve it offline. Left untouched when it is already correct: the row is
- * ordinary synced user data, and rewriting its timestamp on every pull would make each pull look like
- * a change and trigger a push.
- * @param materialized - the table set about to be inserted into the fresh vault DB
- * @param manifestId - the id of the manifest the server reported as the caller's own
- */
-function recordOwnManifestId(materialized: CodecMaterialized, manifestId: string): void {
-  let settings = materialized.tables.find(t => t.name === 'Settings');
-  if (!settings) {
-    settings = { name: 'Settings', records: [] };
-    materialized.tables.push(settings);
-  }
-
-  const now = new Date().toISOString();
-
-  const existing = settings.records.find(r => r.Key === BaseQueries.PERSONAL_MANIFEST_SETTING_KEY);
-  if (existing && existing.Value === manifestId && !existing.IsDeleted) {
-    return;
-  }
-
-  if (existing) {
-    Object.assign(existing, { Value: manifestId, UpdatedAt: now, IsDeleted: 0 });
-    return;
-  }
-  settings.records.push({ Key: BaseQueries.PERSONAL_MANIFEST_SETTING_KEY, Value: manifestId, CreatedAt: now, UpdatedAt: now, IsDeleted: 0 });
-}
-
 let canonicalizeCache: ({ client: SqliteClient; mutationSequence: number } & CanonicalizedVaultSet) | null = null;
 
 /**
@@ -445,8 +415,8 @@ export class VaultSyncService {
        * For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into.
        * TODO: delete this field once the migration is complete.
        */
-      const ownManifestId = await this.resolvePersonalManifestId(sqliteClient);
-      const { canonicalized, manifestRecords } = await this.canonicalizeVault(sqliteClient, { adoptUnstampedInto: ownManifestId });
+      const ownManifestId = await this.resolvePersonalManifestId();
+      const { canonicalized } = await this.canonicalizeVault(sqliteClient, { adoptUnstampedInto: ownManifestId });
 
       /*
        * Canonicalize already handed us every extracted favicon/attachment as plaintext bytes, so materialize can
@@ -462,15 +432,6 @@ export class VaultSyncService {
       const schemaSql = new VaultSqlGenerator().getCompleteSchemaSql();
       const schemaColumns = await VaultCodec.getSchemaColumns(schemaSql);
       const materialized = await vaultCodecMaterializeAsSqlite(canonicalized.manifests.map(m => m.manifest), canonicalized.dataBuckets, schemaColumns);
-
-      /*
-       * Record which manifest is ours in the migrated vault, exactly as a pull does. A legacy vault has
-       * never been materialized and so carries no such row, while the write path resolves the stamp for
-       * a new row from it (see `BaseQueries.GET_PERSONAL_MANIFEST_ID`). Without this, every top-level insert
-       * between the migration and the next pull resolves its stamp to NULL and is rejected outright by
-       * the column's NOT NULL constraint.
-       */
-      recordOwnManifestId(materialized, manifestRecords[0].manifestId);
 
       const sqliteBase64 = await VaultCodec.insertTables(materialized, blobMap, schemaSql);
 
@@ -566,8 +527,9 @@ export class VaultSyncService {
 
       if (isPersonal) {
         /*
-         * Persist the personal manifest's blob salt locally so subsequent canonicalizes hash blobs the same way, and the personal
-         * manifest id so a push can resolve it even before the vault DB records it (see `recordOwnManifestId`).
+         * Persist the personal manifest's blob salt locally so subsequent canonicalizes hash blobs the same way, and the
+         * personal manifest id, which is the sole record of it: it is server-reported client state, not vault content, so
+         * it stays out of the vault (`SqliteClient` hydrates it from here whenever the database is opened).
          */
         await storage.setItem(StorageKeys.VAULT_MANIFEST_SALT, entry.manifest.manifestSalt);
         await storage.setItem(StorageKeys.VAULT_PERSONAL_MANIFEST_ID, entry.manifestId);
@@ -718,14 +680,6 @@ export class VaultSyncService {
     if (overflowTableCount > 0 || overflowColumnTables.length > 0) {
       devWarn(`[V2Pull] Newer-schema data preserved as overflow: ${overflowTableCount} unknown table(s), unknown columns on [${overflowColumnTables.join(', ')}]. It will round-trip on push but is not usable locally until the app is updated.`);
     }
-
-    /*
-     * Record which of these manifests is ours, inside the vault we are assembling. The codec treats
-     * every manifest alike: a user may own several, and which one a client calls home is its own
-     * state. So this comes from what the server reported in this snapshot, and it is what the local
-     * write path stamps new rows with (see `BaseQueries.GET_PERSONAL_MANIFEST_ID`).
-     */
-    recordOwnManifestId(materialized, personal.manifestId);
 
     const sqliteBase64 = await VaultCodec.insertTables(materialized, blobMap, schemaSql);
     devLog('[V2Pull] Codec reassembly complete.');
@@ -1453,7 +1407,7 @@ export class VaultSyncService {
     }
 
     const records: ManifestRecord[] = [{
-      manifestId: await this.resolvePersonalManifestId(sqliteClient),
+      manifestId: await this.resolvePersonalManifestId(),
       isPersonal: true,
       salt: manifestSalt,
       folderId: null,
@@ -1493,15 +1447,14 @@ export class VaultSyncService {
   }
 
   /**
-   * The id of this vault's own (personal) manifest. The vault DB's own setting is the durable source (written on each
-   * materialize); the storage copy covers the one case where no materialize has run yet: the local schema
-   * migration of a legacy sqlite-blob vault, which canonicalizes before it records the setting row.
-   * @param sqliteClient - the open local vault DB
+   * The id of this vault's own (personal) manifest, as reported by the server on the last pull. It is client state
+   * rather than vault content, so local storage is its only home; the vault carries no copy that could go stale or
+   * outlive the account.
    */
-  private async resolvePersonalManifestId(sqliteClient: SqliteClient): Promise<string> {
-    const personalManifestId = sqliteClient.settings.getPersonalManifestId() ?? ((await storage.getItem(StorageKeys.VAULT_PERSONAL_MANIFEST_ID)) as string | null);
+  private async resolvePersonalManifestId(): Promise<string> {
+    const personalManifestId = (await storage.getItem(StorageKeys.VAULT_PERSONAL_MANIFEST_ID)) as string | null;
     if (!personalManifestId) {
-      throw new Error('VaultSyncService: no personal manifest id available (no vault setting and no snapshot baseline); pull once before pushing.');
+      throw new Error('VaultSyncService: no personal manifest id available (no snapshot baseline recorded); pull once before pushing.');
     }
     return personalManifestId;
   }
