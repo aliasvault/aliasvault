@@ -3,7 +3,7 @@
  * change the key names without breaking the code and track shared storage keys in one place.
  */
 
-import { ALL_VAULT_BUCKET_SCOPES, ALL_VAULT_MUTATION_SCOPES, type VaultMutationScope } from '@/utils/types/VaultMutationScope';
+import { ALL_VAULT_MUTATION_SCOPES, type VaultMutationScope } from '@/utils/types/VaultMutationScope';
 
 /** A WXT storage key, scoped to either the persisted (local) or the memory-only (session) area. */
 export type StorageKey = `local:${string}` | `session:${string}`;
@@ -65,8 +65,10 @@ export const StorageKeys = {
   IS_OFFLINE_MODE: 'local:isOfflineMode',
   /** Message of the last failed sync attempt, shown in the UI. */
   LAST_SYNC_ERROR: 'local:lastSyncError',
-  /** The client's last known revision per shared manifest. */
+  /** The client's last known revision per manifest. */
   SERVER_MANIFEST_REVISIONS: 'local:serverManifestRevisions',
+  /** The client's last known revision per data bucket. */
+  VAULT_BUCKET_REVISIONS: 'local:vaultBucketRevisions',
   /** The personal manifest's blob-hashing salt, cached from the last pull; see `CodecManifest.manifestSalt`. */
   VAULT_MANIFEST_SALT: 'local:vaultManifestSalt',
 
@@ -207,10 +209,11 @@ export const StorageKeys = {
 export const dirtyScopeStorageKey = (scope: VaultMutationScope): `local:${string}` => `local:dirtyScope:${scope}`;
 
 /**
- * Storage key holding the local revision number of a single data bucket.
+ * Record key of one data bucket's revision inside {@link StorageKeys.VAULT_BUCKET_REVISIONS}, addressed by the manifest that owns it and the category.
+ * @param manifestId - the id of the manifest that owns the bucket
  * @param category - the data bucket category
  */
-export const bucketRevisionStorageKey = (category: string): `local:${string}` => `local:vaultBucketRev:${category}`;
+export const bucketRevisionKey = (manifestId: string, category: string): string => `${manifestId}:${category}`;
 
 /**
  * Keys that hold auth tokens and ephemeral error state. Cleared on logout; safe to clear during a forced
@@ -276,6 +279,7 @@ export const allVaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.SERVER_REVISION,
   StorageKeys.LEGACY_VAULT_REVISION_NUMBER,
   StorageKeys.SERVER_MANIFEST_REVISIONS,
+  StorageKeys.VAULT_BUCKET_REVISIONS,
   StorageKeys.VAULT_MANIFEST_SALT,
   StorageKeys.VAULT_PERSONAL_MANIFEST_ID,
   StorageKeys.VAULT_CONTENT_FINGERPRINTS,
@@ -291,5 +295,4 @@ export const allVaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY,
   StorageKeys.USERNAME,
   ...ALL_VAULT_MUTATION_SCOPES.map(scope => dirtyScopeStorageKey(scope)),
-  ...ALL_VAULT_BUCKET_SCOPES.map(category => bucketRevisionStorageKey(category)),
 ];

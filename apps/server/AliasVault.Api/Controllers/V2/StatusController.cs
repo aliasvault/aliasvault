@@ -56,11 +56,11 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
         var manifestRevisions = await VaultStatusHelper.GetManifestRevisionsAsync(context, user.Id);
         var personalManifestId = await GroupHelper.GetPersonalManifestIdAsync(context, user.PersonalGroupId);
 
-        // Latest revision per bucket kind.
+        // Latest revision of every bucket available to the caller.
+        var accessibleManifestIds = manifestRevisions.Select(m => m.ManifestId).ToList();
         var bucketRevisions = await context.VaultDataBuckets
-            .Where(x => x.OwnerUserId == user.Id)
-            .GroupBy(x => x.Category)
-            .Select(g => new BucketRevision { Category = g.Key, Revision = g.Max(b => b.RevisionNumber) })
+            .Where(x => accessibleManifestIds.Contains(x.ManifestId))
+            .Select(x => new BucketRevision { ManifestId = x.ManifestId, Category = x.Category, Revision = x.RevisionNumber })
             .ToListAsync();
 
         // Current SRP salt: lives on the password VaultManifestAccessKey for v2 migrated users, on the personal manifest for legacy users.

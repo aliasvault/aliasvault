@@ -10,21 +10,20 @@ using System.ComponentModel.DataAnnotations.Schema;
 using AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
-/// The current revision of a small, independently-syncable user-scoped data bucket. Each bucket holds one kind of
-/// data that we deliberately keep out of the main vault content manifest so it can sync separately and faster.
+/// The current revision of a independently-syncable data bucket belonging to one manifest.
 /// </summary>
 public class VaultDataBucket : VaultDataBucketBase
 {
     /// <summary>
-    /// Gets or sets the user ID foreign key. Part of the composite primary key (OwnerUserId, Category).
+    /// Gets or sets the id of the manifest that owns this bucket. Part of the composite primary key (ManifestId, Category).
     /// </summary>
-    public string OwnerUserId { get; set; } = null!;
+    public Guid ManifestId { get; set; }
 
     /// <summary>
-    /// Gets or sets the navigation property to the user.
+    /// Gets or sets the navigation property to the owning manifest.
     /// </summary>
-    [ForeignKey("OwnerUserId")]
-    public virtual AliasVaultUser User { get; set; } = null!;
+    [ForeignKey("ManifestId")]
+    public virtual VaultManifest Manifest { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the bucket category/kind (e.g. Settings). Part of the composite primary key.

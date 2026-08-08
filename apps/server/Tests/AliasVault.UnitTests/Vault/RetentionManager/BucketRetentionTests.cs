@@ -136,7 +136,7 @@ public class BucketRetentionTests
 
         var currentRevision = new VaultDataBucket
         {
-            OwnerUserId = "user-1",
+            ManifestId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
             Category = VaultDataBucketCategory.Settings,
             EncryptedData = string.Empty,
             RevisionNumber = 10,
@@ -153,7 +153,7 @@ public class BucketRetentionTests
     {
         return new VaultDataBucketsHistory
         {
-            OwnerUserId = "user-1",
+            ManifestId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
             Category = VaultDataBucketCategory.Settings,
             EncryptedData = string.Empty,
             RevisionNumber = revisionNumber,

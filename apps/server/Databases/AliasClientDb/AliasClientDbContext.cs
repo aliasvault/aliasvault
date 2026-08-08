@@ -157,6 +157,9 @@ public class AliasClientDbContext : DbContext
         modelBuilder.Entity<Passkey>().HasKey(e => new { e.ManifestId, e.Id });
         modelBuilder.Entity<TotpCode>().HasKey(e => new { e.ManifestId, e.Id });
 
+        // Settings are named by Key rather than Id.
+        modelBuilder.Entity<Setting>().HasKey(e => new { e.ManifestId, e.Key });
+
         // Configure Attachment - Item relationship
         modelBuilder.Entity<Attachment>()
             .HasOne(l => l.Item)

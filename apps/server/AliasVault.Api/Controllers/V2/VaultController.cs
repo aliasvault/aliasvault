@@ -115,21 +115,18 @@ public class VaultController(
             });
         }
 
-        // The current revision of each bucket is the row itself: superseded revisions live in the history table.
+        var manifestIds = latestManifests.Select(m => m.ManifestId).ToList();
         var buckets = await context.VaultDataBuckets
-            .Where(x => x.OwnerUserId == user.Id)
+            .Where(x => manifestIds.Contains(x.ManifestId))
             .Select(x => new Bucket
             {
+                ManifestId = x.ManifestId,
                 Category = x.Category,
                 Blob = x.EncryptedData,
                 CiphertextHash = x.CiphertextHash,
                 Revision = x.RevisionNumber,
             })
             .ToListAsync();
-
-        // Blob references are scoped per manifest revision. Fetch them for all manifests in one query, then keep
-        // only the refs belonging to each manifest's current revision.
-        var manifestIds = latestManifests.Select(m => m.ManifestId).ToList();
         var currentRevisionByManifest = latestManifests.ToDictionary(m => m.ManifestId, m => m.RevisionNumber);
         var refsByManifest = (await context.VaultBlobReferences
                 .Where(r => manifestIds.Contains(r.ManifestId))
@@ -277,9 +274,9 @@ public class VaultController(
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USERNAME_MISMATCH, 400));
         }
 
-        // Each manifest and bucket may appear at most once.
+        // Each manifest and each (manifest, bucket kind) may appear at most once.
         if (model.Manifests.Select(m => m.ManifestId).Distinct().Count() != model.Manifests.Count
-            || model.Buckets.Select(b => b.Category).Distinct().Count() != model.Buckets.Count)
+            || model.Buckets.Select(b => (b.ManifestId, b.Category)).Distinct().Count() != model.Buckets.Count)
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
         }
@@ -294,6 +291,19 @@ public class VaultController(
             }
 
             resolved.Add((mw, row));
+        }
+
+        foreach (var bucketManifestId in model.Buckets.Select(b => b.ManifestId).Distinct())
+        {
+            if (resolved.Any(r => r.Row.ManifestId == bucketManifestId))
+            {
+                continue;
+            }
+
+            if (!await ManifestAccessHelper.AccessibleManifests(context, user.Id).AnyAsync(x => x.ManifestId == bucketManifestId))
+            {
+                return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+            }
         }
 
         // The caller's own manifest is the one owned by their personal group; a personal group owns no other.
@@ -333,19 +343,24 @@ public class VaultController(
 
         // All-or-nothing revision gate: every manifest and bucket must be exactly one ahead of the server's current.
         // On any staleness, reject the whole write with Outdated and hand back the current revisions to pull/merge.
-        var writeCategories = model.Buckets.Select(b => b.Category).ToList();
-        var bucketRows = await context.VaultDataBuckets.Where(x => x.OwnerUserId == user.Id && writeCategories.Contains(x.Category)).ToDictionaryAsync(x => x.Category);
-        var bucketCurrentRevisions = writeCategories.ToDictionary(c => c, c => bucketRows.TryGetValue(c, out var row) ? row.RevisionNumber : 0);
+        var writeManifestIds = model.Buckets.Select(b => b.ManifestId).Distinct().ToList();
+        var writeCategories = model.Buckets.Select(b => b.Category).Distinct().ToList();
+        var bucketRows = await context.VaultDataBuckets
+            .Where(x => writeManifestIds.Contains(x.ManifestId) && writeCategories.Contains(x.Category))
+            .ToDictionaryAsync(x => (x.ManifestId, x.Category));
+        var bucketCurrentRevisions = model.Buckets.ToDictionary(
+            b => (b.ManifestId, b.Category),
+            b => bucketRows.TryGetValue((b.ManifestId, b.Category), out var row) ? row.RevisionNumber : 0);
 
         var manifestStale = resolved.Any(r => r.Row.RevisionNumber >= r.Write.CurrentRevision + 1);
-        var bucketStale = model.Buckets.Any(b => bucketCurrentRevisions[b.Category] >= b.CurrentRevision + 1);
+        var bucketStale = model.Buckets.Any(b => bucketCurrentRevisions[(b.ManifestId, b.Category)] >= b.CurrentRevision + 1);
         if (manifestStale || bucketStale)
         {
             return Ok(new VaultWriteResponse
             {
                 Status = VaultStatus.Outdated,
                 ManifestRevisions = resolved.Select(r => new ManifestWriteResult { ManifestId = r.Write.ManifestId, Revision = r.Row.RevisionNumber }).ToList(),
-                BucketRevisions = model.Buckets.Select(b => new BucketRevision { Category = b.Category, Revision = bucketCurrentRevisions[b.Category] }).ToList(),
+                BucketRevisions = model.Buckets.Select(b => new BucketRevision { ManifestId = b.ManifestId, Category = b.Category, Revision = bucketCurrentRevisions[(b.ManifestId, b.Category)] }).ToList(),
             });
         }
 
@@ -508,8 +523,8 @@ public class VaultController(
                     continue;
                 }
 
-                var rev = await UpsertBucketAsync(context, user.Id, bucket.Category, bucket.Blob, bucket.CiphertextHash, bucket.CurrentRevision, bucketRows.GetValueOrDefault(bucket.Category));
-                newBucketRevisions.Add(new BucketRevision { Category = bucket.Category, Revision = rev });
+                var rev = await UpsertBucketAsync(context, bucket.ManifestId, bucket.Category, bucket.Blob, bucket.CiphertextHash, bucket.CurrentRevision, bucketRows.GetValueOrDefault((bucket.ManifestId, bucket.Category)));
+                newBucketRevisions.Add(new BucketRevision { ManifestId = bucket.ManifestId, Category = bucket.Category, Revision = rev });
             }
 
             // 6) Personal-scoped email routing + public keys. The personal key is published scoped to the caller's
@@ -790,17 +805,17 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Writes a new revision of a (user, bucket kind): the current row is copied to the history table and then updated in place.
+    /// Writes a new revision of a (manifest, bucket kind): the current row is copied to the history table and then updated in place.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="userId">The bucket owner.</param>
+    /// <param name="manifestId">The manifest that owns the bucket.</param>
     /// <param name="kind">The bucket category.</param>
     /// <param name="encryptedData">The new encrypted payload.</param>
     /// <param name="ciphertextHash">Storage-layer integrity hash of the payload.</param>
     /// <param name="currentRevision">The revision the client believes is current, used to seed a first write.</param>
     /// <param name="existing">The current row, already loaded by the revision gate, or null when none exists yet.</param>
     /// <returns>The new revision number.</returns>
-    private async Task<long> UpsertBucketAsync(AliasServerDbContext context, string userId, VaultDataBucketCategory kind, string encryptedData, string? ciphertextHash, long? currentRevision, VaultDataBucket? existing)
+    private async Task<long> UpsertBucketAsync(AliasServerDbContext context, Guid manifestId, VaultDataBucketCategory kind, string encryptedData, string? ciphertextHash, long? currentRevision, VaultDataBucket? existing)
     {
         var now = timeProvider.UtcNow;
 
@@ -809,7 +824,7 @@ public class VaultController(
             var firstRev = (currentRevision ?? 0) + 1;
             context.VaultDataBuckets.Add(new VaultDataBucket
             {
-                OwnerUserId = userId,
+                ManifestId = manifestId,
                 Category = kind,
                 EncryptedData = encryptedData,
                 CiphertextHash = ciphertextHash,
@@ -830,7 +845,7 @@ public class VaultController(
         existing.RevisionNumber = newRev;
         existing.UpdatedAt = now;
 
-        await ApplyBucketRetentionAsync(context, userId, kind, archived);
+        await ApplyBucketRetentionAsync(context, manifestId, kind, archived);
         return newRev;
     }
 
@@ -838,12 +853,12 @@ public class VaultController(
     /// Prunes superseded revisions of one bucket down to <see cref="_bucketRetentionPolicy"/>.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="userId">The bucket owner.</param>
+    /// <param name="manifestId">The manifest that owns the bucket.</param>
     /// <param name="kind">The bucket category.</param>
     /// <param name="justArchived">The revision archived by this write, included in the retention window.</param>
-    private async Task ApplyBucketRetentionAsync(AliasServerDbContext context, string userId, VaultDataBucketCategory kind, VaultDataBucketsHistory justArchived)
+    private async Task ApplyBucketRetentionAsync(AliasServerDbContext context, Guid manifestId, VaultDataBucketCategory kind, VaultDataBucketsHistory justArchived)
     {
-        var history = await context.VaultDataBucketsHistory.Where(x => x.OwnerUserId == userId && x.Category == kind && x.RevisionNumber != justArchived.RevisionNumber).ToListAsync();
+        var history = await context.VaultDataBucketsHistory.Where(x => x.ManifestId == manifestId && x.Category == kind && x.RevisionNumber != justArchived.RevisionNumber).ToListAsync();
         history.Add(justArchived);
 
         var toDelete = VaultRetentionManager.ApplyRetention(_bucketRetentionPolicy, history, timeProvider.UtcNow);

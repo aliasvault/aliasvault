@@ -11,12 +11,12 @@ using System.ComponentModel.DataAnnotations;
 using AliasClientDb.Abstracts;
 
 /// <summary>
-/// The service entity.
+/// A single setting, scoped to the manifest it belongs to.
 /// </summary>
-public class Setting : SyncableEntity
+public class Setting : ManifestScopedEntity
 {
     /// <summary>
-    /// Gets or sets the setting key which is also the primary unique key.
+    /// Gets or sets the setting key, which names the setting within its manifest.
     /// </summary>
     [Key]
     [StringLength(255)]

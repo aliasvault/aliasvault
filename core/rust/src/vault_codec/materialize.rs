@@ -20,7 +20,7 @@ use std::collections::{HashMap, HashSet};
 use serde_json::json;
 
 use super::manifest::{CodecOverflow, CodecRecord, CodecTableData, Manifest, MaterializeInput, MaterializedTables};
-use super::types::{is_skip_table, row_identity, MANIFESTS_TABLE, OVERFLOW_TABLE};
+use super::types::{is_manifest_scoped, is_skip_table, row_identity, MANIFEST_ID_COL, MANIFESTS_TABLE, OVERFLOW_TABLE};
 use crate::error::{VaultError, VaultResult};
 
 /// Materialize the vault's manifests into the table set the platform inserts. Every manifest arrives
@@ -64,21 +64,27 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
         }
     }
 
-    // Reconstitute every data bucket's tables back into the flat set. Unknown bucket tables keep
-    // their category so canonicalize / extract_bucket can re-emit them into the right bucket.
+    // Put every data bucket's tables back into the flat set.
+    let mut bucket_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
     for bucket in data_buckets {
-        for (name, records) in bucket.tables {
+        for (name, mut records) in bucket.tables {
             if is_skip_table(&name) || name == OVERFLOW_TABLE {
                 continue;
             }
+            if is_manifest_scoped(&name) {
+                for row in records.iter_mut() {
+                    row.insert(MANIFEST_ID_COL.to_string(), json!(bucket.manifest_id));
+                }
+            }
             match split_for_schema(&name, records, &schema_columns, &mut overflow.columns) {
-                SplitResult::Fits(records) => tables.push(CodecTableData { name, records }),
+                SplitResult::Fits(records) => bucket_tables.entry(name).or_default().extend(records),
                 SplitResult::UnknownTable(records) => {
-                    overflow.bucket_tables.entry(bucket.category.clone()).or_default().insert(name, records);
+                    overflow.bucket_tables.entry(bucket.category.clone()).or_default().entry(name).or_default().extend(records);
                 }
             }
         }
     }
+    tables.extend(bucket_tables.into_iter().map(|(name, records)| CodecTableData { name, records }));
 
     // Carry the overflow inside the vault DB itself: one OVERFLOW_TABLE row, inserted like any table.
     if !overflow.is_empty() {

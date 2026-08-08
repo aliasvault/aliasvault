@@ -12,6 +12,9 @@ namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 /// </summary>
 public class Bucket
 {
+    /// <summary>Gets or sets the id of the manifest that owns this bucket.</summary>
+    public required Guid ManifestId { get; set; }
+
     /// <summary>Gets or sets the bucket kind discriminator.</summary>
     public required VaultDataBucketCategory Category { get; set; }
 

@@ -23,10 +23,10 @@ export class SettingsRepository extends BaseRepository {
    * @returns The setting value
    */
   public getSetting(key: string, defaultValue: string = ''): string {
-    const results = this.client.executeQuery<{ Value: string }>(
-      SettingsQueries.GET_SETTING,
-      [key]
-    );
+    const manifestId = this.client.getActiveManifestId() ?? this.personalManifestId();
+    const results = manifestId
+      ? this.client.executeQuery<{ Value: string }>(SettingsQueries.GET_SETTING, [manifestId, key])
+      : this.client.executeQuery<{ Value: string }>(SettingsQueries.GET_SETTING_ANY_MANIFEST, [key]);
     return results.length > 0 ? results[0].Value : defaultValue;
   }
 
@@ -245,23 +245,24 @@ export class SettingsRepository extends BaseRepository {
    */
   public updateSetting(key: string, value: string): void {
     const now = this.now();
+    const manifestId = this.activeManifestId();
 
-    // Check if setting exists
+    // Check if setting exists within this manifest.
     const results = this.client.executeQuery<{ count: number }>(
       SettingsQueries.COUNT_BY_KEY,
-      [key]
+      [manifestId, key]
     );
     const exists = results[0]?.count > 0;
 
     if (exists) {
       this.client.executeUpdate(
         SettingsQueries.UPDATE_SETTING,
-        [value, now, key]
+        [value, now, manifestId, key]
       );
     } else {
       this.client.executeUpdate(
         SettingsQueries.INSERT_SETTING,
-        [key, value, now, now, 0]
+        [manifestId, key, value, now, now, 0]
       );
     }
   }

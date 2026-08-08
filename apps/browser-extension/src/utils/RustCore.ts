@@ -273,10 +273,11 @@ export type CodecManifestSpec = {
 };
 
 /**
- * A manifest-v1 data bucket.
+ * A manifest-v1 data bucket, addressed by the manifest that owns it and its category.
  */
 export type CodecDataBucket = {
   schemaVersion: number;
+  manifestId: string;
   category: string;
   tables: Record<string, Array<Record<string, unknown>>>;
   [key: string]: unknown;
@@ -355,13 +356,13 @@ export async function vaultCodecExtractEncryptionKeyForPublicKey(manifest: Codec
 }
 
 /**
- * Build a single data bucket for `category` from its tables (bucket-only push path). Include the
+ * Build a single data bucket for `(manifestId, category)` from its tables (bucket-only push path). Include the
  * `CodecOverflows` table (see {@link vaultCodecOverflowTable}) in `tables` so a newer writer's
  * columns/tables re-merge and survive; it is consumed and never emitted into the bucket.
  */
-export async function vaultCodecExtractBucket(category: string, tables: Record<string, Array<Record<string, unknown>>>): Promise<CodecDataBucket> {
+export async function vaultCodecExtractBucket(manifestId: string, category: string, tables: Record<string, Array<Record<string, unknown>>>): Promise<CodecDataBucket> {
   await initRustCore();
-  return core.vaultCodecExtractBucket({ category, tables }) as CodecDataBucket;
+  return core.vaultCodecExtractBucket({ manifestId, category, tables }) as CodecDataBucket;
 }
 
 /**

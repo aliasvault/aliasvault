@@ -18,12 +18,12 @@ async function makeDb(): Promise<Database> {
   const SQL = await initSqlJs();
   const db = new SQL.Database();
   db.run(`
-    CREATE TABLE Settings ("Key" TEXT NOT NULL PRIMARY KEY, Value TEXT NULL, CreatedAt TEXT NOT NULL, UpdatedAt TEXT NOT NULL, IsDeleted INTEGER NOT NULL DEFAULT 0);
+    CREATE TABLE Settings (ManifestId TEXT NOT NULL, "Key" TEXT NOT NULL, Value TEXT NULL, CreatedAt TEXT NOT NULL, UpdatedAt TEXT NOT NULL, IsDeleted INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (ManifestId, "Key"));
     CREATE TABLE Folders (ManifestId TEXT NOT NULL, Id TEXT NOT NULL, Name TEXT, ParentFolderId TEXT, PRIMARY KEY (ManifestId, Id));
     CREATE TABLE Logos (ManifestId TEXT NOT NULL, Id TEXT NOT NULL, Kind TEXT NOT NULL DEFAULT 'favicon', Source TEXT NOT NULL, FileData BLOB, MimeType TEXT, Name TEXT, CreatedAt TEXT NOT NULL, UpdatedAt TEXT NOT NULL, IsDeleted INTEGER NOT NULL, PRIMARY KEY (ManifestId, Id));
     CREATE UNIQUE INDEX IX_Logos_ManifestId_Kind_Source ON Logos (ManifestId, Kind, Source);
     CREATE TABLE Items (ManifestId TEXT NOT NULL, Id TEXT NOT NULL, LogoId TEXT, FolderId TEXT, IsDeleted INTEGER NOT NULL, PRIMARY KEY (ManifestId, Id));
-    INSERT INTO Settings VALUES ('PersonalManifestId', '${PERSONAL}', 't', 't', 0);
+    INSERT INTO Settings VALUES ('${PERSONAL}', 'CredentialsSortOrder', 'NewestFirst', 't', 't', 0);
     INSERT INTO Folders VALUES ('${SHARED}', 'FOLDER-SHARED', 'Team', NULL), ('${PERSONAL}', 'FOLDER-MINE', 'Mine', NULL);
   `);
   return db;

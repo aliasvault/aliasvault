@@ -3,14 +3,15 @@
 //!
 //! The input rows are already JSON-normalized by the platform read. Every SQLite byte column
 //! arrives as `{ "__b64": <base64> }`. This module applies the *format* rules:
-//!   - each bucketed table (see `BUCKET_TABLES`; `Settings` today) is split out into its data bucket;
+//!   - each bucketed table (see `BUCKET_TABLES`; `Settings` today) is split out into a data bucket per
+//!     manifest: rows route by their own `ManifestId`.
 //!   - skip-tables are dropped;
 //!   - the two blob columns (`Logos.FileData`, `Attachments.Blob`) have their bytes extracted into a
 //!     content-addressed blob map (hash = `sha256(salt ‖ bytes)`) and the cell replaced with
 //!     `{ "__blobRef": hash, "__blobKind": kind }`;
 //!   - every other column (including non-blob `{ "__b64" }` inline bytes) is copied verbatim.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
@@ -21,8 +22,8 @@ use super::scoped_assets::{normalize_logo_scope, reconcile_logo_references};
 use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecOverflow, DataBucket, Manifest, ManifestSpec, CodecRecord};
 use super::sharing::{clone_referenced_rows, partition_by_manifest, prune_unreferenced_logos, referenced_tables};
 use super::types::{
-    blob_spec_for, bucket_categories, bucket_category_for, is_skip_table, is_unstamped_scope, manifest_scoped_tables, row_identity, MANIFEST_ID_COL,
-    OVERFLOW_TABLE, SCHEMA_VERSION,
+    blob_spec_for, bucket_categories, bucket_category_for, is_bucketed_table, is_manifest_scoped, is_skip_table, is_unstamped_scope,
+    manifest_scoped_tables, row_identity, tables_for_category, MANIFEST_ID_COL, OVERFLOW_TABLE, SCHEMA_VERSION,
 };
 use crate::error::VaultResult;
 
@@ -69,11 +70,9 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
     }
     reject_unstamped_rows(&all_tables)?;
 
-    /*
-     * Snapshot the tables one manifest's rows can point at (logos, tags, field definitions) before
-     * routing, so each manifest can clone in the row an item that just crossed a scope boundary
-     * references. See `REFERENCED_TABLES`.
-     */
+    let bucketed_names: Vec<String> = all_tables.keys().filter(|name| is_bucketed_table(name)).cloned().collect();
+    let bucketed_rows: HashMap<String, Vec<CodecRecord>> = bucketed_names.into_iter().filter_map(|name| all_tables.remove_entry(&name)).collect();
+
     let snapshots: HashMap<String, Vec<CodecRecord>> = referenced_tables()
         .into_iter()
         .filter_map(|name| all_tables.get(name).map(|rows| (name.to_string(), rows.clone())))
@@ -97,44 +96,13 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
 
     let mut blobs: HashMap<String, BlobEntry> = HashMap::new();
     let mut manifest_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
-
-    // category > (table > rows). Seed every declared bucket so the emitted set is stable even when a
-    // bucket has no rows yet (e.g. empty tables).
-    let mut bucketed: HashMap<String, HashMap<String, Vec<CodecRecord>>> = HashMap::new();
-    for category in bucket_categories() {
-        bucketed.insert(category.to_string(), HashMap::new());
-    }
-
     for (name, records) in all_tables {
-        // Bucketed table: carried verbatim in its bucket (bucketed tables own no blob columns today).
-        if let Some(category) = bucket_category_for(&name) {
-            bucketed
-                .get_mut(category)
-                .expect("declared bucket category is seeded above")
-                .insert(name, records);
-            continue;
-        }
-
         // Manifest table: extract any blob column into the content-addressed map.
         let out_rows = extract_table_blobs(&name, records, &writing_manifest_salt, &mut blobs);
         manifest_tables.insert(name, out_rows);
     }
 
-    /*
-     * Re-emit overflow bucket tables into their original categories. A category this client's
-     * BUCKET_TABLES doesn't declare yet is added as its own bucket, preserving the newer writer's
-     * bucket structure verbatim.
-     */
-    for (category, ov_tables) in &overflow.bucket_tables {
-        let bucket = bucketed.entry(category.clone()).or_default();
-        for (name, rows) in ov_tables {
-            bucket.entry(name.clone()).or_insert_with(|| rows.clone());
-        }
-    }
-
-    let mut data_buckets: Vec<DataBucket> = bucketed.into_iter().map(|(category, tables)| DataBucket::new(category, tables)).collect();
-    // Deterministic bucket order (HashMap iteration is unordered) so canonicalize is reproducible.
-    data_buckets.sort_by(|a, b| a.category.cmp(&b.category));
+    let data_buckets = build_data_buckets(bucketed_rows, &overflow, &writing_manifest_id, &other_specs);
 
     // Start with the manifest the caller wrote from, which the input lists first.
     let mut manifests: Vec<CanonicalizedManifest> = Vec::with_capacity(1 + partitions.len());
@@ -181,7 +149,75 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
     Ok(CanonicalizedVault { manifests, data_buckets })
 }
 
-/// For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into. 
+/// Route every bucketed row into the bucket of the manifest that owns it: `(ManifestId, category)`.
+fn build_data_buckets(
+    bucketed_rows: HashMap<String, Vec<CodecRecord>>,
+    overflow: &CodecOverflow,
+    writing_manifest_id: &str,
+    other_specs: &[ManifestSpec],
+) -> Vec<DataBucket> {
+    let known: HashSet<&str> = std::iter::once(writing_manifest_id).chain(other_specs.iter().map(|spec| spec.manifest_id.as_str())).collect();
+
+    // (manifest id, category) > (table > rows).
+    let mut buckets: HashMap<(String, String), HashMap<String, Vec<CodecRecord>>> = HashMap::new();
+    for category in bucket_categories() {
+        let tables = buckets.entry((writing_manifest_id.to_string(), category.to_string())).or_default();
+        for table in tables_for_category(category) {
+            if bucketed_rows.contains_key(table) {
+                tables.insert(table.to_string(), Vec::new());
+            }
+        }
+    }
+
+    /// The manifest a bucketed row belongs to.
+    fn owner<'a>(row: &'a CodecRecord, writing_manifest_id: &'a str, known: &HashSet<&str>) -> Option<&'a str> {
+        match row.get(MANIFEST_ID_COL).and_then(|value| value.as_str()) {
+            Some(id) if !is_unstamped_scope(Some(id)) => known.contains(id).then_some(id),
+            _ => Some(writing_manifest_id),
+        }
+    }
+
+    for (name, rows) in &bucketed_rows {
+        let category = bucket_category_for(name).expect("only bucketed tables are collected into bucketed_rows");
+        for row in rows {
+            let Some(manifest_id) = owner(row, writing_manifest_id, &known) else { continue };
+            buckets
+                .entry((manifest_id.to_string(), category.to_string()))
+                .or_default()
+                .entry(name.clone())
+                .or_default()
+                .push(row.clone());
+        }
+    }
+
+    // Re-emit the overflow's bucket tables: whole tables a newer writer put in a bucket that this client's schema cannot hold. 
+    for (category, ov_tables) in &overflow.bucket_tables {
+        for (name, rows) in ov_tables {
+            if bucketed_rows.contains_key(name) {
+                continue;
+            }
+            for row in rows {
+                let Some(manifest_id) = owner(row, writing_manifest_id, &known) else { continue };
+                buckets
+                    .entry((manifest_id.to_string(), category.clone()))
+                    .or_default()
+                    .entry(name.clone())
+                    .or_default()
+                    .push(row.clone());
+            }
+        }
+    }
+
+    let mut data_buckets: Vec<DataBucket> = buckets
+        .into_iter()
+        .map(|((manifest_id, category), tables)| DataBucket::new(manifest_id, category, tables))
+        .collect();
+    // Deterministic bucket order (HashMap iteration is unordered) so canonicalize is reproducible.
+    data_buckets.sort_by(|a, b| (&a.manifest_id, &a.category).cmp(&(&b.manifest_id, &b.category)));
+    data_buckets
+}
+
+/// For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into.
 /// TODO: delete this function once the migration is complete.
 ///
 /// Stamp every unstamped row of a manifest-scoped table with `manifest_id`. A row that already names a
@@ -293,16 +329,9 @@ fn primary_key_of(identity: &str) -> &str {
     identity.rsplit('\u{1f}').next().unwrap_or(identity)
 }
 
-/// Build a single data bucket for `category` from its already-normalized tables (name > rows).
-/// The bucket-only push path (a bucket changed but the manifest didn't). Input rows are
-/// already normalized by the platform read logic.
-///
-/// When `tables` includes the [`OVERFLOW_TABLE`] row (callers should read it alongside the
-/// bucket's tables), it is consumed and re-merged the same way the full canonicalize does it:
-/// unknown columns re-attach to this bucket's rows, and whole unknown tables recorded under this
-/// bucket's category are re-emitted, so a bucket-only push from an older client never drops a
-/// newer writer's data either.
-pub fn extract_bucket(category: String, mut tables: HashMap<String, Vec<CodecRecord>>) -> DataBucket {
+/// Build a single data bucket for `(manifest_id, category)` from its already-normalized tables
+/// (name > rows). The bucket-only push path (a bucket changed but the manifest didn't).
+pub fn extract_bucket(manifest_id: String, category: String, mut tables: HashMap<String, Vec<CodecRecord>>) -> DataBucket {
     let overflow = tables.remove(OVERFLOW_TABLE).map(|records| CodecOverflow::from_table_records(&records)).unwrap_or_default();
     remerge_overflow_columns(&mut tables, &overflow);
     if let Some(ov_tables) = overflow.bucket_tables.get(&category) {
@@ -310,5 +339,18 @@ pub fn extract_bucket(category: String, mut tables: HashMap<String, Vec<CodecRec
             tables.entry(name.clone()).or_insert_with(|| rows.clone());
         }
     }
-    DataBucket::new(category, tables)
+
+    for (name, rows) in tables.iter_mut() {
+        rows.retain(|row| match row.get(MANIFEST_ID_COL).and_then(|value| value.as_str()) {
+            Some(id) if !is_unstamped_scope(Some(id)) => id == manifest_id,
+            _ => true,
+        });
+        if is_manifest_scoped(name) {
+            for row in rows.iter_mut() {
+                row.insert(MANIFEST_ID_COL.to_string(), json!(manifest_id));
+            }
+        }
+    }
+
+    DataBucket::new(manifest_id, category, tables)
 }

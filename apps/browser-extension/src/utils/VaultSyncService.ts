@@ -6,7 +6,7 @@
 
 import { storage } from 'wxt/utils/storage';
 
-import { bucketRevisionStorageKey, StorageKeys } from '@/utils/constants/storageKeys';
+import { bucketRevisionKey, StorageKeys } from '@/utils/constants/storageKeys';
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
 import type { VaultResponse } from '@/utils/dist/core/models/webapi';
 import { VaultSqlGenerator } from '@/utils/dist/core/vault';
@@ -115,8 +115,8 @@ function manifestIdsEqual(a: string | null | undefined, b: string | null | undef
 
 /** Fingerprint record key for a manifest. */
 const fingerprintManifestKey = (manifestId: string): string => `manifest:${manifestId}`;
-/** Fingerprint record key for a data bucket. */
-const fingerprintBucketKey = (category: string): string => `bucket:${category}`;
+/** Fingerprint record key for a data bucket, addressed by the manifest that owns it. */
+const fingerprintBucketKey = (manifestId: string, category: string): string => `bucket:${manifestId}:${category}`;
 
 /** Max accumulated base64 ciphertext characters per POST /v2/Vault/blobs call (~4 MB request body). */
 const BLOB_UPLOAD_BATCH_MAX_CHARS = 4 * 1024 * 1024;
@@ -192,10 +192,10 @@ type ManifestDto = {
 };
 
 /** A data bucket as carried in the GET snapshot / bundled upload. `category` matches the server enum name (e.g. "Settings"). */
-type BucketDto = { category: string; blob?: string | null; ciphertextHash?: string | null; revision?: number };
+type BucketDto = { manifestId: string; category: string; blob?: string | null; ciphertextHash?: string | null; revision?: number };
 
 /** Per-kind revision as carried in upload responses. */
-type BucketRevisionDto = { category: string; revision: number };
+type BucketRevisionDto = { manifestId: string; category: string; revision: number };
 
 /**
  * Pick the user's personal manifest out of a snapshot. The server names it by id rather than flagging each entry, so
@@ -557,25 +557,32 @@ export class VaultSyncService {
 
     const personal = resolved[0];
 
-    /*
-     * Decrypt every data bucket in the snapshot (Settings today; more categories later). Buckets belong to the personal
-     * manifest alone (personal tables are stripped out of every shared manifest), so they all open with its VEK.
-     */
+    // Decrypt every data bucket in the snapshot.
+    const keyByManifestId = new Map(resolved.map(entry => [entry.manifestId, entry.vek]));
     const dataBuckets: VaultDataBucket[] = [];
+    const pulledBucketRevisions: Record<string, number> = {};
     for (const bucketDto of (snapshot.buckets ?? [])) {
       if (!bucketDto.blob) {
         continue;
       }
-      const bucketJson = await verifyDecryptUnpack(bucketDto.blob, vek, bucketDto.ciphertextHash, `"${bucketDto.category}" bucket`);
+      const bucketKey = keyByManifestId.get(bucketDto.manifestId);
+      if (!bucketKey) {
+        devWarn(`[V2Pull] Data bucket "${bucketDto.category}" belongs to manifest ${bucketDto.manifestId}, which this vault did not open; skipping it.`);
+        continue;
+      }
+      const label = `"${bucketDto.category}" bucket of manifest ${bucketDto.manifestId}`;
+      const bucketJson = await verifyDecryptUnpack(bucketDto.blob, bucketKey, bucketDto.ciphertextHash, label);
       const bucket = JSON.parse(bucketJson) as VaultDataBucket;
       dataBuckets.push(bucket);
-      pulledFingerprints[fingerprintBucketKey(bucketDto.category)] = await vaultCodecComputeContentFingerprint(bucketJson);
+      pulledFingerprints[fingerprintBucketKey(bucketDto.manifestId, bucketDto.category)] = await vaultCodecComputeContentFingerprint(bucketJson);
       const rowCount = Object.values(bucket.tables ?? {}).reduce((n, rows) => n + rows.length, 0);
-      devLog(`[V2Pull] Data bucket "${bucketDto.category}" opened: ${rowCount} rows (revision ${bucketDto.revision}).`);
+      devLog(`[V2Pull] Data bucket ${label} opened: ${rowCount} rows (revision ${bucketDto.revision}).`);
       if (typeof bucketDto.revision === 'number') {
-        await storage.setItem(bucketRevisionStorageKey(bucketDto.category), bucketDto.revision);
+        pulledBucketRevisions[bucketRevisionKey(bucketDto.manifestId, bucketDto.category)] = bucketDto.revision;
       }
     }
+    // Replace rather than merge, so the buckets of a manifest that is gone drop out with it.
+    await storage.setItem(StorageKeys.VAULT_BUCKET_REVISIONS, pulledBucketRevisions);
     if (dataBuckets.length === 0) {
       devLog('[V2Pull] No data buckets in snapshot.');
     }
@@ -979,13 +986,24 @@ export class VaultSyncService {
      * participates in the same all-or-nothing revision gate as the manifests. Unchanged buckets are skipped
      * (unless the write is forced, see the gating comment above).
      */
-    const bucketDtos: Array<{ category: string; blob: string; ciphertextHash: string; currentRevision: number }> = [];
+    const bucketDtos: Array<{ manifestId: string; category: string; blob: string; ciphertextHash: string; currentRevision: number }> = [];
     const writtenBucketFingerprints: Record<string, string> = {};
+    const storedBucketRevisions = await this.loadBucketRevisions();
+    const keyByManifestId = new Map(candidates.map(candidate => [candidate.manifestId, candidate.vek]));
     for (const bucket of canonicalizedBuckets) {
+      const label = `Data bucket "${bucket.category}" of manifest ${bucket.manifestId}`;
+      const fingerprintKey = fingerprintBucketKey(bucket.manifestId, bucket.category);
       const bucketPlaintext = JSON.stringify(bucket);
       const bucketFingerprint = await vaultCodecComputeContentFingerprint(bucketPlaintext);
-      if (!forceFullWrite && !migrateToVaultKey && fingerprints[fingerprintBucketKey(bucket.category)] === bucketFingerprint) {
-        devLog(`[V2Push] Data bucket "${bucket.category}" unchanged versus server baseline, leaving it out of this write.`);
+      if (!forceFullWrite && !migrateToVaultKey && fingerprints[fingerprintKey] === bucketFingerprint) {
+        devLog(`[V2Push] ${label} unchanged versus server baseline, leaving it out of this write.`);
+        continue;
+      }
+
+      // A bucket is encrypted with the key of the manifest that owns it.
+      const bucketKey = keyByManifestId.get(bucket.manifestId);
+      if (!bucketKey) {
+        devWarn(`[V2Push] ${label} names a manifest this vault cannot write; leaving it out of this write.`);
         continue;
       }
 
@@ -994,16 +1012,16 @@ export class VaultSyncService {
         return {
           status: 'rejected',
           newManifestRevision: null,
-          reasons: [`Data bucket "${bucket.category}" validation failed: ${bucketValidation.failedRules.join(', ')}. ${bucketValidation.message}`.trim()],
+          reasons: [`${label} validation failed: ${bucketValidation.failedRules.join(', ')}. ${bucketValidation.message}`.trim()],
         };
       }
 
-      const { ciphertext, compressedBytes } = await packEncrypt(bucketPlaintext, contentKey);
+      const { ciphertext, compressedBytes } = await packEncrypt(bucketPlaintext, bucketKey);
       const ciphertextHash = await vaultCodecComputeCiphertextHash(ciphertext);
-      const currentRevision = ((await storage.getItem(bucketRevisionStorageKey(bucket.category))) as number | null) ?? 0;
-      bucketDtos.push({ category: bucket.category, blob: ciphertext, ciphertextHash, currentRevision });
-      writtenBucketFingerprints[bucket.category] = bucketFingerprint;
-      devLog(`[V2Push] Data bucket "${bucket.category}": raw ${formatKb(bucketPlaintext.length)} → compressed ${formatKb(compressedBytes)} → encrypted ${formatKb(ciphertext.length)}.`);
+      const currentRevision = storedBucketRevisions[bucketRevisionKey(bucket.manifestId, bucket.category)] ?? 0;
+      bucketDtos.push({ manifestId: bucket.manifestId, category: bucket.category, blob: ciphertext, ciphertextHash, currentRevision });
+      writtenBucketFingerprints[fingerprintKey] = bucketFingerprint;
+      devLog(`[V2Push] ${label}: raw ${formatKb(bucketPlaintext.length)} → compressed ${formatKb(compressedBytes)} → encrypted ${formatKb(ciphertext.length)}.`);
     }
 
     /*
@@ -1185,8 +1203,12 @@ export class VaultSyncService {
 
     // 5) Update local persisted state on success.
     await storage.setItem(StorageKeys.SERVER_REVISION, newPersonalRevision);
-    for (const br of (resp.bucketRevisions ?? [])) {
-      await storage.setItem(bucketRevisionStorageKey(br.category), br.revision);
+    if ((resp.bucketRevisions ?? []).length > 0) {
+      const bucketRevisions = await this.loadBucketRevisions();
+      for (const br of resp.bucketRevisions) {
+        bucketRevisions[bucketRevisionKey(br.manifestId, br.category)] = br.revision;
+      }
+      await storage.setItem(StorageKeys.VAULT_BUCKET_REVISIONS, bucketRevisions);
     }
 
     /*
@@ -1212,8 +1234,8 @@ export class VaultSyncService {
      * Record the new content baselines for every target this write actually carried, so the next push can skip
      * them again when unchanged. Targets left out of the write keep their existing baselines.
      */
-    for (const [category, fingerprint] of Object.entries(writtenBucketFingerprints)) {
-      fingerprints[fingerprintBucketKey(category)] = fingerprint;
+    for (const [key, fingerprint] of Object.entries(writtenBucketFingerprints)) {
+      fingerprints[key] = fingerprint;
     }
     for (const [manifestId, fingerprint] of Object.entries(writtenManifestFingerprints)) {
       fingerprints[fingerprintManifestKey(manifestId)] = fingerprint;
@@ -1321,7 +1343,7 @@ export class VaultSyncService {
       }
     }
     for (const bucket of canonicalized.dataBuckets) {
-      if (fingerprints[fingerprintBucketKey(bucket.category)] !== await vaultCodecComputeContentFingerprint(JSON.stringify(bucket))) {
+      if (fingerprints[fingerprintBucketKey(bucket.manifestId, bucket.category)] !== await vaultCodecComputeContentFingerprint(JSON.stringify(bucket))) {
         return false;
       }
     }
@@ -1333,8 +1355,8 @@ export class VaultSyncService {
    * Single-data-bucket upload, for changes scoped to a separate data bucket and not touching any manifest. Goes
    * through the unified POST /v2/Vault write with an empty manifest list and one bucket; the server's all-or-nothing
    * revision gate reports the current bucket revision on conflict, which we rebase onto and retry once.
-   * @param bucket - the new data bucket contents (its `category` selects the server bucket)
-   * @param vek - encryption key
+   * @param bucket - the new data bucket contents (its `manifestId` and `category` select the server bucket)
+   * @param vek - the key of the manifest that owns the bucket
    * @param username - the user's username (the unified write cross-checks it against the auth session)
    */
   public async pushDataBucketOnly(bucket: VaultDataBucket, vek: string, username: string): Promise<{ status: 'ok' | 'outdated'; revision: number }> {
@@ -1344,52 +1366,59 @@ export class VaultSyncService {
   /**
    * The bucket-only push implementation; {@link pushDataBucketOnly} wraps it with the outdated-server guard.
    * @param bucket - the new data bucket contents
-   * @param vek - encryption key
+   * @param vek - the key of the manifest that owns the bucket
    * @param username - the user's username
    */
   private async pushDataBucketOnlyInternal(bucket: VaultDataBucket, vek: string, username: string): Promise<{ status: 'ok' | 'outdated'; revision: number }> {
-    const { category } = bucket;
+    const { manifestId, category } = bucket;
+    const label = `Bucket "${category}" of manifest ${manifestId}`;
+    const revisionKey = bucketRevisionKey(manifestId, category);
 
     const plaintext = JSON.stringify(bucket);
 
     // Same content-fingerprint gate as the full push: a mutation that ended up changing nothing skips the write.
     const fingerprints = await this.loadContentFingerprints();
+    const bucketRevisions = await this.loadBucketRevisions();
     const bucketFingerprint = await vaultCodecComputeContentFingerprint(plaintext);
-    if (fingerprints[fingerprintBucketKey(category)] === bucketFingerprint) {
-      const revision = ((await storage.getItem(bucketRevisionStorageKey(category))) as number | null) ?? 0;
-      devLog(`[V2Push] Bucket "${category}" (bucket-only) unchanged versus server baseline, skipping upload.`);
-      return { status: 'ok', revision };
+    if (fingerprints[fingerprintBucketKey(manifestId, category)] === bucketFingerprint) {
+      devLog(`[V2Push] ${label} (bucket-only) unchanged versus server baseline, skipping upload.`);
+      return { status: 'ok', revision: bucketRevisions[revisionKey] ?? 0 };
     }
 
     const { ciphertext, compressedBytes } = await packEncrypt(plaintext, vek);
     const ciphertextHash = await vaultCodecComputeCiphertextHash(ciphertext);
-    devLog(`[V2Push] Bucket "${category}" (bucket-only): raw ${formatKb(plaintext.length)} → compressed ${formatKb(compressedBytes)} → encrypted ${formatKb(ciphertext.length)}.`);
+    devLog(`[V2Push] ${label} (bucket-only): raw ${formatKb(plaintext.length)} → compressed ${formatKb(compressedBytes)} → encrypted ${formatKb(ciphertext.length)}.`);
 
     const webApi = new WebApiService();
     /** POST the single-bucket write with the given believed-current revision (called again on the rebase retry). */
     const postBucket = (currentRevision: number): Promise<VaultWriteResponseDto> => webApi.post<Record<string, unknown>, VaultWriteResponseDto>(VAULT_ENDPOINT, {
-      username, manifests: [], buckets: [{ category, blob: ciphertext, ciphertextHash, currentRevision }], newBlobs: [], emailRouting: null, userEncryptionPublicKey: '',
+      username, manifests: [], buckets: [{ manifestId, category, blob: ciphertext, ciphertextHash, currentRevision }], newBlobs: [], emailRouting: null, userEncryptionPublicKey: '',
     });
 
-    let currentRevision = (((await storage.getItem(bucketRevisionStorageKey(category))) as number | null) ?? 0);
+    /** This bucket's revision as the server reported it, matched on both halves of its address. */
+    const reportedRevision = (resp: VaultWriteResponseDto): number | undefined =>
+      (resp.bucketRevisions ?? []).find(b => manifestIdsEqual(b.manifestId, manifestId) && b.category === category)?.revision;
+
+    let currentRevision = bucketRevisions[revisionKey] ?? 0;
     let resp = await postBucket(currentRevision);
 
     if (resp.status !== 0) {
-      const serverRevision = (resp.bucketRevisions ?? []).find(b => b.category === category)?.revision ?? currentRevision;
-      devWarn(`[V2Push] Bucket "${category}" outdated (server at revision ${serverRevision}, we assumed ${currentRevision}); rebasing and retrying once.`);
+      const serverRevision = reportedRevision(resp) ?? currentRevision;
+      devWarn(`[V2Push] ${label} outdated (server at revision ${serverRevision}, we assumed ${currentRevision}); rebasing and retrying once.`);
       currentRevision = serverRevision;
       resp = await postBucket(currentRevision);
     }
 
     if (resp.status !== 0) {
-      return { status: 'outdated', revision: (resp.bucketRevisions ?? []).find(b => b.category === category)?.revision ?? currentRevision };
+      return { status: 'outdated', revision: reportedRevision(resp) ?? currentRevision };
     }
 
-    const newRevision = (resp.bucketRevisions ?? []).find(b => b.category === category)?.revision ?? currentRevision + 1;
-    await storage.setItem(bucketRevisionStorageKey(category), newRevision);
+    const newRevision = reportedRevision(resp) ?? currentRevision + 1;
+    bucketRevisions[revisionKey] = newRevision;
+    await storage.setItem(StorageKeys.VAULT_BUCKET_REVISIONS, bucketRevisions);
 
     // New server baseline for this bucket, so an unchanged follow-up push (bucket-only or full) can skip it.
-    fingerprints[fingerprintBucketKey(category)] = bucketFingerprint;
+    fingerprints[fingerprintBucketKey(manifestId, category)] = bucketFingerprint;
     await this.saveContentFingerprints(fingerprints);
 
     return { status: 'ok', revision: newRevision };
@@ -1548,6 +1577,14 @@ export class VaultSyncService {
    */
   private async saveContentFingerprints(fingerprints: Record<string, string>): Promise<void> {
     await storage.setItem(StorageKeys.VAULT_CONTENT_FINGERPRINTS, fingerprints);
+  }
+
+  /**
+   * Load the known server revision of every data bucket, keyed by {@link bucketRevisionKey}. An absent entry
+   * reads as revision 0, which the server answers with its current one so the next attempt rebases.
+   */
+  private async loadBucketRevisions(): Promise<Record<string, number>> {
+    return ((await storage.getItem(StorageKeys.VAULT_BUCKET_REVISIONS)) as Record<string, number> | null) ?? {};
   }
 
   /**

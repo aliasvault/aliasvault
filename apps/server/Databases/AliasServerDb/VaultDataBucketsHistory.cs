@@ -12,19 +12,19 @@ using AliasVault.Shared.Models.WebApi.V2.Vault;
 /// <summary>
 /// A superseded revision of a vault data bucket, kept for backup/rollback per the bucket retention policy.
 /// On every write the current <see cref="VaultDataBucket"/> row is first copied into this table, after which the current row is updated in place.
-/// Composite primary key (OwnerUserId, Category, RevisionNumber).
+/// Composite primary key (ManifestId, Category, RevisionNumber).
 /// </summary>
 public class VaultDataBucketsHistory : VaultDataBucketBase
 {
     /// <summary>
-    /// Gets or sets the ID of the owning user. Part of the composite PK.
+    /// Gets or sets the id of the manifest that owns this bucket. Part of the composite PK.
     /// </summary>
-    public string OwnerUserId { get; set; } = null!;
+    public Guid ManifestId { get; set; }
 
     /// <summary>
     /// Gets or sets the navigation property to the current bucket row this revision belongs to.
     /// </summary>
-    [ForeignKey("OwnerUserId, Category")]
+    [ForeignKey("ManifestId, Category")]
     public virtual VaultDataBucket Bucket { get; set; } = null!;
 
     /// <summary>
@@ -42,7 +42,7 @@ public class VaultDataBucketsHistory : VaultDataBucketBase
     {
         var history = new VaultDataBucketsHistory
         {
-            OwnerUserId = current.OwnerUserId,
+            ManifestId = current.ManifestId,
             Category = current.Category,
             EncryptedData = current.EncryptedData,
             RevisionNumber = current.RevisionNumber,

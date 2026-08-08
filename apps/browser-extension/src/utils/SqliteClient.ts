@@ -67,8 +67,8 @@ export class SqliteClient implements IDatabaseClient {
   }
 
   /**
-   * The id of the user's personal manifest, as reported by the last pull. Every write that cannot inherit a
-   * manifest from a parent row falls back to it.
+   * The id of the user's personal manifest, as reported by the last pull. It is what the client writes into while
+   * no other manifest is switched to.
    * @returns The personal manifest id, or null when no pull has recorded one yet
    */
   public getPersonalManifestId(): string | null {

@@ -176,9 +176,7 @@ export abstract class BaseRepository {
   }
 
   /**
-   * The manifest this client is writing into: whichever one it has been switched to, falling back to the
-   * user's personal manifest. Every write that cannot inherit a manifest from a parent row (an item
-   * outside any folder, a folder at the top level) is stamped with this.
+   * The manifest this client is writing into (currently active manifest).
    * @returns The manifest id new rows are stamped with
    */
   protected activeManifestId(): string {

@@ -165,7 +165,7 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<BlockedIpRange> BlockedIpRanges { get; set; }
 
     /// <summary>
-    /// Gets or sets the VaultDataBuckets DbSet. These represent separately-syncable per-user, per-kind sync buckets. Separate from main manifest.
+    /// Gets or sets the VaultDataBuckets DbSet. These represent separately-syncable per-manifest, per-kind sync buckets. Separate from the manifest blob itself.
     /// </summary>
     public DbSet<VaultDataBucket> VaultDataBuckets { get; set; }
 
@@ -442,27 +442,25 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             .HasForeignKey(m => m.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Configure VaultDataBucket - the current revision of each (user, category) bucket, updated in place.
+        // Configure VaultDataBucket.
         modelBuilder.Entity<VaultDataBucket>(builder =>
         {
-            builder.HasKey(e => new { e.OwnerUserId, e.Category });
-            builder.Property(e => e.OwnerUserId).HasMaxLength(255);
+            builder.HasKey(e => new { e.ManifestId, e.Category });
             builder.Property(e => e.Category).HasConversion<string>().HasMaxLength(50);
-            builder.HasOne(e => e.User)
+            builder.HasOne(e => e.Manifest)
                 .WithMany()
-                .HasForeignKey(e => e.OwnerUserId)
+                .HasForeignKey(e => e.ManifestId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Configure VaultDataBucketsHistory - superseded bucket revisions, pruned by the bucket retention policy.
         modelBuilder.Entity<VaultDataBucketsHistory>(builder =>
         {
-            builder.HasKey(e => new { e.OwnerUserId, e.Category, e.RevisionNumber });
-            builder.Property(e => e.OwnerUserId).HasMaxLength(255);
+            builder.HasKey(e => new { e.ManifestId, e.Category, e.RevisionNumber });
             builder.Property(e => e.Category).HasConversion<string>().HasMaxLength(50);
             builder.HasOne(e => e.Bucket)
                 .WithMany()
-                .HasForeignKey(e => new { e.OwnerUserId, e.Category })
+                .HasForeignKey(e => new { e.ManifestId, e.Category })
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

@@ -8,14 +8,16 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
-/// The current revision of a single data-bucket kind. Used in lightweight payloads (status + upload responses)
-/// that report per-kind revisions without carrying the encrypted blobs.
+/// The current revision of a single data bucket, addressed by the manifest that owns it and its kind.
 /// </summary>
 public class BucketRevision
 {
+    /// <summary>Gets or sets the id of the manifest that owns this bucket.</summary>
+    public required Guid ManifestId { get; set; }
+
     /// <summary>Gets or sets the bucket kind.</summary>
     public required VaultDataBucketCategory Category { get; set; }
 
-    /// <summary>Gets or sets the current (latest) revision number for this bucket kind.</summary>
+    /// <summary>Gets or sets the current (latest) revision number for this bucket.</summary>
     public required long Revision { get; set; }
 }

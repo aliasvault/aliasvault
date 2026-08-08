@@ -31,9 +31,9 @@ pub static BUCKET_TABLES: &[(&str, &str)] = &[
 ];
 
 /// Tables that belong exclusively to the user's own (personal) vault, never to a shared manifest.
-/// Canonicalize never routes these into a shared partition and will refuse to materialize if they
-/// are found in a shared manifest anyway. Empty today (bucketed tables are implicitly personal, see
-/// [`is_personal_table`]); kept as the declaration point for future personal-only tables.
+/// Empty today, and deliberately independent of [`BUCKET_TABLES`]: a bucketed table is kept out of the
+/// manifest blob, which is a different question from which manifests may hold its rows at all. Kept as
+/// the declaration point for a future personal-only table.
 pub static PERSONAL_TABLES: &[&str] = &[];
 
 /// The per-manifest delivery-keypair table. Every manifest carries its own asymmetric keypair(s),
@@ -111,7 +111,12 @@ pub fn is_unstamped_scope(scope: Option<&str>) -> bool {
 
 /// True when a table is personal-only (see [`PERSONAL_TABLES`]): never part of a shared manifest.
 pub fn is_personal_table(table_name: &str) -> bool {
-    PERSONAL_TABLES.contains(&table_name) || bucket_category_for(table_name).is_some()
+    PERSONAL_TABLES.contains(&table_name)
+}
+
+/// True when a table syncs in a data bucket (see [`BUCKET_TABLES`]) rather than inside the manifest.
+pub fn is_bucketed_table(table_name: &str) -> bool {
+    bucket_category_for(table_name).is_some()
 }
 
 /// Get the primary key column for a table.

@@ -13,6 +13,9 @@ namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 /// </summary>
 public class BucketWrite
 {
+    /// <summary>Gets or sets the id of the manifest that owns this bucket. The caller must have write access to it.</summary>
+    public required Guid ManifestId { get; set; }
+
     /// <summary>Gets or sets the bucket kind discriminator.</summary>
     public required VaultDataBucketCategory Category { get; set; }
 

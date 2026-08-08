@@ -244,7 +244,7 @@ pub unsafe extern "C" fn vault_codec_materialize_as_sqlite_ffi(input_json: *cons
     codec_json_ffi(input_json, "input_json", crate::vault_codec::materialize_as_sqlite_json)
 }
 
-/// Build a single data bucket. Input: `{ category, tables }` JSON. Output: `DataBucket` JSON.
+/// Build a single data bucket. Input: `{ manifestId, category, tables }` JSON. Output: `DataBucket` JSON.
 ///
 /// # Safety
 /// `input_json` must be a valid null-terminated C string; free the result with `free_string`.

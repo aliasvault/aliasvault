@@ -75,7 +75,7 @@ pub static SYNCABLE_TABLES: &[TableConfig] = &[
     TableConfig::new("FieldHistories").manifest_scoped(),
     TableConfig::new("Logos").manifest_scoped(),
     TableConfig::new("EncryptionKeys").manifest_scoped(),
-    TableConfig::new("Settings").with_primary_key("Key"),
+    TableConfig::new("Settings").with_primary_key("Key").manifest_scoped(),
 ];
 
 /// The tables a platform must read into the merge input: the syncable tables.

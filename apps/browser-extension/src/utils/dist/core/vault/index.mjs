@@ -1796,6 +1796,39 @@ INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
 VALUES ('20260806144813_2.3.1-ScopedReferenceCopies', '10.0.10');
 
 COMMIT;
+
+BEGIN TRANSACTION;
+ALTER TABLE "Settings" ADD "ManifestId" TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
+
+CREATE TABLE "ef_temp_Settings" (
+    "ManifestId" TEXT NOT NULL,
+    "Key" TEXT NOT NULL,
+    "CreatedAt" TEXT NOT NULL,
+    "IsDeleted" INTEGER NOT NULL,
+    "UpdatedAt" TEXT NOT NULL,
+    "Value" TEXT NULL,
+    CONSTRAINT "PK_Settings" PRIMARY KEY ("ManifestId", "Key")
+);
+
+INSERT INTO "ef_temp_Settings" ("ManifestId", "Key", "CreatedAt", "IsDeleted", "UpdatedAt", "Value")
+SELECT "ManifestId", "Key", "CreatedAt", "IsDeleted", "UpdatedAt", "Value"
+FROM "Settings";
+
+COMMIT;
+
+PRAGMA foreign_keys = 0;
+
+BEGIN TRANSACTION;
+DROP TABLE "Settings";
+
+ALTER TABLE "ef_temp_Settings" RENAME TO "Settings";
+
+COMMIT;
+
+PRAGMA foreign_keys = 1;
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260808095315_2.4.0-ManifestScopedSettings', '10.0.10');
 `;
 var MIGRATION_SCRIPTS = {
   1: `\uFEFFBEGIN TRANSACTION;

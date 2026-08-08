@@ -17,12 +17,6 @@ pub struct ValidationResult {
     pub message: String,
 }
 
-impl ValidationResult {
-    fn ok() -> Self {
-        Self { ok: true, failed_rules: Vec::new(), message: String::new() }
-    }
-}
-
 fn table<'a>(m: &'a Manifest, name: &str) -> &'a [CodecRecord] {
     m.tables.get(name).map(|v| v.as_slice()).unwrap_or(&[])
 }
@@ -56,9 +50,20 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
         };
     }
 
-    // Bucketed tables sync as their own resource beside the manifest, so no manifest may carry them.
-    for name in manifest.tables.keys() {
-        if super::types::is_personal_table(name) && !manifest.tables[name].is_empty() {
+    /*
+     * Two independent rules, reported apart because they fail for different reasons: a bucketed table
+     * syncs as its own resource (one bucket per manifest) so no manifest may carry it, and a
+     * personal-only table may not leave the user's own vault at all.
+     */
+    for name in manifest.tables.keys().filter(|name| !manifest.tables[*name].is_empty()) {
+        if super::types::is_bucketed_table(name) {
+            failed.push("manifest-carries-bucketed-table".to_string());
+            explain.push(format!("Manifest carries bucketed table {}, which belongs in its data bucket", name));
+            break;
+        }
+    }
+    for name in manifest.tables.keys().filter(|name| !manifest.tables[*name].is_empty()) {
+        if super::types::is_personal_table(name) {
             failed.push("manifest-carries-personal-table".to_string());
             explain.push(format!("Manifest carries personal table {}", name));
             break;
@@ -181,6 +186,9 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
 
 /// Validate a data bucket before upload.
 pub fn validate_data_bucket(bucket: &DataBucket) -> ValidationResult {
+    let mut failed: Vec<String> = Vec::new();
+    let mut explain: Vec<String> = Vec::new();
+
     if bucket.schema_version < 1 {
         return ValidationResult {
             ok: false,
@@ -188,5 +196,28 @@ pub fn validate_data_bucket(bucket: &DataBucket) -> ValidationResult {
             message: "Data bucket missing schemaVersion".to_string(),
         };
     }
-    ValidationResult::ok()
+
+    // A bucket is addressed by the manifest that owns it: without the id there is nothing to write to.
+    if bucket.manifest_id.is_empty() {
+        failed.push("dataBucket-manifestId-missing".to_string());
+        explain.push("Data bucket names no manifest".to_string());
+    }
+
+    let expected_scope = Some(bucket.manifest_id.as_str());
+    for (name, rows) in &bucket.tables {
+        if !super::types::is_manifest_scoped(name) {
+            continue;
+        }
+        if rows.iter().any(|row| str_field(row, super::types::MANIFEST_ID_COL) != expected_scope) {
+            failed.push("dataBucket-scope-mismatch".to_string());
+            explain.push(format!("{} carries rows stamped for another manifest", name));
+            break;
+        }
+    }
+
+    ValidationResult {
+        ok: failed.is_empty(),
+        failed_rules: failed,
+        message: explain.join("; "),
+    }
 }

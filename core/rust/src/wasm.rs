@@ -164,19 +164,20 @@ pub fn vault_codec_materialize_as_sqlite_js(input: JsValue) -> Result<JsValue, J
     codec_to_js(&output)
 }
 
-/// Build a single data bucket. Input: `{ category, tables: { <name>: [rows] } }`.
+/// Build a single data bucket. Input: `{ manifestId, category, tables: { <name>: [rows] } }`.
 #[wasm_bindgen(js_name = vaultCodecExtractBucket)]
 pub fn vault_codec_extract_bucket_js(input: JsValue) -> Result<JsValue, JsValue> {
     #[derive(serde::Deserialize)]
     #[serde(rename_all = "camelCase")]
     struct Input {
+        manifest_id: String,
         category: String,
         #[serde(default)]
         tables: std::collections::HashMap<String, Vec<CodecRecord>>,
     }
     let input: Input = serde_wasm_bindgen::from_value(input)
         .map_err(|e| JsValue::from_str(&format!("Failed to parse extract-bucket input: {}", e)))?;
-    codec_to_js(&vault_codec::extract_bucket(input.category, input.tables))
+    codec_to_js(&vault_codec::extract_bucket(input.manifest_id, input.category, input.tables))
 }
 
 /// The bucket layout: `[{ category, tables: [<name>] }]`. Source of truth for platform bucket-only sync.

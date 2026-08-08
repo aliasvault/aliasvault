@@ -34,12 +34,13 @@ pub struct Manifest {
     pub extra: HashMap<String, serde_json::Value>,
 }
 
-/// One data bucket: a part of the vault (one or more tables) kept out of the manifest blobs so it can 
-/// sync on its own server revision without rewriting a manifest.
+/// One data bucket: a part of one manifest (one or more tables) kept out of the manifest blob so it can
+/// sync on its own server revision without rewriting the manifest.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DataBucket {
     pub schema_version: u32,
+    pub manifest_id: String,
     pub category: String,
     pub tables: HashMap<String, Vec<CodecRecord>>,
     #[serde(flatten)]
@@ -47,10 +48,11 @@ pub struct DataBucket {
 }
 
 impl DataBucket {
-    /// Build the `category` data bucket from its already-normalized tables.
-    pub fn new(category: impl Into<String>, tables: HashMap<String, Vec<CodecRecord>>) -> Self {
+    /// Build the `(manifest_id, category)` data bucket from its already-normalized tables.
+    pub fn new(manifest_id: impl Into<String>, category: impl Into<String>, tables: HashMap<String, Vec<CodecRecord>>) -> Self {
         Self {
             schema_version: SCHEMA_VERSION,
+            manifest_id: manifest_id.into(),
             category: category.into(),
             tables,
             extra: HashMap::new(),
@@ -97,7 +99,7 @@ pub struct CanonicalizedManifest {
 }
 
 /// Result of canonicalizing a vault: one entry per manifest, in the order the specs were given, plus
-/// the data buckets, which belong to the vault rather than to any one manifest.
+/// the data buckets, each addressed by the manifest that owns it.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CanonicalizedVault {
