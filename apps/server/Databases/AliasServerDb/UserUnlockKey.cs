@@ -8,6 +8,7 @@ namespace AliasServerDb;
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using AliasVault.Shared.Models.Enums;
 
 /// <summary>
 /// User tied unlock method that a user uses to login to their own account. Every unlock method encrypts the same Account Key,
@@ -36,6 +37,7 @@ public class UserUnlockKey
     /// <summary>
     /// Gets or sets the unlock method this row represents.
     /// </summary>
+    [StringLength(30)]
     public required UnlockMethodType Type { get; set; }
 
     /// <summary>

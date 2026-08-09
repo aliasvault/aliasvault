@@ -10,6 +10,7 @@ namespace AliasVault.Api.Controllers.V2;
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Helpers;
+using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi.V2.Auth;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
@@ -40,7 +41,7 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
         }
 
         // Check if the unlock method type is valid.
-        if (!Enum.TryParse<UnlockMethodType>(type, true, out var parsedType) || !Enum.IsDefined(parsedType))
+        if (!UnlockMethodTypes.TryParse(type?.ToLowerInvariant(), out var parsedType))
         {
             return Ok(new VaultKeyGetResponse { VaultKey = null });
         }
@@ -69,7 +70,7 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
         {
             VaultKey = new VaultKeyResponse
             {
-                Type = unlockKey.Type.ToString().ToLowerInvariant(),
+                Type = UnlockMethodTypes.ToToken(unlockKey.Type),
                 EncryptedAccountKey = unlockKey.EncryptedAccountKey,
                 EncryptedVek = encryptedVek,
                 AccountPublicKey = accountKeypair?.PublicKey,

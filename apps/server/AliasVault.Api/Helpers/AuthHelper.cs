@@ -10,6 +10,7 @@ namespace AliasVault.Api.Helpers;
 using AliasServerDb;
 using AliasVault.Api.Headers;
 using AliasVault.Cryptography.Client;
+using AliasVault.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SecureRemotePassword;

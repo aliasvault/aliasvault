@@ -8,6 +8,7 @@ namespace AliasServerDb;
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using AliasVault.Shared.Models.Enums;
 
 /// <summary>
 /// A per-(user, manifest) VEK access path.
@@ -40,6 +41,7 @@ public class VaultManifestAccessKey
     /// <summary>
     /// Gets or sets what encrypts this row's VEK.
     /// </summary>
+    [StringLength(30)]
     public required ManifestKeyType Type { get; set; }
 
     /// <summary>

@@ -147,7 +147,7 @@ public class VaultController(
             accessKeysByManifest.TryGetValue(m.ManifestId, out var accessKey);
 
             // An account-key row's ciphertext is not sent: the caller decrypted that VEK from their password chain before this call.
-            var grant = accessKey != null && ManifestKeyTypes.CarriesEncryptedVek(accessKey.Type) ? accessKey : null;
+            var grant = accessKey != null && ManifestKeyTypes.VekTravelsWithManifest(accessKey.Type) ? accessKey : null;
             return new Manifest
             {
                 ManifestId = m.ManifestId,
@@ -220,7 +220,7 @@ public class VaultController(
         // How this manifest's VEK reaches the caller.
         var accessKey = (await GetAccessKeysAsync(context, user.Id, [latest.ManifestId])).GetValueOrDefault(latest.ManifestId);
         manifest.KeyType = accessKey != null ? ManifestKeyTypes.ToToken(accessKey.Type) : null;
-        if (accessKey != null && ManifestKeyTypes.CarriesEncryptedVek(accessKey.Type))
+        if (accessKey != null && ManifestKeyTypes.VekTravelsWithManifest(accessKey.Type))
         {
             manifest.EncryptedVek = accessKey.EncryptedVek;
             manifest.Algorithm = VaultKeyAlgorithms.ToToken(accessKey.Algorithm);

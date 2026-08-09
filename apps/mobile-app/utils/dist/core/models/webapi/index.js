@@ -18,4 +18,36 @@ var AuthEventType = /* @__PURE__ */ ((AuthEventType2) => {
   return AuthEventType2;
 })(AuthEventType || {});
 
-export { AuthEventType };
+// src/webapi/UnlockMethodType.ts
+var UnlockMethodType = {
+  /**
+   * Master password: the KEK is derived from the password via Argon2.
+   */
+  Password: "password"
+};
+
+// src/webapi/ManifestKeyType.ts
+var ManifestKeyType = {
+  /**
+   * The VEK is encrypted with the user's own Account Key, which their unlock chain produces.
+   */
+  AccountKey: "accountkey",
+  /**
+   * A grant: the VEK is encrypted to a public key of the user, so only its holder's private half can open it.
+   */
+  GrantKey: "grantkey"
+};
+
+// src/webapi/VaultKeyAlgorithm.ts
+var VaultKeyAlgorithm = {
+  /**
+   * AES-256-GCM: symmetric, used where the reader already holds the wrapping key.
+   */
+  Aes256Gcm: "aes256-gcm",
+  /**
+   * RSA-OAEP with SHA-256: asymmetric, used to encrypt a VEK to a recipient's public key.
+   */
+  RsaOaepSha256: "rsa-oaep-sha256"
+};
+
+export { AuthEventType, ManifestKeyType, UnlockMethodType, VaultKeyAlgorithm };

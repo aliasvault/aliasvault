@@ -7,6 +7,7 @@
 
 namespace AliasServerDb;
 
+using AliasVault.Shared.Models.Enums;
 using AliasVault.WorkerStatus.Database;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
@@ -372,6 +373,7 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             builder.HasIndex(e => new { e.UserId, e.Type, e.VaultManifestId }).IsUnique().HasDatabaseName("UX_VaultManifestAccessKeys_UserId_Type_Manifest");
             builder.HasIndex(e => e.VaultManifestId).HasDatabaseName("IX_VaultManifestAccessKeys_VaultManifestId");
             builder.Property(e => e.Metadata).HasColumnType("jsonb");
+            builder.Property(e => e.Type).HasConversion(v => ManifestKeyTypes.ToToken(v), v => ManifestKeyTypes.Parse(v));
             builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
             builder.HasOne(e => e.UserGrantKey)
                 .WithMany()
@@ -389,6 +391,7 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
 
             builder.HasIndex(e => new { e.UserId, e.Type }).IsUnique().HasDatabaseName("UX_UserUnlockKeys_UserId_Type");
             builder.Property(e => e.Metadata).HasColumnType("jsonb");
+            builder.Property(e => e.Type).HasConversion(v => UnlockMethodTypes.ToToken(v), v => UnlockMethodTypes.Parse(v));
             builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
         });
 

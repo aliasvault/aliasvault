@@ -21,6 +21,10 @@ echo "🔄 Generating vault data bucket categories (C#, TS, Swift, Kotlin) from 
 # Run before the build so the generated TS lands in src/ and is compiled into dist/ (and linted).
 node scripts/generate-bucket-categories.cjs
 
+echo ""
+echo "🔄 Generating vault key vocabulary (C#, TS, Swift, Kotlin)..."
+node scripts/generate-key-vocabulary.cjs
+
 npm run lint && npm run test && npm run build
 
 echo ""

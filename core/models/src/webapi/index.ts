@@ -24,3 +24,6 @@ export * from './BadRequestResponse';
 export * from './AuthEventType';
 export * from './MobileLogin';
 export * from './VaultKey';
+export * from './UnlockMethodType';
+export * from './ManifestKeyType';
+export * from './VaultKeyAlgorithm';

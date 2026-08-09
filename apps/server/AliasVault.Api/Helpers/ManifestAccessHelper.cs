@@ -8,6 +8,7 @@
 namespace AliasVault.Api.Helpers;
 
 using AliasServerDb;
+using AliasVault.Shared.Models.Enums;
 
 /// <summary>
 /// Helper for resolving which vault manifests a user can access.
