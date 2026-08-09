@@ -15,21 +15,6 @@ export class EncryptionKeyQueries {
     WHERE x.IsDeleted = 0`;
 
   /**
-   * Count one manifest's encryption keys carrying a given public key, to keep retained copies idempotent.
-   */
-  public static readonly COUNT_BY_PUBLIC_KEY = `
-    SELECT COUNT(*) as count
-    FROM EncryptionKeys x
-    WHERE x.ManifestId = ? AND x.PublicKey = ?`;
-
-  /**
-   * Retain a copy of a key in a manifest, explicitly NOT primary.
-   */
-  public static readonly INSERT_NON_PRIMARY = `
-    INSERT INTO EncryptionKeys (Id, ManifestId, PublicKey, PrivateKey, IsPrimary, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, ?, 0, ?, ?, 0)`;
-
-  /**
    * Get one manifest's active keypair: the key whose public half is published for SMTP delivery. Passed
    * the root manifest's id, this is the user's personal keypair — `IsPrimary` alone would not identify it,
    * as every manifest has a primary row of its own.

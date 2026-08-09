@@ -51,28 +51,4 @@ export class EncryptionKeyRepository extends BaseRepository {
     this.client.executeUpdate(EncryptionKeyQueries.DEMOTE_FOR_MANIFEST, [now, manifestId]);
     this.client.executeUpdate(EncryptionKeyQueries.INSERT_FOR_MANIFEST, [this.generateId(), manifestId, publicKey, privateKey, now, now]);
   }
-
-  /**
-   * Retain a copy of a keypair among the personal keys as a non-primary row.
-   *
-   * Used by the owner of a shared manifest to keep its delivery keys. The originals live only in the
-   * shared manifest itself, so unsharing or deleting the anchor folder takes them out of the vault and would leave the
-   * owner unable to decrypt mail their own alias received while it was shared.
-   * @param publicKey - The public half, used as the identity of the key
-   * @param privateKey - The private half
-   */
-  public retainNonPrimary(publicKey: string, privateKey: string): void {
-    const personalManifestId = this.personalManifestId();
-    if (!personalManifestId) {
-      return;
-    }
-
-    const existing = this.client.executeQuery<{ count: number }>(EncryptionKeyQueries.COUNT_BY_PUBLIC_KEY, [personalManifestId, publicKey]);
-    if ((existing[0]?.count ?? 0) > 0) {
-      return;
-    }
-
-    const now = this.now();
-    this.client.executeUpdate(EncryptionKeyQueries.INSERT_NON_PRIMARY, [this.generateId(), personalManifestId, publicKey, privateKey, now, now]);
-  }
 }
