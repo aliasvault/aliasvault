@@ -5,7 +5,7 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { devLog } from '@/utils/devLogger/DevLogger';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import type { VaultMutationOptions, VaultMutationScope } from '@/utils/types/VaultMutationScope';
+import { isSilentScope, type VaultMutationOptions, type VaultMutationScope } from '@/utils/types/VaultMutationScope';
 
 /**
  * Hook to execute a vault mutation.
@@ -114,10 +114,17 @@ export function useVaultMutate(): {
    * and continues even if the popup closes.
    *
    * Always polls to detect completion since background sync may queue additional
-   * syncs that we cannot directly observe from the popup context.
+   * syncs that we cannot directly observe from the popup context. A silent scope
+   * (e.g. item usage statistics) syncs the same way but shows no indicator: the
+   * user did not ask for that write and expects no feedback on it.
+   * @param scope - what the mutation touched
    */
-  const triggerBackgroundSync = useCallback((): void => {
-    dbContext.setIsUploading(true);
+  const triggerBackgroundSync = useCallback((scope?: VaultMutationScope): void => {
+    const silent = scope !== undefined && isSilentScope(scope);
+
+    if (!silent) {
+      dbContext.setIsUploading(true);
+    }
 
     /*
      * Fire-and-forget: send message to background without awaiting.
@@ -127,10 +134,11 @@ export function useVaultMutate(): {
      * After sending message, we start polling to detect completion.
      */
     void sendMessage('FULL_VAULT_SYNC').then(async (syncResult) => {
-      if (!syncResult.success && (syncResult.error || syncResult.errorKey)) {
+      if (!silent && !syncResult.success && (syncResult.error || syncResult.errorKey)) {
         /*
          * Permanent failure (e.g. HTTP 413 vault too large). Stop polling and clear the upload
-         * spinner.
+         * spinner. Skipped for a silent scope: it owns neither the poll nor the spinner, both of
+         * which may belong to a visible mutation still in flight.
          */
         if (pollIntervalRef.current) {
           clearInterval(pollIntervalRef.current);
@@ -146,8 +154,10 @@ export function useVaultMutate(): {
       console.error('Background sync error:', error);
     });
 
-    // Start polling for completion
-    startPollingForCompletion();
+    // Start polling for completion (nothing to clear when no indicator was shown)
+    if (!silent) {
+      startPollingForCompletion();
+    }
   }, [dbContext, startPollingForCompletion]);
 
   /**
@@ -164,7 +174,7 @@ export function useVaultMutate(): {
     await saveLocally(operation, options?.scope);
 
     // 2. Trigger sync in background (fire-and-forget, continues even if popup closes)
-    triggerBackgroundSync();
+    triggerBackgroundSync(options?.scope);
   }, [saveLocally, triggerBackgroundSync]);
 
   return {

@@ -8,6 +8,7 @@ import SqliteClient from '@/utils/SqliteClient';
 import { getStorageItem } from '@/utils/StorageUtility';
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
+import { hasUnsyncedUserChanges as hasUnsyncedUserChangesInStorage } from '@/utils/VaultDirtyState';
 import { vaultRequiresManifestMigration } from '@/utils/VaultManifestMigration';
 
 import { markOwnEncryptionKey, vaultStateEvents } from '@/events/VaultStateEvents';
@@ -39,9 +40,11 @@ type DbContextType = {
    */
   getIsOffline: () => boolean;
   /**
-   * True if local vault has changes not yet synced to server.
+   * True if the local vault has user-initiated changes not yet synced to the server. Changes from silent
+   * scopes (e.g. item usage statistics) sync just the same but are not reported here, so the UI stays quiet
+   * about data the user never asked to save.
    */
-  isDirty: boolean;
+  hasUnsyncedUserChanges: boolean;
   /**
    * True if a background sync (download) is in progress.
    */
@@ -125,9 +128,9 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const isOfflineRef = useRef(false);
 
   /**
-   * Dirty state - true if local vault has unsynced changes.
+   * Dirty state - true if the local vault has unsynced changes the user expects to get feedback on.
    */
-  const [isDirty, setIsDirty] = useState(false);
+  const [hasUnsyncedUserChanges, setHasUnsyncedUserChanges] = useState(false);
 
   /**
    * Syncing state - true if a background sync (download) is in progress.
@@ -151,8 +154,8 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * as the server may not know about newly created items/aliases yet.
    */
   const shouldSuppressEmailErrors = useCallback(() => {
-    return isDirty || isSyncing;
-  }, [isDirty, isSyncing]);
+    return hasUnsyncedUserChanges || isSyncing;
+  }, [hasUnsyncedUserChanges, isSyncing]);
 
   /**
    * Set the offline mode state and persist it to local storage.
@@ -172,14 +175,14 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
      * Load the offline mode and sync state from local storage.
      */
     const loadSyncState = async (): Promise<void> => {
-      const [offlineMode, dirty, lastError] = await Promise.all([
+      const [offlineMode, pendingUserChanges, lastError] = await Promise.all([
         storage.getItem(StorageKeys.IS_OFFLINE_MODE) as Promise<boolean | null>,
-        storage.getItem(StorageKeys.IS_DIRTY) as Promise<boolean | null>,
+        hasUnsyncedUserChangesInStorage(),
         storage.getItem(StorageKeys.LAST_SYNC_ERROR) as Promise<string | null>
       ]);
       isOfflineRef.current = offlineMode ?? false;
       setIsOfflineState(offlineMode ?? false);
-      setIsDirty(dirty ?? false);
+      setHasUnsyncedUserChanges(pendingUserChanges);
       setSyncError(lastError ?? null);
     };
     loadSyncState();
@@ -330,7 +333,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * Refresh sync state from storage (called after background updates it).
    */
   const refreshSyncState = useCallback(async (): Promise<void> => {
-    setIsDirty((await storage.getItem(StorageKeys.IS_DIRTY) as boolean | null) ?? false);
+    setHasUnsyncedUserChanges(await hasUnsyncedUserChangesInStorage());
   }, []);
 
   /**
@@ -403,7 +406,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     dbAvailable,
     isOffline,
     getIsOffline,
-    isDirty,
+    hasUnsyncedUserChanges,
     isSyncing,
     isUploading,
     setIsOffline,
@@ -421,7 +424,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     requiresManifestMigration,
     syncError,
     clearSyncError,
-  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, isDirty, isSyncing, isUploading, setIsOffline, shouldSuppressEmailErrors, loadDatabase, loadStoredDatabase, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration, syncError, clearSyncError]);
+  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, hasUnsyncedUserChanges, isSyncing, isUploading, setIsOffline, shouldSuppressEmailErrors, loadDatabase, loadStoredDatabase, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration, syncError, clearSyncError]);
 
   return (
     <DbContext.Provider value={contextValue}>

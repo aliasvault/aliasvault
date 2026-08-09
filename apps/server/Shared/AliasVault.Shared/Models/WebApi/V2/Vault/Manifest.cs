@@ -41,7 +41,7 @@ public class Manifest
     public bool CanAdminister { get; set; }
 
     /// <summary>
-    /// Gets or sets how the caller's access to this manifest's VEK is encrypted.
+    /// Gets or sets how the caller's access to this manifest's VEK is encrypted, as a ManifestKeyType token.
     /// </summary>
     public string? KeyType { get; set; }
 
@@ -50,7 +50,7 @@ public class Manifest
     /// </summary>
     public string? EncryptedVek { get; set; }
 
-    /// <summary>Gets or sets the algorithm of <see cref="EncryptedVek"/> (e.g. "rsa-oaep-sha256"). Null when <see cref="EncryptedVek"/> is null.</summary>
+    /// <summary>Gets or sets the algorithm of <see cref="EncryptedVek"/>, as a VaultKeyAlgorithm token. Null when <see cref="EncryptedVek"/> is null.</summary>
     public string? Algorithm { get; set; }
 
     /// <summary>

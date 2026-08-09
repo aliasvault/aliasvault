@@ -38,8 +38,9 @@ import type { SaveLoginResponse } from '@/utils/types/messaging/SaveLoginRespons
 import type { StringResponse as stringResponse } from '@/utils/types/messaging/StringResponse';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 import type { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
-import { type VaultMutationScope, ALL_VAULT_MUTATION_SCOPES, DEFAULT_VAULT_MUTATION_SCOPE, isManifestScope } from '@/utils/types/VaultMutationScope';
+import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope, isManifestScope } from '@/utils/types/VaultMutationScope';
 import { VaultCodec } from '@/utils/VaultCodec';
+import { clearDirtyScopes, getDirtyScopes } from '@/utils/VaultDirtyState';
 import { VaultKeyService } from '@/utils/VaultKeyService';
 import { vaultRequiresManifestMigration } from '@/utils/VaultManifestMigration';
 import { vaultMergeService } from '@/utils/VaultMergeService';
@@ -710,27 +711,6 @@ export async function handleGetEncryptionKeyDerivationParams(
 ) : Promise<EncryptionKeyDerivationParams | null> {
   // Get metadata from storage
   return await getStorageItem<EncryptionKeyDerivationParams>(StorageKeys.ENCRYPTION_KEY_DERIVATION_PARAMS);
-}
-
-/**
- * Read the set of currently-dirty mutation scopes from their independent per-scope flags. Each scope is a
- * separate idempotent boolean key (see {@link dirtyScopeStorageKey}), so concurrent mutations can never
- * clobber each other's scope the way pushing onto one shared array could. Returns the dirty scopes in the
- * stable {@link ALL_VAULT_MUTATION_SCOPES} order.
- */
-async function getDirtyScopes(): Promise<VaultMutationScope[]> {
-  const flags = await Promise.all(
-    ALL_VAULT_MUTATION_SCOPES.map(async scope => ((await storage.getItem(dirtyScopeStorageKey(scope))) === true ? scope : null))
-  );
-  return flags.filter((s): s is VaultMutationScope => s !== null);
-}
-
-/**
- * Clear every per-scope dirty flag. Called once a sync has confirmed all pending changes are on the server
- * (guarded by the mutation-sequence check in {@link handleMarkVaultClean}).
- */
-async function clearDirtyScopes(): Promise<void> {
-  await storage.removeItems(ALL_VAULT_MUTATION_SCOPES.map(scope => dirtyScopeStorageKey(scope)));
 }
 
 /**
@@ -1509,11 +1489,13 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     }
 
     /*
-     * Announce the sync phase to the popup so it can show the right indicator.
+     * Announce the sync phase to the popup so it can show the right indicator. A push that carries nothing but
+     * silent scopes (item usage statistics) stays unannounced: it is bookkeeping the user never initiated, so a
+     * spinner for it would only imply something is at stake.
      */
     if (needsPull) {
       broadcastSyncPhase('pull');
-    } else if (syncState.isDirty) {
+    } else if (syncState.isDirty && hasUserVisibleScope(await getDirtyScopes())) {
       broadcastSyncPhase('push');
     }
 
