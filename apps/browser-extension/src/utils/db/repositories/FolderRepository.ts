@@ -164,8 +164,6 @@ export class FolderRepository extends BaseRepository {
         ]);
       }
 
-      this.resyncItemChildManifests();
-
       // Move direct child folders to the parent of the deleted folder
       this.client.executeUpdate(FolderQueries.UPDATE_PARENT_FOLDER, [
         targetParentId,
@@ -242,7 +240,6 @@ export class FolderRepository extends BaseRepository {
     return this.withTransaction(async () => {
       const folders = this.client.executeUpdate(BaseQueries.RESTAMP_SUBTREE_FOLDERS, [manifestId, folderId]);
       const items = this.client.executeUpdate(BaseQueries.RESTAMP_SUBTREE_ITEMS, [manifestId, folderId]);
-      this.resyncItemChildManifests();
       // The items moved; the images they point at have to follow them into the new manifest.
       await this.logoRepository.reconcileItemLogoScopes(this.now());
       return folders + items;
@@ -276,7 +273,6 @@ export class FolderRepository extends BaseRepository {
         currentDateTime,
         itemId
       ]);
-      this.resyncItemChildManifests();
       // The destination folder may sit in another manifest; the item's logo has to follow it there.
       await this.logoRepository.reconcileItemLogoScopes(currentDateTime);
       return moved;

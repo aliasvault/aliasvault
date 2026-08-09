@@ -454,11 +454,6 @@ export class ItemRepository extends BaseRepository {
             // The row is addressed by the manifest it is in *now*; the SET above may move it.
             ref.ManifestId
           ]);
-
-          if (folderIdChanged) {
-            // The item may have crossed a manifest boundary; its child rows have to follow it.
-            this.resyncItemChildManifests();
-          }
         }
       }
 

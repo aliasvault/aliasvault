@@ -32,15 +32,6 @@ export abstract class BaseRepository {
   public constructor(protected client: IDatabaseClient) {}
 
   /**
-   * Sync the manifest of every item-scoped row based on the item it hangs off.
-   * This method should be called after anything that moves items between manifests, inside the same transaction.
-   * @returns The number of child rows re-stamped
-   */
-  protected resyncItemChildManifests(): number {
-    return BaseQueries.RESYNC_ITEM_CHILD_MANIFESTS.reduce((total, sql) => total + this.client.executeUpdate(sql), 0);
-  }
-
-  /**
    * Execute a function within a transaction.
    * Automatically handles begin, commit, and rollback.
    * @param fn - The function to execute within the transaction

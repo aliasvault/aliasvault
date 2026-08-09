@@ -327,6 +327,43 @@ object TestUserRegistration {
     // region Empty Vault Creation
 
     /**
+     * Split a SQL script into the individual statements execSQL accepts, one at a time.
+     *
+     * A CREATE TRIGGER carries its own semicolons inside its BEGIN ... END body, so splitting the script
+     * on ";" alone would cut the trigger into fragments that are not valid SQL on their own. A trigger
+     * therefore runs until its terminating END instead.
+     */
+    private fun splitSqlStatements(sql: String): List<String> {
+        val statements = mutableListOf<String>()
+        val current = StringBuilder()
+        var inTriggerBody = false
+
+        for (line in sql.lines()) {
+            val trimmed = line.trim()
+            if (trimmed.isEmpty()) {
+                continue
+            }
+
+            current.appendLine(line)
+            val upper = trimmed.uppercase()
+
+            if (!inTriggerBody && upper.startsWith("CREATE TRIGGER")) {
+                inTriggerBody = true
+                continue
+            }
+
+            val statementEnded = if (inTriggerBody) upper == "END;" else trimmed.endsWith(";")
+            if (statementEnded) {
+                statements.add(current.toString().trim().trimEnd(';'))
+                current.setLength(0)
+                inTriggerBody = false
+            }
+        }
+
+        return statements.filter { it.isNotEmpty() }
+    }
+
+    /**
      * Create an empty vault database as base64 string.
      */
     private fun createEmptyVaultDatabase(): String {
@@ -335,12 +372,8 @@ object TestUserRegistration {
             val db = SQLiteDatabase.openOrCreateDatabase(tempFile, null)
             try {
                 // Execute the complete schema SQL
-                val statements = VaultSql.completeSchema.split(";")
-                for (statement in statements) {
-                    val trimmed = statement.trim()
-                    if (trimmed.isNotEmpty()) {
-                        db.execSQL("$trimmed;")
-                    }
+                for (statement in splitSqlStatements(VaultSql.completeSchema)) {
+                    db.execSQL("$statement;")
                 }
             } finally {
                 db.close()

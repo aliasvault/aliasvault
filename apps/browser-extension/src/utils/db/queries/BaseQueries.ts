@@ -63,19 +63,4 @@ export class BaseQueries {
       SELECT Id FROM subtree
     )`;
 
-  /**
-   * The tables whose rows hang off an item and are therefore stamped with the item's manifest.
-   */
-  private static readonly ITEM_CHILD_TABLES = ['FieldValues', 'FieldHistories', 'ItemTags', 'Attachments', 'Passkeys', 'TotpCodes'];
-
-  /**
-   * Pull every item-scoped row's `ManifestId` back into line with the item it hangs off.
-   */
-  public static readonly RESYNC_ITEM_CHILD_MANIFESTS: readonly string[] = BaseQueries.ITEM_CHILD_TABLES.map(
-    (table) => `
-    UPDATE ${table}
-    SET ManifestId = (SELECT i.ManifestId FROM Items i WHERE i.Id = ${table}.ItemId)
-    WHERE ManifestId IS NOT (SELECT i.ManifestId FROM Items i WHERE i.Id = ${table}.ItemId)
-      AND EXISTS (SELECT 1 FROM Items i WHERE i.Id = ${table}.ItemId)`,
-  );
 }
