@@ -15,18 +15,6 @@ import { WebApiService } from '@/utils/WebApiService';
 export const VAULT_KEY_TYPE_PASSWORD = 'password';
 
 /**
- * Short-lived cache of the last successful password vault key response, to avoid unnecessary repeated
- * network requests.
- */
-const VAULT_KEY_CACHE_TTL_MS = 1000;
-
-/**
- * Process-wide (background service worker) cache of the last successful password vault key response, used by
- * all callers that need to check if the user has a vault key.
- */
-let cachedVaultKey: { data: FetchVaultKeyResult; timestamp: number } | null = null;
-
-/**
  * Result of resolving the vault encryption key after deriving the password key.
  */
 export type ResolvedEncryptionKey = {
@@ -47,33 +35,22 @@ export type FetchVaultKeyResult = {
  */
 export class VaultKeyService {
   /**
-   * Fetch the current user's password vault key from the server. Successful responses are reused for
-   * {@link VAULT_KEY_CACHE_TTL_MS} so the several callers a single sync cycle makes share one request; errors are
-   * never cached, so a transient failure does not stick.
+   * Fetch the current user's password vault key from the server.
    * @param webApi - the API client to use (popup context passes its own instance; background creates one)
    */
   public static async fetchVaultKey(webApi?: WebApiService): Promise<FetchVaultKeyResult> {
-    if (cachedVaultKey && Date.now() - cachedVaultKey.timestamp < VAULT_KEY_CACHE_TTL_MS) {
-      return cachedVaultKey.data;
-    }
-
     const api = webApi ?? new WebApiService();
-    let result: FetchVaultKeyResult;
     try {
       const response = await api.get<VaultKeyGetResponse>(`VaultKey/${VAULT_KEY_TYPE_PASSWORD}`);
-      result = { supported: true, vaultKey: response.vaultKey ?? null };
+      return { supported: true, vaultKey: response.vaultKey ?? null };
     } catch (e) {
       if (e instanceof ApiRequestError && e.statusCode === 404) {
-        result = { supported: false, vaultKey: null };
+        return { supported: false, vaultKey: null };
       } else if (e instanceof Error && e.message.includes('status: 404')) {
-        result = { supported: false, vaultKey: null };
-      } else {
-        throw e;
+        return { supported: false, vaultKey: null };
       }
+      throw e;
     }
-
-    cachedVaultKey = { data: result, timestamp: Date.now() };
-    return result;
   }
 
   /**
@@ -108,13 +85,6 @@ export class VaultKeyService {
    */
   public static async resolveEncryptionKeyOffline(derivedKeyBase64: string): Promise<string> {
     return (await VaultKeyService.resolveFromLocalCache(derivedKeyBase64)).encryptionKey;
-  }
-
-  /**
-   * Drop the cached vault-key response so the next resolve re-fetches it from the server.
-   */
-  public static clearCache(): void {
-    cachedVaultKey = null;
   }
 
   /**
@@ -269,7 +239,7 @@ export class VaultKeyService {
    * Persist a server vault-key response's encrypted blobs for offline unlock.
    * @param vaultKey - the server's vault key response
    */
-  private static async cacheVaultKeyBlobs(vaultKey: VaultKeyResponse): Promise<void> {
+  public static async cacheVaultKeyBlobs(vaultKey: VaultKeyResponse): Promise<void> {
     await storage.setItem(StorageKeys.ENCRYPTED_ACCOUNT_KEY, vaultKey.encryptedAccountKey);
     if (vaultKey.encryptedVek) {
       await storage.setItem(StorageKeys.ENCRYPTED_VEK, vaultKey.encryptedVek);
