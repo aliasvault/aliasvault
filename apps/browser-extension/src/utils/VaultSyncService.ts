@@ -842,12 +842,7 @@ export class VaultSyncService {
      * run earlier (the pre-push no-op check caches its result) and a write in between advances them.
      */
     const storedRevisions = await getManifestRevisions();
-    const currentManifestRevision = storedRevisions[await this.resolvePersonalManifestId()] ?? 0;
-    /**
-     * The revision one manifest's write rebases on, falling back to the revision its grant was resolved at.
-     * @param record - the manifest record
-     */
-    const revisionOf = (record: ManifestRecord): number => record.isPersonal ? currentManifestRevision : storedRevisions[record.manifestId] ?? record.revision;
+    const revisionOf = (record: ManifestRecord): number => storedRevisions[record.manifestId] ?? record.revision;
 
     const recordByManifestId = new Map(manifestRecords.map(r => [r.manifestId, r]));
     const candidates: PushManifest[] = canonicalized.manifests.flatMap(({ manifest, blobs }): PushManifest[] => {

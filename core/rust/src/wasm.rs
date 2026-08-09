@@ -176,7 +176,9 @@ pub fn vault_codec_extract_bucket_js(input: JsValue) -> Result<JsValue, JsValue>
     }
     let input: Input = serde_wasm_bindgen::from_value(input)
         .map_err(|e| JsValue::from_str(&format!("Failed to parse extract-bucket input: {}", e)))?;
-    codec_to_js(&vault_codec::extract_bucket(input.manifest_id, input.category, input.tables))
+    let bucket = vault_codec::extract_bucket(input.manifest_id, input.category, input.tables)
+        .map_err(|e| JsValue::from_str(&format!("extract_bucket failed: {}", e)))?;
+    codec_to_js(&bucket)
 }
 
 /// The bucket layout: `[{ category, tables: [<name>] }]`. Source of truth for platform bucket-only sync.

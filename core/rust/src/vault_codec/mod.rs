@@ -52,7 +52,7 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
 /// Build the `(manifest_id, category)` data bucket from its tables (bucket-only push path).
 /// Include the [`OVERFLOW_TABLE`] row in `tables` (read it alongside the bucket's tables) so a newer
 /// writer's columns/tables re-merge and survive; it is consumed and never emitted into the bucket.
-pub fn extract_bucket(manifest_id: String, category: String, tables: std::collections::HashMap<String, Vec<CodecRecord>>) -> DataBucket {
+pub fn extract_bucket(manifest_id: String, category: String, tables: std::collections::HashMap<String, Vec<CodecRecord>>) -> VaultResult<DataBucket> {
     canonicalize::extract_bucket(manifest_id, category, tables)
 }
 
@@ -216,7 +216,7 @@ pub fn extract_bucket_json(input_json: &str) -> VaultResult<String> {
         tables: std::collections::HashMap<String, Vec<CodecRecord>>,
     }
     let input: Input = serde_json::from_str(input_json)?;
-    Ok(serde_json::to_string(&extract_bucket(input.manifest_id, input.category, input.tables))?)
+    Ok(serde_json::to_string(&extract_bucket(input.manifest_id, input.category, input.tables)?)?)
 }
 
 /// JSON-string sibling of [`bucket_layout`]. Output: `[{ "category": <str>, "tables": [<str>] }]`.

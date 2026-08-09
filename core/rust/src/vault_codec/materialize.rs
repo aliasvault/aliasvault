@@ -20,7 +20,7 @@ use std::collections::{HashMap, HashSet};
 use serde_json::json;
 
 use super::manifest::{CodecOverflow, CodecRecord, CodecTableData, Manifest, MaterializeInput, MaterializedTables};
-use super::types::{is_manifest_scoped, is_skip_table, row_identity, MANIFEST_ID_COL, MANIFESTS_TABLE, OVERFLOW_TABLE};
+use super::types::{is_skip_table, row_identity, MANIFEST_ID_COL, MANIFESTS_TABLE, OVERFLOW_TABLE};
 use crate::error::{VaultError, VaultResult};
 
 /// Materialize the vault's manifests into the table set the platform inserts. Every manifest arrives
@@ -70,10 +70,8 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
             if is_skip_table(&name) || name == OVERFLOW_TABLE {
                 continue;
             }
-            if is_manifest_scoped(&name) {
-                for row in records.iter_mut() {
-                    row.insert(MANIFEST_ID_COL.to_string(), json!(bucket.manifest_id));
-                }
+            for row in records.iter_mut() {
+                row.insert(MANIFEST_ID_COL.to_string(), json!(bucket.manifest_id));
             }
             match split_for_schema(&name, records, &schema_columns, &mut overflow.columns) {
                 SplitResult::Fits(records) => bucket_tables.entry(name).or_default().extend(records),

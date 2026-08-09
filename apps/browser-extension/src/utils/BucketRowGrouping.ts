@@ -46,25 +46,30 @@ export function findByManifestId<T>(map: Map<string, T>, manifestId: string): T 
 }
 
 /**
- * Split a bucket category's rows into one table set per owning manifest.
+ * Split a bucket category's rows into one table set per owning manifest. Ownership is each row's own
+ * `ManifestId` stamp — the writing manifest is no fallback: a row that names no manifest is a bug in
+ * whatever wrote it, refused loudly here rather than silently homed somewhere plausible.
  * @param tableNames - The tables making up the category
  * @param tables - The rows read for those tables
- * @param personalManifestId - The manifest rows belong to
+ * @param writingManifestId - The manifest this vault writes from; its bucket is always declared, even empty
  * @param alsoInclude - Manifests that must be written even when they hold no rows
  * @returns Manifest id → that manifest's rows, per table
  */
 export function groupBucketRowsByManifest(
   tableNames: string[],
   tables: BucketTables,
-  personalManifestId: string,
+  writingManifestId: string,
   alsoInclude: string[] = []
 ): Map<string, BucketTables> {
-  const grouped = new Map<string, BucketTables>([[personalManifestId, {}]]);
+  const grouped = new Map<string, BucketTables>([[writingManifestId, {}]]);
 
   for (const tableName of tableNames) {
     for (const row of tables[tableName] ?? []) {
       const stamp = typeof row.ManifestId === 'string' ? row.ManifestId : '';
-      const owner = isUnstampedManifestId(stamp) ? personalManifestId : (matchManifestId(grouped.keys(), stamp) ?? stamp);
+      if (isUnstampedManifestId(stamp)) {
+        throw new Error(`Bucket table ${tableName} holds a row that names no manifest; every row must carry the manifest it belongs to`);
+      }
+      const owner = matchManifestId(grouped.keys(), stamp) ?? stamp;
 
       const manifestTables = grouped.get(owner) ?? {};
       manifestTables[tableName] = [...(manifestTables[tableName] ?? []), row];

@@ -143,7 +143,10 @@ pub fn identity_columns_for(table_name: &str) -> Vec<&'static str> {
 
 /// Stable string key identifying `row` within `table_name`.
 pub fn row_identity(table_name: &str, row: &super::manifest::CodecRecord) -> Option<String> {
-    let columns = identity_columns_for(table_name);
+    let mut columns = identity_columns_for(table_name);
+    if !columns.contains(&MANIFEST_ID_COL) && row.get(MANIFEST_ID_COL).filter(|value| !value.is_null()).is_some() {
+        columns.insert(0, MANIFEST_ID_COL);
+    }
     // A row with no primary key cannot be addressed at all.
     row.get(primary_key_for(table_name))?;
     Some(

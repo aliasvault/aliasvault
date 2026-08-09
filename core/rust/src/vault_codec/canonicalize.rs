@@ -21,7 +21,7 @@ use super::scoped_assets::{normalize_logo_scope, reconcile_logo_references};
 use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecOverflow, DataBucket, Manifest, ManifestSpec, CodecRecord};
 use super::sharing::{clone_referenced_rows, partition_by_manifest, prune_unreferenced_logos, referenced_tables};
 use super::types::{
-    blob_spec_for, bucket_categories, bucket_category_for, is_bucketed_table, is_manifest_scoped, is_skip_table, is_unstamped_scope,
+    blob_spec_for, bucket_categories, bucket_category_for, is_bucketed_table, is_skip_table, is_unstamped_scope,
     manifest_scoped_tables, row_identity, tables_for_category, MANIFEST_ID_COL, OVERFLOW_TABLE, SCHEMA_VERSION,
 };
 use crate::error::VaultResult;
@@ -68,6 +68,9 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         adopt_unstamped_rows(&mut all_tables, adopt_into);
     }
     reject_unstamped_rows(&all_tables)?;
+    for bucket_tables in overflow.bucket_tables.values() {
+        reject_unstamped_rows(bucket_tables)?;
+    }
 
     let bucketed_names: Vec<String> = all_tables.keys().filter(|name| is_bucketed_table(name)).cloned().collect();
     let bucketed_rows: HashMap<String, Vec<CodecRecord>> = bucketed_names.into_iter().filter_map(|name| all_tables.remove_entry(&name)).collect();
@@ -79,11 +82,6 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
     let no_rows: Vec<CodecRecord> = Vec::new();
     let all_logos = snapshots.get("Logos").unwrap_or(&no_rows);
 
-    /*
-     * Route every row to the manifest that owns it; `all_tables` keeps the writing manifest's rows plus
-     * every table that carries no stamp column. The remaining specs are passed in their original order
-     * so the emitted list mirrors the input.
-     */
     let other_specs: Vec<ManifestSpec> = input.manifests.iter().skip(1).cloned().collect();
     let partitions = partition_by_manifest(&mut all_tables, &other_specs, &snapshots, &writing_manifest_id)?;
 
@@ -166,18 +164,19 @@ fn build_data_buckets(
         }
     }
 
-    /// The manifest a bucketed row belongs to.
-    fn owner<'a>(row: &'a CodecRecord, writing_manifest_id: &'a str, known: &HashSet<&str>) -> Option<&'a str> {
+    /// The manifest a bucketed row belongs to: the one its stamp names. A stamp naming a manifest this
+    /// vault no longer carries drops the row with that manifest (the partition split's `Gone` rule).
+    fn owner<'a>(row: &'a CodecRecord, known: &HashSet<&str>) -> Option<&'a str> {
         match row.get(MANIFEST_ID_COL).and_then(|value| value.as_str()) {
             Some(id) if !is_unstamped_scope(Some(id)) => known.contains(id).then_some(id),
-            _ => Some(writing_manifest_id),
+            _ => None,
         }
     }
 
     for (name, rows) in &bucketed_rows {
         let category = bucket_category_for(name).expect("only bucketed tables are collected into bucketed_rows");
         for row in rows {
-            let Some(manifest_id) = owner(row, writing_manifest_id, &known) else { continue };
+            let Some(manifest_id) = owner(row, &known) else { continue };
             buckets
                 .entry((manifest_id.to_string(), category.to_string()))
                 .or_default()
@@ -194,7 +193,7 @@ fn build_data_buckets(
                 continue;
             }
             for row in rows {
-                let Some(manifest_id) = owner(row, writing_manifest_id, &known) else { continue };
+                let Some(manifest_id) = owner(row, &known) else { continue };
                 buckets
                     .entry((manifest_id.to_string(), category.clone()))
                     .or_default()
@@ -228,10 +227,12 @@ fn adopt_unstamped_rows(tables: &mut HashMap<String, Vec<CodecRecord>>, manifest
     }
 }
 
-/// Reject the whole push when any row of a manifest-scoped table names no manifest.
+/// Reject the whole push when any row names no manifest.
 fn reject_unstamped_rows(tables: &HashMap<String, Vec<CodecRecord>>) -> VaultResult<()> {
-    for name in manifest_scoped_tables() {
-        let Some(rows) = tables.get(name) else { continue };
+    let mut names: Vec<&String> = tables.keys().collect();
+    names.sort();
+    for name in names {
+        let rows = &tables[name];
         let unstamped = rows.iter().filter(|row| is_unstamped(row)).count();
         if unstamped > 0 {
             let first = rows.iter().find(|row| is_unstamped(row)).and_then(|row| row.get("Id")).cloned().unwrap_or(Value::Null);
@@ -328,7 +329,11 @@ fn primary_key_of(identity: &str) -> &str {
 
 /// Build a single data bucket for `(manifest_id, category)` from its already-normalized tables
 /// (name > rows). The bucket-only push path (a bucket changed but the manifest didn't).
-pub fn extract_bucket(manifest_id: String, category: String, mut tables: HashMap<String, Vec<CodecRecord>>) -> DataBucket {
+///
+/// Every row must be stamped for the bucket's own manifest: the caller groups rows by their stamps
+/// before calling, so a row naming no manifest or another one is a grouping bug, refused loudly
+/// rather than repaired by re-homing the row into a scope it never claimed.
+pub fn extract_bucket(manifest_id: String, category: String, mut tables: HashMap<String, Vec<CodecRecord>>) -> VaultResult<DataBucket> {
     let overflow = tables.remove(OVERFLOW_TABLE).map(|records| CodecOverflow::from_table_records(&records)).unwrap_or_default();
     remerge_overflow_columns(&mut tables, &overflow);
     if let Some(ov_tables) = overflow.bucket_tables.get(&category) {
@@ -338,16 +343,27 @@ pub fn extract_bucket(manifest_id: String, category: String, mut tables: HashMap
     }
 
     for (name, rows) in tables.iter_mut() {
-        rows.retain(|row| match row.get(MANIFEST_ID_COL).and_then(|value| value.as_str()) {
-            Some(id) if !is_unstamped_scope(Some(id)) => id == manifest_id,
-            _ => true,
-        });
-        if is_manifest_scoped(name) {
-            for row in rows.iter_mut() {
-                row.insert(MANIFEST_ID_COL.to_string(), json!(manifest_id));
+        for row in rows.iter_mut() {
+            match row.get(MANIFEST_ID_COL).and_then(|value| value.as_str()) {
+                Some(id) if !is_unstamped_scope(Some(id)) => {
+                    if !id.eq_ignore_ascii_case(&manifest_id) {
+                        return Err(crate::error::VaultError::General(format!(
+                            "extract_bucket for manifest {} got a {} row stamped for {}; the caller must group rows by the manifest they name",
+                            manifest_id, name, id
+                        )));
+                    }
+                    // Normalize the stamp to the bucket's declared spelling of the id.
+                    row.insert(MANIFEST_ID_COL.to_string(), json!(manifest_id));
+                }
+                _ => {
+                    return Err(crate::error::VaultError::General(format!(
+                        "extract_bucket refuses a {} row that names no manifest; every row must carry the manifest it belongs to",
+                        name
+                    )));
+                }
             }
         }
     }
 
-    DataBucket::new(manifest_id, category, tables)
+    Ok(DataBucket::new(manifest_id, category, tables))
 }
