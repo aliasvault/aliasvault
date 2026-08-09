@@ -7,7 +7,6 @@
 import { storage } from 'wxt/utils/storage';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
-import { devWarn } from '@/utils/devLogger/DevLogger';
 
 /**
  * Every manifest's last-known server revision, keyed by manifest id; empty when nothing has been pulled yet.
@@ -37,24 +36,4 @@ export async function recordManifestRevisions(revisions: Record<string, number>)
  */
 export async function getPersonalManifestId(): Promise<string | null> {
   return (await storage.getItem(StorageKeys.VAULT_PERSONAL_MANIFEST_ID)) as string | null;
-}
-
-/** The personal manifest's last-known server revision. */
-export async function getPersonalManifestRevision(): Promise<number> {
-  const personalManifestId = await getPersonalManifestId();
-  return personalManifestId ? (await getManifestRevisions())[personalManifestId] ?? 0 : 0;
-}
-
-/**
- * Record the personal manifest's revision.
- * @param revision - the revision the server reported for the personal manifest
- */
-export async function recordPersonalManifestRevision(revision: number): Promise<void> {
-  const personalManifestId = await getPersonalManifestId();
-  if (!personalManifestId) {
-    devWarn(`[VaultSync] No personal manifest id known, dropping personal revision ${revision}; the next sync pulls to rebuild the baseline.`);
-    return;
-  }
-
-  await recordManifestRevisions({ [personalManifestId]: revision });
 }

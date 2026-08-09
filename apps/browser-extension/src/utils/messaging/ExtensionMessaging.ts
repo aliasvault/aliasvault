@@ -78,7 +78,7 @@ export interface IExtensionMessageProtocol {
   GET_WEBAUTHN_SETTINGS(data: any): WebAuthnSettingsResponse;
   IS_URL_LINKED_TO_CREDENTIAL(data: { itemId: string; url: string }): { linked: boolean };
   LOCK_VAULT(): BoolResponse;
-  MARK_VAULT_CLEAN(data: { mutationSeqAtStart: number; newPersonalManifestRevision: number }): { cleared: boolean; currentMutationSeq: number };
+  MARK_VAULT_CLEAN(data: { mutationSeqAtStart: number }): { cleared: boolean; currentMutationSeq: number };
   MIGRATE_VAULT_MANIFEST(): VaultManifestMigrationResult;
   OPEN_AUTOFILL_POPUP(data: { elementIdentifier: string; popupType?: string }): BoolResponse;
   OPEN_POPUP(): BoolResponse;
@@ -95,7 +95,7 @@ export interface IExtensionMessageProtocol {
   SET_CLIPBOARD_CLEAR_TIMEOUT(data: number): boolean;
   SET_LOGIN_SAVE_ENABLED(data: boolean): BoolResponse;
   SET_RECENTLY_SELECTED(data: { itemId: string; domain: string }): { success: boolean };
-  STORE_ENCRYPTED_VAULT(data: { vaultBlob: string; markDirty?: boolean; personalManifestRevision?: number; expectedMutationSeq?: number; scope?: VaultMutationScope }): { success: boolean; mutationSequence: number };
+  STORE_ENCRYPTED_VAULT(data: { vaultBlob: string; markDirty?: boolean; expectedMutationSeq?: number; scope?: VaultMutationScope }): { success: boolean; mutationSequence: number };
   STORE_ENCRYPTION_KEY(data: string): BoolResponse;
   STORE_ENCRYPTION_KEY_DERIVATION_PARAMS(data: EncryptionKeyDerivationParams): BoolResponse;
   STORE_LAST_AUTOFILLED(data: LastAutofilledCredential): { success: boolean };

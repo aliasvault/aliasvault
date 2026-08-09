@@ -9,6 +9,7 @@ import { storage } from 'wxt/utils/storage';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { devLog } from '@/utils/devLogger/DevLogger';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
+import { replaceManifestRevisions } from '@/utils/ManifestRevisions';
 import { ServerUpdateRequiredError } from '@/utils/types/errors/ServerUpdateRequiredError';
 import { VaultKeyService } from '@/utils/VaultKeyService';
 
@@ -92,12 +93,17 @@ export async function openLegacySqliteBlobSnapshot(snapshot: LegacySqliteBlobSna
   // There is no manifest-v1 server state behind this snapshot, so any content fingerprint we hold is stale.
   await storage.removeItem(StorageKeys.VAULT_CONTENT_FINGERPRINTS);
 
+  const revision = typeof snapshot.legacyRevision === 'number' ? snapshot.legacyRevision : 0;
+
   /*
    * The vault has never been materialized, so it carries no record of which manifest is ours. Persist the
-   * server's id for it so the first migration canonicalize can stamp rows with it.
+   * server's id for it so the first migration canonicalize can stamp rows with it, and seed the revision map
+   * with it: a legacy vault is one logical manifest, and every pull path (this one included) must leave the
+   * per-manifest baselines matching what it fetched.
    */
   if (snapshot.personalManifestId) {
     await storage.setItem(StorageKeys.VAULT_PERSONAL_MANIFEST_ID, snapshot.personalManifestId);
+    await replaceManifestRevisions({ [snapshot.personalManifestId]: revision });
   }
 
   devLog('[V2Pull] Legacy sqlite-blob pass-through (user not yet migrated), returning the blob as-is.');
@@ -105,7 +111,7 @@ export async function openLegacySqliteBlobSnapshot(snapshot: LegacySqliteBlobSna
   return {
     encryptedBlob: snapshot.legacyVaultBlob ?? '',
     version: snapshot.version ?? '',
-    revision: typeof snapshot.legacyRevision === 'number' ? snapshot.legacyRevision : 0,
+    revision,
   };
 }
 

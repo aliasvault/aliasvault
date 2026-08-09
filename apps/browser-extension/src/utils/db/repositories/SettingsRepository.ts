@@ -15,17 +15,18 @@ export type CredentialSortOrder = 'OldestFirst' | 'NewestFirst' | 'Alphabetical'
  */
 export class SettingsRepository extends BaseRepository {
   /**
-   * Get setting from database for a given key.
-   * Returns default value (empty string by default) if setting is not found.
+   * Get setting from database for a given key, from the manifest this client writes into.
    * @param key - The setting key
    * @param defaultValue - Default value if setting not found
    * @returns The setting value
    */
   public getSetting(key: string, defaultValue: string = ''): string {
     const manifestId = this.client.getActiveManifestId() ?? this.personalManifestId();
-    const results = manifestId
-      ? this.client.executeQuery<{ Value: string }>(SettingsQueries.GET_SETTING, [manifestId, key])
-      : this.client.executeQuery<{ Value: string }>(SettingsQueries.GET_SETTING_ANY_MANIFEST, [key]);
+    if (!manifestId) {
+      return defaultValue;
+    }
+
+    const results = this.client.executeQuery<{ Value: string }>(SettingsQueries.GET_SETTING, [manifestId, key]);
     return results.length > 0 ? results[0].Value : defaultValue;
   }
 

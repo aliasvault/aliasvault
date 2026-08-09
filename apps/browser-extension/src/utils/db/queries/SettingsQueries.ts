@@ -13,15 +13,6 @@ export class SettingsQueries {
     WHERE s.ManifestId = ? AND s.Key = ?`;
 
   /**
-   * Get setting by key regardless of manifest (first setting found).
-   */
-  public static readonly GET_SETTING_ANY_MANIFEST = `
-    SELECT s.Value
-    FROM Settings s
-    WHERE s.Key = ?
-    LIMIT 1`;
-
-  /**
    * Check if a setting exists within its manifest.
    */
   public static readonly COUNT_BY_KEY = `

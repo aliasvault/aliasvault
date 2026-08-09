@@ -13,7 +13,7 @@ import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 import { buildEmailRouting } from '@/utils/EmailRouting';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { completeLegacyAccountKeyMigration, isLegacySqliteBlobSnapshot, legacyUnstampedRowAdoption, openLegacySqliteBlobSnapshot, prepareLegacyAccountKeyMigration, withOutdatedServerGuard, type LegacyAccountKeyMigration, type LegacySqliteBlobSnapshot } from '@/utils/legacy/LegacyStorageModelMigration';
-import { getManifestRevisions, getPersonalManifestId, getPersonalManifestRevision, recordManifestRevisions, replaceManifestRevisions } from '@/utils/ManifestRevisions';
+import { getManifestRevisions, getPersonalManifestId, recordManifestRevisions, replaceManifestRevisions } from '@/utils/ManifestRevisions';
 import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateManifestSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecBlobEntry, type CodecCanonicalized, type CodecManifest, type CodecManifestSpec} from '@/utils/RustCore';
 import { SharingService, type SessionSharedManifest } from '@/utils/SharingService';
 import { SqliteClient } from '@/utils/SqliteClient';
@@ -123,11 +123,11 @@ type PullResult = {
 };
 
 /**
- * Result of a push.
+ * Result of a push. The revisions of every manifest the write carried are recorded in the per-manifest revision
+ * map ({@link recordManifestRevisions}) as part of the push itself; callers only act on the status.
  */
 export type PushResult = {
   status: 'ok' | 'outdated' | 'missing-blobs' | 'rejected';
-  newManifestRevision: number | null;
   reasons?: string[];
   /** The new encryption key (set by legacy migration). */
   newEncryptionKey?: string;
@@ -907,7 +907,6 @@ export class VaultSyncService {
       if (!bucketValidation.ok) {
         return {
           status: 'rejected',
-          newManifestRevision: null,
           reasons: [`${label} validation failed: ${bucketValidation.failedRules.join(', ')}. ${bucketValidation.message}`.trim()],
         };
       }
@@ -946,7 +945,6 @@ export class VaultSyncService {
         if (candidate.isPersonal) {
           return {
             status: 'rejected',
-            newManifestRevision: null,
             reasons: [`Manifest validation failed: ${validation.failedRules.join(', ')}. ${validation.message}`.trim()],
           };
         }
@@ -980,7 +978,7 @@ export class VaultSyncService {
      */
     if (manifestWrites.length === 0 && bucketDtos.length === 0) {
       devLog('[V2Push] No content changes detected (every manifest and data bucket matches the server baselines); skipping upload.');
-      return { status: 'ok', newManifestRevision: currentManifestRevision };
+      return { status: 'ok' };
     }
 
     /*
@@ -1074,7 +1072,7 @@ export class VaultSyncService {
        */
       const unsatisfiable = resp.missingBlobHashes.filter(h => !blobEntries.has(h));
       if (unsatisfiable.length > 0) {
-        return { status: 'missing-blobs', newManifestRevision: currentManifestRevision, reasons: unsatisfiable };
+        return { status: 'missing-blobs', reasons: unsatisfiable };
       }
 
       devWarn(`[V2Sync] Server reported ${resp.missingBlobHashes.length} missing blob(s); uploading and retrying once.`);
@@ -1086,16 +1084,13 @@ export class VaultSyncService {
 
       resp = await webApi.post<typeof payload, VaultWriteResponseDto>(VAULT_ENDPOINT, payload);
       if (resp.missingBlobHashes && resp.missingBlobHashes.length > 0) {
-        return { status: 'missing-blobs', newManifestRevision: currentManifestRevision, reasons: resp.missingBlobHashes };
+        return { status: 'missing-blobs', reasons: resp.missingBlobHashes };
       }
     }
 
-    const personalResult = (resp.manifestRevisions ?? []).find(r => r.manifestId === personalRecord.manifestId);
-    const newPersonalRevision = personalResult?.revision ?? currentManifestRevision;
-
     if (resp.status !== 0) {
       // All-or-nothing: a single stale manifest or bucket rejected the whole write; the orchestrator pulls/merges/retries.
-      return { status: 'outdated', newManifestRevision: newPersonalRevision };
+      return { status: 'outdated' };
     }
 
     // 5) Update local persisted state on success.
@@ -1107,9 +1102,10 @@ export class VaultSyncService {
       await storage.setItem(StorageKeys.VAULT_BUCKET_REVISIONS, bucketRevisions);
     }
 
+    // Advance the baseline of the manifests this write included.
     const sessionShared = await SharingService.getSessionSharedManifests();
-    const writtenRevisions = new Map((resp.manifestRevisions ?? []).filter(r => r.manifestId !== personalRecord.manifestId).map(r => [r.manifestId, r.revision]));
-    await recordManifestRevisions({ ...Object.fromEntries(writtenRevisions), [await this.resolvePersonalManifestId()]: newPersonalRevision });
+    const writtenRevisions = new Map((resp.manifestRevisions ?? []).map(r => [r.manifestId, r.revision]));
+    await recordManifestRevisions(Object.fromEntries(writtenRevisions));
     for (const record of Object.values(sessionShared)) {
       const revision = writtenRevisions.get(record.manifestId);
       if (revision !== undefined) {
@@ -1157,7 +1153,7 @@ export class VaultSyncService {
     const totalChars = manifestChars + bucketChars + uploadedBlobChars;
     devLog(`[V2Push] Total pushed (encrypted): ${manifestWrites.length} manifest(s) ${formatKb(manifestChars)} + ${bucketDtos.length} buckets ${formatKb(bucketChars)} + ${uploadedCiphertexts.size} blobs ${formatKb(uploadedBlobChars)} = ${formatKb(totalChars)}.`);
 
-    return { status: 'ok', newManifestRevision: newPersonalRevision, newEncryptionKey: migration ? contentKey : undefined };
+    return { status: 'ok', newEncryptionKey: migration ? contentKey : undefined };
   }
 
   /**
@@ -1339,13 +1335,14 @@ export class VaultSyncService {
       await storage.setItem(StorageKeys.VAULT_MANIFEST_SALT, manifestSalt);
     }
 
+    const personalManifestId = await this.resolvePersonalManifestId();
     const records: ManifestRecord[] = [{
-      manifestId: await this.resolvePersonalManifestId(),
+      manifestId: personalManifestId,
       isPersonal: true,
       salt: manifestSalt,
       folderId: null,
       vek: null,
-      revision: await getPersonalManifestRevision(),
+      revision: (await getManifestRevisions())[personalManifestId] ?? 0,
       name: null,
       // The personal manifest's own delivery key is published as the account-level key, not per manifest.
       canAdminister: false,
