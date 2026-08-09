@@ -4,20 +4,23 @@ import { storage } from 'wxt/utils/storage';
 
 import { allVaultDataStorageKeys, AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
 import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
+import type { ItemUsageAction } from '@/utils/db';
 import type { DraftItem } from '@/utils/db/ItemRef';
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
-import { FieldKey, ItemTypes, createSystemField, type Item, type PasswordSettings } from '@/utils/dist/core/models/vault';
-import type { VaultResponse, VaultPostResponse, StatusResponseV2, ManifestRevision } from '@/utils/dist/core/models/webapi';
+import { FieldKey, ItemTypes, VaultDataBucketCategory, createSystemField, type Item, type PasswordSettings } from '@/utils/dist/core/models/vault';
+import type { VaultResponse, StatusResponseV2, ManifestRevision } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import { requiresLegacyVaultKeyMigration } from '@/utils/LegacyVaultKeyMigration';
+import { readLegacySessionEncryptionKey } from '@/utils/legacy/LegacyStorageKeyFallbacks';
+import { requiresLegacyAccountKeyMigration } from '@/utils/legacy/LegacyStorageModelMigration';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { getManifestRevisions, getPersonalManifestId } from '@/utils/ManifestRevisions';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
-import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword, vaultCodecExtractBucket, vaultCodecBucketLayout, vaultCodecOverflowTable } from '@/utils/RustCore';
+import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword, vaultCodecExtractBuckets, vaultCodecBucketLayout, vaultCodecOverflowTable } from '@/utils/RustCore';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
-import { getItemWithFallback } from '@/utils/StorageUtility';
+import { getStorageItem } from '@/utils/StorageUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
@@ -69,59 +72,36 @@ function personalManifestRevision(status: StatusResponseV2): number {
   return personal?.revision ?? 0;
 }
 
-/** The client's last-known revision per shared manifest (manifestId → revision); empty when no shared manifests. */
-async function getLocalSharedManifestRevisions(): Promise<Record<string, number>> {
-  return (await storage.getItem(StorageKeys.SERVER_MANIFEST_REVISIONS)) as Record<string, number> | null ?? {};
-}
-
 /**
  * Whether the client should pull and re-materialize because the server's manifest set no longer matches what the
- * client has locally materialized. Compares the full server list against the client's per-manifest last-known
- * revisions and is idempotent: after a successful materialize the local record matches
+ * client has locally materialized. One map-versus-map comparison covers every manifest, the personal one included:
+ * the server reports it by id like any other. Idempotent: after a successful materialize the local record matches
  * the server, so this returns false until the next server-side change.
- *
+ * 
  * @param serverManifests - the per-manifest revisions from the status response
- * @param personalManifestId - the id the server names as the caller's own; every other entry is a shared manifest
- * @param localMainRevision - the client's last-known personal manifest revision (local:serverRevision)
- * @param localSharedRevisions - the client's last-known revision per shared manifest
+ * @param localRevisions - the client's last-known revision per manifest
  */
-function serverManifestsNeedPull(serverManifests: ManifestRevision[], personalManifestId: string | null, localMainRevision: number, localSharedRevisions: Record<string, number>): boolean {
-  const serverShared = new Map<string, number>();
-  let serverPersonalRevision: number | null = null;
-  for (const m of (serverManifests ?? [])) {
-    if (personalManifestId !== null && m.manifestId === personalManifestId) {
-      serverPersonalRevision = m.revision;
-    } else {
-      serverShared.set(m.manifestId, m.revision);
-    }
-  }
+function serverManifestsNeedPull(serverManifests: ManifestRevision[], localRevisions: Record<string, number>): boolean {
+  const serverRevisions = new Map((serverManifests ?? []).map(m => [m.manifestId, m.revision]));
 
-  /*
-   * Decide whether to pull and log the concrete reason.
-   */
-  if (serverPersonalRevision !== null && serverPersonalRevision > localMainRevision) {
-    devLog(`[VaultSync] Pull needed: personal manifest server rev ${serverPersonalRevision} > local rev ${localMainRevision}.`);
-    return true;
-  }
-
-  // Any shared manifest added or with a changed revision on the server.
-  for (const [manifestId, revision] of serverShared) {
-    const local = localSharedRevisions[manifestId];
+  // Any manifest added or with a changed revision on the server.
+  for (const [manifestId, revision] of serverRevisions) {
+    const local = localRevisions[manifestId];
     if (local !== revision) {
       const reason = local === undefined ? `not tracked locally (server rev ${revision})` : `server rev ${revision} != local rev ${local}`;
-      devLog(`[VaultSync] Pull needed: shared manifest ${manifestId} ${reason}.`);
+      devLog(`[VaultSync] Pull needed: manifest ${manifestId} ${reason}.`);
       return true;
     }
   }
 
-  // Any shared manifest the client still tracks but the server no longer lists (removed / revoked).
-  const removed = Object.keys(localSharedRevisions).find(manifestId => !serverShared.has(manifestId));
+  // Any manifest the client still tracks but the server no longer lists (removed / revoked).
+  const removed = Object.keys(localRevisions).find(manifestId => !serverRevisions.has(manifestId));
   if (removed) {
-    devLog(`[VaultSync] Pull needed: shared manifest ${removed} (local rev ${localSharedRevisions[removed]}) no longer listed by the server (revoked/removed).`);
+    devLog(`[VaultSync] Pull needed: manifest ${removed} (local rev ${localRevisions[removed]}) no longer listed by the server (revoked/removed).`);
     return true;
   }
 
-  devLog(`[VaultSync] No pull needed: personal rev ${serverPersonalRevision ?? 'n/a'} (local ${localMainRevision}), ${serverShared.size} shared manifest(s) all match local revisions.`);
+  devLog(`[VaultSync] No pull needed: ${serverRevisions.size} manifest(s) all match local revisions.`);
   return false;
 }
 
@@ -259,13 +239,20 @@ async function fetchLatestVaultFromServer(): Promise<VaultResponse> {
 }
 
 /**
+ * Outcome of a push attempt: 0 = ok, 2 = the server had newer state and the caller must re-sync (pull/merge/retry).
+ * Revision bookkeeping happens inside VaultSyncService, which records the new revision of every manifest a
+ * successful write actually carried; no revision travels back through this result.
+ */
+type VaultPushOutcome = { status: number };
+
+/**
  * Push the current SQLite vault to the server.
  *
  * @param sqliteClient - the in-memory SQLite client to upload
  * @param options - forceFullWrite bypasses the content-fingerprint gating and rewrites every manifest and bucket
  *   (server rollback recovery); createVaultKey mints the VEK as part of this push (KEK/VEK migration)
  */
-async function pushVaultToServer(sqliteClient: SqliteClient, options: { forceFullWrite: boolean; createVaultKey: boolean }): Promise<VaultPostResponse> {
+async function pushVaultToServer(sqliteClient: SqliteClient, options: { forceFullWrite: boolean; createVaultKey: boolean }): Promise<VaultPushOutcome> {
   const encryptionKey = await handleGetEncryptionKey();
   if (!encryptionKey) {
     throw new Error(formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED));
@@ -284,15 +271,15 @@ async function pushVaultToServer(sqliteClient: SqliteClient, options: { forceFul
       await handleStoreEncryptionKey(result.newEncryptionKey);
     }
 
-    return { status: 0, newRevisionNumber: result.newManifestRevision ?? 0 };
+    return { status: 0 };
   }
 
   if (result.status === 'outdated') {
-    return { status: 2, newRevisionNumber: result.newManifestRevision ?? 0 };
+    return { status: 2 };
   }
 
   if (result.status === 'rejected') {
-    // Structural validation tripped — surface the reasons rather than silently uploading garbage.
+    // Structural validation error
     const reason = (result.reasons ?? ['Integrity check failed']).join('; ');
     devError('[V2Sync] Refusing to upload corrupt vault:', reason);
     throw new Error(formatErrorWithCode(`Vault integrity check failed: ${reason}`, AppErrorCode.UPLOAD_FAILED));
@@ -308,8 +295,7 @@ async function pushVaultToServer(sqliteClient: SqliteClient, options: { forceFul
 /**
  * Sync the vault with the server to check if a newer vault is available. If so, the vault will be updated.
  */
-export async function handleSyncVault(
-) : Promise<messageBoolResponse> {
+export async function handleSyncVault() : Promise<messageBoolResponse> {
   const webApi = new WebApiService();
   const statusResponse = await webApi.getStatus();
   const statusError = webApi.validateStatusResponse(statusResponse);
@@ -317,22 +303,18 @@ export async function handleSyncVault(
     return { success: false, error: await t('common.errors.' + statusError) };
   }
 
-  const localServerRevision = await storage.getItem(StorageKeys.SERVER_REVISION) as number | null ?? 0;
-  const localSharedRevisions = await getLocalSharedManifestRevisions();
-
-  if (serverManifestsNeedPull(statusResponse.manifestRevisions, statusResponse.personalManifestId, localServerRevision, localSharedRevisions)) {
+  if (serverManifestsNeedPull(statusResponse.manifestRevisions, await getManifestRevisions())) {
     /*
      * Retrieve the latest vault from the server.
      */
     const vaultResponse = await fetchLatestVaultFromServer();
 
-    // Store in local: storage for persistence (fresh from server, not dirty)
+    // Store in local: storage for persistence (fresh from server, not dirty). The pull recorded the per-manifest revisions itself.
     await storage.setItems([
       { key: StorageKeys.ENCRYPTED_VAULT, value: vaultResponse.vault.blob },
       { key: StorageKeys.PUBLIC_EMAIL_DOMAINS, value: vaultResponse.vault.publicEmailDomainList },
       { key: StorageKeys.PRIVATE_EMAIL_DOMAINS, value: vaultResponse.vault.privateEmailDomainList },
       { key: StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS, value: vaultResponse.vault.hiddenPrivateEmailDomainList },
-      { key: StorageKeys.SERVER_REVISION, value: vaultResponse.vault.currentRevisionNumber },
       { key: StorageKeys.IS_DIRTY, value: false }
     ]);
 
@@ -354,10 +336,9 @@ export async function handleGetVault(
 
     const encryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string;
     // TODO: the fallback mechanism can be removed some period of time after 0.27.0 is released.
-    const publicEmailDomains = await getItemWithFallback<string[]>(StorageKeys.PUBLIC_EMAIL_DOMAINS);
-    const privateEmailDomains = await getItemWithFallback<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS);
-    const hiddenPrivateEmailDomains = await getItemWithFallback<string[]>(StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS) ?? [];
-    const serverRevision = await storage.getItem(StorageKeys.SERVER_REVISION) as number | null;
+    const publicEmailDomains = await getStorageItem<string[]>(StorageKeys.PUBLIC_EMAIL_DOMAINS);
+    const privateEmailDomains = await getStorageItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS);
+    const hiddenPrivateEmailDomains = await getStorageItem<string[]>(StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS) ?? [];
 
     if (!encryptedVault) {
       console.error('Vault not available');
@@ -381,8 +362,7 @@ export async function handleGetVault(
       vault: decryptedVault,
       publicEmailDomains: publicEmailDomains ?? [],
       privateEmailDomains: privateEmailDomains ?? [],
-      hiddenPrivateEmailDomains: hiddenPrivateEmailDomains ?? [],
-      serverRevision: serverRevision ?? 0
+      hiddenPrivateEmailDomains: hiddenPrivateEmailDomains ?? []
     };
   } catch (error) {
     console.error('Failed to get vault:', error);
@@ -429,9 +409,6 @@ export async function handleClearSession(): Promise<messageBoolResponse> {
 export async function handleClearVaultData(): Promise<messageBoolResponse> {
   // Clear vault data and every piece of state derived from it (sync bookkeeping, dirty flags, bucket revisions)
   await storage.removeItems(allVaultDataStorageKeys());
-
-  // Clear the cached vault key and encrypted VEK.
-  VaultKeyService.clearCache();
 
   // Clear all local preferences (site settings, login save settings, etc.)
   await LocalPreferencesService.clearAll();
@@ -642,8 +619,8 @@ export function handleGetDefaultEmailDomain(): Promise<stringResponse> {
 
       // If no default domain is configured, fall back to first private or public domain
       if (!domain) {
-        const privateEmailDomains = await getItemWithFallback<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS) ?? [];
-        const publicEmailDomains = await getItemWithFallback<string[]>(StorageKeys.PUBLIC_EMAIL_DOMAINS) ?? [];
+        const privateEmailDomains = await getStorageItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS) ?? [];
+        const publicEmailDomains = await getStorageItem<string[]>(StorageKeys.PUBLIC_EMAIL_DOMAINS) ?? [];
         domain = privateEmailDomains[0] || publicEmailDomains[0] || '';
       }
 
@@ -719,15 +696,10 @@ export async function handleGeneratePassword(
 export async function handleGetEncryptionKey(
 ) : Promise<string | null> {
   // Try the current key name first (since 0.22.0)
-  let encryptionKey = await storage.getItem(StorageKeys.ENCRYPTION_KEY) as string | null;
+  const encryptionKey = await storage.getItem(StorageKeys.ENCRYPTION_KEY) as string | null;
 
-  // Fall back to the legacy key name if not found
-  if (!encryptionKey) {
-    // TODO: this check can be removed some period of time after 0.22.0 is released.
-    encryptionKey = await storage.getItem(StorageKeys.LEGACY_DERIVED_KEY) as string | null;
-  }
-
-  return encryptionKey;
+  // LEGACY: fall back to the pre-0.22.0 key name.
+  return encryptionKey ?? await readLegacySessionEncryptionKey();
 }
 
 /**
@@ -737,7 +709,7 @@ export async function handleGetEncryptionKey(
 export async function handleGetEncryptionKeyDerivationParams(
 ) : Promise<EncryptionKeyDerivationParams | null> {
   // Get metadata from storage
-  return await getItemWithFallback<EncryptionKeyDerivationParams>(StorageKeys.ENCRYPTION_KEY_DERIVATION_PARAMS);
+  return await getStorageItem<EncryptionKeyDerivationParams>(StorageKeys.ENCRYPTION_KEY_DERIVATION_PARAMS);
 }
 
 /**
@@ -770,17 +742,31 @@ async function clearDirtyScopes(): Promise<void> {
  * @param sqliteClient - the in-memory SQLite client to read bucket data from
  * @param scopes - the pending dirty scopes (bucket category names, deduplicated here)
  */
-async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultMutationScope[]): Promise<VaultPostResponse> {
+async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultMutationScope[]): Promise<VaultPushOutcome> {
   const encryptionKey = await handleGetEncryptionKey();
   if (!encryptionKey) {
     throw new Error(formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED));
   }
 
   /*
-   * Which tables make up each bucket category is owned by the Rust layer.
+   * Which tables make up each bucket category is owned by the Rust layer, and so is splitting their rows
+   * across the manifests that own them: this loop reads a category whole and hands it over per category.
    */
   const layout = await vaultCodecBucketLayout();
   const username = (await storage.getItem(StorageKeys.USERNAME)) as string;
+
+  if (!sqliteClient.getActiveManifestId() && !sqliteClient.getPersonalManifestId()) {
+    devWarn('[V2Push] No manifest to address the bucket write to, falling back to a full vault upload.');
+    return (await uploadNewVaultToServer(sqliteClient, { forceFullWrite: false, createVaultKey: false })).response;
+  }
+
+  /*
+   * Every manifest this vault can write. Each gets a bucket back, empty where it holds no rows of the
+   * category, so deleting a manifest's last row still reaches the server; a row stamped for anything else
+   * (a manifest whose key this session never opened) is dropped and left to the next full push.
+   */
+  const writeKeys = await vaultSyncService.resolveBucketWriteKeys(encryptionKey);
+  const overflowTable = await vaultCodecOverflowTable();
 
   for (const category of new Set(scopes)) {
     const spec = layout.find(entry => entry.category === category);
@@ -789,22 +775,21 @@ async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultM
       return (await uploadNewVaultToServer(sqliteClient, { forceFullWrite: false, createVaultKey: false })).response;
     }
 
-    /*
-     * Read the CodecOverflows carrier row alongside the bucket's tables: extract_bucket consumes it
-     * to re-merge a newer client's bucket tables/columns, so this partial push doesn't drop them.
-     */
-    const tables = VaultCodec.readNamedTables(sqliteClient, [...spec.tables, await vaultCodecOverflowTable()]);
-    const bucket = await vaultCodecExtractBucket(category, tables);
-    const result = await vaultSyncService.pushDataBucketOnly(bucket, encryptionKey, username);
-    if (result.status !== 'ok') {
-      // Conflict persisted even after the rebase-retry, let the caller run a full re-sync (status 2).
-      return { status: 2, newRevisionNumber: (await storage.getItem(StorageKeys.SERVER_REVISION)) as number | null ?? 0 };
+    const tables = VaultCodec.readNamedTables(sqliteClient, [...spec.tables, overflowTable]);
+    const buckets = await vaultCodecExtractBuckets(category, [...writeKeys.keys()], tables);
+
+    for (const bucket of buckets) {
+      const result = await vaultSyncService.pushDataBucketOnly(bucket, writeKeys.get(bucket.manifestId)!, username);
+      if (result.status !== 'ok') {
+        // Conflict persisted even after the rebase-retry, let the caller run a full re-sync (status 2).
+        return { status: 2 };
+      }
+      devLog(`[V2Push] Bucket-only push for "${category}" of manifest ${bucket.manifestId} done (bucket revision ${result.revision}); manifest untouched.`);
     }
-    devLog(`[V2Push] Bucket-only push for "${category}" done (bucket revision ${result.revision}); manifest untouched.`);
   }
 
-  // Manifest unchanged, so the content revision stays where it was.
-  return { status: 0, newRevisionNumber: (await storage.getItem(StorageKeys.SERVER_REVISION)) as number | null ?? 0 };
+  // Manifests untouched, so every manifest revision baseline stays where it was.
+  return { status: 0 };
 }
 
 /**
@@ -846,7 +831,7 @@ export async function handleUploadVault(
     if (bucketOnly) {
       devLog(`[V2Push] All pending mutations are bucket-scoped (${dirtyScopes.join(', ')}), skipping manifest upload.`);
     }
-    let response: VaultPostResponse;
+    let response: VaultPushOutcome;
     let vaultPruned = false;
     if (bucketOnly) {
       // Bucket-only pushes never prune (settings buckets carry no trash items).
@@ -858,7 +843,6 @@ export async function handleUploadVault(
     return {
       success: true,
       status: response.status,
-      newRevisionNumber: response.newRevisionNumber,
       mutationSeqAtStart,
       vaultPruned
     };
@@ -960,7 +944,7 @@ export async function handleClearPersistedFormValues(): Promise<void> {
  * @param sqliteClient - the in-memory SQLite client to upload
  * @param options - forceFullWrite: whether to force a full write of the vault, createVaultKey: whether to create a vault key
  */
-async function uploadNewVaultToServer(sqliteClient: SqliteClient, options: { forceFullWrite: boolean; createVaultKey: boolean }) : Promise<{ response: VaultPostResponse; vaultPruned: boolean }> {
+async function uploadNewVaultToServer(sqliteClient: SqliteClient, options: { forceFullWrite: boolean; createVaultKey: boolean }) : Promise<{ response: VaultPushOutcome; vaultPruned: boolean }> {
   devLog('[VaultSync] Upload started');
   let vaultPruned = false;
   const encryptionKey = await handleGetEncryptionKey();
@@ -988,7 +972,7 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient, options: { for
     console.warn('[VaultSync] Failed to prune vault, continuing with upload:', pruneError);
   }
 
-  let pushResponse: VaultPostResponse;
+  let pushResponse: VaultPushOutcome;
   try {
     pushResponse = await pushVaultToServer(sqliteClient, options);
   } catch (err) {
@@ -1011,9 +995,6 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient, options: { for
     cachedSqliteClient = sqliteClient;
     cachedVaultBlob = reEncrypted;
   }
-  if (pushResponse.status === 0) {
-    await storage.setItem(StorageKeys.SERVER_REVISION, pushResponse.newRevisionNumber);
-  }
 
   return { response: pushResponse, vaultPruned };
 }
@@ -1022,11 +1003,15 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient, options: { for
  * Persist a locally-mutated vault and attempt to sync it to the server in the background.
  *
  * This is tolerant to server being offline (in which case the vault state will be stored locally for next sync).
+ * @param sqliteClient - the mutated vault
+ * @param encryptionKey - the key the local blob is stored under
+ * @param scope - what the mutation touched; bucket-scoped mutations (e.g. 'Stats') let the sync push just
+ *   that data bucket instead of the whole manifest. Defaults to a full manifest push.
  */
-async function persistLocalVaultMutation(sqliteClient: SqliteClient, encryptionKey: string) : Promise<void> {
+async function persistLocalVaultMutation(sqliteClient: SqliteClient, encryptionKey: string, scope?: VaultMutationScope) : Promise<void> {
   const updatedVaultData = sqliteClient.exportToBase64();
   const encryptedVault = await EncryptionUtility.symmetricEncrypt(updatedVaultData, encryptionKey);
-  await handleStoreEncryptedVault({ vaultBlob: encryptedVault, markDirty: true });
+  await handleStoreEncryptedVault({ vaultBlob: encryptedVault, markDirty: true, scope });
 
   /*
    * The stored blob is exactly this client's content, so re-adopt the pair as the cache (the store just cleared
@@ -1117,14 +1102,12 @@ export async function handleGetEncryptedVault(): Promise<string | null> {
  * @param request Object with:
  *   - vaultBlob: The encrypted vault data
  *   - markDirty: If true, marks vault as dirty and increments mutation sequence (for local mutations)
- *   - serverRevision: Optional explicit server revision (for sync operations)
  *   - expectedMutationSeq: If provided, only store if current sequence matches (for sync operations)
  * @returns { success, mutationSequence } - success=false if expectedMutationSeq didn't match
  */
 export async function handleStoreEncryptedVault(request: {
   vaultBlob: string;
   markDirty?: boolean;
-  serverRevision?: number;
   expectedMutationSeq?: number;
   scope?: VaultMutationScope;
 }): Promise<{ success: boolean; mutationSequence: number }> {
@@ -1147,25 +1130,12 @@ export async function handleStoreEncryptedVault(request: {
   const dirtyScopeKey = dirtyScopeStorageKey(request.scope ?? DEFAULT_VAULT_MUTATION_SCOPE);
 
   // Build items to store.
-  if (request.markDirty && request.serverRevision !== undefined) {
-    await storage.setItems([
-      { key: StorageKeys.ENCRYPTED_VAULT, value: request.vaultBlob },
-      { key: StorageKeys.MUTATION_SEQUENCE, value: mutationSequence },
-      { key: StorageKeys.IS_DIRTY, value: true },
-      { key: StorageKeys.SERVER_REVISION, value: request.serverRevision },
-      { key: dirtyScopeKey, value: true }
-    ]);
-  } else if (request.markDirty) {
+  if (request.markDirty) {
     await storage.setItems([
       { key: StorageKeys.ENCRYPTED_VAULT, value: request.vaultBlob },
       { key: StorageKeys.MUTATION_SEQUENCE, value: mutationSequence },
       { key: StorageKeys.IS_DIRTY, value: true },
       { key: dirtyScopeKey, value: true }
-    ]);
-  } else if (request.serverRevision !== undefined) {
-    await storage.setItems([
-      { key: StorageKeys.ENCRYPTED_VAULT, value: request.vaultBlob },
-      { key: StorageKeys.SERVER_REVISION, value: request.serverRevision }
     ]);
   } else {
     await storage.setItem(StorageKeys.ENCRYPTED_VAULT, request.vaultBlob);
@@ -1211,7 +1181,7 @@ export async function handleMigrateVaultManifest(): Promise<VaultManifestMigrati
     }
 
     const needsSchemaMigration = await sqliteClient.requiresSchemaMigration();
-    const needsVaultKey = await requiresLegacyVaultKeyMigration();
+    const needsVaultKey = await requiresLegacyAccountKeyMigration();
     if (!needsSchemaMigration && !needsVaultKey) {
       devLog('[ManifestMigration] Vault is already on the current storage model, nothing to migrate.');
       return { success: true, pushed: true };
@@ -1236,11 +1206,8 @@ export async function handleMigrateVaultManifest(): Promise<VaultManifestMigrati
     try {
       const uploadResponse = await handleUploadVault({ createVaultKey: needsVaultKey });
       if (uploadResponse.success && uploadResponse.status === 0) {
-        await handleMarkVaultClean({
-          mutationSeqAtStart: uploadResponse.mutationSeqAtStart!,
-          newServerRevision: uploadResponse.newRevisionNumber!
-        });
-        devLog(`[ManifestMigration] Migration pushed, server now at revision ${uploadResponse.newRevisionNumber}.`);
+        await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
+        devLog('[ManifestMigration] Migration pushed to the server.');
         return { success: true, pushed: true };
       }
       devWarn('[ManifestMigration] Migration push did not succeed, vault stays dirty for the next sync:', uploadResponse.error);
@@ -1260,27 +1227,20 @@ export async function handleMigrateVaultManifest(): Promise<VaultManifestMigrati
  * Only clears dirty flag if no mutations happened during sync.
  *
  * @param mutationSeqAtStart - The mutation sequence when sync started
- * @param newServerRevision - The new server revision after successful upload
  * @returns Whether the dirty flag was cleared
  */
 export async function handleMarkVaultClean(request: {
   mutationSeqAtStart: number;
-  newServerRevision: number;
 }): Promise<{ cleared: boolean; currentMutationSeq: number }> {
   const currentMutationSeq = await storage.getItem(StorageKeys.MUTATION_SEQUENCE) as number | null ?? 0;
 
   if (currentMutationSeq === request.mutationSeqAtStart) {
     // No mutations during sync - safe to mark as clean
-    await storage.setItems([
-      { key: StorageKeys.IS_DIRTY, value: false },
-      { key: StorageKeys.SERVER_REVISION, value: request.newServerRevision }
-    ]);
+    await storage.setItem(StorageKeys.IS_DIRTY, false);
     await clearDirtyScopes();
     return { cleared: true, currentMutationSeq };
   }
 
-  // Mutations happened during sync - keep dirty, but still update server revision
-  await storage.setItem(StorageKeys.SERVER_REVISION, request.newServerRevision);
   return { cleared: false, currentMutationSeq };
 }
 
@@ -1290,47 +1250,18 @@ export async function handleMarkVaultClean(request: {
 export async function handleGetSyncState(): Promise<{
   isDirty: boolean;
   mutationSequence: number;
-  serverRevision: number;
   isSyncInProgress: boolean;
 }> {
-  const [isDirty, mutationSequence, serverRevision] = await Promise.all([
+  const [isDirty, mutationSequence] = await Promise.all([
     storage.getItem(StorageKeys.IS_DIRTY) as Promise<boolean | null>,
-    storage.getItem(StorageKeys.MUTATION_SEQUENCE) as Promise<number | null>,
-    storage.getItem(StorageKeys.SERVER_REVISION) as Promise<number | null>
+    storage.getItem(StorageKeys.MUTATION_SEQUENCE) as Promise<number | null>
   ]);
 
   return {
     isDirty: isDirty ?? false,
     mutationSequence: mutationSequence ?? 0,
-    serverRevision: serverRevision ?? 0,
     isSyncInProgress
   };
-}
-
-/**
- * Get the current server revision.
- */
-export async function handleGetServerRevision(): Promise<number> {
-  // First try new key, then fall back to legacy key
-  let revision = await storage.getItem(StorageKeys.SERVER_REVISION) as number | null;
-
-  if (revision === null) {
-    // Try legacy key - parse string format "250" or "250+1" to get server part
-    const legacyRevision = await storage.getItem(StorageKeys.LEGACY_VAULT_REVISION_NUMBER) as string | number | null;
-    if (legacyRevision !== null) {
-      if (typeof legacyRevision === 'number') {
-        revision = legacyRevision;
-      } else {
-        // Handle legacy "250+1" format - extract just the server part
-        const parts = legacyRevision.split('+');
-        revision = parseInt(parts[0], 10) || 0;
-      }
-      // Migrate to new key
-      await storage.setItem(StorageKeys.SERVER_REVISION, revision);
-    }
-  }
-
-  return revision ?? 0;
 }
 
 /**
@@ -1385,7 +1316,7 @@ async function adoptRemoteVaultKeyIfNeeded(): Promise<boolean> {
       await storage.setItem(StorageKeys.ENCRYPTED_VAULT, await EncryptionUtility.symmetricEncrypt(decrypted, vek));
     }
 
-    await VaultKeyService.cacheEncryptedVekFromServer();
+    await VaultKeyService.cacheVaultKeyBlobs(fetchResult.vaultKey);
     await handleStoreEncryptionKey(vek);
     cachedSqliteClient = null;
     cachedVaultBlob = null;
@@ -1505,11 +1436,16 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     // Get current sync state
     const syncState = await handleGetSyncState();
 
+    const localRevisions = await getManifestRevisions();
+    const personalManifestId = await getPersonalManifestId();
     const serverManifestRevision = personalManifestRevision(statusResponse);
-    const localSharedRevisions = await getLocalSharedManifestRevisions();
-    const needsPull = serverManifestsNeedPull(statusResponse.manifestRevisions, statusResponse.personalManifestId, syncState.serverRevision, localSharedRevisions);
+    const localManifestRevision = personalManifestId ? localRevisions[personalManifestId] ?? 0 : 0;
 
-    devLog(`[VaultSync] Status received (server main rev ${serverManifestRevision}, local rev ${syncState.serverRevision}, needsPull ${needsPull}, isDirty ${syncState.isDirty})`);
+    // A personal manifest that went backwards is a rolled-back server (restored backup), which we want to re-push.
+    const serverRolledBack = serverManifestRevision < localManifestRevision;
+    const needsPull = !serverRolledBack && serverManifestsNeedPull(statusResponse.manifestRevisions, localRevisions);
+
+    devLog(`[VaultSync] Status received (server main rev ${serverManifestRevision}, local rev ${localManifestRevision}, needsPull ${needsPull}, isDirty ${syncState.isDirty})`);
 
     // Check if server is actually available (0.0.0 indicates connection error)
     if (statusResponse.serverVersion === '0.0.0') {
@@ -1561,7 +1497,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
       try {
         const sqliteClient = await createVaultSqliteClient();
         if (await vaultSyncService.detectNoOpMutation(sqliteClient, syncState.mutationSequence)) {
-          const cleanResult = await handleMarkVaultClean({ mutationSeqAtStart: syncState.mutationSequence, newServerRevision: syncState.serverRevision });
+          const cleanResult = await handleMarkVaultClean({ mutationSeqAtStart: syncState.mutationSequence });
           if (cleanResult.cleared) {
             devLog('[VaultSync] Local changes are canonically identical to the server baselines (no-op mutation); nothing to push.');
             syncState.isDirty = false;
@@ -1615,7 +1551,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
               devWarn('[VaultSync] Server vault is still on the legacy storage format while the local vault is migrated; skipping the merge and pushing the local vault.');
               const uploadResponse = await handleUploadVault({ forceFullWrite: true });
               if (uploadResponse.success && uploadResponse.status === 0) {
-                await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart!, newServerRevision: uploadResponse.newRevisionNumber! });
+                await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
                 return { success: true, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
               }
               if (uploadResponse.status === 2) {
@@ -1640,7 +1576,6 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
                */
               const storeResult = await handleStoreEncryptedVault({
                 vaultBlob: mergedEncryptedVault,
-                serverRevision: vaultResponseJson.vault.currentRevisionNumber,
                 expectedMutationSeq: syncState.mutationSequence
               });
 
@@ -1653,10 +1588,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
               const uploadResponse = await handleUploadVault();
 
               if (uploadResponse.success && uploadResponse.status === 0) {
-                await handleMarkVaultClean({
-                  mutationSeqAtStart: uploadResponse.mutationSeqAtStart!,
-                  newServerRevision: uploadResponse.newRevisionNumber!
-                });
+                await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
               } else if (uploadResponse.status === 2) {
                 // Server returned Outdated - another device uploaded. Re-sync.
                 return handleFullVaultSync();
@@ -1691,7 +1623,6 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
          */
         const storeResult = await handleStoreEncryptedVault({
           vaultBlob: vaultResponseJson.vault.blob,
-          serverRevision: vaultResponseJson.vault.currentRevisionNumber,
           expectedMutationSeq: syncState.mutationSequence
         });
 
@@ -1722,7 +1653,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
           AppErrorCode.VAULT_DECRYPT_FAILED
         ));
       }
-    } else if (serverManifestRevision === syncState.serverRevision) {
+    } else if (serverManifestRevision === localManifestRevision) {
       /**
        * Server and local vault are at the same revision.
        * If we have pending local changes, upload them now.
@@ -1730,10 +1661,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
       if (syncState.isDirty) {
         const uploadResponse = await handleUploadVault();
         if (uploadResponse.success && uploadResponse.status === 0) {
-          await handleMarkVaultClean({
-            mutationSeqAtStart: uploadResponse.mutationSeqAtStart!,
-            newServerRevision: uploadResponse.newRevisionNumber!
-          });
+          await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
 
           /*
            * If expired trash items were pruned during upload, report the vault as new
@@ -1754,14 +1682,14 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
       }
 
       return { success: true, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
-    } else if (serverManifestRevision < syncState.serverRevision) {
+    } else if (serverRolledBack) {
       /**
        * Server revision DECREASED - server data loss/rollback detected.
        * Client has more advanced revision - upload to recover server state.
        */
       console.warn(
         `Server data loss detected! Server at rev ${serverManifestRevision}, ` +
-        `client at rev ${syncState.serverRevision}. Uploading to recover server state.`
+        `client at rev ${localManifestRevision}. Uploading to recover server state.`
       );
 
       /*
@@ -1771,14 +1699,9 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
       const uploadResponse = await handleUploadVault({ forceFullWrite: true });
 
       if (uploadResponse.success && uploadResponse.status === 0) {
-        await handleMarkVaultClean({
-          mutationSeqAtStart: uploadResponse.mutationSeqAtStart!,
-          newServerRevision: uploadResponse.newRevisionNumber!
-        });
+        await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
 
-        console.info(
-          `Server recovery complete: rev ${serverManifestRevision} → ${uploadResponse.newRevisionNumber}`
-        );
+        console.info(`Server recovery complete: server restored from client state (was at personal rev ${serverManifestRevision}, client at ${localManifestRevision}).`);
 
         return { success: true, hasNewVault: uploadResponse.vaultPruned === true, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
       } else if (uploadResponse.status === 2) {
@@ -2318,7 +2241,7 @@ export async function handleGetTotpSecrets(
     const secrets: Record<string, string> = {};
 
     for (const itemId of message.itemIds) {
-      const totpCodes = sqliteClient.settings.getTotpCodesForItem(itemId);
+      const totpCodes = sqliteClient.items.getTotpCodesForItem(itemId);
       if (totpCodes.length > 0) {
         secrets[itemId] = totpCodes[0].SecretKey;
       }
@@ -2348,7 +2271,7 @@ export async function handleGenerateTotpCode(
 
   try {
     const sqliteClient = await createVaultSqliteClient();
-    const totpCodes = sqliteClient.settings.getTotpCodesForItem(message.itemId);
+    const totpCodes = sqliteClient.items.getTotpCodesForItem(message.itemId);
 
     if (totpCodes.length === 0) {
       return { success: false, error: 'No TOTP codes found for this item' };
@@ -2365,6 +2288,33 @@ export async function handleGenerateTotpCode(
   } catch (error) {
     console.error('Error generating TOTP code:', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
+  }
+}
+
+/**
+ * Record one use of an item: when it was last used, and how often.
+ * @param message - The item that was used and what was done with it.
+ */
+export async function handleRecordItemUsage(
+  message: { itemId: string; action: ItemUsageAction }
+): Promise<{ success: boolean }> {
+  try {
+    const encryptionKey = await handleGetEncryptionKey();
+    if (!encryptionKey) {
+      return { success: false };
+    }
+
+    const sqliteClient = await createVaultSqliteClient();
+    if (!sqliteClient.itemStats.recordUsage(message.itemId, message.action)) {
+      // No such item (deleted between use and record); nothing to attribute the use to.
+      return { success: false };
+    }
+
+    await persistLocalVaultMutation(sqliteClient, encryptionKey, VaultDataBucketCategory.Stats);
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to record item usage:', error);
+    return { success: false };
   }
 }
 

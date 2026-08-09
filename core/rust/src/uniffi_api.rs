@@ -213,10 +213,11 @@ pub fn vault_codec_materialize_as_sqlite(input_json: String) -> Result<String, V
     crate::vault_codec::materialize_as_sqlite_json(&input_json)
 }
 
-/// Build a single data bucket. Input: `{ manifestId, category, tables }` JSON. Output: `DataBucket` JSON.
+/// Build a bucket category's data buckets, one per manifest this vault writes.
+/// Input: `{ category, manifestIds, tables }` JSON. Output: `DataBucket[]` JSON.
 #[uniffi::export]
-pub fn vault_codec_extract_bucket(input_json: String) -> Result<String, VaultError> {
-    crate::vault_codec::extract_bucket_json(&input_json)
+pub fn vault_codec_extract_buckets(input_json: String) -> Result<String, VaultError> {
+    crate::vault_codec::extract_buckets_json(&input_json)
 }
 
 /// The bucket layout: `[{ category, tables: [<name>] }]` JSON. Source of truth for bucket-only sync.

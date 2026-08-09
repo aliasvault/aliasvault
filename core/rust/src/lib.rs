@@ -32,7 +32,7 @@ pub use vault_merge::{
 };
 pub use vault_codec::{
     compute_ciphertext_hash, compute_content_fingerprint, canonicalize_from_sqlite,
-    extract_bucket, generate_manifest_salt, unpack_payload, materialize_as_sqlite, pack_payload,
+    extract_buckets, generate_manifest_salt, unpack_payload, materialize_as_sqlite, pack_payload,
     validate_manifest, validate_data_bucket, BlobEntry,
     CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecRecord, CodecTableData, DataBucket, Manifest,
     MaterializeInput, MaterializedTables, ManifestSpec, ValidationResult,

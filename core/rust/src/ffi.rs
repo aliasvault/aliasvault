@@ -244,13 +244,14 @@ pub unsafe extern "C" fn vault_codec_materialize_as_sqlite_ffi(input_json: *cons
     codec_json_ffi(input_json, "input_json", crate::vault_codec::materialize_as_sqlite_json)
 }
 
-/// Build a single data bucket. Input: `{ manifestId, category, tables }` JSON. Output: `DataBucket` JSON.
+/// Build a bucket category's data buckets, one per manifest. Input: `{ category, manifestIds, tables }` JSON.
+/// Output: `DataBucket[]` JSON.
 ///
 /// # Safety
 /// `input_json` must be a valid null-terminated C string; free the result with `free_string`.
 #[no_mangle]
-pub unsafe extern "C" fn vault_codec_extract_bucket_ffi(input_json: *const c_char) -> *mut c_char {
-    codec_json_ffi(input_json, "input_json", crate::vault_codec::extract_bucket_json)
+pub unsafe extern "C" fn vault_codec_extract_buckets_ffi(input_json: *const c_char) -> *mut c_char {
+    codec_json_ffi(input_json, "input_json", crate::vault_codec::extract_buckets_json)
 }
 
 /// Validate a manifest. Input: `Manifest` JSON. Output: `ValidationResult` JSON.

@@ -17,6 +17,8 @@ mod sharing;
 mod types;
 mod validate;
 
+use std::collections::HashMap;
+
 use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
 use serde_json::json;
@@ -25,7 +27,7 @@ use crate::error::{VaultError, VaultResult};
 
 pub use manifest::{
     BlobEntry, BucketLayoutEntry, CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecOverflow, DataBucket,
-    Manifest, MaterializeInput, MaterializedTables, CodecRecord, CodecTableData, ManifestSpec,
+    ExtractBucketsInput, Manifest, MaterializeInput, MaterializedTables, CodecRecord, CodecTableData, ManifestSpec,
 };
 pub use scoped_assets::{KIND_BUILTIN as LOGO_KIND_BUILTIN, KIND_CUSTOM as LOGO_KIND_CUSTOM, KIND_FAVICON as LOGO_KIND_FAVICON};
 pub use sharing::{active_encryption_key, extract_encryption_key_for_public_key};
@@ -49,11 +51,14 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     materialize::materialize_as_sqlite(input)
 }
 
-/// Build the `(manifest_id, category)` data bucket from its tables (bucket-only push path).
-/// Include the [`OVERFLOW_TABLE`] row in `tables` (read it alongside the bucket's tables) so a newer
-/// writer's columns/tables re-merge and survive; it is consumed and never emitted into the bucket.
-pub fn extract_bucket(manifest_id: String, category: String, tables: std::collections::HashMap<String, Vec<CodecRecord>>) -> VaultResult<DataBucket> {
-    canonicalize::extract_bucket(manifest_id, category, tables)
+/// Build `category`'s data buckets, one per manifest in `manifest_ids`, from the category's tables as the
+/// platform reads them out of its local vault (bucket-only push path). Rows route by the manifest each one
+/// names, exactly as the full push routes them.
+///
+/// Include the [`OVERFLOW_TABLE`] row in `tables` (read it alongside the category's tables) so a newer
+/// writer's columns/tables re-merge and survive; it is consumed and never emitted into a bucket.
+pub fn extract_buckets(category: String, manifest_ids: Vec<String>, tables: HashMap<String, Vec<CodecRecord>>) -> VaultResult<Vec<DataBucket>> {
+    canonicalize::extract_buckets(category, manifest_ids, tables)
 }
 
 /// The bucket layout: every category and the tables it owns, in declaration order.
@@ -205,18 +210,11 @@ pub fn materialize_as_sqlite_json(input_json: &str) -> VaultResult<String> {
     Ok(serde_json::to_string(&materialize_as_sqlite(input)?)?)
 }
 
-/// JSON-string sibling of [`extract_bucket`].
-/// Input: `{ "manifestId": <str>, "category": <str>, "tables": { <name>: [rows] } }`.
-pub fn extract_bucket_json(input_json: &str) -> VaultResult<String> {
-    #[derive(serde::Deserialize)]
-    #[serde(rename_all = "camelCase")]
-    struct Input {
-        manifest_id: String,
-        category: String,
-        tables: std::collections::HashMap<String, Vec<CodecRecord>>,
-    }
-    let input: Input = serde_json::from_str(input_json)?;
-    Ok(serde_json::to_string(&extract_bucket(input.manifest_id, input.category, input.tables)?)?)
+/// JSON-string sibling of [`extract_buckets`].
+/// Input: `{ "category": <str>, "manifestIds": [<str>], "tables": { <name>: [rows] } }`.
+pub fn extract_buckets_json(input_json: &str) -> VaultResult<String> {
+    let input: ExtractBucketsInput = serde_json::from_str(input_json)?;
+    Ok(serde_json::to_string(&extract_buckets(input.category, input.manifest_ids, input.tables)?)?)
 }
 
 /// JSON-string sibling of [`bucket_layout`]. Output: `[{ "category": <str>, "tables": [<str>] }]`.

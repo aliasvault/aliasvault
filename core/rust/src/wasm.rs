@@ -7,7 +7,7 @@ use crate::credential_matcher::{
 };
 use crate::password_generator::{available_languages, generate_password};
 use crate::vault_codec::{
-    self, CanonicalizeInput, CodecRecord, DataBucket, Manifest, MaterializeInput,
+    self, CanonicalizeInput, DataBucket, ExtractBucketsInput, Manifest, MaterializeInput,
 };
 use crate::vault_merge::{merge_vaults, MergeInput, MergeOutput};
 use crate::vault_pruner::{prune_vault, PruneInput, PruneOutput};
@@ -164,21 +164,15 @@ pub fn vault_codec_materialize_as_sqlite_js(input: JsValue) -> Result<JsValue, J
     codec_to_js(&output)
 }
 
-/// Build a single data bucket. Input: `{ manifestId, category, tables: { <name>: [rows] } }`.
-#[wasm_bindgen(js_name = vaultCodecExtractBucket)]
-pub fn vault_codec_extract_bucket_js(input: JsValue) -> Result<JsValue, JsValue> {
-    #[derive(serde::Deserialize)]
-    #[serde(rename_all = "camelCase")]
-    struct Input {
-        manifest_id: String,
-        category: String,
-        tables: std::collections::HashMap<String, Vec<CodecRecord>>,
-    }
-    let input: Input = serde_wasm_bindgen::from_value(input)
-        .map_err(|e| JsValue::from_str(&format!("Failed to parse extract-bucket input: {}", e)))?;
-    let bucket = vault_codec::extract_bucket(input.manifest_id, input.category, input.tables)
-        .map_err(|e| JsValue::from_str(&format!("extract_bucket failed: {}", e)))?;
-    codec_to_js(&bucket)
+/// Build a bucket category's data buckets, one per manifest this vault writes: rows route by the manifest
+/// each one names. Input: `{ category, manifestIds, tables: { <name>: [rows] } }`. Output: `DataBucket[]`.
+#[wasm_bindgen(js_name = vaultCodecExtractBuckets)]
+pub fn vault_codec_extract_buckets_js(input: JsValue) -> Result<JsValue, JsValue> {
+    let input: ExtractBucketsInput = serde_wasm_bindgen::from_value(input)
+        .map_err(|e| JsValue::from_str(&format!("Failed to parse extract-buckets input: {}", e)))?;
+    let buckets = vault_codec::extract_buckets(input.category, input.manifest_ids, input.tables)
+        .map_err(|e| JsValue::from_str(&format!("extract_buckets failed: {}", e)))?;
+    codec_to_js(&buckets)
 }
 
 /// The bucket layout: `[{ category, tables: [<name>] }]`. Source of truth for platform bucket-only sync.

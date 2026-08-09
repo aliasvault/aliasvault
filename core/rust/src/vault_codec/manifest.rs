@@ -200,6 +200,18 @@ pub struct CanonicalizeInput {
     pub adopt_unstamped_into: Option<String>,
 }
 
+/// Input for [`crate::vault_codec::extract_buckets`].
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExtractBucketsInput {
+    pub category: String,
+    /// Every manifest this vault can write. Each gets a bucket back; rows naming anything else are dropped.
+    pub manifest_ids: Vec<String>,
+    /// The category's tables as read from the local vault, plus the
+    /// [`OVERFLOW_TABLE`](super::types::OVERFLOW_TABLE) row so a newer writer's columns/tables re-merge.
+    pub tables: HashMap<String, Vec<CodecRecord>>,
+}
+
 /// Input for [`crate::vault_codec::materialize_as_sqlite`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
