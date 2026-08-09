@@ -21,6 +21,7 @@ import { SrpAuthService } from '@/utils/auth/SrpAuthService';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import type { VaultResponse, LoginResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
+import { getManifestRevisions, getPersonalManifestId } from '@/utils/ManifestRevisions';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCodes';
@@ -76,8 +77,9 @@ const Login: React.FC = () => {
   const persistAndLoadVault = async (vaultResponse: VaultResponse, encryptionKey: string, loginUsername: string): Promise<void> => {
     // Check if there's existing vault data (from forced logout)
     const existingVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string | null;
-    const existingRevision = await storage.getItem(StorageKeys.SERVER_REVISION) as number | null;
     const storedUsername = await storage.getItem(StorageKeys.USERNAME) as string | null;
+    const personalManifestId = await getPersonalManifestId();
+    const existingRevision = personalManifestId ? (await getManifestRevisions())[personalManifestId] ?? null : null;
 
     let vaultToLoad = vaultResponse.vault.blob;
 
@@ -130,7 +132,7 @@ const Login: React.FC = () => {
     // Normal flow: persist server vault to local storage
     await sendMessage('STORE_ENCRYPTED_VAULT', {
       vaultBlob: vaultResponse.vault.blob,
-      serverRevision: vaultResponse.vault.currentRevisionNumber,
+      personalManifestRevision: vaultResponse.vault.currentRevisionNumber,
     });
 
     await sendMessage('STORE_VAULT_METADATA', {

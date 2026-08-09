@@ -21,13 +21,12 @@ import { storage } from '#imports';
 const GET_VAULT_TIMEOUT_MS = 3500;
 
 /**
- * Vault metadata including the server revision.
+ * Vault metadata: the email domain lists the server published on the last sync.
  */
 type VaultMetadata = {
   publicEmailDomains: string[];
   privateEmailDomains: string[];
   hiddenPrivateEmailDomains: string[];
-  serverRevision: number;
 };
 
 type DbContextType = {
@@ -51,10 +50,6 @@ type DbContextType = {
    * True if an upload to server is in progress.
    */
   isUploading: boolean;
-  /**
-   * Current server revision number.
-   */
-  serverRevision: number;
   setIsOffline: (offline: boolean) => Promise<void>;
   /**
    * Set the syncing (download) state.
@@ -84,7 +79,7 @@ type DbContextType = {
   clearDatabase: () => void;
   getVaultMetadata: () => Promise<VaultMetadata | null>;
   /**
-   * Refresh sync state (isDirty, serverRevision) from storage.
+   * Refresh sync state (isDirty) from storage.
    */
   refreshSyncState: () => Promise<void>;
   requiresLegacySqliteBlobMigration: () => Promise<boolean>;
@@ -145,11 +140,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const [isUploading, setIsUploading] = useState(false);
 
   /**
-   * Server revision number.
-   */
-  const [serverRevision, setServerRevision] = useState(0);
-
-  /**
    * Last sync error written by the background sync. Driven by storage so background-only
    * syncs (e.g. follow-up syncs after pending mutations) reach the user.
    */
@@ -182,16 +172,14 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
      * Load the offline mode and sync state from local storage.
      */
     const loadSyncState = async (): Promise<void> => {
-      const [offlineMode, dirty, revision, lastError] = await Promise.all([
+      const [offlineMode, dirty, lastError] = await Promise.all([
         storage.getItem(StorageKeys.IS_OFFLINE_MODE) as Promise<boolean | null>,
         storage.getItem(StorageKeys.IS_DIRTY) as Promise<boolean | null>,
-        storage.getItem(StorageKeys.SERVER_REVISION) as Promise<number | null>,
         storage.getItem(StorageKeys.LAST_SYNC_ERROR) as Promise<string | null>
       ]);
       isOfflineRef.current = offlineMode ?? false;
       setIsOfflineState(offlineMode ?? false);
       setIsDirty(dirty ?? false);
-      setServerRevision(revision ?? 0);
       setSyncError(lastError ?? null);
     };
     loadSyncState();
@@ -322,7 +310,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       const publicEmailDomains = await getStorageItem<string[]>(StorageKeys.PUBLIC_EMAIL_DOMAINS);
       const privateEmailDomains = await getStorageItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS);
       const hiddenPrivateEmailDomains = await getStorageItem<string[]>(StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS);
-      const revision = await storage.getItem(StorageKeys.SERVER_REVISION) as number | null;
 
       if (!publicEmailDomains && !privateEmailDomains) {
         return null;
@@ -332,7 +319,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         publicEmailDomains: publicEmailDomains ?? [],
         privateEmailDomains: privateEmailDomains ?? [],
         hiddenPrivateEmailDomains: hiddenPrivateEmailDomains ?? [],
-        serverRevision: revision ?? 0,
       };
     } catch (error) {
       console.error('Error getting vault metadata from local storage:', error);
@@ -344,12 +330,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * Refresh sync state from storage (called after background updates it).
    */
   const refreshSyncState = useCallback(async (): Promise<void> => {
-    const [dirty, revision] = await Promise.all([
-      storage.getItem(StorageKeys.IS_DIRTY) as Promise<boolean | null>,
-      storage.getItem(StorageKeys.SERVER_REVISION) as Promise<number | null>
-    ]);
-    setIsDirty(dirty ?? false);
-    setServerRevision(revision ?? 0);
+    setIsDirty((await storage.getItem(StorageKeys.IS_DIRTY) as boolean | null) ?? false);
   }, []);
 
   /**
@@ -425,7 +406,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     isDirty,
     isSyncing,
     isUploading,
-    serverRevision,
     setIsOffline,
     setIsSyncing,
     setIsUploading,
@@ -441,7 +421,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     requiresManifestMigration,
     syncError,
     clearSyncError,
-  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, isDirty, isSyncing, isUploading, serverRevision, setIsOffline, shouldSuppressEmailErrors, loadDatabase, loadStoredDatabase, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration, syncError, clearSyncError]);
+  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, isDirty, isSyncing, isUploading, setIsOffline, shouldSuppressEmailErrors, loadDatabase, loadStoredDatabase, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration, syncError, clearSyncError]);
 
   return (
     <DbContext.Provider value={contextValue}>

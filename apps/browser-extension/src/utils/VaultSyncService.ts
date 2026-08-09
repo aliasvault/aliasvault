@@ -13,6 +13,7 @@ import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 import { buildEmailRouting } from '@/utils/EmailRouting';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { completeLegacyAccountKeyMigration, isLegacySqliteBlobSnapshot, legacyUnstampedRowAdoption, openLegacySqliteBlobSnapshot, prepareLegacyAccountKeyMigration, withOutdatedServerGuard, type LegacyAccountKeyMigration, type LegacySqliteBlobSnapshot } from '@/utils/legacy/LegacyStorageModelMigration';
+import { getManifestRevisions, getPersonalManifestId, getPersonalManifestRevision, recordManifestRevisions, replaceManifestRevisions } from '@/utils/ManifestRevisions';
 import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateManifestSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecBlobEntry, type CodecCanonicalized, type CodecManifest, type CodecManifestSpec} from '@/utils/RustCore';
 import { SharingService, type SessionSharedManifest } from '@/utils/SharingService';
 import { SqliteClient } from '@/utils/SqliteClient';
@@ -524,11 +525,9 @@ export class VaultSyncService {
       pulledFingerprints[fingerprintManifestKey(entry.manifestId)] = entry.contentFingerprint;
     }
 
-    // Persist the revision of every manifest so sync can detect when one is added or updated server-side.
-    await storage.setItem(StorageKeys.SERVER_REVISION, personal.revision);
-    const sharedManifestRevisions = Object.fromEntries(resolved.filter(m => !m.isPersonal).map(m => [m.manifestId, m.revision]));
-    await storage.setItem(StorageKeys.SERVER_MANIFEST_REVISIONS, sharedManifestRevisions);
-    devLog(`[V2Pull] Stored local shared-manifest revisions from snapshot: ${Object.keys(sharedManifestRevisions).length === 0 ? '(none)' : Object.entries(sharedManifestRevisions).map(([id, rev]) => `${id}=${rev}`).join(', ')}. Next status check compares against these.`);
+    const manifestRevisions = Object.fromEntries(resolved.map(m => [m.manifestId, m.revision]));
+    await replaceManifestRevisions(manifestRevisions);
+    devLog(`[V2Pull] Stored local manifest revisions from snapshot: ${Object.entries(manifestRevisions).map(([id, rev]) => `${id}=${rev}`).join(', ')}. Next status check compares against these.`);
 
     // Fetch any referenced blobs that aren't already in the local (encrypted) cache.
     const refOwners = new Map<string, ResolvedManifest>();
@@ -785,7 +784,7 @@ export class VaultSyncService {
   }
 
   /**
-   * The push implementation; {@link push} encrypts it with the outdated-server guard.
+   * The push implementation; {@link push} wraps it with the outdated-server guard.
    * @param sqliteClient - the in-memory SQLite the user has been editing
    * @param vek - the symmetric encryption key
    * @param username - the user's username
@@ -842,17 +841,14 @@ export class VaultSyncService {
      * The revision each manifest rebases on, re-read here rather than taken off the records: canonicalize may have
      * run earlier (the pre-push no-op check caches its result) and a write in between advances them.
      */
-    const currentManifestRevision = await this.currentPersonalRevision();
-    const storedSharedRevisions = ((await storage.getItem(StorageKeys.SERVER_MANIFEST_REVISIONS)) as Record<string, number> | null) ?? {};
+    const storedRevisions = await getManifestRevisions();
+    const currentManifestRevision = storedRevisions[await this.resolvePersonalManifestId()] ?? 0;
     /**
      * The revision one manifest's write rebases on, falling back to the revision its grant was resolved at.
      * @param record - the manifest record
      */
-    const revisionOf = (record: ManifestRecord): number => record.isPersonal ? currentManifestRevision : storedSharedRevisions[record.manifestId] ?? record.revision;
+    const revisionOf = (record: ManifestRecord): number => record.isPersonal ? currentManifestRevision : storedRevisions[record.manifestId] ?? record.revision;
 
-    // Every manifest canonicalize produced, joined to its record: one candidate list the whole write is derived from.
-    // A canonicalized manifest with no record is one this vault cannot write and is dropped rather than pushed with a 
-    // key or revision we would have to invent.
     const recordByManifestId = new Map(manifestRecords.map(r => [r.manifestId, r]));
     const candidates: PushManifest[] = canonicalized.manifests.flatMap(({ manifest, blobs }): PushManifest[] => {
       const record = recordByManifestId.get(manifest.manifestId);
@@ -1103,7 +1099,6 @@ export class VaultSyncService {
     }
 
     // 5) Update local persisted state on success.
-    await storage.setItem(StorageKeys.SERVER_REVISION, newPersonalRevision);
     if ((resp.bucketRevisions ?? []).length > 0) {
       const bucketRevisions = await this.loadBucketRevisions();
       for (const br of resp.bucketRevisions) {
@@ -1112,23 +1107,15 @@ export class VaultSyncService {
       await storage.setItem(StorageKeys.VAULT_BUCKET_REVISIONS, bucketRevisions);
     }
 
-    /*
-     * Persist the new revision of every shared manifest written, mirrored onto the session records so a subsequent
-     * push in the same session rebases on the right revision.
-     */
-    const persistedSharedRevisions = ((await storage.getItem(StorageKeys.SERVER_MANIFEST_REVISIONS)) as Record<string, number> | null) ?? {};
     const sessionShared = await SharingService.getSessionSharedManifests();
     const writtenRevisions = new Map((resp.manifestRevisions ?? []).filter(r => r.manifestId !== personalRecord.manifestId).map(r => [r.manifestId, r.revision]));
-    for (const [manifestId, revision] of writtenRevisions) {
-      persistedSharedRevisions[manifestId] = revision;
-    }
+    await recordManifestRevisions({ ...Object.fromEntries(writtenRevisions), [await this.resolvePersonalManifestId()]: newPersonalRevision });
     for (const record of Object.values(sessionShared)) {
       const revision = writtenRevisions.get(record.manifestId);
       if (revision !== undefined) {
         record.revision = revision;
       }
     }
-    await storage.setItem(StorageKeys.SERVER_MANIFEST_REVISIONS, persistedSharedRevisions);
     await SharingService.setSessionSharedManifests(sessionShared);
 
     /*
@@ -1358,7 +1345,7 @@ export class VaultSyncService {
       salt: manifestSalt,
       folderId: null,
       vek: null,
-      revision: await this.currentPersonalRevision(),
+      revision: await getPersonalManifestRevision(),
       name: null,
       // The personal manifest's own delivery key is published as the account-level key, not per manifest.
       canAdminister: false,
@@ -1385,20 +1372,11 @@ export class VaultSyncService {
   }
 
   /**
-   * The personal manifest's last-known server revision. It lives under its own storage key rather than in the
-   * per-manifest revision map: the server addresses it by the auth session, never by id.
-   */
-  private async currentPersonalRevision(): Promise<number> {
-    return ((await storage.getItem(StorageKeys.SERVER_REVISION)) as number | null) ?? 0;
-  }
-
-  /**
-   * The id of this vault's own (personal) manifest, as reported by the server on the last pull. It is client state
-   * rather than vault content, so local storage is its only home; the vault carries no copy that could go stale or
-   * outlive the account.
+   * The id of this vault's own (personal) manifest, as reported by the server on the last pull. Pushing without it
+   * is impossible: it addresses the write and keys the revision the write rebases on.
    */
   private async resolvePersonalManifestId(): Promise<string> {
-    const personalManifestId = (await storage.getItem(StorageKeys.VAULT_PERSONAL_MANIFEST_ID)) as string | null;
+    const personalManifestId = await getPersonalManifestId();
     if (!personalManifestId) {
       throw new Error('VaultSyncService: no personal manifest id available (no snapshot baseline recorded); pull once before pushing.');
     }

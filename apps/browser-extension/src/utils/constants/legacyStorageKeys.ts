@@ -1,7 +1,8 @@
 /**
- * Storage keys that ONLY exist to read state written by an older extension version. Nothing writes them any
- * more: every one of them is read once, migrated onto its current {@link StorageKeys} counterpart, and then
- * dropped. They live apart from `storageKeys.ts` so the current key set stays readable at a glance.
+ * Storage keys that ONLY exist because an older extension version wrote them. Nothing writes them any more:
+ * each is either read once and migrated onto its current {@link StorageKeys} counterpart, or kept purely so a
+ * logout still purges the value an upgrade left behind. They live apart from `storageKeys.ts` so the current key
+ * set stays readable at a glance.
  *
  * Deleting this file is the whole cleanup for these one-time reads: the compiler then points at every
  * remaining reader (all of which live in `@/utils/legacy/LegacyStorageKeyFallbacks`).
@@ -10,10 +11,10 @@
 import type { StorageKey } from '@/utils/constants/storageKeys';
 
 export const LegacyStorageKeys = {
-  /** Pre-v0.20 revision key, in the string format `"250"` or `"250+1"`; migrated to `StorageKeys.SERVER_REVISION`. */
-  VAULT_REVISION_NUMBER: 'local:vaultRevisionNumber',
   /** Pre-v0.22 encryption key location; read as a fallback for `StorageKeys.ENCRYPTION_KEY`. */
   DERIVED_KEY: 'session:derivedKey',
+  /** Pre-v0.31 server revision location; read as a fallback for `StorageKeys.SERVER_MANIFEST_REVISIONS`. */
+  SERVER_REVISION: 'local:serverRevision',
 
   /*
    * -- Session locations migrated to local: in v0.26.0, removable in v0.27.0+ (see readLegacyStorageFallback) --
@@ -34,5 +35,5 @@ export const LegacyStorageKeys = {
  * clears them alongside the current ones.
  */
 export const LEGACY_VAULT_DATA_STORAGE_KEYS: readonly StorageKey[] = [
-  LegacyStorageKeys.VAULT_REVISION_NUMBER,
+  LegacyStorageKeys.SERVER_REVISION,
 ];

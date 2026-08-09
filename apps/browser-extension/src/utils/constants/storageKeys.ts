@@ -33,8 +33,6 @@ export const StorageKeys = {
 
   /** The encrypted vault blob. */
   ENCRYPTED_VAULT: 'local:encryptedVault',
-  /** Revision number of the personal manifest as known by the server. */
-  SERVER_REVISION: 'local:serverRevision',
   /** Public email domains supported by the server. */
   PUBLIC_EMAIL_DOMAINS: 'local:publicEmailDomains',
   /** Private email domains supported by the server. */
@@ -64,7 +62,7 @@ export const StorageKeys = {
   IS_OFFLINE_MODE: 'local:isOfflineMode',
   /** Message of the last failed sync attempt, shown in the UI. */
   LAST_SYNC_ERROR: 'local:lastSyncError',
-  /** The client's last known revision per manifest. */
+  /** The client's last known server revision per manifest. */
   SERVER_MANIFEST_REVISIONS: 'local:serverManifestRevisions',
   /** The client's last known revision per data bucket. */
   VAULT_BUCKET_REVISIONS: 'local:vaultBucketRevisions',
@@ -260,7 +258,6 @@ export const allVaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.PUBLIC_EMAIL_DOMAINS,
   StorageKeys.PRIVATE_EMAIL_DOMAINS,
   StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS,
-  StorageKeys.SERVER_REVISION,
   StorageKeys.SERVER_MANIFEST_REVISIONS,
   StorageKeys.VAULT_BUCKET_REVISIONS,
   StorageKeys.VAULT_MANIFEST_SALT,

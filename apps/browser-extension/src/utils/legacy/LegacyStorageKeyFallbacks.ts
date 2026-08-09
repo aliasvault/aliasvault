@@ -52,21 +52,3 @@ export async function readLegacyStorageFallback<T>(key: StorageKey): Promise<T |
 export async function readLegacySessionEncryptionKey(): Promise<string | null> {
   return await storage.getItem(LegacyStorageKeys.DERIVED_KEY) as string | null;
 }
-
-/**
- * The server revision as stored before v0.20, where it was a string in the `"250"` or `"250+1"` format (server
- * revision plus local edit count). Migrates whatever it finds onto {@link StorageKeys.SERVER_REVISION}. Read
- * only after that key came up empty.
- * @returns The migrated server revision, or null when no legacy value exists
- */
-export async function readLegacyServerRevision(): Promise<number | null> {
-  const legacyRevision = await storage.getItem(LegacyStorageKeys.VAULT_REVISION_NUMBER) as string | number | null;
-  if (legacyRevision === null) {
-    return null;
-  }
-
-  // Only the server part before the '+' is the server revision; the suffix counted unpushed local edits.
-  const revision = typeof legacyRevision === 'number' ? legacyRevision : parseInt(legacyRevision.split('+')[0], 10) || 0;
-  await storage.setItem(StorageKeys.SERVER_REVISION, revision);
-  return revision;
-}
