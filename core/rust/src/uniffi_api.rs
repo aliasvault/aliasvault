@@ -4,7 +4,6 @@
 //! All functions use JSON strings for input/output to simplify cross-language marshalling.
 
 use crate::error::VaultError;
-use crate::vault_merge::SYNCABLE_TABLE_NAMES;
 
 /// Get the version of the aliasvault-core library.
 #[uniffi::export]

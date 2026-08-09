@@ -23,7 +23,6 @@ use serde_json::json;
 
 use crate::error::{VaultError, VaultResult};
 
-pub use hash::{canonical_json, content_hash};
 pub use manifest::{
     BlobEntry, BucketLayoutEntry, CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecOverflow, DataBucket,
     Manifest, MaterializeInput, MaterializedTables, CodecRecord, CodecTableData, ManifestSpec,
@@ -32,7 +31,7 @@ pub use scoped_assets::{KIND_BUILTIN as LOGO_KIND_BUILTIN, KIND_CUSTOM as LOGO_K
 pub use sharing::{active_encryption_key, extract_encryption_key_for_public_key};
 pub use types::{
     bucket_categories, bucket_category_for, is_bucketed_table, is_personal_table, tables_for_category, BLOB_COLUMNS, BUCKET_TABLES,
-    ENCRYPTION_KEYS_TABLE, MANIFESTS_TABLE, MANIFEST_ID_COL, OVERFLOW_ROW_ID, OVERFLOW_TABLE, PERSONAL_TABLES, SCHEMA_VERSION, SKIP_TABLES,
+    ENCRYPTION_KEYS_TABLE, MANIFESTS_TABLE, MANIFEST_ID_COL, OVERFLOW_TABLE, PERSONAL_TABLES, SCHEMA_VERSION, SKIP_TABLES,
 };
 pub use validate::ValidationResult;
 
@@ -163,12 +162,6 @@ pub fn extract_encryption_key_for_public_key_json(manifest_json: &str, public_ke
     Ok(serde_json::to_string(&extract_encryption_key_for_public_key(&m, public_key))?)
 }
 
-/// Extract the manifest's active (primary, manifest-scoped) encryption key row.
-pub fn active_encryption_key_json(manifest_json: &str) -> VaultResult<String> {
-    let m: Manifest = serde_json::from_str(manifest_json)?;
-    Ok(serde_json::to_string(&active_encryption_key(&m))?)
-}
-
 /// SHA-256 (lowercase hex) of a base64 ciphertext string — storage-layer integrity.
 pub fn compute_ciphertext_hash(base64_ciphertext: &str) -> String {
     match BASE64.decode(base64_ciphertext) {
@@ -220,7 +213,6 @@ pub fn extract_bucket_json(input_json: &str) -> VaultResult<String> {
     struct Input {
         manifest_id: String,
         category: String,
-        #[serde(default)]
         tables: std::collections::HashMap<String, Vec<CodecRecord>>,
     }
     let input: Input = serde_json::from_str(input_json)?;

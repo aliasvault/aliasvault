@@ -172,7 +172,6 @@ pub fn vault_codec_extract_bucket_js(input: JsValue) -> Result<JsValue, JsValue>
     struct Input {
         manifest_id: String,
         category: String,
-        #[serde(default)]
         tables: std::collections::HashMap<String, Vec<CodecRecord>>,
     }
     let input: Input = serde_wasm_bindgen::from_value(input)

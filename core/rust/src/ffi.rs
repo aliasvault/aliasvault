@@ -7,7 +7,7 @@ use std::ffi::{c_char, CStr, CString};
 use std::ptr;
 
 use crate::credential_matcher::{filter_credentials, CredentialMatcherInput};
-use crate::vault_merge::{merge_vaults, MergeInput, SYNCABLE_TABLE_NAMES};
+use crate::vault_merge::{merge_vaults, MergeInput};
 use crate::vault_pruner::{prune_vault, PruneInput};
 
 /// Merge two vaults using LWW strategy.

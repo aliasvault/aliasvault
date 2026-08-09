@@ -102,7 +102,6 @@ pub struct CanonicalizedManifest {
 #[serde(rename_all = "camelCase")]
 pub struct CanonicalizedVault {
     pub manifests: Vec<CanonicalizedManifest>,
-    #[serde(default)]
     pub data_buckets: Vec<DataBucket>,
 }
 
@@ -115,11 +114,6 @@ impl CanonicalizedVault {
     /// Every manifest after the first, in spec order.
     pub fn rest(&self) -> Vec<&CanonicalizedManifest> {
         self.manifests.iter().skip(1).collect()
-    }
-
-    /// Every manifest, in spec order, ready to hand back to [`crate::vault_codec::materialize_as_sqlite`].
-    pub fn to_manifests(&self) -> Vec<Manifest> {
-        self.manifests.iter().map(|m| m.manifest.clone()).collect()
     }
 }
 
@@ -187,7 +181,6 @@ impl CodecOverflow {
 #[serde(rename_all = "camelCase")]
 pub struct MaterializedTables {
     pub tables: Vec<CodecTableData>,
-    #[serde(default)]
     pub overflow: CodecOverflow,
 }
 
@@ -212,7 +205,6 @@ pub struct CanonicalizeInput {
 #[serde(rename_all = "camelCase")]
 pub struct MaterializeInput {
     pub manifests: Vec<Manifest>,
-    #[serde(default)]
     pub data_buckets: Vec<DataBucket>,
     pub schema_columns: HashMap<String, Vec<String>>,
 }
