@@ -76,7 +76,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
 
         // v2 storage-format guard: once the user has migrated to manifest-v1, v1 vault endpoints refuse to serve so
         // outdated clients can't accidentally overwrite the new format with a legacy SQLite blob.
-        if (await HasMigratedToV2(context, user.Id))
+        if (await LegacyVaultHelper.HasMigratedToV2Async(context, user.Id))
         {
             return UpgradeRequired();
         }
@@ -149,7 +149,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             return Unauthorized();
         }
 
-        if (await HasMigratedToV2(context, user.Id))
+        if (await LegacyVaultHelper.HasMigratedToV2Async(context, user.Id))
         {
             return UpgradeRequired();
         }
@@ -237,7 +237,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             return Unauthorized();
         }
 
-        if (await HasMigratedToV2(context, user.Id))
+        if (await LegacyVaultHelper.HasMigratedToV2Async(context, user.Id))
         {
             return UpgradeRequired();
         }
@@ -320,16 +320,9 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
     }
 
     /// <summary>
-    /// True once the user has any vault row in the v2 (manifest-v1) storage format or any vault key record.
-    /// </summary>
-    private static async Task<bool> HasMigratedToV2(AliasServerDbContext context, string userId)
-    {
-        return await context.VaultManifests.AnyAsync(x => x.StorageFormat == "manifest-v1" && context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == x.OwnerGroupId))
-            || await context.VaultManifestAccessKeys.AnyAsync(x => x.UserId == userId);
-    }
-
-    /// <summary>
-    /// HTTP 426 Upgrade Required — returned to legacy v1 clients hitting a migrated user.
+    /// HTTP 426 Upgrade Required — returned to legacy v1 clients hitting a migrated user. This is a backstop only:
+    /// the status endpoint already reports such clients as unsupported, so a well-behaved client logs out with a
+    /// proper "update your client" message before it ever calls a vault endpoint.
     /// </summary>
     private IActionResult UpgradeRequired()
     {

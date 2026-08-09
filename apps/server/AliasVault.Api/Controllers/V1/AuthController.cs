@@ -112,6 +112,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             clientSupported = meetsMinimum && !isBlocked;
         }
 
+        // A caller on this v1 endpoint cannot serve a user whose vault has moved to the v2 storage format. Reporting
+        // the client as unsupported makes it show its built-in "please update" message and log out cleanly, instead
+        // of running into a hard failure on the vault endpoints later on.
+        clientSupported = clientSupported && !await LegacyVaultHelper.HasMigratedToV2Async(context, user.Id);
+
         return Ok(new StatusResponse
         {
             ClientVersionSupported = clientSupported,
