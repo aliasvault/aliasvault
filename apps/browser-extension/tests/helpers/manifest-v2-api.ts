@@ -39,7 +39,6 @@ export type VaultSnapshot = {
 /** A decrypted manifest-v1 manifest: known top-level fields plus free-form tables. */
 export type DecryptedManifest = {
   schemaVersion: number;
-  migrationId: string;
   manifestSalt: string;
   canonicalizedAt: string;
   tables: Record<string, Array<Record<string, unknown>>>;

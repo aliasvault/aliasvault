@@ -44,7 +44,6 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     let others: Vec<Manifest> = manifests;
 
     let base_manifest_id = base.manifest_id.clone();
-    let migration_id = base.migration_id;
     let combined = super::sharing::combine_manifest_tables(base.tables, &base_manifest_id, others);
 
     let mut overflow = CodecOverflow::default();
@@ -95,11 +94,7 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
         tables.push(CodecTableData { name: MANIFESTS_TABLE.to_string(), records: manifest_records });
     }
 
-    Ok(MaterializedTables {
-        tables,
-        migration_id,
-        overflow,
-    })
+    Ok(MaterializedTables { tables, overflow })
 }
 
 /// One `Manifests` row per materialized manifest: `{ Id, Name }`.

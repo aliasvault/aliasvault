@@ -88,7 +88,6 @@ public class VaultController(
         }
 
         var emailRouting = await BuildEmailRoutingAsync(context, user);
-        var ownedGroupIds = await GroupHelper.GetOwnedGroupIdsAsync(context, user.Id);
 
         // Every manifest the caller can open.
         var latestManifests = await AccessibleManifests(context, user.Id)
@@ -139,10 +138,6 @@ public class VaultController(
         var accessKeysByManifest = await GetAccessKeysAsync(context, user.Id, manifestIds);
         var encryptionPublicKeys = await GetEncryptionPublicKeysAsync(context, accessKeysByManifest.Values.Where(g => g.UserGrantKeyId != null).Select(g => g.UserGrantKeyId!.Value));
 
-        // A manifest owned by a group the caller does not own is one shared with them: stamp the owning user's name.
-        var foreignGroupIds = latestManifests.Where(m => !ownedGroupIds.Contains(m.OwnerGroupId)).Select(m => m.OwnerGroupId).Distinct().ToList();
-        var ownerUsernamesByGroupId = await GetGroupOwnerUsernamesAsync(context, foreignGroupIds);
-
         // Administering a manifest's shares follows group role, not owner identity: an admin of someone else's group
         // may manage it, and heading a group means managing the manifests filed under it (see GrantAccess).
         var administeredGroupIds = await GroupHelper.GetAdministeredGroupIdsAsync(context, user.Id);
@@ -161,7 +156,6 @@ public class VaultController(
                 CiphertextHash = m.ManifestCiphertextHash,
                 Revision = m.RevisionNumber,
                 BlobReferences = refsByManifest.TryGetValue(m.ManifestId, out var refs) ? refs : [],
-                OwnerUsername = ownerUsernamesByGroupId.GetValueOrDefault(m.OwnerGroupId),
                 CanAdminister = m.OwnerGroupType == GroupType.Shared && administeredGroupIds.Contains(m.OwnerGroupId),
                 KeyType = accessKey != null ? ManifestKeyTypes.ToToken(accessKey.Type) : null,
                 EncryptedVek = grant?.EncryptedVek,
@@ -236,17 +230,10 @@ public class VaultController(
             }
         }
 
-        // Ownership display and administer rights are only meaningful on a manifest that is not the caller's own home one.
+        // Administer rights are only meaningful on a manifest that is not the caller's own home one.
         if (latest.OwnerGroupId != user.PersonalGroupId)
         {
-            // Set owner username for shared manifests for display purposes.
-            var isOwnedByCaller = await context.GroupMembers.AnyAsync(gm => gm.GroupId == latest.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner);
-            if (!isOwnedByCaller)
-            {
-                manifest.OwnerUsername = (await GetGroupOwnerUsernamesAsync(context, [latest.OwnerGroupId])).GetValueOrDefault(latest.OwnerGroupId);
-            }
-
-            manifest.CanAdminister = isOwnedByCaller || await GroupHelper.IsGroupAdminAsync(context, latest.OwnerGroupId, user.Id);
+            manifest.CanAdminister = await GroupHelper.IsGroupAdminAsync(context, latest.OwnerGroupId, user.Id);
         }
 
         return Ok(manifest);
@@ -780,28 +767,6 @@ public class VaultController(
                 .ToListAsync())
             .GroupBy(k => k.VaultManifestId)
             .ToDictionary(g => g.Key, g => g.OrderBy(k => k.Type == ManifestKeyType.AccountKey ? 0 : 1).ThenByDescending(k => k.CreatedAt).ThenBy(k => k.Id).First());
-    }
-
-    /// <summary>
-    /// Gets the display owner of each group: the user who owns it, oldest membership first when co-owned.
-    /// </summary>
-    /// <param name="context">Database context.</param>
-    /// <param name="groupIds">The groups to resolve.</param>
-    /// <returns>The owner's username per group id.</returns>
-    private static async Task<Dictionary<Guid, string?>> GetGroupOwnerUsernamesAsync(AliasServerDbContext context, IEnumerable<Guid> groupIds)
-    {
-        var ids = groupIds.Distinct().ToList();
-        if (ids.Count == 0)
-        {
-            return [];
-        }
-
-        return (await context.GroupMembers
-                .Where(gm => ids.Contains(gm.GroupId) && gm.Role == GroupRole.Owner)
-                .Join(context.AliasVaultUsers, gm => gm.UserId, u => u.Id, (gm, u) => new { gm.GroupId, gm.CreatedAt, gm.UserId, u.UserName })
-                .ToListAsync())
-            .GroupBy(x => x.GroupId)
-            .ToDictionary(g => g.Key, g => g.OrderBy(x => x.CreatedAt).ThenBy(x => x.UserId).First().UserName);
     }
 
     /// <summary>

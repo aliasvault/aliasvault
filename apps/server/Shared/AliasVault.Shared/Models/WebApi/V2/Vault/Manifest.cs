@@ -34,12 +34,6 @@ public class Manifest
     public string? Name { get; set; }
 
     /// <summary>
-    /// Gets or sets the username of the manifest owner.
-    /// <see cref="CanAdminister"/>).
-    /// </summary>
-    public string? OwnerUsername { get; set; }
-
-    /// <summary>
     /// Gets or sets a value indicating whether the caller may administer this manifest's sharing: grant and revoke
     /// access and publish its email delivery key. True when the caller is an owner or admin of the group that owns
     /// the manifest.

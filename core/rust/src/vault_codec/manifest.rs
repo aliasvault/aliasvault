@@ -9,13 +9,11 @@ use super::types::SCHEMA_VERSION;
 /// A codec record is a map of column names to JSON values.
 pub type CodecRecord = HashMap<String, serde_json::Value>;
 
-/// Manifest-v1 manifest
+/// Manifest-v1 manifest.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Manifest {
     pub schema_version: u32,
-    /// Latest EF migration ID.
-    pub migration_id: String,
     /// Per-manifest salt for blob hashing (hex). For a shared manifest this salt is shared by
     /// every participant (it lives inside the encrypted manifest itself) so all of them compute the
     /// same content-addressed blob hashes.
@@ -189,7 +187,6 @@ impl CodecOverflow {
 #[serde(rename_all = "camelCase")]
 pub struct MaterializedTables {
     pub tables: Vec<CodecTableData>,
-    pub migration_id: String,
     #[serde(default)]
     pub overflow: CodecOverflow,
 }
@@ -202,7 +199,6 @@ pub struct CanonicalizeInput {
     /// [`OVERFLOW_TABLE`](super::types::OVERFLOW_TABLE) row written by the last materialize, its overflow 
     /// (a newer writer's tables/columns this schema can't hold) is re-merged automatically.
     pub tables: Vec<CodecTableData>,
-    pub migration_id: String,
     pub canonicalized_at: String,
     pub manifests: Vec<ManifestSpec>,
     /// For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into. 
@@ -215,10 +211,6 @@ pub struct CanonicalizeInput {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterializeInput {
-    /// Every manifest to materialize, the caller's own first. Order carries no privilege between
-    /// namespaces (each row routes by its own `ManifestId`); the first entry only supplies the
-    /// reported `migration_id`. Deserialization is positional, so a caller that skips
-    /// [`MaterializeInput::new`] must keep that order itself.
     pub manifests: Vec<Manifest>,
     #[serde(default)]
     pub data_buckets: Vec<DataBucket>,

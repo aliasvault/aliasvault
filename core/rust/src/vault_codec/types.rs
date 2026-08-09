@@ -48,10 +48,7 @@ pub const MANIFEST_ID_COL: &str = "ManifestId";
 /// vault is materialized from (`Id`, `Name`).
 pub const MANIFESTS_TABLE: &str = "Manifests";
 
-/// Manifest / metadata schema version. This is the manifest *wire structure* version and is its own
-/// axis, independent of the data-model version (which readers derive from the manifest's `migrationId`).
-/// It starts at 1 for the first manifest generation; bump only on a breaking structural change
-/// (field type changes, removed fields).
+/// Manifest / metadata schema version.
 pub const SCHEMA_VERSION: u32 = 1;
 
 /// Client-local SQLite table that carries the codec overflow inside the vault database itself (see

@@ -117,7 +117,7 @@ export class VaultCodec {
 
   /**
    * Insert the materialized tables into a fresh SQLite database and export it (base64).
-   * @param materialized - tables + migration id produced by the Rust `materialize_as_sqlite`
+   * @param materialized - tables produced by the Rust `materialize_as_sqlite`
    * @param blobs - map of `hash -> plaintext bytes` (caller fetched + decrypted these)
    * @param schemaSql - the COMPLETE_SCHEMA_SQL string for the target client version
    * @returns A base64-encoded SQLite database identical (in row content) to the original.
@@ -130,16 +130,6 @@ export class VaultCodec {
       db.run(schemaSql);
       console.info('[VaultCodec] Schema applied.');
 
-      // 2) Stamp __EFMigrationsHistory so VaultSqlGenerator pickup of the version matches what was exported.
-      try {
-        db.run('INSERT OR IGNORE INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion") VALUES (?, ?)', [
-          materialized.migrationId,
-          'manifest-v1',
-        ]);
-      } catch {
-        // Tolerate schema variations — some COMPLETE_SCHEMA_SQL forms stamp it themselves.
-      }
-
       /*
        * SQLite enforces foreign keys immediately (no deferral), and tables are inserted in the order Rust
        * emitted them, so child rows (e.g. Attachments) may precede their parents (Items). Disable enforcement
@@ -151,7 +141,7 @@ export class VaultCodec {
       // Tables present in the freshly-created schema; rows for tables outside it cannot be inserted.
       const schemaTables = new Set<string>(db.exec("SELECT name FROM sqlite_master WHERE type='table'")[0]?.values.map(v => String(v[0])) ?? []);
 
-      // 3) Insert every materialized table's rows.
+      // 2) Insert every materialized table's rows.
       for (const { name: tableName, records: rows } of materialized.tables) {
         if (rows.length === 0) {
           continue;
@@ -190,7 +180,7 @@ export class VaultCodec {
 
       db.run('COMMIT');
 
-      // 4) Verify referential integrity of the fully-assembled database.
+      // 3) Verify referential integrity of the fully-assembled database.
       const fkViolations = db.exec('PRAGMA foreign_key_check');
       if (fkViolations.length > 0) {
         const sample = fkViolations[0].values.slice(0, 5).map(v => `${v[0]} row ${v[1]} → missing parent in ${v[2]}`).join('; ');
@@ -198,7 +188,7 @@ export class VaultCodec {
       }
       console.info('[VaultCodec] Foreign key check passed.');
 
-      // 5) Export.
+      // 4) Export.
       const bytes = db.export();
       console.info(`[VaultCodec] Reassembly complete: exported SQLite of ${bytes.length} bytes.`);
       let binaryString = '';

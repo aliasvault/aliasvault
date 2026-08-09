@@ -250,11 +250,16 @@ function urlComparisonKey(url: string): string {
 /** A single table's rows (byte columns rendered as `{ __b64 }`). */
 export type CodecTableData = { name: string; records: Array<Record<string, unknown>> };
 
-/** Manifest-v1 manifest. Forward-compat: unknown keys are preserved on round-trip. */
+/**
+ * Manifest-v1 manifest. Forward-compat: unknown keys are preserved on round-trip.
+ *
+ * Carries no data-model (EF migration) version: each manifest is written by whichever client last
+ * pushed it, and a reader materializes into the schema it ships with anyway (anything that schema
+ * cannot hold is preserved structurally by `CodecOverflow`). `schemaVersion` is the wire-structure
+ * version and is a separate axis.
+ */
 export type CodecManifest = {
   schemaVersion: number;
-  /** Latest EF migration ID; readers derive the data-model version label from it. */
-  migrationId: string;
   manifestSalt: string;
   canonicalizedAt: string;
   manifestId: string;
@@ -311,15 +316,18 @@ export type CodecOverflow = {
 /** Input for canonicalize. */
 export type CodecCanonicalizeInput = {
   tables: CodecTableData[];
-  migrationId: string;
   canonicalizedAt: string;
   manifests: CodecManifestSpec[];
   /** For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into. TODO: delete this field once the migration is complete. */
   adoptUnstampedInto?: string | null;
 };
 
-/** Materialized tables the platform inserts into a fresh SQLite DB (`overflow` is a diagnostics copy). */
-export type CodecMaterialized = { tables: CodecTableData[]; migrationId: string; overflow: CodecOverflow };
+/**
+ * Materialized tables the platform inserts into a fresh SQLite DB (`overflow` is a diagnostics copy).
+ * No migration id: the DB is created from this client's own schema, which is the only thing that
+ * decides which migration the result is at.
+ */
+export type CodecMaterialized = { tables: CodecTableData[]; overflow: CodecOverflow };
 
 /** One entry in the bucket layout: a category and the tables it owns. */
 export type CodecBucketLayoutEntry = { category: string; tables: string[] };

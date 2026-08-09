@@ -164,8 +164,6 @@ type ManifestDto = {
   blobReferences?: BlobRefDto[];
   /** Plaintext display name of a shared manifest (null for the personal manifest). */
   name?: string | null;
-  /** Username of the manifest owner; set only when the caller is not an owner of the group owning it. Display only. */
-  ownerUsername?: string | null;
   /** Whether the caller may grant/revoke access to this manifest and publish its email delivery key. */
   canAdminister?: boolean;
   /** How the caller's access to this manifest's VEK is encrypted. */
@@ -482,7 +480,6 @@ export class VaultSyncService {
             salt: entry.manifest.manifestSalt,
             revision: entry.revision,
             name: entry.manifest.name ?? dto.name ?? null,
-            ownerUsername: dto.ownerUsername ?? null,
             canAdminister: dto.canAdminister ?? false,
           };
         }
@@ -1185,7 +1182,6 @@ export class VaultSyncService {
   private async canonicalizeVault(sqliteClient: SqliteClient, options?: { adoptUnstampedInto?: string | null }): Promise<CanonicalizedVaultSet> {
     // Read tables from the SQLite database and apply the manifest-v1 format rules.
     const tables = VaultCodec.readTables(sqliteClient);
-    const migrationId = VaultCodec.getLatestMigrationId(sqliteClient);
 
     const manifestRecords = await this.resolveManifestRecords(sqliteClient);
     /*
@@ -1198,7 +1194,6 @@ export class VaultSyncService {
 
     const canonicalized = await timedStage('canonicalize (incl. Rust→JS conversion)', () => vaultCodecCanonicalizeFromSqlite({
       tables,
-      migrationId,
       canonicalizedAt: new Date().toISOString(),
       manifests,
       adoptUnstampedInto: options?.adoptUnstampedInto ?? null,
