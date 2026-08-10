@@ -292,9 +292,12 @@
     {
         // Sanitize the secret key by converting from URI to secret key and name.
         try {
-            var (secretKey, name) = TotpHelper.SanitizeSecretKey(NewTotpCode.SecretKey, NewTotpCode.Name);
+            var (secretKey, name, parameters) = TotpHelper.SanitizeSecretKey(NewTotpCode.SecretKey, NewTotpCode.Name);
             NewTotpCode.SecretKey = secretKey;
             NewTotpCode.Name = name;
+            NewTotpCode.Algorithm = parameters.Algorithm;
+            NewTotpCode.Digits = parameters.Digits;
+            NewTotpCode.Period = parameters.Period;
         }
         catch (Exception ex)
         {

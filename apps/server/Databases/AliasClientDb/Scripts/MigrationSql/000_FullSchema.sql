@@ -1775,3 +1775,15 @@ VALUES ('20260809201914_2.1.1-ItemChildManifestTrigger', '10.0.10');
 
 COMMIT;
 
+BEGIN TRANSACTION;
+ALTER TABLE "TotpCodes" ADD "Algorithm" TEXT NOT NULL DEFAULT 'SHA1';
+
+ALTER TABLE "TotpCodes" ADD "Digits" INTEGER NOT NULL DEFAULT 6;
+
+ALTER TABLE "TotpCodes" ADD "Period" INTEGER NOT NULL DEFAULT 30;
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260810093834_2.1.2-AddTotpParameters', '10.0.10');
+
+COMMIT;
+

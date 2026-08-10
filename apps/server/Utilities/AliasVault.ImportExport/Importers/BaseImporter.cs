@@ -260,13 +260,16 @@ public static class BaseImporter
             {
                 try
                 {
-                    var (secretKey, name) = TotpHelper.SanitizeSecretKey(importedCredential.TwoFactorSecret);
+                    var (secretKey, name, parameters) = TotpHelper.SanitizeSecretKey(importedCredential.TwoFactorSecret);
 
                     item.TotpCodes.Add(new TotpCode
                     {
                         Id = Guid.NewGuid(),
                         Name = name ?? string.Empty,
                         SecretKey = secretKey,
+                        Algorithm = parameters.Algorithm,
+                        Digits = parameters.Digits,
+                        Period = parameters.Period,
                         CreatedAt = createdAt,
                         UpdatedAt = updatedAt,
                     });

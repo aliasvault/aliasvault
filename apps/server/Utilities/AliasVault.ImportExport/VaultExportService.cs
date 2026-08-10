@@ -146,6 +146,9 @@ public static class VaultExportService
             Id = totpCode.Id,
             Name = totpCode.Name,
             SecretKey = totpCode.SecretKey,
+            Algorithm = totpCode.Algorithm,
+            Digits = totpCode.Digits,
+            Period = totpCode.Period,
         };
     }
 

@@ -1136,6 +1136,46 @@ public class ImportExportTests
     }
 
     /// <summary>
+    /// Test case ensuring an imported otpauth:// URI keeps its algorithm, digits and period instead of
+    /// being reduced to the RFC 6238 defaults, which would make the generated codes wrong.
+    /// </summary>
+    [Test]
+    public void ImportPreservesTotpParameters()
+    {
+        // Arrange
+        var credentials = new List<ImportedCredential>
+        {
+            new()
+            {
+                ServiceName = "Sha512Service",
+                TwoFactorSecret = "otpauth://totp/Sha512Service:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Sha512Service&algorithm=SHA512&digits=8&period=60",
+            },
+            new()
+            {
+                ServiceName = "PlainService",
+                TwoFactorSecret = "JBSWY3DPEHPK3PXP",
+            },
+        };
+
+        // Act
+        var items = BaseImporter.ConvertToItem(credentials);
+
+        // Assert
+        var withParameters = items.First(i => i.Name == "Sha512Service").TotpCodes.Single();
+        var withDefaults = items.First(i => i.Name == "PlainService").TotpCodes.Single();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(withParameters.Algorithm, Is.EqualTo("SHA512"));
+            Assert.That(withParameters.Digits, Is.EqualTo(8));
+            Assert.That(withParameters.Period, Is.EqualTo(60));
+            Assert.That(withDefaults.Algorithm, Is.EqualTo(TotpCode.AlgorithmSha1));
+            Assert.That(withDefaults.Digits, Is.EqualTo(TotpCode.DefaultDigits));
+            Assert.That(withDefaults.Period, Is.EqualTo(TotpCode.DefaultPeriod));
+        });
+    }
+
+    /// <summary>
     /// Test case for LastPass secure note detection.
     /// </summary>
     /// <returns>Async task.</returns>

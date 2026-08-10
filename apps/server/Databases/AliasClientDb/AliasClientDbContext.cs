@@ -180,6 +180,11 @@ public class AliasClientDbContext : DbContext
             .HasForeignKey(l => new { l.ManifestId, l.ItemId })
             .OnDelete(DeleteBehavior.Cascade);
 
+        // The TOTP parameters default to what RFC 6238 assumes when an otpauth:// URI omits them.
+        modelBuilder.Entity<TotpCode>().Property(t => t.Algorithm).HasDefaultValue(TotpCode.AlgorithmSha1);
+        modelBuilder.Entity<TotpCode>().Property(t => t.Digits).HasDefaultValue(TotpCode.DefaultDigits);
+        modelBuilder.Entity<TotpCode>().Property(t => t.Period).HasDefaultValue(TotpCode.DefaultPeriod);
+
         // Configure Passkey - Item relationship
         modelBuilder.Entity<Passkey>()
             .HasOne(p => p.Item)
