@@ -5,14 +5,11 @@
 import { storage } from 'wxt/utils/storage';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
-import type { VaultKeyGetResponse, VaultKeyResponse } from '@/utils/dist/core/models/webapi';
+import { UnlockMethodType, type VaultKeyGetResponse, type VaultKeyResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
 import { WebApiService } from '@/utils/WebApiService';
-
-/** The key type for password-based vault keys, mirroring the server's VaultKey.KeyType value. */
-export const VAULT_KEY_TYPE_PASSWORD = 'password';
 
 /**
  * Result of resolving the vault encryption key after deriving the password key.
@@ -41,7 +38,7 @@ export class VaultKeyService {
   public static async fetchVaultKey(webApi?: WebApiService): Promise<FetchVaultKeyResult> {
     const api = webApi ?? new WebApiService();
     try {
-      const response = await api.get<VaultKeyGetResponse>(`VaultKey/${VAULT_KEY_TYPE_PASSWORD}`);
+      const response = await api.get<VaultKeyGetResponse>(`VaultKey/${UnlockMethodType.Password}`);
       return { supported: true, vaultKey: response.vaultKey ?? null };
     } catch (e) {
       if (e instanceof ApiRequestError && e.statusCode === 404) {

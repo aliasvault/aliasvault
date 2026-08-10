@@ -8,7 +8,7 @@ import { storage } from 'wxt/utils/storage';
 
 import { bucketRevisionKey, StorageKeys } from '@/utils/constants/storageKeys';
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
-import type { VaultResponse } from '@/utils/dist/core/models/webapi';
+import { ManifestKeyType, VaultKeyAlgorithm, type VaultResponse } from '@/utils/dist/core/models/webapi';
 import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 import { buildEmailRouting } from '@/utils/EmailRouting';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
@@ -171,7 +171,7 @@ type ManifestDto = {
   keyType?: string | null;
   /** The manifest VEK encrypted with the caller's public key; set only on manifests we open through a grant. */
   encryptedVek?: string | null;
-  /** Algorithm of `encryptedVek` (e.g. "rsa-oaep-sha256"). */
+  /** Algorithm of `encryptedVek`, one of the {@link VaultKeyAlgorithm} tokens. */
   algorithm?: string | null;
   /** The public key `encryptedVek` was encrypted with. Selects which of the caller's keypairs decrypts the grant. */
   encryptionPublicKey?: string | null;
@@ -193,12 +193,6 @@ function selectPersonalManifest(snapshot: GetResponseDto | undefined | null): Ma
   const personalId = snapshot?.personalManifestId;
   return personalId ? (snapshot?.manifests ?? []).find(m => m.manifestId === personalId) : undefined;
 }
-
-/** The manifest's VEK hangs off the account key hierarchy: the unlock chain produced it, nothing travels on the wire. */
-const MANIFEST_KEY_TYPE_ACCOUNT = 'accountkey';
-
-/** The manifest's VEK is encrypted to one of our public keys and carried on the manifest itself. */
-const MANIFEST_KEY_TYPE_GRANT = 'grantkey';
 
 /**
  * Raw snapshot returned by GET /v2/Vault. The `storageFormat` / `legacyVaultBlob` / `legacyRevision` / `version`
@@ -506,6 +500,24 @@ export class VaultSyncService {
       const label = `"${bucketDto.category}" bucket of manifest ${bucketDto.manifestId}`;
       const bucketJson = await verifyDecryptUnpack(bucketDto.blob, bucketKey, bucketDto.ciphertextHash, label);
       const bucket = JSON.parse(bucketJson) as VaultDataBucket;
+
+      /*
+       * Bind the payload to the address the server delivered it under, the rule `openManifest` applies to
+       * a manifest. Materialize stamps every row of a bucket with the bucket's *embedded* manifest id, so
+       * a bucket whose plaintext names another manifest re-homes its rows into a namespace its author
+       * holds no key for: the reader ingests them, and the reader's next push splits them straight into
+       * that manifest's bucket. Anyone who shares a manifest with the victim can plant one.
+       */
+      if (!manifestIdsEqual(bucket.manifestId, bucketDto.manifestId) || bucket.category !== bucketDto.category) {
+        const mismatch = `VaultSyncService: ${label} declares a different address (manifest ${bucket.manifestId}, category "${bucket.category}") inside its encrypted payload`;
+        if (manifestIdsEqual(bucketDto.manifestId, personalDto.manifestId)) {
+          throw new Error(`${mismatch}, refusing to assemble.`);
+        }
+        // Dropping a shared manifest's bucket costs nothing on push: canonicalize only emits a bucket for a manifest that has rows.
+        devWarn(`[V2Pull] ${mismatch}; skipping it.`);
+        continue;
+      }
+
       dataBuckets.push(bucket);
       pulledFingerprints[fingerprintBucketKey(bucketDto.manifestId, bucketDto.category)] = await vaultCodecComputeContentFingerprint(bucketJson);
       const rowCount = Object.values(bucket.tables ?? {}).reduce((n, rows) => n + rows.length, 0);
@@ -660,9 +672,9 @@ export class VaultSyncService {
    */
   private async resolveManifestVek(dto: ManifestDto, accountKeyVeks: Map<string, string>, isPersonal: boolean, personalManifest: CodecManifest | null): Promise<string | null> {
     // A server that predates the field says nothing, and there the home manifest is the account-key one by definition.
-    const keyType = dto.keyType ?? (isPersonal ? MANIFEST_KEY_TYPE_ACCOUNT : MANIFEST_KEY_TYPE_GRANT);
+    const keyType = dto.keyType ?? (isPersonal ? ManifestKeyType.AccountKey : ManifestKeyType.GrantKey);
 
-    if (keyType === MANIFEST_KEY_TYPE_ACCOUNT) {
+    if (keyType === ManifestKeyType.AccountKey) {
       const accountKeyVek = accountKeyVeks.get(dto.manifestId);
       if (!accountKeyVek) {
         // Our unlock chain produced a VEK for a different manifest than the one this key is filed under.
@@ -672,7 +684,7 @@ export class VaultSyncService {
       return accountKeyVek;
     }
 
-    if (keyType !== MANIFEST_KEY_TYPE_GRANT) {
+    if (keyType !== ManifestKeyType.GrantKey) {
       devWarn(`[V2Pull] Manifest ${dto.manifestId} states an unknown key type "${keyType}" (newer server?), skipping it.`);
       return null;
     }
@@ -693,6 +705,17 @@ export class VaultSyncService {
   private async resolveGrantedVek(personalManifest: CodecManifest, dto: ManifestDto): Promise<string | null> {
     if (!dto.encryptedVek || !dto.encryptionPublicKey) {
       devWarn(`[V2Pull] No key available for shared manifest ${dto.manifestId}, skipping it.`);
+      return null;
+    }
+
+    /*
+     * The algorithm, not the key type, decides how the ciphertext opens: a grant encrypted under an algorithm we
+     * do not implement would otherwise be handed to an RSA-OAEP decrypt that cannot possibly be right. A server
+     * predating the field says nothing, and back then every grant was RSA-OAEP.
+     */
+    const algorithm = dto.algorithm ?? VaultKeyAlgorithm.RsaOaepSha256;
+    if (algorithm !== VaultKeyAlgorithm.RsaOaepSha256) {
+      devWarn(`[V2Pull] Shared manifest ${dto.manifestId} grants its VEK under an unsupported algorithm "${algorithm}" (newer server?), skipping it.`);
       return null;
     }
 
@@ -770,8 +793,8 @@ export class VaultSyncService {
    *   which becomes the KEK; on a normal push it is the VEK itself)
    * @param username - the user's username (sent in the upload payload for cross-check)
    * @param options - set createVaultKey to perform the KEK/VEK migration as part of this push (decided once, in
-   *   handleUploadVault); set forceFullWrite to bypass the content-fingerprint gating and
-   *   rewrite every manifest and bucket (server rollback recovery)
+   *   handleUploadVault); set forceFullWrite to bypass the content-fingerprint gating and rewrite every manifest
+   *   and bucket, for when the fingerprints cannot be trusted to describe the server's state
    * @returns Push outcome.
    */
   public async push(
@@ -831,8 +854,8 @@ export class VaultSyncService {
      * against the fingerprint of its last-known server state and only write the targets that actually changed. A
      * missing baseline means "server state unknown" and always writes. Two cases force a blanket write: a KEK/VEK
      * migration re-keys the personal manifest and all buckets (their ciphertext must be re-encrypted with the new VEK
-     * even when the content is unchanged), and forceFullWrite (server rollback recovery) rewrites everything so
-     * the server is restored from the client's state.
+     * even when the content is unchanged), and forceFullWrite rewrites everything for a caller that knows the
+     * fingerprints no longer describe what the server holds.
      */
     const forceFullWrite = options?.forceFullWrite === true;
     const fingerprints = await this.loadContentFingerprints();
@@ -1304,19 +1327,6 @@ export class VaultSyncService {
       }
     }
     return keys;
-  }
-
-  /**
-   * The manifests this client has already pushed a bucket of `category` for.
-   * @param category - the bucket category
-   * @returns the manifest ids with a recorded revision for that category
-   */
-  public async manifestsWithBucketRevision(category: string): Promise<string[]> {
-    const suffix = `:${category}`;
-    return Object.keys(await this.loadBucketRevisions())
-      .filter(key => key.endsWith(suffix))
-      .map(key => key.slice(0, -suffix.length))
-      .filter(manifestId => manifestId.length > 0);
   }
 
   /**
