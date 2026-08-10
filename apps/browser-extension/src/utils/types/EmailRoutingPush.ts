@@ -1,6 +1,7 @@
 /**
- * The email-routing set sent on a vault push: every alias the server should route, each carrying the manifest
- * that owns it.
+ * The email-routing set sent on a vault push: one entry per (address, manifest) pair. An address claimed by
+ * several manifests (personal + shared during family sharing) appears once per manifest; the server links the
+ * claim to each so incoming mail is key-wrapped per linked manifest.
  */
 export type EmailRoutingPush = {
   emailAddressList: Array<{ address: string; manifestId: string }>;

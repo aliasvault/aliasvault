@@ -835,7 +835,7 @@ export class VaultSyncService {
     // Personal manifest first by construction (see `resolveManifestRecords`), which is also the order canonicalize requires.
     const [personalRecord, ...sharedRecords] = manifestRecords;
     const privateEmailDomains = (await getStorageItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS)) ?? [];
-    const emailRouting = buildEmailRouting(canonicalized.manifests.map(m => m.manifest), personalRecord.manifestId, privateEmailDomains);
+    const emailRouting = buildEmailRouting(canonicalized.manifests.map(m => m.manifest), privateEmailDomains);
 
     /*
      * Debug: manifest-set summary + full unencrypted manifests + data buckets, inspectable in the console.

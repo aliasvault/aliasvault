@@ -4,7 +4,7 @@ import argon2 from 'argon2-browser/dist/argon2-bundled.min.js';
 
 import { devWarn } from '@/utils/devLogger/DevLogger';
 import type { EncryptionKey } from '@/utils/dist/core/models/vault';
-import type { Email, MailboxEmail } from '@/utils/dist/core/models/webapi';
+import type { Email, EmailKeyWrap, MailboxEmail } from '@/utils/dist/core/models/webapi';
 
 /**
  * Utility class for encryption operations including:
@@ -361,6 +361,21 @@ export class EncryptionUtility {
   }
 
   /**
+   * Finds the wrap of an email's symmetric key that one of the locally held keypairs can open. An email carries
+   * one wrap per manifest keypair the caller holds.
+   */
+  private static resolveEmailWrap(email: { wraps: EmailKeyWrap[] },encryptionKeys: EncryptionKey[]): { encryptionKey: EncryptionKey, encryptedSymmetricKey: string } {
+    for (const wrap of email.wraps) {
+      const key = encryptionKeys.find(k => k.PublicKey === wrap.publicKey);
+      if (key) {
+        return { encryptionKey: key, encryptedSymmetricKey: wrap.encryptedSymmetricKey };
+      }
+    }
+
+    throw new Error('Encryption key not found');
+  }
+
+  /**
    * Decrypts an individual email based on the provided public/private key pairs.
    */
   public static async decryptEmail(
@@ -368,16 +383,12 @@ export class EncryptionUtility {
     encryptionKeys: EncryptionKey[]
   ): Promise<Email> {
     try {
-      const encryptionKey = encryptionKeys.find(key => key.PublicKey === email.encryptionKey);
-
-      if (!encryptionKey) {
-        throw new Error('Encryption key not found');
-      }
+      const wrap = EncryptionUtility.resolveEmailWrap(email, encryptionKeys);
 
       // Decrypt symmetric key with asymmetric private key
-      const privateKey = await EncryptionUtility.getPrivateKeyObject(encryptionKey);
+      const privateKey = await EncryptionUtility.getPrivateKeyObject(wrap.encryptionKey);
       const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(
-        email.encryptedSymmetricKey,
+        wrap.encryptedSymmetricKey,
         privateKey
       );
       const symmetricKeyBase64 = Buffer.from(symmetricKey).toString('base64');
@@ -420,16 +431,12 @@ export class EncryptionUtility {
   ): Promise<MailboxEmail[]> {
     const results = await Promise.all(emails.map(async email => {
       try {
-        const encryptionKey = encryptionKeys.find(key => key.PublicKey === email.encryptionKey);
-
-        if (!encryptionKey) {
-          throw new Error('Encryption key not found');
-        }
+        const wrap = EncryptionUtility.resolveEmailWrap(email, encryptionKeys);
 
         // Decrypt symmetric key with asymmetric private key
-        const privateKey = await EncryptionUtility.getPrivateKeyObject(encryptionKey);
+        const privateKey = await EncryptionUtility.getPrivateKeyObject(wrap.encryptionKey);
         const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(
-          email.encryptedSymmetricKey,
+          wrap.encryptedSymmetricKey,
           privateKey
         );
         const symmetricKeyBase64 = Buffer.from(symmetricKey).toString('base64');
@@ -466,16 +473,12 @@ export class EncryptionUtility {
     encryptionKeys: EncryptionKey[]
   ): Promise<Uint8Array> {
     try {
-      const encryptionKey = encryptionKeys.find(key => key.PublicKey === email.encryptionKey);
-
-      if (!encryptionKey) {
-        throw new Error('Encryption key not found');
-      }
+      const wrap = EncryptionUtility.resolveEmailWrap(email, encryptionKeys);
 
       // Decrypt the symmetric key using private key (returns raw bytes)
-      const privateKey = await EncryptionUtility.getPrivateKeyObject(encryptionKey);
+      const privateKey = await EncryptionUtility.getPrivateKeyObject(wrap.encryptionKey);
       const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(
-        email.encryptedSymmetricKey,
+        wrap.encryptedSymmetricKey,
         privateKey
       );
 
