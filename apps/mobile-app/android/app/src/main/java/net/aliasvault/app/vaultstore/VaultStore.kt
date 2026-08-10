@@ -10,6 +10,7 @@ import net.aliasvault.app.vaultstore.keystoreprovider.BiometricAuthCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreProvider
 import net.aliasvault.app.vaultstore.models.Item
 import net.aliasvault.app.vaultstore.models.StoreVaultResult
+import net.aliasvault.app.vaultstore.models.TotpCode
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
 import kotlin.coroutines.resume
 
@@ -498,18 +499,18 @@ class VaultStore(
     }
 
     /**
-     * Get the first non-deleted TOTP secret for an item, or null when none exists.
+     * Get the first non-deleted TOTP code for an item, or null when none exists.
      * Used by the autofill service to copy a credential's current TOTP code to
      * the clipboard at fill time.
      */
-    fun getTotpSecretForItem(itemId: String): String? {
+    fun getTotpForItem(itemId: String): TotpCode? {
         if (!database.isVaultUnlocked()) {
             return null
         }
         return try {
-            itemRepository.getTotpSecretForItem(itemId)
+            itemRepository.getTotpForItem(itemId)
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error getting TOTP secret for item", e)
+            android.util.Log.e(TAG, "Error getting TOTP code for item", e)
             null
         }
     }

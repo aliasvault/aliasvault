@@ -7,6 +7,7 @@ import net.aliasvault.app.vaultstore.models.FieldKey
 import net.aliasvault.app.vaultstore.models.FieldType
 import net.aliasvault.app.vaultstore.models.Item
 import net.aliasvault.app.vaultstore.models.ItemField
+import net.aliasvault.app.vaultstore.models.TotpCode
 import net.aliasvault.app.vaultstore.queries.ItemQueries
 import net.aliasvault.app.vaultstore.utils.FolderUtils
 import java.util.Calendar
@@ -390,19 +391,27 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
     }
 
     /**
-     * Get the first non-deleted TOTP secret for an item, or null when there is none.
+     * Get the first non-deleted TOTP code for an item, or null when there is none.
      * Used by the autofill service to copy the current TOTP code to the clipboard
      * when the user selects a credential to fill.
      *
      * @param itemId The UUID of the item.
-     * @return The Base32 secret key string, or null.
+     * @return The TOTP code with its RFC 6238 parameters, or null.
      */
-    fun getTotpSecretForItem(itemId: String): String? {
+    fun getTotpForItem(itemId: String): TotpCode? {
         val results = executeQuery(
-            "SELECT SecretKey FROM TotpCodes WHERE ItemId = ? AND IsDeleted = 0 ORDER BY Name ASC LIMIT 1",
+            "SELECT SecretKey, Algorithm, Digits, Period FROM TotpCodes WHERE ItemId = ? AND IsDeleted = 0 ORDER BY Name ASC LIMIT 1",
             arrayOf(itemId.uppercase()),
         )
-        return results.firstOrNull()?.get("SecretKey") as? String
+        val row = results.firstOrNull() ?: return null
+        val secretKey = row["SecretKey"] as? String ?: return null
+
+        return TotpCode(
+            secretKey = secretKey,
+            algorithm = row["Algorithm"] as? String ?: TotpCode.DEFAULT_ALGORITHM,
+            digits = (row["Digits"] as? Long)?.toInt() ?: TotpCode.DEFAULT_DIGITS,
+            period = (row["Period"] as? Long)?.toInt() ?: TotpCode.DEFAULT_PERIOD,
+        )
     }
 
     // MARK: - Write Operations

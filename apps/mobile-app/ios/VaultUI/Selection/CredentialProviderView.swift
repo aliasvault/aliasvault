@@ -249,8 +249,11 @@ private struct AutofillCredentialCardWithSelection: View {
         AutofillCredentialCard(credential: credential, action: {
             if isChoosingTextToInsert {
                 // Generate TOTP code if available
-                if let secret = credential.totpSecret {
-                    totpCode = TotpGenerator.generateCode(secret: secret)
+                if let totp = credential.totp {
+                    totpCode = TotpGenerator.generateCode(secret: totp.secretKey,
+                                                          period: totp.period,
+                                                          digits: totp.digits,
+                                                          algorithm: totp.algorithm)
                 }
                 showSelectionSheet = true
             } else {
@@ -261,7 +264,7 @@ private struct AutofillCredentialCardWithSelection: View {
                 // copy-on-fill setting enabled (default), put the current
                 // TOTP code on the clipboard so they can paste it into the
                 // 2FA field after the autofill completes.
-                TotpClipboard.copyCodeIfEnabled(secret: credential.totpSecret)
+                TotpClipboard.copyCodeIfEnabled(totp: credential.totp)
 
                 // Fill both username and password immediately for normal autofill
                 onSelect(identifier, credential.password ?? "")

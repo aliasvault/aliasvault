@@ -11,7 +11,8 @@ import { useDialog } from '@/context/DialogContext';
 import { useColors } from '@/hooks/useColorScheme';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 import type { TotpCode } from '@/utils/dist/core/models/vault';
-import { parseOtpAuthUri } from '@/utils/TotpUtility';
+import { TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD } from '@/utils/dist/core/models/vault';
+import { buildOtpAuthUri, parseOtpAuthUri } from '@/utils/TotpUtility';
 
 type TotpFormData = {
   name: string;
@@ -116,6 +117,9 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
             Id: crypto.randomUUID().toUpperCase(),
             Name: name,
             SecretKey: secretKey,
+            Algorithm: parsed.algorithm,
+            Digits: parsed.digits,
+            Period: parsed.period,
             ItemId: '' // Will be set when saving the item
           };
 
@@ -150,9 +154,12 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
   /**
    * Sanitizes the secret key by extracting it from a TOTP URI if needed
    */
-  const sanitizeSecretKey = (secretKeyInput: string, nameInput: string): { secretKey: string, name: string } => {
+  const sanitizeSecretKey = (secretKeyInput: string, nameInput: string): { secretKey: string, name: string, algorithm: string, digits: number, period: number } => {
     let secretKey = secretKeyInput.trim();
     let name = nameInput.trim();
+    let algorithm = TOTP_DEFAULT_ALGORITHM;
+    let digits = TOTP_DEFAULT_DIGITS;
+    let period = TOTP_DEFAULT_PERIOD;
 
     // Check if it's a TOTP URI
     if (secretKey.toLowerCase().startsWith('otpauth://totp/')) {
@@ -161,6 +168,9 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
         throw new Error(t('totp.errors.invalidSecretKey'));
       }
       secretKey = parsed.secret;
+      algorithm = parsed.algorithm;
+      digits = parsed.digits;
+      period = parsed.period;
       // If name is empty, use the label from the URI
       if (!name && parsed.label) {
         name = parsed.label;
@@ -176,7 +186,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
     }
 
     // Name is optional; keep it blank when none was provided or derived.
-    return { secretKey, name };
+    return { secretKey, name, algorithm, digits, period };
   };
 
   /**
@@ -211,13 +221,16 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
 
     try {
       // Sanitize the secret key
-      const { secretKey, name } = sanitizeSecretKey(formData.secretKey, formData.name);
+      const { secretKey, name, algorithm, digits, period } = sanitizeSecretKey(formData.secretKey, formData.name);
 
       // Create new TOTP code
       const newTotpCode: TotpCode = {
         Id: crypto.randomUUID().toUpperCase(),
         Name: name,
         SecretKey: secretKey,
+        Algorithm: algorithm,
+        Digits: digits,
+        Period: period,
         ItemId: '' // Will be set when saving the item
       };
 
@@ -866,7 +879,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
                           const issuer = itemDisplayName || 'AliasVault';
                           const accountName = itemUsername || editingTotpCode.Name;
                           const label = `${encodeURIComponent(issuer)}:${encodeURIComponent(accountName)}`;
-                          return `otpauth://totp/${label}?secret=${editingTotpCode.SecretKey}&issuer=${encodeURIComponent(issuer)}`;
+                          return buildOtpAuthUri(label, editingTotpCode.SecretKey, issuer, editingTotpCode);
                         })()}
                         size={200}
                         backgroundColor="white"

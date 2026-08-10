@@ -39,8 +39,13 @@ object TotpClipboard {
      * @param itemId The ID of the item being filled.
      */
     fun copyCodeForItem(context: Context, store: VaultStore, itemId: String) {
-        val secret = store.getTotpSecretForItem(itemId) ?: return
-        val code = TotpGenerator.generateCode(secret) ?: return
+        val totp = store.getTotpForItem(itemId) ?: return
+        val code = TotpGenerator.generateCode(
+            secret = totp.secretKey,
+            period = totp.period,
+            digits = totp.digits,
+            algorithm = totp.algorithm,
+        ) ?: return
         if (code.isEmpty()) return
 
         try {

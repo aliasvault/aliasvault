@@ -87,8 +87,8 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
 
             // If the item behind this passkey also has a TOTP code and the user has the
             // copy-on-fill setting enabled (default), put the current code on the clipboard.
-            let totpSecret = (try? vaultStore.getFirstTotpCode(forItemId: passkey.parentItemId))??.secretKey
-            TotpClipboard.copyCodeIfEnabled(secret: totpSecret)
+            let totp = (try? vaultStore.getFirstTotpCode(forItemId: passkey.parentItemId)) ?? nil
+            TotpClipboard.copyCodeIfEnabled(totp: totp)
 
             // Build extension output if PRF results are available (iOS 18+)
             if #available(iOS 18.0, *), let prfResults = assertion.prfResults {
@@ -661,7 +661,7 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
 
             // If the credential also has a TOTP code and the user has the copy-on-fill setting
             // enabled (default), put the current code on the clipboard.
-            TotpClipboard.copyCodeIfEnabled(secret: credential.totpSecret)
+            TotpClipboard.copyCodeIfEnabled(totp: credential.totp)
 
             // Extract PRF inputs from the passkey request if available
             var prfInputs: PrfInputs?

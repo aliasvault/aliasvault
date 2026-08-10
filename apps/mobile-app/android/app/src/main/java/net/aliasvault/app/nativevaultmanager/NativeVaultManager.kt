@@ -934,15 +934,20 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
-     * Generate a TOTP code from a Base32-encoded secret.
+     * Generate a TOTP code from a Base32-encoded secret using the stored RFC 6238 parameters.
      * Delegates to the shared Kotlin TotpGenerator so the JS layer can reuse
      * the same RFC 6238 implementation as the autofill service. Returns null
      * for invalid secrets.
      */
     @ReactMethod
-    override fun generateTotpCode(secret: String, promise: Promise) {
+    override fun generateTotpCode(secret: String, algorithm: String, digits: Double, period: Double, promise: Promise) {
         try {
-            val code = net.aliasvault.app.utils.TotpGenerator.generateCode(secret)
+            val code = net.aliasvault.app.utils.TotpGenerator.generateCode(
+                secret = secret,
+                period = period.toInt(),
+                digits = digits.toInt(),
+                algorithm = algorithm,
+            )
             promise.resolve(code)
         } catch (e: Exception) {
             Log.e(TAG, "Error generating TOTP code", e)

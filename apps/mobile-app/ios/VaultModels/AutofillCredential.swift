@@ -15,9 +15,14 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
     public let password: String?
     public let notes: String?
     public let passkey: Passkey?
-    public let totpSecret: String?
+    public let totp: TotpCode?
     public let createdAt: Date
     public let updatedAt: Date
+
+    /// The Base32 secret of the item's TOTP code, if it has one.
+    public var totpSecret: String? {
+        return totp?.secretKey
+    }
 
     public init(
         id: UUID,
@@ -30,7 +35,7 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
         password: String?,
         notes: String?,
         passkey: Passkey?,
-        totpSecret: String? = nil,
+        totp: TotpCode? = nil,
         createdAt: Date,
         updatedAt: Date
     ) {
@@ -44,7 +49,7 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
         self.password = password
         self.notes = notes
         self.passkey = passkey
-        self.totpSecret = totpSecret
+        self.totp = totp
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -53,8 +58,8 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
     /// - Parameters:
     ///   - item: The Item to convert from
     ///   - passkey: Optional passkey associated with this item
-    ///   - totpSecret: Optional TOTP secret key for this item
-    public init(from item: Item, passkey: Passkey? = nil, totpSecret: String? = nil) {
+    ///   - totp: Optional TOTP code for this item
+    public init(from item: Item, passkey: Passkey? = nil, totp: TotpCode? = nil) {
         self.id = item.id
         self.serviceName = item.name
         self.serviceUrl = item.url
@@ -65,7 +70,7 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
         self.password = item.password
         self.notes = item.getFieldValue(FieldKey.notesContent)
         self.passkey = passkey
-        self.totpSecret = totpSecret
+        self.totp = totp
         self.createdAt = item.createdAt
         self.updatedAt = item.updatedAt
     }

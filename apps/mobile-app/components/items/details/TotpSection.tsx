@@ -114,7 +114,7 @@ export const TotpSection: React.FC<TotpSectionProps> = ({ item }) : React.ReactN
       const results = await Promise.all(
         totpCodes.map(async (code) => ({
           id: code.Id,
-          value: await generateTotpCode(code.SecretKey),
+          value: await generateTotpCode(code.SecretKey, code),
         }))
       );
       if (cancelled) return;

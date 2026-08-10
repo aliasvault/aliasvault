@@ -1,5 +1,5 @@
 import type { Item, ItemField, TotpCode, Attachment, FieldHistory } from '@/utils/dist/core/models/vault';
-import { FieldKey, MAX_FIELD_HISTORY_RECORDS } from '@/utils/dist/core/models/vault';
+import { FieldKey, MAX_FIELD_HISTORY_RECORDS, normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod } from '@/utils/dist/core/models/vault';
 
 import { BaseRepository } from '../BaseRepository';
 import { ItemQueries, FieldValueQueries, FieldDefinitionQueries, FieldHistoryQueries, TagQueries } from '../queries/ItemQueries';
@@ -380,9 +380,9 @@ export class ItemRepository extends BaseRepository {
         if (totp.IsDeleted) continue;
 
         await this.client.executeUpdate(`
-          INSERT INTO TotpCodes (Id, Name, SecretKey, ItemId, CreatedAt, UpdatedAt, IsDeleted)
-          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [totp.Id || this.generateId(), totp.Name, totp.SecretKey, itemId, now, now, 0]);
+          INSERT INTO TotpCodes (Id, Name, SecretKey, Algorithm, Digits, Period, ItemId, CreatedAt, UpdatedAt, IsDeleted)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [totp.Id || this.generateId(), totp.Name, totp.SecretKey, normalizeTotpAlgorithm(totp.Algorithm), normalizeTotpDigits(totp.Digits), normalizeTotpPeriod(totp.Period), itemId, now, now, 0]);
       }
 
       // 4. Insert Attachments
@@ -469,8 +469,8 @@ export class ItemRepository extends BaseRepository {
       const childCopies = [
         {
           table: 'TotpCodes',
-          sql: `INSERT INTO TotpCodes (Id, ItemId, Name, SecretKey, CreatedAt, UpdatedAt, IsDeleted)
-                SELECT ?, ?, Name, SecretKey, ?, ?, 0 FROM TotpCodes WHERE Id = ?`,
+          sql: `INSERT INTO TotpCodes (Id, ItemId, Name, SecretKey, Algorithm, Digits, Period, CreatedAt, UpdatedAt, IsDeleted)
+                SELECT ?, ?, Name, SecretKey, Algorithm, Digits, Period, ?, ?, 0 FROM TotpCodes WHERE Id = ?`,
         },
         {
           table: 'Attachments',
@@ -587,10 +587,10 @@ export class ItemRepository extends BaseRepository {
         item.Id,
         originalTotpCodeIds,
         totpCodes.filter(tc => !tc.IsDeleted),
-        (totp) => [totp.Id || this.generateId(), totp.Name, totp.SecretKey, item.Id, now, now, 0],
-        `INSERT INTO TotpCodes (Id, Name, SecretKey, ItemId, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        `UPDATE TotpCodes SET Name = ?, SecretKey = ?, UpdatedAt = ? WHERE Id = ?`,
-        (totp) => [totp.Name, totp.SecretKey, now, totp.Id]
+        (totp) => [totp.Id || this.generateId(), totp.Name, totp.SecretKey, normalizeTotpAlgorithm(totp.Algorithm), normalizeTotpDigits(totp.Digits), normalizeTotpPeriod(totp.Period), item.Id, now, now, 0],
+        `INSERT INTO TotpCodes (Id, Name, SecretKey, Algorithm, Digits, Period, ItemId, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `UPDATE TotpCodes SET Name = ?, SecretKey = ?, Algorithm = ?, Digits = ?, Period = ?, UpdatedAt = ? WHERE Id = ?`,
+        (totp) => [totp.Name, totp.SecretKey, normalizeTotpAlgorithm(totp.Algorithm), normalizeTotpDigits(totp.Digits), normalizeTotpPeriod(totp.Period), now, totp.Id]
       );
 
       // 5. Handle Attachments (insert new, update existing, soft-delete removed).

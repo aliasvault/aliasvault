@@ -39,6 +39,9 @@ const SettingsQueries = {
       Id,
       Name,
       SecretKey,
+      Algorithm,
+      Digits,
+      Period,
       ItemId
     FROM TotpCodes
     WHERE ItemId = ? AND IsDeleted = 0`,

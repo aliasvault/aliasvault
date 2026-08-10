@@ -9,7 +9,7 @@ public class TotpRepository: BaseRepository {
     /// - Throws: Database errors
     public func getTotpCodesForItem(_ itemId: UUID) throws -> [TotpCode] {
         let query = """
-        SELECT Id, Name, SecretKey, ItemId, COALESCE(IsDeleted, 0) as IsDeleted
+        SELECT Id, Name, SecretKey, Algorithm, Digits, Period, ItemId, COALESCE(IsDeleted, 0) as IsDeleted
         FROM TotpCodes
         WHERE ItemId = ? AND IsDeleted = 0
         ORDER BY Name ASC
@@ -29,11 +29,17 @@ public class TotpRepository: BaseRepository {
             }
 
             let isDeleted = (row["IsDeleted"] as? Int64 ?? 0) != 0
+            let algorithm = row["Algorithm"] as? String ?? TotpCode.defaultAlgorithm
+            let digits = Int(row["Digits"] as? Int64 ?? Int64(TotpCode.defaultDigits))
+            let period = Int(row["Period"] as? Int64 ?? Int64(TotpCode.defaultPeriod))
 
             let totpCode = TotpCode(
                 id: id,
                 name: name,
                 secretKey: secretKey,
+                algorithm: algorithm,
+                digits: digits,
+                period: period,
                 itemId: itemIdParsed,
                 isDeleted: isDeleted
             )

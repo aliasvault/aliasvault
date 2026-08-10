@@ -409,10 +409,16 @@ public class VaultManager: NSObject {
 
     @objc
     func generateTotpCode(_ secret: String,
+                          algorithm: String,
+                          digits: Double,
+                          period: Double,
                           resolver resolve: @escaping RCTPromiseResolveBlock,
                           rejecter reject: @escaping RCTPromiseRejectBlock) {
         // Returns nil for invalid secrets; the JS side treats null as "code unavailable".
-        let code = TotpGenerator.generateCode(secret: secret)
+        let code = TotpGenerator.generateCode(secret: secret,
+                                              period: Int(period),
+                                              digits: Int(digits),
+                                              algorithm: algorithm)
         resolve(code)
     }
 

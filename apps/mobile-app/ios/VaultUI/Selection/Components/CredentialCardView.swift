@@ -106,8 +106,11 @@ public struct AutofillCredentialCard: View {
             }
 
             if credential.hasTotp,
-               let secret = credential.totpSecret,
-               let code = TotpGenerator.generateCode(secret: secret),
+               let totp = credential.totp,
+               let code = TotpGenerator.generateCode(secret: totp.secretKey,
+                                                     period: totp.period,
+                                                     digits: totp.digits,
+                                                     algorithm: totp.algorithm),
                !code.isEmpty {
                 Button(action: {
                     UIPasteboard.general.string = code
