@@ -6,6 +6,17 @@
 
 import { defineExtensionMessaging } from '@webext-core/messaging';
 
+/**
+ * An item's TOTP secret plus the RFC 6238 parameters its codes must be generated with. The content
+ * script renders codes itself, so the parameters have to cross the boundary alongside the secret.
+ */
+export type TotpSecret = {
+  SecretKey: string;
+  Algorithm: string;
+  Digits: number;
+  Period: number;
+};
+
 import type { TwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
 import type { FullVaultSyncResult, VaultManifestMigrationResult, VaultSyncPhase } from '@/entrypoints/background/VaultMessageHandler';
 
@@ -72,7 +83,7 @@ export interface IExtensionMessageProtocol {
   GET_SAVE_PROMPT_STATE(): { success: boolean; state: SavePromptPersistedState | null };
   GET_SEARCH_ITEMS(data: { searchTerm: string }): ItemsResponse;
   GET_SYNC_STATE(): { isDirty: boolean; mutationSequence: number; isSyncInProgress: boolean };
-  GET_TOTP_SECRETS(data: { itemIds: string[] }): { success: boolean; secrets?: Record<string, string>; error?: string };
+  GET_TOTP_SECRETS(data: { itemIds: string[] }): { success: boolean; secrets?: Record<string, TotpSecret>; error?: string };
   GET_TWO_FACTOR_STATE(): TwoFactorState | null;
   GET_VAULT(): VaultResponse;
   GET_WEBAUTHN_SETTINGS(data: any): WebAuthnSettingsResponse;

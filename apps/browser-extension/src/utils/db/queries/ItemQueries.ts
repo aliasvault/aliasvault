@@ -436,7 +436,7 @@ export class TotpCodeQueries {
    * so a bare `ItemId` match would pull in a same-id item's codes from another manifest.
    */
   public static readonly GET_BY_ITEM_ID = `
-    SELECT Id, Name, SecretKey, ItemId
+    SELECT Id, Name, SecretKey, Algorithm, Digits, Period, ItemId
     FROM TotpCodes
     WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0`;
 
@@ -444,8 +444,8 @@ export class TotpCodeQueries {
    * Insert a new TOTP code, stamped with the manifest of the item it hangs off.
    */
   public static readonly INSERT = `
-    INSERT INTO TotpCodes (Id, Name, SecretKey, ItemId, ManifestId, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, ?, ${BaseQueries.MANIFEST_OF_ITEM}, ?, ?, ?)`;
+    INSERT INTO TotpCodes (Id, Name, SecretKey, Algorithm, Digits, Period, ItemId, ManifestId, CreatedAt, UpdatedAt, IsDeleted)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ${BaseQueries.MANIFEST_OF_ITEM}, ?, ?, ?)`;
 
   /**
    * Update an existing TOTP code.
@@ -454,6 +454,9 @@ export class TotpCodeQueries {
     UPDATE TotpCodes
     SET Name = ?,
         SecretKey = ?,
+        Algorithm = ?,
+        Digits = ?,
+        Period = ?,
         UpdatedAt = ?
     WHERE Id = ? AND ManifestId = ?`;
 

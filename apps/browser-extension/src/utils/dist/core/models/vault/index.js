@@ -2,6 +2,24 @@
 // This file was automatically generated. Do not edit manually.
 
 
+// src/vault/TotpCode.ts
+var TOTP_DEFAULT_ALGORITHM = "SHA1";
+var TOTP_DEFAULT_DIGITS = 6;
+var TOTP_DEFAULT_PERIOD = 30;
+var TOTP_SUPPORTED_ALGORITHMS = ["SHA1", "SHA256", "SHA512"];
+function normalizeTotpAlgorithm(value) {
+  const normalized = (value ?? "").trim().toUpperCase().replace(/[-_\s]/g, "");
+  return TOTP_SUPPORTED_ALGORITHMS.includes(normalized) ? normalized : TOTP_DEFAULT_ALGORITHM;
+}
+function normalizeTotpDigits(value) {
+  const parsed = typeof value === "number" ? value : parseInt(String(value ?? ""), 10);
+  return Number.isInteger(parsed) && parsed >= 6 && parsed <= 10 ? parsed : TOTP_DEFAULT_DIGITS;
+}
+function normalizeTotpPeriod(value) {
+  const parsed = typeof value === "number" ? value : parseInt(String(value ?? ""), 10);
+  return Number.isInteger(parsed) && parsed > 0 && parsed <= 300 ? parsed : TOTP_DEFAULT_PERIOD;
+}
+
 // src/vault/FieldKey.ts
 var FieldKey = {
   /**
@@ -463,4 +481,4 @@ function createCustomField(options) {
 // src/vault/FieldHistory.ts
 var MAX_FIELD_HISTORY_RECORDS = 10;
 
-export { FieldCategories, FieldKey, FieldTypes, ItemTypes, LogoKinds, MAX_FIELD_HISTORY_RECORDS, SystemFieldRegistry, VaultDataBucketCategory, createCustomField, createSystemField, fieldAppliesToType, getAllSystemFieldKeys, getDefaultFieldsForItemType, getFieldConfigForType, getFieldValue, getFieldValues, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, groupFields, groupFieldsByCategory, hasField, isFieldShownByDefault, isSystemField, isSystemFieldPrefix, itemToCredential };
+export { FieldCategories, FieldKey, FieldTypes, ItemTypes, LogoKinds, MAX_FIELD_HISTORY_RECORDS, SystemFieldRegistry, TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD, TOTP_SUPPORTED_ALGORITHMS, VaultDataBucketCategory, createCustomField, createSystemField, fieldAppliesToType, getAllSystemFieldKeys, getDefaultFieldsForItemType, getFieldConfigForType, getFieldValue, getFieldValues, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, groupFields, groupFieldsByCategory, hasField, isFieldShownByDefault, isSystemField, isSystemFieldPrefix, itemToCredential, normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod };

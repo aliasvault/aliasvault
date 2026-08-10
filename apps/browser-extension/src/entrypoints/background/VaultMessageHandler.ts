@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import * as OTPAuth from 'otpauth';
 import { storage } from 'wxt/utils/storage';
 
 import { AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, vaultDataStorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
@@ -15,12 +14,13 @@ import { readLegacySessionEncryptionKey } from '@/utils/legacy/LegacyStorageKeyF
 import { requiresLegacyAccountKeyMigration } from '@/utils/legacy/LegacyStorageModelMigration';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { getManifestRevisions, manifestsRequiringPull, toManifestRevisionMap } from '@/utils/ManifestRevisions';
-import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
 import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword, vaultCodecExtractBuckets, vaultCodecBucketLayout, vaultCodecOverflowTable } from '@/utils/RustCore';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getStorageItem } from '@/utils/StorageUtility';
+import { generateTotpCode } from '@/utils/TotpUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
@@ -2154,7 +2154,7 @@ export async function handleSearchItemsWithTotp(
  */
 export async function handleGetTotpSecrets(
   message: { itemIds: string[] }
-): Promise<{ success: boolean; secrets?: Record<string, string>; error?: string }> {
+): Promise<{ success: boolean; secrets?: Record<string, TotpSecret>; error?: string }> {
   const encryptionKey = await handleGetEncryptionKey();
 
   if (!encryptionKey) {
@@ -2163,12 +2163,18 @@ export async function handleGetTotpSecrets(
 
   try {
     const sqliteClient = await createVaultSqliteClient();
-    const secrets: Record<string, string> = {};
+    const secrets: Record<string, TotpSecret> = {};
 
     for (const itemId of message.itemIds) {
       const totpCodes = sqliteClient.items.getTotpCodesForItem(itemId);
       if (totpCodes.length > 0) {
-        secrets[itemId] = totpCodes[0].SecretKey;
+        const totpCode = totpCodes[0];
+        secrets[itemId] = {
+          SecretKey: totpCode.SecretKey,
+          Algorithm: totpCode.Algorithm,
+          Digits: totpCode.Digits,
+          Period: totpCode.Period
+        };
       }
     }
 
@@ -2202,14 +2208,12 @@ export async function handleGenerateTotpCode(
       return { success: false, error: 'No TOTP codes found for this item' };
     }
 
-    const totp = new OTPAuth.TOTP({
-      secret: totpCodes[0].SecretKey,
-      algorithm: 'SHA1',
-      digits: 6,
-      period: 30
-    });
+    const code = generateTotpCode(totpCodes[0].SecretKey, totpCodes[0]);
+    if (!code) {
+      return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
+    }
 
-    return { success: true, code: totp.generate() };
+    return { success: true, code };
   } catch (error) {
     console.error('Error generating TOTP code:', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };

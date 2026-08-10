@@ -1,5 +1,5 @@
 import type { Item, ItemField, Attachment, TotpCode, FieldHistory, LogoSelection } from '@/utils/dist/core/models/vault';
-import { FieldKey, LogoKinds, MAX_FIELD_HISTORY_RECORDS } from '@/utils/dist/core/models/vault';
+import { FieldKey, LogoKinds, MAX_FIELD_HISTORY_RECORDS, normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod } from '@/utils/dist/core/models/vault';
 import { getFolderPath } from '@/utils/FolderUtils';
 
 import { BaseRepository, type IDatabaseClient } from '../BaseRepository';
@@ -346,8 +346,8 @@ export class ItemRepository extends BaseRepository {
       const childCopies = [
         {
           table: 'TotpCodes',
-          sql: `INSERT INTO TotpCodes (Id, ItemId, ManifestId, Name, SecretKey, CreatedAt, UpdatedAt, IsDeleted)
-                SELECT ?, ?, ManifestId, Name, SecretKey, ?, ?, 0 FROM TotpCodes WHERE Id = ? AND ManifestId = ?`,
+          sql: `INSERT INTO TotpCodes (Id, ItemId, ManifestId, Name, SecretKey, Algorithm, Digits, Period, CreatedAt, UpdatedAt, IsDeleted)
+                SELECT ?, ?, ManifestId, Name, SecretKey, Algorithm, Digits, Period, ?, ?, 0 FROM TotpCodes WHERE Id = ? AND ManifestId = ?`,
         },
         {
           table: 'Attachments',
@@ -1154,6 +1154,9 @@ export class ItemRepository extends BaseRepository {
           totpCode.Id || this.generateId(),
           totpCode.Name,
           totpCode.SecretKey,
+          normalizeTotpAlgorithm(totpCode.Algorithm),
+          normalizeTotpDigits(totpCode.Digits),
+          normalizeTotpPeriod(totpCode.Period),
           itemId,
           itemId,
           this.activeManifestId(),
@@ -1193,10 +1196,16 @@ export class ItemRepository extends BaseRepository {
       } else if (wasOriginal) {
         // Only update if values actually changed
         const existing = existingByIdMap.get(totpCode.Id);
-        if (existing && (existing.Name !== totpCode.Name || existing.SecretKey !== totpCode.SecretKey)) {
+        const algorithm = normalizeTotpAlgorithm(totpCode.Algorithm);
+        const digits = normalizeTotpDigits(totpCode.Digits);
+        const period = normalizeTotpPeriod(totpCode.Period);
+        const changed = existing && (existing.Name !== totpCode.Name || existing.SecretKey !== totpCode.SecretKey ||
+          existing.Algorithm !== algorithm || existing.Digits !== digits || existing.Period !== period);
+
+        if (changed) {
           this.client.executeUpdate(
             TotpCodeQueries.UPDATE,
-            [totpCode.Name, totpCode.SecretKey, currentDateTime, totpCode.Id, manifestId]
+            [totpCode.Name, totpCode.SecretKey, algorithm, digits, period, currentDateTime, totpCode.Id, manifestId]
           );
         }
       } else {
@@ -1206,6 +1215,9 @@ export class ItemRepository extends BaseRepository {
             totpCode.Id || this.generateId(),
             totpCode.Name,
             totpCode.SecretKey,
+            normalizeTotpAlgorithm(totpCode.Algorithm),
+            normalizeTotpDigits(totpCode.Digits),
+            normalizeTotpPeriod(totpCode.Period),
             itemId,
             itemId,
             this.activeManifestId(),

@@ -1,4 +1,3 @@
-import  * as OTPAuth from 'otpauth';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -6,16 +5,18 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import type { TotpCode } from '@/utils/dist/core/models/vault';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import { generateTotpCode, getTotpElapsedPercentage, getTotpRemainingSeconds } from '@/utils/TotpUtility';
 
 /**
- * Formats a TOTP code as "XXX XXX" with a space in the middle for better readability.
+ * Formats a TOTP code with a space in the middle for better readability, e.g. "XXX XXX" or "XXXX XXXX".
  */
 const formatTotpCode = (code: string | undefined): string => {
   if (!code) {
     return '';
   }
-  if (code.length === 6) {
-    return `${code.slice(0, 3)} ${code.slice(3)}`;
+  if (code.length % 2 === 0) {
+    const half = code.length / 2;
+    return `${code.slice(0, half)} ${code.slice(half)}`;
   }
   return code;
 };
@@ -34,46 +35,6 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId }) => {
   const [currentCodes, setCurrentCodes] = useState<Record<string, string>>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const dbContext = useDb();
-
-  /**
-   * Gets the remaining seconds for the TOTP code.
-   */
-  const getRemainingSeconds = (step = 30): number => {
-    const totp = new OTPAuth.TOTP({
-      secret: 'dummy', // We only need this for timing calculations
-      algorithm: 'SHA1',
-      digits: 6,
-      period: step
-    });
-    return totp.period - (Math.floor(Date.now() / 1000) % totp.period);
-  };
-
-  /**
-   * Gets the remaining percentage for the TOTP code.
-   */
-  const getRemainingPercentage = (): number => {
-    const remaining = getRemainingSeconds();
-    // Invert the percentage so it counts down instead of up
-    return Math.floor(((30.0 - remaining) / 30.0) * 100);
-  };
-
-  /**
-   * Generates a TOTP code for a given secret key.
-   */
-  const generateTotpCode = (secretKey: string): string => {
-    try {
-      const totp = new OTPAuth.TOTP({
-        secret: secretKey,
-        algorithm: 'SHA1',
-        digits: 6,
-        period: 30
-      });
-      return totp.generate();
-    } catch (error) {
-      console.error('Error generating TOTP code:', error);
-      return 'Error';
-    }
-  };
 
   /**
    * Copies a TOTP code to the clipboard.
@@ -132,14 +93,8 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId }) => {
     const updateTotpCodes = (prevCodes: Record<string, string>): Record<string, string> => {
       const newCodes: Record<string, string> = {};
       totpCodes.forEach(code => {
-        const generatedCode = generateTotpCode(code.SecretKey);
-        // Only update if we have a valid code
-        if (generatedCode !== 'Error') {
-          newCodes[code.Id] = generatedCode;
-        } else {
-        // Keep the previous code if there's an error
-          newCodes[code.Id] = prevCodes[code.Id] ?? 'Error';
-        }
+        // Keep the previous code when generation fails, so a single bad tick doesn't blank the display.
+        newCodes[code.Id] = generateTotpCode(code.SecretKey, code) ?? prevCodes[code.Id] ?? 'Error';
       });
       return newCodes;
     };
@@ -147,7 +102,7 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId }) => {
     // Generate initial codes
     const initialCodes: Record<string, string> = {};
     totpCodes.forEach(code => {
-      initialCodes[code.Id] = generateTotpCode(code.SecretKey);
+      initialCodes[code.Id] = generateTotpCode(code.SecretKey, code) ?? 'Error';
     });
     setCurrentCodes(initialCodes);
 
@@ -200,14 +155,14 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId }) => {
                       {copiedId === totpCode.Id ? (
                         <span className="text-green-600 dark:text-green-400">{t('common.copied')}</span>
                       ) : (
-                        <span className="text-gray-500 dark:text-gray-400">{getRemainingSeconds()}s</span>
+                        <span className="text-gray-500 dark:text-gray-400">{getTotpRemainingSeconds(totpCode)}s</span>
                       )}
                     </div>
                   </div>
                   <div className="w-1 h-6 bg-gray-200 rounded-full dark:bg-gray-600">
                     <div
                       className="bg-blue-600 rounded-full transition-all"
-                      style={{ height: `${getRemainingPercentage()}%`, width: '100%' }}
+                      style={{ height: `${getTotpElapsedPercentage(totpCode)}%`, width: '100%' }}
                     />
                   </div>
                 </div>

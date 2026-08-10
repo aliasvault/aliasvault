@@ -92,11 +92,47 @@ type TotpCode = {
     Name: string;
     /** The secret key for the TOTP code */
     SecretKey: string;
+    /** The HMAC algorithm used to derive the code: SHA1, SHA256 or SHA512 */
+    Algorithm: string;
+    /** The number of digits in the generated code, typically 6 or 8 */
+    Digits: number;
+    /** The time step in seconds a code stays valid for, typically 30 or 60 */
+    Period: number;
     /** The item ID this TOTP code belongs to */
     ItemId: string;
     /** Whether the TOTP code has been deleted (soft delete) */
     IsDeleted?: boolean;
 };
+/** The HMAC algorithm RFC 6238 assumes when an otpauth:// URI omits the `algorithm` parameter. */
+declare const TOTP_DEFAULT_ALGORITHM = "SHA1";
+/** The code length RFC 6238 assumes when an otpauth:// URI omits the `digits` parameter. */
+declare const TOTP_DEFAULT_DIGITS = 6;
+/** The time step RFC 6238 assumes when an otpauth:// URI omits the `period` parameter. */
+declare const TOTP_DEFAULT_PERIOD = 30;
+/** The HMAC algorithms the TOTP generators implement. Anything else falls back to {@link TOTP_DEFAULT_ALGORITHM}. */
+declare const TOTP_SUPPORTED_ALGORITHMS: readonly ["SHA1", "SHA256", "SHA512"];
+/**
+ * Normalizes a raw `algorithm` value (from an otpauth:// URI or an older vault row) to one of
+ * {@link TOTP_SUPPORTED_ALGORITHMS}, falling back to {@link TOTP_DEFAULT_ALGORITHM}.
+ *
+ * @param value - Raw algorithm value, e.g. "sha256" or undefined
+ * @returns A supported algorithm name in uppercase
+ */
+declare function normalizeTotpAlgorithm(value: string | null | undefined): string;
+/**
+ * Normalizes a raw `digits` value to a supported code length (6-10), falling back to {@link TOTP_DEFAULT_DIGITS}.
+ *
+ * @param value - Raw digits value, e.g. "8" or undefined
+ * @returns A usable digit count
+ */
+declare function normalizeTotpDigits(value: string | number | null | undefined): number;
+/**
+ * Normalizes a raw `period` value to a positive time step, falling back to {@link TOTP_DEFAULT_PERIOD}.
+ *
+ * @param value - Raw period value, e.g. "60" or undefined
+ * @returns A usable period in seconds
+ */
+declare function normalizeTotpPeriod(value: string | number | null | undefined): number;
 
 /**
  * Credential SQLite database type.
@@ -660,4 +696,4 @@ type FieldHistory = {
  */
 declare const MAX_FIELD_HISTORY_RECORDS = 10;
 
-export { type Alias, type Attachment, type CreateCustomFieldOptions, type CreateSystemFieldOptions, type Credential, type DicewareCapitalization, type DicewareSalt, type DicewareSeparator, type EncryptionKey, FieldCategories, type FieldCategory, type FieldHistory, FieldKey, type FieldKeyValue, type FieldType, FieldTypes, type Item, type ItemField, type ItemLogo, type ItemTag, type ItemTagRef, type ItemType, type ItemTypeFieldConfig, ItemTypes, type LogoKind, LogoKinds, type LogoSelection, MAX_FIELD_HISTORY_RECORDS, type Passkey, type PasswordGeneratorType, type PasswordSettings, type SystemFieldDefinition, SystemFieldRegistry, type Tag, type TotpCode, VaultDataBucketCategory, type VaultDataBucketCategoryValue, createCustomField, createSystemField, fieldAppliesToType, getAllSystemFieldKeys, getDefaultFieldsForItemType, getFieldConfigForType, getFieldValue, getFieldValues, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, groupFields, groupFieldsByCategory, hasField, isFieldShownByDefault, isSystemField, isSystemFieldPrefix, itemToCredential };
+export { type Alias, type Attachment, type CreateCustomFieldOptions, type CreateSystemFieldOptions, type Credential, type DicewareCapitalization, type DicewareSalt, type DicewareSeparator, type EncryptionKey, FieldCategories, type FieldCategory, type FieldHistory, FieldKey, type FieldKeyValue, type FieldType, FieldTypes, type Item, type ItemField, type ItemLogo, type ItemTag, type ItemTagRef, type ItemType, type ItemTypeFieldConfig, ItemTypes, type LogoKind, LogoKinds, type LogoSelection, MAX_FIELD_HISTORY_RECORDS, type Passkey, type PasswordGeneratorType, type PasswordSettings, type SystemFieldDefinition, SystemFieldRegistry, TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD, TOTP_SUPPORTED_ALGORITHMS, type Tag, type TotpCode, VaultDataBucketCategory, type VaultDataBucketCategoryValue, createCustomField, createSystemField, fieldAppliesToType, getAllSystemFieldKeys, getDefaultFieldsForItemType, getFieldConfigForType, getFieldValue, getFieldValues, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, groupFields, groupFieldsByCategory, hasField, isFieldShownByDefault, isSystemField, isSystemFieldPrefix, itemToCredential, normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod };

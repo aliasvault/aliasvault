@@ -1,15 +1,14 @@
-import * as OTPAuth from 'otpauth';
-
 import { fillItem, fillTotpCode } from '@/entrypoints/contentScript/Form';
 
 import { ItemTypeIconSvgs } from '@/utils/dist/core/models/icons';
 import type { Item } from '@/utils/dist/core/models/vault';
-import { FieldKey, getFieldValue } from '@/utils/dist/core/models/vault';
+import { FieldKey, getFieldValue, normalizeTotpPeriod } from '@/utils/dist/core/models/vault';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
-import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
+import { generateTotpCode, getTotpRemainingSeconds } from '@/utils/TotpUtility';
 
 import { t } from '@/i18n/StandaloneI18n';
 
@@ -85,29 +84,15 @@ function cleanupTotpInterval(): void {
 }
 
 /**
- * Generate TOTP code from secret key
+ * Generate a TOTP code from a secret and its stored parameters, formatted with a space in the middle.
  */
-function generateTotpCode(secretKey: string): string {
-  try {
-    const totp = new OTPAuth.TOTP({
-      secret: secretKey,
-      algorithm: 'SHA1',
-      digits: 6,
-      period: 30
-    });
-    const code = totp.generate();
-    // Format as "XXX XXX" with space in middle
-    return `${code.slice(0, 3)} ${code.slice(3)}`;
-  } catch {
+function formatTotpCodeForSecret(secret: TotpSecret): string {
+  const code = generateTotpCode(secret.SecretKey, secret);
+  if (!code) {
     return '--- ---';
   }
-}
-
-/**
- * Get remaining seconds until next TOTP code
- */
-function getTotpRemainingSeconds(): number {
-  return 30 - (Math.floor(Date.now() / 1000) % 30);
+  const half = code.length % 2 === 0 ? code.length / 2 : 3;
+  return `${code.slice(0, half)} ${code.slice(half)}`;
 }
 
 /**
@@ -520,17 +505,15 @@ function createPieSlicePath(cx: number, cy: number, r: number, fraction: number)
  */
 function updateTotpCodes(
   codeElements: Map<string, { codeSpan: HTMLSpanElement; pieChart: SVGPathElement }>,
-  secrets: Record<string, string>
+  secrets: Record<string, TotpSecret>
 ): void {
-  const remainingSeconds = getTotpRemainingSeconds();
-  const fraction = remainingSeconds / 30;
-
   codeElements.forEach((elements, itemId) => {
     const secret = secrets[itemId];
     if (secret) {
-      elements.codeSpan.textContent = generateTotpCode(secret);
+      elements.codeSpan.textContent = formatTotpCodeForSecret(secret);
     }
-    elements.pieChart.setAttribute('d', createPieSlicePath(6, 6, 5, fraction));
+    // Each code counts down over its own period, so the pie is computed per item rather than once.
+    elements.pieChart.setAttribute('d', createPieSlicePath(6, 6, 5, getTotpRemainingSeconds(secret) / normalizeTotpPeriod(secret?.Period)));
   });
 }
 
@@ -541,7 +524,7 @@ function updateTotpCodes(
  */
 function createTotpItem(
   item: Item,
-  secret: string | undefined,
+  secret: TotpSecret | undefined,
   input: HTMLInputElement,
   rootContainer: HTMLElement,
   codeElements?: Map<string, { codeSpan: HTMLSpanElement; pieChart: SVGPathElement }>,
@@ -588,11 +571,10 @@ function createTotpItem(
 
   // TOTP code span - show generated code or static placeholder
   const codeSpan = document.createElement('span');
-  codeSpan.textContent = secret ? generateTotpCode(secret) : '000 000';
+  codeSpan.textContent = secret ? formatTotpCodeForSecret(secret) : '000 000';
 
   // Pie chart countdown - blue pie that shrinks clockwise from top
-  const remainingSeconds = getTotpRemainingSeconds();
-  const fraction = secret ? remainingSeconds / 30 : 1; // Static shows full pie
+  const fraction = secret ? getTotpRemainingSeconds(secret) / normalizeTotpPeriod(secret.Period) : 1; // Static shows full pie
 
   const svgNS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNS, 'svg');
