@@ -69,15 +69,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   /**
    * Clear authentication data and tokens from storage (forced logout).
    * This is called when the server forces a logout (401, token revocation, password change).
-   * Preserves the encrypted vault + metadata for recovery on next login.
-   * Keeps username for login page prefill and vault ownership verification.
+   * Clears the encrypted vault and everything derived from it; the next login pulls a fresh one.
+   * Keeps username for login page prefill, and the local preferences.
    *
    * This is the base logout function. clearAuthUserInitiated builds on top of this.
    *
    * @param errorMessage Optional error message to display on the login page
    */
   const clearAuthForced = useCallback(async (errorMessage?: string) : Promise<void> => {
-    // Clear session data (tokens + ephemeral data) - vault data is preserved for recovery
+    // Clear session data: tokens, ephemeral data and the vault itself
     await sendMessage('CLEAR_SESSION');
 
     // Clear in-memory database reference
@@ -101,15 +101,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * Clear authentication data and tokens from storage (user-initiated logout).
    * This is called when the user explicitly clicks the logout button.
    *
-   * Builds on clearAuthForced by also clearing vault data and username.
+   * Builds on clearAuthForced by also clearing the username and the local preferences.
    *
    * @param errorMessage Optional error message to display on the login page
    */
   const clearAuthUserInitiated = useCallback(async (errorMessage?: string) : Promise<void> => {
-    // First, perform the base forced logout (clears session, in-memory db, PIN)
+    // First, perform the base forced logout (clears session, vault, in-memory db, PIN)
     await clearAuthForced(errorMessage);
 
-    // Additionally clear vault data and username (forced logout preserves these for recovery)
+    // Additionally clear the username and local preferences, which a forced logout keeps
     await sendMessage('CLEAR_VAULT_DATA');
 
     setUsername(null);

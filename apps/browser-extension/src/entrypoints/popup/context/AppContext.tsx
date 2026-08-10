@@ -45,7 +45,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       isLoggingOutRef.current = true;
       await webApi.revokeTokens();
-      // Use forced logout to preserve orphaned vault
+      // Use forced logout, which keeps the username for the login prefill
       await auth.clearAuthForced(errorMessage);
     } catch (error) {
       console.error('Error during logout:', error);

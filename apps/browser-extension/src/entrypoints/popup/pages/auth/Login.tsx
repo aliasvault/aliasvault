@@ -21,7 +21,6 @@ import { SrpAuthService } from '@/utils/auth/SrpAuthService';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import type { VaultResponse, LoginResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import { getManifestRevisions } from '@/utils/ManifestRevisions';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCodes';
@@ -40,19 +39,6 @@ let usernamePrefillAttempted = false;
 
 /** Track if 2FA state restoration has been attempted (only do it once on mount) */
 let twoFactorStateRestoreAttempted = false;
-
-/**
- * Whether the local vault's last-known baselines cover everything the server holds: every server manifest is known
- * locally at the same (or a higher, i.e. server rolled back) revision, and the local vault tracks no manifest the
- * server has since removed (revoked share). Only then is preserving the local blob over the freshly pulled one safe.
- * @param localRevisions - the per-manifest baselines the local blob was built from (captured before the pull)
- * @param serverRevisions - the server's per-manifest revisions (what the pull just stored)
- */
-const localVaultCoversServer = (localRevisions: Record<string, number>, serverRevisions: Record<string, number>): boolean => {
-  const serverCovered = Object.entries(serverRevisions).every(([manifestId, revision]) => (localRevisions[manifestId] ?? -1) >= revision);
-  const nothingRevoked = Object.keys(localRevisions).every(manifestId => manifestId in serverRevisions);
-  return serverCovered && nothingRevoked;
-};
 
 /**
  * Login page
@@ -83,57 +69,10 @@ const Login: React.FC = () => {
   const srpUtil = new SrpUtility(webApi);
 
   /**
-   * Helper to persist and load vault after successful authentication.
-   * Checks if local vault exists from forced logout and preserves it if it still covers everything the server holds.
-   * Also checks if the vault belongs to the same user - if different user, uses server vault.
-   * @param preLoginRevisions - the per-manifest baselines as they were BEFORE the pull: the pull replaces the stored
-   *   map with the server's, so this captured copy is the only record of what the local blob was built from.
+   * Persist and load the vault the pull just produced. A login always adopts the server's vault as-is: logging out
+   * clears the local one either way, so there is never a second candidate to choose between here.
    */
-  const persistAndLoadVault = async (vaultResponse: VaultResponse, encryptionKey: string, loginUsername: string, preLoginRevisions: Record<string, number>): Promise<void> => {
-    // Check if there's existing vault data (from forced logout)
-    const existingVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string | null;
-    const storedUsername = await storage.getItem(StorageKeys.USERNAME) as string | null;
-
-    if (existingVault && Object.keys(preLoginRevisions).length > 0) {
-      // Check if the existing vault belongs to a different user
-      const normalizedLoginUsername = loginUsername.toLowerCase().trim();
-      const normalizedStoredUsername = storedUsername?.toLowerCase().trim();
-
-      if (storedUsername && normalizedStoredUsername !== normalizedLoginUsername) {
-        // Different user
-        console.info(
-          `Existing vault belongs to different user (${storedUsername}), using server vault for ${loginUsername}`
-        );
-      } else {
-        // Same user (or no stored username)
-        try {
-          const decryptedExisting = await EncryptionUtility.symmetricDecrypt(existingVault, encryptionKey);
-
-          // The pull stored the server's per-manifest revisions; compare them against the pre-login baselines.
-          if (localVaultCoversServer(preLoginRevisions, await getManifestRevisions())) {
-            console.info('Existing local vault covers every server manifest, preserving it (pending local changes upload on the next sync)');
-
-            // Update metadata and load existing vault
-            await sendMessage('STORE_VAULT_METADATA', {
-              publicEmailDomainList: vaultResponse.vault.publicEmailDomainList,
-              privateEmailDomainList: vaultResponse.vault.privateEmailDomainList,
-              hiddenPrivateEmailDomainList: vaultResponse.vault.hiddenPrivateEmailDomainList,
-            });
-
-            await dbContext.loadDatabase(decryptedExisting);
-            return;
-          }
-
-          // Server is more advanced, fetch server vault
-          console.info('Server has manifests ahead of (or unknown to) the local baselines, using server vault');
-        } catch {
-          // Decryption failed, password changed or corrupt vault
-          console.info('Existing vault could not be decrypted (password changed), using server vault');
-        }
-      }
-    }
-
-    // Normal flow: persist server vault to local storage. The pull already recorded the per-manifest revisions.
+  const persistAndLoadVault = async (vaultResponse: VaultResponse, encryptionKey: string): Promise<void> => {
     await sendMessage('STORE_ENCRYPTED_VAULT', { vaultBlob: vaultResponse.vault.blob });
 
     await sendMessage('STORE_VAULT_METADATA', {
@@ -143,8 +82,7 @@ const Login: React.FC = () => {
     });
 
     // Decrypt and load the vault into memory
-    const decryptedVault = await EncryptionUtility.symmetricDecrypt(vaultResponse.vault.blob, encryptionKey);
-    await dbContext.loadDatabase(decryptedVault);
+    await dbContext.loadDatabase(await EncryptionUtility.symmetricDecrypt(vaultResponse.vault.blob, encryptionKey));
   };
 
   /**
@@ -174,21 +112,11 @@ const Login: React.FC = () => {
       encryptionSettings: loginResponse.encryptionSettings
     });
 
-    // Capture the pre-pull revision baselines: the pull below replaces the stored map with the server's.
-    const preLoginRevisions = await getManifestRevisions();
-
     // Fetch the latest vault.
     const vaultResponseJson = await vaultSyncService.pull(encryptionKey);
 
-    /*
-     * Persist and load the vault.
-     * If there was a forced logout, persistAndLoadVault checks existing vault data:
-     * - If different user > uses server vault
-     * - If local vault still covers the server state > preserves it (will upload via sync in /reinitialize)
-     * - If server is more advanced > uses server vault
-     * - If password changed (can't decrypt) > uses server vault
-     */
-    await persistAndLoadVault(vaultResponseJson, encryptionKey, username, preLoginRevisions);
+    // Persist and load the vault.
+    await persistAndLoadVault(vaultResponseJson, encryptionKey);
 
     // Reset prefill flag so next logout will prefill again
     usernamePrefillAttempted = false;
@@ -484,14 +412,11 @@ const Login: React.FC = () => {
         encryptionSettings: result.encryptionSettings,
       });
 
-      // Capture the pre-pull revision baselines: the pull below replaces the stored map with the server's.
-      const preLoginRevisions = await getManifestRevisions();
-
       // Fetch the latest vault.
       const vaultResponse = await vaultSyncService.pull(mobileKey);
 
       // Persist and load the vault
-      await persistAndLoadVault(vaultResponse, mobileKey, result.username, preLoginRevisions);
+      await persistAndLoadVault(vaultResponse, mobileKey);
 
       /*
        * Navigate to reinitialize page which will:

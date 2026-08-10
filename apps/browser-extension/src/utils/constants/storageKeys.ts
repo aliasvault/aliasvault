@@ -197,10 +197,7 @@ export const dirtyScopeStorageKey = (scope: VaultMutationScope): `local:${string
  */
 export const bucketRevisionKey = (manifestId: string, category: string): string => `${manifestId}:${category}`;
 
-/**
- * Keys that hold auth tokens and ephemeral error state. Cleared on logout; safe to clear during a forced
- * logout because no vault data is lost.
- */
+/** Keys that hold auth tokens and ephemeral error state. Cleared on any logout. */
 export const AUTH_STORAGE_KEYS: readonly StorageKey[] = [
   StorageKeys.ACCESS_TOKEN,
   StorageKeys.REFRESH_TOKEN,
@@ -250,10 +247,11 @@ export const LOCAL_PREFERENCE_STORAGE_KEYS: readonly StorageKey[] = [
 ];
 
 /**
- * Every key holding vault data or state derived from it, including the per-scope dynamic keys. Cleared when
- * the vault itself is cleared (logout), so no state from the previous account can leak into the next one.
+ * Every key holding vault data or state derived from it, including the per-scope dynamic keys. Cleared on ANY
+ * logout, forced or user-initiated: a session's vault never outlives it, so no stale blob, revision baseline or
+ * dirty flag can meet the vault the next login pulls.
  */
-export const allVaultDataStorageKeys = (): StorageKey[] => [
+export const vaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.ENCRYPTED_VAULT,
   StorageKeys.PUBLIC_EMAIL_DOMAINS,
   StorageKeys.PRIVATE_EMAIL_DOMAINS,
@@ -273,7 +271,6 @@ export const allVaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.ENCRYPTED_ACCOUNT_KEY,
   StorageKeys.ACCOUNT_PUBLIC_KEY,
   StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY,
-  StorageKeys.USERNAME,
   ...ALL_VAULT_MUTATION_SCOPES.map(scope => dirtyScopeStorageKey(scope)),
   ...LEGACY_VAULT_DATA_STORAGE_KEYS,
 ];

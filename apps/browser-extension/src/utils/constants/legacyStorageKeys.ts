@@ -31,7 +31,7 @@ export const LegacyStorageKeys = {
 } as const satisfies Record<string, StorageKey>;
 
 /**
- * Legacy keys holding vault data or state derived from it, spread into `allVaultDataStorageKeys()` so a logout
+ * Legacy keys holding vault data or state derived from it, spread into `vaultDataStorageKeys()` so a logout
  * clears them alongside the current ones.
  */
 export const LEGACY_VAULT_DATA_STORAGE_KEYS: readonly StorageKey[] = [

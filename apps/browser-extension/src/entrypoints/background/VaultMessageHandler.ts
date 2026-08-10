@@ -2,19 +2,19 @@
 import * as OTPAuth from 'otpauth';
 import { storage } from 'wxt/utils/storage';
 
-import { allVaultDataStorageKeys, AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
+import { AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, vaultDataStorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
 import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
 import type { ItemUsageAction } from '@/utils/db';
 import type { DraftItem } from '@/utils/db/ItemRef';
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import { FieldKey, ItemTypes, VaultDataBucketCategory, createSystemField, type Item, type PasswordSettings } from '@/utils/dist/core/models/vault';
-import type { VaultResponse, StatusResponseV2, ManifestRevision } from '@/utils/dist/core/models/webapi';
+import type { VaultResponse, ManifestRevision } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { readLegacySessionEncryptionKey } from '@/utils/legacy/LegacyStorageKeyFallbacks';
 import { requiresLegacyAccountKeyMigration } from '@/utils/legacy/LegacyStorageModelMigration';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
-import { getManifestRevisions, getPersonalManifestId } from '@/utils/ManifestRevisions';
+import { getManifestRevisions, manifestsRequiringPull, toManifestRevisionMap } from '@/utils/ManifestRevisions';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
 import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword, vaultCodecExtractBuckets, vaultCodecBucketLayout, vaultCodecOverflowTable } from '@/utils/RustCore';
@@ -65,45 +65,24 @@ let cachedSqliteClient: SqliteClient | null = null;
 let cachedVaultBlob: string | null = null;
 
 /**
- * The server revision of the user's personal manifest.
- * @param status - the status response from the server
- */
-function personalManifestRevision(status: StatusResponseV2): number {
-  const personal = (status.manifestRevisions ?? []).find(m => m.manifestId === status.personalManifestId);
-  return personal?.revision ?? 0;
-}
-
-/**
- * Whether the client should pull and re-materialize because the server's manifest set no longer matches what the
- * client has locally materialized. One map-versus-map comparison covers every manifest, the personal one included:
- * the server reports it by id like any other. Idempotent: after a successful materialize the local record matches
- * the server, so this returns false until the next server-side change.
- * 
+ * Whether the client has to pull and re-materialize, i.e. whether any manifest's local state no longer matches what
+ * the server reports.
  * @param serverManifests - the per-manifest revisions from the status response
  * @param localRevisions - the client's last-known revision per manifest
  */
 function serverManifestsNeedPull(serverManifests: ManifestRevision[], localRevisions: Record<string, number>): boolean {
-  const serverRevisions = new Map((serverManifests ?? []).map(m => [m.manifestId, m.revision]));
+  const serverRevisions = toManifestRevisionMap(serverManifests);
+  const requiringPull = manifestsRequiringPull(serverRevisions, localRevisions);
 
-  // Any manifest added or with a changed revision on the server.
-  for (const [manifestId, revision] of serverRevisions) {
-    const local = localRevisions[manifestId];
-    if (local !== revision) {
-      const reason = local === undefined ? `not tracked locally (server rev ${revision})` : `server rev ${revision} != local rev ${local}`;
-      devLog(`[VaultSync] Pull needed: manifest ${manifestId} ${reason}.`);
-      return true;
-    }
+  if (requiringPull.length === 0) {
+    devLog(`[VaultSync] No pull needed: ${Object.keys(serverRevisions).length} manifest(s) all match local revisions.`);
+    return false;
   }
 
-  // Any manifest the client still tracks but the server no longer lists (removed / revoked).
-  const removed = Object.keys(localRevisions).find(manifestId => !serverRevisions.has(manifestId));
-  if (removed) {
-    devLog(`[VaultSync] Pull needed: manifest ${removed} (local rev ${localRevisions[removed]}) no longer listed by the server (revoked/removed).`);
-    return true;
-  }
-
-  devLog(`[VaultSync] No pull needed: ${serverRevisions.size} manifest(s) all match local revisions.`);
-  return false;
+  /** One manifest as `id (local rev X, server rev Y)`, with "untracked"/"unlisted" for a one-sided manifest. */
+  const describe = (manifestId: string): string => `${manifestId} (local ${localRevisions[manifestId] ?? 'untracked'}, server ${serverRevisions[manifestId] ?? 'unlisted'})`;
+  devLog(`[VaultSync] Pull needed for ${requiringPull.length} manifest(s): ${requiringPull.map(describe).join(', ')}.`);
+  return true;
 }
 
 /**
@@ -250,8 +229,8 @@ type VaultPushOutcome = { status: number };
  * Push the current SQLite vault to the server.
  *
  * @param sqliteClient - the in-memory SQLite client to upload
- * @param options - forceFullWrite bypasses the content-fingerprint gating and rewrites every manifest and bucket
- *   (server rollback recovery); createVaultKey mints the VEK as part of this push (KEK/VEK migration)
+ * @param options - forceFullWrite bypasses the content-fingerprint gating and rewrites every manifest and bucket;
+ *   createVaultKey mints the VEK as part of this push (KEK/VEK migration)
  */
 async function pushVaultToServer(sqliteClient: SqliteClient, options: { forceFullWrite: boolean; createVaultKey: boolean }): Promise<VaultPushOutcome> {
   const encryptionKey = await handleGetEncryptionKey();
@@ -383,8 +362,7 @@ export async function handleLockVault(): Promise<messageBoolResponse> {
 }
 
 /**
- * Clear session data (tokens and ephemeral data).
- * This is safe to call during forced logout as it preserves vault data.
+ * Clear session data: tokens, ephemeral data and the vault itself.
  */
 export async function handleClearSession(): Promise<messageBoolResponse> {
   // Clear auth tokens and last sync error
@@ -392,6 +370,9 @@ export async function handleClearSession(): Promise<messageBoolResponse> {
 
   // Clear session-only data (security: encryption key must not persist)
   await storage.removeItems([...SESSION_STORAGE_KEYS]);
+
+  // Clear the vault and every piece of state derived from it (sync bookkeeping, dirty flags, blob cache).
+  await storage.removeItems(vaultDataStorageKeys());
 
   // Reset password unlock failed attempts counter on logout
   await LocalPreferencesService.resetPasswordUnlockFailedAttempts();
@@ -408,8 +389,11 @@ export async function handleClearSession(): Promise<messageBoolResponse> {
  * This removes all persistent vault storage and local preferences.
  */
 export async function handleClearVaultData(): Promise<messageBoolResponse> {
-  // Clear vault data and every piece of state derived from it (sync bookkeeping, dirty flags, bucket revisions)
-  await storage.removeItems(allVaultDataStorageKeys());
+  /*
+   * Clear vault data and every piece of state derived from it (sync bookkeeping, dirty flags, bucket revisions),
+   * plus the username, which a forced logout keeps for the login prefill and a user-initiated logout drops.
+   */
+  await storage.removeItems([...vaultDataStorageKeys(), StorageKeys.USERNAME]);
 
   // Clear all local preferences (site settings, login save settings, etc.)
   await LocalPreferencesService.clearAll();
@@ -780,9 +764,10 @@ async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultM
  * are pushed. A dirty 'manifest' scope (or a dirty state with no recorded scopes) triggers the full upload path,
  * whose content-fingerprint gating then narrows the write down to the manifests/buckets that actually changed.
  *
- * @param options - set forceFullWrite to rewrite every manifest and bucket regardless of change detection
- *   (server rollback recovery); set createVaultKey to mint the VEK as part of this push (the explicit storage
- *   migration passes this, and it is the only caller that should)
+ * @param options - set forceFullWrite to rewrite every manifest and bucket regardless of change detection, for when
+ *   the fingerprints cannot be trusted to describe the server's state (the legacy storage-format guard is the only
+ *   caller); set createVaultKey to mint the VEK as part of this push (the explicit storage migration passes this,
+ *   and it is the only caller that should)
  */
 export async function handleUploadVault(
   options?: { forceFullWrite?: boolean; createVaultKey?: boolean }
@@ -1416,16 +1401,9 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     // Get current sync state
     const syncState = await handleGetSyncState();
 
-    const localRevisions = await getManifestRevisions();
-    const personalManifestId = await getPersonalManifestId();
-    const serverManifestRevision = personalManifestRevision(statusResponse);
-    const localManifestRevision = personalManifestId ? localRevisions[personalManifestId] ?? 0 : 0;
+    const needsPull = serverManifestsNeedPull(statusResponse.manifestRevisions, await getManifestRevisions());
 
-    // A personal manifest that went backwards is a rolled-back server (restored backup), which we want to re-push.
-    const serverRolledBack = serverManifestRevision < localManifestRevision;
-    const needsPull = !serverRolledBack && serverManifestsNeedPull(statusResponse.manifestRevisions, localRevisions);
-
-    devLog(`[VaultSync] Status received (server main rev ${serverManifestRevision}, local rev ${localManifestRevision}, needsPull ${needsPull}, isDirty ${syncState.isDirty})`);
+    devLog(`[VaultSync] Status received (needsPull ${needsPull}, isDirty ${syncState.isDirty})`);
 
     // Check if server is actually available (0.0.0 indicates connection error)
     if (statusResponse.serverVersion === '0.0.0') {
@@ -1514,8 +1492,9 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
       try {
         if (syncState.isDirty) {
           /*
-           * We have local changes AND server has newer vault.
-           * Merge local vault with server vault, then upload the merged result.
+           * The server moved on some manifest while the local vault holds unpushed changes. Merge the local vault
+           * onto the freshly pulled one and upload the result; the push then writes exactly the manifests whose
+           * merged content differs from what the server just served.
            */
           const localEncryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string | null;
 
@@ -1635,65 +1614,29 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
           AppErrorCode.VAULT_DECRYPT_FAILED
         ));
       }
-    } else if (serverManifestRevision === localManifestRevision) {
+    } else if (syncState.isDirty) {
       /**
-       * Server and local vault are at the same revision.
-       * If we have pending local changes, upload them now.
+       * Server and client agree on every manifest revision, so the pending local changes upload as-is.
        */
-      if (syncState.isDirty) {
-        const uploadResponse = await handleUploadVault();
-        if (uploadResponse.success && uploadResponse.status === 0) {
-          await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
-
-          /*
-           * If expired trash items were pruned during upload, report the vault as new
-           * so the popup reloads the pruned vault instead of resurrecting the items
-           * from its stale in-memory copy on the next mutation.
-           */
-          return { success: true, hasNewVault: uploadResponse.vaultPruned === true, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
-        } else if (uploadResponse.status === 2) {
-          /**
-           * Server returned Outdated - another device uploaded first.
-           * Recursively call sync to fetch, merge, and retry.
-           */
-          return handleFullVaultSync();
-        } else {
-          console.error('Failed to upload pending vault:', uploadResponse.error);
-          return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: uploadResponse.error };
-        }
-      }
-
-      return { success: true, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
-    } else if (serverRolledBack) {
-      /**
-       * Server revision DECREASED - server data loss/rollback detected.
-       * Client has more advanced revision - upload to recover server state.
-       */
-      console.warn(
-        `Server data loss detected! Server at rev ${serverManifestRevision}, ` +
-        `client at rev ${localManifestRevision}. Uploading to recover server state.`
-      );
-
-      /*
-       * Force a full write: the server's content is behind the client's baselines, so the fingerprint gating
-       * would wrongly report "unchanged" and skip exactly the targets that need to be restored.
-       */
-      const uploadResponse = await handleUploadVault({ forceFullWrite: true });
-
+      const uploadResponse = await handleUploadVault();
       if (uploadResponse.success && uploadResponse.status === 0) {
         await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
 
-        console.info(`Server recovery complete: server restored from client state (was at personal rev ${serverManifestRevision}, client at ${localManifestRevision}).`);
-
+        /*
+         * If expired trash items were pruned during upload, report the vault as new
+         * so the popup reloads the pruned vault instead of resurrecting the items
+         * from its stale in-memory copy on the next mutation.
+         */
         return { success: true, hasNewVault: uploadResponse.vaultPruned === true, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
       } else if (uploadResponse.status === 2) {
-        // Another client recovered first
-        devLog('[VaultSync] Another client recovered server first, re-syncing...');
+        /**
+         * Server returned Outdated - another device uploaded first.
+         * Recursively call sync to fetch, merge, and retry.
+         */
         return handleFullVaultSync();
       } else {
-        console.error('Server recovery failed:', uploadResponse.error);
-        // E-801: Upload failed during server recovery - preserve the upload error detail when available
-        return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: uploadResponse.error ?? formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_FAILED) };
+        console.error('Failed to upload pending vault:', uploadResponse.error);
+        return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: uploadResponse.error };
       }
     }
 
