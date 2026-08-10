@@ -398,7 +398,8 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
 
         // Get list of email claims owned by the user (v1 only supports personal claims in the personal manifest).
         var userOwnedEmailClaims = await context.EmailClaims
-            .Where(x => x.VaultManifestId == personalManifestId)
+            .Include(x => x.Links)
+            .Where(x => x.Links.Any(l => l.VaultManifestId == personalManifestId))
             .ToListAsync();
 
         // Keep track of processed and sanitized email addresses to know which ones still exist.
@@ -420,13 +421,13 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             if (limit.WindowSeconds == 0)
             {
                 // Global absolute cap: every claim ever billed to the caller's group (including disabled ones).
-                baseCount = await context.EmailClaims.CountAsync(x => x.VaultManifest!.OwnerGroupId == user.PersonalGroupId);
+                baseCount = await context.EmailClaimLinks.Where(l => l.VaultManifest.OwnerGroupId == user.PersonalGroupId).Select(l => l.EmailClaimId).Distinct().CountAsync();
             }
             else
             {
                 // Time-based cap: aliases created within the rolling window (create-then-delete still counts).
                 var windowStart = timeProvider.UtcNow.AddSeconds(-limit.WindowSeconds);
-                baseCount = await context.EmailClaims.CountAsync(x => x.CreatedAt >= windowStart && x.VaultManifest!.OwnerGroupId == user.PersonalGroupId);
+                baseCount = await context.EmailClaimLinks.Where(l => l.EmailClaim.CreatedAt >= windowStart && l.VaultManifest.OwnerGroupId == user.PersonalGroupId).Select(l => l.EmailClaimId).Distinct().CountAsync();
             }
 
             limitUsages.Add((limit.MaxCount, baseCount));
@@ -500,7 +501,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             {
                 context.EmailClaims.Add(new EmailClaim
                     {
-                        VaultManifestId = personalManifestId,
+                        Links = [new EmailClaimLink { VaultManifestId = personalManifestId }],
                         Address = sanitizedEmail,
                         AddressLocal = sanitizedEmail.Split('@')[0],
                         AddressDomain = sanitizedEmail.Split('@')[1],
@@ -524,8 +525,21 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         {
             if (!processedEmailAddresses.Contains(existingClaim.Address))
             {
-                // Email address is no longer in the new list and has not been disabled yet, so disable it.
-                existingClaim.Disabled = true;
+                // The address is gone from the personal vault. Disable the claim when the personal manifest is its only link (keeping the link so a later re-claim re-enables it).
+                var personalLinks = existingClaim.Links.Where(l => l.VaultManifestId == personalManifestId).ToList();
+                if (personalLinks.Count == existingClaim.Links.Count)
+                {
+                    existingClaim.Disabled = true;
+                    existingClaim.UpdatedAt = timeProvider.UtcNow;
+                    continue;
+                }
+
+                foreach (var link in personalLinks)
+                {
+                    existingClaim.Links.Remove(link);
+                    context.EmailClaimLinks.Remove(link);
+                }
+
                 existingClaim.UpdatedAt = timeProvider.UtcNow;
             }
         }

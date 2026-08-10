@@ -13,6 +13,7 @@ export * from './MailboxBulk';
 export * from './MailboxEmail';
 export * from './Email';
 export * from './EmailAttachment';
+export * from './EmailKeyWrap';
 export * from './AuthLog';
 export * from './RefreshToken';
 export * from './FaviconExtractModel';

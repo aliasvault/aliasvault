@@ -247,6 +247,14 @@ public class SharingController(IAliasServerDbContextFactory dbContextFactory, Us
         }
 
         context.VaultManifestAccessKeys.Remove(grant);
+
+        // Strip the recipient's personal manifest links from every address also linked to the revoked manifest,
+        // so future mail is no longer wrapped for their personal key.
+        var recipientPersonalGroupId = await context.AliasVaultUsers.Where(u => u.Id == model.RecipientUserId).Select(u => u.PersonalGroupId).FirstOrDefaultAsync();
+        await context.EmailClaimLinks
+            .Where(l => l.VaultManifest.OwnerGroupId == recipientPersonalGroupId && context.EmailClaimLinks.Any(s => s.EmailClaimId == l.EmailClaimId && s.VaultManifestId == model.ManifestId))
+            .ExecuteDeleteAsync();
+
         await context.SaveChangesAsync();
 
         return Ok();

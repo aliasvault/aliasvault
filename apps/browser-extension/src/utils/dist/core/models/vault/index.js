@@ -13,7 +13,7 @@ function normalizeTotpAlgorithm(value) {
 }
 function normalizeTotpDigits(value) {
   const parsed = typeof value === "number" ? value : parseInt(String(value ?? ""), 10);
-  return Number.isInteger(parsed) && parsed >= 6 && parsed <= 10 ? parsed : TOTP_DEFAULT_DIGITS;
+  return Number.isInteger(parsed) && parsed >= 6 && parsed <= 8 ? parsed : TOTP_DEFAULT_DIGITS;
 }
 function normalizeTotpPeriod(value) {
   const parsed = typeof value === "number" ? value : parseInt(String(value ?? ""), 10);

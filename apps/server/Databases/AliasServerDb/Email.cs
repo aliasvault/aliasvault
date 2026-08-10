@@ -7,8 +7,6 @@
 
 namespace AliasServerDb;
 
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
@@ -27,23 +25,10 @@ public class Email
     public int Id { get; set; }
 
     /// <summary>
-    /// Gets or sets encryption key foreign key.
+    /// Gets or sets the wrapped copies of the symmetric key the email contents are encrypted with, one per
+    /// manifest that had claimed the alias at delivery time.
     /// </summary>
-    [StringLength(255)]
-    public Guid EncryptionKeyId { get; set; }
-
-    /// <summary>
-    /// Gets or sets foreign key to the VaultManifestDeliveryKey object which contains the public key used for encrypting
-    /// the symmetric encryption key.
-    /// </summary>
-    [ForeignKey("EncryptionKeyId")]
-    public virtual VaultManifestDeliveryKey EncryptionKey { get; set; } = null!;
-
-    /// <summary>
-    /// Gets or sets the encrypted symmetric key which was used to encrypt the email message.
-    /// This key is encrypted with the public key of the user.
-    /// </summary>
-    public string EncryptedSymmetricKey { get; set; } = null!;
+    public virtual List<EmailKeyWrap> Wraps { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the subject of the email.

@@ -54,7 +54,7 @@ public class VaultManifestDeliveryKey
     public DateTime UpdatedAt { get; set; }
 
     /// <summary>
-    /// Gets or sets the collection of Emails that are using this encryption key.
+    /// Gets or sets the collection of email key wraps that were encrypted with this key.
     /// </summary>
-    public virtual ICollection<Email> Emails { get; set; } = [];
+    public virtual ICollection<EmailKeyWrap> Wraps { get; set; } = [];
 }

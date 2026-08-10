@@ -32,8 +32,7 @@ async function createMailboxEmail(
     date: '2026-05-26T00:00:00Z',
     dateSystem: '2026-05-26T00:00:00Z',
     secondsAgo: id,
-    encryptedSymmetricKey: await EncryptionUtility.encryptWithPublicKey(rawSymmetricKey, encryptionKey.PublicKey),
-    encryptionKey: encryptionKey.PublicKey,
+    wraps: [{ publicKey: encryptionKey.PublicKey, encryptedSymmetricKey: await EncryptionUtility.encryptWithPublicKey(rawSymmetricKey, encryptionKey.PublicKey) }],
   };
 }
 
@@ -58,8 +57,7 @@ async function createEmail(
     date: '2026-05-26T00:00:00Z',
     dateSystem: '2026-05-26T00:00:00Z',
     secondsAgo: 1,
-    encryptedSymmetricKey: await EncryptionUtility.encryptWithPublicKey(rawSymmetricKey, encryptionKey.PublicKey),
-    encryptionKey: encryptionKey.PublicKey,
+    wraps: [{ publicKey: encryptionKey.PublicKey, encryptedSymmetricKey: await EncryptionUtility.encryptWithPublicKey(rawSymmetricKey, encryptionKey.PublicKey) }],
     attachments: [],
   };
 }

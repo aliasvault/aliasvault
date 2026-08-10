@@ -11,9 +11,8 @@ using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Helpers;
 using AliasVault.Auth.IpAddress;
-using AliasVault.Shared.Models.Spamok;
 using AliasVault.Shared.Models.WebApi;
-using AliasVault.Shared.Models.WebApi.V1.Email;
+using AliasVault.Shared.Models.WebApi.V2.Email;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -80,9 +79,9 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             });
         }
 
-        // Retrieve emails from database.
+        // Retrieve emails from database, restricted to emails carrying a wrap the caller can open.
         var decryptableKeyIds = await EmailAccessHelper.ResolveDecryptableKeyIdsAsync(context, user.Id);
-        var emailQuery = context.Emails.AsNoTracking().Where(x => x.To == sanitizedEmail && decryptableKeyIds.Contains(x.EncryptionKeyId));
+        var emailQuery = context.Emails.AsNoTracking().Where(x => x.To == sanitizedEmail && x.Wraps.Any(w => decryptableKeyIds.Contains(w.EncryptionKeyId)));
         if (shadowCutoff is not null)
         {
             emailQuery = emailQuery.Where(x => x.DateSystem <= shadowCutoff.Value);
@@ -102,8 +101,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
                 DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
                 SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
                 MessagePreview = x.MessagePreview ?? string.Empty,
-                EncryptedSymmetricKey = x.EncryptedSymmetricKey,
-                EncryptionKey = x.EncryptionKey.PublicKey,
+                Wraps = x.Wraps.Where(w => decryptableKeyIds.Contains(w.EncryptionKeyId)).OrderBy(w => w.EncryptionKeyId).Select(w => new EmailKeyWrapApiModel { PublicKey = w.EncryptionKey.PublicKey, EncryptedSymmetricKey = w.EncryptedSymmetricKey }).ToList(),
             })
             .OrderByDescending(x => x.DateSystem)
             .Take(50)
@@ -150,14 +148,14 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         // Restrict to emails this user holds a key for.
         var decryptableKeyIds = await EmailAccessHelper.ResolveDecryptableKeyIdsAsync(context, user.Id);
 
-        // Fetch the newest emails for each address individually.
+        // Fetch the newest emails for each address individually, restricted to emails carrying a wrap the caller can open.
         var cutoffClause = shadowCutoff is null ? string.Empty : @" AND e2.""DateSystem"" <= @cutoff";
         var pageSql = $@"
             SELECT e.*
             FROM unnest(@addresses) AS addr(email)
             CROSS JOIN LATERAL (
                 SELECT * FROM ""Emails"" AS e2
-                WHERE e2.""To"" = addr.email AND e2.""EncryptionKeyId"" = ANY(@keyids){cutoffClause}
+                WHERE e2.""To"" = addr.email AND EXISTS (SELECT 1 FROM ""EmailKeyWraps"" AS w WHERE w.""EmailId"" = e2.""Id"" AND w.""EncryptionKeyId"" = ANY(@keyids)){cutoffClause}
                 ORDER BY e2.""DateSystem"" DESC
                 LIMIT @limit
             ) AS e";
@@ -194,14 +192,13 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
                 DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
                 SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
                 MessagePreview = x.MessagePreview ?? string.Empty,
-                EncryptedSymmetricKey = x.EncryptedSymmetricKey,
-                EncryptionKey = x.EncryptionKey.PublicKey,
+                Wraps = x.Wraps.Where(w => decryptableKeyIds.Contains(w.EncryptionKeyId)).OrderBy(w => w.EncryptionKeyId).Select(w => new EmailKeyWrapApiModel { PublicKey = w.EncryptionKey.PublicKey, EncryptedSymmetricKey = w.EncryptedSymmetricKey }).ToList(),
                 HasAttachments = x.Attachments.Any(),
             })
             .ToListAsync();
 
         // Count the total number of emails.
-        var countQuery = context.Emails.Where(email => validAddresses.Contains(email.To) && decryptableKeyIds.Contains(email.EncryptionKeyId));
+        var countQuery = context.Emails.Where(email => validAddresses.Contains(email.To) && email.Wraps.Any(w => decryptableKeyIds.Contains(w.EncryptionKeyId)));
         if (shadowCutoff is not null)
         {
             countQuery = countQuery.Where(email => email.DateSystem <= shadowCutoff.Value);

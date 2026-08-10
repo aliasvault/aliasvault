@@ -25,23 +25,24 @@ public static class EmailAccessHelper
     /// <returns>True when the user holds an access key on the alias's manifest.</returns>
     public static async Task<bool> CanReadClaimAsync(AliasServerDbContext context, EmailClaim claim, string userId)
     {
-        // An orphaned claim has no manifest and therefore no owner: it is a tombstone holding an address, and nobody may read mail for it.
-        if (claim.VaultManifestId is null)
+        // An orphaned claim has no links and therefore no owner: it is a tombstone holding an address, and nobody may read mail for it.
+        var linkedManifestIds = await context.EmailClaimLinks.Where(l => l.EmailClaimId == claim.Id).Select(l => l.VaultManifestId).ToListAsync();
+        if (linkedManifestIds.Count == 0)
         {
             return false;
         }
 
-        // Holding any access key on the manifest is proof of access: AccountKey on a personal manifest, GrantKey on a shared manifest (owner self-grant and recipient alike).
-        var hasAccessKey = await context.VaultManifestAccessKeys.AnyAsync(k => k.UserId == userId && k.VaultManifestId == claim.VaultManifestId);
+        // Holding any access key on a linked manifest is proof of access: AccountKey on a personal manifest, GrantKey on a shared manifest (owner self-grant and recipient alike).
+        var hasAccessKey = await context.VaultManifestAccessKeys.AnyAsync(k => k.UserId == userId && linkedManifestIds.Contains(k.VaultManifestId));
         if (hasAccessKey)
         {
             return true;
         }
 
-        // TODO: legacy fallback: pre-KEK/VEK accounts have no AccountKey row on their personal manifest yet, so the manifest being filed
-        // under their personal group is their only proof of access. Personal groups only: a shared manifest is grants-only, so a group owner
+        // TODO: legacy fallback: pre-KEK/VEK accounts have no AccountKey row on their personal manifest yet, so the manifest being linked
+        // to their personal group is their only proof of access. Personal groups only: a shared manifest is grants-only, so a group owner
         // whose grant was revoked must not read its mail. Delete once all clients have migrated.
-        return await context.VaultManifests.AnyAsync(m => m.ManifestId == claim.VaultManifestId && context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == m.OwnerGroupId));
+        return await context.VaultManifests.AnyAsync(m => linkedManifestIds.Contains(m.ManifestId) && context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == m.OwnerGroupId));
     }
 
     /// <summary>
@@ -58,10 +59,10 @@ public static class EmailAccessHelper
             return [];
         }
 
-        // Get the claims that the user may read.
-        var claims = await context.EmailClaims
-            .Where(claim => addresses.Contains(claim.Address) && !claim.Disabled && claim.VaultManifestId != null)
-            .Select(claim => new { claim.Address, ManifestId = claim.VaultManifestId!.Value, claim.VaultManifest!.OwnerGroupId })
+        // Get the claim links that the user may read through; a dual-claimed address is readable through any one of its links.
+        var claims = await context.EmailClaimLinks
+            .Where(l => addresses.Contains(l.EmailClaim.Address) && !l.EmailClaim.Disabled)
+            .Select(l => new { l.EmailClaim.Address, ManifestId = l.VaultManifestId, l.VaultManifest.OwnerGroupId })
             .ToListAsync();
         if (claims.Count == 0)
         {
@@ -81,7 +82,7 @@ public static class EmailAccessHelper
         // grant was revoked must not read its mail. TODO: delete once all clients have migrated.
         var personalGroupId = await GroupHelper.GetPersonalGroupIdAsync(context, userId);
 
-        return claims.Where(c => keyedManifestIds.Contains(c.ManifestId) || c.OwnerGroupId == personalGroupId).Select(c => c.Address).ToList();
+        return claims.Where(c => keyedManifestIds.Contains(c.ManifestId) || c.OwnerGroupId == personalGroupId).Select(c => c.Address).Distinct().ToList();
     }
 
     /// <summary>

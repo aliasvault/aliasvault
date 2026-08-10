@@ -52,7 +52,6 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
 
         // See if this user has a valid claim to the email address.
         var emailClaim = await context.EmailClaims
-            .Include(x => x.VaultManifest)
             .FirstOrDefaultAsync(x => x.Address == sanitizedEmail);
 
         if (emailClaim is null || emailClaim.Disabled)
@@ -67,8 +66,8 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             });
         }
 
-        // An orphaned claim (no manifest) has no owner, so it matches nobody.
-        if (emailClaim.VaultManifest?.OwnerGroupId != user.PersonalGroupId)
+        var hasPersonalLink = await context.EmailClaimLinks.AnyAsync(l => l.EmailClaimId == emailClaim.Id && l.VaultManifest.OwnerGroupId == user.PersonalGroupId);
+        if (!hasPersonalLink)
         {
             return BadRequest(new ApiErrorResponse
             {
@@ -80,8 +79,13 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             });
         }
 
+        var personalKeyIds = await context.VaultManifestDeliveryKeys
+            .Where(k => context.VaultManifests.Any(m => m.ManifestId == k.VaultManifestId && m.OwnerGroupId == user.PersonalGroupId))
+            .Select(k => k.Id)
+            .ToListAsync();
+
         // Retrieve emails from database (excluding any received after a shadow-block took effect).
-        var emailQuery = context.Emails.AsNoTracking().Where(x => x.To == sanitizedEmail);
+        var emailQuery = context.Emails.AsNoTracking().Where(x => x.To == sanitizedEmail && x.Wraps.Any(w => personalKeyIds.Contains(w.EncryptionKeyId)));
         if (shadowCutoff is not null)
         {
             emailQuery = emailQuery.Where(x => x.DateSystem <= shadowCutoff.Value);
@@ -101,8 +105,8 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
                 DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
                 SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
                 MessagePreview = x.MessagePreview ?? string.Empty,
-                EncryptedSymmetricKey = x.EncryptedSymmetricKey,
-                EncryptionKey = x.EncryptionKey.PublicKey,
+                EncryptedSymmetricKey = x.Wraps.Where(w => personalKeyIds.Contains(w.EncryptionKeyId)).OrderBy(w => w.EncryptionKeyId).Select(w => w.EncryptedSymmetricKey).First(),
+                EncryptionKey = x.Wraps.Where(w => personalKeyIds.Contains(w.EncryptionKeyId)).OrderBy(w => w.EncryptionKeyId).Select(w => w.EncryptionKey.PublicKey).First(),
             })
             .OrderByDescending(x => x.DateSystem)
             .Take(50)
@@ -142,9 +146,16 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         model.PageSize = Math.Min(model.PageSize, 50);
 
         // Load all email addresses that the user has a claim to where the address is in the list.
-        var validAddresses = await context.EmailClaims
-            .Where(claim => model.Addresses.Contains(claim.Address) && !claim.Disabled && claim.VaultManifest!.OwnerGroupId == user.PersonalGroupId)
-            .Select(claim => claim.Address)
+        var validAddresses = await context.EmailClaimLinks
+            .Where(l => model.Addresses.Contains(l.EmailClaim.Address) && !l.EmailClaim.Disabled && l.VaultManifest.OwnerGroupId == user.PersonalGroupId)
+            .Select(l => l.EmailClaim.Address)
+            .Distinct()
+            .ToListAsync();
+
+        // The caller's personal keys: v1 clients only hold the private halves of these, so serve the matching wraps.
+        var personalKeyIds = await context.VaultManifestDeliveryKeys
+            .Where(k => context.VaultManifests.Any(m => m.ManifestId == k.VaultManifestId && m.OwnerGroupId == user.PersonalGroupId))
+            .Select(k => k.Id)
             .ToListAsync();
 
         var page = Math.Max(model.Page, 1);
@@ -157,7 +168,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             FROM unnest(@addresses) AS addr(email)
             CROSS JOIN LATERAL (
                 SELECT * FROM ""Emails"" AS e2
-                WHERE e2.""To"" = addr.email{cutoffClause}
+                WHERE e2.""To"" = addr.email AND EXISTS (SELECT 1 FROM ""EmailKeyWraps"" AS w WHERE w.""EmailId"" = e2.""Id"" AND w.""EncryptionKeyId"" = ANY(@keyids)){cutoffClause}
                 ORDER BY e2.""DateSystem"" DESC
                 LIMIT @limit
             ) AS e";
@@ -165,6 +176,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         List<NpgsqlParameter> parameters =
         [
             new("addresses", validAddresses.ToArray()),
+            new("keyids", personalKeyIds.ToArray()),
             new("limit", page * model.PageSize),
         ];
 
@@ -193,14 +205,14 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
                 DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
                 SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
                 MessagePreview = x.MessagePreview ?? string.Empty,
-                EncryptedSymmetricKey = x.EncryptedSymmetricKey,
-                EncryptionKey = x.EncryptionKey.PublicKey,
+                EncryptedSymmetricKey = x.Wraps.Where(w => personalKeyIds.Contains(w.EncryptionKeyId)).OrderBy(w => w.EncryptionKeyId).Select(w => w.EncryptedSymmetricKey).First(),
+                EncryptionKey = x.Wraps.Where(w => personalKeyIds.Contains(w.EncryptionKeyId)).OrderBy(w => w.EncryptionKeyId).Select(w => w.EncryptionKey.PublicKey).First(),
                 HasAttachments = x.Attachments.Any(),
             })
             .ToListAsync();
 
         // Total count for pagination
-        var countQuery = context.Emails.Where(email => validAddresses.Contains(email.To));
+        var countQuery = context.Emails.Where(email => validAddresses.Contains(email.To) && email.Wraps.Any(w => personalKeyIds.Contains(w.EncryptionKeyId)));
         if (shadowCutoff is not null)
         {
             countQuery = countQuery.Where(email => email.DateSystem <= shadowCutoff.Value);

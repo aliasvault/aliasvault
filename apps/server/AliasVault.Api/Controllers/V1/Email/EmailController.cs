@@ -36,7 +36,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        var (email, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
+        var (email, personalWrap, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
         if (errorResult != null)
         {
             return errorResult;
@@ -57,8 +57,8 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
             MessageHtml = email.MessageHtml,
             MessagePlain = email.MessagePlain,
             MessageSource = email.MessageSource,
-            EncryptedSymmetricKey = email.EncryptedSymmetricKey,
-            EncryptionKey = email.EncryptionKey.PublicKey,
+            EncryptedSymmetricKey = personalWrap!.EncryptedSymmetricKey,
+            EncryptionKey = personalWrap.EncryptionKey.PublicKey,
         };
 
         // Add attachment metadata (without the filebytes)
@@ -86,7 +86,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        var (email, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
+        var (email, _, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
         if (errorResult != null)
         {
             return errorResult;
@@ -119,7 +119,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        var (email, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
+        var (email, _, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
         if (errorResult != null)
         {
             return errorResult;
@@ -144,13 +144,13 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     /// </summary>
     /// <param name="id">The email ID to retrieve.</param>
     /// <param name="context">The database context.</param>
-    /// <returns>A tuple containing the authenticated user, the email, and an IActionResult if there's an error.</returns>
-    private async Task<(Email? Email, IActionResult? ErrorResult)> AuthenticateAndRetrieveEmailAsync(int id, AliasServerDbContext context)
+    /// <returns>A tuple containing the email, the wrap belonging to the caller's personal keys, and an IActionResult if there's an error.</returns>
+    private async Task<(Email? Email, EmailKeyWrap? PersonalWrap, IActionResult? ErrorResult)> AuthenticateAndRetrieveEmailAsync(int id, AliasServerDbContext context)
     {
         var user = await GetCurrentUserAsync();
         if (user is null)
         {
-            return (null, Unauthorized("Not authenticated."));
+            return (null, null, Unauthorized("Not authenticated."));
         }
 
         // Shadow-block: when active, emails received after the block took effect behave as if they do not exist.
@@ -159,28 +159,41 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
         // Retrieve email from database.
         var email = await context.Emails
             .Include(x => x.Attachments)
+            .Include(x => x.Wraps)
+            .ThenInclude(w => w.EncryptionKey)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (email is null)
         {
-            return (null, NotFound("Email not found."));
+            return (null, null, NotFound("Email not found."));
         }
 
         // Hide emails received after a shadow-block took effect.
         if (shadowCutoff is not null && email.DateSystem > shadowCutoff.Value)
         {
-            return (null, NotFound());
+            return (null, null, NotFound());
         }
 
         // See if this user has a valid claim to the email address.
         var normalizedEmailAddress = email.To.Trim().ToLower();
-        var emailClaim = await context.EmailClaims.FirstOrDefaultAsync(x => x.Address == normalizedEmailAddress && !x.Disabled && x.VaultManifest!.OwnerGroupId == user.PersonalGroupId);
+        var emailClaim = await context.EmailClaims.FirstOrDefaultAsync(x => x.Address == normalizedEmailAddress && !x.Disabled && x.Links.Any(l => l.VaultManifest.OwnerGroupId == user.PersonalGroupId));
 
         if (emailClaim is null)
         {
-            return (null, Unauthorized("User does not have a claim to this email address."));
+            return (null, null, Unauthorized("User does not have a claim to this email address."));
         }
 
-        return (email, null);
+        // Serve the wrap belonging to the caller's personal keys.
+        var personalKeyIds = await context.VaultManifestDeliveryKeys
+            .Where(k => context.VaultManifests.Any(m => m.ManifestId == k.VaultManifestId && m.OwnerGroupId == user.PersonalGroupId))
+            .Select(k => k.Id)
+            .ToListAsync();
+        var personalWrap = email.Wraps.Where(w => personalKeyIds.Contains(w.EncryptionKeyId)).OrderBy(w => w.EncryptionKeyId).FirstOrDefault();
+        if (personalWrap is null)
+        {
+            return (null, null, NotFound("Email not found."));
+        }
+
+        return (email, personalWrap, null);
     }
 }

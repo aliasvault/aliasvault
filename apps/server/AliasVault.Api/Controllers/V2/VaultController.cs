@@ -419,10 +419,11 @@ public class VaultController(
                 row.Client = clientHeader;
                 row.UpdatedAt = timeProvider.UtcNow;
 
-                // Every manifest counts the aliases the push filed against it, shared manifests included.
+                // Every manifest counts the aliases the push filed against it, shared manifests included. One
+                // address may be pushed for several manifests at once, so count distinct addresses per manifest.
                 if (model.EmailRouting != null)
                 {
-                    row.EmailClaimsCount = model.EmailRouting.EmailAddressList.Count(x => x.ManifestId == row.ManifestId);
+                    row.EmailClaimsCount = model.EmailRouting.EmailAddressList.Where(x => x.ManifestId == row.ManifestId).Select(x => EmailHelper.SanitizeEmail(x.Address)).Distinct().Count();
                 }
 
                 if (row.OwnerGroupId == user.PersonalGroupId)
@@ -914,7 +915,7 @@ public class VaultController(
     private async Task<EmailRouting> BuildEmailRoutingAsync(AliasServerDbContext context, AliasVaultUser user)
     {
         var claims = await context.EmailClaims
-            .Where(c => !c.Disabled && context.GroupMembers.Any(gm => gm.GroupId == c.VaultManifest!.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner))
+            .Where(c => !c.Disabled && c.Links.Any(l => context.GroupMembers.Any(gm => gm.GroupId == l.VaultManifest.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner)))
             .Select(c => c.Address)
             .ToListAsync();
 
@@ -979,16 +980,17 @@ public class VaultController(
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="user">The calling user.</param>
-    /// <param name="routing">The pushed routing data: every claimed address with the manifest it is filed under.</param>
+    /// <param name="routing">The pushed routing data: one entry per (address, manifest) pair.</param>
     private async Task UpdateEmailClaimsAsync(AliasServerDbContext context, AliasVaultUser user, EmailRoutingPush routing)
     {
-        var claimedManifestIds = routing.EmailAddressList.Select(x => x.ManifestId).Distinct().ToList();
-        var accessibleManifests = (await ManifestAccessHelper.AccessibleManifests(context, user.Id)
-            .Where(m => claimedManifestIds.Contains(m.ManifestId))
+        var pushedPairs = routing.EmailAddressList.Select(x => new { Address = EmailHelper.SanitizeEmail(x.Address), x.ManifestId }).Distinct().ToList();
+
+        var accessibleManifests = (await ManifestAccessHelper.AccessibleManifests(context, user.Id).Select(m => m.ManifestId).ToListAsync()).ToHashSet();
+        var ownedManifests = (await context.VaultManifests
+            .Where(m => context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner))
             .Select(m => m.ManifestId)
             .ToListAsync()).ToHashSet();
-
-        var ownerGroupByManifest = await GroupHelper.GetOwnerGroupsAsync(context, accessibleManifests);
+        var speaksFor = accessibleManifests.Union(ownedManifests).ToHashSet();
 
         // Resolved server-side and never read off the push: this is what stops a client filing an alias under a manifest it merely named.
         var personalManifestId = await GroupHelper.GetPersonalManifestIdAsync(context, user.PersonalGroupId);
@@ -998,49 +1000,70 @@ public class VaultController(
             return;
         }
 
-        // Get the manifests with a delivery key.
-        var manifestsWithDeliveryKey = (await context.VaultManifestDeliveryKeys
-            .Where(k => accessibleManifests.Contains(k.VaultManifestId) && k.IsPrimary)
-            .Select(k => k.VaultManifestId)
-            .ToListAsync()).ToHashSet();
-
-        var manifestByAddress = new Dictionary<string, Guid>();
-        foreach (var claimed in routing.EmailAddressList)
+        var assertedPairs = new List<(string Address, Guid ManifestId)>();
+        foreach (var pair in pushedPairs)
         {
-            var sanitizedClaimed = EmailHelper.SanitizeEmail(claimed.Address);
-            if (!accessibleManifests.Contains(claimed.ManifestId))
+            if (!accessibleManifests.Contains(pair.ManifestId))
             {
-                logger.LogWarning("{User} claimed alias {Email} for manifest {Manifest} they cannot access; filing it under their own personal manifest instead.", user.UserName, sanitizedClaimed, claimed.ManifestId);
+                logger.LogWarning("{User} claimed alias {Email} for manifest {Manifest} they cannot access; dropping the pair.", user.UserName, pair.Address, pair.ManifestId);
                 continue;
             }
 
-            manifestByAddress[sanitizedClaimed] = claimed.ManifestId;
-            if (claimed.ManifestId != personalManifestId.Value && !manifestsWithDeliveryKey.Contains(claimed.ManifestId))
-            {
-                logger.LogWarning("{User} claimed shared alias {Email} for manifest {Manifest} with no published delivery key; its mail stays readable by the routing owner alone until a delivery key is published.", user.UserName, sanitizedClaimed, claimed.ManifestId);
-            }
+            assertedPairs.Add((pair.Address, pair.ManifestId));
         }
 
-        var newEmailAddresses = routing.EmailAddressList
-            .Select(x => EmailHelper.SanitizeEmail(x.Address))
-            .Distinct()
-            .ToList();
+        var assertedManifestIds = assertedPairs.Select(p => p.ManifestId).Distinct().ToList();
+        var ownerGroupByManifest = await GroupHelper.GetOwnerGroupsAsync(context, assertedManifestIds);
 
-        // Get the claims this push may update: every claim whose manifest is owned by a group the caller owns, plus every claim belonging to a shared manifest they can currently access.
+        // Warn when a shared manifest claims aliases without a published delivery key: it gets no wrap for its mail until one is published.
+        var manifestsWithDeliveryKey = (await context.VaultManifestDeliveryKeys
+            .Where(k => assertedManifestIds.Contains(k.VaultManifestId) && k.IsPrimary)
+            .Select(k => k.VaultManifestId)
+            .ToListAsync()).ToHashSet();
+        foreach (var (address, manifestId) in assertedPairs.Where(p => p.ManifestId != personalManifestId.Value && !manifestsWithDeliveryKey.Contains(p.ManifestId)))
+        {
+            logger.LogWarning("{User} claimed shared alias {Email} for manifest {Manifest} with no published delivery key; that manifest gets no wrap for its mail until a delivery key is published.", user.UserName, address, manifestId);
+        }
+
+        var desiredByAddress = assertedPairs.GroupBy(p => p.Address).ToDictionary(g => g.Key, g => g.Select(p => p.ManifestId).ToHashSet());
+
+        // Get the claims this push may update: every claim linked to a manifest the caller speaks for.
         var userOwnedEmailClaims = await context.EmailClaims
-            .Where(x => context.GroupMembers.Any(gm => gm.GroupId == x.VaultManifest!.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner)
-                || (x.VaultManifestId != null && accessibleManifests.Contains(x.VaultManifestId.Value)))
+            .Include(c => c.Links)
+            .Where(c => c.Links.Any(l => speaksFor.Contains(l.VaultManifestId)))
             .ToListAsync();
-        var processed = new List<string>();
+        var processed = new HashSet<string>();
         var supportedDomains = config.PrivateEmailDomains;
 
-        // Max-alias check: how many new aliases each quota subject (the group owning the manifest) may still create.
+        // Max-alias check: how many new aliases each quota subject (the group owning the linked manifest) may still create.
         var remainingAliases = await GetRemainingAliasAllowancesAsync(context, user, ownerGroupByManifest.Values);
         var limitLoggedFor = new HashSet<Guid>();
 
-        foreach (var email in newEmailAddresses)
+        // Check if the caller has enough quota to create a new link for the given manifest.
+        bool TryChargeQuota(Guid manifestId)
         {
-            var sanitized = EmailHelper.SanitizeEmail(email);
+            var quotaGroupId = ownerGroupByManifest.TryGetValue(manifestId, out var ownerGroupId) ? ownerGroupId : user.PersonalGroupId;
+            if (!remainingAliases.TryGetValue(quotaGroupId, out var remaining))
+            {
+                return true;
+            }
+
+            if (remaining <= 0)
+            {
+                if (limitLoggedFor.Add(quotaGroupId))
+                {
+                    logger.LogWarning("Alias creation limit reached for group {QuotaGroup} (pushed by {User}). Skipping creation of additional aliases charged to it.", quotaGroupId, user.UserName);
+                }
+
+                return false;
+            }
+
+            remainingAliases[quotaGroupId] = remaining - 1;
+            return true;
+        }
+
+        foreach (var sanitized in pushedPairs.Select(p => p.Address).Distinct())
+        {
             processed.Add(sanitized);
 
             if (!new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(sanitized))
@@ -1056,59 +1079,81 @@ public class VaultController(
                 continue;
             }
 
-            // Which manifest the alias is filed against: the one the push named when the caller may claim for it, their own personal manifest otherwise.
-            var resolvedManifestId = manifestByAddress.TryGetValue(sanitized, out var claimedManifestId) ? claimedManifestId : personalManifestId.Value;
-
-            // The quota subject is the group owning that manifest: the shared manifest's group, or the caller's personal group.
-            var quotaGroupId = ownerGroupByManifest.TryGetValue(resolvedManifestId, out var ownerGroupId) ? ownerGroupId : user.PersonalGroupId;
+            // Every pair for this address named a manifest the caller cannot access: nothing is asserted. The
+            // address still counts as pushed, so the absence handling below leaves its claim alone.
+            if (!desiredByAddress.TryGetValue(sanitized, out var desiredManifestIds) || desiredManifestIds.Count == 0)
+            {
+                continue;
+            }
 
             var existing = userOwnedEmailClaims.FirstOrDefault(x => x.Address == sanitized);
             if (existing != null)
             {
+                var changed = false;
+                foreach (var manifestId in desiredManifestIds.Where(m => existing.Links.All(l => l.VaultManifestId != m)))
+                {
+                    if (!TryChargeQuota(manifestId))
+                    {
+                        continue;
+                    }
+
+                    existing.Links.Add(new EmailClaimLink { EmailClaimId = existing.Id, VaultManifestId = manifestId });
+                    changed = true;
+                }
+
+                var staleLinks = existing.Links.Where(l => speaksFor.Contains(l.VaultManifestId) && !desiredManifestIds.Contains(l.VaultManifestId)).ToList();
+                if (staleLinks.Count == existing.Links.Count)
+                {
+                    // Removing these would orphan the claim (the pushed links were all blocked, e.g. by quota); keep the previous links rather than leave a tombstone.
+                    logger.LogWarning("{User} pushed {Email} but none of its links could be created; keeping its previous links.", user.UserName, sanitized);
+                    staleLinks.Clear();
+                }
+
+                foreach (var stale in staleLinks)
+                {
+                    existing.Links.Remove(stale);
+                    context.EmailClaimLinks.Remove(stale);
+                    changed = true;
+                }
+
                 if (existing.Disabled)
                 {
                     existing.Disabled = false;
-                    existing.UpdatedAt = timeProvider.UtcNow;
+                    changed = true;
                 }
 
-                // Re-point the claim when the alias moved into or out of a shared manifest.
-                if (existing.VaultManifestId != resolvedManifestId)
+                if (changed)
                 {
-                    existing.VaultManifestId = resolvedManifestId;
                     existing.UpdatedAt = timeProvider.UtcNow;
                 }
 
                 continue;
             }
 
-            var foreignClaim = await context.EmailClaims.FirstOrDefaultAsync(x => x.Address == sanitized);
-            if (foreignClaim != null)
+            // Adding a link to an existing address requires access to one of its current links' manifests.
+            if (await context.EmailClaims.AnyAsync(x => x.Address == sanitized))
             {
-                // The address already exists: either a genuine attempt on someone else's address, or a shared alias of a manifest this caller cannot access. Neither may touch the claim.
                 logger.LogWarning("{User} tried to claim email already owned by another user: {Email}", user.UserName, sanitized);
                 continue;
             }
 
-            // Once the quota group's max is reached, silently skip creating further aliases charged to it
-            // (logged once per group for audits), while aliases charged to other groups in the same push carry on.
-            if (remainingAliases.TryGetValue(quotaGroupId, out var remaining))
+            var newLinks = new List<EmailClaimLink>();
+            foreach (var manifestId in desiredManifestIds)
             {
-                if (remaining <= 0)
+                if (TryChargeQuota(manifestId))
                 {
-                    if (limitLoggedFor.Add(quotaGroupId))
-                    {
-                        logger.LogWarning("Alias creation limit reached for group {QuotaGroup} (pushed by {User}). Skipping creation of additional aliases charged to it.", quotaGroupId, user.UserName);
-                    }
-
-                    continue;
+                    newLinks.Add(new EmailClaimLink { VaultManifestId = manifestId });
                 }
+            }
 
-                remainingAliases[quotaGroupId] = remaining - 1;
+            if (newLinks.Count == 0)
+            {
+                continue;
             }
 
             context.EmailClaims.Add(new EmailClaim
             {
-                VaultManifestId = resolvedManifestId,
+                Links = newLinks,
                 Address = sanitized,
                 AddressLocal = sanitized.Split('@')[0],
                 AddressDomain = sanitized.Split('@')[1],
@@ -1117,15 +1162,29 @@ public class VaultController(
             });
         }
 
-        // Disable claims that were not processed in this push and the user had access to (all active claims should be pushed on every change.)
-        var disabledClaims = userOwnedEmailClaims.Where(x => !x.Disabled && !processed.Contains(x.Address)).ToList();
-        foreach (var claim in disabledClaims)
+        // An address that is no longer pushed loses the links the caller speaks for. When that would remove every link,
+        // the claim is disabled instead and keeps its links.
+        foreach (var claim in userOwnedEmailClaims.Where(x => !x.Disabled && !processed.Contains(x.Address)))
         {
-            claim.Disabled = true;
-            claim.UpdatedAt = timeProvider.UtcNow;
-        }
+            var removable = claim.Links.Where(l => speaksFor.Contains(l.VaultManifestId)).ToList();
+            if (removable.Count == claim.Links.Count)
+            {
+                claim.Disabled = true;
+                claim.UpdatedAt = timeProvider.UtcNow;
+                continue;
+            }
 
-        context.EmailClaims.UpdateRange(disabledClaims);
+            foreach (var link in removable)
+            {
+                claim.Links.Remove(link);
+                context.EmailClaimLinks.Remove(link);
+            }
+
+            if (removable.Count > 0)
+            {
+                claim.UpdatedAt = timeProvider.UtcNow;
+            }
+        }
     }
 
     /// <summary>
@@ -1155,14 +1214,14 @@ public class VaultController(
                 int currentCount;
                 if (limit.WindowSeconds == 0)
                 {
-                    // Global absolute cap: every claim ever charged to this group (including disabled ones).
-                    currentCount = await context.EmailClaims.CountAsync(x => x.VaultManifest!.OwnerGroupId == groupId);
+                    // Global absolute cap: every claim ever charged to this group (including disabled ones). A claim is charged to every group it is linked into.
+                    currentCount = await context.EmailClaimLinks.Where(l => l.VaultManifest.OwnerGroupId == groupId).Select(l => l.EmailClaimId).Distinct().CountAsync();
                 }
                 else
                 {
                     // Time-based cap: aliases created within the rolling window (create-then-delete still counts).
                     var windowStart = timeProvider.UtcNow.AddSeconds(-limit.WindowSeconds);
-                    currentCount = await context.EmailClaims.CountAsync(x => x.CreatedAt >= windowStart && x.VaultManifest!.OwnerGroupId == groupId);
+                    currentCount = await context.EmailClaimLinks.Where(l => l.EmailClaim.CreatedAt >= windowStart && l.VaultManifest.OwnerGroupId == groupId).Select(l => l.EmailClaimId).Distinct().CountAsync();
                 }
 
                 var allowed = limit.MaxCount - currentCount;

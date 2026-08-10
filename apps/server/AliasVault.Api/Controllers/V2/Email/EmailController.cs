@@ -11,11 +11,12 @@ using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Helpers;
 using AliasVault.Auth.IpAddress;
-using AliasVault.Shared.Models.Spamok;
+using AliasVault.Shared.Models.WebApi.V2.Email;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using AttachmentApiModel = AliasVault.Shared.Models.Spamok.AttachmentApiModel;
 
 /// <summary>
 /// Email controller for retrieving emails from the database.
@@ -37,7 +38,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        var (email, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
+        var (email, callerWraps, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
         if (errorResult != null)
         {
             return errorResult;
@@ -58,12 +59,11 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
             MessageHtml = email.MessageHtml,
             MessagePlain = email.MessagePlain,
             MessageSource = email.MessageSource,
-            EncryptedSymmetricKey = email.EncryptedSymmetricKey,
-            EncryptionKey = email.EncryptionKey.PublicKey,
+            Wraps = callerWraps.Select(w => new EmailKeyWrapApiModel { PublicKey = w.EncryptionKey.PublicKey, EncryptedSymmetricKey = w.EncryptedSymmetricKey }).ToList(),
         };
 
         // Add attachment metadata (without the filebytes)
-        var attachments = await context.EmailAttachments.Where(x => x.EmailId == email.Id).Select(x => new AttachmentApiModel()
+        var attachments = await context.EmailAttachments.Where(x => x.EmailId == email!.Id).Select(x => new AttachmentApiModel()
         {
             Id = x.Id,
             Email_Id = x.EmailId,
@@ -87,7 +87,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        var (email, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
+        var (email, _, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
         if (errorResult != null)
         {
             return errorResult;
@@ -120,7 +120,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        var (email, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
+        var (email, _, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
         if (errorResult != null)
         {
             return errorResult;
@@ -145,13 +145,13 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     /// </summary>
     /// <param name="id">The email ID to retrieve.</param>
     /// <param name="context">The database context.</param>
-    /// <returns>A tuple containing the authenticated user, the email, and an IActionResult if there's an error.</returns>
-    private async Task<(Email? Email, IActionResult? ErrorResult)> AuthenticateAndRetrieveEmailAsync(int id, AliasServerDbContext context)
+    /// <returns>A tuple containing the email, the wraps of it the caller can open, and an IActionResult if there's an error.</returns>
+    private async Task<(Email? Email, List<EmailKeyWrap> CallerWraps, IActionResult? ErrorResult)> AuthenticateAndRetrieveEmailAsync(int id, AliasServerDbContext context)
     {
         var user = await GetCurrentUserAsync();
         if (user is null)
         {
-            return (null, Unauthorized("Not authenticated."));
+            return (null, [], Unauthorized("Not authenticated."));
         }
 
         // Shadow-block: when active, emails received after the block took effect behave as if they do not exist.
@@ -160,17 +160,19 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
         // Retrieve email from database.
         var email = await context.Emails
             .Include(x => x.Attachments)
+            .Include(x => x.Wraps)
+            .ThenInclude(w => w.EncryptionKey)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (email is null)
         {
-            return (null, NotFound("Email not found."));
+            return (null, [], NotFound("Email not found."));
         }
 
         // Hide emails received after a shadow-block took effect.
         if (shadowCutoff is not null && email.DateSystem > shadowCutoff.Value)
         {
-            return (null, NotFound());
+            return (null, [], NotFound());
         }
 
         // Check if the user has access to the email address.
@@ -179,16 +181,17 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
 
         if (emailClaim is null || !await EmailAccessHelper.CanReadClaimAsync(context, emailClaim, user.Id))
         {
-            return (null, Unauthorized("User does not have a claim to this email address."));
+            return (null, [], Unauthorized("User does not have a claim to this email address."));
         }
 
-        // Check if the user has access to the email.
+        // The email is accessible only through a wrap the caller holds a private key for.
         var decryptableKeyIds = await EmailAccessHelper.ResolveDecryptableKeyIdsAsync(context, user.Id);
-        if (!decryptableKeyIds.Contains(email.EncryptionKeyId))
+        var callerWraps = email.Wraps.Where(w => decryptableKeyIds.Contains(w.EncryptionKeyId)).OrderBy(w => w.EncryptionKeyId).ToList();
+        if (callerWraps.Count == 0)
         {
-            return (null, NotFound("Email not found."));
+            return (null, [], NotFound("Email not found."));
         }
 
-        return (email, null);
+        return (email, callerWraps, null);
     }
 }

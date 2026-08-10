@@ -79,7 +79,7 @@ public class EmailCleanupTask : IMaintenanceTask
 
             // Get all email addresses for this user
             var userAddresses = await dbContext.EmailClaims
-                .Where(c => dbContext.AliasVaultUsers.Any(u => u.Id == user.Id && u.PersonalGroupId == c.VaultManifest!.OwnerGroupId))
+                .Where(c => c.Links.Any(l => dbContext.AliasVaultUsers.Any(u => u.Id == user.Id && u.PersonalGroupId == l.VaultManifest.OwnerGroupId)))
                 .Select(c => c.Address)
                 .ToListAsync(cancellationToken);
 

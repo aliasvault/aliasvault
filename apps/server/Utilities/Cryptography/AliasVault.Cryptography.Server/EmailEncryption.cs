@@ -15,12 +15,12 @@ using AliasServerDb;
 public static class EmailEncryption
 {
     /// <summary>
-    /// Encrypt the email contents with the user's public key.
+    /// Encrypt the email contents with a fresh symmetric key, wrapped once per recipient manifest's delivery key.
     /// </summary>
     /// <param name="email">The plain text email object to encrypt.</param>
-    /// <param name="encryptionKey">The user public encryption key to use for the encryption.</param>
+    /// <param name="deliveryKeys">The delivery keys of every manifest that claims the alias; each gets its own wrap of the same symmetric key.</param>
     /// <returns>Email object with all sensitive fields encrypted.</returns>
-    public static Email EncryptEmail(Email email, VaultManifestDeliveryKey encryptionKey)
+    public static Email EncryptEmail(Email email, IReadOnlyCollection<VaultManifestDeliveryKey> deliveryKeys)
     {
         // Generate symmetric key for email encryption.
         var symmetricKey = Encryption.GenerateRandomSymmetricKey();
@@ -53,9 +53,11 @@ public static class EmailEncryption
             attachment.Bytes = Encryption.SymmetricEncrypt(attachment.Bytes, symmetricKey);
         }
 
-        // Encrypt the symmetric key with the user's public key.
-        email.EncryptedSymmetricKey = Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, encryptionKey.PublicKey);
-        email.EncryptionKeyId = encryptionKey.Id;
+        // Wrap the same symmetric key once per recipient manifest's delivery key.
+        foreach (var deliveryKey in deliveryKeys)
+        {
+            email.Wraps.Add(new EmailKeyWrap { EncryptionKeyId = deliveryKey.Id, EncryptedSymmetricKey = Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, deliveryKey.PublicKey) });
+        }
 
         return email;
     }
@@ -68,8 +70,26 @@ public static class EmailEncryption
     /// <returns>Email object with all sensitive fields decrypted.</returns>
     public static Email DecryptEmail(Email email, string userPrivateKey)
     {
-        // Decrypt symmetric key using private key.
-        var symmetricKey = Encryption.DecryptSymmetricKeyWithRsa(email.EncryptedSymmetricKey, userPrivateKey);
+        // Decrypt the symmetric key from the wrap belonging to this private key; with multiple wraps the
+        // matching one is found by simply trying each.
+        byte[]? symmetricKey = null;
+        foreach (var wrap in email.Wraps)
+        {
+            try
+            {
+                symmetricKey = Encryption.DecryptSymmetricKeyWithRsa(wrap.EncryptedSymmetricKey, userPrivateKey);
+                break;
+            }
+            catch (System.Security.Cryptography.CryptographicException)
+            {
+                // Wrap belongs to another manifest's key; try the next one.
+            }
+        }
+
+        if (symmetricKey is null)
+        {
+            throw new InvalidOperationException("The email carries no wrap that the provided private key can open.");
+        }
 
         // Encrypt all email contents with the symmetric key.
         if (email.MessageHtml is not null)

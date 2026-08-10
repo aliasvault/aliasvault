@@ -120,7 +120,10 @@ declare const TOTP_SUPPORTED_ALGORITHMS: readonly ["SHA1", "SHA256", "SHA512"];
  */
 declare function normalizeTotpAlgorithm(value: string | null | undefined): string;
 /**
- * Normalizes a raw `digits` value to a supported code length (6-10), falling back to {@link TOTP_DEFAULT_DIGITS}.
+ * Normalizes a raw `digits` value to a supported code length, falling back to {@link TOTP_DEFAULT_DIGITS}.
+ *
+ * The 6-8 range is what the authenticator ecosystem actually issues, and it keeps the modulo below 2^32
+ * so the native generators can compute it in a 32-bit integer without overflowing.
  *
  * @param value - Raw digits value, e.g. "8" or undefined
  * @returns A usable digit count
