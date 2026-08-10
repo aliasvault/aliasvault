@@ -58,54 +58,16 @@ public class SmtpServerTests
 
         await _testHost.StartAsync();
 
-        // Create an AliasVault user, public key and an email claim.
+        // Create an AliasVault user with personal group, manifest and primary delivery key (public key).
         var dbContext = _testHostBuilder.GetDbContext();
-        var user = new AliasVaultUser
-        {
-            UserName = "testuser",
-            Email = "testuser@example.tld",
-        };
-        dbContext.AliasVaultUsers.Add(user);
-        await dbContext.SaveChangesAsync();
+        var testUser = await TestUserSeeder.CreateTestUserAsync(dbContext, "testuser", "testuser@example.tld", PublicKey);
 
-        // Create email claims.
-        var emailClaim = new UserEmailClaim
-        {
-            UserId = user.Id,
-            Address = "claimed@example.tld",
-            AddressLocal = "claimed",
-            AddressDomain = "example.tld",
-        };
-        dbContext.UserEmailClaims.Add(emailClaim);
-
-        var emailClaim2 = new UserEmailClaim
-        {
-            UserId = user.Id,
-            Address = "claimed.cc@example.tld",
-            AddressLocal = "claimed.cc",
-            AddressDomain = "example.tld",
-        };
-        dbContext.UserEmailClaims.Add(emailClaim2);
+        // Create email claims linked to the user's personal manifest so delivery can resolve the primary delivery key.
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(testUser.Manifest.ManifestId, "claimed@example.tld"));
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(testUser.Manifest.ManifestId, "claimed.cc@example.tld"));
 
         // Create disabled email claim.
-        var emailClaimDisabled = new UserEmailClaim
-        {
-            UserId = user.Id,
-            Address = "disabled@example.tld",
-            AddressLocal = "disabled",
-            AddressDomain = "example.tld",
-            Disabled = true,
-        };
-        dbContext.UserEmailClaims.Add(emailClaimDisabled);
-
-        // Create public key.
-        var encryptionKey = new UserEncryptionKey
-        {
-            UserId = user.Id,
-            PublicKey = PublicKey,
-            IsPrimary = true,
-        };
-        dbContext.UserEncryptionKeys.Add(encryptionKey);
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(testUser.Manifest.ManifestId, "disabled@example.tld", disabled: true));
 
         await dbContext.SaveChangesAsync();
     }
@@ -215,7 +177,7 @@ public class SmtpServerTests
         await SendMessageToSmtpServer(message);
 
         // Check if the email is in the database.
-        var processedEmail = await _testHostBuilder.GetDbContext().Emails.FirstAsync();
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Wraps).FirstAsync();
 
         // Test non-encrypted field.
         Assert.That(processedEmail.To, Is.EqualTo("claimed@example.tld"));
@@ -251,7 +213,7 @@ public class SmtpServerTests
         await SendMessageToSmtpServer(message);
 
         // Check if the email is in the database.
-        var processedEmail = await _testHostBuilder.GetDbContext().Emails.FirstAsync();
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Wraps).FirstAsync();
 
         // Test non-encrypted field.
         Assert.That(processedEmail.To, Is.EqualTo("claimed@example.tld"));
@@ -285,7 +247,7 @@ public class SmtpServerTests
         await SendMessageToSmtpServer(message);
 
         // Check if the email is in the database.
-        var processedEmail = await _testHostBuilder.GetDbContext().Emails.FirstAsync();
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Wraps).FirstAsync();
 
         // Test non-encrypted field.
         Assert.That(processedEmail.To, Is.EqualTo("claimed@example.tld"));
@@ -319,7 +281,7 @@ public class SmtpServerTests
         await SendMessageToSmtpServer(message);
 
         // Check if the email is in the database.
-        var processedEmail = await _testHostBuilder.GetDbContext().Emails.FirstAsync();
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Wraps).FirstAsync();
 
         // Decrypt the email and verify the accented characters survived into the preview.
         processedEmail = EmailEncryption.DecryptEmail(processedEmail, PrivateKey);

@@ -36,28 +36,10 @@ public static class SeedData
 
         await dbContext.ServerSettings.AddRangeAsync(settings);
 
-        // Create test user
-        var user = new AliasVaultUser
-        {
-            UserName = "testuser",
-            Email = "testuser@example.tld",
-        };
-        dbContext.AliasVaultUsers.Add(user);
-        await dbContext.SaveChangesAsync();
+        // Create test user with personal group, manifest and primary delivery key.
+        var testUser = await TestUserSeeder.CreateTestUserAsync(dbContext, "testuser", "testuser@example.tld");
 
-        // Create encryption key for the user
-        var encryptionKey = new UserEncryptionKey
-        {
-            Id = Guid.NewGuid(),
-            UserId = user.Id,
-            PublicKey = "test-encryption-key",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-        };
-        dbContext.UserEncryptionKeys.Add(encryptionKey);
-        await dbContext.SaveChangesAsync();
-
-        await SeedEmails(dbContext, encryptionKey.Id);
+        await SeedEmails(dbContext, testUser.DeliveryKey.Id);
         await SeedLogs(dbContext);
         await SeedAuthLogs(dbContext);
 
@@ -68,7 +50,7 @@ public static class SeedData
     /// Seeds the database with test emails.
     /// </summary>
     /// <param name="dbContext">The database context.</param>
-    /// <param name="encryptionKeyId">The encryption key ID.</param>
+    /// <param name="encryptionKeyId">The delivery key ID the emails' key wraps reference.</param>
     /// <returns>Task.</returns>
     private static async Task SeedEmails(AliasServerDbContext dbContext, Guid encryptionKeyId)
     {
@@ -148,7 +130,7 @@ public static class SeedData
     /// </summary>
     /// <param name="index">The index.</param>
     /// <param name="daysOffset">The days offset.</param>
-    /// <param name="encryptionKeyId">The encryption key ID.</param>
+    /// <param name="encryptionKeyId">The delivery key ID the email's key wrap references.</param>
     /// <param name="prefix">The prefix.</param>
     /// <returns>Email.</returns>
     private static Email CreateTestEmail(int index, int daysOffset, Guid encryptionKeyId, string prefix)
@@ -167,8 +149,7 @@ public static class SeedData
             MessagePlain = "Test message",
             MessagePreview = "Test message",
             MessageSource = "Test source",
-            EncryptedSymmetricKey = "dummy-key",
-            UserEncryptionKeyId = encryptionKeyId,
+            Wraps = [new EmailKeyWrap { EncryptionKeyId = encryptionKeyId, EncryptedSymmetricKey = "dummy-key" }],
         };
     }
 
