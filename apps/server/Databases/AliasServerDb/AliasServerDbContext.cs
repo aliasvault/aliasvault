@@ -370,7 +370,9 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex(e => new { e.UserId, e.Type, e.VaultManifestId }).IsUnique().HasDatabaseName("UX_VaultManifestAccessKeys_UserId_Type_Manifest");
+            // One access path per (holder, type, manifest) per VEK version: a rotation adds a row rather than
+            // replacing one, so the retired VEK stays retrievable for the history revisions it sealed.
+            builder.HasIndex(e => new { e.UserId, e.Type, e.VaultManifestId, e.KeyVersion }).IsUnique().HasDatabaseName("UX_VaultManifestAccessKeys_UserId_Type_Manifest_Version");
             builder.HasIndex(e => e.VaultManifestId).HasDatabaseName("IX_VaultManifestAccessKeys_VaultManifestId");
             builder.Property(e => e.Metadata).HasColumnType("jsonb");
             builder.Property(e => e.Type).HasConversion(v => ManifestKeyTypes.ToToken(v), v => ManifestKeyTypes.Parse(v));
@@ -389,7 +391,9 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex(e => new { e.UserId, e.Type }).IsUnique().HasDatabaseName("UX_UserUnlockKeys_UserId_Type");
+            // Label is part of the key so a user can enroll several methods of one type (two hardware keys, say)
+            // while methods that must stay single, the password above all, keep it empty and so stay unique per type.
+            builder.HasIndex(e => new { e.UserId, e.Type, e.Label }).IsUnique().HasDatabaseName("UX_UserUnlockKeys_UserId_Type_Label");
             builder.Property(e => e.Metadata).HasColumnType("jsonb");
             builder.Property(e => e.Type).HasConversion(v => UnlockMethodTypes.ToToken(v), v => UnlockMethodTypes.Parse(v));
             builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));

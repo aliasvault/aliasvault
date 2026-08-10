@@ -52,6 +52,12 @@ public class UserGrantKey
     public bool IsPrimary { get; set; }
 
     /// <summary>
+    /// Gets or sets the version of the user's Account Key that <see cref="EncryptedPrivateKey"/> is encrypted with;
+    /// see <see cref="UserUnlockKey.AccountKeyVersion"/>.
+    /// </summary>
+    public int AccountKeyVersion { get; set; }
+
+    /// <summary>
     /// Gets or sets the timestamp at which this keypair was created.
     /// </summary>
     public DateTime CreatedAt { get; set; }

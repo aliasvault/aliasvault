@@ -56,6 +56,18 @@ public class VaultManifestAccessKey
     public required string EncryptedVek { get; set; }
 
     /// <summary>
+    /// Gets or sets the version of the manifest's VEK that <see cref="EncryptedVek"/> yields.
+    /// </summary>
+    public int KeyVersion { get; set; }
+
+    /// <summary>
+    /// Gets or sets the version of the user's Account Key that encrypted <see cref="EncryptedVek"/> (see
+    /// <see cref="UserUnlockKey.AccountKeyVersion"/>), or null when this row is a grant. Grants are encrypted to a
+    /// public key rather than to the AK, and name their wrapping key through <see cref="UserGrantKeyId"/> instead.
+    /// </summary>
+    public int? AccountKeyVersion { get; set; }
+
+    /// <summary>
     /// Gets or sets the id of the account keypair (<see cref="UserGrantKey"/>) the VEK was encrypted to.
     /// </summary>
     public Guid? UserGrantKeyId { get; set; }

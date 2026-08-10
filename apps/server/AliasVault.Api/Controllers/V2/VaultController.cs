@@ -470,6 +470,7 @@ public class VaultController(
                             Type = ManifestKeyType.AccountKey,
                             Algorithm = VaultKeyAlgorithm.Aes256Gcm,
                             EncryptedVek = migrationEncryptedVek,
+                            AccountKeyVersion = 0,
                             CreatedAt = timeProvider.UtcNow,
                             UpdatedAt = timeProvider.UtcNow,
                         });
@@ -766,7 +767,7 @@ public class VaultController(
                 .Where(k => k.UserId == userId && ids.Contains(k.VaultManifestId))
                 .ToListAsync())
             .GroupBy(k => k.VaultManifestId)
-            .ToDictionary(g => g.Key, g => g.OrderBy(k => k.Type == ManifestKeyType.AccountKey ? 0 : 1).ThenByDescending(k => k.CreatedAt).ThenBy(k => k.Id).First());
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(k => k.KeyVersion).ThenBy(k => k.Type == ManifestKeyType.AccountKey ? 0 : 1).ThenByDescending(k => k.CreatedAt).ThenBy(k => k.Id).First());
     }
 
     /// <summary>

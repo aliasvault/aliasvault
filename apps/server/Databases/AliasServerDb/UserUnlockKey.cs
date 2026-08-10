@@ -47,9 +47,21 @@ public class UserUnlockKey
     public required VaultKeyAlgorithm Algorithm { get; set; }
 
     /// <summary>
+    /// Gets or sets the label distinguishing two enrollments of the same <see cref="Type"/>, e.g. two hardware keys.
+    /// Empty for methods a user can only hold one of.
+    /// </summary>
+    [StringLength(100)]
+    public string Label { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the Account Key encrypted with this method's KEK.
     /// </summary>
     public required string EncryptedAccountKey { get; set; }
+
+    /// <summary>
+    /// Gets or sets the version of the Account Key that <see cref="EncryptedAccountKey"/> contains.
+    /// </summary>
+    public int AccountKeyVersion { get; set; }
 
     /// <summary>
     /// Gets or sets optional per-method fields as JSON, e.g. SRP salt and verifier, KDF parameters etc. Read and

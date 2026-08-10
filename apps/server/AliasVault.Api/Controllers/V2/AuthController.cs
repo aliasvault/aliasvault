@@ -508,6 +508,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
                         Type = ManifestKeyType.AccountKey,
                         Algorithm = VaultKeyAlgorithm.Aes256Gcm,
                         EncryptedVek = model.EncryptedVek!,
+                        AccountKeyVersion = 0,
                         CreatedAt = timeProvider.UtcNow,
                         UpdatedAt = timeProvider.UtcNow,
                     });

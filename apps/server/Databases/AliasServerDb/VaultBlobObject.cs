@@ -49,6 +49,11 @@ public class VaultBlobObject
     public int SizeBytes { get; set; }
 
     /// <summary>
+    /// Gets or sets the version of the VEK that <see cref="EncryptedData"/> is encrypted with.
+    /// </summary>
+    public int KeyVersion { get; set; }
+
+    /// <summary>
     /// Gets or sets the created timestamp.
     /// </summary>
     public DateTime CreatedAt { get; set; }

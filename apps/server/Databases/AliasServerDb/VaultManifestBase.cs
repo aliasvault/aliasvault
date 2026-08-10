@@ -52,6 +52,11 @@ public abstract class VaultManifestBase : IVaultRevision
     public string? Version { get; set; }
 
     /// <summary>
+    /// Gets or sets the version of the manifest's VEK that <see cref="ManifestBlob"/> is encrypted with.
+    /// </summary>
+    public int KeyVersion { get; set; }
+
+    /// <summary>
     /// Gets or sets the revision number of the vault manifest. This number is incremented with each change.
     /// </summary>
     [Required]
@@ -129,6 +134,7 @@ public abstract class VaultManifestBase : IVaultRevision
         StorageFormat = source.StorageFormat;
         ManifestBlob = source.ManifestBlob;
         ManifestCiphertextHash = source.ManifestCiphertextHash;
+        KeyVersion = source.KeyVersion;
         Version = source.Version;
         RevisionNumber = source.RevisionNumber;
         FileSize = source.FileSize;

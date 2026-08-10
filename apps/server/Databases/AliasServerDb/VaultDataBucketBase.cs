@@ -21,6 +21,11 @@ public abstract class VaultDataBucketBase : IVaultRevision
     public required string EncryptedData { get; set; }
 
     /// <summary>
+    /// Gets or sets the version of the owning manifest's VEK that <see cref="EncryptedData"/> is encrypted with.
+    /// </summary>
+    public int KeyVersion { get; set; }
+
+    /// <summary>
     /// Gets or sets the revision number of this bucket. Incremented on every write.
     /// </summary>
     public required long RevisionNumber { get; set; }
@@ -48,6 +53,7 @@ public abstract class VaultDataBucketBase : IVaultRevision
     public void CopyPayloadFrom(VaultDataBucketBase source)
     {
         EncryptedData = source.EncryptedData;
+        KeyVersion = source.KeyVersion;
         RevisionNumber = source.RevisionNumber;
         CiphertextHash = source.CiphertextHash;
         CreatedAt = source.CreatedAt;
