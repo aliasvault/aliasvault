@@ -325,9 +325,12 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
             return false;
         }
 
-        if (emailClaim.VaultManifestId is null)
+        // An alias may be claimed by several manifests at once (personal + shared). The mail is stored once, with
+        // the symmetric key wrapped per linked manifest's primary delivery key.
+        var linkedManifestIds = await dbContext.EmailClaimLinks.Where(l => l.EmailClaimId == emailClaim.Id).Select(l => l.VaultManifestId).ToListAsync(CancellationToken.None);
+        if (linkedManifestIds.Count == 0)
         {
-            // The claim is orphaned: the manifest it was associated with no longer exists (owner deleted account),
+            // The claim is orphaned: every manifest it was linked to no longer exists (owner deleted account),
             // leaving the claim as a tombstone record that is designed to block re-use of the address. We cannot process this email.
             logger.LogInformation(
                 "Rejected email: email for {ToAddress} is claimed but its owning vault no longer exists. The owner has most likely deleted their account.",
@@ -345,21 +348,28 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
             return false;
         }
 
-        // Every alias is associated with a manifest. The email is encrypted with the manifest's primary public delivery key.
-        var deliveryKey = await dbContext.VaultManifestDeliveryKeys.FirstOrDefaultAsync(x => x.VaultManifestId == emailClaim.VaultManifestId && x.IsPrimary, CancellationToken.None);
-        if (deliveryKey is null)
+        // Resolve every linked manifest's primary delivery key. A manifest without one cannot receive this mail
+        // (its members simply get no wrap); reject only when no wrap at all is possible.
+        var deliveryKeys = await dbContext.VaultManifestDeliveryKeys.Where(x => linkedManifestIds.Contains(x.VaultManifestId) && x.IsPrimary).ToListAsync(CancellationToken.None);
+        foreach (var keylessManifestId in linkedManifestIds.Except(deliveryKeys.Select(k => k.VaultManifestId)))
         {
-            // The manifest has no published primary delivery key, so we cannot process this email.
+            logger.LogWarning("Manifest {ManifestId} claims alias {ToAddress} but has no primary delivery key published; it gets no wrap for this email.", keylessManifestId, toAddress.User + "@" + toAddress.Host);
+        }
+
+        if (deliveryKeys.Count == 0)
+        {
+            // No linked manifest has a published primary delivery key, so we cannot process this email.
             logger.LogCritical(
-                "Rejected email: email for {ToAddress} cannot be processed. No primary delivery encryption key found for its manifest.",
+                "Rejected email: email for {ToAddress} cannot be processed. No primary delivery encryption key found for any of its manifests.",
                 toAddress.User + "@" + toAddress.Host);
             return false;
         }
 
-        // Resolve the group that owns the manifest, only used to increment its EmailsReceived abuse counter.
-        var recipientGroupId = await dbContext.VaultManifests.Where(m => m.ManifestId == emailClaim.VaultManifestId).Select(m => (Guid?)m.OwnerGroupId).FirstOrDefaultAsync(CancellationToken.None);
+        // Resolve the groups that own the wrapped-for manifests, only used to increment their EmailsReceived counters.
+        var wrappedManifestIds = deliveryKeys.Select(k => k.VaultManifestId).ToList();
+        var recipientGroupIds = await dbContext.VaultManifests.Where(m => wrappedManifestIds.Contains(m.ManifestId)).Select(m => m.OwnerGroupId).Distinct().ToListAsync(CancellationToken.None);
 
-        var insertedId = await InsertEmailIntoDatabase(message, new MailAddress(toAddress.AsAddress()), deliveryKey, recipientGroupId);
+        var insertedId = await InsertEmailIntoDatabase(message, new MailAddress(toAddress.AsAddress()), deliveryKeys, recipientGroupIds);
         logger.LogDebug("Email for {ToAddress} successfully saved into database with ID {InsertedId}.", toAddress.User + "@" + toAddress.Host, insertedId);
         return true;
     }
@@ -369,21 +379,21 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
     /// </summary>
     /// <param name="message">MimeMessage to save into database.</param>
     /// <param name="toAddress">The recipient for this mail.</param>
-    /// <param name="encryptionKey">The public key to encrypt the mail contents with.</param>
-    /// <param name="recipientGroupId">The group that owns the manifest this alias is referenced by.</param>
-    private async Task<int> InsertEmailIntoDatabase(MimeMessage message, MailAddress toAddress, VaultManifestDeliveryKey encryptionKey, Guid? recipientGroupId)
+    /// <param name="deliveryKeys">The delivery keys of every manifest claiming this alias; each gets its own wrap of the email's symmetric key.</param>
+    /// <param name="recipientGroupIds">The groups that own the manifests this alias is claimed by.</param>
+    private async Task<int> InsertEmailIntoDatabase(MimeMessage message, MailAddress toAddress, IReadOnlyCollection<VaultManifestDeliveryKey> deliveryKeys, IReadOnlyCollection<Guid> recipientGroupIds)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
         var newEmail = ConvertMimeMessageToEmail(message, toAddress);
-        newEmail = EmailEncryption.EncryptEmail(newEmail, encryptionKey);
+        newEmail = EmailEncryption.EncryptEmail(newEmail, deliveryKeys);
 
         // Insert the email into the database.
         dbContext.Emails.Add(newEmail);
 
-        // Increment the recipient group's EmailsReceived counter (persistent counter for abuse detection).
-        var group = recipientGroupId is not null ? await dbContext.Groups.FindAsync(recipientGroupId) : null;
-        if (group != null)
+        // Increment each recipient group's EmailsReceived counter: the mail lands in every linked group's pool, so each is charged for it.
+        var groups = await dbContext.Groups.Where(g => recipientGroupIds.Contains(g.Id)).ToListAsync();
+        foreach (var group in groups)
         {
             group.EmailsReceived++;
         }
