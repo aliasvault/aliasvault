@@ -6,11 +6,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AliasClientDb.Migrations
 {
     /// <inheritdoc />
-    public partial class _260ItemChildManifestTriggers : Migration
+    public partial class _211ItemChildManifestTrigger : Migration
     {
         /// <summary>
-        /// The tables whose rows hang off an item through an ItemId foreign key. Their key into Items is the
-        /// composite (ManifestId, ItemId), so their stamp has to keep agreeing with the item's own.
+        /// The tables whose rows are owned by an item through an ItemId foreign key.
         /// </summary>
         private static readonly string[] ItemIdChildTables = ["FieldValues", "FieldHistories", "ItemTags", "Attachments", "Passkeys", "TotpCodes"];
 
@@ -23,13 +22,11 @@ namespace AliasClientDb.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             /*
-             * Moving an item between folders can move it between manifests, and every row hanging off that item
+             * Moving an item between folders can move it between manifests, and every row owned by that item
              * has to follow it: those rows reference their item by the composite (ManifestId, ItemId), so a stamp
              * left behind points at nothing and the item silently loses its fields, TOTP codes and attachments in
-             * every local read until the next push heals it server-side.
-             *
-             * Enforcing that here rather than in each client keeps the rule with the data and all client side apps
-             * will automatically re-stamp when an item is moved between manifests thanks to this trigger.
+             * every local read until the next push heals it server-side. This trigger ensures all clients that
+             * use this sqlite structure will automatically re-stamp when an item is moved between manifests.
              */
             var body = new System.Text.StringBuilder();
             foreach (var table in ItemIdChildTables)

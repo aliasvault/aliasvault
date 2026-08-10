@@ -1296,64 +1296,6 @@ VALUES ('20260130221620_2.0.0-MajorVersionBump', '10.0.10');
 
 COMMIT;
 
-BEGIN TRANSACTION;
-DROP INDEX "IX_Logos_Source";
-
-ALTER TABLE "Logos" ADD "Kind" TEXT NOT NULL DEFAULT 'favicon';
-
-ALTER TABLE "Logos" ADD "Name" TEXT NULL;
-
-ALTER TABLE "Logos" ADD "SharedFolderId" TEXT NULL;
-
-CREATE TABLE "CodecOverflows" (
-    "Id" TEXT NOT NULL CONSTRAINT "PK_CodecOverflows" PRIMARY KEY,
-    "Data" TEXT NOT NULL
-);
-
-CREATE UNIQUE INDEX "IX_Logos_SharedFolderId_Kind_Source" ON "Logos" ("SharedFolderId", "Kind", "Source");
-
-INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260726141537_2.1.0-CodecOverflowsAndItemLogos', '10.0.10');
-
-COMMIT;
-
-BEGIN TRANSACTION;
-ALTER TABLE "EncryptionKeys" ADD "SharedFolderId" TEXT NULL;
-
-CREATE INDEX "IX_EncryptionKeys_SharedFolderId_IsPrimary" ON "EncryptionKeys" ("SharedFolderId", "IsPrimary");
-
-INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260731141636_2.2.0-ScopeEncryptionKeysPerManifest', '10.0.10');
-
-COMMIT;
-
-BEGIN TRANSACTION;
-ALTER TABLE "Logos" RENAME COLUMN "SharedFolderId" TO "ManifestId";
-
-DROP INDEX "IX_Logos_SharedFolderId_Kind_Source";
-
-CREATE UNIQUE INDEX "IX_Logos_ManifestId_Kind_Source" ON "Logos" ("ManifestId", "Kind", "Source");
-
-ALTER TABLE "EncryptionKeys" RENAME COLUMN "SharedFolderId" TO "ManifestId";
-
-DROP INDEX "IX_EncryptionKeys_SharedFolderId_IsPrimary";
-
-CREATE INDEX "IX_EncryptionKeys_ManifestId_IsPrimary" ON "EncryptionKeys" ("ManifestId", "IsPrimary");
-
-ALTER TABLE "Items" ADD "ManifestId" TEXT NULL;
-
-ALTER TABLE "Folders" ADD "ManifestId" TEXT NULL;
-
-CREATE TABLE "Manifests" (
-    "Id" TEXT NOT NULL CONSTRAINT "PK_Manifests" PRIMARY KEY,
-    "Name" TEXT NULL
-);
-
-INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260801094716_2.2.0-ManifestScopedStorage', '10.0.10');
-
-COMMIT;
-
 PRAGMA foreign_keys = 0;
 
 BEGIN TRANSACTION;
@@ -1362,6 +1304,8 @@ DROP INDEX "IX_TotpCodes_ItemId";
 DROP INDEX "IX_Tags_Name";
 
 DROP INDEX "IX_Passkeys_ItemId";
+
+DROP INDEX "IX_Logos_Source";
 
 DROP INDEX "IX_ItemTags_ItemId_TagId";
 
@@ -1375,9 +1319,21 @@ ALTER TABLE "TotpCodes" ADD "ManifestId" TEXT NOT NULL DEFAULT '00000000-0000-00
 
 ALTER TABLE "Tags" ADD "ManifestId" TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
 
+ALTER TABLE "Settings" ADD "ManifestId" TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
+
 ALTER TABLE "Passkeys" ADD "ManifestId" TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
 
+ALTER TABLE "Logos" ADD "ManifestId" TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
+
+ALTER TABLE "Logos" ADD "Kind" TEXT NOT NULL DEFAULT 'favicon';
+
+ALTER TABLE "Logos" ADD "Name" TEXT NULL;
+
 ALTER TABLE "ItemTags" ADD "ManifestId" TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
+
+ALTER TABLE "Items" ADD "ManifestId" TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
+
+ALTER TABLE "Folders" ADD "ManifestId" TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
 
 ALTER TABLE "FieldValues" ADD "ManifestId" TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
 
@@ -1385,13 +1341,44 @@ ALTER TABLE "FieldHistories" ADD "ManifestId" TEXT NOT NULL DEFAULT '00000000-00
 
 ALTER TABLE "FieldDefinitions" ADD "ManifestId" TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
 
+ALTER TABLE "EncryptionKeys" ADD "ManifestId" TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
+
 ALTER TABLE "Attachments" ADD "ManifestId" TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
+
+CREATE TABLE "CodecOverflows" (
+    "Id" TEXT NOT NULL CONSTRAINT "PK_CodecOverflows" PRIMARY KEY,
+    "Data" TEXT NOT NULL
+);
+
+CREATE TABLE "ItemStats" (
+    "ManifestId" TEXT NOT NULL,
+    "Id" TEXT NOT NULL,
+    "LastUsedAt" TEXT NULL,
+    "UseCount" INTEGER NOT NULL,
+    "LastAutofilledAt" TEXT NULL,
+    "AutofillCount" INTEGER NOT NULL,
+    "LastCopiedAt" TEXT NULL,
+    "CopyCount" INTEGER NOT NULL,
+    "LastPasskeyAuthAt" TEXT NULL,
+    "PasskeyAuthCount" INTEGER NOT NULL,
+    "CreatedAt" TEXT NOT NULL,
+    "UpdatedAt" TEXT NOT NULL,
+    "IsDeleted" INTEGER NOT NULL,
+    CONSTRAINT "PK_ItemStats" PRIMARY KEY ("ManifestId", "Id")
+);
+
+CREATE TABLE "Manifests" (
+    "Id" TEXT NOT NULL CONSTRAINT "PK_Manifests" PRIMARY KEY,
+    "Name" TEXT NULL
+);
 
 CREATE INDEX "IX_TotpCodes_ManifestId_ItemId" ON "TotpCodes" ("ManifestId", "ItemId");
 
 CREATE INDEX "IX_Tags_ManifestId_Name" ON "Tags" ("ManifestId", "Name");
 
 CREATE INDEX "IX_Passkeys_ManifestId_ItemId" ON "Passkeys" ("ManifestId", "ItemId");
+
+CREATE UNIQUE INDEX "IX_Logos_ManifestId_Kind_Source" ON "Logos" ("ManifestId", "Kind", "Source");
 
 CREATE UNIQUE INDEX "IX_ItemTags_ManifestId_ItemId_TagId" ON "ItemTags" ("ManifestId", "ItemId", "TagId");
 
@@ -1411,31 +1398,9 @@ CREATE INDEX "IX_FieldHistories_ManifestId_FieldDefinitionId" ON "FieldHistories
 
 CREATE INDEX "IX_FieldHistories_ManifestId_ItemId" ON "FieldHistories" ("ManifestId", "ItemId");
 
+CREATE INDEX "IX_EncryptionKeys_ManifestId_IsPrimary" ON "EncryptionKeys" ("ManifestId", "IsPrimary");
+
 CREATE INDEX "IX_Attachments_ManifestId_ItemId" ON "Attachments" ("ManifestId", "ItemId");
-
-UPDATE FieldValues SET ManifestId = (SELECT i.ManifestId FROM Items i WHERE i.Id = FieldValues.ItemId)
-                  WHERE EXISTS (SELECT 1 FROM Items i WHERE i.Id = FieldValues.ItemId);
-
-UPDATE FieldHistories SET ManifestId = (SELECT i.ManifestId FROM Items i WHERE i.Id = FieldHistories.ItemId)
-                  WHERE EXISTS (SELECT 1 FROM Items i WHERE i.Id = FieldHistories.ItemId);
-
-UPDATE ItemTags SET ManifestId = (SELECT i.ManifestId FROM Items i WHERE i.Id = ItemTags.ItemId)
-                  WHERE EXISTS (SELECT 1 FROM Items i WHERE i.Id = ItemTags.ItemId);
-
-UPDATE Attachments SET ManifestId = (SELECT i.ManifestId FROM Items i WHERE i.Id = Attachments.ItemId)
-                  WHERE EXISTS (SELECT 1 FROM Items i WHERE i.Id = Attachments.ItemId);
-
-UPDATE Passkeys SET ManifestId = (SELECT i.ManifestId FROM Items i WHERE i.Id = Passkeys.ItemId)
-                  WHERE EXISTS (SELECT 1 FROM Items i WHERE i.Id = Passkeys.ItemId);
-
-UPDATE TotpCodes SET ManifestId = (SELECT i.ManifestId FROM Items i WHERE i.Id = TotpCodes.ItemId)
-                  WHERE EXISTS (SELECT 1 FROM Items i WHERE i.Id = TotpCodes.ItemId);
-
-UPDATE Tags SET ManifestId = (SELECT it.ManifestId FROM ItemTags it WHERE it.TagId = Tags.Id ORDER BY it.ManifestId LIMIT 1)
-                  WHERE EXISTS (SELECT 1 FROM ItemTags it WHERE it.TagId = Tags.Id);
-
-UPDATE FieldDefinitions SET ManifestId = (SELECT fv.ManifestId FROM FieldValues fv WHERE fv.FieldDefinitionId = FieldDefinitions.Id ORDER BY fv.ManifestId LIMIT 1)
-                  WHERE EXISTS (SELECT 1 FROM FieldValues fv WHERE fv.FieldDefinitionId = FieldDefinitions.Id);
 
 CREATE TABLE "ef_temp_Attachments" (
     "ManifestId" TEXT NOT NULL,
@@ -1508,7 +1473,7 @@ CREATE TABLE "ef_temp_Folders" (
 );
 
 INSERT INTO "ef_temp_Folders" ("ManifestId", "Id", "CreatedAt", "IsDeleted", "Name", "ParentFolderId", "UpdatedAt", "Weight")
-SELECT IFNULL("ManifestId", '00000000-0000-0000-0000-000000000000'), "Id", "CreatedAt", "IsDeleted", "Name", "ParentFolderId", "UpdatedAt", "Weight"
+SELECT "ManifestId", "Id", "CreatedAt", "IsDeleted", "Name", "ParentFolderId", "UpdatedAt", "Weight"
 FROM "Folders";
 
 CREATE TABLE "ef_temp_Items" (
@@ -1528,7 +1493,7 @@ CREATE TABLE "ef_temp_Items" (
 );
 
 INSERT INTO "ef_temp_Items" ("ManifestId", "Id", "CreatedAt", "DeletedAt", "FolderId", "IsDeleted", "ItemType", "LogoId", "Name", "UpdatedAt")
-SELECT IFNULL("ManifestId", '00000000-0000-0000-0000-000000000000'), "Id", "CreatedAt", "DeletedAt", "FolderId", "IsDeleted", "ItemType", "LogoId", "Name", "UpdatedAt"
+SELECT "ManifestId", "Id", "CreatedAt", "DeletedAt", "FolderId", "IsDeleted", "ItemType", "LogoId", "Name", "UpdatedAt"
 FROM "Items";
 
 CREATE TABLE "ef_temp_ItemTags" (
@@ -1603,6 +1568,20 @@ INSERT INTO "ef_temp_Tags" ("ManifestId", "Id", "Color", "CreatedAt", "DisplayOr
 SELECT "ManifestId", "Id", "Color", "CreatedAt", "DisplayOrder", "IsDeleted", "Name", "UpdatedAt"
 FROM "Tags";
 
+CREATE TABLE "ef_temp_Settings" (
+    "ManifestId" TEXT NOT NULL,
+    "Key" TEXT NOT NULL,
+    "CreatedAt" TEXT NOT NULL,
+    "IsDeleted" INTEGER NOT NULL,
+    "UpdatedAt" TEXT NOT NULL,
+    "Value" TEXT NULL,
+    CONSTRAINT "PK_Settings" PRIMARY KEY ("ManifestId", "Key")
+);
+
+INSERT INTO "ef_temp_Settings" ("ManifestId", "Key", "CreatedAt", "IsDeleted", "UpdatedAt", "Value")
+SELECT "ManifestId", "Key", "CreatedAt", "IsDeleted", "UpdatedAt", "Value"
+FROM "Settings";
+
 CREATE TABLE "ef_temp_Logos" (
     "ManifestId" TEXT NOT NULL,
     "Id" TEXT NOT NULL,
@@ -1619,7 +1598,7 @@ CREATE TABLE "ef_temp_Logos" (
 );
 
 INSERT INTO "ef_temp_Logos" ("ManifestId", "Id", "CreatedAt", "FetchedAt", "FileData", "IsDeleted", "Kind", "MimeType", "Name", "Source", "UpdatedAt")
-SELECT IFNULL("ManifestId", '00000000-0000-0000-0000-000000000000'), "Id", "CreatedAt", "FetchedAt", "FileData", "IsDeleted", "Kind", "MimeType", "Name", "Source", "UpdatedAt"
+SELECT "ManifestId", "Id", "CreatedAt", "FetchedAt", "FileData", "IsDeleted", "Kind", "MimeType", "Name", "Source", "UpdatedAt"
 FROM "Logos";
 
 CREATE TABLE "ef_temp_FieldDefinitions" (
@@ -1655,7 +1634,7 @@ CREATE TABLE "ef_temp_EncryptionKeys" (
 );
 
 INSERT INTO "ef_temp_EncryptionKeys" ("ManifestId", "Id", "CreatedAt", "IsDeleted", "IsPrimary", "PrivateKey", "PublicKey", "UpdatedAt")
-SELECT IFNULL("ManifestId", '00000000-0000-0000-0000-000000000000'), "Id", "CreatedAt", "IsDeleted", "IsPrimary", "PrivateKey", "PublicKey", "UpdatedAt"
+SELECT "ManifestId", "Id", "CreatedAt", "IsDeleted", "IsPrimary", "PrivateKey", "PublicKey", "UpdatedAt"
 FROM "EncryptionKeys";
 
 COMMIT;
@@ -1698,6 +1677,10 @@ ALTER TABLE "ef_temp_TotpCodes" RENAME TO "TotpCodes";
 DROP TABLE "Tags";
 
 ALTER TABLE "ef_temp_Tags" RENAME TO "Tags";
+
+DROP TABLE "Settings";
+
+ALTER TABLE "ef_temp_Settings" RENAME TO "Settings";
 
 DROP TABLE "Logos";
 
@@ -1771,81 +1754,7 @@ CREATE INDEX "IX_EncryptionKeys_ManifestId_IsPrimary" ON "EncryptionKeys" ("Mani
 COMMIT;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260806143736_2.3.0-ManifestScopedPrimaryKeys', '10.0.10');
-
-BEGIN TRANSACTION;
-INSERT OR IGNORE INTO Tags (ManifestId, Id, Name, Color, DisplayOrder, CreatedAt, UpdatedAt, IsDeleted)
-                  SELECT DISTINCT it.ManifestId, t.Id, t.Name, t.Color, t.DisplayOrder, t.CreatedAt, t.UpdatedAt, t.IsDeleted
-                  FROM ItemTags it JOIN Tags t ON t.Id = it.TagId;
-
-INSERT OR IGNORE INTO FieldDefinitions (ManifestId, Id, FieldType, Label, IsMultiValue, IsHidden, EnableHistory, Weight, ApplicableToTypes, CreatedAt, UpdatedAt, IsDeleted)
-                  SELECT DISTINCT fv.ManifestId, fd.Id, fd.FieldType, fd.Label, fd.IsMultiValue, fd.IsHidden, fd.EnableHistory, fd.Weight, fd.ApplicableToTypes, fd.CreatedAt, fd.UpdatedAt, fd.IsDeleted
-                  FROM FieldValues fv JOIN FieldDefinitions fd ON fd.Id = fv.FieldDefinitionId;
-
-INSERT OR IGNORE INTO FieldDefinitions (ManifestId, Id, FieldType, Label, IsMultiValue, IsHidden, EnableHistory, Weight, ApplicableToTypes, CreatedAt, UpdatedAt, IsDeleted)
-                  SELECT DISTINCT fh.ManifestId, fd.Id, fd.FieldType, fd.Label, fd.IsMultiValue, fd.IsHidden, fd.EnableHistory, fd.Weight, fd.ApplicableToTypes, fd.CreatedAt, fd.UpdatedAt, fd.IsDeleted
-                  FROM FieldHistories fh JOIN FieldDefinitions fd ON fd.Id = fh.FieldDefinitionId;
-
-INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260806144813_2.3.1-ScopedReferenceCopies', '10.0.10');
-
-COMMIT;
-
-BEGIN TRANSACTION;
-ALTER TABLE "Settings" ADD "ManifestId" TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
-
-CREATE TABLE "ef_temp_Settings" (
-    "ManifestId" TEXT NOT NULL,
-    "Key" TEXT NOT NULL,
-    "CreatedAt" TEXT NOT NULL,
-    "IsDeleted" INTEGER NOT NULL,
-    "UpdatedAt" TEXT NOT NULL,
-    "Value" TEXT NULL,
-    CONSTRAINT "PK_Settings" PRIMARY KEY ("ManifestId", "Key")
-);
-
-INSERT INTO "ef_temp_Settings" ("ManifestId", "Key", "CreatedAt", "IsDeleted", "UpdatedAt", "Value")
-SELECT "ManifestId", "Key", "CreatedAt", "IsDeleted", "UpdatedAt", "Value"
-FROM "Settings";
-
-COMMIT;
-
-PRAGMA foreign_keys = 0;
-
-BEGIN TRANSACTION;
-DROP TABLE "Settings";
-
-ALTER TABLE "ef_temp_Settings" RENAME TO "Settings";
-
-COMMIT;
-
-PRAGMA foreign_keys = 1;
-
-INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260808095315_2.4.0-ManifestScopedSettings', '10.0.10');
-
-BEGIN TRANSACTION;
-CREATE TABLE "ItemStats" (
-    "ManifestId" TEXT NOT NULL,
-    "Id" TEXT NOT NULL,
-    "LastUsedAt" TEXT NULL,
-    "UseCount" INTEGER NOT NULL,
-    "LastAutofilledAt" TEXT NULL,
-    "AutofillCount" INTEGER NOT NULL,
-    "LastCopiedAt" TEXT NULL,
-    "CopyCount" INTEGER NOT NULL,
-    "LastPasskeyAuthAt" TEXT NULL,
-    "PasskeyAuthCount" INTEGER NOT NULL,
-    "CreatedAt" TEXT NOT NULL,
-    "UpdatedAt" TEXT NOT NULL,
-    "IsDeleted" INTEGER NOT NULL,
-    CONSTRAINT "PK_ItemStats" PRIMARY KEY ("ManifestId", "Id")
-);
-
-INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260808132139_2.5.0-AddItemStats', '10.0.10');
-
-COMMIT;
+VALUES ('20260809201530_2.1.0-ManifestScopedStorage', '10.0.10');
 
 BEGIN TRANSACTION;
 CREATE TRIGGER IF NOT EXISTS "TR_Items_ResyncChildManifestIds"
@@ -1862,7 +1771,7 @@ BEGIN
 END;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260809173344_2.6.0-ItemChildManifestTriggers', '10.0.10');
+VALUES ('20260809201914_2.1.1-ItemChildManifestTrigger', '10.0.10');
 
 COMMIT;
 

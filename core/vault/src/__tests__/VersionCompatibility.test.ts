@@ -179,7 +179,7 @@ describe('VersionCompatibility', () => {
 
     it('should accept newer full-schema EF stamps (e.g. 2.1.0) via the same-major fallback', () => {
       /*
-       * Materialized databases carry EF history rows beyond 2.0.0 (e.g. 2.1.0-CodecOverflowsAndItemLogos).
+       * Materialized databases carry EF history rows beyond 2.0.0 (e.g. 2.1.0-ManifestScopedStorage).
        * Those are unknown to the frozen chain on purpose and must resolve as compatible.
        */
       const result = checkVersionCompatibility('2.1.0');

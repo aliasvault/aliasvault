@@ -8,6 +8,8 @@ Refer to the docs `upgrade-ef-client-model.md` for how this scripts are used.
 
 ## The migration chain is frozen at vault version 2.0.0
 
-Since the manifest-v1 storage model (vault version 2.0.0, revision 13) every vault pull re-materializes the local SQLite from the full schema (`000_FullSchema.sql` / `COMPLETE_SCHEMA_SQL`), so individual client migrations are no longer added after 2.0.0.
+After vault version 2.0.0, the SQLite schema is always recreated directly from the full schema script, so incremental client migrations are no longer used. Numbered `NNN_*.sql` files are legacy and can be removed once all users are on version 2.0.0 or higher.
 
-The individual migrations can be fully removed once all active users have migrated to 2.0.0+, as that version is compatible with the manifest-v1 structure.
+## Rules for migrations after 2.0.0
+
+Post-2.0.0, EF migrations are only used to generate the up-to-date full schema. Data-changing SQL is not required as the newest DB schema is used before materialization.

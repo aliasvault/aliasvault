@@ -15,10 +15,13 @@ mkdir -p "$OUTPUT_DIR"
 
 # Regenerate the full schema script.
 echo "Generating full schema script..."
-dotnet ef migrations script \
+if ! dotnet ef migrations script \
   --project "$PROJECT" \
   --startup-project "$STARTUP_PROJECT" \
   --context "$CONTEXT" \
-  --output "$FULL_FILE"
+  --output "$FULL_FILE"; then
+    echo "Error: 'dotnet ef migrations script' failed; $FULL_FILE was not regenerated."
+    exit 1
+fi
 
 echo "Done. Full schema written to $FULL_FILE"
