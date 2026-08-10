@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AliasServerDb.Migrations
 {
     [DbContext(typeof(AliasServerDbContext))]
-    [Migration("20260808095808_ManifestOwnedDataBuckets")]
-    partial class ManifestOwnedDataBuckets
+    [Migration("20260810093922_ManifestStorageAndGroupOwnership")]
+    partial class ManifestStorageAndGroupOwnership
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -892,8 +892,10 @@ namespace AliasServerDb.Migrations
                     b.Property<string>("Metadata")
                         .HasColumnType("jsonb");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1125,8 +1127,10 @@ namespace AliasServerDb.Migrations
                     b.Property<string>("Metadata")
                         .HasColumnType("jsonb");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
