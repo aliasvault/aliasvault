@@ -193,7 +193,7 @@ public func truncateText(_ text: String?, limit: Int) -> String {
         credential: AutofillCredential(
             id: UUID(),
             serviceName: "Example Service with a very long name bla bla bla",
-            serviceUrl: "https://example.com",
+            serviceUrls: ["https://example.com"],
             logo: nil,
             username: "usernameverylongverylongtextindeed",
             email: "john.doe@example.com",

@@ -288,7 +288,7 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                 ItemWithCredentialInfo(
                     itemId: item.itemId,
                     serviceName: item.serviceName,
-                    url: item.url,
+                    urls: item.urls,
                     username: item.username,
                     hasPassword: item.hasPassword,
                     createdAt: item.createdAt,

@@ -48,13 +48,7 @@ data class Item(
     }
 
     /**
-     * Get the URL field value (login.url).
-     */
-    val url: String?
-        get() = getFieldValue(FieldKey.LOGIN_URL)
-
-    /**
-     * Get all URL field values (login.url) for multi-URL support.
+     * Get all URL field values (login.url).
      */
     val urls: List<String>
         get() = getFieldValues(FieldKey.LOGIN_URL)

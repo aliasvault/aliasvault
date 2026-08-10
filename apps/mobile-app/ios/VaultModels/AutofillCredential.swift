@@ -6,7 +6,6 @@ import Foundation
 public struct AutofillCredential: Codable, Hashable, Equatable {
     public let id: UUID
     public let serviceName: String?
-    public let serviceUrl: String?
     /// All URLs associated with this credential (for multi-URL support)
     public let serviceUrls: [String]
     public let logo: Data?
@@ -27,8 +26,7 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
     public init(
         id: UUID,
         serviceName: String?,
-        serviceUrl: String?,
-        serviceUrls: [String] = [],
+        serviceUrls: [String],
         logo: Data?,
         username: String?,
         email: String?,
@@ -41,8 +39,7 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
     ) {
         self.id = id
         self.serviceName = serviceName
-        self.serviceUrl = serviceUrl
-        self.serviceUrls = serviceUrls.isEmpty ? (serviceUrl.map { [$0] } ?? []) : serviceUrls
+        self.serviceUrls = serviceUrls
         self.logo = logo
         self.username = username
         self.email = email
@@ -62,7 +59,6 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
     public init(from item: Item, passkey: Passkey? = nil, totp: TotpCode? = nil) {
         self.id = item.id
         self.serviceName = item.name
-        self.serviceUrl = item.url
         self.serviceUrls = item.urls
         self.logo = item.logo
         self.username = item.username

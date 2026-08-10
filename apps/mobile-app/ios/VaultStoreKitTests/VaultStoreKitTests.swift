@@ -75,7 +75,7 @@ final public class VaultStoreKitTests: XCTestCase {
         if let gmail = gmailItem {
             // Verify all expected properties
             XCTAssertEqual(gmail.name, "Gmail Test Account")
-            XCTAssertEqual(gmail.url, "https://google.com")
+            XCTAssertEqual(gmail.urls, ["https://google.com"])
             XCTAssertEqual(gmail.username, "test.user@gmail.com")
             XCTAssertEqual(gmail.firstName, "Test")
             XCTAssertEqual(gmail.lastName, "User")

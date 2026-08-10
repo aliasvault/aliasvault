@@ -425,7 +425,6 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
                         ItemWithCredentialInfo(
                             itemId = itemId,
                             serviceName = itemName,
-                            url = urls.firstOrNull(),
                             urls = urls,
                             username = itemUsername,
                             hasPassword = hasPassword,
@@ -747,8 +746,7 @@ data class PasskeyWithItem(
 data class ItemWithCredentialInfo(
     val itemId: UUID,
     val serviceName: String?,
-    val url: String?,
-    val urls: List<String> = url?.let { listOf(it) } ?: emptyList(),
+    val urls: List<String>,
     val username: String?,
     val hasPassword: Boolean,
     val createdAt: Date,

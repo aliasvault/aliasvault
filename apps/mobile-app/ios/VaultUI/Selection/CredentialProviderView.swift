@@ -476,7 +476,7 @@ extension AutofillCredential {
         AutofillCredential(
             id: UUID(),
             serviceName: "Example Service",
-            serviceUrl: "https://example.com",
+            serviceUrls: ["https://example.com"],
             logo: nil,
             username: "johndoe",
             email: "john@example.com",
@@ -497,7 +497,7 @@ public class PreviewCredentialProviderViewModel: CredentialProviderViewModel {
             AutofillCredential(
                 id: UUID(),
                 serviceName: "Another Service",
-                serviceUrl: "https://another.com",
+                serviceUrls: ["https://another.com"],
                 logo: nil,
                 username: "anotheruser",
                 email: "another@example.com",

@@ -146,7 +146,7 @@ private struct PasskeyCredentialCard: View {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(credential.serviceName ?? credential.serviceUrl ?? "-")
+                        Text(credential.serviceName ?? credential.serviceUrls.first ?? "-")
                             .font(.headline)
                             .foregroundColor(colors.text)
 
@@ -252,11 +252,13 @@ public class PasskeyProviderViewModel: ObservableObject {
             // Prepare searchable fields including passkey rpIds
             var searchableFields = [
                 credential.serviceName?.lowercased() ?? "",
-                credential.serviceUrl?.lowercased() ?? "",
                 credential.username?.lowercased() ?? "",
                 credential.email?.lowercased() ?? "",
                 credential.notes?.lowercased() ?? ""
             ]
+
+            // Add all associated URLs to searchable fields
+            searchableFields.append(contentsOf: credential.serviceUrls.map { $0.lowercased() })
 
             // Add passkey rpId to searchable fields
             if let passkey = credential.passkey {
@@ -336,7 +338,7 @@ public class PasskeyProviderViewModel: ObservableObject {
         AutofillCredential(
             id: UUID(),
             serviceName: "GitHub",
-            serviceUrl: "https://github.com",
+            serviceUrls: ["https://github.com"],
             logo: nil,
             username: "johndoe",
             email: "user@example.com",
@@ -349,7 +351,7 @@ public class PasskeyProviderViewModel: ObservableObject {
         AutofillCredential(
             id: UUID(),
             serviceName: "Google",
-            serviceUrl: "https://google.com",
+            serviceUrls: ["https://google.com"],
             logo: nil,
             username: nil,
             email: "johndoe@gmail.com",
@@ -395,7 +397,7 @@ public class PasskeyProviderViewModel: ObservableObject {
         AutofillCredential(
             id: UUID(),
             serviceName: "GitHub",
-            serviceUrl: "https://github.com",
+            serviceUrls: ["https://github.com"],
             logo: nil,
             username: "johndoe",
             email: "user@example.com",

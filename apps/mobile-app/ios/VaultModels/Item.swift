@@ -63,12 +63,7 @@ public struct Item: Codable, Hashable, Equatable {
         return fields.filter { $0.fieldKey == fieldKey }.map { $0.value }
     }
 
-    /// Get the URL field value (login.url).
-    public var url: String? {
-        return getFieldValue(FieldKey.loginUrl)
-    }
-
-    /// Get all URL field values (login.url) for multi-URL support.
+    /// Get all URL field values (login.url).
     public var urls: [String] {
         return getFieldValues(FieldKey.loginUrl)
     }

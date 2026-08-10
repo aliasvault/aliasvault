@@ -98,7 +98,7 @@ public class PasskeyRepository: BaseRepository {
             items.append(ItemWithCredentialInfoData(
                 itemId: itemId,
                 serviceName: serviceName,
-                url: url,
+                urls: url.map { [$0] } ?? [],
                 username: itemUsername,
                 hasPassword: hasPassword,
                 createdAt: createdAt,
@@ -518,7 +518,6 @@ public class PasskeyRepository: BaseRepository {
 public struct ItemWithCredentialInfoData {
     public let itemId: UUID
     public let serviceName: String?
-    public let url: String?
     /// All URLs associated with this item (supports multi-value URL fields)
     public let urls: [String]
     public let username: String?
@@ -526,21 +525,9 @@ public struct ItemWithCredentialInfoData {
     public let createdAt: Date
     public let updatedAt: Date
 
-    public init(itemId: UUID, serviceName: String?, url: String?, username: String?, hasPassword: Bool, createdAt: Date, updatedAt: Date) {
-        self.itemId = itemId
-        self.serviceName = serviceName
-        self.url = url
-        self.urls = url.map { [$0] } ?? []
-        self.username = username
-        self.hasPassword = hasPassword
-        self.createdAt = createdAt
-        self.updatedAt = updatedAt
-    }
-
     public init(itemId: UUID, serviceName: String?, urls: [String], username: String?, hasPassword: Bool, createdAt: Date, updatedAt: Date) {
         self.itemId = itemId
         self.serviceName = serviceName
-        self.url = urls.first
         self.urls = urls
         self.username = username
         self.hasPassword = hasPassword

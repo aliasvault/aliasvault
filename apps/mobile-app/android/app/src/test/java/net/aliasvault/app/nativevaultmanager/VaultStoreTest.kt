@@ -79,7 +79,7 @@ class VaultStoreTest {
 
         // Verify all expected properties
         assertEquals("Gmail Test Account", gmailItem.name)
-        assertEquals("https://google.com", gmailItem.url)
+        assertEquals(listOf("https://google.com"), gmailItem.urls)
         assertEquals("test.user@gmail.com", gmailItem.username)
         assertEquals("Test", gmailItem.firstName)
         assertEquals("User", gmailItem.lastName)
