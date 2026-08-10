@@ -41,7 +41,16 @@ public static class EmailEncryption
             email.MessagePreview = Encryption.SymmetricEncrypt(email.MessagePreview, symmetricKey);
         }
 
-        email.MessageSource = Encryption.SymmetricEncrypt(email.MessageSource, symmetricKey);
+        if (email.MessageSource is not null)
+        {
+            email.MessageSource = Encryption.SymmetricEncrypt(email.MessageSource, symmetricKey);
+        }
+
+        if (email.MessageSourceBytes is not null)
+        {
+            email.MessageSourceBytes = Encryption.SymmetricEncrypt(email.MessageSourceBytes, symmetricKey);
+        }
+
         email.Subject = Encryption.SymmetricEncrypt(email.Subject, symmetricKey);
         email.From = Encryption.SymmetricEncrypt(email.From, symmetricKey);
         email.FromLocal = Encryption.SymmetricEncrypt(email.FromLocal, symmetricKey);
@@ -107,7 +116,17 @@ public static class EmailEncryption
             email.MessagePreview = Encryption.SymmetricDecrypt(email.MessagePreview, symmetricKey);
         }
 
-        email.MessageSource = Encryption.SymmetricDecrypt(email.MessageSource, symmetricKey);
+        if (email.MessageSource is not null)
+        {
+            email.MessageSource = Encryption.SymmetricDecrypt(email.MessageSource, symmetricKey);
+        }
+
+        if (email.MessageSourceBytes is not null)
+        {
+            // Note: the decrypted bytes are the gzip-compressed source; callers must gunzip to get the raw MIME.
+            email.MessageSourceBytes = Encryption.SymmetricDecrypt(email.MessageSourceBytes, symmetricKey);
+        }
+
         email.Subject = Encryption.SymmetricDecrypt(email.Subject, symmetricKey);
         email.From = Encryption.SymmetricDecrypt(email.From, symmetricKey);
         email.FromLocal = Encryption.SymmetricDecrypt(email.FromLocal, symmetricKey);

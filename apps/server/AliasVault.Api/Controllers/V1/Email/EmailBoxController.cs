@@ -207,7 +207,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
                 MessagePreview = x.MessagePreview ?? string.Empty,
                 EncryptedSymmetricKey = x.Wraps.Where(w => personalKeyIds.Contains(w.EncryptionKeyId)).OrderBy(w => w.EncryptionKeyId).Select(w => w.EncryptedSymmetricKey).First(),
                 EncryptionKey = x.Wraps.Where(w => personalKeyIds.Contains(w.EncryptionKeyId)).OrderBy(w => w.EncryptionKeyId).Select(w => w.EncryptionKey.PublicKey).First(),
-                HasAttachments = x.Attachments.Any(),
+                HasAttachments = x.AttachmentCount > 0 || x.Attachments.Any(),
             })
             .ToListAsync();
 

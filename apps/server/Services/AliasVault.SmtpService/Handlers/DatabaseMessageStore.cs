@@ -8,6 +8,7 @@
 namespace AliasVault.SmtpService.Handlers;
 
 using System.Buffers;
+using System.IO.Compression;
 using System.Net.Mail;
 using System.Text.RegularExpressions;
 using AliasServerDb;
@@ -143,7 +144,8 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
             fromDomain = string.Empty;
         }
 
-        // Create email object.
+        // Create email object. The gzipped raw source is the single authoritative copy of the body content:
+        // clients derive the html/plain bodies and attachments by parsing it after decrypt+gunzip.
         var email = new Email
         {
             From = from,
@@ -153,44 +155,53 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
             ToLocal = toAddress.User.ToLower(),
             ToDomain = toAddress.Host.ToLower(),
             Subject = message.Subject ?? string.Empty,
-            MessageHtml = message.HtmlBody,
-            MessagePlain = message.TextBody,
-            MessageSource = message.ToString(),
+            MessageSourceBytes = CompressMessageSource(message),
+            AttachmentCount = message.Attachments.Count(),
             Date = message.Date.DateTime.ToUniversalTime(),
             DateSystem = DateTime.UtcNow,
             Visible = true,
         };
 
         // Extract a preview of the email message body to be used in the email listing preview in the UI.
-        email.MessagePreview = ExtractMessagePreview(email);
-
-        // Parse attachments from email, and create separate attachment records in database for each attachment.
-        foreach (var attachment in message.Attachments)
-        {
-            var emailAttachment = CreateEmailAttachment(attachment);
-            email.Attachments.Add(emailAttachment);
-        }
+        email.MessagePreview = ExtractMessagePreview(message.TextBody, message.HtmlBody);
 
         return email;
+    }
+
+    /// <summary>
+    /// Serialize the full RFC 822 message and gzip-compress it.
+    /// </summary>
+    /// <param name="message">MimeMessage object.</param>
+    /// <returns>Gzip-compressed raw message source.</returns>
+    private static byte[] CompressMessageSource(MimeMessage message)
+    {
+        using var output = new MemoryStream();
+        using (var gzip = new GZipStream(output, CompressionLevel.Optimal, leaveOpen: true))
+        {
+            message.WriteTo(gzip);
+        }
+
+        return output.ToArray();
     }
 
     /// <summary>
     /// Extracts a preview of the email message body to be used in the email listing preview in the UI.
     /// This so the client does not need to load the full email body.
     /// </summary>
-    /// <param name="email">Email to extract preview for.</param>
+    /// <param name="messagePlain">The parsed plain text body of the message, if any.</param>
+    /// <param name="messageHtml">The parsed HTML body of the message, if any.</param>
     /// <returns>Email preview as string.</returns>
-    private static string ExtractMessagePreview(Email email)
+    private static string ExtractMessagePreview(string? messagePlain, string? messageHtml)
     {
         var messagePreview = string.Empty;
         const int maxPreviewLength = 180;
 
         try
         {
-            if (email.MessagePlain != null && !string.IsNullOrEmpty(email.MessagePlain) && email.MessagePlain.Length > 3)
+            if (messagePlain != null && !string.IsNullOrEmpty(messagePlain) && messagePlain.Length > 3)
             {
                 // Decode HTML entities (e.g., &#39; -> ', &amp; -> &)
-                string plainToPlainText = System.Net.WebUtility.HtmlDecode(email.MessagePlain);
+                string plainToPlainText = System.Net.WebUtility.HtmlDecode(messagePlain);
 
                 // Replace any newline characters with a space
                 plainToPlainText = Regex.Replace(plainToPlainText, @"\t|\n|\r", " ", RegexOptions.NonBacktracking);
@@ -211,9 +222,9 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
                     ? plainToPlainText.Substring(0, maxPreviewLength)
                     : plainToPlainText;
             }
-            else if (email.MessageHtml != null)
+            else if (messageHtml != null)
             {
-                string htmlToPlainText = Uglify.HtmlToText(email.MessageHtml).ToString();
+                string htmlToPlainText = Uglify.HtmlToText(messageHtml).ToString();
 
                 // Decode HTML entities (e.g., &#39; -> ', &amp; -> &)
                 htmlToPlainText = System.Net.WebUtility.HtmlDecode(htmlToPlainText);
@@ -243,46 +254,6 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
         }
 
         return messagePreview;
-    }
-
-    /// <summary>
-    /// Create an EmailAttachment object from a MimeEntity attachment.
-    /// </summary>
-    /// <param name="attachment">MimeEntity attachment.</param>
-    /// <returns>EmailAttachment object.</returns>
-    private static EmailAttachment CreateEmailAttachment(MimeEntity attachment)
-    {
-        byte[] fileBytes = GetAttachmentBytes(attachment);
-
-        return new EmailAttachment
-        {
-            Bytes = fileBytes,
-            Filename = attachment.ContentDisposition?.FileName ?? string.Empty,
-            MimeType = attachment.ContentType.MimeType,
-            Filesize = fileBytes.Length,
-            Date = DateTime.UtcNow,
-        };
-    }
-
-    /// <summary>
-    /// Get the attachment bytes from a MimeEntity attachment.
-    /// </summary>
-    /// <param name="attachment">MimeEntity attachment.</param>
-    /// <returns>Attachment byte array.</returns>
-    private static byte[] GetAttachmentBytes(MimeEntity attachment)
-    {
-        using var memory = new MemoryStream();
-
-        if (attachment is MimePart mimePartAttachment)
-        {
-            mimePartAttachment.Content?.DecodeTo(memory);
-        }
-        else
-        {
-            ((MessagePart)attachment).Message?.WriteTo(memory);
-        }
-
-        return memory.ToArray();
     }
 
     /// <summary>

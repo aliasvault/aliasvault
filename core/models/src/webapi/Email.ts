@@ -2,14 +2,21 @@ import { EmailAttachment } from "./EmailAttachment";
 import { EmailKeyWrap } from "./EmailKeyWrap";
 
 export type Email = {
-    /** The body of the email message */
-    messageHtml: string;
+    /** The body of the email message. Null for source-only stored emails: derive it by parsing the source */
+    messageHtml: string | null;
 
-    /** The plain text body of the email message */
-    messagePlain: string;
+    /** The plain text body of the email message. Null for source-only stored emails: derive it by parsing the source */
+    messagePlain: string | null;
 
-    /** The raw RFC 822 source of the email message */
+    /**
+     * The raw RFC 822 source of the email message (ciphertext, base64). For source-only stored emails the
+     * decrypted plaintext is gzip-compressed and starts with the gzip magic bytes 0x1f 0x8b; parse the
+     * (decompressed) source to derive the bodies and attachments.
+     */
     messageSource: string;
+
+    /** The number of attachments contained in the email message */
+    attachmentCount: number;
 
     /** The ID of the email */
     id: number;

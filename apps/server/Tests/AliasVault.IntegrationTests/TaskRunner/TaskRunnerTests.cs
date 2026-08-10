@@ -65,6 +65,11 @@ public class TaskRunnerTests
         await using var dbContext = await _testHostBuilder.GetDbContextAsync();
         var emails = await dbContext.Emails.ToListAsync();
         Assert.That(emails, Has.Count.EqualTo(50));
+
+        // The seed contains one legacy-shaped email (text source + attachment row) per age group: the old one must
+        // be cleaned up together with its attachment row, the recent one must survive with its attachment row intact.
+        var attachmentCount = await dbContext.EmailAttachments.CountAsync();
+        Assert.That(attachmentCount, Is.EqualTo(1), "Only the recent legacy email's attachment row should remain after cleanup of old legacy rows.");
     }
 
     /// <summary>
@@ -650,9 +655,8 @@ public class TaskRunnerTests
             To = to,
             ToLocal = "n/a",
             ToDomain = "n/a",
-            MessageSource = "n/a",
-            MessagePlain = "n/a",
-            MessageHtml = "n/a",
+            MessageSourceBytes = [0x1f, 0x8b],
+            AttachmentCount = 0,
             MessagePreview = "n/a",
             Subject = subject,
             Date = date,

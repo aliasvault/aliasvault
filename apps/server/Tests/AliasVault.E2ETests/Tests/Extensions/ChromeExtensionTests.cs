@@ -378,7 +378,7 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
     [Test]
     public async Task ExtensionCreateCredentialTest()
     {
-        var emailClaimsCountInitial = await ApiDbContext.UserEmailClaims.CountAsync();
+        var emailClaimsCountInitial = await ApiDbContext.EmailClaims.CountAsync();
 
         // Login to the extension
         var extensionPopup = await LoginToExtension();
@@ -462,7 +462,7 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
 
         // Assert that email claims is now at one to verify that the email claim was correctly passed to the API from
         // the browser extension.
-        var emailClaimsCount = await ApiDbContext.UserEmailClaims.CountAsync();
+        var emailClaimsCount = await ApiDbContext.EmailClaims.CountAsync();
         Assert.That(emailClaimsCount, Is.EqualTo(emailClaimsCountInitial + 1), "Email claim for user not at expected count. Check browser extension and API email claim register logic.");
 
         // Clean up the temporary file after the test

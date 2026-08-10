@@ -102,6 +102,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
                 SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
                 MessagePreview = x.MessagePreview ?? string.Empty,
                 Wraps = x.Wraps.Where(w => decryptableKeyIds.Contains(w.EncryptionKeyId)).OrderBy(w => w.EncryptionKeyId).Select(w => new EmailKeyWrapApiModel { PublicKey = w.EncryptionKey.PublicKey, EncryptedSymmetricKey = w.EncryptedSymmetricKey }).ToList(),
+                HasAttachments = x.AttachmentCount > 0 || x.Attachments.Any(),
             })
             .OrderByDescending(x => x.DateSystem)
             .Take(50)
@@ -193,7 +194,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
                 SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
                 MessagePreview = x.MessagePreview ?? string.Empty,
                 Wraps = x.Wraps.Where(w => decryptableKeyIds.Contains(w.EncryptionKeyId)).OrderBy(w => w.EncryptionKeyId).Select(w => new EmailKeyWrapApiModel { PublicKey = w.EncryptionKey.PublicKey, EncryptedSymmetricKey = w.EncryptedSymmetricKey }).ToList(),
-                HasAttachments = x.Attachments.Any(),
+                HasAttachments = x.AttachmentCount > 0 || x.Attachments.Any(),
             })
             .ToListAsync();
 

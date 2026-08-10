@@ -56,7 +56,8 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
             SecondsAgo = (int)DateTime.UtcNow.Subtract(email.DateSystem).TotalSeconds,
             MessageHtml = email.MessageHtml,
             MessagePlain = email.MessagePlain,
-            MessageSource = email.MessageSource,
+            MessageSource = email.MessageSourceBytes is not null ? Convert.ToBase64String(email.MessageSourceBytes) : email.MessageSource,
+            AttachmentCount = email.AttachmentCount,
             EncryptedSymmetricKey = personalWrap!.EncryptedSymmetricKey,
             EncryptionKey = personalWrap.EncryptionKey.PublicKey,
         };

@@ -91,9 +91,22 @@ public class Email
     public string? MessagePreview { get; set; }
 
     /// <summary>
-    /// Gets or sets the source of the email message.
+    /// Gets or sets the source of the email message. Only set on legacy rows; newer rows store the
+    /// source in <see cref="MessageSourceBytes"/> instead.
     /// </summary>
-    public string MessageSource { get; set; } = null!;
+    public string? MessageSource { get; set; }
+
+    /// <summary>
+    /// Gets or sets the gzip-compressed and encrypted raw RFC 822 source of the email message. The single authoritative
+    /// body copy for emails stored in the source-only format; clients detect the compression via the gzip magic bytes (0x1f 0x8b) after decrypt.
+    /// </summary>
+    public byte[]? MessageSourceBytes { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of attachments contained in the email message. Stamped at ingest so list
+    /// views can show an attachment indicator without parsing the encrypted source.
+    /// </summary>
+    public int AttachmentCount { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the email is visible.

@@ -7,6 +7,7 @@
 
 namespace AliasVault.IntegrationTests.SmtpServer;
 
+using System.IO.Compression;
 using System.Net.Sockets;
 using System.Text;
 using AliasServerDb;
@@ -179,8 +180,12 @@ public class SmtpServerTests
         // Check if the email is in the database.
         var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Wraps).FirstAsync();
 
-        // Test non-encrypted field.
-        Assert.That(processedEmail.To, Is.EqualTo("claimed@example.tld"));
+        // Test non-encrypted fields.
+        Assert.Multiple(() =>
+        {
+            Assert.That(processedEmail.To, Is.EqualTo("claimed@example.tld"));
+            Assert.That(processedEmail.AttachmentCount, Is.Zero);
+        });
 
         // Decrypt the email and then check all individual fields.
         processedEmail = EmailEncryption.DecryptEmail(processedEmail, PrivateKey);
@@ -191,9 +196,15 @@ public class SmtpServerTests
             Assert.That(processedEmail.FromLocal, Is.EqualTo("sender"));
             Assert.That(processedEmail.FromDomain, Is.EqualTo("example.com"));
             Assert.That(processedEmail.MessagePreview, Is.EqualTo("This is a test email plain."));
-            Assert.That(processedEmail.MessagePlain, Is.EqualTo("This is a test email plain."));
-            Assert.That(processedEmail.MessageHtml, Is.Null);
+            Assert.That(processedEmail.MessagePlain, Is.Null, "Parsed bodies should no longer be persisted; only the gzipped raw source is stored.");
+            Assert.That(processedEmail.MessageHtml, Is.Null, "Parsed bodies should no longer be persisted; only the gzipped raw source is stored.");
+            Assert.That(processedEmail.MessageSource, Is.Null, "The legacy text source column should no longer be populated.");
+            Assert.That(processedEmail.MessageSourceBytes, Is.Not.Null, "The gzipped raw source should be stored in MessageSourceBytes.");
         });
+
+        // The decrypted source is still gzip-compressed; gunzip it and verify the original body is present.
+        var messageSource = Encoding.UTF8.GetString(Gunzip(processedEmail.MessageSourceBytes!));
+        Assert.That(messageSource, Does.Contain(textBody));
     }
 
     /// <summary>
@@ -225,8 +236,14 @@ public class SmtpServerTests
             Assert.That(processedEmail, Is.Not.Null);
             Assert.That(processedEmail.MessagePreview, Is.EqualTo("This is a test email html."));
             Assert.That(processedEmail.MessagePlain, Is.Null);
-            Assert.That(processedEmail.MessageHtml, Is.EqualTo(htmlBody));
+            Assert.That(processedEmail.MessageHtml, Is.Null, "Parsed bodies should no longer be persisted; only the gzipped raw source is stored.");
+            Assert.That(processedEmail.MessageSource, Is.Null, "The legacy text source column should no longer be populated.");
+            Assert.That(processedEmail.MessageSourceBytes, Is.Not.Null, "The gzipped raw source should be stored in MessageSourceBytes.");
         });
+
+        // The decrypted source is still gzip-compressed; gunzip it and verify the original html body is present.
+        var messageSource = Encoding.UTF8.GetString(Gunzip(processedEmail.MessageSourceBytes!));
+        Assert.That(messageSource, Does.Contain(htmlBody));
     }
 
     /// <summary>
@@ -258,8 +275,91 @@ public class SmtpServerTests
         {
             Assert.That(processedEmail, Is.Not.Null);
             Assert.That(processedEmail.MessagePreview, Is.EqualTo("This is a test email multipart."));
-            Assert.That(processedEmail.MessagePlain, Is.EqualTo("This is a test email multipart."));
-            Assert.That(processedEmail.MessageHtml, Is.EqualTo(htmlBody));
+            Assert.That(processedEmail.MessagePlain, Is.Null, "Parsed bodies should no longer be persisted; only the gzipped raw source is stored.");
+            Assert.That(processedEmail.MessageHtml, Is.Null, "Parsed bodies should no longer be persisted; only the gzipped raw source is stored.");
+            Assert.That(processedEmail.MessageSource, Is.Null, "The legacy text source column should no longer be populated.");
+            Assert.That(processedEmail.MessageSourceBytes, Is.Not.Null, "The gzipped raw source should be stored in MessageSourceBytes.");
+        });
+
+        // The decrypted source is still gzip-compressed; gunzip it and verify both original bodies are present.
+        var messageSource = Encoding.UTF8.GetString(Gunzip(processedEmail.MessageSourceBytes!));
+        Assert.Multiple(() =>
+        {
+            Assert.That(messageSource, Does.Contain(textBody));
+            Assert.That(messageSource, Does.Contain(htmlBody));
+        });
+    }
+
+    /// <summary>
+    /// Full roundtrip test for the source-only email storage format: ingest a multipart email (html + plain +
+    /// attachment), decrypt the stored row with the test private key, gunzip the source bytes and verify the raw
+    /// RFC 822 message contains all original content.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task MultipartEmailSourceRoundtrip()
+    {
+        // Arrange
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress("Test Sender", "sender@example.com"));
+        message.To.Add(new MailboxAddress("Test Recipient", "claimed@example.tld"));
+        message.Subject = "Test Email source roundtrip.";
+        const string textBody = "This is a test email roundtrip plain.";
+        const string htmlBody = "<html><body><h1>This is a test email roundtrip html.</h1></body></html>";
+        var attachmentData = Encoding.UTF8.GetBytes("This is a roundtrip attachment.");
+        var bodyBuilder = new BodyBuilder { TextBody = textBody, HtmlBody = htmlBody };
+        bodyBuilder.Attachments.Add("attachment.txt", attachmentData, ContentType.Parse("text/plain"));
+        message.Body = bodyBuilder.ToMessageBody();
+        await SendMessageToSmtpServer(message);
+
+        // Retrieve the stored email and verify the unencrypted metadata written at ingest.
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Wraps).FirstAsync();
+        var encryptedSourceBytes = processedEmail.MessageSourceBytes;
+        Assert.Multiple(() =>
+        {
+            Assert.That(processedEmail.AttachmentCount, Is.EqualTo(1));
+            Assert.That(encryptedSourceBytes, Is.Not.Null, "The gzipped raw source should be stored in MessageSourceBytes.");
+        });
+
+        // Decrypt the email; the decrypted source bytes must differ from the stored (encrypted) bytes.
+        processedEmail = EmailEncryption.DecryptEmail(processedEmail, PrivateKey);
+        var decryptedSourceBytes = processedEmail.MessageSourceBytes!;
+        Assert.Multiple(() =>
+        {
+            Assert.That(decryptedSourceBytes, Is.Not.EqualTo(encryptedSourceBytes), "Email source bytes are not encrypted at rest. Check email encryption logic.");
+            Assert.That(decryptedSourceBytes[0], Is.EqualTo(0x1f), "Decrypted source should still be gzip-compressed (gzip magic byte 1).");
+            Assert.That(decryptedSourceBytes[1], Is.EqualTo(0x8b), "Decrypted source should still be gzip-compressed (gzip magic byte 2).");
+        });
+
+        // Gunzip the decrypted source and verify the raw MIME message contains all original content.
+        var sourceBytes = Gunzip(decryptedSourceBytes);
+        var messageSource = Encoding.UTF8.GetString(sourceBytes);
+        var crlfSeparatorIndex = messageSource.IndexOf("\r\n\r\n", StringComparison.Ordinal);
+        var headerSeparatorIndex = crlfSeparatorIndex != -1 ? crlfSeparatorIndex : messageSource.IndexOf("\n\n", StringComparison.Ordinal);
+        Assert.That(headerSeparatorIndex, Is.GreaterThan(0), "Gunzipped source should contain an RFC 822 header/body separator.");
+        var headerBlock = messageSource[..headerSeparatorIndex];
+        Assert.Multiple(() =>
+        {
+            Assert.That(messageSource, Does.Match("^[A-Za-z][A-Za-z0-9-]*: "), "Gunzipped source should start with the RFC 822 header block.");
+            Assert.That(headerBlock, Does.Contain("From: Test Sender <sender@example.com>"));
+            Assert.That(headerBlock, Does.Contain("To: Test Recipient <claimed@example.tld>"));
+            Assert.That(headerBlock, Does.Contain("Subject: Test Email source roundtrip."));
+            Assert.That(messageSource, Does.Contain(textBody));
+            Assert.That(messageSource, Does.Contain(htmlBody));
+            Assert.That(messageSource, Does.Contain("This is a roundtrip attachment.").Or.Contain(Convert.ToBase64String(attachmentData)), "Raw MIME should contain the attachment payload (literal or base64-encoded).");
+        });
+
+        // Parse the raw MIME and verify the attachment payload decodes back to the original bytes.
+        using var sourceStream = new MemoryStream(sourceBytes);
+        var parsedMessage = await MimeMessage.LoadAsync(sourceStream);
+        var parsedAttachment = parsedMessage.Attachments.OfType<MimePart>().Single();
+        Assert.That(parsedAttachment.Content, Is.Not.Null, "Parsed attachment has no content. Check the stored raw source.");
+        using var decodedAttachment = new MemoryStream();
+        await parsedAttachment.Content!.DecodeToAsync(decodedAttachment);
+        Assert.Multiple(() =>
+        {
+            Assert.That(parsedAttachment.FileName, Is.EqualTo("attachment.txt"));
+            Assert.That(decodedAttachment.ToArray(), Is.EqualTo(attachmentData));
         });
     }
 
@@ -371,7 +471,8 @@ public class SmtpServerTests
     }
 
     /// <summary>
-    /// Tests sending a single email in plain format to the SMTP server to check if it is processed correctly.
+    /// Tests sending a single email with an attachment to the SMTP server to check if it is processed correctly.
+    /// In the source-only storage format no separate attachment rows are created; only the attachment count is stamped.
     /// </summary>
     /// <returns>Task.</returns>
     [Test]
@@ -393,10 +494,15 @@ public class SmtpServerTests
 
         await SendMessageToSmtpServer(message);
 
-        // Check that attachment is in the database and the bytes are encrypted.
-        Assert.That(await _testHostBuilder.GetDbContext().EmailAttachments.CountAsync(), Is.EqualTo(1));
-        var attachment = await _testHostBuilder.GetDbContext().EmailAttachments.FirstAsync();
-        Assert.That(attachment.Bytes, Is.Not.EqualTo(attachmentData), "Email attachment bytes are not encrypted. Check email encryption logic.");
+        // Check that no separate attachment rows are created and the attachment count is stamped on the email row.
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.FirstAsync();
+        var attachmentRowCount = await _testHostBuilder.GetDbContext().EmailAttachments.CountAsync();
+        Assert.Multiple(() =>
+        {
+            Assert.That(attachmentRowCount, Is.Zero, "No EmailAttachments rows should be created; attachments live inside the stored raw source.");
+            Assert.That(processedEmail.AttachmentCount, Is.EqualTo(1));
+            Assert.That(processedEmail.MessageSourceBytes, Is.Not.Null, "The gzipped raw source should be stored in MessageSourceBytes.");
+        });
     }
 
     /// <summary>
@@ -470,5 +576,19 @@ public class SmtpServerTests
         var buffer = new byte[512];
         var bytesRead = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length));
         return Encoding.ASCII.GetString(buffer, 0, bytesRead).Trim();
+    }
+
+    /// <summary>
+    /// Decompresses gzip-compressed bytes, as required to read the raw MIME source from a decrypted MessageSourceBytes value.
+    /// </summary>
+    /// <param name="gzippedBytes">The gzip-compressed bytes, starting with the gzip magic bytes 0x1f 0x8b.</param>
+    /// <returns>The decompressed bytes.</returns>
+    private static byte[] Gunzip(byte[] gzippedBytes)
+    {
+        using var input = new MemoryStream(gzippedBytes);
+        using var gzip = new GZipStream(input, CompressionMode.Decompress);
+        using var output = new MemoryStream();
+        gzip.CopyTo(output);
+        return output.ToArray();
     }
 }
