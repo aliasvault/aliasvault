@@ -7,8 +7,6 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Email;
 
-using AliasVault.Shared.Models.Spamok;
-
 /// <summary>
 /// Represents the email API model.
 /// </summary>

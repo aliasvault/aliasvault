@@ -1,14 +1,14 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="EmailApiModelBase.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Shared.Models.Spamok.Base;
+namespace AliasVault.Shared.Models.WebApi.V1.Email;
 
 /// <summary>
-/// Represents a mailbox email API model base of the external api.spamok.com API.
+/// Represents the base email API model of the AliasVault V1 email API.
 /// </summary>
 public abstract class EmailApiModelBase
 {
@@ -64,7 +64,8 @@ public abstract class EmailApiModelBase
 
     /// <summary>
     /// Gets or sets the encrypted symmetric key which was used to encrypt the email message.
-    /// This key is encrypted with the public key of the user.
+    /// This key is encrypted with the public key of the user. V1 always serves the personal wrap;
+    /// the per-manifest wrap list is a V2-only concept.
     /// </summary>
     public string EncryptedSymmetricKey { get; set; } = string.Empty;
 

@@ -16,7 +16,6 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using AttachmentApiModel = AliasVault.Shared.Models.Spamok.AttachmentApiModel;
 
 /// <summary>
 /// Email controller for retrieving emails from the database.

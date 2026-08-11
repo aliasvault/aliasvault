@@ -10,7 +10,7 @@ namespace AliasVault.Api.Controllers.V1.Email;
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Auth.IpAddress;
-using AliasVault.Shared.Models.Spamok;
+using AliasVault.Shared.Models.WebApi.V1.Email;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -57,7 +57,6 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
             MessageHtml = email.MessageHtml,
             MessagePlain = email.MessagePlain,
             MessageSource = email.MessageSourceBytes is not null ? Convert.ToBase64String(email.MessageSourceBytes) : email.MessageSource,
-            AttachmentCount = email.AttachmentCount,
             EncryptedSymmetricKey = personalWrap!.EncryptedSymmetricKey,
             EncryptionKey = personalWrap.EncryptionKey.PublicKey,
         };

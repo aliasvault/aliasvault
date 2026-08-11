@@ -7,10 +7,8 @@
 
 namespace AliasVault.Shared.Models.WebApi.V1.Email;
 
-using AliasVault.Shared.Models.Spamok;
-
 /// <summary>
-/// Represents a mailbox API model.
+/// Represents a bulk mailbox response of the AliasVault V1 email API.
 /// </summary>
 public class MailboxBulkResponse
 {

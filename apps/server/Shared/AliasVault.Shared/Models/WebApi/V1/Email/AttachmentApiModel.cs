@@ -5,10 +5,10 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Shared.Models.Spamok;
+namespace AliasVault.Shared.Models.WebApi.V1.Email;
 
 /// <summary>
-/// Represents an attachment for an email of the external api.spamok.com API.
+/// Represents an attachment of an email served by the AliasVault V1 email API.
 /// </summary>
 public class AttachmentApiModel
 {

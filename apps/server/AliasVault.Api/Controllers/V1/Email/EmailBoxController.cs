@@ -10,7 +10,6 @@ namespace AliasVault.Api.Controllers.V1.Email;
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Auth.IpAddress;
-using AliasVault.Shared.Models.Spamok;
 using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.V1.Email;
 using Asp.Versioning;
