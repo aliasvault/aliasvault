@@ -5,9 +5,13 @@ function downloadFileFromStream(fileName, contentStreamReference) {
     const anchorElement = document.createElement('a');
     anchorElement.href = url;
     anchorElement.download = fileName ?? '';
+    document.body.appendChild(anchorElement);
     anchorElement.click();
     anchorElement.remove();
-    URL.revokeObjectURL(url);
+    // Defer revocation: some browsers (Firefox, Safari, and Chrome with large blobs)
+    // need the object URL to remain valid after click() returns, because the download
+    // is queued asynchronously. Revoking immediately causes a silent download failure.
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
 window.topMenuClickOutsideHandler = (dotNetHelper) => {
