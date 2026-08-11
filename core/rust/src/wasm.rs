@@ -1,5 +1,6 @@
 //! WASM bindings for browser extension.
 
+use serde::Serialize;
 use wasm_bindgen::prelude::*;
 
 use crate::credential_matcher::{
@@ -356,6 +357,37 @@ pub fn generate_random_email_prefix_js(length: u32) -> String {
 #[wasm_bindgen(js_name = getIdentityLanguages)]
 pub fn get_identity_languages_js() -> Vec<String> {
     crate::identity_generator::available_languages()
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Email Parser WASM Bindings
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Parse a raw RFC 822 email source into its html/plain bodies and attachment metadata.
+/// Input that starts with the gzip magic bytes (0x1f 0x8b) is gunzipped, so the
+/// decrypted `MessageSource` of both legacy and source-only emails can be passed as-is.
+#[wasm_bindgen(js_name = parseEmailSource)]
+pub fn parse_email_source_js(source: &[u8]) -> Result<JsValue, JsValue> {
+    let parsed = crate::email_parser::parse_email_source(source)
+        .map_err(|e| JsValue::from_str(&format!("Email parse failed: {}", e)))?;
+
+    parsed
+        .serialize(&serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true).serialize_missing_as_null(true))
+        .map_err(|e| JsValue::from_str(&format!("Failed to serialize output: {}", e)))
+}
+
+/// Turn a stored email source into the raw RFC 822 message bytes for showing the message source without parsing it.
+#[wasm_bindgen(js_name = decodeEmailSource)]
+pub fn decode_email_source_js(source: &[u8]) -> Result<Vec<u8>, JsValue> {
+    crate::email_parser::decode_email_source(source)
+        .map_err(|e| JsValue::from_str(&format!("Email source decode failed: {}", e)))
+}
+
+/// Extract the decoded bytes of one attachment, identified by its index in the parsed attachment list.
+#[wasm_bindgen(js_name = extractEmailAttachment)]
+pub fn extract_email_attachment_js(source: &[u8], index: usize) -> Result<Vec<u8>, JsValue> {
+    crate::email_parser::extract_email_attachment(source, index)
+        .map_err(|e| JsValue::from_str(&format!("Email attachment extraction failed: {}", e)))
 }
 
 /// Get the list of age range option values ("random" plus 5-year ranges).

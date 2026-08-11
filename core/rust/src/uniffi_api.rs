@@ -189,6 +189,27 @@ pub fn get_identity_languages() -> Vec<String> {
     crate::identity_generator::available_languages()
 }
 
+/// Parse a raw RFC 822 email source into its html/plain bodies and attachment metadata, returned as
+/// a JSON string (`{htmlBody, textBody, attachments: [{filename, mimeType, size}]}`). Input that
+/// starts with the gzip magic bytes (0x1f 0x8b) is gunzipped, so the decrypted
+/// `MessageSource` of both legacy and source-only emails can be passed as-is.
+#[uniffi::export]
+pub fn parse_email_source(source: Vec<u8>) -> Result<String, VaultError> {
+    crate::email_parser::parse_email_source_json(&source)
+}
+
+/// Turn a stored email source into the raw RFC 822 message bytes for showing the message source without parsing it.
+#[uniffi::export]
+pub fn decode_email_source(source: Vec<u8>) -> Result<Vec<u8>, VaultError> {
+    crate::email_parser::decode_email_source(&source)
+}
+
+/// Extract the decoded bytes of one attachment, identified by its index in the parsed attachment list.
+#[uniffi::export]
+pub fn extract_email_attachment(source: Vec<u8>, index: u32) -> Result<Vec<u8>, VaultError> {
+    crate::email_parser::extract_email_attachment(&source, index as usize)
+}
+
 /// Get the list of age range option values ("random" plus 5-year ranges).
 #[uniffi::export]
 pub fn get_identity_age_ranges() -> Vec<String> {

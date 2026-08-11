@@ -20,6 +20,7 @@ pub mod vault_merge;
 pub mod vault_codec;
 pub mod vault_pruner;
 pub mod credential_matcher;
+pub mod email_parser;
 pub mod password_generator;
 pub mod identity_generator;
 pub mod srp;
@@ -44,6 +45,7 @@ pub use credential_matcher::{
     filter_credentials, extract_domain, extract_root_domain,
     AutofillMatchingMode, CredentialMatcherInput, CredentialMatcherOutput,
 };
+pub use email_parser::{ParsedEmail, ParsedEmailAttachment};
 pub use password_generator::{generate_password, PasswordSettings};
 pub use identity_generator::{generate_identity, Identity, IdentityRequest};
 pub use srp::{

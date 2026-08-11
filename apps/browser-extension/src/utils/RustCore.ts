@@ -172,6 +172,47 @@ export async function getIdentityAgeRanges(): Promise<string[]> {
 }
 
 /**
+ * A single attachment of a parsed email message. Metadata only: fetch the bytes with
+ * {@link extractEmailAttachment} using this attachment's index in {@link ParsedEmail.attachments}.
+ */
+export type ParsedEmailAttachment = {
+  filename: string;
+  mimeType: string;
+  size: number;
+};
+
+/** Result of parsing a raw RFC 822 email source. Body fields are null when the message has no such part. */
+export type ParsedEmail = {
+  htmlBody: string | null;
+  textBody: string | null;
+  attachments: ParsedEmailAttachment[];
+};
+
+/**
+ * Parse a raw RFC 822 email source into its html/plain bodies and attachment metadata.
+ */
+export async function parseEmailSource(source: Uint8Array): Promise<ParsedEmail> {
+  await initRustCore();
+  return core.parseEmailSource(source) as ParsedEmail;
+}
+
+/**
+ * Turn a stored email source into the raw RFC 822 message bytes for showing the message source without parsing it.
+ */
+export async function decodeEmailSource(source: Uint8Array): Promise<Uint8Array> {
+  await initRustCore();
+  return core.decodeEmailSource(source) as Uint8Array;
+}
+
+/**
+ * Extract the decoded bytes of one attachment, identified by its index in the parsed attachment list.
+ */
+export async function extractEmailAttachment(source: Uint8Array, index: number): Promise<Uint8Array> {
+  await initRustCore();
+  return core.extractEmailAttachment(source, index) as Uint8Array;
+}
+
+/**
  * Generate a random 32-byte seed as a 64-character hex string, suitable for the
  * `seed` argument of {@link generatePassword}.
  */

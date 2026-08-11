@@ -211,12 +211,10 @@ type EmailAttachment = {
 };
 
 type Email = {
-    /** The body of the email message */
-    messageHtml: string;
-    /** The plain text body of the email message */
-    messagePlain: string;
-    /** The raw RFC 822 source of the email message */
+    /** The raw RFC 822 source of the email message (ciphertext, base64)  */
     messageSource: string;
+    /** The number of attachments contained in the email message */
+    attachmentCount: number;
     /** The ID of the email */
     id: number;
     /** The subject of the email */

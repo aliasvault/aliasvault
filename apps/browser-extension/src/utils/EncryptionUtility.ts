@@ -5,6 +5,24 @@ import argon2 from 'argon2-browser/dist/argon2-bundled.min.js';
 import { devWarn } from '@/utils/devLogger/DevLogger';
 import type { EncryptionKey } from '@/utils/dist/core/models/vault';
 import type { Email, EmailKeyWrap, MailboxEmail } from '@/utils/dist/core/models/webapi';
+import { parseEmailSource, type ParsedEmailAttachment } from '@/utils/RustCore';
+
+/**
+ * A decrypted email. Its metadata (subject, sender) is decrypted from the individually encrypted fields, while
+ * the bodies and attachments are derived from the raw RFC 822 source.
+ */
+export type DecryptedEmail = {
+  /** The email with its metadata fields decrypted. */
+  email: Email;
+  /** The html body parsed out of the source, null when the message has no html part. */
+  htmlBody: string | null;
+  /** The plain text body parsed out of the source, null when the message has no text part. */
+  textBody: string | null;
+  /** The attachments contained in the source, in the index order `extractEmailAttachment` expects. */
+  attachments: ParsedEmailAttachment[];
+  /** The decrypted source bytes. */
+  sourceBytes: Uint8Array | null;
+};
 
 /**
  * Utility class for encryption operations including:
@@ -376,43 +394,49 @@ export class EncryptionUtility {
   }
 
   /**
+   * Unwraps the symmetric key an email's contents are encrypted with, as base64.
+   */
+  private static async resolveEmailSymmetricKey(email: { wraps: EmailKeyWrap[] }, encryptionKeys: EncryptionKey[]): Promise<string> {
+    const wrap = EncryptionUtility.resolveEmailWrap(email, encryptionKeys);
+    const privateKey = await EncryptionUtility.getPrivateKeyObject(wrap.encryptionKey);
+    const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(wrap.encryptedSymmetricKey, privateKey);
+
+    return Buffer.from(symmetricKey).toString('base64');
+  }
+
+  /**
    * Decrypts an individual email based on the provided public/private key pairs.
    */
-  public static async decryptEmail(
-    email: Email,
-    encryptionKeys: EncryptionKey[]
-  ): Promise<Email> {
+  public static async decryptEmail(email: Email, encryptionKeys: EncryptionKey[]): Promise<DecryptedEmail> {
     try {
-      const wrap = EncryptionUtility.resolveEmailWrap(email, encryptionKeys);
+      const symmetricKeyBase64 = await EncryptionUtility.resolveEmailSymmetricKey(email, encryptionKeys);
 
-      // Decrypt symmetric key with asymmetric private key
-      const privateKey = await EncryptionUtility.getPrivateKeyObject(wrap.encryptionKey);
-      const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(
-        wrap.encryptedSymmetricKey,
-        privateKey
-      );
-      const symmetricKeyBase64 = Buffer.from(symmetricKey).toString('base64');
-
-      // Create a new object to avoid mutating the original
       const decryptedEmail = { ...email };
-
-      // Decrypt all email fields
       decryptedEmail.subject = await EncryptionUtility.symmetricDecrypt(email.subject, symmetricKeyBase64);
       decryptedEmail.fromDisplay = await EncryptionUtility.symmetricDecrypt(email.fromDisplay, symmetricKeyBase64);
       decryptedEmail.fromDomain = await EncryptionUtility.symmetricDecrypt(email.fromDomain, symmetricKeyBase64);
       decryptedEmail.fromLocal = await EncryptionUtility.symmetricDecrypt(email.fromLocal, symmetricKeyBase64);
 
-      if (email.messageHtml) {
-        decryptedEmail.messageHtml = await EncryptionUtility.symmetricDecrypt(email.messageHtml, symmetricKeyBase64);
-      }
-      if (email.messagePlain) {
-        decryptedEmail.messagePlain = await EncryptionUtility.symmetricDecrypt(email.messagePlain, symmetricKeyBase64);
-      }
-      if (email.messageSource) {
-        decryptedEmail.messageSource = await EncryptionUtility.symmetricDecrypt(email.messageSource, symmetricKeyBase64);
+      const sourceBytes = email.messageSource ? await EncryptionUtility.symmetricDecryptBytes(Uint8Array.from(atob(email.messageSource), c => c.charCodeAt(0)), symmetricKeyBase64) : null;
+      decryptedEmail.messageSource = '';
+
+      let htmlBody: string | null = null;
+      let textBody: string | null = null;
+      let attachments: ParsedEmailAttachment[] = [];
+
+      if (sourceBytes) {
+        try {
+          const parsed = await parseEmailSource(sourceBytes);
+          htmlBody = parsed.htmlBody;
+          textBody = parsed.textBody;
+          attachments = parsed.attachments;
+        } catch (err) {
+          // A parse failure costs the bodies, not the email: the raw source view renders without the parser.
+          devWarn(`[Email] Could not parse the source of email ${email.id}:`, err);
+        }
       }
 
-      return decryptedEmail;
+      return { email: decryptedEmail, htmlBody, textBody, attachments, sourceBytes };
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to decrypt email');
     }
@@ -431,15 +455,7 @@ export class EncryptionUtility {
   ): Promise<MailboxEmail[]> {
     const results = await Promise.all(emails.map(async email => {
       try {
-        const wrap = EncryptionUtility.resolveEmailWrap(email, encryptionKeys);
-
-        // Decrypt symmetric key with asymmetric private key
-        const privateKey = await EncryptionUtility.getPrivateKeyObject(wrap.encryptionKey);
-        const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(
-          wrap.encryptedSymmetricKey,
-          privateKey
-        );
-        const symmetricKeyBase64 = Buffer.from(symmetricKey).toString('base64');
+        const symmetricKeyBase64 = await EncryptionUtility.resolveEmailSymmetricKey(email, encryptionKeys);
 
         // Create a new object to avoid mutating the original
         const decryptedEmail = { ...email };
@@ -473,17 +489,7 @@ export class EncryptionUtility {
     encryptionKeys: EncryptionKey[]
   ): Promise<Uint8Array> {
     try {
-      const wrap = EncryptionUtility.resolveEmailWrap(email, encryptionKeys);
-
-      // Decrypt the symmetric key using private key (returns raw bytes)
-      const privateKey = await EncryptionUtility.getPrivateKeyObject(wrap.encryptionKey);
-      const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(
-        wrap.encryptedSymmetricKey,
-        privateKey
-      );
-
-      // Convert symmetric key to base64 string if symmetricDecrypt expects it
-      const symmetricKeyBase64 = Buffer.from(symmetricKey).toString('base64');
+      const symmetricKeyBase64 = await EncryptionUtility.resolveEmailSymmetricKey(email, encryptionKeys);
 
       // Decrypt the attachment using raw bytes
       return await EncryptionUtility.symmetricDecryptBytes(encryptedBytes, symmetricKeyBase64);

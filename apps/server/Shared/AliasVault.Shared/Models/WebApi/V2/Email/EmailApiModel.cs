@@ -13,19 +13,9 @@ namespace AliasVault.Shared.Models.WebApi.V2.Email;
 public class EmailApiModel : EmailApiModelBase
 {
     /// <summary>
-    /// Gets or sets the HTML content of the email message.
-    /// </summary>
-    public string? MessageHtml { get; set; }
-
-    /// <summary>
-    /// Gets or sets the plain text content of the email message.
-    /// </summary>
-    public string? MessagePlain { get; set; }
-
-    /// <summary>
-    /// Gets or sets the source content of the email message as base64 ciphertext. For source-only stored
-    /// emails the decrypted plaintext is gzip-compressed: clients detect this via the gzip magic bytes
-    /// (0x1f 0x8b) and parse the bodies and attachments from the decompressed source.
+    /// Gets or sets the source content of the email message as base64 ciphertext which contains the raw RFC 822 message bytes.
+    /// The other MessagePlain and MessageHtml DB fields are no longer served by the v2 API as these columns are deprecated,
+    /// only filled in for legacy emails (pre-0.31.0) and will be removed from the DB in a future version.
     /// </summary>
     public string? MessageSource { get; set; }
 

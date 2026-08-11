@@ -76,12 +76,12 @@ public class Email
     public DateTime DateSystem { get; set; }
 
     /// <summary>
-    /// Gets or sets the HTML content of the email message.
+    /// Gets or sets the HTML content of the email message. No longer served by the v2 API and no longer filled in since 0.31.0 in favor of MessageSource. TODO: remove this column in a future version.
     /// </summary>
     public string? MessageHtml { get; set; }
 
     /// <summary>
-    /// Gets or sets the plain text content of the email message.
+    /// Gets or sets the plain text content of the email message. No longer served by the v2 API and no longer filled in since 0.31.0 in favor of MessageSource. TODO: remove this column in a future version.
     /// </summary>
     public string? MessagePlain { get; set; }
 
