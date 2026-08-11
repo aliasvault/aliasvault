@@ -982,9 +982,9 @@ namespace AliasServerDb.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("EncryptedData")
+                    b.Property<byte[]>("EncryptedData")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("bytea");
 
                     b.Property<long>("RevisionNumber")
                         .HasColumnType("bigint");
@@ -1016,9 +1016,9 @@ namespace AliasServerDb.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("EncryptedData")
+                    b.Property<byte[]>("EncryptedData")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("bytea");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1056,8 +1056,8 @@ namespace AliasServerDb.Migrations
                     b.Property<int>("FileSize")
                         .HasColumnType("integer");
 
-                    b.Property<string>("ManifestBlob")
-                        .HasColumnType("text");
+                    b.Property<byte[]>("ManifestBlob")
+                        .HasColumnType("bytea");
 
                     b.Property<string>("ManifestCiphertextHash")
                         .HasMaxLength(64)
@@ -1225,8 +1225,8 @@ namespace AliasServerDb.Migrations
                     b.Property<int>("FileSize")
                         .HasColumnType("integer");
 
-                    b.Property<string>("ManifestBlob")
-                        .HasColumnType("text");
+                    b.Property<byte[]>("ManifestBlob")
+                        .HasColumnType("bytea");
 
                     b.Property<string>("ManifestCiphertextHash")
                         .HasMaxLength(64)

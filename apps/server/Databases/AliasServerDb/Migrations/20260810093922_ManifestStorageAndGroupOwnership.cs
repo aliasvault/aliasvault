@@ -27,6 +27,7 @@ namespace AliasServerDb.Migrations
             ScopeDeliveryKeysToManifests(migrationBuilder);
             ScopeRateLimitsToGroups(migrationBuilder);
             AddManifestV1Tables(migrationBuilder);
+            SkipToastCompressionOnCiphertextColumns(migrationBuilder);
         }
 
         /// <inheritdoc />
@@ -154,7 +155,7 @@ namespace AliasServerDb.Migrations
             migrationBuilder.AddColumn<Guid>(name: "OwnerGroupId", table: "VaultManifests", type: "uuid", nullable: true);
             migrationBuilder.AddColumn<string>(name: "Name", table: "VaultManifests", type: "character varying(255)", maxLength: 255, nullable: true);
             migrationBuilder.AddColumn<string>(name: "StorageFormat", table: "VaultManifests", type: "character varying(20)", maxLength: 20, nullable: true);
-            migrationBuilder.AddColumn<string>(name: "ManifestBlob", table: "VaultManifests", type: "text", nullable: true);
+            migrationBuilder.AddColumn<byte[]>(name: "ManifestBlob", table: "VaultManifests", type: "bytea", nullable: true);
             migrationBuilder.AddColumn<string>(name: "ManifestCiphertextHash", table: "VaultManifests", type: "character varying(64)", maxLength: 64, nullable: true);
 
             // A manifest-v1 revision carries no vault blob and no SRP credentials, so the columns that only the legacy
@@ -182,7 +183,7 @@ namespace AliasServerDb.Migrations
                     ManifestId = table.Column<Guid>(type: "uuid", nullable: false),
                     VaultBlob = table.Column<string>(type: "text", nullable: true),
                     StorageFormat = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    ManifestBlob = table.Column<string>(type: "text", nullable: true),
+                    ManifestBlob = table.Column<byte[]>(type: "bytea", nullable: true),
                     ManifestCiphertextHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
                     Version = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     FileSize = table.Column<int>(type: "integer", nullable: false),
@@ -543,7 +544,7 @@ namespace AliasServerDb.Migrations
                 {
                     ManifestId = table.Column<Guid>(type: "uuid", nullable: false),
                     Category = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    EncryptedData = table.Column<string>(type: "text", nullable: false),
+                    EncryptedData = table.Column<byte[]>(type: "bytea", nullable: false),
                     RevisionNumber = table.Column<long>(type: "bigint", nullable: false),
                     CiphertextHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -567,7 +568,7 @@ namespace AliasServerDb.Migrations
                     RevisionNumber = table.Column<long>(type: "bigint", nullable: false),
                     ManifestId = table.Column<Guid>(type: "uuid", nullable: false),
                     Category = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    EncryptedData = table.Column<string>(type: "text", nullable: false),
+                    EncryptedData = table.Column<byte[]>(type: "bytea", nullable: false),
                     CiphertextHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -589,6 +590,23 @@ namespace AliasServerDb.Migrations
             migrationBuilder.CreateIndex(name: "IX_VaultManifestAccessKeys_VaultManifestId", table: "VaultManifestAccessKeys", column: "VaultManifestId");
             migrationBuilder.CreateIndex(name: "UX_VaultManifestAccessKeys_UserId_Type_Manifest", table: "VaultManifestAccessKeys", columns: new[] { "UserId", "Type", "VaultManifestId" }, unique: true);
             migrationBuilder.CreateIndex(name: "IX_VaultBlobObjects_OwnerUserId_Category", table: "VaultBlobObjects", columns: new[] { "OwnerUserId", "Category" });
+        }
+
+        /// <summary>
+        /// Every manifest-v1 payload column holds AES ciphertext of an already-gzipped payload, which is
+        /// incompressible, so TOAST would burn a compression attempt per write and always discard the result.
+        /// EXTERNAL keeps the out-of-line storage but skips that attempt, matching the Emails.MessageSourceBytes column.
+        /// </summary>
+        /// <param name="migrationBuilder">Migration builder.</param>
+        private static void SkipToastCompressionOnCiphertextColumns(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.Sql("""
+                ALTER TABLE "VaultManifests" ALTER COLUMN "ManifestBlob" SET STORAGE EXTERNAL;
+                ALTER TABLE "VaultManifestsHistory" ALTER COLUMN "ManifestBlob" SET STORAGE EXTERNAL;
+                ALTER TABLE "VaultDataBuckets" ALTER COLUMN "EncryptedData" SET STORAGE EXTERNAL;
+                ALTER TABLE "VaultDataBucketsHistory" ALTER COLUMN "EncryptedData" SET STORAGE EXTERNAL;
+                ALTER TABLE "VaultBlobObjects" ALTER COLUMN "EncryptedData" SET STORAGE EXTERNAL;
+                """);
         }
 
         /// <summary>

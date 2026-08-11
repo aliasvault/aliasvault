@@ -121,7 +121,7 @@ public class VaultController(
             {
                 ManifestId = x.ManifestId,
                 Category = x.Category,
-                Blob = x.EncryptedData,
+                Blob = Convert.ToBase64String(x.EncryptedData),
                 CiphertextHash = x.CiphertextHash,
                 Revision = x.RevisionNumber,
             })
@@ -152,7 +152,7 @@ public class VaultController(
             {
                 ManifestId = m.ManifestId,
                 Name = m.Name,
-                Blob = m.ManifestBlob,
+                Blob = m.ManifestBlob != null ? Convert.ToBase64String(m.ManifestBlob) : null,
                 CiphertextHash = m.ManifestCiphertextHash,
                 Revision = m.RevisionNumber,
                 BlobReferences = refsByManifest.TryGetValue(m.ManifestId, out var refs) ? refs : [],
@@ -211,7 +211,7 @@ public class VaultController(
         {
             ManifestId = latest.ManifestId,
             Name = latest.Name,
-            Blob = latest.ManifestBlob,
+            Blob = latest.ManifestBlob != null ? Convert.ToBase64String(latest.ManifestBlob) : null,
             CiphertextHash = latest.ManifestCiphertextHash,
             Revision = latest.RevisionNumber,
             BlobReferences = blobRefs,
@@ -266,6 +266,29 @@ public class VaultController(
             || model.Buckets.Select(b => (b.ManifestId, b.Category)).Distinct().Count() != model.Buckets.Count)
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
+        }
+
+        // Decode base64-encoded ciphertexts into raw bytes.
+        var manifestBlobs = new Dictionary<Guid, byte[]>();
+        foreach (var mw in model.Manifests)
+        {
+            if (!CiphertextHelper.TryDecode(mw.ManifestBlob, out var manifestBlob))
+            {
+                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
+            }
+
+            manifestBlobs[mw.ManifestId] = manifestBlob;
+        }
+
+        var bucketBlobs = new Dictionary<(Guid ManifestId, VaultDataBucketCategory Category), byte[]>();
+        foreach (var bucket in model.Buckets.Where(b => !string.IsNullOrEmpty(b.Blob)))
+        {
+            if (!CiphertextHelper.TryDecode(bucket.Blob, out var bucketBlob))
+            {
+                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
+            }
+
+            bucketBlobs[(bucket.ManifestId, bucket.Category)] = bucketBlob;
         }
 
         var resolved = new List<(ManifestWrite Write, VaultManifest Row)>();
@@ -408,13 +431,13 @@ public class VaultController(
 
                 row.VaultBlob = null;
                 row.StorageFormat = ManifestFormat;
-                row.ManifestBlob = mw.ManifestBlob;
+                row.ManifestBlob = manifestBlobs[mw.ManifestId];
                 row.ManifestCiphertextHash = mw.ManifestCiphertextHash;
 
                 // Manifest revisions carry no data-model version, so we null it instead.
                 row.Version = null;
                 row.RevisionNumber = mw.CurrentRevision + 1;
-                row.FileSize = FileHelper.Base64StringToKilobytes(mw.ManifestBlob);
+                row.FileSize = FileHelper.BytesToKilobytes(row.ManifestBlob.Length);
                 row.CredentialsCount = mw.CredentialsCount;
                 row.Client = clientHeader;
                 row.UpdatedAt = timeProvider.UtcNow;
@@ -507,12 +530,12 @@ public class VaultController(
             var newBucketRevisions = new List<BucketRevision>();
             foreach (var bucket in model.Buckets)
             {
-                if (string.IsNullOrEmpty(bucket.Blob))
+                if (!bucketBlobs.TryGetValue((bucket.ManifestId, bucket.Category), out var bucketBlob))
                 {
                     continue;
                 }
 
-                var rev = await UpsertBucketAsync(context, bucket.ManifestId, bucket.Category, bucket.Blob, bucket.CiphertextHash, bucket.CurrentRevision, bucketRows.GetValueOrDefault((bucket.ManifestId, bucket.Category)));
+                var rev = await UpsertBucketAsync(context, bucket.ManifestId, bucket.Category, bucketBlob, bucket.CiphertextHash, bucket.CurrentRevision, bucketRows.GetValueOrDefault((bucket.ManifestId, bucket.Category)));
                 newBucketRevisions.Add(new BucketRevision { ManifestId = bucket.ManifestId, Category = bucket.Category, Revision = rev });
             }
 
@@ -777,12 +800,12 @@ public class VaultController(
     /// <param name="context">Database context.</param>
     /// <param name="manifestId">The manifest that owns the bucket.</param>
     /// <param name="kind">The bucket category.</param>
-    /// <param name="encryptedData">The new encrypted payload.</param>
+    /// <param name="encryptedData">The new encrypted payload as raw ciphertext bytes.</param>
     /// <param name="ciphertextHash">Storage-layer integrity hash of the payload.</param>
     /// <param name="currentRevision">The revision the client believes is current, used to seed a first write.</param>
     /// <param name="existing">The current row, already loaded by the revision gate, or null when none exists yet.</param>
     /// <returns>The new revision number.</returns>
-    private async Task<long> UpsertBucketAsync(AliasServerDbContext context, Guid manifestId, VaultDataBucketCategory kind, string encryptedData, string? ciphertextHash, long? currentRevision, VaultDataBucket? existing)
+    private async Task<long> UpsertBucketAsync(AliasServerDbContext context, Guid manifestId, VaultDataBucketCategory kind, byte[] encryptedData, string? ciphertextHash, long? currentRevision, VaultDataBucket? existing)
     {
         var now = timeProvider.UtcNow;
 
@@ -858,18 +881,8 @@ public class VaultController(
             byte[]? data = null;
             if (!existing.TryGetValue(dto.Hash, out var row) || overwrite)
             {
-                try
+                if (!CiphertextHelper.TryDecode(dto.EncryptedDataBase64, out data))
                 {
-                    data = Convert.FromBase64String(dto.EncryptedDataBase64);
-                }
-                catch (FormatException)
-                {
-                    return false;
-                }
-
-                if (data.Length < 16)
-                {
-                    // Anything smaller than IV+tag overhead can't be valid AES-GCM ciphertext, reject the upload.
                     return false;
                 }
             }

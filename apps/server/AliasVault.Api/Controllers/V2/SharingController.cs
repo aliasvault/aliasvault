@@ -99,6 +99,12 @@ public class SharingController(IAliasServerDbContextFactory dbContextFactory, Us
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.MANIFEST_ID_INVALID, 400));
         }
 
+        // Ciphertext travels base64-encoded but is stored as raw bytes.
+        if (!CiphertextHelper.TryDecode(model.ManifestBlob, out var manifestBlob))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
+        }
+
         var ownerGroupId = await GroupHelper.ResolveShareTargetGroupIdAsync(context, me.Id, model.GroupId);
         if (ownerGroupId is null)
         {
@@ -118,10 +124,10 @@ public class SharingController(IAliasServerDbContextFactory dbContextFactory, Us
             OwnerGroupId = ownerGroupId.Value,
             Name = model.Name,
             StorageFormat = ManifestFormat,
-            ManifestBlob = model.ManifestBlob,
+            ManifestBlob = manifestBlob,
             ManifestCiphertextHash = model.ManifestCiphertextHash,
             RevisionNumber = 1,
-            FileSize = FileHelper.Base64StringToKilobytes(model.ManifestBlob),
+            FileSize = FileHelper.BytesToKilobytes(manifestBlob.Length),
             Client = clientHeader,
             CreatedAt = timeProvider.UtcNow,
             UpdatedAt = timeProvider.UtcNow,

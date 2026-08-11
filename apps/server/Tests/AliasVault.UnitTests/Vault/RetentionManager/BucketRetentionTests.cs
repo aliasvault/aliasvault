@@ -138,7 +138,7 @@ public class BucketRetentionTests
         {
             ManifestId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
             Category = VaultDataBucketCategory.Settings,
-            EncryptedData = string.Empty,
+            EncryptedData = [],
             RevisionNumber = 10,
             UpdatedAt = new DateTime(2023, 6, 1, 12, 0, 0),
         };
@@ -155,7 +155,7 @@ public class BucketRetentionTests
         {
             ManifestId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
             Category = VaultDataBucketCategory.Settings,
-            EncryptedData = string.Empty,
+            EncryptedData = [],
             RevisionNumber = revisionNumber,
             UpdatedAt = updatedAt,
         };

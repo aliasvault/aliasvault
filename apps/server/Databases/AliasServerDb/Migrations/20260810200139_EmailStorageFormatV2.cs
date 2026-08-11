@@ -31,13 +31,18 @@ namespace AliasServerDb.Migrations
                 type: "bytea",
                 nullable: true);
 
-            // The column holds AES ciphertext which is incompressible, so skip TOAST compression.
-            migrationBuilder.Sql(@"ALTER TABLE ""Emails"" ALTER COLUMN ""MessageSourceBytes"" SET STORAGE EXTERNAL;");
+            // Both columns hold AES ciphertext which is incompressible, so skip TOAST compression.
+            migrationBuilder.Sql("""
+                ALTER TABLE "Emails" ALTER COLUMN "MessageSourceBytes" SET STORAGE EXTERNAL;
+                ALTER TABLE "EmailAttachments" ALTER COLUMN "Bytes" SET STORAGE EXTERNAL;
+                """);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql(@"ALTER TABLE ""EmailAttachments"" ALTER COLUMN ""Bytes"" SET STORAGE EXTENDED;");
+
             migrationBuilder.DropColumn(
                 name: "AttachmentCount",
                 table: "Emails");

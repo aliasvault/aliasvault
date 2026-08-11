@@ -32,9 +32,9 @@ public abstract class VaultManifestBase : IVaultRevision
     public required string StorageFormat { get; set; }
 
     /// <summary>
-    /// Gets or sets the encrypted manifest blob (AES-GCM ciphertext, base64-encoded).
+    /// Gets or sets the encrypted manifest blob (raw AES-GCM ciphertext bytes).
     /// </summary>
-    public string? ManifestBlob { get; set; }
+    public byte[]? ManifestBlob { get; set; }
 
     /// <summary>
     /// Gets or sets the SHA-256 (hex) of the encrypted manifest ciphertext. Stored for storage-layer integrity

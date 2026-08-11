@@ -16,9 +16,9 @@ using System.ComponentModel.DataAnnotations;
 public abstract class VaultDataBucketBase : IVaultRevision
 {
     /// <summary>
-    /// Gets or sets the encrypted bucket payload (AES-GCM ciphertext, base64-encoded).
+    /// Gets or sets the encrypted bucket payload (raw AES-GCM ciphertext bytes).
     /// </summary>
-    public required string EncryptedData { get; set; }
+    public required byte[] EncryptedData { get; set; }
 
     /// <summary>
     /// Gets or sets the version of the owning manifest's VEK that <see cref="EncryptedData"/> is encrypted with.

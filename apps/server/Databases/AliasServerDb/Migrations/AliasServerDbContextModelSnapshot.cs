@@ -1015,9 +1015,9 @@ namespace AliasServerDb.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("EncryptedData")
+                    b.Property<byte[]>("EncryptedData")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("bytea");
 
                     b.Property<int>("KeyVersion")
                         .HasColumnType("integer");
@@ -1052,9 +1052,9 @@ namespace AliasServerDb.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("EncryptedData")
+                    b.Property<byte[]>("EncryptedData")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("bytea");
 
                     b.Property<int>("KeyVersion")
                         .HasColumnType("integer");
@@ -1098,8 +1098,8 @@ namespace AliasServerDb.Migrations
                     b.Property<int>("KeyVersion")
                         .HasColumnType("integer");
 
-                    b.Property<string>("ManifestBlob")
-                        .HasColumnType("text");
+                    b.Property<byte[]>("ManifestBlob")
+                        .HasColumnType("bytea");
 
                     b.Property<string>("ManifestCiphertextHash")
                         .HasMaxLength(64)
@@ -1276,8 +1276,8 @@ namespace AliasServerDb.Migrations
                     b.Property<int>("KeyVersion")
                         .HasColumnType("integer");
 
-                    b.Property<string>("ManifestBlob")
-                        .HasColumnType("text");
+                    b.Property<byte[]>("ManifestBlob")
+                        .HasColumnType("bytea");
 
                     b.Property<string>("ManifestCiphertextHash")
                         .HasMaxLength(64)
