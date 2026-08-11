@@ -139,6 +139,33 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     }
 
     /// <summary>
+    /// Get the bytes of an attachment body that was detached from the email's source at ingest.
+    /// </summary>
+    /// <param name="id">The email ID.</param>
+    /// <param name="partIndex">The part index, as advertised by the X-AliasVault-Part header on the attachment in the message source.</param>
+    /// <returns>Part bytes in encrypted form.</returns>
+    [HttpGet(template: "{id}/parts/{partIndex}", Name = "GetEmailPart")]
+    public async Task<IActionResult> GetEmailPart(int id, int partIndex)
+    {
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+
+        var (email, _, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
+        if (errorResult != null)
+        {
+            return errorResult;
+        }
+
+        var part = await context.EmailParts.FirstOrDefaultAsync(x => x.EmailId == email!.Id && x.PartIndex == partIndex);
+        if (part == null)
+        {
+            return NotFound("Email part not found.");
+        }
+
+        // Return the encrypted bytes as binary.
+        return File(part.Bytes, "application/octet-stream");
+    }
+
+    /// <summary>
     /// Authenticates the user and retrieves the requested email.
     /// </summary>
     /// <param name="id">The email ID to retrieve.</param>

@@ -179,6 +179,8 @@ export type ParsedEmailAttachment = {
   filename: string;
   mimeType: string;
   size: number;
+  detached: boolean;
+  partIndex: number | null;
 };
 
 /** Result of parsing a raw RFC 822 email source. Body fields are null when the message has no such part. */
@@ -207,9 +209,9 @@ export async function decodeEmailSource(source: Uint8Array): Promise<Uint8Array>
 /**
  * Extract the decoded bytes of one attachment, identified by its index in the parsed attachment list.
  */
-export async function extractEmailAttachment(source: Uint8Array, index: number): Promise<Uint8Array> {
+export async function extractEmailAttachment(source: Uint8Array, index: number, detachedBody?: Uint8Array): Promise<Uint8Array> {
   await initRustCore();
-  return core.extractEmailAttachment(source, index) as Uint8Array;
+  return core.extractEmailAttachment(source, index, detachedBody) as Uint8Array;
 }
 
 /**

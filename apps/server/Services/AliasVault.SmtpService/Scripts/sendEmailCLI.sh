@@ -261,6 +261,8 @@ send_email() {
         local boundary="boundary-$(generate_random_string 16)"
         local attachment_content="This is a test attachment content - $(generate_random_string 32)"
         local attachment_name="test_attachment_$(generate_random_string 8).txt"
+        local large_attachment_name="test_large_attachment_$(generate_random_string 8).bin"s
+        local large_attachment_size=$((80 * 1024))  # >64KB to test multipart/mixed attachment storage path
 
         {
             generate_headers "$recipient" "$subject" "" "$boundary"
@@ -279,13 +281,22 @@ send_email() {
 
             printf "\r\n"
 
-            # Attachment part
+            # Attachment part 1: small text attachment (stored inline)
             printf -- "--%s\r\n" "$boundary"
             printf "Content-Type: application/octet-stream\r\n"
             printf "Content-Transfer-Encoding: base64\r\n"
             printf "Content-Disposition: attachment; filename=\"%s\"\r\n" "$attachment_name"
             printf "\r\n"
             echo "$attachment_content" | base64
+            printf "\r\n"
+
+            # Attachment part 2: large random binary attachment (stored out-of-bounds)
+            printf -- "--%s\r\n" "$boundary"
+            printf "Content-Type: application/octet-stream\r\n"
+            printf "Content-Transfer-Encoding: base64\r\n"
+            printf "Content-Disposition: attachment; filename=\"%s\"\r\n" "$large_attachment_name"
+            printf "\r\n"
+            head -c "$large_attachment_size" /dev/urandom | base64 | fold -w 76
             printf "\r\n"
             printf -- "--%s--\r\n" "$boundary"
         } | curl --url "smtp://localhost:$smtp_port" \

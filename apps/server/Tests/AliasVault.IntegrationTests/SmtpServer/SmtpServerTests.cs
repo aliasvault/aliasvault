@@ -506,6 +506,173 @@ public class SmtpServerTests
     }
 
     /// <summary>
+    /// Tests that a sizeable attachment is detached from the message source at ingest.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task LargeAttachmentIsDetachedFromSource()
+    {
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress("Test Sender", "sender@example.com"));
+        message.To.Add(new MailboxAddress("Test Recipient", "claimed@example.tld"));
+        message.Subject = "Test Email with large attachment";
+
+        // Random bytes well over the 64 KB detach floor, so the payload cannot compress away either.
+        var attachmentData = new byte[128 * 1024];
+        Random.Shared.NextBytes(attachmentData);
+
+        var bodyBuilder = new BodyBuilder { TextBody = "This is a test email with a large attachment." };
+        bodyBuilder.Attachments.Add("large.bin", attachmentData, ContentType.Parse("application/octet-stream"));
+        message.Body = bodyBuilder.ToMessageBody();
+
+        await SendMessageToSmtpServer(message);
+
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Parts).Include(x => x.Wraps).FirstAsync();
+        var storedPart = processedEmail.Parts.Single();
+        Assert.Multiple(() =>
+        {
+            Assert.That(processedEmail.AttachmentCount, Is.EqualTo(1));
+            Assert.That(storedPart.PartIndex, Is.Zero);
+            Assert.That(storedPart.Bytes, Is.Not.Empty);
+        });
+
+        // The whole point of detaching: the source a client downloads to read the mail no longer carries the payload.
+        Assert.That(processedEmail.MessageSourceBytes!.Length, Is.LessThan(attachmentData.Length / 4), "The stored source should no longer carry the attachment payload.");
+
+        processedEmail = EmailEncryption.DecryptEmail(processedEmail, PrivateKey);
+        var sourceBytes = Gunzip(processedEmail.MessageSourceBytes!);
+        var messageSource = Encoding.UTF8.GetString(sourceBytes);
+        Assert.Multiple(() =>
+        {
+            Assert.That(messageSource, Does.Contain("X-AliasVault-Part: 0"), "The detached attachment should advertise the index its body is stored under.");
+            Assert.That(messageSource, Does.Contain($"X-AliasVault-Detached-Length: {attachmentData.Length}"), "The detached attachment should advertise its decoded size.");
+            Assert.That(messageSource, Does.Contain("filename=large.bin"), "The attachment headers must stay in the source so clients can still list it.");
+        });
+
+        // The skeleton has to remain a parseable MIME message with the attachment present but empty.
+        using var sourceStream = new MemoryStream(sourceBytes);
+        var parsedMessage = await MimeMessage.LoadAsync(sourceStream);
+        var parsedAttachment = parsedMessage.Attachments.OfType<MimePart>().Single();
+        using var emptyBody = new MemoryStream();
+        await parsedAttachment.Content!.DecodeToAsync(emptyBody);
+        Assert.Multiple(() =>
+        {
+            Assert.That(parsedAttachment.FileName, Is.EqualTo("large.bin"));
+            Assert.That(emptyBody.ToArray(), Is.Empty, "The detached attachment should have an empty body in the source.");
+        });
+
+        // Splicing the stored part back where its body was must reproduce the original file byte for byte.
+        var detachedBody = Gunzip(processedEmail.Parts.Single().Bytes);
+        var spliced = SpliceDetachedPart(sourceBytes, detachedBody);
+        using var splicedStream = new MemoryStream(spliced);
+        var splicedMessage = await MimeMessage.LoadAsync(splicedStream);
+        using var decodedAttachment = new MemoryStream();
+        await splicedMessage.Attachments.OfType<MimePart>().Single().Content!.DecodeToAsync(decodedAttachment);
+        Assert.That(decodedAttachment.ToArray(), Is.EqualTo(attachmentData), "The spliced attachment should decode to the original bytes.");
+    }
+
+    /// <summary>
+    /// Tests that every recipient of a multi-recipient email gets a usable copy of a detached attachment.
+    /// Detaching lifts the body out of the shared MimeMessage, so doing it per recipient rather than once up
+    /// front would leave every copy after the first with an empty part.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task DetachedAttachmentIsStoredForEveryRecipient()
+    {
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress("Test Sender", "sender@example.com"));
+        message.To.Add(new MailboxAddress("Test Recipient", "claimed@example.tld"));
+        message.Cc.Add(new MailboxAddress("Test Recipient 2", "claimed.cc@example.tld"));
+        message.Subject = "Test Email with large attachment for multiple recipients";
+
+        var attachmentData = new byte[128 * 1024];
+        Random.Shared.NextBytes(attachmentData);
+
+        var bodyBuilder = new BodyBuilder { TextBody = "This is a test email with a large attachment." };
+        bodyBuilder.Attachments.Add("large.bin", attachmentData, ContentType.Parse("application/octet-stream"));
+        message.Body = bodyBuilder.ToMessageBody();
+
+        await SendMessageToSmtpServer(message);
+
+        var emails = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Parts).Include(x => x.Wraps).ToListAsync();
+        Assert.That(emails, Has.Count.EqualTo(2));
+
+        foreach (var email in emails)
+        {
+            var decrypted = EmailEncryption.DecryptEmail(email, PrivateKey);
+            var detachedBody = Gunzip(decrypted.Parts.Single().Bytes);
+            var spliced = SpliceDetachedPart(Gunzip(decrypted.MessageSourceBytes!), detachedBody);
+
+            using var splicedStream = new MemoryStream(spliced);
+            var splicedMessage = await MimeMessage.LoadAsync(splicedStream);
+            using var decodedAttachment = new MemoryStream();
+            await splicedMessage.Attachments.OfType<MimePart>().Single().Content!.DecodeToAsync(decodedAttachment);
+
+            Assert.That(decodedAttachment.ToArray(), Is.EqualTo(attachmentData), $"Recipient {email.To} did not get a usable copy of the detached attachment.");
+        }
+    }
+
+    /// <summary>
+    /// Tests that an attachment below the detach floor is left inline: detaching it would cost an extra round
+    /// trip on download for a saving too small to matter.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task SmallAttachmentStaysInsideSource()
+    {
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress("Test Sender", "sender@example.com"));
+        message.To.Add(new MailboxAddress("Test Recipient", "claimed@example.tld"));
+        message.Subject = "Test Email with small attachment";
+
+        var bodyBuilder = new BodyBuilder { TextBody = "This is a test email with a small attachment." };
+        bodyBuilder.Attachments.Add("small.txt", Encoding.UTF8.GetBytes("This is a small attachment."), ContentType.Parse("text/plain"));
+        message.Body = bodyBuilder.ToMessageBody();
+
+        await SendMessageToSmtpServer(message);
+
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Parts).FirstAsync();
+        Assert.Multiple(() =>
+        {
+            Assert.That(processedEmail.Parts, Is.Empty, "An attachment below the detach floor should stay inside the source.");
+            Assert.That(processedEmail.AttachmentCount, Is.EqualTo(1));
+        });
+    }
+
+    /// <summary>
+    /// Splices a detached part body back into the empty body of the attachment it was lifted out of, mirroring
+    /// what the Rust core does client-side.
+    /// </summary>
+    /// <param name="skeleton">The raw MIME source with the attachment body removed.</param>
+    /// <param name="body">The transfer-encoded attachment body to splice back in.</param>
+    /// <returns>The reassembled raw MIME source.</returns>
+    private static byte[] SpliceDetachedPart(byte[] skeleton, byte[] body)
+    {
+        // The detached part's body sits between the blank line that ends its headers and the next boundary.
+        var text = Encoding.ASCII.GetString(skeleton);
+        var headerIndex = text.IndexOf("X-AliasVault-Detached-Length:", StringComparison.Ordinal);
+        Assert.That(headerIndex, Is.GreaterThan(0), "Skeleton does not contain a detached part.");
+
+        var separator = text.IndexOf("\r\n\r\n", headerIndex, StringComparison.Ordinal);
+        var separatorLength = 4;
+        if (separator == -1)
+        {
+            separator = text.IndexOf("\n\n", headerIndex, StringComparison.Ordinal);
+            separatorLength = 2;
+        }
+
+        Assert.That(separator, Is.GreaterThan(0), "Detached part has no header/body separator.");
+        var bodyStart = separator + separatorLength;
+
+        var spliced = new byte[skeleton.Length + body.Length];
+        Array.Copy(skeleton, 0, spliced, 0, bodyStart);
+        Array.Copy(body, 0, spliced, bodyStart, body.Length);
+        Array.Copy(skeleton, bodyStart, spliced, bodyStart + body.Length, skeleton.Length - bodyStart);
+        return spliced;
+    }
+
+    /// <summary>
     /// Sends a message to the SMTP server with retry logic for connection.
     /// </summary>
     /// <param name="message">MimeMessage to send.</param>

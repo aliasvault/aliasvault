@@ -62,6 +62,12 @@ public static class EmailEncryption
             attachment.Bytes = Encryption.SymmetricEncrypt(attachment.Bytes, symmetricKey);
         }
 
+        // Encrypt the attachment bodies that were detached from the source with the same symmetric key.
+        foreach (var part in email.Parts)
+        {
+            part.Bytes = Encryption.SymmetricEncrypt(part.Bytes, symmetricKey);
+        }
+
         // Wrap the same symmetric key once per recipient manifest's delivery key.
         foreach (var deliveryKey in deliveryKeys)
         {
@@ -131,6 +137,12 @@ public static class EmailEncryption
         email.From = Encryption.SymmetricDecrypt(email.From, symmetricKey);
         email.FromLocal = Encryption.SymmetricDecrypt(email.FromLocal, symmetricKey);
         email.FromDomain = Encryption.SymmetricDecrypt(email.FromDomain, symmetricKey);
+
+        // Decrypt the attachment bodies that were detached from the source.
+        foreach (var part in email.Parts)
+        {
+            part.Bytes = Encryption.SymmetricDecrypt(part.Bytes, symmetricKey);
+        }
 
         return email;
     }

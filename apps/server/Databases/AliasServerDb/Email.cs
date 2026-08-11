@@ -122,4 +122,10 @@ public class Email
     /// Gets or sets the collection of email attachments.
     /// </summary>
     public virtual List<EmailAttachment> Attachments { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the attachment bodies that were detached from <see cref="MessageSourceBytes"/> at ingest.
+    /// Clients can fetch these individually, only when the user actually opens an attachment.
+    /// </summary>
+    public virtual List<EmailPart> Parts { get; set; } = [];
 }

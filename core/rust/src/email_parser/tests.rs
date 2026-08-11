@@ -77,7 +77,7 @@ fn parses_multipart_email_with_attachment() {
     assert_eq!(attachment.filename, "report.pdf");
     assert_eq!(attachment.mime_type, "application/pdf");
     assert_eq!(attachment.size, 10);
-    assert_eq!(extract_email_attachment(MULTIPART_EMAIL.as_bytes(), 0).unwrap(), b"%PDF-hello");
+    assert_eq!(extract_email_attachment(MULTIPART_EMAIL.as_bytes(), 0, None).unwrap(), b"%PDF-hello");
 }
 
 #[test]
@@ -137,7 +137,7 @@ Prijs: 10€\r\n\
     let parsed = parse_email_source(&legacy_double_encode(email.as_bytes())).unwrap();
 
     assert_eq!(parsed.attachments.len(), 1);
-    let content = extract_email_attachment(&legacy_double_encode(email.as_bytes()), 0).unwrap();
+    let content = extract_email_attachment(&legacy_double_encode(email.as_bytes()), 0, None).unwrap();
     assert_eq!(String::from_utf8(content).unwrap().trim_end(), "Prijs: 10€");
 }
 
@@ -204,16 +204,16 @@ c2Vjb25k\r\n\
     let parsed = parse_email_source(email.as_bytes()).unwrap();
     assert_eq!(parsed.attachments.iter().map(|a| a.filename.as_str()).collect::<Vec<_>>(), ["first.bin", "second.bin"]);
 
-    assert_eq!(extract_email_attachment(email.as_bytes(), 0).unwrap(), b"first");
-    assert_eq!(extract_email_attachment(email.as_bytes(), 1).unwrap(), b"second");
-    assert!(extract_email_attachment(email.as_bytes(), 2).is_err(), "an out of range index must error, not return empty bytes");
+    assert_eq!(extract_email_attachment(email.as_bytes(), 0, None).unwrap(), b"first");
+    assert_eq!(extract_email_attachment(email.as_bytes(), 1, None).unwrap(), b"second");
+    assert!(extract_email_attachment(email.as_bytes(), 2, None).is_err(), "an out of range index must error, not return empty bytes");
 }
 
 #[test]
 fn extracts_attachments_from_compressed_source() {
     let compressed = gzip(MULTIPART_EMAIL.as_bytes());
 
-    assert_eq!(extract_email_attachment(&compressed, 0).unwrap(), b"%PDF-hello");
+    assert_eq!(extract_email_attachment(&compressed, 0, None).unwrap(), b"%PDF-hello");
 }
 
 #[test]

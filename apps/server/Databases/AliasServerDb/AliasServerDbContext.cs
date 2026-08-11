@@ -107,6 +107,11 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<EmailKeyWrap> EmailKeyWraps { get; set; }
 
     /// <summary>
+    /// Gets or sets the EmailParts DbSet.
+    /// </summary>
+    public DbSet<EmailPart> EmailParts { get; set; }
+
+    /// <summary>
     /// Gets or sets the Groups DbSet.
     /// </summary>
     public DbSet<Group> Groups { get; set; }

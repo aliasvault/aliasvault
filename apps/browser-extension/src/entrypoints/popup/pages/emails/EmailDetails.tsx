@@ -218,7 +218,20 @@ const EmailDetails: React.FC = (): React.ReactElement => {
         return;
       }
 
-      const bytes = await extractEmailAttachment(sourceBytes, index);
+      let detachedBody: Uint8Array | undefined;
+      if (attachment.detached && attachment.partIndex !== null) {
+        if (!dbContext?.sqliteClient || !email) {
+          setError('Database context or email not available');
+          return;
+        }
+
+        const encryptedPart = await webApi.downloadBlob(`Email/${id}/parts/${attachment.partIndex}`);
+        const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
+
+        detachedBody = await EncryptionUtility.decryptAttachment(encryptedPart, email, encryptionKeys);
+      }
+
+      const bytes = await extractEmailAttachment(sourceBytes, index, detachedBody);
       triggerAttachmentDownload(bytes, attachment.mimeType, attachment.filename);
     } catch (err) {
       console.error('handleDownloadParsedAttachment error', err);
