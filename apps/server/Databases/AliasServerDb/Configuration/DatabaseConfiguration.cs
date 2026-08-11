@@ -7,6 +7,7 @@
 
 namespace AliasServerDb.Configuration;
 
+using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,6 +70,39 @@ public static class DatabaseConfiguration
         });
 
         return services;
+    }
+
+    /// <summary>
+    /// Applies all pending migrations, reporting which migration is being applied and how long each one took.
+    /// </summary>
+    /// <param name="context">The database context to migrate.</param>
+    /// <param name="logger">Logger to report the migration progress on.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public static async Task MigrateWithLoggingAsync(this DbContext context, ILogger logger, CancellationToken cancellationToken = default)
+    {
+        var pendingMigrations = (await context.Database.GetPendingMigrationsAsync(cancellationToken)).ToList();
+        if (pendingMigrations.Count == 0)
+        {
+            logger.LogInformation("Database schema is up-to-date, no migrations to apply.");
+            return;
+        }
+
+        logger.LogInformation("Database schema is behind, applying {Count} pending migration(s): {Migrations}", pendingMigrations.Count, string.Join(", ", pendingMigrations));
+
+        var totalStopwatch = Stopwatch.StartNew();
+        for (var index = 0; index < pendingMigrations.Count; index++)
+        {
+            var migration = pendingMigrations[index];
+            logger.LogInformation("Applying migration {Index}/{Count}: {Migration} ...", index + 1, pendingMigrations.Count, migration);
+
+            var migrationStopwatch = Stopwatch.StartNew();
+            await context.Database.MigrateAsync(migration, cancellationToken);
+
+            logger.LogInformation("Applied migration {Index}/{Count}: {Migration} in {Duration}", index + 1, pendingMigrations.Count, migration, FormatDuration(migrationStopwatch.Elapsed));
+        }
+
+        logger.LogInformation("Database schema is up-to-date, applied {Count} migration(s) in {Duration}.", pendingMigrations.Count, FormatDuration(totalStopwatch.Elapsed));
     }
 
     /// <summary>
@@ -152,5 +186,25 @@ public static class DatabaseConfiguration
         }
 
         throw new TimeoutException($"Database did not become ready within {timeoutSeconds} seconds. Migrations may not have completed.");
+    }
+
+    /// <summary>
+    /// Formats an elapsed timespan as a short human readable duration, scaled to how long it actually took.
+    /// </summary>
+    /// <param name="elapsed">The elapsed time to format.</param>
+    /// <returns>The formatted duration, e.g. "84ms", "7.0s" or "2m 5s".</returns>
+    private static string FormatDuration(TimeSpan elapsed)
+    {
+        if (elapsed.TotalSeconds < 1)
+        {
+            return FormattableString.Invariant($"{elapsed.TotalMilliseconds:F0}ms");
+        }
+
+        if (elapsed.TotalMinutes < 1)
+        {
+            return FormattableString.Invariant($"{elapsed.TotalSeconds:F1}s");
+        }
+
+        return FormattableString.Invariant($"{(int)elapsed.TotalMinutes}m {elapsed.Seconds}s");
     }
 }
