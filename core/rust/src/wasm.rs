@@ -384,9 +384,11 @@ pub fn decode_email_source_js(source: &[u8]) -> Result<Vec<u8>, JsValue> {
 }
 
 /// Extract the decoded bytes of one attachment, identified by its index in the parsed attachment list.
+/// An attachment the parse result flagged as `detached` carries no body in the source; pass its separately
+/// fetched body as `detachedBody`. It is ignored for attachments that are still inline.
 #[wasm_bindgen(js_name = extractEmailAttachment)]
-pub fn extract_email_attachment_js(source: &[u8], index: usize) -> Result<Vec<u8>, JsValue> {
-    crate::email_parser::extract_email_attachment(source, index)
+pub fn extract_email_attachment_js(source: &[u8], index: usize, detached_body: Option<Box<[u8]>>) -> Result<Vec<u8>, JsValue> {
+    crate::email_parser::extract_email_attachment(source, index, detached_body.as_deref())
         .map_err(|e| JsValue::from_str(&format!("Email attachment extraction failed: {}", e)))
 }
 

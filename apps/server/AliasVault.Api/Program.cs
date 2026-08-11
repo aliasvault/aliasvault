@@ -221,6 +221,9 @@ using (var scope = app.Services.CreateScope())
 {
     var container = scope.ServiceProvider;
     await using var db = await container.GetRequiredService<IAliasServerDbContextFactory>().CreateDbContextAsync();
+
+    // Raise the command timeout for migrations.
+    db.Database.SetCommandTimeout((int)TimeSpan.FromMinutes(60).TotalSeconds);
     await db.Database.MigrateAsync();
 }
 
