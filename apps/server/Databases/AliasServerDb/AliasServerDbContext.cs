@@ -49,29 +49,10 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<AliasVaultUser> AliasVaultUsers { get; set; }
 
     /// <summary>
-    /// Gets or sets the AliasVaultRoles DbSet.
-    /// </summary>
-    public DbSet<AliasVaultRole> AliasVaultRoles { get; set; }
-
-    /// <summary>
-    /// Gets or sets the UserRoles DbSet.
-    /// </summary>
-    public DbSet<IdentityUserRole<string>> UserRoles { get; set; }
-
-    /// <summary>
-    /// Gets or sets the UserClaims DbSet.
+    /// Gets or sets the UserClaims DbSet. Not written by AliasVault itself, but ASP.NET Identity reads it
+    /// whenever it materializes a ClaimsPrincipal, so the table must exist.
     /// </summary>
     public DbSet<IdentityUserClaim<string>> UserClaims { get; set; }
-
-    /// <summary>
-    /// Gets or sets the UserLogin DbSet.
-    /// </summary>
-    public DbSet<IdentityUserLogin<string>> UserLogin { get; set; }
-
-    /// <summary>
-    /// Gets or sets the RoleClaims DbSet.
-    /// </summary>
-    public DbSet<IdentityRoleClaim<string>> RoleClaims { get; set; }
 
     /// <summary>
     /// Gets or sets the UserTokens DbSet.
@@ -87,11 +68,6 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     /// Gets or sets the AdminUser DbSet.
     /// </summary>
     public DbSet<AdminUser> AdminUsers { get; set; }
-
-    /// <summary>
-    /// Gets or sets the AdminRoles DbSet.
-    /// </summary>
-    public DbSet<AdminRole> AdminRoles { get; set; }
 
     /// <summary>
     /// Gets or sets the VaultManifests DbSet. Exactly one row per logical manifest, holding its current revision.
@@ -269,29 +245,16 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             }
         }
 
-        // Configure AspNetIdentity tables manually.
-        modelBuilder.Entity<IdentityUserRole<string>>(entity =>
-        {
-            entity.HasKey(r => new { r.UserId, r.RoleId });
-            entity.ToTable("UserRoles");
-        });
-
+        /*
+         * Configure the AspNetIdentity tables manually. Only the tables that ASP.NET Identity actually
+         * touches in AliasVault are mapped: UserClaims (read on every ClaimsPrincipal creation) and
+         * UserTokens (2FA authenticator keys and recovery codes). Roles, role claims and external
+         * logins are not used, so those tables are intentionally absent.
+         */
         modelBuilder.Entity<IdentityUserClaim<string>>(entity =>
         {
             entity.HasKey(c => c.Id);
             entity.ToTable("UserClaims");
-        });
-
-        modelBuilder.Entity<IdentityUserLogin<string>>(entity =>
-        {
-            entity.HasKey(l => new { l.LoginProvider, l.ProviderKey });
-            entity.ToTable("UserLogins");
-        });
-
-        modelBuilder.Entity<IdentityRoleClaim<string>>(entity =>
-        {
-            entity.HasKey(rc => rc.Id);
-            entity.ToTable("RoleClaims");
         });
 
         modelBuilder.Entity<IdentityUserToken<string>>(entity =>

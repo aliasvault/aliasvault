@@ -99,7 +99,7 @@ builder.Services.AddLogging(logging =>
     logging.AddFilter("Microsoft.AspNetCore.Identity.UserManager", LogLevel.Error);
 });
 
-builder.Services.AddIdentity<AliasVaultUser, AliasVaultRole>(options =>
+builder.Services.AddIdentityCore<AliasVaultUser>(options =>
     {
         options.Password.RequireDigit = false;
         options.Password.RequireLowercase = false;

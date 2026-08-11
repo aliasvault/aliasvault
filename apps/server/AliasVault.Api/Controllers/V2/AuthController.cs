@@ -41,7 +41,6 @@ using V2Auth = AliasVault.Shared.Models.WebApi.V2.Auth;
 /// </summary>
 /// <param name="dbContextFactory">AliasServerDbContext instance.</param>
 /// <param name="userManager">UserManager instance.</param>
-/// <param name="signInManager">SignInManager instance.</param>
 /// <param name="configuration">IConfiguration instance.</param>
 /// <param name="cache">IMemoryCache instance for persisting SRP values during multistep login process.</param>
 /// <param name="timeProvider">ITimeProvider instance. This returns the time which can be mutated for testing.</param>
@@ -53,7 +52,7 @@ using V2Auth = AliasVault.Shared.Models.WebApi.V2.Auth;
 [Route("v{version:apiVersion}/[controller]")]
 [ApiController]
 [ApiVersion("2")]
-public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, SignInManager<AliasVaultUser> signInManager, IConfiguration configuration, IMemoryCache cache, ITimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, RegistrationRateLimitService registrationRateLimitService, IpBlockListService ipBlockListService) : ControllerBase
+public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IConfiguration configuration, IMemoryCache cache, ITimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, RegistrationRateLimitService registrationRateLimitService, IpBlockListService ipBlockListService) : ControllerBase
 {
     /// <summary>
     /// Timeout in minutes for mobile login requests. Clients use 2 minutes for countdown, we use 3 here to give a bit of extra buffer time.
@@ -518,9 +517,6 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             }
 
             await authLoggingService.LogAuthEventSuccessAsync(model.Username, AuthEventType.Register);
-
-            // When a user is registered, they are automatically signed in.
-            await signInManager.SignInAsync(user, isPersistent: false);
 
             // Return the token.
             var tokenModel = await GenerateNewTokensForUser(user, extendedLifetime: true);
