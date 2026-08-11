@@ -4,6 +4,10 @@
 # Example: ./sendEmailCLI.sh 2525
 # Default port is 25 if not specified
 
+MAGENTA='\033[0;35m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
 generate_random_string() {
     LC_ALL=C tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w ${1:-10} | head -n 1
 }
@@ -56,10 +60,57 @@ generate_random_chinese() {
     echo "$result"
 }
 
-generate_random_attachment() {
-    local temp_file="/tmp/test_attachment_$(generate_random_string 8).txt"
-    echo "This is a test attachment content - $(generate_random_string 32)" > "$temp_file"
-    echo "$temp_file"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
+
+# ~10KB, stays under the 64KB threshold: exercises the inline attachment storage path.
+SMALL_ATTACHMENT_FILE="$REPO_ROOT/apps/browser-extension/public/icon/128.png"
+# ~190KB, well over the 64KB threshold: exercises the out-of-bounds attachment storage path.
+LARGE_ATTACHMENT_FILE="$REPO_ROOT/docs/static/assets/img/screenshot.png"
+
+mime_type_for() {
+    case "$(echo "${1##*.}" | tr '[:upper:]' '[:lower:]')" in
+        png) echo "image/png" ;;
+        jpg|jpeg) echo "image/jpeg" ;;
+        gif) echo "image/gif" ;;
+        pdf) echo "application/pdf" ;;
+        txt) echo "text/plain" ;;
+        *) echo "application/octet-stream" ;;
+    esac
+}
+
+# Returns the path to use as attachment. Falls back to generated random bytes when the repo
+# asset is missing (e.g. when this script is copied outside of the repository).
+resolve_attachment_file() {
+    local file="$1"
+    local fallback_size="$2"
+
+    if [[ -f "$file" ]]; then
+        echo "$file"
+        return
+    fi
+
+    local fallback="/tmp/test_attachment_fallback_$fallback_size.bin"
+    if [[ ! -f "$fallback" ]]; then
+        head -c "$fallback_size" /dev/urandom > "$fallback"
+    fi
+    echo "Warning: attachment file not found: $file (falling back to random bytes)" >&2
+    echo "$fallback"
+}
+
+# Writes a base64 encoded MIME part for the given file to stdout.
+append_file_attachment() {
+    local boundary="$1"
+    local file="$2"
+
+    printf -- "--%s\r\n" "$boundary"
+    printf "Content-Type: %s; name=\"%s\"\r\n" "$(mime_type_for "$file")" "$(basename "$file")"
+    printf "Content-Transfer-Encoding: base64\r\n"
+    printf "Content-Disposition: attachment; filename=\"%s\"\r\n" "$(basename "$file")"
+    printf "\r\n"
+    # Normalize to 76 char CRLF terminated base64 lines (BSD and GNU base64 wrap differently).
+    base64 < "$file" | tr -d '\n' | fold -w 76 | sed 's/$/\r/'
+    printf "\r\n"
 }
 
 print_logo() {
@@ -88,6 +139,7 @@ generate_plain_body() {
     local emoji_text="$5"
     local random_unicode="$6"
     local with_attachment="$7"
+    local attachment_info="$8"
 
     local opening_text="This is test email #$email_number"
     if [[ "$with_attachment" == "true" ]]; then
@@ -140,6 +192,7 @@ generate_html_body() {
     local emoji_text="$5"
     local random_unicode="$6"
     local with_attachment="$7"
+    local attachment_info="$8"
 
     local opening_text="This is test email #$email_number"
     if [[ "$with_attachment" == "true" ]]; then
@@ -259,10 +312,8 @@ send_email() {
     # Handle emails with attachments
     if [[ "$with_attachment" == "true" ]]; then
         local boundary="boundary-$(generate_random_string 16)"
-        local attachment_content="This is a test attachment content - $(generate_random_string 32)"
-        local attachment_name="test_attachment_$(generate_random_string 8).txt"
-        local large_attachment_name="test_large_attachment_$(generate_random_string 8).bin"s
-        local large_attachment_size=$((80 * 1024))  # >64KB to test multipart/mixed attachment storage path
+        local small_file=$(resolve_attachment_file "$SMALL_ATTACHMENT_FILE" $((10 * 1024)))
+        local large_file=$(resolve_attachment_file "$LARGE_ATTACHMENT_FILE" $((80 * 1024)))
 
         {
             generate_headers "$recipient" "$subject" "" "$boundary"
@@ -274,30 +325,19 @@ send_email() {
             printf "\r\n"
 
             if [[ "$is_html" == "true" ]]; then
-                generate_html_body "$email_number" "$content_suffix" "$chinese_text" "$special_chars" "$emoji_text" "$random_unicode" "$with_attachment"
+                generate_html_body "$email_number" "$content_suffix" "$chinese_text" "$special_chars" "$emoji_text" "$random_unicode" "$with_attachment" "$attachment_info"
             else
-                generate_plain_body "$email_number" "$content_suffix" "$chinese_text" "$special_chars" "$emoji_text" "$random_unicode" "$with_attachment"
+                generate_plain_body "$email_number" "$content_suffix" "$chinese_text" "$special_chars" "$emoji_text" "$random_unicode" "$with_attachment" "$attachment_info"
             fi
 
             printf "\r\n"
 
-            # Attachment part 1: small text attachment (stored inline)
-            printf -- "--%s\r\n" "$boundary"
-            printf "Content-Type: application/octet-stream\r\n"
-            printf "Content-Transfer-Encoding: base64\r\n"
-            printf "Content-Disposition: attachment; filename=\"%s\"\r\n" "$attachment_name"
-            printf "\r\n"
-            echo "$attachment_content" | base64
-            printf "\r\n"
+            # Attachment part 1: small real file, stays under 64KB (stored inline)
+            append_file_attachment "$boundary" "$small_file"
 
-            # Attachment part 2: large random binary attachment (stored out-of-bounds)
-            printf -- "--%s\r\n" "$boundary"
-            printf "Content-Type: application/octet-stream\r\n"
-            printf "Content-Transfer-Encoding: base64\r\n"
-            printf "Content-Disposition: attachment; filename=\"%s\"\r\n" "$large_attachment_name"
-            printf "\r\n"
-            head -c "$large_attachment_size" /dev/urandom | base64 | fold -w 76
-            printf "\r\n"
+            # Attachment part 2: large real file, over 64KB (stored out-of-bounds)
+            append_file_attachment "$boundary" "$large_file"
+
             printf -- "--%s--\r\n" "$boundary"
         } | curl --url "smtp://localhost:$smtp_port" \
                  --mail-from "sender@example.com" \
