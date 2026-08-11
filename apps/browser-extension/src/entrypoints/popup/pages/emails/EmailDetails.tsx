@@ -12,7 +12,8 @@ import ConversionUtility from '@/entrypoints/popup/utils/ConversionUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import type { EmailAttachment, Email } from '@/utils/dist/core/models/webapi';
-import EncryptionUtility from '@/utils/EncryptionUtility';
+import EncryptionUtility, { type DecryptedEmail } from '@/utils/EncryptionUtility';
+import { decodeEmailSource, extractEmailAttachment, type ParsedEmailAttachment } from '@/utils/RustCore';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
@@ -32,7 +33,8 @@ const EmailDetails: React.FC = (): React.ReactElement => {
   const dbContext = useDb();
   const webApi = useWebApi();
   const [error, setError] = useState<string | null>(null);
-  const [email, setEmail] = useState<Email | null>(null);
+  const [decrypted, setDecrypted] = useState<DecryptedEmail | null>(null);
+  const [sourceText, setSourceText] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 150);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showMetadata, setShowMetadata] = useState(false);
@@ -40,6 +42,12 @@ const EmailDetails: React.FC = (): React.ReactElement => {
   const [credential, setCredential] = useState<{ id: string; name: string } | null>(null);
   const { setIsInitialLoading } = useLoading();
   const { setHeaderButtons } = useHeaderButtons();
+
+  const email = decrypted?.email ?? null;
+  const htmlBody = decrypted?.htmlBody ?? null;
+  const textBody = decrypted?.textBody ?? null;
+  const parsedAttachments: ParsedEmailAttachment[] = decrypted?.attachments ?? [];
+  const sourceBytes = decrypted?.sourceBytes ?? null;
 
   useEffect(() => {
     // For expanded windows, ensure we have proper history state for navigation.
@@ -71,17 +79,18 @@ const EmailDetails: React.FC = (): React.ReactElement => {
         }
 
         const response = await webApi.get<Email>(`Email/${id}`);
-
-        // Decrypt email locally using public/private key pairs
         const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
         const decryptedEmail = await EncryptionUtility.decryptEmail(response, encryptionKeys);
-        setEmail(decryptedEmail);
+
+        setDecrypted(decryptedEmail);
 
         // Set initial view mode based on available content
-        if (decryptedEmail.messageHtml) {
+        if (decryptedEmail.htmlBody) {
           setViewMode('html');
-        } else if (decryptedEmail.messagePlain) {
+        } else if (decryptedEmail.textBody) {
           setViewMode('plain');
+        } else if (decryptedEmail.sourceBytes) {
+          setViewMode('source');
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -109,23 +118,36 @@ const EmailDetails: React.FC = (): React.ReactElement => {
     setCredential(match ? { id: match.Id, name: match.Name ?? address } : null);
   }, [email, dbContext?.sqliteClient]);
 
-  // Available view modes for the cycle button — only formats the server actually provided.
+  // Available view modes for the cycle button.
   const availableModes = useMemo<Array<'html' | 'plain' | 'source'>>(() => {
-    if (!email) {
+    if (!decrypted) {
       return [];
     }
     const modes: Array<'html' | 'plain' | 'source'> = [];
-    if (email.messageHtml) {
+    if (decrypted.htmlBody) {
       modes.push('html');
     }
-    if (email.messagePlain) {
+    if (decrypted.textBody) {
       modes.push('plain');
     }
-    if (email.messageSource) {
+    if (decrypted.sourceBytes) {
       modes.push('source');
     }
     return modes;
-  }, [email]);
+  }, [decrypted]);
+
+  /**
+   * Decode raw source if source view is opened
+   */
+  useEffect(() => {
+    if (viewMode !== 'source' || sourceText !== null || !sourceBytes) {
+      return;
+    }
+
+    decodeEmailSource(sourceBytes)
+      .then(decoded => setSourceText(new TextDecoder().decode(decoded)))
+      .catch(err => setError(err instanceof Error ? err.message : 'Failed to decode email source'));
+  }, [viewMode, sourceText, sourceBytes]);
 
   const formatLabels = useMemo<Record<'html' | 'plain' | 'source', string>>(() => ({
     html: t('emails.formatHtml'),
@@ -168,7 +190,45 @@ const EmailDetails: React.FC = (): React.ReactElement => {
   }, [id, fromPath]);
 
   /**
-   * Handle downloading an attachment.
+   * Trigger a browser download for raw attachment bytes.
+   */
+  const triggerAttachmentDownload = (bytes: Uint8Array, mimeType: string | null, filename: string): void => {
+    const blob = new Blob([bytes], { type: mimeType ?? 'application/octet-stream' });
+
+    // Create download link and trigger download
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+
+    // Cleanup
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
+
+  /**
+   * Handle downloading an attachment contained in the message source.
+   */
+  const handleDownloadParsedAttachment = async (attachment: ParsedEmailAttachment, index: number): Promise<void> => {
+    try {
+      if (!sourceBytes) {
+        setError('Email source not available');
+        return;
+      }
+
+      const bytes = await extractEmailAttachment(sourceBytes, index);
+      triggerAttachmentDownload(bytes, attachment.mimeType, attachment.filename);
+    } catch (err) {
+      console.error('handleDownloadParsedAttachment error', err);
+      setError(err instanceof Error ? err.message : 'Failed to download attachment');
+    }
+  };
+
+  /**
+   * Handle downloading an attachment stored as a separate record (legacy emails): fetch the
+   * encrypted bytes from the API and decrypt them locally.
    */
   const handleDownloadAttachment = async (attachment: EmailAttachment): Promise<void> => {
     try {
@@ -191,22 +251,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
         return;
       }
 
-      // Create Blob directly from Uint8Array
-      const blob = new Blob([new Uint8Array(decryptedBytes)], {
-        type: attachment.mimeType ?? 'application/octet-stream'
-      });
-
-      // Create download link and trigger download
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = attachment.filename;
-      document.body.appendChild(a);
-      a.click();
-
-      // Cleanup
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      triggerAttachmentDownload(new Uint8Array(decryptedBytes), attachment.mimeType, attachment.filename);
     } catch (err) {
       console.error('handleDownloadAttachment error', err);
       setError(err instanceof Error ? err.message : 'Failed to download attachment');
@@ -338,36 +383,59 @@ const EmailDetails: React.FC = (): React.ReactElement => {
 
         {/* Email Body — always rendered on a white background with dark text so contrast doesn't break in dark mode. */}
         <div className="bg-white mt-4">
-          {viewMode === 'html' && email.messageHtml ? (
+          {viewMode === 'html' && htmlBody ? (
             <iframe
-              srcDoc={ConversionUtility.sanitizeAndPrepareEmailHtml(email.messageHtml)}
+              srcDoc={ConversionUtility.sanitizeAndPrepareEmailHtml(htmlBody)}
               className="w-full min-h-[500px] border-0"
               title={t('emails.emailContent')}
               sandbox="allow-popups allow-popups-to-escape-sandbox"
             />
           ) : viewMode === 'plain' ? (
             <pre className="whitespace-pre-wrap text-gray-800 p-3 font-sans">
-              {email.messagePlain ?? t('emails.emailNotFound')}
+              {textBody ?? t('emails.emailNotFound')}
             </pre>
           ) : viewMode === 'source' ? (
             <pre className="whitespace-pre-wrap text-gray-800 p-3 font-mono text-xs leading-relaxed">
-              {email.messageSource ?? t('emails.emailNotFound')}
+              {sourceText ?? t('common.loading')}
             </pre>
           ) : (
             <pre className="whitespace-pre-wrap text-gray-800 p-3">
-              {email.messagePlain}
+              {textBody}
             </pre>
           )}
         </div>
 
         {/* Attachments */}
-        {email.attachments && email.attachments.length > 0 && (
+        {(parsedAttachments.length > 0 || (email.attachments && email.attachments.length > 0)) && (
           <div className="p-6 border-t border-gray-200 dark:border-gray-700">
             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
               {t('common.attachments')}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {email.attachments.map((attachment) => (
+              {parsedAttachments.length > 0 ? parsedAttachments.map((attachment, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleDownloadParsedAttachment(attachment, index)}
+                  className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 text-left"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                    />
+                  </svg>
+                  <span>
+                    {attachment.filename} ({Math.ceil(attachment.size / 1024)} KB)
+                  </span>
+                </button>
+              )) : email.attachments.map((attachment) => (
                 <button
                   key={attachment.id}
                   onClick={() => handleDownloadAttachment(attachment)}
