@@ -48,6 +48,11 @@ public class SmtpServerTests
     private TestHostBuilder _testHostBuilder;
 
     /// <summary>
+    /// The personal group of the seeded test user, which owns the anonymized sender counts.
+    /// </summary>
+    private Guid _personalGroupId;
+
+    /// <summary>
     /// Setup logic for every test.
     /// </summary>
     /// <returns>Task.</returns>
@@ -62,6 +67,7 @@ public class SmtpServerTests
         // Create an AliasVault user with personal group, manifest and primary delivery key (public key).
         var dbContext = _testHostBuilder.GetDbContext();
         var testUser = await TestUserSeeder.CreateTestUserAsync(dbContext, "testuser", "testuser@example.tld", PublicKey);
+        _personalGroupId = testUser.PersonalGroup.Id;
 
         // Create email claims linked to the user's personal manifest so delivery can resolve the primary delivery key.
         dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(testUser.Manifest.ManifestId, "claimed@example.tld"));
@@ -205,6 +211,152 @@ public class SmtpServerTests
         // The decrypted source is still gzip-compressed; gunzip it and verify the original body is present.
         var messageSource = Encoding.UTF8.GetString(Gunzip(processedEmail.MessageSourceBytes!));
         Assert.That(messageSource, Does.Contain(textBody));
+    }
+
+    /// <summary>
+    /// An alias contributes its sender bucket exactly once, on the first email it receives.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task AnonymizedSenderCountedOncePerAlias()
+    {
+        await SendMessageToSmtpServer(BuildSimpleMessage("sender@example.com", "claimed@example.tld", "First"));
+        await SendMessageToSmtpServer(BuildSimpleMessage("sender@example.com", "claimed@example.tld", "Second"));
+
+        var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var group = await dbContext.Groups.FirstAsync(g => g.Id == _personalGroupId);
+        var claim = await dbContext.EmailClaims.FirstAsync(c => c.Address == "claimed@example.tld");
+        var expectedBucket = AnonymizedSenderBucket.Compute(TestHostBuilder.IntegrationAbuseMetricsSalt, "example.com");
+        var deliveredCount = await dbContext.Emails.CountAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(deliveredCount, Is.EqualTo(2), "both emails should still be delivered");
+            Assert.That(group.AnonymizedEmailAliasSenderCounts, Has.Length.EqualTo(AnonymizedSenderBucket.BucketCount));
+            Assert.That(group.AnonymizedEmailAliasSenderCounts.Sum(x => x), Is.EqualTo(1), "the second email must not count again");
+            Assert.That(group.AnonymizedEmailAliasSenderCounts[expectedBucket], Is.EqualTo(1));
+            Assert.That(claim.AnonymizedSenderCounted, Is.True, "the alias should be latched after its first email");
+        });
+    }
+
+    /// <summary>
+    /// Aliases contacted first by different services spread across different buckets, which is what keeps ordinary
+    /// use distinguishable from a run of signups all pointed at one target.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task AnonymizedSenderCountsSpreadAcrossDistinctSenders()
+    {
+        await SendMessageToSmtpServer(BuildSimpleMessage("sender@example.com", "claimed@example.tld", "One"));
+        await SendMessageToSmtpServer(BuildSimpleMessage("noreply@other-service.org", "claimed.cc@example.tld", "Two"));
+
+        var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var group = await dbContext.Groups.FirstAsync(g => g.Id == _personalGroupId);
+        var firstBucket = AnonymizedSenderBucket.Compute(TestHostBuilder.IntegrationAbuseMetricsSalt, "example.com");
+        var secondBucket = AnonymizedSenderBucket.Compute(TestHostBuilder.IntegrationAbuseMetricsSalt, "other-service.org");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(firstBucket, Is.Not.EqualTo(secondBucket), "test domains must not collide, or the assertions below prove nothing");
+            Assert.That(group.AnonymizedEmailAliasSenderCounts.Sum(x => x), Is.EqualTo(2));
+            Assert.That(group.AnonymizedEmailAliasSenderCounts[firstBucket], Is.EqualTo(1));
+            Assert.That(group.AnonymizedEmailAliasSenderCounts[secondBucket], Is.EqualTo(1));
+            Assert.That(group.AnonymizedEmailAliasSenderCounts.Max(), Is.EqualTo(1), "two services must not read as concentration");
+        });
+    }
+
+    /// <summary>
+    /// Aliases all first contacted from the same host pile into a single bucket. This is the shape the counts
+    /// exists to surface: many aliases, one destination.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task AnonymizedSenderCountsConcentrateOnSingleSender()
+    {
+        await SendMessageToSmtpServer(BuildSimpleMessage("signup@example.com", "claimed@example.tld", "One"));
+        await SendMessageToSmtpServer(BuildSimpleMessage("noreply@example.com", "claimed.cc@example.tld", "Two"));
+
+        var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var group = await dbContext.Groups.FirstAsync(g => g.Id == _personalGroupId);
+        var expectedBucket = AnonymizedSenderBucket.Compute(TestHostBuilder.IntegrationAbuseMetricsSalt, "example.com");
+
+        Assert.Multiple(() =>
+        {
+            // Different local parts, one host: the local part must play no role in where the bucket lands.
+            Assert.That(group.AnonymizedEmailAliasSenderCounts.Sum(x => x), Is.EqualTo(2));
+            Assert.That(group.AnonymizedEmailAliasSenderCounts[expectedBucket], Is.EqualTo(2));
+            Assert.That(group.AnonymizedEmailAliasSenderCounts.Count(x => x > 0), Is.EqualTo(1), "one host must occupy exactly one bucket");
+        });
+    }
+
+    /// <summary>
+    /// A failure while recording the counts must never affect delivery. The sender's bucket is pre-saturated
+    /// here so the increment overflows the column: before this was swallowed the error escaped as a 550 for mail
+    /// that had already been stored, which is exactly what gets an alias onto a sender's suppression list.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task AnonymizedSenderCountFailureDoesNotRejectEmail()
+    {
+        var setupContext = await _testHostBuilder.GetDbContextAsync();
+        var position = AnonymizedSenderBucket.Compute(TestHostBuilder.IntegrationAbuseMetricsSalt, "example.com") + 1;
+        await setupContext.Database.ExecuteSqlAsync($"UPDATE \"Groups\" SET \"AnonymizedEmailAliasSenderCounts\"[{position}] = {int.MaxValue} WHERE \"Id\" = {_personalGroupId}");
+
+        Assert.DoesNotThrowAsync(async () => await SendMessageToSmtpServer(BuildSimpleMessage("sender@example.com", "claimed@example.tld", "Overflow")));
+
+        var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var deliveredCount = await dbContext.Emails.CountAsync();
+        var group = await dbContext.Groups.FirstAsync(g => g.Id == _personalGroupId);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(deliveredCount, Is.EqualTo(1), "the email must be stored even though the count write failed");
+            Assert.That(group.AnonymizedEmailAliasSenderCounts[position - 1], Is.EqualTo(int.MaxValue), "the count is simply lost, which is the cheaper failure");
+        });
+    }
+
+    /// <summary>
+    /// Assert that out-of-range writes to the anonymized sender counts do not corrupt the counts.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task AnonymizedSenderBucketOutOfRangeDoesNotCorruptCounts()
+    {
+        var setupContext = await _testHostBuilder.GetDbContextAsync();
+        var position = AnonymizedSenderBucket.Compute(TestHostBuilder.IntegrationAbuseMetricsSalt, "example.com") + 1;
+        await setupContext.Database.ExecuteSqlAsync($"UPDATE \"Groups\" SET \"AnonymizedEmailAliasSenderCounts\" = array_fill(0, ARRAY[1]) WHERE \"Id\" = {_personalGroupId}");
+
+        await SendMessageToSmtpServer(BuildSimpleMessage("sender@example.com", "claimed@example.tld", "One"));
+        Assert.DoesNotThrowAsync(async () => await SendMessageToSmtpServer(BuildSimpleMessage("sender@example.com", "claimed.cc@example.tld", "Two")));
+
+        // Assert
+        var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var deliveredCount = await dbContext.Emails.CountAsync();
+        var nullCount = await dbContext.Database.SqlQuery<int>($"SELECT COALESCE(array_position(\"AnonymizedEmailAliasSenderCounts\", NULL), 0) AS \"Value\" FROM \"Groups\" WHERE \"Id\" = {_personalGroupId}").FirstAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(deliveredCount, Is.EqualTo(2), "both emails must be delivered despite the unwritable bucket");
+            Assert.That(nullCount, Is.Zero, "an out-of-range should be ignored instead of corrupting the bucket itself");
+        });
+    }
+
+    /// <summary>
+    /// Every recipient group is charged once per delivered email. The counter drives quota enforcement and is now
+    /// incremented by a statement rather than through the change tracker, so it needs coverage proving it still
+    /// counts at all — it had none before.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task EmailsReceivedCounterIncrementsPerDelivery()
+    {
+        await SendMessageToSmtpServer(BuildSimpleMessage("sender@example.com", "claimed@example.tld", "One"));
+        await SendMessageToSmtpServer(BuildSimpleMessage("other@example.com", "claimed.cc@example.tld", "Two"));
+
+        var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var group = await dbContext.Groups.FirstAsync(g => g.Id == _personalGroupId);
+
+        Assert.That(group.EmailsReceived, Is.EqualTo(2), "each delivered email must charge the recipient group exactly once");
     }
 
     /// <summary>
@@ -706,6 +858,23 @@ public class SmtpServerTests
         {
             await client.DisconnectAsync(true);
         }
+    }
+
+    /// <summary>
+    /// Build a minimal plain-text message for delivery tests.
+    /// </summary>
+    /// <param name="from">The sender address.</param>
+    /// <param name="to">The recipient address.</param>
+    /// <param name="subject">The subject line.</param>
+    /// <returns>The message.</returns>
+    private static MimeMessage BuildSimpleMessage(string from, string to, string subject)
+    {
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress("Test Sender", from));
+        message.To.Add(new MailboxAddress("Test Recipient", to));
+        message.Subject = subject;
+        message.Body = new BodyBuilder { TextBody = "Body of " + subject }.ToMessageBody();
+        return message;
     }
 
     private static async Task<TcpClient> ConnectRawSmtpClient()

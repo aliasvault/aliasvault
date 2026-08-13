@@ -10,7 +10,9 @@ using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using AliasServerDb;
 using AliasServerDb.Configuration;
+using AliasVault.Cryptography.Server;
 using AliasVault.Logging;
+using AliasVault.Shared.Server.Utilities;
 using AliasVault.SmtpService;
 using AliasVault.SmtpService.Handlers;
 using AliasVault.SmtpService.Workers;
@@ -40,6 +42,8 @@ config.AllowedToDomains = emailDomains
     .Select(static x => x.Trim().ToLowerInvariant())
     .Distinct(StringComparer.Ordinal)
     .ToList();
+
+config.AbuseMetricsSalt = SecretReader.GetAbuseMetricsSalt();
 
 var tlsEnabled = Environment.GetEnvironmentVariable("SMTP_TLS_ENABLED") ?? "false";
 config.SmtpTlsEnabled = tlsEnabled;

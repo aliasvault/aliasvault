@@ -430,7 +430,7 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
         var wrappedManifestIds = deliveryKeys.Select(k => k.VaultManifestId).ToList();
         var recipientGroupIds = await dbContext.VaultManifests.Where(m => wrappedManifestIds.Contains(m.ManifestId)).Select(m => m.OwnerGroupId).Distinct().ToListAsync(CancellationToken.None);
 
-        var insertedId = await InsertEmailIntoDatabase(message, detachedParts, new MailAddress(toAddress.AsAddress()), deliveryKeys, recipientGroupIds);
+        var insertedId = await InsertEmailIntoDatabase(message, detachedParts, new MailAddress(toAddress.AsAddress()), deliveryKeys, recipientGroupIds, emailClaim.Id, emailClaim.AnonymizedSenderCounted);
         logger.LogDebug("Email for {ToAddress} successfully saved into database with ID {InsertedId}.", toAddress.User + "@" + toAddress.Host, insertedId);
         return true;
     }
@@ -443,26 +443,86 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
     /// <param name="toAddress">The recipient for this mail.</param>
     /// <param name="deliveryKeys">The delivery keys of every manifest claiming this alias; each gets its own wrap of the email's symmetric key.</param>
     /// <param name="recipientGroupIds">The groups that own the manifests this alias is claimed by.</param>
-    private async Task<int> InsertEmailIntoDatabase(MimeMessage message, IReadOnlyCollection<DetachedPart> detachedParts, MailAddress toAddress, IReadOnlyCollection<VaultManifestDeliveryKey> deliveryKeys, IReadOnlyCollection<Guid> recipientGroupIds)
+    /// <param name="emailClaimId">The claim on the recipient alias, latched when its anonymized sender bucket is counted.</param>
+    /// <param name="senderAlreadyCounted">Whether the sender is already counted for anonymized sender usage detection.</param>
+    private async Task<int> InsertEmailIntoDatabase(MimeMessage message, IReadOnlyCollection<DetachedPart> detachedParts, MailAddress toAddress, IReadOnlyCollection<VaultManifestDeliveryKey> deliveryKeys, IReadOnlyCollection<Guid> recipientGroupIds, Guid emailClaimId, bool senderAlreadyCounted)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
         var newEmail = ConvertMimeMessageToEmail(message, detachedParts, toAddress);
+
+        var senderHost = newEmail.FromDomain;
         newEmail = EmailEncryption.EncryptEmail(newEmail, deliveryKeys);
 
         // Insert the email into the database.
         dbContext.Emails.Add(newEmail);
 
-        // Increment each recipient group's EmailsReceived counter: the mail lands in every linked group's pool, so each is charged for it.
-        var groups = await dbContext.Groups.Where(g => recipientGroupIds.Contains(g.Id)).ToListAsync();
-        foreach (var group in groups)
-        {
-            group.EmailsReceived++;
-        }
-
         await dbContext.SaveChangesAsync();
 
+        await IncrementEmailsReceived(dbContext, recipientGroupIds);
+        await RecordAnonymizedSenderBucket(dbContext, emailClaimId, senderAlreadyCounted, senderHost, recipientGroupIds);
+
         return newEmail.Id;
+    }
+
+    /// <summary>
+    /// Increment the EmailsReceived counter for every recipient group.
+    /// </summary>
+    /// <param name="dbContext">The context the email was inserted with.</param>
+    /// <param name="recipientGroupIds">The groups that own the manifests this alias is claimed by.</param>
+    private async Task IncrementEmailsReceived(AliasServerDbContext dbContext, IReadOnlyCollection<Guid> recipientGroupIds)
+    {
+        try
+        {
+            var groupIds = recipientGroupIds.ToArray();
+            await dbContext.Database.ExecuteSqlAsync($"UPDATE \"Groups\" SET \"EmailsReceived\" = \"EmailsReceived\" + 1 WHERE \"Id\" = ANY({groupIds})");
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not increment the EmailsReceived counter for the recipient groups.");
+        }
+    }
+
+    /// <summary>
+    /// Record the sender host in the sender bucket for anonymized sender usage detection.
+    /// </summary>
+    /// <param name="dbContext">The context the email was inserted with.</param>
+    /// <param name="emailClaimId">The claim on the recipient alias.</param>
+    /// <param name="senderAlreadyCounted">Whether the sender is already counted for anonymized sender usage detection.</param>
+    /// <param name="senderHost">The plaintext sender host, captured before encryption.</param>
+    /// <param name="recipientGroupIds">The groups that own the manifests this alias is claimed by.</param>
+    private async Task RecordAnonymizedSenderBucket(AliasServerDbContext dbContext, Guid emailClaimId, bool senderAlreadyCounted, string senderHost, IReadOnlyCollection<Guid> recipientGroupIds)
+    {
+        if (senderAlreadyCounted || string.IsNullOrWhiteSpace(config.AbuseMetricsSalt) || string.IsNullOrWhiteSpace(senderHost))
+        {
+            return;
+        }
+
+        try
+        {
+            // Set the sender already counted flag for the email claim.
+            var latched = await dbContext.Database.ExecuteSqlAsync($"UPDATE \"EmailClaims\" SET \"AnonymizedSenderCounted\" = true WHERE \"Id\" = {emailClaimId} AND \"AnonymizedSenderCounted\" = false");
+            if (latched == 0)
+            {
+                return;
+            }
+
+            // Compute the bucket index for the sender host and increment the count for the recipient groups.
+            var position = AnonymizedSenderBucket.Compute(config.AbuseMetricsSalt, senderHost) + 1;
+            var groupIds = recipientGroupIds.ToArray();
+
+            await dbContext.Database.ExecuteSqlAsync(
+                $"""
+                 UPDATE "Groups"
+                 SET "AnonymizedEmailAliasSenderCounts"[{position}] = COALESCE("AnonymizedEmailAliasSenderCounts"[{position}], 0) + 1
+                 WHERE "Id" = ANY({groupIds}) AND array_length("AnonymizedEmailAliasSenderCounts", 1) >= {position}
+                 """);
+        }
+        catch (Exception ex)
+        {
+            // Could not record the anonymized sender bucket for email claim. The email itself was stored and delivered normally.
+            logger.LogWarning(ex, "Could not record the anonymized sender bucket for email claim {EmailClaimId}. The email itself was stored and delivered normally.", emailClaimId);
+        }
     }
 
     /// <summary>

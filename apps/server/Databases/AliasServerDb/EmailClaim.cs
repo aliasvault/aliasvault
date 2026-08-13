@@ -56,6 +56,12 @@ public class EmailClaim
     public bool Disabled { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether this alias has been counted in the anonymized sender bucket
+    /// of the owner group.
+    /// </summary>
+    public bool AnonymizedSenderCounted { get; set; }
+
+    /// <summary>
     /// Gets or sets created timestamp.
     /// </summary>
     public DateTime CreatedAt { get; set; }

@@ -34,4 +34,9 @@ public class Config
     /// Domains not in this list will be rejected.
     /// </summary>
     public List<string> AllowedToDomains { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the per-instance salt used to bucket sender hosts for abuse detection.
+    /// </summary>
+    public string AbuseMetricsSalt { get; set; } = string.Empty;
 }

@@ -66,6 +66,12 @@ public class Group
     public int EmailsReceived { get; set; } = 0;
 
     /// <summary>
+    /// Gets or sets the per-bucket counts of first-time senders to this group's email aliases. This is used to detect
+    /// mass signup patterns in a privacy-preserving way.
+    /// </summary>
+    public int[] AnonymizedEmailAliasSenderCounts { get; set; } = new int[64];
+
+    /// <summary>
     /// Gets or sets created timestamp.
     /// </summary>
     public DateTime CreatedAt { get; set; }

@@ -299,6 +299,12 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             builder.HasIndex(e => e.PersonalGroupId).IsUnique().HasDatabaseName("UX_AliasVaultUsers_PersonalGroupId");
         });
 
+        modelBuilder.Entity<Group>(builder =>
+        {
+            builder.Property(e => e.AnonymizedEmailAliasSenderCounts)
+                .HasDefaultValueSql("array_fill(0, ARRAY[64])");
+        });
+
         // Configure GroupMember, who may be granted access to the group's shared manifests.
         modelBuilder.Entity<GroupMember>(builder =>
         {
