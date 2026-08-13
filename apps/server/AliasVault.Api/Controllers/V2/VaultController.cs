@@ -1003,7 +1003,7 @@ public class VaultController(
             .Where(m => context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner))
             .Select(m => m.ManifestId)
             .ToListAsync()).ToHashSet();
-        var speaksFor = accessibleManifests.Union(ownedManifests).ToHashSet();
+        var updateScope = accessibleManifests.Union(ownedManifests).ToHashSet();
 
         // Resolved server-side and never read off the push: this is what stops a client filing an alias under a manifest it merely named.
         var personalManifestId = await GroupHelper.GetPersonalManifestIdAsync(context, user.PersonalGroupId);
@@ -1040,10 +1040,10 @@ public class VaultController(
 
         var desiredByAddress = assertedPairs.GroupBy(p => p.Address).ToDictionary(g => g.Key, g => g.Select(p => p.ManifestId).ToHashSet());
 
-        // Get the claims this push may update: every claim linked to a manifest the caller speaks for.
+        // Get the claims this push may update: every claim linked to a manifest inside the caller's update scope.
         var userOwnedEmailClaims = await context.EmailClaims
             .Include(c => c.Links)
-            .Where(c => c.Links.Any(l => speaksFor.Contains(l.VaultManifestId)))
+            .Where(c => c.Links.Any(l => updateScope.Contains(l.VaultManifestId)))
             .ToListAsync();
         var processed = new HashSet<string>();
         var supportedDomains = config.PrivateEmailDomains;
@@ -1114,7 +1114,7 @@ public class VaultController(
                     changed = true;
                 }
 
-                var staleLinks = existing.Links.Where(l => speaksFor.Contains(l.VaultManifestId) && !desiredManifestIds.Contains(l.VaultManifestId)).ToList();
+                var staleLinks = existing.Links.Where(l => updateScope.Contains(l.VaultManifestId) && !desiredManifestIds.Contains(l.VaultManifestId)).ToList();
                 if (staleLinks.Count == existing.Links.Count)
                 {
                     // Removing these would orphan the claim (the pushed links were all blocked, e.g. by quota); keep the previous links rather than leave a tombstone.
@@ -1175,11 +1175,11 @@ public class VaultController(
             });
         }
 
-        // An address that is no longer pushed loses the links the caller speaks for. When that would remove every link,
-        // the claim is disabled instead and keeps its links.
+        // An address that is no longer pushed loses the links inside the caller's update scope. When that would remove
+        // every link, the claim is disabled instead and keeps its links.
         foreach (var claim in userOwnedEmailClaims.Where(x => !x.Disabled && !processed.Contains(x.Address)))
         {
-            var removable = claim.Links.Where(l => speaksFor.Contains(l.VaultManifestId)).ToList();
+            var removable = claim.Links.Where(l => updateScope.Contains(l.VaultManifestId)).ToList();
             if (removable.Count == claim.Links.Count)
             {
                 claim.Disabled = true;
