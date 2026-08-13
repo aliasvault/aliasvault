@@ -49,10 +49,11 @@ using SecureRemotePassword;
 /// <param name="settingsService">ServerSettingsService instance.</param>
 /// <param name="registrationRateLimitService">RegistrationRateLimitService instance.</param>
 /// <param name="ipBlockListService">IpBlockListService instance.</param>
+/// <param name="mobileLoginRateLimitService">MobileLoginRateLimitService instance.</param>
 [Route("v{version:apiVersion}/[controller]")]
 [ApiController]
 [ApiVersion("1")]
-public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, SignInManager<AliasVaultUser> signInManager, IConfiguration configuration, IMemoryCache cache, ITimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, RegistrationRateLimitService registrationRateLimitService, IpBlockListService ipBlockListService) : ControllerBase
+public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, SignInManager<AliasVaultUser> signInManager, IConfiguration configuration, IMemoryCache cache, ITimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, RegistrationRateLimitService registrationRateLimitService, IpBlockListService ipBlockListService, MobileLoginRateLimitService mobileLoginRateLimitService) : ControllerBase
 {
     /// <summary>
     /// Timeout in minutes for mobile login requests. Clients use 2 minutes for countdown, we use 3 here to give a bit of extra buffer time.
@@ -649,7 +650,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     [AllowAnonymous]
     public async Task<IActionResult> InitiateMobileLogin([FromBody] MobileLoginInitiateRequest model)
     {
-        await using var context = await dbContextFactory.CreateDbContextAsync();
+        // Reject invalid public key structure.
+        if (!MobileLoginPublicKeyValidator.IsValid(model.ClientPublicKey))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_INVALID_PUBLIC_KEY, 400));
+        }
 
         // Check the IP blocklist.
         if (await ipBlockListService.IsBlockedForLoginAsync(IpAddressUtility.GetRawIpAddressFromContext(HttpContext)))
@@ -657,6 +662,17 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             await authLoggingService.LogAuthEventFailAsync("n/a", AuthEventType.MobileLogin, AuthFailureReason.IpBlocked);
             return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 400));
         }
+
+        // Check IP-based mobile login rate limit.
+        var settings = await settingsService.GetAllSettingsAsync();
+        var ipAddress = IpAddressUtility.GetAnonymizedIpFromContext(HttpContext, config.IpLoggingEnabled);
+        if (await mobileLoginRateLimitService.IsRateLimitExceededAsync(ipAddress, settings.MaxMobileLoginRequestsPerIpPerMinute))
+        {
+            await authLoggingService.LogAuthEventFailAsync("n/a", AuthEventType.MobileLogin, AuthFailureReason.MobileLoginRateLimitExceeded);
+            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_RATE_LIMIT_EXCEEDED, 429));
+        }
+
+        await using var context = await dbContextFactory.CreateDbContextAsync();
 
         // Generate a unique request ID
         var requestId = Guid.NewGuid().ToString("N");
@@ -667,7 +683,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             Id = requestId,
             ClientPublicKey = model.ClientPublicKey,
             CreatedAt = timeProvider.UtcNow,
-            ClientIpAddress = IpAddressUtility.GetAnonymizedIpFromContext(HttpContext, config.IpLoggingEnabled),
+            ClientIpAddress = ipAddress,
         };
 
         context.MobileLoginRequests.Add(loginRequest);

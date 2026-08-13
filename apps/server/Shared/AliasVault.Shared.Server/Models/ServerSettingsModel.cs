@@ -84,4 +84,10 @@ public class ServerSettingsModel
     /// Set to 0 to disable IP-based registration rate limiting.
     /// </summary>
     public int MaxRegistrationsPerIpPer24Hours { get; set; } = 5;
+
+    /// <summary>
+    /// Gets or sets the maximum number of mobile login requests allowed per IP address (/24 range) within
+    /// one minute. Defaults to 10. Set to 0 to disable mobile login rate limiting.
+    /// </summary>
+    public int MaxMobileLoginRequestsPerIpPerMinute { get; set; } = 10;
 }
