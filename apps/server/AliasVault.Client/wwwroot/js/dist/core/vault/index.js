@@ -1824,6 +1824,14 @@ INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
 VALUES ('20260810093834_2.1.2-AddTotpParameters', '10.0.10');
 
 COMMIT;
+
+BEGIN TRANSACTION;
+ALTER TABLE "Items" ADD "ArchivedAt" TEXT NULL;
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260813084934_2.1.3-AddItemArchivedAt', '10.0.10');
+
+COMMIT;
 `;
 var MIGRATION_SCRIPTS = {
   1: `\uFEFFBEGIN TRANSACTION;

@@ -53,6 +53,15 @@ public class Item : ManifestScopedEntity
     public DateTime? DeletedAt { get; set; }
 
     /// <summary>
+    /// Gets or sets the timestamp when this item was archived.
+    /// When null, the item is active. When set, the item is hidden from the main item list and from
+    /// autofill suggestions, but is otherwise untouched: it keeps its fields, attachments and email
+    /// aliases, is never auto-pruned, and can be unarchived at any time.
+    /// Archiving is independent of <see cref="DeletedAt"/>, an archived item can still be deleted.
+    /// </summary>
+    public DateTime? ArchivedAt { get; set; }
+
+    /// <summary>
     /// Gets or sets the folder ID foreign key.
     /// </summary>
     public Guid? FolderId { get; set; }
