@@ -36,4 +36,13 @@ public class EmailClaimLink
     /// </summary>
     [ForeignKey("VaultManifestId")]
     public virtual VaultManifest VaultManifest { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this manifest paused (stopped) wanting mail for the alias. A user may switch a
+    /// single alias off without removing the item that carries it: the link stays, so previously received mail
+    /// remains readable and re-enabling is a flag flip, but incoming mail is no longer wrapped for this manifest.
+    /// This is separate from the global <see cref="EmailClaim.Disabled"/> flag, which means the alias is gone from the
+    /// vault entirely and not read anywhere anymore, which also engages disabled-email pruning.
+    /// </summary>
+    public bool Paused { get; set; } = false;
 }

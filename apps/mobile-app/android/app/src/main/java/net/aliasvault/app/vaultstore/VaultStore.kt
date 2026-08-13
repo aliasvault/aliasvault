@@ -492,10 +492,25 @@ class VaultStore(
     }
 
     /**
-     * Get all items from the vault.
+     * Get all items from the vault. Archived and trashed items are excluded, so this is safe to use
+     * as the autofill candidate list.
      */
     fun getAllItems(): List<Item> {
         return itemRepository.getAll()
+    }
+
+    /**
+     * Get all archived items from the vault.
+     */
+    fun getArchivedItems(): List<Item> {
+        return itemRepository.getArchived()
+    }
+
+    /**
+     * Get the number of archived items in the vault.
+     */
+    fun getArchivedCount(): Int {
+        return itemRepository.getArchivedCount()
     }
 
     /**

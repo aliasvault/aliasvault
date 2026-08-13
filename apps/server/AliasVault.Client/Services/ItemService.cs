@@ -500,6 +500,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
             .AsSplitQuery()
             .Where(x => !x.IsDeleted)
             .Where(x => x.DeletedAt == null) // Exclude items in trash
+            .Where(x => x.ArchivedAt == null) // Exclude archived items
             .ToListAsync();
 
         return items;
@@ -531,6 +532,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
             .AsSplitQuery()
             .Where(x => !x.IsDeleted)
             .Where(x => x.DeletedAt == null) // Exclude items in trash
+            .Where(x => x.ArchivedAt == null) // Exclude archived items
             .ToListAsync();
 
         // Map to ItemListEntry with proper boolean logic
@@ -701,6 +703,48 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
             .ToListAsync();
 
         return items;
+    }
+
+    /// <summary>
+    /// Gets all archived items. Items that are also in the trash are excluded: those belong in
+    /// "Recently Deleted", which is the more urgent of the two states.
+    /// </summary>
+    /// <returns>List of archived items.</returns>
+    public async Task<List<Item>> GetArchivedAsync()
+    {
+        var context = await dbService.GetDbContextAsync();
+
+        var items = await context.Items
+            .Include(x => x.FieldValues.Where(fv => !fv.IsDeleted))
+                .ThenInclude(fv => fv.FieldDefinition)
+            .Include(x => x.Logo)
+            .AsSplitQuery()
+            .Where(x => !x.IsDeleted && x.DeletedAt == null && x.ArchivedAt != null)
+            .OrderByDescending(x => x.ArchivedAt)
+            .ToListAsync();
+
+        return items;
+    }
+
+    /// <summary>
+    /// Archives an item: it disappears from the main list and from autofill, but keeps all of its data
+    /// and its email aliases, and is never auto-pruned.
+    /// </summary>
+    /// <param name="id">Id of item to archive.</param>
+    /// <returns>Bool which indicates if archiving was successful.</returns>
+    public async Task<bool> ArchiveItemAsync(Guid id)
+    {
+        return await SetArchivedAtAsync(id, DateTime.UtcNow, x => x.ArchivedAt == null);
+    }
+
+    /// <summary>
+    /// Unarchives an item, returning it to the main list and to autofill.
+    /// </summary>
+    /// <param name="id">Id of item to unarchive.</param>
+    /// <returns>Bool which indicates if unarchiving was successful.</returns>
+    public async Task<bool> UnarchiveItemAsync(Guid id)
+    {
+        return await SetArchivedAtAsync(id, null, x => x.ArchivedAt != null);
     }
 
     /// <summary>
@@ -1773,5 +1817,29 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
 
         // Return the mapped language, or fall back to "en" if no match found
         return mappedLanguage ?? "en";
+    }
+
+    /// <summary>
+    /// Sets or clears an item's ArchivedAt timestamp.
+    /// </summary>
+    /// <param name="id">Id of the item to update.</param>
+    /// <param name="archivedAt">The new ArchivedAt value; null unarchives the item.</param>
+    /// <param name="precondition">Guard that the item must satisfy, so a no-op does not dirty the vault.</param>
+    /// <returns>Bool which indicates if the item was found and saved.</returns>
+    private async Task<bool> SetArchivedAtAsync(Guid id, DateTime? archivedAt, Func<Item, bool> precondition)
+    {
+        InvalidateListCache();
+        var context = await dbService.GetDbContextAsync();
+
+        var item = await context.Items.Where(x => x.Id == id && !x.IsDeleted).FirstOrDefaultAsync();
+        if (item == null || !precondition(item))
+        {
+            return false;
+        }
+
+        item.ArchivedAt = archivedAt;
+        item.UpdatedAt = DateTime.UtcNow;
+
+        return await dbService.SaveDatabaseAsync();
     }
 }

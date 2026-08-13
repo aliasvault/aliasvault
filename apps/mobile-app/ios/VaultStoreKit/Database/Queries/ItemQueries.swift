@@ -17,16 +17,31 @@ public struct ItemQueries {
           CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
           CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
           i.CreatedAt,
-          i.UpdatedAt
+          i.UpdatedAt,
+          i.ArchivedAt
         FROM Items i
         LEFT JOIN Logos l ON i.LogoId = l.Id
         """
 
-    /// Get all active items (not deleted, not in trash).
+    /// Get all active items (not deleted, not in deleted items, not archived).
     public static let getAllActive = """
         \(baseSelect)
-        WHERE i.IsDeleted = 0 AND i.DeletedAt IS NULL
+        WHERE i.IsDeleted = 0 AND i.DeletedAt IS NULL AND i.ArchivedAt IS NULL
         ORDER BY i.CreatedAt DESC
+        """
+
+    /// Get all archived items. Deleted items are excluded.
+    public static let getArchived = """
+        \(baseSelect)
+        WHERE i.IsDeleted = 0 AND i.DeletedAt IS NULL AND i.ArchivedAt IS NOT NULL
+        ORDER BY i.ArchivedAt DESC
+        """
+
+    /// Count of archived items.
+    public static let countArchived = """
+        SELECT COUNT(*) as count
+        FROM Items
+        WHERE IsDeleted = 0 AND DeletedAt IS NULL AND ArchivedAt IS NOT NULL
         """
 
     /// Get a single item by ID.
@@ -41,7 +56,8 @@ public struct ItemQueries {
           CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
           CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
           i.CreatedAt,
-          i.UpdatedAt
+          i.UpdatedAt,
+          i.ArchivedAt
         FROM Items i
         LEFT JOIN Logos l ON i.LogoId = l.Id
         WHERE i.Id = ? AND i.IsDeleted = 0
@@ -163,6 +179,22 @@ public struct ItemQueries {
         WHERE Id = ? AND IsDeleted = 0 AND DeletedAt IS NOT NULL
         """
 
+    /// Archive an item (set ArchivedAt).
+    public static let archiveItem = """
+        UPDATE Items
+        SET ArchivedAt = ?,
+            UpdatedAt = ?
+        WHERE Id = ? AND IsDeleted = 0 AND ArchivedAt IS NULL
+        """
+
+    /// Unarchive an item (clear ArchivedAt).
+    public static let unarchiveItem = """
+        UPDATE Items
+        SET ArchivedAt = NULL,
+            UpdatedAt = ?
+        WHERE Id = ? AND IsDeleted = 0 AND ArchivedAt IS NOT NULL
+        """
+
     /// Convert item to tombstone for permanent deletion.
     public static let tombstoneItem = """
         UPDATE Items
@@ -170,6 +202,7 @@ public struct ItemQueries {
             Name = NULL,
             LogoId = NULL,
             FolderId = NULL,
+            ArchivedAt = NULL,
             UpdatedAt = ?
         WHERE Id = ?
         """

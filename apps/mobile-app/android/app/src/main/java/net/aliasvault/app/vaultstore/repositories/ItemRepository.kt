@@ -298,14 +298,33 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
 
     /**
      * Get recently deleted items (in trash).
-     * Note: This returns minimal Item objects without fields for performance.
      *
      * @return List of items in trash.
      */
-    @Suppress("LongMethod", "LoopWithTooManyJumpStatements")
     fun getRecentlyDeleted(): List<Item> {
+        return getItemsWithoutFields(ItemQueries.GET_RECENTLY_DELETED, "recently deleted")
+    }
+
+    /**
+     * Get archived items.
+     *
+     * @return List of archived items.
+     */
+    fun getArchived(): List<Item> {
+        return getItemsWithoutFields(ItemQueries.GET_ARCHIVED, "archived")
+    }
+
+    /**
+     * Run an item list query and map the rows to Item objects without loading their fields.
+     *
+     * @param query The item query to run.
+     * @param label What the query returns, used in the parse-failure log line.
+     * @return The mapped items, skipping any row that fails to parse.
+     */
+    @Suppress("LoopWithTooManyJumpStatements")
+    private fun getItemsWithoutFields(query: String, label: String): List<Item> {
         val items = mutableListOf<Item>()
-        val results = executeQueryWithBlobs(ItemQueries.GET_RECENTLY_DELETED, emptyArray())
+        val results = executeQueryWithBlobs(query, emptyArray())
 
         // Build folder paths
         val folderPaths = buildFolderPaths()
@@ -335,7 +354,7 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
                         logo = logo,
                         folderId = folderUuid,
                         folderPath = folderPath,
-                        fields = emptyList(), // Not loading fields for trash items
+                        fields = emptyList(), // Not loading fields for list-only items
                         hasPasskey = hasPasskey,
                         hasAttachment = hasAttachment,
                         hasTotp = hasTotp,
@@ -344,7 +363,7 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
                     ),
                 )
             } catch (e: Exception) {
-                Log.e(TAG, "Error parsing recently deleted item row", e)
+                Log.e(TAG, "Error parsing $label item row", e)
             }
         }
 
@@ -387,6 +406,16 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
      */
     fun getRecentlyDeletedCount(): Int {
         val results = executeQuery(ItemQueries.COUNT_RECENTLY_DELETED, emptyArray())
+        return (results.firstOrNull()?.get("count") as? Long)?.toInt() ?: 0
+    }
+
+    /**
+     * Get count of archived items.
+     *
+     * @return Number of archived items.
+     */
+    fun getArchivedCount(): Int {
+        val results = executeQuery(ItemQueries.COUNT_ARCHIVED, emptyArray())
         return (results.firstOrNull()?.get("count") as? Long)?.toInt() ?: 0
     }
 
@@ -439,6 +468,33 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
         return withTransaction {
             val now = now()
             executeUpdate(ItemQueries.RESTORE_ITEM, arrayOf(now, itemId))
+        }
+    }
+
+    /**
+     * Archive an item: it disappears from the main list and from autofill, but keeps all of its
+     * data and its email aliases, and is never auto-pruned.
+     *
+     * @param itemId The ID of the item to archive.
+     * @return Number of rows affected.
+     */
+    fun archive(itemId: String): Int {
+        return withTransaction {
+            val now = now()
+            executeUpdate(ItemQueries.ARCHIVE_ITEM, arrayOf(now, now, itemId))
+        }
+    }
+
+    /**
+     * Unarchive an item, returning it to the main list and to autofill.
+     *
+     * @param itemId The ID of the item to unarchive.
+     * @return Number of rows affected.
+     */
+    fun unarchive(itemId: String): Int {
+        return withTransaction {
+            val now = now()
+            executeUpdate(ItemQueries.UNARCHIVE_ITEM, arrayOf(now, itemId))
         }
     }
 

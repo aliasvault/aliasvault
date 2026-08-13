@@ -154,6 +154,41 @@ public class ItemRepository: BaseRepository {
         return Int(results.first?["count"] as? Int64 ?? 0)
     }
 
+    /// Get archived items.
+    /// - Returns: Array of items
+    public func getArchived() throws -> [Item] {
+        let itemResults = try client.executeQuery(ItemQueries.getArchived, params: [])
+        let itemRows = itemResults.compactMap { ItemRow(from: $0) }
+
+        if itemRows.isEmpty {
+            return []
+        }
+
+        // Fetch fields for archived items
+        let itemIds = itemRows.map { $0.id }
+        let fieldQuery = ItemQueries.getFieldValuesForItems(itemIds.count)
+        let fieldResults = try client.executeQuery(fieldQuery, params: itemIds.map { $0 as SqliteBindValue })
+        let fieldRows = fieldResults.compactMap { FieldRow(from: $0) }
+        let fieldsByItem = FieldMapper.processFieldRows(fieldRows)
+
+        // Build folder paths
+        let folderPaths = try buildFolderPaths()
+
+        return itemRows.compactMap { row in
+            let folderPath = row.folderId
+                .flatMap { UUID(uuidString: $0) }
+                .flatMap { folderPaths[$0] }
+            return ItemMapper.mapRow(row, fields: fieldsByItem[row.id] ?? [], folderPath: folderPath)
+        }
+    }
+
+    /// Get count of archived items.
+    /// - Returns: Number of archived items
+    public func getArchivedCount() throws -> Int {
+        let results = try client.executeQuery(ItemQueries.countArchived, params: [])
+        return Int(results.first?["count"] as? Int64 ?? 0)
+    }
+
     // MARK: - Write Operations
 
     /// Move an item to trash (set DeletedAt timestamp).
@@ -175,6 +210,29 @@ public class ItemRepository: BaseRepository {
         let now = self.now()
         return try withTransaction {
             try client.executeUpdate(ItemQueries.restoreItem, params: [now, itemId])
+        }
+    }
+
+    /// Archive an item: it disappears from the main list and from autofill, but keeps all of its
+    /// data and its email aliases, and is never auto-pruned.
+    /// - Parameter itemId: The ID of the item to archive
+    /// - Returns: Number of rows affected
+    @discardableResult
+    public func archive(_ itemId: String) throws -> Int {
+        let now = self.now()
+        return try withTransaction {
+            try client.executeUpdate(ItemQueries.archiveItem, params: [now, now, itemId])
+        }
+    }
+
+    /// Unarchive an item, returning it to the main list and to autofill.
+    /// - Parameter itemId: The ID of the item to unarchive
+    /// - Returns: Number of rows affected
+    @discardableResult
+    public func unarchive(_ itemId: String) throws -> Int {
+        let now = self.now()
+        return try withTransaction {
+            try client.executeUpdate(ItemQueries.unarchiveItem, params: [now, itemId])
         }
     }
 

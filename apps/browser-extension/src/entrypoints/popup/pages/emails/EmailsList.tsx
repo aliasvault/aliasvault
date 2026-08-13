@@ -13,8 +13,10 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
+import { StorageKeys } from '@/utils/constants/storageKeys';
 import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
+import { getStorageItem } from '@/utils/StorageUtility';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
@@ -44,6 +46,17 @@ const EmailsList: React.FC = () => {
   const PAGE_SIZE = 50;
 
   /**
+   * The addresses whose mailbox this vault may ask for: aliases on a server-hosted domain that are still switched on.
+   * A deleted or switched-off alias has no enabled claim link on the server, so its mail stays hidden, and addresses
+   * on domains the server does not host are never sent to it in the first place.
+   */
+  const getMailboxAddresses = useCallback(async () : Promise<string[]> => {
+    const routableAddresses = dbContext.sqliteClient?.items.getRoutableEmailAddresses() ?? [];
+    const privateEmailDomains = await getStorageItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS) ?? [];
+    return routableAddresses.filter(address => privateEmailDomains.some(domain => address.toLowerCase().endsWith(`@${domain.toLowerCase()}`)));
+  }, [dbContext?.sqliteClient]);
+
+  /**
    * Loads emails from the web API.
    */
   const loadEmails = useCallback(async (reset: boolean = true) : Promise<void> => {
@@ -62,8 +75,8 @@ const EmailsList: React.FC = () => {
         return;
       }
 
-      // Get unique email addresses from all credentials.
-      const emailAddresses = dbContext.sqliteClient.items.getAllEmailAddresses();
+      // Get the addresses this vault has enabled claims for.
+      const emailAddresses = await getMailboxAddresses();
 
       try {
         const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', {
@@ -93,7 +106,7 @@ const EmailsList: React.FC = () => {
       setIsLoading(false);
       setIsInitialLoading(false);
     }
-  }, [dbContext?.sqliteClient, dbContext.isOffline, webApi, setIsLoading, setIsInitialLoading, t, PAGE_SIZE]);
+  }, [dbContext?.sqliteClient, dbContext.isOffline, webApi, setIsLoading, setIsInitialLoading, t, PAGE_SIZE, getMailboxAddresses]);
 
   /**
    * Loads more emails (next page).
@@ -107,7 +120,7 @@ const EmailsList: React.FC = () => {
       setIsLoadingMore(true);
       setError(null);
 
-      const emailAddresses = dbContext.sqliteClient.items.getAllEmailAddresses();
+      const emailAddresses = await getMailboxAddresses();
       const nextPage = currentPage + 1;
 
       const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', {
@@ -130,7 +143,7 @@ const EmailsList: React.FC = () => {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoadingMore, dbContext?.sqliteClient, dbContext.isOffline, webApi, currentPage, PAGE_SIZE, t]);
+  }, [isLoadingMore, dbContext?.sqliteClient, dbContext.isOffline, webApi, currentPage, PAGE_SIZE, t, getMailboxAddresses]);
 
   useEffect(() => {
     loadEmails();

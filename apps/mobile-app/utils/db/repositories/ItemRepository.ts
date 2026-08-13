@@ -4,7 +4,7 @@ import { FieldKey, MAX_FIELD_HISTORY_RECORDS, normalizeTotpAlgorithm, normalizeT
 import { BaseRepository } from '../BaseRepository';
 import { ItemQueries, FieldValueQueries, FieldDefinitionQueries, FieldHistoryQueries, TagQueries } from '../queries/ItemQueries';
 import { FieldMapper, type FieldRow } from '../mappers/FieldMapper';
-import { ItemMapper, type ItemRow, type TagRow, type ItemWithDeletedAt } from '../mappers/ItemMapper';
+import { ItemMapper, type ItemRow, type TagRow, type ItemWithArchivedAt, type ItemWithDeletedAt } from '../mappers/ItemMapper';
 import type { LogoRepository } from './LogoRepository';
 
 /**
@@ -241,6 +241,50 @@ export class ItemRepository extends BaseRepository {
   }
 
   /**
+   * Get archived items.
+   * @returns Array of items with ArchivedAt field
+   */
+  public async getArchived(): Promise<ItemWithArchivedAt[]> {
+    const itemRows = await this.client.executeQuery<ItemRow & { ArchivedAt: string }>(ItemQueries.GET_ARCHIVED);
+
+    if (itemRows.length === 0) {
+      return [];
+    }
+
+    // Fetch fields for archived items
+    const itemIds = itemRows.map(row => row.Id);
+    const fieldQuery = ItemQueries.getFieldValuesForItems(itemIds.length);
+    const fieldRows = await this.client.executeQuery<FieldRow>(fieldQuery, itemIds);
+    const fieldsByItem = FieldMapper.processFieldRows(fieldRows);
+
+    // Fetch tags
+    let tagsByItem = new Map<string, { Id: string; Name: string; Color?: string }[]>();
+    if (await this.tableExists('ItemTags')) {
+      const tagQuery = TagQueries.getTagsForItems(itemIds.length);
+      const tagRows = await this.client.executeQuery<TagRow>(tagQuery, itemIds);
+      tagsByItem = ItemMapper.groupTagsByItem(tagRows);
+    }
+
+    // Build folder paths
+    const folderPaths = await this.buildFolderPaths();
+
+    return itemRows.map(row => {
+      const folderPath = row.FolderId ? folderPaths.get(row.FolderId) : undefined;
+      const item = ItemMapper.mapRow(row, fieldsByItem.get(row.Id) || [], tagsByItem.get(row.Id) || [], folderPath);
+      return { ...item, ArchivedAt: row.ArchivedAt };
+    });
+  }
+
+  /**
+   * Get count of archived items.
+   * @returns Number of archived items
+   */
+  public async getArchivedCount(): Promise<number> {
+    const results = await this.client.executeQuery<{ count: number }>(ItemQueries.COUNT_ARCHIVED);
+    return results.length > 0 ? results[0].count : 0;
+  }
+
+  /**
    * Get field history for a specific field.
    * @param itemId - The ID of the item
    * @param fieldKey - The field key to get history for
@@ -304,6 +348,31 @@ export class ItemRepository extends BaseRepository {
     const now = this.now();
     return this.withTransaction(async () => {
       return this.client.executeUpdate(ItemQueries.RESTORE_ITEM, [now, itemId]);
+    });
+  }
+
+  /**
+   * Archive an item: it disappears from the main list and from autofill, but keeps all of its data
+   * and its email aliases, and is never auto-pruned.
+   * @param itemId - The ID of the item to archive
+   * @returns Number of rows affected
+   */
+  public async archive(itemId: string): Promise<number> {
+    const now = this.now();
+    return this.withTransaction(async () => {
+      return this.client.executeUpdate(ItemQueries.ARCHIVE_ITEM, [now, now, itemId]);
+    });
+  }
+
+  /**
+   * Unarchive an item, returning it to the main list and to autofill.
+   * @param itemId - The ID of the item to unarchive
+   * @returns Number of rows affected
+   */
+  public async unarchive(itemId: string): Promise<number> {
+    const now = this.now();
+    return this.withTransaction(async () => {
+      return this.client.executeUpdate(ItemQueries.UNARCHIVE_ITEM, [now, itemId]);
     });
   }
 

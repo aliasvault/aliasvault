@@ -149,6 +149,8 @@ const EmailDetails: React.FC = (): React.ReactElement => {
       .catch(err => setError(err instanceof Error ? err.message : 'Failed to decode email source'));
   }, [viewMode, sourceText, sourceBytes]);
 
+  const sanitizedHtmlBody = useMemo(() => htmlBody ? ConversionUtility.sanitizeAndPrepareEmailHtml(htmlBody) : null, [htmlBody]);
+
   const formatLabels = useMemo<Record<'html' | 'plain' | 'source', string>>(() => ({
     html: t('emails.formatHtml'),
     plain: t('emails.formatPlain'),
@@ -396,9 +398,9 @@ const EmailDetails: React.FC = (): React.ReactElement => {
 
         {/* Email Body — always rendered on a white background with dark text so contrast doesn't break in dark mode. */}
         <div className="bg-white mt-4">
-          {viewMode === 'html' && htmlBody ? (
+          {viewMode === 'html' && sanitizedHtmlBody ? (
             <iframe
-              srcDoc={ConversionUtility.sanitizeAndPrepareEmailHtml(htmlBody)}
+              srcDoc={sanitizedHtmlBody}
               className="w-full min-h-[500px] border-0"
               title={t('emails.emailContent')}
               sandbox="allow-popups allow-popups-to-escape-sandbox"

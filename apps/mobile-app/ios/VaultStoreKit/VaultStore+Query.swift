@@ -250,6 +250,34 @@ extension VaultStore {
         return try itemRepository.getRecentlyDeletedCount()
     }
 
+    /// Get archived items.
+    /// - Returns: Array of items
+    public func getArchivedItems() throws -> [Item] {
+        return try itemRepository.getArchived()
+    }
+
+    /// Get count of archived items.
+    /// - Returns: Number of archived items
+    public func getArchivedCount() throws -> Int {
+        return try itemRepository.getArchivedCount()
+    }
+
+    /// Archive an item, hiding it from the main list and from autofill.
+    /// - Parameter itemId: The UUID of the item to archive
+    /// - Returns: Number of rows affected
+    @discardableResult
+    public func archiveItem(_ itemId: UUID) throws -> Int {
+        return try itemRepository.archive(itemId.uuidString.uppercased())
+    }
+
+    /// Unarchive an item.
+    /// - Parameter itemId: The UUID of the item to unarchive
+    /// - Returns: Number of rows affected
+    @discardableResult
+    public func unarchiveItem(_ itemId: UUID) throws -> Int {
+        return try itemRepository.unarchive(itemId.uuidString.uppercased())
+    }
+
     /// Move an item to trash.
     /// - Parameter itemId: The UUID of the item to trash
     /// - Returns: Number of rows affected

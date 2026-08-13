@@ -996,7 +996,10 @@ public class VaultController(
     /// <param name="routing">The pushed routing data: one entry per (address, manifest) pair.</param>
     private async Task UpdateEmailClaimsAsync(AliasServerDbContext context, AliasVaultUser user, EmailRoutingPush routing)
     {
-        var pushedPairs = routing.EmailAddressList.Select(x => new { Address = EmailHelper.SanitizeEmail(x.Address), x.ManifestId }).Distinct().ToList();
+        var pushedPairs = routing.EmailAddressList
+            .GroupBy(x => new { Address = EmailHelper.SanitizeEmail(x.Address), x.ManifestId })
+            .Select(g => new { g.Key.Address, g.Key.ManifestId, Paused = g.All(x => x.Paused) })
+            .ToList();
 
         var accessibleManifests = (await ManifestAccessHelper.AccessibleManifests(context, user.Id).Select(m => m.ManifestId).ToListAsync()).ToHashSet();
         var ownedManifests = (await context.VaultManifests
@@ -1013,7 +1016,7 @@ public class VaultController(
             return;
         }
 
-        var assertedPairs = new List<(string Address, Guid ManifestId)>();
+        var assertedPairs = new List<(string Address, Guid ManifestId, bool Paused)>();
         foreach (var pair in pushedPairs)
         {
             if (!accessibleManifests.Contains(pair.ManifestId))
@@ -1022,7 +1025,7 @@ public class VaultController(
                 continue;
             }
 
-            assertedPairs.Add((pair.Address, pair.ManifestId));
+            assertedPairs.Add((pair.Address, pair.ManifestId, pair.Paused));
         }
 
         var assertedManifestIds = assertedPairs.Select(p => p.ManifestId).Distinct().ToList();
@@ -1033,12 +1036,13 @@ public class VaultController(
             .Where(k => assertedManifestIds.Contains(k.VaultManifestId) && k.IsPrimary)
             .Select(k => k.VaultManifestId)
             .ToListAsync()).ToHashSet();
-        foreach (var (address, manifestId) in assertedPairs.Where(p => p.ManifestId != personalManifestId.Value && !manifestsWithDeliveryKey.Contains(p.ManifestId)))
+        foreach (var (address, manifestId, _) in assertedPairs.Where(p => !p.Paused && p.ManifestId != personalManifestId.Value && !manifestsWithDeliveryKey.Contains(p.ManifestId)))
         {
             logger.LogWarning("{User} claimed shared alias {Email} for manifest {Manifest} with no published delivery key; that manifest gets no wrap for its mail until a delivery key is published.", user.UserName, address, manifestId);
         }
 
-        var desiredByAddress = assertedPairs.GroupBy(p => p.Address).ToDictionary(g => g.Key, g => g.Select(p => p.ManifestId).ToHashSet());
+        // Per address: the manifests that claim it, each with whether the user switched the alias off there.
+        var desiredByAddress = assertedPairs.GroupBy(p => p.Address).ToDictionary(g => g.Key, g => g.ToDictionary(p => p.ManifestId, p => p.Paused));
 
         // Get the claims this push may update: every claim linked to a manifest inside the caller's update scope.
         var userOwnedEmailClaims = await context.EmailClaims
@@ -1094,7 +1098,7 @@ public class VaultController(
 
             // Every pair for this address named a manifest the caller cannot access: nothing is asserted. The
             // address still counts as pushed, so the absence handling below leaves its claim alone.
-            if (!desiredByAddress.TryGetValue(sanitized, out var desiredManifestIds) || desiredManifestIds.Count == 0)
+            if (!desiredByAddress.TryGetValue(sanitized, out var desiredManifests) || desiredManifests.Count == 0)
             {
                 continue;
             }
@@ -1103,18 +1107,28 @@ public class VaultController(
             if (existing != null)
             {
                 var changed = false;
-                foreach (var manifestId in desiredManifestIds.Where(m => existing.Links.All(l => l.VaultManifestId != m)))
+                foreach (var (manifestId, paused) in desiredManifests.Where(d => existing.Links.All(l => l.VaultManifestId != d.Key)))
                 {
                     if (!TryChargeQuota(manifestId))
                     {
                         continue;
                     }
 
-                    existing.Links.Add(new EmailClaimLink { EmailClaimId = existing.Id, VaultManifestId = manifestId });
+                    existing.Links.Add(new EmailClaimLink { EmailClaimId = existing.Id, VaultManifestId = manifestId, Paused = paused });
                     changed = true;
                 }
 
-                var staleLinks = existing.Links.Where(l => updateScope.Contains(l.VaultManifestId) && !desiredManifestIds.Contains(l.VaultManifestId)).ToList();
+                // Switching a single alias on or off only affects this flag: the link itself survives, so mail already received for it stays readable.
+                foreach (var link in existing.Links)
+                {
+                    if (desiredManifests.TryGetValue(link.VaultManifestId, out var paused) && link.Paused != paused)
+                    {
+                        link.Paused = paused;
+                        changed = true;
+                    }
+                }
+
+                var staleLinks = existing.Links.Where(l => updateScope.Contains(l.VaultManifestId) && !desiredManifests.ContainsKey(l.VaultManifestId)).ToList();
                 if (staleLinks.Count == existing.Links.Count)
                 {
                     // Removing these would orphan the claim (the pushed links were all blocked, e.g. by quota); keep the previous links rather than leave a tombstone.
@@ -1151,11 +1165,11 @@ public class VaultController(
             }
 
             var newLinks = new List<EmailClaimLink>();
-            foreach (var manifestId in desiredManifestIds)
+            foreach (var (manifestId, paused) in desiredManifests)
             {
                 if (TryChargeQuota(manifestId))
                 {
-                    newLinks.Add(new EmailClaimLink { VaultManifestId = manifestId });
+                    newLinks.Add(new EmailClaimLink { VaultManifestId = manifestId, Paused = paused });
                 }
             }
 

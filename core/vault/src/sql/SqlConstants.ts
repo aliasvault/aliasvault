@@ -1801,6 +1801,14 @@ INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
 VALUES ('20260813084934_2.1.3-AddItemArchivedAt', '10.0.10');
 
 COMMIT;
+
+BEGIN TRANSACTION;
+ALTER TABLE "FieldValues" ADD "IsDisabled" INTEGER NOT NULL DEFAULT 0;
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260813090206_2.1.4-AddFieldValueIsDisabled', '10.0.10');
+
+COMMIT;
 `;
 /**
  * Individual migration SQL scripts

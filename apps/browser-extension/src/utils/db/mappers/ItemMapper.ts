@@ -8,6 +8,11 @@ import { scopedKey } from '../ItemRef';
 export type ItemWithDeletedAt = Item & { DeletedAt?: string };
 
 /**
+ * Item with its ArchivedAt timestamp, for the archived list.
+ */
+export type ItemWithArchivedAt = Item & { ArchivedAt?: string };
+
+/**
  * Raw item row from database query.
  */
 export type ItemRow = {
@@ -28,6 +33,7 @@ export type ItemRow = {
   CreatedAt: string;
   UpdatedAt: string;
   DeletedAt?: string | null;
+  ArchivedAt?: string | null;
 }
 
 /**

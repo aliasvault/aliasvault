@@ -16,6 +16,7 @@ public struct ItemRow {
     public let createdAt: String
     public let updatedAt: String
     public let deletedAt: String?
+    public let archivedAt: String?
 
     /// Initialize from a database row dictionary.
     public init?(from row: [String: Any]) {
@@ -46,6 +47,7 @@ public struct ItemRow {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.deletedAt = row["DeletedAt"] as? String
+        self.archivedAt = row["ArchivedAt"] as? String
     }
 }
 

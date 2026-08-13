@@ -65,4 +65,9 @@ public class FieldValue : ManifestScopedEntity
     /// Gets or sets the weight for sorting field values in the UI.
     /// </summary>
     public int Weight { get; set; } = 0;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this field value should be considered disabled (e.g. applies to email aliases).
+    /// </summary>
+    public bool IsDisabled { get; set; }
 }

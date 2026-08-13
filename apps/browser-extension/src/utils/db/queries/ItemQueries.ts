@@ -27,17 +27,38 @@ export class ItemQueries {
       CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.ManifestId = i.ManifestId AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
       CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.ManifestId = i.ManifestId AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
       i.CreatedAt,
-      i.UpdatedAt
+      i.UpdatedAt,
+      i.ArchivedAt
     FROM Items i
     LEFT JOIN Logos l ON i.LogoId = l.Id AND l.ManifestId = i.ManifestId`;
 
   /**
-   * Get all active items (not deleted, not in trash).
+   * Get all active items (not deleted, not in trash, not archived).
+   *
+   * This is the source list for both the main item list and autofill, so archived items are excluded
+   * from both by this single predicate.
    */
   public static readonly GET_ALL_ACTIVE = `
     ${ItemQueries.BASE_SELECT}
-    WHERE i.IsDeleted = 0 AND i.DeletedAt IS NULL
+    WHERE i.IsDeleted = 0 AND i.DeletedAt IS NULL AND i.ArchivedAt IS NULL
     ORDER BY i.CreatedAt DESC`;
+
+  /**
+   * Get all archived items. Trashed items are excluded: an item that is both archived and trashed
+   * belongs in "Recently Deleted", which is the more urgent of the two states.
+   */
+  public static readonly GET_ARCHIVED = `
+    ${ItemQueries.BASE_SELECT}
+    WHERE i.IsDeleted = 0 AND i.DeletedAt IS NULL AND i.ArchivedAt IS NOT NULL
+    ORDER BY i.ArchivedAt DESC`;
+
+  /**
+   * Count of archived items.
+   */
+  public static readonly COUNT_ARCHIVED = `
+    SELECT COUNT(*) as count
+    FROM Items
+    WHERE IsDeleted = 0 AND DeletedAt IS NULL AND ArchivedAt IS NOT NULL`;
 
   /**
    * Get a single item by its manifest-qualified key: an id alone does not identify a row, since the
@@ -59,7 +80,8 @@ export class ItemQueries {
       CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.ManifestId = i.ManifestId AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
       CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.ManifestId = i.ManifestId AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
       i.CreatedAt,
-      i.UpdatedAt
+      i.UpdatedAt,
+      i.ArchivedAt
     FROM Items i
     LEFT JOIN Logos l ON i.LogoId = l.Id AND l.ManifestId = i.ManifestId
     WHERE i.Id = ? AND i.ManifestId = ? AND i.IsDeleted = 0`;
@@ -237,6 +259,24 @@ export class ItemQueries {
     WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0 AND DeletedAt IS NOT NULL`;
 
   /**
+   * Archive an item (set ArchivedAt).
+   */
+  public static readonly ARCHIVE_ITEM = `
+    UPDATE Items
+    SET ArchivedAt = ?,
+        UpdatedAt = ?
+    WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0 AND ArchivedAt IS NULL`;
+
+  /**
+   * Unarchive an item (clear ArchivedAt).
+   */
+  public static readonly UNARCHIVE_ITEM = `
+    UPDATE Items
+    SET ArchivedAt = NULL,
+        UpdatedAt = ?
+    WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0 AND ArchivedAt IS NOT NULL`;
+
+  /**
    * Convert item to tombstone for permanent deletion.
    */
   public static readonly TOMBSTONE_ITEM = `
@@ -245,13 +285,15 @@ export class ItemQueries {
         Name = NULL,
         LogoId = NULL,
         FolderId = NULL,
+        ArchivedAt = NULL,
         UpdatedAt = ?
     WHERE Id = ? AND ManifestId = ?`;
 
   /**
-   * Get all unique email addresses from field values.
+   * Get all unique email addresses the vault still routes mail to. Addresses the user switched off are excluded:
+   * their claim link is disabled server-side, so no new mail arrives for them and their inbox stays hidden.
    */
-  public static readonly GET_ALL_EMAIL_ADDRESSES = `
+  public static readonly GET_ROUTABLE_EMAIL_ADDRESSES = `
     SELECT DISTINCT fv.Value as Email
     FROM FieldValues fv
     INNER JOIN Items i ON fv.ItemId = i.Id AND fv.ManifestId = i.ManifestId
@@ -259,6 +301,22 @@ export class ItemQueries {
       AND fv.Value IS NOT NULL
       AND fv.Value != ''
       AND fv.IsDeleted = 0
+      AND fv.IsDisabled = 0
+      AND i.IsDeleted = 0
+      AND i.DeletedAt IS NULL`;
+
+  /**
+   * Count the live, switched-on login email fields carrying one address. Zero means the vault holds no enabled
+   * claim for it, so its mailbox must not be shown.
+   */
+  public static readonly COUNT_ROUTABLE_EMAIL_FIELDS = `
+    SELECT COUNT(*) as Count
+    FROM FieldValues fv
+    INNER JOIN Items i ON fv.ItemId = i.Id AND fv.ManifestId = i.ManifestId
+    WHERE fv.FieldKey = ?
+      AND LOWER(fv.Value) = ?
+      AND fv.IsDeleted = 0
+      AND fv.IsDisabled = 0
       AND i.IsDeleted = 0
       AND i.DeletedAt IS NULL`;
 

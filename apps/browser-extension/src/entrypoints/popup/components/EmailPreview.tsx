@@ -85,7 +85,10 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
         setError(null);
         const isPublic = await isPublicDomain(email);
         const isPrivate = await isPrivateDomain(email);
-        const isSupported = isPublic || isPrivate;
+
+        // Check if the email is routable (has active claim and is not manually disabled/paused, so still actively receiving mail for).
+        const isRoutable = !isPrivate || (dbContext.sqliteClient?.items.isEmailAddressRoutable(email) ?? false);
+        const isSupported = (isPublic || isPrivate) && isRoutable;
 
         setIsSpamOk(isPublic);
         setIsSupportedDomain(isSupported);

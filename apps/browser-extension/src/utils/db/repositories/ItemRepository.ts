@@ -5,7 +5,7 @@ import { getFolderPath } from '@/utils/FolderUtils';
 import { BaseRepository, type IDatabaseClient } from '../BaseRepository';
 import { itemKeyBindings, scopedKey, type DraftItem, type ItemRef } from '../ItemRef';
 import { FieldMapper, type FieldRow } from '../mappers/FieldMapper';
-import { ItemMapper, type ItemRow, type TagRow, type ItemWithDeletedAt } from '../mappers/ItemMapper';
+import { ItemMapper, type ItemRow, type TagRow, type ItemWithArchivedAt, type ItemWithDeletedAt } from '../mappers/ItemMapper';
 import {
   ItemQueries,
   FieldValueQueries,
@@ -84,13 +84,48 @@ export class ItemRepository extends BaseRepository {
   }
 
   /**
-   * Fetch all active items with their dynamic fields and tags.
+   * Fetch all active items with their dynamic fields and tags. Archived and trashed items are
+   * excluded; this is what both the main item list and autofill read.
    * @returns Array of Item objects (empty array if Items table doesn't exist yet)
    */
   public getAll(): Item[] {
-    let itemRows: ItemRow[];
+    return this.hydrateItems(this.selectItemRows(ItemQueries.GET_ALL_ACTIVE));
+  }
+
+  /**
+   * Fetch all archived items with their dynamic fields and tags.
+   * @returns Array of archived Item objects with ArchivedAt (empty array if Items table doesn't exist yet)
+   */
+  public getArchived(): ItemWithArchivedAt[] {
+    const itemRows = this.selectItemRows(ItemQueries.GET_ARCHIVED);
+    const items = this.hydrateItems(itemRows);
+    return items.map((item, index) => ({ ...item, ArchivedAt: itemRows[index].ArchivedAt ?? undefined }));
+  }
+
+  /**
+   * Get count of archived items.
+   * @returns Number of archived items
+   */
+  public getArchivedCount(): number {
     try {
-      itemRows = this.client.executeQuery<ItemRow>(ItemQueries.GET_ALL_ACTIVE);
+      const result = this.client.executeQuery<{ count: number }>(ItemQueries.COUNT_ARCHIVED);
+      return result[0]?.count ?? 0;
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('no such table')) {
+        return 0;
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Run an item SELECT, tolerating a vault whose schema predates the Items table.
+   * @param query - The item query to run
+   * @returns The raw item rows, or an empty array if the table does not exist yet
+   */
+  private selectItemRows(query: string): ItemRow[] {
+    try {
+      return this.client.executeQuery<ItemRow>(query);
     } catch (error) {
       // Items table may not exist in older vault versions - return empty array
       if (error instanceof Error && error.message.includes('no such table')) {
@@ -98,7 +133,14 @@ export class ItemRepository extends BaseRepository {
       }
       throw error;
     }
+  }
 
+  /**
+   * Attach fields, tags and folder paths to raw item rows.
+   * @param itemRows - The raw item rows to hydrate
+   * @returns The hydrated Item objects, in the order the rows came in
+   */
+  private hydrateItems(itemRows: ItemRow[]): Item[] {
     if (itemRows.length === 0) {
       return [];
     }
@@ -186,15 +228,31 @@ export class ItemRepository extends BaseRepository {
   }
 
   /**
-   * Fetch all unique email addresses from all items.
+   * Fetch the unique email addresses the vault still routes mail to, i.e. every live login email field the user
+   * has not switched off. A switched-off alias keeps its claim link and its stored mail server-side, but the
+   * client stops asking for its mailbox until it is switched back on.
    * @returns Array of email addresses
    */
-  public getAllEmailAddresses(): string[] {
+  public getRoutableEmailAddresses(): string[] {
     const results = this.client.executeQuery<{ Email: string }>(
-      ItemQueries.GET_ALL_EMAIL_ADDRESSES,
+      ItemQueries.GET_ROUTABLE_EMAIL_ADDRESSES,
       [FieldKey.LoginEmail]
     );
     return results.map(row => row.Email);
+  }
+
+  /**
+   * Check whether the vault still routes mail to one address. False once every live item carrying it has the
+   * alias switched off, or when no live item carries it at all.
+   * @param email - The full email address (local@domain) to check
+   * @returns True when at least one live, switched-on login email field carries this address
+   */
+  public isEmailAddressRoutable(email: string): boolean {
+    const results = this.client.executeQuery<{ Count: number }>(
+      ItemQueries.COUNT_ROUTABLE_EMAIL_FIELDS,
+      [FieldKey.LoginEmail, email.trim().toLowerCase()]
+    );
+    return (results[0]?.Count ?? 0) > 0;
   }
 
   /**
@@ -509,6 +567,50 @@ export class ItemRepository extends BaseRepository {
         return 0;
       }
       return this.client.executeUpdate(ItemQueries.RESTORE_ITEM, [
+        currentDateTime,
+        ref.Id,
+        ref.ManifestId
+      ]);
+    });
+  }
+
+  /**
+   * Archive an item: it disappears from the main list and from autofill, but keeps all of its data
+   * and its email aliases, and is never auto-pruned.
+   * @param itemId - The ID of the item to archive
+   * @param manifestId - The manifest the item belongs to, when known
+   * @returns The number of rows updated
+   */
+  public async archive(itemId: string, manifestId?: string): Promise<number> {
+    return this.withTransaction(async () => {
+      const currentDateTime = this.now();
+      const ref = this.resolveItemRef(itemId, manifestId);
+      if (!ref) {
+        return 0;
+      }
+      return this.client.executeUpdate(ItemQueries.ARCHIVE_ITEM, [
+        currentDateTime,
+        currentDateTime,
+        ref.Id,
+        ref.ManifestId
+      ]);
+    });
+  }
+
+  /**
+   * Unarchive an item, returning it to the main list and to autofill.
+   * @param itemId - The ID of the item to unarchive
+   * @param manifestId - The manifest the item belongs to, when known
+   * @returns The number of rows updated
+   */
+  public async unarchive(itemId: string, manifestId?: string): Promise<number> {
+    return this.withTransaction(async () => {
+      const currentDateTime = this.now();
+      const ref = this.resolveItemRef(itemId, manifestId);
+      if (!ref) {
+        return 0;
+      }
+      return this.client.executeUpdate(ItemQueries.UNARCHIVE_ITEM, [
         currentDateTime,
         ref.Id,
         ref.ManifestId
