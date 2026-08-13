@@ -153,4 +153,14 @@ public enum ApiErrorCode
     /// Generic user account registration failure.
     /// </summary>
     REGISTRATION_FAILED,
+
+    /// <summary>
+    /// Mobile login request contains an invalid client public key.
+    /// </summary>
+    MOBILE_LOGIN_INVALID_PUBLIC_KEY,
+
+    /// <summary>
+    /// Too many mobile login requests were created from this client in a short period.
+    /// </summary>
+    MOBILE_LOGIN_RATE_LIMIT_EXCEEDED,
 }
