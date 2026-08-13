@@ -63,6 +63,11 @@ public enum AuthFailureReason
     IpBlocked = 9,
 
     /// <summary>
+    /// Indicates that no active SRP session existed for the user, meaning no login was initiated or it expired.
+    /// </summary>
+    SrpSessionNotFound = 10,
+
+    /// <summary>
     /// Indicates that the failure reason was unknown.
     /// </summary>
     Unknown = 99,
