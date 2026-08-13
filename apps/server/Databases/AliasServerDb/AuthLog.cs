@@ -63,10 +63,15 @@ public enum AuthFailureReason
     IpBlocked = 9,
 
     /// <summary>
+    /// Indicates that no active SRP session existed for the user, meaning no login was initiated or it expired.
+    /// </summary>
+    SrpSessionNotFound = 10,
+
+    /// <summary>
     /// Indicates that the mobile login attempt was blocked because the client created too many
     /// mobile login requests in a short period.
     /// </summary>
-    MobileLoginRateLimitExceeded = 10,
+    MobileLoginRateLimitExceeded = 11,
 
     /// <summary>
     /// Indicates that the failure reason was unknown.

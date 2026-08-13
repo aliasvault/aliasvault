@@ -883,10 +883,10 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Validate the SRP session (actual password check).
-        var serverSession = AuthHelper.ValidateSrpSession(cache, user, model.ClientPublicEphemeral, model.ClientSessionProof);
+        var (serverSession, activeSessionFound) = AuthHelper.ValidateSrpSession(cache, user, model.ClientPublicEphemeral, model.ClientSessionProof);
         if (serverSession is null)
         {
-            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.AccountDeletion, AuthFailureReason.InvalidPassword);
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.AccountDeletion, activeSessionFound ? AuthFailureReason.InvalidPassword : AuthFailureReason.SrpSessionNotFound);
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PASSWORD_MISMATCH, 400));
         }
 
@@ -1046,13 +1046,17 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Validate the SRP session (actual password check).
-        var serverSession = AuthHelper.ValidateSrpSession(cache, user, model.ClientPublicEphemeral, model.ClientSessionProof);
+        var (serverSession, activeSessionFound) = AuthHelper.ValidateSrpSession(cache, user, model.ClientPublicEphemeral, model.ClientSessionProof);
         if (serverSession is null)
         {
-            // Increment failed login attempts in order to lock out the account when the limit is reached.
-            await userManager.AccessFailedAsync(user);
+            if (activeSessionFound)
+            {
+                // Incorrect password: increment failed login attempts which then locks out
+                // the account when the limit is reached.
+                await userManager.AccessFailedAsync(user);
+            }
 
-            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.Login, AuthFailureReason.InvalidPassword);
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.Login, activeSessionFound ? AuthFailureReason.InvalidPassword : AuthFailureReason.SrpSessionNotFound);
             return (null, null, BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400)));
         }
 
