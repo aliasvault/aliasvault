@@ -87,6 +87,7 @@ builder.Services.AddScoped<AuthLoggingService>();
 builder.Services.AddScoped<ServerSettingsService>();
 builder.Services.AddScoped<RegistrationRateLimitService>();
 builder.Services.AddScoped<IpBlockListService>();
+builder.Services.AddScoped<MobileLoginRateLimitService>();
 builder.Services.AddSingleton<FaviconRateLimitService>();
 builder.Services.AddScoped<RateLimitService>();
 builder.Services.AddHttpContextAccessor();
