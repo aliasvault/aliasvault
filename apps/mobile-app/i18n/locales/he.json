@@ -29,6 +29,7 @@
     "attachments": "צרופות",
     "or": "או",
     "retry": "לנסות שוב",
+    "resizeField": "Drag to resize field",
     "deleteItemConfirmTitle": "Delete Item",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
@@ -605,6 +606,7 @@
     "formatSwitchTitle": "Switch email format",
     "sizeKB": "ק״ב",
     "offlineMessage": "החיבור שלך מנותק. נא להתחבר לאינטרנט כדי לטעון את הודעות הדוא״ל שלך.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "לא קיבלת הודעות דוא״ל כלשהן לכתובות הדוא״ל הפרטיות שלך עדיין. כשמגיעה הודעה חדשה היא תופיע כאן.",
     "loadMore": "Load More ({{count}} remaining)",
     "time": {
