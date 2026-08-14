@@ -174,7 +174,7 @@
     <value>Belső szerver hiba</value>
   </data>
   <data name="VAULT_ERROR" xml:space="preserve">
-    <value>A helyi széf nem friss. Szinkronizálja széfjét az oldal frissítésével, majd próbálja újra.</value>
+    <value>A helyi széf nem friss. Kérem, szinkronizálja széfjét az oldal frissítésével, majd próbálja újra.</value>
   </data>
   <data name="UNKNOWN_ERROR" xml:space="preserve">
     <value>Egy ismeretlen hiba lépett fel. Próbálkozzon újra.</value>
@@ -183,7 +183,7 @@
     <value>Helytelen hitelesítő kód. Kérem próbálja meg újra.</value>
   </data>
   <data name="INVALID_RECOVERY_CODE" xml:space="preserve">
-    <value>Helytelen helyreállító kód. Kérem próbálja meg újra.</value>
+    <value>Helytelen helyreállító kód. Kérem, próbálja meg újra.</value>
   </data>
   <data name="VAULT_NOT_UP_TO_DATE" xml:space="preserve">
     <value>A széfje nem friss. Kérem, szinkronizálja széfjét és próbálja újra.</value>
