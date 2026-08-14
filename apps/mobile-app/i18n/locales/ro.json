@@ -29,6 +29,7 @@
     "attachments": "Atașamente",
     "or": "sau",
     "retry": "Reîncearcă",
+    "resizeField": "Drag to resize field",
     "deleteItemConfirmTitle": "Șterge elementul",
     "deleteItemConfirmDescription": "Sigur dorești să ștergi acest element?",
     "errors": {
@@ -605,6 +606,7 @@
     "formatSwitchTitle": "Schimbă formatul e-mailului",
     "sizeKB": "KB",
     "offlineMessage": "Ești offline. Conectarea la internet este necesară pentru a încărca e-mailurile tale.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "Nu ai primit încă niciun e-mail pe adresele tale private. Atunci când vei primi un e-mail nou, acesta va apărea aici.",
     "loadMore": "Încarcă mai multe ({{count}} rămase)",
     "time": {
