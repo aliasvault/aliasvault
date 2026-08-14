@@ -29,6 +29,7 @@
     "attachments": "Załączniki",
     "or": "lub",
     "retry": "Ponów próbę",
+    "resizeField": "Drag to resize field",
     "deleteItemConfirmTitle": "Usuń element",
     "deleteItemConfirmDescription": "Czy na pewno chcesz usunąć ten element?",
     "errors": {
@@ -605,6 +606,7 @@
     "formatSwitchTitle": "Zmień format wiadomości e-mail",
     "sizeKB": "KB",
     "offlineMessage": "Jesteś offline. Połącz się z Internetem, aby załadować wiadomości e-mail.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "Nie otrzymałeś jeszcze żadnych wiadomości e-mail na swoje prywatne adresy e-mail. Gdy otrzymasz nową wiadomość e-mail, pojawi się ona tutaj.",
     "loadMore": "Załaduj więcej (pozostało {{count}})",
     "time": {
