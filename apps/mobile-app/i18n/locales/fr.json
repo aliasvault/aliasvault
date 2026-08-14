@@ -29,6 +29,7 @@
     "attachments": "Pièces jointes",
     "or": "ou",
     "retry": "Réessayer",
+    "resizeField": "Drag to resize field",
     "deleteItemConfirmTitle": "Supprimer l'élement",
     "deleteItemConfirmDescription": "Êtes-vous certain de vouloir supprimer cet élément?",
     "errors": {
@@ -605,6 +606,7 @@
     "formatSwitchTitle": "Changer le format de l'e-mail",
     "sizeKB": "KO",
     "offlineMessage": "Vous êtes déconnecté. Veuillez vous connecter à internet pour charger vos e-mails.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "Vous n'avez pas encore reçu d'e-mails sur vos adresses e-mail privées. Quand vous recevez un nouvel e-mail, il apparaîtra ici.",
     "loadMore": "Charger plus ({{count}} restants)",
     "time": {
