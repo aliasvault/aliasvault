@@ -32,6 +32,7 @@ import {
   unlockWithPin
 } from '@/utils/PinUnlockService';
 import { hasErrorCode, getErrorMessage, extractErrorCode, AppErrorCode } from '@/utils/types/errors/AppErrorCodes';
+import { ClientUpgradeRequiredError } from '@/utils/types/errors/ClientUpgradeRequiredError';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
@@ -112,7 +113,14 @@ const Unlock: React.FC = () => {
       setIsInitialLoading(false);
       await dbContext.setIsOffline(false);
       return { online: true, error: null };
-    } catch {
+    } catch (err) {
+      // Server refused this client version.
+      if (err instanceof ClientUpgradeRequiredError) {
+        setIsInitialLoading(false);
+        await app.logout(t('common.errors.clientVersionNotSupported'));
+        return { online: false, error: 'clientVersionNotSupported' };
+      }
+
       /**
        * Non-network errors (e.g., session expired, auth failures) are thrown by getStatus().
        * The logout event is already emitted by the WebApiService, so we just return an error
@@ -343,8 +351,11 @@ const Unlock: React.FC = () => {
        */
       navigate('/reinitialize', { replace: true });
     } catch (err) {
-      // Check if it's a version incompatibility error
-      if (err instanceof VaultVersionIncompatibleError) {
+      // Server refused this client version.
+      if (err instanceof ClientUpgradeRequiredError) {
+        await app.logout(t('common.errors.clientVersionNotSupported'));
+      } else if (err instanceof VaultVersionIncompatibleError) {
+        // Check if it's a version incompatibility error
         await app.logout(err.message);
       } else if (hasErrorCode(err)) {
         // Check if it's a decryption failure (E-203): this means wrong password
@@ -604,8 +615,11 @@ const Unlock: React.FC = () => {
        */
       navigate('/reinitialize', { replace: true });
     } catch (err) {
-      // Check if it's a version incompatibility error
-      if (err instanceof VaultVersionIncompatibleError) {
+      // Server refused this client version.
+      if (err instanceof ClientUpgradeRequiredError) {
+        await app.logout(t('common.errors.clientVersionNotSupported'));
+      } else if (err instanceof VaultVersionIncompatibleError) {
+        // Check if it's a version incompatibility error
         await app.logout(err.message);
       } else if (hasErrorCode(err)) {
         // Error contains an error code (E-XXX), show the formatted message as-is

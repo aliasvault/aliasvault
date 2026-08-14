@@ -18,6 +18,7 @@ import { getItemWithFallback } from '@/utils/StorageUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
+import { ClientUpgradeRequiredError } from '@/utils/types/errors/ClientUpgradeRequiredError';
 import { NetworkError } from '@/utils/types/errors/NetworkError';
 import { PayloadTooLargeError } from '@/utils/types/errors/PayloadTooLargeError';
 import { RequestTimeoutError } from '@/utils/types/errors/RequestTimeoutError';
@@ -1472,6 +1473,13 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     return { success: true, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false };
   } catch (err) {
     console.error('Vault sync error:', err);
+
+    /*
+     * The server refuses this extension version for this account (HTTP 426).
+     */
+    if (err instanceof ClientUpgradeRequiredError) {
+      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, errorKey: 'clientVersionNotSupported' };
+    }
 
     // Version incompatibility requires logout
     if (err instanceof VaultVersionIncompatibleError) {

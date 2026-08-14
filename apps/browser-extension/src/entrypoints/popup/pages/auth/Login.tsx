@@ -22,6 +22,7 @@ import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCodes';
+import { ClientUpgradeRequiredError } from '@/utils/types/errors/ClientUpgradeRequiredError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
 import { vaultStateEvents } from '@/events/VaultStateEvents';
@@ -345,7 +346,10 @@ const Login: React.FC = () => {
       );
     } catch (err) {
       // Show API authentication errors as-is.
-      if (err instanceof ApiAuthError) {
+      if (err instanceof ClientUpgradeRequiredError) {
+        // Server refused this client version (HTTP 426).
+        setError(t('common.errors.clientVersionNotSupported'));
+      } else if (err instanceof ApiAuthError) {
         setError(t('common.apiErrors.' + err.message));
       } else if (hasErrorCode(err)) {
         // Error contains an error code (E-XXX), show the formatted message as-is
@@ -412,7 +416,10 @@ const Login: React.FC = () => {
     } catch (err) {
       // Show API authentication errors as-is.
       console.error('2FA error:', err);
-      if (err instanceof ApiAuthError) {
+      if (err instanceof ClientUpgradeRequiredError) {
+        // Server refused this client version (HTTP 426).
+        setError(t('common.errors.clientVersionNotSupported'));
+      } else if (err instanceof ApiAuthError) {
         setError(t('common.apiErrors.' + err.message));
       } else if (hasErrorCode(err)) {
         // Error contains an error code (E-XXX), show the formatted message as-is
