@@ -226,6 +226,7 @@
       "biometricDisabledMessage": "{{biometric}} on poistettu käytöstä AliasVaultin osalta. Ota se ensin käyttöön laitteen asetuksissa.",
       "biometricHelp": "Käytä biometriikkaa avataksesi holvisi, joka on suojattu {{keystore}} -tunnuksella.",
       "biometricUnavailableHelp": "{{biometric}} ei ole käytettävissä. Avaa asetukset napauttamalla ja/tai siirry laitteen asetuksiin ottaaksesi sen käyttöön ja määrittääksesi sen.",
+      "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
       "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "pin": "PIN-koodi",
       "pinDescription": "Käytä mukautettua PIN-koodia avataksesi holvisi nopeammin.",
