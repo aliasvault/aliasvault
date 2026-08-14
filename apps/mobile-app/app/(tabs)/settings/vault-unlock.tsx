@@ -266,7 +266,7 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
       fontSize: 16,
     },
     warningText: {
-      color: colors.errorBorder,
+      color: colors.errorText,
       fontSize: 13,
       marginTop: 4,
     },
@@ -301,8 +301,10 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
               })}
             </ThemedText>
             {!hasBiometrics && (
-              <ThemedText style={[styles.helpText, { color: colors.errorBorder }]}>
-                {t('settings.vaultUnlockSettings.biometricUnavailableHelp', { biometric: biometricDisplayName })}
+              <ThemedText style={[styles.helpText, { color: colors.errorText }]}>
+                {Platform.OS === 'android'
+                  ? t('settings.vaultUnlockSettings.biometricUnavailableHelpAndroid')
+                  : t('settings.vaultUnlockSettings.biometricUnavailableHelp', { biometric: biometricDisplayName })}
               </ThemedText>
             )}
           </TouchableOpacity>
