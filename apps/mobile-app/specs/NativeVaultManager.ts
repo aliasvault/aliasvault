@@ -104,6 +104,11 @@ export interface Spec extends TurboModule {
   isPinEnabled(): Promise<boolean>;
   isKeystoreAvailable(): Promise<boolean>;
 
+  // Whether the device has biometrics that can protect the vault key. On Android the key
+  // requires Class 3 (strong) biometrics, so devices with only Class 2 (weak) biometrics
+  // such as camera-based face unlock return false here.
+  isBiometricsAvailableOnDevice(): Promise<boolean>;
+
   // Biometric unlock validation - checks if biometric unlock is actually available
   // Returns true only if device supports biometrics AND the encryption key is valid
   // Returns false if key has been invalidated (e.g., biometric enrollment changed)
