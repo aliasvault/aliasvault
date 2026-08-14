@@ -8,23 +8,51 @@
 namespace AliasVault.UnitTests.Utilities;
 
 using System.Net;
+using System.Text;
 
 using SkiaSharp;
 
 /// <summary>
-/// Tests for the AliasVault.FaviconExtractor class.
+/// Tests for the AliasVault.FaviconExtractor class. Tests that fetch real websites live in
+/// <see cref="FaviconExtractorNetworkTests"/> and are excluded from CI.
 /// </summary>
 public class FaviconExtractorTests
 {
     /// <summary>
-    /// Test extracting a favicon from a known website.
+    /// Check that a page opening with an XML declaration is not sniffed as an SVG. Icon responses are
+    /// accepted on their magic bytes rather than their Content-Type, so an XHTML error page served in
+    /// place of an icon must still be rejected.
     /// </summary>
-    /// <returns>Task.</returns>
     [Test]
-    public async Task ExtractFaviconGoogle()
+    public void RejectsXmlPageAsSvg()
     {
-        var faviconBytes = await FaviconExtractor.FaviconExtractor.GetFaviconAsync("https://adsense.google.com/start/");
-        Assert.That(faviconBytes, Is.Not.Null);
+        var xhtmlPage = Encoding.UTF8.GetBytes(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n" +
+            "<html xmlns=\"http://www.w3.org/1999/xhtml\"><body>Not found</body></html>");
+
+        // A real SVG icon can carry the same XML declaration and doctype before the <svg> tag.
+        var svgIcon = Encoding.UTF8.GetBytes(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n" +
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" />");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(FaviconExtractor.FaviconExtractor.DetectImageFormat(xhtmlPage), Is.EqualTo(FaviconExtractor.FaviconExtractor.ImageFormatSignature.Unknown), "An XHTML page must not be treated as an image");
+            Assert.That(FaviconExtractor.FaviconExtractor.DetectImageFormat(svgIcon), Is.EqualTo(FaviconExtractor.FaviconExtractor.ImageFormatSignature.Svg), "An SVG behind an XML declaration must still be recognized");
+        });
+    }
+
+    /// <summary>
+    /// Check that SkiaSharp's native library actually loads. It is missing its dependencies on some
+    /// runtime images, and because every decode failure is swallowed as "not a usable image" that
+    /// shows up as favicon extraction silently failing for every non-SVG icon rather than as an error.
+    /// </summary>
+    [Test]
+    public void SkiaSharpNativeLibraryLoads()
+    {
+        Assert.That(FaviconExtractor.FaviconExtractor.IsWithinDecodePixelBudget(EncodeSolidPng(16, 16)), Is.True, "SkiaSharp must be able to decode a PNG");
     }
 
     /// <summary>
