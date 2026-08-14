@@ -226,6 +226,7 @@
       "biometricDisabledMessage": "{{biometric}} is uitgeschakeld voor AliasVault. Ga naar de app instellingen om dit in te schakelen.",
       "biometricHelp": "Gebruik biometrische authenticatie om je kluis te ontgrendelen, die is beveiligd door de {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} is niet beschikbaar. Tik om instellingen te openen en/of ga naar je apparaat-instellingen om het in te schakelen en te configureren.",
+      "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
       "featureRequiresPasscode": "Deze functie vereist een toegangscode om te kunnen worden ingeschakeld op uw apparaat.",
       "pin": "Pincode",
       "pinDescription": "Gebruik een eigen pincode om je vault sneller te ontgrendelen.",
