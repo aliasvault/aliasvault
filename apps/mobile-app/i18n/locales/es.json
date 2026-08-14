@@ -226,7 +226,7 @@
       "biometricDisabledMessage": "{{biometric}} está deshabilitado para AliasVault. Para usarlo, por favor habilítelo en la configuración de tu dispositivo.",
       "biometricHelp": "Usa los datos biométricos para desbloquear tu bóveda que está asegurada por la {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} no está disponible. Toca para abrir ajustes y/o ve a la configuración de tu dispositivo para activarlo y configurarlo.",
-      "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
+      "biometricUnavailableHelpAndroid": "La verificación biométrica no está disponible para su dispositivo. Android requiere verificación (clase 3), como una huella digital o un reconocimiento facial seguro.",
       "featureRequiresPasscode": "Esta característica requiere que se habilite un código de acceso en su dispositivo.",
       "pin": "Código PIN",
       "pinDescription": "Usa un código PIN personalizado para desbloquear tu bóveda más rápidamente.",
