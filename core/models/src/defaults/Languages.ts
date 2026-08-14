@@ -45,6 +45,7 @@ export const LANGUAGES: ILanguageInfo[] = [
   { code: 'fa', flag: '🇮🇷', label: 'فارسی', alternativeCodes: ['fa-IR', 'fa-AF'] },
   { code: 'hu', flag: '🇭🇺', label: 'Magyar', alternativeCodes: ['hu-HU'] },
   { code: 'ga', flag: '🇮🇪', label: 'Gaeilge', alternativeCodes: ['ga-IE'] },
+  { code: 'id', flag: '🇮🇩', label: 'Bahasa Indonesia', alternativeCodes: ['id-ID'] },
 ];
 
 /**

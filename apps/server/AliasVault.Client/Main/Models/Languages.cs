@@ -44,6 +44,7 @@ public static class Languages
         ("fa", "🇮🇷", "فارسی", ["fa-IR", "fa-AF"]),
         ("hu", "🇭🇺", "Magyar", ["hu-HU"]),
         ("ga", "🇮🇪", "Gaeilge", ["ga-IE"]),
+        ("id", "🇮🇩", "Bahasa Indonesia", ["id-ID"]),
     ];
 
     /// <summary>
