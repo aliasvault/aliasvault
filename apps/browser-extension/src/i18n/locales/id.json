@@ -366,6 +366,7 @@
     "noEmails": "Tidak ada email yang ditemukan",
     "noEmailsDescription": "Anda belum menerima email apa pun di alamat email privat Anda. Ketika Anda menerima email baru, email tersebut akan muncul di sini.",
     "offlineMessage": "Anda sedang offline. Silakan hubungkan ke internet untuk memuat email Anda.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "loadMore": "Muat Lebih Banyak (tersisa {{count}})",
     "dateFormat": {
       "justNow": "baru saja",
