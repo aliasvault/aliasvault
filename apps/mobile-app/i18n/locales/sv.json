@@ -29,6 +29,7 @@
     "attachments": "Bifogade filer",
     "or": "eller",
     "retry": "Försök igen",
+    "resizeField": "Drag to resize field",
     "deleteItemConfirmTitle": "Radera objekt",
     "deleteItemConfirmDescription": "Är du säker på att du vill radera det här objektet?",
     "errors": {
@@ -605,6 +606,7 @@
     "formatSwitchTitle": "Switch email format",
     "sizeKB": "KB",
     "offlineMessage": "Du är offline. Anslut till internet för att ladda dina e-postmeddelanden.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "Du har inte mottagit några e-postmeddelanden på dina privata e-postadresser än. När du fått ett nytt e-postmeddelande så visas det här.",
     "loadMore": "Läs in fler ({{count}} kvar)",
     "time": {
