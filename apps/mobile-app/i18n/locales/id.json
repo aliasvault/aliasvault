@@ -29,6 +29,7 @@
     "attachments": "Lampiran",
     "or": "atau",
     "retry": "Coba lagi",
+    "resizeField": "Drag to resize field",
     "deleteItemConfirmTitle": "Hapus Item",
     "deleteItemConfirmDescription": "Apakah Anda yakin Anda ingin menghapus item ini?",
     "errors": {
@@ -605,6 +606,7 @@
     "formatSwitchTitle": "Ganti format email",
     "sizeKB": "KB",
     "offlineMessage": "Anda sedang offline. Silakan hubungkan ke internet untuk memuat email Anda.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "Anda belum menerima email apa pun di alamat email privat Anda. Ketika Anda menerima email baru, email tersebut akan muncul di sini.",
     "loadMore": "Muat Lebih Banyak (tersisa {{count}})",
     "time": {
