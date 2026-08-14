@@ -5,7 +5,7 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, ActivityIndicator, useColorScheme, Linking, Text, TextInput, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { WebView } from 'react-native-webview';
+import { WebView, type WebViewNavigation } from 'react-native-webview';
 
 import ConversionUtility from '@/utils/ConversionUtility';
 import type { Item } from '@/utils/dist/core/models/vault';
@@ -191,6 +191,25 @@ export default function EmailDetailsScreen() : React.ReactNode {
       setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
     }
   };
+
+  /**
+   * Open links tapped inside the email body in the external browser.
+   */
+  const handleShouldStartLoadWithRequest = useCallback((request: WebViewNavigation): boolean => {
+    const url = request.url;
+
+    // The email body is injected as static HTML which has no URL of its own, so let that load through.
+    if (!url || url === 'about:blank' || url.startsWith('data:') || url.startsWith('file://')) {
+      return true;
+    }
+
+    Linking.openURL(url).catch(() => {
+      // Ignore links the OS has no handler for.
+    });
+
+    // Block the navigation so one-time links are only ever opened once, by the external browser.
+    return false;
+  }, []);
 
   /**
    * Handle the open item button press.
@@ -545,12 +564,8 @@ export default function EmailDetailsScreen() : React.ReactNode {
         source={{ html: sanitizedHtml }}
         scrollEnabled={true}
         javaScriptEnabled={false}
-        onNavigationStateChange={(event) => {
-          if (event.url !== 'about:blank') {
-            // Open the URL in the browser
-            Linking.openURL(event.url);
-          }
-        }}
+        setSupportMultipleWindows={false}
+        onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
       />
     );
   } else {
