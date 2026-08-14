@@ -152,6 +152,10 @@ extension VaultStore {
             if vaultResponse.statusCode == 401 {
                 throw AppError.sessionExpired
             }
+            if vaultResponse.statusCode == 426 {
+                // Server no longer supports this app version for this account
+                throw AppError.clientVersionNotSupported
+            }
             throw AppError.serverUnavailable(statusCode: vaultResponse.statusCode)
         }
 
@@ -574,6 +578,11 @@ extension VaultStore {
                 throw AppError.sessionExpired
             }
 
+            if statusResponse.statusCode == 426 {
+                // Server no longer supports this app version for this account
+                throw AppError.clientVersionNotSupported
+            }
+
             // Other error (5xx, network, etc.) - go offline
             setOfflineMode(true)
             throw AppError.serverUnavailable(statusCode: statusResponse.statusCode)
@@ -643,6 +652,10 @@ extension VaultStore {
         guard vaultResponse.statusCode == 200 else {
             if vaultResponse.statusCode == 401 {
                 throw AppError.sessionExpired
+            }
+            if vaultResponse.statusCode == 426 {
+                // Server no longer supports this app version for this account
+                throw AppError.clientVersionNotSupported
             }
             throw AppError.serverUnavailable(statusCode: vaultResponse.statusCode)
         }

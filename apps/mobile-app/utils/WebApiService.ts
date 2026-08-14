@@ -5,6 +5,7 @@ import type { StatusResponse, VaultResponse, AuthLogModel, RefreshToken } from '
 
 import i18n from '@/i18n';
 
+import { ClientUpgradeRequiredError } from './types/errors/ClientUpgradeRequiredError';
 import { LocalAuthError } from './types/errors/LocalAuthError';
 import { PayloadTooLargeError } from './types/errors/PayloadTooLargeError';
 import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
@@ -92,6 +93,11 @@ export class WebApiService {
         throw new Error(i18n.t('auth.errors.sessionExpired'));
       }
 
+      // Server refused this client version.
+      if (response.statusCode === 426) {
+        throw new ClientUpgradeRequiredError();
+      }
+
       if (response.statusCode === 413 && throwOnError) {
         throw new PayloadTooLargeError(`Request rejected with HTTP 413: payload exceeds server limit`);
       }
@@ -158,9 +164,19 @@ export class WebApiService {
         headers: nativeResponse.headers,
       };
 
+      // Server refused this client version.
+      if (nativeResponse.statusCode === 426) {
+        throw new ClientUpgradeRequiredError();
+      }
+
       return new Response(nativeResponse.body, responseInit);
     } catch (error) {
       console.error('API request failed:', error);
+
+      // Server refused this client version.
+      if (error instanceof ClientUpgradeRequiredError) {
+        throw error;
+      }
 
       // Detect SSL certificate errors
       if (error instanceof Error) {

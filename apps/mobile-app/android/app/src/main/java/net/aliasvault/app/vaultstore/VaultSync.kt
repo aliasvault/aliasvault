@@ -411,6 +411,10 @@ class VaultSync(
                 if (response.statusCode == 413) {
                     throw AppError.VaultTooLarge()
                 }
+                // 426: server no longer supports this app version for this account.
+                if (response.statusCode == 426) {
+                    throw AppError.ClientVersionNotSupported()
+                }
                 return VaultUploadResult(
                     success = false,
                     status = -1,
@@ -650,6 +654,10 @@ class VaultSync(
             if (vaultResponse.statusCode == 401) {
                 throw AppError.SessionExpired()
             }
+            if (vaultResponse.statusCode == 426) {
+                // Server no longer supports this app version for this account
+                throw AppError.ClientVersionNotSupported()
+            }
             throw AppError.ServerUnavailable(vaultResponse.statusCode)
         }
 
@@ -677,6 +685,10 @@ class VaultSync(
             if (statusResponse.statusCode == 401) {
                 Log.e(TAG, "Authentication failed (401) - token refresh also failed")
                 throw AppError.SessionExpired()
+            }
+            if (statusResponse.statusCode == 426) {
+                // Server no longer supports this app version for this account
+                throw AppError.ClientVersionNotSupported()
             }
             metadata.setOfflineMode(true)
             throw AppError.ServerUnavailable(statusResponse.statusCode)
@@ -748,6 +760,10 @@ class VaultSync(
         if (vaultResponse.statusCode != 200) {
             if (vaultResponse.statusCode == 401) {
                 throw VaultOperationException("Session expired")
+            }
+            if (vaultResponse.statusCode == 426) {
+                // Typed error so the JS layer gets E-301 and shows the "update your app" message.
+                throw AppError.ClientVersionNotSupported()
             }
             throw VaultOperationException("Server unavailable: ${vaultResponse.statusCode}")
         }
