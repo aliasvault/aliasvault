@@ -366,6 +366,7 @@
     "noEmails": "Inga e-postmeddelanden hittades",
     "noEmailsDescription": "Du har inte mottagit några e-postmeddelanden på dina privata e-postadresser än. När du fått ett nytt e-postmeddelande så visas det här.",
     "offlineMessage": "Du är offline. Anslut till internet för att ladda dina e-postmeddelanden.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "loadMore": "Läs in fler ({{count}} kvar)",
     "dateFormat": {
       "justNow": "precis nu",
