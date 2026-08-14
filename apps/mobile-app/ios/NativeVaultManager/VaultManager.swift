@@ -784,6 +784,19 @@ public class VaultManager: NSObject {
         resolve(vaultStore.isKeystoreAvailable())
     }
 
+    /// Check if the device has biometrics that can protect the vault key.
+    /// Face ID and Touch ID always qualify on iOS, unlike Class 2 biometrics some Android devices offer.
+    @objc
+    func isBiometricsAvailableOnDevice(_ resolve: @escaping RCTPromiseResolveBlock,
+                                       rejecter reject: @escaping RCTPromiseRejectBlock) {
+        let context = LAContext()
+        var error: NSError?
+        let canEvaluate = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
+
+        // A lockout means biometrics are enrolled but temporarily blocked, so still count as available.
+        resolve(canEvaluate || error?.code == LAError.biometryLockout.rawValue)
+    }
+
     /// Check if biometric unlock is actually available (device + key validation).
     /// This checks not only if biometrics are configured in auth methods,
     /// but also validates that the encryption key in Keychain is valid.
