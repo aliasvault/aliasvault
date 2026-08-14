@@ -77,11 +77,16 @@ const EmailDetails: React.FC = (): React.ReactElement => {
         const decryptedEmail = await EncryptionUtility.decryptEmail(response, encryptionKeys);
         setEmail(decryptedEmail);
 
-        // Set initial view mode based on available content
+        /*
+         * Set initial view mode based on available content. Emails received by newer server
+         * versions only carry the raw source, so fall back to that when no rendered body exists.
+         */
         if (decryptedEmail.messageHtml) {
           setViewMode('html');
         } else if (decryptedEmail.messagePlain) {
           setViewMode('plain');
+        } else if (decryptedEmail.messageSource) {
+          setViewMode('source');
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -126,6 +131,12 @@ const EmailDetails: React.FC = (): React.ReactElement => {
     }
     return modes;
   }, [email]);
+
+  /*
+   * Emails stored by newer server versions only contain the raw source. Until this client can
+   * render those itself we show the source verbatim plus a notice to update.
+   */
+  const isSourceOnly = Boolean(email?.messageSource) && !email?.messageHtml && !email?.messagePlain;
 
   const formatLabels = useMemo<Record<'html' | 'plain' | 'source', string>>(() => ({
     html: t('emails.formatHtml'),
@@ -335,6 +346,12 @@ const EmailDetails: React.FC = (): React.ReactElement => {
             </div>
           )}
         </div>
+
+        {isSourceOnly && (
+          <div className="mt-4 p-3 rounded-lg border border-amber-300 bg-amber-50 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
+            {t('emails.updateClientForFormattedView')}
+          </div>
+        )}
 
         {/* Email Body — always rendered on a white background with dark text so contrast doesn't break in dark mode. */}
         <div className="bg-white mt-4">

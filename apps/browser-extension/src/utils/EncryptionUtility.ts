@@ -153,6 +153,41 @@ export class EncryptionUtility {
   }
 
   /**
+   * Decrypts a base64 AES-GCM payload that may be gzip compressed after decryption.
+   */
+  public static async symmetricDecryptMaybeCompressed(base64Ciphertext: string, base64Key: string): Promise<string> {
+    if (!base64Ciphertext) {
+      return base64Ciphertext;
+    }
+
+    const encryptedBytes = Uint8Array.from(atob(base64Ciphertext), c => c.charCodeAt(0));
+    const decryptedBytes = await EncryptionUtility.symmetricDecryptBytes(encryptedBytes, base64Key);
+
+    return await EncryptionUtility.decodeMaybeGzipped(decryptedBytes);
+  }
+
+  /**
+   * Decodes bytes as UTF-8, attempting to gunzip them first when they carry the gzip magic header.
+   */
+  private static async decodeMaybeGzipped(bytes: Uint8Array): Promise<string> {
+    const decoder = new TextDecoder();
+
+    // Gzip magic number (0x1f 0x8b); anything else is treated as plain UTF-8.
+    if (bytes.length < 2 || bytes[0] !== 0x1f || bytes[1] !== 0x8b) {
+      return decoder.decode(bytes);
+    }
+
+    if (typeof DecompressionStream === 'undefined') {
+      throw new Error('Gzip decompression is not supported by this browser');
+    }
+
+    const stream = new Blob([bytes as BlobPart]).stream().pipeThrough(new DecompressionStream('gzip'));
+    const decompressed = await new Response(stream).arrayBuffer();
+
+    return decoder.decode(decompressed);
+  }
+
+  /**
    * Generates a new RSA key pair for asymmetric encryption
    */
   public static async generateRsaKeyPair(): Promise<{ publicKey: string, privateKey: string }> {
@@ -337,7 +372,8 @@ export class EncryptionUtility {
         decryptedEmail.messagePlain = await EncryptionUtility.symmetricDecrypt(email.messagePlain, symmetricKeyBase64);
       }
       if (email.messageSource) {
-        decryptedEmail.messageSource = await EncryptionUtility.symmetricDecrypt(email.messageSource, symmetricKeyBase64);
+        // The raw source is optionally gzip compressed before encryption in v0.31+ APIs.
+        decryptedEmail.messageSource = await EncryptionUtility.symmetricDecryptMaybeCompressed(email.messageSource, symmetricKeyBase64);
       }
 
       return decryptedEmail;
