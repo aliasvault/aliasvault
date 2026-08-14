@@ -29,6 +29,7 @@
     "attachments": "Anhänge",
     "or": "oder",
     "retry": "Erneut versuchen",
+    "resizeField": "Drag to resize field",
     "deleteItemConfirmTitle": "Element löschen",
     "deleteItemConfirmDescription": "Bist Du sicher, dass Du dieses Element löschen möchtest?",
     "errors": {
@@ -605,6 +606,7 @@
     "formatSwitchTitle": "E-Mail-Format wechseln",
     "sizeKB": "kB",
     "offlineMessage": "Keine Verbindung. Bitte verbinde Dich mit dem Internet, um Deine E-Mails zu laden.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "Du hast bisher keine E-Mails an Deine privaten E-Mail-Adressen erhalten. Neue E-Mails werden hier angezeigt, sobald sie eintreffen.",
     "loadMore": "Weitere laden ({{count}} verbleibend)",
     "time": {
