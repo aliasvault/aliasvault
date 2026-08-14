@@ -20,8 +20,8 @@ export class AppUnlockUtility {
       let methods = await NativeVaultManager.getAuthMethods() as AuthMethod[];
       // Check if Face ID is actually available despite being enabled
       if (methods.includes('faceid')) {
-        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-        if (!isEnrolled) {
+        const isAvailable = await this.isBiometricsAvailableOnDevice();
+        if (!isAvailable) {
           // Remove Face ID from the list of enabled auth methods
           methods = methods.filter(method => method !== 'faceid');
         }
@@ -92,12 +92,7 @@ export class AppUnlockUtility {
    */
   static async isBiometricsAvailableOnDevice(): Promise<boolean> {
     try {
-      const hasHardware = await LocalAuthentication.hasHardwareAsync();
-      if (!hasHardware) {
-        return false;
-      }
-
-      return await LocalAuthentication.isEnrolledAsync();
+      return await NativeVaultManager.isBiometricsAvailableOnDevice();
     } catch (error) {
       console.error('Error checking biometric device availability:', error);
       return false;
