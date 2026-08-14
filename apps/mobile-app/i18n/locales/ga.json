@@ -226,6 +226,7 @@
       "biometricDisabledMessage": "Tá {{biometric}} díchumasaithe le haghaidh AliasVault. Chun é a úsáid, cumasaigh é i socruithe do ghléis ar dtús.",
       "biometricHelp": "Bain úsáid as bithmhéadracht chun do chruinneachán a dhíghlasáil, atá slán leis an {{keystore}}.",
       "biometricUnavailableHelp": "Níl {{biometric}} ar fáil. Tapáil chun socruithe a oscailt agus/nó téigh chuig socruithe do ghléis chun é a chumasú agus a chumrú.",
+      "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
       "featureRequiresPasscode": "Éilíonn an ghné seo paschód a bheith cumasaithe ar do ghléas.",
       "pin": "Cód PIN",
       "pinDescription": "Bain úsáid as cód PIN saincheaptha chun do chruinneachán a dhíghlasáil níos tapúla.",
