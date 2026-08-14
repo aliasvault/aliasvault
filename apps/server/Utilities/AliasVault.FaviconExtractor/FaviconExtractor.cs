@@ -29,15 +29,22 @@ public static class FaviconExtractor
     private const int MaxResponseBytes = 5 * 1024 * 1024; // 5MB cap per response body, measured after decompression.
     private const int MaxDecodedPixels = 2048 * 2048; // Pixel budget per image; see IsWithinDecodePixelBudget.
     private const int MaxFaviconCandidates = 10; // Distinct favicon URLs fetched per page; see TryExtractFaviconFromNodes.
-    private static readonly TimeSpan _extractionDeadline = TimeSpan.FromSeconds(5); // Wall-clock budget for one full extraction.
-    private static readonly TimeSpan _requestTimeout = TimeSpan.FromSeconds(3); // Per-request budget, so one slow host still leaves room for another candidate.
-    private static readonly int[] _resizeWidths = [96, 64, 48, 32];
-    private static readonly int[] _jpegFallbackQualities = [80, 65, 50];
-    private static readonly string[] _allowedSchemes = ["http", "https"];
+    private static readonly TimeSpan ExtractionDeadline = TimeSpan.FromSeconds(5); // Wall-clock budget for one full extraction.
+    private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(3); // Per-request budget, so one slow host still leaves room for another candidate.
+    private static readonly int[] ResizeWidths = [96, 64, 48, 32];
+    private static readonly int[] JpegFallbackQualities = [80, 65, 50];
+    private static readonly string[] AllowedSchemes = ["http", "https"];
+
+    // Content types that mark a response as a web page rather than an icon.
+    private static readonly HashSet<string> HtmlMediaTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "text/html",
+        "application/xhtml+xml",
+    };
 
     // Formats every AliasVault client (web, browser extension, mobile) can render safely.
     // Anything else is re-encoded to one of these or rejected.
-    private static readonly ImageFormatSignature[] _clientSafeFormats =
+    private static readonly ImageFormatSignature[] ClientSafeFormats =
     [
         ImageFormatSignature.Ico,
         ImageFormatSignature.Png,
@@ -104,7 +111,7 @@ public static class FaviconExtractor
         using HttpClient client = CreateHttpClient();
 
         // Set a limit for how long the extraction can take.
-        using var deadline = new CancellationTokenSource(_extractionDeadline);
+        using var deadline = new CancellationTokenSource(ExtractionDeadline);
 
         try
         {
@@ -327,15 +334,34 @@ public static class FaviconExtractor
     /// <returns>The favicon bytes.</returns>
     private static async Task<byte[]?> TryGetFaviconAsync(HttpClient client, Uri uri, CancellationToken cancellationToken)
     {
-        var response = await FollowRedirectsAsync(client, uri, cancellationToken);
+        HttpResponseMessage? response;
+        try
+        {
+            response = await FollowRedirectsAsync(client, uri, cancellationToken);
+        }
+        catch (HttpRequestException)
+        {
+            response = null;
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            // Per-request timeout. Try the default favicon path as last resort below.
+            response = null;
+        }
 
         if (response == null || !response.IsSuccessStatusCode)
         {
-            return null;
+            // The page itself didn't load: bot protection, an auth wall, an error page or a homepage
+            // too slow to answer. The origin usually still serves /favicon.ico straight from a CDN,
+            // so try that as last resort.
+            return await FetchAndProcessFaviconAsync(client, $"{uri.GetLeftPart(UriPartial.Authority)}/favicon.ico", cancellationToken);
         }
 
-        var faviconNodes = await GetFaviconNodesFromHtml(response, uri, cancellationToken);
-        return await TryExtractFaviconFromNodes(faviconNodes, client, uri, cancellationToken);
+        // Resolve relative hrefs against the URL we actually ended up on after possible redirect.
+        var finalUri = response.RequestMessage?.RequestUri ?? uri;
+
+        var faviconNodes = await GetFaviconNodesFromHtml(response, finalUri, cancellationToken);
+        return await TryExtractFaviconFromNodes(faviconNodes, client, finalUri, cancellationToken);
     }
 
     /// <summary>
@@ -347,9 +373,12 @@ public static class FaviconExtractor
     /// <returns>The favicon nodes.</returns>
     private static async Task<HtmlNodeCollection[]> GetFaviconNodesFromHtml(HttpResponseMessage response, Uri uri, CancellationToken cancellationToken)
     {
-        string htmlContent = await response.Content.ReadAsStringAsync(cancellationToken);
+        var htmlBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
         HtmlDocument htmlDoc = new();
-        htmlDoc.LoadHtml(htmlContent);
+        using (var htmlStream = new MemoryStream(htmlBytes))
+        {
+            htmlDoc.Load(htmlStream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        }
 
         var defaultFavicon = new HtmlNode(HtmlNodeType.Element, htmlDoc, 0);
         defaultFavicon.Attributes.Add("href", $"{uri.GetLeftPart(UriPartial.Authority)}/favicon.ico");
@@ -365,7 +394,7 @@ public static class FaviconExtractor
             htmlDoc.DocumentNode.SelectNodes("//link[@rel='icon' and @sizes='192x192']"),
             htmlDoc.DocumentNode.SelectNodes("//link[@rel='apple-touch-icon' or @rel='apple-touch-icon-precomposed']"),
             htmlDoc.DocumentNode.SelectNodes("//link[@rel='icon' or @rel='shortcut icon']"),
-            new HtmlNodeCollection(htmlDoc.DocumentNode) { defaultFavicon },
+            new(htmlDoc.DocumentNode) { defaultFavicon },
         ];
 
         // Filter node array to only return non-null values and cast to non-nullable array
@@ -450,8 +479,10 @@ public static class FaviconExtractor
                 return null;
             }
 
+            // Check for valid image content type (if provided), if not provided then don't reject (yet)
+            // as some servers send the icon with no Content-Type set at all.
             var contentType = response.Content.Headers.ContentType?.MediaType;
-            if (string.IsNullOrEmpty(contentType) || !contentType.StartsWith("image/"))
+            if (!string.IsNullOrEmpty(contentType) && HtmlMediaTypes.Contains(contentType))
             {
                 return null;
             }
@@ -472,7 +503,7 @@ public static class FaviconExtractor
                 return null;
             }
 
-            if (_clientSafeFormats.Contains(format))
+            if (ClientSafeFormats.Contains(format))
             {
                 // Recognized, client-safe format: keep as-is, only shrinking if it exceeds the cap.
                 return imageBytes.Length > MaxSizeBytes ? ResizeImage(imageBytes, format) : imageBytes;
@@ -512,7 +543,7 @@ public static class FaviconExtractor
 
         var client = new HttpClient(handler)
         {
-            Timeout = _requestTimeout,
+            Timeout = RequestTimeout,
             MaxResponseContentBufferSize = MaxResponseBytes,
         };
 
@@ -583,7 +614,7 @@ public static class FaviconExtractor
     /// <returns>True if the scheme and port are both allowed, false otherwise.</returns>
     private static bool IsAllowedSchemeAndPort(Uri uri)
     {
-        return _allowedSchemes.Contains(uri.Scheme) && uri.IsDefaultPort;
+        return AllowedSchemes.Contains(uri.Scheme) && uri.IsDefaultPort;
     }
 
     /// <summary>
@@ -649,21 +680,20 @@ public static class FaviconExtractor
     }
 
     /// <summary>
-    /// Checks whether the bytes look like an SVG by inspecting a short text prefix for an XML or
-    /// SVG opening tag.
+    /// Checks whether the bytes look like an SVG by inspecting a short text prefix for an SVG opening tag.
     /// </summary>
     /// <param name="bytes">The raw image bytes.</param>
-    /// <returns>True if the content appears to be SVG/XML.</returns>
+    /// <returns>True if the content appears to be SVG.</returns>
     private static bool LooksLikeSvg(byte[] bytes)
     {
-        var prefixLength = Math.Min(bytes.Length, 256);
+        var prefixLength = Math.Min(bytes.Length, 1024);
         if (prefixLength == 0)
         {
             return false;
         }
 
         var prefix = Encoding.UTF8.GetString(bytes, 0, prefixLength).TrimStart('\uFEFF', ' ', '\t', '\r', '\n').ToLowerInvariant();
-        return prefix.Contains("<svg") || prefix.StartsWith("<?xml", StringComparison.Ordinal);
+        return prefix.Contains("<svg");
     }
 
     /// <summary>
@@ -702,7 +732,7 @@ public static class FaviconExtractor
             }
 
             // Pass 1: PNG at progressively smaller widths. Preserves transparency.
-            foreach (var width in _resizeWidths)
+            foreach (var width in ResizeWidths)
             {
                 var encoded = EncodeAtWidth(original, width, SKEncodedImageFormat.Png, 100);
                 if (encoded != null && encoded.Length <= MaxSizeBytes)
@@ -713,8 +743,8 @@ public static class FaviconExtractor
 
             // Pass 2: JPEG at the smallest width with decreasing quality. Loses transparency but
             // gives much smaller files for photographic favicons that resist PNG compression.
-            var fallbackWidth = _resizeWidths[^1];
-            foreach (var quality in _jpegFallbackQualities)
+            var fallbackWidth = ResizeWidths[^1];
+            foreach (var quality in JpegFallbackQualities)
             {
                 var encoded = EncodeAtWidth(original, fallbackWidth, SKEncodedImageFormat.Jpeg, quality);
                 if (encoded != null && encoded.Length <= MaxSizeBytes)
