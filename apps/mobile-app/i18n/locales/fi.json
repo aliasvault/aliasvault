@@ -29,6 +29,7 @@
     "attachments": "Liitteet",
     "or": "tai",
     "retry": "Yritä uudelleen",
+    "resizeField": "Drag to resize field",
     "deleteItemConfirmTitle": "Poista kohde",
     "deleteItemConfirmDescription": "Haluatko varmasti poistaa tämän kohteen?",
     "errors": {
@@ -605,6 +606,7 @@
     "formatSwitchTitle": "Switch email format",
     "sizeKB": "kB",
     "offlineMessage": "Olet offline-tilassa. Ole hyvä ja yhdistä internetiin ladataksesi sähköpostiosoitteesi.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "Et ole vielä saanut sähköpostiviestejä yksityisissä sähköpostiosoitteissasi. Kun saat uuden sähköpostiviestin, se näkyy täällä.",
     "loadMore": "Load More ({{count}} remaining)",
     "time": {
