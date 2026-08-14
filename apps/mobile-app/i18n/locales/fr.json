@@ -29,7 +29,7 @@
     "attachments": "Pièces jointes",
     "or": "ou",
     "retry": "Réessayer",
-    "resizeField": "Drag to resize field",
+    "resizeField": "Glisser pour redimensionner le champ",
     "deleteItemConfirmTitle": "Supprimer l'élement",
     "deleteItemConfirmDescription": "Êtes-vous certain de vouloir supprimer cet élément?",
     "errors": {
@@ -227,7 +227,7 @@
       "biometricDisabledMessage": "{{biometric}} est désactivé pour AliasVault. Pour l'utiliser, veuillez d'abord l'activer dans les paramètres de votre appareil.",
       "biometricHelp": "Utilisez la biométrie pour déverrouiller votre coffre-fort, qui est sécurisé par l’ {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} n'est pas disponible. Appuyez pour ouvrir les paramètres et/ou allez dans les paramètres de votre appareil pour l'activer et le configurer.",
-      "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
+      "biometricUnavailableHelpAndroid": "La biométrie n'est pas disponible pour votre appareil. Android nécessite une biométrie solide (Classe 3) telle qu'une empreinte digitale ou une reconnaissance faciale sécurisée.",
       "featureRequiresPasscode": "Cette fonctionnalité nécessite un code d'accès pour être activée sur votre appareil.",
       "pin": "Code PIN",
       "pinDescription": "Utilisez un code PIN personnalisé pour déverrouiller votre coffre-fort plus rapidement.",
@@ -606,7 +606,7 @@
     "formatSwitchTitle": "Changer le format de l'e-mail",
     "sizeKB": "KO",
     "offlineMessage": "Vous êtes déconnecté. Veuillez vous connecter à internet pour charger vos e-mails.",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
+    "updateClientForFormattedView": "Cet e-mail nécessite une version plus récente de l'application pour s'afficher correctement. Veuillez mettre à jour votre application.",
     "emptyMessage": "Vous n'avez pas encore reçu d'e-mails sur vos adresses e-mail privées. Quand vous recevez un nouvel e-mail, il apparaîtra ici.",
     "loadMore": "Charger plus ({{count}} restants)",
     "time": {
