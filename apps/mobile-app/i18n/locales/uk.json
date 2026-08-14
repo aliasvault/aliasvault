@@ -29,6 +29,7 @@
     "attachments": "Вкладення",
     "or": "або",
     "retry": "Retry",
+    "resizeField": "Drag to resize field",
     "deleteItemConfirmTitle": "Delete Item",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
@@ -605,6 +606,7 @@
     "formatSwitchTitle": "Switch email format",
     "sizeKB": "КБ",
     "offlineMessage": "Ви офлайн. Будь ласка, приєднайтесь до Інтернету, щоб завантажити свої електронні листи.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "Ви ще не отримували жодних листів на свої приватні адреси електронної пошти. Коли ви отримаєте новий лист, він з’явиться тут.",
     "loadMore": "Load More ({{count}} remaining)",
     "time": {
