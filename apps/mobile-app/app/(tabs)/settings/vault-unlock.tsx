@@ -82,11 +82,10 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
             text: t('settings.openSettings'),
             style: 'default',
             /**
-             * Handle the open settings press.
+             * Handle the open settings press. Biometrics stay disabled until the user has
+             * actually enrolled one that works, which is re-checked when this screen reloads.
              */
             onPress: async () : Promise<void> => {
-              await AppUnlockUtility.enableAuthMethod('faceid');
-              setIsBiometricsEnabled(true);
               if (Platform.OS === 'ios') {
                 Linking.openURL('app-settings:');
               } else {

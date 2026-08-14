@@ -39,7 +39,17 @@ export class AppUnlockUtility {
    */
   static async setAuthMethods(methods: AuthMethod[]): Promise<void> {
     // Ensure password is always included
-    const methodsToSave = methods.includes('password') ? methods : [...methods, 'password'];
+    let methodsToSave = methods.includes('password') ? methods : [...methods, 'password'];
+
+    /*
+     * Never persist biometrics on a device that cannot use them. The native keystore key
+     * requires strong (Class 3) biometrics, so storing it would fail and leave the setting
+     * enabled while unlocking silently falls back to PIN or password.
+     */
+    if (methodsToSave.includes('faceid') && !await this.isBiometricsAvailableOnDevice()) {
+      console.warn('Biometrics not available on this device, not enabling as auth method');
+      methodsToSave = methodsToSave.filter(method => method !== 'faceid');
+    }
 
     // Update native credentials manager
     try {
