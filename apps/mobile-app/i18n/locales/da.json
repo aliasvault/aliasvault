@@ -29,6 +29,7 @@
     "attachments": "Vedhæftede filer",
     "or": "eller",
     "retry": "Prøv igen",
+    "resizeField": "Drag to resize field",
     "deleteItemConfirmTitle": "Slet element",
     "deleteItemConfirmDescription": "Er du sikker på, at du vil slette dette element?",
     "errors": {
@@ -605,6 +606,7 @@
     "formatSwitchTitle": "Skift e-mail format",
     "sizeKB": "KB",
     "offlineMessage": "Du er offline. Opret venligst forbindelse til internettet for at indlæse dine e-mails.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "Du har ikke modtaget nogen e-mails på dine private e-mailadresser endnu. Når du modtager en ny e-mail, vil den blive vist her.",
     "loadMore": "Indlæs flere ({{count}} tilbage)",
     "time": {
