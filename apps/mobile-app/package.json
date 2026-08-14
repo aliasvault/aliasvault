@@ -100,8 +100,9 @@
   },
   "overrides": {
     "react-dom": "19.2.3",
-    "js-yaml": "4.2.0",
-    "launch-editor": "2.14.1"
+    "js-yaml": "4.3.1",
+    "launch-editor": "2.14.1",
+    "uuid": "^11.1.1"
   },
   "expo": {
     "autolinking": {

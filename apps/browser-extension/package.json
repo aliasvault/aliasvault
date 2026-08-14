@@ -70,7 +70,7 @@
     "argon2": "^0.44.0",
     "autoprefixer": "^10.4.20",
     "better-sqlite3": "^12.5.0",
-    "eslint": "^10.8.0",
+    "eslint": "^9.39.5",
     "eslint-import-resolver-typescript": "^4.4.3",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsdoc": "^50.6.3",
