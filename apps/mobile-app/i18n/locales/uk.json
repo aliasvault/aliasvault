@@ -226,6 +226,7 @@
       "biometricDisabledMessage": "{{biometric}} вимкнено для AliasVault. Щоб використовувати його, спочатку ввімкніть в налаштуваннях вашого пристрою.",
       "biometricHelp": "Використовуйте біометричні дані, щоб розблокувати сховище, захищене {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} недоступний. Натисніть, щоб відкрити налаштування, та/або перейдіть до налаштувань пристрою, щоб увімкнути та налаштувати його.",
+      "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
       "featureRequiresPasscode": "Ця функція вимагає включений пароль на вашому пристрої.",
       "pin": "ПІН-код",
       "pinDescription": "Використовуйте власний PIN-код, щоб швидше розблокувати сховище.",
