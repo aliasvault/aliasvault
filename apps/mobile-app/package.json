@@ -49,6 +49,7 @@
     "expo-symbols": "~56.0.5",
     "expo-web-browser": "~56.0.5",
     "fbemitter": "^3.0.0",
+    "fflate": "^0.8.3",
     "i18next": "^26.0.0",
     "lodash": "^4.18.1",
     "react": "19.2.3",
@@ -106,8 +107,12 @@
   },
   "expo": {
     "autolinking": {
-      "exclude": ["@react-native-masked-view/masked-view"],
-      "buildFromSource": [".*"]
+      "exclude": [
+        "@react-native-masked-view/masked-view"
+      ],
+      "buildFromSource": [
+        ".*"
+      ]
     }
   },
   "private": true

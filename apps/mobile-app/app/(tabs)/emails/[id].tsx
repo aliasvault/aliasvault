@@ -238,6 +238,12 @@ export default function EmailDetailsScreen() : React.ReactNode {
     return modes;
   }, [email]);
 
+  /*
+   * Emails stored by newer server versions only contain the raw source. Until this client can
+   * render those itself we show the source verbatim plus a notice to update.
+   */
+  const isSourceOnly = Boolean(email?.messageSource) && !email?.messageHtml && !email?.messagePlain;
+
   const formatLabels = useMemo<Record<'html' | 'plain' | 'source', string>>(() => ({
     html: t('emails.formatHtml'),
     plain: t('emails.formatPlain'),
@@ -404,6 +410,18 @@ export default function EmailDetailsScreen() : React.ReactNode {
       backgroundColor: colors.background,
       flexDirection: 'row',
       padding: 2,
+    },
+    updateNotice: {
+      backgroundColor: colors.warningBackground,
+      borderColor: colors.warning,
+      borderRadius: 6,
+      borderWidth: 1,
+      margin: 8,
+      padding: 10,
+    },
+    updateNoticeText: {
+      color: colors.warning,
+      fontSize: 13,
     },
     webView: {
       flex: 1,
@@ -599,6 +617,13 @@ export default function EmailDetailsScreen() : React.ReactNode {
       <ThemedView style={styles.container}>
         <Stack.Screen options={{ title: t('emails.emailDetails') }} />
         {metadataView}
+        {isSourceOnly && (
+          <View style={styles.updateNotice}>
+            <ThemedText style={styles.updateNoticeText}>
+              {t('emails.updateClientForFormattedView')}
+            </ThemedText>
+          </View>
+        )}
         {emailView}
         {email.attachments && email.attachments.length > 0 && (
           <View style={styles.attachments}>
