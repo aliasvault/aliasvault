@@ -226,6 +226,7 @@
       "biometricDisabledMessage": "AliasVault的{{biometric}}已禁用。如需使用，请先在设备设置中启用它。",
       "biometricHelp": "使用生物识别解锁您的密码库，经由 {{keystore}} 加密。",
       "biometricUnavailableHelp": "{{biometric}}不可用。点击打开设置和/或前往设备设置启用并配置它。",
+      "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
       "featureRequiresPasscode": "此功能需要在您的设备上启用密码。",
       "pin": "PIN 码",
       "pinDescription": "使用自定义 PIN 码快速解锁密码库。",
