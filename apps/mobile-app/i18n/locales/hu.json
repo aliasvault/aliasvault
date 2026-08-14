@@ -29,6 +29,7 @@
     "attachments": "Csatolmányok",
     "or": "vagy",
     "retry": "Újra",
+    "resizeField": "Drag to resize field",
     "deleteItemConfirmTitle": "Elem törlése",
     "deleteItemConfirmDescription": "Biztosan ki akarja törölni az elemet?",
     "errors": {
@@ -226,6 +227,7 @@
       "biometricDisabledMessage": "A {{biometric}} kikapcsolásra kerüt az AliasVault-ban. Ha használni akarja, kapcsolja be az eszközén a beállításokban.",
       "biometricHelp": "A {{keystore}} által biztosított biometria használata a széf feloldáshoz.",
       "biometricUnavailableHelp": "A {{biometric}} nem elérhető. Koppintson a beállításhoz, vagy kézileg menjen be a készülék mbeállítások közé.",
+      "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
       "featureRequiresPasscode": "Ehhez a funkcióhoz eszközén be kell kapcsolnia a képernyőzárat.",
       "pin": "PIN kód",
       "pinDescription": "Használjon egy egyéni pin kódot, hogy széfét gyorsabban fel tudja oldani.",
@@ -604,6 +606,7 @@
     "formatSwitchTitle": "E-mail formátum váltása",
     "sizeKB": "KB",
     "offlineMessage": "Jelenleg offline. Kapcsolódjon az internethez az e-mailek betöltéséhez.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "Nem kapott még e-maileket a privát címére. Beérkezés esetén itt jelenik majd meg.",
     "loadMore": "Továbbiak betöltése ({{count}} hátra)",
     "time": {

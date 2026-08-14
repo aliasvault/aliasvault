@@ -20,11 +20,11 @@
     </xsd:element>
   </xsd:schema>
   <data name="ViewItemPageTitle">
-    <value>View item</value>
+    <value>Lihat item</value>
     <comment>Page title for viewing an item</comment>
   </data>
   <data name="ViewItemTitle">
-    <value>View item</value>
+    <value>Lihat item</value>
     <comment>Page header title for viewing an item</comment>
   </data>
   <data name="EditButtonMobile">
@@ -32,7 +32,7 @@
     <comment>Text for edit button on mobile</comment>
   </data>
   <data name="EditButtonDesktop">
-    <value>Edit item</value>
+    <value>Ubah item</value>
     <comment>Text for edit button on desktop</comment>
   </data>
   <data name="DeleteButtonMobile">
@@ -40,19 +40,19 @@
     <comment>Text for delete button on mobile</comment>
   </data>
   <data name="DeleteButtonDesktop">
-    <value>Delete item</value>
+    <value>Hapus item</value>
     <comment>Text for delete button on desktop</comment>
   </data>
   <data name="LoginDetailsSection">
-    <value>Login details</value>
+    <value>Rincian Login</value>
     <comment>Section header for login details</comment>
   </data>
   <data name="GeneratedItemDescription">
-    <value>Below you can view and copy the generated details for this item. Any emails sent to the shown address will automatically appear on this page.</value>
+    <value>Di bawah ini Anda dapat melihat dan menyalin rincian yang telah dihasilkan untuk item ini. Setiap email yang dikirim ke alamat yang tertera akan secara otomatis muncul di halaman ini.</value>
     <comment>Description for generated item with email support</comment>
   </data>
   <data name="StoredItemDescription">
-    <value>Below you can view and copy the stored login details for this item.</value>
+    <value>Di bawah ini, Anda dapat melihat dan menyalin detail login yang tersimpan untuk item ini.</value>
     <comment>Description for stored item without email support</comment>
   </data>
   <data name="EmailLabel">
@@ -72,15 +72,15 @@
     <comment>Section header for alias information</comment>
   </data>
   <data name="FullNameLabel">
-    <value>Full name</value>
+    <value>Nama lengkap</value>
     <comment>Label for full name field</comment>
   </data>
   <data name="FirstNameLabel">
-    <value>First name</value>
+    <value>Nama depan</value>
     <comment>Label for first name field</comment>
   </data>
   <data name="LastNameLabel">
-    <value>Last name</value>
+    <value>Nama belakang</value>
     <comment>Label for last name field</comment>
   </data>
   <data name="BirthdateLabel">
@@ -88,15 +88,15 @@
     <comment>Label for birthdate field</comment>
   </data>
   <data name="NicknameLabel">
-    <value>Nickname</value>
+    <value>Nama Panggilan</value>
     <comment>Label for nickname field</comment>
   </data>
   <data name="ViewItemBreadcrumb">
-    <value>View item</value>
+    <value>Lihat item</value>
     <comment>Breadcrumb text for view item page</comment>
   </data>
   <data name="ItemNotFoundError">
-    <value>This item does not exist (anymore). Please try again.</value>
+    <value>Barang ini tidak ada (lagi). Silakan coba lagi.</value>
     <comment>Error message when item is not found</comment>
   </data>
   <data name="PasskeySectionHeader">
@@ -116,7 +116,7 @@
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, edit this item and delete the passkey. To replace or create a new passkey, visit the website and follow its prompts.</value>
+    <value>Kunci akses dibuat melalui ekstensi browser atau aplikasi seluler saat diminta oleh sebuah situs web. Kunci akses tersebut tidak dapat diedit atau dibuat secara manual melalui aplikasi web. Untuk menghapus kunci akses ini, edit entri ini dan hapus kunci aksesnya. Untuk mengganti atau membuat kunci akses baru, kunjungi situs web tersebut dan ikuti petunjuk yang diberikan.</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="Untitled">
@@ -128,7 +128,7 @@
     <comment>Section header for notes</comment>
   </data>
   <data name="CardSection">
-    <value>Card Details</value>
+    <value>Rincian kartu</value>
     <comment>Section header for credit card details</comment>
   </data>
   <data name="CustomFieldsSection">

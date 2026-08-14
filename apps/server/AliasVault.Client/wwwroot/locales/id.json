@@ -1,25 +1,25 @@
 {
   "loading": {
-    "title": "AliasVault is loading",
-    "message": "Initializing secure environment. AliasVault prioritizes your privacy by running entirely in your browser. The first load might take a short while.",
-    "refreshText": "If loading seems stuck, you can click the button below to refresh the page.",
-    "refreshButtonText": "Refresh Page"
+    "title": "AliasVault sedang dimuat",
+    "message": "Sedang menginisialisasi lingkungan aman. AliasVault mengutamakan privasi Anda dengan beroperasi sepenuhnya di dalam browser Anda. Pemuatan pertama mungkin memerlukan waktu sebentar.",
+    "refreshText": "Jika proses pemuatan tampak terhenti, Anda dapat mengklik tombol di bawah ini untuk menyegarkan halaman.",
+    "refreshButtonText": "Segarkan halaman"
   },
   "errors": {
-    "unhandledError": "An unhandled error has occurred. Please try reloading the page. If the issue persists, please contact support.",
-    "webAssemblyError": "AliasVault requires WebAssembly, which this browser does not support. Try using a more modern browser that supports WebAssembly.",
-    "reloadPageText": "Reload Page"
+    "unhandledError": "Telah terjadi kesalahan yang tidak dapat ditangani. Silakan coba muat ulang halaman ini. Jika masalah masih berlanjut, silakan hubungi bagian dukungan.",
+    "webAssemblyError": "AliasVault memerlukan WebAssembly, yang tidak didukung oleh browser ini. Cobalah menggunakan browser yang lebih modern yang mendukung WebAssembly.",
+    "reloadPageText": "Segarkan halaman"
   },
   "quotes": {
     "security": [
-      "Your identity is your most valuable asset. Protect it like one.",
-      "In the digital world, a strong password is your first line of defense.",
-      "Security is not a product, but a process.",
-      "The weakest link in the security chain is the human element.",
-      "Security is always excessive until it's not enough.",
-      "Trust, but verify - especially online.",
-      "Your data is only as secure as your weakest password.",
-      "The most secure password is the one you can't remember."
+      "Identitas Anda adalah aset paling berharga yang Anda miliki. Lindungi identitas Anda sebagaimana layaknya aset berharga.",
+      "Di dunia digital, kata sandi yang kuat adalah garis pertahanan pertama Anda.",
+      "Keamanan bukanlah sebuah produk, melainkan sebuah proses.",
+      "Unsur terlemah dalam rantai keamanan adalah faktor manusia.",
+      "Keamanan selalu berlebihan sampai akhirnya tidak cukup lagi.",
+      "Percayalah, tapi periksa juga — terutama di dunia maya.",
+      "Keamanan data Anda bergantung pada kata sandi terlemah yang Anda miliki.",
+      "Kata sandi yang paling aman adalah kata sandi yang tidak bisa Anda ingat."
     ]
   }
 }

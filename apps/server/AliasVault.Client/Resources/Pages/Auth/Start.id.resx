@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="MainTitle" xml:space="preserve">
-    <value>Password &amp; (Email) Alias Manager</value>
+    <value>Pengelola Kata Sandi &amp; Alias (Email)</value>
     <comment>Main title of the application</comment>
   </data>
   <data name="TaglineText" xml:space="preserve">
-    <value>Your Privacy. Protected.</value>
+    <value>Privasi Anda. Terlindungi.</value>
     <comment>Tagline emphasizing privacy protection</comment>
   </data>
   <data name="CreateNewVaultButton" xml:space="preserve">
@@ -71,15 +71,15 @@
     <comment>Button text for creating a new vault</comment>
   </data>
   <data name="LoginExistingAccountButton" xml:space="preserve">
-    <value>Log in with existing account</value>
+    <value>Masuk dengan akun yang sudah ada</value>
     <comment>Button text for logging in with existing account</comment>
   </data>
   <data name="HttpsWarningTitle" xml:space="preserve">
-    <value>HTTPS Required</value>
+    <value>HTTPS diperlukan</value>
     <comment>Title for HTTPS warning banner</comment>
   </data>
   <data name="HttpsWarningMessage" xml:space="preserve">
-    <value>Browsers only allow secure crypto operations via HTTPS, except for localhost. Login/registration won't work over HTTP with the current hostname. Please switch to HTTPS.</value>
+    <value>Browser hanya mengizinkan operasi kriptografi yang aman melalui HTTPS, kecuali untuk localhost. Proses masuk/pendaftaran tidak akan berfungsi melalui HTTP dengan nama host saat ini. Silakan beralih ke HTTPS.</value>
     <comment>Message explaining why HTTPS is required</comment>
   </data>
 </root>

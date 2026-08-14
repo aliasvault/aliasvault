@@ -29,6 +29,7 @@
     "attachments": "附件",
     "or": "或",
     "retry": "重试",
+    "resizeField": "Drag to resize field",
     "deleteItemConfirmTitle": "删除项目",
     "deleteItemConfirmDescription": "您确定要删除此项目吗？",
     "errors": {
@@ -226,6 +227,7 @@
       "biometricDisabledMessage": "AliasVault的{{biometric}}已禁用。如需使用，请先在设备设置中启用它。",
       "biometricHelp": "使用生物识别解锁您的密码库，经由 {{keystore}} 加密。",
       "biometricUnavailableHelp": "{{biometric}}不可用。点击打开设置和/或前往设备设置启用并配置它。",
+      "biometricUnavailableHelpAndroid": "您的设备不支持生物识别。Android 系统需要强类（第 3 类）生物识别，例如指纹或受支持的安全人脸识别。",
       "featureRequiresPasscode": "此功能需要在您的设备上启用密码。",
       "pin": "PIN 码",
       "pinDescription": "使用自定义 PIN 码快速解锁密码库。",
@@ -604,6 +606,7 @@
     "formatSwitchTitle": "切换邮件格式",
     "sizeKB": "KB",
     "offlineMessage": "您处于离线状态，请连接互联网以加载邮件。",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "您的私人邮箱地址尚未收到任何邮件。当您收到新邮件时，会显示在这里。",
     "loadMore": "加载更多（剩余 {{count}} 封）",
     "time": {

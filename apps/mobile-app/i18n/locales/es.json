@@ -29,6 +29,7 @@
     "attachments": "Archivos adjuntos",
     "or": "o",
     "retry": "Reintentar",
+    "resizeField": "Arrastra para redimensionar el campo",
     "deleteItemConfirmTitle": "Eliminar elemento",
     "deleteItemConfirmDescription": "¿Está seguro de querer borrar este ítem?",
     "errors": {
@@ -226,6 +227,7 @@
       "biometricDisabledMessage": "{{biometric}} está deshabilitado para AliasVault. Para usarlo, por favor habilítelo en la configuración de tu dispositivo.",
       "biometricHelp": "Usa los datos biométricos para desbloquear tu bóveda que está asegurada por la {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} no está disponible. Toca para abrir ajustes y/o ve a la configuración de tu dispositivo para activarlo y configurarlo.",
+      "biometricUnavailableHelpAndroid": "La verificación biométrica no está disponible para su dispositivo. Android requiere verificación (clase 3), como una huella digital o un reconocimiento facial seguro.",
       "featureRequiresPasscode": "Esta característica requiere que se habilite un código de acceso en su dispositivo.",
       "pin": "Código PIN",
       "pinDescription": "Usa un código PIN personalizado para desbloquear tu bóveda más rápidamente.",
@@ -604,6 +606,7 @@
     "formatSwitchTitle": "Cambiar formato de email",
     "sizeKB": "KB",
     "offlineMessage": "Está desconectado. Por favor, conéctese a Internet para cargar sus correos electrónicos.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "No has recibido ningún correo electrónico en tus direcciones privadas todavía. Cuando recibas un nuevo correo electrónico, aparecerá aquí.",
     "loadMore": "Cargar más ({{count}} restantes)",
     "time": {

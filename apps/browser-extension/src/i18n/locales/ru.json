@@ -366,6 +366,7 @@
     "noEmails": "Электронные письма не найдены",
     "noEmailsDescription": "Вы еще не получали никаких электронных писем на свои личные адреса электронной почты. Когда вы получите новое электронное письмо, оно появится здесь.",
     "offlineMessage": "Вы не в сети. Пожалуйста, подключитесь к Интернету, чтобы загрузить свои электронные письма.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "loadMore": "Загрузить еще (осталось: {{count}})",
     "dateFormat": {
       "justNow": "прямо сейчас",

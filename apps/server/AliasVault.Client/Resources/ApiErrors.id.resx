@@ -129,19 +129,19 @@
     <value>Pendaftaran akun baru saat ini dinonaktifkan di server ini. Silakan hubungi administrator.</value>
   </data>
   <data name="REGISTRATION_FAILED" xml:space="preserve">
-    <value>Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.</value>
+    <value>Tidak dapat membuat akun. Silakan coba lagi beberapa menit lagi. Jika masalah ini masih berlanjut, silakan hubungi bagian dukungan.</value>
   </data>
   <data name="USER_NOT_FOUND" xml:space="preserve">
-    <value>Username atau password salah. Mohon coba lagi.</value>
+    <value>Nama pengguna atau kata sandi tidak valid. Silakan coba lagi.</value>
   </data>
   <data name="USERNAME_REQUIRED" xml:space="preserve">
     <value>Username diperlukan.</value>
   </data>
   <data name="USERNAME_ALREADY_IN_USE" xml:space="preserve">
-    <value>Username sudah ada yang pakai.</value>
+    <value>Nama pengguna sudah ada yang pakai.</value>
   </data>
   <data name="USERNAME_AVAILABLE" xml:space="preserve">
-    <value>Username tersedia.</value>
+    <value>Nama pengguna tersedia.</value>
   </data>
   <data name="USERNAME_MISMATCH" xml:space="preserve">
     <value>Nama pengguna tidak sesuai dengan pengguna saat ini.</value>
@@ -168,7 +168,7 @@
     <value>Nama pengguna tidak valid, hanya boleh berisi huruf atau angka.</value>
   </data>
   <data name="PENDING_MIGRATIONS" xml:space="preserve">
-    <value>There are pending migrations. Please run 'dotnet ef database update' to apply them.</value>
+    <value>Ada migrasi yang masih tertunda. Silakan jalankan perintah ‘dotnet ef database update’ untuk menerapkan migrasi tersebut.</value>
   </data>
   <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
     <value>Kesalahan server internal</value>
@@ -180,15 +180,15 @@
     <value>Terjadi kesalahan tidak diketahui. Coba lagi.</value>
   </data>
   <data name="INVALID_AUTHENTICATOR_CODE" xml:space="preserve">
-    <value>Kode autentikator salah. Mohon coba lagi.</value>
+    <value>Kode otentikasi tidak valid. Silakan coba lagi.</value>
   </data>
   <data name="INVALID_RECOVERY_CODE" xml:space="preserve">
-    <value>Kode pemulihan salah. Mohon coba lagi.</value>
+    <value>Kode pemulihan tidak valid. Silakan coba lagi.</value>
   </data>
   <data name="VAULT_NOT_UP_TO_DATE" xml:space="preserve">
-    <value>Vault Anda bukan yang terkini. Harap sinkronkan vault Anda dan coba lagi.</value>
+    <value>Vault Anda belum diperbarui. Silakan sinkronkan vault Anda, lalu coba lagi.</value>
   </data>
   <data name="ACCOUNT_LOCKED" xml:space="preserve">
-    <value>You have entered an incorrect password too many times and your account has now been locked out. You can try again in 30 minutes.</value>
+    <value>Anda telah memasukkan kata sandi yang salah terlalu sering sehingga akun Anda kini telah diblokir. Anda dapat mencobanya lagi dalam 30 menit.</value>
   </data>
 </root>

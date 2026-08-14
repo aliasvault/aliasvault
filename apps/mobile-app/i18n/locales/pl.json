@@ -29,6 +29,7 @@
     "attachments": "Załączniki",
     "or": "lub",
     "retry": "Ponów próbę",
+    "resizeField": "Drag to resize field",
     "deleteItemConfirmTitle": "Usuń element",
     "deleteItemConfirmDescription": "Czy na pewno chcesz usunąć ten element?",
     "errors": {
@@ -226,6 +227,7 @@
       "biometricDisabledMessage": "Funkcja {{biometric}} jest wyłączona dla AliasVault. Aby z niej skorzystać, należy najpierw włączyć ją w ustawieniach urządzenia.",
       "biometricHelp": "Użyj danych biometrycznych, aby odblokować sejf zabezpieczony przez {{keystore}}.",
       "biometricUnavailableHelp": "Funkcja {{biometric}} jest niedostępna. Dotknij, aby otworzyć ustawienia i/lub przejdź do ustawień urządzenia, aby ją włączyć.",
+      "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
       "featureRequiresPasscode": "Ta funkcja wymaga włączenia kodu PIN na twoim urządzeniu.",
       "pin": "Kod PIN",
       "pinDescription": "Użyj niestandardowego kodu PIN, aby szybciej odblokować sejf.",
@@ -604,6 +606,7 @@
     "formatSwitchTitle": "Zmień format wiadomości e-mail",
     "sizeKB": "KB",
     "offlineMessage": "Jesteś offline. Połącz się z Internetem, aby załadować wiadomości e-mail.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "Nie otrzymałeś jeszcze żadnych wiadomości e-mail na swoje prywatne adresy e-mail. Gdy otrzymasz nową wiadomość e-mail, pojawi się ona tutaj.",
     "loadMore": "Załaduj więcej (pozostało {{count}})",
     "time": {

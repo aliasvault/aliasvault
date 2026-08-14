@@ -60,11 +60,11 @@
   </resheader>
   <!-- Page Header -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Baru-baru ini dihapus</value>
+    <value></value>
     <comment>Page title for recently deleted items</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Items that have been deleted can be restored within 30 days.</value>
+    <value>Item yang telah dihapus dapat dipulihkan dalam waktu 30 hari.</value>
     <comment>Page description text</comment>
   </data>
   <data name="Description" xml:space="preserve">
@@ -73,11 +73,11 @@
   </data>
   <!-- Empty State -->
   <data name="NoItems" xml:space="preserve">
-    <value>No recently deleted items</value>
+    <value>Tidak ada yang baru dihapus</value>
     <comment>Title when no deleted items exist</comment>
   </data>
   <data name="NoItemsDescription" xml:space="preserve">
-    <value>Items you delete will appear here for 30 days before being permanently removed.</value>
+    <value>Item yang Anda hapus akan tetap muncul di sini selama 30 hari sebelum dihapus secara permanen.</value>
     <comment>Description when no deleted items exist</comment>
   </data>
   <data name="Untitled" xml:space="preserve">
@@ -86,7 +86,7 @@
   </data>
   <!-- Days Remaining -->
   <data name="DaysRemaining" xml:space="preserve">
-    <value>Permanently deleted in {0} days</value>
+    <value>Akan dihapus secara permanen dalam {0} hari</value>
     <comment>Text showing how many days until permanent deletion</comment>
   </data>
   <data name="ExpiringSoon" xml:space="preserve">
@@ -99,62 +99,62 @@
     <comment>Button text to restore a deleted item</comment>
   </data>
   <data name="EmptyAll" xml:space="preserve">
-    <value>Empty trash</value>
+    <value>Kosongkan tempat sampah</value>
     <comment>Button text to permanently delete all items</comment>
   </data>
   <!-- Confirm Delete Modal -->
   <data name="ConfirmDeleteTitle" xml:space="preserve">
-    <value>Permanently delete item?</value>
+    <value>Hapus item secara permanen?</value>
     <comment>Title for delete confirmation modal</comment>
   </data>
   <data name="ConfirmDeleteMessage" xml:space="preserve">
-    <value>This action cannot be undone. The item will be permanently removed from your vault.</value>
+    <value>Tindakan ini tidak dapat dibatalkan. Item tersebut akan dihapus secara permanen dari brankas Anda.</value>
     <comment>Message in delete confirmation modal</comment>
   </data>
   <data name="DeletePermanently" xml:space="preserve">
-    <value>Delete permanently</value>
+    <value>Hapus permanen</value>
     <comment>Button text to confirm permanent deletion</comment>
   </data>
   <!-- Confirm Empty All Modal -->
   <data name="ConfirmEmptyAllTitle" xml:space="preserve">
-    <value>Empty trash?</value>
+    <value>Kosongkan tempat sampah?</value>
     <comment>Title for empty all confirmation modal</comment>
   </data>
   <data name="ConfirmEmptyAllMessage" xml:space="preserve">
-    <value>This will permanently delete {0} item(s). This action cannot be undone.</value>
+    <value>Tindakan ini akan menghapus {0} item secara permanen. Tindakan ini tidak dapat dibatalkan.</value>
     <comment>Message in empty all confirmation modal</comment>
   </data>
   <!-- Status Messages -->
   <data name="Restoring" xml:space="preserve">
-    <value>Restoring item...</value>
+    <value>Memulihkan item...</value>
     <comment>Loading message while restoring</comment>
   </data>
   <data name="RestoreSuccess" xml:space="preserve">
-    <value>Item restored successfully.</value>
+    <value>Item berhasil dipulihkan.</value>
     <comment>Success message after restore</comment>
   </data>
   <data name="RestoreFailed" xml:space="preserve">
-    <value>Failed to restore item.</value>
+    <value>Gagal memulihkan item.</value>
     <comment>Error message when restore fails</comment>
   </data>
   <data name="Deleting" xml:space="preserve">
-    <value>Deleting item...</value>
+    <value>Menghapus item...</value>
     <comment>Loading message while deleting</comment>
   </data>
   <data name="DeleteSuccess" xml:space="preserve">
-    <value>Item permanently deleted.</value>
+    <value>Item dihapus secara permanen.</value>
     <comment>Success message after permanent deletion</comment>
   </data>
   <data name="DeleteFailed" xml:space="preserve">
-    <value>Failed to delete item.</value>
+    <value>Gagal menghapus item.</value>
     <comment>Error message when deletion fails</comment>
   </data>
   <data name="EmptyAllSuccess" xml:space="preserve">
-    <value>All items permanently deleted.</value>
+    <value>Semua item dihapus secara permanen.</value>
     <comment>Success message after emptying trash</comment>
   </data>
   <data name="EmptyAllPartialFailed" xml:space="preserve">
-    <value>Failed to delete {0} item(s).</value>
+    <value>Gagal menghapus {0} item.</value>
     <comment>Error message when some deletions fail</comment>
   </data>
 </root>
