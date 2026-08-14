@@ -168,6 +168,15 @@ class AndroidKeystoreProvider(
     override fun storeKey(key: String, callback: KeystoreOperationCallback) {
         _mainHandler.post {
             try {
+                if (!isStrongBiometricAvailable(context)) {
+                    callback.onError(
+                        AppError.BiometricNotAvailable(
+                            "Device has no strong (Class 3) biometrics available",
+                        ),
+                    )
+                    return@post
+                }
+
                 val currentActivity = getCurrentActivity()
                 if (currentActivity == null || !(currentActivity is FragmentActivity)) {
                     callback.onError(
