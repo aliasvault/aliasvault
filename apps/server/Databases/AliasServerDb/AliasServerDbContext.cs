@@ -401,6 +401,10 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
         {
             builder.HasKey(l => new { l.EmailClaimId, l.VaultManifestId });
 
+            // Stored as its name rather than an ordinal: every query here reads "is this link still Removed", which
+            // is worth being able to answer from a raw SQL prompt without a lookup table in your head.
+            builder.Property(l => l.State).HasConversion<string>().HasMaxLength(20);
+
             builder.HasOne(l => l.EmailClaim)
                 .WithMany(c => c.Links)
                 .HasForeignKey(l => l.EmailClaimId)

@@ -49,7 +49,7 @@ public class EmailQuotaCleanupTask : IMaintenanceTask
         var usersWithClaims = await (from u in dbContext.AliasVaultUsers
                                      join g in dbContext.Groups on u.PersonalGroupId equals g.Id
                                      join m in dbContext.VaultManifests on g.Id equals m.OwnerGroupId
-                                     join l in dbContext.EmailClaimLinks on m.ManifestId equals l.VaultManifestId
+                                     join l in dbContext.EmailClaimLinks.Where(link => link.State != EmailClaimLinkState.Removed) on m.ManifestId equals l.VaultManifestId
                                      select new { u.Id, u.UserName, g.MaxEmails, u.LastActivityDate, u.CreatedAt, l.EmailClaim.Address })
             .ToListAsync(cancellationToken);
 

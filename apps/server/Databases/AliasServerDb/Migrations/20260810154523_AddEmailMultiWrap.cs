@@ -18,7 +18,8 @@ namespace AliasServerDb.Migrations
                 columns: table => new
                 {
                     EmailClaimId = table.Column<Guid>(type: "uuid", nullable: false),
-                    VaultManifestId = table.Column<Guid>(type: "uuid", nullable: false)
+                    VaultManifestId = table.Column<Guid>(type: "uuid", nullable: false),
+                    State = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -73,13 +74,14 @@ namespace AliasServerDb.Migrations
                 columns: new[] { "EncryptionKeyId", "EmailId" });
 
             // Every existing email gets exactly one wrap (its current key), every claim one link (its current
-            // manifest). A tombstoned claim (VaultManifestId already null) simply gets zero links.
+            // manifest). A tombstoned claim (VaultManifestId already null) simply gets zero links. A disabled claim
+            // kept its manifest reference purely as an ownership record, which is what 'Removed' now indicates.
             migrationBuilder.Sql("""
                 INSERT INTO "EmailKeyWraps" ("EmailId", "EncryptionKeyId", "EncryptedSymmetricKey")
                 SELECT "Id", "EncryptionKeyId", "EncryptedSymmetricKey" FROM "Emails";
 
-                INSERT INTO "EmailClaimLinks" ("EmailClaimId", "VaultManifestId")
-                SELECT "Id", "VaultManifestId" FROM "EmailClaims" WHERE "VaultManifestId" IS NOT NULL;
+                INSERT INTO "EmailClaimLinks" ("EmailClaimId", "VaultManifestId", "State")
+                SELECT "Id", "VaultManifestId", CASE WHEN "Disabled" THEN 'Removed' ELSE 'Active' END FROM "EmailClaims" WHERE "VaultManifestId" IS NOT NULL;
                 """);
 
             migrationBuilder.DropForeignKey(name: "FK_EmailClaims_VaultManifests_VaultManifestId", table: "EmailClaims");

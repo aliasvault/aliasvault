@@ -33,6 +33,12 @@ public class MailboxBulkResponse
     public int TotalRecords { get; set; }
 
     /// <summary>
+    /// Gets or sets the public keys referenced by the wraps of the returned emails, sent once for the whole
+    /// response. A wrap's <see cref="EmailKeyWrapApiModel.KeyIndex"/> is its position in this list.
+    /// </summary>
+    public List<string> PublicKeys { get; set; } = [];
+
+    /// <summary>
     /// Gets or sets the list of mailbox email API models.
     /// </summary>
     public List<MailboxEmailApiModel> Mails { get; set; } = [];

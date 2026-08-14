@@ -66,6 +66,7 @@ public abstract class EmailApiModelBase
     /// <summary>
     /// Gets or sets the wrapped copies of the email's symmetric key the caller can open, one per manifest keypair
     /// the caller holds (their personal key, plus the delivery key of every shared manifest they can access).
+    /// Each wrap names its public key by index into the public key table of the response model.
     /// </summary>
     public List<EmailKeyWrapApiModel> Wraps { get; set; } = [];
 }

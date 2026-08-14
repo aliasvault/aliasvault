@@ -533,6 +533,11 @@ namespace AliasServerDb.Migrations
                     b.Property<Guid>("VaultManifestId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.HasKey("EmailClaimId", "VaultManifestId");
 
                     b.HasIndex("VaultManifestId", "EmailClaimId");

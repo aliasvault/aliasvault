@@ -14,9 +14,10 @@ namespace AliasVault.Shared.Models.WebApi.V2.Email;
 public class EmailKeyWrapApiModel
 {
     /// <summary>
-    /// Gets or sets the public key whose private half unwraps this wrap.
+    /// Gets or sets the position of the public key in the response-level public key table. The key itself is sent
+    /// once as part of the full response.
     /// </summary>
-    public string PublicKey { get; set; } = string.Empty;
+    public int KeyIndex { get; set; }
 
     /// <summary>
     /// Gets or sets the email's symmetric key, encrypted with the public key.

@@ -390,7 +390,7 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
 
         // An alias may be claimed by several manifests at once (personal + shared). The mail is stored once, with
         // the symmetric key wrapped per linked manifest's primary delivery key.
-        var links = await dbContext.EmailClaimLinks.Where(l => l.EmailClaimId == emailClaim.Id).Select(l => new { l.VaultManifestId, l.Paused }).ToListAsync(CancellationToken.None);
+        var links = await dbContext.EmailClaimLinks.Where(l => l.EmailClaimId == emailClaim.Id).Select(l => new { l.VaultManifestId, l.State }).ToListAsync(CancellationToken.None);
         if (links.Count == 0)
         {
             // The claim is orphaned: every manifest it was linked to no longer exists (owner deleted account).
@@ -410,12 +410,12 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
             return false;
         }
 
-        // Check if there is at least one linked manifest that has not paused the alias.
-        var linkedManifestIds = links.Where(l => !l.Paused).Select(l => l.VaultManifestId).ToList();
+        // Check if there is at least one manifest that still carries the alias and wants its mail.
+        var linkedManifestIds = links.Where(l => l.State == EmailClaimLinkState.Active).Select(l => l.VaultManifestId).ToList();
         if (linkedManifestIds.Count == 0)
         {
             logger.LogInformation(
-                "Rejected email: email for {ToAddress} is claimed but every vault claiming it has the alias switched off.",
+                "Rejected email: email for {ToAddress} is claimed but every vault that still carries it has the alias switched off.",
                 toAddress.User + "@" + toAddress.Host);
             return false;
         }

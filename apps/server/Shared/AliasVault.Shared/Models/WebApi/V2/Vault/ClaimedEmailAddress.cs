@@ -21,9 +21,7 @@ public class ClaimedEmailAddress
     public required Guid ManifestId { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the user switched this alias off for this manifest. A client pushes
-    /// every alias it carries, paused ones included: absence from the push means the alias is gone from the vault,
-    /// while <c>true</c> means the user switched it off and its stored mail must be kept. Defaults to false.
+    /// Gets or sets a value indicating whether the user switched this alias off for this manifest.
     /// </summary>
     public bool Paused { get; set; }
 }

@@ -38,11 +38,7 @@ public class EmailClaimLink
     public virtual VaultManifest VaultManifest { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets a value indicating whether this manifest paused (stopped) wanting mail for the alias. A user may switch a
-    /// single alias off without removing the item that carries it: the link stays, so previously received mail
-    /// remains readable and re-enabling is a flag flip, but incoming mail is no longer wrapped for this manifest.
-    /// This is separate from the global <see cref="EmailClaim.Disabled"/> flag, which means the alias is gone from the
-    /// vault entirely and not read anywhere anymore, which also engages disabled-email pruning.
+    /// Gets or sets the state of the link. A link record is permanent and never deleted, except when the owner account/group is permanently deleted.
     /// </summary>
-    public bool Paused { get; set; } = false;
+    public EmailClaimLinkState State { get; set; } = EmailClaimLinkState.Active;
 }
