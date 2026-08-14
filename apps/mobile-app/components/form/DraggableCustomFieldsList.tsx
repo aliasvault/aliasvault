@@ -15,6 +15,7 @@ import { AdvancedPasswordField } from './AdvancedPasswordField';
 import { EditableFieldLabel } from './EditableFieldLabel';
 import { FormField } from './FormField';
 import { HiddenField } from './HiddenField';
+import { ResizableTextArea } from './ResizableTextArea';
 
 /**
  * Custom field definition type
@@ -55,13 +56,10 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
   const renderFieldInput = (): React.ReactNode => {
     if (field.fieldType === FieldTypes.TextArea) {
       return (
-        <FormField
+        <ResizableTextArea
           value={value}
           onChangeText={onValueChange}
           label=""
-          multiline
-          numberOfLines={4}
-          textAlignVertical="top"
         />
       );
     }
