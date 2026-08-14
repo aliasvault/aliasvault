@@ -226,6 +226,7 @@
       "biometricDisabledMessage": "{{biometric}} dinonaktifkan untuk AliasVault. Untuk menggunakannya, silakan aktifkan terlebih dahulu di pengaturan perangkat Anda.",
       "biometricHelp": "Gunakan data biometrik untuk membuka brankas Anda, yang diamankan oleh {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} tidak tersedia. Ketuk untuk membuka pengaturan dan/atau buka pengaturan perangkat Anda untuk mengaktifkan dan mengonfigurasinya.",
+      "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
       "featureRequiresPasscode": "Fitur ini memerlukan kode sandi yang telah diaktifkan di perangkat Anda.",
       "pin": "Kode PIN",
       "pinDescription": "Gunakan kode PIN khusus untuk membuka brankas Anda dengan lebih cepat.",
