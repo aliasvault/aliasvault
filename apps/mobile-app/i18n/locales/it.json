@@ -29,6 +29,7 @@
     "attachments": "Allegati",
     "or": "o",
     "retry": "Riprova",
+    "resizeField": "Drag to resize field",
     "deleteItemConfirmTitle": "Elimina elemento",
     "deleteItemConfirmDescription": "Sei sicuro di voler rimuovere questo elemento?",
     "errors": {
@@ -605,6 +606,7 @@
     "formatSwitchTitle": "Cambia formato email",
     "sizeKB": "KB",
     "offlineMessage": "Sei offline. Collegati a internet per caricare le email.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "Non hai ancora ricevuto email ai tuoi indirizzi privati. Quando ne riceverai una nuova, apparirà qui.",
     "loadMore": "Carica altro ({{count}} rimanenti)",
     "time": {
