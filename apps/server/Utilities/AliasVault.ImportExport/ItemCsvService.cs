@@ -33,27 +33,27 @@ public static class ItemCsvService
         {
             var record = new ItemCsvRecord
             {
-                ServiceName = item.Name ?? string.Empty,
-                FolderPath = BuildFolderPath(item.Folder),
-                ServiceUrl = GetJoinedFieldValues(item, FieldKey.LoginUrl),
-                Username = GetFieldValue(item, FieldKey.LoginUsername),
-                CurrentPassword = GetFieldValue(item, FieldKey.LoginPassword),
-                AliasEmail = GetFieldValue(item, FieldKey.LoginEmail),
-                TwoFactorSecret = item.TotpCodes.FirstOrDefault(t => !t.IsDeleted)?.SecretKey ?? string.Empty,
-                AliasGender = GetFieldValue(item, FieldKey.AliasGender),
-                AliasFirstName = GetFieldValue(item, FieldKey.AliasFirstName),
-                AliasLastName = GetFieldValue(item, FieldKey.AliasLastName),
+                ServiceName = SanitizeCsvField(item.Name ?? string.Empty),
+                FolderPath = SanitizeCsvField(BuildFolderPath(item.Folder)),
+                ServiceUrl = SanitizeCsvField(GetJoinedFieldValues(item, FieldKey.LoginUrl)),
+                Username = SanitizeCsvField(GetFieldValue(item, FieldKey.LoginUsername)),
+                CurrentPassword = SanitizeCsvField(GetFieldValue(item, FieldKey.LoginPassword)),
+                AliasEmail = SanitizeCsvField(GetFieldValue(item, FieldKey.LoginEmail)),
+                TwoFactorSecret = SanitizeCsvField(item.TotpCodes.FirstOrDefault(t => !t.IsDeleted)?.SecretKey ?? string.Empty),
+                AliasGender = SanitizeCsvField(GetFieldValue(item, FieldKey.AliasGender)),
+                AliasFirstName = SanitizeCsvField(GetFieldValue(item, FieldKey.AliasFirstName)),
+                AliasLastName = SanitizeCsvField(GetFieldValue(item, FieldKey.AliasLastName)),
                 AliasNickName = string.Empty, // NickName is no longer stored as a separate field
                 AliasBirthDate = ParseBirthDate(GetFieldValue(item, FieldKey.AliasBirthdate)),
-                Notes = GetFieldValue(item, FieldKey.NotesContent),
+                Notes = SanitizeCsvField(GetFieldValue(item, FieldKey.NotesContent)),
                 CreatedAt = item.CreatedAt,
                 UpdatedAt = item.UpdatedAt,
-                CardholderName = GetFieldValue(item, FieldKey.CardCardholderName),
-                CardNumber = GetFieldValue(item, FieldKey.CardNumber),
-                CardExpiryMonth = GetFieldValue(item, FieldKey.CardExpiryMonth),
-                CardExpiryYear = GetFieldValue(item, FieldKey.CardExpiryYear),
-                CardCvv = GetFieldValue(item, FieldKey.CardCvv),
-                CardPin = GetFieldValue(item, FieldKey.CardPin),
+                CardholderName = SanitizeCsvField(GetFieldValue(item, FieldKey.CardCardholderName)),
+                CardNumber = SanitizeCsvField(GetFieldValue(item, FieldKey.CardNumber)),
+                CardExpiryMonth = SanitizeCsvField(GetFieldValue(item, FieldKey.CardExpiryMonth)),
+                CardExpiryYear = SanitizeCsvField(GetFieldValue(item, FieldKey.CardExpiryYear)),
+                CardCvv = SanitizeCsvField(GetFieldValue(item, FieldKey.CardCvv)),
+                CardPin = SanitizeCsvField(GetFieldValue(item, FieldKey.CardPin)),
             };
 
             records.Add(record);
@@ -66,6 +66,33 @@ public static class ItemCsvService
         csv.WriteRecords(records);
         writer.Flush();
         return memoryStream.ToArray();
+    }
+
+    /// <summary>
+    /// Neutralizes spreadsheet formula injection (OWASP CSV Injection) in a field value.
+    /// A cell that starts with '=', '+', '-', '@', a tab or a carriage return is interpreted
+    /// as a formula by Excel/LibreOffice/Google Sheets when the exported file is opened.
+    /// Vault values (notes, usernames, imported KDBX/CSV entries) are attacker-controllable,
+    /// so every exported text field is prefixed with a single quote when it could be read
+    /// as a formula. The quote is how spreadsheets display literal text and is what other
+    /// password managers emit for the same reason.
+    /// </summary>
+    /// <param name="value">The raw field value from the vault.</param>
+    /// <returns>The value safe to place in a CSV cell.</returns>
+    public static string SanitizeCsvField(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return value;
+        }
+
+        var first = value[0];
+        if (first is '=' or '+' or '-' or '@' or '\t' or '\r')
+        {
+            return "'" + value;
+        }
+
+        return value;
     }
 
     /// <summary>

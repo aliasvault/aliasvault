@@ -2213,6 +2213,51 @@ public class ImportExportTests
     }
 
     /// <summary>
+    /// Exported CSV must neutralize spreadsheet formula injection: a vault value that
+    /// begins with a formula trigger character would be executed by Excel/LibreOffice
+    /// when the exported file is opened (OWASP CSV Injection).
+    /// </summary>
+    [Test]
+    public void ExportItemsToCsv_NeutralizesFormulaInjection()
+    {
+        var item = CreateTestItem("=HYPERLINK(\"http://evil\",\"click\") Service", ItemType.Login, new Dictionary<string, string>
+        {
+            { FieldKey.LoginUsername, "+SUM(1+1)*cmd|' /C calc'!A0" },
+            { FieldKey.LoginPassword, "-2+3+cmd|' /C calc'!A0" },
+            { FieldKey.NotesContent, "=cmd|'/C calc'!A0" },
+        });
+
+        var csvString = System.Text.Encoding.Default.GetString(ItemCsvService.ExportItemsToCsv([item]));
+
+        Assert.That(csvString, Does.Contain("'=cmd|"), "formula in notes must be prefixed with a quote");
+        Assert.That(csvString, Does.Contain("'+SUM"), "formula in username must be prefixed with a quote");
+        Assert.That(csvString, Does.Contain("'-2+3"), "formula-looking password must be prefixed with a quote");
+        Assert.That(csvString, Does.Contain("'=HYPERLINK"), "formula in service name must be prefixed with a quote");
+    }
+
+    /// <summary>
+    /// Normal values must round-trip unchanged: the sanitizer only reacts to the first
+    /// character being a formula trigger.
+    /// </summary>
+    [Test]
+    public void ExportItemsToCsv_LeavesRegularValuesUntouched()
+    {
+        var item = CreateTestItem("GitHub", ItemType.Login, new Dictionary<string, string>
+        {
+            { FieldKey.LoginUsername, "test-user_01" },
+            { FieldKey.LoginPassword, "p@ss=word-with-dashes" },
+            { FieldKey.NotesContent, "regular notes, no formula" },
+        });
+
+        var csvString = System.Text.Encoding.Default.GetString(ItemCsvService.ExportItemsToCsv([item]));
+
+        Assert.That(csvString, Does.Contain("test-user_01"));
+        Assert.That(csvString, Does.Contain("p@ss=word-with-dashes"));
+        Assert.That(csvString, Does.Not.Contain("'p@ss"));
+        Assert.That(csvString, Does.Not.Contain("'regular"));
+    }
+
+    /// <summary>
     /// Helper method to create a test item with TOTP.
     /// </summary>
     private static Item CreateTestItemWithTotp(string name, string username, string password)
