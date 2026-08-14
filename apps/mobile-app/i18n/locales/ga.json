@@ -29,6 +29,7 @@
     "attachments": "Ceangaltáin",
     "or": "nó",
     "retry": "Déan iarracht eile",
+    "resizeField": "Drag to resize field",
     "deleteItemConfirmTitle": "Scrios Mír",
     "deleteItemConfirmDescription": "An bhfuil tú cinnte gur mian leat an mhír seo a scriosadh?",
     "errors": {
@@ -605,6 +606,7 @@
     "formatSwitchTitle": "Athraigh formáid ríomhphoist",
     "sizeKB": "KB",
     "offlineMessage": "Tá tú as líne. Ceangail leis an idirlíon le do ríomhphoist a luchtú.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "Níl aon ríomhphoist faighte agat ag do sheoltaí ríomhphoist príobháideacha go fóill. Nuair a gheobhaidh tú ríomhphost nua, beidh sé le feiceáil anseo.",
     "loadMore": "Luchtaigh Tuilleadh ({{count}} fágtha)",
     "time": {
