@@ -330,7 +330,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             426,
             new
             {
-                error = "upgrade_required",
+                error = "UPGRADE_REQUIRED",
                 message = "Your client is out of date. Please update to access this vault.",
             });
     }
