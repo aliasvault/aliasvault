@@ -29,6 +29,7 @@
     "attachments": "ပူးတွဲဖိုင်များ",
     "or": "သို့မဟုတ်",
     "retry": "ပြန်ကြိုးစား",
+    "resizeField": "Drag to resize field",
     "deleteItemConfirmTitle": "ဤအရာကို ဖျက်ရန်",
     "deleteItemConfirmDescription": "ဤအရာကို ဖျက်ပစ်မည်မှာ သေချာပါသလား?",
     "errors": {
@@ -605,6 +606,7 @@
     "formatSwitchTitle": "အီးမေးလ်ပုံစံ ပြောင်းလဲရန်",
     "sizeKB": "KB",
     "offlineMessage": "You are offline. Please connect to the internet to load your emails.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "You have not received any emails at your private email addresses yet. When you receive a new email, it will appear here.",
     "loadMore": "Load More ({{count}} remaining)",
     "time": {
