@@ -226,6 +226,7 @@
       "biometricDisabledMessage": "A {{biometric}} kikapcsolásra kerüt az AliasVault-ban. Ha használni akarja, kapcsolja be az eszközén a beállításokban.",
       "biometricHelp": "A {{keystore}} által biztosított biometria használata a széf feloldáshoz.",
       "biometricUnavailableHelp": "A {{biometric}} nem elérhető. Koppintson a beállításhoz, vagy kézileg menjen be a készülék mbeállítások közé.",
+      "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
       "featureRequiresPasscode": "Ehhez a funkcióhoz eszközén be kell kapcsolnia a képernyőzárat.",
       "pin": "PIN kód",
       "pinDescription": "Használjon egy egyéni pin kódot, hogy széfét gyorsabban fel tudja oldani.",
