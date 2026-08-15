@@ -139,7 +139,7 @@ public class CredentialTests : ClientPlaywrightTest
 
         // First, switch item type to "Alias" by clicking the type selector dropdown
         // The default type is "Login", we need to change it to "Alias" to see the identity fields
-        var typeSelector = Page.Locator("text=Creating Login").First;
+        var typeSelector = Page.Locator("button[aria-label='Item Type']").First;
         await typeSelector.ClickAsync();
         await Task.Delay(100);
 
@@ -163,22 +163,9 @@ public class CredentialTests : ClientPlaywrightTest
         var username = await Page.InputValueAsync("#username");
         Assert.That(username, Is.Not.Null.And.Not.Empty, "Username not generated before alias is generated.");
 
-        // 2. Then generate a new identity using the "Generate Random Alias" button.
-        // Note: When switching to Alias type, an alias is auto-generated, so we may need to clear first
-        var generateButton = Page.Locator("text=Generate Random Alias");
-        if (await generateButton.CountAsync() == 0)
-        {
-            // If alias was auto-generated, there's a "Clear Alias Fields" button instead - click it first
-            var clearButton = Page.Locator("text=Clear Alias Fields");
-            if (await clearButton.CountAsync() > 0)
-            {
-                await clearButton.First.ClickAsync();
-                await Task.Delay(100);
-            }
-        }
-
-        generateButton = Page.Locator("text=Generate Random Alias");
-        Assert.That(await generateButton.CountAsync(), Is.GreaterThan(0), "Generate Random Alias button not found.");
+        // 2. Then generate a new identity using the regenerate button in the alias section.
+        var generateButton = Page.Locator("button[id='generate-random-alias']");
+        Assert.That(await generateButton.CountAsync(), Is.GreaterThan(0), "Generate random alias button not found.");
         await generateButton.First.ClickAsync();
 
         // Wait for the identity fields to be filled.
