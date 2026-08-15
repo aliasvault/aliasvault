@@ -82,6 +82,10 @@ export const FieldSelectors = {
  */
 export const ButtonSelectors = {
   ADD_NEW_ITEM: 'button[title="Add new item"]',
+  ADD_ITEM_TYPE_LOGIN: 'button#add-item-type-Login',
+  ADD_ITEM_TYPE_ALIAS: 'button#add-item-type-Alias',
+  ADD_ITEM_TYPE_CREDIT_CARD: 'button#add-item-type-CreditCard',
+  ADD_ITEM_TYPE_NOTE: 'button#add-item-type-Note',
   EDIT_ITEM: 'button[title="Edit Item"]',
   SAVE: 'button#save-credential',
   ADD_FIELD_MENU: 'button#add-field-menu',
