@@ -1371,9 +1371,7 @@ export default function AddEditItemScreen(): React.ReactNode {
             {/* Item Type Selector */}
             <ItemTypeSelector
               selectedType={item.ItemType}
-              isEditMode={isEditMode}
               onTypeChange={handleTypeChange}
-              onRegenerateAlias={aliasFieldsShownByDefault ? generateRandomAlias : undefined}
             />
 
             {/* Item Name and Primary Fields Section */}

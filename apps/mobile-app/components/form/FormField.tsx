@@ -93,7 +93,7 @@ const FormFieldComponent = forwardRef<FormFieldRef, FormFieldProps>(({
       borderColor: colorRed,
     },
     inputGroup: {
-      marginBottom: 6,
+      marginBottom: 4,
     },
     inputLabel: {
       color: colors.textMuted,
