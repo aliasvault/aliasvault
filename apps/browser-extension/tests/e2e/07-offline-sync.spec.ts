@@ -63,6 +63,7 @@ test.describe.serial('7. Offline Sync', () => {
   test('7.4 Client B creates a credential while offline', async () => {
     await clientB.goToVault();
     await clientB.popup.locator(ButtonSelectors.ADD_NEW_ITEM).click();
+    await clientB.popup.locator(ButtonSelectors.ADD_ITEM_TYPE_LOGIN).click();
     // All fields are now visible on the same page (no "Next" step)
     await expect(clientB.popup.locator(FieldSelectors.LOGIN_USERNAME)).toBeVisible({ timeout: 10000 });
     await clientB.popup.fill(FieldSelectors.ITEM_NAME, credentialNameB);

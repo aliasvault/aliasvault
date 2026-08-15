@@ -82,43 +82,26 @@ const ItemTypeSelector: React.FC<ItemTypeSelectorProps> = ({
 
   return (
     <div className="relative">
-      <div className="w-full px-4 py-2 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg flex items-center gap-2">
+      <div className="relative w-full px-4 py-2 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg flex items-center gap-2">
         <button
           type="button"
           onClick={() => onDropdownToggle(!showDropdown)}
-          className="flex-1 flex items-center justify-between gap-2 min-w-0 hover:opacity-80 transition-opacity"
-        >
-          <span className="flex items-center gap-2 min-w-0">
-            <span className="shrink-0 text-primary-600 dark:text-primary-400">
-              {selectedTypeOption?.iconSvg}
-            </span>
-            <span className="text-primary-700 dark:text-primary-300 font-medium text-sm truncate">
-              {selectedTypeOption ? t(selectedTypeOption.titleKey) : ''}
-            </span>
+          className="peer absolute inset-0 rounded-lg"
+          aria-label={t('itemTypes.typeLabel')}
+        />
+        <span className="relative flex items-center gap-2 min-w-0 pointer-events-none peer-hover:opacity-80 transition-opacity">
+          <span className="shrink-0 text-primary-600 dark:text-primary-400">
+            {selectedTypeOption?.iconSvg}
           </span>
-          <span className="flex items-center gap-1 min-w-0">
-            <span className="text-xs text-primary-600/80 dark:text-primary-400/80 truncate">
-              {t('itemTypes.typeLabel')}
-            </span>
-            <svg
-              className={`w-4 h-4 shrink-0 text-primary-500 transition-transform ${showDropdown ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+          <span className="text-primary-700 dark:text-primary-300 font-medium text-sm truncate">
+            {selectedTypeOption ? t(selectedTypeOption.titleKey) : ''}
           </span>
-        </button>
-        {/* Regenerate alias button - icon only for flexibility */}
+        </span>
         {selectedType === ItemTypes.Alias && !isEditMode && onRegenerateAlias && (
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRegenerateAlias();
-            }}
-            className="flex-shrink-0 p-1.5 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/40 rounded transition-colors"
+            onClick={onRegenerateAlias}
+            className="relative flex-shrink-0 -my-1 p-1.5 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/40 rounded transition-colors"
             title={t('itemTypes.regenerateAlias')}
           >
             <svg className='w-4 h-4' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -127,6 +110,19 @@ const ItemTypeSelector: React.FC<ItemTypeSelectorProps> = ({
             </svg>
           </button>
         )}
+        <span className="relative flex-1 flex items-center justify-end gap-1 min-w-0 pointer-events-none peer-hover:opacity-80 transition-opacity">
+          <span className="text-xs text-primary-600/80 dark:text-primary-400/80 truncate">
+            {t('itemTypes.typeLabel')}
+          </span>
+          <svg
+            className={`w-4 h-4 shrink-0 text-primary-500 transition-transform ${showDropdown ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </span>
       </div>
 
       {/* Type Dropdown Menu */}
@@ -151,7 +147,7 @@ const ItemTypeSelector: React.FC<ItemTypeSelectorProps> = ({
                 <span className={selectedType === option.type ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400'}>
                   {option.iconSvg}
                 </span>
-                <span className="font-medium">
+                <span className="font-medium text-sm">
                   {t(option.titleKey)}
                 </span>
                 {selectedType === option.type && (
