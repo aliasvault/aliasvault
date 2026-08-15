@@ -84,7 +84,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
             type="submit"
             form="folder-form"
             disabled={isSubmitting}
-            className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
           >
             {isSubmitting
               ? t('common.saving')
