@@ -57,11 +57,9 @@ const ITEM_TYPE_OPTIONS: ItemTypeOption[] = [
 
 type ItemTypeSelectorProps = {
   selectedType: ItemType;
-  isEditMode: boolean;
   showDropdown: boolean;
   onDropdownToggle: (show: boolean) => void;
   onTypeChange: (type: ItemType) => void;
-  onRegenerateAlias?: () => void;
 };
 
 /**
@@ -70,11 +68,9 @@ type ItemTypeSelectorProps = {
  */
 const ItemTypeSelector: React.FC<ItemTypeSelectorProps> = ({
   selectedType,
-  isEditMode,
   showDropdown,
   onDropdownToggle,
-  onTypeChange,
-  onRegenerateAlias
+  onTypeChange
 }) => {
   const { t } = useTranslation();
 
@@ -97,19 +93,6 @@ const ItemTypeSelector: React.FC<ItemTypeSelectorProps> = ({
             {selectedTypeOption ? t(selectedTypeOption.titleKey) : ''}
           </span>
         </span>
-        {selectedType === ItemTypes.Alias && !isEditMode && onRegenerateAlias && (
-          <button
-            type="button"
-            onClick={onRegenerateAlias}
-            className="relative flex-shrink-0 -my-1 p-1.5 text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 hover:bg-primary-300 dark:hover:bg-primary-900/40 rounded transition-colors"
-            title={t('itemTypes.regenerateAlias')}
-          >
-            <svg className='w-4 h-4' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M23 4v6h-6"/>
-              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-            </svg>
-          </button>
-        )}
         <span className="relative flex-1 flex items-center justify-end gap-1 min-w-0 pointer-events-none peer-hover:opacity-80 transition-opacity">
           <span className="text-xs text-primary-600/80 dark:text-primary-400/80 truncate">
             {t('itemTypes.typeLabel')}

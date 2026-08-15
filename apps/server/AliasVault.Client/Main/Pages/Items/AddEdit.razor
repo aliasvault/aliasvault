@@ -37,10 +37,8 @@ else
                 <ItemTypeSelector
                     SelectedType="@Obj.ItemType"
                     SelectedTypeChanged="HandleItemTypeChange"
-                    IsEditMode="@EditMode"
                     ShowDropdown="@ShowTypeDropdown"
-                    ShowDropdownChanged="@((show) => ShowTypeDropdown = show)"
-                    OnRegenerateAlias="@GenerateRandomAlias" />
+                    ShowDropdownChanged="@((show) => ShowTypeDropdown = show)" />
 
                 @* Service/Name Section - Always shown *@
                 <div class="p-4 mb-4 bg-white border-2 border-primary-600 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
