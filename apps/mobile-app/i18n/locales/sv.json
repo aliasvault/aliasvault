@@ -344,6 +344,7 @@
     "settings": "Inställningar"
   },
   "itemTypes": {
+    "typeLabel": "Objekttyp",
     "creating": "Skapar",
     "editing": "Redigerar",
     "login": {
