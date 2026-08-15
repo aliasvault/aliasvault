@@ -787,6 +787,11 @@ video {
   margin-right: -0.5rem;
 }
 
+.-my-1 {
+  margin-top: -0.25rem;
+  margin-bottom: -0.25rem;
+}
+
 .mx-2 {
   margin-left: 0.5rem;
   margin-right: 0.5rem;
@@ -1804,11 +1809,6 @@ video {
   border-style: dashed;
 }
 
-.border-amber-300 {
-  --tw-border-opacity: 1;
-  border-color: rgb(252 211 77 / var(--tw-border-opacity));
-}
-
 .border-amber-400 {
   --tw-border-opacity: 1;
   border-color: rgb(251 191 36 / var(--tw-border-opacity));
@@ -2654,6 +2654,10 @@ video {
   color: rgb(214 131 56 / var(--tw-text-opacity));
 }
 
+.text-primary-600\/80 {
+  color: rgb(214 131 56 / 0.8);
+}
+
 .text-primary-700 {
   --tw-text-opacity: 1;
   color: rgb(184 112 47 / var(--tw-text-opacity));
@@ -3028,6 +3032,11 @@ video {
   background-color: rgb(251 203 116 / var(--tw-bg-opacity));
 }
 
+.hover\:bg-primary-300:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(248 185 99 / var(--tw-bg-opacity));
+}
+
 .hover\:bg-primary-500:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(244 149 65 / var(--tw-bg-opacity));
@@ -3196,10 +3205,6 @@ video {
   text-decoration-line: none;
 }
 
-.hover\:opacity-80:hover {
-  opacity: 0.8;
-}
-
 .hover\:file\:bg-primary-100::file-selector-button:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(253 222 133 / var(--tw-bg-opacity));
@@ -3365,6 +3370,10 @@ video {
   opacity: 1;
 }
 
+.peer:hover ~ .peer-hover\:opacity-80 {
+  opacity: 0.8;
+}
+
 .dark\:divide-gray-600:is(.dark *) > :not([hidden]) ~ :not([hidden]) {
   --tw-divide-opacity: 1;
   border-color: rgb(75 85 99 / var(--tw-divide-opacity));
@@ -3489,10 +3498,6 @@ video {
 
 .dark\:bg-amber-900\/20:is(.dark *) {
   background-color: rgb(120 53 15 / 0.2);
-}
-
-.dark\:bg-amber-900\/30:is(.dark *) {
-  background-color: rgb(120 53 15 / 0.3);
 }
 
 .dark\:bg-blue-400:is(.dark *) {
@@ -3798,6 +3803,10 @@ video {
 .dark\:text-primary-400:is(.dark *) {
   --tw-text-opacity: 1;
   color: rgb(246 167 82 / var(--tw-text-opacity));
+}
+
+.dark\:text-primary-400\/80:is(.dark *) {
+  color: rgb(246 167 82 / 0.8);
 }
 
 .dark\:text-primary-500:is(.dark *) {
