@@ -271,8 +271,7 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         // 4. Create a credential while offline (saved locally, can't sync)
         var serviceName = "Dirty Vault Recovery Test";
 
-        await extensionPopup.ClickAsync("button[title='Add new item']");
-        await extensionPopup.WaitForSelectorAsync("input#itemName");
+        await OpenAddItemForm(extensionPopup);
         await extensionPopup.FillAsync("input#itemName", serviceName);
         await extensionPopup.ClickAsync("button#save-credential");
 
