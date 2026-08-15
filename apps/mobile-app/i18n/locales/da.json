@@ -344,6 +344,7 @@
     "settings": "Indstillinger"
   },
   "itemTypes": {
+    "typeLabel": "Elementtype",
     "creating": "Opretter",
     "editing": "Redigerer",
     "login": {
