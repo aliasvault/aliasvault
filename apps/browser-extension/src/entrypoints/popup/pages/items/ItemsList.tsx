@@ -8,6 +8,7 @@ import FolderBreadcrumb from '@/entrypoints/popup/components/Folders/FolderBread
 import FolderModal from '@/entrypoints/popup/components/Folders/FolderModal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+import AddItemDropdown from '@/entrypoints/popup/components/Items/AddItemDropdown';
 import CurrentSiteSuggestion from '@/entrypoints/popup/components/Items/CurrentSiteSuggestion';
 import FolderPill from '@/entrypoints/popup/components/Items/FolderPill';
 import ItemCard from '@/entrypoints/popup/components/Items/ItemCard';
@@ -26,7 +27,7 @@ import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import type { Folder } from '@/utils/db/repositories/FolderRepository';
 import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
-import type { Item } from '@/utils/dist/core/models/vault';
+import type { Item, ItemType } from '@/utils/dist/core/models/vault';
 import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount } from '@/utils/FolderUtils';
 import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@/utils/ItemFilters';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -214,22 +215,17 @@ const ItemsList: React.FC = () => {
    * Navigate to add item page, pre-selecting the item type if filtering by type.
    * Also pre-selects the current folder if we're inside a folder.
    */
-  const handleAddItem = useCallback(() : void => {
+  const handleAddItem = useCallback((type: ItemType) : void => {
     const params = new URLSearchParams();
-
-    // If filtering by an item type, pre-select that type for the new item
-    if (isItemTypeFilter(filterType)) {
-      params.set('type', filterType);
-    }
+    params.set('type', type);
 
     // Pre-select the current folder if we're inside a folder
     if (currentFolderId) {
       params.set('folderId', currentFolderId);
     }
 
-    const queryString = params.toString();
-    navigate(queryString ? `/items/add?${queryString}` : '/items/add');
-  }, [navigate, filterType, currentFolderId]);
+    navigate(`/items/add?${params.toString()}`);
+  }, [navigate, currentFolderId]);
 
   /**
    * Handle add new folder.
@@ -456,11 +452,7 @@ const ItemsList: React.FC = () => {
             iconType={HeaderIconType.EXPAND}
           />
         )}
-        <HeaderButton
-          onClick={handleAddItem}
-          title={t('items.addNewItem')}
-          iconType={HeaderIconType.PLUS}
-        />
+        <AddItemDropdown onSelect={handleAddItem} />
       </div>
     );
 
