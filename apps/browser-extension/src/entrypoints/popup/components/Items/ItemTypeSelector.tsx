@@ -86,24 +86,28 @@ const ItemTypeSelector: React.FC<ItemTypeSelectorProps> = ({
         <button
           type="button"
           onClick={() => onDropdownToggle(!showDropdown)}
-          className="flex-1 flex items-center justify-between hover:opacity-80 transition-opacity"
+          className="flex-1 flex items-center justify-between gap-2 min-w-0 hover:opacity-80 transition-opacity"
         >
-          <div className="flex items-center gap-2">
-            <span className="text-primary-600 dark:text-primary-400">
+          {/* Inline label so it's clear the row is a picker, not just a status badge */}
+          <span className="text-xs text-primary-600/80 dark:text-primary-400/80 truncate">
+            {t('itemTypes.typeLabel')}
+          </span>
+          <span className="flex items-center gap-1.5 min-w-0">
+            <span className="shrink-0 text-primary-600 dark:text-primary-400">
               {selectedTypeOption?.iconSvg}
             </span>
-            <span className="text-primary-700 dark:text-primary-300 font-medium text-sm">
-              {isEditMode ? t('itemTypes.editing') : t('itemTypes.creating')} {selectedTypeOption ? t(selectedTypeOption.titleKey) : ''}
+            <span className="text-primary-700 dark:text-primary-300 font-medium text-sm truncate">
+              {selectedTypeOption ? t(selectedTypeOption.titleKey) : ''}
             </span>
-          </div>
-          <svg
-            className={`w-4 h-4 text-primary-500 transition-transform ${showDropdown ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+            <svg
+              className={`w-4 h-4 shrink-0 text-primary-500 transition-transform ${showDropdown ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </span>
         </button>
         {/* Regenerate alias button - icon only for flexibility */}
         {selectedType === ItemTypes.Alias && !isEditMode && onRegenerateAlias && (
