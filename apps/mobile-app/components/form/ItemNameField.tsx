@@ -103,7 +103,7 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
       color: colors.destructive,
     },
     wrapper: {
-      marginBottom: 16,
+      marginBottom: 4,
     },
   });
 
