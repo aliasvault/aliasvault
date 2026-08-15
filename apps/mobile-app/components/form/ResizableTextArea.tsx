@@ -1,8 +1,10 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, LayoutChangeEvent, PanResponder, StyleSheet, TextInput, TextInputProps, TouchableHighlight, View, useWindowDimensions } from 'react-native';
+import { LayoutChangeEvent, StyleSheet, TextInput, TextInputProps, TouchableHighlight, View, useWindowDimensions } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
 import { HapticsUtility } from '@/utils/HapticsUtility';
 
@@ -18,6 +20,12 @@ const MAX_HEIGHT_RATIO = 0.6;
 
 /** Height change per accessibility increment/decrement action. */
 const ACCESSIBILITY_STEP = 40;
+
+/** Vertical movement in pixels before a touch counts as a drag instead of a tap. */
+const DRAG_THRESHOLD = 2;
+
+/** Extra touch area around the drag handle. */
+const HANDLE_HIT_SLOP = { bottom: 12, left: 24, right: 24, top: 8 };
 
 type ResizableTextAreaProps = Omit<TextInputProps, 'onChangeText' | 'multiline' | 'numberOfLines'> & {
   label: string;
@@ -46,80 +54,82 @@ export const ResizableTextArea: React.FC<ResizableTextAreaProps> = ({
   const { height: windowHeight } = useWindowDimensions();
 
   const maxHeight = Math.max(MIN_HEIGHT * 2, Math.round(windowHeight * MAX_HEIGHT_RATIO));
-  const maxHeightRef = useRef(maxHeight);
 
   // Whether the user dragged the handle; until then the field sizes itself to its content.
   const [isResized, setIsResized] = useState(false);
-  const heightAnim = useRef(new Animated.Value(MIN_HEIGHT)).current;
-  const renderedHeight = useRef(MIN_HEIGHT);
-  const dragStartHeight = useRef(MIN_HEIGHT);
-  const hasDragged = useRef(false);
 
-  /**
-   * Clamp a height between the minimum and the current maximum.
-   */
-  const clampHeight = useCallback((height: number): number => {
-    return Math.min(Math.max(height, MIN_HEIGHT), maxHeightRef.current);
-  }, []);
-
-  /**
-   * Apply a height to the animated value and remember it as the rendered height.
-   */
-  const applyHeight = useCallback((height: number): void => {
-    renderedHeight.current = height;
-    heightAnim.setValue(height);
-  }, [heightAnim]);
+  // Height the field renders at: measured from the layout while it still auto-grows,
+  // driven by the drag afterwards.
+  const height = useSharedValue(MIN_HEIGHT);
+  const maxHeightValue = useSharedValue(maxHeight);
+  const dragStartHeight = useSharedValue(MIN_HEIGHT);
+  const hasDragged = useSharedValue(false);
 
   // Keep the height within bounds when the window size changes (e.g. rotation).
   useEffect(() => {
-    maxHeightRef.current = maxHeight;
+    maxHeightValue.value = maxHeight;
 
-    if (isResized && renderedHeight.current > maxHeight) {
-      applyHeight(maxHeight);
+    if (isResized && height.value > maxHeight) {
+      height.value = maxHeight;
     }
-  }, [maxHeight, isResized, applyHeight]);
+  }, [maxHeight, isResized, height, maxHeightValue]);
 
-  const panResponder = useMemo(() => PanResponder.create({
-    onStartShouldSetPanResponder: (): boolean => true,
-    onMoveShouldSetPanResponder: (): boolean => true,
-    onPanResponderTerminationRequest: (): boolean => false,
-    onPanResponderGrant: (): void => {
-      hasDragged.current = false;
-      dragStartHeight.current = renderedHeight.current;
-      heightAnim.setValue(renderedHeight.current);
-      HapticsUtility.impact(Haptics.ImpactFeedbackStyle.Light);
-    },
+  const animatedHeightStyle = useAnimatedStyle(() => ({ height: height.value }));
+
+  /**
+   * Give feedback when the handle is grabbed.
+   */
+  const handleDragStart = useCallback((): void => {
+    HapticsUtility.impact(Haptics.ImpactFeedbackStyle.Light);
+  }, []);
+
+  /**
+   * Resize with a native gesture instead of a JS PanResponder: on iOS the surrounding
+   * scroll view and modal sheet keep the touch for themselves when the drag is handled in
+   * JS, so the page scrolls or the modal is dragged away instead of the field growing.
+   */
+  const resizeGesture = useMemo(() => Gesture.Pan()
+    .minDistance(0)
+    .hitSlop(HANDLE_HIT_SLOP)
+    .onBegin((): void => {
+      hasDragged.value = false;
+      dragStartHeight.value = height.value;
+      runOnJS(handleDragStart)();
+    })
     // Resize the field along with the finger, ignoring the jitter of a plain tap.
-    onPanResponderMove: (_event, gestureState): void => {
-      if (!hasDragged.current && Math.abs(gestureState.dy) < 2) {
+    .onUpdate((event): void => {
+      if (!hasDragged.value && Math.abs(event.translationY) < DRAG_THRESHOLD) {
         return;
       }
 
-      applyHeight(clampHeight(dragStartHeight.current + gestureState.dy));
+      height.value = Math.min(Math.max(dragStartHeight.value + event.translationY, MIN_HEIGHT), maxHeightValue.value);
 
       // Switch from auto-growing to the fixed height that follows the finger.
-      if (!hasDragged.current) {
-        hasDragged.current = true;
-        setIsResized(true);
+      if (!hasDragged.value) {
+        hasDragged.value = true;
+        runOnJS(setIsResized)(true);
       }
-    },
-  }), [applyHeight, clampHeight, heightAnim]);
+    }), [dragStartHeight, handleDragStart, hasDragged, height, maxHeightValue]);
 
   /**
    * Resize in fixed steps, used by the accessibility increment/decrement actions.
    */
   const stepHeight = useCallback((delta: number): void => {
-    applyHeight(clampHeight(renderedHeight.current + delta));
+    height.value = Math.min(Math.max(height.value + delta, MIN_HEIGHT), maxHeightValue.value);
     setIsResized(true);
-  }, [applyHeight, clampHeight]);
+  }, [height, maxHeightValue]);
 
   /**
    * Track the height the field renders at, so a drag starts from the size the
    * user actually sees while the field is still auto-growing.
    */
   const handleLayout = useCallback((event: LayoutChangeEvent): void => {
-    renderedHeight.current = event.nativeEvent.layout.height;
-  }, []);
+    if (isResized) {
+      return;
+    }
+
+    height.value = event.nativeEvent.layout.height;
+  }, [isResized, height]);
 
   const styles = StyleSheet.create({
     handle: {
@@ -182,7 +192,7 @@ export const ResizableTextArea: React.FC<ResizableTextAreaProps> = ({
       )}
       <View style={styles.inputContainer}>
         <Animated.View
-          style={isResized ? { height: heightAnim } : undefined}
+          style={isResized ? animatedHeightStyle : undefined}
           onLayout={handleLayout}
         >
           <TextInput
@@ -199,18 +209,19 @@ export const ResizableTextArea: React.FC<ResizableTextAreaProps> = ({
             {...props}
           />
         </Animated.View>
-        <View
-          style={styles.handle}
-          hitSlop={{ bottom: 12, left: 24, right: 24, top: 8 }}
-          accessibilityRole="adjustable"
-          accessibilityLabel={t('common.resizeField')}
-          accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
-          onAccessibilityAction={(event) => stepHeight(event.nativeEvent.actionName === 'increment' ? ACCESSIBILITY_STEP : -ACCESSIBILITY_STEP)}
-          testID={testID ? `${testID}-resize-handle` : undefined}
-          {...panResponder.panHandlers}
-        >
-          <MaterialIcons name="drag-handle" size={18} color={colors.textMuted} />
-        </View>
+        <GestureDetector gesture={resizeGesture}>
+          <View
+            style={styles.handle}
+            hitSlop={HANDLE_HIT_SLOP}
+            accessibilityRole="adjustable"
+            accessibilityLabel={t('common.resizeField')}
+            accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+            onAccessibilityAction={(event) => stepHeight(event.nativeEvent.actionName === 'increment' ? ACCESSIBILITY_STEP : -ACCESSIBILITY_STEP)}
+            testID={testID ? `${testID}-resize-handle` : undefined}
+          >
+            <MaterialIcons name="drag-handle" size={18} color={colors.textMuted} />
+          </View>
+        </GestureDetector>
       </View>
     </View>
   );
