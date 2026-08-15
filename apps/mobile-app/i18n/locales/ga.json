@@ -344,6 +344,7 @@
     "settings": "Socruithe"
   },
   "itemTypes": {
+    "typeLabel": "Cineál Mír",
     "creating": "Ag cruthú",
     "editing": "Eagarthóireacht",
     "login": {
