@@ -344,6 +344,7 @@
     "settings": "Setări"
   },
   "itemTypes": {
+    "typeLabel": "Tip element",
     "creating": "Creare",
     "editing": "Editare",
     "login": {
