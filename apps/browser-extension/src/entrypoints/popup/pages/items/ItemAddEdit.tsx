@@ -91,7 +91,7 @@ const ItemAddEdit: React.FC = () => {
   const { executeVaultMutationAsync } = useVaultMutate();
   const { setHeaderButtons, setBackButtonTitle } = useHeaderButtons();
   const { setIsInitialLoading } = useLoading();
-  const { generateAlias, generateRandomEmailPrefix, lastGeneratedValues } = useAliasGenerator();
+  const { generateAlias, generateRandomEmailPrefix, resolveDefaultEmailDomain, lastGeneratedValues, setLastGeneratedValues } = useAliasGenerator();
   const { detectService } = useServiceDetection();
   const webApi = useWebApi();
 
@@ -560,14 +560,14 @@ const ItemAddEdit: React.FC = () => {
       prefix = await RustCore.generateIdentityEmailPrefix({ firstName, lastName, birthDate });
     }
 
-    const defaultEmailDomain = dbContext.sqliteClient.settings.getDefaultEmailDomain();
+    const defaultEmailDomain = await resolveDefaultEmailDomain();
     const email = defaultEmailDomain ? `${prefix}@${defaultEmailDomain}` : prefix;
 
     setFieldValues(prev => ({
       ...prev,
       'login.email': email
     }));
-  }, [dbContext?.sqliteClient, fieldValues, generateRandomEmailPrefix]);
+  }, [dbContext?.sqliteClient, fieldValues, generateRandomEmailPrefix, resolveDefaultEmailDomain]);
 
   /**
    * Generate a random-string email alias (for Login type email field).
@@ -580,20 +580,21 @@ const ItemAddEdit: React.FC = () => {
     }
 
     const prefix = await generateRandomEmailPrefix();
-    const defaultEmailDomain = dbContext.sqliteClient.settings.getDefaultEmailDomain();
+    const defaultEmailDomain = await resolveDefaultEmailDomain();
     const email = defaultEmailDomain ? `${prefix}@${defaultEmailDomain}` : prefix;
 
     setFieldValues(prev => ({
       ...prev,
       'login.email': email
     }));
-  }, [dbContext?.sqliteClient, generateRandomEmailPrefix]);
+  }, [dbContext?.sqliteClient, generateRandomEmailPrefix, resolveDefaultEmailDomain]);
 
   /**
    * Generate a random username using the shared alias generator.
    * Reuses the same logic as full alias generation but only updates the username field.
    */
   const generateRandomUsername = useCallback(async () => {
+    const previousGeneratedValues = lastGeneratedValues;
     const generatedData = await generateAlias();
     if (!generatedData) {
       return;
@@ -604,7 +605,12 @@ const ItemAddEdit: React.FC = () => {
       ...prev,
       'login.username': generatedData.username
     }));
-  }, [generateAlias]);
+
+    setLastGeneratedValues({
+      ...previousGeneratedValues,
+      username: generatedData.username
+    });
+  }, [generateAlias, lastGeneratedValues, setLastGeneratedValues]);
 
   /**
    * Check if alias fields are shown by default for the current item type.

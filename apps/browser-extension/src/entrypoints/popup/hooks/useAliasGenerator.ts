@@ -33,6 +33,7 @@ type LastGeneratedValues = {
 const useAliasGenerator = (): {
   generateAlias: () => Promise<GeneratedAliasData | null>;
   generateRandomEmailPrefix: () => Promise<string>;
+  resolveDefaultEmailDomain: () => Promise<string>;
   lastGeneratedValues: LastGeneratedValues;
   setLastGeneratedValues: Dispatch<SetStateAction<LastGeneratedValues>>;
 } => {
@@ -43,6 +44,33 @@ const useAliasGenerator = (): {
     password: null,
     email: null
   });
+
+  /**
+   * Resolve the email domain to use for generated aliases. Falls back to the first available
+   * private (or public) domain when the vault has no valid default domain configured, so that
+   * generated emails always include a domain.
+   */
+  const resolveDefaultEmailDomain = useCallback(async (): Promise<string> => {
+    const metadata = await dbContext.getVaultMetadata();
+    const privateEmailDomains = metadata?.privateEmailDomains ?? [];
+    const publicEmailDomains = metadata?.publicEmailDomains ?? [];
+    const hiddenPrivateEmailDomains = metadata?.hiddenPrivateEmailDomains ?? [];
+    
+    /**
+     * Check if a domain is valid.
+     */
+    const isValidDomain = (domain: string): boolean => Boolean(domain) &&
+      domain !== 'DISABLED.TLD' &&
+      !hiddenPrivateEmailDomains.includes(domain) &&
+      (privateEmailDomains.includes(domain) || publicEmailDomains.includes(domain));
+
+    const configuredDomain = dbContext.sqliteClient?.settings.getDefaultEmailDomain() ?? '';
+    if (isValidDomain(configuredDomain)) {
+      return configuredDomain;
+    }
+
+    return privateEmailDomains.find(isValidDomain) ?? publicEmailDomains.find(isValidDomain) ?? '';
+  }, [dbContext]);
 
   /**
    * Generate random alias data.
@@ -70,7 +98,7 @@ const useAliasGenerator = (): {
       const passwordSettings = dbContext.sqliteClient.settings.getPasswordSettings();
       const password = await RustCore.generatePassword(passwordSettings);
 
-      const defaultEmailDomain = dbContext.sqliteClient.settings.getDefaultEmailDomain();
+      const defaultEmailDomain = await resolveDefaultEmailDomain();
       const email = defaultEmailDomain ? `${identity.emailPrefix}@${defaultEmailDomain}` : identity.emailPrefix;
 
       const generatedData: GeneratedAliasData = {
@@ -95,7 +123,7 @@ const useAliasGenerator = (): {
       console.error('Error generating random alias:', error);
       return null;
     }
-  }, [dbContext?.sqliteClient]);
+  }, [dbContext?.sqliteClient, resolveDefaultEmailDomain]);
 
   /**
    * Generate a random string email prefix (not identity-based).
@@ -108,6 +136,7 @@ const useAliasGenerator = (): {
   return {
     generateAlias,
     generateRandomEmailPrefix,
+    resolveDefaultEmailDomain,
     lastGeneratedValues,
     setLastGeneratedValues
   };
