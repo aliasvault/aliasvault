@@ -84,26 +84,20 @@ export const ItemTypeSelector: React.FC<ItemTypeSelectorProps> = ({
       paddingVertical: 12,
       marginBottom: 16,
     },
-    dropdownContainer: {
+    dropdownIcon: {
+      marginLeft: 4,
+    },
+    labelContainer: {
       flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    dropdownIcon: {
+      justifyContent: 'flex-end',
       marginLeft: 8,
-    },
-    labelContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    labelIcon: {
-      marginRight: 8,
     },
     labelText: {
       color: colors.primary,
-      fontWeight: '600',
-      fontSize: 14,
+      fontSize: 12,
+      opacity: 0.8,
     },
     modalContainer: {
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -143,6 +137,21 @@ export const ItemTypeSelector: React.FC<ItemTypeSelectorProps> = ({
       borderRadius: 6,
       marginLeft: 8,
       padding: 8,
+      marginVertical: -6,
+    },
+    valueContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexShrink: 1,
+    },
+    valueIcon: {
+      marginRight: 8,
+    },
+    valueText: {
+      color: colors.primary,
+      fontWeight: '600',
+      fontSize: 14,
+      flexShrink: 1,
     },
   });
 
@@ -150,28 +159,19 @@ export const ItemTypeSelector: React.FC<ItemTypeSelectorProps> = ({
     <View style={styles.container}>
       <RobustPressable
         onPress={() => setShowDropdown(true)}
-        style={styles.dropdownContainer}
+        style={styles.valueContainer}
       >
-        <View style={styles.labelContainer}>
-          {selectedTypeOption && (
-            <MaterialIcons
-              name={selectedTypeOption.icon}
-              size={20}
-              color={colors.primary}
-              style={styles.labelIcon}
-            />
-          )}
-          <ThemedText style={styles.labelText}>
-            {isEditMode ? t('itemTypes.editing') : t('itemTypes.creating')}{' '}
-            {selectedTypeOption ? t(selectedTypeOption.titleKey) : ''}
-          </ThemedText>
-        </View>
-        <MaterialIcons
-          name="keyboard-arrow-down"
-          size={24}
-          color={colors.primary}
-          style={styles.dropdownIcon}
-        />
+        {selectedTypeOption && (
+          <MaterialIcons
+            name={selectedTypeOption.icon}
+            size={20}
+            color={colors.primary}
+            style={styles.valueIcon}
+          />
+        )}
+        <ThemedText style={styles.valueText} numberOfLines={1}>
+          {selectedTypeOption ? t(selectedTypeOption.titleKey) : ''}
+        </ThemedText>
       </RobustPressable>
 
       {/* Regenerate alias button - only for Alias type in create mode */}
@@ -183,6 +183,21 @@ export const ItemTypeSelector: React.FC<ItemTypeSelectorProps> = ({
           <MaterialIcons name="refresh" size={20} color={colors.primary} />
         </RobustPressable>
       )}
+
+      <RobustPressable
+        onPress={() => setShowDropdown(true)}
+        style={styles.labelContainer}
+      >
+        <ThemedText style={styles.labelText} numberOfLines={1}>
+          {t('itemTypes.typeLabel')}
+        </ThemedText>
+        <MaterialIcons
+          name="keyboard-arrow-down"
+          size={24}
+          color={colors.primary}
+          style={styles.dropdownIcon}
+        />
+      </RobustPressable>
 
       {/* Type Dropdown Modal */}
       <Modal

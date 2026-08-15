@@ -101,7 +101,7 @@ const ItemTypeSelector: React.FC<ItemTypeSelectorProps> = ({
           <button
             type="button"
             onClick={onRegenerateAlias}
-            className="relative flex-shrink-0 -my-1 p-1.5 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/40 rounded transition-colors"
+            className="relative flex-shrink-0 -my-1 p-1.5 text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 hover:bg-primary-300 dark:hover:bg-primary-900/40 rounded transition-colors"
             title={t('itemTypes.regenerateAlias')}
           >
             <svg className='w-4 h-4' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
