@@ -1096,6 +1096,7 @@ const ItemAddEdit: React.FC = () => {
           onClick={handleSave}
           title={isSaving ? t('common.saving') : t('items.saveItem')}
           iconType={HeaderIconType.SAVE}
+          variant="primary"
           isLoading={isSaving}
           disabled={isSaving}
         />

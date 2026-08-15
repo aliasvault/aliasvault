@@ -88,16 +88,17 @@ const ItemTypeSelector: React.FC<ItemTypeSelectorProps> = ({
           onClick={() => onDropdownToggle(!showDropdown)}
           className="flex-1 flex items-center justify-between gap-2 min-w-0 hover:opacity-80 transition-opacity"
         >
-          {/* Inline label so it's clear the row is a picker, not just a status badge */}
-          <span className="text-xs text-primary-600/80 dark:text-primary-400/80 truncate">
-            {t('itemTypes.typeLabel')}
-          </span>
-          <span className="flex items-center gap-1.5 min-w-0">
+          <span className="flex items-center gap-2 min-w-0">
             <span className="shrink-0 text-primary-600 dark:text-primary-400">
               {selectedTypeOption?.iconSvg}
             </span>
             <span className="text-primary-700 dark:text-primary-300 font-medium text-sm truncate">
               {selectedTypeOption ? t(selectedTypeOption.titleKey) : ''}
+            </span>
+          </span>
+          <span className="flex items-center gap-1 min-w-0">
+            <span className="text-xs text-primary-600/80 dark:text-primary-400/80 truncate">
+              {t('itemTypes.typeLabel')}
             </span>
             <svg
               className={`w-4 h-4 shrink-0 text-primary-500 transition-transform ${showDropdown ? 'rotate-180' : ''}`}

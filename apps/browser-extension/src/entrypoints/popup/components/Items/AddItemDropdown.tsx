@@ -43,6 +43,7 @@ const AddItemDropdown: React.FC<AddItemDropdownProps> = ({ onSelect }) => {
         onClick={() => (isOpen ? closeMenu() : setIsOpen(true))}
         title={t('items.addNewItem')}
         iconType={HeaderIconType.PLUS}
+        variant="primary"
         isActive={isOpen}
       />
 
