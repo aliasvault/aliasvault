@@ -1382,29 +1382,8 @@ const ItemAddEdit: React.FC = () => {
           folders={folders}
           selectedFolderId={item.FolderId}
           onFolderChange={(folderId) => setItem({ ...item, FolderId: folderId })}
+          suggestions={isEditMode ? [] : suggestedNames.filter(name => name && name !== item.Name).slice(0, 3)}
         />
-        {/* Alternative item title suggestions (create mode) */}
-        {!isEditMode && ((): React.ReactNode => {
-          const nameSuggestions = suggestedNames.filter(name => name && name !== item.Name).slice(0, 3);
-          if (nameSuggestions.length === 0) {
-            return null;
-          }
-          return (
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              <span className="text-xs text-gray-500 dark:text-gray-400">{t('items.suggestions')}:</span>
-              {nameSuggestions.map(name => (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() => setItem(prev => prev ? { ...prev, Name: name } : prev)}
-                  className="px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-primary-100 dark:hover:bg-primary-900/40 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
-                >
-                  {name}
-                </button>
-              ))}
-            </div>
-          );
-        })()}
         {/* Primary fields (like URL) shown below name */}
         {primaryFields.map(field => (
           <div key={field.FieldKey}>
