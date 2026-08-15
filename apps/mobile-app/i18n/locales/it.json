@@ -344,6 +344,7 @@
     "settings": "Impostazioni"
   },
   "itemTypes": {
+    "typeLabel": "Tipo Elemento",
     "creating": "Creazione in corso",
     "editing": "Modifica",
     "login": {
