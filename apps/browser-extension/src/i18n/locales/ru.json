@@ -282,7 +282,6 @@
     "typeLabel": "Тип записи",
     "creating": "Создание",
     "editing": "Редактирование",
-    "regenerateAlias": "Перегенерировать псевдоним",
     "addCustomField": "Добавить свое поле",
     "fieldLabel": "Название поля",
     "enterFieldName": "Введите название поля",
