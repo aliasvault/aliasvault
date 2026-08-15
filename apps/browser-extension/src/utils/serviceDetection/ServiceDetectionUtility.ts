@@ -6,6 +6,20 @@ import { FormDetector } from '../formDetector/FormDetector';
  */
 export class ServiceDetectionUtility {
   /**
+   * Check if a URL points to an actual website (http/https). Browser-internal pages such as
+   * new tab, settings and extension pages (chrome://, about:, edge://, moz-extension:// etc.)
+   * are not websites and should not be used for service detection.
+   */
+  public static isWebsiteUrl(rawUrl: string): boolean {
+    try {
+      const url = new URL(rawUrl);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Sanitize a raw URL down to its origin (scheme + host + port), stripping the
    * path, query string and fragment.
    */
@@ -48,6 +62,16 @@ export class ServiceDetectionUtility {
    * Get service information from tab data (for use in popup dashboard)
    */
   public static getServiceInfoFromTab(tabUrl: string, tabTitle?: string): ServiceInfo {
+    // Skip browser-internal pages (new tab, settings, extension pages) as they are not services.
+    if (!this.isWebsiteUrl(tabUrl)) {
+      return {
+        suggestedNames: [],
+        currentUrl: '',
+        serviceUrl: '',
+        domain: ''
+      };
+    }
+
     try {
       const url = new URL(tabUrl);
       const location = {
