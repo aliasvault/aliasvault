@@ -282,7 +282,6 @@
     "typeLabel": "项目类型",
     "creating": "创建",
     "editing": "编辑",
-    "regenerateAlias": "重新生成别名",
     "addCustomField": "添加自定义字段",
     "fieldLabel": "字段标签",
     "enterFieldName": "输入字段名称",
