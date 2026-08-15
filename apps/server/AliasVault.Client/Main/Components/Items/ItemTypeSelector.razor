@@ -20,19 +20,6 @@
                 @GetTypeDisplayName(SelectedType)
             </span>
         </div>
-        @if (SelectedType == ItemType.Alias && !IsEditMode && OnRegenerateAlias.HasDelegate)
-        {
-            <button type="button"
-                    @onclick="HandleRegenerate"
-                    @onclick:preventDefault="true"
-                    class="relative flex-shrink-0 -my-1 p-1.5 text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 hover:bg-primary-300 dark:hover:bg-primary-900/40 rounded transition-colors"
-                    title="@Localizer["RegenerateAlias"]">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M23 4v6h-6"/>
-                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-                </svg>
-            </button>
-        }
         <div class="relative flex-1 flex items-center justify-end gap-1 min-w-0 pointer-events-none peer-hover:opacity-80 transition-opacity">
             <span class="text-xs text-primary-600/80 dark:text-primary-400/80 truncate">
                 @SharedLocalizer["ItemTypeLabel"]
@@ -91,12 +78,6 @@
     public EventCallback<string> SelectedTypeChanged { get; set; }
 
     /// <summary>
-    /// Whether we are in edit mode (disables type switching).
-    /// </summary>
-    [Parameter]
-    public bool IsEditMode { get; set; }
-
-    /// <summary>
     /// Whether the dropdown is currently shown.
     /// </summary>
     [Parameter]
@@ -107,12 +88,6 @@
     /// </summary>
     [Parameter]
     public EventCallback<bool> ShowDropdownChanged { get; set; }
-
-    /// <summary>
-    /// Callback when regenerate alias button is clicked.
-    /// </summary>
-    [Parameter]
-    public EventCallback OnRegenerateAlias { get; set; }
 
     private async Task ToggleDropdown()
     {
@@ -134,11 +109,6 @@
             await SelectedTypeChanged.InvokeAsync(itemType);
         }
         await CloseDropdown();
-    }
-
-    private async Task HandleRegenerate()
-    {
-        await OnRegenerateAlias.InvokeAsync();
     }
 
     private string GetTypeDisplayName(string itemType)

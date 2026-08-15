@@ -1366,11 +1366,9 @@ const ItemAddEdit: React.FC = () => {
       {/* Item Type Selector */}
       <ItemTypeSelector
         selectedType={item.ItemType}
-        isEditMode={isEditMode}
         showDropdown={showTypeDropdown}
         onDropdownToggle={setShowTypeDropdown}
         onTypeChange={handleTypeChange}
-        onRegenerateAlias={aliasFieldsShownByDefault && !isEditMode ? handleGenerateAlias : undefined}
       />
 
       {/* Item Name and Primary fields block */}
