@@ -17,6 +17,7 @@ type ItemNameInputProps = {
   folders: Folder[];
   selectedFolderId: string | null | undefined;
   onFolderChange: (folderId: string | null) => void;
+  suggestions?: string[];
 };
 
 /**
@@ -29,7 +30,8 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
   onChange,
   folders,
   selectedFolderId,
-  onFolderChange
+  onFolderChange,
+  suggestions = []
 }) => {
   const { t } = useTranslation();
   const [showFolderModal, setShowFolderModal] = useState(false);
@@ -174,9 +176,28 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
   return (
     <>
       <div>
-        <label htmlFor="itemName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          {t('items.itemName')} <span className="text-red-500">*</span>
-        </label>
+        {/* mb-1.5 rather than mb-1: the suggestion pills fill the whole line box, so they sit closer to the input than bare label text would */}
+        <div className="flex items-center gap-2 mb-1.5">
+          <label htmlFor="itemName" className="shrink-0 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            {t('items.itemName')} <span className="text-red-500">*</span>
+          </label>
+          {/* Name suggestions, inline with the label so they don't add an extra row */}
+          {suggestions.length > 0 && (
+            <div className="flex-1 min-w-0 flex items-center gap-1 overflow-x-auto no-scrollbar" aria-label={t('items.suggestions')}>
+              {suggestions.map(name => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => onChange(name)}
+                  title={`${t('items.suggestions')}: ${name}`}
+                  className="shrink-0 max-w-[7rem] truncate px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-primary-100 dark:hover:bg-primary-900/40 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <div className="relative flex items-center">
           <input
             ref={inputRef}
