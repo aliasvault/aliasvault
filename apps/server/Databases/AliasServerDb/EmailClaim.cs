@@ -11,9 +11,9 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
-/// EmailClaim object. This object is used to reserve an email address. The claim is linked to every manifest
-/// the alias lives in (see <see cref="Links"/>); a claim whose links are all gone is a tombstone that blocks
-/// re-use of the address on purpose any by design.
+/// EmailClaim object. This object is used to reserve an email address. The claim is linked to every manifest that
+/// has ever held the alias (see <see cref="Links"/>), each link saying whether that manifest still carries it; a
+/// claim whose links are all gone is a tombstone that blocks re-use of the address on purpose and by design.
 /// </summary>
 [Index(nameof(Address), IsUnique = true)]
 public class EmailClaim
@@ -46,14 +46,6 @@ public class EmailClaim
     /// </summary>
     [StringLength(255)]
     public string AddressDomain { get; set; } = null!;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the email claim has been disabled. Disabled means that
-    /// the email claim was claimed by a user previously, but that user has deleted this alias since.
-    /// Incoming emails addressed to dusabled aliases are rejected by the server. However if the user
-    /// later claims this alias again it will be automatically re-enabled.
-    /// </summary>
-    public bool Disabled { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether this alias has been counted in the anonymized sender bucket

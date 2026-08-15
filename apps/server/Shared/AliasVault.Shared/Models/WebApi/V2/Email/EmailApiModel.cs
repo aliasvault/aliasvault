@@ -13,8 +13,8 @@ namespace AliasVault.Shared.Models.WebApi.V2.Email;
 public class EmailApiModel : EmailApiModelBase
 {
     /// <summary>
-    /// Gets or sets the public keys referenced by this email's wraps. A wrap's
-    /// <see cref="EmailKeyWrapApiModel.KeyIndex"/> is its position in this list.
+    /// Gets or sets the public keys referenced by this email's decryption keys. A decryption key's
+    /// <see cref="EmailDecryptionKeyApiModel.KeyIndex"/> is its position in this list.
     /// </summary>
     public List<string> PublicKeys { get; set; } = [];
 

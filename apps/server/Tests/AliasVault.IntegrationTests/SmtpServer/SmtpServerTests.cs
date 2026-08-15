@@ -184,7 +184,7 @@ public class SmtpServerTests
         await SendMessageToSmtpServer(message);
 
         // Check if the email is in the database.
-        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Wraps).FirstAsync();
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.DecryptionKeys).FirstAsync();
 
         // Test non-encrypted fields.
         Assert.Multiple(() =>
@@ -376,7 +376,7 @@ public class SmtpServerTests
         await SendMessageToSmtpServer(message);
 
         // Check if the email is in the database.
-        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Wraps).FirstAsync();
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.DecryptionKeys).FirstAsync();
 
         // Test non-encrypted field.
         Assert.That(processedEmail.To, Is.EqualTo("claimed@example.tld"));
@@ -416,7 +416,7 @@ public class SmtpServerTests
         await SendMessageToSmtpServer(message);
 
         // Check if the email is in the database.
-        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Wraps).FirstAsync();
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.DecryptionKeys).FirstAsync();
 
         // Test non-encrypted field.
         Assert.That(processedEmail.To, Is.EqualTo("claimed@example.tld"));
@@ -465,7 +465,7 @@ public class SmtpServerTests
         await SendMessageToSmtpServer(message);
 
         // Retrieve the stored email and verify the unencrypted metadata written at ingest.
-        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Wraps).FirstAsync();
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.DecryptionKeys).FirstAsync();
         var encryptedSourceBytes = processedEmail.MessageSourceBytes;
         Assert.Multiple(() =>
         {
@@ -533,7 +533,7 @@ public class SmtpServerTests
         await SendMessageToSmtpServer(message);
 
         // Check if the email is in the database.
-        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Wraps).FirstAsync();
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.DecryptionKeys).FirstAsync();
 
         // Decrypt the email and verify the accented characters survived into the preview.
         processedEmail = EmailEncryption.DecryptEmail(processedEmail, PrivateKey);
@@ -679,7 +679,7 @@ public class SmtpServerTests
 
         await SendMessageToSmtpServer(message);
 
-        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Parts).Include(x => x.Wraps).FirstAsync();
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Parts).Include(x => x.DecryptionKeys).FirstAsync();
         var storedPart = processedEmail.Parts.Single();
         Assert.Multiple(() =>
         {
@@ -747,7 +747,7 @@ public class SmtpServerTests
 
         await SendMessageToSmtpServer(message);
 
-        var emails = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Parts).Include(x => x.Wraps).ToListAsync();
+        var emails = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Parts).Include(x => x.DecryptionKeys).ToListAsync();
         Assert.That(emails, Has.Count.EqualTo(2));
 
         foreach (var email in emails)

@@ -8,7 +8,7 @@ namespace AliasServerDb.Migrations
     /// <summary>
     /// Adds a many-to-many relationship between emails and manifests, allowing an email to be claimed by multiple manifests.
     /// </summary>
-    public partial class AddEmailMultiWrap : Migration
+    public partial class AddEmailMultiManifest : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -39,25 +39,25 @@ namespace AliasServerDb.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "EmailKeyWraps",
+                name: "EmailDecryptionKeys",
                 columns: table => new
                 {
                     EmailId = table.Column<int>(type: "integer", nullable: false),
-                    EncryptionKeyId = table.Column<Guid>(type: "uuid", nullable: false),
+                    VaultManifestDeliveryKeyId = table.Column<Guid>(type: "uuid", nullable: false),
                     EncryptedSymmetricKey = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_EmailKeyWraps", x => new { x.EmailId, x.EncryptionKeyId });
+                    table.PrimaryKey("PK_EmailDecryptionKeys", x => new { x.EmailId, x.VaultManifestDeliveryKeyId });
                     table.ForeignKey(
-                        name: "FK_EmailKeyWraps_Emails_EmailId",
+                        name: "FK_EmailDecryptionKeys_Emails_EmailId",
                         column: x => x.EmailId,
                         principalTable: "Emails",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_EmailKeyWraps_VaultManifestDeliveryKeys_EncryptionKeyId",
-                        column: x => x.EncryptionKeyId,
+                        name: "FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId",
+                        column: x => x.VaultManifestDeliveryKeyId,
                         principalTable: "VaultManifestDeliveryKeys",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -69,15 +69,15 @@ namespace AliasServerDb.Migrations
                 columns: new[] { "VaultManifestId", "EmailClaimId" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_EmailKeyWraps_EncryptionKeyId_EmailId",
-                table: "EmailKeyWraps",
-                columns: new[] { "EncryptionKeyId", "EmailId" });
+                name: "IX_EmailDecryptionKeys_VaultManifestDeliveryKeyId_EmailId",
+                table: "EmailDecryptionKeys",
+                columns: new[] { "VaultManifestDeliveryKeyId", "EmailId" });
 
-            // Every existing email gets exactly one wrap (its current key), every claim one link (its current
+            // Every existing email gets exactly one decryption key (its current key), every claim one link (its current
             // manifest). A tombstoned claim (VaultManifestId already null) simply gets zero links. A disabled claim
             // kept its manifest reference purely as an ownership record, which is what 'Removed' now indicates.
             migrationBuilder.Sql("""
-                INSERT INTO "EmailKeyWraps" ("EmailId", "EncryptionKeyId", "EncryptedSymmetricKey")
+                INSERT INTO "EmailDecryptionKeys" ("EmailId", "VaultManifestDeliveryKeyId", "EncryptedSymmetricKey")
                 SELECT "Id", "EncryptionKeyId", "EncryptedSymmetricKey" FROM "Emails";
 
                 INSERT INTO "EmailClaimLinks" ("EmailClaimId", "VaultManifestId", "State")
@@ -92,11 +92,28 @@ namespace AliasServerDb.Migrations
             migrationBuilder.DropColumn(name: "EncryptedSymmetricKey", table: "Emails");
             migrationBuilder.DropColumn(name: "EncryptionKeyId", table: "Emails");
             migrationBuilder.DropColumn(name: "VaultManifestId", table: "EmailClaims");
+            migrationBuilder.DropColumn(name: "Disabled", table: "EmailClaims");
+            migrationBuilder.Sql("""CREATE INDEX "IX_EmailClaimLinks_EmailClaimId_Live" ON "EmailClaimLinks" ("EmailClaimId") WHERE "State" <> 'Removed';""");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("""DROP INDEX IF EXISTS "IX_EmailClaimLinks_EmailClaimId_Live";""");
+
+            migrationBuilder.AddColumn<bool>(
+                name: "Disabled",
+                table: "EmailClaims",
+                type: "boolean",
+                nullable: false,
+                defaultValue: false);
+
+            // Rebuild the roll-up from the links before they are dropped with the table below.
+            migrationBuilder.Sql("""
+                UPDATE "EmailClaims" c
+                SET "Disabled" = NOT EXISTS (SELECT 1 FROM "EmailClaimLinks" l WHERE l."EmailClaimId" = c."Id" AND l."State" <> 'Removed');
+                """);
+
             migrationBuilder.AddColumn<string>(
                 name: "EncryptedSymmetricKey",
                 table: "Emails",
@@ -116,14 +133,14 @@ namespace AliasServerDb.Migrations
                 type: "uuid",
                 nullable: true);
 
-            // Collapse back to one wrap/link per row (the lowest key/manifest id when there are several - the
-            // extra wraps are unrepresentable in the singular model and are dropped with the table). An email
-            // whose wraps are all gone is undecryptable and cannot be represented either; it is deleted.
+            // Collapse back to one decryption key/link per row (the lowest key/manifest id when there are several - the
+            // extra decryption keys are unrepresentable in the singular model and are dropped with the table). An email
+            // whose decryption keys are all gone is undecryptable and cannot be represented either; it is deleted.
             migrationBuilder.Sql("""
                 UPDATE "Emails" e
-                SET "EncryptionKeyId" = w."EncryptionKeyId", "EncryptedSymmetricKey" = w."EncryptedSymmetricKey"
-                FROM (SELECT DISTINCT ON ("EmailId") "EmailId", "EncryptionKeyId", "EncryptedSymmetricKey" FROM "EmailKeyWraps" ORDER BY "EmailId", "EncryptionKeyId") w
-                WHERE w."EmailId" = e."Id";
+                SET "EncryptionKeyId" = d."VaultManifestDeliveryKeyId", "EncryptedSymmetricKey" = d."EncryptedSymmetricKey"
+                FROM (SELECT DISTINCT ON ("EmailId") "EmailId", "VaultManifestDeliveryKeyId", "EncryptedSymmetricKey" FROM "EmailDecryptionKeys" ORDER BY "EmailId", "VaultManifestDeliveryKeyId") d
+                WHERE d."EmailId" = e."Id";
 
                 DELETE FROM "Emails" WHERE "EncryptionKeyId" IS NULL;
 
@@ -154,7 +171,7 @@ namespace AliasServerDb.Migrations
                 oldNullable: true);
 
             migrationBuilder.DropTable(name: "EmailClaimLinks");
-            migrationBuilder.DropTable(name: "EmailKeyWraps");
+            migrationBuilder.DropTable(name: "EmailDecryptionKeys");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Emails_EncryptionKeyId",

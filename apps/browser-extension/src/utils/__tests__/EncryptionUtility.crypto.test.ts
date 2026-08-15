@@ -9,13 +9,15 @@ beforeEach(() => {
 });
 
 /**
- * Creates a mailbox email with fields encrypted by the supplied RSA key pair.
+ * Creates a mailbox email with fields encrypted by the supplied RSA key pair. The decryption key references the key
+ * by its position in the response-level public key table, mirroring what the API sends.
  */
 async function createMailboxEmail(
   id: number,
   encryptionKey: EncryptionKey,
   rawSymmetricKey: string,
-  subject: string
+  subject: string,
+  keyIndex: number
 ): Promise<MailboxEmail> {
   const symmetricKeyBase64 = Buffer.from(rawSymmetricKey).toString('base64');
 
@@ -32,21 +34,21 @@ async function createMailboxEmail(
     date: '2026-05-26T00:00:00Z',
     dateSystem: '2026-05-26T00:00:00Z',
     secondsAgo: id,
-    wraps: [{ publicKey: encryptionKey.PublicKey, encryptedSymmetricKey: await EncryptionUtility.encryptWithPublicKey(rawSymmetricKey, encryptionKey.PublicKey) }],
+    decryptionKeys: [{ keyIndex, encryptedSymmetricKey: await EncryptionUtility.encryptWithPublicKey(rawSymmetricKey, encryptionKey.PublicKey) }],
   };
 }
 
 /**
- * Creates an email with the supplied symmetric key encrypted by the RSA key pair.
+ * Creates an email with the supplied symmetric key encrypted by the RSA key pair. A single email carries its own
+ * public key table, so the decryption key always references index 0.
  */
 async function createEmail(
   encryptionKey: EncryptionKey,
   rawSymmetricKey: string
 ): Promise<Email> {
   return {
-    messageHtml: '',
-    messagePlain: '',
     messageSource: '',
+    attachmentCount: 0,
     id: 1,
     subject: '',
     fromDisplay: '',
@@ -57,7 +59,8 @@ async function createEmail(
     date: '2026-05-26T00:00:00Z',
     dateSystem: '2026-05-26T00:00:00Z',
     secondsAgo: 1,
-    wraps: [{ publicKey: encryptionKey.PublicKey, encryptedSymmetricKey: await EncryptionUtility.encryptWithPublicKey(rawSymmetricKey, encryptionKey.PublicKey) }],
+    decryptionKeys: [{ keyIndex: 0, encryptedSymmetricKey: await EncryptionUtility.encryptWithPublicKey(rawSymmetricKey, encryptionKey.PublicKey) }],
+    publicKeys: [encryptionKey.PublicKey],
     attachments: [],
   };
 }
@@ -170,34 +173,84 @@ describe('email RSA private key cache', () => {
       PrivateKey: keyPairB.privateKey,
       IsPrimary: false,
     };
+    const publicKeys = [encryptionKeyA.PublicKey, encryptionKeyB.PublicKey];
     const emails = [
-      await createMailboxEmail(1, encryptionKeyA, '0123456789abcdef0123456789abcdef', 'Subject A1'),
-      await createMailboxEmail(2, encryptionKeyA, 'abcdef0123456789abcdef0123456789', 'Subject A2'),
-      await createMailboxEmail(3, encryptionKeyB, 'fedcba9876543210fedcba9876543210', 'Subject B1'),
+      await createMailboxEmail(1, encryptionKeyA, '0123456789abcdef0123456789abcdef', 'Subject A1', 0),
+      await createMailboxEmail(2, encryptionKeyA, 'abcdef0123456789abcdef0123456789', 'Subject A2', 0),
+      await createMailboxEmail(3, encryptionKeyB, 'fedcba9876543210fedcba9876543210', 'Subject B1', 1),
     ];
     const importKeySpy = vi.spyOn(crypto.subtle, 'importKey');
 
     try {
-      const decryptedEmails = await EncryptionUtility.decryptEmailList(emails, [encryptionKeyA, encryptionKeyB]);
+      const decryptedEmails = await EncryptionUtility.decryptEmailList(emails, publicKeys, [encryptionKeyA, encryptionKeyB]);
 
       expect(decryptedEmails.map(email => email.subject)).toEqual(['Subject A1', 'Subject A2', 'Subject B1']);
       expect(countPrivateKeyImports(importKeySpy.mock.calls as unknown[][])).toBe(2);
 
-      await EncryptionUtility.decryptEmailList([emails[0]], [encryptionKeyA, encryptionKeyB]);
+      await EncryptionUtility.decryptEmailList([emails[0]], publicKeys, [encryptionKeyA, encryptionKeyB]);
       expect(countPrivateKeyImports(importKeySpy.mock.calls as unknown[][])).toBe(2);
 
       EncryptionUtility.clearRsaPrivateKeyCache();
-      await EncryptionUtility.decryptEmailList([emails[0]], [encryptionKeyA, encryptionKeyB]);
+      await EncryptionUtility.decryptEmailList([emails[0]], publicKeys, [encryptionKeyA, encryptionKeyB]);
       expect(countPrivateKeyImports(importKeySpy.mock.calls as unknown[][])).toBe(3);
     } finally {
       importKeySpy.mockRestore();
     }
   });
 
+  it('resolves the decryption key by key index rather than by list order', async () => {
+    /*
+     * The key table is shared by the whole response, so an email's own decryption key list is not aligned with it. Picking
+     * the wrong entry would decrypt with a key that does not match and blank the row.
+     */
+    const keyPairA = await EncryptionUtility.generateRsaKeyPair();
+    const keyPairB = await EncryptionUtility.generateRsaKeyPair();
+    const encryptionKeyA: EncryptionKey = {
+      Id: 'key-a',
+      PublicKey: keyPairA.publicKey,
+      PrivateKey: keyPairA.privateKey,
+      IsPrimary: true,
+    };
+    const encryptionKeyB: EncryptionKey = {
+      Id: 'key-b',
+      PublicKey: keyPairB.publicKey,
+      PrivateKey: keyPairB.privateKey,
+      IsPrimary: false,
+    };
+
+    // Only the second key of the table is held locally, and it is the only decryption key on the email.
+    const publicKeys = [encryptionKeyA.PublicKey, encryptionKeyB.PublicKey];
+    const email = await createMailboxEmail(1, encryptionKeyB, '0123456789abcdef0123456789abcdef', 'Indexed', 1);
+
+    const decryptedEmails = await EncryptionUtility.decryptEmailList([email], publicKeys, [encryptionKeyB]);
+
+    expect(decryptedEmails.map(mail => mail.subject)).toEqual(['Indexed']);
+  });
+
+  it('skips an email whose decryption key points outside the key table', async () => {
+    // A decryption key referencing an index the response never sent is a malformed response; it must cost that row only.
+    const keyPair = await EncryptionUtility.generateRsaKeyPair();
+    const encryptionKey: EncryptionKey = {
+      Id: 'key-a',
+      PublicKey: keyPair.publicKey,
+      PrivateKey: keyPair.privateKey,
+      IsPrimary: true,
+    };
+    const emails = [
+      await createMailboxEmail(1, encryptionKey, '0123456789abcdef0123456789abcdef', 'Readable', 0),
+      await createMailboxEmail(2, encryptionKey, 'abcdef0123456789abcdef0123456789', 'Dangling', 7),
+    ];
+
+    const decryptedEmails = await EncryptionUtility.decryptEmailList(emails, [encryptionKey.PublicKey], [encryptionKey]);
+
+    expect(decryptedEmails.map(mail => mail.subject)).toEqual(['Readable']);
+  });
+
   it('skips undecryptable emails instead of failing the whole batch', async () => {
-    // A mailbox can legitimately contain a message this user has no key for. Mail delivered to an alias before
-    // it moved into a shared manifest is encrypted with the owner's personal key. The server filters those out,
-    // but if one slips through it must cost that single row, not blank the entire mailbox.
+    /*
+     * A mailbox can legitimately contain a message this user has no key for, e.g. when an alias is moved from a personal manifest to a shared manifest
+     * but previously emails have not been encrypted yet for the new manifest, so older emails are hidden.
+     */
     const keyPair = await EncryptionUtility.generateRsaKeyPair();
     const strangerKeyPair = await EncryptionUtility.generateRsaKeyPair();
     const encryptionKey: EncryptionKey = {
@@ -212,14 +265,15 @@ describe('email RSA private key cache', () => {
       PrivateKey: strangerKeyPair.privateKey,
       IsPrimary: false,
     };
+    const publicKeys = [encryptionKey.PublicKey, strangerKey.PublicKey];
     const emails = [
-      await createMailboxEmail(1, encryptionKey, '0123456789abcdef0123456789abcdef', 'Readable'),
-      await createMailboxEmail(2, strangerKey, 'abcdef0123456789abcdef0123456789', 'Unreadable'),
-      await createMailboxEmail(3, encryptionKey, 'fedcba9876543210fedcba9876543210', 'Also readable'),
+      await createMailboxEmail(1, encryptionKey, '0123456789abcdef0123456789abcdef', 'Readable', 0),
+      await createMailboxEmail(2, strangerKey, 'abcdef0123456789abcdef0123456789', 'Unreadable', 1),
+      await createMailboxEmail(3, encryptionKey, 'fedcba9876543210fedcba9876543210', 'Also readable', 0),
     ];
 
     // Only the own key is held, so email 2 cannot be decrypted.
-    const decryptedEmails = await EncryptionUtility.decryptEmailList(emails, [encryptionKey]);
+    const decryptedEmails = await EncryptionUtility.decryptEmailList(emails, publicKeys, [encryptionKey]);
 
     expect(decryptedEmails.map(email => email.subject)).toEqual(['Readable', 'Also readable']);
   });

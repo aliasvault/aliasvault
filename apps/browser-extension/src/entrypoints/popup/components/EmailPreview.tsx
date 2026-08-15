@@ -141,7 +141,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
              */
             const response = await webApi.authFetch(`EmailBox/${email}`, { method: 'GET' }, true, false);
             try {
-              const data = response as { mails: MailboxEmail[] };
+              const data = response as { mails: MailboxEmail[], publicKeys: string[] };
 
               // Store all emails, sorted by date
               const allMails = data.mails
@@ -151,6 +151,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
                 // Loop through all emails and decrypt them locally
                 const decryptedEmails: MailboxEmail[] = await EncryptionUtility.decryptEmailList(
                   allMails,
+                  data.publicKeys,
                   dbContext.sqliteClient!.encryptionKeys.getAll()
                 );
 

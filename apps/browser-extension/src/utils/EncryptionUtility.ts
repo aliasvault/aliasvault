@@ -4,7 +4,7 @@ import argon2 from 'argon2-browser/dist/argon2-bundled.min.js';
 
 import { devWarn } from '@/utils/devLogger/DevLogger';
 import type { EncryptionKey } from '@/utils/dist/core/models/vault';
-import type { Email, EmailKeyWrap, MailboxEmail } from '@/utils/dist/core/models/webapi';
+import type { Email, EmailDecryptionKey, MailboxEmail } from '@/utils/dist/core/models/webapi';
 import { parseEmailSource, type ParsedEmailAttachment } from '@/utils/RustCore';
 
 /**
@@ -379,14 +379,20 @@ export class EncryptionUtility {
   }
 
   /**
-   * Finds the wrap of an email's symmetric key that one of the locally held keypairs can open. An email carries
-   * one wrap per manifest keypair the caller holds.
+   * Finds the decryption key of an email's symmetric key that one of the locally held keypairs can open. An email
+   * carries one decryption key per manifest keypair the caller holds. It names its public key by index into the
+   * publicKeys table that the API sends once per response.
    */
-  private static resolveEmailWrap(email: { wraps: EmailKeyWrap[] },encryptionKeys: EncryptionKey[]): { encryptionKey: EncryptionKey, encryptedSymmetricKey: string } {
-    for (const wrap of email.wraps) {
-      const key = encryptionKeys.find(k => k.PublicKey === wrap.publicKey);
+  private static resolveEmailDecryptionKey(decryptionKeys: EmailDecryptionKey[], publicKeys: string[], encryptionKeys: EncryptionKey[]): { encryptionKey: EncryptionKey, encryptedSymmetricKey: string } {
+    for (const decryptionKey of decryptionKeys) {
+      const publicKey = publicKeys[decryptionKey.keyIndex];
+      if (!publicKey) {
+        continue;
+      }
+
+      const key = encryptionKeys.find(k => k.PublicKey === publicKey);
       if (key) {
-        return { encryptionKey: key, encryptedSymmetricKey: wrap.encryptedSymmetricKey };
+        return { encryptionKey: key, encryptedSymmetricKey: decryptionKey.encryptedSymmetricKey };
       }
     }
 
@@ -394,12 +400,12 @@ export class EncryptionUtility {
   }
 
   /**
-   * Unwraps the symmetric key an email's contents are encrypted with, as base64.
+   * Decrypts the symmetric key an email's contents are encrypted with, as base64.
    */
-  private static async resolveEmailSymmetricKey(email: { wraps: EmailKeyWrap[] }, encryptionKeys: EncryptionKey[]): Promise<string> {
-    const wrap = EncryptionUtility.resolveEmailWrap(email, encryptionKeys);
-    const privateKey = await EncryptionUtility.getPrivateKeyObject(wrap.encryptionKey);
-    const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(wrap.encryptedSymmetricKey, privateKey);
+  private static async resolveEmailSymmetricKey(decryptionKeys: EmailDecryptionKey[], publicKeys: string[], encryptionKeys: EncryptionKey[]): Promise<string> {
+    const match = EncryptionUtility.resolveEmailDecryptionKey(decryptionKeys, publicKeys, encryptionKeys);
+    const privateKey = await EncryptionUtility.getPrivateKeyObject(match.encryptionKey);
+    const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(match.encryptedSymmetricKey, privateKey);
 
     return Buffer.from(symmetricKey).toString('base64');
   }
@@ -409,7 +415,7 @@ export class EncryptionUtility {
    */
   public static async decryptEmail(email: Email, encryptionKeys: EncryptionKey[]): Promise<DecryptedEmail> {
     try {
-      const symmetricKeyBase64 = await EncryptionUtility.resolveEmailSymmetricKey(email, encryptionKeys);
+      const symmetricKeyBase64 = await EncryptionUtility.resolveEmailSymmetricKey(email.decryptionKeys, email.publicKeys, encryptionKeys);
 
       const decryptedEmail = { ...email };
       decryptedEmail.subject = await EncryptionUtility.symmetricDecrypt(email.subject, symmetricKeyBase64);
@@ -443,7 +449,8 @@ export class EncryptionUtility {
   }
 
   /**
-   * Decrypts a list of emails based on the provided public/private key pairs.
+   * Decrypts a list of emails based on the provided public/private key pairs. The publicKeys table is the one the
+   * API sent alongside the emails; each email's decryption keys reference it by index.
    *
    * Emails that cannot be decrypted are skipped rather than failing the batch. The server only serves mail the
    * caller holds a key for, so this should not happen but we handle it gracefully to prevent one unreadable record
@@ -451,11 +458,12 @@ export class EncryptionUtility {
    */
   public static async decryptEmailList(
     emails: MailboxEmail[],
+    publicKeys: string[],
     encryptionKeys: EncryptionKey[]
   ): Promise<MailboxEmail[]> {
     const results = await Promise.all(emails.map(async email => {
       try {
-        const symmetricKeyBase64 = await EncryptionUtility.resolveEmailSymmetricKey(email, encryptionKeys);
+        const symmetricKeyBase64 = await EncryptionUtility.resolveEmailSymmetricKey(email.decryptionKeys, publicKeys, encryptionKeys);
 
         // Create a new object to avoid mutating the original
         const decryptedEmail = { ...email };
@@ -489,7 +497,7 @@ export class EncryptionUtility {
     encryptionKeys: EncryptionKey[]
   ): Promise<Uint8Array> {
     try {
-      const symmetricKeyBase64 = await EncryptionUtility.resolveEmailSymmetricKey(email, encryptionKeys);
+      const symmetricKeyBase64 = await EncryptionUtility.resolveEmailSymmetricKey(email.decryptionKeys, email.publicKeys, encryptionKeys);
 
       // Decrypt the attachment using raw bytes
       return await EncryptionUtility.symmetricDecryptBytes(encryptedBytes, symmetricKeyBase64);

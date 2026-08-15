@@ -400,8 +400,8 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
             return false;
         }
 
-        // Check if the email claim is disabled.
-        if (emailClaim.Disabled)
+        // Check whether any vault still carries the alias at all.
+        if (links.All(l => l.State == EmailClaimLinkState.Removed))
         {
             // Email claim is disabled, so we cannot process this email.
             logger.LogInformation(

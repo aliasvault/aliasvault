@@ -102,9 +102,9 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<EmailClaimLink> EmailClaimLinks { get; set; }
 
     /// <summary>
-    /// Gets or sets the EmailKeyWraps DbSet.
+    /// Gets or sets the EmailDecryptionKeys DbSet.
     /// </summary>
-    public DbSet<EmailKeyWrap> EmailKeyWraps { get; set; }
+    public DbSet<EmailDecryptionKey> EmailDecryptionKeys { get; set; }
 
     /// <summary>
     /// Gets or sets the EmailParts DbSet.
@@ -415,29 +415,30 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .HasForeignKey(l => l.VaultManifestId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // The reconcilers and quota checks walk from a manifest to its claimed addresses.
             builder.HasIndex(l => new { l.VaultManifestId, l.EmailClaimId });
+            builder.HasIndex(l => l.EmailClaimId).HasFilter("\"State\" <> 'Removed'").HasDatabaseName("IX_EmailClaimLinks_EmailClaimId_Live");
         });
 
         /*
-         * Configure EmailKeyWrap - one wrapped symmetric key per (email, delivery key).
+         * Configure EmailDecryptionKey - one encrypted symmetric key per (email, delivery key).
          */
-        modelBuilder.Entity<EmailKeyWrap>(builder =>
+        modelBuilder.Entity<EmailDecryptionKey>(builder =>
         {
-            builder.HasKey(w => new { w.EmailId, w.EncryptionKeyId });
+            builder.HasKey(d => new { d.EmailId, d.VaultManifestDeliveryKeyId });
 
-            builder.HasOne(w => w.Email)
-                .WithMany(e => e.Wraps)
-                .HasForeignKey(w => w.EmailId)
+            builder.HasOne(d => d.Email)
+                .WithMany(e => e.DecryptionKeys)
+                .HasForeignKey(d => d.EmailId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(w => w.EncryptionKey)
-                .WithMany(k => k.Wraps)
-                .HasForeignKey(w => w.EncryptionKeyId)
+            builder.HasOne(d => d.VaultManifestDeliveryKey)
+                .WithMany(k => k.DecryptionKeys)
+                .HasForeignKey(d => d.VaultManifestDeliveryKeyId)
+                .HasConstraintName("FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId")
                 .OnDelete(DeleteBehavior.Cascade);
 
             // The mailbox queries filter emails by the set of keys the caller holds.
-            builder.HasIndex(w => new { w.EncryptionKeyId, w.EmailId });
+            builder.HasIndex(d => new { d.VaultManifestDeliveryKeyId, d.EmailId });
         });
 
         modelBuilder.Entity<VaultManifestDeliveryKey>(builder =>

@@ -25,14 +25,14 @@ public static class EmailAccessHelper
     /// <returns>True when the user holds an access key on the alias's manifest.</returns>
     public static async Task<bool> CanReadClaimAsync(AliasServerDbContext context, EmailClaim claim, string userId)
     {
-        // An orphaned claim has no links and therefore no owner: it is a tombstone holding an address, and nobody may read mail for it.
-        var linkedManifestIds = await context.EmailClaimLinks.Where(l => l.EmailClaimId == claim.Id).Select(l => l.VaultManifestId).ToListAsync();
+        // Only manifests that carry the alias grant access.
+        var linkedManifestIds = await context.EmailClaimLinks.Where(l => l.EmailClaimId == claim.Id && l.State != EmailClaimLinkState.Removed).Select(l => l.VaultManifestId).ToListAsync();
         if (linkedManifestIds.Count == 0)
         {
             return false;
         }
 
-        // Holding any access key on a linked manifest is proof of access: AccountKey on a personal manifest, GrantKey on a shared manifest (owner self-grant and recipient alike).
+        // Holding any access key on a linked manifest is proof of access.
         var hasAccessKey = await context.VaultManifestAccessKeys.AnyAsync(k => k.UserId == userId && linkedManifestIds.Contains(k.VaultManifestId));
         if (hasAccessKey)
         {
@@ -59,11 +59,8 @@ public static class EmailAccessHelper
             return [];
         }
 
-        // Get the claim links that the user may read through; a dual-claimed address is readable through any one of its links.
-        var claims = await context.EmailClaimLinks
-            .Where(l => addresses.Contains(l.EmailClaim.Address) && !l.EmailClaim.Disabled)
-            .Select(l => new { l.EmailClaim.Address, ManifestId = l.VaultManifestId, l.VaultManifest.OwnerGroupId })
-            .ToListAsync();
+        // Get the claim links that the user may read through.
+        var claims = await context.EmailClaimLinks.Where(l => addresses.Contains(l.EmailClaim.Address) && l.State != EmailClaimLinkState.Removed).Select(l => new { l.EmailClaim.Address, ManifestId = l.VaultManifestId, l.VaultManifest.OwnerGroupId }).ToListAsync();
         if (claims.Count == 0)
         {
             return [];

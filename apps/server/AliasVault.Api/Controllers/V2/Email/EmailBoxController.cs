@@ -51,10 +51,8 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         var sanitizedEmail = to.Trim().ToLower();
 
         // See if this user has a valid claim to the email address.
-        var emailClaim = await context.EmailClaims
-            .FirstOrDefaultAsync(x => x.Address == sanitizedEmail);
-
-        if (emailClaim is null || emailClaim.Disabled)
+        var emailClaim = await context.EmailClaims.FirstOrDefaultAsync(x => x.Address == sanitizedEmail && x.Links.Any(l => l.State != EmailClaimLinkState.Removed));
+        if (emailClaim is null)
         {
             return BadRequest(new ApiErrorResponse
             {
@@ -79,39 +77,50 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             });
         }
 
-        // Retrieve emails from database, restricted to emails carrying a wrap the caller can open.
+        // Retrieve emails from database, restricted to emails carrying a decryption key the caller can open.
         var decryptableKeyIds = await EmailAccessHelper.ResolveDecryptableKeyIdsAsync(context, user.Id);
-        var emailQuery = context.Emails.AsNoTracking().Where(x => x.To == sanitizedEmail && x.Wraps.Any(w => decryptableKeyIds.Contains(w.EncryptionKeyId)));
+        var keyTable = await EmailKeyTable.BuildAsync(context, decryptableKeyIds);
+        var emailQuery = context.Emails.AsNoTracking().Where(x => x.To == sanitizedEmail && x.DecryptionKeys.Any(d => decryptableKeyIds.Contains(d.VaultManifestDeliveryKeyId)));
         if (shadowCutoff is not null)
         {
             emailQuery = emailQuery.Where(x => x.DateSystem <= shadowCutoff.Value);
         }
 
-        List<MailboxEmailApiModel> emails = await emailQuery
-            .Select(x => new MailboxEmailApiModel()
+        var rows = await emailQuery
+            .Select(x => new
             {
-                Id = x.Id,
-                Subject = x.Subject,
-                FromDisplay = x.From,
-                FromDomain = x.FromDomain,
-                FromLocal = x.FromLocal,
-                ToDomain = x.ToDomain,
-                ToLocal = x.ToLocal,
-                Date = DateTime.SpecifyKind(x.Date, DateTimeKind.Utc),
-                DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
-                SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
-                MessagePreview = x.MessagePreview ?? string.Empty,
-                Wraps = x.Wraps.Where(w => decryptableKeyIds.Contains(w.EncryptionKeyId)).OrderBy(w => w.EncryptionKeyId).Select(w => new EmailKeyWrapApiModel { PublicKey = w.EncryptionKey.PublicKey, EncryptedSymmetricKey = w.EncryptedSymmetricKey }).ToList(),
-                HasAttachments = x.AttachmentCount > 0 || x.Attachments.Any(),
+                Mail = new MailboxEmailApiModel()
+                {
+                    Id = x.Id,
+                    Subject = x.Subject,
+                    FromDisplay = x.From,
+                    FromDomain = x.FromDomain,
+                    FromLocal = x.FromLocal,
+                    ToDomain = x.ToDomain,
+                    ToLocal = x.ToLocal,
+                    Date = DateTime.SpecifyKind(x.Date, DateTimeKind.Utc),
+                    DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
+                    SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
+                    MessagePreview = x.MessagePreview ?? string.Empty,
+                    HasAttachments = x.AttachmentCount > 0 || x.Attachments.Any(),
+                },
+                DecryptionKeys = x.DecryptionKeys.Where(d => decryptableKeyIds.Contains(d.VaultManifestDeliveryKeyId)).Select(d => new { d.VaultManifestDeliveryKeyId, d.EncryptedSymmetricKey }).ToList(),
             })
-            .OrderByDescending(x => x.DateSystem)
+            .OrderByDescending(x => x.Mail.DateSystem)
             .Take(50)
             .ToListAsync();
+
+        var emails = rows.ConvertAll(r =>
+        {
+            r.Mail.DecryptionKeys = keyTable.ToApiModels(r.DecryptionKeys.Select(d => (d.VaultManifestDeliveryKeyId, d.EncryptedSymmetricKey)));
+            return r.Mail;
+        });
 
         var returnValue = new MailboxApiModel
         {
             Address = to,
             Subscribed = false,
+            PublicKeys = keyTable.PublicKeys,
             Mails = emails,
         };
 
@@ -148,15 +157,16 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
 
         // Restrict to emails this user holds a key for.
         var decryptableKeyIds = await EmailAccessHelper.ResolveDecryptableKeyIdsAsync(context, user.Id);
+        var keyTable = await EmailKeyTable.BuildAsync(context, decryptableKeyIds);
 
-        // Fetch the newest emails for each address individually, restricted to emails carrying a wrap the caller can open.
+        // Fetch the newest emails for each address individually, restricted to emails carrying a decryption key the caller can open.
         var cutoffClause = shadowCutoff is null ? string.Empty : @" AND e2.""DateSystem"" <= @cutoff";
         var pageSql = $@"
             SELECT e.*
             FROM unnest(@addresses) AS addr(email)
             CROSS JOIN LATERAL (
                 SELECT * FROM ""Emails"" AS e2
-                WHERE e2.""To"" = addr.email AND EXISTS (SELECT 1 FROM ""EmailKeyWraps"" AS w WHERE w.""EmailId"" = e2.""Id"" AND w.""EncryptionKeyId"" = ANY(@keyids)){cutoffClause}
+                WHERE e2.""To"" = addr.email AND EXISTS (SELECT 1 FROM ""EmailDecryptionKeys"" AS d WHERE d.""EmailId"" = e2.""Id"" AND d.""VaultManifestDeliveryKeyId"" = ANY(@keyids)){cutoffClause}
                 ORDER BY e2.""DateSystem"" DESC
                 LIMIT @limit
             ) AS e";
@@ -174,32 +184,41 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         }
 
         // Merge the per-address results, order them globally and take the requested page.
-        var mails = await context.Emails
+        var rows = await context.Emails
             .FromSqlRaw(pageSql, parameters.ToArray())
             .AsNoTracking()
             .OrderByDescending(x => x.DateSystem)
             .Skip((page - 1) * model.PageSize)
             .Take(model.PageSize)
-            .Select(x => new MailboxEmailApiModel
+            .Select(x => new
             {
-                Id = x.Id,
-                Subject = x.Subject,
-                FromDisplay = x.From,
-                FromDomain = x.FromDomain,
-                FromLocal = x.FromLocal,
-                ToDomain = x.ToDomain,
-                ToLocal = x.ToLocal,
-                Date = DateTime.SpecifyKind(x.Date, DateTimeKind.Utc),
-                DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
-                SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
-                MessagePreview = x.MessagePreview ?? string.Empty,
-                Wraps = x.Wraps.Where(w => decryptableKeyIds.Contains(w.EncryptionKeyId)).OrderBy(w => w.EncryptionKeyId).Select(w => new EmailKeyWrapApiModel { PublicKey = w.EncryptionKey.PublicKey, EncryptedSymmetricKey = w.EncryptedSymmetricKey }).ToList(),
-                HasAttachments = x.AttachmentCount > 0 || x.Attachments.Any(),
+                Mail = new MailboxEmailApiModel
+                {
+                    Id = x.Id,
+                    Subject = x.Subject,
+                    FromDisplay = x.From,
+                    FromDomain = x.FromDomain,
+                    FromLocal = x.FromLocal,
+                    ToDomain = x.ToDomain,
+                    ToLocal = x.ToLocal,
+                    Date = DateTime.SpecifyKind(x.Date, DateTimeKind.Utc),
+                    DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
+                    SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
+                    MessagePreview = x.MessagePreview ?? string.Empty,
+                    HasAttachments = x.AttachmentCount > 0 || x.Attachments.Any(),
+                },
+                DecryptionKeys = x.DecryptionKeys.Where(d => decryptableKeyIds.Contains(d.VaultManifestDeliveryKeyId)).Select(d => new { d.VaultManifestDeliveryKeyId, d.EncryptedSymmetricKey }).ToList(),
             })
             .ToListAsync();
 
+        var mails = rows.ConvertAll(r =>
+        {
+            r.Mail.DecryptionKeys = keyTable.ToApiModels(r.DecryptionKeys.Select(d => (d.VaultManifestDeliveryKeyId, d.EncryptedSymmetricKey)));
+            return r.Mail;
+        });
+
         // Count the total number of emails.
-        var countQuery = context.Emails.Where(email => validAddresses.Contains(email.To) && email.Wraps.Any(w => decryptableKeyIds.Contains(w.EncryptionKeyId)));
+        var countQuery = context.Emails.Where(email => validAddresses.Contains(email.To) && email.DecryptionKeys.Any(d => decryptableKeyIds.Contains(d.VaultManifestDeliveryKeyId)));
         if (shadowCutoff is not null)
         {
             countQuery = countQuery.Where(email => email.DateSystem <= shadowCutoff.Value);
@@ -210,6 +229,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         MailboxBulkResponse returnValue = new()
         {
             Addresses = validAddresses,
+            PublicKeys = keyTable.PublicKeys,
             Mails = mails,
             PageSize = model.PageSize,
             CurrentPage = page,

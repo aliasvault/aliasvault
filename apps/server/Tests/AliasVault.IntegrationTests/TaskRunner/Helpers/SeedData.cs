@@ -52,7 +52,7 @@ public static class SeedData
     /// Seeds the database with test emails.
     /// </summary>
     /// <param name="dbContext">The database context.</param>
-    /// <param name="encryptionKeyId">The delivery key ID the emails' key wraps reference.</param>
+    /// <param name="encryptionKeyId">The delivery key ID the emails' decryption keys reference.</param>
     /// <returns>Task.</returns>
     private static async Task SeedEmails(AliasServerDbContext dbContext, Guid encryptionKeyId)
     {
@@ -133,7 +133,7 @@ public static class SeedData
     /// </summary>
     /// <param name="index">The index.</param>
     /// <param name="daysOffset">The days offset.</param>
-    /// <param name="encryptionKeyId">The delivery key ID the email's key wrap references.</param>
+    /// <param name="encryptionKeyId">The delivery key ID the email's decryption key references.</param>
     /// <param name="prefix">The prefix.</param>
     /// <returns>Email.</returns>
     private static Email CreateTestEmail(int index, int daysOffset, Guid encryptionKeyId, string prefix)
@@ -152,7 +152,7 @@ public static class SeedData
             MessagePreview = "Test message",
             MessageSourceBytes = Gzip("Test source"),
             AttachmentCount = 0,
-            Wraps = [new EmailKeyWrap { EncryptionKeyId = encryptionKeyId, EncryptedSymmetricKey = "dummy-key" }],
+            DecryptionKeys = [new EmailDecryptionKey { VaultManifestDeliveryKeyId = encryptionKeyId, EncryptedSymmetricKey = "dummy-key" }],
         };
     }
 
@@ -162,7 +162,7 @@ public static class SeedData
     /// </summary>
     /// <param name="index">The index.</param>
     /// <param name="daysOffset">The days offset.</param>
-    /// <param name="encryptionKeyId">The delivery key ID the email's key wrap references.</param>
+    /// <param name="encryptionKeyId">The delivery key ID the email's decryption key references.</param>
     /// <param name="prefix">The prefix.</param>
     /// <returns>Email.</returns>
     private static Email CreateLegacyTestEmail(int index, int daysOffset, Guid encryptionKeyId, string prefix)
@@ -182,7 +182,7 @@ public static class SeedData
             MessagePreview = "Test message",
             MessageSource = "Test source",
             Attachments = [new EmailAttachment { Bytes = [1, 2, 3], Filename = "legacy.txt", MimeType = "text/plain", Filesize = 3, Date = DateTime.UtcNow.AddDays(daysOffset) }],
-            Wraps = [new EmailKeyWrap { EncryptionKeyId = encryptionKeyId, EncryptedSymmetricKey = "dummy-key" }],
+            DecryptionKeys = [new EmailDecryptionKey { VaultManifestDeliveryKeyId = encryptionKeyId, EncryptedSymmetricKey = "dummy-key" }],
         };
     }
 

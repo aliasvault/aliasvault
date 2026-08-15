@@ -190,6 +190,9 @@ export class ItemQueries {
       ORDER BY t.DisplayOrder, t.Name`;
   }
 
+  /**
+   * Generate placeholders for item key pairs.
+   */
   private static itemKeyPlaceholders(itemCount: number): string {
     return Array(itemCount).fill('(?, ?)').join(', ');
   }

@@ -139,9 +139,9 @@ type ValidateLoginResponse = {
     serverSessionProof: string;
 };
 
-type EmailKeyWrap = {
-    /** The public key whose private half unwraps this wrap */
-    publicKey: string;
+type EmailDecryptionKey = {
+    /** Position of the public key in the response-level publicKeys table */
+    keyIndex: number;
     /** The email's symmetric key, encrypted with the public key */
     encryptedSymmetricKey: string;
 };
@@ -171,8 +171,8 @@ type MailboxEmail = {
     dateSystem: string;
     /** The number of seconds ago the email was received */
     secondsAgo: number;
-    /** The wrapped copies of the email's symmetric key the caller can open, one per manifest keypair the caller holds */
-    wraps: EmailKeyWrap[];
+    /** The encrypted copies of the email's symmetric key the caller can decrypt, one per manifest keypair the caller holds. */
+    decryptionKeys: EmailDecryptionKey[];
 };
 
 /**
@@ -191,6 +191,7 @@ type MailboxBulkResponse = {
     currentPage: number;
     pageSize: number;
     totalRecords: number;
+    publicKeys: string[];
     mails: MailboxEmail[];
 };
 
@@ -235,8 +236,10 @@ type Email = {
     dateSystem: string;
     /** The number of seconds ago the email was received */
     secondsAgo: number;
-    /** The wrapped copies of the email's symmetric key the caller can open, one per manifest keypair the caller holds */
-    wraps: EmailKeyWrap[];
+    /** The encrypted copies of the email's symmetric key the caller can decrypt, one per manifest keypair the caller holds */
+    decryptionKeys: EmailDecryptionKey[];
+    /** The public keys referenced by this email's decryption keys, indexed by EmailDecryptionKey.keyIndex */
+    publicKeys: string[];
     /** The attachments of the email */
     attachments: EmailAttachment[];
 };
@@ -526,4 +529,4 @@ declare const VaultKeyAlgorithm: {
  */
 type VaultKeyAlgorithmValue = typeof VaultKeyAlgorithm[keyof typeof VaultKeyAlgorithm];
 
-export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type Email, type EmailAttachment, type EmailKeyWrap, type FaviconExtractModel, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, ManifestKeyType, type ManifestKeyTypeValue, type ManifestRevision, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type RefreshToken, type StatusResponse, type StatusResponseV2, type TokenModel, UnlockMethodType, type UnlockMethodTypeValue, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, VaultKeyAlgorithm, type VaultKeyAlgorithmValue, type VaultKeyGetResponse, type VaultKeyResponse, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse };
+export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type Email, type EmailAttachment, type EmailDecryptionKey, type FaviconExtractModel, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, ManifestKeyType, type ManifestKeyTypeValue, type ManifestRevision, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type RefreshToken, type StatusResponse, type StatusResponseV2, type TokenModel, UnlockMethodType, type UnlockMethodTypeValue, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, VaultKeyAlgorithm, type VaultKeyAlgorithmValue, type VaultKeyGetResponse, type VaultKeyResponse, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse };

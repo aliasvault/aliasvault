@@ -11,8 +11,8 @@ using AliasServerDb;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
-/// A maintenance task that deletes emails whose key wraps are all gone. Wraps cascade away with their manifest's
-/// delivery keys (account deletion, shared folder deletion), and an email without any wrap is permanently
+/// A maintenance task that deletes emails whose decryption keys are all gone. They cascade away with their manifest's
+/// delivery keys (account deletion, shared folder deletion), and an email without any decryption key is permanently
 /// undecryptable: nobody holds a key that can open it, so it can be safely deleted.
 /// </summary>
 public class OrphanedEmailCleanupTask : IMaintenanceTask
@@ -41,9 +41,9 @@ public class OrphanedEmailCleanupTask : IMaintenanceTask
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-        // Delete all emails without a single remaining key wrap - attachments cascade with them.
+        // Delete all emails without a single remaining decryption key - attachments cascade with them.
         var deletedCount = await dbContext.Emails
-            .Where(x => !x.Wraps.Any())
+            .Where(x => !x.DecryptionKeys.Any())
             .ExecuteDeleteAsync(cancellationToken);
 
         if (deletedCount > 0)

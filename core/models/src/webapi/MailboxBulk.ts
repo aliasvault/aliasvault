@@ -17,5 +17,6 @@ export type MailboxBulkResponse = {
     currentPage: number;
     pageSize: number;
     totalRecords: number;
+    publicKeys: string[];
     mails: MailboxEmail[];
 }

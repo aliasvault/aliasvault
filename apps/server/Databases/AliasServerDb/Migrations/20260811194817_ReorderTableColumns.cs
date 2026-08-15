@@ -53,8 +53,8 @@ namespace AliasServerDb.Migrations
                 ALTER TABLE "AliasVaultUsers" DROP CONSTRAINT "FK_AliasVaultUsers_Groups_PersonalGroupId";
                 ALTER TABLE "EmailAttachments" DROP CONSTRAINT "FK_EmailAttachments_Emails_EmailId";
                 ALTER TABLE "EmailClaimLinks" DROP CONSTRAINT "FK_EmailClaimLinks_VaultManifests_VaultManifestId";
-                ALTER TABLE "EmailKeyWraps" DROP CONSTRAINT "FK_EmailKeyWraps_Emails_EmailId";
-                ALTER TABLE "EmailKeyWraps" DROP CONSTRAINT "FK_EmailKeyWraps_VaultManifestDeliveryKeys_EncryptionKeyId";
+                ALTER TABLE "EmailDecryptionKeys" DROP CONSTRAINT "FK_EmailDecryptionKeys_Emails_EmailId";
+                ALTER TABLE "EmailDecryptionKeys" DROP CONSTRAINT "FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId";
                 ALTER TABLE "GroupMembers" DROP CONSTRAINT "FK_GroupMembers_AliasVaultUsers_UserId";
                 ALTER TABLE "MobileLoginRequests" DROP CONSTRAINT "FK_MobileLoginRequests_AliasVaultUsers_UserId";
                 ALTER TABLE "RateLimits" DROP CONSTRAINT "FK_RateLimits_Groups_GroupId";
@@ -534,8 +534,8 @@ namespace AliasServerDb.Migrations
                 ALTER TABLE "AliasVaultUsers" ADD CONSTRAINT "FK_AliasVaultUsers_Groups_PersonalGroupId" FOREIGN KEY ("PersonalGroupId") REFERENCES "Groups"("Id") ON DELETE RESTRICT;
                 ALTER TABLE "EmailAttachments" ADD CONSTRAINT "FK_EmailAttachments_Emails_EmailId" FOREIGN KEY ("EmailId") REFERENCES "Emails"("Id") ON DELETE CASCADE;
                 ALTER TABLE "EmailClaimLinks" ADD CONSTRAINT "FK_EmailClaimLinks_VaultManifests_VaultManifestId" FOREIGN KEY ("VaultManifestId") REFERENCES "VaultManifests"("ManifestId") ON DELETE CASCADE;
-                ALTER TABLE "EmailKeyWraps" ADD CONSTRAINT "FK_EmailKeyWraps_Emails_EmailId" FOREIGN KEY ("EmailId") REFERENCES "Emails"("Id") ON DELETE CASCADE;
-                ALTER TABLE "EmailKeyWraps" ADD CONSTRAINT "FK_EmailKeyWraps_VaultManifestDeliveryKeys_EncryptionKeyId" FOREIGN KEY ("EncryptionKeyId") REFERENCES "VaultManifestDeliveryKeys"("Id") ON DELETE CASCADE;
+                ALTER TABLE "EmailDecryptionKeys" ADD CONSTRAINT "FK_EmailDecryptionKeys_Emails_EmailId" FOREIGN KEY ("EmailId") REFERENCES "Emails"("Id") ON DELETE CASCADE;
+                ALTER TABLE "EmailDecryptionKeys" ADD CONSTRAINT "FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId" FOREIGN KEY ("VaultManifestDeliveryKeyId") REFERENCES "VaultManifestDeliveryKeys"("Id") ON DELETE CASCADE;
                 ALTER TABLE "GroupMembers" ADD CONSTRAINT "FK_GroupMembers_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;
                 ALTER TABLE "MobileLoginRequests" ADD CONSTRAINT "FK_MobileLoginRequests_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;
                 ALTER TABLE "RateLimits" ADD CONSTRAINT "FK_RateLimits_Groups_GroupId" FOREIGN KEY ("GroupId") REFERENCES "Groups"("Id") ON DELETE CASCADE;

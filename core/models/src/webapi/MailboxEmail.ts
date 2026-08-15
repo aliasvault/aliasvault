@@ -1,4 +1,4 @@
-import { EmailKeyWrap } from "./EmailKeyWrap";
+import { EmailDecryptionKey } from "./EmailDecryptionKey";
 
 export type MailboxEmail = {
     /** The preview of the email message */
@@ -37,6 +37,6 @@ export type MailboxEmail = {
     /** The number of seconds ago the email was received */
     secondsAgo: number;
 
-    /** The wrapped copies of the email's symmetric key the caller can open, one per manifest keypair the caller holds */
-    wraps: EmailKeyWrap[];
+    /** The encrypted copies of the email's symmetric key the caller can decrypt, one per manifest keypair the caller holds. */
+    decryptionKeys: EmailDecryptionKey[];
 }

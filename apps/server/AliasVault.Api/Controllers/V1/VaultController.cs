@@ -320,7 +320,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
     }
 
     /// <summary>
-    /// HTTP 426 Upgrade Required — returned to legacy v1 clients hitting a migrated user. This is a backstop only:
+    /// HTTP 426 Upgrade Required: returned to legacy v1 clients hitting a migrated user. This is a backstop only:
     /// the status endpoint already reports such clients as unsupported, so a well-behaved client logs out with a
     /// proper "update your client" message before it ever calls a vault endpoint.
     /// </summary>
@@ -396,10 +396,11 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         // multiple credentials share the same private email address.
         newEmailAddresses = newEmailAddresses.Select(EmailHelper.SanitizeEmail).Distinct().ToList();
 
-        // Get list of email claims owned by the user (v1 only supports personal claims in the personal manifest).
+        // Get list of email claims owned by the user.
         var userOwnedEmailClaims = await context.EmailClaims
             .Include(x => x.Links)
-            .Where(x => x.Links.Any(l => l.VaultManifestId == personalManifestId))
+            .Where(x => x.Links.Any(l => l.VaultManifestId == personalManifestId && l.State != EmailClaimLinkState.Removed)
+                || (x.Links.All(l => l.State == EmailClaimLinkState.Removed) && x.Links.Any(l => l.VaultManifestId == personalManifestId)))
             .ToListAsync();
 
         // Keep track of processed and sanitized email addresses to know which ones still exist.
@@ -420,7 +421,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             int baseCount;
             if (limit.WindowSeconds == 0)
             {
-                // Global absolute cap: every claim ever billed to the caller's group (including disabled ones).
+                // Global absolute cap: every claim ever billed to the caller's group.
                 baseCount = await context.EmailClaimLinks.Where(l => l.VaultManifest.OwnerGroupId == user.PersonalGroupId).Select(l => l.EmailClaimId).Distinct().CountAsync();
             }
             else
@@ -464,14 +465,17 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             var existingUserClaim = userOwnedEmailClaims.FirstOrDefault(x => x.Address == sanitizedEmail);
             if (existingUserClaim != null)
             {
-                // Claim already exists but is disabled, so we can re-enable it.
-                if (existingUserClaim.Disabled)
+                // The personal manifest carries the address again, so revive its link. A paused link keeps its pause:
+                // v1 has no per-alias switch, and a v1 sync must never undo one set from a v2 client.
+                var personalLink = existingUserClaim.Links.FirstOrDefault(l => l.VaultManifestId == personalManifestId);
+                if (personalLink is { State: EmailClaimLinkState.Removed })
                 {
-                    existingUserClaim.Disabled = false;
+                    personalLink.State = EmailClaimLinkState.Active;
                     existingUserClaim.UpdatedAt = timeProvider.UtcNow;
                 }
 
-                // If the claim already exists and is not disabled, everything is good, we don't need to do anything.
+                // Reviving the link is all there is to re-enabling the alias: a claim counts as live for as long as
+                // any of its links is not removed, so there is no separate flag to put back.
                 continue;
             }
 
@@ -517,31 +521,27 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             }
         }
 
-        // Disable email claims that are no longer in the new list and have not been disabled yet.
-        // Important: we do not delete email claims ever, as they may be re-used by the user in the future.
-        // We also don't want to allow other users to re-use emails used by other users.
-        // Email claims are considered permanent.
-        foreach (var existingClaim in userOwnedEmailClaims.Where(x => !x.Disabled).ToList())
+        // Disable email claim links that are no longer in the new provided email claim list.
+        foreach (var existingClaim in userOwnedEmailClaims)
         {
-            if (!processedEmailAddresses.Contains(existingClaim.Address))
+            if (processedEmailAddresses.Contains(existingClaim.Address))
             {
-                // The address is gone from the personal vault. Disable the claim when the personal manifest is its only link (keeping the link so a later re-claim re-enables it).
-                var personalLinks = existingClaim.Links.Where(l => l.VaultManifestId == personalManifestId).ToList();
-                if (personalLinks.Count == existingClaim.Links.Count)
-                {
-                    existingClaim.Disabled = true;
-                    existingClaim.UpdatedAt = timeProvider.UtcNow;
-                    continue;
-                }
-
-                foreach (var link in personalLinks)
-                {
-                    existingClaim.Links.Remove(link);
-                    context.EmailClaimLinks.Remove(link);
-                }
-
-                existingClaim.UpdatedAt = timeProvider.UtcNow;
+                continue;
             }
+
+            // The address is gone from the personal vault: disable its link.
+            var personalLinks = existingClaim.Links.Where(l => l.VaultManifestId == personalManifestId && l.State != EmailClaimLinkState.Removed).ToList();
+            if (personalLinks.Count == 0)
+            {
+                continue;
+            }
+
+            foreach (var link in personalLinks)
+            {
+                link.State = EmailClaimLinkState.Removed;
+            }
+
+            existingClaim.UpdatedAt = timeProvider.UtcNow;
         }
 
         await context.SaveChangesAsync();

@@ -9,7 +9,7 @@ namespace AliasVault.Shared.Models.WebApi.V2.Email;
 
 /// <summary>
 /// Represents the base email API model. Decryptability is expressed exclusively through
-/// <see cref="Wraps"/>: one wrapped symmetric key per manifest keypair the caller holds.
+/// <see cref="DecryptionKeys"/>: one encrypted symmetric key per manifest keypair the caller holds.
 /// </summary>
 public abstract class EmailApiModelBase
 {
@@ -64,9 +64,9 @@ public abstract class EmailApiModelBase
     public double SecondsAgo { get; set; }
 
     /// <summary>
-    /// Gets or sets the wrapped copies of the email's symmetric key the caller can open, one per manifest keypair
+    /// Gets or sets the encrypted copies of the email's symmetric key the caller can decrypt, one per manifest keypair
     /// the caller holds (their personal key, plus the delivery key of every shared manifest they can access).
-    /// Each wrap names its public key by index into the public key table of the response model.
+    /// Each entry names its public key by index into the public key table of the response model.
     /// </summary>
-    public List<EmailKeyWrapApiModel> Wraps { get; set; } = [];
+    public List<EmailDecryptionKeyApiModel> DecryptionKeys { get; set; } = [];
 }

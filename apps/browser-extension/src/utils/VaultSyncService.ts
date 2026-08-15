@@ -865,6 +865,9 @@ export class VaultSyncService {
      * run earlier (the pre-push no-op check caches its result) and a write in between advances them.
      */
     const storedRevisions = await getManifestRevisions();
+    /**
+     * Get the revision of a manifest from the stored revisions, or use the revision from the manifest record if not found.
+     */
     const revisionOf = (record: ManifestRecord): number => storedRevisions[record.manifestId] ?? record.revision;
 
     const recordByManifestId = new Map(manifestRecords.map(r => [r.manifestId, r]));

@@ -25,10 +25,10 @@ public class Email
     public int Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the wrapped copies of the symmetric key the email contents are encrypted with, one per
+    /// Gets or sets the encrypted copies of the symmetric key the email contents are encrypted with, one per
     /// manifest that had claimed the alias at delivery time.
     /// </summary>
-    public virtual List<EmailKeyWrap> Wraps { get; set; } = [];
+    public virtual List<EmailDecryptionKey> DecryptionKeys { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the subject of the email.

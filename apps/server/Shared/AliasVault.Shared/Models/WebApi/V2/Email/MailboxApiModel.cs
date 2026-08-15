@@ -23,8 +23,8 @@ public class MailboxApiModel
     public bool Subscribed { get; set; }
 
     /// <summary>
-    /// Gets or sets the public keys referenced by the wraps of the returned emails, sent once for the whole
-    /// response. A wrap's <see cref="EmailKeyWrapApiModel.KeyIndex"/> is its position in this list.
+    /// Gets or sets the public keys referenced by the decryption keys of the returned emails, sent once for the whole
+    /// response. A decryption key's <see cref="EmailDecryptionKeyApiModel.KeyIndex"/> is its position in this list.
     /// </summary>
     public List<string> PublicKeys { get; set; } = [];
 

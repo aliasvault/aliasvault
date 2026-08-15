@@ -8,6 +8,7 @@
 namespace AliasVault.E2ETests.Tests.Client.Shard1;
 
 using System.Text;
+using AliasServerDb;
 using AliasVault.IntegrationTests.SmtpServer.Helpers;
 using MailKit.Net.Smtp;
 using MailKit.Security;
@@ -65,7 +66,7 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         });
 
         // Assert that the claim was created on the server.
-        var claim = await ApiDbContext.UserEmailClaims.Where(x => x.Address == email).FirstOrDefaultAsync();
+        var claim = await ApiDbContext.EmailClaims.Where(x => x.Address == email).FirstOrDefaultAsync();
         Assert.That(claim, Is.Not.Null, "Claim for email address not found in database. Check if item creation and claim creation are working correctly.");
 
         // Assert that the users public key was created on the server.
@@ -162,7 +163,7 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         });
 
         // Assert that the claim was created on the server.
-        var claim = await ApiDbContext.UserEmailClaims.Where(x => x.Address == email).FirstOrDefaultAsync();
+        var claim = await ApiDbContext.EmailClaims.Where(x => x.Address == email).FirstOrDefaultAsync();
         Assert.That(claim, Is.Not.Null, "Claim for email address not found in database. Check if item creation and claim creation are working correctly.");
 
         // Assert that the users public key was created on the server.
@@ -304,7 +305,7 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         });
 
         // Assert that the claim was created on the server.
-        var claim = await ApiDbContext.UserEmailClaims.FirstOrDefaultAsync(x => x.Address == email);
+        var claim = await ApiDbContext.EmailClaims.FirstOrDefaultAsync(x => x.Address == email);
 
         Assert.That(claim, Is.Null, "Claim for unknown email address domain found in database. Check if claim creation domain check is working correctly.");
     }
@@ -327,7 +328,7 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         });
 
         // Assert that the claim was created on the server.
-        var claim = await ApiDbContext.UserEmailClaims.FirstOrDefaultAsync(x => x.Address == email);
+        var claim = await ApiDbContext.EmailClaims.FirstOrDefaultAsync(x => x.Address == email);
         Assert.That(claim, Is.Not.Null, "Claim for email address not found in database. Check if item creation and claim creation are working correctly.");
 
         // Login as new user.
@@ -341,7 +342,7 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         });
 
         // Assert that still only one claim exists for the email address.
-        var claimCount = await ApiDbContext.UserEmailClaims.CountAsync(x => x.Address == email);
+        var claimCount = await ApiDbContext.EmailClaims.CountAsync(x => x.Address == email);
         Assert.That(
             claimCount,
             Is.LessThanOrEqualTo(1),
@@ -374,19 +375,19 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         });
 
         // Assert that the claim was created on the server.
-        var claim = await ApiDbContext.UserEmailClaims.AsNoTracking().FirstOrDefaultAsync(x => x.Address == email1);
+        var claim = await ApiDbContext.EmailClaims.AsNoTracking().FirstOrDefaultAsync(x => x.Address == email1);
         Assert.That(claim, Is.Not.Null, "Initial claim for email address not found in database.");
 
         // Step 2: Delete the email claim from the database directly.
         // This simulates the scenario where both credentials were created while the API was down
         // (offline mode) so no claim exists on the server yet. When the vault syncs, it will send
         // both email addresses at once, and the server needs to handle the case-insensitive duplicates.
-        var claimToRemove = await ApiDbContext.UserEmailClaims.FirstAsync(x => x.Address == email1);
-        ApiDbContext.UserEmailClaims.Remove(claimToRemove);
+        var claimToRemove = await ApiDbContext.EmailClaims.FirstAsync(x => x.Address == email1);
+        ApiDbContext.EmailClaims.Remove(claimToRemove);
         await ApiDbContext.SaveChangesAsync();
 
         // Verify claim is gone.
-        var claimAfterDelete = await ApiDbContext.UserEmailClaims.AsNoTracking().FirstOrDefaultAsync(x => x.Address == email1);
+        var claimAfterDelete = await ApiDbContext.EmailClaims.AsNoTracking().FirstOrDefaultAsync(x => x.Address == email1);
         Assert.That(claimAfterDelete, Is.Null, "Claim should have been removed from database.");
 
         // Step 3: Create credential B with the same email but different casing (capital C).
@@ -409,15 +410,15 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         // so if we reach here without exception, the vault sync succeeded.
 
         // Step 5: Assert that exactly one email claim exists on the server (normalized to lowercase).
-        var claims = await ApiDbContext.UserEmailClaims.AsNoTracking()
+        var claims = await ApiDbContext.EmailClaims.AsNoTracking()
             .Where(x => x.Address == email1)
             .ToListAsync();
         Assert.That(claims, Has.Count.EqualTo(1), "Exactly one email claim should exist for the case-insensitive duplicate email address.");
         Assert.That(claims[0].Address, Is.EqualTo(email1), "Email claim should be stored in lowercase.");
-        Assert.That(claims[0].Disabled, Is.False, "Email claim should not be disabled.");
+        Assert.That(await IsClaimLiveAsync(claims[0].Id), Is.True, "Email claim should not be disabled.");
 
         // Step 6: Verify no duplicate claims exist with different casing.
-        var allClaims = await ApiDbContext.UserEmailClaims.AsNoTracking()
+        var allClaims = await ApiDbContext.EmailClaims.AsNoTracking()
             .Where(x => x.AddressLocal == "casedupe" && x.AddressDomain == "example.tld")
             .ToListAsync();
         Assert.That(allClaims, Has.Count.EqualTo(1), "No duplicate claims with different casing should exist.");
@@ -450,8 +451,8 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         });
 
         // Assert that both claims were created on the server.
-        var claim1 = await ApiDbContext.UserEmailClaims.AsNoTracking().FirstOrDefaultAsync(x => x.Address == email1);
-        var claim2 = await ApiDbContext.UserEmailClaims.AsNoTracking().FirstOrDefaultAsync(x => x.Address == email2);
+        var claim1 = await ApiDbContext.EmailClaims.AsNoTracking().FirstOrDefaultAsync(x => x.Address == email1);
+        var claim2 = await ApiDbContext.EmailClaims.AsNoTracking().FirstOrDefaultAsync(x => x.Address == email2);
         Assert.Multiple(() =>
         {
             Assert.That(claim1, Is.Not.Null, "Claim for email address not found in database. Check if item creation and claim creation are working correctly.");
@@ -459,10 +460,12 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         });
 
         // Assert that both claims are not disabled.
+        var claim1Live = await IsClaimLiveAsync(claim1!.Id);
+        var claim2Live = await IsClaimLiveAsync(claim2!.Id);
         Assert.Multiple(() =>
         {
-            Assert.That(claim1.Disabled, Is.False, "Claim for new email address is marked disabled after creation.");
-            Assert.That(claim2.Disabled, Is.False, "Claim for new email address is marked disabled after creation.");
+            Assert.That(claim1Live, Is.True, "Claim for new email address is marked disabled after creation.");
+            Assert.That(claim2Live, Is.True, "Claim for new email address is marked disabled after creation.");
         });
 
         // Delete the first credential.
@@ -472,12 +475,14 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         await Task.Delay(1000);
 
         // Assert that the first claim is now disabled, and second still enabled.
-        claim1 = await ApiDbContext.UserEmailClaims.AsNoTracking().FirstAsync(x => x.Address == email1);
-        claim2 = await ApiDbContext.UserEmailClaims.AsNoTracking().FirstAsync(x => x.Address == email2);
+        claim1 = await ApiDbContext.EmailClaims.AsNoTracking().FirstAsync(x => x.Address == email1);
+        claim2 = await ApiDbContext.EmailClaims.AsNoTracking().FirstAsync(x => x.Address == email2);
+        claim1Live = await IsClaimLiveAsync(claim1.Id);
+        claim2Live = await IsClaimLiveAsync(claim2.Id);
         Assert.Multiple(() =>
         {
-            Assert.That(claim1.Disabled, Is.True, "Claim for deleted alias is not marked as disabled after deletion.");
-            Assert.That(claim2.Disabled, Is.False, "Claim for existing email address is marked disabled after deleting another claim.");
+            Assert.That(claim1Live, Is.False, "Claim for deleted alias is not marked as disabled after deletion.");
+            Assert.That(claim2Live, Is.True, "Claim for existing email address is marked disabled after deleting another claim.");
         });
 
         // Create a new credential with the same email as the one that was disabled.
@@ -488,8 +493,8 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         });
 
         // Assert that the first email claim is enabled again.
-        claim1 = await ApiDbContext.UserEmailClaims.AsNoTracking().FirstAsync(x => x.Address == email1);
-        Assert.That(claim1.Disabled, Is.False, "Claim is not marked as (re)enabled when user re-claims it after having previously deleted it.");
+        claim1 = await ApiDbContext.EmailClaims.AsNoTracking().FirstAsync(x => x.Address == email1);
+        Assert.That(await IsClaimLiveAsync(claim1.Id), Is.True, "Claim is not marked as (re)enabled when user re-claims it after having previously deleted it.");
     }
 
     /// <summary>
@@ -502,6 +507,17 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         await _testHost.StopAsync();
         _testHost.Dispose();
         await _testHostBuilder.DisposeAsync();
+    }
+
+    /// <summary>
+    /// Checks whether an alias is still carried by any vault. There is no disabled flag on the claim: a link that is
+    /// not removed is what says the alias is live, and paused counts as live because the user still has the alias.
+    /// </summary>
+    /// <param name="emailClaimId">The email claim to check.</param>
+    /// <returns>True while at least one manifest still carries the alias.</returns>
+    private async Task<bool> IsClaimLiveAsync(Guid emailClaimId)
+    {
+        return await ApiDbContext.EmailClaimLinks.AsNoTracking().AnyAsync(l => l.EmailClaimId == emailClaimId && l.State != EmailClaimLinkState.Removed);
     }
 
     /// <summary>

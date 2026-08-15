@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AliasServerDb.Migrations
 {
     [DbContext(typeof(AliasServerDbContext))]
-    [Migration("20260810154523_AddEmailMultiWrap")]
-    partial class AddEmailMultiWrap
+    [Migration("20260810154523_AddEmailMultiManifest")]
+    partial class AddEmailMultiManifest
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -506,9 +506,6 @@ namespace AliasServerDb.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("Disabled")
-                        .HasColumnType("boolean");
-
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -537,26 +534,30 @@ namespace AliasServerDb.Migrations
 
                     b.HasIndex("VaultManifestId", "EmailClaimId");
 
+                    b.HasIndex("EmailClaimId")
+                        .HasDatabaseName("IX_EmailClaimLinks_EmailClaimId_Live")
+                        .HasFilter("\"State\" <> 'Removed'");
+
                     b.ToTable("EmailClaimLinks");
                 });
 
-            modelBuilder.Entity("AliasServerDb.EmailKeyWrap", b =>
+            modelBuilder.Entity("AliasServerDb.EmailDecryptionKey", b =>
                 {
                     b.Property<int>("EmailId")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("EncryptionKeyId")
+                    b.Property<Guid>("VaultManifestDeliveryKeyId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("EncryptedSymmetricKey")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("EmailId", "EncryptionKeyId");
+                    b.HasKey("EmailId", "VaultManifestDeliveryKeyId");
 
-                    b.HasIndex("EncryptionKeyId", "EmailId");
+                    b.HasIndex("VaultManifestDeliveryKeyId", "EmailId");
 
-                    b.ToTable("EmailKeyWraps");
+                    b.ToTable("EmailDecryptionKeys");
                 });
 
             modelBuilder.Entity("AliasServerDb.Group", b =>
@@ -1511,23 +1512,24 @@ namespace AliasServerDb.Migrations
                     b.Navigation("VaultManifest");
                 });
 
-            modelBuilder.Entity("AliasServerDb.EmailKeyWrap", b =>
+            modelBuilder.Entity("AliasServerDb.EmailDecryptionKey", b =>
                 {
                     b.HasOne("AliasServerDb.Email", "Email")
-                        .WithMany("Wraps")
+                        .WithMany("DecryptionKeys")
                         .HasForeignKey("EmailId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("AliasServerDb.VaultManifestDeliveryKey", "EncryptionKey")
-                        .WithMany("Wraps")
-                        .HasForeignKey("EncryptionKeyId")
+                    b.HasOne("AliasServerDb.VaultManifestDeliveryKey", "VaultManifestDeliveryKey")
+                        .WithMany("DecryptionKeys")
+                        .HasForeignKey("VaultManifestDeliveryKeyId")
+                        .HasConstraintName("FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Email");
 
-                    b.Navigation("EncryptionKey");
+                    b.Navigation("VaultManifestDeliveryKey");
                 });
 
             modelBuilder.Entity("AliasServerDb.GroupMember", b =>
@@ -1695,7 +1697,7 @@ namespace AliasServerDb.Migrations
                 {
                     b.Navigation("Attachments");
 
-                    b.Navigation("Wraps");
+                    b.Navigation("DecryptionKeys");
                 });
 
             modelBuilder.Entity("AliasServerDb.EmailClaim", b =>
@@ -1710,7 +1712,7 @@ namespace AliasServerDb.Migrations
 
             modelBuilder.Entity("AliasServerDb.VaultManifestDeliveryKey", b =>
                 {
-                    b.Navigation("Wraps");
+                    b.Navigation("DecryptionKeys");
                 });
 #pragma warning restore 612, 618
         }

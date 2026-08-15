@@ -37,12 +37,13 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        var (email, callerWraps, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
+        var (email, callerDecryptionKeys, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
         if (errorResult != null)
         {
             return errorResult;
         }
 
+        var keyTable = EmailKeyTable.Create(callerDecryptionKeys.Select(d => (d.VaultManifestDeliveryKeyId, d.VaultManifestDeliveryKey.PublicKey)));
         var returnEmail = new EmailApiModel
         {
             Id = email!.Id,
@@ -57,7 +58,8 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
             SecondsAgo = (int)DateTime.UtcNow.Subtract(email.DateSystem).TotalSeconds,
             MessageSource = email.MessageSourceBytes is not null ? Convert.ToBase64String(email.MessageSourceBytes) : email.MessageSource,
             AttachmentCount = email.AttachmentCount,
-            Wraps = callerWraps.Select(w => new EmailKeyWrapApiModel { PublicKey = w.EncryptionKey.PublicKey, EncryptedSymmetricKey = w.EncryptedSymmetricKey }).ToList(),
+            PublicKeys = keyTable.PublicKeys,
+            DecryptionKeys = keyTable.ToApiModels(callerDecryptionKeys.Select(d => (d.VaultManifestDeliveryKeyId, d.EncryptedSymmetricKey))),
         };
 
         // Add attachment metadata (without the filebytes)
@@ -170,8 +172,8 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     /// </summary>
     /// <param name="id">The email ID to retrieve.</param>
     /// <param name="context">The database context.</param>
-    /// <returns>A tuple containing the email, the wraps of it the caller can open, and an IActionResult if there's an error.</returns>
-    private async Task<(Email? Email, List<EmailKeyWrap> CallerWraps, IActionResult? ErrorResult)> AuthenticateAndRetrieveEmailAsync(int id, AliasServerDbContext context)
+    /// <returns>A tuple containing the email, the decryption keys of it the caller can open, and an IActionResult if there's an error.</returns>
+    private async Task<(Email? Email, List<EmailDecryptionKey> CallerDecryptionKeys, IActionResult? ErrorResult)> AuthenticateAndRetrieveEmailAsync(int id, AliasServerDbContext context)
     {
         var user = await GetCurrentUserAsync();
         if (user is null)
@@ -185,8 +187,8 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
         // Retrieve email from database.
         var email = await context.Emails
             .Include(x => x.Attachments)
-            .Include(x => x.Wraps)
-            .ThenInclude(w => w.EncryptionKey)
+            .Include(x => x.DecryptionKeys)
+            .ThenInclude(d => d.VaultManifestDeliveryKey)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (email is null)
@@ -202,21 +204,20 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
 
         // Check if the user has access to the email address.
         var normalizedEmailAddress = email.To.Trim().ToLower();
-        var emailClaim = await context.EmailClaims.FirstOrDefaultAsync(x => x.Address == normalizedEmailAddress && !x.Disabled);
-
+        var emailClaim = await context.EmailClaims.FirstOrDefaultAsync(x => x.Address == normalizedEmailAddress);
         if (emailClaim is null || !await EmailAccessHelper.CanReadClaimAsync(context, emailClaim, user.Id))
         {
             return (null, [], Unauthorized("User does not have a claim to this email address."));
         }
 
-        // The email is accessible only through a wrap the caller holds a private key for.
+        // The email is accessible only through a decryption key the caller holds the private half for.
         var decryptableKeyIds = await EmailAccessHelper.ResolveDecryptableKeyIdsAsync(context, user.Id);
-        var callerWraps = email.Wraps.Where(w => decryptableKeyIds.Contains(w.EncryptionKeyId)).OrderBy(w => w.EncryptionKeyId).ToList();
-        if (callerWraps.Count == 0)
+        var callerDecryptionKeys = email.DecryptionKeys.Where(d => decryptableKeyIds.Contains(d.VaultManifestDeliveryKeyId)).OrderBy(d => d.VaultManifestDeliveryKeyId).ToList();
+        if (callerDecryptionKeys.Count == 0)
         {
             return (null, [], NotFound("Email not found."));
         }
 
-        return (email, callerWraps, null);
+        return (email, callerDecryptionKeys, null);
     }
 }

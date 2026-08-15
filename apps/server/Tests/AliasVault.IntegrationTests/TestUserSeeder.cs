@@ -64,7 +64,7 @@ public static class TestUserSeeder
     /// </summary>
     /// <param name="vaultManifestId">The manifest that claims the alias.</param>
     /// <param name="address">The full email address; the local and domain parts are derived from it.</param>
-    /// <param name="disabled">Whether the claim is disabled.</param>
+    /// <param name="disabled">Whether the claim is disabled, i.e. the manifest no longer carries the alias.</param>
     /// <param name="createdAt">Optional created/updated timestamp; defaults to now.</param>
     /// <returns>The new email claim carrying a single link to the manifest.</returns>
     public static EmailClaim CreateEmailClaim(Guid vaultManifestId, string address, bool disabled = false, DateTime? createdAt = null)
@@ -76,10 +76,9 @@ public static class TestUserSeeder
             Address = address,
             AddressLocal = addressParts[0],
             AddressDomain = addressParts[1],
-            Disabled = disabled,
             CreatedAt = timestamp,
             UpdatedAt = timestamp,
-            Links = [new EmailClaimLink { VaultManifestId = vaultManifestId }],
+            Links = [new EmailClaimLink { VaultManifestId = vaultManifestId, State = disabled ? EmailClaimLinkState.Removed : EmailClaimLinkState.Active }],
         };
     }
 }

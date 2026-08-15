@@ -928,7 +928,8 @@ public class VaultController(
     private async Task<EmailRouting> BuildEmailRoutingAsync(AliasServerDbContext context, AliasVaultUser user)
     {
         var claims = await context.EmailClaims
-            .Where(c => !c.Disabled && c.Links.Any(l => context.GroupMembers.Any(gm => gm.GroupId == l.VaultManifest.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner)))
+            .Where(c => c.Links.Any(l => l.State != EmailClaimLinkState.Removed
+                && context.GroupMembers.Any(gm => gm.GroupId == l.VaultManifest.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner)))
             .Select(c => c.Address)
             .ToListAsync();
 
@@ -996,9 +997,10 @@ public class VaultController(
     /// <param name="routing">The pushed routing data: one entry per (address, manifest) pair.</param>
     private async Task UpdateEmailClaimsAsync(AliasServerDbContext context, AliasVaultUser user, EmailRoutingPush routing)
     {
+        // Get all unique emails with calculated state (active wins from paused in case there are multiple).
         var pushedPairs = routing.EmailAddressList
             .GroupBy(x => new { Address = EmailHelper.SanitizeEmail(x.Address), x.ManifestId })
-            .Select(g => new { g.Key.Address, g.Key.ManifestId, Paused = g.All(x => x.Paused) })
+            .Select(g => new { g.Key.Address, g.Key.ManifestId, State = g.All(x => x.Paused) ? EmailClaimLinkState.Paused : EmailClaimLinkState.Active })
             .ToList();
 
         var accessibleManifests = (await ManifestAccessHelper.AccessibleManifests(context, user.Id).Select(m => m.ManifestId).ToListAsync()).ToHashSet();
@@ -1016,7 +1018,7 @@ public class VaultController(
             return;
         }
 
-        var assertedPairs = new List<(string Address, Guid ManifestId, bool Paused)>();
+        var assertedPairs = new List<(string Address, Guid ManifestId, EmailClaimLinkState State)>();
         foreach (var pair in pushedPairs)
         {
             if (!accessibleManifests.Contains(pair.ManifestId))
@@ -1025,7 +1027,7 @@ public class VaultController(
                 continue;
             }
 
-            assertedPairs.Add((pair.Address, pair.ManifestId, pair.Paused));
+            assertedPairs.Add((pair.Address, pair.ManifestId, pair.State));
         }
 
         var assertedManifestIds = assertedPairs.Select(p => p.ManifestId).Distinct().ToList();
@@ -1036,18 +1038,19 @@ public class VaultController(
             .Where(k => assertedManifestIds.Contains(k.VaultManifestId) && k.IsPrimary)
             .Select(k => k.VaultManifestId)
             .ToListAsync()).ToHashSet();
-        foreach (var (address, manifestId, _) in assertedPairs.Where(p => !p.Paused && p.ManifestId != personalManifestId.Value && !manifestsWithDeliveryKey.Contains(p.ManifestId)))
+        foreach (var (address, manifestId, _) in assertedPairs.Where(p => p.State == EmailClaimLinkState.Active && p.ManifestId != personalManifestId.Value && !manifestsWithDeliveryKey.Contains(p.ManifestId)))
         {
             logger.LogWarning("{User} claimed shared alias {Email} for manifest {Manifest} with no published delivery key; that manifest gets no wrap for its mail until a delivery key is published.", user.UserName, address, manifestId);
         }
 
-        // Per address: the manifests that claim it, each with whether the user switched the alias off there.
-        var desiredByAddress = assertedPairs.GroupBy(p => p.Address).ToDictionary(g => g.Key, g => g.ToDictionary(p => p.ManifestId, p => p.Paused));
+        // Per address: the manifests that carry it, each with the state the push puts that link in.
+        var desiredByAddress = assertedPairs.GroupBy(p => p.Address).ToDictionary(g => g.Key, g => g.ToDictionary(p => p.ManifestId, p => p.State));
 
         // Get the claims this push may update: every claim linked to a manifest inside the caller's update scope.
         var userOwnedEmailClaims = await context.EmailClaims
             .Include(c => c.Links)
-            .Where(c => c.Links.Any(l => updateScope.Contains(l.VaultManifestId)))
+            .Where(c => c.Links.Any(l => updateScope.Contains(l.VaultManifestId) && l.State != EmailClaimLinkState.Removed)
+                || (c.Links.All(l => l.State == EmailClaimLinkState.Removed) && c.Links.Any(l => updateScope.Contains(l.VaultManifestId))))
             .ToListAsync();
         var processed = new HashSet<string>();
         var supportedDomains = config.PrivateEmailDomains;
@@ -1107,45 +1110,41 @@ public class VaultController(
             if (existing != null)
             {
                 var changed = false;
-                foreach (var (manifestId, paused) in desiredManifests.Where(d => existing.Links.All(l => l.VaultManifestId != d.Key)))
+                foreach (var (manifestId, state) in desiredManifests)
                 {
-                    if (!TryChargeQuota(manifestId))
+                    var link = existing.Links.FirstOrDefault(l => l.VaultManifestId == manifestId);
+                    if (link is null)
                     {
+                        if (TryChargeQuota(manifestId))
+                        {
+                            existing.Links.Add(new EmailClaimLink { EmailClaimId = existing.Id, VaultManifestId = manifestId, State = state });
+                            changed = true;
+                        }
+
                         continue;
                     }
 
-                    existing.Links.Add(new EmailClaimLink { EmailClaimId = existing.Id, VaultManifestId = manifestId, Paused = paused });
-                    changed = true;
-                }
-
-                // Switching a single alias on or off only affects this flag: the link itself survives, so mail already received for it stays readable.
-                foreach (var link in existing.Links)
-                {
-                    if (desiredManifests.TryGetValue(link.VaultManifestId, out var paused) && link.Paused != paused)
+                    if (link.State != state)
                     {
-                        link.Paused = paused;
+                        link.State = state;
                         changed = true;
                     }
                 }
 
-                var staleLinks = existing.Links.Where(l => updateScope.Contains(l.VaultManifestId) && !desiredManifests.ContainsKey(l.VaultManifestId)).ToList();
-                if (staleLinks.Count == existing.Links.Count)
+                // Links in the caller's update scope that this push no longer carries: those manifests dropped the alias.
+                var inScopeLinks = existing.Links.Where(l => l.State != EmailClaimLinkState.Removed && updateScope.Contains(l.VaultManifestId));
+                var droppedLinks = inScopeLinks.Where(l => !desiredManifests.ContainsKey(l.VaultManifestId)).ToList();
+                if (droppedLinks.Count > 0 && existing.Links.All(l => l.State == EmailClaimLinkState.Removed || droppedLinks.Contains(l)))
                 {
-                    // Removing these would orphan the claim (the pushed links were all blocked, e.g. by quota); keep the previous links rather than leave a tombstone.
+                    // The push carries this address, yet every link would end up removed: the links it named were all
+                    // blocked (e.g. by quota). Keep the previous ones rather than disable an alias the vault still has.
                     logger.LogWarning("{User} pushed {Email} but none of its links could be created; keeping its previous links.", user.UserName, sanitized);
-                    staleLinks.Clear();
+                    droppedLinks.Clear();
                 }
 
-                foreach (var stale in staleLinks)
+                foreach (var dropped in droppedLinks)
                 {
-                    existing.Links.Remove(stale);
-                    context.EmailClaimLinks.Remove(stale);
-                    changed = true;
-                }
-
-                if (existing.Disabled)
-                {
-                    existing.Disabled = false;
+                    dropped.State = EmailClaimLinkState.Removed;
                     changed = true;
                 }
 
@@ -1165,11 +1164,11 @@ public class VaultController(
             }
 
             var newLinks = new List<EmailClaimLink>();
-            foreach (var (manifestId, paused) in desiredManifests)
+            foreach (var (manifestId, state) in desiredManifests)
             {
                 if (TryChargeQuota(manifestId))
                 {
-                    newLinks.Add(new EmailClaimLink { VaultManifestId = manifestId, Paused = paused });
+                    newLinks.Add(new EmailClaimLink { VaultManifestId = manifestId, State = state });
                 }
             }
 
@@ -1189,28 +1188,23 @@ public class VaultController(
             });
         }
 
-        // An address that is no longer pushed loses the links inside the caller's update scope. When that would remove
-        // every link, the claim is disabled instead and keeps its links.
-        foreach (var claim in userOwnedEmailClaims.Where(x => !x.Disabled && !processed.Contains(x.Address)))
+        // An address that is no longer pushed is dropped by every manifest in the caller's update scope: their links go to
+        // removed, and once that leaves no manifest carrying the address the claim reads as dead. The rows stay behind
+        // as the ownership record, which is what lets the same manifests claim the address back later.
+        foreach (var claim in userOwnedEmailClaims.Where(x => !processed.Contains(x.Address)))
         {
-            var removable = claim.Links.Where(l => updateScope.Contains(l.VaultManifestId)).ToList();
-            if (removable.Count == claim.Links.Count)
+            var droppedLinks = claim.Links.Where(l => l.State != EmailClaimLinkState.Removed && updateScope.Contains(l.VaultManifestId)).ToList();
+            if (droppedLinks.Count == 0)
             {
-                claim.Disabled = true;
-                claim.UpdatedAt = timeProvider.UtcNow;
                 continue;
             }
 
-            foreach (var link in removable)
+            foreach (var link in droppedLinks)
             {
-                claim.Links.Remove(link);
-                context.EmailClaimLinks.Remove(link);
+                link.State = EmailClaimLinkState.Removed;
             }
 
-            if (removable.Count > 0)
-            {
-                claim.UpdatedAt = timeProvider.UtcNow;
-            }
+            claim.UpdatedAt = timeProvider.UtcNow;
         }
     }
 
@@ -1241,7 +1235,7 @@ public class VaultController(
                 int currentCount;
                 if (limit.WindowSeconds == 0)
                 {
-                    // Global absolute cap: every claim ever charged to this group (including disabled ones). A claim is charged to every group it is linked into.
+                    // Global absolute cap: every claim ever charged to this group. A claim is charged to every group it is linked into.
                     currentCount = await context.EmailClaimLinks.Where(l => l.VaultManifest.OwnerGroupId == groupId).Select(l => l.EmailClaimId).Distinct().CountAsync();
                 }
                 else

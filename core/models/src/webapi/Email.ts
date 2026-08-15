@@ -1,5 +1,5 @@
 import { EmailAttachment } from "./EmailAttachment";
-import { EmailKeyWrap } from "./EmailKeyWrap";
+import { EmailDecryptionKey } from "./EmailDecryptionKey";
 
 export type Email = {
     /** The raw RFC 822 source of the email message (ciphertext, base64)  */
@@ -38,8 +38,11 @@ export type Email = {
     /** The number of seconds ago the email was received */
     secondsAgo: number;
 
-    /** The wrapped copies of the email's symmetric key the caller can open, one per manifest keypair the caller holds */
-    wraps: EmailKeyWrap[];
+    /** The encrypted copies of the email's symmetric key the caller can decrypt, one per manifest keypair the caller holds */
+    decryptionKeys: EmailDecryptionKey[];
+
+    /** The public keys referenced by this email's decryption keys, indexed by EmailDecryptionKey.keyIndex */
+    publicKeys: string[];
 
     /** The attachments of the email */
     attachments: EmailAttachment[];

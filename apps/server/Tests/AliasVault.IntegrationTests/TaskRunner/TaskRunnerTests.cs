@@ -640,7 +640,7 @@ public class TaskRunnerTests
     /// Creates a base email with static required fields.
     /// </summary>
     /// <param name="to">The recipient email address.</param>
-    /// <param name="deliveryKey">The delivery key the email's key wrap references.</param>
+    /// <param name="deliveryKey">The delivery key the email's decryption key references.</param>
     /// <param name="subject">The email subject.</param>
     /// <param name="date">The email date.</param>
     /// <returns>A new Email object with static fields pre-filled.</returns>
@@ -648,7 +648,7 @@ public class TaskRunnerTests
     {
         return new Email
         {
-            Wraps = [new EmailKeyWrap { EncryptionKeyId = deliveryKey.Id, EncryptedSymmetricKey = "n/a" }],
+            DecryptionKeys = [new EmailDecryptionKey { VaultManifestDeliveryKeyId = deliveryKey.Id, EncryptedSymmetricKey = "n/a" }],
             From = "n/a",
             FromLocal = "n/a",
             FromDomain = "n/a",
@@ -738,7 +738,7 @@ public class TaskRunnerTests
         foreach (var alias in aliases)
         {
             // Add 50 random emails for enabled aliases
-            if (!alias.Disabled)
+            if (alias.Links.Any(l => l.State != EmailClaimLinkState.Removed))
             {
                 for (int i = 0; i < 50; i++)
                 {
@@ -806,7 +806,7 @@ public class TaskRunnerTests
         // Create user3 with no limit (0 = unlimited)
         var user3 = await TestUserSeeder.CreateTestUserAsync(dbContext, "user3", "user3@test.com", configureGroup: g => g.MaxEmails = 0);
 
-        // The emails' key wraps all reference user1's delivery key, mirroring the single encryption key used before.
+        // The emails' decryption keys all reference user1's delivery key, mirroring the single encryption key used before.
         var deliveryKey = user1.DeliveryKey;
 
         // Create email claims for each user, linked to their personal manifest
@@ -844,7 +844,7 @@ public class TaskRunnerTests
         // Create user3 with no age limit (0 = unlimited)
         var user3 = await TestUserSeeder.CreateTestUserAsync(dbContext, "user3", "user3@test.com", configureGroup: g => g.MaxEmailAgeDays = 0);
 
-        // The emails' key wraps all reference user1's delivery key, mirroring the single encryption key used before.
+        // The emails' decryption keys all reference user1's delivery key, mirroring the single encryption key used before.
         var deliveryKey = user1.DeliveryKey;
 
         // Create email claims for each user, linked to their personal manifest
@@ -889,7 +889,7 @@ public class TaskRunnerTests
         // Create user without specific limit (0 = use global limit)
         var userWithoutLimit = await TestUserSeeder.CreateTestUserAsync(dbContext, "userwithoutLimit", "userwithoutLimit@test.com", configureGroup: g => g.MaxEmails = 0);
 
-        // The emails' key wraps all reference the first user's delivery key, mirroring the single encryption key used before.
+        // The emails' decryption keys all reference the first user's delivery key, mirroring the single encryption key used before.
         var deliveryKey = userWithLimit.DeliveryKey;
 
         // Create email claims, linked to each user's personal manifest
@@ -929,7 +929,7 @@ public class TaskRunnerTests
             u.CreatedAt = DateTime.UtcNow.AddDays(-100);
         });
 
-        // The emails' key wraps all reference the active user's delivery key, mirroring the single encryption key used before.
+        // The emails' decryption keys all reference the active user's delivery key, mirroring the single encryption key used before.
         var deliveryKey = activeUser.DeliveryKey;
 
         // Create email claims for each user, linked to their personal manifest
@@ -969,7 +969,7 @@ public class TaskRunnerTests
         // Create inactive user (no recent activity for 45 days)
         var inactiveUser = await TestUserSeeder.CreateTestUserAsync(dbContext, "inactiveuser", "inactiveuser@test.com", configureUser: u => u.LastActivityDate = DateTime.UtcNow.AddDays(-45));
 
-        // The emails' key wraps all reference the active user's delivery key, mirroring the single encryption key used before.
+        // The emails' decryption keys all reference the active user's delivery key, mirroring the single encryption key used before.
         var deliveryKey = activeUser.DeliveryKey;
 
         // Create email claims for each user, linked to their personal manifest

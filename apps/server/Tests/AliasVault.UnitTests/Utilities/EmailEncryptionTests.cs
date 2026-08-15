@@ -37,8 +37,8 @@ public class EmailEncryptionTests
         {
             Assert.That(encrypted.MessageSourceBytes, Is.Not.EqualTo(gzippedSource), "MessageSourceBytes should be encrypted at rest.");
             Assert.That(encrypted.MessageSource, Is.Null, "The legacy text source column should remain unset for source-only emails.");
-            Assert.That(encrypted.Wraps, Has.Count.EqualTo(1));
-            Assert.That(encrypted.Wraps[0].EncryptionKeyId, Is.EqualTo(deliveryKey.Id));
+            Assert.That(encrypted.DecryptionKeys, Has.Count.EqualTo(1));
+            Assert.That(encrypted.DecryptionKeys[0].VaultManifestDeliveryKeyId, Is.EqualTo(deliveryKey.Id));
         });
 
         var decrypted = EmailEncryption.DecryptEmail(encrypted, RsaEncryptionTests.PrivateKey);
