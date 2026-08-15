@@ -262,27 +262,16 @@ else
                 {
                     <div class="col-span-1 md:col-span-1 lg:col-span-2">
                         <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                            <h3 class="mb-4 text-xl font-semibold dark:text-white">@Localizer["AliasSectionHeader"]</h3>
-                            <div class="mb-4">
-                                <Button OnClick="HandleGenerateOrClearAlias" Color="@(HasAliasValues() ? "secondary" : "primary")" AdditionalClasses="@GetToggleButtonClasses()">
-                                    <svg class='w-5 h-5 inline-block' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                        @if (HasAliasValues())
-                                        {
-                                            <path d="M18 6L6 18M6 6l12 12"/>
-                                        }
-                                        else
-                                        {
-                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                                            <circle cx="8" cy="8" r="1"/>
-                                            <circle cx="16" cy="8" r="1"/>
-                                            <circle cx="12" cy="12" r="1"/>
-                                            <circle cx="8" cy="16" r="1"/>
-                                            <circle cx="16" cy="16" r="1"/>
-                                        }
+                            <h3 class="mb-4 text-xl font-semibold dark:text-white flex items-center justify-between gap-2">
+                                <span>@Localizer["AliasSectionHeader"]</span>
+                                <button type="button" id="generate-random-alias" @onclick="GenerateRandomAlias" @onclick:preventDefault="true"
+                                        class="p-1.5 text-gray-400 hover:text-primary-500 transition-colors focus:outline-none" title="@SharedLocalizer["Generate"]">
+                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M23 4v6h-6"/>
+                                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
                                     </svg>
-                                    @(HasAliasValues() ? Localizer["ClearAliasFieldsButton"] : Localizer["GenerateRandomAliasButton"])
-                                </Button>
-                            </div>
+                                </button>
+                            </h3>
                             <div class="grid gap-6">
                                 <div class="col-span-6 sm:col-span-3">
                                     <EditFormRow Id="first-name" Label="@Localizer["FirstNameLabel"]" @bind-Value="Obj.GetField(FieldKey.AliasFirstName)!.Value"></EditFormRow>
@@ -1044,44 +1033,12 @@ else
         StateHasChanged();
     }
 
-    private async Task HandleGenerateOrClearAlias()
-    {
-        if (HasAliasValues())
-        {
-            ClearAliasFields();
-        }
-        else
-        {
-            await GenerateRandomAlias();
-        }
-    }
-
-    private void ClearAliasFields()
-    {
-        Obj.SetFieldValue(FieldKey.AliasFirstName, string.Empty);
-        Obj.SetFieldValue(FieldKey.AliasLastName, string.Empty);
-        Obj.SetFieldValue(FieldKey.AliasGender, string.Empty);
-        Obj.SetFieldValue(FieldKey.AliasBirthdate, string.Empty);
-
-        StateHasChanged();
-    }
-
     private bool HasAliasValues()
     {
         return !string.IsNullOrWhiteSpace(Obj.GetFieldValue(FieldKey.AliasFirstName)) ||
                !string.IsNullOrWhiteSpace(Obj.GetFieldValue(FieldKey.AliasLastName)) ||
                !string.IsNullOrWhiteSpace(Obj.GetFieldValue(FieldKey.AliasGender)) ||
                !string.IsNullOrWhiteSpace(Obj.GetFieldValue(FieldKey.AliasBirthdate));
-    }
-
-    private string GetToggleButtonClasses()
-    {
-        var baseClasses = "flex items-center justify-center gap-1";
-        if (HasAliasValues())
-        {
-            return $"{baseClasses} bg-gray-500 hover:bg-gray-600 text-white";
-        }
-        return baseClasses;
     }
 
     private async Task GenerateRandomAlias()
