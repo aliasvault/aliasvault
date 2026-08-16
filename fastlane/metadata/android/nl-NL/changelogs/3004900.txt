@@ -1,0 +1,4 @@
+- Item aanmaken UI flow verbeterd
+- Notities veld is nu in hoogte aanpasbaar
+- Indonesische taaloptie toegevoegd
+- Meerdere bugs verholpen
