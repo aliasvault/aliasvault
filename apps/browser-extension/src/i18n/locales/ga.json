@@ -282,7 +282,6 @@
     "typeLabel": "Cineál Mír",
     "creating": "Ag cruthú",
     "editing": "Eagarthóireacht",
-    "regenerateAlias": "Ailias a athghiniúint",
     "addCustomField": "Cuir réimse saincheaptha leis",
     "fieldLabel": "Lipéad Réimse",
     "enterFieldName": "Cuir isteach ainm na réimse",
@@ -366,7 +365,7 @@
     "noEmails": "Níor aimsíodh aon ríomhphoist",
     "noEmailsDescription": "Níl aon ríomhphoist faighte agat ag do sheoltaí ríomhphoist príobháideacha go fóill. Nuair a gheobhaidh tú ríomhphost nua, beidh sé le feiceáil anseo.",
     "offlineMessage": "Tá tú as líne. Ceangail leis an idirlíon le do ríomhphoist a luchtú.",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
+    "updateClientForFormattedView": "Éilíonn an ríomhphost seo leagan níos nuaí den aip le go dtaispeánfar i gceart é. Nuashonraigh d'aip le do thoil.",
     "loadMore": "Luchtaigh Tuilleadh ({{count}} fágtha)",
     "dateFormat": {
       "justNow": "díreach anois",

@@ -282,7 +282,6 @@
     "typeLabel": "Tip element",
     "creating": "Creare",
     "editing": "Editare",
-    "regenerateAlias": "Regenerează alias",
     "addCustomField": "Adaugă câmp personalizat",
     "fieldLabel": "Etichetă câmp",
     "enterFieldName": "Introdu numele câmpului",
@@ -366,7 +365,7 @@
     "noEmails": "Nu s-au găsit e-mailuri",
     "noEmailsDescription": "Nu ai primit încă niciun e-mail pe adresele tale private. Atunci când vei primi un e-mail nou, acesta va apărea aici.",
     "offlineMessage": "Sunteți offline. Conectează-te la internet pentru a încărca e-mailurile.",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
+    "updateClientForFormattedView": "Acest e-mail necesită o versiune mai nouă a aplicației pentru a fi afișat corect. Actualizează aplicația.",
     "loadMore": "Încarcă mai multe ({{count}} rămase)",
     "dateFormat": {
       "justNow": "acum",

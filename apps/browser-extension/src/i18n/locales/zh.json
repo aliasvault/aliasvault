@@ -282,7 +282,6 @@
     "typeLabel": "项目类型",
     "creating": "创建",
     "editing": "编辑",
-    "regenerateAlias": "重新生成别名",
     "addCustomField": "添加自定义字段",
     "fieldLabel": "字段标签",
     "enterFieldName": "输入字段名称",
@@ -366,7 +365,7 @@
     "noEmails": "未找到邮件",
     "noEmailsDescription": "您的私人邮箱地址尚未收到任何邮件。当您收到新邮件时，会显示在这里。",
     "offlineMessage": "您处于离线状态。请连接互联网以加载邮件。",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
+    "updateClientForFormattedView": "此邮件需要使用较新版本的应用才能正常显示。请更新您的应用。",
     "loadMore": "加载更多（剩余 {{count}} 封）",
     "dateFormat": {
       "justNow": "刚刚",

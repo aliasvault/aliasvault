@@ -121,14 +121,6 @@
     <comment>Placeholder text for service name input</comment>
   </data>
   <!-- Button text -->
-  <data name="GenerateRandomAliasButton">
-    <value>生成随机别名</value>
-    <comment>Button text for generating a random alias</comment>
-  </data>
-  <data name="ClearAliasFieldsButton">
-    <value>清除别名字段</value>
-    <comment>Button text for clearing alias fields</comment>
-  </data>
   <data name="SaveItemButton">
     <value>保存项目</value>
     <comment>Button text for saving an item</comment>

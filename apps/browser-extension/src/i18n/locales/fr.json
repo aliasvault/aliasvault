@@ -282,7 +282,6 @@
     "typeLabel": "Type d'élément",
     "creating": "Création",
     "editing": "Édition",
-    "regenerateAlias": "Régénérer l'alias",
     "addCustomField": "Ajouter un champ personnalisé",
     "fieldLabel": "Intitulé du champ",
     "enterFieldName": "Entrez le nom du champ",
@@ -366,7 +365,7 @@
     "noEmails": "Aucun email trouvé",
     "noEmailsDescription": "Vous n'avez pas encore reçu d'emails dans vos adresses email privées. Quand vous recevez un nouvel email, il apparaîtra ici.",
     "offlineMessage": "Vous êtes déconnecté. Veuillez vous connecter à internet pour charger vos e-mails.",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
+    "updateClientForFormattedView": "Cet e-mail nécessite une version plus récente de l'application pour s'afficher correctement. Veuillez mettre à jour votre application.",
     "loadMore": "Charger plus ({{count}} restants)",
     "dateFormat": {
       "justNow": "maintenant",

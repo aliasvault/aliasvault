@@ -282,7 +282,6 @@
     "typeLabel": "Tipo Elemento",
     "creating": "Creazione in corso",
     "editing": "Modifica",
-    "regenerateAlias": "Rigenera alias",
     "addCustomField": "Aggiungere un campo personalizzato",
     "fieldLabel": "Etichetta del campo",
     "enterFieldName": "Inserisci il nome del campo",
@@ -366,7 +365,7 @@
     "noEmails": "Nessuna email trovata",
     "noEmailsDescription": "Non hai ancora ricevuto email ai tuoi indirizzi email privati. Quando ne riceverai una nuova, apparirà qui.",
     "offlineMessage": "Sei offline. Collegati a internet per caricare le email.",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
+    "updateClientForFormattedView": "Questa email richiede una nuova versione dell'app per essere visualizzata correttamente. Si prega di aggiornare l'app.",
     "loadMore": "Carica altro ({{count}} rimanenti)",
     "dateFormat": {
       "justNow": "proprio ora",

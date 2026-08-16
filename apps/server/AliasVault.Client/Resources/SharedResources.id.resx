@@ -384,4 +384,8 @@
     <value>Tidak ada</value>
     <comment>Shown next to the Item label when an email is not linked to any credential. Shared between email modal and email page.</comment>
   </data>
+  <data name="ItemTypeLabel" xml:space="preserve">
+    <value>Tipe Item</value>
+    <comment>Inline label on the item type picker</comment>
+  </data>
 </root>

@@ -344,6 +344,7 @@
     "settings": "အပြင်အဆင်များ"
   },
   "itemTypes": {
+    "typeLabel": "Item Type",
     "creating": "Creating",
     "editing": "Editing",
     "login": {

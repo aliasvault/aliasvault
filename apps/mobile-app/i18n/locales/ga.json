@@ -29,7 +29,7 @@
     "attachments": "Ceangaltáin",
     "or": "nó",
     "retry": "Déan iarracht eile",
-    "resizeField": "Drag to resize field",
+    "resizeField": "Tarraing chun méid an réimse a athrú",
     "deleteItemConfirmTitle": "Scrios Mír",
     "deleteItemConfirmDescription": "An bhfuil tú cinnte gur mian leat an mhír seo a scriosadh?",
     "errors": {
@@ -227,7 +227,7 @@
       "biometricDisabledMessage": "Tá {{biometric}} díchumasaithe le haghaidh AliasVault. Chun é a úsáid, cumasaigh é i socruithe do ghléis ar dtús.",
       "biometricHelp": "Bain úsáid as bithmhéadracht chun do chruinneachán a dhíghlasáil, atá slán leis an {{keystore}}.",
       "biometricUnavailableHelp": "Níl {{biometric}} ar fáil. Tapáil chun socruithe a oscailt agus/nó téigh chuig socruithe do ghléis chun é a chumasú agus a chumrú.",
-      "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
+      "biometricUnavailableHelpAndroid": "Níl bithmhéadracht ar fáil do do ghléas. Éilíonn Android bithmhéadracht láidir (Rang 3), amhail méarloirg nó aitheantas aghaidhe slán tacaithe.",
       "featureRequiresPasscode": "Éilíonn an ghné seo paschód a bheith cumasaithe ar do ghléas.",
       "pin": "Cód PIN",
       "pinDescription": "Bain úsáid as cód PIN saincheaptha chun do chruinneachán a dhíghlasáil níos tapúla.",
@@ -344,6 +344,7 @@
     "settings": "Socruithe"
   },
   "itemTypes": {
+    "typeLabel": "Cineál Mír",
     "creating": "Ag cruthú",
     "editing": "Eagarthóireacht",
     "login": {
@@ -606,7 +607,7 @@
     "formatSwitchTitle": "Athraigh formáid ríomhphoist",
     "sizeKB": "KB",
     "offlineMessage": "Tá tú as líne. Ceangail leis an idirlíon le do ríomhphoist a luchtú.",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
+    "updateClientForFormattedView": "Éilíonn an ríomhphost seo leagan níos nuaí den aip le go dtaispeánfar i gceart é. Nuashonraigh d'aip le do thoil.",
     "emptyMessage": "Níl aon ríomhphoist faighte agat ag do sheoltaí ríomhphoist príobháideacha go fóill. Nuair a gheobhaidh tú ríomhphost nua, beidh sé le feiceáil anseo.",
     "loadMore": "Luchtaigh Tuilleadh ({{count}} fágtha)",
     "time": {

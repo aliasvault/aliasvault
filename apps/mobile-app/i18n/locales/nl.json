@@ -344,6 +344,7 @@
     "settings": "Instellingen"
   },
   "itemTypes": {
+    "typeLabel": "Itemtype",
     "creating": "Aanmaken",
     "editing": "Bewerken",
     "login": {
@@ -357,7 +358,7 @@
       "cardInformation": "Kaartgegevens"
     },
     "note": {
-      "title": "Opmerking"
+      "title": "Notitie"
     },
     "addField": "Veld toevoegen",
     "addCustomField": "Aangepast veld toevoegen",

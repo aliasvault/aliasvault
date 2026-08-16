@@ -344,6 +344,7 @@
     "settings": "Configurações"
   },
   "itemTypes": {
+    "typeLabel": "Tipo do Item",
     "creating": "Criando",
     "editing": "Editando",
     "login": {

@@ -344,6 +344,7 @@
     "settings": "Настройки"
   },
   "itemTypes": {
+    "typeLabel": "Тип записи",
     "creating": "Создание",
     "editing": "Редактирование",
     "login": {

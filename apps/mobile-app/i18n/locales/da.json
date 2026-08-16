@@ -29,7 +29,7 @@
     "attachments": "Vedhæftede filer",
     "or": "eller",
     "retry": "Prøv igen",
-    "resizeField": "Drag to resize field",
+    "resizeField": "Træk for at ændre størrelse på feltet",
     "deleteItemConfirmTitle": "Slet element",
     "deleteItemConfirmDescription": "Er du sikker på, at du vil slette dette element?",
     "errors": {
@@ -227,7 +227,7 @@
       "biometricDisabledMessage": "{{biometric}} er deaktiveret for AliasVault. For at bruge det skal du først aktivere det i din enheds indstillinger.",
       "biometricHelp": "Brug biometri til at låse din boks op, som er sikret af {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} er ikke tilgængelig. Tryk for at åbne indstillinger og/eller gå til din enheds indstillinger for at aktivere og konfigurere det.",
-      "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
+      "biometricUnavailableHelpAndroid": "Biometri er ikke tilgængelige for din enhed. Android kræver stærk (klasse 3) biometri såsom et fingeraftryk eller understøttet sikker ansigtsgenkendelse.",
       "featureRequiresPasscode": "Denne funktion kræver, at en adgangskode er aktiveret på din enhed.",
       "pin": "PIN-kode",
       "pinDescription": "Brug en brugerdefineret PIN-kode til at låse din boks hurtigere op.",
@@ -344,6 +344,7 @@
     "settings": "Indstillinger"
   },
   "itemTypes": {
+    "typeLabel": "Elementtype",
     "creating": "Opretter",
     "editing": "Redigerer",
     "login": {
@@ -606,7 +607,7 @@
     "formatSwitchTitle": "Skift e-mail format",
     "sizeKB": "KB",
     "offlineMessage": "Du er offline. Opret venligst forbindelse til internettet for at indlæse dine e-mails.",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
+    "updateClientForFormattedView": "Denne e-mail kræver en nyere app-version for at vise den korrekt. Opdatér venligst din app.",
     "emptyMessage": "Du har ikke modtaget nogen e-mails på dine private e-mailadresser endnu. Når du modtager en ny e-mail, vil den blive vist her.",
     "loadMore": "Indlæs flere ({{count}} tilbage)",
     "time": {
