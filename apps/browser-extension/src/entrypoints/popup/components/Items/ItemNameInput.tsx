@@ -17,6 +17,8 @@ type ItemNameInputProps = {
   folders: Folder[];
   selectedFolderId: string | null | undefined;
   onFolderChange: (folderId: string | null) => void;
+  // Optional control rendered directly left of the input (the item logo).
+  logoSlot?: React.ReactNode;
 };
 
 /**
@@ -29,7 +31,8 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
   onChange,
   folders,
   selectedFolderId,
-  onFolderChange
+  onFolderChange,
+  logoSlot
 }) => {
   const { t } = useTranslation();
   const [showFolderModal, setShowFolderModal] = useState(false);
@@ -177,36 +180,38 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
         <label htmlFor="itemName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           {t('items.itemName')} <span className="text-red-500">*</span>
         </label>
-        <div className="relative flex items-center">
-          <input
-            ref={inputRef}
-            id="itemName"
-            type="text"
-            value={value}
-            onChange={handleNameChange}
-            className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white ${selectedFolderId ? 'pr-28' : 'pr-10'}`}
-            required
-          />
-          {/* Folder Button inside input - always visible, width adjusts based on whether a folder is selected */}
-          <button
-            type="button"
-            onClick={handleOpenFolderModal}
-            className={`absolute right-1 z-10 flex items-center gap-1 px-2 py-1 rounded transition-colors text-xs ${
-              selectedFolderId
-                ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 hover:bg-primary-200 dark:hover:bg-primary-900/50'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
-            }`}
-            title={selectedFolder?.Name || '-'}
-          >
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-            </svg>
-            {selectedFolderId && (
-              <span className="max-w-16 truncate">
-                {selectedFolder?.Name}
-              </span>
-            )}
-          </button>
+        <div className="flex items-stretch gap-2">
+          {logoSlot}
+          <div className="relative flex items-center flex-1 min-w-0">
+            <input
+              ref={inputRef}
+              id="itemName"
+              type="text"
+              value={value}
+              onChange={handleNameChange}
+              className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white ${selectedFolderId ? 'pr-28' : 'pr-10'}`}
+              required
+            />
+            <button
+              type="button"
+              onClick={handleOpenFolderModal}
+              className={`absolute right-1 z-10 flex items-center gap-1 px-2 py-1 rounded transition-colors text-xs ${
+                selectedFolderId
+                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 hover:bg-primary-200 dark:hover:bg-primary-900/50'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+              }`}
+              title={selectedFolder?.Name || '-'}
+            >
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
+              {selectedFolderId && (
+                <span className="max-w-16 truncate">
+                  {selectedFolder?.Name}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 

@@ -1391,12 +1391,6 @@ const ItemAddEdit: React.FC = () => {
 
       {/* Item Name and Primary fields block */}
       <FormSection>
-        <ItemLogoPicker
-          item={item}
-          pendingSelection={logoSelection}
-          pendingPreview={logoPreview}
-          onSelect={handleLogoSelect}
-        />
         <ItemNameInput
           inputRef={nameInputRef}
           value={item.Name || ''}
@@ -1404,6 +1398,14 @@ const ItemAddEdit: React.FC = () => {
           folders={folders}
           selectedFolderId={item.FolderId}
           onFolderChange={(folderId) => setItem({ ...item, FolderId: folderId })}
+          logoSlot={
+            <ItemLogoPicker
+              item={item}
+              pendingSelection={logoSelection}
+              pendingPreview={logoPreview}
+              onSelect={handleLogoSelect}
+            />
+          }
         />
         {/* Alternative item title suggestions (create mode) */}
         {!isEditMode && ((): React.ReactNode => {
