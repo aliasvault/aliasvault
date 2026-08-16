@@ -50,7 +50,7 @@ const HeaderButton: React.FC<HeaderButtonProps> = ({
       id={id}
       onClick={onClick}
       disabled={isDisabled}
-      className={`p-2 rounded-lg transition-colors ${stateClasses} ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+      className={`inline-flex items-center justify-center min-w-[30px] min-h-[30px] rounded-lg transition-colors ${stateClasses} ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       title={title}
     >
       {isLoading ? (
