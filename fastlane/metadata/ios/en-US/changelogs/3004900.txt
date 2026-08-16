@@ -1,0 +1,4 @@
+- Update item creation UI flow with new item chooser
+- Make notes field resizable
+- Add Indonesian language
+- Fix bugs
