@@ -810,17 +810,14 @@ export class ItemRepository extends BaseRepository {
    *      go back to the automatic favicon;
    *   2. otherwise a logo the user chose earlier (built-in or uploaded) is kept, so editing the URL
    *      never silently replaces a deliberate choice with a favicon;
-   *   3. otherwise the favicon for the item's current domain, which is looked up rather than carried
-   *      over: an item whose URL changed must not keep the previous site's logo.
+   *   3. a favicon selection carrying bytes is a re-fetch of the current domain, which refreshes the
+   *      image the domain's row holds;
    *
-   * Rule 2 also keeps the logo of an item inside a shared manifest pointing at the manifest's own row.
-   * Re-resolving would swap in the personal-scope row, which the next push would then copy over the
-   * shared manifest's logo: a write every member sees, every time anyone edits the item.
    * @param item The item being created or updated
    * @param currentDateTime The current date/time string for timestamps
-   * @param existingLogoId The logo the item currently has, when updating
-   * @param selection A logo the user explicitly picked or uploaded
-   * @returns The logo ID to store on the item, or null when it should have none
+   * @param existingLogoId The favicon the item currently has, when updating
+   * @param selection A favicon the user explicitly picked or uploaded
+   * @returns The favicon ID to store on the item, or null when it should have none
    */
   private async resolveLogoId(
     item: DraftItem,
@@ -851,6 +848,15 @@ export class ItemRepository extends BaseRepository {
      */
     if (source === 'unknown') {
       return null;
+    }
+
+    /*
+     * An explicit re-fetch: the user asked for this domain's favicon to be pulled again because the one
+     * on file went stale, so the fresh bytes replace it.
+     */
+    const refetched = selection?.Kind === LogoKinds.Favicon && selection.Data ? this.logoRepository.convertToUint8Array(selection.Data) : null;
+    if (refetched && refetched.length > 0) {
+      return this.logoRepository.getOrCreate(scope, LogoKinds.Favicon, source, refetched, currentDateTime, { mimeType: 'image/x-icon' });
     }
 
     // Keep the current favicon when it is already this domain's, whatever scope it lives in.

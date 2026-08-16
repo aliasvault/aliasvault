@@ -41,6 +41,16 @@ export class LogoRepository extends BaseRepository {
   }
 
   /**
+   * The image bytes the vault already holds for a domain, in any manifest.
+   * @param source The normalized source domain (e.g., 'github.com')
+   * @returns The favicon bytes, or null when no manifest holds one for this domain
+   */
+  public getFaviconData(source: string): Uint8Array | null {
+    const row = this.client.executeQuery<{ FileData: Uint8Array | null }>(LogoQueries.GET_BEST_FOR_KEY, [LogoKinds.Favicon, source])[0];
+    return row?.FileData && row.FileData.length > 0 ? new Uint8Array(row.FileData) : null;
+  }
+
+  /**
    * Get the id of the logo with this kind and key inside one manifest, if that manifest holds it.
    * @param manifestId The manifest to look in
    * @param kind The logo kind

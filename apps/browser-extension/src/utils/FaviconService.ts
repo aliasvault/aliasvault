@@ -15,6 +15,20 @@ export type FaviconFetchResult = {
 };
 
 /**
+ * Options for a favicon fetch.
+ */
+export type FaviconFetchOptions = {
+  /**
+   * Fetch even when the vault already holds a favicon for the domain. Set for an explicit re-fetch,
+   * where the point is to replace a favicon that has gone stale.
+   */
+  ignoreStored?: boolean;
+
+  /** Timeout in milliseconds (default: 5000ms). */
+  timeoutMs?: number;
+};
+
+/**
  * Default timeout for favicon fetch operations (5 seconds).
  */
 const FAVICON_FETCH_TIMEOUT_MS = 5000;
@@ -105,20 +119,31 @@ export class FaviconService {
   }
 
   /**
+   * The icon the vault already holds for this URL's domain, if any.
+   * @param urlString The URL to look an icon up for
+   * @param sqliteClient The SQLite client instance
+   * @returns The stored icon bytes, or null when the vault holds none
+   */
+  public static getStoredFavicon(urlString: string | undefined | null, sqliteClient: SqliteClient): Uint8Array | null {
+    const source = FaviconService.extractSourceFromUrl(urlString);
+    return source === 'unknown' ? null : sqliteClient.logos.getFaviconData(source);
+  }
+
+  /**
    * Fetch favicon for a URL from the server API.
-   * Includes deduplication check and timeout handling.
    * @param urlString The URL to fetch favicon for
    * @param sqliteClient The SQLite client for deduplication check
    * @param webApi The WebAPI service for making the request
-   * @param timeoutMs Optional timeout in milliseconds (default: 5000ms)
+   * @param options Optional fetch options
    * @returns FaviconFetchResult with success status and image data
    */
   public static async fetchFavicon(
     urlString: string | undefined | null,
     sqliteClient: SqliteClient,
     webApi: WebApiService,
-    timeoutMs: number = FAVICON_FETCH_TIMEOUT_MS
+    options: FaviconFetchOptions = {}
   ): Promise<FaviconFetchResult> {
+    const timeoutMs = options.timeoutMs ?? FAVICON_FETCH_TIMEOUT_MS;
     // Validate URL
     const normalizedUrl = FaviconService.normalizeUrl(urlString);
     if (!normalizedUrl) {
@@ -132,7 +157,7 @@ export class FaviconService {
     }
 
     // Check if logo already exists (deduplication)
-    if (sqliteClient.logos.hasFaviconForSource(source)) {
+    if (!options.ignoreStored && sqliteClient.logos.hasFaviconForSource(source)) {
       return { success: false, skipped: true };
     }
 

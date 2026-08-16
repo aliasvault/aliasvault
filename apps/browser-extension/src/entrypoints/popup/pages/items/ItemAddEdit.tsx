@@ -27,19 +27,19 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import useAliasGenerator from '@/entrypoints/popup/hooks/useAliasGenerator';
 import useFormPersistence from '@/entrypoints/popup/hooks/useFormPersistence';
+import useItemLogo from '@/entrypoints/popup/hooks/useItemLogo';
 import useServiceDetection from '@/entrypoints/popup/hooks/useServiceDetection';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
 import type { DraftItem } from '@/utils/db/ItemRef';
 import type { Folder } from '@/utils/db/repositories/FolderRepository';
-import type { ItemField, ItemType, FieldType, Attachment, TotpCode, PasswordSettings, LogoSelection } from '@/utils/dist/core/models/vault';
+import type { ItemField, ItemType, FieldType, Attachment, TotpCode, PasswordSettings } from '@/utils/dist/core/models/vault';
 import { FieldCategories, FieldTypes, LogoKinds, ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType } from '@/utils/dist/core/models/vault';
 import { FaviconService } from '@/utils/FaviconService';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { NavigationStateService } from '@/utils/NavigationStateService';
 import * as RustCore from '@/utils/RustCore';
-import SqliteClient from '@/utils/SqliteClient';
 
 import { browser } from '#imports';
 
@@ -120,8 +120,6 @@ const ItemAddEdit: React.FC = () => {
 
   // UI visibility state
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
-  const [logoSelection, setLogoSelection] = useState<LogoSelection | undefined>(undefined);
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [show2FA, setShow2FA] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
 
@@ -662,12 +660,22 @@ const ItemAddEdit: React.FC = () => {
   }, []);
 
   /**
-   * Handle the user choosing a logo. Changes are only persisted when the item itself is saved.
+   * Put icon bytes on the item so the editor previews exactly what saving will store.
    */
-  const handleLogoSelect = useCallback((selection: LogoSelection) => {
-    setLogoSelection(selection);
-    setLogoPreview(selection.Data ? SqliteClient.imgSrcFromBytes(selection.Data) : null);
+  const handleLogoBytesChange = useCallback((data?: Uint8Array) => {
+    setItem(prev => (!prev || prev.Logo === data) ? prev : { ...prev, Logo: data });
   }, []);
+
+  /*
+   * The item's favicon: a pick from the built-in catalog, or the website's own favicon extracted from the URL.
+   */
+  const { logoSelection, isFetchingLogo, resolvedFaviconSource, selectLogo, fetchLogoFromWebsite } = useItemLogo({
+    url: fieldValues['login.url'],
+    currentLogoKind: item?.LogoInfo?.Kind,
+    isReady: !localLoading && item !== null,
+    isExistingItem: isEditMode,
+    onLogoBytesChange: handleLogoBytesChange
+  });
 
   /**
    * After creating a credential from a page's "create new item" flow, autofill the freshly
@@ -794,11 +802,13 @@ const ItemAddEdit: React.FC = () => {
 
       /*
        * Fetch and attach favicon from URL if needed (handles deduplication internally).
-       * Only call if we have a URL value to avoid unnecessary processing.
+       * Only call if we have a URL value to avoid unnecessary processing, and not when the editor
+       * already resolved this URL's icon: if a preview fetched the icon and stored it in memory, we don't need to fetch it again.
        */
       const urlValue = fieldValues['login.url'];
       const usesAutomaticLogo = !logoSelection || logoSelection.Kind === LogoKinds.Favicon;
-      if (dbContext?.sqliteClient && urlValue && usesAutomaticLogo) {
+      const isLogoResolved = usesAutomaticLogo && resolvedFaviconSource === FaviconService.extractSourceFromUrl(FaviconService.extractFirstValidUrl(urlValue));
+      if (dbContext?.sqliteClient && urlValue && usesAutomaticLogo && !isLogoResolved) {
         updatedItem = await FaviconService.fetchAndAttachFavicon(
           updatedItem,
           urlValue,
@@ -867,7 +877,7 @@ const ItemAddEdit: React.FC = () => {
       console.error('Error saving item:', err);
       setIsSaving(false);
     }
-  }, [item, isSaving, fieldValues, applicableSystemFields, customFields, dbContext, isEditMode, executeVaultMutationAsync, navigate, location.state, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyIdsMarkedForDeletion, logoSelection, webApi, clearPersistedValues, fillBackAndCloseWindow]);
+  }, [item, isSaving, fieldValues, applicableSystemFields, customFields, dbContext, isEditMode, executeVaultMutationAsync, navigate, location.state, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyIdsMarkedForDeletion, logoSelection, resolvedFaviconSource, webApi, clearPersistedValues, fillBackAndCloseWindow]);
 
   /**
    * Handle delete action.
@@ -1402,8 +1412,10 @@ const ItemAddEdit: React.FC = () => {
             <ItemLogoPicker
               item={item}
               pendingSelection={logoSelection}
-              pendingPreview={logoPreview}
-              onSelect={handleLogoSelect}
+              faviconSource={resolvedFaviconSource}
+              isFetching={isFetchingLogo}
+              onSelect={selectLogo}
+              onFetchFromWebsite={() => void fetchLogoFromWebsite()}
             />
           }
         />

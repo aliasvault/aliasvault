@@ -277,6 +277,28 @@
     "publicEmailDescription": "Anonymous but limited privacy. Email content is readable by anyone that knows the address.",
     "validation": {
       "required": "This field is required"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "builtinLogos": "Built-in icons",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "itemTypes": {

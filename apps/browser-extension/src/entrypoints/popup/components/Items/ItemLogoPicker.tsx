@@ -4,24 +4,24 @@ import { useTranslation } from 'react-i18next';
 import LogoPickerModal from '@/entrypoints/popup/components/Items/LogoPickerModal';
 
 import type { DraftItem } from '@/utils/db/ItemRef';
-import { getAppIconSvg } from '@/utils/dist/core/models/icons';
 import type { LogoSelection, ItemLogo } from '@/utils/dist/core/models/vault';
 import { LogoKinds } from '@/utils/dist/core/models/vault';
-import SqliteClient from '@/utils/SqliteClient';
 
 import ItemIconComponent from './ItemIcon';
 
 type ItemLogoPickerProps = {
   item: DraftItem;
   pendingSelection?: LogoSelection;
-  pendingPreview?: string | null;
+  faviconSource?: string | null;
+  isFetching?: boolean;
   onSelect: (selection: LogoSelection) => void;
+  onFetchFromWebsite: () => void;
 };
 
 /**
- * The item's logo on the edit screen: shows what the item will look like and allows to opens the picker.
+ * The item's icon on the edit screen: shows what the item will look like and opens the picker.
  */
-const ItemLogoPicker: React.FC<ItemLogoPickerProps> = ({ item, pendingSelection, pendingPreview, onSelect }) => {
+const ItemLogoPicker: React.FC<ItemLogoPickerProps> = ({ item, pendingSelection, faviconSource, isFetching = false, onSelect, onFetchFromWebsite }) => {
   const { t } = useTranslation();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
 
@@ -29,44 +29,22 @@ const ItemLogoPicker: React.FC<ItemLogoPickerProps> = ({ item, pendingSelection,
    * What the item will show once saved: an unsaved choice takes precedence over the stored logo, so
    * the preview matches the outcome rather than the past.
    */
-  const effectiveLogo: ItemLogo | undefined = pendingSelection && pendingSelection.Kind !== LogoKinds.Favicon
-    ? { Id: '', Kind: pendingSelection.Kind, Source: pendingSelection.Source ?? '', Name: pendingSelection.Name }
-    : (pendingSelection ? undefined : item.LogoInfo);
+  let effectiveLogo: ItemLogo | undefined = item.LogoInfo;
+  if (pendingSelection?.Kind === LogoKinds.Favicon) {
+    effectiveLogo = faviconSource ? { Id: '', Kind: LogoKinds.Favicon, Source: faviconSource } : undefined;
+  } else if (pendingSelection) {
+    effectiveLogo = { Id: '', Kind: pendingSelection.Kind, Source: pendingSelection.Source ?? '', Name: pendingSelection.Name };
+  }
 
   /**
-   * Render the logo preview, favouring an upload that has not been stored yet.
+   * Display the source of the logo.
    */
-  const renderPreview = (): React.ReactNode => {
-    if (pendingPreview) {
-      return <img src={pendingPreview} alt="" className="w-6 h-6 object-contain" />;
-    }
-    if (effectiveLogo?.Kind === LogoKinds.Builtin) {
-      const svg = getAppIconSvg(effectiveLogo.Source);
-      if (svg) {
-        return <div className="w-6 h-6" dangerouslySetInnerHTML={{ __html: svg }} />;
-      }
-    }
-    if (effectiveLogo?.Kind === LogoKinds.Custom) {
-      const src = item.Logo ? SqliteClient.imgSrcFromBytes(item.Logo) : null;
-      if (src) {
-        return <img src={src} alt="" className="w-6 h-6 object-contain" />;
-      }
-    }
-    return <ItemIconComponent item={{ ...item, LogoInfo: effectiveLogo }} className="w-6 h-6" />;
-  };
-
-  /**
-   * One line saying where this logo comes from, so an automatic logo is never mistaken for a choice.
-   */
-  const renderProvenance = (): string => {
-    if (pendingSelection?.Kind === LogoKinds.Custom && pendingSelection.Data) {
-      return t('items.logo.sourceUploaded');
-    }
+  const renderSource = (): string => {
     switch (effectiveLogo?.Kind) {
       case LogoKinds.Builtin:
         return t('items.logo.sourceBuiltin');
       case LogoKinds.Custom:
-        return effectiveLogo.Name ? t('items.logo.sourceUploadedNamed', { name: effectiveLogo.Name }) : t('items.logo.sourceUploaded');
+        return t('items.logo.sourceCustom');
       case LogoKinds.Favicon:
         return t('items.logo.sourceFavicon', { domain: effectiveLogo.Source });
       default:
@@ -79,11 +57,18 @@ const ItemLogoPicker: React.FC<ItemLogoPickerProps> = ({ item, pendingSelection,
       <button
         type="button"
         onClick={() => setIsPickerOpen(true)}
-        title={`${t('items.logo.chooseLogo')} — ${renderProvenance()}`}
+        title={`${t('items.logo.chooseLogo')} — ${renderSource()}`}
         aria-label={t('items.logo.chooseLogo')}
         className="group relative flex items-center justify-center w-[calc(2.5rem+2px)] h-[calc(2.5rem+2px)] flex-shrink-0 cursor-pointer rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 hover:border-primary-500 dark:hover:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
       >
-        {renderPreview()}
+        {isFetching ? (
+          <svg className="animate-spin w-5 h-5 text-gray-500 dark:text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        ) : (
+          <ItemIconComponent item={{ ...item, LogoInfo: effectiveLogo }} className="w-6 h-6" />
+        )}
         {/* Hovering dims the logo and reveals a full-size pencil, so the click target reads as "edit" without a badge too small to recognise. */}
         <span className="absolute inset-0 flex items-center justify-center rounded-md bg-gray-900/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,6 +82,7 @@ const ItemLogoPicker: React.FC<ItemLogoPickerProps> = ({ item, pendingSelection,
         onClose={() => setIsPickerOpen(false)}
         currentLogo={effectiveLogo}
         onSelect={onSelect}
+        onFetchFromWebsite={onFetchFromWebsite}
       />
     </>
   );
