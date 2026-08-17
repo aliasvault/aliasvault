@@ -13,11 +13,6 @@ namespace AliasVault.Shared.Models.WebApi.V2.Email;
 public class MailboxBulkResponse
 {
     /// <summary>
-    /// Gets or sets the mailbox addresses that client wants to retrieve emails for.
-    /// </summary>
-    public List<string> Addresses { get; set; } = [];
-
-    /// <summary>
     /// Gets or sets requested page number.
     /// </summary>
     public int CurrentPage { get; set; }

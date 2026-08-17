@@ -119,7 +119,9 @@ public class Email
     public bool PushNotificationSent { get; set; }
 
     /// <summary>
-    /// Gets or sets the collection of email attachments.
+    /// Gets or sets the collection of email attachments. Only populated for legacy emails: no longer written since
+    /// 0.31.0, as attachments are carried inline in the message source. See <see cref="EmailAttachment"/> for the
+    /// conditions under which this table can be dropped.
     /// </summary>
     public virtual List<EmailAttachment> Attachments { get; set; } = [];
 

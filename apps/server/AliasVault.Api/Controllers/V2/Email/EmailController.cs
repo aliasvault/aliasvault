@@ -57,22 +57,9 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
             DateSystem = DateTime.SpecifyKind(email.DateSystem, DateTimeKind.Utc),
             SecondsAgo = (int)DateTime.UtcNow.Subtract(email.DateSystem).TotalSeconds,
             MessageSource = email.MessageSourceBytes is not null ? Convert.ToBase64String(email.MessageSourceBytes) : email.MessageSource,
-            AttachmentCount = email.AttachmentCount,
             PublicKeys = keyTable.PublicKeys,
             DecryptionKeys = keyTable.ToApiModels(callerDecryptionKeys.Select(d => (d.VaultManifestDeliveryKeyId, d.EncryptedSymmetricKey))),
         };
-
-        // Add attachment metadata (without the filebytes)
-        var attachments = await context.EmailAttachments.Where(x => x.EmailId == email!.Id).Select(x => new AttachmentApiModel()
-        {
-            Id = x.Id,
-            Email_Id = x.EmailId,
-            Filename = x.Filename,
-            MimeType = x.MimeType,
-            Filesize = x.Filesize,
-        }).ToListAsync();
-
-        returnEmail.Attachments = attachments;
 
         return Ok(returnEmail);
     }
@@ -107,37 +94,6 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
             logger.LogError(ex, "An error occurred while deleting email with ID {id}.", id);
             return StatusCode(500, $"An error occurred while deleting the email: {ex.Message}");
         }
-    }
-
-    /// <summary>
-    /// Get the attachment bytes for the specified email and attachment ID.
-    /// </summary>
-    /// <param name="id">The email ID.</param>
-    /// <param name="attachmentId">The attachment ID.</param>
-    /// <returns>Attachment bytes in encrypted form.</returns>
-    [HttpGet(template: "{id}/attachments/{attachmentId}", Name = "GetEmailAttachment")]
-    public async Task<IActionResult> GetEmailAttachment(int id, int attachmentId)
-    {
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-
-        var (email, _, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
-        if (errorResult != null)
-        {
-            return errorResult;
-        }
-
-        // Find the requested attachment
-        var attachment = await context.EmailAttachments
-            .FirstOrDefaultAsync(x => x.Id == attachmentId && x.EmailId == email!.Id);
-
-        if (attachment == null)
-        {
-            return NotFound("Attachment not found.");
-        }
-
-        // Return the encrypted bytes as opaque binary. The original MIME type would be
-        // misleading since the payload is AES ciphertext, not a renderable file.
-        return File(attachment.Bytes, "application/octet-stream", attachment.Filename);
     }
 
     /// <summary>
@@ -186,7 +142,6 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
 
         // Retrieve email from database.
         var email = await context.Emails
-            .Include(x => x.Attachments)
             .Include(x => x.DecryptionKeys)
             .ThenInclude(d => d.VaultManifestDeliveryKey)
             .FirstOrDefaultAsync(x => x.Id == id);

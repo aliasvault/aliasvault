@@ -25,6 +25,14 @@ namespace AliasServerDb.Migrations
                 nullable: false,
                 defaultValue: 0);
 
+            // Backfill the count for emails that predate this column from their attachment records, so the column is
+            // authoritative for every row in the table.
+            migrationBuilder.Sql("""
+                UPDATE "Emails" SET "AttachmentCount" = counts."AttachmentCount"
+                FROM (SELECT "EmailId", COUNT(*) AS "AttachmentCount" FROM "EmailAttachments" GROUP BY "EmailId") AS counts
+                WHERE "Emails"."Id" = counts."EmailId";
+                """);
+
             migrationBuilder.AddColumn<byte[]>(
                 name: "MessageSourceBytes",
                 table: "Emails",

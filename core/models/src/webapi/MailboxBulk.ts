@@ -13,7 +13,6 @@ export type MailboxBulkRequest = {
  * Mailbox bulk response type.
  */
 export type MailboxBulkResponse = {
-    addresses: string[];
     currentPage: number;
     pageSize: number;
     totalRecords: number;

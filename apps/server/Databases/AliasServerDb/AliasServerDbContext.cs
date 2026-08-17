@@ -87,7 +87,7 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<Email> Emails { get; set; }
 
     /// <summary>
-    /// Gets or sets the EmailAttachments DbSet.
+    /// Gets or sets the EmailAttachments DbSet. Deprecated and read-only since 0.31.0, see <see cref="EmailAttachment"/>.
     /// </summary>
     public DbSet<EmailAttachment> EmailAttachments { get; set; }
 

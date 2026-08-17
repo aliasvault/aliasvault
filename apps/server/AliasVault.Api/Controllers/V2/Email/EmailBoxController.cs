@@ -102,7 +102,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
                     DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
                     SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
                     MessagePreview = x.MessagePreview ?? string.Empty,
-                    HasAttachments = x.AttachmentCount > 0 || x.Attachments.Any(),
+                    HasAttachments = x.AttachmentCount > 0,
                 },
                 DecryptionKeys = x.DecryptionKeys.Where(d => decryptableKeyIds.Contains(d.VaultManifestDeliveryKeyId)).Select(d => new { d.VaultManifestDeliveryKeyId, d.EncryptedSymmetricKey }).ToList(),
             })
@@ -205,7 +205,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
                     DateSystem = DateTime.SpecifyKind(x.DateSystem, DateTimeKind.Utc),
                     SecondsAgo = (int)DateTime.UtcNow.Subtract(x.DateSystem).TotalSeconds,
                     MessagePreview = x.MessagePreview ?? string.Empty,
-                    HasAttachments = x.AttachmentCount > 0 || x.Attachments.Any(),
+                    HasAttachments = x.AttachmentCount > 0,
                 },
                 DecryptionKeys = x.DecryptionKeys.Where(d => decryptableKeyIds.Contains(d.VaultManifestDeliveryKeyId)).Select(d => new { d.VaultManifestDeliveryKeyId, d.EncryptedSymmetricKey }).ToList(),
             })
@@ -228,7 +228,6 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
 
         MailboxBulkResponse returnValue = new()
         {
-            Addresses = validAddresses,
             PublicKeys = keyTable.PublicKeys,
             Mails = mails,
             PageSize = model.PageSize,

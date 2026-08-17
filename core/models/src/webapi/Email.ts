@@ -5,9 +5,6 @@ export type Email = {
     /** The raw RFC 822 source of the email message (ciphertext, base64)  */
     messageSource: string;
 
-    /** The number of attachments contained in the email message */
-    attachmentCount: number;
-
     /** The ID of the email */
     id: number;
 
@@ -43,7 +40,4 @@ export type Email = {
 
     /** The public keys referenced by this email's decryption keys, indexed by EmailDecryptionKey.keyIndex */
     publicKeys: string[];
-
-    /** The attachments of the email */
-    attachments: EmailAttachment[];
 }
