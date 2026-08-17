@@ -214,6 +214,9 @@ async function checkAndRestoreSavePromptEarly(ctx: Parameters<typeof createShado
       if (!authStatus.isLoggedIn || authStatus.isVaultLocked) {
         return;
       }
+      if (authStatus.requiresLegacySqliteBlobMigration || authStatus.requiresManifestMigration) {
+        return;
+      }
     } catch {
       return;
     }
@@ -304,6 +307,9 @@ async function checkAndRestorePersistedSavePrompt(container: HTMLElement): Promi
       if (!authStatus.isLoggedIn || authStatus.isVaultLocked) {
         return;
       }
+      if (authStatus.requiresLegacySqliteBlobMigration || authStatus.requiresManifestMigration) {
+        return;
+      }
     } catch {
       return;
     }
@@ -359,6 +365,9 @@ function initializeLoginDetector(container: HTMLElement): void {
     try {
       const authStatus = await sendMessage('CHECK_AUTH_STATUS');
       if (!authStatus.isLoggedIn || authStatus.isVaultLocked) {
+        return;
+      }
+      if (authStatus.requiresLegacySqliteBlobMigration || authStatus.requiresManifestMigration) {
         return;
       }
     } catch {
@@ -821,7 +830,7 @@ export default defineContentScript({
             /*
              * Check if the vault requires a migration, if so, show a popup to the user.
              */
-            if (authStatus.requiresLegacySqliteBlobMigration || authStatus.requiresSchemaMigration) {
+            if (authStatus.requiresLegacySqliteBlobMigration || authStatus.requiresManifestMigration) {
               // Show upgrade required popup
               await createUpgradeRequiredPopup(inputElement, container, await t('content.vaultUpgradeRequired'));
               return;

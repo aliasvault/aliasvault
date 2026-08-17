@@ -41,6 +41,8 @@ const MobileUnlockModal: React.FC<IMobileUnlockModalProps> = ({
     switch (errorCode) {
       case MobileLoginErrorCode.TIMEOUT:
         return t('common.errors.mobileLoginRequestExpired');
+      case MobileLoginErrorCode.SERVER_OUTDATED:
+        return t('common.errors.serverVersionNotSupported');
       case MobileLoginErrorCode.GENERIC:
       default:
         return t('common.errors.unknownError');

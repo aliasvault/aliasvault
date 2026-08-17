@@ -43,7 +43,7 @@ import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleSc
 import { VaultCodec } from '@/utils/VaultCodec';
 import { clearDirtyScopes, getDirtyScopes } from '@/utils/VaultDirtyState';
 import { VaultKeyService } from '@/utils/VaultKeyService';
-import { vaultRequiresManifestMigration } from '@/utils/VaultManifestMigration';
+import { vaultRequiresManifestMigration, VaultMigrationKind, type VaultMigrationStatus } from '@/utils/VaultManifestMigration';
 import { vaultMergeService } from '@/utils/VaultMergeService';
 import { vaultSyncService, invalidateCanonicalizeCache } from '@/utils/VaultSyncService';
 import { WebApiService } from '@/utils/WebApiService';
@@ -96,7 +96,7 @@ let hasPendingSync = false;
 /**
  * Check if the user is logged in and if the vault is locked, and also check for both kinds of pending vault.
  */
-export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, isVaultLocked: boolean, requiresLegacySqliteBlobMigration: boolean, requiresSchemaMigration: boolean, error?: string }> {
+export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, isVaultLocked: boolean, requiresLegacySqliteBlobMigration: boolean, requiresManifestMigration: boolean, error?: string }> {
   const [username, accessToken, vaultData, encryptionKey] = await Promise.all([storage.getItem(StorageKeys.USERNAME), storage.getItem(StorageKeys.ACCESS_TOKEN), storage.getItem(StorageKeys.ENCRYPTED_VAULT), handleGetEncryptionKey()]);
 
   const isLoggedIn = username !== null && accessToken !== null;
@@ -104,27 +104,27 @@ export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, i
 
   // A locked or logged-out vault can't be opened, so neither upgrade state can be determined.
   if (isVaultLocked || !isLoggedIn) {
-    return { isLoggedIn, isVaultLocked, requiresLegacySqliteBlobMigration: false, requiresSchemaMigration: false };
+    return { isLoggedIn, isVaultLocked, requiresLegacySqliteBlobMigration: false, requiresManifestMigration: false };
   }
 
   // Vault is unlocked, check for pending migrations
   try {
     const sqliteClient = await createVaultSqliteClient();
     const requiresLegacySqliteBlobMigration = await sqliteClient.requiresLegacySqliteBlobMigration();
-    const requiresSchemaMigration = await sqliteClient.requiresSchemaMigration();
-    return { isLoggedIn, isVaultLocked, requiresLegacySqliteBlobMigration, requiresSchemaMigration };
+    const requiresManifestMigration = await vaultRequiresManifestMigration(sqliteClient);
+    return { isLoggedIn, isVaultLocked, requiresLegacySqliteBlobMigration, requiresManifestMigration };
   } catch (error) {
     // If it's a version incompatibility error, we need to handle it specially
     if (error instanceof VaultVersionIncompatibleError) {
       // Return the error so the UI can handle it appropriately (logout user)
-      return { isLoggedIn, isVaultLocked, requiresLegacySqliteBlobMigration: false, requiresSchemaMigration: false, error: error.message };
+      return { isLoggedIn, isVaultLocked, requiresLegacySqliteBlobMigration: false, requiresManifestMigration: false, error: error.message };
     }
 
     return {
       isLoggedIn,
       isVaultLocked,
       requiresLegacySqliteBlobMigration: false,
-      requiresSchemaMigration: false,
+      requiresManifestMigration: false,
       error: error instanceof Error ? error.message : await t('common.errors.unknownError')
     };
   }
@@ -1122,6 +1122,45 @@ export type VaultManifestMigrationResult = {
   pushed: boolean;
   error?: string;
 };
+
+/**
+ * Classify the pending migration so the migration gate logic knows whether it may run on its own.
+ */
+export async function handleGetVaultMigrationStatus(): Promise<VaultMigrationStatus> {
+  try {
+    const sqliteClient = await createVaultSqliteClient();
+
+    if (await sqliteClient.requiresLegacySqliteBlobMigration()) {
+      // The frozen sqlite-blob chain runs first, under its own /upgrade gate; nothing here applies yet.
+      return { kind: VaultMigrationKind.None, serverConfirmed: true };
+    }
+
+    // Ask the server whether it holds a key hierarchy for this account, and adopt it when it does.
+    let serverConfirmed = false;
+    try {
+      const probe = await VaultKeyService.fetchVaultKey();
+      serverConfirmed = probe.supported;
+      if (probe.vaultKey) {
+        await adoptRemoteVaultKeyIfNeeded();
+      }
+    } catch (probeError) {
+      devWarn('[ManifestMigration] Vault key probe failed, classifying from local state:', probeError);
+    }
+
+    if (await requiresLegacyAccountKeyMigration()) {
+      return { kind: VaultMigrationKind.StorageFormatUpgrade, serverConfirmed };
+    }
+
+    if (await sqliteClient.requiresSchemaMigration()) {
+      return { kind: VaultMigrationKind.SchemaRebuild, serverConfirmed: true };
+    }
+
+    return { kind: VaultMigrationKind.None, serverConfirmed: true };
+  } catch (error) {
+    devWarn('[ManifestMigration] Could not classify the pending migration, assuming it crosses the storage format:', error);
+    return { kind: VaultMigrationKind.StorageFormatUpgrade, serverConfirmed: false };
+  }
+}
 
 /**
  * Upgrade local manifest-v1 storage model to the current schema (if needed).

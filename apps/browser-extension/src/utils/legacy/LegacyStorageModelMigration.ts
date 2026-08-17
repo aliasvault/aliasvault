@@ -10,6 +10,7 @@ import { StorageKeys } from '@/utils/constants/storageKeys';
 import { devLog } from '@/utils/devLogger/DevLogger';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { replaceManifestRevisions } from '@/utils/ManifestRevisions';
+import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
 import { ServerUpdateRequiredError } from '@/utils/types/errors/ServerUpdateRequiredError';
 import { VaultKeyService } from '@/utils/VaultKeyService';
 
@@ -17,19 +18,56 @@ import { VaultKeyService } from '@/utils/VaultKeyService';
  * -- 1. Servers predating the v2 vault API --
  */
 
+/** How long the legacy-API probe may take before we stop blaming the server version. */
+const V1_PROBE_TIMEOUT_MS = 3000;
+
 /**
- * True when an error from WebApiService is an HTTP 404. WebApiService surfaces non-2xx responses as a generic
- * Error whose message carries the status code (`HTTP error! status: 404`).
+ * True when an error from WebApiService is an HTTP 404. Every non-2xx response from authFetch surfaces as an
+ * {@link ApiRequestError} carrying the status code.
  * @param e - the caught error
  */
 function isNotFoundError(e: unknown): boolean {
-  return e instanceof Error && e.message.includes('status: 404');
+  return e instanceof ApiRequestError && e.statusCode === 404;
 }
 
 /**
- * Run a v2 API call, translating the outdated-server 404 into {@link ServerUpdateRequiredError}. Such a server
- * answers every v2 endpoint with a 404, which is indistinguishable from a routing error unless we translate it,
- * so the UI can surface "update your server" (E-903) instead. Every other failure propagates unchanged.
+ * Probe whether the configured server answers on the v1 API while v2 does not respond.
+ * @param apiBaseUrl - the configured API base URL, without a version segment
+ */
+export async function serverPredatesV2Api(apiBaseUrl: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/v1/Auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}',
+      signal: AbortSignal.timeout(V1_PROBE_TIMEOUT_MS),
+    });
+
+    return response.status !== 404;
+  } catch {
+    // Unreachable or timed out: we cannot prove the server is outdated, so let the caller report the original failure.
+    return false;
+  }
+}
+
+/**
+ * Translate a 404 from a v2 endpoint into {@link ServerUpdateRequiredError} when the server turns out to be an
+ * outdated AliasVault install.
+ * @param status - the HTTP status of the v2 response
+ * @param apiBaseUrl - the configured API base URL, without a version segment
+ */
+export async function throwIfServerPredatesV2Api(status: number, apiBaseUrl: string): Promise<void> {
+  if (status !== 404) {
+    return;
+  }
+
+  if (await serverPredatesV2Api(apiBaseUrl)) {
+    throw new ServerUpdateRequiredError();
+  }
+}
+
+/**
+ * Run a v2 API call, translating the outdated-server 404 into {@link ServerUpdateRequiredError}.
  * @param fn - the call to run
  */
 export async function withOutdatedServerGuard<T>(fn: () => Promise<T>): Promise<T> {

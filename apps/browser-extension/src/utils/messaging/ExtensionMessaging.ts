@@ -36,6 +36,7 @@ import type { StringResponse } from '@/utils/types/messaging/StringResponse';
 import type { VaultResponse } from '@/utils/types/messaging/VaultResponse';
 import type { VaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
 import type { VaultMutationScope } from '@/utils/types/VaultMutationScope';
+import type { VaultMigrationStatus } from '@/utils/VaultManifestMigration';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
@@ -48,7 +49,7 @@ export interface IExtensionMessageProtocol {
   ADD_URL_TO_CREDENTIAL(data: { itemId: string; url: string }): { success: boolean; error?: string }; 
   AUTOFILL_CREATED_ITEM(data: { item: any; elementIdentifier?: string }): BoolResponse;
   CANCEL_CLIPBOARD_CLEAR(): void;
-  CHECK_AUTH_STATUS(): { isLoggedIn: boolean; isVaultLocked: boolean; requiresLegacySqliteBlobMigration: boolean; requiresSchemaMigration: boolean; error?: string };
+  CHECK_AUTH_STATUS(): { isLoggedIn: boolean; isVaultLocked: boolean; requiresLegacySqliteBlobMigration: boolean; requiresManifestMigration: boolean; error?: string };
   CHECK_LOGIN_DUPLICATE(data: { domain: string; username: string }): DuplicateCheckResponse;
   CLEAR_LAST_AUTOFILLED(): { success: boolean };
   CLEAR_PERSISTED_FORM_VALUES(): void;
@@ -86,6 +87,7 @@ export interface IExtensionMessageProtocol {
   GET_TOTP_SECRETS(data: { itemIds: string[] }): { success: boolean; secrets?: Record<string, TotpSecret>; error?: string };
   GET_TWO_FACTOR_STATE(): TwoFactorState | null;
   GET_VAULT(): VaultResponse;
+  GET_VAULT_MIGRATION_STATUS(): VaultMigrationStatus;
   GET_WEBAUTHN_SETTINGS(data: any): WebAuthnSettingsResponse;
   IS_URL_LINKED_TO_CREDENTIAL(data: { itemId: string; url: string }): { linked: boolean };
   LOCK_VAULT(): BoolResponse;

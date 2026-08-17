@@ -4,6 +4,7 @@ import { MobileLoginErrorCode } from '@/entrypoints/popup/types/MobileLoginError
 
 import type { LoginResponse, MobileLoginInitiateResponse, MobileLoginPollResponse } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
+import { serverPredatesV2Api } from '@/utils/legacy/LegacyStorageModelMigration';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 import type { WebApiService } from '@/utils/WebApiService';
 
@@ -62,6 +63,14 @@ export class MobileLoginUtility {
           clientPublicKey: publicKeyJwk,
         }),
       });
+
+      /*
+       * A 404 on this initiating call means the v2 API is missing altogether. Only this call may read a 404 that
+       * way: the poll below answers 404 for an expired request, which is a normal outcome.
+       */
+      if (response.status === 404 && await serverPredatesV2Api(await this.webApi.getApiUrl())) {
+        throw MobileLoginErrorCode.SERVER_OUTDATED;
+      }
 
       if (!response.ok) {
         throw MobileLoginErrorCode.GENERIC;

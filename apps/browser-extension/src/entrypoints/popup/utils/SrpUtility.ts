@@ -1,5 +1,6 @@
 import { SrpAuthService } from '@/utils/auth/SrpAuthService';
 import type { LoginResponse, ValidateLoginResponse, ValidateLoginRequest, ValidateLoginRequest2Fa, BadRequestResponse } from '@/utils/dist/core/models/webapi';
+import { throwIfServerPredatesV2Api } from '@/utils/legacy/LegacyStorageModelMigration';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { WebApiService } from '@/utils/WebApiService';
 
@@ -22,6 +23,15 @@ class SrpUtility {
   }
 
   /**
+   * Reject a response that a server predating the v2 API produced.
+   * TODO: can be deleted later once all users have migrated to the new storage format and we don't support v1 API anymore.
+   * @param response - the raw auth response
+   */
+  private async assertServerSupportsV2Api(response: Response): Promise<void> {
+    await throwIfServerPredatesV2Api(response.status, await this.webApiService.getApiUrl());
+  }
+
+  /**
    * Initiate login with server.
    */
   public async initiateLogin(username: string): Promise<LoginResponse> {
@@ -34,6 +44,8 @@ class SrpUtility {
       },
       body: JSON.stringify({ username: normalizedUsername }),
     });
+
+    await this.assertServerSupportsV2Api(response);
 
     // Check if response is a bad request (400)
     if (response.status === 400) {
@@ -96,6 +108,8 @@ class SrpUtility {
       },
       body: JSON.stringify(model),
     });
+
+    await this.assertServerSupportsV2Api(response);
 
     // Check if response is a bad request (400)
     if (response.status === 400) {
@@ -160,6 +174,8 @@ class SrpUtility {
       },
       body: JSON.stringify(model),
     });
+
+    await this.assertServerSupportsV2Api(response);
 
     // Check if response is a bad request (400)
     if (response.status === 400) {

@@ -608,6 +608,9 @@
     "whatsNew": "What's New",
     "whatsNewDescription": "An upgrade is required to support the following changes:",
     "noDescriptionAvailable": "No description available for this version.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "alerts": {
       "unableToGetVersionInfo": "Unable to get version information. Please try again.",
       "selfHostedServer": "Self-Hosted Server",
@@ -616,11 +619,6 @@
       "upgradeFailed": "Upgrade Failed",
       "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})"
     }
-  },
-  "manifestMigration": {
-    "migrating": "Automatically migrating your vault to the new data model. This should only take a few seconds...",
-    "failedTitle": "Vault Migration Failed",
-    "failedDescription": "Your vault could not be migrated to the new data model. Your existing data is untouched. Please try again, or log out and log back in. If the problem persists, please contact support."
   },
   "logout": {
     "unsyncedChangesTitle": "Unsynced Changes",

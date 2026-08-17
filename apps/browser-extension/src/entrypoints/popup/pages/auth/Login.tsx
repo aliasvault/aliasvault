@@ -125,7 +125,7 @@ const Login: React.FC = () => {
     /*
      * Navigate to reinitialize page which will:
      * 1. Call syncVault() to check version compatibility
-     * 2. Send the vault through /upgrade (legacy sqlite-blob chain) and/or /manifest-migration when those gates apply
+     * 2. Send the vault through /upgrade when either the legacy sqlite-blob chain or the manifest migration applies
      * 3. Navigate to appropriate page
      *
      * Other windows on /login or /unlock pick up the encryption-key storage
@@ -428,7 +428,7 @@ const Login: React.FC = () => {
       /*
        * Navigate to reinitialize page which will:
        * 1. Call syncVault() to check version compatibility
-       * 2. Send the vault through /upgrade (legacy sqlite-blob chain) and/or /manifest-migration when those gates apply
+       * 2. Send the vault through /upgrade when either the legacy sqlite-blob chain or the manifest migration applies
        * 3. Navigate to appropriate page
        */
       hideLoading();

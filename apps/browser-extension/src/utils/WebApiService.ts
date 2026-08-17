@@ -448,7 +448,7 @@ export class WebApiService {
   /**
    * Get the API URL from settings.
    */
-  private async getApiUrl(): Promise<string> {
+  public async getApiUrl(): Promise<string> {
     const result = await storage.getItem(StorageKeys.API_URL) as string;
     if (!result || result.length === 0) {
       return AppInfo.DEFAULT_API_URL;

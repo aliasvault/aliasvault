@@ -9,6 +9,11 @@ export enum MobileLoginErrorCode {
   TIMEOUT = 'TIMEOUT',
 
   /**
+   * The server is outdated and does not support mobile login.
+   */
+  SERVER_OUTDATED = 'SERVER_OUTDATED',
+
+  /**
    * A generic error occurred during mobile login.
    */
   GENERIC = 'GENERIC',

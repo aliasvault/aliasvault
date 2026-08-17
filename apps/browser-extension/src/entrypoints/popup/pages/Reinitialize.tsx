@@ -142,10 +142,10 @@ const Reinitialize: React.FC = () => {
         navigate('/upgrade', { replace: true });
       },
       /**
-       * Handle sqlite-blob to manifest-v1 migration.
+       * Handle the manifest migration, which the same gate serves.
        */
       onManifestMigrationRequired: () => {
-        navigate('/manifest-migration', { replace: true });
+        navigate('/upgrade', { replace: true });
       },
       /**
        * Handle sync errors silently - user already has local vault.
@@ -186,20 +186,9 @@ const Reinitialize: React.FC = () => {
         return;
       }
 
-      /*
-       * Check both vault upgrade gates before navigating. Order matters: a pre-2.0.0 vault has to walk the
-       * sqlite-blob upgrade chain (/upgrade, user-confirmed) before it is eligible for the manifest migration
-       * (/manifest-migration, automatic). The apps queries assume the current schema, so rendering any other page 
-       * before running the migrations would throw on the missing columns.
-       */
-      if (await requiresLegacySqliteBlobMigration()) {
-        setIsInitialLoading(false);
+      // Check if the vault requires a migration. If so, navigate to the upgrade page.
+      if (await requiresLegacySqliteBlobMigration() || await requiresManifestMigration()) {
         navigate('/upgrade', { replace: true });
-        return;
-      }
-
-      if (await requiresManifestMigration()) {
-        navigate('/manifest-migration', { replace: true });
         return;
       }
 
