@@ -148,12 +148,12 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
 
         // Sanitize input.
         model.Addresses = model.Addresses.Select(x => x.Trim().ToLower()).ToList();
-        model.PageSize = Math.Min(model.PageSize, 50);
+        model.PageSize = Math.Clamp(model.PageSize, 1, 50);
 
         // Check if the user has access to the email addresses.
         var validAddresses = await EmailAccessHelper.FilterReadableAddressesAsync(context, model.Addresses, user.Id);
 
-        var page = Math.Max(model.Page, 1);
+        var page = Math.Clamp(model.Page, 1, 10000);
 
         // Restrict to emails this user holds a key for.
         var decryptableKeyIds = await EmailAccessHelper.ResolveDecryptableKeyIdsAsync(context, user.Id);

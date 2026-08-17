@@ -19,6 +19,7 @@ type ItemNameInputProps = {
   onFolderChange: (folderId: string | null) => void;
   // Optional control rendered directly left of the input (the item logo).
   logoSlot?: React.ReactNode;
+  suggestions?: string[];
 };
 
 /**
@@ -32,7 +33,8 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
   folders,
   selectedFolderId,
   onFolderChange,
-  logoSlot
+  logoSlot,
+  suggestions = []
 }) => {
   const { t } = useTranslation();
   const [showFolderModal, setShowFolderModal] = useState(false);
@@ -177,9 +179,28 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
   return (
     <>
       <div>
-        <label htmlFor="itemName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          {t('items.itemName')} <span className="text-red-500">*</span>
-        </label>
+        {/* mb-1.5 rather than mb-1: the suggestion pills fill the whole line box, so they sit closer to the input than bare label text would */}
+        <div className="flex items-center gap-2 mb-1.5">
+          <label htmlFor="itemName" className="shrink-0 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            {t('items.itemName')} <span className="text-red-500">*</span>
+          </label>
+          {/* Name suggestions, inline with the label so they don't add an extra row */}
+          {suggestions.length > 0 && (
+            <div className="flex-1 min-w-0 flex items-center gap-1 overflow-x-auto no-scrollbar" aria-label={t('items.suggestions')}>
+              {suggestions.map(name => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => onChange(name)}
+                  title={`${t('items.suggestions')}: ${name}`}
+                  className="shrink-0 max-w-[7rem] truncate px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-primary-100 dark:hover:bg-primary-900/40 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <div className="flex items-stretch gap-2">
           {logoSlot}
           <div className="relative flex items-center flex-1 min-w-0">
@@ -192,6 +213,7 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
               className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white ${selectedFolderId ? 'pr-28' : 'pr-10'}`}
               required
             />
+            {/* Folder Button inside input - always visible, width adjusts based on whether a folder is selected */}
             <button
               type="button"
               onClick={handleOpenFolderModal}

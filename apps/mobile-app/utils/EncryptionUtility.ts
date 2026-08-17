@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer';
 
+import { gunzipSync, strFromU8 } from 'fflate';
 import AesGcmCrypto from 'react-native-aes-gcm-crypto';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
@@ -130,6 +131,25 @@ class EncryptionUtility {
     );
 
     return new Uint8Array(decrypted);
+  }
+
+  /**
+   * Decrypts a base64 AES-GCM payload that may be gzip compressed after decryption.
+   */
+  public static async symmetricDecryptMaybeCompressed(base64Ciphertext: string, base64Key: string): Promise<string> {
+    if (!base64Ciphertext) {
+      return base64Ciphertext;
+    }
+
+    const encryptedBytes = Uint8Array.from(atob(base64Ciphertext), c => c.charCodeAt(0));
+    const decryptedBytes = await EncryptionUtility.symmetricDecryptBytes(encryptedBytes, base64Key);
+
+    // Gzip magic number (0x1f 0x8b); anything else is treated as plain UTF-8.
+    if (decryptedBytes.length >= 2 && decryptedBytes[0] === 0x1f && decryptedBytes[1] === 0x8b) {
+      return strFromU8(gunzipSync(decryptedBytes));
+    }
+
+    return Buffer.from(decryptedBytes).toString('utf8');
   }
 
   /**
@@ -297,7 +317,8 @@ class EncryptionUtility {
         decryptedEmail.messagePlain = await EncryptionUtility.symmetricDecrypt(email.messagePlain, symmetricKeyBase64);
       }
       if (email.messageSource) {
-        decryptedEmail.messageSource = await EncryptionUtility.symmetricDecrypt(email.messageSource, symmetricKeyBase64);
+        // The raw source is optionally gzip compressed before encryption by 0.31+ API.
+        decryptedEmail.messageSource = await EncryptionUtility.symmetricDecryptMaybeCompressed(email.messageSource, symmetricKeyBase64);
       }
 
       return decryptedEmail;

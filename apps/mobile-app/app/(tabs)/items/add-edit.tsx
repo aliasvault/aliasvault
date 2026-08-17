@@ -34,6 +34,7 @@ import { FormSection } from '@/components/form/FormSection';
 import { HiddenField } from '@/components/form/HiddenField';
 import { ItemNameField, ItemNameFieldRef } from '@/components/form/ItemNameField';
 import { MultiValueField } from '@/components/form/MultiValueField';
+import { ResizableTextArea } from '@/components/form/ResizableTextArea';
 import { AttachmentUploader } from '@/components/items/details/AttachmentUploader';
 import { TotpEditor } from '@/components/items/details/TotpEditor';
 import { ItemTypeSelector } from '@/components/items/ItemTypeSelector';
@@ -1149,13 +1150,10 @@ export default function AddEditItemScreen(): React.ReactNode {
 
       case FieldTypes.TextArea:
         return (
-          <FormField
+          <ResizableTextArea
             value={stringValue}
             onChangeText={(val) => handleFieldChange(fieldKey, val)}
             label={label}
-            multiline
-            numberOfLines={4}
-            textAlignVertical="top"
             onRemove={onRemove}
             testID={testID}
           />
@@ -1373,9 +1371,7 @@ export default function AddEditItemScreen(): React.ReactNode {
             {/* Item Type Selector */}
             <ItemTypeSelector
               selectedType={item.ItemType}
-              isEditMode={isEditMode}
               onTypeChange={handleTypeChange}
-              onRegenerateAlias={aliasFieldsShownByDefault ? generateRandomAlias : undefined}
             />
 
             {/* Item Name and Primary Fields Section */}

@@ -140,7 +140,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
 
         // Sanitize input.
         model.Addresses = model.Addresses.Select(x => x.Trim().ToLower()).ToList();
-        model.PageSize = Math.Min(model.PageSize, 50);
+        model.PageSize = Math.Clamp(model.PageSize, 1, 50);
 
         // Load all email addresses that the user has a claim to where the address is in the list.
         var validAddresses = await context.EmailClaimLinks
@@ -155,7 +155,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             .Select(k => k.Id)
             .ToListAsync();
 
-        var page = Math.Max(model.Page, 1);
+        var page = Math.Clamp(model.Page, 1, 10000);
 
         // Fetch the newest emails for each address individually via a LATERAL join. This lets
         // PostgreSQL use the (To, DateSystem) index to read only the top rows per address.

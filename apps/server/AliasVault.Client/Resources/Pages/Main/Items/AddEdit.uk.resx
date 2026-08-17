@@ -121,14 +121,6 @@
     <comment>Placeholder text for service name input</comment>
   </data>
   <!-- Button text -->
-  <data name="GenerateRandomAliasButton">
-    <value>Генерувати випадковий псевдонім</value>
-    <comment>Button text for generating a random alias</comment>
-  </data>
-  <data name="ClearAliasFieldsButton">
-    <value>Очистити поля псевдоніма</value>
-    <comment>Button text for clearing alias fields</comment>
-  </data>
   <data name="SaveItemButton">
     <value>Save Item</value>
     <comment>Button text for saving an item</comment>

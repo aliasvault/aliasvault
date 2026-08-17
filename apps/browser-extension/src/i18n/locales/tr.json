@@ -282,7 +282,6 @@
     "typeLabel": "Item Type",
     "creating": "Creating",
     "editing": "Editing",
-    "regenerateAlias": "Regenerate alias",
     "addCustomField": "Add custom field",
     "fieldLabel": "Field Label",
     "enterFieldName": "Enter field name",
@@ -366,6 +365,7 @@
     "noEmails": "No emails found",
     "noEmailsDescription": "Özel e-posta adreslerinize henüz bir e-posta gelmedi. Yeni bir e-posta aldığınızda burada görünecektir.",
     "offlineMessage": "Çevrimdışısınız. E-postalarınızı yüklemek için lütfen internet bağlantısı sağlayın.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "loadMore": "Load More ({{count}} remaining)",
     "dateFormat": {
       "justNow": "biraz önce",

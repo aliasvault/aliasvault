@@ -24,6 +24,7 @@ import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCodes';
+import { ClientUpgradeRequiredError } from '@/utils/types/errors/ClientUpgradeRequiredError';
 import { ServerUpdateRequiredError } from '@/utils/types/errors/ServerUpdateRequiredError';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
@@ -291,7 +292,10 @@ const Login: React.FC = () => {
       );
     } catch (err) {
       console.error('Login error:', err);
-      if (err instanceof ServerUpdateRequiredError) {
+      if (err instanceof ClientUpgradeRequiredError) {
+        // Server refused this client version (HTTP 426).
+        setError(t('common.errors.clientVersionNotSupported'));
+      } else if (err instanceof ServerUpdateRequiredError) {
         // Server does not support the v2 API, throw unsupported error.
         setError(t('common.errors.serverVersionNotSupported'));
       } else if (err instanceof VaultProcessingError) {
@@ -366,7 +370,10 @@ const Login: React.FC = () => {
     } catch (err) {
       // Show API authentication errors as-is.
       console.error('2FA error:', err);
-      if (err instanceof ServerUpdateRequiredError) {
+      if (err instanceof ClientUpgradeRequiredError) {
+        // Server refused this client version (HTTP 426).
+        setError(t('common.errors.clientVersionNotSupported'));
+      } else if (err instanceof ServerUpdateRequiredError) {
         // Server does not support the v2 API, throw unsupported error.
         setError(t('common.errors.serverVersionNotSupported'));
       } else if (err instanceof VaultProcessingError) {

@@ -42,6 +42,8 @@ jobs:
       working-directory: apps/server
       run: dotnet build --no-restore
 
+    # NetworkTests are excluded here: they fetch real third-party websites and are meant to be run
+    # by hand with --filter "Category=NetworkTests" (e.g. this includes favicon extractor tests targeting external public websites).
     - name: Run unittests
       working-directory: apps/server
-      run: dotnet test Tests/AliasVault.UnitTests --no-build --verbosity normal
+      run: dotnet test Tests/AliasVault.UnitTests --no-build --verbosity normal --filter "Category!=NetworkTests"

@@ -214,12 +214,13 @@ export class TestClient {
   }
 
   /**
-   * Open the add credential form.
+   * Open the add credential form via the item type dropdown in the header.
    */
-  async openAddCredentialForm(): Promise<this> {
+  async openAddCredentialForm(typeSelector: string = ButtonSelectors.ADD_ITEM_TYPE_LOGIN): Promise<this> {
     const addButton = this.popup.locator(ButtonSelectors.ADD_NEW_ITEM);
     await expect(addButton).toBeVisible();
     await addButton.click();
+    await this.popup.locator(typeSelector).click();
     await expect(this.popup.locator(FieldSelectors.ITEM_NAME)).toBeVisible();
     return this;
   }

@@ -138,7 +138,7 @@ You can reset the admin password by running the `aliasvault reset-admin-password
 
 1. SSH into the aliasvault container:
 ```bash
-docker compose exec -it aliasvault /bin/bash
+docker exec -it aliasvault /bin/bash
 ```
 
 2. Run the reset-admin-password script:
@@ -148,10 +148,14 @@ aliasvault reset-admin-password
 
 3. Note the password displayed, then exit the SSH session (`Ctrl+C` or type `exit`) and restart the container:
 ```bash
-docker compose restart
+docker restart aliasvault
 ```
 
 4. You can now log in to the admin panel (`/admin`) with the new password.
+
+:::note
+The commands above use `docker` directly so they also work when the compose file is not available from your current shell, e.g. when the stack is managed by a NAS UI such as OpenMediaVault, Synology or Unraid. If you run the compose file yourself, `docker compose exec -it aliasvault /bin/bash` and `docker compose restart` work equally well from the directory that contains your `docker-compose.yml`.
+:::
 
 ### 5. Mobile app cannot connect, but web app and browser extension work
 

@@ -29,6 +29,7 @@
     "attachments": "Allegati",
     "or": "o",
     "retry": "Riprova",
+    "resizeField": "Trascina per ridimensionare il campo",
     "deleteItemConfirmTitle": "Elimina elemento",
     "deleteItemConfirmDescription": "Sei sicuro di voler rimuovere questo elemento?",
     "errors": {
@@ -226,6 +227,7 @@
       "biometricDisabledMessage": "{{biometric}} è disabilitato per AliasVault. Per usarlo, abilitalo prima nelle impostazioni del dispositivo.",
       "biometricHelp": "Usa la biometria per sbloccare la tua cassaforte, protetta dall' {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} non è disponibile. Tocca per aprire le impostazioni o vai alle impostazioni del dispositivo per abilitarlo e configurarlo.",
+      "biometricUnavailableHelpAndroid": "I dati biometrici non sono disponibili per il tuo dispositivo. Android richiede biometrie forti (classe 3), come un'impronta digitale o un riconoscimento sicuro del volto.",
       "featureRequiresPasscode": "Questa funzione richiede che un codice di accesso sia abilitato sul tuo dispositivo.",
       "pin": "Codice PIN",
       "pinDescription": "Usa un codice PIN personalizzato per sbloccare la cassaforte più rapidamente.",
@@ -342,6 +344,7 @@
     "settings": "Impostazioni"
   },
   "itemTypes": {
+    "typeLabel": "Tipo Elemento",
     "creating": "Creazione in corso",
     "editing": "Modifica",
     "login": {
@@ -604,6 +607,7 @@
     "formatSwitchTitle": "Cambia formato email",
     "sizeKB": "KB",
     "offlineMessage": "Sei offline. Collegati a internet per caricare le email.",
+    "updateClientForFormattedView": "Questa email richiede una nuova versione dell'app per essere visualizzata correttamente. Si prega di aggiornare l'app.",
     "emptyMessage": "Non hai ancora ricevuto email ai tuoi indirizzi privati. Quando ne riceverai una nuova, apparirà qui.",
     "loadMore": "Carica altro ({{count}} rimanenti)",
     "time": {

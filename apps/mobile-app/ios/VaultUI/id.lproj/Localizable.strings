@@ -4,89 +4,89 @@
 "back" = "Kembali";
 "next" = "Berikutnya";
 "edit" = "Ubah";
-"website" = "Website";
+"website" = "Situs Web";
 "username" = "Username";
 "title" = "Judul";
 "unknown_error" = "Terjadi kesalahan yang tidak diketahui";
 
-"loading_items" = "Loading items...";
-"no_items_found" = "No items found";
-"no_items_match" = "No existing items match your search";
-"create_new_item" = "Create New Item";
-"open_aliasvault" = "Open AliasVault";
-"untitled_credential" = "this credential";
-"link_url_prompt_title" = "Link to credential?";
-"link_url_prompt_message" = "Add \"{{url}}\" to {{name}} so AliasVault recognises this app or website next time?";
-"link_url_prompt_link_action" = "Link and fill";
-"link_url_prompt_skip_action" = "Just fill";
-"linking_url" = "Linking...";
-"select_item" = "Select Item";
-"select_text_to_insert" = "Select Text to Insert";
-"choose_username" = "Choose Username";
-"select_text_to_insert_message" = "Select the text to insert into the focused input field";
-"choose_username_message" = "This website may require either your username or your email address to log in";
+"loading_items" = "Memuat item...";
+"no_items_found" = "Tidak ada item yang ditemukan";
+"no_items_match" = "Tidak ada item yang sesuai dengan pencarian anda";
+"create_new_item" = "Buat item baru";
+"open_aliasvault" = "Masuk ke AliasVault";
+"untitled_credential" = "kredensial ini";
+"link_url_prompt_title" = "Tautkan ke kredensial?";
+"link_url_prompt_message" = "Tambah \"{{url}} ke {{name}} supaya AliasVault mengeetahui aplikasi atau website ini lain kali?";
+"link_url_prompt_link_action" = "Tautan dan isi";
+"link_url_prompt_skip_action" = "Langsung isi";
+"linking_url" = "Menautkan...";
+"select_item" = "Pilih item";
+"select_text_to_insert" = "Pilih Teks yang Akan Disisipkan";
+"choose_username" = "Pilih Nama Pengguna";
+"select_text_to_insert_message" = "Pilih teks yang akan disisipkan ke dalam bidang masukan yang sedang aktif";
+"choose_username_message" = "Situs web ini mungkin memerlukan nama pengguna atau alamat email Anda untuk masuk";
 "username_prefix" = "Username: ";
-"email_prefix" = "E-mail: ";
+"email_prefix" = "Email: ";
 "password" = "Kata sandi";
-"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
+"items_load_error" = "Gagal memuat item. Silakan buka aplikasi AliasVault untuk memeriksa pembaruan.";
 "no_item_selected" = "No item selected.";
 
 /* Context menu strings */
-"copy_username" = "Copy Username";
-"copy_password" = "Copy Password";
-"copy_email" = "Copy Email";
-"copy_totp_code" = "Copy TOTP Code";
-"view_details" = "View Details";
-"username_copied" = "Username copied";
-"password_copied" = "Password copied";
-"email_copied" = "Email copied";
-"totp_code_copied" = "TOTP code copied";
-"totp_code" = "TOTP Code";
+"copy_username" = "Salin Nama Pengguna";
+"copy_password" = "Salin Kata Sandi";
+"copy_email" = "Salin email";
+"copy_totp_code" = "Salin kode TOTP";
+"view_details" = "Lihat Rincian";
+"username_copied" = "Nama pengguna disalin";
+"password_copied" = "Kata sandi tersalin";
+"email_copied" = "Email tersalin";
+"totp_code_copied" = "Kode TOTP tersalin";
+"totp_code" = "Kode TOTP";
 
 /* Search bar */
-"search_items" = "Search items...";
+"search_items" = "Cari item...";
 
 /* Passkey registration */
 "create_passkey_title" = "Buat Passkey baru";
-"create_passkey_subtitle" = "Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.";
+"create_passkey_subtitle" = "Daftarkan passkey baru untuk situs web ini. Kunci tersebut akan disimpan dengan aman di brankas Anda dan secara otomatis disinkronkan ke seluruh perangkat Anda melalui AliasVault.";
 "create_passkey_button_confirm" = "Buat Passkey";
 
 /* Passkey provider */
 "passkey" = "Passkey";
-"loading_passkeys" = "Loading passkeys...";
-"no_passkeys_found" = "No passkeys found";
-"no_passkeys_match" = "No existing passkeys match your search";
-"select_passkey" = "Select Passkey";
-"passkeys_load_error" = "Failed to load passkeys. Please open the AliasVault app to check for updates.";
+"loading_passkeys" = "Memuat passkey...";
+"no_passkeys_found" = "Tidak ada passkey ditemukan";
+"no_passkeys_match" = "Tidak ada passkey yang ada yang sesuai dengan pencarian Anda";
+"select_passkey" = "Pilih Passkey";
+"passkeys_load_error" = "Gagal memuat passkey. Silakan buka aplikasi AliasVault untuk memeriksa pembaruan.";
 
 /* Passkey replacement */
 "create_new_passkey" = "Buat Passkey baru";
-"select_passkey_to_replace" = "Or, replace an existing passkey";
-"replace_passkey" = "Replace Passkey";
-"replace_passkey_explanation" = "This will replace the existing passkey with a new one. Please be aware that your old passkey will be overwritten and no longer accessible. If you wish to create a separate passkey instead, go back to the previous screen.";
-"create_passkey_explanation" = "This creates a new passkey and stores it in your vault. It will be automatically synced across all your devices that use AliasVault.";
+"select_passkey_to_replace" = "Atau, ganti passkey yang sudah ada";
+"replace_passkey" = "Ganti Passkey";
+"replace_passkey_explanation" = "Tindakan ini akan mengganti passkey yang ada dengan yang baru. Harap diperhatikan bahwa passkey lama Anda akan ditimpa dan tidak dapat diakses lagi. Jika Anda ingin membuat passkey terpisah, silakan kembali ke layar sebelumnya.";
+"create_passkey_explanation" = "Tindakan ini akan membuat kunci akses baru dan menyimpannya di brankas Anda. Kunci tersebut akan secara otomatis disinkronkan ke semua perangkat Anda yang menggunakan AliasVault.";
 
 /* Passkey merge with existing item */
-"passkey_add_to_existing" = "Or, add passkey to an existing item";
+"passkey_add_to_existing" = "Atau, tambah passkey ke item yang sudah ada";
 "add_passkey" = "Tambah Passkey";
-"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
+"merge_passkey_explanation" = "Tindakan ini akan menambahkan kunci akses ke item yang sudah ada. Kata sandi dan data lainnya akan tetap dipertahankan.";
 
 /* PIN Unlock */
 "unlock_vault" = "Buka Brankas";
 "enter_pin_to_unlock_vault" = "Masukkan pin untuk membuka vault";
-"pin_locked_max_attempts" = "PIN locked after too many failed attempts";
-"pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
+"pin_locked_max_attempts" = "PIN terkunci setelah terlalu banyak upaya yang gagal";
+"pin_incorrect_attempts_remaining" = "PIN salah. Tersisa %d kali percobaan";
 
 /* Password Unlock */
-"enter_password_to_unlock" = "Enter your master password";
+"enter_password_to_unlock" = "Masukkan kata sandi utama Anda";
 "unlock" = "Buka";
 "incorrect_password" = "Kata sandi salah. Silakan coba lagi.";
-"attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
+"attempts_warning" = "Kata sandi salah. Anda akan dikeluarkan dari sistem jika memasukkan kata sandi yang salah %d kali lagi.";
 "max_attempts_reached" = "Terlalu banyak percobaan untuk membuka. Kamu di-logout dengan alasan keamanan";
 
 /* PIN Setup */
-"pin_setup_title" = "Setup PIN";
-"pin_setup_subtitle" = "Choose a PIN to unlock your vault";
+"pin_setup_title" = "Atur Kode PIN";
+"pin_setup_subtitle" = "Pilih PIN untuk membuka kunci brankas Anda";
 "pin_confirm_title" = "Konfirmasi PIN";
-"pin_confirm_subtitle" = "Re-enter your PIN to confirm";
-"pin_mismatch" = "PINs do not match. Please try again.";
+"pin_confirm_subtitle" = "Masukkan kembali PIN untuk mengonfirmasi";
+"pin_mismatch" = "PIN tidak cocok. Mohon coba lagi.";

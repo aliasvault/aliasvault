@@ -282,7 +282,6 @@
     "typeLabel": "Item Type",
     "creating": "Luodaan",
     "editing": "Muokaataan",
-    "regenerateAlias": "Regenerate alias",
     "addCustomField": "Add custom field",
     "fieldLabel": "Kentän otsikko",
     "enterFieldName": "Anna kentän nimi",
@@ -366,6 +365,7 @@
     "noEmails": "Sähköposteja ei löytynyt",
     "noEmailsDescription": "Et ole vielä vastaanottanut sähköposteja yksityisissä sähköpostiosoitteissasi. Kun saat uuden sähköpostiviestin, se näkyy täällä.",
     "offlineMessage": "Olet offline-tilassa. Ole hyvä ja yhdistä internetiin ladataksesi sähköpostiosoitteesi.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "loadMore": "Load More ({{count}} remaining)",
     "dateFormat": {
       "justNow": "juuri nyt",

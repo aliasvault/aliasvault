@@ -49,10 +49,11 @@ using V2Auth = AliasVault.Shared.Models.WebApi.V2.Auth;
 /// <param name="settingsService">ServerSettingsService instance.</param>
 /// <param name="registrationRateLimitService">RegistrationRateLimitService instance.</param>
 /// <param name="ipBlockListService">IpBlockListService instance.</param>
+/// <param name="mobileLoginRateLimitService">MobileLoginRateLimitService instance.</param>
 [Route("v{version:apiVersion}/[controller]")]
 [ApiController]
 [ApiVersion("2")]
-public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IConfiguration configuration, IMemoryCache cache, ITimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, RegistrationRateLimitService registrationRateLimitService, IpBlockListService ipBlockListService) : ControllerBase
+public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IConfiguration configuration, IMemoryCache cache, ITimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, RegistrationRateLimitService registrationRateLimitService, IpBlockListService ipBlockListService, MobileLoginRateLimitService mobileLoginRateLimitService) : ControllerBase
 {
     /// <summary>
     /// Timeout in minutes for mobile login requests. Clients use 2 minutes for countdown, we use 3 here to give a bit of extra buffer time.
@@ -78,6 +79,13 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginInitiateRequest model)
     {
+        // Check the IP blocklist.
+        if (await ipBlockListService.IsBlockedForLoginAsync(IpAddressUtility.GetRawIpAddressFromContext(HttpContext)))
+        {
+            await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Login, AuthFailureReason.IpBlocked);
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 400));
+        }
+
         var user = await userManager.FindByNameAsync(model.Username);
 
         // If user doesn't exist, generate or retrieve fake data to prevent user enumeration attacks.
@@ -282,6 +290,13 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         if (user.Blocked)
         {
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.TokenRefresh, AuthFailureReason.AccountBlocked);
+            return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 401));
+        }
+
+        // Check the IP blocklist.
+        if (await ipBlockListService.IsBlockedForLoginAsync(IpAddressUtility.GetRawIpAddressFromContext(HttpContext)))
+        {
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.TokenRefresh, AuthFailureReason.IpBlocked);
             return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 401));
         }
 
@@ -589,13 +604,17 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Validate the SRP session (actual current password check).
-        var serverSession = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.CurrentClientPublicEphemeral, model.CurrentClientSessionProof);
+        var (serverSession, activeSessionFound) = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.CurrentClientPublicEphemeral, model.CurrentClientSessionProof);
         if (serverSession is null)
         {
-            // Increment failed login attempts in order to lock out the account when the limit is reached.
-            await userManager.AccessFailedAsync(user);
+            if (activeSessionFound)
+            {
+                // The password was wrong: increment failed login attempts which then locks out
+                // the account when the limit is reached.
+                await userManager.AccessFailedAsync(user);
+            }
 
-            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.PasswordChange, AuthFailureReason.InvalidPassword);
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.PasswordChange, activeSessionFound ? AuthFailureReason.InvalidPassword : AuthFailureReason.SrpSessionNotFound);
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PASSWORD_MISMATCH, 400));
         }
 
@@ -716,6 +735,28 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     [AllowAnonymous]
     public async Task<IActionResult> InitiateMobileLogin([FromBody] MobileLoginInitiateRequest model)
     {
+        // Reject invalid public key structure.
+        if (!MobileLoginPublicKeyValidator.IsValid(model.ClientPublicKey))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_INVALID_PUBLIC_KEY, 400));
+        }
+
+        // Check the IP blocklist.
+        if (await ipBlockListService.IsBlockedForLoginAsync(IpAddressUtility.GetRawIpAddressFromContext(HttpContext)))
+        {
+            await authLoggingService.LogAuthEventFailAsync("n/a", AuthEventType.MobileLogin, AuthFailureReason.IpBlocked);
+            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 400));
+        }
+
+        // Check IP-based mobile login rate limit.
+        var settings = await settingsService.GetAllSettingsAsync();
+        var ipAddress = IpAddressUtility.GetAnonymizedIpFromContext(HttpContext, config.IpLoggingEnabled);
+        if (await mobileLoginRateLimitService.IsRateLimitExceededAsync(ipAddress, settings.MaxMobileLoginRequestsPerIpPerMinute))
+        {
+            await authLoggingService.LogAuthEventFailAsync("n/a", AuthEventType.MobileLogin, AuthFailureReason.MobileLoginRateLimitExceeded);
+            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_RATE_LIMIT_EXCEEDED, 429));
+        }
+
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
         // Generate a unique request ID
@@ -727,7 +768,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             Id = requestId,
             ClientPublicKey = model.ClientPublicKey,
             CreatedAt = timeProvider.UtcNow,
-            ClientIpAddress = IpAddressUtility.GetAnonymizedIpFromContext(HttpContext, config.IpLoggingEnabled),
+            ClientIpAddress = ipAddress,
         };
 
         context.MobileLoginRequests.Add(loginRequest);
@@ -928,10 +969,10 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         // Validate the SRP session (actual password check).
         await using var context = await dbContextFactory.CreateDbContextAsync();
-        var serverSession = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.ClientPublicEphemeral, model.ClientSessionProof);
+        var (serverSession, activeSessionFound) = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.ClientPublicEphemeral, model.ClientSessionProof);
         if (serverSession is null)
         {
-            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.AccountDeletion, AuthFailureReason.InvalidPassword);
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.AccountDeletion, activeSessionFound ? AuthFailureReason.InvalidPassword : AuthFailureReason.SrpSessionNotFound);
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PASSWORD_MISMATCH, 400));
         }
 
@@ -1095,13 +1136,17 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         // Validate the SRP session (actual password check).
         await using var context = await dbContextFactory.CreateDbContextAsync();
-        var serverSession = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.ClientPublicEphemeral, model.ClientSessionProof);
+        var (serverSession, activeSessionFound) = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.ClientPublicEphemeral, model.ClientSessionProof);
         if (serverSession is null)
         {
-            // Increment failed login attempts in order to lock out the account when the limit is reached.
-            await userManager.AccessFailedAsync(user);
+            if (activeSessionFound)
+            {
+                // Incorrect password: increment failed login attempts which then locks out
+                // the account when the limit is reached.
+                await userManager.AccessFailedAsync(user);
+            }
 
-            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.Login, AuthFailureReason.InvalidPassword);
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.Login, activeSessionFound ? AuthFailureReason.InvalidPassword : AuthFailureReason.SrpSessionNotFound);
             return (null, null, BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400)));
         }
 

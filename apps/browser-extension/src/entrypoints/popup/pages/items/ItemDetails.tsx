@@ -89,6 +89,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
           onClick={handleEdit}
           title={t('items.editItem')}
           iconType={HeaderIconType.EDIT}
+          variant="primary"
         />
       </div>
     );

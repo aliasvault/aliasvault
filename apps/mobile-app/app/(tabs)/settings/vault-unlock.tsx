@@ -82,11 +82,10 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
             text: t('settings.openSettings'),
             style: 'default',
             /**
-             * Handle the open settings press.
+             * Handle the open settings press. Biometrics stay disabled until the user has
+             * actually enrolled one that works, which is re-checked when this screen reloads.
              */
             onPress: async () : Promise<void> => {
-              await AppUnlockUtility.enableAuthMethod('faceid');
-              setIsBiometricsEnabled(true);
               if (Platform.OS === 'ios') {
                 Linking.openURL('app-settings:');
               } else {
@@ -266,7 +265,7 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
       fontSize: 16,
     },
     warningText: {
-      color: colors.errorBorder,
+      color: colors.errorText,
       fontSize: 13,
       marginTop: 4,
     },
@@ -301,8 +300,10 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
               })}
             </ThemedText>
             {!hasBiometrics && (
-              <ThemedText style={[styles.helpText, { color: colors.errorBorder }]}>
-                {t('settings.vaultUnlockSettings.biometricUnavailableHelp', { biometric: biometricDisplayName })}
+              <ThemedText style={[styles.helpText, { color: colors.errorText }]}>
+                {Platform.OS === 'android'
+                  ? t('settings.vaultUnlockSettings.biometricUnavailableHelpAndroid')
+                  : t('settings.vaultUnlockSettings.biometricUnavailableHelp', { biometric: biometricDisplayName })}
               </ThemedText>
             )}
           </TouchableOpacity>

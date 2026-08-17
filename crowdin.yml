@@ -36,6 +36,7 @@ languages:
   - ko
   - hu
   - ga
+  - id
 base_path: ./
 preserve_hierarchy: 1
 files:

@@ -95,7 +95,7 @@ const ItemAddEdit: React.FC = () => {
   const { executeVaultMutationAsync } = useVaultMutate();
   const { setHeaderButtons, setBackButtonTitle } = useHeaderButtons();
   const { setIsInitialLoading } = useLoading();
-  const { generateAlias, generateRandomEmailPrefix, lastGeneratedValues } = useAliasGenerator();
+  const { generateAlias, generateRandomEmailPrefix, resolveDefaultEmailDomain, lastGeneratedValues, setLastGeneratedValues } = useAliasGenerator();
   const { detectService } = useServiceDetection();
   const webApi = useWebApi();
 
@@ -565,14 +565,14 @@ const ItemAddEdit: React.FC = () => {
       prefix = await RustCore.generateIdentityEmailPrefix({ firstName, lastName, birthDate });
     }
 
-    const defaultEmailDomain = dbContext.sqliteClient.settings.getDefaultEmailDomain();
+    const defaultEmailDomain = await resolveDefaultEmailDomain();
     const email = defaultEmailDomain ? `${prefix}@${defaultEmailDomain}` : prefix;
 
     setFieldValues(prev => ({
       ...prev,
       'login.email': email
     }));
-  }, [dbContext?.sqliteClient, fieldValues, generateRandomEmailPrefix]);
+  }, [dbContext?.sqliteClient, fieldValues, generateRandomEmailPrefix, resolveDefaultEmailDomain]);
 
   /**
    * Generate a random-string email alias (for Login type email field).
@@ -585,20 +585,21 @@ const ItemAddEdit: React.FC = () => {
     }
 
     const prefix = await generateRandomEmailPrefix();
-    const defaultEmailDomain = dbContext.sqliteClient.settings.getDefaultEmailDomain();
+    const defaultEmailDomain = await resolveDefaultEmailDomain();
     const email = defaultEmailDomain ? `${prefix}@${defaultEmailDomain}` : prefix;
 
     setFieldValues(prev => ({
       ...prev,
       'login.email': email
     }));
-  }, [dbContext?.sqliteClient, generateRandomEmailPrefix]);
+  }, [dbContext?.sqliteClient, generateRandomEmailPrefix, resolveDefaultEmailDomain]);
 
   /**
    * Generate a random username using the shared alias generator.
    * Reuses the same logic as full alias generation but only updates the username field.
    */
   const generateRandomUsername = useCallback(async () => {
+    const previousGeneratedValues = lastGeneratedValues;
     const generatedData = await generateAlias();
     if (!generatedData) {
       return;
@@ -609,7 +610,12 @@ const ItemAddEdit: React.FC = () => {
       ...prev,
       'login.username': generatedData.username
     }));
-  }, [generateAlias]);
+
+    setLastGeneratedValues({
+      ...previousGeneratedValues,
+      username: generatedData.username
+    });
+  }, [generateAlias, lastGeneratedValues, setLastGeneratedValues]);
 
   /**
    * Check if alias fields are shown by default for the current item type.
@@ -1123,6 +1129,7 @@ const ItemAddEdit: React.FC = () => {
           onClick={handleSave}
           title={isSaving ? t('common.saving') : t('items.saveItem')}
           iconType={HeaderIconType.SAVE}
+          variant="primary"
           isLoading={isSaving}
           disabled={isSaving}
         />
@@ -1392,11 +1399,9 @@ const ItemAddEdit: React.FC = () => {
       {/* Item Type Selector */}
       <ItemTypeSelector
         selectedType={item.ItemType}
-        isEditMode={isEditMode}
         showDropdown={showTypeDropdown}
         onDropdownToggle={setShowTypeDropdown}
         onTypeChange={handleTypeChange}
-        onRegenerateAlias={aliasFieldsShownByDefault && !isEditMode ? handleGenerateAlias : undefined}
       />
 
       {/* Item Name and Primary fields block */}
@@ -1418,29 +1423,8 @@ const ItemAddEdit: React.FC = () => {
               onFetchFromWebsite={() => void fetchLogoFromWebsite()}
             />
           }
+          suggestions={isEditMode ? [] : suggestedNames.filter(name => name && name !== item.Name).slice(0, 3)}
         />
-        {/* Alternative item title suggestions (create mode) */}
-        {!isEditMode && ((): React.ReactNode => {
-          const nameSuggestions = suggestedNames.filter(name => name && name !== item.Name).slice(0, 3);
-          if (nameSuggestions.length === 0) {
-            return null;
-          }
-          return (
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              <span className="text-xs text-gray-500 dark:text-gray-400">{t('items.suggestions')}:</span>
-              {nameSuggestions.map(name => (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() => setItem(prev => prev ? { ...prev, Name: name } : prev)}
-                  className="px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-primary-100 dark:hover:bg-primary-900/40 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
-                >
-                  {name}
-                </button>
-              ))}
-            </div>
-          );
-        })()}
         {/* Primary fields (like URL) shown below name */}
         {primaryFields.map(field => (
           <div key={field.FieldKey}>

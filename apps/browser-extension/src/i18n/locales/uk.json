@@ -282,7 +282,6 @@
     "typeLabel": "Item Type",
     "creating": "Creating",
     "editing": "Editing",
-    "regenerateAlias": "Regenerate alias",
     "addCustomField": "Add custom field",
     "fieldLabel": "Field Label",
     "enterFieldName": "Enter field name",
@@ -366,6 +365,7 @@
     "noEmails": "Електронних листів не знайдено",
     "noEmailsDescription": "Ви ще не отримували жодних листів на свої приватні адреси електронної пошти. Коли ви отримаєте новий лист, він з’явиться тут.",
     "offlineMessage": "Ви офлайн. Будь ласка, приєднайтесь до Інтернету, щоб завантажити свої електронні листи.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "loadMore": "Load More ({{count}} remaining)",
     "dateFormat": {
       "justNow": "щойно",

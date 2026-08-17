@@ -2649,6 +2649,10 @@ video {
   color: rgb(214 131 56 / var(--tw-text-opacity));
 }
 
+.text-primary-600\/80 {
+  color: rgb(214 131 56 / 0.8);
+}
+
 .text-primary-700 {
   --tw-text-opacity: 1;
   color: rgb(184 112 47 / var(--tw-text-opacity));
@@ -2978,11 +2982,6 @@ video {
   background-color: rgb(249 250 251 / var(--tw-bg-opacity));
 }
 
-.hover\:bg-gray-600:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgb(75 85 99 / var(--tw-bg-opacity));
-}
-
 .hover\:bg-gray-800:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(31 41 55 / var(--tw-bg-opacity));
@@ -3191,10 +3190,6 @@ video {
   text-decoration-line: none;
 }
 
-.hover\:opacity-80:hover {
-  opacity: 0.8;
-}
-
 .hover\:file\:bg-primary-100::file-selector-button:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(253 222 133 / var(--tw-bg-opacity));
@@ -3358,6 +3353,10 @@ video {
 
 .group:hover .group-hover\:opacity-100 {
   opacity: 1;
+}
+
+.peer:hover ~ .peer-hover\:opacity-80 {
+  opacity: 0.8;
 }
 
 .dark\:divide-gray-600:is(.dark *) > :not([hidden]) ~ :not([hidden]) {
@@ -3791,6 +3790,10 @@ video {
   color: rgb(246 167 82 / var(--tw-text-opacity));
 }
 
+.dark\:text-primary-400\/80:is(.dark *) {
+  color: rgb(246 167 82 / 0.8);
+}
+
 .dark\:text-primary-500:is(.dark *) {
   --tw-text-opacity: 1;
   color: rgb(244 149 65 / var(--tw-text-opacity));
@@ -3960,10 +3963,6 @@ video {
 
 .dark\:hover\:bg-primary-900\/30:hover:is(.dark *) {
   background-color: rgb(123 74 30 / 0.3);
-}
-
-.dark\:hover\:bg-primary-900\/40:hover:is(.dark *) {
-  background-color: rgb(123 74 30 / 0.4);
 }
 
 .dark\:hover\:bg-primary-900\/50:hover:is(.dark *) {

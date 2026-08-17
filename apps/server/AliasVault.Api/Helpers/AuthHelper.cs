@@ -38,15 +38,16 @@ public static class AuthHelper
     /// <param name="user">The user object.</param>
     /// <param name="clientEphemeral">The client ephemeral value.</param>
     /// <param name="clientSessionProof">The client session proof.</param>
-    /// <returns>SrpSession if validation succeeds, null otherwise.</returns>
-    public static async Task<SrpSession?> ValidateSrpSessionAsync(IMemoryCache cache, AliasServerDbContext context, AliasVaultUser user, string clientEphemeral, string clientSessionProof)
+    /// <returns>Tuple with the SrpSession (null if validation failed) and whether an active SRP session existed.</returns>
+    public static async Task<(SrpSession? Session, bool ActiveSessionFound)> ValidateSrpSessionAsync(IMemoryCache cache, AliasServerDbContext context, AliasVaultUser user, string clientEphemeral, string clientSessionProof)
     {
         // Get or create SRP identity. For existing users without SrpIdentity, fall back to username (lowercase).
         var srpIdentity = user.SrpIdentity ?? user.UserName!.ToLowerInvariant();
 
         if (!cache.TryGetValue(CachePrefixEphemeral + srpIdentity, out var serverSecretEphemeral) || serverSecretEphemeral is not string)
         {
-            return null;
+            // No login was initiated for this user, or the server ephemeral has expired. Return false to indicate that no active session was found.
+            return (null, false);
         }
 
         // Retrieve latest vault of user which contains the current salt and verifier.
@@ -62,12 +63,8 @@ public static class AuthHelper
             latestVaultEncryptionSettings.Verifier,
             clientSessionProof);
 
-        if (serverSession is null)
-        {
-            return null;
-        }
-
-        return serverSession;
+        // If validation failed, serverSession will be null here.
+        return (serverSession, true);
     }
 
     /// <summary>

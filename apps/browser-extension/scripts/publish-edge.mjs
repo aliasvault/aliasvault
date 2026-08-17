@@ -40,12 +40,33 @@ const authHeaders = {
   "X-ClientID": env.EDGE_CLIENT_ID,
 };
 
+// Describe an HTTP error response.
+async function describeError(res) {
+  const body = await res.text();
+  const detail = `${res.status} ${res.statusText}`.trim();
+  return body ? `${detail} ${body}` : detail;
+}
+
+// Describe an authentication error.
+function authHint(status) {
+  if (status === 401) {
+    return "\n   → The API key is rejected (expired or regenerated). Create a new key at\n     https://partner.microsoft.com/dashboard/microsoftedge/ → Publish API → Create API credentials,\n     then update EDGE_API_KEY in ~/.aliasvault/browser-extensions.env";
+  }
+  if (status === 403) {
+    return "\n   → EDGE_CLIENT_ID is not valid for this account (check the Publish API page).";
+  }
+  if (status === 410) {
+    return "\n   → Missing X-ClientID header; the deprecated v1 (bearer token) flow is retired.";
+  }
+  return "";
+}
+
 async function pollOperation(operationUrl, label) {
   const start = Date.now();
   while (Date.now() - start < POLL_TIMEOUT_MS) {
     const res = await fetch(operationUrl, { headers: authHeaders });
     if (!res.ok) {
-      throw new Error(`${label} poll failed: ${res.status} ${await res.text()}`);
+      throw new Error(`${label} poll failed: ${await describeError(res)}${authHint(res.status)}`);
     }
     const data = await res.json();
     if (data.status === "Succeeded") {
@@ -69,7 +90,7 @@ async function uploadPackage(zipBytes) {
     body: zipBytes,
   });
   if (res.status !== 202) {
-    throw new Error(`Upload failed: ${res.status} ${await res.text()}`);
+    throw new Error(`Upload failed: ${await describeError(res)}${authHint(res.status)}`);
   }
   const location = res.headers.get("location");
   if (!location) {
@@ -86,7 +107,7 @@ async function publishSubmission(notesText) {
     body: JSON.stringify({ notes: notesText }),
   });
   if (res.status !== 202) {
-    throw new Error(`Publish failed: ${res.status} ${await res.text()}`);
+    throw new Error(`Publish failed: ${await describeError(res)}${authHint(res.status)}`);
   }
   const location = res.headers.get("location");
   if (!location) {

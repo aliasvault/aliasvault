@@ -282,7 +282,6 @@
     "typeLabel": "Tipo de elemento",
     "creating": "Creando",
     "editing": "Editando",
-    "regenerateAlias": "Regenerar alias",
     "addCustomField": "Añadir campo personalizado",
     "fieldLabel": "Etiqueta del campo",
     "enterFieldName": "Introduzca el nombre del campo",
@@ -366,6 +365,7 @@
     "noEmails": "No se han encontrado correos electrónicos",
     "noEmailsDescription": "No has recibido ningún correo electrónico en tus direcciones privadas todavía. Cuando recibas un nuevo correo electrónico, aparecerá aquí.",
     "offlineMessage": "Está desconectado. Por favor, conéctese a Internet para cargar sus correos electrónicos.",
+    "updateClientForFormattedView": "Este correo electrónico requiere una nueva versión de la aplicación para mostrarla correctamente. Por favor, actualice su aplicación.",
     "loadMore": "Cargar más ({{count}} restantes)",
     "dateFormat": {
       "justNow": "ahora mismo",

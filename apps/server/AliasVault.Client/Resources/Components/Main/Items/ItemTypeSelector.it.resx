@@ -45,9 +45,4 @@
     <value>Modifica</value>
     <comment>Status text when editing an existing item</comment>
   </data>
-  <!-- Buttons -->
-  <data name="RegenerateAlias">
-    <value>Rigenera Alias</value>
-    <comment>Tooltip for regenerate alias button</comment>
-  </data>
 </root>

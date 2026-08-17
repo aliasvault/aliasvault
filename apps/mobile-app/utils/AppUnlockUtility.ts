@@ -20,8 +20,8 @@ export class AppUnlockUtility {
       let methods = await NativeVaultManager.getAuthMethods() as AuthMethod[];
       // Check if Face ID is actually available despite being enabled
       if (methods.includes('faceid')) {
-        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-        if (!isEnrolled) {
+        const isAvailable = await this.isBiometricsAvailableOnDevice();
+        if (!isAvailable) {
           // Remove Face ID from the list of enabled auth methods
           methods = methods.filter(method => method !== 'faceid');
         }
@@ -39,7 +39,17 @@ export class AppUnlockUtility {
    */
   static async setAuthMethods(methods: AuthMethod[]): Promise<void> {
     // Ensure password is always included
-    const methodsToSave = methods.includes('password') ? methods : [...methods, 'password'];
+    let methodsToSave = methods.includes('password') ? methods : [...methods, 'password'];
+
+    /*
+     * Never persist biometrics on a device that cannot use them. The native keystore key
+     * requires strong (Class 3) biometrics, so storing it would fail and leave the setting
+     * enabled while unlocking silently falls back to PIN or password.
+     */
+    if (methodsToSave.includes('faceid') && !await this.isBiometricsAvailableOnDevice()) {
+      console.warn('Biometrics not available on this device, not enabling as auth method');
+      methodsToSave = methodsToSave.filter(method => method !== 'faceid');
+    }
 
     // Update native credentials manager
     try {
@@ -92,12 +102,7 @@ export class AppUnlockUtility {
    */
   static async isBiometricsAvailableOnDevice(): Promise<boolean> {
     try {
-      const hasHardware = await LocalAuthentication.hasHardwareAsync();
-      if (!hasHardware) {
-        return false;
-      }
-
-      return await LocalAuthentication.isEnrolledAsync();
+      return await NativeVaultManager.isBiometricsAvailableOnDevice();
     } catch (error) {
       console.error('Error checking biometric device availability:', error);
       return false;

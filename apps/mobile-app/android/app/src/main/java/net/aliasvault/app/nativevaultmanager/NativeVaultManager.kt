@@ -1452,6 +1452,23 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
+     * Check if this device has biometrics that can protect the vault encryption key.
+     * The keystore key requires Class 3 (strong) biometrics, so devices that only offer
+     * Class 2 (weak) biometrics, such as camera-based face unlock only in some devices
+     * will report false here and have to use PIN or password unlock instead.
+     * @param promise The promise to resolve.
+     */
+    @ReactMethod
+    override fun isBiometricsAvailableOnDevice(promise: Promise) {
+        try {
+            promise.resolve(AndroidKeystoreProvider.isStrongBiometricAvailable(reactApplicationContext))
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking biometric availability", e)
+            promise.reject("ERR_BIOMETRIC_CHECK", "Failed to check biometric availability: ${e.message}", e)
+        }
+    }
+
+    /**
      * Check if biometric unlock is actually available (device + key validation).
      * This checks not only if biometrics are configured in auth methods,
      * but also validates that the encryption key in KeyStore is valid.

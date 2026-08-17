@@ -121,14 +121,6 @@
     <comment>Placeholder text for service name input</comment>
   </data>
   <!-- Button text -->
-  <data name="GenerateRandomAliasButton">
-    <value>Créer un alias aléatoire</value>
-    <comment>Button text for generating a random alias</comment>
-  </data>
-  <data name="ClearAliasFieldsButton">
-    <value>Effacer les champs d'alias</value>
-    <comment>Button text for clearing alias fields</comment>
-  </data>
   <data name="SaveItemButton">
     <value>Enregistrer l'élément</value>
     <comment>Button text for saving an item</comment>

@@ -10,6 +10,7 @@ type HeaderButtonProps = {
   id?: string;
   disabled?: boolean;
   isLoading?: boolean;
+  isActive?: boolean;
 };
 
 /**
@@ -22,22 +23,34 @@ const HeaderButton: React.FC<HeaderButtonProps> = ({
   variant = 'default',
   id,
   disabled = false,
-  isLoading = false
+  isLoading = false,
+  isActive = false
 }) => {
-  const colorClasses = {
-    default: 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700',
-    primary: 'text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/20',
-    danger: 'text-red-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20'
+  /** The `primary` variant is filled with the accent color to mark the main action of a screen. */
+  const variantClasses = {
+    default: {
+      base: 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700',
+      active: 'text-gray-700 bg-gray-100 dark:text-gray-200 dark:bg-gray-700'
+    },
+    primary: {
+      base: 'text-white bg-primary-600 hover:bg-primary-700 shadow-sm',
+      active: 'text-white bg-primary-700 shadow-sm'
+    },
+    danger: {
+      base: 'text-red-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20',
+      active: 'text-red-600 bg-red-100 dark:bg-red-900/20'
+    }
   };
 
   const isDisabled = disabled || isLoading;
+  const stateClasses = variantClasses[variant][isActive ? 'active' : 'base'];
 
   return (
     <button
       id={id}
       onClick={onClick}
       disabled={isDisabled}
-      className={`p-2 rounded-lg ${colorClasses[variant]} ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+      className={`inline-flex items-center justify-center min-w-[30px] min-h-[30px] rounded-lg transition-colors ${stateClasses} ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       title={title}
     >
       {isLoading ? (

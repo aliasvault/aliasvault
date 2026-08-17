@@ -297,6 +297,10 @@
     [vaultManager isKeystoreAvailable:resolve rejecter:reject];
 }
 
+- (void)isBiometricsAvailableOnDevice:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager isBiometricsAvailableOnDevice:resolve rejecter:reject];
+}
+
 - (void)isBiometricUnlockAvailable:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager isBiometricUnlockAvailable:resolve rejecter:reject];
 }

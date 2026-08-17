@@ -29,6 +29,7 @@
     "attachments": "Anhänge",
     "or": "oder",
     "retry": "Erneut versuchen",
+    "resizeField": "Ziehen, um die Feldgröße zu ändern",
     "deleteItemConfirmTitle": "Element löschen",
     "deleteItemConfirmDescription": "Bist Du sicher, dass Du dieses Element löschen möchtest?",
     "errors": {
@@ -226,6 +227,7 @@
       "biometricDisabledMessage": "{{biometric}} ist für AliasVault deaktiviert. Bitte aktiviere es zuerst in den Geräteeinstellungen, um es zu verwenden.",
       "biometricHelp": "Benutze Biometrie, um Deinen Tresor zu entsperren. Dieser ist durch den {{keystore}} gesichert ist.",
       "biometricUnavailableHelp": "{{biometric}} ist nicht verfügbar. Tippe, um die Einstellungen zu öffnen und/oder gehe zu den Geräteeinstellungen, um es zu aktivieren und zu konfigurieren.",
+      "biometricUnavailableHelpAndroid": "Biometrische Authentifizierung ist für Dein Gerät nicht verfügbar. Android erfordert starke (Class 3) Biometrik, wie z. B. einen Fingerabdruck oder unterstützte sichere Gesichtserkennung.",
       "featureRequiresPasscode": "Diese Funktion erfordert, dass ein Zugangscode auf deinem Gerät eingerichtet ist.",
       "pin": "PIN-Code",
       "pinDescription": "Benutze einen eigenen PIN-Code, um Deinen Tresor schneller zu entsperren.",
@@ -342,6 +344,7 @@
     "settings": "Einstellungen"
   },
   "itemTypes": {
+    "typeLabel": "Elementtyp",
     "creating": "Wird erstellt",
     "editing": "Bearbeiten",
     "login": {
@@ -604,6 +607,7 @@
     "formatSwitchTitle": "E-Mail-Format wechseln",
     "sizeKB": "kB",
     "offlineMessage": "Keine Verbindung. Bitte verbinde Dich mit dem Internet, um Deine E-Mails zu laden.",
+    "updateClientForFormattedView": "Diese E-Mail erfordert eine neuere App-Version, um sie korrekt anzuzeigen. Bitte aktualisiere Deine App.",
     "emptyMessage": "Du hast bisher keine E-Mails an Deine privaten E-Mail-Adressen erhalten. Neue E-Mails werden hier angezeigt, sobald sie eintreffen.",
     "loadMore": "Weitere laden ({{count}} verbleibend)",
     "time": {

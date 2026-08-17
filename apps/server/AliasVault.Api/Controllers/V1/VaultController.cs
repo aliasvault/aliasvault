@@ -252,13 +252,17 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         }
 
         // Validate the SRP session (actual password check).
-        var serverSession = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.CurrentClientPublicEphemeral, model.CurrentClientSessionProof);
+        var (serverSession, activeSessionFound) = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.CurrentClientPublicEphemeral, model.CurrentClientSessionProof);
         if (serverSession is null)
         {
-            // Increment failed login attempts in order to lock out the account when the limit is reached.
-            await GetUserManager().AccessFailedAsync(user);
+            if (activeSessionFound)
+            {
+                // The password was wrong: increment failed login attempts which then locks out
+                // the account when the limit is reached.
+                await GetUserManager().AccessFailedAsync(user);
+            }
 
-            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.PasswordChange, AuthFailureReason.InvalidPassword);
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.PasswordChange, activeSessionFound ? AuthFailureReason.InvalidPassword : AuthFailureReason.SrpSessionNotFound);
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PASSWORD_MISMATCH, 400));
         }
 

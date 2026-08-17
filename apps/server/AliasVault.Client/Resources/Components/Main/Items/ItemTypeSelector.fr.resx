@@ -45,9 +45,4 @@
     <value>Édition</value>
     <comment>Status text when editing an existing item</comment>
   </data>
-  <!-- Buttons -->
-  <data name="RegenerateAlias">
-    <value>Récréer l'alias</value>
-    <comment>Tooltip for regenerate alias button</comment>
-  </data>
 </root>

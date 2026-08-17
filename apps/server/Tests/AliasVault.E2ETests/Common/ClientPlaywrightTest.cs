@@ -229,10 +229,6 @@ public abstract class ClientPlaywrightTest : PlaywrightTest
         await NavigateUsingBlazorRouter("items/create");
         await WaitForUrlAsync("items/create", "Add Item");
 
-        // Check if a button with text "Generate Random Alias" appears
-        var generateButton = Page.Locator("text=Generate Random Alias");
-        Assert.That(generateButton, Is.Not.Null, "Generate button not found.");
-
         // Check if email field is specified with a private email domain (alias).
         // In that case we need to:
         // 1. Click "+ Email" button to add the email field (for Login type items)

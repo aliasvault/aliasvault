@@ -25,6 +25,7 @@ import Logo from '@/assets/images/logo.svg';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { FolderModal } from '@/components/folders/FolderModal';
 import { FolderPill, type FolderWithCount } from '@/components/folders/FolderPill';
+import { AddItemFab } from '@/components/items/AddItemFab';
 import { ItemCard } from '@/components/items/ItemCard';
 import { ItemFilterMenu } from '@/components/items/ItemFilterMenu';
 import { SortMenu } from '@/components/items/SortMenu';
@@ -33,7 +34,6 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { AndroidHeader } from '@/components/ui/AndroidHeader';
 import { CollapsibleHeader } from '@/components/ui/CollapsibleHeader';
-import { RobustPressable } from '@/components/ui/RobustPressable';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
@@ -564,21 +564,18 @@ export default function ItemsScreen(): React.ReactNode {
   }, [dbContext.sqliteClient, executeVaultMutation, loadItems]);
 
   /**
-   * Handle FAB press - navigate to add item screen.
+   * Handle item type selection from the FAB menu - navigate to the add item screen.
    * If there's a search query, pass it as itemUrl (if URL) or itemName (if not).
    */
-  const handleAddItem = useCallback(() => {
+  const handleAddItem = useCallback((itemType: ItemType) => {
     navigate(() => {
       const trimmedQuery = searchQuery.trim();
       if (trimmedQuery) {
         const isUrl = /^https?:\/\//i.test(trimmedQuery);
-        if (isUrl) {
-          router.push(`/(tabs)/items/add-edit?itemUrl=${encodeURIComponent(trimmedQuery)}`);
-        } else {
-          router.push(`/(tabs)/items/add-edit?itemName=${encodeURIComponent(trimmedQuery)}`);
-        }
+        const queryParam = isUrl ? 'itemUrl' : 'itemName';
+        router.push(`/(tabs)/items/add-edit?itemType=${itemType}&${queryParam}=${encodeURIComponent(trimmedQuery)}`);
       } else {
-        router.push('/(tabs)/items/add-edit');
+        router.push(`/(tabs)/items/add-edit?itemType=${itemType}`);
       }
       HapticsUtility.impact();
     });
@@ -733,31 +730,6 @@ export default function ItemsScreen(): React.ReactNode {
       justifyContent: 'center',
       marginTop: 16,
       paddingTop: 16,
-    },
-    // FAB styles
-    fab: {
-      alignItems: 'center',
-      backgroundColor: colors.primary,
-      borderRadius: 28,
-      bottom: Platform.OS === 'ios' ? insets.bottom + 60 : 16,
-      elevation: 4,
-      height: 56,
-      justifyContent: 'center',
-      position: 'absolute',
-      right: 16,
-      shadowColor: colors.black,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.25,
-      shadowRadius: 3.84,
-      width: 56,
-      zIndex: 1000,
-    },
-    fabIcon: {
-      color: colors.primarySurfaceText,
-      fontSize: 24,
     },
   });
 
@@ -964,11 +936,6 @@ export default function ItemsScreen(): React.ReactNode {
         alwaysVisible={true}
       />
       <ThemedView style={styles.stepContainer}>
-        {/* FAB */}
-        <RobustPressable style={styles.fab} onPress={handleAddItem} testID="add-item-button">
-          <MaterialIcons name="add" style={styles.fabIcon} />
-        </RobustPressable>
-
         {/* Item list */}
         <Animated.FlatList
           ref={flatListRef}
@@ -1010,6 +977,9 @@ export default function ItemsScreen(): React.ReactNode {
           ListFooterComponent={renderListFooter() as React.ReactElement}
         />
       </ThemedView>
+
+      {/* FAB with item type menu */}
+      <AddItemFab onSelectType={handleAddItem} testID="add-item-button" />
 
       {/* Filter menu overlay */}
       <ItemFilterMenu

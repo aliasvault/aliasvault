@@ -59,27 +59,27 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Alias" xml:space="preserve">
-    <value>Alias</value>
+    <value></value>
     <comment>Label for alias mode toggle</comment>
   </data>
   <data name="PrivateEmailTitle" xml:space="preserve">
-    <value>Email pribadi</value>
+    <value></value>
     <comment>Title for private email domains section</comment>
   </data>
   <data name="PrivateEmailDescription" xml:space="preserve">
-    <value>Terenkripsi E2E, sangat pribadi.</value>
+    <value>Terenkripsi ujung ke ujung, sepenuhnya privat.</value>
     <comment>Description of private email domains</comment>
   </data>
   <data name="PublicEmailTitle" xml:space="preserve">
-    <value>Penyedia Email Temp yang publik</value>
+    <value>Penyedia Layanan Email Sementara Umum</value>
     <comment>Title for public email domains section</comment>
   </data>
   <data name="PublicEmailDescription" xml:space="preserve">
-    <value>Anonim tetapi privasi terbatas. Isi email dapat dibaca oleh siapa pun yang mengetahui alamat tersebut.</value>
+    <value>Anonim namun privasi terbatas. Isi email dapat dibaca oleh siapa saja yang mengetahui alamatnya.</value>
     <comment>Description of public email domains</comment>
   </data>
   <data name="PrivateEmailAliasVaultServer" xml:space="preserve">
-    <value>Server AliasVault</value>
+    <value></value>
     <comment>Subtitle for private email domains section</comment>
   </data>
 </root>

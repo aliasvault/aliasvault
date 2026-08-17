@@ -29,6 +29,7 @@
     "attachments": "Anexos",
     "or": "ou",
     "retry": "Tentar Novamente",
+    "resizeField": "Drag to resize field",
     "deleteItemConfirmTitle": "Excluir Item",
     "deleteItemConfirmDescription": "Tem certeza que deseja excluir este item?",
     "errors": {
@@ -226,6 +227,7 @@
       "biometricDisabledMessage": "{{biometric}} está desabitado para o AliasVault. Para utilizar, por favor primeiro habilite nas configurações do seu dispositivo.",
       "biometricHelp": "Utilize biometria para desbloquear seu cofre, que está protegido por {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} não está disponível. Clique para abrir as configurações e/ou vá às configurações do seu dispositivo para habilitar e configurar.",
+      "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
       "featureRequiresPasscode": "Este recurso requer uma senha para ser habilitado no seu dispositivo.",
       "pin": "Código PIN",
       "pinDescription": "Utilize um código PIN para desbloquear seu cofre mais rapidamente.",
@@ -342,6 +344,7 @@
     "settings": "Configurações"
   },
   "itemTypes": {
+    "typeLabel": "Tipo do Item",
     "creating": "Criando",
     "editing": "Editando",
     "login": {
@@ -604,6 +607,7 @@
     "formatSwitchTitle": "Alterar formato do e-mail",
     "sizeKB": "KB",
     "offlineMessage": "Você está offline. Por favor conecte-se à internet para carregar seus e-mails.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "emptyMessage": "Você ainda não recebeu nenhum e-mail em seus endereços de e-mail privados. Quando receber um novo e-mail, ele aparecerá aqui.",
     "loadMore": "Carregar Mais ({{count}} restante(s))",
     "time": {

@@ -271,6 +271,10 @@ extension VaultStore {
             if response.statusCode == 413 {
                 throw AppError.vaultTooLarge
             }
+            // 426: server no longer supports this app version for this account.
+            if response.statusCode == 426 {
+                throw AppError.clientVersionNotSupported
+            }
             return VaultUploadResult(
                 success: false,
                 status: -1,

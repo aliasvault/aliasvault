@@ -27,6 +27,7 @@ import { DeleteFolderModal } from '@/components/folders/DeleteFolderModal';
 import { FolderBreadcrumb } from '@/components/folders/FolderBreadcrumb';
 import { FolderModal } from '@/components/folders/FolderModal';
 import { FolderPill } from '@/components/folders/FolderPill';
+import { AddItemFab } from '@/components/items/AddItemFab';
 import { ItemCard } from '@/components/items/ItemCard';
 import { SortMenu } from '@/components/items/SortMenu';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
@@ -455,18 +456,17 @@ export default function FolderViewScreen(): React.ReactNode {
   }, [dbContext.sqliteClient, folderId, executeVaultMutation, router]);
 
   /**
-   * Handle FAB press - navigate to add item screen with folder pre-selected.
+   * Handle item type selection from the FAB menu.
    */
-  const handleAddItem = useCallback(() => {
+  const handleAddItem = useCallback((itemType: ItemType) => {
     navigate(() => {
-      router.push(`/(tabs)/items/add-edit?folderId=${folderId}` as '/(tabs)/items/add-edit');
+      router.push(`/(tabs)/items/add-edit?folderId=${folderId}&itemType=${itemType}` as '/(tabs)/items/add-edit');
       HapticsUtility.impact();
     });
   }, [folderId, router, navigate]);
 
   /**
-   * Handle subfolder click - navigate to subfolder view, preserving the active filter
-   * so the subfolder opens with the same filter that produced its badge count.
+   * Handle subfolder click.
    */
   const handleSubfolderClick = useCallback((subfolderId: string) => {
     navigate(() => {
@@ -640,31 +640,6 @@ export default function FolderViewScreen(): React.ReactNode {
       opacity: 0.6,
       textAlign: 'center',
       paddingHorizontal: 32,
-    },
-    // FAB styles
-    fab: {
-      alignItems: 'center',
-      backgroundColor: colors.primary,
-      borderRadius: 28,
-      bottom: Platform.OS === 'ios' ? insets.bottom + 60 : 16,
-      elevation: 4,
-      height: 56,
-      justifyContent: 'center',
-      position: 'absolute',
-      right: 16,
-      shadowColor: colors.black,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.25,
-      shadowRadius: 3.84,
-      width: 56,
-      zIndex: 1000,
-    },
-    fabIcon: {
-      color: colors.primarySurfaceText,
-      fontSize: 24,
     },
     // Subfolder pills styles
     folderPillsContainer: {
@@ -940,11 +915,6 @@ export default function FolderViewScreen(): React.ReactNode {
 
   return (
     <ThemedContainer style={styles.container}>
-      {/* FAB */}
-      <RobustPressable style={styles.fab} onPress={handleAddItem}>
-        <MaterialIcons name="add" style={styles.fabIcon} />
-      </RobustPressable>
-
       {/* Item list */}
       <FlatList
         ref={flatListRef}
@@ -979,6 +949,9 @@ export default function FolderViewScreen(): React.ReactNode {
         }
         ListEmptyComponent={renderEmptyComponent() as React.ReactElement}
       />
+
+      {/* FAB with item type menu */}
+      <AddItemFab onSelectType={handleAddItem} />
 
       {/* Filter menu overlay */}
       {renderFilterOverlay()}

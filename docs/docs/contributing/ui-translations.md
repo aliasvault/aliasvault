@@ -17,6 +17,7 @@ AliasVault is currently available in the following languages. See how complete e
 - 🇩🇪 German
 - 🇮🇱 Hebrew
 - 🇭🇺 Hungarian
+- 🇮🇩 Indonesian
 - 🇮🇪 Irish
 - 🇮🇹 Italian
 - 🇵🇱 Polish

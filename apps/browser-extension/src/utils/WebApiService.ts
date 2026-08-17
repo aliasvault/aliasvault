@@ -6,6 +6,7 @@ import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
 import { AppInfo } from "./AppInfo";
 import { ApiAuthError } from './types/errors/ApiAuthError';
 import { ApiRequestError } from './types/errors/ApiRequestError';
+import { ClientUpgradeRequiredError } from './types/errors/ClientUpgradeRequiredError';
 import { NetworkError } from './types/errors/NetworkError';
 import { PayloadTooLargeError } from './types/errors/PayloadTooLargeError';
 import { RequestTimeoutError } from './types/errors/RequestTimeoutError';
@@ -166,9 +167,9 @@ export class WebApiService {
       signal: this.buildTimeoutSignal(endpoint, headers, options.signal),
     };
 
+    let response: Response;
     try {
-      const response = await fetch(url, requestOptions);
-      return response;
+      response = await fetch(url, requestOptions);
     } catch (error) {
       console.error('API request failed:', error);
       /*
@@ -184,6 +185,13 @@ export class WebApiService {
         error instanceof Error ? error : undefined
       );
     }
+
+    // The server rejects clients it no longer supports with HTTP 426 on any endpoint.
+    if (response.status === 426) {
+      throw new ClientUpgradeRequiredError();
+    }
+
+    return response;
   }
 
   /**
@@ -326,6 +334,10 @@ export class WebApiService {
       if (error instanceof ApiAuthError) {
         throw error;
       }
+      // Server refused this client version.
+      if (error instanceof ClientUpgradeRequiredError) {
+        throw error;
+      }
       return {
         clientVersionSupported: true,
         serverVersion: '0.0.0',
@@ -392,6 +404,11 @@ export class WebApiService {
       console.warn(`Token refresh failed with status ${response.status}, treating as offline`);
       return { token: null, isAuthError: false };
     } catch (error) {
+      // Server refused this client version.
+      if (error instanceof ClientUpgradeRequiredError) {
+        throw error;
+      }
+
       // Network errors (server unreachable, timeout, DNS, etc.), treat as offline
       if (error instanceof NetworkError) {
         console.warn('Token refresh failed due to network error, treating as offline');

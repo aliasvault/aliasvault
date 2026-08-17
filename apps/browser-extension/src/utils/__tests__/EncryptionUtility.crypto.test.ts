@@ -88,6 +88,15 @@ async function encryptAttachmentBytes(plaintext: Uint8Array, rawSymmetricKey: st
 }
 
 /**
+ * Gzip compresses a string.
+ */
+async function gzip(plaintext: string): Promise<Uint8Array> {
+  const stream = new Blob([new TextEncoder().encode(plaintext) as BlobPart]).stream()
+    .pipeThrough(new CompressionStream('gzip'));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+
+/**
  * Counts non-extractable RSA private-key imports.
  */
 function countPrivateKeyImports(importKeyCalls: unknown[][]): number {
@@ -304,5 +313,60 @@ describe('email RSA private key cache', () => {
     } finally {
       importKeySpy.mockRestore();
     }
+  });
+});
+
+describe('decryptEmail message source', () => {
+  const rawSource = 'Subject: Hello\r\nContent-Type: text/plain\r\n\r\nRaw RFC 822 body.';
+
+  /**
+   * Builds an email whose message source holds the supplied already-encoded bytes.
+   */
+  async function createEmailWithSource(
+    sourceBytes: Uint8Array,
+    encryptionKey: EncryptionKey,
+    rawSymmetricKey: string
+  ): Promise<Email> {
+    const email = await createEmail(encryptionKey, rawSymmetricKey);
+    const encryptedBytes = await encryptAttachmentBytes(sourceBytes, rawSymmetricKey);
+    email.messageSource = Buffer.from(encryptedBytes).toString('base64');
+    return email;
+  }
+
+  /**
+   * Creates an RSA encryption key pair for the test.
+   */
+  async function createEncryptionKey(): Promise<EncryptionKey> {
+    const keyPair = await EncryptionUtility.generateRsaKeyPair();
+    return {
+      Id: 'key-a',
+      PublicKey: keyPair.publicKey,
+      PrivateKey: keyPair.privateKey,
+      IsPrimary: true,
+    };
+  }
+
+  it('decrypts an uncompressed message source', async () => {
+    const encryptionKey = await createEncryptionKey();
+    const rawSymmetricKey = '0123456789abcdef0123456789abcdef';
+    const sourceBytes = new TextEncoder().encode(rawSource);
+    const email = await createEmailWithSource(sourceBytes, encryptionKey, rawSymmetricKey);
+
+    const decrypted = await EncryptionUtility.decryptEmail(email, [encryptionKey]);
+
+    expect(decrypted.sourceBytes).toEqual(sourceBytes);
+    expect(decrypted.email.messageSource).toBe('');
+  });
+
+  it('hands a compressed message source to the parser untouched', async () => {
+    const encryptionKey = await createEncryptionKey();
+    const rawSymmetricKey = '0123456789abcdef0123456789abcdef';
+    const compressed = await gzip(rawSource);
+    const email = await createEmailWithSource(compressed, encryptionKey, rawSymmetricKey);
+
+    const decrypted = await EncryptionUtility.decryptEmail(email, [encryptionKey]);
+
+    // Gunzipping is the parser's job (see core/rust/src/email_parser); decryption only unwraps the ciphertext.
+    expect(decrypted.sourceBytes).toEqual(compressed);
   });
 });

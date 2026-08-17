@@ -120,6 +120,24 @@ public class BrowserExtensionPlaywrightTest : ClientPlaywrightTest
     }
 
     /// <summary>
+    /// Open the add item form in the browser extension by clicking the add button and picking an item type.
+    /// </summary>
+    /// <param name="extensionPopup">The extension popup page.</param>
+    /// <param name="itemType">The item type to create, e.g. "Login", "Alias", "CreditCard" or "Note".</param>
+    /// <returns>Async task.</returns>
+    protected async Task OpenAddItemForm(IPage extensionPopup, string itemType = "Login")
+    {
+        // Click add new item button which opens the item type dropdown
+        await extensionPopup.ClickAsync("button[title='Add new item']");
+
+        // Choose the item type to create
+        await extensionPopup.ClickAsync($"button#add-item-type-{itemType}");
+
+        // Wait for the item name field to be visible
+        await extensionPopup.WaitForSelectorAsync("input#itemName");
+    }
+
+    /// <summary>
     /// Create a new credential in the browser extension.
     /// </summary>
     /// <param name="extensionPopup">The extension popup page.</param>
@@ -127,11 +145,7 @@ public class BrowserExtensionPlaywrightTest : ClientPlaywrightTest
     /// <returns>Async task.</returns>
     protected async Task CreateCredentialInExtension(IPage extensionPopup, string serviceName)
     {
-        // Click add new item button
-        await extensionPopup.ClickAsync("button[title='Add new item']");
-
-        // Wait for the item name field to be visible
-        await extensionPopup.WaitForSelectorAsync("input#itemName");
+        await OpenAddItemForm(extensionPopup);
 
         // Fill in the credential name
         await extensionPopup.FillAsync("input#itemName", serviceName);

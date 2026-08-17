@@ -282,7 +282,6 @@
     "typeLabel": "Elementtype",
     "creating": "Opretter",
     "editing": "Redigerer",
-    "regenerateAlias": "Gengenerer alias",
     "addCustomField": "Tilføj brugerdefineret felt",
     "fieldLabel": "Feltnavn",
     "enterFieldName": "Indtast feltnavn",
@@ -366,6 +365,7 @@
     "noEmails": "Ingen e-mails fundet",
     "noEmailsDescription": "Du har endnu ikke modtaget nogen e-mails på dine private e-mailadresser. Når du modtager en ny e-mail, vil den blive vist her.",
     "offlineMessage": "Du er offline. Opret venligst forbindelse til internettet for at indlæse dine e-mails.",
+    "updateClientForFormattedView": "Denne e-mail kræver en nyere app-version for at vise den korrekt. Opdatér venligst din app.",
     "loadMore": "Indlæs flere ({{count}} tilbage)",
     "dateFormat": {
       "justNow": "lige nu",

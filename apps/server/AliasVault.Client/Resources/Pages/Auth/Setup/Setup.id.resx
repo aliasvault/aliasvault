@@ -21,28 +21,28 @@
   </xsd:schema>
   <!-- Step titles -->
   <data name="TermsAndConditionsStepTitle">
-    <value>Using AliasVault</value>
+    <value>Gunakan AliasVault</value>
     <comment>Title for the terms and conditions step</comment>
   </data>
   <data name="UsernameStepTitle">
-    <value>Choose Username</value>
+    <value>Pilih Nama Pengguna</value>
     <comment>Title for the username selection step</comment>
   </data>
   <data name="PasswordStepTitle">
-    <value>Set Password</value>
+    <value>Atur Kata Sandi</value>
     <comment>Title for the password creation step</comment>
   </data>
   <data name="CreatingStepTitle">
-    <value>Creating Vault</value>
+    <value>Membuat Vault</value>
     <comment>Title for the vault creation step</comment>
   </data>
   <data name="SetupStepTitle">
-    <value>Setup</value>
+    <value>Pengaturan</value>
     <comment>Default setup step title</comment>
   </data>
   <!-- Button text -->
   <data name="CreateAccountButton">
-    <value>Create Account</value>
+    <value>Buat Akun</value>
     <comment>Button text for creating account</comment>
   </data>
   <data name="ContinueButton">

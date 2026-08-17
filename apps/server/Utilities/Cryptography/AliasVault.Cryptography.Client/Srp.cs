@@ -128,6 +128,11 @@ public static class Srp
             // Incorrect password provided, return null.
             return null;
         }
+        catch (FormatException)
+        {
+            // Malformed (non-hexadecimal) ephemeral or proof provided, return null.
+            return null;
+        }
     }
 
     /// <summary>

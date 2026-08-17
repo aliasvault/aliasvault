@@ -6,37 +6,29 @@
 @inject IStringLocalizerFactory LocalizerFactory
 
 <div class="relative mb-4">
-    <div class="w-full px-4 py-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg flex items-center gap-2">
+    <div class="relative w-full px-4 py-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg flex items-center gap-2">
         <button type="button"
                 @onclick="ToggleDropdown"
                 @onclick:preventDefault="true"
-                class="flex-1 flex items-center justify-between hover:opacity-80 transition-opacity">
-            <div class="flex items-center gap-2">
-                <span class="text-primary-600 dark:text-primary-400">
-                    @GetTypeIcon(SelectedType)
-                </span>
-                <span class="text-primary-700 dark:text-primary-300 font-medium text-sm">
-                    @(IsEditMode ? Localizer["Editing"] : Localizer["Creating"]) @GetTypeDisplayName(SelectedType)
-                </span>
-            </div>
-            <svg class="w-4 h-4 text-primary-500 transition-transform @(ShowDropdown ? "rotate-180" : "")"
+                class="peer absolute inset-0 rounded-lg"
+                aria-label="@SharedLocalizer["ItemTypeLabel"]"></button>
+        <div class="relative flex items-center gap-2 min-w-0 pointer-events-none peer-hover:opacity-80 transition-opacity">
+            <span class="shrink-0 text-primary-600 dark:text-primary-400">
+                @GetTypeIcon(SelectedType)
+            </span>
+            <span class="text-primary-700 dark:text-primary-300 font-medium text-sm truncate">
+                @GetTypeDisplayName(SelectedType)
+            </span>
+        </div>
+        <div class="relative flex-1 flex items-center justify-end gap-1 min-w-0 pointer-events-none peer-hover:opacity-80 transition-opacity">
+            <span class="text-xs text-primary-600/80 dark:text-primary-400/80 truncate">
+                @SharedLocalizer["ItemTypeLabel"]
+            </span>
+            <svg class="w-4 h-4 shrink-0 text-primary-500 transition-transform @(ShowDropdown ? "rotate-180" : "")"
                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
-        </button>
-        @if (SelectedType == ItemType.Alias && !IsEditMode && OnRegenerateAlias.HasDelegate)
-        {
-            <button type="button"
-                    @onclick="HandleRegenerate"
-                    @onclick:preventDefault="true"
-                    class="flex-shrink-0 p-1.5 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/40 rounded transition-colors"
-                    title="@Localizer["RegenerateAlias"]">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M23 4v6h-6"/>
-                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-                </svg>
-            </button>
-        }
+        </div>
     </div>
 
     @if (ShowDropdown)
@@ -53,7 +45,7 @@
                     <span class="@(SelectedType == itemType ? "text-primary-600 dark:text-primary-400" : "text-gray-500 dark:text-gray-400")">
                         @GetTypeIcon(itemType)
                     </span>
-                    <span class="font-medium">
+                    <span class="font-medium text-sm">
                         @GetTypeDisplayName(itemType)
                     </span>
                     @if (SelectedType == itemType)
@@ -71,6 +63,8 @@
 @code {
     private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Items.ItemTypeSelector", "AliasVault.Client");
 
+    private IStringLocalizer SharedLocalizer => LocalizerFactory.Create("SharedResources", "AliasVault.Client");
+
     /// <summary>
     /// The currently selected item type.
     /// </summary>
@@ -84,12 +78,6 @@
     public EventCallback<string> SelectedTypeChanged { get; set; }
 
     /// <summary>
-    /// Whether we are in edit mode (disables type switching).
-    /// </summary>
-    [Parameter]
-    public bool IsEditMode { get; set; }
-
-    /// <summary>
     /// Whether the dropdown is currently shown.
     /// </summary>
     [Parameter]
@@ -100,12 +88,6 @@
     /// </summary>
     [Parameter]
     public EventCallback<bool> ShowDropdownChanged { get; set; }
-
-    /// <summary>
-    /// Callback when regenerate alias button is clicked.
-    /// </summary>
-    [Parameter]
-    public EventCallback OnRegenerateAlias { get; set; }
 
     private async Task ToggleDropdown()
     {
@@ -127,11 +109,6 @@
             await SelectedTypeChanged.InvokeAsync(itemType);
         }
         await CloseDropdown();
-    }
-
-    private async Task HandleRegenerate()
-    {
-        await OnRegenerateAlias.InvokeAsync();
     }
 
     private string GetTypeDisplayName(string itemType)

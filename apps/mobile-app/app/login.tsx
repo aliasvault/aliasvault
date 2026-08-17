@@ -15,6 +15,7 @@ import type { LoginResponse } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import { SrpUtility } from '@/utils/SrpUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
+import { ClientUpgradeRequiredError } from '@/utils/types/errors/ClientUpgradeRequiredError';
 import { LocalAuthError } from '@/utils/types/errors/LocalAuthError';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -422,7 +423,11 @@ export default function LoginScreen() : React.ReactNode {
         initiateLoginResponse
       );
     } catch (err) {
-      if (err instanceof ApiAuthError) {
+      if (err instanceof ClientUpgradeRequiredError) {
+        // Server refused this app version; show the notice translated, keyed on its error code.
+        console.error('Client upgrade required:', err);
+        setError(t('vault.errors.versionNotSupported'));
+      } else if (err instanceof ApiAuthError) {
         console.error('ApiAuthError error:', err);
         setError(t(`apiErrors.${err.message}`));
       } else if (err instanceof LocalAuthError) {
@@ -481,7 +486,10 @@ export default function LoginScreen() : React.ReactNode {
       );
     } catch (err) {
       console.error('2FA error:', err);
-      if (err instanceof ApiAuthError) {
+      if (err instanceof ClientUpgradeRequiredError) {
+        // Server refused this app version; show the notice translated, keyed on its error code.
+        setError(t('vault.errors.versionNotSupported'));
+      } else if (err instanceof ApiAuthError) {
         setError(t(`apiErrors.${err.message}`));
       } else if (err instanceof LocalAuthError) {
         setError((err as Error).message);

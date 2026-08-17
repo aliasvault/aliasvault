@@ -63,11 +63,11 @@
     <comment>Section title for email panel</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
-    <value>Auto-refresh enabled</value>
+    <value>Fitur penyegaran otomatis diaktifkan</value>
     <comment>Tooltip for auto-refresh indicator</comment>
   </data>
   <data name="SubjectColumn" xml:space="preserve">
-    <value>Subject</value>
+    <value>Subjek</value>
     <comment>Table column header for email subject</comment>
   </data>
   <data name="DateColumn" xml:space="preserve">
@@ -75,7 +75,7 @@
     <comment>Table column header for email date</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
-    <value>No emails received (yet).</value>
+    <value>Belum ada email yang diterima (sampai saat ini).</value>
     <comment>Message when no emails are available</comment>
   </data>
   <data name="EmailAddressInUseError" xml:space="preserve">
@@ -83,7 +83,7 @@
     <comment>Error message when email address is already in use</comment>
   </data>
   <data name="EmailLoadError" xml:space="preserve">
-    <value>Terjadi kesalahan saat mencoba memuat email. Silakan coba ubah dan simpan entri kredensial untuk menyinkronkan basis data, lalu coba lagi.</value>
+    <value>Terjadi kesalahan saat mencoba memuat email. Silakan coba edit dan simpan entri kredensial untuk menyinkronkan database, lalu coba lagi.</value>
     <comment>Error message when email loading fails</comment>
   </data>
   <data name="LoadMoreButton" xml:space="preserve">

@@ -24,13 +24,31 @@ updates:
 
     # Enable version updates for npm
     - package-ecosystem: "npm"
-      # Look for `package.json` and `lock` files in the `root` directory
-      directory: "/"
+      # There is no root `package.json`; every npm project lives in a subdirectory.
+      # These must be listed explicitly for the `ignore` rules below to apply to them.
+      directories:
+          - "/apps/browser-extension"
+          - "/apps/mobile-app"
+          - "/apps/server/AliasVault.Admin"
+          - "/apps/server/AliasVault.Client"
+          - "/core/models"
+          - "/core/vault"
+          - "/docs"
+      # 0 disables automatic version-update PRs (the previous effective behaviour,
+      # since `directory: "/"` matched no manifest). Security updates still run.
+      open-pull-requests-limit: 0
       # Check for updates once a week
       schedule:
           day: "monday"
           time: "09:00"
           interval: "weekly"
+      ignore:
+          # eslint 10 is unusable here: eslint-plugin-import peers on `<=9` and has no
+          # v10-compatible release, so the bump breaks `npm ci` with ERESOLVE.
+          # Drop this once eslint-plugin-import supports v10 (or we move to
+          # eslint-plugin-import-x), then upgrade eslint deliberately.
+          - dependency-name: "eslint"
+            versions: [">=10"]
 
     # Enable version updates for Docker
     - package-ecosystem: "docker"

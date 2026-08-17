@@ -11,6 +11,7 @@ import fr from './locales/fr.json';
 import ga from './locales/ga.json';
 import he from './locales/he.json';
 import hu from './locales/hu.json';
+import id from './locales/id.json';
 import it from './locales/it.json';
 import nl from './locales/nl.json';
 import pl from './locales/pl.json';
@@ -31,6 +32,7 @@ const resources = {
   ga: { translation: ga },
   he: { translation: he },
   hu: { translation: hu },
+  id: { translation: id },
   nl: { translation: nl },
   it: { translation: it },
   pl: { translation: pl },

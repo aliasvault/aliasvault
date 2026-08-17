@@ -5,7 +5,7 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, ActivityIndicator, useColorScheme, Linking, Text, TextInput, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { WebView } from 'react-native-webview';
+import { WebView, type WebViewNavigation } from 'react-native-webview';
 
 import ConversionUtility from '@/utils/ConversionUtility';
 import type { Item } from '@/utils/dist/core/models/vault';
@@ -193,6 +193,25 @@ export default function EmailDetailsScreen() : React.ReactNode {
   };
 
   /**
+   * Open links tapped inside the email body in the external browser.
+   */
+  const handleShouldStartLoadWithRequest = useCallback((request: WebViewNavigation): boolean => {
+    const url = request.url;
+
+    // The email body is injected as static HTML which has no URL of its own, so let that load through.
+    if (!url || url === 'about:blank' || url.startsWith('data:') || url.startsWith('file://')) {
+      return true;
+    }
+
+    Linking.openURL(url).catch(() => {
+      // Ignore links the OS has no handler for.
+    });
+
+    // Block the navigation so one-time links are only ever opened once, by the external browser.
+    return false;
+  }, []);
+
+  /**
    * Handle the open item button press.
    */
   const handleOpenItem = () : void => {
@@ -218,6 +237,12 @@ export default function EmailDetailsScreen() : React.ReactNode {
     }
     return modes;
   }, [email]);
+
+  /*
+   * Emails stored by newer server versions only contain the raw source. Until this client can
+   * render those itself we show the source verbatim plus a notice to update.
+   */
+  const isSourceOnly = Boolean(email?.messageSource) && !email?.messageHtml && !email?.messagePlain;
 
   const formatLabels = useMemo<Record<'html' | 'plain' | 'source', string>>(() => ({
     html: t('emails.formatHtml'),
@@ -386,6 +411,18 @@ export default function EmailDetailsScreen() : React.ReactNode {
       flexDirection: 'row',
       padding: 2,
     },
+    updateNotice: {
+      backgroundColor: colors.warningBackground,
+      borderColor: colors.warning,
+      borderRadius: 6,
+      borderWidth: 1,
+      margin: 8,
+      padding: 10,
+    },
+    updateNoticeText: {
+      color: colors.warning,
+      fontSize: 13,
+    },
     webView: {
       flex: 1,
     },
@@ -545,12 +582,8 @@ export default function EmailDetailsScreen() : React.ReactNode {
         source={{ html: sanitizedHtml }}
         scrollEnabled={true}
         javaScriptEnabled={false}
-        onNavigationStateChange={(event) => {
-          if (event.url !== 'about:blank') {
-            // Open the URL in the browser
-            Linking.openURL(event.url);
-          }
-        }}
+        setSupportMultipleWindows={false}
+        onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
       />
     );
   } else {
@@ -584,6 +617,13 @@ export default function EmailDetailsScreen() : React.ReactNode {
       <ThemedView style={styles.container}>
         <Stack.Screen options={{ title: t('emails.emailDetails') }} />
         {metadataView}
+        {isSourceOnly && (
+          <View style={styles.updateNotice}>
+            <ThemedText style={styles.updateNoticeText}>
+              {t('emails.updateClientForFormattedView')}
+            </ThemedText>
+          </View>
+        )}
         {emailView}
         {email.attachments && email.attachments.length > 0 && (
           <View style={styles.attachments}>

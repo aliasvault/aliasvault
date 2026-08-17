@@ -58,12 +58,18 @@ class AndroidKeystoreProvider(
          * The filename for the encrypted key.
          */
         private const val ENCRYPTED_KEY_FILE = "encrypted_vault_key"
-    }
 
-    /**
-     * The biometric manager.
-     */
-    private val _biometricManager = BiometricManager.from(context)
+        /**
+         * Whether the device can perform biometric authentication that is strong enough to
+         * protect the vault key. The key is bound to [KeyProperties.AUTH_BIOMETRIC_STRONG],
+         * so Class 2 (weak) biometrics such as camera-based face unlock can never unlock it.
+         * @param context The context to read the biometric state from
+         * @return Whether Class 3 (strong) biometrics are enrolled and usable
+         */
+        fun isStrongBiometricAvailable(context: Context): Boolean {
+            return BiometricManager.from(context).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) == BiometricManager.BIOMETRIC_SUCCESS
+        }
+    }
 
     /**
      * The executor.
@@ -83,14 +89,8 @@ class AndroidKeystoreProvider(
      * @return Whether the biometric is available and key is valid
      */
     override fun isBiometricAvailable(): Boolean {
-        // First check if device supports biometrics
-        val deviceSupported = _biometricManager.canAuthenticate(
-            BiometricManager.Authenticators.BIOMETRIC_WEAK or
-                BiometricManager.Authenticators.BIOMETRIC_STRONG or
-                BiometricManager.Authenticators.DEVICE_CREDENTIAL,
-        ) == BiometricManager.BIOMETRIC_SUCCESS
-
-        if (!deviceSupported) {
+        // First check if device supports biometrics strong enough for the key below
+        if (!isStrongBiometricAvailable(context)) {
             return false
         }
 
@@ -168,6 +168,15 @@ class AndroidKeystoreProvider(
     override fun storeKey(key: String, callback: KeystoreOperationCallback) {
         _mainHandler.post {
             try {
+                if (!isStrongBiometricAvailable(context)) {
+                    callback.onError(
+                        AppError.BiometricNotAvailable(
+                            "Device has no strong (Class 3) biometrics available",
+                        ),
+                    )
+                    return@post
+                }
+
                 val currentActivity = getCurrentActivity()
                 if (currentActivity == null || !(currentActivity is FragmentActivity)) {
                     callback.onError(

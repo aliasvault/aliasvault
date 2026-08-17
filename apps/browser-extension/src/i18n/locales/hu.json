@@ -282,7 +282,6 @@
     "typeLabel": "Elem típus",
     "creating": "Létrehozás",
     "editing": "Szerkesztés",
-    "regenerateAlias": "Alias újragenerálása",
     "addCustomField": "Egyedi mező hozzáadása",
     "fieldLabel": "Mező cím",
     "enterFieldName": "Adja meg a mező nevét",
@@ -366,6 +365,7 @@
     "noEmails": "Nem található e-mail",
     "noEmailsDescription": "Nem kapott még e-maileket a privát címére. Beérkezés esetén itt jelenik majd meg.",
     "offlineMessage": "Jelenleg offline. Kapcsolódjon az internethez az e-mailek betöltéséhez.",
+    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "loadMore": "Továbbiak betöltése ({{count}} hátra)",
     "dateFormat": {
       "justNow": "éppen most",
