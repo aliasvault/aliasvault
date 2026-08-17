@@ -15,7 +15,9 @@ namespace AliasServerDb.Migrations
             DropForeignKeys(migrationBuilder);
 
             RebuildAliasVaultUsers(migrationBuilder);
+            RebuildGroups(migrationBuilder);
             RebuildEmails(migrationBuilder);
+            RebuildEmailClaims(migrationBuilder);
             RebuildRateLimits(migrationBuilder);
             RebuildVaultManifests(migrationBuilder);
             RebuildVaultManifestsHistory(migrationBuilder);
@@ -52,10 +54,13 @@ namespace AliasServerDb.Migrations
                 ALTER TABLE "AliasVaultUserRefreshTokens" DROP CONSTRAINT "FK_AliasVaultUserRefreshTokens_AliasVaultUsers_UserId";
                 ALTER TABLE "AliasVaultUsers" DROP CONSTRAINT "FK_AliasVaultUsers_Groups_PersonalGroupId";
                 ALTER TABLE "EmailAttachments" DROP CONSTRAINT "FK_EmailAttachments_Emails_EmailId";
+                ALTER TABLE "EmailClaimLinks" DROP CONSTRAINT "FK_EmailClaimLinks_EmailClaims_EmailClaimId";
                 ALTER TABLE "EmailClaimLinks" DROP CONSTRAINT "FK_EmailClaimLinks_VaultManifests_VaultManifestId";
                 ALTER TABLE "EmailDecryptionKeys" DROP CONSTRAINT "FK_EmailDecryptionKeys_Emails_EmailId";
                 ALTER TABLE "EmailDecryptionKeys" DROP CONSTRAINT "FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId";
+                ALTER TABLE "EmailParts" DROP CONSTRAINT "FK_EmailParts_Emails_EmailId";
                 ALTER TABLE "GroupMembers" DROP CONSTRAINT "FK_GroupMembers_AliasVaultUsers_UserId";
+                ALTER TABLE "GroupMembers" DROP CONSTRAINT "FK_GroupMembers_Groups_GroupId";
                 ALTER TABLE "MobileLoginRequests" DROP CONSTRAINT "FK_MobileLoginRequests_AliasVaultUsers_UserId";
                 ALTER TABLE "RateLimits" DROP CONSTRAINT "FK_RateLimits_Groups_GroupId";
                 ALTER TABLE "UserGrantKeys" DROP CONSTRAINT "FK_UserGrantKeys_AliasVaultUsers_UserId";
@@ -119,6 +124,39 @@ namespace AliasServerDb.Migrations
         }
 
         /// <summary>
+        /// Moves the anonymized first-time sender buckets up next to the other per-group email counters they belong
+        /// with, instead of leaving them behind the audit timestamps where they were appended.
+        /// </summary>
+        /// <param name="migrationBuilder">Migration builder.</param>
+        private static void RebuildGroups(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.Sql("""
+                CREATE TABLE "Groups_reordered" (
+                    "Id" uuid NOT NULL,
+                    "Name" character varying(255) NOT NULL,
+                    "Type" integer NOT NULL,
+                    "ShadowBlocked" boolean NOT NULL,
+                    "ShadowBlockedAt" timestamp with time zone,
+                    "MaxEmails" integer NOT NULL,
+                    "MaxEmailAgeDays" integer NOT NULL,
+                    "EmailsReceived" integer NOT NULL,
+                    "AnonymizedEmailAliasSenderCounts" integer[] DEFAULT array_fill(0, ARRAY[64]) NOT NULL,
+                    "CreatedAt" timestamp with time zone NOT NULL,
+                    "UpdatedAt" timestamp with time zone NOT NULL
+                );
+
+                INSERT INTO "Groups_reordered" ("Id", "Name", "Type", "ShadowBlocked", "ShadowBlockedAt", "MaxEmails", "MaxEmailAgeDays", "EmailsReceived", "AnonymizedEmailAliasSenderCounts", "CreatedAt", "UpdatedAt")
+                SELECT "Id", "Name", "Type", "ShadowBlocked", "ShadowBlockedAt", "MaxEmails", "MaxEmailAgeDays", "EmailsReceived", "AnonymizedEmailAliasSenderCounts", "CreatedAt", "UpdatedAt"
+                FROM "Groups";
+
+                DROP TABLE "Groups";
+                ALTER TABLE "Groups_reordered" RENAME TO "Groups";
+
+                ALTER TABLE "Groups" ADD CONSTRAINT "PK_Groups" PRIMARY KEY ("Id");
+                """);
+        }
+
+        /// <summary>
         /// Groups the recipient and sender columns, moves the message body columns the current storage format uses
         /// (preview, source bytes and the attachment counter) up next to each other, and pushes the v1 body columns
         /// that are no longer written to the back.
@@ -166,6 +204,36 @@ namespace AliasServerDb.Migrations
                 CREATE INDEX "IX_Emails_PushNotificationSent" ON "Emails" ("PushNotificationSent");
                 CREATE INDEX "IX_Emails_To_DateSystem" ON "Emails" ("To", "DateSystem");
                 CREATE INDEX "IX_Emails_Visible" ON "Emails" ("Visible");
+                """);
+        }
+
+        /// <summary>
+        /// Moves the anonymized sender flag up next to the address it describes, and compacts the dead column slots
+        /// this table carries from the user-owned claim model it was migrated away from.
+        /// </summary>
+        /// <param name="migrationBuilder">Migration builder.</param>
+        private static void RebuildEmailClaims(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.Sql("""
+                CREATE TABLE "EmailClaims_reordered" (
+                    "Id" uuid NOT NULL,
+                    "Address" character varying(255) NOT NULL,
+                    "AddressLocal" character varying(255) NOT NULL,
+                    "AddressDomain" character varying(255) NOT NULL,
+                    "AnonymizedSenderCounted" boolean DEFAULT false NOT NULL,
+                    "CreatedAt" timestamp with time zone NOT NULL,
+                    "UpdatedAt" timestamp with time zone NOT NULL
+                );
+
+                INSERT INTO "EmailClaims_reordered" ("Id", "Address", "AddressLocal", "AddressDomain", "AnonymizedSenderCounted", "CreatedAt", "UpdatedAt")
+                SELECT "Id", "Address", "AddressLocal", "AddressDomain", "AnonymizedSenderCounted", "CreatedAt", "UpdatedAt"
+                FROM "EmailClaims";
+
+                DROP TABLE "EmailClaims";
+                ALTER TABLE "EmailClaims_reordered" RENAME TO "EmailClaims";
+
+                ALTER TABLE "EmailClaims" ADD CONSTRAINT "PK_EmailClaims" PRIMARY KEY ("Id");
+                CREATE UNIQUE INDEX "IX_EmailClaims_Address" ON "EmailClaims" ("Address");
                 """);
         }
 
@@ -533,10 +601,13 @@ namespace AliasServerDb.Migrations
                 ALTER TABLE "AliasVaultUserRefreshTokens" ADD CONSTRAINT "FK_AliasVaultUserRefreshTokens_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;
                 ALTER TABLE "AliasVaultUsers" ADD CONSTRAINT "FK_AliasVaultUsers_Groups_PersonalGroupId" FOREIGN KEY ("PersonalGroupId") REFERENCES "Groups"("Id") ON DELETE RESTRICT;
                 ALTER TABLE "EmailAttachments" ADD CONSTRAINT "FK_EmailAttachments_Emails_EmailId" FOREIGN KEY ("EmailId") REFERENCES "Emails"("Id") ON DELETE CASCADE;
+                ALTER TABLE "EmailClaimLinks" ADD CONSTRAINT "FK_EmailClaimLinks_EmailClaims_EmailClaimId" FOREIGN KEY ("EmailClaimId") REFERENCES "EmailClaims"("Id") ON DELETE CASCADE;
                 ALTER TABLE "EmailClaimLinks" ADD CONSTRAINT "FK_EmailClaimLinks_VaultManifests_VaultManifestId" FOREIGN KEY ("VaultManifestId") REFERENCES "VaultManifests"("ManifestId") ON DELETE CASCADE;
                 ALTER TABLE "EmailDecryptionKeys" ADD CONSTRAINT "FK_EmailDecryptionKeys_Emails_EmailId" FOREIGN KEY ("EmailId") REFERENCES "Emails"("Id") ON DELETE CASCADE;
                 ALTER TABLE "EmailDecryptionKeys" ADD CONSTRAINT "FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId" FOREIGN KEY ("VaultManifestDeliveryKeyId") REFERENCES "VaultManifestDeliveryKeys"("Id") ON DELETE CASCADE;
+                ALTER TABLE "EmailParts" ADD CONSTRAINT "FK_EmailParts_Emails_EmailId" FOREIGN KEY ("EmailId") REFERENCES "Emails"("Id") ON DELETE CASCADE;
                 ALTER TABLE "GroupMembers" ADD CONSTRAINT "FK_GroupMembers_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;
+                ALTER TABLE "GroupMembers" ADD CONSTRAINT "FK_GroupMembers_Groups_GroupId" FOREIGN KEY ("GroupId") REFERENCES "Groups"("Id") ON DELETE CASCADE;
                 ALTER TABLE "MobileLoginRequests" ADD CONSTRAINT "FK_MobileLoginRequests_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;
                 ALTER TABLE "RateLimits" ADD CONSTRAINT "FK_RateLimits_Groups_GroupId" FOREIGN KEY ("GroupId") REFERENCES "Groups"("Id") ON DELETE CASCADE;
                 ALTER TABLE "UserGrantKeys" ADD CONSTRAINT "FK_UserGrantKeys_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;

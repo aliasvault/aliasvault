@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AliasServerDb.Migrations
 {
     [DbContext(typeof(AliasServerDbContext))]
-    [Migration("20260811194817_ReorderTableColumns")]
+    [Migration("20260817222545_ReorderTableColumns")]
     partial class ReorderTableColumns
     {
         /// <inheritdoc />
@@ -470,6 +470,9 @@ namespace AliasServerDb.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
+                    b.Property<bool>("AnonymizedSenderCounted")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -499,11 +502,11 @@ namespace AliasServerDb.Migrations
 
                     b.HasKey("EmailClaimId", "VaultManifestId");
 
-                    b.HasIndex("VaultManifestId", "EmailClaimId");
-
                     b.HasIndex("EmailClaimId")
                         .HasDatabaseName("IX_EmailClaimLinks_EmailClaimId_Live")
                         .HasFilter("\"State\" <> 'Removed'");
+
+                    b.HasIndex("VaultManifestId", "EmailClaimId");
 
                     b.ToTable("EmailClaimLinks");
                 });
@@ -527,11 +530,43 @@ namespace AliasServerDb.Migrations
                     b.ToTable("EmailDecryptionKeys");
                 });
 
+            modelBuilder.Entity("AliasServerDb.EmailPart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<byte[]>("Bytes")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<int>("EmailId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PartIndex")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmailId", "PartIndex")
+                        .IsUnique();
+
+                    b.ToTable("EmailParts");
+                });
+
             modelBuilder.Entity("AliasServerDb.Group", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.PrimitiveCollection<int[]>("AnonymizedEmailAliasSenderCounts")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer[]")
+                        .HasDefaultValueSql("array_fill(0, ARRAY[64])");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1436,13 +1471,24 @@ namespace AliasServerDb.Migrations
                     b.HasOne("AliasServerDb.VaultManifestDeliveryKey", "VaultManifestDeliveryKey")
                         .WithMany("DecryptionKeys")
                         .HasForeignKey("VaultManifestDeliveryKeyId")
-                        .HasConstraintName("FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId");
 
                     b.Navigation("Email");
 
                     b.Navigation("VaultManifestDeliveryKey");
+                });
+
+            modelBuilder.Entity("AliasServerDb.EmailPart", b =>
+                {
+                    b.HasOne("AliasServerDb.Email", "Email")
+                        .WithMany("Parts")
+                        .HasForeignKey("EmailId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Email");
                 });
 
             modelBuilder.Entity("AliasServerDb.GroupMember", b =>
@@ -1611,6 +1657,8 @@ namespace AliasServerDb.Migrations
                     b.Navigation("Attachments");
 
                     b.Navigation("DecryptionKeys");
+
+                    b.Navigation("Parts");
                 });
 
             modelBuilder.Entity("AliasServerDb.EmailClaim", b =>
