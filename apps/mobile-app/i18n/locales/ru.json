@@ -29,7 +29,7 @@
     "attachments": "Вложения",
     "or": "или",
     "retry": "Повторить",
-    "resizeField": "Drag to resize field",
+    "resizeField": "Перетащите, чтобы изменить размер поля",
     "deleteItemConfirmTitle": "Удалить запись",
     "deleteItemConfirmDescription": "Вы уверены, что хотите удалить эту запись?",
     "errors": {
@@ -227,7 +227,7 @@
       "biometricDisabledMessage": "{{biometric}} отключен для AliasVault. Чтобы использовать его, пожалуйста, сначала включите его в настройках вашего устройства.",
       "biometricHelp": "Разблокируйте хранилище с помощью биометрии. Оно защищено {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} недоступен. Нажмите, чтобы открыть настройки, и/или перейдите в настройки своего устройства, чтобы включить и настроить его.",
-      "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
+      "biometricUnavailableHelpAndroid": "Биометрия недоступна на вашем устройстве. Android требует сильную биометрию (класс 3), например отпечаток пальца или защищённое распознавание лица.",
       "featureRequiresPasscode": "Для этой функции необходимо настроить код-пароль на вашем устройстве.",
       "pin": "ПИН-код",
       "pinDescription": "Используйте PIN-код для быстрой разблокировки хранилища.",
