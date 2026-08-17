@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 
 import Modal from '@/entrypoints/popup/components/Dialogs/Modal';
+import { AttachmentIcon } from '@/entrypoints/popup/components/Icons/AttachmentIcon';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
@@ -11,7 +12,7 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import ConversionUtility from '@/entrypoints/popup/utils/ConversionUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import type { EmailAttachment, Email } from '@/utils/dist/core/models/webapi';
+import type { Email } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility, { type DecryptedEmail } from '@/utils/EncryptionUtility';
 import { decodeEmailSource, extractEmailAttachment, type ParsedEmailAttachment } from '@/utils/RustCore';
 
@@ -40,6 +41,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
   const [showMetadata, setShowMetadata] = useState(false);
   const [viewMode, setViewMode] = useState<'html' | 'plain' | 'source'>('html');
   const [credential, setCredential] = useState<{ id: string; name: string } | null>(null);
+  const attachmentsRef = useRef<HTMLDivElement>(null);
   const { setIsInitialLoading } = useLoading();
   const { setHeaderButtons } = useHeaderButtons();
 
@@ -241,38 +243,6 @@ const EmailDetails: React.FC = (): React.ReactElement => {
     }
   };
 
-  /**
-   * Handle downloading an attachment stored as a separate record (legacy emails): fetch the
-   * encrypted bytes from the API and decrypt them locally.
-   */
-  const handleDownloadAttachment = async (attachment: EmailAttachment): Promise<void> => {
-    try {
-      // Get the encrypted attachment bytes from the API
-      const encryptedBytes = await webApi.downloadBlob(`Email/${id}/attachments/${attachment.id}`);
-
-      if (!dbContext?.sqliteClient || !email) {
-        setError('Database context or email not available');
-        return;
-      }
-
-      // Get encryption keys for decryption
-      const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
-
-      // Decrypt the attachment using raw bytes
-      const decryptedBytes = await EncryptionUtility.decryptAttachment(encryptedBytes, email, encryptionKeys);
-
-      if (!decryptedBytes) {
-        setError('Failed to decrypt attachment');
-        return;
-      }
-
-      triggerAttachmentDownload(new Uint8Array(decryptedBytes), attachment.mimeType, attachment.filename);
-    } catch (err) {
-      console.error('handleDownloadAttachment error', err);
-      setError(err instanceof Error ? err.message : 'Failed to download attachment');
-    }
-  };
-
   /*
    * Set header buttons whenever the available formats or active view mode change so the
    * format-cycle button label stays in sync. Mirrors the web app's header layout.
@@ -375,6 +345,16 @@ const EmailDetails: React.FC = (): React.ReactElement => {
                 </svg>
               </button>
             </div>
+            {parsedAttachments.length > 0 && (
+              <button
+                onClick={() => attachmentsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className="flex items-center gap-1 flex-shrink-0 px-2 py-1 rounded-full text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                title={t('common.attachments')}
+              >
+                <AttachmentIcon className="w-4 h-4" />
+                <span>{parsedAttachments.length}</span>
+              </button>
+            )}
           </div>
           {showMetadata && (
             <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400 mt-2">
@@ -421,13 +401,13 @@ const EmailDetails: React.FC = (): React.ReactElement => {
         </div>
 
         {/* Attachments */}
-        {(parsedAttachments.length > 0 || (email.attachments && email.attachments.length > 0)) && (
-          <div className="p-6 border-t border-gray-200 dark:border-gray-700">
+        {parsedAttachments.length > 0 && (
+          <div ref={attachmentsRef} className="p-6 border-t border-gray-200 dark:border-gray-700">
             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
               {t('common.attachments')}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {parsedAttachments.length > 0 ? parsedAttachments.map((attachment, index) => (
+              {parsedAttachments.map((attachment, index) => (
                 <button
                   key={index}
                   onClick={() => handleDownloadParsedAttachment(attachment, index)}
@@ -448,29 +428,6 @@ const EmailDetails: React.FC = (): React.ReactElement => {
                   </svg>
                   <span>
                     {attachment.filename} ({Math.ceil(attachment.size / 1024)} KB)
-                  </span>
-                </button>
-              )) : email.attachments.map((attachment) => (
-                <button
-                  key={attachment.id}
-                  onClick={() => handleDownloadAttachment(attachment)}
-                  className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 text-left"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
-                    />
-                  </svg>
-                  <span>
-                    {attachment.filename} ({Math.ceil(attachment.filesize / 1024)} KB)
                   </span>
                 </button>
               ))}

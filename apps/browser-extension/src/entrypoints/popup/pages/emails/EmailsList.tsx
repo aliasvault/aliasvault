@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
+import { AttachmentIcon } from '@/entrypoints/popup/components/Icons/AttachmentIcon';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
@@ -267,8 +268,9 @@ const EmailsList: React.FC = () => {
               <div className="text-gray-900 dark:text-white mb-1 font-bold">
                 {email.subject}
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                {formatEmailDate(email.dateSystem)}
+              <div className="flex items-center gap-1.5 flex-shrink-0 text-sm text-gray-500 dark:text-gray-400">
+                {email.hasAttachments && <AttachmentIcon className="w-4 h-4" />}
+                <span>{formatEmailDate(email.dateSystem)}</span>
               </div>
             </div>
             <div className="text-gray-600 text-sm dark:text-gray-300 line-clamp-2">

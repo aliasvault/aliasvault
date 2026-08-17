@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 
+import { AttachmentIcon } from '@/entrypoints/popup/components/Icons/AttachmentIcon';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
@@ -287,8 +288,9 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
                 {mail.subject.substring(0, 30)}{mail.subject.length > 30 ? '...' : ''}
               </span>
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-              {new Date(mail.dateSystem).toLocaleDateString()}
+            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 ml-2 flex-shrink-0">
+              {mail.hasAttachments && <AttachmentIcon className="w-3.5 h-3.5" />}
+              <span>{new Date(mail.dateSystem).toLocaleDateString()}</span>
             </div>
           </a>
         ) : (
@@ -305,8 +307,9 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
                 {mail.subject.substring(0, 30)}{mail.subject.length > 30 ? '...' : ''}
               </span>
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-              {new Date(mail.dateSystem).toLocaleDateString()}
+            <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 ml-2 flex-shrink-0">
+              {mail.hasAttachments && <AttachmentIcon className="w-3.5 h-3.5" />}
+              <span>{new Date(mail.dateSystem).toLocaleDateString()}</span>
             </span>
           </Link>
         )

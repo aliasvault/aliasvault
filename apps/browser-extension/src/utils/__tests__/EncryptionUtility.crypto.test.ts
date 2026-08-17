@@ -48,7 +48,6 @@ async function createEmail(
 ): Promise<Email> {
   return {
     messageSource: '',
-    attachmentCount: 0,
     id: 1,
     subject: '',
     fromDisplay: '',
