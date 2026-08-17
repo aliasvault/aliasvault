@@ -389,7 +389,6 @@
     "noEmails": "No emails found",
     "noEmailsDescription": "You have not received any emails at your private email addresses yet. When you receive a new email, it will appear here.",
     "offlineMessage": "You are offline. Please connect to the internet to load your emails.",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "loadMore": "Load More ({{count}} remaining)",
     "dateFormat": {
       "justNow": "just now",
