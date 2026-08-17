@@ -563,8 +563,10 @@ public class VaultController(
                 await context.SaveChangesAsync();
             }
 
-            if (model.EmailRouting is { EmailAddressList.Count: > 0 })
+            if (model.EmailRouting is not null)
             {
+                // Only update email claims when the client sends a non-empty routing object. If null has been sent by client, we
+                // do not update the email claims (so to not delete any claims if they have been forgotten by the client).
                 await UpdateEmailClaimsAsync(context, user, model.EmailRouting);
             }
 
@@ -994,7 +996,7 @@ public class VaultController(
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="user">The calling user.</param>
-    /// <param name="routing">The pushed routing data: one entry per (address, manifest) pair.</param>
+    /// <param name="routing">The pushed routing data: one entry per (address, manifest) pair, plus the manifests it speaks for.</param>
     private async Task UpdateEmailClaimsAsync(AliasServerDbContext context, AliasVaultUser user, EmailRoutingPush routing)
     {
         // Get all unique emails with calculated state (active wins from paused in case there are multiple).
@@ -1008,7 +1010,6 @@ public class VaultController(
             .Where(m => context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner))
             .Select(m => m.ManifestId)
             .ToListAsync()).ToHashSet();
-        var updateScope = accessibleManifests.Union(ownedManifests).ToHashSet();
 
         // Resolved server-side and never read off the push: this is what stops a client filing an alias under a manifest it merely named.
         var personalManifestId = await GroupHelper.GetPersonalManifestIdAsync(context, user.PersonalGroupId);
@@ -1032,6 +1033,12 @@ public class VaultController(
 
         var assertedManifestIds = assertedPairs.Select(p => p.ManifestId).Distinct().ToList();
         var ownerGroupByManifest = await GroupHelper.GetOwnerGroupsAsync(context, assertedManifestIds);
+
+        // The manifests this push speaks for: the ones the client says it opened, plus any it named an address for.
+        var coveredManifestIds = routing.CoveredManifestIds.ToHashSet();
+        coveredManifestIds.UnionWith(assertedManifestIds);
+
+        var updateScope = accessibleManifests.Union(ownedManifests).Intersect(coveredManifestIds).ToHashSet();
 
         // Warn when a shared manifest claims aliases without a published delivery key: it gets no wrap for its mail until one is published.
         var manifestsWithDeliveryKey = (await context.VaultManifestDeliveryKeys

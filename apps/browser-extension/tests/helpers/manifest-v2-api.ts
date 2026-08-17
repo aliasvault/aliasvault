@@ -147,7 +147,7 @@ export async function pushManifest(
     }],
     buckets: [],
     newBlobs: [],
-    emailRouting: { emailAddressList: [] },
+    emailRouting: null,
     userEncryptionPublicKey: '',
   };
 
