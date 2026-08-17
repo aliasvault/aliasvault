@@ -59,7 +59,7 @@ const ItemLogoPicker: React.FC<ItemLogoPickerProps> = ({ item, pendingSelection,
         onClick={() => setIsPickerOpen(true)}
         title={`${t('items.logo.chooseLogo')} — ${renderSource()}`}
         aria-label={t('items.logo.chooseLogo')}
-        className="group relative flex items-center justify-center w-[calc(2.5rem+2px)] h-[calc(2.5rem+2px)] flex-shrink-0 cursor-pointer rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 hover:border-primary-500 dark:hover:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+        className="flex items-center justify-center w-[calc(2.5rem+2px)] h-[calc(2.5rem+2px)] flex-shrink-0 cursor-pointer rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-primary-50 dark:hover:bg-primary-900/30 hover:border-primary-500 dark:hover:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
       >
         {isFetching ? (
           <svg className="animate-spin w-5 h-5 text-gray-500 dark:text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -69,12 +69,6 @@ const ItemLogoPicker: React.FC<ItemLogoPickerProps> = ({ item, pendingSelection,
         ) : (
           <ItemIconComponent item={{ ...item, LogoInfo: effectiveLogo }} className="w-6 h-6" />
         )}
-        {/* Hovering dims the logo and reveals a full-size pencil, so the click target reads as "edit" without a badge too small to recognise. */}
-        <span className="absolute inset-0 flex items-center justify-center rounded-md bg-gray-900/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-        </span>
       </button>
 
       <LogoPickerModal

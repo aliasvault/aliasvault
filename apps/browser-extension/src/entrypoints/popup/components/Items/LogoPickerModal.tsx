@@ -49,7 +49,7 @@ const LogoPickerModal: React.FC<LogoPickerModalProps> = ({ isOpen, onClose, curr
                 type="button"
                 title={t(`items.logo.builtin.${key}`)}
                 onClick={() => choose({ Kind: LogoKinds.Builtin, Source: key })}
-                className={`flex items-center justify-center p-2 rounded-lg border transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                className={`flex items-center justify-center p-2 rounded-lg border transition-colors hover:bg-primary-50 dark:hover:bg-primary-900/30 hover:border-primary-500 dark:hover:border-primary-500 ${
                   currentLogo?.Kind === LogoKinds.Builtin && currentLogo.Source === key
                     ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30'
                     : 'border-gray-200 dark:border-gray-600'
