@@ -9,6 +9,7 @@
         <WasmBuildNative>true</WasmBuildNative>
         <LangVersion>14</LangVersion>
         <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+        <EmccInitialHeapSize>1073741824</EmccInitialHeapSize>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
