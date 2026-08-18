@@ -84,6 +84,24 @@ function withTrustedWebAuthnSender<T, U>(
 }
 
 /**
+ * True when the message comes from one of the extension's own pages (popup, expanded tab, passkey window),
+ * false for content scripts running inside web pages. Sensitive operations must never be serviceable from a content-script context.
+ */
+function isTrustedExtensionSender(sender: WebAuthnMessageSender): boolean {
+  const senderOrigin = typeof sender.origin === 'string' && sender.origin !== 'null' ? sender.origin : undefined;
+  const senderUrl = senderOrigin ?? sender.url ?? sender.tab?.url;
+  if (!senderUrl) {
+    return false;
+  }
+
+  try {
+    return new URL(senderUrl).origin === new URL(browser.runtime.getURL('')).origin;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Notify content scripts in all tabs that the vault was unlocked, so any conditional passkey
  * request parked while the vault was locked can re-query and surface its passkeys.
  */
@@ -214,7 +232,7 @@ export default defineBackground({
     // Listen for messages via @webext-core/messaging
     onMessage('CHECK_AUTH_STATUS', () => handleCheckAuthStatus());
 
-    onMessage('GET_ENCRYPTION_KEY', () => handleGetEncryptionKey());
+    onMessage('GET_ENCRYPTION_KEY', ({ sender }) => isTrustedExtensionSender(sender) ? handleGetEncryptionKey() : null);
     onMessage('GET_ENCRYPTION_KEY_DERIVATION_PARAMS', () => handleGetEncryptionKeyDerivationParams());
     onMessage('GET_VAULT', () => handleGetVault());
     onMessage('GET_FILTERED_ITEMS', ({ data }) => handleGetFilteredItems(data));
@@ -226,7 +244,11 @@ export default defineBackground({
     onMessage('GENERATE_PASSWORD', ({ data }) => handleGeneratePassword(data.settings));
 
     onMessage('STORE_VAULT_METADATA', ({ data }) => handleStoreVaultMetadata(data));
-    onMessage('STORE_ENCRYPTION_KEY', async ({ data }) => {
+    onMessage('STORE_ENCRYPTION_KEY', async ({ data, sender }) => {
+      if (!isTrustedExtensionSender(sender)) {
+        return { success: false };
+      }
+
       const result = await handleStoreEncryptionKey(data);
       /*
        * Storing the encryption key means the vault just became unlocked; let content scripts
@@ -259,7 +281,7 @@ export default defineBackground({
     onMessage('TOGGLE_CONTEXT_MENU', ({ data }) => handleToggleContextMenu(data));
 
     onMessage('PERSIST_FORM_VALUES', ({ data }) => handlePersistFormValues(data));
-    onMessage('GET_PERSISTED_FORM_VALUES', () => handleGetPersistedFormValues());
+    onMessage('GET_PERSISTED_FORM_VALUES', ({ sender }) => isTrustedExtensionSender(sender) ? handleGetPersistedFormValues() : null);
     onMessage('CLEAR_PERSISTED_FORM_VALUES', () => handleClearPersistedFormValues());
 
     // Remember login save messages

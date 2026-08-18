@@ -56,14 +56,22 @@ import { t } from '@/i18n/StandaloneI18n';
  *
  * Cache Strategy:
  * - Local mutations (createCredential, etc.): Work directly on cachedSqliteClient, no cache clearing
- * - New vault from remote (login, sync): Clear cache by setting both to null
- * - Logout/clear vault: Clear cache by setting both to null
- *
- * The cache is cleared by setting cachedSqliteClient and cachedVaultBlob to null directly
- * in the functions that receive new vault data from external sources.
+ * - New vault from remote (login, sync): Clear cache by setting both to null, WITHOUT closing — an in-flight
+ *   flow (e.g. a push holding the client across an HTTP await, or persistLocalVaultMutation re-adopting the
+ *   client it just stored) may legitimately still use the detached instance.
+ * - Lock/logout/clear vault: cleanupCachedSqliteClient().
  */
 let cachedSqliteClient: SqliteClient | null = null;
 let cachedVaultBlob: string | null = null;
+
+/**
+ * Cleanup the cached decrypted vault database and drop the cache.
+ */
+function cleanupCachedSqliteClient(): void {
+  cachedSqliteClient?.close();
+  cachedSqliteClient = null;
+  cachedVaultBlob = null;
+}
 
 /**
  * Whether the client has to pull and re-materialize, i.e. whether any manifest's local state no longer matches what
@@ -358,6 +366,7 @@ export async function handleGetVault(
  */
 export async function handleLockVault(): Promise<messageBoolResponse> {
   await storage.removeItems([...VAULT_LOCK_STORAGE_KEYS]);
+  cleanupCachedSqliteClient();
 
   return { success: true };
 }
@@ -378,9 +387,8 @@ export async function handleClearSession(): Promise<messageBoolResponse> {
   // Reset password unlock failed attempts counter on logout
   await LocalPreferencesService.resetPasswordUnlockFailedAttempts();
 
-  // Clear cached client since session ended
-  cachedSqliteClient = null;
-  cachedVaultBlob = null;
+  // Cleanup cached sqlite client
+  cleanupCachedSqliteClient();
 
   return { success: true };
 }
@@ -398,6 +406,9 @@ export async function handleClearVaultData(): Promise<messageBoolResponse> {
 
   // Clear all local preferences (site settings, login save settings, etc.)
   await LocalPreferencesService.clearAll();
+
+  // Free the decrypted vault held in service-worker memory alongside the persisted data it came from.
+  closeCachedSqliteClient();
 
   return { success: true };
 }
