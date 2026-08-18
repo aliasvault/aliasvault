@@ -6,6 +6,7 @@
 
 import { storage } from 'wxt/utils/storage';
 
+import { base64ToBytes } from '@/utils/Base64';
 import { bucketRevisionKey, StorageKeys } from '@/utils/constants/storageKeys';
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
 import { ManifestKeyType, VaultKeyAlgorithm, type VaultResponse } from '@/utils/dist/core/models/webapi';
@@ -80,7 +81,7 @@ async function verifyDecryptUnpack(base64Ciphertext: string, vek: string, expect
   if (expectedCiphertextHash && await vaultCodecComputeCiphertextHash(base64Ciphertext) !== expectedCiphertextHash) {
     throw new Error(`VaultSyncService: ${label} ciphertext hash mismatch, refusing to load. Possible storage corruption.`);
   }
-  const encryptedBytes = Uint8Array.from(atob(base64Ciphertext), c => c.charCodeAt(0));
+  const encryptedBytes = base64ToBytes(base64Ciphertext);
   const plainBytes = await EncryptionUtility.symmetricDecryptBytes(encryptedBytes, vek);
   return vaultCodecUnpackPayload(plainBytes);
 }

@@ -1,5 +1,6 @@
 import initSqlJs from 'sql.js';
 
+import { base64ToBytes, bytesToBase64 } from '@/utils/Base64';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import type { VaultVersion } from '@/utils/dist/core/vault';
 import { VaultSqlGenerator, checkVersionCompatibility, extractVersionFromMigrationId } from '@/utils/dist/core/vault';
@@ -22,6 +23,12 @@ import type { IDatabaseClient, SqliteBindValue } from './db/BaseRepository';
 import type { Database } from 'sql.js';
 
 import { storage } from '#imports';
+
+/** Minimum number of free pages before a VACUUM is worth the full database rewrite on export. */
+const VACUUM_MIN_FREE_PAGES = 64;
+
+/** A VACUUM runs when the freelist holds at least this fraction (1/n) of the database's pages. */
+const VACUUM_FREE_PAGE_RATIO = 10;
 
 /**
  * Core SQLite database client.
@@ -164,12 +171,7 @@ export class SqliteClient implements IDatabaseClient {
    */
   public async initializeFromBase64(base64String: string): Promise<void> {
     try {
-      // Convert base64 to Uint8Array
-      const binaryString = atob(base64String);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
+      const bytes = base64ToBytes(base64String);
 
       // Initialize SQL.js with the WASM file
       const SQL = await initSqlJs({
@@ -272,19 +274,23 @@ export class SqliteClient implements IDatabaseClient {
     }
 
     try {
-      // Vacuum to free up space before exporting
-      this.db.run('VACUUM');
-
-      const binaryArray = this.db.export();
-
-      let binaryString = '';
-      for (let i = 0; i < binaryArray.length; i++) {
-        binaryString += String.fromCharCode(binaryArray[i]);
-      }
-      return btoa(binaryString);
+      this.vacuumIfFragmented();
+      return bytesToBase64(this.db.export());
     } catch (error) {
       console.error('Error exporting SQLite database:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Rebuild the database to reclaim free pages, but only when enough of them have accumulated to be worth it.
+   */
+  private vacuumIfFragmented(): void {
+    const freePages = this.executeQuery<{ freelist_count: number }>('PRAGMA freelist_count')[0]?.freelist_count ?? 0;
+    const totalPages = this.executeQuery<{ page_count: number }>('PRAGMA page_count')[0]?.page_count ?? 0;
+
+    if (freePages >= VACUUM_MIN_FREE_PAGES && freePages * VACUUM_FREE_PAGE_RATIO >= totalPages) {
+      this.executeRaw('VACUUM');
     }
   }
 
@@ -612,8 +618,7 @@ export class SqliteClient implements IDatabaseClient {
    */
   private static base64Encode(buffer: Uint8Array | number[] | { [key: number]: number }): string | null {
     try {
-      const arr = Array.from(this.toUint8Array(buffer));
-      return btoa(arr.reduce((data, byte) => data + String.fromCharCode(byte), ''));
+      return bytesToBase64(this.toUint8Array(buffer));
     } catch (error) {
       console.error('Error encoding to base64:', error);
       return null;

@@ -1,6 +1,7 @@
 import initSqlJs from 'sql.js';
 import { browser } from 'wxt/browser';
 
+import { base64ToBytes, bytesToBase64 } from '@/utils/Base64';
 import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
 import { devLog } from '@/utils/devLogger/DevLogger';
 import type { SqliteClient } from '@/utils/SqliteClient';
@@ -275,12 +276,7 @@ export class VaultMergeService {
    * @returns The loaded Database instance
    */
   private loadDatabase(SQL: SqlJsStatic, base64String: string): Database {
-    const binaryString = atob(base64String);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return new SQL.Database(bytes);
+    return new SQL.Database(base64ToBytes(base64String));
   }
 
   /**
@@ -290,14 +286,7 @@ export class VaultMergeService {
    */
   private exportDatabase(db: Database): string {
     db.run('VACUUM');
-    const binaryArray = db.export();
-    // Convert to string in chunks to avoid O(n²) byte-by-byte concatenation
-    const chunkSize = 0x8000;
-    const parts: string[] = [];
-    for (let i = 0; i < binaryArray.length; i += chunkSize) {
-      parts.push(String.fromCharCode(...binaryArray.subarray(i, i + chunkSize)));
-    }
-    return btoa(parts.join(''));
+    return bytesToBase64(db.export());
   }
 
   /**

@@ -1,6 +1,7 @@
 import argon2 from 'argon2-browser/dist/argon2-bundled.min.js';
 import { browser } from 'wxt/browser';
 
+import { base64ToBytes, bytesToBase64 } from '@/utils/Base64';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 
 import { storage } from '#imports';
@@ -159,7 +160,7 @@ export async function setupPin(pin: string, vaultEncryptionKey: string): Promise
   try {
     // Generate random salt
     const salt = crypto.getRandomValues(new Uint8Array(16));
-    const saltBase64 = arrayBufferToBase64(salt.buffer);
+    const saltBase64 = bytesToBase64(salt);
 
     // Derive key from PIN using Argon2id
     const combinedSalt = await assembleSaltWithPepper(salt);
@@ -177,7 +178,7 @@ export async function setupPin(pin: string, vaultEncryptionKey: string): Promise
     const combined = new Uint8Array(iv.length + encryptedKey.byteLength);
     combined.set(iv, 0);
     combined.set(new Uint8Array(encryptedKey), iv.length);
-    const encryptedKeyBase64 = arrayBufferToBase64(combined.buffer);
+    const encryptedKeyBase64 = bytesToBase64(combined);
 
     /* Store encrypted key, salt, PIN length, and enable flag */
     await Promise.all([
@@ -228,12 +229,12 @@ export async function unlockWithPin(pin: string): Promise<string> {
     }
 
     // Decode encrypted package
-    const combined = new Uint8Array(base64ToArrayBuffer(encryptedKeyBase64));
+    const combined = base64ToBytes(encryptedKeyBase64);
     const iv = combined.slice(0, 12);
     const encryptedData = combined.slice(12);
 
     // Derive key from PIN with extension ID pepper
-    const salt = new Uint8Array(base64ToArrayBuffer(saltBase64));
+    const salt = base64ToBytes(saltBase64);
     const combinedSalt = await assembleSaltWithPepper(salt);
     const pinKey = await derivePinKey(pin, combinedSalt);
 
@@ -358,7 +359,7 @@ async function assembleSaltWithPepper(randomSalt: Uint8Array): Promise<Uint8Arra
  */
 async function derivePinKey(pin: string, salt: Uint8Array): Promise<CryptoKey> {
   // Convert salt to base64 string (required by argon2-browser)
-  const saltBase64 = arrayBufferToBase64(salt.buffer as ArrayBuffer);
+  const saltBase64 = bytesToBase64(salt);
 
   // Derive key using Argon2id
   const hash = await argon2.hash({
@@ -381,28 +382,4 @@ async function derivePinKey(pin: string, salt: Uint8Array): Promise<CryptoKey> {
   );
 
   return pinKey;
-}
-
-/**
- * Convert ArrayBuffer to base64 string
- */
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-}
-
-/**
- * Convert base64 string to ArrayBuffer
- */
-function base64ToArrayBuffer(base64: string): ArrayBuffer {
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes.buffer;
 }

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { storage } from 'wxt/utils/storage';
 
+import { base64ToBytes } from '@/utils/Base64';
 import { AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, vaultDataStorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
 import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
 import type { ItemUsageAction } from '@/utils/db';
@@ -1920,12 +1921,7 @@ export async function handleSaveLoginCredential(
     // First try direct base64 if provided
     if (message.logoBase64) {
       try {
-        const binaryString = atob(message.logoBase64);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        logo = bytes;
+        logo = base64ToBytes(message.logoBase64);
       } catch {
         // Logo decode failed, continue without logo
       }

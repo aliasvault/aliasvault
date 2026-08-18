@@ -2,6 +2,7 @@ import { Buffer } from 'buffer';
 
 import argon2 from 'argon2-browser/dist/argon2-bundled.min.js';
 
+import { base64ToBytes, bytesToBase64 } from '@/utils/Base64';
 import { devWarn } from '@/utils/devLogger/DevLogger';
 import type { EncryptionKey } from '@/utils/dist/core/models/vault';
 import type { Email, EmailDecryptionKey, MailboxEmail } from '@/utils/dist/core/models/webapi';
@@ -77,7 +78,7 @@ export class EncryptionUtility {
 
     const key = await crypto.subtle.importKey(
       "raw",
-      Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
+      base64ToBytes(base64Key),
       {
         name: "AES-GCM",
         length: 256,
@@ -100,11 +101,7 @@ export class EncryptionUtility {
     combined.set(iv, 0);
     combined.set(new Uint8Array(ciphertext), iv.length);
 
-    return btoa(
-      Array.from(combined)
-        .map(byte => String.fromCharCode(byte))
-        .join('')
-    );
+    return bytesToBase64(combined);
   }
 
   /**
@@ -113,7 +110,7 @@ export class EncryptionUtility {
   public static async symmetricEncryptBytes(plaintextBytes: Uint8Array, base64Key: string): Promise<string> {
     const key = await crypto.subtle.importKey(
       "raw",
-      Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
+      base64ToBytes(base64Key),
       {
         name: "AES-GCM",
         length: 256,
@@ -134,11 +131,7 @@ export class EncryptionUtility {
     combined.set(iv, 0);
     combined.set(new Uint8Array(ciphertext), iv.length);
 
-    return btoa(
-      Array.from(combined)
-        .map(byte => String.fromCharCode(byte))
-        .join('')
-    );
+    return bytesToBase64(combined);
   }
 
   /**
@@ -151,7 +144,7 @@ export class EncryptionUtility {
 
     const key = await crypto.subtle.importKey(
       "raw",
-      Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
+      base64ToBytes(base64Key),
       {
         name: "AES-GCM",
         length: 256,
@@ -160,7 +153,7 @@ export class EncryptionUtility {
       ["decrypt"]
     );
 
-    const ivAndCiphertext = Uint8Array.from(atob(base64Ciphertext), c => c.charCodeAt(0));
+    const ivAndCiphertext = base64ToBytes(base64Ciphertext);
     const iv = ivAndCiphertext.slice(0, 12);
     const ciphertext = ivAndCiphertext.slice(12);
 
@@ -184,7 +177,7 @@ export class EncryptionUtility {
 
     const key = await crypto.subtle.importKey(
       "raw",
-      Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
+      base64ToBytes(base64Key),
       {
         name: "AES-GCM",
         length: 256,
@@ -211,14 +204,14 @@ export class EncryptionUtility {
    */
   public static generateVaultEncryptionKey(): string {
     const vek = crypto.getRandomValues(new Uint8Array(32));
-    return btoa(String.fromCharCode(...vek));
+    return bytesToBase64(vek);
   }
 
   /**
    * Encrypts a VEK with a KEK using AES-256-GCM. Returns base64(IV | ciphertext | authTag).
    */
   public static async encryptVaultEncryptionKey(vekBase64: string, kekBase64: string): Promise<string> {
-    const vekBytes = Uint8Array.from(atob(vekBase64), c => c.charCodeAt(0));
+    const vekBytes = base64ToBytes(vekBase64);
     return this.symmetricEncryptBytes(vekBytes, kekBase64);
   }
 
@@ -226,9 +219,9 @@ export class EncryptionUtility {
    * Decrypts an encrypted VEK with a KEK. Returns the VEK as base64.
    */
   public static async decryptVaultEncryptionKey(encryptedVekBase64: string, kekBase64: string): Promise<string> {
-    const encryptedBytes = Uint8Array.from(atob(encryptedVekBase64), c => c.charCodeAt(0));
+    const encryptedBytes = base64ToBytes(encryptedVekBase64);
     const vekBytes = await this.symmetricDecryptBytes(encryptedBytes, kekBase64);
-    return btoa(String.fromCharCode(...vekBytes));
+    return bytesToBase64(vekBytes);
   }
 
   /**
@@ -303,7 +296,7 @@ export class EncryptionUtility {
       encodedPlaintext
     );
 
-    return btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(cipherBuffer))));
+    return bytesToBase64(new Uint8Array(cipherBuffer));
   }
 
   /**
@@ -324,7 +317,7 @@ export class EncryptionUtility {
    * Decrypts data using RSA-OAEP asymmetric encryption with a CryptoKey private key.
    */
   public static async decryptWithPrivateKeyObject(ciphertext: string, privateKey: CryptoKey): Promise<Uint8Array> {
-    const cipherBuffer = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
+    const cipherBuffer = base64ToBytes(ciphertext);
     const plaintextBuffer = await crypto.subtle.decrypt(
       {
         name: "RSA-OAEP",
@@ -423,7 +416,7 @@ export class EncryptionUtility {
       decryptedEmail.fromDomain = await EncryptionUtility.symmetricDecrypt(email.fromDomain, symmetricKeyBase64);
       decryptedEmail.fromLocal = await EncryptionUtility.symmetricDecrypt(email.fromLocal, symmetricKeyBase64);
 
-      const sourceBytes = email.messageSource ? await EncryptionUtility.symmetricDecryptBytes(Uint8Array.from(atob(email.messageSource), c => c.charCodeAt(0)), symmetricKeyBase64) : null;
+      const sourceBytes = email.messageSource ? await EncryptionUtility.symmetricDecryptBytes(base64ToBytes(email.messageSource), symmetricKeyBase64) : null;
       decryptedEmail.messageSource = '';
 
       let htmlBody: string | null = null;

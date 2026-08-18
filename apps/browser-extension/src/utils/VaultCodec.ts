@@ -2,6 +2,8 @@
  * VaultCodec: SQLite materialization methods for the manifest-v1 storage format.
  */
 
+import { base64ToBytes as decodeBase64, bytesToBase64 as encodeBase64 } from '@/utils/Base64';
+
 import type {
   CodecManifest,
   CodecDataBucket,
@@ -138,6 +140,9 @@ export class VaultCodec {
       db.run('PRAGMA foreign_keys = OFF');
       db.run('BEGIN TRANSACTION');
 
+      // Compiled INSERT statements, keyed by table name plus the row's column set.
+      const statements = new Map<string, import('sql.js').Statement>();
+
       // Tables present in the freshly-created schema; rows for tables outside it cannot be inserted.
       const schemaTables = new Set<string>(db.exec("SELECT name FROM sqlite_master WHERE type='table'")[0]?.values.map(v => String(v[0])) ?? []);
 
@@ -156,7 +161,6 @@ export class VaultCodec {
         console.info(`[VaultCodec] Inserting ${rows.length} rows into "${tableName}"...`);
         for (const row of rows) {
           const cols = Object.keys(row);
-          const placeholders = cols.map(() => '?').join(', ');
           const values: unknown[] = cols.map(c => {
             const v = row[c];
             if (this.isBlobRef(v)) {
@@ -169,14 +173,27 @@ export class VaultCodec {
             return (v === undefined ? null : v) as unknown;
           });
 
-          const quotedCols = cols.map(c => `"${c}"`).join(', ');
+          const statementKey = `${tableName}\u0000${cols.join('\u0000')}`;
+          let statement = statements.get(statementKey);
+          if (!statement) {
+            const quotedCols = cols.map(c => `"${c}"`).join(', ');
+            const placeholders = cols.map(() => '?').join(', ');
+            statement = db.prepare(`INSERT INTO "${tableName}" (${quotedCols}) VALUES (${placeholders})`);
+            statements.set(statementKey, statement);
+          }
+
           try {
-            db.run(`INSERT INTO "${tableName}" (${quotedCols}) VALUES (${placeholders})`, values as never);
+            statement.run(values as never);
           } catch (e) {
             throw new Error(`VaultCodec: failed to insert row into "${tableName}" (columns: ${cols.join(', ')}): ${e instanceof Error ? e.message : String(e)}`);
           }
         }
       }
+
+      for (const statement of statements.values()) {
+        statement.free();
+      }
+      statements.clear();
 
       db.run('COMMIT');
 
@@ -191,11 +208,7 @@ export class VaultCodec {
       // 4) Export.
       const bytes = db.export();
       console.info(`[VaultCodec] Reassembly complete: exported SQLite of ${bytes.length} bytes.`);
-      let binaryString = '';
-      for (let i = 0; i < bytes.length; i++) {
-        binaryString += String.fromCharCode(bytes[i]);
-      }
-      return btoa(binaryString);
+      return encodeBase64(bytes);
     } finally {
       db.close();
     }
@@ -308,7 +321,7 @@ export class VaultCodec {
    * @param base64 - base64-encoded bytes
    */
   public static base64ToBytes(base64: string): Uint8Array {
-    return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+    return decodeBase64(base64);
   }
 
   /**
@@ -316,11 +329,7 @@ export class VaultCodec {
    * @param bytes - bytes to encode
    */
   private static bytesToBase64(bytes: Uint8Array): string {
-    let s = '';
-    for (let i = 0; i < bytes.length; i++) {
-      s += String.fromCharCode(bytes[i]);
-    }
-    return btoa(s);
+    return encodeBase64(bytes);
   }
 }
 
