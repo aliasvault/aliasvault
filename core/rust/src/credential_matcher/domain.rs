@@ -228,11 +228,23 @@ pub fn extract_domain(url: &str) -> String {
     extract_domain_with_port(url).domain
 }
 
+/// Check if a host string is an IP address literal (IPv4 or IPv6, optionally bracketed).
+/// IP addresses have no domain hierarchy, so they must never be reduced to a "root domain".
+fn is_ip_literal(host: &str) -> bool {
+    let bare = host.strip_prefix('[').and_then(|h| h.strip_suffix(']')).unwrap_or(host);
+    bare.parse::<std::net::IpAddr>().is_ok()
+}
+
 /// Extract root domain from a domain string.
 /// E.g., "sub.example.com" -> "example.com"
 /// E.g., "sub.example.com.au" -> "example.com.au"
 /// E.g., "sub.example.co.uk" -> "example.co.uk"
+/// IP address literals are returned unchanged: "192.168.1.5" must not become "1.5".
 pub fn extract_root_domain(domain: &str) -> String {
+    if is_ip_literal(domain) {
+        return domain.to_string();
+    }
+
     let parts: Vec<&str> = domain.split('.').collect();
     if parts.len() < 2 {
         return domain.to_string();
@@ -262,6 +274,12 @@ pub fn extract_root_domain(domain: &str) -> String {
 pub fn domains_match(domain1: &str, domain2: &str) -> bool {
     if domain1.is_empty() || domain2.is_empty() {
         return false;
+    }
+
+    // IP address literals have no subdomain structure: only the exact same address matches.
+    // Without this guard, "192.168.1.5" and "10.0.1.5" would both reduce to root "1.5" and match.
+    if is_ip_literal(domain1) || is_ip_literal(domain2) {
+        return domain1 == domain2;
     }
 
     // Exact match
@@ -430,6 +448,37 @@ mod tests {
         assert_eq!(extract_root_domain("sub.example.co.uk"), "example.co.uk");
         assert_eq!(extract_root_domain("example.co.uk"), "example.co.uk");
         assert_eq!(extract_root_domain("sub.example.com.au"), "example.com.au");
+    }
+
+    #[test]
+    fn test_extract_root_domain_ip_literals_unchanged() {
+        assert_eq!(extract_root_domain("192.168.1.5"), "192.168.1.5");
+        assert_eq!(extract_root_domain("10.0.0.1"), "10.0.0.1");
+        assert_eq!(extract_root_domain("::1"), "::1");
+        assert_eq!(extract_root_domain("[2001:db8::1]"), "[2001:db8::1]");
+    }
+
+    #[test]
+    fn test_ip_literals_require_exact_match() {
+        // Same IP matches
+        assert!(domains_match("192.168.1.5", "192.168.1.5"));
+
+        // Distinct IPs sharing trailing octets must NOT match
+        // (previously both reduced to root "1.5" and matched)
+        assert!(!domains_match("192.168.1.5", "10.0.1.5"));
+
+        // An IP must not be treated as a "subdomain" of a suffix of itself
+        assert!(!domains_match("192.168.1.5", "168.1.5"));
+        assert!(!domains_match("168.1.5", "192.168.1.5"));
+
+        // IP vs regular domain never matches
+        assert!(!domains_match("192.168.1.5", "example.com"));
+
+        // IPv6 literals: exact match only (bare and bracketed forms)
+        assert!(domains_match("::1", "::1"));
+        assert!(!domains_match("::1", "::2"));
+        assert!(domains_match("[2001:db8::1]", "[2001:db8::1]"));
+        assert!(!domains_match("[2001:db8::1]", "[2001:db8::2]"));
     }
 
     #[test]
