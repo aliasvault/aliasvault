@@ -36,7 +36,7 @@ function parseTypeScriptFieldKeys(tsContent) {
   const fieldKeys = {};
 
   // Extract field comments
-  const lines = tsContent.split('\n');
+  const lines = tsContent.split(/\r?\n/);
   let currentComment = '';
 
   for (let i = 0; i < lines.length; i++) {
@@ -159,7 +159,7 @@ function parseItemTypeFieldConfig(tsContent) {
 
   const body = match[1];
   // Match properties with comments
-  const lines = body.split('\n');
+  const lines = body.split(/\r?\n/);
   let currentComment = '';
 
   for (const line of lines) {
@@ -201,7 +201,7 @@ function parseSystemFieldDefinition(tsContent) {
   }
 
   const body = match[1];
-  const lines = body.split('\n');
+  const lines = body.split(/\r?\n/);
   let currentComment = '';
 
   for (const line of lines) {
@@ -1049,7 +1049,7 @@ function parseItemTypeIconSvgs(tsContent) {
 
   // Match each icon: IconName: `<svg...>`,
   // Use a state machine to handle template literals with backticks
-  const lines = body.split('\n');
+  const lines = body.split(/\r?\n/);
   let currentIconName = null;
   let currentSvg = '';
   let inTemplateLiteral = false;

@@ -26,7 +26,7 @@ const CS_OUTPUT = path.join(REPO_ROOT, 'apps/server/Databases/AliasClientDb/Mode
  */
 function parseConstants(source) {
   const constants = [];
-  const lines = source.split('\n');
+  const lines = source.split(/\r?\n/);
   let pendingDoc = null;
 
   for (const line of lines) {
