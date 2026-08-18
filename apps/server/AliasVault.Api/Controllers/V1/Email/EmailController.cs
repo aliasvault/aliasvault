@@ -104,7 +104,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
         {
             // Log the exception
             logger.LogError(ex, "An error occurred while deleting email with ID {id}.", id);
-            return StatusCode(500, $"An error occurred while deleting the email: {ex.Message}");
+            return StatusCode(500, "An error occurred while deleting the email.");
         }
     }
 

@@ -125,7 +125,7 @@ builder.Services.AddAuthentication(options =>
 {
     var jwtKey = SecretReader.GetJwtKey();
 
-    options.IncludeErrorDetails = true;
+    options.IncludeErrorDetails = builder.Environment.IsDevelopment();
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
