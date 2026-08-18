@@ -39,7 +39,7 @@ public class RustItemMatcher {
             let inputData = try JSONSerialization.data(withJSONObject: input, options: [])
             guard let inputJson = String(data: inputData, encoding: .utf8) else {
                 print("[RustItemMatcher] Failed to create input JSON")
-                return credentials
+                return []
             }
 
             // Call Rust via UniFFI
@@ -50,7 +50,7 @@ public class RustItemMatcher {
                   let output = try JSONSerialization.jsonObject(with: outputData) as? [String: Any],
                   let matchedIds = output["matched_ids"] as? [String] else {
                 print("[RustItemMatcher] Failed to parse output JSON")
-                return credentials
+                return []
             }
 
             // If no matches found, return empty array
@@ -70,8 +70,7 @@ public class RustItemMatcher {
 
         } catch {
             print("[RustItemMatcher] Error filtering credentials: \(error)")
-            // Fallback to returning all credentials on error
-            return credentials
+            return []
         }
     }
 }

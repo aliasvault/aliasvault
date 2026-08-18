@@ -101,8 +101,7 @@ object RustItemMatcher {
             return filtered
         } catch (e: Exception) {
             Log.e(TAG, "Error filtering items with Rust matcher: ${e.message}", e)
-            // Fallback to returning all items on error
-            return items
+            return emptyList()
         }
     }
 
