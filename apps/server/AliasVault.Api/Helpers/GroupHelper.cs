@@ -16,17 +16,6 @@ using Microsoft.EntityFrameworkCore;
 public static class GroupHelper
 {
     /// <summary>
-    /// Get the ids of every group the user owns.
-    /// </summary>
-    /// <param name="context">Database context.</param>
-    /// <param name="userId">The user.</param>
-    /// <returns>The owned group ids.</returns>
-    public static async Task<List<Guid>> GetOwnedGroupIdsAsync(AliasServerDbContext context, string userId)
-    {
-        return await context.GroupMembers.Where(m => m.UserId == userId && m.Role == GroupRole.Owner).Select(m => m.GroupId).ToListAsync();
-    }
-
-    /// <summary>
     /// Get the ids of every group the user may administer.
     /// </summary>
     /// <param name="context">Database context.</param>
@@ -146,25 +135,6 @@ public static class GroupHelper
     }
 
     /// <summary>
-    /// Check if the user may administer the shared manifest. Only a shared manifest can be administered: a personal
-    /// manifest has no sharing to manage, and refusing it here is what stops the sharing endpoints from ever being
-    /// pointed at somebody's own vault.
-    /// </summary>
-    /// <param name="context">Database context.</param>
-    /// <param name="manifestId">The shared manifest.</param>
-    /// <param name="userId">The user.</param>
-    /// <returns>True when the user can administer the manifest.</returns>
-    public static async Task<bool> CanAdministerManifestAsync(AliasServerDbContext context, Guid manifestId, string userId)
-    {
-        var groupId = await SharedManifests(context)
-            .Where(m => m.ManifestId == manifestId)
-            .Select(m => (Guid?)m.OwnerGroupId)
-            .FirstOrDefaultAsync();
-
-        return groupId is not null && await IsGroupAdminAsync(context, groupId.Value, userId);
-    }
-
-    /// <summary>
     /// Get the owning group of each manifest. That group is the quota subject for everything filed under the manifest:
     /// both the rate-limit rules and the usage they are measured against are scoped to it.
     /// </summary>
@@ -182,32 +152,5 @@ public static class GroupHelper
         return await context.VaultManifests
             .Where(m => ids.Contains(m.ManifestId))
             .ToDictionaryAsync(m => m.ManifestId, m => m.OwnerGroupId);
-    }
-
-    /// <summary>
-    /// Adds the user to the group as a plain member when they are not already in it.
-    /// </summary>
-    /// <param name="context">Database context.</param>
-    /// <param name="groupId">The group.</param>
-    /// <param name="userId">The user to add.</param>
-    /// <param name="now">Current time.</param>
-    /// <returns>A task.</returns>
-    public static async Task EnsureMembershipAsync(AliasServerDbContext context, Guid groupId, string userId, DateTime now)
-    {
-        var exists = await context.GroupMembers.AnyAsync(m => m.GroupId == groupId && m.UserId == userId);
-        if (exists)
-        {
-            return;
-        }
-
-        context.GroupMembers.Add(new GroupMember
-        {
-            Id = Guid.NewGuid(),
-            GroupId = groupId,
-            UserId = userId,
-            Role = GroupRole.Member,
-            CreatedAt = now,
-            UpdatedAt = now,
-        });
     }
 }

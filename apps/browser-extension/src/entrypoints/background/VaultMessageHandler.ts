@@ -409,7 +409,7 @@ export async function handleClearVaultData(): Promise<messageBoolResponse> {
   await LocalPreferencesService.clearAll();
 
   // Free the decrypted vault held in service-worker memory alongside the persisted data it came from.
-  closeCachedSqliteClient();
+  cleanupCachedSqliteClient();
 
   return { success: true };
 }
