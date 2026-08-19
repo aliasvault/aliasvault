@@ -566,12 +566,17 @@ public static class FaviconExtractor
         };
 
         var random = new Random();
+
+        // Keep these roughly in sync with current stable browsers (verified 2026-08):
+        // Chrome stable 151, Firefox stable 152. Stale majors are one of the cheapest
+        // bot-protection heuristics to trip.
         var userAgents = new[]
         {
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (X11; Linux x86_64; rv:152.0) Gecko/20100101 Firefox/152.0",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:152.0) Gecko/20100101 Firefox/152.0",
         };
 
         // Use random User-Agent
@@ -602,9 +607,13 @@ public static class FaviconExtractor
         // hints alongside the Firefox User-Agent is exactly the mismatch bot protection screens for.
         if (userAgent.Contains("Chrome", StringComparison.Ordinal))
         {
-            client.DefaultRequestHeaders.Add("Sec-CH-UA", "\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"120\", \"Google Chrome\";v=\"120\"");
+            // The Sec-CH-UA brand/version list must match the User-Agent major, and the
+            // platform hint must match the UA platform token, or bot protection flags the
+            // mismatch. Windows UA -> "Windows", macOS UA -> "macOS".
+            var major = userAgent.Split("Chrome/")[1].Split('.')[0];
+            client.DefaultRequestHeaders.Add("Sec-CH-UA", $"\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"{major}\", \"Google Chrome\";v=\"{major}\"");
             client.DefaultRequestHeaders.Add("Sec-CH-UA-Mobile", "?0");
-            client.DefaultRequestHeaders.Add("Sec-CH-UA-Platform", "\"Windows\"");
+            client.DefaultRequestHeaders.Add("Sec-CH-UA-Platform", userAgent.Contains("Macintosh", StringComparison.Ordinal) ? "\"macOS\"" : "\"Windows\"");
         }
 
         return client;
