@@ -122,6 +122,16 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<GroupMember> GroupMembers { get; set; }
 
     /// <summary>
+    /// Gets or sets the GroupInvitations DbSet.
+    /// </summary>
+    public DbSet<GroupInvitation> GroupInvitations { get; set; }
+
+    /// <summary>
+    /// Gets or sets the ClientActions DbSet.
+    /// </summary>
+    public DbSet<ClientAction> ClientActions { get; set; }
+
+    /// <summary>
     /// Gets or sets the VaultManifestDeliveryKeys DbSet.
     /// </summary>
     public DbSet<VaultManifestDeliveryKey> VaultManifestDeliveryKeys { get; set; }
@@ -320,6 +330,53 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasIndex(e => e.UserId);
+        });
+
+        // Configure GroupInvitation, an offer to join a group.
+        modelBuilder.Entity<GroupInvitation>(builder =>
+        {
+            builder.HasOne(e => e.Group)
+                .WithMany()
+                .HasForeignKey(e => e.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(e => e.Inviter)
+                .WithMany()
+                .HasForeignKey(e => e.InviterUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(e => e.Invitee)
+                .WithMany()
+                .HasForeignKey(e => e.InviteeUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // At most one open invitation per (group, invitee).
+            builder.HasIndex(e => new { e.GroupId, e.InviteeUserId }).IsUnique().HasFilter("\"State\" = 'Pending'").HasDatabaseName("UX_GroupInvitations_Group_Invitee_Pending");
+            builder.Property(e => e.State).HasConversion<string>().HasMaxLength(20);
+            builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
+
+            // Losing the keypair the vault key was sealed to leaves an invitation nobody could ever open.
+            builder.HasOne(e => e.UserGrantKey)
+                .WithMany()
+                .HasForeignKey(e => e.UserGrantKeyId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configure ClientAction, a work the server needs a client to carry out on its behalf.
+        modelBuilder.Entity<ClientAction>(builder =>
+        {
+            builder.HasOne(e => e.TargetUser)
+                .WithMany()
+                .HasForeignKey(e => e.TargetUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(e => e.TargetGroup)
+                .WithMany()
+                .HasForeignKey(e => e.TargetGroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Property(e => e.Type).HasConversion<string>().HasMaxLength(50);
+            builder.Property(e => e.Payload).HasColumnType("jsonb");
         });
 
         // Configure VaultManifest: one row per logical manifest (current revision), keyed by ManifestId.

@@ -32,13 +32,11 @@ public class CreateSharedManifestRequest
     /// <summary>Gets or sets the manifest VEK encrypted with the caller's own public key (base64), decryptable only by the caller.</summary>
     public required string SelfEncryptedVek { get; set; }
 
-    /// <summary>Gets or sets the id of the caller's own account public key used to encrypt (from GET /v2/Sharing/recipient for their own username).</summary>
-    public required Guid SelfPublicKeyId { get; set; }
+    /// <summary>
+    /// Gets or sets the caller's own account public key (JWK) the <see cref="SelfEncryptedVek"/> was encrypted with.
+    /// </summary>
+    public required string SelfPublicKey { get; set; }
 
-    /// <summary>Gets or sets the asymmetric algorithm used, both for the caller's own grant and for <see cref="Grants"/>.</summary>
+    /// <summary>Gets or sets the asymmetric algorithm the caller's own grant was encrypted with.</summary>
     public required string Algorithm { get; set; }
-
-    /// <summary>Gets or sets the grants handed to fellow group members, applied in the same transaction as the
-    /// manifest itself (optional).</summary>
-    public List<ManifestGrant> Grants { get; set; } = [];
 }
