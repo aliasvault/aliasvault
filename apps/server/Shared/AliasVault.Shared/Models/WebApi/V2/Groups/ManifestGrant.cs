@@ -5,7 +5,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Shared.Models.WebApi.V2.Sharing;
+namespace AliasVault.Shared.Models.WebApi.V2.Groups;
 
 /// <summary>
 /// One recipient's access to a shared manifest: the manifest's VEK encrypted with a public key of theirs.

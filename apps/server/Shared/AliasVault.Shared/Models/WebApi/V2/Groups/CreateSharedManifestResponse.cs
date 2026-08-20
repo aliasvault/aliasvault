@@ -5,10 +5,10 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Shared.Models.WebApi.V2.Sharing;
+namespace AliasVault.Shared.Models.WebApi.V2.Groups;
 
 /// <summary>
-/// Response for POST /v2/Sharing/manifests. Identifies the newly created shared manifest.
+/// Response for POST /v2/Groups/{groupId}/manifest. Identifies the newly created shared manifest.
 /// </summary>
 public class CreateSharedManifestResponse
 {

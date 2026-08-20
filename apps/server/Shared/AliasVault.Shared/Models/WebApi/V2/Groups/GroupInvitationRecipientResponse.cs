@@ -7,8 +7,6 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Groups;
 
-using AliasVault.Shared.Models.WebApi.V2.Sharing;
-
 /// <summary>
 /// Response for POST /v2/Groups/{groupId}/invitations/recipient: the account behind a username together with the
 /// public key an invitation to it has to be sealed for.

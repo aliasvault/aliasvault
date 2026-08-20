@@ -5,10 +5,10 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Shared.Models.WebApi.V2.Sharing;
+namespace AliasVault.Shared.Models.WebApi.V2.Groups;
 
 /// <summary>
-/// Request for POST /v2/Sharing/manifests. Creates a new shared (non-personal) manifest filed under a group.
+/// Request for POST /v2/Groups/{groupId}/manifest.
 /// </summary>
 public class CreateSharedManifestRequest
 {
@@ -18,22 +18,17 @@ public class CreateSharedManifestRequest
     /// <summary>Gets or sets the plaintext display name of the manifest.</summary>
     public required string Name { get; set; }
 
-    /// <summary>
-    /// Gets or sets the shared group to file this manifest under.
-    /// </summary>
-    public required Guid GroupId { get; set; }
-
     /// <summary>Gets or sets the encrypted manifest blob (AES-GCM ciphertext under the manifest VEK, base64).</summary>
     public required string ManifestBlob { get; set; }
 
     /// <summary>Gets or sets the SHA-256 (hex) of the manifest ciphertext, for storage-layer integrity verification.</summary>
     public string? ManifestCiphertextHash { get; set; }
 
-    /// <summary>Gets or sets the manifest VEK encrypted with the caller's own public key (base64), decryptable only by the caller.</summary>
+    /// <summary>Gets or sets the manifest VEK encrypted with the user's own public key (base64), decryptable only by the user.</summary>
     public required string SelfEncryptedVek { get; set; }
 
     /// <summary>
-    /// Gets or sets the caller's own account public key (JWK) the <see cref="SelfEncryptedVek"/> was encrypted with.
+    /// Gets or sets the user's own account public key (JWK) the <see cref="SelfEncryptedVek"/> was encrypted with.
     /// </summary>
     public required string SelfPublicKey { get; set; }
 

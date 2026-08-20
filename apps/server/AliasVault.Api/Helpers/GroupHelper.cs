@@ -48,23 +48,17 @@ public static class GroupHelper
     }
 
     /// <summary>
-    /// Resolve the <see cref="GroupType.Shared"/> group a new shared manifest is filed under. The caller always names
-    /// the group and it must already exist: creating a group is an explicit action of its own, never a side effect of
-    /// sharing something, so there is no implicit "the caller's own family group" to fall back to. Refusing a
-    /// <see cref="GroupType.Personal"/> group here is also what keeps a personal group at exactly one manifest, which
-    /// every personal-manifest lookup relies on (see <see cref="GetPersonalManifestIdAsync"/>).
+    /// Check whether the caller may administer a <see cref="GroupType.Shared"/> group.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="userId">The caller.</param>
-    /// <param name="groupId">The shared group named by the caller.</param>
-    /// <returns>The group id, or null when it does not exist, is not a shared group, or the caller may not administer it.</returns>
-    public static async Task<Guid?> ResolveShareTargetGroupIdAsync(AliasServerDbContext context, string userId, Guid groupId)
+    /// <param name="groupId">The shared group ID.</param>
+    /// <param name="userId">The user ID.</param>
+    /// <returns>False when the group does not exist, is not a shared group, or the caller may not administer it.</returns>
+    public static async Task<bool> IsSharedGroupAdminAsync(AliasServerDbContext context, Guid groupId, string userId)
     {
-        var resolved = await context.Groups.AnyAsync(g => g.Id == groupId
+        return await context.Groups.AnyAsync(g => g.Id == groupId
             && g.Type == GroupType.Shared
             && g.Members.Any(m => m.UserId == userId && (m.Role == GroupRole.Owner || m.Role == GroupRole.Admin)));
-
-        return resolved ? groupId : null;
     }
 
     /// <summary>

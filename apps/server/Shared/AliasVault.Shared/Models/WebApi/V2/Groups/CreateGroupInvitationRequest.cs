@@ -7,8 +7,6 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Groups;
 
-using AliasVault.Shared.Models.WebApi.V2.Sharing;
-
 /// <summary>
 /// Request for POST /v2/Groups/{groupId}/invitations: invite an account to join the group, handing it the group's
 /// vault key sealed for that account in the same call.

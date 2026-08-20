@@ -85,6 +85,7 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
             ManifestRevisions = manifestRevisions,
             PersonalManifestId = personalManifestId,
             BucketRevisions = bucketRevisions,
+            PendingActions = await ClientActionHelper.GetPendingActionsAsync(context, user.Id),
         });
     }
 }
