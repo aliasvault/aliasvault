@@ -8,17 +8,14 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Sharing;
 
 /// <summary>
-/// Request for POST /v2/Sharing/manifests. Creates a new shared (non-personal) manifest owned by the caller. The
-/// manifest's VEK is generated client-side and encrypted for the caller's *own* public key, persisted as a
-/// <c>shared</c> grant in the same call.
+/// Request for POST /v2/Sharing/manifests. Creates a new shared (non-personal) manifest filed under a group.
 /// </summary>
 public class CreateSharedManifestRequest
 {
-    /// <summary>Gets or sets the client-minted id of the new manifest. The encrypted placeholder manifest
-    /// already carries this id as its identity, so the server persists it verbatim (validating uniqueness).</summary>
+    /// <summary>Gets or sets the client-minted id of the new manifest.</summary>
     public required Guid ManifestId { get; set; }
 
-    /// <summary>Gets or sets the plaintext display name of the manifest (server-visible for the sharing UI).</summary>
+    /// <summary>Gets or sets the plaintext display name of the manifest.</summary>
     public required string Name { get; set; }
 
     /// <summary>
@@ -38,6 +35,10 @@ public class CreateSharedManifestRequest
     /// <summary>Gets or sets the id of the caller's own account public key used to encrypt (from GET /v2/Sharing/recipient for their own username).</summary>
     public required Guid SelfPublicKeyId { get; set; }
 
-    /// <summary>Gets or sets the asymmetric algorithm used.</summary>
+    /// <summary>Gets or sets the asymmetric algorithm used, both for the caller's own grant and for <see cref="Grants"/>.</summary>
     public required string Algorithm { get; set; }
+
+    /// <summary>Gets or sets the grants handed to fellow group members, applied in the same transaction as the
+    /// manifest itself (optional).</summary>
+    public List<ManifestGrant> Grants { get; set; } = [];
 }
