@@ -144,3 +144,9 @@ Feel free to open an issue or discussion on GitHub. We warmly welcome all contri
 AliasVault is open-source and community-driven. If you like what we’re building, consider supporting us through [Open Collective](https://opencollective.com/aliasvault) or through:
 
 <a href="https://www.buymeacoffee.com/lanedirt" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px !important;" ></a>
+
+## License
+
+The source code in this repository is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0), except where otherwise noted.
+
+The software license does not grant rights to use the project's trademarks, names, or logos. See [TRADEMARKS.md](TRADEMARKS.md) for details.
