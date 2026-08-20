@@ -9,16 +9,18 @@ import type { DraftItem } from '@/utils/db/ItemRef';
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import { FieldKey, ItemTypes, VaultDataBucketCategory, createSystemField, type Item, type PasswordSettings } from '@/utils/dist/core/models/vault';
-import type { VaultResponse, ManifestRevision } from '@/utils/dist/core/models/webapi';
+import { VaultKeyAlgorithm, type VaultResponse, type ManifestRevision, type StatusResponseV2 } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { readLegacySessionEncryptionKey } from '@/utils/legacy/LegacyStorageKeyFallbacks';
 import { requiresLegacyAccountKeyMigration } from '@/utils/legacy/LegacyStorageModelMigration';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { getManifestRevisions, manifestsRequiringPull, toManifestRevisionMap } from '@/utils/ManifestRevisions';
 import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
+import { PendingActionProcessor } from '@/utils/PendingActionProcessor';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
 import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword, vaultCodecExtractBuckets, vaultCodecBucketLayout, vaultCodecOverflowTable } from '@/utils/RustCore';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
+import { createAnchorFolder, SharingService } from '@/utils/SharingService';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getStorageItem } from '@/utils/StorageUtility';
 import { generateTotpCode } from '@/utils/TotpUtility';
@@ -1262,13 +1264,19 @@ export async function handleMarkVaultClean(request: {
 }
 
 /**
- * Get the current sync state.
+ * Local sync bookkeeping: whether the vault holds changes that still have to be pushed, the mutation counter
+ * they were recorded at, and whether a sync is running right now.
  */
-export async function handleGetSyncState(): Promise<{
+export type VaultSyncState = {
   isDirty: boolean;
   mutationSequence: number;
   isSyncInProgress: boolean;
-}> {
+};
+
+/**
+ * Get the current sync state.
+ */
+export async function handleGetSyncState(): Promise<VaultSyncState> {
   const [isDirty, mutationSequence] = await Promise.all([
     storage.getItem(StorageKeys.IS_DIRTY) as Promise<boolean | null>,
     storage.getItem(StorageKeys.MUTATION_SEQUENCE) as Promise<number | null>
@@ -1415,7 +1423,15 @@ export async function handleFullVaultSync(): Promise<FullVaultSyncResult> {
 }
 
 /**
- * Internal implementation of the full vault sync. Encrypted by handleFullVaultSync
+ * Build a sync result.
+ * @param overrides - the fields that differ from an uneventful, successful sync
+ */
+function syncResult(overrides: Partial<FullVaultSyncResult> = {}): FullVaultSyncResult {
+  return { success: true, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, ...overrides };
+}
+
+/**
+ * Internal implementation of the full vault sync. Wrapped by handleFullVaultSync
  * so the result can be persisted to local storage for the popup to surface.
  */
 async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
@@ -1424,7 +1440,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     // Mark that we need to sync again after current sync completes
     hasPendingSync = true;
     devLog('[VaultSync] Sync already in progress, queued for retry after completion');
-    return { success: true, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
+    return syncResult();
   }
 
   // Mark sync as in progress
@@ -1436,319 +1452,35 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
   const webApi = new WebApiService();
 
   try {
-    // Check if user is logged in
-    const authStatus = await handleCheckAuthStatus();
-    if (!authStatus.isLoggedIn) {
-      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
+    const preflight = await runSyncPreflight(webApi);
+    if (!preflight.proceed) {
+      return preflight.result;
     }
 
-    if (authStatus.isVaultLocked) {
-      // E-202: Vault is locked
-      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
-    }
+    const { statusResponse, syncState, needsPull } = preflight;
 
-    // Check app status and vault revision
-    const statusResponse = await webApi.getStatus();
-
-    // Get current sync state
-    const syncState = await handleGetSyncState();
-
-    const needsPull = serverManifestsNeedPull(statusResponse.manifestRevisions, await getManifestRevisions());
-
-    devLog(`[VaultSync] Status received (needsPull ${needsPull}, isDirty ${syncState.isDirty})`);
-
-    // Check if server is actually available (0.0.0 indicates connection error)
-    if (statusResponse.serverVersion === '0.0.0') {
-      // Server is unavailable - enter offline mode if we have a local vault
-      const encryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT);
-      if (encryptedVault) {
-        await storage.setItem(StorageKeys.IS_OFFLINE_MODE, true);
-        return { success: true, hasNewVault: false, wasOffline: true, sqliteBlobUpgradeRequired: false, requiresLogout: false };
-      } else {
-        return { success: false, hasNewVault: false, wasOffline: true, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: await t('common.errors.serverNotAvailable') };
-      }
-    }
-
-    // Validate status response
-    const statusError = webApi.validateStatusResponse(statusResponse);
-    if (statusError) {
-      if (statusError === 'clientVersionNotSupported' || statusError === 'serverVersionNotSupported') {
-        return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: true, errorKey: statusError };
-      }
-      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, errorKey: statusError };
-    }
-
-    // Check if the SRP salt has changed (password change detection)
-    const storedEncryptionParams = await handleGetEncryptionKeyDerivationParams();
-    if (storedEncryptionParams && statusResponse.srpSalt && statusResponse.srpSalt !== storedEncryptionParams.salt) {
-      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: true, errorKey: 'passwordChanged' };
-    }
-
-    /*
-     * Only needed when we are about to pull: the vault data below is decrypted with the session key, which is stale if
-     * another device migrated. An unmigrated device with nothing to pull has nothing to adopt and skips the check.
-     */
-    if (needsPull && !await adoptRemoteVaultKeyIfNeeded()) {
-      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: true, errorKey: 'passwordChanged' };
-    }
-
-    // Valid connection - exit offline mode if we were in it
-    const isOffline = await storage.getItem(StorageKeys.IS_OFFLINE_MODE) as boolean | null;
-    if (isOffline) {
-      await storage.setItem(StorageKeys.IS_OFFLINE_MODE, false);
-    }
-
-    /*
-     * A dirty vault can still be canonically identical to the last-known server state: a mutation was recorded but
-     * changed nothing (e.g. an entry opened for edit and saved as-is). We check for this here to avoid a pointless
-     * push to the server.
-     */
-    if (syncState.isDirty && !needsPull) {
-      try {
-        const sqliteClient = await createVaultSqliteClient();
-        if (await vaultSyncService.detectNoOpMutation(sqliteClient, syncState.mutationSequence)) {
-          const cleanResult = await handleMarkVaultClean({ mutationSeqAtStart: syncState.mutationSequence });
-          if (cleanResult.cleared) {
-            devLog('[VaultSync] Local changes are canonically identical to the server baselines (no-op mutation); nothing to push.');
-            syncState.isDirty = false;
-          }
-        }
-      } catch (preCheckError) {
-        devWarn('[VaultSync] No-op mutation pre-check failed, proceeding with a normal push:', preCheckError);
-      }
-    }
-
-    /*
-     * Announce the sync phase to the popup so it can show the right indicator. A push that carries nothing but
-     * silent scopes (item usage statistics) stays unannounced: it is bookkeeping the user never initiated, so a
-     * spinner for it would only imply something is at stake.
-     */
-    if (needsPull) {
-      broadcastSyncPhase('pull');
-    } else if (syncState.isDirty && hasUserVisibleScope(await getDirtyScopes())) {
-      broadcastSyncPhase('push');
-    }
+    await announceSyncPhase(needsPull, syncState.isDirty);
 
     const encryptionKey = await handleGetEncryptionKey();
     if (!encryptionKey) {
-      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: await t('common.errors.vaultIsLocked') };
+      return syncResult({ success: false, error: await t('common.errors.vaultIsLocked') });
     }
+
+    // Chcek for any client pending actions as directed by the server (e.g. shared group invitations, shared group memberships, etc.)
+    const grantSyncChangedVault = await applyServerDirectedChanges(webApi, statusResponse, syncState, encryptionKey, needsPull);
 
     if (needsPull) {
-      /*
-       * Server has a manifest we haven't materialized yet. Either the Main vault advanced, or a manifest was
-       * added/updated (e.g. a newly shared manifest). Pull and re-materialize so the new/updated content appears.
-       */
-      const vaultResponseJson = await fetchLatestVaultFromServer();
-
-      try {
-        if (syncState.isDirty) {
-          /*
-           * The server moved on some manifest while the local vault holds unpushed changes. Merge the local vault
-           * onto the freshly pulled one and upload the result; the push then writes exactly the manifests whose
-           * merged content differs from what the server just served.
-           */
-          const localEncryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string | null;
-
-          if (localEncryptedVault) {
-            const localDecrypted = await EncryptionUtility.symmetricDecrypt(localEncryptedVault, encryptionKey);
-            const serverDecrypted = await EncryptionUtility.symmetricDecrypt(vaultResponseJson.vault.blob, encryptionKey);
-
-            /*
-             * Guard for the sqlite-blob to manifest-v1 migration window: this device has already migrated its vault onto the current
-             * schema but the push has not landed yet, while another (not-yet-updated) device advanced the server's
-             * legacy sqlite-blob. The two databases have different column sets, so merging them would throw an error.
-             * We assume here the migrated local vault is newer, so it's pushed as-is.
-             */
-            if (await isLegacyStorageVault(serverDecrypted) && !await isLegacyStorageVault(localDecrypted)) {
-              devWarn('[VaultSync] Server vault is still on the legacy storage format while the local vault is migrated; skipping the merge and pushing the local vault.');
-              const uploadResponse = await handleUploadVault({ forceFullWrite: true });
-              if (uploadResponse.success && uploadResponse.status === 0) {
-                await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
-                return { success: true, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
-              }
-              if (uploadResponse.status === 2) {
-                return handleFullVaultSync();
-              }
-              return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: uploadResponse.error };
-            }
-
-            const mergeResult = await vaultMergeService.merge(localDecrypted, serverDecrypted);
-
-            if (mergeResult.success) {
-              devLog('[VaultSync] Vault merge during sync completed:', mergeResult.stats);
-
-              const mergedEncryptedVault = await EncryptionUtility.symmetricEncrypt(
-                mergeResult.mergedVaultBase64,
-                encryptionKey
-              );
-
-              /*
-               * Store merged vault. Use expectedMutationSeq to detect if a local mutation
-               * happened during merge - if so, reject and re-sync.
-               */
-              const storeResult = await handleStoreEncryptedVault({
-                vaultBlob: mergedEncryptedVault,
-                expectedMutationSeq: syncState.mutationSequence
-              });
-
-              if (!storeResult.success) {
-                devLog('[VaultSync] Mutation detected during merge, re-syncing...');
-                return handleFullVaultSync();
-              }
-
-              // Upload merged vault to server
-              const uploadResponse = await handleUploadVault();
-
-              if (uploadResponse.success && uploadResponse.status === 0) {
-                await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
-              } else if (uploadResponse.status === 2) {
-                // Server returned Outdated - another device uploaded. Re-sync.
-                return handleFullVaultSync();
-              } else {
-                console.error('Failed to upload merged vault:', uploadResponse.error);
-                return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: uploadResponse.error };
-              }
-
-              // Store metadata
-              await handleStoreVaultMetadata({
-                publicEmailDomainList: vaultResponseJson.vault.publicEmailDomainList,
-                privateEmailDomainList: vaultResponseJson.vault.privateEmailDomainList,
-                hiddenPrivateEmailDomainList: vaultResponseJson.vault.hiddenPrivateEmailDomainList,
-              });
-
-              // Check for pending migrations
-              const sqliteClient = await createVaultSqliteClient();
-              const requiresLegacySqliteBlobMigration = await sqliteClient.requiresLegacySqliteBlobMigration();
-              const manifestMigrationRequired = await vaultRequiresManifestMigration(sqliteClient);
-
-              return { success: true, hasNewVault: true, wasOffline: false, sqliteBlobUpgradeRequired: requiresLegacySqliteBlobMigration, manifestMigrationRequired, requiresLogout: false };
-            } else {
-              console.error('Vault merge failed during sync, using server vault');
-              // Fall through to use server vault
-            }
-          }
-        }
-
-        /*
-         * No local changes (or merge failed) - just use server vault.
-         * Use expectedMutationSeq to detect concurrent mutations.
-         */
-        const storeResult = await handleStoreEncryptedVault({
-          vaultBlob: vaultResponseJson.vault.blob,
-          expectedMutationSeq: syncState.mutationSequence
-        });
-
-        if (!storeResult.success) {
-          devLog('[VaultSync] Mutation detected during sync, re-syncing...');
-          return handleFullVaultSync();
-        }
-
-        await handleStoreVaultMetadata({
-          publicEmailDomainList: vaultResponseJson.vault.publicEmailDomainList,
-          privateEmailDomainList: vaultResponseJson.vault.privateEmailDomainList,
-          hiddenPrivateEmailDomainList: vaultResponseJson.vault.hiddenPrivateEmailDomainList,
-        });
-
-        // Check for pending migrations
-        const sqliteClient = await createVaultSqliteClient();
-        const requiresLegacySqliteBlobMigration = await sqliteClient.requiresLegacySqliteBlobMigration();
-        const manifestMigrationRequired = await vaultRequiresManifestMigration(sqliteClient);
-
-        return { success: true, hasNewVault: true, wasOffline: false, sqliteBlobUpgradeRequired: requiresLegacySqliteBlobMigration, manifestMigrationRequired, requiresLogout: false };
-      } catch (error) {
-        if (error instanceof VaultVersionIncompatibleError) {
-          return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: true, error: error.message };
-        }
-        // E-501: Vault decryption failed
-        throw new Error(formatErrorWithCode(
-          'Vault could not be decrypted, if the problem persists please logout and login again.',
-          AppErrorCode.VAULT_DECRYPT_FAILED
-        ));
-      }
-    } else if (syncState.isDirty) {
-      /**
-       * Server and client agree on every manifest revision, so the pending local changes upload as-is.
-       */
-      const uploadResponse = await handleUploadVault();
-      if (uploadResponse.success && uploadResponse.status === 0) {
-        await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
-
-        /*
-         * If expired trash items were pruned during upload, report the vault as new
-         * so the popup reloads the pruned vault instead of resurrecting the items
-         * from its stale in-memory copy on the next mutation.
-         */
-        return { success: true, hasNewVault: uploadResponse.vaultPruned === true, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
-      } else if (uploadResponse.status === 2) {
-        /**
-         * Server returned Outdated - another device uploaded first.
-         * Recursively call sync to fetch, merge, and retry.
-         */
-        return handleFullVaultSync();
-      } else {
-        console.error('Failed to upload pending vault:', uploadResponse.error);
-        return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: uploadResponse.error };
-      }
+      return await pullAndMaterializeServerVault(syncState, encryptionKey, grantSyncChangedVault);
     }
 
-    // Check for pending migrations (for paths that didn't initialize a new database)
-    try {
-      const sqliteClient = await createVaultSqliteClient();
-      const requiresLegacySqliteBlobMigration = await sqliteClient.requiresLegacySqliteBlobMigration();
-      if (requiresLegacySqliteBlobMigration) {
-        return { success: true, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: true, requiresLogout: false };
-      }
-      if (await vaultRequiresManifestMigration(sqliteClient)) {
-        return { success: true, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, manifestMigrationRequired: true, requiresLogout: false };
-      }
-    } catch {
-      // Ignore errors checking migrations
+    if (syncState.isDirty) {
+      return await pushPendingLocalChanges(grantSyncChangedVault);
     }
 
-    return { success: true, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false };
+    // No changes to apply, check for any pending migrations.
+    return await pendingMigrationResult() ?? syncResult();
   } catch (err) {
-    console.error('Vault sync error:', err);
-
-    /*
-     * The server refuses this extension version for this account (HTTP 426).
-     */
-    if (err instanceof ClientUpgradeRequiredError) {
-      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: true, errorKey: 'clientVersionNotSupported' };
-    }
-
-    // Version incompatibility requires logout
-    if (err instanceof VaultVersionIncompatibleError) {
-      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: true, error: err.message };
-    }
-
-    // Auth error (session expired) - signal popup to trigger logout
-    if (err instanceof ApiAuthError) {
-      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: true, errorKey: 'sessionExpired' };
-    }
-
-    // E-805: Vault transfer timed out - show a targeted error instead of entering offline mode
-    if (err instanceof RequestTimeoutError) {
-      return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: formatErrorWithCode(await t('common.errors.vaultSyncTimeout'), AppErrorCode.UPLOAD_TIMEOUT) };
-    }
-
-    // Network error - enter offline mode if we have a local vault
-    if (err instanceof NetworkError) {
-      const encryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT);
-      if (encryptedVault) {
-        await storage.setItem(StorageKeys.IS_OFFLINE_MODE, true);
-        return { success: true, hasNewVault: false, wasOffline: true, sqliteBlobUpgradeRequired: false, requiresLogout: false };
-      }
-    }
-
-    // For all other errors, include an error code so users can report it
-    const baseMessage = err instanceof Error ? err.message : 'Unknown error during vault sync';
-    // Check if message already has an error code (E-XXX format)
-    const hasErrorCode = /E-\d{3}/.test(baseMessage);
-    const errorMessage = hasErrorCode
-      ? baseMessage
-      : formatErrorWithCode(baseMessage, AppErrorCode.UNKNOWN_ERROR);
-    return { success: false, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, error: errorMessage };
+    return await mapSyncFailure(err);
   } finally {
     // Reset sync in progress flag
     isSyncInProgress = false;
@@ -1758,11 +1490,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     // Clear the popup's sync indicator; a follow-up sync below re-announces its own phase.
     broadcastSyncPhase('idle');
 
-    /*
-     * Check if another sync is needed (mutations happened during this sync).
-     * Trigger follow-up sync asynchronously (don't await to avoid blocking).
-     * Popup will poll isDirty flag to detect when background sync completes.
-     */
+    // Check if another sync is needed (mutations happened during this sync).
     if (hasPendingSync) {
       devLog('[VaultSync] Pending mutations detected, triggering follow-up sync');
       hasPendingSync = false;
@@ -1772,6 +1500,445 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
       });
     }
   }
+}
+
+/**
+ * Outcome of the sync preflight: either a result the sync returns as-is, or the state the sync then runs on.
+ */
+type SyncPreflightResult =
+  | { proceed: false; result: FullVaultSyncResult }
+  | { proceed: true; statusResponse: StatusResponseV2; syncState: VaultSyncState; needsPull: boolean };
+
+/**
+ * Stop the sync before it touches the vault, reporting the given result.
+ * @param overrides - the fields that differ from an uneventful, successful sync
+ */
+function abortSync(overrides: Partial<FullVaultSyncResult>): SyncPreflightResult {
+  return { proceed: false, result: syncResult(overrides) };
+}
+
+/**
+ * Sync preflight (sanity checks) to determine if the sync should proceed.
+ *
+ * @param webApi - the API service the status call runs on
+ * @returns Either the result the sync must return unchanged, or the status, sync state and pull decision.
+ */
+async function runSyncPreflight(webApi: WebApiService): Promise<SyncPreflightResult> {
+  // Check if user is logged in
+  const authStatus = await handleCheckAuthStatus();
+  if (!authStatus.isLoggedIn) {
+    return abortSync({ success: false });
+  }
+
+  if (authStatus.isVaultLocked) {
+    // E-202: Vault is locked
+    return abortSync({ success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) });
+  }
+
+  // Check app status and vault revision
+  const statusResponse = await webApi.getStatus();
+
+  // Get current sync state
+  const syncState = await handleGetSyncState();
+
+  const needsPull = serverManifestsNeedPull(statusResponse.manifestRevisions, await getManifestRevisions());
+
+  devLog(`[VaultSync] Status received (needsPull ${needsPull}, isDirty ${syncState.isDirty})`);
+
+  // Check if server is actually available (0.0.0 indicates connection error)
+  if (statusResponse.serverVersion === '0.0.0') {
+    return { proceed: false, result: await enterOfflineMode() };
+  }
+
+  // Validate status response
+  const statusError = webApi.validateStatusResponse(statusResponse);
+  if (statusError) {
+    const requiresLogout = statusError === 'clientVersionNotSupported' || statusError === 'serverVersionNotSupported';
+    return abortSync({ success: false, requiresLogout, errorKey: statusError });
+  }
+
+  // Check if the SRP salt has changed (password change detection)
+  const storedEncryptionParams = await handleGetEncryptionKeyDerivationParams();
+  if (storedEncryptionParams && statusResponse.srpSalt && statusResponse.srpSalt !== storedEncryptionParams.salt) {
+    return abortSync({ success: false, requiresLogout: true, errorKey: 'passwordChanged' });
+  }
+
+  /*
+   * Only needed when we are about to pull: the vault data below is decrypted with the session key, which is stale if
+   * another device migrated. An unmigrated device with nothing to pull has nothing to adopt and skips the check.
+   */
+  if (needsPull && !await adoptRemoteVaultKeyIfNeeded()) {
+    return abortSync({ success: false, requiresLogout: true, errorKey: 'passwordChanged' });
+  }
+
+  // Valid connection - exit offline mode if we were in it
+  const isOffline = await storage.getItem(StorageKeys.IS_OFFLINE_MODE) as boolean | null;
+  if (isOffline) {
+    await storage.setItem(StorageKeys.IS_OFFLINE_MODE, false);
+  }
+
+  if (syncState.isDirty && !needsPull && await clearDirtyStateIfNoOpMutation(syncState.mutationSequence)) {
+    syncState.isDirty = false;
+  }
+
+  return { proceed: true, statusResponse, syncState, needsPull };
+}
+
+/**
+ * Fall back to offline mode when the server cannot be reached. Without a local vault there is nothing to fall
+ * back on, so that case reports a failure instead.
+ */
+async function enterOfflineMode(): Promise<FullVaultSyncResult> {
+  const encryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT);
+  if (!encryptedVault) {
+    return syncResult({ success: false, wasOffline: true, error: await t('common.errors.serverNotAvailable') });
+  }
+
+  await storage.setItem(StorageKeys.IS_OFFLINE_MODE, true);
+  return syncResult({ wasOffline: true });
+}
+
+/**
+ * Check if the local vault is canonically identical to the last-known server state, if so, do not unnecessarily push it to the server.
+ *
+ * @param mutationSequence - the mutation counter the sync started at
+ * @returns True when the dirty flag was cleared and there is nothing left to push.
+ */
+async function clearDirtyStateIfNoOpMutation(mutationSequence: number): Promise<boolean> {
+  try {
+    const sqliteClient = await createVaultSqliteClient();
+    if (!await vaultSyncService.detectNoOpMutation(sqliteClient, mutationSequence)) {
+      return false;
+    }
+
+    const cleanResult = await handleMarkVaultClean({ mutationSeqAtStart: mutationSequence });
+    if (cleanResult.cleared) {
+      devLog('[VaultSync] Local changes are canonically identical to the server baselines (no-op mutation); nothing to push.');
+    }
+    return cleanResult.cleared;
+  } catch (preCheckError) {
+    devWarn('[VaultSync] No-op mutation pre-check failed, proceeding with a normal push:', preCheckError);
+    return false;
+  }
+}
+
+/**
+ * Announce the sync phase to the popup so it can show the right indicator.
+ *
+ * @param needsPull - whether the sync is about to pull from the server
+ * @param isDirty - whether the local vault holds changes that still have to be pushed
+ */
+async function announceSyncPhase(needsPull: boolean, isDirty: boolean): Promise<void> {
+  if (needsPull) {
+    broadcastSyncPhase('pull');
+  } else if (isDirty && hasUserVisibleScope(await getDirtyScopes())) {
+    broadcastSyncPhase('push');
+  }
+}
+
+/**
+ * Carry out the work the server has addressed to this client (primarily related to shared groups).
+ *
+ * @param webApi - the API service the pending actions are acknowledged on
+ * @param statusResponse - the status response carrying the pending actions
+ * @param syncState - the sync state, updated in place when the reconciled rows make the vault dirty
+ * @param encryptionKey - the key the reconciled vault is re-encrypted with
+ * @param needsPull - whether this sync already announced itself as a pull
+ * @returns True when the stored vault changed, which the sync has to report as a new vault however it ends.
+ */
+async function applyServerDirectedChanges(webApi: WebApiService, statusResponse: StatusResponseV2, syncState: VaultSyncState, encryptionKey: string, needsPull: boolean): Promise<boolean> {  
+  const pendingActions = PendingActionProcessor.pendingActions(statusResponse);
+  const sharedManifestCount = Object.keys(await SharingService.getSessionSharedManifests()).length;
+  if (pendingActions.length === 0 && sharedManifestCount === 0) {
+    return false;
+  }
+
+  const sqliteClient = await createVaultSqliteClient();
+
+  // A vault with a migration still ahead of it is not on the current schema, so it cannot take the new rows yet.
+  const canReconcile = !await vaultRequiresManifestMigration(sqliteClient);
+  let vaultChanged = canReconcile && await SharingService.ensureAnchorFolders(sqliteClient);
+  if (canReconcile && pendingActions.length > 0) {
+    vaultChanged = await PendingActionProcessor.process(webApi, pendingActions, sqliteClient) || vaultChanged;
+  }
+
+  if (!vaultChanged) {
+    return false;
+  }
+
+  // A rotated delivery key or a re-anchored folder is a normal local change, so it rides out on this very sync.
+  const reconciledVault = await EncryptionUtility.symmetricEncrypt(sqliteClient.exportToBase64(), encryptionKey);
+  const stored = await handleStoreEncryptedVault({ vaultBlob: reconciledVault, markDirty: true });
+  syncState.isDirty = true;
+  syncState.mutationSequence = stored.mutationSequence;
+
+  if (!needsPull) {
+    broadcastSyncPhase('push');
+  }
+
+  // The stored vault now holds a row the caller's in-memory copy does not, so this sync has to report a new vault.
+  return true;
+}
+
+/**
+ * Pull the server's latest vault and merge any local changes onto it.
+ *
+ * @param syncState - the sync state the pull runs against
+ * @param encryptionKey - the key the local and server vaults are encrypted with
+ * @param grantSyncChangedVault - whether an earlier step already changed the stored vault
+ */
+async function pullAndMaterializeServerVault(syncState: VaultSyncState, encryptionKey: string, grantSyncChangedVault: boolean): Promise<FullVaultSyncResult> {
+  const vaultResponseJson = await fetchLatestVaultFromServer();
+
+  try {
+    if (syncState.isDirty) {
+      const mergedResult = await mergeAndPushLocalChanges(vaultResponseJson, syncState, encryptionKey, grantSyncChangedVault);
+      if (mergedResult) {
+        return mergedResult;
+      }
+    }
+
+    /*
+     * No local changes (or merge failed) - just use server vault.
+     * Use expectedMutationSeq to detect concurrent mutations.
+     */
+    const storeResult = await handleStoreEncryptedVault({
+      vaultBlob: vaultResponseJson.vault.blob,
+      expectedMutationSeq: syncState.mutationSequence
+    });
+
+    if (!storeResult.success) {
+      devLog('[VaultSync] Mutation detected during sync, re-syncing...');
+      return handleFullVaultSync();
+    }
+
+    await storeVaultMetadata(vaultResponseJson);
+
+    return await materializedVaultResult();
+  } catch (error) {
+    if (error instanceof VaultVersionIncompatibleError) {
+      return syncResult({ success: false, requiresLogout: true, error: error.message });
+    }
+    // E-501: Vault decryption failed
+    throw new Error(formatErrorWithCode(
+      'Vault could not be decrypted, if the problem persists please logout and login again.',
+      AppErrorCode.VAULT_DECRYPT_FAILED
+    ));
+  }
+}
+
+/**
+ * Merge the local vault onto the server's latest vault and upload the result.
+ *
+ * @param vaultResponse - the vault just pulled from the server
+ * @param syncState - the sync state the merge runs against
+ * @param encryptionKey - the key both vaults are encrypted with
+ * @param grantSyncChangedVault - whether an earlier step already changed the stored vault
+ * @returns The sync result, or null when there is nothing to merge onto and the caller should take the
+ *   server vault as-is (no local vault stored, or the merge itself failed).
+ */
+async function mergeAndPushLocalChanges(
+  vaultResponse: VaultResponse,
+  syncState: VaultSyncState,
+  encryptionKey: string,
+  grantSyncChangedVault: boolean
+): Promise<FullVaultSyncResult | null> {
+  const localEncryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string | null;
+  if (!localEncryptedVault) {
+    return null;
+  }
+
+  const localDecrypted = await EncryptionUtility.symmetricDecrypt(localEncryptedVault, encryptionKey);
+  const serverDecrypted = await EncryptionUtility.symmetricDecrypt(vaultResponse.vault.blob, encryptionKey);
+
+  /*
+   * Guard for the sqlite-blob to manifest-v1 migration window: this device has already migrated its vault onto the current
+   * schema but the push has not landed yet, while another (not-yet-updated) device advanced the server's
+   * legacy sqlite-blob. The two databases have different column sets, so merging them would throw an error.
+   * We assume here the migrated local vault is newer, so it's pushed as-is.
+   */
+  if (await isLegacyStorageVault(serverDecrypted) && !await isLegacyStorageVault(localDecrypted)) {
+    devWarn('[VaultSync] Server vault is still on the legacy storage format while the local vault is migrated; skipping the merge and pushing the local vault.');
+    return await pushOverLegacyServerVault(grantSyncChangedVault);
+  }
+
+  const mergeResult = await vaultMergeService.merge(localDecrypted, serverDecrypted);
+
+  if (!mergeResult.success) {
+    console.error('Vault merge failed during sync, using server vault');
+    return null;
+  }
+
+  devLog('[VaultSync] Vault merge during sync completed:', mergeResult.stats);
+
+  const mergedEncryptedVault = await EncryptionUtility.symmetricEncrypt(mergeResult.mergedVaultBase64, encryptionKey);
+
+  // Store merged vault. Use expectedMutationSeq to detect if a local mutation happened during merge.
+  const storeResult = await handleStoreEncryptedVault({
+    vaultBlob: mergedEncryptedVault,
+    expectedMutationSeq: syncState.mutationSequence
+  });
+
+  if (!storeResult.success) {
+    devLog('[VaultSync] Mutation detected during merge, re-syncing...');
+    return handleFullVaultSync();
+  }
+
+  // Upload merged vault to server
+  const uploadResponse = await handleUploadVault();
+
+  if (uploadResponse.success && uploadResponse.status === 0) {
+    await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
+  } else if (uploadResponse.status === 2) {
+    // Outdated: another device uploaded first. Re-sync.
+    return handleFullVaultSync();
+  } else {
+    console.error('Failed to upload merged vault:', uploadResponse.error);
+    return syncResult({ success: false, error: uploadResponse.error });
+  }
+
+  await storeVaultMetadata(vaultResponse);
+
+  return await materializedVaultResult();
+}
+
+/**
+ * Push the local vault over a server vault that is still on the legacy sqlite-blob format, replacing it whole instead of merging two incompatible schemas.
+ *
+ * @param grantSyncChangedVault - whether an earlier step already changed the stored vault
+ */
+async function pushOverLegacyServerVault(grantSyncChangedVault: boolean): Promise<FullVaultSyncResult> {
+  const uploadResponse = await handleUploadVault({ forceFullWrite: true });
+  if (uploadResponse.success && uploadResponse.status === 0) {
+    await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
+    return syncResult({ hasNewVault: grantSyncChangedVault });
+  }
+
+  if (uploadResponse.status === 2) {
+    return handleFullVaultSync();
+  }
+
+  return syncResult({ success: false, error: uploadResponse.error });
+}
+
+/**
+ * Push path: server and client agree on every manifest revision, so the pending local changes upload as-is.
+ *
+ * @param grantSyncChangedVault - whether an earlier step already changed the stored vault
+ */
+async function pushPendingLocalChanges(grantSyncChangedVault: boolean): Promise<FullVaultSyncResult> {
+  const uploadResponse = await handleUploadVault();
+
+  if (uploadResponse.success && uploadResponse.status === 0) {
+    await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
+
+    /*
+     * If expired trash items were pruned during upload, report the vault as new
+     * so the popup reloads the pruned vault instead of resurrecting the items
+     * from its stale in-memory copy on the next mutation.
+     */
+    return syncResult({ hasNewVault: uploadResponse.vaultPruned === true || grantSyncChangedVault });
+  }
+
+  if (uploadResponse.status === 2) {
+    // Outdated: another device uploaded first. Re-sync.
+    return handleFullVaultSync();
+  }
+
+  console.error('Failed to upload pending vault:', uploadResponse.error);
+  return syncResult({ success: false, error: uploadResponse.error });
+}
+
+/**
+ * Store the email domain lists that came with a pulled vault.
+ * @param vaultResponse - the vault response to take the metadata from
+ */
+async function storeVaultMetadata(vaultResponse: VaultResponse): Promise<void> {
+  await handleStoreVaultMetadata({
+    publicEmailDomainList: vaultResponse.vault.publicEmailDomainList,
+    privateEmailDomainList: vaultResponse.vault.privateEmailDomainList,
+    hiddenPrivateEmailDomainList: vaultResponse.vault.hiddenPrivateEmailDomainList,
+  });
+}
+
+/**
+ * Result for a sync that stored a freshly materialized vault, reporting any migrations that new database needs before it can be used.
+ */
+async function materializedVaultResult(): Promise<FullVaultSyncResult> {
+  const sqliteClient = await createVaultSqliteClient();
+  const requiresLegacySqliteBlobMigration = await sqliteClient.requiresLegacySqliteBlobMigration();
+  const manifestMigrationRequired = await vaultRequiresManifestMigration(sqliteClient);
+
+  return syncResult({ hasNewVault: true, sqliteBlobUpgradeRequired: requiresLegacySqliteBlobMigration, manifestMigrationRequired });
+}
+
+/**
+ * Check for any pending migrations.
+ * @returns The result to return when a migration is pending, null when none is or the check itself failed.
+ */
+async function pendingMigrationResult(): Promise<FullVaultSyncResult | null> {
+  try {
+    const sqliteClient = await createVaultSqliteClient();
+    if (await sqliteClient.requiresLegacySqliteBlobMigration()) {
+      return syncResult({ sqliteBlobUpgradeRequired: true });
+    }
+
+    if (await vaultRequiresManifestMigration(sqliteClient)) {
+      return syncResult({ manifestMigrationRequired: true });
+    }
+  } catch {
+    // Ignore errors checking migrations
+  }
+
+  return null;
+}
+
+/**
+ * Turn an error thrown during a sync into the result the popup acts on.
+ * error message carrying a reportable code.
+ *
+ * @param err - the error the sync threw
+ */
+async function mapSyncFailure(err: unknown): Promise<FullVaultSyncResult> {
+  console.error('Vault sync error:', err);
+
+  /*
+   * The server refuses this extension version for this account (HTTP 426).
+   */
+  if (err instanceof ClientUpgradeRequiredError) {
+    return syncResult({ success: false, requiresLogout: true, errorKey: 'clientVersionNotSupported' });
+  }
+
+  // Version incompatibility requires logout
+  if (err instanceof VaultVersionIncompatibleError) {
+    return syncResult({ success: false, requiresLogout: true, error: err.message });
+  }
+
+  // Auth error (session expired) - signal popup to trigger logout
+  if (err instanceof ApiAuthError) {
+    return syncResult({ success: false, requiresLogout: true, errorKey: 'sessionExpired' });
+  }
+
+  // E-805: Vault transfer timed out - show a targeted error instead of entering offline mode
+  if (err instanceof RequestTimeoutError) {
+    return syncResult({ success: false, error: formatErrorWithCode(await t('common.errors.vaultSyncTimeout'), AppErrorCode.UPLOAD_TIMEOUT) });
+  }
+
+  // Network error: enter offline mode if we have a local vault
+  if (err instanceof NetworkError && await storage.getItem(StorageKeys.ENCRYPTED_VAULT)) {
+    await storage.setItem(StorageKeys.IS_OFFLINE_MODE, true);
+    return syncResult({ wasOffline: true });
+  }
+
+  // For all other errors, include an error code so users can report it
+  const baseMessage = err instanceof Error ? err.message : 'Unknown error during vault sync';
+  // Check if message already has an error code (E-XXX format)
+  const hasErrorCode = /E-\d{3}/.test(baseMessage);
+  const errorMessage = hasErrorCode
+    ? baseMessage
+    : formatErrorWithCode(baseMessage, AppErrorCode.UNKNOWN_ERROR);
+
+  return syncResult({ success: false, error: errorMessage });
 }
 
 /**
@@ -2330,5 +2497,139 @@ export async function handleGetRecentlySelected(
   } catch (error) {
     console.error('Error getting recently selected item:', error);
     return { success: false, itemId: null };
+  }
+}
+
+/**
+ * Create the shared vault of a group the user administers.
+ * @param message - the group to create the vault for.
+ */
+export async function handleGroupCreateVault(message: { groupId: string }): Promise<{ success: boolean; error?: string }> {
+  const encryptionKey = await handleGetEncryptionKey();
+  if (!encryptionKey) {
+    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
+  }
+
+  try {
+    const webApi = new WebApiService();
+    const overview = await SharingService.getOverview(webApi);
+    const group = overview.groups.find(candidate => candidate.groupId.toLowerCase() === message.groupId.toLowerCase());
+
+    if (!group || group.role === 'Member') {
+      return { success: false, error: await t('sharing.family.errors.createVaultFailed') };
+    }
+
+    // The new vault's VEK is encrypted for this client's own account public key.
+    const selfPublicKey = await VaultKeyService.getAccountPublicKey();
+    if (!selfPublicKey) {
+      return { success: false, error: await t('sharing.family.errors.vaultUpgradeRequired') };
+    }
+
+    if (group.manifestId) {
+      // Already has a vault.
+      devLog(`[Sharing] Group ${group.groupId} already has vault ${group.manifestId}; nothing to create.`);
+      return { success: true };
+    }
+
+    const sqliteClient = await createVaultSqliteClient();
+    if (await vaultRequiresManifestMigration(sqliteClient)) {
+      return { success: false, error: await t('sharing.family.errors.vaultUpgradeRequired') };
+    }
+
+    // The vault's id doubles as its anchor folder id.
+    const anchorId = crypto.randomUUID().toUpperCase();
+    const mapping = await SharingService.createSharedManifest(webApi, {
+      groupId: group.groupId,
+      name: group.name,
+      selfPublicKey,
+    }, anchorId, anchorId);
+
+    await SharingService.addSessionSharedManifest({
+      folderId: anchorId,
+      manifestId: mapping.manifestId,
+      vek: mapping.vek,
+      salt: mapping.salt,
+      revision: mapping.revision,
+      name: group.name,
+      canAdminister: true,
+    });
+
+    await createAnchorFolder(sqliteClient, mapping.manifestId, group.name);
+
+    // Mail to an alias in this vault is encrypted with the vault's own keypair, which is what makes it readable by every member.
+    await SharingService.rotateManifestEncryptionKey(sqliteClient, mapping.manifestId);
+    await persistLocalVaultMutation(sqliteClient, encryptionKey);
+
+    devLog(`[Sharing] Created shared vault ${mapping.manifestId} for group ${group.groupId}, anchored at folder ${anchorId}.`);
+    return { success: true };
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.apiErrorCode === 'GROUP_MANIFEST_EXISTS') {
+      // Two administrators asked at the same moment; the other one's vault stands and arrives through its grant.
+      return { success: true };
+    }
+
+    console.error('Failed to create shared vault:', error);
+    return { success: false, error: await t('sharing.family.errors.createVaultFailed') };
+  }
+}
+
+/**
+ * Invite somebody to a shared group, handing them the group's vault key.
+ * @param message - the group to invite into and the username to invite.
+ */
+export async function handleGroupInviteMember(message: { groupId: string; username: string }): Promise<{ success: boolean; error?: string; apiErrorCode?: string }> {
+  const encryptionKey = await handleGetEncryptionKey();
+  if (!encryptionKey) {
+    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
+  }
+
+  try {
+    const webApi = new WebApiService();
+    const overview = await SharingService.getOverview(webApi);
+    const group = overview.groups.find(candidate => candidate.groupId.toLowerCase() === message.groupId.toLowerCase());
+
+    if (!group || group.role === 'Member' || !group.manifestId) {
+      return { success: false, error: await t('sharing.family.errors.inviteFailed') };
+    }
+
+    // Find the session's own grant on the vault.
+    const record = Object.values(await SharingService.getSessionSharedManifests()).find(candidate => candidate.manifestId.toLowerCase() === group.manifestId!.toLowerCase());
+    if (!record) {
+      return { success: false, error: await t('sharing.family.errors.inviteFailed') };
+    }
+
+    const recipient = await SharingService.resolveInvitationRecipient(webApi, group.groupId, message.username);
+    const grant = await SharingService.sealVekFor(record.vek, recipient);
+    await SharingService.invite(webApi, group.groupId, recipient.userId, grant, VaultKeyAlgorithm.RsaOaepSha256);
+
+    devLog(`[Sharing] Invited ${recipient.userId} to group ${group.groupId} with the key to vault ${record.manifestId} sealed in.`);
+    return { success: true };
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.apiErrorCode) {
+      return { success: false, apiErrorCode: error.apiErrorCode };
+    }
+
+    console.error('Failed to invite group member:', error);
+    return { success: false, error: await t('sharing.family.errors.inviteFailed') };
+  }
+}
+
+/**
+ * Remove somebody from a shared group, or leave one by naming oneself.
+ *
+ * @param message - the group and the member to remove.
+ */
+export async function handleGroupRemoveMember(message: { groupId: string; userId: string }): Promise<{ success: boolean; error?: string }> {
+  try {
+    const webApi = new WebApiService();
+    await SharingService.removeMember(webApi, message.groupId, message.userId);
+
+    devLog(`[Sharing] Removed ${message.userId} from group ${message.groupId}; syncing to pick up whatever the server left for this client to finish.`);
+    void handleFullVaultSync().catch(error => console.error('Background sync after a group membership change failed:', error));
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to remove group member:', error);
+    return { success: false, error: await t('sharing.family.errors.removeMemberFailed') };
   }
 }
