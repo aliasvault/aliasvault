@@ -170,16 +170,6 @@ public enum ApiErrorCode
     SHARED_MANIFEST_NOT_FOUND,
 
     /// <summary>
-    /// The recipient already has a share grant for this manifest.
-    /// </summary>
-    SHARE_ALREADY_EXISTS,
-
-    /// <summary>
-    /// No share grant exists for the given recipient and manifest.
-    /// </summary>
-    SHARE_NOT_FOUND,
-
-    /// <summary>
     /// The recipient has no usable public key to encrypt a shared vault key for, or the referenced key is invalid.
     /// </summary>
     RECIPIENT_KEY_NOT_FOUND,
@@ -203,6 +193,52 @@ public enum ApiErrorCode
     /// The referenced group does not exist, is not a shared group, or is not one the caller may administer.
     /// </summary>
     GROUP_NOT_FOUND,
+
+    /// <summary>
+    /// The group already holds a manifest, so the caller must use that one instead of creating another.
+    /// </summary>
+    GROUP_MANIFEST_EXISTS,
+
+    /// <summary>
+    /// The invitation does not exist, is not addressed to (or sent by) the caller, or was already answered.
+    /// </summary>
+    INVITATION_NOT_FOUND,
+
+    /// <summary>
+    /// There is already an open invitation for this user in this group.
+    /// </summary>
+    INVITATION_ALREADY_EXISTS,
+
+    /// <summary>
+    /// No account can be invited under the given username, or it is the caller's own.
+    /// </summary>
+    INVITE_RECIPIENT_NOT_FOUND,
+
+    /// <summary>
+    /// The invited user is already a member of the group.
+    /// </summary>
+    ALREADY_GROUP_MEMBER,
+
+    /// <summary>
+    /// The group's owner cannot be removed from it; ownership has to be transferred first.
+    /// </summary>
+    CANNOT_REMOVE_GROUP_OWNER,
+
+    /// <summary>
+    /// The invited account has published no public key, so a shared vault key cannot be encrypted for it. The account
+    /// has to finish upgrading its vault before it can be invited anywhere.
+    /// </summary>
+    INVITE_RECIPIENT_NOT_READY,
+
+    /// <summary>
+    /// The group has no shared vault yet, so there is no key to hand an invitee. One has to be created first.
+    /// </summary>
+    GROUP_HAS_NO_VAULT,
+
+    /// <summary>
+    /// The client action does not exist, or is not addressed to the caller.
+    /// </summary>
+    CLIENT_ACTION_NOT_FOUND,
 
     /// <summary>
     /// Mobile login request contains an invalid client public key.
