@@ -29,4 +29,10 @@ public class ReceivedManifestInvitation
 
     /// <summary>Gets or sets when it was sent.</summary>
     public required DateTime CreatedAt { get; set; }
+
+    /// <summary>Gets or sets the encrypted name of the vault.</summary>
+    public string? EncryptedName { get; set; }
+
+    /// <summary>Gets or sets the public half of the recipient's keypair the offer was sealed to.</summary>
+    public string? RecipientPublicKey { get; set; }
 }

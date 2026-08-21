@@ -40,6 +40,8 @@ export type ReceivedManifestInvitation = {
   manifestId: string;
   inviterUsername: string;
   createdAt: string;
+  encryptedName: string | null;
+  recipientPublicKey: string | null;
 }
 
 /**
@@ -95,6 +97,7 @@ export type ManifestGrant = {
   recipientUserId: string;
   recipientPublicKeyId: string;
   encryptedVek: string;
+  encryptedName?: string | null;
 }
 
 /**

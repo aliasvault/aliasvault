@@ -75,6 +75,11 @@ public class GroupInvitation
     public string? EncryptedVek { get; set; }
 
     /// <summary>
+    /// Gets or sets the shared vault's name, encrypted for the same public key as the <see cref="EncryptedVek"/>.
+    /// </summary>
+    public string? EncryptedName { get; set; }
+
+    /// <summary>
     /// Gets or sets the invitee's account keypair (<see cref="UserGrantKey"/>) the <see cref="EncryptedVek"/> was encrypted to.
     /// </summary>
     public Guid? UserGrantKeyId { get; set; }

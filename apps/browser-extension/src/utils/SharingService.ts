@@ -2,7 +2,7 @@ import { storage } from 'wxt/utils/storage';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { devWarn } from '@/utils/devLogger/DevLogger';
-import { VaultKeyAlgorithm, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type GrantManifestAccessRequest, type GrantManifestAccessResponse, type GroupMemberInfo, type GroupOverviewResponse, type ManifestGrant, type VaultKeyAlgorithmValue } from '@/utils/dist/core/models/webapi';
+import { VaultKeyAlgorithm, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type GrantManifestAccessRequest, type GrantManifestAccessResponse, type GroupMemberInfo, type GroupOverviewResponse, type ManifestGrant, type ReceivedManifestInvitation, type VaultKeyAlgorithmValue } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { vaultCodecGenerateManifestSalt } from '@/utils/RustCore';
 import type { SqliteClient } from '@/utils/SqliteClient';
@@ -94,11 +94,12 @@ export class SharingService {
   }
 
   /**
-   * Encrypt a shared vault's VEK for one member of the group, with a public key of theirs.
+   * Encrypt a shared vault's VEK for one member of the group.
    * @param manifestVek - the shared vault's VEK.
    * @param member - the member to encrypt it for.
+   * @param vaultName - what the vault is called, or null when this client has no name for it.
    */
-  public static async encryptVekFor(manifestVek: string, member: GroupMemberInfo): Promise<ManifestGrant | null> {
+  public static async encryptVekFor(manifestVek: string, member: GroupMemberInfo, vaultName: string | null): Promise<ManifestGrant | null> {
     if (!member.publicKey || !member.publicKeyId) {
       return null;
     }
@@ -107,7 +108,38 @@ export class SharingService {
       recipientUserId: member.userId,
       recipientPublicKeyId: member.publicKeyId,
       encryptedVek: await EncryptionUtility.encryptWithPublicKey(manifestVek, member.publicKey),
+      encryptedName: vaultName ? await EncryptionUtility.encryptWithPublicKey(vaultName, member.publicKey) : null,
     };
+  }
+
+  /**
+   * Open the vault names sealed into the offers of access addressed to this account.
+   * @param sqliteClient - the open local vault, which holds this account's superseded private keys.
+   * @param invitations - the offers as served by the API.
+   * @returns The name of each offer's vault, keyed by invitation id; offers whose name will not open are left out.
+   */
+  public static async openInvitationNames(sqliteClient: SqliteClient, invitations: ReceivedManifestInvitation[]): Promise<Record<string, string>> {
+    const names: Record<string, string> = {};
+
+    for (const invitation of invitations) {
+      if (!invitation.encryptedName || !invitation.recipientPublicKey) {
+        continue;
+      }
+
+      const privateKey = await this.resolveGrantPrivateKey(sqliteClient, invitation.recipientPublicKey);
+      if (!privateKey) {
+        devWarn(`[Sharing] No account key in this vault opens the name sealed into invitation ${invitation.id}.`);
+        continue;
+      }
+
+      try {
+        names[invitation.id] = new TextDecoder().decode(await EncryptionUtility.decryptWithPrivateKey(invitation.encryptedName, privateKey));
+      } catch (error) {
+        devWarn(`[Sharing] Failed to open the name sealed into invitation ${invitation.id}.`, error);
+      }
+    }
+
+    return names;
   }
 
   /**
@@ -298,6 +330,15 @@ export class SharingService {
     return sqliteClient.encryptionKeys.getAccountKeypair(publicKey)?.PrivateKey ?? null;
   }
 
+}
+
+/**
+ * What every shared manifest in this vault is called, keyed by lower-cased manifest id.
+ * @param sqliteClient - the open local vault.
+ */
+export function anchorFolderNames(sqliteClient: SqliteClient): Record<string, string> {
+  const anchors = sqliteClient.executeQuery<{ ManifestId: string; Name: string }>('SELECT ManifestId, Name FROM Folders WHERE IsDeleted = 0 AND ManifestId IS NOT NULL AND UPPER(Id) = UPPER(ManifestId)');
+  return Object.fromEntries(anchors.map(anchor => [anchor.ManifestId.toLowerCase(), anchor.Name]));
 }
 
 /**

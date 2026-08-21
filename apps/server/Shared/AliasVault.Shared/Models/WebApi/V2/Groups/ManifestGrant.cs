@@ -20,4 +20,7 @@ public class ManifestGrant
 
     /// <summary>Gets or sets the manifest VEK encrypted with that public key (base64), decryptable only by the recipient.</summary>
     public required string EncryptedVek { get; set; }
+
+    /// <summary>Gets or sets the vault's name encrypted with the same public key, null when the client sealed none.</summary>
+    public string? EncryptedName { get; set; }
 }

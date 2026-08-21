@@ -16,7 +16,7 @@ import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { completeLegacyAccountKeyMigration, isLegacySqliteBlobSnapshot, legacyUnstampedRowAdoption, openLegacySqliteBlobSnapshot, prepareLegacyAccountKeyMigration, withOutdatedServerGuard, type LegacyAccountKeyMigration, type LegacySqliteBlobSnapshot } from '@/utils/legacy/LegacyStorageModelMigration';
 import { getManifestRevisions, getPersonalManifestId, recordManifestRevisions, replaceManifestRevisions, toManifestRevisionMap } from '@/utils/ManifestRevisions';
 import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateManifestSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecBlobEntry, type CodecCanonicalized, type CodecManifest, type CodecManifestSpec} from '@/utils/RustCore';
-import { SharingService, type ManifestVekGrant, type SessionSharedManifest } from '@/utils/SharingService';
+import { anchorFolderNames, SharingService, type ManifestVekGrant, type SessionSharedManifest } from '@/utils/SharingService';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getStorageItem } from '@/utils/StorageUtility';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
@@ -1362,6 +1362,7 @@ export class VaultSyncService {
 
     const stampedManifestIds = VaultCodec.manifestIdsInVault(sqliteClient);
     const sharedVeks = await SharingService.openSharedManifestVeks(sqliteClient);
+    const folderNames = anchorFolderNames(sqliteClient);
     for (const record of Object.values(await SharingService.getSessionSharedManifests())) {
       if (!stampedManifestIds.has(record.manifestId)) {
         devLog(`[V2Push] Shared manifest ${record.manifestId} has no rows in this vault; leaving it out of the write rather than emptying it server-side.`);
@@ -1380,7 +1381,8 @@ export class VaultSyncService {
         isPersonal: false,
         salt: record.salt,
         vek,
-        name: record.name ?? null,
+        // Read back off the anchor folder every push, so the name inside the manifest follows a rename instead of staying at whatever the vault was called when it was created.
+        name: folderNames[record.manifestId.toLowerCase()] ?? record.name ?? null,
         canAdminister: record.canAdminister === true,
       });
     }

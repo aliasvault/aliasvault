@@ -284,6 +284,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             State = GroupInvitationState.Pending,
             VaultManifestId = manifestId,
             EncryptedVek = model.Grant.EncryptedVek,
+            EncryptedName = model.Grant.EncryptedName,
             UserGrantKeyId = model.Grant.RecipientPublicKeyId,
             Algorithm = algorithm,
             CreatedAt = timeProvider.UtcNow,
@@ -394,6 +395,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
 
         // The sealed copy has become the grant, so it stops being a second copy of the key lying around.
         invitation.EncryptedVek = null;
+        invitation.EncryptedName = null;
         invitation.UserGrantKeyId = null;
 
         await context.SaveChangesAsync();
@@ -570,6 +572,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
                 ManifestId = i.VaultManifestId!.Value,
                 InviterUsername = i.Inviter.UserName ?? string.Empty,
                 i.CreatedAt,
+                i.EncryptedName,
+                RecipientPublicKey = i.UserGrantKey != null ? i.UserGrantKey.PublicKey : null,
             })
             .ToListAsync();
 
@@ -593,6 +597,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             ManifestId = i.ManifestId,
             InviterUsername = i.InviterUsername,
             CreatedAt = i.CreatedAt,
+            EncryptedName = i.EncryptedName,
+            RecipientPublicKey = i.RecipientPublicKey,
         })];
     }
 
@@ -605,6 +611,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     {
         invitation.State = state;
         invitation.EncryptedVek = null;
+        invitation.EncryptedName = null;
         invitation.UserGrantKeyId = null;
         invitation.RespondedAt = timeProvider.UtcNow;
         invitation.UpdatedAt = timeProvider.UtcNow;

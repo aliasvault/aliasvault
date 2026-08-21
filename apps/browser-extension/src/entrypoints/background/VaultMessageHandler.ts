@@ -20,7 +20,7 @@ import { PendingActionProcessor } from '@/utils/PendingActionProcessor';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
 import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword, vaultCodecExtractBuckets, vaultCodecBucketLayout, vaultCodecOverflowTable } from '@/utils/RustCore';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
-import { createAnchorFolder, SharingService } from '@/utils/SharingService';
+import { anchorFolderNames, createAnchorFolder, SharingService } from '@/utils/SharingService';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getStorageItem } from '@/utils/StorageUtility';
 import { generateTotpCode } from '@/utils/TotpUtility';
@@ -2645,12 +2645,14 @@ export async function handleGroupGrantAccess(message: { groupId: string; manifes
       return { success: false, error: await t('sharing.family.errors.inviteFailed') };
     }
 
-    const manifestVek = await SharingService.openSharedManifestVek(await createVaultSqliteClient(), record);
+    const sqliteClient = await createVaultSqliteClient();
+    const manifestVek = await SharingService.openSharedManifestVek(sqliteClient, record);
     if (!manifestVek) {
       return { success: false, error: await t('sharing.family.errors.inviteFailed') };
     }
 
-    const grant = await SharingService.encryptVekFor(manifestVek, member);
+    const vaultName = anchorFolderNames(sqliteClient)[manifest.manifestId.toLowerCase()] ?? record.name ?? null;
+    const grant = await SharingService.encryptVekFor(manifestVek, member, vaultName);
     if (!grant) {
       return { success: false, apiErrorCode: 'INVITE_RECIPIENT_NOT_READY' };
     }

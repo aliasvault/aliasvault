@@ -560,6 +560,8 @@ type ReceivedManifestInvitation = {
     manifestId: string;
     inviterUsername: string;
     createdAt: string;
+    encryptedName: string | null;
+    recipientPublicKey: string | null;
 };
 /**
  * One shared vault owned by a group, with the members who can open it.
@@ -609,6 +611,7 @@ type ManifestGrant = {
     recipientUserId: string;
     recipientPublicKeyId: string;
     encryptedVek: string;
+    encryptedName?: string | null;
 };
 /**
  * Give a member of the group access to one of its shared vaults.
