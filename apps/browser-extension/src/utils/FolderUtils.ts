@@ -17,6 +17,25 @@ export type FolderTreeNode = Folder & {
 };
 
 /**
+ * Whether a folder is shared with other people rather than the user's own.
+ * @param folder - The folder to classify
+ * @param personalManifestId - The user's personal manifest id, or null when no pull has recorded one yet
+ * @returns True when the folder belongs to a manifest shared with other people
+ */
+export function isSharedFolder(folder: Pick<Folder, 'ManifestId'>, personalManifestId: string | null | undefined): boolean {
+  return Boolean(personalManifestId && folder.ManifestId && folder.ManifestId !== personalManifestId);
+}
+
+/**
+ * Whether a folder is the one this client renders a shared manifest as.
+ * @param folder - The folder to classify
+ * @returns True when the folder anchors a shared manifest
+ */
+export function isAnchorFolder(folder: Pick<Folder, 'Id' | 'ManifestId'>): boolean {
+  return Boolean(folder.ManifestId) && folder.Id.toUpperCase() === String(folder.ManifestId).toUpperCase();
+}
+
+/**
  * Build a hierarchical tree from a flat array of folders.
  * @param folders - Flat array of folders
  * @returns Array of root-level folder tree nodes

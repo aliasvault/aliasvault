@@ -9,6 +9,7 @@ type DeleteFolderModalProps = {
   onDeleteFolderOnly: () => Promise<void>;
   onDeleteFolderAndContents: () => Promise<void>;
   itemCount: number;
+  sharedVault?: boolean;
 };
 
 /**
@@ -19,7 +20,8 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
   onClose,
   onDeleteFolderOnly,
   onDeleteFolderAndContents,
-  itemCount
+  itemCount,
+  sharedVault = false
 }) => {
   const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,60 +84,69 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
       }
     >
       <div className="space-y-4">
-        {/* Option buttons */}
-        <div className="space-y-3 pt-2">
-          {/* Delete folder only - move items to root */}
-          <button
-            type="button"
-            onClick={handleDeleteFolderOnly}
-            disabled={isSubmitting}
-            className="w-full p-3 text-left border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-          >
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 text-orange-500">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l2 2 4-4" />
-                </svg>
-              </div>
-              <div>
-                <p className="font-medium text-gray-900 dark:text-white">
-                  {t('items.deleteFolderKeepItems')}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {t('items.deleteFolderKeepItemsDescription')}
-                </p>
-              </div>
-            </div>
-          </button>
+        {/* A shared vault: no delete options, only the hint */}
+        {sharedVault && (
+          <p className="pt-2 text-sm text-gray-600 dark:text-gray-400">
+            {t('items.deleteSharedFolderHint')}
+          </p>
+        )}
 
-          {/* Delete folder and contents */}
-          {itemCount > 0 && (
+        {/* Option buttons */}
+        {!sharedVault && (
+          <div className="space-y-3 pt-2">
+            {/* Delete folder only - move items to root */}
             <button
               type="button"
-              onClick={handleDeleteFolderAndContents}
+              onClick={handleDeleteFolderOnly}
               disabled={isSubmitting}
-              className="w-full p-3 text-left border border-red-300 dark:border-red-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+              className="w-full p-3 text-left border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
             >
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 text-red-500">
+                <div className="mt-0.5 text-orange-500">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l2 2 4-4" />
                   </svg>
                 </div>
                 <div>
-                  <p className="font-medium text-red-600 dark:text-red-400">
-                    {t('items.deleteFolderAndItems')}
+                  <p className="font-medium text-gray-900 dark:text-white">
+                    {t('items.deleteFolderKeepItems')}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {t('items.deleteFolderAndItemsDescription', { count: itemCount })}
+                    {t('items.deleteFolderKeepItemsDescription')}
                   </p>
                 </div>
               </div>
             </button>
-          )}
-        </div>
+
+            {/* Delete folder and contents */}
+            {itemCount > 0 && (
+              <button
+                type="button"
+                onClick={handleDeleteFolderAndContents}
+                disabled={isSubmitting}
+                className="w-full p-3 text-left border border-red-300 dark:border-red-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 text-red-500">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium text-red-600 dark:text-red-400">
+                      {t('items.deleteFolderAndItems')}
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {t('items.deleteFolderAndItemsDescription', { count: itemCount })}
+                    </p>
+                  </div>
+                </div>
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </ModalWrapper>
   );

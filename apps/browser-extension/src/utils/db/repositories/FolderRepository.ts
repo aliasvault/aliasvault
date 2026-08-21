@@ -1,3 +1,7 @@
+import { isAnchorFolder } from '@/utils/FolderUtils';
+
+import { t } from '@/i18n/StandaloneI18n';
+
 import { BaseRepository } from '../BaseRepository';
 import { BaseQueries } from '../queries/BaseQueries';
 import { FolderQueries } from '../queries/FolderQueries';
@@ -136,6 +140,8 @@ export class FolderRepository extends BaseRepository {
    * @returns The number of rows updated
    */
   public async delete(folderId: string): Promise<number> {
+    await this.assertDeletable(folderId);
+
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
 
@@ -188,6 +194,8 @@ export class FolderRepository extends BaseRepository {
    * @returns The number of items trashed
    */
   public async deleteWithContents(folderId: string): Promise<number> {
+    await this.assertDeletable(folderId);
+
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
 
@@ -228,6 +236,17 @@ export class FolderRepository extends BaseRepository {
 
       return totalItemsDeleted;
     });
+  }
+
+  /**
+   * Refuse to delete the folder a shared vault is rendered as (see {@link isAnchorFolder}).
+   * @param folderId - The folder about to be deleted
+   */
+  private async assertDeletable(folderId: string): Promise<void> {
+    const folder = this.getById(folderId);
+    if (folder && isAnchorFolder(folder)) {
+      throw new Error(await t('items.deleteSharedFolderHint'));
+    }
   }
 
   /**
