@@ -6,6 +6,7 @@ import { VaultKeyAlgorithm, type CreateGroupInvitationRequest, type CreateGroupI
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { vaultCodecGenerateManifestSalt } from '@/utils/RustCore';
 import type { SqliteClient } from '@/utils/SqliteClient';
+import { VaultKeyService } from '@/utils/VaultKeyService';
 import type { WebApiService } from '@/utils/WebApiService';
 
 /**
@@ -25,7 +26,7 @@ export type ShareTarget = {
 };
 
 /**
- * The client-side mapping of a shared manifest: the manifest id plus its VEK, blob-hashing salt and current revision.
+ * A manifest's VEK as this account holds it.
  */
 export type ManifestVekGrant = {
   encryptedVek: string;
@@ -34,20 +35,15 @@ export type ManifestVekGrant = {
 };
 
 /**
- * Session record of a shared manifest resolved during the last pull. Kept in session storage (cleared on lock)
- * because the VEK is plaintext; rebuilt from the server grant on the next pull.
- *
- * This is the sync layer's key cache and nothing more: it says which manifests this session can open and write,
- * never how any of them is presented. Where a manifest is rendered is the client's own choice, made from the vault
- * itself (see {@link createAnchorFolder}), and its revision is owned by `ManifestRevisions`.
- *
- * The presence of a record is what makes a manifest writable. `canAdminister` is the permission: whether this user
- * may grant/revoke access and publish the manifest's email delivery key, which is also true for an admin of a group
- * they do not own.
+ * The client-side mapping of a newly created shared vault.
  */
-export type SessionSharedManifest = {
+export type SharedManifestMapping = ManifestVekGrant & { manifestId: string; salt: string; revision: number };
+
+/**
+ * Session record of a shared manifest resolved during the last pull. Rebuilt from the server grant on every pull.
+ */
+export type SessionSharedManifest = ManifestVekGrant & {
   manifestId: string;
-  vek: string;
   salt: string;
   name?: string | null;
   canAdminister?: boolean;
@@ -73,17 +69,24 @@ export class SharingService {
    */
   public static async createSharedManifest(webApi: WebApiService, group: ShareTarget, manifestId: string): Promise<SharedManifestMapping> {
     const manifestVek = EncryptionUtility.generateVaultEncryptionKey();
+    const selfEncryptedVek = await EncryptionUtility.encryptWithPublicKey(manifestVek, group.selfPublicKey);
 
     const response = await webApi.post<CreateSharedManifestRequest, CreateSharedManifestResponse>(`Groups/${group.groupId}/manifest`, {
       manifestId,
       name: group.name,
-      selfEncryptedVek: await EncryptionUtility.encryptWithPublicKey(manifestVek, group.selfPublicKey),
+      selfEncryptedVek,
       selfPublicKey: group.selfPublicKey,
       algorithm: VaultKeyAlgorithm.RsaOaepSha256,
     });
 
-    // The salt the first push writes into the vault: it lives inside the manifest, which does not exist yet.
-    return { manifestId: response.manifestId, vek: manifestVek, salt: await vaultCodecGenerateManifestSalt(), revision: response.revisionNumber };
+    return {
+      manifestId: response.manifestId,
+      encryptedVek: selfEncryptedVek,
+      encryptionPublicKey: group.selfPublicKey,
+      algorithm: VaultKeyAlgorithm.RsaOaepSha256,
+      salt: await vaultCodecGenerateManifestSalt(),
+      revision: response.revisionNumber,
+    };
   }
 
   /**
@@ -231,12 +234,66 @@ export class SharingService {
     return new TextDecoder().decode(plaintextBytes);
   }
 
+  /**
+   * Unwrap one shared manifest's VEK from the grant this account holds on it.
+   * @param sqliteClient - the open local vault, the durable home of the account's superseded private keys.
+   * @param record - the manifest to open.
+   */
+  public static async openSharedManifestVek(sqliteClient: SqliteClient, record: SessionSharedManifest): Promise<string | null> {
+    if (record.algorithm !== VaultKeyAlgorithm.RsaOaepSha256) {
+      devWarn(`[Sharing] Vault ${record.manifestId} grants its key under an unsupported algorithm "${record.algorithm}" (newer server?); leaving it closed.`);
+      return null;
+    }
+
+    const privateKey = await this.resolveGrantPrivateKey(sqliteClient, record.encryptionPublicKey);
+    if (!privateKey) {
+      devWarn(`[Sharing] No account key in this vault opens the grant on vault ${record.manifestId}; leaving it closed.`);
+      return null;
+    }
+
+    try {
+      return await this.decryptManifestVek(record.encryptedVek, privateKey);
+    } catch (error) {
+      devWarn(`[Sharing] Failed to unwrap the key of vault ${record.manifestId}; leaving it closed.`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Unwrap the VEK of every shared manifest this session holds a grant on, keyed by manifest id.
+   * @param sqliteClient - the open local vault.
+   */
+  public static async openSharedManifestVeks(sqliteClient: SqliteClient): Promise<Map<string, string>> {
+    const veks = new Map<string, string>();
+    for (const record of Object.values(await this.getSessionSharedManifests())) {
+      const vek = await this.openSharedManifestVek(sqliteClient, record);
+      if (vek) {
+        veks.set(record.manifestId, vek);
+      }
+    }
+    return veks;
+  }
+
+  /**
+   * The private key that opens a grant made out to `publicKey`.
+   * @param sqliteClient - the open local vault.
+   * @param publicKey - the public half the grant was encrypted for.
+   */
+  private static async resolveGrantPrivateKey(sqliteClient: SqliteClient, publicKey: string): Promise<string | null> {
+    if (await VaultKeyService.getAccountPublicKey() === publicKey) {
+      const sessionPrivateKey = await VaultKeyService.getSessionAccountPrivateKey();
+      if (sessionPrivateKey) {
+        return sessionPrivateKey;
+      }
+    }
+
+    return sqliteClient.encryptionKeys.getAccountKeypair(publicKey)?.PrivateKey ?? null;
+  }
+
 }
 
 /**
- * Renders a shared manifest as a local folder. This is purely a client-side UI choice: manifests are not tied
- * to anything, all items in the vault are associated with a manifestId, but how its rendered, either as a 
- * local folder or as hard vault-switching, is the client's own choice. It does not affect the storage and sync layers.
+ * Renders a shared manifest as a local folder.
  * @param sqliteClient - the open local vault.
  * @param manifestId - the shared vault to give a folder to.
  * @param name - the group name, used as the folder name.
