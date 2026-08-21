@@ -31,6 +31,7 @@ import AutofillSettings from '@/entrypoints/popup/pages/settings/AutofillSetting
 import AutoLockSettings from '@/entrypoints/popup/pages/settings/AutoLockSettings';
 import ClipboardSettings from '@/entrypoints/popup/pages/settings/ClipboardSettings';
 import ContextMenuSettings from '@/entrypoints/popup/pages/settings/ContextMenuSettings';
+import FamilySharingSettings from '@/entrypoints/popup/pages/settings/FamilySharingSettings';
 import IdentityGeneratorSettings from '@/entrypoints/popup/pages/settings/IdentityGeneratorSettings';
 import LanguageSettings from '@/entrypoints/popup/pages/settings/LanguageSettings';
 import PasskeySettings from '@/entrypoints/popup/pages/settings/PasskeySettings';
@@ -210,6 +211,7 @@ const App: React.FC = () => {
     { path: '/settings/identity-generator', element: <IdentityGeneratorSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/password-generator', element: <PasswordGeneratorSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/appearance', element: <AppearanceSettings />, showBackButton: true, title: t('common.settings') },
+    { path: '/settings/family-sharing', element: <FamilySharingSettings />, showBackButton: true, title: t('common.settings') },
   ], [t]);
 
   useEffect(() => {
