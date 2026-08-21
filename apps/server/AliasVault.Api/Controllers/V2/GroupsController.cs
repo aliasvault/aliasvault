@@ -53,7 +53,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
 
         var memberships = await context.GroupMembers
             .Where(gm => gm.UserId == me.Id && gm.Group.Type == GroupType.Shared)
-            .Select(gm => new { gm.GroupId, gm.Group.Name, gm.Role })
+            .Select(gm => new { gm.GroupId, gm.Role })
             .ToListAsync();
 
         var response = new GroupOverviewResponse
@@ -97,7 +97,6 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             response.Groups.Add(new GroupInfo
             {
                 GroupId = membership.GroupId,
-                Name = membership.Name,
                 Role = membership.Role.ToString(),
                 Manifests = [.. manifests
                     .Where(m => m.OwnerGroupId == membership.GroupId)
@@ -568,7 +567,6 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             {
                 i.Id,
                 i.GroupId,
-                GroupName = i.Group.Name,
                 ManifestId = i.VaultManifestId!.Value,
                 InviterUsername = i.Inviter.UserName ?? string.Empty,
                 i.CreatedAt,
@@ -593,7 +591,6 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         {
             Id = i.Id,
             GroupId = i.GroupId,
-            GroupName = i.GroupName,
             ManifestId = i.ManifestId,
             InviterUsername = i.InviterUsername,
             CreatedAt = i.CreatedAt,

@@ -18,9 +18,6 @@ public class ReceivedManifestInvitation
     /// <summary>Gets or sets the group the vault belongs to.</summary>
     public required Guid GroupId { get; set; }
 
-    /// <summary>Gets or sets the group's display name.</summary>
-    public required string GroupName { get; set; }
-
     /// <summary>Gets or sets the vault being offered.</summary>
     public required Guid ManifestId { get; set; }
 

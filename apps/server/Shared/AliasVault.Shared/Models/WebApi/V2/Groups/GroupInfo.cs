@@ -18,11 +18,6 @@ public class GroupInfo
     public required Guid GroupId { get; set; }
 
     /// <summary>
-    /// Gets or sets the group's display name.
-    /// </summary>
-    public required string Name { get; set; }
-
-    /// <summary>
     /// Gets or sets the caller's own role in it.
     /// </summary>
     public required string Role { get; set; }

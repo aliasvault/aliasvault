@@ -556,7 +556,6 @@ type SentManifestInvitation = {
 type ReceivedManifestInvitation = {
     id: string;
     groupId: string;
-    groupName: string;
     manifestId: string;
     inviterUsername: string;
     createdAt: string;
@@ -576,7 +575,6 @@ type SharedManifestInfo = {
  */
 type GroupInfo = {
     groupId: string;
-    name: string;
     role: GroupRole;
     manifests: SharedManifestInfo[];
     members: GroupMemberInfo[];
