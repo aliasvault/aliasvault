@@ -336,20 +336,25 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.LAST_MANIFEST_GRANT_HOLDER, 400));
         }
 
-        await using var transaction = await context.Database.BeginTransactionAsync();
-
-        foreach (var invitation in await context.GroupInvitations.Where(i => i.VaultManifestId == manifestId && i.InviteeUserId == userId && i.State == GroupInvitationState.Pending).ToListAsync())
+        // Create a transaction to ensure the invitation and grant are closed together.
+        var strategy = context.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
         {
-            CloseInvitation(invitation, GroupInvitationState.Revoked);
-        }
+            await using var transaction = await context.Database.BeginTransactionAsync();
 
-        if (await GrantHelper.RevokeAccessAsync(context, manifestId, userId))
-        {
-            await ClientActionHelper.EnqueueForGroupAsync(context, ClientActionType.RotateManifestDeliveryKey, groupId, manifestId, timeProvider.UtcNow);
-        }
+            foreach (var invitation in await context.GroupInvitations.Where(i => i.VaultManifestId == manifestId && i.InviteeUserId == userId && i.State == GroupInvitationState.Pending).ToListAsync())
+            {
+                CloseInvitation(invitation, GroupInvitationState.Revoked);
+            }
 
-        await context.SaveChangesAsync();
-        await transaction.CommitAsync();
+            if (await GrantHelper.RevokeAccessAsync(context, manifestId, userId))
+            {
+                await ClientActionHelper.EnqueueForGroupAsync(context, ClientActionType.RotateManifestDeliveryKey, groupId, manifestId, timeProvider.UtcNow);
+            }
+
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+        });
 
         return Ok();
     }
@@ -508,26 +513,30 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             }
         }
 
-        // Start a transaction to ensure all operations are atomic.
-        await using var transaction = await context.Database.BeginTransactionAsync();
-        context.GroupMembers.Remove(membership);
-
-        // An offer of access that outlived the membership it was made under would let them back in on accepting it.
-        foreach (var invitation in await context.GroupInvitations.Where(i => i.GroupId == groupId && i.InviteeUserId == userId && i.State == GroupInvitationState.Pending).ToListAsync())
+        // Create a transaction to ensure the membership and offers of access are closed together.
+        var strategy = context.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
         {
-            CloseInvitation(invitation, GroupInvitationState.Revoked);
-        }
+            await using var transaction = await context.Database.BeginTransactionAsync();
+            context.GroupMembers.Remove(membership);
 
-        foreach (var manifestId in manifestIds)
-        {
-            if (await GrantHelper.RevokeAccessAsync(context, manifestId, userId))
+            // An offer of access that outlived the membership it was made under would let them back in on accepting it.
+            foreach (var invitation in await context.GroupInvitations.Where(i => i.GroupId == groupId && i.InviteeUserId == userId && i.State == GroupInvitationState.Pending).ToListAsync())
             {
-                await ClientActionHelper.EnqueueForGroupAsync(context, ClientActionType.RotateManifestDeliveryKey, groupId, manifestId, timeProvider.UtcNow);
+                CloseInvitation(invitation, GroupInvitationState.Revoked);
             }
-        }
 
-        await context.SaveChangesAsync();
-        await transaction.CommitAsync();
+            foreach (var manifestId in manifestIds)
+            {
+                if (await GrantHelper.RevokeAccessAsync(context, manifestId, userId))
+                {
+                    await ClientActionHelper.EnqueueForGroupAsync(context, ClientActionType.RotateManifestDeliveryKey, groupId, manifestId, timeProvider.UtcNow);
+                }
+            }
+
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+        });
 
         return Ok();
     }
