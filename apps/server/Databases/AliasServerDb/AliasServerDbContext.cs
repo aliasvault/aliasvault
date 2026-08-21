@@ -193,6 +193,11 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<RateLimit> RateLimits { get; set; }
 
     /// <summary>
+    /// Gets or sets the CapabilityRules DbSet.
+    /// </summary>
+    public DbSet<CapabilityRule> CapabilityRules { get; set; }
+
+    /// <summary>
     /// Gets or sets the UserUnlockKeys DbSet.
     /// </summary>
     public DbSet<UserUnlockKey> UserUnlockKeys { get; set; }
@@ -422,6 +427,23 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .WithMany()
                 .HasForeignKey(e => e.UserGrantKeyId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configure CapabilityRule.
+        modelBuilder.Entity<CapabilityRule>(builder =>
+        {
+            builder.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(e => e.Group)
+                .WithMany()
+                .HasForeignKey(e => e.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Property(e => e.Kind).HasConversion<string>().HasMaxLength(20);
+            builder.Property(e => e.Tier).HasConversion<string>().HasMaxLength(20);
         });
 
         // Configure UserUnlockKey: one row per enrolled unlock method, each encrypting the user's Account Key.

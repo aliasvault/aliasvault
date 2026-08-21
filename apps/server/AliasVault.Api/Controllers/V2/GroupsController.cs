@@ -9,11 +9,13 @@ namespace AliasVault.Api.Controllers.V2;
 
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
+using AliasVault.Api.Filters;
 using AliasVault.Api.Helpers;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.V2.Groups;
 using AliasVault.Shared.Providers.Time;
+using AliasVault.Shared.Server.Capabilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +24,11 @@ using Microsoft.EntityFrameworkCore;
 /// <summary>
 /// Groups controller which manages shared groups and their related manifests.
 /// </summary>
+/// <remarks>
+/// Note: the vault sharing capability gate sits on the endpoints that create or modify a shared vault or a membership,
+/// and deliberately not on the ones that read or leave one: an account that loses the capability keeps full access to
+/// what it already shares, and can still get out of it. TODO: review all capability gain vs loss states when this is gated behind account tiers.
+/// </remarks>
 /// <param name="dbContextFactory">The database context factory.</param>
 /// <param name="userManager">The user manager.</param>
 /// <param name="timeProvider">Time provider.</param>
@@ -114,10 +121,10 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     /// </summary>
     /// <param name="groupId">The shared group ID.</param>
     /// <param name="model">The create manifest request.</param>
-    /// <param name="clientHeader">The client header.</param>
     /// <returns>The created manifest id and its revision.</returns>
     [HttpPost("{groupId:guid}/manifest")]
-    public async Task<IActionResult> CreateManifest(Guid groupId, [FromBody] CreateSharedManifestRequest model, [FromHeader(Name = "X-AliasVault-Client")] string? clientHeader)
+    [RequireCapability(CapabilityKeys.VaultSharing)]
+    public async Task<IActionResult> CreateManifest(Guid groupId, [FromBody] CreateSharedManifestRequest model)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
         var me = await GetCurrentUserAsync();
@@ -168,7 +175,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             StorageFormat = ManifestFormat,
             RevisionNumber = 0,
             FileSize = 0,
-            Client = clientHeader,
+            Client = ClientHeader,
             CreatedAt = timeProvider.UtcNow,
             UpdatedAt = timeProvider.UtcNow,
         };
@@ -195,6 +202,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     /// <param name="model">The username to look up.</param>
     /// <returns>The recipient and the key to seal for.</returns>
     [HttpPost("{groupId:guid}/invitations/recipient")]
+    [RequireCapability(CapabilityKeys.VaultSharing)]
     public async Task<IActionResult> ResolveInvitationRecipient(Guid groupId, [FromBody] GroupInvitationRecipientRequest model)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
@@ -227,6 +235,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     /// <param name="model">The create invitation request.</param>
     /// <returns>The created invitation id.</returns>
     [HttpPost("{groupId:guid}/invitations")]
+    [RequireCapability(CapabilityKeys.VaultSharing)]
     public async Task<IActionResult> CreateInvitation(Guid groupId, [FromBody] CreateGroupInvitationRequest model)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
@@ -301,6 +310,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     /// <param name="invitationId">The invitation ID.</param>
     /// <returns>Ok on success.</returns>
     [HttpPost("invitations/{invitationId:guid}/accept")]
+    [RequireCapability(CapabilityKeys.VaultSharing)]
     public async Task<IActionResult> AcceptInvitation(Guid invitationId)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();

@@ -50,6 +50,12 @@ public class StatusResponse
     public List<BucketRevision> BucketRevisions { get; set; } = [];
 
     /// <summary>
+    /// Gets or sets what this caller may do, keyed by capability. Includes the ones that are off, so an absent key
+    /// means only that this server does not know the capability.
+    /// </summary>
+    public Dictionary<string, string> Capabilities { get; set; } = [];
+
+    /// <summary>
     /// Gets or sets the work the server needs this client to carry out, because it needs something only a client has:
     /// vault content, a vault key, a private key. This primarily affects vault sharing and revocation actions.
     /// </summary>

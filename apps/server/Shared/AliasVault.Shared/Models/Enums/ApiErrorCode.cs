@@ -249,4 +249,9 @@ public enum ApiErrorCode
     /// Too many mobile login requests were created from this client in a short period.
     /// </summary>
     MOBILE_LOGIN_RATE_LIMIT_EXCEEDED,
+
+    /// <summary>
+    /// The capability the request needs is not enabled for this account on this server.
+    /// </summary>
+    CAPABILITY_NOT_AVAILABLE,
 }

@@ -11,6 +11,7 @@ using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Headers;
 using AliasVault.Api.Helpers;
+using AliasVault.Api.Services;
 using AliasVault.Shared.Core;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
@@ -27,8 +28,9 @@ using StatusModels = AliasVault.Shared.Models.WebApi.V2.Status;
 /// </summary>
 /// <param name="dbContextFactory">DbContext factory.</param>
 /// <param name="userManager">UserManager.</param>
+/// <param name="capabilityService">Resolves which capabilities the caller may use.</param>
 [ApiVersion("2")]
-public class StatusController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager) : AuthenticatedRequestController(userManager)
+public class StatusController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, CapabilityService capabilityService) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Status endpoint called by the client to get the full sync status in one call.
@@ -85,6 +87,7 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
             ManifestRevisions = manifestRevisions,
             PersonalManifestId = personalManifestId,
             BucketRevisions = bucketRevisions,
+            Capabilities = await capabilityService.GetCapabilitiesAsync(user.Id, clientHeader),
             PendingActions = await ClientActionHelper.GetPendingActionsAsync(context, user.Id),
         });
     }

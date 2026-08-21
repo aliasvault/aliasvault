@@ -9,6 +9,7 @@ namespace AliasVault.Api.Controllers.Abstracts;
 
 using System.Security.Claims;
 using AliasServerDb;
+using AliasVault.Api.Headers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +23,11 @@ using Microsoft.AspNetCore.Mvc;
 [Authorize]
 public abstract class AuthenticatedRequestController(UserManager<AliasVaultUser> userManager) : ControllerBase
 {
+    /// <summary>
+    /// Gets the raw client header the current request arrived with.
+    /// </summary>
+    protected string? ClientHeader => Request.Headers[ClientHeaderInfo.HeaderName].FirstOrDefault();
+
     /// <summary>
     /// Get the userManager instance.
     /// </summary>
