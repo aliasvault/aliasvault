@@ -195,9 +195,9 @@ public enum ApiErrorCode
     GROUP_NOT_FOUND,
 
     /// <summary>
-    /// The group already holds a manifest, so the caller must use that one instead of creating another.
+    /// The group already holds as many shared vaults as it is entitled to, so no further one can be created.
     /// </summary>
-    GROUP_MANIFEST_EXISTS,
+    GROUP_MANIFEST_LIMIT_REACHED,
 
     /// <summary>
     /// The invitation does not exist, is not addressed to (or sent by) the caller, or was already answered.
@@ -205,19 +205,20 @@ public enum ApiErrorCode
     INVITATION_NOT_FOUND,
 
     /// <summary>
-    /// There is already an open invitation for this user in this group.
+    /// There is already an open offer of access to this shared vault for this member.
     /// </summary>
     INVITATION_ALREADY_EXISTS,
 
     /// <summary>
-    /// No account can be invited under the given username, or it is the caller's own.
+    /// The account access was offered to is not on the group's membership roster. Who belongs to a group is decided
+    /// outside the client, so this cannot be resolved by the caller.
     /// </summary>
-    INVITE_RECIPIENT_NOT_FOUND,
+    NOT_GROUP_MEMBER,
 
     /// <summary>
-    /// The invited user is already a member of the group.
+    /// The member already holds access to this shared vault.
     /// </summary>
-    ALREADY_GROUP_MEMBER,
+    ACCESS_ALREADY_GRANTED,
 
     /// <summary>
     /// The group's owner cannot be removed from it; ownership has to be transferred first.
@@ -225,15 +226,16 @@ public enum ApiErrorCode
     CANNOT_REMOVE_GROUP_OWNER,
 
     /// <summary>
-    /// The invited account has published no public key, so a shared vault key cannot be encrypted for it. The account
-    /// has to finish upgrading its vault before it can be invited anywhere.
+    /// The member is the last one who can open one of the group's shared vaults, so taking their access away would
+    /// leave that vault unopenable. Somebody else has to be given access to it first.
     /// </summary>
-    INVITE_RECIPIENT_NOT_READY,
+    LAST_MANIFEST_GRANT_HOLDER,
 
     /// <summary>
-    /// The group has no shared vault yet, so there is no key to hand an invitee. One has to be created first.
+    /// The account access was offered to has published no public key, so a shared vault key cannot be encrypted for
+    /// it. That account has to finish upgrading its vault before it can be given access to anything.
     /// </summary>
-    GROUP_HAS_NO_VAULT,
+    INVITE_RECIPIENT_NOT_READY,
 
     /// <summary>
     /// The client action does not exist, or is not addressed to the caller.

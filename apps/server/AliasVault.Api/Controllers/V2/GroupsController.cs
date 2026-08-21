@@ -22,13 +22,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
-/// Groups controller which manages shared groups and their related manifests.
+/// Groups controller which manages the shared vaults of a group and who inside the group can open them.
 /// </summary>
-/// <remarks>
-/// Note: the vault sharing capability gate sits on the endpoints that create or modify a shared vault or a membership,
-/// and deliberately not on the ones that read or leave one: an account that loses the capability keeps full access to
-/// what it already shares, and can still get out of it. TODO: review all capability gain vs loss states when this is gated behind account tiers.
-/// </remarks>
 /// <param name="dbContextFactory">The database context factory.</param>
 /// <param name="userManager">The user manager.</param>
 /// <param name="timeProvider">Time provider.</param>
@@ -38,7 +33,12 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     private const string ManifestFormat = "manifest-v1";
 
     /// <summary>
-    /// Get the overview of the caller's shared groups and invitations.
+    /// How many shared vaults one group may hold. TODO: hardcoded for now; make this dynamic when needed.
+    /// </summary>
+    private const int MaxSharedVaults = 3;
+
+    /// <summary>
+    /// Get the overview of the caller's shared groups and the access offers awaiting their answer.
     /// </summary>
     /// <returns>The overview.</returns>
     [HttpGet]
@@ -67,62 +67,70 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
 
         var groupIds = memberships.ConvertAll(m => m.GroupId);
-        var administeredGroupIds = memberships.Where(m => m.Role is GroupRole.Owner or GroupRole.Admin).Select(m => m.GroupId).ToList();
+        var administeredGroupIds = memberships.Where(m => m.Role is GroupRole.Owner or GroupRole.Admin).Select(m => m.GroupId).ToHashSet();
         var allMembers = await context.GroupMembers
             .Where(gm => groupIds.Contains(gm.GroupId))
             .Select(gm => new { gm.GroupId, gm.UserId, gm.Role })
             .ToListAsync();
-        var manifestByGroup = await context.VaultManifests
+        var manifests = await context.VaultManifests
             .Where(m => groupIds.Contains(m.OwnerGroupId))
-            .ToDictionaryAsync(m => m.OwnerGroupId, m => m.ManifestId);
-        var grantHolders = await GrantHelper.GetGrantHoldersByManifestAsync(context, [.. manifestByGroup.Values]);
+            .Select(m => new { m.ManifestId, m.OwnerGroupId, m.CreatedAt })
+            .ToListAsync();
+        var grantHolders = await GrantHelper.GetGrantHoldersByManifestAsync(context, manifests.ConvertAll(m => m.ManifestId));
 
         var allMemberIds = allMembers.Select(m => m.UserId).Distinct(StringComparer.Ordinal).ToList();
         var usernames = await context.AliasVaultUsers
             .Where(u => allMemberIds.Contains(u.Id))
             .ToDictionaryAsync(u => u.Id, u => u.UserName ?? string.Empty);
 
-        // Open invitations are only shown to admins.
-        var openInvitations = administeredGroupIds.Count > 0 ? await GetOpenInvitationsByGroupAsync(context, administeredGroupIds) : [];
+        // Only an admin can hand a vault key to somebody, so only an admin is served the keys to seal one with.
+        var administeredMemberIds = allMembers.Where(m => administeredGroupIds.Contains(m.GroupId)).Select(m => m.UserId);
+        var publicKeys = administeredGroupIds.Count > 0 ? await GrantHelper.GetPrimaryKeysAsync(context, administeredMemberIds) : [];
+
+        // Open offers are only shown to the admins who may withdraw them.
+        var openInvitations = administeredGroupIds.Count > 0 ? await GetOpenInvitationsByManifestAsync(context, [.. administeredGroupIds]) : [];
 
         foreach (var membership in memberships)
         {
-            var canAdminister = membership.Role is GroupRole.Owner or GroupRole.Admin;
-            var manifestId = manifestByGroup.TryGetValue(membership.GroupId, out var id) ? id : (Guid?)null;
+            var canAdminister = administeredGroupIds.Contains(membership.GroupId);
 
-            var group = new GroupInfo
+            response.Groups.Add(new GroupInfo
             {
                 GroupId = membership.GroupId,
                 Name = membership.Name,
                 Role = membership.Role.ToString(),
-                ManifestId = manifestId,
+                Manifests = [.. manifests
+                    .Where(m => m.OwnerGroupId == membership.GroupId)
+                    .Select(m => new { Manifest = m, Holders = grantHolders.GetValueOrDefault(m.ManifestId) ?? [] })
+                    .Where(m => canAdminister || m.Holders.Contains(me.Id))
+                    .OrderBy(m => m.Manifest.CreatedAt)
+                    .Select(m => new SharedManifestInfo
+                    {
+                        ManifestId = m.Manifest.ManifestId,
+                        MemberUserIds = [.. m.Holders],
+                        PendingInvitations = canAdminister ? openInvitations.GetValueOrDefault(m.Manifest.ManifestId) ?? [] : [],
+                    })],
                 Members = [.. allMembers.Where(m => m.GroupId == membership.GroupId).Select(m => new GroupMemberInfo
                 {
                     UserId = m.UserId,
                     Username = usernames.GetValueOrDefault(m.UserId, string.Empty),
                     Role = m.Role.ToString(),
+                    PublicKeyId = canAdminister ? publicKeys.GetValueOrDefault(m.UserId)?.PublicKeyId : null,
+                    PublicKey = canAdminister ? publicKeys.GetValueOrDefault(m.UserId)?.PublicKey : null,
                 })],
-            };
-
-            // Only admins can see the group's open invitations.
-            if (canAdminister)
-            {
-                group.PendingInvitations = openInvitations.TryGetValue(membership.GroupId, out var invitations) ? invitations : [];
-            }
-
-            response.Groups.Add(group);
+            });
         }
 
         return Ok(response);
     }
 
     /// <summary>
-    /// Create the shared group's vault, together with the caller's own grant on it.
+    /// Create another shared vault for a group, together with the caller's own grant on it.
     /// </summary>
     /// <param name="groupId">The shared group ID.</param>
     /// <param name="model">The create manifest request.</param>
     /// <returns>The created manifest id and its revision.</returns>
-    [HttpPost("{groupId:guid}/manifest")]
+    [HttpPost("{groupId:guid}/manifests")]
     [RequireCapability(CapabilityKeys.VaultSharing)]
     public async Task<IActionResult> CreateManifest(Guid groupId, [FromBody] CreateSharedManifestRequest model)
     {
@@ -160,10 +168,10 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 404));
         }
 
-        // A group (currently) holds exactly one vault.
-        if (await context.VaultManifests.AnyAsync(x => x.OwnerGroupId == groupId))
+        // A family holds a handful of vaults, enough to keep e.g. streaming and banking apart without growing without bound.
+        if (await context.VaultManifests.CountAsync(x => x.OwnerGroupId == groupId) >= MaxSharedVaults)
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_MANIFEST_EXISTS, 400));
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_MANIFEST_LIMIT_REACHED, 400));
         }
 
         // Create the empty manifest.
@@ -171,7 +179,6 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         {
             ManifestId = model.ManifestId,
             OwnerGroupId = groupId,
-            Name = model.Name,
             StorageFormat = ManifestFormat,
             RevisionNumber = 0,
             FileSize = 0,
@@ -196,47 +203,16 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Resolve the account behind a username, together with the public key an invitation to it must be sealed for.
-    /// </summary>
-    /// <param name="groupId">The group to invite into.</param>
-    /// <param name="model">The username to look up.</param>
-    /// <returns>The recipient and the key to seal for.</returns>
-    [HttpPost("{groupId:guid}/invitations/recipient")]
-    [RequireCapability(CapabilityKeys.VaultSharing)]
-    public async Task<IActionResult> ResolveInvitationRecipient(Guid groupId, [FromBody] GroupInvitationRecipientRequest model)
-    {
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-        var me = await GetCurrentUserAsync();
-        if (me == null)
-        {
-            return Unauthorized();
-        }
-
-        var (invitee, failure) = await ResolveInviteeAsync(context, groupId, me.Id, () => GetUserManager().FindByNameAsync(model.Username.Trim()));
-        if (failure is not null)
-        {
-            return failure;
-        }
-
-        var recipient = (await GrantHelper.GetPrimaryKeysAsync(context, [invitee!.Id])).GetValueOrDefault(invitee.Id);
-        if (recipient is null)
-        {
-            // The account has never published a keypair (which can happen if user is still on sqlite-blob legacy storage format), return error.
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITE_RECIPIENT_NOT_READY, 400));
-        }
-
-        return Ok(new GroupInvitationRecipientResponse { Recipient = recipient });
-    }
-
-    /// <summary>
-    /// Invite an account to join a shared group, handing over the group's vault key sealed for them in the same call.
+    /// Offer a member of the group access to one of its shared vaults, handing over the vault key sealed for them in
+    /// the same call. The offer becomes a grant once they accept it.
     /// </summary>
     /// <param name="groupId">The group ID.</param>
-    /// <param name="model">The create invitation request.</param>
+    /// <param name="manifestId">The shared vault to give access to.</param>
+    /// <param name="model">The grant request.</param>
     /// <returns>The created invitation id.</returns>
-    [HttpPost("{groupId:guid}/invitations")]
+    [HttpPost("{groupId:guid}/manifests/{manifestId:guid}/access")]
     [RequireCapability(CapabilityKeys.VaultSharing)]
-    public async Task<IActionResult> CreateInvitation(Guid groupId, [FromBody] CreateGroupInvitationRequest model)
+    public async Task<IActionResult> GrantAccess(Guid groupId, Guid manifestId, [FromBody] GrantManifestAccessRequest model)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
         var me = await GetCurrentUserAsync();
@@ -250,29 +226,52 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_ALGORITHM, 400));
         }
 
-        var (invitee, failure) = await ResolveInviteeAsync(context, groupId, me.Id, () => GetUserManager().FindByIdAsync(model.UserId));
-        if (failure is not null)
+        if (!await GroupHelper.IsSharedGroupAdminAsync(context, groupId, me.Id))
         {
-            return failure;
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_NOT_FOUND, 404));
         }
 
-        // The sealed key and the invitation have to be about the same person.
-        if (!string.Equals(model.Grant.RecipientUserId, invitee!.Id, StringComparison.Ordinal))
+        if (!await context.VaultManifests.AnyAsync(m => m.ManifestId == manifestId && m.OwnerGroupId == groupId))
+        {
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+        }
+
+        /*
+         * Handing out a key is only meaningful for somebody who holds it: with several vaults per group, being an
+         * admin of the group no longer implies access to each one of them, and an admin who was left out of a vault
+         * cannot pass on what they cannot open.
+         */
+        if (!await context.VaultManifestAccessKeys.AnyAsync(k => k.VaultManifestId == manifestId && k.UserId == me.Id && k.Type == ManifestKeyType.GrantKey))
+        {
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+        }
+
+        // Access only ever goes to somebody already on the group's roster, which is administered outside the client.
+        if (!await GroupHelper.IsSharedGroupMemberAsync(context, groupId, model.UserId))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.NOT_GROUP_MEMBER, 400));
+        }
+
+        // The sealed key and the offer have to be about the same person.
+        if (!string.Equals(model.Grant.RecipientUserId, model.UserId, StringComparison.Ordinal))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 400));
         }
 
         // The key it was sealed for must really be theirs.
-        if (!await context.UserGrantKeys.AnyAsync(k => k.Id == model.Grant.RecipientPublicKeyId && k.UserId == invitee.Id))
+        if (!await context.UserGrantKeys.AnyAsync(k => k.Id == model.Grant.RecipientPublicKeyId && k.UserId == model.UserId))
         {
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 404));
         }
 
-        var manifestId = await context.VaultManifests.Where(m => m.OwnerGroupId == groupId).Select(m => (Guid?)m.ManifestId).FirstOrDefaultAsync();
-        if (manifestId is null)
+        if (await context.VaultManifestAccessKeys.AnyAsync(k => k.VaultManifestId == manifestId && k.UserId == model.UserId && k.Type == ManifestKeyType.GrantKey))
         {
-            // Nothing to seal, so there is nothing an accept could hand over.
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_HAS_NO_VAULT, 400));
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ACCESS_ALREADY_GRANTED, 400));
+        }
+
+        if (await context.GroupInvitations.AnyAsync(i => i.VaultManifestId == manifestId && i.InviteeUserId == model.UserId && i.State == GroupInvitationState.Pending))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_ALREADY_EXISTS, 400));
         }
 
         var invitation = new GroupInvitation
@@ -280,7 +279,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             Id = Guid.NewGuid(),
             GroupId = groupId,
             InviterUserId = me.Id,
-            InviteeUserId = invitee.Id,
+            InviteeUserId = model.UserId,
             Role = GroupRole.Member,
             State = GroupInvitationState.Pending,
             VaultManifestId = manifestId,
@@ -301,11 +300,62 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_ALREADY_EXISTS, 400));
         }
 
-        return Ok(new CreateGroupInvitationResponse { InvitationId = invitation.Id });
+        return Ok(new GrantManifestAccessResponse { InvitationId = invitation.Id });
     }
 
     /// <summary>
-    /// Accept an invitation addressed to the current user.
+    /// Take a member's access to one shared vault away, without touching their membership of the group.
+    /// </summary>
+    /// <param name="groupId">The group ID.</param>
+    /// <param name="manifestId">The shared vault.</param>
+    /// <param name="userId">The member losing access, or the caller themselves.</param>
+    /// <returns>Ok on success.</returns>
+    [HttpDelete("{groupId:guid}/manifests/{manifestId:guid}/access/{userId}")]
+    public async Task<IActionResult> RevokeAccess(Guid groupId, Guid manifestId, string userId)
+    {
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var me = await GetCurrentUserAsync();
+        if (me == null)
+        {
+            return Unauthorized();
+        }
+
+        var isSelf = string.Equals(userId, me.Id, StringComparison.Ordinal);
+        if (!isSelf && !await GroupHelper.IsSharedGroupAdminAsync(context, groupId, me.Id))
+        {
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_NOT_FOUND, 404));
+        }
+
+        if (!await context.VaultManifests.AnyAsync(m => m.ManifestId == manifestId && m.OwnerGroupId == groupId))
+        {
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+        }
+
+        if (!isSelf && await GrantHelper.IsLastGrantHolderAsync(context, manifestId, userId))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.LAST_MANIFEST_GRANT_HOLDER, 400));
+        }
+
+        await using var transaction = await context.Database.BeginTransactionAsync();
+
+        foreach (var invitation in await context.GroupInvitations.Where(i => i.VaultManifestId == manifestId && i.InviteeUserId == userId && i.State == GroupInvitationState.Pending).ToListAsync())
+        {
+            CloseInvitation(invitation, GroupInvitationState.Revoked);
+        }
+
+        if (await GrantHelper.RevokeAccessAsync(context, manifestId, userId))
+        {
+            await ClientActionHelper.EnqueueForGroupAsync(context, ClientActionType.RotateManifestDeliveryKey, groupId, manifestId, timeProvider.UtcNow);
+        }
+
+        await context.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        return Ok();
+    }
+
+    /// <summary>
+    /// Accept an offer of access addressed to the current user.
     /// </summary>
     /// <param name="invitationId">The invitation ID.</param>
     /// <returns>Ok on success.</returns>
@@ -326,6 +376,13 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_NOT_FOUND, 404));
         }
 
+        // Accepting no longer joins anything: the roster decided that, and a member who was taken off it in the
+        // meantime has nothing left to accept.
+        if (!await GroupHelper.IsSharedGroupMemberAsync(context, invitation.GroupId, me.Id))
+        {
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_NOT_FOUND, 404));
+        }
+
         if (!await PromoteSealedGrantAsync(context, invitation, me.Id))
         {
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_NOT_FOUND, 404));
@@ -334,20 +391,6 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         invitation.State = GroupInvitationState.Accepted;
         invitation.RespondedAt = timeProvider.UtcNow;
         invitation.UpdatedAt = timeProvider.UtcNow;
-
-        // Idempotent in the one way that matters: a membership added in the meantime (by an admin elsewhere) is kept.
-        if (!await context.GroupMembers.AnyAsync(gm => gm.GroupId == invitation.GroupId && gm.UserId == me.Id))
-        {
-            context.GroupMembers.Add(new GroupMember
-            {
-                Id = Guid.NewGuid(),
-                GroupId = invitation.GroupId,
-                UserId = me.Id,
-                Role = invitation.Role,
-                CreatedAt = timeProvider.UtcNow,
-                UpdatedAt = timeProvider.UtcNow,
-            });
-        }
 
         // The sealed copy has become the grant, so it stops being a second copy of the key lying around.
         invitation.EncryptedVek = null;
@@ -358,7 +401,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Decline an invitation addressed to the current user.
+    /// Decline an offer of access addressed to the current user.
     /// </summary>
     /// <param name="invitationId">The invitation to decline.</param>
     /// <returns>Ok on success.</returns>
@@ -385,7 +428,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Withdraw an invitation the current user's group sent but that has not been answered yet.
+    /// Withdraw an offer of access the caller's group made but that has not been answered yet.
     /// </summary>
     /// <param name="invitationId">The invitation ID.</param>
     /// <returns>Ok on success.</returns>
@@ -412,7 +455,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Remove a member from a shared group.
+    /// Remove a member from a shared group, taking their access to every one of its vaults with them. Adding somebody
+    /// back is an operator action, so this is deliberately one-way from a client's point of view.
     /// </summary>
     /// <param name="groupId">The group ID.</param>
     /// <param name="userId">The user ID to remove.</param>
@@ -445,20 +489,40 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.CANNOT_REMOVE_GROUP_OWNER, 400));
         }
 
+        var manifestIds = await GroupHelper.GetManifestIdsOfGroupAsync(context, groupId);
+
+        /*
+         * Removing the only member who can open a vault would leave it unopenable, since the key exists nowhere else.
+         * An admin has to hand that vault to somebody else first. Leaving of one's own accord is not blocked by it:
+         * being unable to walk out of a family would be the worse failure, and the vault is the group's problem then.
+         */
+        if (!isSelf)
+        {
+            foreach (var manifestId in manifestIds)
+            {
+                if (await GrantHelper.IsLastGrantHolderAsync(context, manifestId, userId))
+                {
+                    return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.LAST_MANIFEST_GRANT_HOLDER, 400));
+                }
+            }
+        }
+
         // Start a transaction to ensure all operations are atomic.
         await using var transaction = await context.Database.BeginTransactionAsync();
         context.GroupMembers.Remove(membership);
 
-        // Sanity check: revoke any open invitations of this user for this group.
+        // An offer of access that outlived the membership it was made under would let them back in on accepting it.
         foreach (var invitation in await context.GroupInvitations.Where(i => i.GroupId == groupId && i.InviteeUserId == userId && i.State == GroupInvitationState.Pending).ToListAsync())
         {
             CloseInvitation(invitation, GroupInvitationState.Revoked);
         }
 
-        var manifestId = await context.VaultManifests.Where(m => m.OwnerGroupId == groupId).Select(m => (Guid?)m.ManifestId).FirstOrDefaultAsync();
-        if (manifestId is not null && await GrantHelper.RevokeAccessAsync(context, manifestId.Value, userId))
+        foreach (var manifestId in manifestIds)
         {
-            await ClientActionHelper.EnqueueForGroupAsync(context, ClientActionType.RotateManifestDeliveryKey, groupId, manifestId, timeProvider.UtcNow);
+            if (await GrantHelper.RevokeAccessAsync(context, manifestId, userId))
+            {
+                await ClientActionHelper.EnqueueForGroupAsync(context, ClientActionType.RotateManifestDeliveryKey, groupId, manifestId, timeProvider.UtcNow);
+            }
         }
 
         await context.SaveChangesAsync();
@@ -468,45 +532,72 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// The open invitations of each group, for the admins who may withdraw them.
+    /// The open offers of access to each shared vault, for the admins who may withdraw them.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="groupIds">The groups to list invitations of.</param>
-    /// <returns>Group id to its open invitations.</returns>
-    private static async Task<Dictionary<Guid, List<SentGroupInvitation>>> GetOpenInvitationsByGroupAsync(AliasServerDbContext context, List<Guid> groupIds)
+    /// <param name="groupIds">The groups to list offers of.</param>
+    /// <returns>Manifest id to its open offers.</returns>
+    private static async Task<Dictionary<Guid, List<SentManifestInvitation>>> GetOpenInvitationsByManifestAsync(AliasServerDbContext context, List<Guid> groupIds)
     {
         return (await context.GroupInvitations
-                .Where(i => groupIds.Contains(i.GroupId) && i.State == GroupInvitationState.Pending)
-                .Select(i => new { i.GroupId, Invitation = new SentGroupInvitation { Id = i.Id, InviteeUsername = i.Invitee.UserName ?? string.Empty, CreatedAt = i.CreatedAt } })
+                .Where(i => groupIds.Contains(i.GroupId) && i.State == GroupInvitationState.Pending && i.VaultManifestId != null)
+                .Select(i => new
+                {
+                    ManifestId = i.VaultManifestId!.Value,
+                    Invitation = new SentManifestInvitation { Id = i.Id, InviteeUserId = i.InviteeUserId, InviteeUsername = i.Invitee.UserName ?? string.Empty, CreatedAt = i.CreatedAt },
+                })
                 .ToListAsync())
-            .GroupBy(i => i.GroupId)
+            .GroupBy(i => i.ManifestId)
             .ToDictionary(g => g.Key, g => g.Select(i => i.Invitation).ToList());
     }
 
     /// <summary>
-    /// The open invitations addressed to one user.
+    /// The open offers of access addressed to one user.
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="userId">The invitee.</param>
-    /// <returns>Their open invitations.</returns>
-    private static async Task<List<ReceivedGroupInvitation>> GetReceivedInvitationsAsync(AliasServerDbContext context, string userId)
+    /// <returns>Their open offers.</returns>
+    private static async Task<List<ReceivedManifestInvitation>> GetReceivedInvitationsAsync(AliasServerDbContext context, string userId)
     {
-        return await context.GroupInvitations
-            .Where(i => i.InviteeUserId == userId && i.State == GroupInvitationState.Pending && i.Group.Type == GroupType.Shared)
+        var invitations = await context.GroupInvitations
+            .Where(i => i.InviteeUserId == userId && i.State == GroupInvitationState.Pending && i.Group.Type == GroupType.Shared && i.VaultManifestId != null)
             .OrderBy(i => i.CreatedAt)
-            .Select(i => new ReceivedGroupInvitation
+            .Select(i => new
             {
-                Id = i.Id,
-                GroupId = i.GroupId,
+                i.Id,
+                i.GroupId,
                 GroupName = i.Group.Name,
+                ManifestId = i.VaultManifestId!.Value,
                 InviterUsername = i.Inviter.UserName ?? string.Empty,
-                CreatedAt = i.CreatedAt,
+                i.CreatedAt,
             })
             .ToListAsync();
+
+        if (invitations.Count == 0)
+        {
+            return [];
+        }
+
+        var manifestIds = invitations.ConvertAll(i => i.ManifestId);
+        var existingManifestIds = (await context.VaultManifests
+            .Where(m => manifestIds.Contains(m.ManifestId))
+            .Select(m => m.ManifestId)
+            .ToListAsync()).ToHashSet();
+
+        // An offer whose vault is gone is not something the recipient can act on, so it is left out rather than shown.
+        return [.. invitations.Where(i => existingManifestIds.Contains(i.ManifestId)).Select(i => new ReceivedManifestInvitation
+        {
+            Id = i.Id,
+            GroupId = i.GroupId,
+            GroupName = i.GroupName,
+            ManifestId = i.ManifestId,
+            InviterUsername = i.InviterUsername,
+            CreatedAt = i.CreatedAt,
+        })];
     }
 
     /// <summary>
-    /// Close an invitation, dropping the vault key sealed inside it.
+    /// Close an offer of access, dropping the vault key sealed inside it.
     /// </summary>
     /// <param name="invitation">The invitation to close.</param>
     /// <param name="state">The state it ends in.</param>
@@ -520,12 +611,12 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Turn the vault key sealed into an invitation into the accepting member's grant on the group's vault.
+    /// Turn the vault key sealed into an offer of access into the accepting member's grant on that vault.
     /// </summary>
     /// <param name="context">The database context.</param>
     /// <param name="invitation">The invitation being accepted.</param>
     /// <param name="userId">The accepting user.</param>
-    /// <returns>Whether the accepting user ends up holding a grant on the group's vault.</returns>
+    /// <returns>Whether the accepting user ends up holding a grant on the vault.</returns>
     private async Task<bool> PromoteSealedGrantAsync(AliasServerDbContext context, GroupInvitation invitation, string userId)
     {
         if (invitation.EncryptedVek is null || invitation.UserGrantKeyId is null || invitation.VaultManifestId is null)
@@ -533,56 +624,19 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return false;
         }
 
-        var currentManifestId = await context.VaultManifests.Where(m => m.OwnerGroupId == invitation.GroupId).Select(m => (Guid?)m.ManifestId).FirstOrDefaultAsync();
-        if (currentManifestId != invitation.VaultManifestId)
+        var manifestId = invitation.VaultManifestId.Value;
+        if (!await context.VaultManifests.AnyAsync(m => m.ManifestId == manifestId && m.OwnerGroupId == invitation.GroupId))
         {
             return false;
         }
 
-        if (await context.VaultManifestAccessKeys.AnyAsync(k => k.VaultManifestId == currentManifestId.Value && k.UserId == userId && k.Type == ManifestKeyType.GrantKey))
+        if (await context.VaultManifestAccessKeys.AnyAsync(k => k.VaultManifestId == manifestId && k.UserId == userId && k.Type == ManifestKeyType.GrantKey))
         {
             return true;
         }
 
-        context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(currentManifestId.Value, userId, invitation.UserGrantKeyId.Value, invitation.EncryptedVek, invitation.Algorithm, timeProvider.UtcNow));
+        context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(manifestId, userId, invitation.UserGrantKeyId.Value, invitation.EncryptedVek, invitation.Algorithm, timeProvider.UtcNow));
 
         return true;
-    }
-
-    /// <summary>
-    /// Resolve who an invitation is for and whether it may be sent at all.
-    /// </summary>
-    /// <param name="context">The database context.</param>
-    /// <param name="groupId">The group ID.</param>
-    /// <param name="callerId">The inviting user.</param>
-    /// <param name="findInvitee">How to look the invitee up.</param>
-    /// <returns>The invitee, or the failure to return instead.</returns>
-    private async Task<(AliasVaultUser? Invitee, IActionResult? Failure)> ResolveInviteeAsync(AliasServerDbContext context, Guid groupId, string callerId, Func<Task<AliasVaultUser?>> findInvitee)
-    {
-        var group = await context.Groups.FirstOrDefaultAsync(g => g.Id == groupId && g.Type == GroupType.Shared);
-        if (group is null || !await GroupHelper.IsGroupAdminAsync(context, groupId, callerId))
-        {
-            return (null, NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_NOT_FOUND, 404)));
-        }
-
-        var invitee = await findInvitee();
-        if (invitee is null || invitee.Blocked)
-        {
-            return (null, NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITE_RECIPIENT_NOT_FOUND, 404)));
-        }
-
-        // Sanity check: the invitee must not already be a member of the group.
-        if (await context.GroupMembers.AnyAsync(gm => gm.GroupId == groupId && gm.UserId == invitee.Id))
-        {
-            return (null, BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ALREADY_GROUP_MEMBER, 400)));
-        }
-
-        // Sanity check: the invitee must not already have an open invitation for this group.
-        if (await context.GroupInvitations.AnyAsync(i => i.GroupId == groupId && i.InviteeUserId == invitee.Id && i.State == GroupInvitationState.Pending))
-        {
-            return (null, BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_ALREADY_EXISTS, 400)));
-        }
-
-        return (invitee, null);
     }
 }

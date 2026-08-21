@@ -28,17 +28,12 @@ public class GroupInfo
     public required string Role { get; set; }
 
     /// <summary>
-    /// Gets or sets the group's shared vault if it exists.
+    /// Gets or sets the group's shared vaults. A group holds any number of them.
     /// </summary>
-    public Guid? ManifestId { get; set; }
+    public List<SharedManifestInfo> Manifests { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the group's members.
     /// </summary>
     public List<GroupMemberInfo> Members { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets the invitations sent from this group that are still awaiting an answer (only filled if caller has sufficient permissions).
-    /// </summary>
-    public List<SentGroupInvitation> PendingInvitations { get; set; } = [];
 }

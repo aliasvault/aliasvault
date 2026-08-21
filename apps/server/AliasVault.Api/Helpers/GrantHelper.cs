@@ -9,7 +9,6 @@ namespace AliasVault.Api.Helpers;
 
 using AliasServerDb;
 using AliasVault.Shared.Models.Enums;
-using AliasVault.Shared.Models.WebApi.V2.Groups;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
@@ -64,8 +63,8 @@ public static class GrantHelper
     /// </summary>
     /// <param name="context">The database context.</param>
     /// <param name="userIds">The user IDs to look up.</param>
-    /// <returns>User ID to their grant recipient details.</returns>
-    public static async Task<Dictionary<string, GrantRecipient>> GetPrimaryKeysAsync(AliasServerDbContext context, IEnumerable<string> userIds)
+    /// <returns>User ID to the public key a vault key is sealed for them with. Users without a keypair are absent.</returns>
+    public static async Task<Dictionary<string, MemberPublicKey>> GetPrimaryKeysAsync(AliasServerDbContext context, IEnumerable<string> userIds)
     {
         var ids = userIds.Distinct(StringComparer.Ordinal).ToList();
         if (ids.Count == 0)
@@ -75,7 +74,7 @@ public static class GrantHelper
 
         return await context.UserGrantKeys
             .Where(k => ids.Contains(k.UserId) && k.IsPrimary)
-            .ToDictionaryAsync(k => k.UserId, k => new GrantRecipient { UserId = k.UserId, PublicKeyId = k.Id, PublicKey = k.PublicKey });
+            .ToDictionaryAsync(k => k.UserId, k => new MemberPublicKey(k.Id, k.PublicKey));
     }
 
     /// <summary>
@@ -107,5 +106,23 @@ public static class GrantHelper
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Whether taking this user's access away would leave nobody able to open the manifest.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="manifestId">The shared manifest.</param>
+    /// <param name="userId">The user about to lose access.</param>
+    /// <returns>True when the user holds the only grant on it.</returns>
+    public static async Task<bool> IsLastGrantHolderAsync(AliasServerDbContext context, Guid manifestId, string userId)
+    {
+        var holders = await context.VaultManifestAccessKeys
+            .Where(k => k.VaultManifestId == manifestId && k.Type == ManifestKeyType.GrantKey)
+            .Select(k => k.UserId)
+            .Distinct()
+            .ToListAsync();
+
+        return holders.Count == 1 && holders.Contains(userId, StringComparer.Ordinal);
     }
 }

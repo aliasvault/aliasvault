@@ -52,7 +52,7 @@ public static class ClientActionHelper
     }
 
     /// <summary>
-    /// Record work for the admins of a group.
+    /// Record work for the admins of a group, without queueing the same thing twice.
     /// </summary>
     /// <param name="context">The database context.</param>
     /// <param name="type">The work to be done.</param>

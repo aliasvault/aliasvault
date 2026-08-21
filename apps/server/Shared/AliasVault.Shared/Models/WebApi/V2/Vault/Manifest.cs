@@ -30,9 +30,6 @@ public class Manifest
     /// <summary>Gets or sets the blob references this manifest revision needs (so the client can detect cache misses).</summary>
     public List<BlobReference> BlobReferences { get; set; } = [];
 
-    /// <summary>Gets or sets the plaintext display name of a shared manifest. Null for the personal manifest.</summary>
-    public string? Name { get; set; }
-
     /// <summary>
     /// Gets or sets a value indicating whether the caller may administer this manifest's sharing: grant and revoke
     /// access and publish its email delivery key. True when the caller is an owner or admin of the group that owns

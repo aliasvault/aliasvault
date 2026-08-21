@@ -2,7 +2,7 @@ import { storage } from 'wxt/utils/storage';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { devWarn } from '@/utils/devLogger/DevLogger';
-import { VaultKeyAlgorithm, type CreateGroupInvitationRequest, type CreateGroupInvitationResponse, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type GrantRecipient, type GroupInvitationRecipientRequest, type GroupInvitationRecipientResponse, type GroupOverviewResponse, type ManifestGrant, type VaultKeyAlgorithmValue } from '@/utils/dist/core/models/webapi';
+import { VaultKeyAlgorithm, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type GrantManifestAccessRequest, type GrantManifestAccessResponse, type GroupMemberInfo, type GroupOverviewResponse, type ManifestGrant, type VaultKeyAlgorithmValue } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { vaultCodecGenerateManifestSalt } from '@/utils/RustCore';
 import type { SqliteClient } from '@/utils/SqliteClient';
@@ -15,13 +15,12 @@ import type { WebApiService } from '@/utils/WebApiService';
  */
 
 /**
- * The group a new shared vault is being created for, with the creator's own public key: the VEK is encrypted for it and
- * for nothing else, because a vault is created before its group has a second member and everyone who joins afterwards
- * gets the key encrypted for them inside their invitation.
+ * A shared vault about to be created, with the creator's own public key: the VEK is encrypted for it and for nothing
+ * else, because a new vault starts out with one member and everybody who is let in afterwards gets the key encrypted
+ * for them inside the offer of access that lets them in.
  */
 export type ShareTarget = {
   groupId: string;
-  name: string;
   selfPublicKey: string;
 };
 
@@ -45,16 +44,22 @@ export type SharedManifestMapping = ManifestVekGrant & { manifestId: string; sal
 export type SessionSharedManifest = ManifestVekGrant & {
   manifestId: string;
   salt: string;
+  /** Read out of the encrypted manifest on pull; null until its first revision has been pushed. */
   name?: string | null;
   canAdminister?: boolean;
 };
+
+/**
+ * What a shared vault is called when this client has no name for it yet.
+ */
+export const DEFAULT_SHARED_VAULT_NAME = 'Shared';
 
 /**
  * Service with static helpers implementing the vault sharing flows.
  */
 export class SharingService {
   /**
-   * The groups this user is in and the invitations awaiting their answer.
+   * The families this user belongs to, their shared vaults, and the offers of access awaiting an answer.
    * @param webApi - API client to reuse.
    */
   public static async getOverview(webApi: WebApiService): Promise<GroupOverviewResponse> {
@@ -71,9 +76,8 @@ export class SharingService {
     const manifestVek = EncryptionUtility.generateVaultEncryptionKey();
     const selfEncryptedVek = await EncryptionUtility.encryptWithPublicKey(manifestVek, group.selfPublicKey);
 
-    const response = await webApi.post<CreateSharedManifestRequest, CreateSharedManifestResponse>(`Groups/${group.groupId}/manifest`, {
+    const response = await webApi.post<CreateSharedManifestRequest, CreateSharedManifestResponse>(`Groups/${group.groupId}/manifests`, {
       manifestId,
-      name: group.name,
       selfEncryptedVek,
       selfPublicKey: group.selfPublicKey,
       algorithm: VaultKeyAlgorithm.RsaOaepSha256,
@@ -90,44 +94,48 @@ export class SharingService {
   }
 
   /**
-   * Resolve the account behind a username together with the public key an invitation to it has to be encrypted for.
-   * @param webApi - API client to reuse.
-   * @param groupId - the group to invite into.
-   * @param username - the account to look up.
+   * Encrypt a shared vault's VEK for one member of the group, with a public key of theirs.
+   * @param manifestVek - the shared vault's VEK.
+   * @param member - the member to encrypt it for.
    */
-  public static async resolveInvitationRecipient(webApi: WebApiService, groupId: string, username: string): Promise<GrantRecipient> {
-    const response = await webApi.post<GroupInvitationRecipientRequest, GroupInvitationRecipientResponse>(`Groups/${groupId}/invitations/recipient`, { username });
-    return response.recipient;
-  }
+  public static async encryptVekFor(manifestVek: string, member: GroupMemberInfo): Promise<ManifestGrant | null> {
+    if (!member.publicKey || !member.publicKeyId) {
+      return null;
+    }
 
-  /**
-   * Encrypt a shared manifest's VEK for one recipient, with that recipient's own public key, ready to travel inside
-   * the invitation that offers them the vault.
-   * @param manifestVek - the shared manifest's VEK.
-   * @param recipient - who to encrypt it for.
-   */
-  public static async encryptVekFor(manifestVek: string, recipient: GrantRecipient): Promise<ManifestGrant> {
     return {
-      recipientUserId: recipient.userId,
-      recipientPublicKeyId: recipient.publicKeyId,
-      encryptedVek: await EncryptionUtility.encryptWithPublicKey(manifestVek, recipient.publicKey),
+      recipientUserId: member.userId,
+      recipientPublicKeyId: member.publicKeyId,
+      encryptedVek: await EncryptionUtility.encryptWithPublicKey(manifestVek, member.publicKey),
     };
   }
 
   /**
-   * Invite an account to a group.
+   * Offer a member of the group access to one of its shared vaults.
    * @param webApi - API client to reuse.
-   * @param groupId - the group to invite into.
-   * @param userId - the account being invited, as resolved by {@link resolveInvitationRecipient}.
-   * @param grant - the group's vault key, encrypted for that account's public key, as produced by {@link encryptVekFor}.
+   * @param groupId - the group the vault belongs to.
+   * @param manifestId - the shared vault to hand access to.
+   * @param userId - the member being let in.
+   * @param grant - the vault's key, encrypted for that member, as produced by {@link encryptVekFor}.
    * @param algorithm - the algorithm the grant was encrypted with.
    */
-  public static async invite(webApi: WebApiService, groupId: string, userId: string, grant: ManifestGrant, algorithm: VaultKeyAlgorithmValue): Promise<void> {
-    await webApi.post<CreateGroupInvitationRequest, CreateGroupInvitationResponse>(`Groups/${groupId}/invitations`, { userId, grant, algorithm });
+  public static async grantAccess(webApi: WebApiService, groupId: string, manifestId: string, userId: string, grant: ManifestGrant, algorithm: VaultKeyAlgorithmValue): Promise<void> {
+    await webApi.post<GrantManifestAccessRequest, GrantManifestAccessResponse>(`Groups/${groupId}/manifests/${manifestId}/access`, { userId, grant, algorithm });
   }
 
   /**
-   * Withdraw an invitation this group sent that has not been answered yet.
+   * Take a member's access to one shared vault away, or give up one's own.
+   * @param webApi - API client to reuse.
+   * @param groupId - the group the vault belongs to.
+   * @param manifestId - the shared vault.
+   * @param userId - the member losing access.
+   */
+  public static async revokeAccess(webApi: WebApiService, groupId: string, manifestId: string, userId: string): Promise<void> {
+    await webApi.delete<void>(`Groups/${groupId}/manifests/${manifestId}/access/${userId}`);
+  }
+
+  /**
+   * Withdraw an offer of access this group made that has not been answered yet.
    * @param webApi - API client to reuse.
    * @param invitationId - the invitation to withdraw.
    */
@@ -136,7 +144,7 @@ export class SharingService {
   }
 
   /**
-   * Accept an invitation addressed to this user, joining the group.
+   * Accept an offer of access addressed to this user, opening the shared vault it names.
    * @param webApi - API client to reuse.
    * @param invitationId - the invitation to accept.
    */
@@ -145,7 +153,7 @@ export class SharingService {
   }
 
   /**
-   * Decline an invitation addressed to this user.
+   * Decline an offer of access addressed to this user.
    * @param webApi - API client to reuse.
    * @param invitationId - the invitation to decline.
    */
@@ -182,7 +190,7 @@ export class SharingService {
         continue;
       }
 
-      await createAnchorFolder(sqliteClient, record.manifestId, record.name ?? 'Shared');
+      await createAnchorFolder(sqliteClient, record.manifestId, record.name ?? DEFAULT_SHARED_VAULT_NAME);
       devWarn(`[Sharing] Shared vault ${record.manifestId} had no anchor folder; recreated it.`);
       mutated = true;
     }
@@ -296,7 +304,7 @@ export class SharingService {
  * Renders a shared manifest as a local folder.
  * @param sqliteClient - the open local vault.
  * @param manifestId - the shared vault to give a folder to.
- * @param name - the group name, used as the folder name.
+ * @param name - the vault's own name, used as the folder name.
  */
 export async function createAnchorFolder(sqliteClient: SqliteClient, manifestId: string, name: string): Promise<void> {
   const folderId = manifestId.toUpperCase();

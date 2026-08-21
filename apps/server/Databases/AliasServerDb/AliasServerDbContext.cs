@@ -355,8 +355,7 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .HasForeignKey(e => e.InviteeUserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // At most one open invitation per (group, invitee).
-            builder.HasIndex(e => new { e.GroupId, e.InviteeUserId }).IsUnique().HasFilter("\"State\" = 'Pending'").HasDatabaseName("UX_GroupInvitations_Group_Invitee_Pending");
+            builder.HasIndex(e => new { e.VaultManifestId, e.InviteeUserId }).IsUnique().HasFilter("\"State\" = 'Pending'").HasDatabaseName("UX_GroupInvitations_Manifest_Invitee_Pending");
             builder.Property(e => e.State).HasConversion<string>().HasMaxLength(20);
             builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
 

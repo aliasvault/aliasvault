@@ -22,7 +22,7 @@ public static class CapabilityRegistry
             CapabilityKeys.VaultSharing,
             CapabilityRuleKind.Entitlement,
             CapabilityValue.Off,
-            "Shared vaults: creating a shared vault, inviting people to it and accepting invitations. Currently in beta."),
+            "Shared vaults: creating a shared vault, giving family members access to it and accepting such access. Currently in beta."),
     }.AsReadOnly();
 
     private static readonly Dictionary<string, CapabilityDefinition> ByKey = Definitions.ToDictionary(d => d.Key, StringComparer.OrdinalIgnoreCase);

@@ -525,7 +525,7 @@ declare const VaultKeyAlgorithm: {
 type VaultKeyAlgorithmValue = typeof VaultKeyAlgorithm[keyof typeof VaultKeyAlgorithm];
 
 /**
- * The messages of the /v2/Groups API: the membership half of vault sharing.
+ * The messages of the /v2/Groups API: the sharing half of vault sharing.
  */
 /**
  * A member's role in a group.
@@ -538,24 +538,36 @@ type GroupMemberInfo = {
     userId: string;
     username: string;
     role: GroupRole;
+    publicKeyId: string | null;
+    publicKey: string | null;
 };
 /**
- * An invitation sent from a group that is still awaiting an answer.
+ * An offer of access to a shared vault that is still awaiting the recipient's answer.
  */
-type SentGroupInvitation = {
+type SentManifestInvitation = {
     id: string;
+    inviteeUserId: string;
     inviteeUsername: string;
     createdAt: string;
 };
 /**
- * An open invitation addressed to this user.
+ * An open offer of access to a shared vault, addressed to this user.
  */
-type ReceivedGroupInvitation = {
+type ReceivedManifestInvitation = {
     id: string;
     groupId: string;
     groupName: string;
+    manifestId: string;
     inviterUsername: string;
     createdAt: string;
+};
+/**
+ * One shared vault owned by a group, with the members who can open it.
+ */
+type SharedManifestInfo = {
+    manifestId: string;
+    memberUserIds: string[];
+    pendingInvitations: SentManifestInvitation[];
 };
 /**
  * One shared group this user belongs to.
@@ -564,56 +576,34 @@ type GroupInfo = {
     groupId: string;
     name: string;
     role: GroupRole;
-    manifestId: string | null;
+    manifests: SharedManifestInfo[];
     members: GroupMemberInfo[];
-    pendingInvitations: SentGroupInvitation[];
 };
 /**
  * Everything the sharing screen renders, as served by GET /v2/Groups.
  */
 type GroupOverviewResponse = {
     groups: GroupInfo[];
-    receivedInvitations: ReceivedGroupInvitation[];
+    receivedInvitations: ReceivedManifestInvitation[];
 };
 /**
- * Create a shared group's vault.
+ * Create another shared vault for a group.
  */
 type CreateSharedManifestRequest = {
     manifestId: string;
-    name: string;
     selfEncryptedVek: string;
     selfPublicKey: string;
     algorithm: VaultKeyAlgorithmValue;
 };
 /**
- * The created manifest, as served by POST /v2/Groups/{groupId}/manifest.
+ * The created vault, as served by POST /v2/Groups/{groupId}/manifests.
  */
 type CreateSharedManifestResponse = {
     manifestId: string;
     revisionNumber: number;
 };
 /**
- * Ask which account a username belongs to, and which public key an invitation to it must be encrypted for.
- */
-type GroupInvitationRecipientRequest = {
-    username: string;
-};
-/**
- * A user a manifest VEK can be encrypted for, with the public key to encrypt it with.
- */
-type GrantRecipient = {
-    userId: string;
-    publicKeyId: string;
-    publicKey: string;
-};
-/**
- * The resolved recipient, as served by POST /v2/Groups/{groupId}/invitations/recipient.
- */
-type GroupInvitationRecipientResponse = {
-    recipient: GrantRecipient;
-};
-/**
- * One recipient's copy of a manifest VEK, encrypted for a public key of theirs.
+ * One recipient's copy of a shared vault's VEK, encrypted for a public key of theirs.
  */
 type ManifestGrant = {
     recipientUserId: string;
@@ -621,26 +611,22 @@ type ManifestGrant = {
     encryptedVek: string;
 };
 /**
- * Invite an account to a group.
+ * Give a member of the group access to one of its shared vaults.
  */
-type CreateGroupInvitationRequest = {
+type GrantManifestAccessRequest = {
     userId: string;
     grant: ManifestGrant;
     algorithm: VaultKeyAlgorithmValue;
 };
 /**
- * The sent invitation, as served by POST /v2/Groups/{groupId}/invitations.
+ * The created offer, as served by POST /v2/Groups/{groupId}/manifests/{manifestId}/access.
  */
-type CreateGroupInvitationResponse = {
+type GrantManifestAccessResponse = {
     invitationId: string;
 };
 
 /**
  * The capability keys the server resolves and hands to clients on the status response.
- *
- * A key travels between the server and every client and is stored in rule rows, so renaming one means a
- * coordinated release across the API, the extension, the mobile app and the web client: name the capability,
- * never the screen or the marketing name it currently ships under.
  *
  * Mirrored on the server side in AliasVault.Shared.Server/Capabilities/CapabilityKeys.cs.
  */
@@ -662,4 +648,4 @@ type CapabilityKey = typeof CapabilityKeys[keyof typeof CapabilityKeys];
  */
 declare function isCapabilityEnabled(value: string | undefined): boolean;
 
-export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type CapabilityKey, CapabilityKeys, type CreateGroupInvitationRequest, type CreateGroupInvitationResponse, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type Email, type EmailAttachment, type EmailDecryptionKey, type FaviconExtractModel, type GrantRecipient, type GroupInfo, type GroupInvitationRecipientRequest, type GroupInvitationRecipientResponse, type GroupMemberInfo, type GroupOverviewResponse, type GroupRole, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, type ManifestGrant, ManifestKeyType, type ManifestKeyTypeValue, type ManifestRevision, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type ReceivedGroupInvitation, type RefreshToken, type SentGroupInvitation, type StatusResponse, type StatusResponseV2, type TokenModel, UnlockMethodType, type UnlockMethodTypeValue, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, VaultKeyAlgorithm, type VaultKeyAlgorithmValue, type VaultKeyGetResponse, type VaultKeyResponse, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse, isCapabilityEnabled };
+export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type CapabilityKey, CapabilityKeys, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type Email, type EmailAttachment, type EmailDecryptionKey, type FaviconExtractModel, type GrantManifestAccessRequest, type GrantManifestAccessResponse, type GroupInfo, type GroupMemberInfo, type GroupOverviewResponse, type GroupRole, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, type ManifestGrant, ManifestKeyType, type ManifestKeyTypeValue, type ManifestRevision, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type ReceivedManifestInvitation, type RefreshToken, type SentManifestInvitation, type SharedManifestInfo, type StatusResponse, type StatusResponseV2, type TokenModel, UnlockMethodType, type UnlockMethodTypeValue, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, VaultKeyAlgorithm, type VaultKeyAlgorithmValue, type VaultKeyGetResponse, type VaultKeyResponse, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse, isCapabilityEnabled };

@@ -24,12 +24,6 @@ public class VaultManifest : VaultManifestBase
     public Guid ManifestId { get; set; }
 
     /// <summary>
-    /// Gets or sets the optional display name of a manifest. Used in e.g. sharing UI.
-    /// </summary>
-    [StringLength(255)]
-    public string? Name { get; set; }
-
-    /// <summary>
     /// Gets or sets the group that owns this manifest.
     /// </summary>
     public Guid OwnerGroupId { get; set; }

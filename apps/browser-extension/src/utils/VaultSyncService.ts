@@ -166,8 +166,6 @@ type ManifestDto = {
   ciphertextHash?: string | null;
   revision: number;
   blobReferences?: BlobRefDto[];
-  /** Plaintext display name of a shared manifest (null for the personal manifest). */
-  name?: string | null;
   /** Whether the caller may grant/revoke access to this manifest and publish its email delivery key. */
   canAdminister?: boolean;
   /** How the caller's access to this manifest's VEK is encrypted. */
@@ -272,7 +270,7 @@ type ManifestRecord = {
   salt: string;
   /** The key this manifest encrypts with; null for the personal manifest, whose content key the push supplies (it can be freshly minted). */
   vek: string | null;
-  /** Plaintext display name; null for the personal manifest. */
+  /** Display name, as read from (and written back into) the encrypted manifest; null for the personal manifest. */
   name: string | null;
   /** Whether the caller may publish this manifest's email delivery key. */
   canAdminister: boolean;
@@ -434,7 +432,7 @@ export class VaultSyncService {
             manifestId: dto.manifestId,
             ...contentlessGrant,
             salt: await vaultCodecGenerateManifestSalt(),
-            name: dto.name ?? null,
+            name: null,
             canAdminister: dto.canAdminister ?? false,
           };
           contentlessRevisions[dto.manifestId] = dto.revision;
@@ -455,7 +453,7 @@ export class VaultSyncService {
       }
       resolved.push(entry);
 
-      devLog(`[V2Pull] Manifest ${entry.manifestId} opened (content hash verified, ${isPersonal ? 'personal' : `shared "${entry.manifest.name ?? dto.name ?? 'unnamed'}"`}): tables: ${Object.entries(entry.manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
+      devLog(`[V2Pull] Manifest ${entry.manifestId} opened (content hash verified, ${isPersonal ? 'personal' : `shared "${entry.manifest.name ?? 'unnamed'}"`}): tables: ${Object.entries(entry.manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
 
       if (isPersonal) {
         /*
@@ -478,7 +476,7 @@ export class VaultSyncService {
         manifestId: entry.manifestId,
         ...grant,
         salt: entry.manifest.manifestSalt,
-        name: entry.manifest.name ?? dto.name ?? null,
+        name: entry.manifest.name ?? null,
         canAdminister: dto.canAdminister ?? false,
       };
     }

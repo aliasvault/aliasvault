@@ -48,6 +48,29 @@ public static class GroupHelper
     }
 
     /// <summary>
+    /// Check whether a user is on a shared group's membership roster.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="groupId">The shared group ID.</param>
+    /// <param name="userId">The user ID.</param>
+    /// <returns>True when the user is a member of the group.</returns>
+    public static async Task<bool> IsSharedGroupMemberAsync(AliasServerDbContext context, Guid groupId, string userId)
+    {
+        return await context.GroupMembers.AnyAsync(m => m.GroupId == groupId && m.UserId == userId && m.Group.Type == GroupType.Shared);
+    }
+
+    /// <summary>
+    /// Get the ids of every shared vault a group holds.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="groupId">The group.</param>
+    /// <returns>The manifest ids owned by the group.</returns>
+    public static async Task<List<Guid>> GetManifestIdsOfGroupAsync(AliasServerDbContext context, Guid groupId)
+    {
+        return await context.VaultManifests.Where(m => m.OwnerGroupId == groupId).Select(m => m.ManifestId).ToListAsync();
+    }
+
+    /// <summary>
     /// Check whether the caller may administer a <see cref="GroupType.Shared"/> group.
     /// </summary>
     /// <param name="context">Database context.</param>

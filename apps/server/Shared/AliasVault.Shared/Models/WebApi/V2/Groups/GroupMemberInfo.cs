@@ -8,7 +8,7 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Groups;
 
 /// <summary>
-/// One member of a shared group.
+/// One member of a shared group, as shown to the other members.
 /// </summary>
 public class GroupMemberInfo
 {
@@ -20,4 +20,10 @@ public class GroupMemberInfo
 
     /// <summary>Gets or sets their role in the group.</summary>
     public required string Role { get; set; }
+
+    /// <summary>Gets or sets the id of the member's primary public key.</summary>
+    public Guid? PublicKeyId { get; set; }
+
+    /// <summary>Gets or sets that public key itself (JWK).</summary>
+    public string? PublicKey { get; set; }
 }

@@ -3,6 +3,7 @@ using System;
 using AliasServerDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AliasServerDb.Migrations
 {
     [DbContext(typeof(AliasServerDbContext))]
-    partial class AliasServerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260821180325_DropVaultManifestName")]
+    partial class DropVaultManifestName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -762,18 +765,16 @@ namespace AliasServerDb.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GroupId");
-
                     b.HasIndex("InviterUserId");
 
                     b.HasIndex("UserGrantKeyId");
 
-                    b.HasIndex("InviteeUserId", "State");
-
-                    b.HasIndex("VaultManifestId", "InviteeUserId")
+                    b.HasIndex("GroupId", "InviteeUserId")
                         .IsUnique()
-                        .HasDatabaseName("UX_GroupInvitations_Manifest_Invitee_Pending")
+                        .HasDatabaseName("UX_GroupInvitations_Group_Invitee_Pending")
                         .HasFilter("\"State\" = 'Pending'");
+
+                    b.HasIndex("InviteeUserId", "State");
 
                     b.ToTable("GroupInvitations");
                 });

@@ -2535,13 +2535,19 @@ export async function handleGetRecentlySelected(
 }
 
 /**
- * Create the shared vault of a group the user administers.
- * @param message - the group to create the vault for.
+ * Create another shared vault for a family, with this account as its first member.
+ *
+ * @param message - the family to create the vault for and the name to give it.
  */
-export async function handleGroupCreateVault(message: { groupId: string }): Promise<{ success: boolean; error?: string; apiErrorCode?: string }> {
+export async function handleGroupCreateVault(message: { groupId: string; name: string }): Promise<{ success: boolean; error?: string; apiErrorCode?: string }> {
   const encryptionKey = await handleGetEncryptionKey();
   if (!encryptionKey) {
     return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
+  }
+
+  const name = message.name.trim();
+  if (name.length === 0) {
+    return { success: false, error: await t('sharing.family.errors.createVaultFailed') };
   }
 
   try {
@@ -2560,20 +2566,14 @@ export async function handleGroupCreateVault(message: { groupId: string }): Prom
       return { success: false, error: await t('sharing.family.errors.vaultUpgradeRequired') };
     }
 
-    if (group.manifestId) {
-      // Already has a vault.
-      devLog(`[Sharing] Group ${group.groupId} already has vault ${group.manifestId}; nothing to create.`);
-      return { success: true };
-    }
-
     const sqliteClient = await createVaultSqliteClient();
     if (await vaultRequiresManifestMigration(sqliteClient)) {
       return { success: false, error: await t('sharing.family.errors.vaultUpgradeRequired') };
     }
 
+    // The name stays on this device: it rides into the vault below, never into the create request.
     const mapping = await SharingService.createSharedManifest(webApi, {
       groupId: group.groupId,
-      name: group.name,
       selfPublicKey,
     }, crypto.randomUUID().toUpperCase());
 
@@ -2583,25 +2583,20 @@ export async function handleGroupCreateVault(message: { groupId: string }): Prom
       encryptionPublicKey: mapping.encryptionPublicKey,
       algorithm: mapping.algorithm,
       salt: mapping.salt,
-      name: group.name,
+      name,
       canAdminister: true,
     });
 
     await recordManifestRevisions({ [mapping.manifestId]: mapping.revision });
-    await createAnchorFolder(sqliteClient, mapping.manifestId, group.name);
+    await createAnchorFolder(sqliteClient, mapping.manifestId, name);
 
     // Mail to an alias in this vault is encrypted with the vault's own keypair, which is what makes it readable by every member.
     await SharingService.rotateManifestEncryptionKey(sqliteClient, mapping.manifestId);
     await persistLocalVaultMutation(sqliteClient, encryptionKey);
 
-    devLog(`[Sharing] Created shared vault ${mapping.manifestId} for group ${group.groupId}.`);
+    devLog(`[Sharing] Created shared vault ${mapping.manifestId} ("${name}") for group ${group.groupId}.`);
     return { success: true };
   } catch (error) {
-    if (error instanceof ApiRequestError && error.apiErrorCode === 'GROUP_MANIFEST_EXISTS') {
-      // Two administrators asked at the same moment; the other one's vault stands and arrives through its grant.
-      return { success: true };
-    }
-
     console.error('Failed to create shared vault:', error);
     if (error instanceof ApiRequestError && error.apiErrorCode) {
       return { success: false, apiErrorCode: error.apiErrorCode };
@@ -2618,10 +2613,12 @@ export async function handleGroupCreateVault(message: { groupId: string }): Prom
 }
 
 /**
- * Invite somebody to a shared group, handing them the group's vault key.
- * @param message - the group to invite into and the username to invite.
+ * Give a member of a family access to one of its shared vaults, handing them the vault's key sealed for them.
+ *
+ * The recipient is picked off the family's own roster, so this never names an account outside the family.
+ * @param message - the family, the vault, and the member being let in.
  */
-export async function handleGroupInviteMember(message: { groupId: string; username: string }): Promise<{ success: boolean; error?: string; apiErrorCode?: string }> {
+export async function handleGroupGrantAccess(message: { groupId: string; manifestId: string; userId: string }): Promise<{ success: boolean; error?: string; apiErrorCode?: string }> {
   const encryptionKey = await handleGetEncryptionKey();
   if (!encryptionKey) {
     return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
@@ -2631,13 +2628,19 @@ export async function handleGroupInviteMember(message: { groupId: string; userna
     const webApi = new WebApiService();
     const overview = await SharingService.getOverview(webApi);
     const group = overview.groups.find(candidate => candidate.groupId.toLowerCase() === message.groupId.toLowerCase());
+    const manifest = group?.manifests.find(candidate => candidate.manifestId.toLowerCase() === message.manifestId.toLowerCase());
+    const member = group?.members.find(candidate => candidate.userId === message.userId);
 
-    if (!group || group.role === 'Member' || !group.manifestId) {
+    if (!group || group.role === 'Member' || !manifest || !member) {
       return { success: false, error: await t('sharing.family.errors.inviteFailed') };
     }
 
-    // Find the session's own grant on the vault.
-    const record = Object.values(await SharingService.getSessionSharedManifests()).find(candidate => candidate.manifestId.toLowerCase() === group.manifestId!.toLowerCase());
+    if (!member.publicKey) {
+      return { success: false, apiErrorCode: 'INVITE_RECIPIENT_NOT_READY' };
+    }
+
+    // Find the session's own grant on the vault: a key that was never handed to this account cannot be passed on.
+    const record = Object.values(await SharingService.getSessionSharedManifests()).find(candidate => candidate.manifestId.toLowerCase() === manifest.manifestId.toLowerCase());
     if (!record) {
       return { success: false, error: await t('sharing.family.errors.inviteFailed') };
     }
@@ -2647,28 +2650,55 @@ export async function handleGroupInviteMember(message: { groupId: string; userna
       return { success: false, error: await t('sharing.family.errors.inviteFailed') };
     }
 
-    const recipient = await SharingService.resolveInvitationRecipient(webApi, group.groupId, message.username);
-    const grant = await SharingService.encryptVekFor(manifestVek, recipient);
-    await SharingService.invite(webApi, group.groupId, recipient.userId, grant, VaultKeyAlgorithm.RsaOaepSha256);
+    const grant = await SharingService.encryptVekFor(manifestVek, member);
+    if (!grant) {
+      return { success: false, apiErrorCode: 'INVITE_RECIPIENT_NOT_READY' };
+    }
 
-    devLog(`[Sharing] Invited ${recipient.userId} to group ${group.groupId} with the key to vault ${record.manifestId} encrypted for them.`);
+    await SharingService.grantAccess(webApi, group.groupId, manifest.manifestId, member.userId, grant, VaultKeyAlgorithm.RsaOaepSha256);
+
+    devLog(`[Sharing] Offered ${member.userId} access to vault ${manifest.manifestId} with its key encrypted for them.`);
     return { success: true };
   } catch (error) {
     if (error instanceof ApiRequestError && error.apiErrorCode) {
       return { success: false, apiErrorCode: error.apiErrorCode };
     }
 
-    console.error('Failed to invite group member:', error);
+    console.error('Failed to grant shared vault access:', error);
     return { success: false, error: await t('sharing.family.errors.inviteFailed') };
   }
 }
 
 /**
- * Remove somebody from a shared group, or leave one by naming oneself.
+ * Take a member's access to one shared vault away, or give up one's own.
+ *
+ * @param message - the family, the vault, and the member losing access.
+ */
+export async function handleGroupRevokeAccess(message: { groupId: string; manifestId: string; userId: string }): Promise<{ success: boolean; error?: string; apiErrorCode?: string }> {
+  try {
+    const webApi = new WebApiService();
+    await SharingService.revokeAccess(webApi, message.groupId, message.manifestId, message.userId);
+
+    devLog(`[Sharing] Revoked ${message.userId}'s access to vault ${message.manifestId}; syncing to pick up whatever the server left for this client to finish.`);
+    void handleFullVaultSync().catch(error => console.error('Background sync after a vault access change failed:', error));
+
+    return { success: true };
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.apiErrorCode) {
+      return { success: false, apiErrorCode: error.apiErrorCode };
+    }
+
+    console.error('Failed to revoke shared vault access:', error);
+    return { success: false, error: await t('sharing.family.errors.removeMemberFailed') };
+  }
+}
+
+/**
+ * Remove somebody from a family, or leave one by naming oneself.
  *
  * @param message - the group and the member to remove.
  */
-export async function handleGroupRemoveMember(message: { groupId: string; userId: string }): Promise<{ success: boolean; error?: string }> {
+export async function handleGroupRemoveMember(message: { groupId: string; userId: string }): Promise<{ success: boolean; error?: string; apiErrorCode?: string }> {
   try {
     const webApi = new WebApiService();
     await SharingService.removeMember(webApi, message.groupId, message.userId);
@@ -2678,6 +2708,10 @@ export async function handleGroupRemoveMember(message: { groupId: string; userId
 
     return { success: true };
   } catch (error) {
+    if (error instanceof ApiRequestError && error.apiErrorCode) {
+      return { success: false, apiErrorCode: error.apiErrorCode };
+    }
+
     console.error('Failed to remove group member:', error);
     return { success: false, error: await t('sharing.family.errors.removeMemberFailed') };
   }

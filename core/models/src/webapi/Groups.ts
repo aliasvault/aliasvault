@@ -1,7 +1,7 @@
 import { VaultKeyAlgorithmValue } from './VaultKeyAlgorithm';
 
 /**
- * The messages of the /v2/Groups API: the membership half of vault sharing.
+ * The messages of the /v2/Groups API: the sharing half of vault sharing.
  */
 
 /**
@@ -16,26 +16,39 @@ export type GroupMemberInfo = {
   userId: string;
   username: string;
   role: GroupRole;
+  publicKeyId: string | null;
+  publicKey: string | null;
 }
 
 /**
- * An invitation sent from a group that is still awaiting an answer.
+ * An offer of access to a shared vault that is still awaiting the recipient's answer.
  */
-export type SentGroupInvitation = {
+export type SentManifestInvitation = {
   id: string;
+  inviteeUserId: string;
   inviteeUsername: string;
   createdAt: string;
 }
 
 /**
- * An open invitation addressed to this user.
+ * An open offer of access to a shared vault, addressed to this user.
  */
-export type ReceivedGroupInvitation = {
+export type ReceivedManifestInvitation = {
   id: string;
   groupId: string;
   groupName: string;
+  manifestId: string;
   inviterUsername: string;
   createdAt: string;
+}
+
+/**
+ * One shared vault owned by a group, with the members who can open it.
+ */
+export type SharedManifestInfo = {
+  manifestId: string;
+  memberUserIds: string[];
+  pendingInvitations: SentManifestInvitation[];
 }
 
 /**
@@ -45,9 +58,8 @@ export type GroupInfo = {
   groupId: string;
   name: string;
   role: GroupRole;
-  manifestId: string | null;
+  manifests: SharedManifestInfo[];
   members: GroupMemberInfo[];
-  pendingInvitations: SentGroupInvitation[];
 }
 
 /**
@@ -55,22 +67,21 @@ export type GroupInfo = {
  */
 export type GroupOverviewResponse = {
   groups: GroupInfo[];
-  receivedInvitations: ReceivedGroupInvitation[];
+  receivedInvitations: ReceivedManifestInvitation[];
 }
 
 /**
- * Create a shared group's vault.
+ * Create another shared vault for a group.
  */
 export type CreateSharedManifestRequest = {
   manifestId: string;
-  name: string;
   selfEncryptedVek: string;
   selfPublicKey: string;
   algorithm: VaultKeyAlgorithmValue;
 }
 
 /**
- * The created manifest, as served by POST /v2/Groups/{groupId}/manifest.
+ * The created vault, as served by POST /v2/Groups/{groupId}/manifests.
  */
 export type CreateSharedManifestResponse = {
   manifestId: string;
@@ -78,30 +89,7 @@ export type CreateSharedManifestResponse = {
 }
 
 /**
- * Ask which account a username belongs to, and which public key an invitation to it must be encrypted for.
- */
-export type GroupInvitationRecipientRequest = {
-  username: string;
-}
-
-/**
- * A user a manifest VEK can be encrypted for, with the public key to encrypt it with.
- */
-export type GrantRecipient = {
-  userId: string;
-  publicKeyId: string;
-  publicKey: string;
-}
-
-/**
- * The resolved recipient, as served by POST /v2/Groups/{groupId}/invitations/recipient.
- */
-export type GroupInvitationRecipientResponse = {
-  recipient: GrantRecipient;
-}
-
-/**
- * One recipient's copy of a manifest VEK, encrypted for a public key of theirs.
+ * One recipient's copy of a shared vault's VEK, encrypted for a public key of theirs.
  */
 export type ManifestGrant = {
   recipientUserId: string;
@@ -110,17 +98,17 @@ export type ManifestGrant = {
 }
 
 /**
- * Invite an account to a group.
+ * Give a member of the group access to one of its shared vaults.
  */
-export type CreateGroupInvitationRequest = {
+export type GrantManifestAccessRequest = {
   userId: string;
   grant: ManifestGrant;
   algorithm: VaultKeyAlgorithmValue;
 }
 
 /**
- * The sent invitation, as served by POST /v2/Groups/{groupId}/invitations.
+ * The created offer, as served by POST /v2/Groups/{groupId}/manifests/{manifestId}/access.
  */
-export type CreateGroupInvitationResponse = {
+export type GrantManifestAccessResponse = {
   invitationId: string;
 }

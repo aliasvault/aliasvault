@@ -8,7 +8,7 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Groups;
 
 /// <summary>
-/// Response for POST /v2/Groups/{groupId}/manifest. Identifies the newly created shared manifest.
+/// Response for POST /v2/Groups/{groupId}/manifests. Identifies the newly created shared vault.
 /// </summary>
 public class CreateSharedManifestResponse
 {

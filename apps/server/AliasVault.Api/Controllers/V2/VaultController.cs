@@ -91,7 +91,7 @@ public class VaultController(
 
         // Every manifest the caller can open.
         var latestManifests = await AccessibleManifests(context, user.Id)
-            .Select(x => new { x.ManifestId, x.Name, x.ManifestBlob, x.ManifestCiphertextHash, x.RevisionNumber, x.OwnerGroupId, OwnerGroupType = x.OwnerGroup.Type })
+            .Select(x => new { x.ManifestId, x.ManifestBlob, x.ManifestCiphertextHash, x.RevisionNumber, x.OwnerGroupId, OwnerGroupType = x.OwnerGroup.Type })
             .ToListAsync();
 
         if (!latestManifests.Any(m => m.OwnerGroupId == user.PersonalGroupId))
@@ -137,9 +137,6 @@ public class VaultController(
 
         var accessKeysByManifest = await GetAccessKeysAsync(context, user.Id, manifestIds);
         var encryptionPublicKeys = await GetEncryptionPublicKeysAsync(context, accessKeysByManifest.Values.Where(g => g.UserGrantKeyId != null).Select(g => g.UserGrantKeyId!.Value));
-
-        // Administering a manifest's shares follows group role, not owner identity: an admin of someone else's group
-        // may manage it, and heading a group means managing the manifests filed under it (see GrantAccess).
         var administeredGroupIds = await GroupHelper.GetAdministeredGroupIdsAsync(context, user.Id);
 
         var manifests = latestManifests.Select(m =>
@@ -151,12 +148,11 @@ public class VaultController(
             return new Manifest
             {
                 ManifestId = m.ManifestId,
-                Name = m.Name,
                 Blob = m.ManifestBlob != null ? Convert.ToBase64String(m.ManifestBlob) : null,
                 CiphertextHash = m.ManifestCiphertextHash,
                 Revision = m.RevisionNumber,
                 BlobReferences = refsByManifest.TryGetValue(m.ManifestId, out var refs) ? refs : [],
-                CanAdminister = m.OwnerGroupType == GroupType.Shared && administeredGroupIds.Contains(m.OwnerGroupId),
+                CanAdminister = m.OwnerGroupType == GroupType.Shared && administeredGroupIds.Contains(m.OwnerGroupId) && grant != null,
                 KeyType = accessKey != null ? ManifestKeyTypes.ToToken(accessKey.Type) : null,
                 EncryptedVek = grant?.EncryptedVek,
                 Algorithm = grant != null ? VaultKeyAlgorithms.ToToken(grant.Algorithm) : null,
@@ -210,7 +206,6 @@ public class VaultController(
         var manifest = new Manifest
         {
             ManifestId = latest.ManifestId,
-            Name = latest.Name,
             Blob = latest.ManifestBlob != null ? Convert.ToBase64String(latest.ManifestBlob) : null,
             CiphertextHash = latest.ManifestCiphertextHash,
             Revision = latest.RevisionNumber,
@@ -736,7 +731,8 @@ public class VaultController(
 
         var administered = await GroupHelper.SharedManifests(context)
             .Where(m => ids.Contains(m.ManifestId)
-                && context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == userId && (gm.Role == GroupRole.Admin || gm.Role == GroupRole.Owner)))
+                && context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == userId && (gm.Role == GroupRole.Admin || gm.Role == GroupRole.Owner))
+                && context.VaultManifestAccessKeys.Any(k => k.VaultManifestId == m.ManifestId && k.UserId == userId && k.Type == ManifestKeyType.GrantKey))
             .Select(m => m.ManifestId)
             .ToListAsync();
 

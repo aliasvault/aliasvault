@@ -15,7 +15,7 @@ public class ManifestGrant
     /// <summary>Gets or sets the recipient this grant is for.</summary>
     public required string RecipientUserId { get; set; }
 
-    /// <summary>Gets or sets the id of the recipient public key used to encrypt (see <see cref="GrantRecipient"/>).</summary>
+    /// <summary>Gets or sets the id of the recipient public key used to encrypt (see <see cref="GroupMemberInfo.PublicKeyId"/>).</summary>
     public required Guid RecipientPublicKeyId { get; set; }
 
     /// <summary>Gets or sets the manifest VEK encrypted with that public key (base64), decryptable only by the recipient.</summary>
