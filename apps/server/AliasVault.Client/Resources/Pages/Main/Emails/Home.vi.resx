@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Emails</value>
+    <comment>Page title</comment>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>You can view all emails received by your private email addresses below.</value>
+    <comment>Page description</comment>
+  </data>
+  <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
+    <value>Auto-refresh enabled</value>
+    <comment>Tooltip for auto-refresh indicator</comment>
+  </data>
+  <data name="RefreshButton" xml:space="preserve">
+    <value>Refresh</value>
+    <comment>Refresh button text</comment>
+  </data>
+  <data name="NoEmailClaimsMessage" xml:space="preserve">
+    <value>You are not using any private email addresses (yet). Create a new alias and use a private email address supported by AliasVault. All emails received by these private email addresses will show up here.</value>
+    <comment>Message when no email addresses are configured</comment>
+  </data>
+  <data name="NoEmailsReceivedMessage" xml:space="preserve">
+    <value>No emails have been received yet.</value>
+    <comment>Message when no emails are received</comment>
+  </data>
+  <data name="LoadingText" xml:space="preserve">
+    <value>Loading...</value>
+    <comment>Loading indicator text</comment>
+  </data>
+  <data name="LoadMoreButtonText" xml:space="preserve">
+    <value>Load More ({0} remaining)</value>
+    <comment>Load more button text with count. {0} is placeholder for number of remaining emails</comment>
+  </data>
+  <data name="ClaimDoesNotExistError" xml:space="preserve">
+    <value>An error occurred while trying to load the emails. Please try to edit and save any credential entry to synchronize the database, then try again.</value>
+    <comment>Error message when email claim does not exist</comment>
+  </data>
+  <data name="LoadEmailsFailedMessage" xml:space="preserve">
+    <value>Failed to load email: {0}</value>
+    <comment>Error message when loading email fails. {0} is placeholder for error message</comment>
+  </data>
+  <data name="LoadMoreEmailsFailedMessage" xml:space="preserve">
+    <value>Failed to load more emails: {0}</value>
+    <comment>Error message when loading more emails fails. {0} is placeholder for error message</comment>
+  </data>
+</root>
