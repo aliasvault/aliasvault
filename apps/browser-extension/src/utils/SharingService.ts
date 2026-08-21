@@ -27,7 +27,11 @@ export type ShareTarget = {
 /**
  * The client-side mapping of a shared manifest: the manifest id plus its VEK, blob-hashing salt and current revision.
  */
-export type SharedManifestMapping = { manifestId: string; vek: string; salt: string; revision: number };
+export type ManifestVekGrant = {
+  encryptedVek: string;
+  encryptionPublicKey: string;
+  algorithm: string;
+};
 
 /**
  * Session record of a shared manifest resolved during the last pull. Kept in session storage (cleared on lock)

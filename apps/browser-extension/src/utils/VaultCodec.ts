@@ -242,6 +242,27 @@ export class VaultCodec {
   }
 
   /**
+   * Every manifest id this vault holds a row for.
+   * @param sqliteClient - client wrapping the open SQLite DB
+   */
+  public static manifestIdsInVault(sqliteClient: SqliteClient): Set<string> {
+    const stampedTables = this.listUserTables(sqliteClient).filter(
+      name => sqliteClient.executeQuery<{ name: string }>(`SELECT name FROM pragma_table_info("${name}") WHERE name = 'ManifestId'`).length > 0
+    );
+
+    const ids = new Set<string>();
+    for (const name of stampedTables) {
+      for (const row of sqliteClient.executeQuery<{ ManifestId: string | null }>(`SELECT DISTINCT ManifestId FROM "${name}" WHERE ManifestId IS NOT NULL AND ManifestId != ''`)) {
+        if (row.ManifestId) {
+          ids.add(row.ManifestId);
+        }
+      }
+    }
+    return ids;
+  }
+
+  /**
+   * Normalize a SQLite-returned row into a JSON-safe shape  /**
    * Normalize a SQLite-returned row into a JSON-safe shape — Uint8Array bytes become `{ __b64: ... }`.
    * @param row - raw row from sql.js
    */

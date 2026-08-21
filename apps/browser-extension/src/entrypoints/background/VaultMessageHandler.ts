@@ -739,12 +739,16 @@ async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultM
     return (await uploadNewVaultToServer(sqliteClient, { forceFullWrite: false, createVaultKey: false })).response;
   }
 
+  // Same rule as the full push: a vault holding manifests this session cannot write is re-synced, not written to.
+  if (await vaultHoldsUnwritableManifests()) {
+    return { status: 2 };
+  }
+
   /*
    * Every manifest this vault can write. Each gets a bucket back, empty where it holds no rows of the
-   * category, so deleting a manifest's last row still reaches the server; a row stamped for anything else
-   * (a manifest whose key this session never opened) is dropped and left to the next full push.
+   * category, so deleting a manifest's last row still reaches the server.
    */
-  const writeKeys = await vaultSyncService.resolveBucketWriteKeys(encryptionKey);
+  const writeKeys = await vaultSyncService.resolveBucketWriteKeys(sqliteClient, encryptionKey);
   const overflowTable = await vaultCodecOverflowTable();
 
   for (const category of new Set(scopes)) {
@@ -1541,7 +1545,7 @@ async function runSyncPreflight(webApi: WebApiService): Promise<SyncPreflightRes
   // Get current sync state
   const syncState = await handleGetSyncState();
 
-  const needsPull = serverManifestsNeedPull(statusResponse.manifestRevisions, await getManifestRevisions());
+  let needsPull = serverManifestsNeedPull(statusResponse.manifestRevisions, await getManifestRevisions());
 
   devLog(`[VaultSync] Status received (needsPull ${needsPull}, isDirty ${syncState.isDirty})`);
 
@@ -1581,7 +1585,37 @@ async function runSyncPreflight(webApi: WebApiService): Promise<SyncPreflightRes
     syncState.isDirty = false;
   }
 
+  /*
+   * The shared-vault keys this session holds are session state; the stored vault is not, so the two can drift
+   * apart on their own — a browser restart clears the keys while the vault keeps its shared rows. Pushing in that
+   * state would drop those rows from the write instead of failing it, so pull first: the pull is what re-records
+   * the keys. Only checked when there is something to push, since that is the only case it protects.
+   */
+  if (syncState.isDirty && !needsPull && await vaultHoldsUnwritableManifests()) {
+    needsPull = true;
+  }
+
   return { proceed: true, statusResponse, syncState, needsPull };
+}
+
+/**
+ * Whether the stored vault holds rows for manifests this session cannot write, which a pull has to repair before
+ * anything may be pushed (see {@link VaultSyncService.findUnwritableManifests}). A vault that cannot even be
+ * opened answers false: it has its own failure path, and forcing a pull here would only mask it.
+ */
+async function vaultHoldsUnwritableManifests(): Promise<boolean> {
+  try {
+    const unwritable = await vaultSyncService.findUnwritableManifests(await createVaultSqliteClient());
+    if (unwritable.length === 0) {
+      return false;
+    }
+
+    devWarn(`[VaultSync] Vault holds rows for manifest(s) this session cannot write (${unwritable.join(', ')}); pulling before the push.`);
+    return true;
+  } catch (error) {
+    devWarn('[VaultSync] Could not check which manifests this session can write; leaving the pull decision to the revisions.', error);
+    return false;
+  }
 }
 
 /**
@@ -2545,7 +2579,9 @@ export async function handleGroupCreateVault(message: { groupId: string }): Prom
 
     await SharingService.addSessionSharedManifest({
       manifestId: mapping.manifestId,
-      vek: mapping.vek,
+      encryptedVek: mapping.encryptedVek,
+      encryptionPublicKey: mapping.encryptionPublicKey,
+      algorithm: mapping.algorithm,
       salt: mapping.salt,
       name: group.name,
       canAdminister: true,
@@ -2606,8 +2642,13 @@ export async function handleGroupInviteMember(message: { groupId: string; userna
       return { success: false, error: await t('sharing.family.errors.inviteFailed') };
     }
 
+    const manifestVek = await SharingService.openSharedManifestVek(await createVaultSqliteClient(), record);
+    if (!manifestVek) {
+      return { success: false, error: await t('sharing.family.errors.inviteFailed') };
+    }
+
     const recipient = await SharingService.resolveInvitationRecipient(webApi, group.groupId, message.username);
-    const grant = await SharingService.encryptVekFor(record.vek, recipient);
+    const grant = await SharingService.encryptVekFor(manifestVek, recipient);
     await SharingService.invite(webApi, group.groupId, recipient.userId, grant, VaultKeyAlgorithm.RsaOaepSha256);
 
     devLog(`[Sharing] Invited ${recipient.userId} to group ${group.groupId} with the key to vault ${record.manifestId} encrypted for them.`);

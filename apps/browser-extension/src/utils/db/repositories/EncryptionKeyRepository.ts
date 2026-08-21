@@ -40,6 +40,20 @@ export class EncryptionKeyRepository extends BaseRepository {
   }
 
   /**
+   * Get the account keypair matching the given public half.
+   * @param publicKey - The public half the grant was encrypted for
+   * @returns The keypair, or null when this vault holds no account key with that public half
+   */
+  public getAccountKeypair(publicKey: string): EncryptionKey | null {
+    const personalManifestId = this.personalManifestId();
+    if (!personalManifestId) {
+      return null;
+    }
+    const results = this.client.executeQuery<EncryptionKey>(EncryptionKeyQueries.GET_ACCOUNT_KEY_BY_PUBLIC_KEY, [personalManifestId, publicKey]);
+    return results.length > 0 ? results[0] : null;
+  }
+
+  /**
    * Make the given keypair the manifest's active one, demoting (never deleting) whatever it supersedes so
    * mail received before the rotation stays decryptable.
    * @param manifestId - The manifest id to stamp the keypair with

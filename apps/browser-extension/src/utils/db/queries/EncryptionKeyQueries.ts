@@ -30,6 +30,18 @@ export class EncryptionKeyQueries {
     LIMIT 1`;
 
   /**
+   * Get the account keypair matching the given public half.
+   */
+  public static readonly GET_ACCOUNT_KEY_BY_PUBLIC_KEY = `
+    SELECT
+      x.PublicKey,
+      x.PrivateKey,
+      x.IsPrimary
+    FROM EncryptionKeys x
+    WHERE x.ManifestId = ? AND x.PublicKey = ? AND x.IsDeleted = 0
+    LIMIT 1`;
+
+  /**
    * Demote a manifest's current keypair. Rotation demotes rather than deletes, so mail received before the
    * rotation stays decryptable by the members who still hold the folder.
    */
