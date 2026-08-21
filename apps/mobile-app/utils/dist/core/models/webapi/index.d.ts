@@ -194,22 +194,6 @@ type MailboxBulkResponse = {
     mails: MailboxEmail[];
 };
 
-/**
- * Email attachment type.
- */
-type EmailAttachment = {
-    /** The ID of the attachment */
-    id: number;
-    /** The ID of the email the attachment belongs to */
-    emailId: number;
-    /** The filename of the attachment */
-    filename: string;
-    /** The MIME type of the attachment */
-    mimeType: string;
-    /** The size of the attachment in bytes */
-    filesize: number;
-};
-
 type Email = {
     /** The raw RFC 822 source of the email message (ciphertext, base64)  */
     messageSource: string;
@@ -237,6 +221,22 @@ type Email = {
     decryptionKeys: EmailDecryptionKey[];
     /** The public keys referenced by this email's decryption keys, indexed by EmailDecryptionKey.keyIndex */
     publicKeys: string[];
+};
+
+/**
+ * Email attachment type.
+ */
+type EmailAttachment = {
+    /** The ID of the attachment */
+    id: number;
+    /** The ID of the email the attachment belongs to */
+    emailId: number;
+    /** The filename of the attachment */
+    filename: string;
+    /** The MIME type of the attachment */
+    mimeType: string;
+    /** The size of the attachment in bytes */
+    filesize: number;
 };
 
 /**
@@ -524,4 +524,128 @@ declare const VaultKeyAlgorithm: {
  */
 type VaultKeyAlgorithmValue = typeof VaultKeyAlgorithm[keyof typeof VaultKeyAlgorithm];
 
-export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type Email, type EmailAttachment, type EmailDecryptionKey, type FaviconExtractModel, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, ManifestKeyType, type ManifestKeyTypeValue, type ManifestRevision, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type RefreshToken, type StatusResponse, type StatusResponseV2, type TokenModel, UnlockMethodType, type UnlockMethodTypeValue, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, VaultKeyAlgorithm, type VaultKeyAlgorithmValue, type VaultKeyGetResponse, type VaultKeyResponse, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse };
+/**
+ * The messages of the /v2/Groups API: the membership half of vault sharing — who is in a shared group, who has been
+ * asked to join one, and the grants that hand a group's vault key to a member.
+ *
+ * The names mirror the server DTOs in `AliasVault.Shared.Models.WebApi.V2.Groups` one for one, so a change on either
+ * side is visible as a change to its counterpart. Server `Guid` and `DateTime` are strings here, as they are on the
+ * wire.
+ */
+/**
+ * A member's role in a group. The wire form is the name of the server-side `GroupRole` enum member; the privilege
+ * ordering it encodes belongs to the server and is never re-derived by a client.
+ */
+type GroupRole = 'Owner' | 'Admin' | 'Member';
+/**
+ * One member of a group.
+ */
+type GroupMemberInfo = {
+    userId: string;
+    username: string;
+    role: GroupRole;
+};
+/**
+ * An invitation sent from a group that is still awaiting an answer.
+ */
+type SentGroupInvitation = {
+    id: string;
+    inviteeUsername: string;
+    createdAt: string;
+};
+/**
+ * An open invitation addressed to this user: an offer to join somebody else's group.
+ */
+type ReceivedGroupInvitation = {
+    id: string;
+    groupId: string;
+    groupName: string;
+    inviterUsername: string;
+    createdAt: string;
+};
+/**
+ * One shared group this user belongs to.
+ */
+type GroupInfo = {
+    groupId: string;
+    name: string;
+    role: GroupRole;
+    /** The group's shared vault, or null while no admin has created one yet. Nobody can be invited before it exists. */
+    manifestId: string | null;
+    members: GroupMemberInfo[];
+    /** Open invitations sent from this group. Only served to admins, so empty for a plain member. */
+    pendingInvitations: SentGroupInvitation[];
+};
+/**
+ * Everything the sharing screen renders, as served by GET /v2/Groups.
+ */
+type GroupOverviewResponse = {
+    groups: GroupInfo[];
+    receivedInvitations: ReceivedGroupInvitation[];
+};
+/**
+ * Create a shared group's vault: the manifest blob encrypted with a freshly minted VEK, plus the creator's own copy
+ * of that VEK. The server is told which public key was used and looks its own row up from that, so it cannot name a
+ * key it holds the private half of and be handed a readable copy of the VEK.
+ */
+type CreateSharedManifestRequest = {
+    manifestId: string;
+    name: string;
+    manifestBlob: string;
+    manifestCiphertextHash?: string;
+    selfEncryptedVek: string;
+    selfPublicKey: string;
+    algorithm: VaultKeyAlgorithmValue;
+};
+/**
+ * The created vault, as served by POST /v2/Groups/{groupId}/manifest.
+ */
+type CreateSharedManifestResponse = {
+    manifestId: string;
+    revisionNumber: number;
+};
+/**
+ * Ask which account a username belongs to, and which public key an invitation to it must be sealed for.
+ */
+type GroupInvitationRecipientRequest = {
+    username: string;
+};
+/**
+ * A user a manifest VEK can be encrypted for, with the public key to encrypt it with.
+ */
+type GrantRecipient = {
+    userId: string;
+    publicKeyId: string;
+    publicKey: string;
+};
+/**
+ * The resolved recipient, as served by POST /v2/Groups/{groupId}/invitations/recipient.
+ */
+type GroupInvitationRecipientResponse = {
+    recipient: GrantRecipient;
+};
+/**
+ * One recipient's copy of a manifest VEK, encrypted for a public key of theirs.
+ */
+type ManifestGrant = {
+    recipientUserId: string;
+    recipientPublicKeyId: string;
+    encryptedVek: string;
+};
+/**
+ * Invite an account to a group, handing over the group's vault key sealed for them in the same call: accepting is
+ * then the single step that makes someone a member and gives them the key.
+ */
+type CreateGroupInvitationRequest = {
+    userId: string;
+    grant: ManifestGrant;
+    algorithm: VaultKeyAlgorithmValue;
+};
+/**
+ * The sent invitation, as served by POST /v2/Groups/{groupId}/invitations.
+ */
+type CreateGroupInvitationResponse = {
+    invitationId: string;
+};
+
+export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type CreateGroupInvitationRequest, type CreateGroupInvitationResponse, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type Email, type EmailAttachment, type EmailDecryptionKey, type FaviconExtractModel, type GrantRecipient, type GroupInfo, type GroupInvitationRecipientRequest, type GroupInvitationRecipientResponse, type GroupMemberInfo, type GroupOverviewResponse, type GroupRole, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, type ManifestGrant, ManifestKeyType, type ManifestKeyTypeValue, type ManifestRevision, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type ReceivedGroupInvitation, type RefreshToken, type SentGroupInvitation, type StatusResponse, type StatusResponseV2, type TokenModel, UnlockMethodType, type UnlockMethodTypeValue, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, VaultKeyAlgorithm, type VaultKeyAlgorithmValue, type VaultKeyGetResponse, type VaultKeyResponse, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse };
