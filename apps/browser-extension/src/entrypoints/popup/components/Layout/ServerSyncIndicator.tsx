@@ -8,9 +8,11 @@ import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 /**
  * Minimum time (ms) to show the syncing indicator.
- * Ensures user sees confirmation that a new vault was downloaded.
+ * Ensures user sees confirmation that a new vault was downloaded. Kept just long enough to register as a state
+ * rather than a flicker: a pull of an ordinary vault finishes in a few hundred ms, so a longer floor is the
+ * indicator waiting on itself rather than on the sync.
  */
-const MIN_SYNC_DISPLAY_TIME = 1000;
+const MIN_SYNC_DISPLAY_TIME = 400;
 
 /**
  * Grace period (ms) before the pending indicator appears. A save flips the vault to dirty for a few hundred ms

@@ -137,12 +137,6 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.MANIFEST_ID_INVALID, 400));
         }
 
-        // The manifest ciphertext is base64-encoded but stored as raw bytes.
-        if (!CiphertextHelper.TryDecode(model.ManifestBlob, out var manifestBlob))
-        {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
-        }
-
         if (!await GroupHelper.IsSharedGroupAdminAsync(context, groupId, me.Id))
         {
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_NOT_FOUND, 404));
@@ -165,16 +159,15 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_MANIFEST_EXISTS, 400));
         }
 
+        // Create the empty manifest.
         var manifest = new VaultManifest
         {
             ManifestId = model.ManifestId,
             OwnerGroupId = groupId,
             Name = model.Name,
             StorageFormat = ManifestFormat,
-            ManifestBlob = manifestBlob,
-            ManifestCiphertextHash = model.ManifestCiphertextHash,
-            RevisionNumber = 1,
-            FileSize = FileHelper.BytesToKilobytes(manifestBlob.Length),
+            RevisionNumber = 0,
+            FileSize = 0,
             Client = clientHeader,
             CreatedAt = timeProvider.UtcNow,
             UpdatedAt = timeProvider.UtcNow,

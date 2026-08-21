@@ -14,7 +14,7 @@ import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { readLegacySessionEncryptionKey } from '@/utils/legacy/LegacyStorageKeyFallbacks';
 import { requiresLegacyAccountKeyMigration } from '@/utils/legacy/LegacyStorageModelMigration';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
-import { getManifestRevisions, manifestsRequiringPull, toManifestRevisionMap } from '@/utils/ManifestRevisions';
+import { getManifestRevisions, manifestsRequiringPull, recordManifestRevisions, toManifestRevisionMap } from '@/utils/ManifestRevisions';
 import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
 import { PendingActionProcessor } from '@/utils/PendingActionProcessor';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
@@ -2504,7 +2504,7 @@ export async function handleGetRecentlySelected(
  * Create the shared vault of a group the user administers.
  * @param message - the group to create the vault for.
  */
-export async function handleGroupCreateVault(message: { groupId: string }): Promise<{ success: boolean; error?: string }> {
+export async function handleGroupCreateVault(message: { groupId: string }): Promise<{ success: boolean; error?: string; apiErrorCode?: string }> {
   const encryptionKey = await handleGetEncryptionKey();
   if (!encryptionKey) {
     return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
@@ -2516,6 +2516,7 @@ export async function handleGroupCreateVault(message: { groupId: string }): Prom
     const group = overview.groups.find(candidate => candidate.groupId.toLowerCase() === message.groupId.toLowerCase());
 
     if (!group || group.role === 'Member') {
+      console.error(`Failed to create shared vault: group ${message.groupId} is not one this account administers.`);
       return { success: false, error: await t('sharing.family.errors.createVaultFailed') };
     }
 
@@ -2536,31 +2537,28 @@ export async function handleGroupCreateVault(message: { groupId: string }): Prom
       return { success: false, error: await t('sharing.family.errors.vaultUpgradeRequired') };
     }
 
-    // The vault's id doubles as its anchor folder id.
-    const anchorId = crypto.randomUUID().toUpperCase();
     const mapping = await SharingService.createSharedManifest(webApi, {
       groupId: group.groupId,
       name: group.name,
       selfPublicKey,
-    }, anchorId, anchorId);
+    }, crypto.randomUUID().toUpperCase());
 
     await SharingService.addSessionSharedManifest({
-      folderId: anchorId,
       manifestId: mapping.manifestId,
       vek: mapping.vek,
       salt: mapping.salt,
-      revision: mapping.revision,
       name: group.name,
       canAdminister: true,
     });
 
+    await recordManifestRevisions({ [mapping.manifestId]: mapping.revision });
     await createAnchorFolder(sqliteClient, mapping.manifestId, group.name);
 
     // Mail to an alias in this vault is encrypted with the vault's own keypair, which is what makes it readable by every member.
     await SharingService.rotateManifestEncryptionKey(sqliteClient, mapping.manifestId);
     await persistLocalVaultMutation(sqliteClient, encryptionKey);
 
-    devLog(`[Sharing] Created shared vault ${mapping.manifestId} for group ${group.groupId}, anchored at folder ${anchorId}.`);
+    devLog(`[Sharing] Created shared vault ${mapping.manifestId} for group ${group.groupId}.`);
     return { success: true };
   } catch (error) {
     if (error instanceof ApiRequestError && error.apiErrorCode === 'GROUP_MANIFEST_EXISTS') {
@@ -2569,7 +2567,17 @@ export async function handleGroupCreateVault(message: { groupId: string }): Prom
     }
 
     console.error('Failed to create shared vault:', error);
-    return { success: false, error: await t('sharing.family.errors.createVaultFailed') };
+    if (error instanceof ApiRequestError && error.apiErrorCode) {
+      return { success: false, apiErrorCode: error.apiErrorCode };
+    }
+
+    /*
+     * Everything this can fail on (a vault that will not open, a key that will not import, a server that refuses
+     * without a code) collapses into the same sentence otherwise, which leaves nothing to act on. The cause is
+     * appended the way the upload path does it.
+     */
+    const detail = error instanceof Error && error.message.length > 0 ? ` [${error.message}]` : '';
+    return { success: false, error: `${await t('sharing.family.errors.createVaultFailed')}${detail}` };
   }
 }
 
@@ -2599,10 +2607,10 @@ export async function handleGroupInviteMember(message: { groupId: string; userna
     }
 
     const recipient = await SharingService.resolveInvitationRecipient(webApi, group.groupId, message.username);
-    const grant = await SharingService.sealVekFor(record.vek, recipient);
+    const grant = await SharingService.encryptVekFor(record.vek, recipient);
     await SharingService.invite(webApi, group.groupId, recipient.userId, grant, VaultKeyAlgorithm.RsaOaepSha256);
 
-    devLog(`[Sharing] Invited ${recipient.userId} to group ${group.groupId} with the key to vault ${record.manifestId} sealed in.`);
+    devLog(`[Sharing] Invited ${recipient.userId} to group ${group.groupId} with the key to vault ${record.manifestId} encrypted for them.`);
     return { success: true };
   } catch (error) {
     if (error instanceof ApiRequestError && error.apiErrorCode) {

@@ -525,16 +525,10 @@ declare const VaultKeyAlgorithm: {
 type VaultKeyAlgorithmValue = typeof VaultKeyAlgorithm[keyof typeof VaultKeyAlgorithm];
 
 /**
- * The messages of the /v2/Groups API: the membership half of vault sharing — who is in a shared group, who has been
- * asked to join one, and the grants that hand a group's vault key to a member.
- *
- * The names mirror the server DTOs in `AliasVault.Shared.Models.WebApi.V2.Groups` one for one, so a change on either
- * side is visible as a change to its counterpart. Server `Guid` and `DateTime` are strings here, as they are on the
- * wire.
+ * The messages of the /v2/Groups API: the membership half of vault sharing.
  */
 /**
- * A member's role in a group. The wire form is the name of the server-side `GroupRole` enum member; the privilege
- * ordering it encodes belongs to the server and is never re-derived by a client.
+ * A member's role in a group.
  */
 type GroupRole = 'Owner' | 'Admin' | 'Member';
 /**
@@ -554,7 +548,7 @@ type SentGroupInvitation = {
     createdAt: string;
 };
 /**
- * An open invitation addressed to this user: an offer to join somebody else's group.
+ * An open invitation addressed to this user.
  */
 type ReceivedGroupInvitation = {
     id: string;
@@ -570,10 +564,8 @@ type GroupInfo = {
     groupId: string;
     name: string;
     role: GroupRole;
-    /** The group's shared vault, or null while no admin has created one yet. Nobody can be invited before it exists. */
     manifestId: string | null;
     members: GroupMemberInfo[];
-    /** Open invitations sent from this group. Only served to admins, so empty for a plain member. */
     pendingInvitations: SentGroupInvitation[];
 };
 /**
@@ -584,28 +576,24 @@ type GroupOverviewResponse = {
     receivedInvitations: ReceivedGroupInvitation[];
 };
 /**
- * Create a shared group's vault: the manifest blob encrypted with a freshly minted VEK, plus the creator's own copy
- * of that VEK. The server is told which public key was used and looks its own row up from that, so it cannot name a
- * key it holds the private half of and be handed a readable copy of the VEK.
+ * Create a shared group's vault.
  */
 type CreateSharedManifestRequest = {
     manifestId: string;
     name: string;
-    manifestBlob: string;
-    manifestCiphertextHash?: string;
     selfEncryptedVek: string;
     selfPublicKey: string;
     algorithm: VaultKeyAlgorithmValue;
 };
 /**
- * The created vault, as served by POST /v2/Groups/{groupId}/manifest.
+ * The created manifest, as served by POST /v2/Groups/{groupId}/manifest.
  */
 type CreateSharedManifestResponse = {
     manifestId: string;
     revisionNumber: number;
 };
 /**
- * Ask which account a username belongs to, and which public key an invitation to it must be sealed for.
+ * Ask which account a username belongs to, and which public key an invitation to it must be encrypted for.
  */
 type GroupInvitationRecipientRequest = {
     username: string;
@@ -633,8 +621,7 @@ type ManifestGrant = {
     encryptedVek: string;
 };
 /**
- * Invite an account to a group, handing over the group's vault key sealed for them in the same call: accepting is
- * then the single step that makes someone a member and gives them the key.
+ * Invite an account to a group.
  */
 type CreateGroupInvitationRequest = {
     userId: string;

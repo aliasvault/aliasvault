@@ -64,8 +64,6 @@ export type GroupOverviewResponse = {
 export type CreateSharedManifestRequest = {
   manifestId: string;
   name: string;
-  manifestBlob: string;
-  manifestCiphertextHash?: string;
   selfEncryptedVek: string;
   selfPublicKey: string;
   algorithm: VaultKeyAlgorithmValue;
@@ -80,7 +78,7 @@ export type CreateSharedManifestResponse = {
 }
 
 /**
- * Ask which account a username belongs to, and which public key an invitation to it must be sealed for.
+ * Ask which account a username belongs to, and which public key an invitation to it must be encrypted for.
  */
 export type GroupInvitationRecipientRequest = {
   username: string;

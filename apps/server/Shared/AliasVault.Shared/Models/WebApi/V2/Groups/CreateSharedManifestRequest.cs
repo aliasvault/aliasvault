@@ -18,12 +18,6 @@ public class CreateSharedManifestRequest
     /// <summary>Gets or sets the plaintext display name of the manifest.</summary>
     public required string Name { get; set; }
 
-    /// <summary>Gets or sets the encrypted manifest blob (AES-GCM ciphertext under the manifest VEK, base64).</summary>
-    public required string ManifestBlob { get; set; }
-
-    /// <summary>Gets or sets the SHA-256 (hex) of the manifest ciphertext, for storage-layer integrity verification.</summary>
-    public string? ManifestCiphertextHash { get; set; }
-
     /// <summary>Gets or sets the manifest VEK encrypted with the user's own public key (base64), decryptable only by the user.</summary>
     public required string SelfEncryptedVek { get; set; }
 

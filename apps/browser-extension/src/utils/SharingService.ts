@@ -1,0 +1,246 @@
+import { storage } from 'wxt/utils/storage';
+
+import { StorageKeys } from '@/utils/constants/storageKeys';
+import { devWarn } from '@/utils/devLogger/DevLogger';
+import { VaultKeyAlgorithm, type CreateGroupInvitationRequest, type CreateGroupInvitationResponse, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type GrantRecipient, type GroupInvitationRecipientRequest, type GroupInvitationRecipientResponse, type GroupOverviewResponse, type ManifestGrant, type VaultKeyAlgorithmValue } from '@/utils/dist/core/models/webapi';
+import { EncryptionUtility } from '@/utils/EncryptionUtility';
+import { vaultCodecGenerateManifestSalt } from '@/utils/RustCore';
+import type { SqliteClient } from '@/utils/SqliteClient';
+import type { WebApiService } from '@/utils/WebApiService';
+
+/**
+ * Vault sharing logic. A shared manifest is a non-personal VaultManifest server-side, owned by a group and encrypted with its own VEK.
+ * All manifests (both personal and shared) get combined into a single local sqlite vault database that this client consumes.
+ */
+
+/**
+ * The group a new shared vault is being created for, with the creator's own public key: the VEK is encrypted for it and
+ * for nothing else, because a vault is created before its group has a second member and everyone who joins afterwards
+ * gets the key encrypted for them inside their invitation.
+ */
+export type ShareTarget = {
+  groupId: string;
+  name: string;
+  selfPublicKey: string;
+};
+
+/**
+ * The client-side mapping of a shared manifest: the manifest id plus its VEK, blob-hashing salt and current revision.
+ */
+export type SharedManifestMapping = { manifestId: string; vek: string; salt: string; revision: number };
+
+/**
+ * Session record of a shared manifest resolved during the last pull. Kept in session storage (cleared on lock)
+ * because the VEK is plaintext; rebuilt from the server grant on the next pull.
+ *
+ * This is the sync layer's key cache and nothing more: it says which manifests this session can open and write,
+ * never how any of them is presented. Where a manifest is rendered is the client's own choice, made from the vault
+ * itself (see {@link createAnchorFolder}), and its revision is owned by `ManifestRevisions`.
+ *
+ * The presence of a record is what makes a manifest writable. `canAdminister` is the permission: whether this user
+ * may grant/revoke access and publish the manifest's email delivery key, which is also true for an admin of a group
+ * they do not own.
+ */
+export type SessionSharedManifest = {
+  manifestId: string;
+  vek: string;
+  salt: string;
+  name?: string | null;
+  canAdminister?: boolean;
+};
+
+/**
+ * Service with static helpers implementing the vault sharing flows.
+ */
+export class SharingService {
+  /**
+   * The groups this user is in and the invitations awaiting their answer.
+   * @param webApi - API client to reuse.
+   */
+  public static async getOverview(webApi: WebApiService): Promise<GroupOverviewResponse> {
+    return webApi.get<GroupOverviewResponse>('Groups');
+  }
+
+  /**
+   * Create a shared group's vault.
+   * @param webApi - API client to reuse.
+   * @param group - the group to create the vault for, with this client's own public key to encrypt its VEK for.
+   * @param manifestId - the client-minted id of the new vault.
+   */
+  public static async createSharedManifest(webApi: WebApiService, group: ShareTarget, manifestId: string): Promise<SharedManifestMapping> {
+    const manifestVek = EncryptionUtility.generateVaultEncryptionKey();
+
+    const response = await webApi.post<CreateSharedManifestRequest, CreateSharedManifestResponse>(`Groups/${group.groupId}/manifest`, {
+      manifestId,
+      name: group.name,
+      selfEncryptedVek: await EncryptionUtility.encryptWithPublicKey(manifestVek, group.selfPublicKey),
+      selfPublicKey: group.selfPublicKey,
+      algorithm: VaultKeyAlgorithm.RsaOaepSha256,
+    });
+
+    // The salt the first push writes into the vault: it lives inside the manifest, which does not exist yet.
+    return { manifestId: response.manifestId, vek: manifestVek, salt: await vaultCodecGenerateManifestSalt(), revision: response.revisionNumber };
+  }
+
+  /**
+   * Resolve the account behind a username together with the public key an invitation to it has to be encrypted for.
+   * @param webApi - API client to reuse.
+   * @param groupId - the group to invite into.
+   * @param username - the account to look up.
+   */
+  public static async resolveInvitationRecipient(webApi: WebApiService, groupId: string, username: string): Promise<GrantRecipient> {
+    const response = await webApi.post<GroupInvitationRecipientRequest, GroupInvitationRecipientResponse>(`Groups/${groupId}/invitations/recipient`, { username });
+    return response.recipient;
+  }
+
+  /**
+   * Encrypt a shared manifest's VEK for one recipient, with that recipient's own public key, ready to travel inside
+   * the invitation that offers them the vault.
+   * @param manifestVek - the shared manifest's VEK.
+   * @param recipient - who to encrypt it for.
+   */
+  public static async encryptVekFor(manifestVek: string, recipient: GrantRecipient): Promise<ManifestGrant> {
+    return {
+      recipientUserId: recipient.userId,
+      recipientPublicKeyId: recipient.publicKeyId,
+      encryptedVek: await EncryptionUtility.encryptWithPublicKey(manifestVek, recipient.publicKey),
+    };
+  }
+
+  /**
+   * Invite an account to a group.
+   * @param webApi - API client to reuse.
+   * @param groupId - the group to invite into.
+   * @param userId - the account being invited, as resolved by {@link resolveInvitationRecipient}.
+   * @param grant - the group's vault key, encrypted for that account's public key, as produced by {@link encryptVekFor}.
+   * @param algorithm - the algorithm the grant was encrypted with.
+   */
+  public static async invite(webApi: WebApiService, groupId: string, userId: string, grant: ManifestGrant, algorithm: VaultKeyAlgorithmValue): Promise<void> {
+    await webApi.post<CreateGroupInvitationRequest, CreateGroupInvitationResponse>(`Groups/${groupId}/invitations`, { userId, grant, algorithm });
+  }
+
+  /**
+   * Withdraw an invitation this group sent that has not been answered yet.
+   * @param webApi - API client to reuse.
+   * @param invitationId - the invitation to withdraw.
+   */
+  public static async withdrawInvitation(webApi: WebApiService, invitationId: string): Promise<void> {
+    await webApi.delete<void>(`Groups/invitations/${invitationId}`);
+  }
+
+  /**
+   * Accept an invitation addressed to this user, joining the group.
+   * @param webApi - API client to reuse.
+   * @param invitationId - the invitation to accept.
+   */
+  public static async acceptInvitation(webApi: WebApiService, invitationId: string): Promise<void> {
+    await webApi.post<object, void>(`Groups/invitations/${invitationId}/accept`, {}, false);
+  }
+
+  /**
+   * Decline an invitation addressed to this user.
+   * @param webApi - API client to reuse.
+   * @param invitationId - the invitation to decline.
+   */
+  public static async declineInvitation(webApi: WebApiService, invitationId: string): Promise<void> {
+    await webApi.post<object, void>(`Groups/invitations/${invitationId}/decline`, {}, false);
+  }
+
+  /**
+   * Remove a member from a group, or leave one by naming oneself.
+   * @param webApi - API client to reuse.
+   * @param groupId - the group.
+   * @param userId - the member to remove.
+   */
+  public static async removeMember(webApi: WebApiService, groupId: string, userId: string): Promise<void> {
+    await webApi.delete<void>(`Groups/${groupId}/members/${userId}`);
+  }
+
+  /**
+   * Make sure every shared vault this session administers is anchored at a local folder.
+   * @param sqliteClient - the open local vault.
+   * @returns Whether the vault was mutated.
+   */
+  public static async ensureAnchorFolders(sqliteClient: SqliteClient): Promise<boolean> {
+    let mutated = false;
+
+    for (const record of Object.values(await this.getSessionSharedManifests())) {
+      if (!record.canAdminister) {
+        // A member waiting for the administrator's first push has nothing to anchor yet.
+        continue;
+      }
+
+      const anchored = sqliteClient.executeQuery<{ Id: string }>('SELECT Id FROM Folders WHERE ManifestId = ? AND IsDeleted = 0 AND ParentFolderId IS NULL', [record.manifestId]);
+      if (anchored.length > 0) {
+        continue;
+      }
+
+      await createAnchorFolder(sqliteClient, record.manifestId, record.name ?? 'Shared');
+      devWarn(`[Sharing] Shared vault ${record.manifestId} had no anchor folder; recreated it.`);
+      mutated = true;
+    }
+
+    return mutated;
+  }
+
+  /**
+   * Mint a fresh active keypair for a shared manifest.
+   * @param sqliteClient - the open local vault DB (caller must run this inside a vault mutation so it is saved)
+   * @param manifestId - the shared manifest's id (the stamp its key rows carry)
+   */
+  public static async rotateManifestEncryptionKey(sqliteClient: SqliteClient, manifestId: string): Promise<void> {
+    const keyPair = await EncryptionUtility.generateRsaKeyPair();
+    sqliteClient.encryptionKeys.setActiveForManifest(manifestId, keyPair.publicKey, keyPair.privateKey);
+  }
+
+  /**
+   * The shared manifests resolved during the last pull (see {@link SessionSharedManifest}), keyed by manifest id.
+   * Both manifests the user administers and manifests shared with them arrive embedded in GET /v2/Vault; the pull
+   * flow decrypts their VEKs with the private key and records them here for the push path.
+   */
+  public static async getSessionSharedManifests(): Promise<Record<string, SessionSharedManifest>> {
+    return ((await storage.getItem(StorageKeys.SHARED_MANIFESTS)) as Record<string, SessionSharedManifest> | null) ?? {};
+  }
+
+  /**
+   * Persist the session shared-manifest records (written by the pull flow and share create, read by push and the UI).
+   */
+  public static async setSessionSharedManifests(manifests: Record<string, SessionSharedManifest>): Promise<void> {
+    await storage.setItem(StorageKeys.SHARED_MANIFESTS, manifests);
+  }
+
+  /**
+   * Add (or replace) a session shared-manifest record, used after creating a share so the very next push already
+   * carries the rows stamped for it, before any pull has run.
+   */
+  public static async addSessionSharedManifest(record: SessionSharedManifest): Promise<void> {
+    const manifests = await this.getSessionSharedManifests();
+    manifests[record.manifestId] = record;
+    await this.setSessionSharedManifests(manifests);
+  }
+
+  /**
+   * Decrypt an RSA-OAEP encrypted manifest VEK with the given private key (JWK string), returning the VEK as base64.
+   */
+  public static async decryptManifestVek(encryptedVek: string, privateKey: string): Promise<string> {
+    const plaintextBytes = await EncryptionUtility.decryptWithPrivateKey(encryptedVek, privateKey);
+    return new TextDecoder().decode(plaintextBytes);
+  }
+
+}
+
+/**
+ * Renders a shared manifest as a local folder. This is purely a client-side UI choice: manifests are not tied
+ * to anything, all items in the vault are associated with a manifestId, but how its rendered, either as a 
+ * local folder or as hard vault-switching, is the client's own choice. It does not affect the storage and sync layers.
+ * @param sqliteClient - the open local vault.
+ * @param manifestId - the shared vault to give a folder to.
+ * @param name - the group name, used as the folder name.
+ */
+export async function createAnchorFolder(sqliteClient: SqliteClient, manifestId: string, name: string): Promise<void> {
+  const folderId = manifestId.toUpperCase();
+  await sqliteClient.folders.create(name, null, folderId);
+  await sqliteClient.folders.restampSubtree(folderId, manifestId);
+}
+
+export default SharingService;

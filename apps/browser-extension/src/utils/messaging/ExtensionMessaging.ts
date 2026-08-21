@@ -89,7 +89,7 @@ export interface IExtensionMessageProtocol {
   GET_VAULT(): VaultResponse;
   GET_VAULT_MIGRATION_STATUS(): VaultMigrationStatus;
   GET_WEBAUTHN_SETTINGS(data: any): WebAuthnSettingsResponse;
-  GROUP_CREATE_VAULT(data: { groupId: string }): { success: boolean; error?: string };
+  GROUP_CREATE_VAULT(data: { groupId: string }): { success: boolean; error?: string; apiErrorCode?: string };
   GROUP_INVITE_MEMBER(data: { groupId: string; username: string }): { success: boolean; error?: string; apiErrorCode?: string };
   GROUP_REMOVE_MEMBER(data: { groupId: string; userId: string }): { success: boolean; error?: string };
   IS_URL_LINKED_TO_CREDENTIAL(data: { itemId: string; url: string }): { linked: boolean };

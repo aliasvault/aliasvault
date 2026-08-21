@@ -1,4 +1,3 @@
-import { EmailAttachment } from "./EmailAttachment";
 import { EmailDecryptionKey } from "./EmailDecryptionKey";
 
 export type Email = {

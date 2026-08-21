@@ -14,13 +14,13 @@ import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 import { buildEmailRouting } from '@/utils/EmailRouting';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { completeLegacyAccountKeyMigration, isLegacySqliteBlobSnapshot, legacyUnstampedRowAdoption, openLegacySqliteBlobSnapshot, prepareLegacyAccountKeyMigration, withOutdatedServerGuard, type LegacyAccountKeyMigration, type LegacySqliteBlobSnapshot } from '@/utils/legacy/LegacyStorageModelMigration';
-import { getManifestRevisions, getPersonalManifestId, recordManifestRevisions, replaceManifestRevisions } from '@/utils/ManifestRevisions';
+import { getManifestRevisions, getPersonalManifestId, recordManifestRevisions, replaceManifestRevisions, toManifestRevisionMap } from '@/utils/ManifestRevisions';
 import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateManifestSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecBlobEntry, type CodecCanonicalized, type CodecManifest, type CodecManifestSpec} from '@/utils/RustCore';
 import { SharingService, type SessionSharedManifest } from '@/utils/SharingService';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getStorageItem } from '@/utils/StorageUtility';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
-import { type VaultManifest, type VaultDataBucket, VaultCodec } from '@/utils/VaultCodec';
+import { type VaultManifest, type VaultDataBucket, type TableData, VaultCodec } from '@/utils/VaultCodec';
 import { VaultKeyService } from '@/utils/VaultKeyService';
 import { WebApiService } from '@/utils/WebApiService';
 
@@ -87,13 +87,23 @@ async function verifyDecryptUnpack(base64Ciphertext: string, vek: string, expect
 }
 
 /**
- * The folder a client renders a manifest at: the single top-level folder inside it (the one whose
- * parent lives in a namespace this manifest cannot see, so canonicalize nulled it).
- * @param manifest - the decrypted manifest
+ * Every manifest id the vault holds a row for. Read off the whole table set the codec is about to be handed rather
+ * than off a chosen few tables: any stamped row of any table is a row that has to travel with its manifest, so a
+ * narrower check would silently drop the ones it did not look at. Ids are compared exactly, the way the codec
+ * routes them, so "present here" means the same thing as "rows will land there".
+ * @param tables - the vault's tables as read for this canonicalize
  */
-function topLevelFolderId(manifest: VaultManifest): string | null {
-  const roots = (manifest.tables.Folders ?? []).filter(row => row.ParentFolderId == null && !row.IsDeleted).map(row => String(row.Id));
-  return roots.length === 1 ? roots[0] : null;
+function manifestIdsPresentIn(tables: TableData[]): Set<string> {
+  const present = new Set<string>();
+  for (const table of tables) {
+    for (const record of table.records) {
+      const manifestId = record.ManifestId;
+      if (typeof manifestId === 'string' && manifestId.length > 0) {
+        present.add(manifestId);
+      }
+    }
+  }
+  return present;
 }
 
 /**
@@ -268,12 +278,8 @@ type ManifestRecord = {
   isPersonal: boolean;
   /** Salt this manifest's blob hashes are derived with. */
   salt: string;
-  /** The folder this manifest is anchored at; null for the personal manifest, which anchors nowhere. */
-  folderId: string | null;
   /** The key this manifest encrypts with; null for the personal manifest, whose content key the push supplies (it can be freshly minted). */
   vek: string | null;
-  /** Last-known server revision as of this resolve; the push overlays anything newer it has recorded since. */
-  revision: number;
   /** Plaintext display name; null for the personal manifest. */
   name: string | null;
   /** Whether the caller may publish this manifest's email delivery key. */
@@ -422,18 +428,23 @@ export class VaultSyncService {
     const accountKeyVeks = new Map<string, string>([[personalDto.manifestId, vek]]);
     const resolved: ResolvedManifest[] = [];
     const sessionSharedManifests: Record<string, SessionSharedManifest> = {};
-    /*
-     * Folder id of each manifest as of the last pull, so a manifest that is currently empty (created
-     * but not yet split into) still resolves to the folder the client renders it at.
-     */
-    const priorFolderIds = new Map(Object.values(await SharingService.getSessionSharedManifests()).map(r => [r.manifestId, r.folderId]));
+    const contentlessRevisions: Record<string, number> = {};
     for (const dto of [personalDto, ...(snapshot.manifests ?? []).filter(m => m.manifestId !== personalDto.manifestId)]) {
       const isPersonal = dto.manifestId === personalDto.manifestId;
       const manifestKey = await this.resolveManifestVek(dto, accountKeyVeks, isPersonal, resolved[0]?.manifest ?? null);
       if (!manifestKey || !dto.blob) {
-        // Same policy as a manifest that fails to open: a shared one only costs us that folder, the home one is the vault.
         if (dto.manifestId === personalDto.manifestId) {
           throw new Error(`VaultSyncService: no key resolved for the home manifest ${dto.manifestId} (key type "${dto.keyType ?? 'unspecified'}"), refusing to assemble.`);
+        }
+        if (manifestKey) {
+          sessionSharedManifests[dto.manifestId] = {
+            manifestId: dto.manifestId,
+            vek: manifestKey,
+            salt: await vaultCodecGenerateManifestSalt(),
+            name: dto.name ?? null,
+            canAdminister: dto.canAdminister ?? false,
+          };
+          contentlessRevisions[dto.manifestId] = dto.revision;
         }
         continue;
       }
@@ -451,8 +462,7 @@ export class VaultSyncService {
       }
       resolved.push(entry);
 
-      const folderId = isPersonal ? null : (topLevelFolderId(entry.manifest) ?? priorFolderIds.get(dto.manifestId) ?? null);
-      devLog(`[V2Pull] Manifest ${entry.manifestId} opened (content hash verified, ${isPersonal ? 'personal' : `folder ${folderId ?? 'unassigned'}`}): tables: ${Object.entries(entry.manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
+      devLog(`[V2Pull] Manifest ${entry.manifestId} opened (content hash verified, ${isPersonal ? 'personal' : `shared "${entry.manifest.name ?? dto.name ?? 'unnamed'}"`}): tables: ${Object.entries(entry.manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
 
       if (isPersonal) {
         /*
@@ -465,21 +475,13 @@ export class VaultSyncService {
         continue;
       }
 
-      if (folderId) {
-        // A manifest the user administers must win over one they only have read access to for the same folder id.
-        const existing = sessionSharedManifests[folderId];
-        if (!(existing?.canAdminister && !dto.canAdminister)) {
-          sessionSharedManifests[folderId] = {
-            folderId,
-            manifestId: dto.manifestId,
-            vek: manifestKey,
-            salt: entry.manifest.manifestSalt,
-            revision: entry.revision,
-            name: entry.manifest.name ?? dto.name ?? null,
-            canAdminister: dto.canAdminister ?? false,
-          };
-        }
-      }
+      sessionSharedManifests[entry.manifestId] = {
+        manifestId: entry.manifestId,
+        vek: manifestKey,
+        salt: entry.manifest.manifestSalt,
+        name: entry.manifest.name ?? dto.name ?? null,
+        canAdminister: dto.canAdminister ?? false,
+      };
     }
     await SharingService.setSessionSharedManifests(sessionSharedManifests);
 
@@ -538,7 +540,7 @@ export class VaultSyncService {
       pulledFingerprints[fingerprintManifestKey(entry.manifestId)] = entry.contentFingerprint;
     }
 
-    const manifestRevisions = Object.fromEntries(resolved.map(m => [m.manifestId, m.revision]));
+    const manifestRevisions = { ...Object.fromEntries(resolved.map(m => [m.manifestId, m.revision])), ...contentlessRevisions };
     await replaceManifestRevisions(manifestRevisions);
     devLog(`[V2Pull] Stored local manifest revisions from snapshot: ${Object.entries(manifestRevisions).map(([id, rev]) => `${id}=${rev}`).join(', ')}. Next status check compares against these.`);
 
@@ -861,16 +863,7 @@ export class VaultSyncService {
     const forceFullWrite = options?.forceFullWrite === true;
     const fingerprints = await this.loadContentFingerprints();
 
-    /*
-     * The revision each manifest rebases on, re-read here rather than taken off the records: canonicalize may have
-     * run earlier (the pre-push no-op check caches its result) and a write in between advances them.
-     */
     const storedRevisions = await getManifestRevisions();
-    /**
-     * Get the revision of a manifest from the stored revisions, or use the revision from the manifest record if not found.
-     */
-    const revisionOf = (record: ManifestRecord): number => storedRevisions[record.manifestId] ?? record.revision;
-
     const recordByManifestId = new Map(manifestRecords.map(r => [r.manifestId, r]));
     const candidates: PushManifest[] = canonicalized.manifests.flatMap(({ manifest, blobs }): PushManifest[] => {
       const record = recordByManifestId.get(manifest.manifestId);
@@ -881,10 +874,9 @@ export class VaultSyncService {
         manifestId: record.manifestId,
         isPersonal: record.isPersonal,
         manifest,
-        // Only the personal manifest leaves its key open, for the content key resolved above.
         vek: record.vek ?? contentKey,
         blobs,
-        currentRevision: revisionOf(record),
+        currentRevision: storedRevisions[record.manifestId] ?? 0,
       }];
     });
 
@@ -1068,7 +1060,7 @@ export class VaultSyncService {
          * means that mutation was interrupted after the manifest was created server-side. Aliases in its subtree
          * stay personal (readable by the owner only) until sharing is toggled again.
          */
-        devWarn(`[V2Push] Shared manifest anchored at folder ${record.folderId} is missing its email keypair; its aliases stay personal until sharing is re-enabled.`);
+        devWarn(`[V2Push] Shared manifest ${record.manifestId} is missing its email keypair; its aliases stay personal until sharing is re-enabled.`);
       }
     }
 
@@ -1125,16 +1117,7 @@ export class VaultSyncService {
     }
 
     // Advance the baseline of the manifests this write included.
-    const sessionShared = await SharingService.getSessionSharedManifests();
-    const writtenRevisions = new Map((resp.manifestRevisions ?? []).map(r => [r.manifestId, r.revision]));
-    await recordManifestRevisions(Object.fromEntries(writtenRevisions));
-    for (const record of Object.values(sessionShared)) {
-      const revision = writtenRevisions.get(record.manifestId);
-      if (revision !== undefined) {
-        record.revision = revision;
-      }
-    }
-    await SharingService.setSessionSharedManifests(sessionShared);
+    await recordManifestRevisions(toManifestRevisionMap(resp.manifestRevisions));
 
     /*
      * Record the new content baselines for every target this write actually carried, so the next push can skip
@@ -1188,7 +1171,7 @@ export class VaultSyncService {
     // Read tables from the SQLite database and apply the manifest-v1 format rules.
     const tables = VaultCodec.readTables(sqliteClient);
 
-    const manifestRecords = await this.resolveManifestRecords(sqliteClient);
+    const manifestRecords = await this.resolveManifestRecords(tables);
     /*
      * Membership is the ManifestId stamp on each row (written by the repositories at insert, move and share time),
      * so a spec only has to name the manifest and supply its blob salt. The personal manifest goes first: the codec reads the
@@ -1335,40 +1318,35 @@ export class VaultSyncService {
 
   /**
    * Resolve every manifest this vault can write, personal manifest first, as one uniform list.
-   * @param sqliteClient - the open local vault DB
+   * @param tables - the vault's tables as read for this canonicalize
    */
-  private async resolveManifestRecords(sqliteClient: SqliteClient): Promise<ManifestRecord[]> {
+  private async resolveManifestRecords(tables: TableData[]): Promise<ManifestRecord[]> {
     let manifestSalt = (await storage.getItem(StorageKeys.VAULT_MANIFEST_SALT)) as string | null;
     if (!manifestSalt) {
       manifestSalt = await vaultCodecGenerateManifestSalt();
       await storage.setItem(StorageKeys.VAULT_MANIFEST_SALT, manifestSalt);
     }
 
-    const personalManifestId = await this.resolvePersonalManifestId();
     const records: ManifestRecord[] = [{
-      manifestId: personalManifestId,
+      manifestId: await this.resolvePersonalManifestId(),
       isPersonal: true,
       salt: manifestSalt,
-      folderId: null,
       vek: null,
-      revision: (await getManifestRevisions())[personalManifestId] ?? 0,
       name: null,
-      // The personal manifest's own delivery key is published as the account-level key, not per manifest.
       canAdminister: false,
     }];
 
-    const folderIdsInDb = new Set(sqliteClient.executeQuery<{ Id: string }>('SELECT Id FROM Folders').map(r => r.Id));
+    const stampedManifestIds = manifestIdsPresentIn(tables);
     for (const record of Object.values(await SharingService.getSessionSharedManifests())) {
-      if (!folderIdsInDb.has(record.folderId)) {
+      if (!stampedManifestIds.has(record.manifestId)) {
+        devLog(`[V2Push] Shared manifest ${record.manifestId} has no rows in this vault; leaving it out of the write rather than emptying it server-side.`);
         continue;
       }
       records.push({
         manifestId: record.manifestId,
         isPersonal: false,
         salt: record.salt,
-        folderId: record.folderId,
         vek: record.vek,
-        revision: record.revision ?? 0,
         name: record.name ?? null,
         canAdminister: record.canAdminister === true,
       });
