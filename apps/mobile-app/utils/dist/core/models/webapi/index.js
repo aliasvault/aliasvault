@@ -50,4 +50,16 @@ var VaultKeyAlgorithm = {
   RsaOaepSha256: "rsa-oaep-sha256"
 };
 
-export { AuthEventType, ManifestKeyType, UnlockMethodType, VaultKeyAlgorithm };
+// src/webapi/CapabilityKeys.ts
+var CapabilityKeys = {
+  /**
+   * Shared vaults: creating one, inviting people to it, and accepting an invitation to one. The capability
+   * behind the Family Sharing screens, and behind anything else built on a vault more than one account holds.
+   */
+  VaultSharing: "vault-sharing"
+};
+function isCapabilityEnabled(value) {
+  return value?.toLowerCase() === "true";
+}
+
+export { AuthEventType, CapabilityKeys, ManifestKeyType, UnlockMethodType, VaultKeyAlgorithm, isCapabilityEnabled };

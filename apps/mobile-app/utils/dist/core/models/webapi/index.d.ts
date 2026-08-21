@@ -82,9 +82,9 @@ type StatusResponseV2 = {
     clientVersionSupported: boolean;
     serverVersion: string;
     manifestRevisions: ManifestRevision[];
-    /** The manifest owned by the user's personal group; every other entry is a shared one. */
     personalManifestId: string | null;
     srpSalt: string;
+    capabilities?: Record<string, string>;
 };
 
 /**
@@ -635,4 +635,31 @@ type CreateGroupInvitationResponse = {
     invitationId: string;
 };
 
-export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type CreateGroupInvitationRequest, type CreateGroupInvitationResponse, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type Email, type EmailAttachment, type EmailDecryptionKey, type FaviconExtractModel, type GrantRecipient, type GroupInfo, type GroupInvitationRecipientRequest, type GroupInvitationRecipientResponse, type GroupMemberInfo, type GroupOverviewResponse, type GroupRole, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, type ManifestGrant, ManifestKeyType, type ManifestKeyTypeValue, type ManifestRevision, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type ReceivedGroupInvitation, type RefreshToken, type SentGroupInvitation, type StatusResponse, type StatusResponseV2, type TokenModel, UnlockMethodType, type UnlockMethodTypeValue, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, VaultKeyAlgorithm, type VaultKeyAlgorithmValue, type VaultKeyGetResponse, type VaultKeyResponse, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse };
+/**
+ * The capability keys the server resolves and hands to clients on the status response.
+ *
+ * A key travels between the server and every client and is stored in rule rows, so renaming one means a
+ * coordinated release across the API, the extension, the mobile app and the web client: name the capability,
+ * never the screen or the marketing name it currently ships under.
+ *
+ * Mirrored on the server side in AliasVault.Shared.Server/Capabilities/CapabilityKeys.cs.
+ */
+declare const CapabilityKeys: {
+    /**
+     * Shared vaults: creating one, inviting people to it, and accepting an invitation to one. The capability
+     * behind the Family Sharing screens, and behind anything else built on a vault more than one account holds.
+     */
+    readonly VaultSharing: "vault-sharing";
+};
+/**
+ * A capability key known to this build.
+ */
+type CapabilityKey = typeof CapabilityKeys[keyof typeof CapabilityKeys];
+/**
+ * Whether a resolved value means the capability is on. Anything that is not "true" is off, so a value this build
+ * does not understand fails closed rather than exposing a capability.
+ * @param value - the value the server resolved, or undefined when it did not mention the key at all.
+ */
+declare function isCapabilityEnabled(value: string | undefined): boolean;
+
+export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type CapabilityKey, CapabilityKeys, type CreateGroupInvitationRequest, type CreateGroupInvitationResponse, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type Email, type EmailAttachment, type EmailDecryptionKey, type FaviconExtractModel, type GrantRecipient, type GroupInfo, type GroupInvitationRecipientRequest, type GroupInvitationRecipientResponse, type GroupMemberInfo, type GroupOverviewResponse, type GroupRole, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, type ManifestGrant, ManifestKeyType, type ManifestKeyTypeValue, type ManifestRevision, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type ReceivedGroupInvitation, type RefreshToken, type SentGroupInvitation, type StatusResponse, type StatusResponseV2, type TokenModel, UnlockMethodType, type UnlockMethodTypeValue, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, VaultKeyAlgorithm, type VaultKeyAlgorithmValue, type VaultKeyGetResponse, type VaultKeyResponse, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse, isCapabilityEnabled };

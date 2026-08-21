@@ -50,8 +50,7 @@ public class StatusResponse
     public List<BucketRevision> BucketRevisions { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets what this caller may do, keyed by capability. Includes the ones that are off, so an absent key
-    /// means only that this server does not know the capability.
+    /// Gets or sets what this caller may do, keyed by capability.
     /// </summary>
     public Dictionary<string, string> Capabilities { get; set; } = [];
 

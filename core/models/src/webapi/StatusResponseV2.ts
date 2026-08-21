@@ -13,7 +13,7 @@ export type StatusResponseV2 = {
   clientVersionSupported: boolean;
   serverVersion: string;
   manifestRevisions: ManifestRevision[];
-  /** The manifest owned by the user's personal group; every other entry is a shared one. */
   personalManifestId: string | null;
   srpSalt: string;
+  capabilities?: Record<string, string>;
 }

@@ -27,16 +27,23 @@ public class CapabilityService(IAliasServerDbContextFactory dbContextFactory, IM
     private const string EnabledRulesCacheKey = "CapabilityRules_Enabled";
 
     /// <summary>
-    /// Resolves the caller's capabilities, every one this build knows about, on or off.
+    /// Resolves the capabilities to hand the caller. Ones that resolve to off are left out.
     /// </summary>
     /// <param name="userId">The calling account.</param>
     /// <param name="clientHeader">The raw client header the call arrived with, used by client-scoped rules.</param>
-    /// <returns>Every known capability key and its resolved value.</returns>
+    /// <returns>The capability keys that resolved to something other than off, with their values.</returns>
     public async Task<Dictionary<string, string>> GetCapabilitiesAsync(string userId, string? clientHeader)
     {
         var rules = await GetEnabledRulesAsync();
         var subject = await BuildSubjectAsync(userId, clientHeader, rules);
-        return CapabilityResolver.ResolveAll(rules, subject, timeProvider.UtcNow);
+        var resolved = CapabilityResolver.ResolveAll(rules, subject, timeProvider.UtcNow);
+
+        /*
+         * Filter on the off value itself rather than on IsEnabled: values are strings so one can carry a cap or a
+         * variant name, and those are not "true" but do still need to reach the client.
+         */
+        var enabled = resolved.Where(x => !string.Equals(x.Value, CapabilityValue.Off, StringComparison.OrdinalIgnoreCase));
+        return enabled.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal);
     }
 
     /// <summary>

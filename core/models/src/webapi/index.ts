@@ -29,3 +29,4 @@ export * from './UnlockMethodType';
 export * from './ManifestKeyType';
 export * from './VaultKeyAlgorithm';
 export * from './Groups';
+export * from './CapabilityKeys';
