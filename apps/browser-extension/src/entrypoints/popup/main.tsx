@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from '@/entrypoints/popup/App';
 import { AppProvider } from '@/entrypoints/popup/context/AppContext';
 import { AuthProvider } from '@/entrypoints/popup/context/AuthContext';
+import { CapabilityProvider } from '@/entrypoints/popup/context/CapabilityContext';
 import { DbProvider } from '@/entrypoints/popup/context/DbContext';
 import { HeaderButtonsProvider } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { LoadingProvider } from '@/entrypoints/popup/context/LoadingContext';
@@ -24,7 +25,9 @@ const renderApp = (): void => {
             <LoadingProvider>
               <HeaderButtonsProvider>
                 <ThemeProvider>
-                  <App />
+                  <CapabilityProvider>
+                    <App />
+                  </CapabilityProvider>
                 </ThemeProvider>
               </HeaderButtonsProvider>
             </LoadingProvider>

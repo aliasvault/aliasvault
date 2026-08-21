@@ -26,6 +26,8 @@ export const StorageKeys = {
   CLIENT_URL: 'local:clientUrl',
   /** Version reported by the server on the last status call. */
   SERVER_VERSION: 'local:serverVersion',
+  /** The capabilities that are enabled for this account passed from the server. */
+  CAPABILITIES: 'local:capabilities',
 
   /*
    * -- Vault data (local cache) --
@@ -197,11 +199,12 @@ export const dirtyScopeStorageKey = (scope: VaultMutationScope): `local:${string
  */
 export const bucketRevisionKey = (manifestId: string, category: string): string => `${manifestId}:${category}`;
 
-/** Keys that hold auth tokens and ephemeral error state. Cleared on any logout. */
+/** Keys that hold auth tokens, ephemeral error state and account-scoped server state. Cleared on any logout. */
 export const AUTH_STORAGE_KEYS: readonly StorageKey[] = [
   StorageKeys.ACCESS_TOKEN,
   StorageKeys.REFRESH_TOKEN,
   StorageKeys.LAST_SYNC_ERROR,
+  StorageKeys.CAPABILITIES,
 ];
 
 /** Keys that must not survive a vault lock: the encryption key plus anything derived from decrypted data. */

@@ -7,6 +7,7 @@ import Header from '@/entrypoints/popup/components/Layout/Header';
 import PasskeyLayout from '@/entrypoints/popup/components/Layout/PasskeyLayout';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
+import { RequireCapability } from '@/entrypoints/popup/context/CapabilityContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { NavigationProvider } from '@/entrypoints/popup/context/NavigationContext';
@@ -39,6 +40,7 @@ import PasswordGeneratorSettings from '@/entrypoints/popup/pages/settings/Passwo
 import Settings from '@/entrypoints/popup/pages/settings/Settings';
 import VaultUnlockSettings from '@/entrypoints/popup/pages/settings/VaultUnlockSettings';
 
+import { CapabilityKeys } from '@/utils/dist/core/models/webapi';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
@@ -211,7 +213,7 @@ const App: React.FC = () => {
     { path: '/settings/identity-generator', element: <IdentityGeneratorSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/password-generator', element: <PasswordGeneratorSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/appearance', element: <AppearanceSettings />, showBackButton: true, title: t('common.settings') },
-    { path: '/settings/family-sharing', element: <FamilySharingSettings />, showBackButton: true, title: t('common.settings') },
+    { path: '/settings/family-sharing', element: <RequireCapability capability={CapabilityKeys.VaultSharing}><FamilySharingSettings /></RequireCapability>, showBackButton: true, title: t('common.settings') },
   ], [t]);
 
   useEffect(() => {

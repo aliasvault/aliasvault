@@ -4,6 +4,7 @@ import type { StatusResponseV2 } from '@/utils/dist/core/models/webapi';
 import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
 
 import { AppInfo } from "./AppInfo";
+import { CapabilityService } from './CapabilityService';
 import { ApiAuthError } from './types/errors/ApiAuthError';
 import { ApiRequestError } from './types/errors/ApiRequestError';
 import { ClientUpgradeRequiredError } from './types/errors/ClientUpgradeRequiredError';
@@ -324,6 +325,10 @@ export class WebApiService {
       if (status.serverVersion && status.serverVersion !== '0.0.0') {
         await storage.setItem(StorageKeys.SERVER_VERSION, status.serverVersion);
       }
+
+      // Persist the capabilities that are enabled for this account.
+      await CapabilityService.store(status);
+
       return status;
     } catch (error) {
       /**
@@ -343,7 +348,8 @@ export class WebApiService {
         serverVersion: '0.0.0',
         manifestRevisions: [],
         personalManifestId: null,
-        srpSalt: ''
+        srpSalt: '',
+        capabilities: await CapabilityService.getAll()
       };
     }
   }
