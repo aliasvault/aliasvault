@@ -34,7 +34,7 @@ public sealed class RequireCapabilityAttribute(string capabilityKey) : Attribute
         }
 
         var capabilityService = context.HttpContext.RequestServices.GetRequiredService<CapabilityService>();
-        var clientHeader = context.HttpContext.Request.Headers[ClientHeaderInfo.HeaderName].FirstOrDefault();
+        var clientHeader = ClientHeaderInfo.GetRawValue(context.HttpContext.Request);
         if (await capabilityService.IsEnabledAsync(userId, capabilityKey, clientHeader))
         {
             return;

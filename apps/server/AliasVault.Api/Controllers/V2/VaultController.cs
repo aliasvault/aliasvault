@@ -244,10 +244,9 @@ public class VaultController(
     /// buckets, and new blobs in a single all-or-nothing DB transaction.
     /// </summary>
     /// <param name="model">Vault write request DTO.</param>
-    /// <param name="clientHeader">Client header.</param>
     /// <returns>Vault write response DTO.</returns>
     [HttpPost("")]
-    public async Task<IActionResult> Write([FromBody] VaultWriteRequest model, [FromHeader(Name = "X-AliasVault-Client")] string? clientHeader)
+    public async Task<IActionResult> Write([FromBody] VaultWriteRequest model)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
         var user = await GetCurrentUserAsync();
@@ -439,7 +438,7 @@ public class VaultController(
                 row.RevisionNumber = mw.CurrentRevision + 1;
                 row.FileSize = FileHelper.BytesToKilobytes(row.ManifestBlob.Length);
                 row.CredentialsCount = mw.CredentialsCount;
-                row.Client = clientHeader;
+                row.Client = ClientHeader;
                 row.UpdatedAt = timeProvider.UtcNow;
 
                 // Every manifest counts the aliases the push filed against it, shared manifests included. One

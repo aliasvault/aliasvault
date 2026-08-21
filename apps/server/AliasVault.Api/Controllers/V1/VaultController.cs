@@ -136,10 +136,9 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
     /// Save a new vault to the database for the current user.
     /// </summary>
     /// <param name="model">Vault model.</param>
-    /// <param name="clientHeader">Client header.</param>
     /// <returns>IActionResult.</returns>
     [HttpPost("")]
-    public async Task<IActionResult> Update([FromBody] Shared.Models.WebApi.V1.Vault.Vault model, [FromHeader(Name = "X-AliasVault-Client")] string? clientHeader)
+    public async Task<IActionResult> Update([FromBody] Shared.Models.WebApi.V1.Vault.Vault model)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
@@ -195,7 +194,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         currentManifest.FileSize = FileHelper.Base64StringToKilobytes(model.Blob);
         currentManifest.CredentialsCount = model.CredentialsCount;
         currentManifest.EmailClaimsCount = model.EmailAddressList.Count;
-        currentManifest.Client = clientHeader;
+        currentManifest.Client = ClientHeader;
         currentManifest.CreatedAt = timeProvider.UtcNow;
         currentManifest.UpdatedAt = timeProvider.UtcNow;
 
@@ -222,12 +221,9 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
     /// Save a new vault to the database based on a new encryption password for the current user.
     /// </summary>
     /// <param name="model">Vault model.</param>
-    /// <param name="clientHeader">Client header.</param>
     /// <returns>IActionResult.</returns>
     [HttpPost("change-password")]
-    public async Task<IActionResult> UpdateChangePassword(
-        [FromBody] VaultPasswordChangeRequest model,
-        [FromHeader(Name = "X-AliasVault-Client")] string? clientHeader)
+    public async Task<IActionResult> UpdateChangePassword([FromBody] VaultPasswordChangeRequest model)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
@@ -300,7 +296,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         currentManifest.Verifier = model.NewPasswordVerifier;
         currentManifest.EncryptionType = Defaults.EncryptionType;
         currentManifest.EncryptionSettings = Defaults.EncryptionSettings;
-        currentManifest.Client = clientHeader;
+        currentManifest.Client = ClientHeader;
         currentManifest.CreatedAt = timeProvider.UtcNow;
         currentManifest.UpdatedAt = timeProvider.UtcNow;
 

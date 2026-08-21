@@ -78,11 +78,10 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// <summary>
     /// Status endpoint called by client to check if user is still authenticated and get sync status.
     /// </summary>
-    /// <param name="clientHeader">Client header.</param>
     /// <returns>Returns status response if valid authentication is provided, otherwise it will return 401 unauthorized.</returns>
     [Authorize]
     [HttpGet("status")]
-    public async Task<IActionResult> Status([FromHeader(Name = "X-AliasVault-Client")] string? clientHeader)
+    public async Task<IActionResult> Status()
     {
         var user = await userManager.GetUserAsync(User);
         if (user == null)
@@ -105,7 +104,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         // Check client version compatibility if header is provided
         var clientSupported = false;
-        var clientInfo = ClientHeaderInfo.Parse(clientHeader);
+        var clientInfo = ClientHeaderInfo.Parse(ClientHeaderInfo.GetRawValue(Request));
         if (!string.IsNullOrEmpty(clientInfo.ClientVersion)
             && AppInfo.MinimumClientVersions.TryGetValue(clientInfo.ClientName, out var minimumVersion))
         {

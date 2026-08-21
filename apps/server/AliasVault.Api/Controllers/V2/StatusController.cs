@@ -35,10 +35,9 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
     /// <summary>
     /// Status endpoint called by the client to get the full sync status in one call.
     /// </summary>
-    /// <param name="clientHeader">Client header used for version-compatibility checks.</param>
     /// <returns>The combined status response, or 401 when the caller is not authenticated.</returns>
     [HttpGet]
-    public async Task<IActionResult> Status([FromHeader(Name = "X-AliasVault-Client")] string? clientHeader)
+    public async Task<IActionResult> Status()
     {
         var user = await GetUserManager().GetUserAsync(User);
         if (user == null)
@@ -70,7 +69,7 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
 
         // Check client version compatibility if the header is provided.
         var clientSupported = false;
-        var clientInfo = ClientHeaderInfo.Parse(clientHeader);
+        var clientInfo = ClientHeaderInfo.Parse(ClientHeader);
         if (!string.IsNullOrEmpty(clientInfo.ClientVersion)
             && AppInfo.MinimumClientVersions.TryGetValue(clientInfo.ClientName, out var minimumVersion))
         {
@@ -87,7 +86,7 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
             ManifestRevisions = manifestRevisions,
             PersonalManifestId = personalManifestId,
             BucketRevisions = bucketRevisions,
-            Capabilities = await capabilityService.GetCapabilitiesAsync(user.Id, clientHeader),
+            Capabilities = await capabilityService.GetCapabilitiesAsync(user.Id, ClientHeader),
             PendingActions = await ClientActionHelper.GetPendingActionsAsync(context, user.Id),
         });
     }

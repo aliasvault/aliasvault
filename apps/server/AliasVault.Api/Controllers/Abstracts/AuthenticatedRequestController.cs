@@ -26,7 +26,7 @@ public abstract class AuthenticatedRequestController(UserManager<AliasVaultUser>
     /// <summary>
     /// Gets the raw client header the current request arrived with.
     /// </summary>
-    protected string? ClientHeader => Request.Headers[ClientHeaderInfo.HeaderName].FirstOrDefault();
+    protected string? ClientHeader => ClientHeaderInfo.GetRawValue(Request);
 
     /// <summary>
     /// Get the userManager instance.
