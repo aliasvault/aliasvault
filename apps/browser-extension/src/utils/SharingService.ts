@@ -5,6 +5,7 @@ import { StorageKeys } from '@/utils/constants/storageKeys';
 import { devWarn } from '@/utils/devLogger/DevLogger';
 import { VaultKeyAlgorithm, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type DeleteSharedManifestInitiateResponse, type DeleteSharedManifestRequest, type GrantManifestAccessRequest, type GrantManifestAccessResponse, type GroupMemberInfo, type GroupOverviewResponse, type ManifestGrant, type ReceivedManifestInvitation, type VaultKeyAlgorithmValue } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
+import { readLegacySessionEncryptionKey } from '@/utils/legacy/LegacyStorageKeyFallbacks';
 import { vaultCodecGenerateManifestSalt } from '@/utils/RustCore';
 import type { SqliteClient } from '@/utils/SqliteClient';
 import { VaultKeyService } from '@/utils/VaultKeyService';
@@ -40,12 +41,12 @@ export type ManifestVekGrant = {
 export type SharedManifestMapping = ManifestVekGrant & { manifestId: string; salt: string; revision: number };
 
 /**
- * Session record of a shared manifest resolved during the last pull. Rebuilt from the server grant on every pull.
+ * Key record of a shared manifest, resolved during the last pull (or a share create) and rebuilt from the server
+ * grant on every pull.
  */
-export type SessionSharedManifest = ManifestVekGrant & {
+export type SharedManifestRecord = ManifestVekGrant & {
   manifestId: string;
   salt: string;
-  /** Read out of the encrypted manifest on pull; null until its first revision has been pushed. */
   name?: string | null;
   canAdminister?: boolean;
 };
@@ -227,7 +228,7 @@ export class SharingService {
   public static async ensureAnchorFolders(sqliteClient: SqliteClient): Promise<boolean> {
     let mutated = false;
 
-    for (const record of Object.values(await this.getSessionSharedManifests())) {
+    for (const record of Object.values(await this.getSharedManifestRecords())) {
       if (!record.canAdminister) {
         // A member waiting for the administrator's first push has nothing to anchor yet.
         continue;
@@ -257,37 +258,56 @@ export class SharingService {
   }
 
   /**
-   * The shared manifests resolved during the last pull (see {@link SessionSharedManifest}), keyed by manifest id.
-   * Both manifests the user administers and manifests shared with them arrive embedded in GET /v2/Vault; the pull
-   * flow decrypts their VEKs with the private key and records them here for the push path.
+   * The shared-manifest key records (see {@link SharedManifestRecord}), keyed by manifest id.
    */
-  public static async getSessionSharedManifests(): Promise<Record<string, SessionSharedManifest>> {
-    return ((await storage.getItem(StorageKeys.SHARED_MANIFESTS)) as Record<string, SessionSharedManifest> | null) ?? {};
+  public static async getSharedManifestRecords(): Promise<Record<string, SharedManifestRecord>> {
+    const ciphertext = (await storage.getItem(StorageKeys.SHARED_MANIFESTS)) as string | null;
+    const encryptionKey = ciphertext ? await this.sessionEncryptionKey() : null;
+    if (!ciphertext || !encryptionKey) {
+      return {};
+    }
+
+    try {
+      return JSON.parse(await EncryptionUtility.symmetricDecrypt(ciphertext, encryptionKey)) as Record<string, SharedManifestRecord>;
+    } catch (error) {
+      devWarn('[Sharing] The stored shared-manifest key records did not decrypt (re-keyed vault?); treating them as absent.', error);
+      return {};
+    }
   }
 
   /**
-   * The session record of one shared manifest.
+   * The key record of one shared manifest.
    * @param manifestId - the manifest to look up.
    */
-  public static async getSessionSharedManifest(manifestId: string): Promise<SessionSharedManifest | null> {
-    return Object.values(await this.getSessionSharedManifests()).find(record => record.manifestId.toLowerCase() === manifestId.toLowerCase()) ?? null;
+  public static async getSharedManifestRecord(manifestId: string): Promise<SharedManifestRecord | null> {
+    return Object.values(await this.getSharedManifestRecords()).find(record => record.manifestId.toLowerCase() === manifestId.toLowerCase()) ?? null;
   }
 
   /**
-   * Persist the session shared-manifest records (written by the pull flow and share create, read by push and the UI).
+   * Persist the shared-manifest key records.
+   * @param manifests - the full record map; replaces whatever is stored.
+   * @param encryptionKey - the vault encryption key the map is sealed with, passed explicitly because both writers already hold it.
    */
-  public static async setSessionSharedManifests(manifests: Record<string, SessionSharedManifest>): Promise<void> {
-    await storage.setItem(StorageKeys.SHARED_MANIFESTS, manifests);
+  public static async setSharedManifestRecords(manifests: Record<string, SharedManifestRecord>, encryptionKey: string): Promise<void> {
+    await storage.setItem(StorageKeys.SHARED_MANIFESTS, await EncryptionUtility.symmetricEncrypt(JSON.stringify(manifests), encryptionKey));
   }
 
   /**
-   * Add (or replace) a session shared-manifest record, used after creating a share so the very next push already
-   * carries the rows stamped for it, before any pull has run.
+   * Add (or replace) one shared-manifest key record.
+   * @param record - the record to add.
+   * @param encryptionKey - the vault encryption key the map is sealed with.
    */
-  public static async addSessionSharedManifest(record: SessionSharedManifest): Promise<void> {
-    const manifests = await this.getSessionSharedManifests();
+  public static async addSharedManifestRecord(record: SharedManifestRecord, encryptionKey: string): Promise<void> {
+    const manifests = await this.getSharedManifestRecords();
     manifests[record.manifestId] = record;
-    await this.setSessionSharedManifests(manifests);
+    await this.setSharedManifestRecords(manifests, encryptionKey);
+  }
+
+  /**
+   * The session vault encryption key, or null while the vault is locked.
+   */
+  private static async sessionEncryptionKey(): Promise<string | null> {
+    return ((await storage.getItem(StorageKeys.ENCRYPTION_KEY)) as string | null) ?? await readLegacySessionEncryptionKey();
   }
 
   /**
@@ -303,7 +323,7 @@ export class SharingService {
    * @param sqliteClient - the open local vault, the durable home of the account's superseded private keys.
    * @param record - the manifest to open.
    */
-  public static async openSharedManifestVek(sqliteClient: SqliteClient, record: SessionSharedManifest): Promise<string | null> {
+  public static async openSharedManifestVek(sqliteClient: SqliteClient, record: SharedManifestRecord): Promise<string | null> {
     if (record.algorithm !== VaultKeyAlgorithm.RsaOaepSha256) {
       devWarn(`[Sharing] Vault ${record.manifestId} grants its key under an unsupported algorithm "${record.algorithm}" (newer server?); leaving it closed.`);
       return null;
@@ -329,7 +349,7 @@ export class SharingService {
    */
   public static async openSharedManifestVeks(sqliteClient: SqliteClient): Promise<Map<string, string>> {
     const veks = new Map<string, string>();
-    for (const record of Object.values(await this.getSessionSharedManifests())) {
+    for (const record of Object.values(await this.getSharedManifestRecords())) {
       const vek = await this.openSharedManifestVek(sqliteClient, record);
       if (vek) {
         veks.set(record.manifestId, vek);

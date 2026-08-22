@@ -1629,12 +1629,11 @@ async function vaultHoldsUnwritableManifests(): Promise<boolean> {
 }
 
 /**
- * Whether the stored vault holds rows of shared manifests this session has no key record for, which a pull has to repair.
- * A manifest still unrecorded after its pull (the server no longer serves it) is not pulled for again.
+ * Whether the stored vault holds rows of shared manifests this account has no key record for, which a pull has to repair.
  */
 async function vaultHoldsUnrecordedSharedManifests(): Promise<boolean> {
   try {
-    const recorded = new Set(Object.values(await SharingService.getSessionSharedManifests()).map(record => record.manifestId.toLowerCase()));
+    const recorded = new Set(Object.values(await SharingService.getSharedManifestRecords()).map(record => record.manifestId.toLowerCase()));
     for (const manifestId of recorded) {
       manifestsPulledForSharedKeys.delete(manifestId);
     }
@@ -1723,7 +1722,7 @@ async function announceSyncPhase(needsPull: boolean, isDirty: boolean): Promise<
  */
 async function applyServerDirectedChanges(webApi: WebApiService, statusResponse: StatusResponseV2, syncState: VaultSyncState, encryptionKey: string, needsPull: boolean): Promise<boolean> {  
   const pendingActions = PendingActionProcessor.pendingActions(statusResponse);
-  const sharedManifestCount = Object.keys(await SharingService.getSessionSharedManifests()).length;
+  const sharedManifestCount = Object.keys(await SharingService.getSharedManifestRecords()).length;
   if (pendingActions.length === 0 && sharedManifestCount === 0) {
     return false;
   }
@@ -2618,7 +2617,7 @@ export async function handleGroupCreateVault(message: { groupId: string; name: s
       selfPublicKey,
     }, crypto.randomUUID().toUpperCase());
 
-    await SharingService.addSessionSharedManifest({
+    await SharingService.addSharedManifestRecord({
       manifestId: mapping.manifestId,
       encryptedVek: mapping.encryptedVek,
       encryptionPublicKey: mapping.encryptionPublicKey,
@@ -2626,7 +2625,7 @@ export async function handleGroupCreateVault(message: { groupId: string; name: s
       salt: mapping.salt,
       name,
       canAdminister: true,
-    });
+    }, encryptionKey);
 
     await recordManifestRevisions({ [mapping.manifestId]: mapping.revision });
     await createAnchorFolder(sqliteClient, mapping.manifestId, name);
@@ -2697,16 +2696,17 @@ export async function handleGroupInviteMember(message: { groupId: string; manife
       return { success: false, apiErrorCode: 'INVITE_RECIPIENT_NOT_READY' };
     }
 
-    // Find the session's own grant on the vault: a key that was never handed to this account cannot be passed on.
-    let record = await SharingService.getSessionSharedManifest(manifest.manifestId);
+    // Find this account's own grant on the vault: a key that was never handed to this account cannot be passed on.
+    let record = await SharingService.getSharedManifestRecord(manifest.manifestId);
     if (!record) {
-      devWarn(`[Sharing] No key record for vault ${manifest.manifestId} in this session; pulling to re-record it before inviting.`);
+      // Backstop: the records persist next to the vault, so a missing one means a desync only a pull repairs.
+      devWarn(`[Sharing] No key record stored for vault ${manifest.manifestId}; pulling to re-record it before inviting.`);
       await handleFullVaultSync({ forcePull: true });
-      record = await SharingService.getSessionSharedManifest(manifest.manifestId);
+      record = await SharingService.getSharedManifestRecord(manifest.manifestId);
     }
 
     if (!record) {
-      return failed('this session holds no key for the vault');
+      return failed('this account holds no key for the vault');
     }
 
     const sqliteClient = await createVaultSqliteClient();

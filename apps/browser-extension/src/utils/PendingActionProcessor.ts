@@ -89,7 +89,7 @@ export class PendingActionProcessor {
    * @param sqliteClient - the open local vault.
    */
   private static async rotateDeliveryKey(action: PendingClientAction, sqliteClient: SqliteClient): Promise<ActionOutcome> {
-    const record = Object.values(await SharingService.getSessionSharedManifests()).find(candidate => idsEqual(candidate.manifestId, action.manifestId));
+    const record = Object.values(await SharingService.getSharedManifestRecords()).find(candidate => idsEqual(candidate.manifestId, action.manifestId));
 
     if (!record?.canAdminister) {
       devLog(`[PendingActions] Vault ${action.manifestId} is not open to this session as an administrator; leaving its delivery key rotation for another sync.`);

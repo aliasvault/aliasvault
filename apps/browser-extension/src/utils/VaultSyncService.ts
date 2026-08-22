@@ -16,7 +16,7 @@ import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { completeLegacyAccountKeyMigration, isLegacySqliteBlobSnapshot, legacyUnstampedRowAdoption, openLegacySqliteBlobSnapshot, prepareLegacyAccountKeyMigration, withOutdatedServerGuard, type LegacyAccountKeyMigration, type LegacySqliteBlobSnapshot } from '@/utils/legacy/LegacyStorageModelMigration';
 import { getManifestRevisions, getPersonalManifestId, recordManifestRevisions, replaceManifestRevisions, toManifestRevisionMap } from '@/utils/ManifestRevisions';
 import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateManifestSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecBlobEntry, type CodecCanonicalized, type CodecManifest, type CodecManifestSpec} from '@/utils/RustCore';
-import { anchorFolderNames, SharingService, type ManifestVekGrant, type SessionSharedManifest } from '@/utils/SharingService';
+import { anchorFolderNames, SharingService, type ManifestVekGrant, type SharedManifestRecord } from '@/utils/SharingService';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getStorageItem } from '@/utils/StorageUtility';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
@@ -417,7 +417,7 @@ export class VaultSyncService {
      */
     const accountKeyVeks = new Map<string, string>([[personalDto.manifestId, vek]]);
     const resolved: ResolvedManifest[] = [];
-    const sessionSharedManifests: Record<string, SessionSharedManifest> = {};
+    const sharedManifestRecords: Record<string, SharedManifestRecord> = {};
     const contentlessRevisions: Record<string, number> = {};
     for (const dto of [personalDto, ...(snapshot.manifests ?? []).filter(m => m.manifestId !== personalDto.manifestId)]) {
       const isPersonal = dto.manifestId === personalDto.manifestId;
@@ -428,7 +428,7 @@ export class VaultSyncService {
         }
         const contentlessGrant = manifestKey ? grantOf(dto) : null;
         if (contentlessGrant) {
-          sessionSharedManifests[dto.manifestId] = {
+          sharedManifestRecords[dto.manifestId] = {
             manifestId: dto.manifestId,
             ...contentlessGrant,
             salt: await vaultCodecGenerateManifestSalt(),
@@ -472,7 +472,7 @@ export class VaultSyncService {
         continue;
       }
 
-      sessionSharedManifests[entry.manifestId] = {
+      sharedManifestRecords[entry.manifestId] = {
         manifestId: entry.manifestId,
         ...grant,
         salt: entry.manifest.manifestSalt,
@@ -480,7 +480,7 @@ export class VaultSyncService {
         canAdminister: dto.canAdminister ?? false,
       };
     }
-    await SharingService.setSessionSharedManifests(sessionSharedManifests);
+    await SharingService.setSharedManifestRecords(sharedManifestRecords, vek);
 
     const personal = resolved[0];
 
@@ -1363,7 +1363,7 @@ export class VaultSyncService {
     const stampedManifestIds = VaultCodec.manifestIdsInVault(sqliteClient);
     const sharedVeks = await SharingService.openSharedManifestVeks(sqliteClient);
     const folderNames = anchorFolderNames(sqliteClient);
-    for (const record of Object.values(await SharingService.getSessionSharedManifests())) {
+    for (const record of Object.values(await SharingService.getSharedManifestRecords())) {
       if (!stampedManifestIds.has(record.manifestId)) {
         devLog(`[V2Push] Shared manifest ${record.manifestId} has no rows in this vault; leaving it out of the write rather than emptying it server-side.`);
         continue;

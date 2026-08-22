@@ -60,7 +60,7 @@ const FamilySharingSettings: React.FC = () => {
       const loaded = await SharingService.getOverview(webApi);
       setOverview(loaded);
       setInvitationNames(sqliteClient ? await SharingService.openInvitationNames(sqliteClient, loaded.receivedInvitations) : {});
-      const records = await SharingService.getSessionSharedManifests();
+      const records = await SharingService.getSharedManifestRecords();
       const names = Object.fromEntries(Object.values(records).filter(record => record.name).map(record => [record.manifestId.toLowerCase(), record.name as string]));
       setVaultNames({ ...names, ...(sqliteClient ? anchorFolderNames(sqliteClient) : {}) });
       setError(null);
