@@ -92,7 +92,7 @@ export class PendingActionProcessor {
     const record = Object.values(await SharingService.getSharedManifestRecords()).find(candidate => idsEqual(candidate.manifestId, action.manifestId));
 
     if (!record?.canAdminister) {
-      devLog(`[PendingActions] Vault ${action.manifestId} is not open to this session as an administrator; leaving its delivery key rotation for another sync.`);
+      devLog(`[PendingActions] Manifest ${action.manifestId} is not open to this session as an administrator; leaving its delivery key rotation for another sync.`);
       return { vaultChanged: false, completed: false };
     }
 

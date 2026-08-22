@@ -283,20 +283,20 @@ export class SharingService {
    */
   public static async openSharedManifestVek(sqliteClient: SqliteClient, record: SharedManifestRecord): Promise<string | null> {
     if (record.algorithm !== VaultKeyAlgorithm.RsaOaepSha256) {
-      devWarn(`[Sharing] Vault ${record.manifestId} grants its key under an unsupported algorithm "${record.algorithm}" (newer server?); leaving it closed.`);
+      devWarn(`[Sharing] Manifest ${record.manifestId} grants its key under an unsupported algorithm "${record.algorithm}" (newer server?); leaving it closed.`);
       return null;
     }
 
     const privateKey = await this.resolveGrantPrivateKey(sqliteClient, record.encryptionPublicKey);
     if (!privateKey) {
-      devWarn(`[Sharing] No account key in this vault opens the grant on vault ${record.manifestId}; leaving it closed.`);
+      devWarn(`[Sharing] No account key in this vault opens the grant on manifest ${record.manifestId}; leaving it closed.`);
       return null;
     }
 
     try {
       return await this.decryptManifestVek(record.encryptedVek, privateKey);
     } catch (error) {
-      devWarn(`[Sharing] Failed to unwrap the key of vault ${record.manifestId}; leaving it closed.`, error);
+      devWarn(`[Sharing] Failed to unwrap the key of manifest ${record.manifestId}; leaving it closed.`, error);
       return null;
     }
   }

@@ -83,7 +83,7 @@ export const StorageKeys = {
   VAULT_BLOB_CIPHER_CACHE: 'local:vaultBlobCipherCache',
   /** Blob hashes the server has stored (refreshed on every pull/push). */
   VAULT_SERVER_BLOB_HASHES: 'local:vaultServerBlobHashes',
-  /** Shared-vault key records (wrapped VEK grants). */
+  /** Shared-manifest key records (wrapped VEK grants). */
   SHARED_MANIFESTS: 'local:sharedManifests',
 
   /*

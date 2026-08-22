@@ -604,7 +604,7 @@ type CreateSharedManifestRequest = {
     algorithm: VaultKeyAlgorithmValue;
 };
 /**
- * The created vault, as served by POST /v2/Groups/{groupId}/manifests.
+ * The created manifest, as served by POST /v2/Groups/{groupId}/manifests.
  */
 type CreateSharedManifestResponse = {
     manifestId: string;

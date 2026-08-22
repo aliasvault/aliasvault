@@ -227,7 +227,7 @@ public enum ApiErrorCode
 
     /// <summary>
     /// The member is the last one who can open one of the group's shared manifests, so taking their access away would
-    /// leave that vault unopenable. Somebody else has to be given access to it first.
+    /// leave that manifest unopenable. Somebody else has to be given access to it first.
     /// </summary>
     LAST_MANIFEST_GRANT_HOLDER,
 
@@ -239,7 +239,7 @@ public enum ApiErrorCode
 
     /// <summary>
     /// The shared manifest's key was rotated after the offer of access was made, so the key sealed into the offer no
-    /// longer opens the vault. The offer is closed and the inviter has to make a fresh one.
+    /// longer opens the manifest. The offer is closed and the inviter has to make a fresh one.
     /// </summary>
     INVITATION_KEY_OUTDATED,
 

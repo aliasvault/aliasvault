@@ -16,9 +16,9 @@ public class SharedManifestInfo
     /// <summary>Gets or sets the manifest id.</summary>
     public required Guid ManifestId { get; set; }
 
-    /// <summary>Gets or sets the members holding a grant on this vault, i.e. the ones who can open it.</summary>
+    /// <summary>Gets or sets the members holding a grant on this manifest, i.e. the ones who can open it.</summary>
     public List<string> MemberUserIds { get; set; } = [];
 
-    /// <summary>Gets or sets the offers of access to this vault still awaiting an answer (filled for admins only).</summary>
+    /// <summary>Gets or sets the offers of access to this manifest still awaiting an answer (filled for admins only).</summary>
     public List<SentManifestInvitation> PendingInvitations { get; set; } = [];
 }

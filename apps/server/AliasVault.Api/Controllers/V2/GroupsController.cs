@@ -89,7 +89,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             .Where(u => allMemberIds.Contains(u.Id))
             .ToDictionaryAsync(u => u.Id, u => u.UserName ?? string.Empty);
 
-        // Only an admin can hand a vault key to somebody, so only an admin is served the keys to seal one with.
+        // Only an admin can hand a manifest key to somebody, so only an admin is served the keys to seal one with.
         var administeredMemberIds = allMembers.Where(m => administeredGroupIds.Contains(m.GroupId)).Select(m => m.UserId);
         var publicKeys = administeredGroupIds.Count > 0 ? await GrantHelper.GetPrimaryKeysAsync(context, administeredMemberIds) : [];
 
@@ -173,7 +173,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 404));
         }
 
-        // A family holds a handful of vaults, enough to keep e.g. streaming and banking apart without growing without bound.
+        // A family holds a handful of manifests, enough to keep e.g. streaming and banking apart without growing without bound.
         if (await context.VaultManifests.CountAsync(x => x.OwnerGroupId == groupId) >= MaxSharedVaults)
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_MANIFEST_LIMIT_REACHED, 400));
@@ -210,7 +210,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Offer a member of the group access to one of its shared manifests, handing over the vault key sealed for them in
+    /// Offer a member of the group access to one of its shared manifests, handing over the manifest key sealed for them in
     /// the same call. The offer becomes a grant once they accept it.
     /// </summary>
     /// <param name="groupId">The group ID.</param>
@@ -249,8 +249,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
 
         /*
-         * Handing out a key is only meaningful for somebody who holds it: with several vaults per group, being an
-         * admin of the group no longer implies access to each one of them, and an admin who was left out of a vault
+         * Handing out a key is only meaningful for somebody who holds it: with several manifests per group, being an
+         * admin of the group no longer implies access to each one of them, and an admin who was left out of a manifest
          * cannot pass on what they cannot open.
          */
         if (!await context.VaultManifestAccessKeys.AnyAsync(k => k.VaultManifestId == manifestId && k.UserId == me.Id && k.Type == ManifestKeyType.GrantKey))
@@ -669,7 +669,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             .Select(m => m.ManifestId)
             .ToListAsync()).ToHashSet();
 
-        // An offer whose vault is gone is not something the recipient can act on, so it is left out rather than shown.
+        // An offer whose manifest is gone is not something the recipient can act on, so it is left out rather than shown.
         return [.. invitations.Where(i => existingManifestIds.Contains(i.ManifestId)).Select(i => new ReceivedManifestInvitation
         {
             Id = i.Id,
@@ -683,7 +683,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Close an offer of access, dropping the vault key sealed inside it.
+    /// Close an offer of access, dropping the manifest key sealed inside it.
     /// </summary>
     /// <param name="invitation">The invitation to close.</param>
     /// <param name="state">The state it ends in.</param>
@@ -698,13 +698,13 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Turn the vault key sealed into an offer of access into the accepting member's grant on that vault.
+    /// Turn the manifest key sealed into an offer of access into the accepting member's grant on that manifest.
     /// </summary>
     /// <param name="context">The database context.</param>
     /// <param name="invitation">The invitation being accepted.</param>
     /// <param name="userId">The accepting user.</param>
     /// <param name="keyVersion">The manifest's current VEK version, already checked against the offer's.</param>
-    /// <returns>Whether the accepting user ends up holding a grant on the vault.</returns>
+    /// <returns>Whether the accepting user ends up holding a grant on the manifest.</returns>
     private async Task<bool> PromoteSealedGrantAsync(AliasServerDbContext context, GroupInvitation invitation, string userId, int keyVersion)
     {
         if (invitation.EncryptedVek is null || invitation.UserGrantKeyId is null || invitation.VaultManifestId is null)

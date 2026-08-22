@@ -44,7 +44,7 @@ import type { StringResponse as stringResponse } from '@/utils/types/messaging/S
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 import type { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
 import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope, isManifestScope } from '@/utils/types/VaultMutationScope';
-import { VaultCodec } from '@/utils/VaultCodec';
+import { manifestIdKey, VaultCodec } from '@/utils/VaultCodec';
 import { clearDirtyScopes, getDirtyScopes } from '@/utils/VaultDirtyState';
 import { VaultKeyService } from '@/utils/VaultKeyService';
 import { vaultRequiresManifestMigration, VaultMigrationKind, type VaultMigrationStatus } from '@/utils/VaultManifestMigration';
@@ -107,6 +107,16 @@ let hasPendingSync = false;
 
 /** The shared manifests a pull was already forced for over a missing key record, so one the server stopped serving does not pull on every sync. */
 const manifestsPulledForSharedKeys = new Set<string>();
+
+/**
+ * How many times one chain of syncs may restart itself over a push the server called outdated. A pull settles a
+ * genuine conflict on the first retry; a chain that keeps going is one where the pull cannot repair what makes the
+ * push refuse itself, and repeating it forever would pull and merge the whole vault on every turn.
+ */
+const MAX_OUTDATED_RESYNCS = 3;
+
+/** How many times the running chain of syncs has already restarted over an outdated push. */
+let outdatedResyncCount = 0;
 
 /**
  * Check if the user is logged in and if the vault is locked, and also check for both kinds of pending vault.
@@ -264,6 +274,7 @@ async function pushVaultToServer(sqliteClient: SqliteClient, options: { forceFul
        * Migration succeeded: from now on the session key is the VEK, not the password-derived key.
        * TODO: this can be removed once all users have migrated to the manifest-v1 storage model.
        */
+      await resealSharedManifestRecords(result.newEncryptionKey);
       await handleStoreEncryptionKey(result.newEncryptionKey);
     }
 
@@ -1298,6 +1309,24 @@ export async function handleGetSyncState(): Promise<VaultSyncState> {
 }
 
 /**
+ * Re-seal the shared-manifest key records under a new session key.
+ *
+ * The records are stored encrypted with the session key, so a key swap (adopting another device's VEK, or minting
+ * one in the migration push) leaves them unreadable and this session silently without any shared manifest, which
+ * only a pull would repair. Must run while the old key is still the session key, since that is what reads them.
+ * @param newEncryptionKey - the key that is about to become the session key
+ */
+async function resealSharedManifestRecords(newEncryptionKey: string): Promise<void> {
+  const records = await SharingService.getSharedManifestRecords();
+  if (Object.keys(records).length === 0) {
+    return;
+  }
+
+  await SharingService.setSharedManifestRecords(records, newEncryptionKey);
+  devLog(`[Sharing] Re-sealed ${Object.keys(records).length} shared-manifest key record(s) under the new vault key.`);
+}
+
+/**
  * Adopt a server-side vault key this device does not know about yet.
  *
  * A missing local encrypted-VEK cache means one of two things: this user is genuinely still legacy (their next full
@@ -1349,6 +1378,7 @@ async function adoptRemoteVaultKeyIfNeeded(): Promise<boolean> {
       await storage.setItem(StorageKeys.ENCRYPTED_VAULT, await EncryptionUtility.symmetricEncrypt(decrypted, vek));
     }
 
+    await resealSharedManifestRecords(vek);
     await VaultKeyService.cacheVaultKeyBlobs(fetchResult.vaultKey);
     await handleStoreEncryptionKey(vek);
     cachedSqliteClient = null;
@@ -1467,7 +1497,8 @@ async function handleFullVaultSyncInternal(options?: FullVaultSyncOptions): Prom
       return preflight.result;
     }
 
-    const { statusResponse, syncState, needsPull } = preflight;
+    const { statusResponse, syncState } = preflight;
+    let needsPull = preflight.needsPull;
 
     await announceSyncPhase(needsPull, syncState.isDirty);
 
@@ -1478,6 +1509,15 @@ async function handleFullVaultSyncInternal(options?: FullVaultSyncOptions): Prom
 
     // Chcek for any client pending actions as directed by the server (e.g. shared group invitations, shared group memberships, etc.)
     const grantSyncChangedVault = await applyServerDirectedChanges(webApi, statusResponse, syncState, encryptionKey, needsPull);
+
+    /*
+     * The rows just reconciled turned a clean vault dirty after the preflight had already decided, so the
+     * write-side check runs again here instead of letting this sync push into a refusal and re-sync afterwards.
+     */
+    if (!needsPull && syncState.isDirty && await vaultHoldsUnwritableManifests()) {
+      needsPull = true;
+      broadcastSyncPhase('pull');
+    }
 
     if (needsPull) {
       return await pullAndMaterializeServerVault(syncState, encryptionKey, grantSyncChangedVault);
@@ -1508,13 +1548,35 @@ async function handleFullVaultSyncInternal(options?: FullVaultSyncOptions): Prom
       handleFullVaultSync().catch(err => {
         console.error('[VaultSync] Follow-up sync failed:', err);
       });
+    } else {
+      // Nothing chained onto this sync, so the next outdated push starts counting from zero again.
+      outdatedResyncCount = 0;
     }
   }
 }
 
+/**
+ * Re-sync after the server refused a push as outdated, at most {@link MAX_OUTDATED_RESYNCS} times per chain.
+ *
+ * The pull that follows is what normally makes the next push succeed. When it does not (the vault holds rows of a
+ * manifest no pull can restore access to, say), the chain would otherwise re-pull and re-merge the whole vault
+ * forever, so it is cut off and the failure is reported instead.
+ * @param what - what could not be written, named for the log
+ */
+async function resyncAfterOutdatedPush(what: string): Promise<FullVaultSyncResult> {
+  if (outdatedResyncCount >= MAX_OUTDATED_RESYNCS) {
+    devError(`[VaultSync] The server still refuses ${what} after ${MAX_OUTDATED_RESYNCS} re-syncs; giving up on this chain, the next sync starts over.`);
+    outdatedResyncCount = 0;
+    return syncResult({ success: false, error: await t('common.errors.syncConflictMaxRetries') });
+  }
+
+  outdatedResyncCount++;
+  return handleFullVaultSync();
+}
+
 /** What a caller may ask of a full sync beyond what the revisions decide. */
 type FullVaultSyncOptions = {
-  /** Pull even when the revisions say the vault is current, for state only a pull re-records (the shared-vault key records). */
+  /** Pull even when the revisions say the vault is current, for state only a pull re-records (the shared-manifest key records). */
   forcePull?: boolean;
 };
 
@@ -1598,7 +1660,11 @@ async function runSyncPreflight(webApi: WebApiService, options?: FullVaultSyncOp
     syncState.isDirty = false;
   }
 
-  // Check if we are missing any manifest related information that we do have write access for.
+  /*
+   * Two states the revisions cannot see, both repaired by a pull: rows of a manifest this session cannot write
+   * (which the push would silently leave out, so it refuses instead), and rows of a shared manifest this session
+   * holds no key record for at all. The first only matters for a write, the second also for reading the manifest.
+   */
   if (syncState.isDirty && !needsPull && await vaultHoldsUnwritableManifests()) {
     needsPull = true;
   }
@@ -1634,14 +1700,15 @@ async function vaultHoldsUnwritableManifests(): Promise<boolean> {
  */
 async function vaultHoldsUnrecordedSharedManifests(): Promise<boolean> {
   try {
-    const recorded = new Set(Object.values(await SharingService.getSharedManifestRecords()).map(record => record.manifestId.toLowerCase()));
+    const recorded = new Set(Object.values(await SharingService.getSharedManifestRecords()).map(record => manifestIdKey(record.manifestId)));
     for (const manifestId of recorded) {
       manifestsPulledForSharedKeys.delete(manifestId);
     }
 
-    const personalManifestId = (await getPersonalManifestId())?.toLowerCase() ?? null;
+    const personalId = await getPersonalManifestId();
+    const personalManifestId = personalId ? manifestIdKey(personalId) : null;
     const unrecorded = [...VaultCodec.manifestIdsInVault(await createVaultSqliteClient())]
-      .map(manifestId => manifestId.toLowerCase())
+      .map(manifestIdKey)
       .filter(manifestId => manifestId !== personalManifestId && !recorded.has(manifestId) && !manifestsPulledForSharedKeys.has(manifestId));
     if (unrecorded.length === 0) {
       return false;
@@ -1767,6 +1834,7 @@ async function pullAndMaterializeServerVault(syncState: VaultSyncState, encrypti
 
   try {
     if (syncState.isDirty) {
+      await pruneRowsOfLostManifests(encryptionKey);
       const mergedResult = await mergeAndPushLocalChanges(vaultResponseJson, syncState, encryptionKey, grantSyncChangedVault);
       if (mergedResult) {
         return mergedResult;
@@ -1799,6 +1867,32 @@ async function pullAndMaterializeServerVault(syncState: VaultSyncState, encrypti
       'Vault could not be decrypted, if the problem persists please logout and login again.',
       AppErrorCode.VAULT_DECRYPT_FAILED
     ));
+  }
+}
+
+/**
+ * Drop the rows of every manifest the snapshot just pulled no longer serves this account, so they do not survive
+ * the merge that follows.
+ *
+ * A pull of a clean vault drops them by replacing the whole database; the merge path has to be told, because a
+ * merge keeps local-only rows. Left in place they can never be written again, which makes every following push
+ * refuse itself. What the snapshot served is the authority here, not what opened out of it: a manifest that fails
+ * to decrypt once is still this account's.
+ * @param encryptionKey - the key the stored vault is sealed with
+ */
+async function pruneRowsOfLostManifests(encryptionKey: string): Promise<void> {
+  try {
+    const sqliteClient = await createVaultSqliteClient();
+    const dropped = vaultSyncService.dropRowsOfLostManifests(sqliteClient, vaultSyncService.manifestIdsServedByLastSnapshot());
+    if (dropped.length === 0) {
+      return;
+    }
+
+    // Not a local change of the user's making, so it is stored without touching the dirty state or its sequence.
+    await handleStoreEncryptedVault({ vaultBlob: await EncryptionUtility.symmetricEncrypt(sqliteClient.exportToBase64(), encryptionKey) });
+    invalidateCanonicalizeCache();
+  } catch (error) {
+    devWarn('[VaultSync] Could not drop the rows of manifests this account no longer holds; the merge runs on the vault as it is.', error);
   }
 }
 
@@ -1865,8 +1959,8 @@ async function mergeAndPushLocalChanges(
   if (uploadResponse.success && uploadResponse.status === 0) {
     await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
   } else if (uploadResponse.status === 2) {
-    // Outdated: another device uploaded first. Re-sync.
-    return handleFullVaultSync();
+    // Outdated: another device uploaded first, or the merged vault is not one this session may write whole.
+    return resyncAfterOutdatedPush('the merged vault');
   } else {
     console.error('Failed to upload merged vault:', uploadResponse.error);
     return syncResult({ success: false, error: uploadResponse.error });
@@ -1890,7 +1984,7 @@ async function pushOverLegacyServerVault(grantSyncChangedVault: boolean): Promis
   }
 
   if (uploadResponse.status === 2) {
-    return handleFullVaultSync();
+    return resyncAfterOutdatedPush('the vault pushed over the legacy server vault');
   }
 
   return syncResult({ success: false, error: uploadResponse.error });
@@ -1916,8 +2010,8 @@ async function pushPendingLocalChanges(grantSyncChangedVault: boolean): Promise<
   }
 
   if (uploadResponse.status === 2) {
-    // Outdated: another device uploaded first. Re-sync.
-    return handleFullVaultSync();
+    // Outdated: another device uploaded first, or this vault is not one this session may write whole.
+    return resyncAfterOutdatedPush('the pending local changes');
   }
 
   console.error('Failed to upload pending vault:', uploadResponse.error);
@@ -2654,10 +2748,10 @@ export async function handleGroupCreateVault(message: { groupId: string; name: s
 }
 
 /**
- * Invite a member of a family to one of its shared manifests, handing them the vault's key sealed for them.
+ * Invite a member of a family to one of its shared manifests, handing them the manifest's key sealed for them.
  *
  * The recipient is picked off the family's own roster, so this never names an account outside the family.
- * @param message - the family, the vault, and the member being invited.
+ * @param message - the family, the manifest, and the member being invited.
  */
 export async function handleGroupInviteMember(message: { groupId: string; manifestId: string; userId: string }): Promise<{ success: boolean; error?: string; apiErrorCode?: string }> {
   const encryptionKey = await handleGetEncryptionKey();

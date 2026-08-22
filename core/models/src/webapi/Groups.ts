@@ -81,7 +81,7 @@ export type CreateSharedManifestRequest = {
 }
 
 /**
- * The created vault, as served by POST /v2/Groups/{groupId}/manifests.
+ * The created manifest, as served by POST /v2/Groups/{groupId}/manifests.
  */
 export type CreateSharedManifestResponse = {
   manifestId: string;

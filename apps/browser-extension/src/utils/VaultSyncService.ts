@@ -21,7 +21,7 @@ import { SharingService, type ManifestVekGrant, type SharedManifestRecord } from
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getStorageItem } from '@/utils/StorageUtility';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
-import { type VaultManifest, type VaultDataBucket, VaultCodec } from '@/utils/VaultCodec';
+import { type VaultManifest, type VaultDataBucket, VaultCodec, manifestIdKey } from '@/utils/VaultCodec';
 import { VaultKeyService } from '@/utils/VaultKeyService';
 import { WebApiService } from '@/utils/WebApiService';
 
@@ -299,6 +299,9 @@ export function invalidateCanonicalizeCache(): void {
  * Service entry point.
  */
 export class VaultSyncService {
+  /** The manifest ids the last snapshot carried, recorded before any of them is opened. */
+  private lastServedManifestIds: string[] = [];
+
   /**
    * Retrieve the latest vault from the server as a normalized {@link VaultResponse} (encrypted SQLite blob +
    * email routing + revision).
@@ -315,6 +318,7 @@ export class VaultSyncService {
      */
     devLog('[V2Pull] Step 1/4: fetching vault snapshot (GET /v2/Vault)...');
     const snapshot = await this.fetchSnapshot();
+    this.lastServedManifestIds = (snapshot.manifests ?? []).map(m => m.manifestId);
     const personalManifest = selectPersonalManifest(snapshot);
     devLog(`[V2Pull] Step 1/4 done: storageFormat=${snapshot.storageFormat}, manifests=${snapshot.manifests?.length ?? 0}, personalRevision=${personalManifest?.revision}, manifestBlob=${personalManifest?.blob?.length ?? 0} chars, buckets=${snapshot.buckets?.length ?? 0}, blobRefs=${personalManifest?.blobReferences?.length ?? 0}`);
 
@@ -1331,14 +1335,57 @@ export class VaultSyncService {
    * @returns The manifest ids the vault holds but this session cannot write, empty when the two agree
    */
   public async findUnwritableManifests(sqliteClient: SqliteClient): Promise<string[]> {
-    const writable = new Set<string>((await SharingService.openSharedManifestVeks(sqliteClient)).keys());
+    const writable = new Set<string>([...(await SharingService.openSharedManifestVeks(sqliteClient)).keys()].map(manifestIdKey));
 
     const personalManifestId = await getPersonalManifestId();
     if (personalManifestId) {
-      writable.add(personalManifestId);
+      writable.add(manifestIdKey(personalManifestId));
     }
 
-    return [...VaultCodec.manifestIdsInVault(sqliteClient)].filter(manifestId => !writable.has(manifestId));
+    return [...VaultCodec.manifestIdsInVault(sqliteClient)].filter(manifestId => !writable.has(manifestIdKey(manifestId)));
+  }
+
+  /**
+   * The manifests the last snapshot served this account, in the spelling the server used. This is what the account
+   * may still open, as opposed to what actually opened: a manifest whose blob fails to decrypt once is still one of
+   * this account's, so it must never be mistaken for one that was taken away.
+   * @returns The served manifest ids, empty when nothing has been pulled in this session
+   */
+  public manifestIdsServedByLastSnapshot(): string[] {
+    return [...this.lastServedManifestIds];
+  }
+
+  /**
+   * Drop the rows of every manifest the server no longer serves this account.
+   *
+   * A manifest that is absent from the snapshot is one this account lost (access revoked, or the manifest deleted
+   * for everybody). Its rows cannot be written any more, and a merge keeps local-only rows, so without this they
+   * would survive every pull and make every following push refuse itself ({@link findUnwritableManifests}) with no
+   * way out. Dropping them is what a pull of a clean vault already does implicitly, by replacing the whole database.
+   * @param sqliteClient - the open local vault, mutated in place
+   * @param grantedManifestIds - the manifests the snapshot just served, the personal one included
+   * @returns The manifest ids whose rows were dropped, empty when there was nothing to drop
+   */
+  public dropRowsOfLostManifests(sqliteClient: SqliteClient, grantedManifestIds: Iterable<string>): string[] {
+    const granted = new Set([...grantedManifestIds].map(manifestIdKey));
+    if (granted.size === 0) {
+      // Nothing is known about what this account may open, and guessing with the user's data is worse than keeping it.
+      return [];
+    }
+
+    const lost = [...VaultCodec.manifestIdsInVault(sqliteClient)].filter(manifestId => !granted.has(manifestIdKey(manifestId)));
+    if (lost.length === 0) {
+      return [];
+    }
+
+    for (const table of VaultCodec.stampedTables(sqliteClient)) {
+      for (const manifestId of lost) {
+        sqliteClient.executeUpdate(`DELETE FROM "${table}" WHERE lower(ManifestId) = ?`, [manifestIdKey(manifestId)]);
+      }
+    }
+
+    devWarn(`[VaultSync] Dropped the rows of manifest(s) this account no longer holds (${lost.join(', ')}); they are gone from the server for this account.`);
+    return lost;
   }
 
   /**
@@ -1361,11 +1408,11 @@ export class VaultSyncService {
       canAdminister: false,
     }];
 
-    const stampedManifestIds = VaultCodec.manifestIdsInVault(sqliteClient);
+    const stampedManifestIds = new Set([...VaultCodec.manifestIdsInVault(sqliteClient)].map(manifestIdKey));
     const sharedVeks = await SharingService.openSharedManifestVeks(sqliteClient);
     const manifestNames = multiManifestRendering.displayNames(sqliteClient);
     for (const record of Object.values(await SharingService.getSharedManifestRecords())) {
-      if (!stampedManifestIds.has(record.manifestId)) {
+      if (!stampedManifestIds.has(manifestIdKey(record.manifestId))) {
         devLog(`[V2Push] Shared manifest ${record.manifestId} has no rows in this vault; leaving it out of the write rather than emptying it server-side.`);
         continue;
       }

@@ -38,6 +38,27 @@ type BlobRef = {
 };
 
 /**
+ * The stamp a row carries while it belongs to no manifest yet.
+ */
+export const UNSTAMPED_MANIFEST_ID = '00000000-0000-0000-0000-000000000000';
+
+/**
+ * Whether a stamp names no manifest, so it must never be mistaken for one the vault holds rows for.
+ * @param manifestId - the stamp as the row carries it
+ */
+export function isUnstampedScope(manifestId: string | null | undefined): boolean {
+  return !manifestId || manifestId.toLowerCase() === UNSTAMPED_MANIFEST_ID;
+}
+
+/**
+ * The comparison key of a manifest id, force it to lowercase to ensure cross-platform compatibility.
+ * @param manifestId - the manifest id in any casing
+ */
+export function manifestIdKey(manifestId: string): string {
+  return manifestId.toLowerCase();
+}
+
+/**
  * VaultCodec — sql.js read/insert methods.
  */
 export class VaultCodec {
@@ -242,18 +263,24 @@ export class VaultCodec {
   }
 
   /**
+   * The tables carrying a manifest stamp.
+   * @param sqliteClient - client wrapping the open SQLite DB
+   */
+  public static stampedTables(sqliteClient: SqliteClient): string[] {
+    return this.listUserTables(sqliteClient).filter(
+      name => sqliteClient.executeQuery<{ name: string }>(`SELECT name FROM pragma_table_info("${name}") WHERE name = 'ManifestId'`).length > 0
+    );
+  }
+
+  /**
    * Every manifest id this vault holds a row for.
    * @param sqliteClient - client wrapping the open SQLite DB
    */
   public static manifestIdsInVault(sqliteClient: SqliteClient): Set<string> {
-    const stampedTables = this.listUserTables(sqliteClient).filter(
-      name => sqliteClient.executeQuery<{ name: string }>(`SELECT name FROM pragma_table_info("${name}") WHERE name = 'ManifestId'`).length > 0
-    );
-
     const ids = new Set<string>();
-    for (const name of stampedTables) {
+    for (const name of this.stampedTables(sqliteClient)) {
       for (const row of sqliteClient.executeQuery<{ ManifestId: string | null }>(`SELECT DISTINCT ManifestId FROM "${name}" WHERE ManifestId IS NOT NULL AND ManifestId != ''`)) {
-        if (row.ManifestId) {
+        if (row.ManifestId && !isUnstampedScope(row.ManifestId)) {
           ids.add(row.ManifestId);
         }
       }
