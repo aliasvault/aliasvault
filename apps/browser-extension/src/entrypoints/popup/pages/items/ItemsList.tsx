@@ -5,6 +5,7 @@ import { useLocation, useNavigate, useParams, useSearchParams } from 'react-rout
 import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
 import DeleteFolderModal from '@/entrypoints/popup/components/Folders/DeleteFolderModal';
 import FolderBreadcrumb from '@/entrypoints/popup/components/Folders/FolderBreadcrumb';
+import FolderIcon from '@/entrypoints/popup/components/Folders/FolderIcon';
 import FolderModal from '@/entrypoints/popup/components/Folders/FolderModal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
@@ -28,7 +29,7 @@ import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 import type { Folder } from '@/utils/db/repositories/FolderRepository';
 import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
 import type { Item, ItemType } from '@/utils/dist/core/models/vault';
-import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount } from '@/utils/FolderUtils';
+import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount, isAnchorFolder, isSharedFolder } from '@/utils/FolderUtils';
 import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@/utils/ItemFilters';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
@@ -99,6 +100,7 @@ type FolderWithCount = {
   id: string;
   name: string;
   itemCount: number;
+  isShared: boolean;
 };
 
 /**
@@ -157,6 +159,20 @@ const ItemsList: React.FC = () => {
     const folder = folders.find((f: { Id: string; Name: string }) => f.Id === currentFolderId);
     return folder?.Name ?? null;
   }, [currentFolderId, dbContext?.sqliteClient, folderRefreshKey]);
+
+  // The folder being viewed, re-read when it changes
+  const currentFolder = useMemo(() => {
+    // folderRefreshKey is included in deps to force re-computation when the folder changes
+    void folderRefreshKey;
+    if (!currentFolderId || !dbContext?.sqliteClient) {
+      return null;
+    }
+
+    return dbContext.sqliteClient.folders.getById(currentFolderId);
+  }, [currentFolderId, dbContext?.sqliteClient, folderRefreshKey]);
+
+  // Whether it is the folder a shared vault is rendered as: left or revoked in Family Sharing, never deleted here
+  const currentFolderIsAnchor = currentFolder !== null && isAnchorFolder(currentFolder);
 
   // Get current folder's full path (for relative path computation in search results)
   const currentFolderPath = useMemo(() => {
@@ -615,10 +631,12 @@ const ItemsList: React.FC = () => {
     };
 
     // Build result with recursive counts
+    const personalManifestId = dbContext.sqliteClient.getPersonalManifestId();
     const result = relevantFolders.map((folder: Folder) => ({
       id: folder.Id,
       name: folder.Name,
-      itemCount: getRecursiveItemCountLocal(folder.Id)
+      itemCount: getRecursiveItemCountLocal(folder.Id),
+      isShared: isSharedFolder(folder, personalManifestId)
     })).sort((a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name));
 
     return result;
@@ -1012,6 +1030,7 @@ const ItemsList: React.FC = () => {
                   onClick={() => handleFolderClick(folder.id, folder.name)}
                   isActive={activeKind === 'folder' && activeIndex === index}
                   optionId={folderIdFor(index)}
+                  isShared={folder.isShared}
                 />
               ))}
               {canCreateSubfolder && (
@@ -1049,6 +1068,7 @@ const ItemsList: React.FC = () => {
                   onClick={() => handleFolderClick(folder.id, folder.name)}
                   isActive={activeKind === 'folder' && activeIndex === index}
                   optionId={folderIdFor(index)}
+                  isShared={folder.isShared}
                 />
               ))}
               {canCreateSubfolder && (
@@ -1175,6 +1195,7 @@ const ItemsList: React.FC = () => {
         onDeleteFolderOnly={handleDeleteFolderOnly}
         onDeleteFolderAndContents={handleDeleteFolderAndContents}
         itemCount={totalItemCountInFolderTree}
+        sharedVault={currentFolderIsAnchor}
       />
     </div>
   );

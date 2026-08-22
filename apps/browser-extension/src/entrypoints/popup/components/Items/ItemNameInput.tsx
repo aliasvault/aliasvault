@@ -1,13 +1,17 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { buildFolderTree, getFolderIdPath, type FolderTreeNode } from '@/utils/FolderUtils';
+import FolderIcon from '@/entrypoints/popup/components/Folders/FolderIcon';
+import { useDb } from '@/entrypoints/popup/context/DbContext';
+
+import { buildFolderTree, getFolderIdPath, isSharedFolder, type FolderTreeNode } from '@/utils/FolderUtils';
 
 type Folder = {
   Id: string;
   Name: string;
   ParentFolderId: string | null;
   Weight: number;
+  ManifestId?: string | null;
 };
 
 type ItemNameInputProps = {
@@ -37,10 +41,12 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
   suggestions = []
 }) => {
   const { t } = useTranslation();
+  const dbContext = useDb();
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 
   const selectedFolder = folders.find(f => f.Id === selectedFolderId);
+  const personalManifestId = dbContext?.sqliteClient?.getPersonalManifestId() ?? null;
 
   // Build folder tree
   const folderTree = useMemo(() => buildFolderTree(folders), [folders]);
@@ -146,14 +152,12 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
           )}
 
           {/* Folder icon */}
-          <svg
-            className={`w-5 h-5 shrink-0 ${isSelected ? 'text-primary-500' : 'text-gray-400'} ${!hasChildren ? 'ml-5' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-          </svg>
+          <FolderIcon
+            variant="outline"
+            isShared={isSharedFolder(node, personalManifestId)}
+            className={`w-5 h-5 ${isSelected ? 'text-primary-500' : 'text-gray-400'} ${!hasChildren ? 'ml-5' : ''}`}
+            badgeClassName="bg-white dark:bg-gray-800 ring-gray-200 dark:ring-gray-600"
+          />
 
           {/* Folder name */}
           <span className="font-medium flex-1">{node.Name}</span>
@@ -174,7 +178,7 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
         )}
       </div>
     );
-  }, [expandedFolders, selectedFolderId, handleSelectFolder, toggleFolder]);
+  }, [expandedFolders, selectedFolderId, handleSelectFolder, toggleFolder, personalManifestId]);
 
   return (
     <>
@@ -224,9 +228,12 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
               }`}
               title={selectedFolder?.Name || '-'}
             >
-              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-              </svg>
+              <FolderIcon
+                variant="outline"
+                isShared={selectedFolder !== undefined && isSharedFolder(selectedFolder, personalManifestId)}
+                className="w-4 h-4"
+                badgeClassName="bg-white dark:bg-gray-700 ring-gray-200 dark:ring-gray-600"
+              />
               {selectedFolderId && (
                 <span className="max-w-16 truncate">
                   {selectedFolder?.Name}
