@@ -55,7 +55,7 @@ var VaultKeyAlgorithm = {
 // src/webapi/CapabilityKeys.ts
 var CapabilityKeys = {
   /**
-   * Shared vaults: creating one, inviting people to it, and accepting an invitation to one. The capability
+   * Shared manifests: creating one, inviting people to it, and accepting an invitation to one. The capability
    * behind the Family Sharing screens, and behind anything else built on a vault more than one account holds.
    */
   VaultSharing: "vault-sharing"

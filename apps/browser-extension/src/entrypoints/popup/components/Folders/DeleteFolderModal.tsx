@@ -84,7 +84,7 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
       }
     >
       <div className="space-y-4">
-        {/* A shared vault: no delete options, only the hint */}
+        {/* A shared manifest: no delete options, only the hint */}
         {sharedVault && (
           <p className="pt-2 text-sm text-gray-600 dark:text-gray-400">
             {t('items.deleteSharedFolderHint')}

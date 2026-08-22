@@ -17,8 +17,8 @@ import type { WebApiService } from '@/utils/WebApiService';
  */
 
 /**
- * A shared vault about to be created, with the creator's own public key: the VEK is encrypted for it and for nothing
- * else, because a new vault starts out with one member and everybody who is let in afterwards gets the key encrypted
+ * A shared manifest about to be created, with the creator's own public key: the VEK is encrypted for it and for nothing
+ * else, because a new manifest starts out with one member and everybody who is let in afterwards gets the key encrypted
  * for them inside the invitation that lets them in.
  */
 export type ShareTarget = {
@@ -36,7 +36,7 @@ export type ManifestVekGrant = {
 };
 
 /**
- * The client-side mapping of a newly created shared vault.
+ * The client-side mapping of a newly created shared manifest.
  */
 export type SharedManifestMapping = ManifestVekGrant & { manifestId: string; salt: string; revision: number };
 
@@ -56,7 +56,7 @@ export type SharedManifestRecord = ManifestVekGrant & {
  */
 export class SharingService {
   /**
-   * The families this user belongs to, their shared vaults, and the invitations awaiting an answer.
+   * The families this user belongs to, their shared manifests, and the invitations awaiting an answer.
    * @param webApi - API client to reuse.
    */
   public static async getOverview(webApi: WebApiService): Promise<GroupOverviewResponse> {
@@ -64,10 +64,10 @@ export class SharingService {
   }
 
   /**
-   * Create a shared group's vault.
+   * Create a shared group's manifest.
    * @param webApi - API client to reuse.
-   * @param group - the group to create the vault for, with this client's own public key to encrypt its VEK for.
-   * @param manifestId - the client-minted id of the new vault.
+   * @param group - the group to create the manifest for, with this client's own public key to encrypt its VEK for.
+   * @param manifestId - the client-minted id of the new manifest.
    */
   public static async createSharedManifest(webApi: WebApiService, group: ShareTarget, manifestId: string): Promise<SharedManifestMapping> {
     const manifestVek = EncryptionUtility.generateVaultEncryptionKey();
@@ -91,8 +91,8 @@ export class SharingService {
   }
 
   /**
-   * Encrypt a shared vault's VEK for one member of the group.
-   * @param manifestVek - the shared vault's VEK.
+   * Encrypt a shared manifest's VEK for one member of the group.
+   * @param manifestVek - the shared manifest's VEK.
    * @param member - the member to encrypt it for.
    * @param vaultName - what the vault is called, or null when this client has no name for it.
    */
@@ -140,12 +140,12 @@ export class SharingService {
   }
 
   /**
-   * Invite a member of the group to one of its shared vaults.
+   * Invite a member of the group to one of its shared manifests.
    * @param webApi - API client to reuse.
-   * @param groupId - the group the vault belongs to.
-   * @param manifestId - the shared vault to invite them to.
+   * @param groupId - the group the manifest belongs to.
+   * @param manifestId - the shared manifest to invite them to.
    * @param userId - the member being invited.
-   * @param grant - the vault's key, encrypted for that member, as produced by {@link encryptVekFor}.
+   * @param grant - the manifest's key, encrypted for that member, as produced by {@link encryptVekFor}.
    * @param algorithm - the algorithm the grant was encrypted with.
    */
   public static async inviteMember(webApi: WebApiService, groupId: string, manifestId: string, userId: string, grant: ManifestGrant, algorithm: VaultKeyAlgorithmValue): Promise<void> {
@@ -153,10 +153,10 @@ export class SharingService {
   }
 
   /**
-   * Take a member's access to one shared vault away, or hand back one's own. The server refuses the latter for group admins.
+   * Take a member's access to one shared manifest away, or hand back one's own. The server refuses the latter for group admins.
    * @param webApi - API client to reuse.
-   * @param groupId - the group the vault belongs to.
-   * @param manifestId - the shared vault.
+   * @param groupId - the group the manifest belongs to.
+   * @param manifestId - the shared manifest.
    * @param userId - the member losing access.
    */
   public static async revokeAccess(webApi: WebApiService, groupId: string, manifestId: string, userId: string): Promise<void> {
@@ -164,11 +164,11 @@ export class SharingService {
   }
 
   /**
-   * Delete a shared vault for good, taking it away from every member at once. The server requires proof of the
+   * Delete a shared manifest for good, taking it away from every member at once. The server requires proof of the
    * caller's master password, so this runs the SRP handshake the account deletion flow also uses.
    * @param webApi - API client to reuse.
-   * @param groupId - the group the vault belongs to.
-   * @param manifestId - the shared vault to delete.
+   * @param groupId - the group the manifest belongs to.
+   * @param manifestId - the shared manifest to delete.
    * @param password - the caller's master password, proven to the server and forgotten.
    */
   public static async deleteSharedManifest(webApi: WebApiService, groupId: string, manifestId: string, password: string): Promise<void> {
@@ -188,7 +188,7 @@ export class SharingService {
   }
 
   /**
-   * Accept an invitation addressed to this user, opening the shared vault it names.
+   * Accept an invitation addressed to this user, opening the shared manifest it names.
    * @param webApi - API client to reuse.
    * @param invitationId - the invitation to accept.
    */

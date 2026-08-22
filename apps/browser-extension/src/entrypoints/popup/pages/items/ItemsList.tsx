@@ -171,7 +171,7 @@ const ItemsList: React.FC = () => {
     return dbContext.sqliteClient.folders.getById(currentFolderId);
   }, [currentFolderId, dbContext?.sqliteClient, folderRefreshKey]);
 
-  // Whether it is the folder a shared vault is rendered as: left or revoked in Family Sharing, never deleted here
+  // Whether it is the folder a shared manifest is rendered as: left or revoked in Family Sharing, never deleted here
   const currentFolderIsSharedVaultRoot = currentFolder !== null && multiManifestRendering.isManifestRoot(currentFolder);
 
   // Get current folder's full path (for relative path computation in search results)

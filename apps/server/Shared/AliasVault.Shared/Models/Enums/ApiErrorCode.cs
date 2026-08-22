@@ -170,7 +170,7 @@ public enum ApiErrorCode
     SHARED_MANIFEST_NOT_FOUND,
 
     /// <summary>
-    /// The recipient has no usable public key to encrypt a shared vault key for, or the referenced key is invalid.
+    /// The recipient has no usable public key to encrypt a shared manifest key for, or the referenced key is invalid.
     /// </summary>
     RECIPIENT_KEY_NOT_FOUND,
 
@@ -195,7 +195,7 @@ public enum ApiErrorCode
     GROUP_NOT_FOUND,
 
     /// <summary>
-    /// The group already holds as many shared vaults as it is entitled to, so no further one can be created.
+    /// The group already holds as many shared manifests as it is entitled to, so no further one can be created.
     /// </summary>
     GROUP_MANIFEST_LIMIT_REACHED,
 
@@ -205,7 +205,7 @@ public enum ApiErrorCode
     INVITATION_NOT_FOUND,
 
     /// <summary>
-    /// There is already an open offer of access to this shared vault for this member.
+    /// There is already an open offer of access to this shared manifest for this member.
     /// </summary>
     INVITATION_ALREADY_EXISTS,
 
@@ -216,7 +216,7 @@ public enum ApiErrorCode
     NOT_GROUP_MEMBER,
 
     /// <summary>
-    /// The member already holds access to this shared vault.
+    /// The member already holds access to this shared manifest.
     /// </summary>
     ACCESS_ALREADY_GRANTED,
 
@@ -226,16 +226,22 @@ public enum ApiErrorCode
     CANNOT_REVOKE_OWN_ACCESS,
 
     /// <summary>
-    /// The member is the last one who can open one of the group's shared vaults, so taking their access away would
+    /// The member is the last one who can open one of the group's shared manifests, so taking their access away would
     /// leave that vault unopenable. Somebody else has to be given access to it first.
     /// </summary>
     LAST_MANIFEST_GRANT_HOLDER,
 
     /// <summary>
-    /// The account access was offered to has published no public key, so a shared vault key cannot be encrypted for
+    /// The account access was offered to has published no public key, so a shared manifest key cannot be encrypted for
     /// it. That account has to finish upgrading its vault before it can be given access to anything.
     /// </summary>
     INVITE_RECIPIENT_NOT_READY,
+
+    /// <summary>
+    /// The shared manifest's key was rotated after the offer of access was made, so the key sealed into the offer no
+    /// longer opens the vault. The offer is closed and the inviter has to make a fresh one.
+    /// </summary>
+    INVITATION_KEY_OUTDATED,
 
     /// <summary>
     /// The client action does not exist, or is not addressed to the caller.

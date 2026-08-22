@@ -18,7 +18,7 @@ public enum GroupType
     Personal = 0,
 
     /// <summary>
-    /// A group users join by invitation to be able to participate in shared vaults. Represents "family" in UI.
+    /// A group users join by invitation to be able to participate in shared manifests. Represents "family" in UI.
     /// </summary>
     Shared = 1,
 }

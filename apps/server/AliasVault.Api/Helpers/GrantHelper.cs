@@ -24,9 +24,10 @@ public static class GrantHelper
     /// <param name="publicKeyId">The recipient public key ID.</param>
     /// <param name="encryptedVek">The encrypted VEK.</param>
     /// <param name="algorithm">The algorithm it was encrypted with.</param>
+    /// <param name="keyVersion">The version of the manifest's VEK that <paramref name="encryptedVek"/> yields.</param>
     /// <param name="now">Current time.</param>
     /// <returns>The unpersisted grant.</returns>
-    public static VaultManifestAccessKey BuildGrant(Guid manifestId, string userId, Guid publicKeyId, string encryptedVek, VaultKeyAlgorithm algorithm, DateTime now)
+    public static VaultManifestAccessKey BuildGrant(Guid manifestId, string userId, Guid publicKeyId, string encryptedVek, VaultKeyAlgorithm algorithm, int keyVersion, DateTime now)
     {
         return new VaultManifestAccessKey
         {
@@ -36,6 +37,7 @@ public static class GrantHelper
             Type = ManifestKeyType.GrantKey,
             Algorithm = algorithm,
             EncryptedVek = encryptedVek,
+            KeyVersion = keyVersion,
             UserGrantKeyId = publicKeyId,
             CreatedAt = now,
             UpdatedAt = now,

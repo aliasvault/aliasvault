@@ -8,7 +8,7 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Groups;
 
 /// <summary>
-/// Request for POST /v2/Groups/{groupId}/manifests: create another shared vault for the group.
+/// Request for POST /v2/Groups/{groupId}/manifests: create another shared manifest for the group.
 /// </summary>
 public class CreateSharedManifestRequest
 {

@@ -31,4 +31,10 @@ public enum GroupInvitationState
     /// Withdrawn by the inviter (or another group admin) before it was answered.
     /// </summary>
     Revoked = 3,
+
+    /// <summary>
+    /// The vault's key was rotated after the invitation was made, so the key sealed into it no longer opens the vault and
+    /// accepting it would hand the invitee a grant they cannot use. The inviter has to make a fresh invitation.
+    /// </summary>
+    Stale = 4,
 }

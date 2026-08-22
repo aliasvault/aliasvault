@@ -22,7 +22,7 @@ import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
 type PendingRemoval = { group: GroupInfo; manifest: SharedManifestInfo; member: GroupMemberInfo; isSelf: boolean };
 
 /**
- * A shared vault deletion in progress: first a plain warning, then the master password confirmation.
+ * A shared manifest deletion in progress: first a plain warning, then the master password confirmation.
  */
 type PendingVaultDelete = { group: GroupInfo; manifest: SharedManifestInfo; stage: 'confirm' | 'password' };
 
@@ -33,7 +33,7 @@ class BackgroundActionError extends Error {}
 class BackgroundApiError extends Error {}
 
 /**
- * Family sharing settings page: create a family's shared vaults, invite the members of that family to them, and
+ * Family sharing settings page: create a family's shared manifests, invite the members of that family to them, and
  * answer the invitations others sent.
  */
 const FamilySharingSettings: React.FC = () => {
@@ -121,6 +121,7 @@ const FamilySharingSettings: React.FC = () => {
       case 'ACCESS_ALREADY_GRANTED': return t('sharing.family.errors.alreadyHasAccess');
       case 'INVITATION_ALREADY_EXISTS': return t('sharing.family.errors.alreadyInvited');
       case 'INVITATION_NOT_FOUND': return t('sharing.family.errors.invitationGone');
+      case 'INVITATION_KEY_OUTDATED': return t('sharing.family.errors.invitationKeyOutdated');
       case 'LAST_MANIFEST_GRANT_HOLDER': return t('sharing.family.errors.lastMemberWithAccess');
       case 'GROUP_MANIFEST_LIMIT_REACHED': return t('sharing.family.errors.vaultLimitReached');
       default: return code !== null ? `${fallback} [${code}]` : fallback;
@@ -140,7 +141,7 @@ const FamilySharingSettings: React.FC = () => {
   };
 
   /**
-   * Create another shared vault for the family.
+   * Create another shared manifest for the family.
    * @param group - the family to create it for.
    */
   const createSharedVault = (group: GroupInfo): Promise<void> => {
@@ -157,7 +158,7 @@ const FamilySharingSettings: React.FC = () => {
   };
 
   /**
-   * Invite one member to one shared vault.
+   * Invite one member to one shared manifest.
    * @param group - the family the vault belongs to.
    * @param manifest - the vault.
    * @param member - the member being invited.
@@ -169,7 +170,7 @@ const FamilySharingSettings: React.FC = () => {
   }, t('sharing.family.errors.inviteFailed'));
 
   /**
-   * Accept an invitation, opening the shared vault it names.
+   * Accept an invitation, opening the shared manifest it names.
    * @param invitationId - the invitation to accept.
    */
   const acceptInvitation = (invitationId: string): Promise<void> => run(async () => {
@@ -196,7 +197,7 @@ const FamilySharingSettings: React.FC = () => {
   };
 
   /**
-   * Delete a shared vault with password confirmation.
+   * Delete a shared manifest with password confirmation.
    * @param password - the entered master password.
    */
   const deleteSharedVault = async (password: string): Promise<void> => {
@@ -236,7 +237,7 @@ const FamilySharingSettings: React.FC = () => {
   const toggleRoster = (groupId: string): void => setExpandedRosters(previous => ({ ...previous, [groupId]: !isRosterExpanded(groupId) }));
 
   /**
-   * What to call a shared vault on screen.
+   * What to call a shared manifest on screen.
    * @param manifest - the vault.
    */
   const vaultLabel = (manifest: SharedManifestInfo): string => vaultNames[manifest.manifestId.toLowerCase()] ?? t('sharing.family.unnamedVault');

@@ -18,7 +18,7 @@ public class GroupOverviewResponse
     public List<GroupInfo> Groups { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets the offers of access to a shared vault addressed to the caller, awaiting their accept or decline.
+    /// Gets or sets the offers of access to a shared manifest addressed to the caller, awaiting their accept or decline.
     /// </summary>
     public List<ReceivedManifestInvitation> ReceivedInvitations { get; set; } = [];
 }

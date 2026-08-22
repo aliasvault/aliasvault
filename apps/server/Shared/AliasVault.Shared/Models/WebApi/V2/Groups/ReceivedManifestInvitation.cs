@@ -8,7 +8,7 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Groups;
 
 /// <summary>
-/// An open offer of access to a shared vault, addressed to the caller.
+/// An open offer of access to a shared manifest, addressed to the caller.
 /// </summary>
 public class ReceivedManifestInvitation
 {

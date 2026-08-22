@@ -400,11 +400,11 @@ declare enum AuthEventType {
      */
     Register = 30,
     /**
-     * Represents creation of a shared vault.
+     * Represents creation of a shared manifest.
      */
     SharedVaultCreation = 50,
     /**
-     * Represents deletion of a shared vault, confirmed with the master password.
+     * Represents deletion of a shared manifest, confirmed with the master password.
      */
     SharedVaultDeletion = 51,
     /**
@@ -550,7 +550,7 @@ type GroupMemberInfo = {
     publicKey: string | null;
 };
 /**
- * An offer of access to a shared vault that is still awaiting the recipient's answer.
+ * An offer of access to a shared manifest that is still awaiting the recipient's answer.
  */
 type SentManifestInvitation = {
     id: string;
@@ -559,7 +559,7 @@ type SentManifestInvitation = {
     createdAt: string;
 };
 /**
- * An open offer of access to a shared vault, addressed to this user.
+ * An open offer of access to a shared manifest, addressed to this user.
  */
 type ReceivedManifestInvitation = {
     id: string;
@@ -571,7 +571,7 @@ type ReceivedManifestInvitation = {
     recipientPublicKey: string | null;
 };
 /**
- * One shared vault owned by a group, with the members who can open it.
+ * One shared manifest owned by a group, with the members who can open it.
  */
 type SharedManifestInfo = {
     manifestId: string;
@@ -595,7 +595,7 @@ type GroupOverviewResponse = {
     receivedInvitations: ReceivedManifestInvitation[];
 };
 /**
- * Create another shared vault for a group.
+ * Create another shared manifest for a group.
  */
 type CreateSharedManifestRequest = {
     manifestId: string;
@@ -611,7 +611,7 @@ type CreateSharedManifestResponse = {
     revisionNumber: number;
 };
 /**
- * One recipient's copy of a shared vault's VEK, encrypted for a public key of theirs.
+ * One recipient's copy of a shared manifest's VEK, encrypted for a public key of theirs.
  */
 type ManifestGrant = {
     recipientUserId: string;
@@ -620,7 +620,7 @@ type ManifestGrant = {
     encryptedName?: string | null;
 };
 /**
- * Give a member of the group access to one of its shared vaults.
+ * Give a member of the group access to one of its shared manifests.
  */
 type GrantManifestAccessRequest = {
     userId: string;
@@ -644,7 +644,7 @@ type DeleteSharedManifestInitiateResponse = {
     srpIdentity: string;
 };
 /**
- * Delete a shared vault for good, carrying the SRP proof of the caller's master password.
+ * Delete a shared manifest for good, carrying the SRP proof of the caller's master password.
  */
 type DeleteSharedManifestRequest = {
     clientPublicEphemeral: string;
@@ -658,7 +658,7 @@ type DeleteSharedManifestRequest = {
  */
 declare const CapabilityKeys: {
     /**
-     * Shared vaults: creating one, inviting people to it, and accepting an invitation to one. The capability
+     * Shared manifests: creating one, inviting people to it, and accepting an invitation to one. The capability
      * behind the Family Sharing screens, and behind anything else built on a vault more than one account holds.
      */
     readonly VaultSharing: "vault-sharing";

@@ -70,12 +70,12 @@ public class GroupInvitation
     public Guid? VaultManifestId { get; set; }
 
     /// <summary>
-    /// Gets or sets the shared vault's VEK, encrypted for the invitee's public key.
+    /// Gets or sets the shared manifest's VEK, encrypted for the invitee's public key.
     /// </summary>
     public string? EncryptedVek { get; set; }
 
     /// <summary>
-    /// Gets or sets the shared vault's name, encrypted for the same public key as the <see cref="EncryptedVek"/>.
+    /// Gets or sets the shared manifest's name, encrypted for the same public key as the <see cref="EncryptedVek"/>.
     /// </summary>
     public string? EncryptedName { get; set; }
 
@@ -88,6 +88,12 @@ public class GroupInvitation
     /// Gets or sets the navigation property to that keypair.
     /// </summary>
     public virtual UserGrantKey? UserGrantKey { get; set; }
+
+    /// <summary>
+    /// Gets or sets the version of the manifest's VEK that this invitation was sealed under. Used to check
+    /// if this invitation is still valid for the manifest upon accepting.
+    /// </summary>
+    public int VaultKeyVersion { get; set; }
 
     /// <summary>
     /// Gets or sets the algorithm the <see cref="EncryptedVek"/> is encrypted with.

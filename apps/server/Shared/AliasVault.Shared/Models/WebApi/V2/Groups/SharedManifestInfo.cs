@@ -8,7 +8,7 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Groups;
 
 /// <summary>
-/// One shared vault owned by a group. A group holds any number of these, each with its own key and its own set of
+/// One shared manifest owned by a group. A group holds any number of these, each with its own key and its own set of
 /// members that were given access to it.
 /// </summary>
 public class SharedManifestInfo

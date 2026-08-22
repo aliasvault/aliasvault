@@ -63,12 +63,12 @@ public enum AuthEventType
     Register = 30,
 
     /// <summary>
-    /// Represents creation of a shared vault.
+    /// Represents creation of a shared manifest.
     /// </summary>
     SharedVaultCreation = 50,
 
     /// <summary>
-    /// Represents deletion of a shared vault, confirmed with the master password.
+    /// Represents deletion of a shared manifest, confirmed with the master password.
     /// </summary>
     SharedVaultDeletion = 51,
 

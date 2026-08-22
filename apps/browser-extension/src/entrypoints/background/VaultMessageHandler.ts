@@ -2576,7 +2576,7 @@ export async function handleGetRecentlySelected(
 }
 
 /**
- * Create another shared vault for a family, with this account as its first member.
+ * Create another shared manifest for a family, with this account as its first member.
  *
  * @param message - the family to create the vault for and the name to give it.
  */
@@ -2597,7 +2597,7 @@ export async function handleGroupCreateVault(message: { groupId: string; name: s
     const group = overview.groups.find(candidate => candidate.groupId.toLowerCase() === message.groupId.toLowerCase());
 
     if (!group || group.role === 'Member') {
-      console.error(`Failed to create shared vault: group ${message.groupId} is not one this account administers.`);
+      console.error(`Failed to create shared manifest: group ${message.groupId} is not one this account administers.`);
       return { success: false, error: await t('sharing.family.errors.createVaultFailed') };
     }
 
@@ -2635,10 +2635,10 @@ export async function handleGroupCreateVault(message: { groupId: string; name: s
     await SharingService.rotateManifestEncryptionKey(sqliteClient, mapping.manifestId);
     await persistLocalVaultMutation(sqliteClient, encryptionKey);
 
-    devLog(`[Sharing] Created shared vault ${mapping.manifestId} ("${name}") for group ${group.groupId}.`);
+    devLog(`[Sharing] Created shared manifest ${mapping.manifestId} ("${name}") for group ${group.groupId}.`);
     return { success: true };
   } catch (error) {
-    console.error('Failed to create shared vault:', error);
+    console.error('Failed to create shared manifest:', error);
     if (error instanceof ApiRequestError && error.apiErrorCode) {
       return { success: false, apiErrorCode: error.apiErrorCode };
     }
@@ -2654,7 +2654,7 @@ export async function handleGroupCreateVault(message: { groupId: string; name: s
 }
 
 /**
- * Invite a member of a family to one of its shared vaults, handing them the vault's key sealed for them.
+ * Invite a member of a family to one of its shared manifests, handing them the vault's key sealed for them.
  *
  * The recipient is picked off the family's own roster, so this never names an account outside the family.
  * @param message - the family, the vault, and the member being invited.
@@ -2731,13 +2731,13 @@ export async function handleGroupInviteMember(message: { groupId: string; manife
       return { success: false, apiErrorCode: error.apiErrorCode };
     }
 
-    console.error('Failed to invite member to shared vault:', error);
+    console.error('Failed to invite member to shared manifest:', error);
     return { success: false, error: await t('sharing.family.errors.inviteFailed') };
   }
 }
 
 /**
- * Take a member's access to one shared vault away, or hand back one's own.
+ * Take a member's access to one shared manifest away, or hand back one's own.
  *
  * @param message - the family, the vault, and the member losing access.
  */
@@ -2755,7 +2755,7 @@ export async function handleGroupRevokeAccess(message: { groupId: string; manife
       return { success: false, apiErrorCode: error.apiErrorCode };
     }
 
-    console.error('Failed to revoke shared vault access:', error);
+    console.error('Failed to revoke shared manifest access:', error);
     return { success: false, error: await t('sharing.family.errors.revokeAccessFailed') };
   }
 }

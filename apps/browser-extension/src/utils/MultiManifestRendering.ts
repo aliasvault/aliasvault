@@ -118,7 +118,7 @@ const subfolderRendering: MultiManifestRenderer = {
       }
 
       await this.render(sqliteClient, manifest.manifestId, manifest.name ?? await defaultSharedVaultName());
-      devWarn(`[Sharing] Shared vault ${manifest.manifestId} had no folder; recreated it.`);
+      devWarn(`[Sharing] Shared manifest ${manifest.manifestId} had no folder; recreated it.`);
       mutated = true;
     }
 
@@ -126,7 +126,7 @@ const subfolderRendering: MultiManifestRenderer = {
   },
 
   /**
-   * The name of a shared vault is the name of the folder it is rendered as.
+   * The name of a shared manifest is the name of the folder it is rendered as.
    * @param sqliteClient - The open local vault
    */
   displayNames(sqliteClient: SqliteClient): Record<string, string> {

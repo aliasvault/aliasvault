@@ -239,7 +239,7 @@ export class FolderRepository extends BaseRepository {
   }
 
   /**
-   * Refuse to delete a folder that a shared vault is rendered as (see {@link multiManifestRendering}).
+   * Refuse to delete a folder that a shared manifest is rendered as (see {@link multiManifestRendering}).
    * @param folderId - The folder about to be deleted
    */
   private async assertDeletable(folderId: string): Promise<void> {

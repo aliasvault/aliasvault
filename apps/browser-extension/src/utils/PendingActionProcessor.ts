@@ -84,7 +84,7 @@ export class PendingActionProcessor {
   }
 
   /**
-   * Replace a shared vault's mail delivery keypair, which the server asks for after somebody who held the old private half was removed from the group.
+   * Replace a shared manifest's mail delivery keypair, which the server asks for after somebody who held the old private half was removed from the group.
    * @param action - the action naming the manifest to rotate.
    * @param sqliteClient - the open local vault.
    */
@@ -97,7 +97,7 @@ export class PendingActionProcessor {
     }
 
     await SharingService.rotateManifestEncryptionKey(sqliteClient, record.manifestId);
-    devLog(`[PendingActions] Rotated the mail delivery key of shared vault ${record.manifestId}.`);
+    devLog(`[PendingActions] Rotated the mail delivery key of shared manifest ${record.manifestId}.`);
 
     return { vaultChanged: true, completed: true };
   }

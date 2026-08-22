@@ -23,7 +23,7 @@ public class GroupInfo
     public required string Role { get; set; }
 
     /// <summary>
-    /// Gets or sets the group's shared vaults. A group holds any number of them.
+    /// Gets or sets the group's shared manifests. A group holds any number of them.
     /// </summary>
     public List<SharedManifestInfo> Manifests { get; set; } = [];
 

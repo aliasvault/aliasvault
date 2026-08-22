@@ -8,7 +8,7 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Groups;
 
 /// <summary>
-/// An offer of access to a shared vault that is still awaiting the recipient's answer.
+/// An offer of access to a shared manifest that is still awaiting the recipient's answer.
 /// </summary>
 public class SentManifestInvitation
 {

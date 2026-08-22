@@ -26,20 +26,20 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
 /// <summary>
-/// Groups controller which manages the shared vaults of a group and who inside the group can open them.
+/// Groups controller which manages the shared manifests of a group and who inside the group can open them.
 /// </summary>
 /// <param name="dbContextFactory">The database context factory.</param>
 /// <param name="userManager">The user manager.</param>
 /// <param name="timeProvider">Time provider.</param>
 /// <param name="cache">Memory cache holding the server's SRP ephemeral between the delete initiate and confirm calls.</param>
-/// <param name="authLoggingService">Auth logging service, recording shared vault creation and the master password checks guarding deletion.</param>
+/// <param name="authLoggingService">Auth logging service, recording shared manifest creation and the master password checks guarding deletion.</param>
 [ApiVersion("2")]
 public class GroupsController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, ITimeProvider timeProvider, IMemoryCache cache, AuthLoggingService authLoggingService) : AuthenticatedRequestController(userManager)
 {
     private const string ManifestFormat = "manifest-v1";
 
     /// <summary>
-    /// How many shared vaults one group may hold. TODO: hardcoded for now; make this dynamic when needed.
+    /// How many shared manifests one group may hold. TODO: hardcoded for now; make this dynamic when needed.
     /// </summary>
     private const int MaxSharedVaults = 3;
 
@@ -130,7 +130,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Create another shared vault for a group, together with the caller's own grant on it.
+    /// Create another shared manifest for a group, together with the caller's own grant on it.
     /// </summary>
     /// <param name="groupId">The shared group ID.</param>
     /// <param name="model">The create manifest request.</param>
@@ -192,7 +192,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             UpdatedAt = timeProvider.UtcNow,
         };
         context.VaultManifests.Add(manifest);
-        context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(manifest.ManifestId, me.Id, selfPublicKeyId.Value, model.SelfEncryptedVek, algorithm, timeProvider.UtcNow));
+        context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(manifest.ManifestId, me.Id, selfPublicKeyId.Value, model.SelfEncryptedVek, algorithm, manifest.KeyVersion, timeProvider.UtcNow));
 
         try
         {
@@ -210,11 +210,11 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Offer a member of the group access to one of its shared vaults, handing over the vault key sealed for them in
+    /// Offer a member of the group access to one of its shared manifests, handing over the vault key sealed for them in
     /// the same call. The offer becomes a grant once they accept it.
     /// </summary>
     /// <param name="groupId">The group ID.</param>
-    /// <param name="manifestId">The shared vault to give access to.</param>
+    /// <param name="manifestId">The shared manifest to give access to.</param>
     /// <param name="model">The grant request.</param>
     /// <returns>The created invitation id.</returns>
     [HttpPost("{groupId:guid}/manifests/{manifestId:guid}/access")]
@@ -238,7 +238,12 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_NOT_FOUND, 404));
         }
 
-        if (!await context.VaultManifests.AnyAsync(m => m.ManifestId == manifestId && m.OwnerGroupId == groupId))
+        var manifestKeyVersion = await context.VaultManifests
+            .Where(m => m.ManifestId == manifestId && m.OwnerGroupId == groupId)
+            .Select(m => (int?)m.KeyVersion)
+            .FirstOrDefaultAsync();
+
+        if (manifestKeyVersion is null)
         {
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
         }
@@ -276,6 +281,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ACCESS_ALREADY_GRANTED, 400));
         }
 
+        await CloseStaleInvitationsAsync(context, manifestId, manifestKeyVersion.Value);
+
         if (await context.GroupInvitations.AnyAsync(i => i.VaultManifestId == manifestId && i.InviteeUserId == model.UserId && i.State == GroupInvitationState.Pending))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_ALREADY_EXISTS, 400));
@@ -293,6 +300,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             EncryptedVek = model.Grant.EncryptedVek,
             EncryptedName = model.Grant.EncryptedName,
             UserGrantKeyId = model.Grant.RecipientPublicKeyId,
+            VaultKeyVersion = manifestKeyVersion.Value,
             Algorithm = algorithm,
             CreatedAt = timeProvider.UtcNow,
             UpdatedAt = timeProvider.UtcNow,
@@ -376,10 +384,10 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Begin deleting one of the group's shared vaults.
+    /// Begin deleting one of the group's shared manifests.
     /// </summary>
     /// <param name="groupId">The group ID.</param>
-    /// <param name="manifestId">The shared vault to delete.</param>
+    /// <param name="manifestId">The shared manifest to delete.</param>
     /// <returns>The SRP handshake values for the confirm endpoint.</returns>
     [HttpPost("{groupId:guid}/manifests/{manifestId:guid}/delete/initiate")]
     public async Task<IActionResult> InitiateDeleteManifest(Guid groupId, Guid manifestId)
@@ -415,10 +423,10 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Delete one of the group's shared vaults (confirmed with the master password).
+    /// Delete one of the group's shared manifests (confirmed with the master password).
     /// </summary>
     /// <param name="groupId">The group ID.</param>
-    /// <param name="manifestId">The shared vault to delete.</param>
+    /// <param name="manifestId">The shared manifest to delete.</param>
     /// <param name="model">The SRP proof of the caller's master password.</param>
     /// <returns>Ok on success.</returns>
     [HttpPost("{groupId:guid}/manifests/{manifestId:guid}/delete/confirm")]
@@ -517,7 +525,25 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_NOT_FOUND, 404));
         }
 
-        if (!await PromoteSealedGrantAsync(context, invitation, me.Id))
+        var manifestKeyVersion = invitation.VaultManifestId is null ? null : await context.VaultManifests
+            .Where(m => m.ManifestId == invitation.VaultManifestId.Value && m.OwnerGroupId == invitation.GroupId)
+            .Select(m => (int?)m.KeyVersion)
+            .FirstOrDefaultAsync();
+
+        if (manifestKeyVersion is null)
+        {
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_NOT_FOUND, 404));
+        }
+
+        // If the current manifest key version is different from the one the invitation was sealed under, it is no longer valid.
+        if (manifestKeyVersion.Value != invitation.VaultKeyVersion)
+        {
+            CloseInvitation(invitation, GroupInvitationState.Stale);
+            await context.SaveChangesAsync();
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_KEY_OUTDATED, 400));
+        }
+
+        if (!await PromoteSealedGrantAsync(context, invitation, me.Id, manifestKeyVersion.Value))
         {
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_NOT_FOUND, 404));
         }
@@ -590,7 +616,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// The open offers of access to each shared vault, for the admins who may withdraw them.
+    /// The open offers of access to each shared manifest, for the admins who may withdraw them.
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="groupIds">The groups to list offers of.</param>
@@ -677,8 +703,9 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     /// <param name="context">The database context.</param>
     /// <param name="invitation">The invitation being accepted.</param>
     /// <param name="userId">The accepting user.</param>
+    /// <param name="keyVersion">The manifest's current VEK version, already checked against the offer's.</param>
     /// <returns>Whether the accepting user ends up holding a grant on the vault.</returns>
-    private async Task<bool> PromoteSealedGrantAsync(AliasServerDbContext context, GroupInvitation invitation, string userId)
+    private async Task<bool> PromoteSealedGrantAsync(AliasServerDbContext context, GroupInvitation invitation, string userId, int keyVersion)
     {
         if (invitation.EncryptedVek is null || invitation.UserGrantKeyId is null || invitation.VaultManifestId is null)
         {
@@ -686,18 +713,32 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
 
         var manifestId = invitation.VaultManifestId.Value;
-        if (!await context.VaultManifests.AnyAsync(m => m.ManifestId == manifestId && m.OwnerGroupId == invitation.GroupId))
-        {
-            return false;
-        }
-
         if (await context.VaultManifestAccessKeys.AnyAsync(k => k.VaultManifestId == manifestId && k.UserId == userId && k.Type == ManifestKeyType.GrantKey))
         {
             return true;
         }
 
-        context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(manifestId, userId, invitation.UserGrantKeyId.Value, invitation.EncryptedVek, invitation.Algorithm, timeProvider.UtcNow));
+        context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(manifestId, userId, invitation.UserGrantKeyId.Value, invitation.EncryptedVek, invitation.Algorithm, keyVersion, timeProvider.UtcNow));
 
         return true;
+    }
+
+    /// <summary>
+    /// Close every open offer of access to a manifest whose sealed key predates the manifest's current one, as accepting it would fail anyway.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    /// <param name="manifestId">The shared manifest.</param>
+    /// <param name="keyVersion">The manifest's current VEK version.</param>
+    /// <returns>A task.</returns>
+    private async Task CloseStaleInvitationsAsync(AliasServerDbContext context, Guid manifestId, int keyVersion)
+    {
+        var stale = await context.GroupInvitations
+            .Where(i => i.VaultManifestId == manifestId && i.State == GroupInvitationState.Pending && i.VaultKeyVersion != keyVersion)
+            .ToListAsync();
+
+        foreach (var invitation in stale)
+        {
+            CloseInvitation(invitation, GroupInvitationState.Stale);
+        }
     }
 }

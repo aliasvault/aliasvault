@@ -21,7 +21,7 @@ export type GroupMemberInfo = {
 }
 
 /**
- * An offer of access to a shared vault that is still awaiting the recipient's answer.
+ * An offer of access to a shared manifest that is still awaiting the recipient's answer.
  */
 export type SentManifestInvitation = {
   id: string;
@@ -31,7 +31,7 @@ export type SentManifestInvitation = {
 }
 
 /**
- * An open offer of access to a shared vault, addressed to this user.
+ * An open offer of access to a shared manifest, addressed to this user.
  */
 export type ReceivedManifestInvitation = {
   id: string;
@@ -44,7 +44,7 @@ export type ReceivedManifestInvitation = {
 }
 
 /**
- * One shared vault owned by a group, with the members who can open it.
+ * One shared manifest owned by a group, with the members who can open it.
  */
 export type SharedManifestInfo = {
   manifestId: string;
@@ -71,7 +71,7 @@ export type GroupOverviewResponse = {
 }
 
 /**
- * Create another shared vault for a group.
+ * Create another shared manifest for a group.
  */
 export type CreateSharedManifestRequest = {
   manifestId: string;
@@ -89,7 +89,7 @@ export type CreateSharedManifestResponse = {
 }
 
 /**
- * One recipient's copy of a shared vault's VEK, encrypted for a public key of theirs.
+ * One recipient's copy of a shared manifest's VEK, encrypted for a public key of theirs.
  */
 export type ManifestGrant = {
   recipientUserId: string;
@@ -99,7 +99,7 @@ export type ManifestGrant = {
 }
 
 /**
- * Give a member of the group access to one of its shared vaults.
+ * Give a member of the group access to one of its shared manifests.
  */
 export type GrantManifestAccessRequest = {
   userId: string;
@@ -126,7 +126,7 @@ export type DeleteSharedManifestInitiateResponse = {
 }
 
 /**
- * Delete a shared vault for good, carrying the SRP proof of the caller's master password.
+ * Delete a shared manifest for good, carrying the SRP proof of the caller's master password.
  */
 export type DeleteSharedManifestRequest = {
   clientPublicEphemeral: string;

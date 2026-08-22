@@ -13,7 +13,7 @@ namespace AliasVault.Shared.Server.Capabilities;
 public static class CapabilityKeys
 {
     /// <summary>
-    /// Shared vaults.
+    /// Shared manifests.
     /// </summary>
     public const string VaultSharing = "vault-sharing";
 }
