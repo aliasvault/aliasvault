@@ -12,15 +12,14 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
 import type { GroupInfo, GroupMemberInfo, GroupOverviewResponse, SharedManifestInfo } from '@/utils/dist/core/models/webapi';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { anchorFolderNames, SharingService } from '@/utils/SharingService';
+import { multiManifestRendering } from '@/utils/MultiManifestRendering';
+import { SharingService } from '@/utils/SharingService';
 import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
 
 /**
- * What the confirmation dialog is about.
+ * The access removal the confirmation dialog is about.
  */
-type PendingRemoval =
-  | { kind: 'member'; group: GroupInfo; member: GroupMemberInfo; isSelf: boolean }
-  | { kind: 'access'; group: GroupInfo; manifest: SharedManifestInfo; member: GroupMemberInfo; isSelf: boolean };
+type PendingRemoval = { group: GroupInfo; manifest: SharedManifestInfo; member: GroupMemberInfo; isSelf: boolean };
 
 /**
  * A shared vault deletion in progress: first a plain warning, then the master password confirmation.
@@ -62,7 +61,7 @@ const FamilySharingSettings: React.FC = () => {
       setInvitationNames(sqliteClient ? await SharingService.openInvitationNames(sqliteClient, loaded.receivedInvitations) : {});
       const records = await SharingService.getSharedManifestRecords();
       const names = Object.fromEntries(Object.values(records).filter(record => record.name).map(record => [record.manifestId.toLowerCase(), record.name as string]));
-      setVaultNames({ ...names, ...(sqliteClient ? anchorFolderNames(sqliteClient) : {}) });
+      setVaultNames({ ...names, ...(sqliteClient ? multiManifestRendering.displayNames(sqliteClient) : {}) });
       setError(null);
     } catch {
       setError(t('sharing.family.errors.loadFailed'));
@@ -181,7 +180,7 @@ const FamilySharingSettings: React.FC = () => {
   }, t('sharing.family.errors.invitationGone'));
 
   /**
-   * Carry out whatever the confirmation dialog was about.
+   * Carry out the access removal the confirmation dialog was about.
    */
   const confirmRemoval = (): Promise<void> => {
     const removal = pendingRemoval;
@@ -190,16 +189,10 @@ const FamilySharingSettings: React.FC = () => {
       return Promise.resolve();
     }
 
-    if (removal.kind === 'member') {
-      return run(async () => {
-        unwrap(await sendMessage('GROUP_REMOVE_MEMBER', { groupId: removal.group.groupId, userId: removal.member.userId }));
-      }, t('sharing.family.errors.removeMemberFailed'));
-    }
-
     return run(async () => {
       unwrap(await sendMessage('GROUP_REVOKE_ACCESS', { groupId: removal.group.groupId, manifestId: removal.manifest.manifestId, userId: removal.member.userId }));
       await loadStoredDatabase();
-    }, t('sharing.family.errors.removeMemberFailed'));
+    }, t('sharing.family.errors.revokeAccessFailed'));
   };
 
   /**
@@ -265,20 +258,20 @@ const FamilySharingSettings: React.FC = () => {
    */
   const removalDialog = (): { title: string; message: string; confirmText: string } => {
     if (!pendingRemoval) {
-      return { title: '', message: '', confirmText: t('common.remove') };
+      return { title: '', message: '', confirmText: t('sharing.revoke') };
     }
 
-    if (pendingRemoval.kind === 'member') {
-      return pendingRemoval.isSelf
-        ? { title: t('sharing.family.leaveFamily'), message: t('sharing.family.leaveFamilyConfirm'), confirmText: t('sharing.family.leaveFamily') }
-        : { title: t('common.remove'), message: t('sharing.family.removeMemberConfirm', { username: pendingRemoval.member.username }), confirmText: t('common.remove') };
+    if (pendingRemoval.isSelf) {
+      return {
+        title: t('sharing.family.leaveVault'),
+        message: t('sharing.family.leaveVaultConfirm', { vault: vaultLabel(pendingRemoval.manifest) }),
+        confirmText: t('sharing.family.leaveVault'),
+      };
     }
 
     return {
       title: t('sharing.revoke'),
-      message: pendingRemoval.isSelf
-        ? t('sharing.family.leaveVaultConfirm', { vault: vaultLabel(pendingRemoval.manifest) })
-        : t('sharing.family.revokeAccessConfirm', { username: pendingRemoval.member.username, vault: vaultLabel(pendingRemoval.manifest) }),
+      message: t('sharing.family.revokeAccessConfirm', { username: pendingRemoval.member.username, vault: vaultLabel(pendingRemoval.manifest) }),
       confirmText: t('sharing.revoke'),
     };
   };
@@ -288,7 +281,7 @@ const FamilySharingSettings: React.FC = () => {
   const dialog = removalDialog();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <ConfirmDeleteModal
         isOpen={pendingRemoval !== null}
         onClose={() => setPendingRemoval(null)}
@@ -331,10 +324,10 @@ const FamilySharingSettings: React.FC = () => {
 
       {receivedInvitations.length > 0 && (
         <section>
-          <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-3">{t('sharing.family.invitations')}</h3>
+          <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-2">{t('sharing.family.invitations')}</h3>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-700">
             {receivedInvitations.map(invitation => (
-              <div key={invitation.id} className="p-4 space-y-3">
+              <div key={invitation.id} className="p-3 space-y-2">
                 <div>
                   <p className="font-medium text-gray-900 dark:text-white">{invitationNames[invitation.id] ?? t('sharing.family.unnamedVault')}</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t('sharing.family.invitedBy', { username: invitation.inviterUsername })}</p>
@@ -367,11 +360,12 @@ const FamilySharingSettings: React.FC = () => {
 
       {groups.map(group => {
         const canAdminister = group.role === 'Owner' || group.role === 'Admin';
+        const myUserId = group.members.find(member => member.username === app.username)?.userId ?? '';
 
         return (
-          <section key={group.groupId} className="space-y-4">
+          <section key={group.groupId} className="space-y-3">
             {/* The family's members. */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3">
               <button onClick={() => toggleRoster(group.groupId)} className="flex items-center justify-between w-full text-left">
                 <span className="font-medium text-gray-900 dark:text-white">{t('sharing.members')} ({group.members.length})</span>
                 <svg className={`w-5 h-5 text-gray-500 transition-transform ${isRosterExpanded(group.groupId) ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -380,115 +374,126 @@ const FamilySharingSettings: React.FC = () => {
               </button>
 
               {isRosterExpanded(group.groupId) && (
-                <div className="mt-3 space-y-3">
-                  <ul className="space-y-2">
+                <div className="mt-2 space-y-2">
+                  <ul className="divide-y divide-gray-100 dark:divide-gray-700">
                     {group.members.map(member => {
-                      const isSelf = member.username === app.username;
-                      const canRemove = member.role !== 'Owner' && (isSelf || canAdminister);
+                      const isSelf = member.userId === myUserId;
 
                       return (
-                        <li key={member.userId} className="flex items-center justify-between gap-2">
+                        <li key={member.userId} className="flex items-center justify-between gap-2 py-1.5 first:pt-0 last:pb-0">
                           <div className="min-w-0">
                             <p className="text-sm text-gray-900 dark:text-white truncate">
                               {member.username}{isSelf && ` (${t('sharing.family.you')})`}
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">{roleLabel(member)}</p>
                           </div>
-                          {canRemove && (
-                            <button
-                              disabled={busy}
-                              onClick={() => setPendingRemoval({ kind: 'member', group, member, isSelf })}
-                              className="shrink-0 px-2 py-1 text-xs rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50"
-                            >
-                              {isSelf ? t('sharing.family.leaveFamily') : t('common.remove')}
-                            </button>
-                          )}
                         </li>
                       );
                     })}
                   </ul>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('sharing.family.rosterManagedElsewhere')}</p>
                 </div>
               )}
             </div>
 
-            {/* One block per shared vault, each with the members who can open it. */}
-            {group.manifests.map(manifest => (
-              <div key={manifest.manifestId} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="font-medium text-gray-900 dark:text-white">{vaultLabel(manifest)}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('sharing.family.sharedVaultActive', { name: vaultLabel(manifest) })}</p>
-                  </div>
-                  {canAdminister && (
-                    <button
-                      disabled={busy}
-                      onClick={() => setPendingVaultDelete({ group, manifest, stage: 'confirm' })}
-                      className="shrink-0 px-2 py-1 text-xs rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50"
-                    >
-                      {t('common.delete')}
-                    </button>
-                  )}
-                </div>
+            {/* One block per shared folder, each with the members who can open it. */}
+            {group.manifests.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-md font-semibold text-gray-900 dark:text-white">{t('sharing.family.sharedFolders')}</h3>
+                {group.manifests.map(manifest => {
+                  const iHoldKey = manifest.memberUserIds.includes(myUserId);
 
-                <ul className="space-y-2">
-                  {group.members.map(member => {
-                    const isSelf = member.username === app.username;
-                    const hasAccess = manifest.memberUserIds.includes(member.userId);
-                    const isInvited = manifest.pendingInvitations.some(invitation => invitation.inviteeUserId === member.userId);
-                    const invitation = manifest.pendingInvitations.find(candidate => candidate.inviteeUserId === member.userId);
-
-                    return (
-                      <li key={member.userId} className="flex items-center justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="text-sm text-gray-900 dark:text-white truncate">
-                            {member.username}{isSelf && ` (${t('sharing.family.you')})`}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {hasAccess ? t('sharing.family.hasAccess') : isInvited ? t('sharing.family.invited') : t('sharing.family.noAccess')}
-                          </p>
-                        </div>
-
-                        {hasAccess && (isSelf || canAdminister) && (
+                  return (
+                    <div key={manifest.manifestId} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-medium text-gray-900 dark:text-white truncate">{vaultLabel(manifest)}</p>
+                        {canAdminister && (
                           <button
                             disabled={busy}
-                            onClick={() => setPendingRemoval({ kind: 'access', group, manifest, member, isSelf })}
+                            onClick={() => setPendingVaultDelete({ group, manifest, stage: 'confirm' })}
                             className="shrink-0 px-2 py-1 text-xs rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50"
                           >
-                            {t('sharing.revoke')}
+                            {t('common.delete')}
                           </button>
                         )}
+                      </div>
 
-                        {isInvited && canAdminister && invitation && (
-                          <button
-                            disabled={busy}
-                            onClick={() => run(() => SharingService.withdrawInvitation(webApi, invitation.id), t('sharing.family.errors.invitationGone'))}
-                            className="shrink-0 px-2 py-1 text-xs rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
-                          >
-                            {t('sharing.family.withdraw')}
-                          </button>
-                        )}
+                      {/* Inviting somebody seals this vault's key for them, which an admin who holds no grant on it cannot do. */}
+                      {canAdminister && !iHoldKey && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('sharing.family.cannotInviteWithoutAccess')}</p>
+                      )}
 
-                        {!hasAccess && !isInvited && canAdminister && (
-                          <button
-                            disabled={busy || !member.publicKey}
-                            title={member.publicKey ? undefined : t('sharing.family.errors.userNotReady')}
-                            onClick={() => inviteMember(group, manifest, member)}
-                            className="shrink-0 px-2 py-1 text-xs rounded-md bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white"
-                          >
-                            {t('sharing.family.invite')}
-                          </button>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
+                      <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+                        {group.members.map(member => {
+                          const isSelf = member.userId === myUserId;
+                          const hasAccess = manifest.memberUserIds.includes(member.userId);
+                          const isInvited = manifest.pendingInvitations.some(invitation => invitation.inviteeUserId === member.userId);
+                          const invitation = manifest.pendingInvitations.find(candidate => candidate.inviteeUserId === member.userId);
+
+                          return (
+                            <li key={member.userId} className="flex items-center justify-between gap-2 py-1.5 first:pt-0 last:pb-0">
+                              <div className="min-w-0">
+                                <p className="text-sm text-gray-900 dark:text-white truncate">
+                                  {member.username}{isSelf && ` (${t('sharing.family.you')})`}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  {hasAccess ? t('sharing.family.hasAccess') : isInvited ? t('sharing.family.invited') : t('sharing.family.noAccess')}
+                                </p>
+                              </div>
+
+                              {/* An admin's own grant stays put: it is the only copy of the key their duties, inviting others among them, need. */}
+                              {hasAccess && isSelf && !canAdminister && (
+                                <button
+                                  disabled={busy}
+                                  onClick={() => setPendingRemoval({ group, manifest, member, isSelf })}
+                                  className="shrink-0 px-2 py-1 text-xs rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50"
+                                >
+                                  {t('sharing.family.leaveVault')}
+                                </button>
+                              )}
+
+                              {hasAccess && !isSelf && canAdminister && (
+                                <button
+                                  disabled={busy}
+                                  onClick={() => setPendingRemoval({ group, manifest, member, isSelf })}
+                                  className="shrink-0 px-2 py-1 text-xs rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50"
+                                >
+                                  {t('sharing.revoke')}
+                                </button>
+                              )}
+
+                              {isInvited && !isSelf && canAdminister && invitation && (
+                                <button
+                                  disabled={busy}
+                                  onClick={() => run(() => SharingService.withdrawInvitation(webApi, invitation.id), t('sharing.family.errors.invitationGone'))}
+                                  className="shrink-0 px-2 py-1 text-xs rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+                                >
+                                  {t('sharing.family.withdraw')}
+                                </button>
+                              )}
+
+                              {!hasAccess && !isInvited && !isSelf && canAdminister && iHoldKey && (
+                                <button
+                                  disabled={busy || !member.publicKey}
+                                  title={member.publicKey ? undefined : t('sharing.family.errors.userNotReady')}
+                                  onClick={() => inviteMember(group, manifest, member)}
+                                  className="shrink-0 px-2 py-1 text-xs rounded-md bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white"
+                                >
+                                  {t('sharing.family.invite')}
+                                </button>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
+            )}
 
-            {/* Creating another shared vault. */}
+            {/* Creating another shared folder. */}
             {(canAdminister || group.manifests.length === 0) && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 space-y-3">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 space-y-2">
                 {group.manifests.length === 0 && (
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {canAdminister ? t('sharing.family.noSharedVaultAdmin') : t('sharing.family.noSharedVaultMember')}

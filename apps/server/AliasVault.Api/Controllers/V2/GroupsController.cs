@@ -312,11 +312,11 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Take a member's access to one shared vault away, without touching their membership of the group.
+    /// Revoke a member's access to a shared manifest.
     /// </summary>
     /// <param name="groupId">The group ID.</param>
-    /// <param name="manifestId">The shared vault.</param>
-    /// <param name="userId">The member losing access, or the caller themselves.</param>
+    /// <param name="manifestId">The shared manifest.</param>
+    /// <param name="userId">The member losing access.</param>
     /// <returns>Ok on success.</returns>
     [HttpDelete("{groupId:guid}/manifests/{manifestId:guid}/access/{userId}")]
     public async Task<IActionResult> RevokeAccess(Guid groupId, Guid manifestId, string userId)
@@ -329,7 +329,15 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
 
         var isSelf = string.Equals(userId, me.Id, StringComparison.Ordinal);
-        if (!isSelf && !await GroupHelper.IsSharedGroupAdminAsync(context, groupId, me.Id))
+        var isAdmin = await GroupHelper.IsSharedGroupAdminAsync(context, groupId, me.Id);
+
+        if (isSelf && isAdmin)
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.CANNOT_REVOKE_OWN_ACCESS, 400));
+        }
+
+        var mayRevoke = isSelf ? await GroupHelper.IsSharedGroupMemberAsync(context, groupId, me.Id) : isAdmin;
+        if (!mayRevoke)
         {
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_NOT_FOUND, 404));
         }
@@ -339,7 +347,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
         }
 
-        if (!isSelf && await GrantHelper.IsLastGrantHolderAsync(context, manifestId, userId))
+        if (await GrantHelper.IsLastGrantHolderAsync(context, manifestId, userId))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.LAST_MANIFEST_GRANT_HOLDER, 400));
         }
@@ -577,87 +585,6 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
 
         CloseInvitation(invitation, GroupInvitationState.Revoked);
         await context.SaveChangesAsync();
-
-        return Ok();
-    }
-
-    /// <summary>
-    /// Remove a member from a shared group, taking their access to every one of its vaults with them. Adding somebody
-    /// back is an operator action, so this is deliberately one-way from a client's point of view.
-    /// </summary>
-    /// <param name="groupId">The group ID.</param>
-    /// <param name="userId">The user ID to remove.</param>
-    /// <returns>Ok on success.</returns>
-    [HttpDelete("{groupId:guid}/members/{userId}")]
-    public async Task<IActionResult> RemoveMember(Guid groupId, string userId)
-    {
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-        var me = await GetCurrentUserAsync();
-        if (me == null)
-        {
-            return Unauthorized();
-        }
-
-        var membership = await context.GroupMembers.FirstOrDefaultAsync(gm => gm.GroupId == groupId && gm.UserId == userId && gm.Group.Type == GroupType.Shared);
-        if (membership is null)
-        {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_NOT_FOUND, 404));
-        }
-
-        var isSelf = string.Equals(userId, me.Id, StringComparison.Ordinal);
-        if (!isSelf && !await GroupHelper.IsGroupAdminAsync(context, groupId, me.Id))
-        {
-            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_NOT_FOUND, 404));
-        }
-
-        // The owner is the group's anchor: losing them would leave a group nobody can administer or delete.
-        if (membership.Role == GroupRole.Owner)
-        {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.CANNOT_REMOVE_GROUP_OWNER, 400));
-        }
-
-        var manifestIds = await GroupHelper.GetManifestIdsOfGroupAsync(context, groupId);
-
-        /*
-         * Removing the only member who can open a vault would leave it unopenable, since the key exists nowhere else.
-         * An admin has to hand that vault to somebody else first. Leaving of one's own accord is not blocked by it:
-         * being unable to walk out of a family would be the worse failure, and the vault is the group's problem then.
-         */
-        if (!isSelf)
-        {
-            foreach (var manifestId in manifestIds)
-            {
-                if (await GrantHelper.IsLastGrantHolderAsync(context, manifestId, userId))
-                {
-                    return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.LAST_MANIFEST_GRANT_HOLDER, 400));
-                }
-            }
-        }
-
-        // Create a transaction to ensure the membership and offers of access are closed together.
-        var strategy = context.Database.CreateExecutionStrategy();
-        await strategy.ExecuteAsync(async () =>
-        {
-            await using var transaction = await context.Database.BeginTransactionAsync();
-            context.GroupMembers.Remove(membership);
-
-            // An offer of access that outlived the membership it was made under would let them back in on accepting it.
-            foreach (var invitation in await context.GroupInvitations.Where(i => i.GroupId == groupId && i.InviteeUserId == userId && i.State == GroupInvitationState.Pending).ToListAsync())
-            {
-                CloseInvitation(invitation, GroupInvitationState.Revoked);
-            }
-
-            foreach (var manifestId in manifestIds)
-            {
-                if (await GrantHelper.RevokeAccessAsync(context, manifestId, userId))
-                {
-                    await ClientActionHelper.EnqueueForGroupAsync(context, ClientActionType.RotateManifestDeliveryKey, groupId, manifestId, timeProvider.UtcNow);
-                }
-            }
-
-            await context.SaveChangesAsync();
-            await transaction.CommitAsync();
-        });
 
         return Ok();
     }

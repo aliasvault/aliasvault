@@ -5,7 +5,6 @@ import { useLocation, useNavigate, useParams, useSearchParams } from 'react-rout
 import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
 import DeleteFolderModal from '@/entrypoints/popup/components/Folders/DeleteFolderModal';
 import FolderBreadcrumb from '@/entrypoints/popup/components/Folders/FolderBreadcrumb';
-import FolderIcon from '@/entrypoints/popup/components/Folders/FolderIcon';
 import FolderModal from '@/entrypoints/popup/components/Folders/FolderModal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
@@ -29,9 +28,10 @@ import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 import type { Folder } from '@/utils/db/repositories/FolderRepository';
 import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
 import type { Item, ItemType } from '@/utils/dist/core/models/vault';
-import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount, isAnchorFolder, isSharedFolder } from '@/utils/FolderUtils';
+import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount, isSharedFolder } from '@/utils/FolderUtils';
 import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@/utils/ItemFilters';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import { multiManifestRendering } from '@/utils/MultiManifestRendering';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
@@ -172,7 +172,7 @@ const ItemsList: React.FC = () => {
   }, [currentFolderId, dbContext?.sqliteClient, folderRefreshKey]);
 
   // Whether it is the folder a shared vault is rendered as: left or revoked in Family Sharing, never deleted here
-  const currentFolderIsAnchor = currentFolder !== null && isAnchorFolder(currentFolder);
+  const currentFolderIsSharedVaultRoot = currentFolder !== null && multiManifestRendering.isManifestRoot(currentFolder);
 
   // Get current folder's full path (for relative path computation in search results)
   const currentFolderPath = useMemo(() => {
@@ -1195,7 +1195,7 @@ const ItemsList: React.FC = () => {
         onDeleteFolderOnly={handleDeleteFolderOnly}
         onDeleteFolderAndContents={handleDeleteFolderAndContents}
         itemCount={totalItemCountInFolderTree}
-        sharedVault={currentFolderIsAnchor}
+        sharedVault={currentFolderIsSharedVaultRoot}
       />
     </div>
   );

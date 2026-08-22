@@ -15,8 +15,9 @@ import { buildEmailRouting } from '@/utils/EmailRouting';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { completeLegacyAccountKeyMigration, isLegacySqliteBlobSnapshot, legacyUnstampedRowAdoption, openLegacySqliteBlobSnapshot, prepareLegacyAccountKeyMigration, withOutdatedServerGuard, type LegacyAccountKeyMigration, type LegacySqliteBlobSnapshot } from '@/utils/legacy/LegacyStorageModelMigration';
 import { getManifestRevisions, getPersonalManifestId, recordManifestRevisions, replaceManifestRevisions, toManifestRevisionMap } from '@/utils/ManifestRevisions';
+import { multiManifestRendering } from '@/utils/MultiManifestRendering';
 import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateManifestSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecBlobEntry, type CodecCanonicalized, type CodecManifest, type CodecManifestSpec} from '@/utils/RustCore';
-import { anchorFolderNames, SharingService, type ManifestVekGrant, type SharedManifestRecord } from '@/utils/SharingService';
+import { SharingService, type ManifestVekGrant, type SharedManifestRecord } from '@/utils/SharingService';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getStorageItem } from '@/utils/StorageUtility';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
@@ -1170,8 +1171,8 @@ export class VaultSyncService {
   }
 
   /**
-   * Canonicalize the local vault into the manifest-v1 format against every manifest this vault writes, splitting
-   * each shared manifest's anchor subtree off into its own manifest.
+   * Canonicalize the local vault into the manifest-v1 format against every manifest this vault writes, routing each
+   * row into its own manifest by the ManifestId it carries.
    * @param sqliteClient - the in-memory SQLite database to canonicalize
    * @returns The canonicalized set plus the manifest records it was split against
    */
@@ -1362,7 +1363,7 @@ export class VaultSyncService {
 
     const stampedManifestIds = VaultCodec.manifestIdsInVault(sqliteClient);
     const sharedVeks = await SharingService.openSharedManifestVeks(sqliteClient);
-    const folderNames = anchorFolderNames(sqliteClient);
+    const manifestNames = multiManifestRendering.displayNames(sqliteClient);
     for (const record of Object.values(await SharingService.getSharedManifestRecords())) {
       if (!stampedManifestIds.has(record.manifestId)) {
         devLog(`[V2Push] Shared manifest ${record.manifestId} has no rows in this vault; leaving it out of the write rather than emptying it server-side.`);
@@ -1381,8 +1382,8 @@ export class VaultSyncService {
         isPersonal: false,
         salt: record.salt,
         vek,
-        // Read back off the anchor folder every push, so the name inside the manifest follows a rename instead of staying at whatever the vault was called when it was created.
-        name: folderNames[record.manifestId.toLowerCase()] ?? record.name ?? null,
+        // Re-read how this client renders the manifest on every push, so the name inside it follows a rename instead of staying at whatever the vault was called when it was created.
+        name: manifestNames[record.manifestId.toLowerCase()] ?? record.name ?? null,
         canAdminister: record.canAdminister === true,
       });
     }

@@ -16,11 +16,12 @@ import { requiresLegacyAccountKeyMigration } from '@/utils/legacy/LegacyStorageM
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { getManifestRevisions, getPersonalManifestId, manifestsRequiringPull, recordManifestRevisions, toManifestRevisionMap } from '@/utils/ManifestRevisions';
 import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
+import { multiManifestRendering } from '@/utils/MultiManifestRendering';
 import { PendingActionProcessor } from '@/utils/PendingActionProcessor';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
 import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword, vaultCodecExtractBuckets, vaultCodecBucketLayout, vaultCodecOverflowTable } from '@/utils/RustCore';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
-import { anchorFolderNames, createAnchorFolder, SharingService } from '@/utils/SharingService';
+import { SharingService } from '@/utils/SharingService';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getStorageItem } from '@/utils/StorageUtility';
 import { generateTotpCode } from '@/utils/TotpUtility';
@@ -1722,8 +1723,8 @@ async function announceSyncPhase(needsPull: boolean, isDirty: boolean): Promise<
  */
 async function applyServerDirectedChanges(webApi: WebApiService, statusResponse: StatusResponseV2, syncState: VaultSyncState, encryptionKey: string, needsPull: boolean): Promise<boolean> {  
   const pendingActions = PendingActionProcessor.pendingActions(statusResponse);
-  const sharedManifestCount = Object.keys(await SharingService.getSharedManifestRecords()).length;
-  if (pendingActions.length === 0 && sharedManifestCount === 0) {
+  const sharedManifests = Object.values(await SharingService.getSharedManifestRecords());
+  if (pendingActions.length === 0 && sharedManifests.length === 0) {
     return false;
   }
 
@@ -1731,7 +1732,7 @@ async function applyServerDirectedChanges(webApi: WebApiService, statusResponse:
 
   // A vault with a migration still ahead of it is not on the current schema, so it cannot take the new rows yet.
   const canReconcile = !await vaultRequiresManifestMigration(sqliteClient);
-  let vaultChanged = canReconcile && await SharingService.ensureAnchorFolders(sqliteClient);
+  let vaultChanged = canReconcile && await multiManifestRendering.reconcile(sqliteClient, sharedManifests);
   if (canReconcile && pendingActions.length > 0) {
     vaultChanged = await PendingActionProcessor.process(webApi, pendingActions, sqliteClient) || vaultChanged;
   }
@@ -1740,7 +1741,7 @@ async function applyServerDirectedChanges(webApi: WebApiService, statusResponse:
     return false;
   }
 
-  // A rotated delivery key or a re-anchored folder is a normal local change, so it rides out on this very sync.
+  // A rotated delivery key or a re-rendered shared manifest is a normal local change, so it rides out on this very sync.
   const reconciledVault = await EncryptionUtility.symmetricEncrypt(sqliteClient.exportToBase64(), encryptionKey);
   const stored = await handleStoreEncryptedVault({ vaultBlob: reconciledVault, markDirty: true });
   syncState.isDirty = true;
@@ -2628,7 +2629,7 @@ export async function handleGroupCreateVault(message: { groupId: string; name: s
     }, encryptionKey);
 
     await recordManifestRevisions({ [mapping.manifestId]: mapping.revision });
-    await createAnchorFolder(sqliteClient, mapping.manifestId, name);
+    await multiManifestRendering.render(sqliteClient, mapping.manifestId, name);
 
     // Mail to an alias in this vault is encrypted with the vault's own keypair, which is what makes it readable by every member.
     await SharingService.rotateManifestEncryptionKey(sqliteClient, mapping.manifestId);
@@ -2715,7 +2716,7 @@ export async function handleGroupInviteMember(message: { groupId: string; manife
       return failed('the key of the vault did not open');
     }
 
-    const vaultName = anchorFolderNames(sqliteClient)[manifest.manifestId.toLowerCase()] ?? record.name ?? null;
+    const vaultName = multiManifestRendering.displayNames(sqliteClient)[manifest.manifestId.toLowerCase()] ?? record.name ?? null;
     const grant = await SharingService.encryptVekFor(manifestVek, member, vaultName);
     if (!grant) {
       return { success: false, apiErrorCode: 'INVITE_RECIPIENT_NOT_READY' };
@@ -2736,7 +2737,7 @@ export async function handleGroupInviteMember(message: { groupId: string; manife
 }
 
 /**
- * Take a member's access to one shared vault away, or give up one's own.
+ * Take a member's access to one shared vault away, or hand back one's own.
  *
  * @param message - the family, the vault, and the member losing access.
  */
@@ -2755,30 +2756,6 @@ export async function handleGroupRevokeAccess(message: { groupId: string; manife
     }
 
     console.error('Failed to revoke shared vault access:', error);
-    return { success: false, error: await t('sharing.family.errors.removeMemberFailed') };
-  }
-}
-
-/**
- * Remove somebody from a family, or leave one by naming oneself.
- *
- * @param message - the group and the member to remove.
- */
-export async function handleGroupRemoveMember(message: { groupId: string; userId: string }): Promise<{ success: boolean; error?: string; apiErrorCode?: string }> {
-  try {
-    const webApi = new WebApiService();
-    await SharingService.removeMember(webApi, message.groupId, message.userId);
-
-    devLog(`[Sharing] Removed ${message.userId} from group ${message.groupId}; syncing to pick up whatever the server left for this client to finish.`);
-    void handleFullVaultSync().catch(error => console.error('Background sync after a group membership change failed:', error));
-
-    return { success: true };
-  } catch (error) {
-    if (error instanceof ApiRequestError && error.apiErrorCode) {
-      return { success: false, apiErrorCode: error.apiErrorCode };
-    }
-
-    console.error('Failed to remove group member:', error);
-    return { success: false, error: await t('sharing.family.errors.removeMemberFailed') };
+    return { success: false, error: await t('sharing.family.errors.revokeAccessFailed') };
   }
 }

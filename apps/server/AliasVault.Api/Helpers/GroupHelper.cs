@@ -60,17 +60,6 @@ public static class GroupHelper
     }
 
     /// <summary>
-    /// Get the ids of every shared vault a group holds.
-    /// </summary>
-    /// <param name="context">Database context.</param>
-    /// <param name="groupId">The group.</param>
-    /// <returns>The manifest ids owned by the group.</returns>
-    public static async Task<List<Guid>> GetManifestIdsOfGroupAsync(AliasServerDbContext context, Guid groupId)
-    {
-        return await context.VaultManifests.Where(m => m.OwnerGroupId == groupId).Select(m => m.ManifestId).ToListAsync();
-    }
-
-    /// <summary>
     /// Check whether the caller may administer a <see cref="GroupType.Shared"/> group.
     /// </summary>
     /// <param name="context">Database context.</param>

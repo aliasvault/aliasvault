@@ -52,11 +52,6 @@ export type SharedManifestRecord = ManifestVekGrant & {
 };
 
 /**
- * What a shared vault is called when this client has no name for it yet.
- */
-export const DEFAULT_SHARED_VAULT_NAME = 'Shared';
-
-/**
  * Service with static helpers implementing the vault sharing flows.
  */
 export class SharingService {
@@ -158,7 +153,7 @@ export class SharingService {
   }
 
   /**
-   * Take a member's access to one shared vault away, or give up one's own.
+   * Take a member's access to one shared vault away, or hand back one's own. The server refuses the latter for group admins.
    * @param webApi - API client to reuse.
    * @param groupId - the group the vault belongs to.
    * @param manifestId - the shared vault.
@@ -208,43 +203,6 @@ export class SharingService {
    */
   public static async declineInvitation(webApi: WebApiService, invitationId: string): Promise<void> {
     await webApi.post<object, void>(`Groups/invitations/${invitationId}/decline`, {}, false);
-  }
-
-  /**
-   * Remove a member from a group, or leave one by naming oneself.
-   * @param webApi - API client to reuse.
-   * @param groupId - the group.
-   * @param userId - the member to remove.
-   */
-  public static async removeMember(webApi: WebApiService, groupId: string, userId: string): Promise<void> {
-    await webApi.delete<void>(`Groups/${groupId}/members/${userId}`);
-  }
-
-  /**
-   * Make sure every shared vault this session administers is anchored at a local folder.
-   * @param sqliteClient - the open local vault.
-   * @returns Whether the vault was mutated.
-   */
-  public static async ensureAnchorFolders(sqliteClient: SqliteClient): Promise<boolean> {
-    let mutated = false;
-
-    for (const record of Object.values(await this.getSharedManifestRecords())) {
-      if (!record.canAdminister) {
-        // A member waiting for the administrator's first push has nothing to anchor yet.
-        continue;
-      }
-
-      const anchored = sqliteClient.executeQuery<{ Id: string }>('SELECT Id FROM Folders WHERE ManifestId = ? AND IsDeleted = 0 AND ParentFolderId IS NULL', [record.manifestId]);
-      if (anchored.length > 0) {
-        continue;
-      }
-
-      await createAnchorFolder(sqliteClient, record.manifestId, record.name ?? DEFAULT_SHARED_VAULT_NAME);
-      devWarn(`[Sharing] Shared vault ${record.manifestId} had no anchor folder; recreated it.`);
-      mutated = true;
-    }
-
-    return mutated;
   }
 
   /**
@@ -374,27 +332,6 @@ export class SharingService {
     return sqliteClient.encryptionKeys.getAccountKeypair(publicKey)?.PrivateKey ?? null;
   }
 
-}
-
-/**
- * What every shared manifest in this vault is called, keyed by lower-cased manifest id.
- * @param sqliteClient - the open local vault.
- */
-export function anchorFolderNames(sqliteClient: SqliteClient): Record<string, string> {
-  const anchors = sqliteClient.executeQuery<{ ManifestId: string; Name: string }>('SELECT ManifestId, Name FROM Folders WHERE IsDeleted = 0 AND ManifestId IS NOT NULL AND UPPER(Id) = UPPER(ManifestId)');
-  return Object.fromEntries(anchors.map(anchor => [anchor.ManifestId.toLowerCase(), anchor.Name]));
-}
-
-/**
- * Renders a shared manifest as a local folder.
- * @param sqliteClient - the open local vault.
- * @param manifestId - the shared vault to give a folder to.
- * @param name - the vault's own name, used as the folder name.
- */
-export async function createAnchorFolder(sqliteClient: SqliteClient, manifestId: string, name: string): Promise<void> {
-  const folderId = manifestId.toUpperCase();
-  await sqliteClient.folders.create(name, null, folderId);
-  await sqliteClient.folders.restampSubtree(folderId, manifestId);
 }
 
 export default SharingService;

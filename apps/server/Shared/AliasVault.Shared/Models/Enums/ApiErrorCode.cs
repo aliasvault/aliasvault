@@ -221,9 +221,9 @@ public enum ApiErrorCode
     ACCESS_ALREADY_GRANTED,
 
     /// <summary>
-    /// The group's owner cannot be removed from it; ownership has to be transferred first.
+    /// An admin of the group cannot take away their own access to a shared manifest.
     /// </summary>
-    CANNOT_REMOVE_GROUP_OWNER,
+    CANNOT_REVOKE_OWN_ACCESS,
 
     /// <summary>
     /// The member is the last one who can open one of the group's shared vaults, so taking their access away would
