@@ -51,6 +51,14 @@ export type RegistrationResult = {
 };
 
 /**
+ * SRP client proof type.
+ */
+export type SrpClientProof = {
+  clientPublicEphemeral: string;
+  clientSessionProof: string;
+};
+
+/**
  * Login credentials prepared from password derivation.
  */
 export type PreparedCredentials = {
@@ -249,6 +257,50 @@ export class SrpAuthService {
   }
 
   /**
+   * Derives the client's SRP proof for one server-verified master password check.
+   *
+   * @param salt - The SRP salt from the initiate response
+   * @param srpIdentity - The SRP identity from the initiate response
+   * @param passwordHashString - The password hash as uppercase hex string
+   * @param serverEphemeral - The server's public ephemeral from the initiate response
+   * @returns The client public ephemeral and session proof to submit to the confirm endpoint
+   */
+  public static async deriveClientProof(
+    salt: string,
+    srpIdentity: string,
+    passwordHashString: string,
+    serverEphemeral: string
+  ): Promise<SrpClientProof> {
+    const clientEphemeral = await SrpAuthService.generateEphemeral();
+    const privateKey = await SrpAuthService.derivePrivateKey(salt, srpIdentity, passwordHashString);
+    const session = await SrpAuthService.deriveSession(clientEphemeral.secret, serverEphemeral, salt, srpIdentity, privateKey);
+
+    return { clientPublicEphemeral: clientEphemeral.public, clientSessionProof: session.proof };
+  }
+
+  /**
+   * Derives the client's SRP proof for a login initiate response.
+   *
+   * @param loginResponse - The login initiate response holding salt, SRP identity and server ephemeral
+   * @param username - The username typed by the user, used as SRP identity fallback on older servers
+   * @param passwordHashString - The password hash as uppercase hex string
+   * @returns The client public ephemeral and session proof to submit to the validate endpoint
+   */
+  public static async deriveLoginProof(
+    loginResponse: LoginResponse,
+    username: string,
+    passwordHashString: string
+  ): Promise<SrpClientProof> {
+    /*
+     * Use srpIdentity from server response if available, otherwise fall back to normalized username.
+     * @todo Remove fallback after 0.26.0+ has been released.
+     */
+    const srpIdentity = loginResponse.srpIdentity ?? SrpAuthService.normalizeUsername(username);
+
+    return SrpAuthService.deriveClientProof(loginResponse.salt, srpIdentity, passwordHashString, loginResponse.serverEphemeral);
+  }
+
+  /**
    * Prepares login credentials by deriving the password hash.
    *
    * This method derives the encryption key from the password using the
@@ -444,12 +496,6 @@ export class SrpAuthService {
 
       const loginResponse = (await initiateResponse.json()) as LoginResponse;
 
-      /*
-       * Use srpIdentity from server response if available, otherwise fall back to normalized username.
-       * @todo Remove fallback after 0.26.0+ has been released.
-       */
-      const srpIdentity = loginResponse.srpIdentity ?? normalizedUsername;
-
       // Step 2: Prepare credentials
       const credentials = await SrpAuthService.prepareCredentials(
         password,
@@ -458,20 +504,8 @@ export class SrpAuthService {
         loginResponse.encryptionSettings
       );
 
-      // Step 3: Generate SRP session using srpIdentity (not the typed username)
-      const clientEphemeral = await SrpAuthService.generateEphemeral();
-      const privateKey = await SrpAuthService.derivePrivateKey(
-        loginResponse.salt,
-        srpIdentity,
-        credentials.passwordHashString
-      );
-      const session = await SrpAuthService.deriveSession(
-        clientEphemeral.secret,
-        loginResponse.serverEphemeral,
-        loginResponse.salt,
-        srpIdentity,
-        privateKey
-      );
+      // Step 3: Generate the SRP proof for this login response
+      const proof = await SrpAuthService.deriveLoginProof(loginResponse, normalizedUsername, credentials.passwordHashString);
 
       // Step 4: Validate login
       const validateResponse = await fetch(`${baseUrl}Auth/validate`, {
@@ -480,8 +514,7 @@ export class SrpAuthService {
         body: JSON.stringify({
           username: normalizedUsername,
           rememberMe,
-          clientPublicEphemeral: clientEphemeral.public,
-          clientSessionProof: session.proof,
+          ...proof,
         }),
       });
 

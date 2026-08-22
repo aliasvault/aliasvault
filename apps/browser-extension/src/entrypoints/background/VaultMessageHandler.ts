@@ -14,7 +14,7 @@ import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { readLegacySessionEncryptionKey } from '@/utils/legacy/LegacyStorageKeyFallbacks';
 import { requiresLegacyAccountKeyMigration } from '@/utils/legacy/LegacyStorageModelMigration';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
-import { getManifestRevisions, manifestsRequiringPull, recordManifestRevisions, toManifestRevisionMap } from '@/utils/ManifestRevisions';
+import { getManifestRevisions, getPersonalManifestId, manifestsRequiringPull, recordManifestRevisions, toManifestRevisionMap } from '@/utils/ManifestRevisions';
 import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
 import { PendingActionProcessor } from '@/utils/PendingActionProcessor';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
@@ -103,6 +103,9 @@ function serverManifestsNeedPull(serverManifests: ManifestRevision[], localRevis
  */
 let isSyncInProgress = false;
 let hasPendingSync = false;
+
+/** The shared manifests a pull was already forced for over a missing key record, so one the server stopped serving does not pull on every sync. */
+const manifestsPulledForSharedKeys = new Set<string>();
 
 /**
  * Check if the user is logged in and if the vault is locked, and also check for both kinds of pending vault.
@@ -1419,9 +1422,10 @@ async function persistSyncErrorState(result: FullVaultSyncResult): Promise<void>
  * Full vault sync orchestration that runs entirely in background context.
  * Wraps the internal implementation with sync-error persistence so the popup
  * can show a targeted alert for failures even if it wasn't open at the time.
+ * @param options - what the caller asks of the sync beyond what the revisions decide
  */
-export async function handleFullVaultSync(): Promise<FullVaultSyncResult> {
-  const result = await handleFullVaultSyncInternal();
+export async function handleFullVaultSync(options?: FullVaultSyncOptions): Promise<FullVaultSyncResult> {
+  const result = await handleFullVaultSyncInternal(options);
   await persistSyncErrorState(result);
   return result;
 }
@@ -1437,8 +1441,9 @@ function syncResult(overrides: Partial<FullVaultSyncResult> = {}): FullVaultSync
 /**
  * Internal implementation of the full vault sync. Wrapped by handleFullVaultSync
  * so the result can be persisted to local storage for the popup to surface.
+ * @param options - what the caller asks of the sync beyond what the revisions decide
  */
-async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
+async function handleFullVaultSyncInternal(options?: FullVaultSyncOptions): Promise<FullVaultSyncResult> {
   // Check if sync is already in progress
   if (isSyncInProgress) {
     // Mark that we need to sync again after current sync completes
@@ -1456,7 +1461,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
   const webApi = new WebApiService();
 
   try {
-    const preflight = await runSyncPreflight(webApi);
+    const preflight = await runSyncPreflight(webApi, options);
     if (!preflight.proceed) {
       return preflight.result;
     }
@@ -1506,6 +1511,12 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
   }
 }
 
+/** What a caller may ask of a full sync beyond what the revisions decide. */
+type FullVaultSyncOptions = {
+  /** Pull even when the revisions say the vault is current, for state only a pull re-records (the shared-vault key records). */
+  forcePull?: boolean;
+};
+
 /**
  * Outcome of the sync preflight: either a result the sync returns as-is, or the state the sync then runs on.
  */
@@ -1525,9 +1536,10 @@ function abortSync(overrides: Partial<FullVaultSyncResult>): SyncPreflightResult
  * Sync preflight (sanity checks) to determine if the sync should proceed.
  *
  * @param webApi - the API service the status call runs on
+ * @param options - what the caller asks of the sync beyond what the revisions decide
  * @returns Either the result the sync must return unchanged, or the status, sync state and pull decision.
  */
-async function runSyncPreflight(webApi: WebApiService): Promise<SyncPreflightResult> {
+async function runSyncPreflight(webApi: WebApiService, options?: FullVaultSyncOptions): Promise<SyncPreflightResult> {
   // Check if user is logged in
   const authStatus = await handleCheckAuthStatus();
   if (!authStatus.isLoggedIn) {
@@ -1545,7 +1557,7 @@ async function runSyncPreflight(webApi: WebApiService): Promise<SyncPreflightRes
   // Get current sync state
   const syncState = await handleGetSyncState();
 
-  let needsPull = serverManifestsNeedPull(statusResponse.manifestRevisions, await getManifestRevisions());
+  let needsPull = options?.forcePull === true || serverManifestsNeedPull(statusResponse.manifestRevisions, await getManifestRevisions());
 
   devLog(`[VaultSync] Status received (needsPull ${needsPull}, isDirty ${syncState.isDirty})`);
 
@@ -1575,7 +1587,7 @@ async function runSyncPreflight(webApi: WebApiService): Promise<SyncPreflightRes
     return abortSync({ success: false, requiresLogout: true, errorKey: 'passwordChanged' });
   }
 
-  // Valid connection - exit offline mode if we were in it
+  // Valid connection: exit offline mode if we were in it
   const isOffline = await storage.getItem(StorageKeys.IS_OFFLINE_MODE) as boolean | null;
   if (isOffline) {
     await storage.setItem(StorageKeys.IS_OFFLINE_MODE, false);
@@ -1585,13 +1597,11 @@ async function runSyncPreflight(webApi: WebApiService): Promise<SyncPreflightRes
     syncState.isDirty = false;
   }
 
-  /*
-   * The shared-vault keys this session holds are session state; the stored vault is not, so the two can drift
-   * apart on their own — a browser restart clears the keys while the vault keeps its shared rows. Pushing in that
-   * state would drop those rows from the write instead of failing it, so pull first: the pull is what re-records
-   * the keys. Only checked when there is something to push, since that is the only case it protects.
-   */
+  // Check if we are missing any manifest related information that we do have write access for.
   if (syncState.isDirty && !needsPull && await vaultHoldsUnwritableManifests()) {
+    needsPull = true;
+  }
+  if (!needsPull && await vaultHoldsUnrecordedSharedManifests()) {
     needsPull = true;
   }
 
@@ -1614,6 +1624,37 @@ async function vaultHoldsUnwritableManifests(): Promise<boolean> {
     return true;
   } catch (error) {
     devWarn('[VaultSync] Could not check which manifests this session can write; leaving the pull decision to the revisions.', error);
+    return false;
+  }
+}
+
+/**
+ * Whether the stored vault holds rows of shared manifests this session has no key record for, which a pull has to repair.
+ * A manifest still unrecorded after its pull (the server no longer serves it) is not pulled for again.
+ */
+async function vaultHoldsUnrecordedSharedManifests(): Promise<boolean> {
+  try {
+    const recorded = new Set(Object.values(await SharingService.getSessionSharedManifests()).map(record => record.manifestId.toLowerCase()));
+    for (const manifestId of recorded) {
+      manifestsPulledForSharedKeys.delete(manifestId);
+    }
+
+    const personalManifestId = (await getPersonalManifestId())?.toLowerCase() ?? null;
+    const unrecorded = [...VaultCodec.manifestIdsInVault(await createVaultSqliteClient())]
+      .map(manifestId => manifestId.toLowerCase())
+      .filter(manifestId => manifestId !== personalManifestId && !recorded.has(manifestId) && !manifestsPulledForSharedKeys.has(manifestId));
+    if (unrecorded.length === 0) {
+      return false;
+    }
+
+    for (const manifestId of unrecorded) {
+      manifestsPulledForSharedKeys.add(manifestId);
+    }
+
+    devWarn(`[VaultSync] Vault holds rows for shared manifest(s) this session has no key record for (${unrecorded.join(', ')}); pulling to re-record them.`);
+    return true;
+  } catch (error) {
+    devWarn('[VaultSync] Could not check which shared manifests this session holds key records for; leaving the pull decision to the revisions.', error);
     return false;
   }
 }
@@ -2613,16 +2654,25 @@ export async function handleGroupCreateVault(message: { groupId: string; name: s
 }
 
 /**
- * Give a member of a family access to one of its shared vaults, handing them the vault's key sealed for them.
+ * Invite a member of a family to one of its shared vaults, handing them the vault's key sealed for them.
  *
  * The recipient is picked off the family's own roster, so this never names an account outside the family.
- * @param message - the family, the vault, and the member being let in.
+ * @param message - the family, the vault, and the member being invited.
  */
-export async function handleGroupGrantAccess(message: { groupId: string; manifestId: string; userId: string }): Promise<{ success: boolean; error?: string; apiErrorCode?: string }> {
+export async function handleGroupInviteMember(message: { groupId: string; manifestId: string; userId: string }): Promise<{ success: boolean; error?: string; apiErrorCode?: string }> {
   const encryptionKey = await handleGetEncryptionKey();
   if (!encryptionKey) {
     return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
   }
+
+  /**
+   * Fail the invite with a reason.
+   * @param reason - what was missing.
+   */
+  const failed = async (reason: string): Promise<{ success: boolean; error: string }> => {
+    devWarn(`[Sharing] Could not invite ${message.userId} to vault ${message.manifestId}: ${reason}.`);
+    return { success: false, error: `${await t('sharing.family.errors.inviteFailed')} [${reason}]` };
+  };
 
   try {
     const webApi = new WebApiService();
@@ -2631,8 +2681,16 @@ export async function handleGroupGrantAccess(message: { groupId: string; manifes
     const manifest = group?.manifests.find(candidate => candidate.manifestId.toLowerCase() === message.manifestId.toLowerCase());
     const member = group?.members.find(candidate => candidate.userId === message.userId);
 
-    if (!group || group.role === 'Member' || !manifest || !member) {
-      return { success: false, error: await t('sharing.family.errors.inviteFailed') };
+    if (!group || group.role === 'Member') {
+      return failed('not an administrator of the group');
+    }
+
+    if (!manifest) {
+      return failed('the vault does not belong to the group');
+    }
+
+    if (!member) {
+      return failed('the recipient is not a member of the group');
     }
 
     if (!member.publicKey) {
@@ -2640,15 +2698,21 @@ export async function handleGroupGrantAccess(message: { groupId: string; manifes
     }
 
     // Find the session's own grant on the vault: a key that was never handed to this account cannot be passed on.
-    const record = Object.values(await SharingService.getSessionSharedManifests()).find(candidate => candidate.manifestId.toLowerCase() === manifest.manifestId.toLowerCase());
+    let record = await SharingService.getSessionSharedManifest(manifest.manifestId);
     if (!record) {
-      return { success: false, error: await t('sharing.family.errors.inviteFailed') };
+      devWarn(`[Sharing] No key record for vault ${manifest.manifestId} in this session; pulling to re-record it before inviting.`);
+      await handleFullVaultSync({ forcePull: true });
+      record = await SharingService.getSessionSharedManifest(manifest.manifestId);
+    }
+
+    if (!record) {
+      return failed('this session holds no key for the vault');
     }
 
     const sqliteClient = await createVaultSqliteClient();
     const manifestVek = await SharingService.openSharedManifestVek(sqliteClient, record);
     if (!manifestVek) {
-      return { success: false, error: await t('sharing.family.errors.inviteFailed') };
+      return failed('the key of the vault did not open');
     }
 
     const vaultName = anchorFolderNames(sqliteClient)[manifest.manifestId.toLowerCase()] ?? record.name ?? null;
@@ -2657,16 +2721,16 @@ export async function handleGroupGrantAccess(message: { groupId: string; manifes
       return { success: false, apiErrorCode: 'INVITE_RECIPIENT_NOT_READY' };
     }
 
-    await SharingService.grantAccess(webApi, group.groupId, manifest.manifestId, member.userId, grant, VaultKeyAlgorithm.RsaOaepSha256);
+    await SharingService.inviteMember(webApi, group.groupId, manifest.manifestId, member.userId, grant, VaultKeyAlgorithm.RsaOaepSha256);
 
-    devLog(`[Sharing] Offered ${member.userId} access to vault ${manifest.manifestId} with its key encrypted for them.`);
+    devLog(`[Sharing] Invited ${member.userId} to vault ${manifest.manifestId} with its key encrypted for them.`);
     return { success: true };
   } catch (error) {
     if (error instanceof ApiRequestError && error.apiErrorCode) {
       return { success: false, apiErrorCode: error.apiErrorCode };
     }
 
-    console.error('Failed to grant shared vault access:', error);
+    console.error('Failed to invite member to shared vault:', error);
     return { success: false, error: await t('sharing.family.errors.inviteFailed') };
   }
 }

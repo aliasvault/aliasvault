@@ -68,37 +68,12 @@ class SrpUtility {
     loginResponse: LoginResponse
   ): Promise<ValidateLoginResponse> {
     const normalizedUsername = SrpAuthService.normalizeUsername(username);
-
-    /*
-     * Use srpIdentity from server response if available, otherwise fall back to normalized username.
-     * @todo Remove fallback after 0.26.0+ has been released.
-     */
-    const srpIdentity = loginResponse.srpIdentity ?? normalizedUsername;
-
-    // Generate client ephemeral
-    const clientEphemeral = await SrpAuthService.generateEphemeral();
-
-    // Derive private key using srpIdentity (not the typed username)
-    const privateKey = await SrpAuthService.derivePrivateKey(
-      loginResponse.salt,
-      srpIdentity,
-      passwordHashString
-    );
-
-    // Derive session using srpIdentity (not the typed username)
-    const session = await SrpAuthService.deriveSession(
-      clientEphemeral.secret,
-      loginResponse.serverEphemeral,
-      loginResponse.salt,
-      srpIdentity,
-      privateKey
-    );
+    const proof = await SrpAuthService.deriveLoginProof(loginResponse, normalizedUsername, passwordHashString);
 
     const model: ValidateLoginRequest = {
       username: normalizedUsername,
       rememberMe: rememberMe,
-      clientPublicEphemeral: clientEphemeral.public,
-      clientSessionProof: session.proof,
+      ...proof,
     };
 
     const response = await this.webApiService.rawFetch('Auth/validate', {
@@ -133,37 +108,12 @@ class SrpUtility {
     code2Fa: number
   ): Promise<ValidateLoginResponse> {
     const normalizedUsername = SrpAuthService.normalizeUsername(username);
-
-    /*
-     * Use srpIdentity from server response if available, otherwise fall back to normalized username.
-     * @todo Remove fallback after 0.26.0+ has been released.
-     */
-    const srpIdentity = loginResponse.srpIdentity ?? normalizedUsername;
-
-    // Generate client ephemeral
-    const clientEphemeral = await SrpAuthService.generateEphemeral();
-
-    // Derive private key using srpIdentity (not the typed username)
-    const privateKey = await SrpAuthService.derivePrivateKey(
-      loginResponse.salt,
-      srpIdentity,
-      passwordHashString
-    );
-
-    // Derive session using srpIdentity (not the typed username)
-    const session = await SrpAuthService.deriveSession(
-      clientEphemeral.secret,
-      loginResponse.serverEphemeral,
-      loginResponse.salt,
-      srpIdentity,
-      privateKey
-    );
+    const proof = await SrpAuthService.deriveLoginProof(loginResponse, normalizedUsername, passwordHashString);
 
     const model: ValidateLoginRequest2Fa = {
       username: normalizedUsername,
       rememberMe,
-      clientPublicEphemeral: clientEphemeral.public,
-      clientSessionProof: session.proof,
+      ...proof,
       code2Fa,
     };
 
