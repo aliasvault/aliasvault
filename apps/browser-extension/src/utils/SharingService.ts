@@ -1,8 +1,9 @@
 import { storage } from 'wxt/utils/storage';
 
+import { SrpAuthService } from '@/utils/auth/SrpAuthService';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { devWarn } from '@/utils/devLogger/DevLogger';
-import { VaultKeyAlgorithm, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type GrantManifestAccessRequest, type GrantManifestAccessResponse, type GroupMemberInfo, type GroupOverviewResponse, type ManifestGrant, type ReceivedManifestInvitation, type VaultKeyAlgorithmValue } from '@/utils/dist/core/models/webapi';
+import { VaultKeyAlgorithm, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type DeleteSharedManifestInitiateResponse, type DeleteSharedManifestRequest, type GrantManifestAccessRequest, type GrantManifestAccessResponse, type GroupMemberInfo, type GroupOverviewResponse, type ManifestGrant, type ReceivedManifestInvitation, type VaultKeyAlgorithmValue } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { vaultCodecGenerateManifestSalt } from '@/utils/RustCore';
 import type { SqliteClient } from '@/utils/SqliteClient';
@@ -17,7 +18,7 @@ import type { WebApiService } from '@/utils/WebApiService';
 /**
  * A shared vault about to be created, with the creator's own public key: the VEK is encrypted for it and for nothing
  * else, because a new vault starts out with one member and everybody who is let in afterwards gets the key encrypted
- * for them inside the offer of access that lets them in.
+ * for them inside the invitation that lets them in.
  */
 export type ShareTarget = {
   groupId: string;
@@ -59,7 +60,7 @@ export const DEFAULT_SHARED_VAULT_NAME = 'Shared';
  */
 export class SharingService {
   /**
-   * The families this user belongs to, their shared vaults, and the offers of access awaiting an answer.
+   * The families this user belongs to, their shared vaults, and the invitations awaiting an answer.
    * @param webApi - API client to reuse.
    */
   public static async getOverview(webApi: WebApiService): Promise<GroupOverviewResponse> {
@@ -113,10 +114,10 @@ export class SharingService {
   }
 
   /**
-   * Open the vault names sealed into the offers of access addressed to this account.
+   * Open the vault names sealed into the invitations addressed to this account.
    * @param sqliteClient - the open local vault, which holds this account's superseded private keys.
-   * @param invitations - the offers as served by the API.
-   * @returns The name of each offer's vault, keyed by invitation id; offers whose name will not open are left out.
+   * @param invitations - the invitations as served by the API.
+   * @returns The name of each invitation's vault, keyed by invitation id; invitations whose name will not open are left out.
    */
   public static async openInvitationNames(sqliteClient: SqliteClient, invitations: ReceivedManifestInvitation[]): Promise<Record<string, string>> {
     const names: Record<string, string> = {};
@@ -143,15 +144,15 @@ export class SharingService {
   }
 
   /**
-   * Offer a member of the group access to one of its shared vaults.
+   * Invite a member of the group to one of its shared vaults.
    * @param webApi - API client to reuse.
    * @param groupId - the group the vault belongs to.
-   * @param manifestId - the shared vault to hand access to.
-   * @param userId - the member being let in.
+   * @param manifestId - the shared vault to invite them to.
+   * @param userId - the member being invited.
    * @param grant - the vault's key, encrypted for that member, as produced by {@link encryptVekFor}.
    * @param algorithm - the algorithm the grant was encrypted with.
    */
-  public static async grantAccess(webApi: WebApiService, groupId: string, manifestId: string, userId: string, grant: ManifestGrant, algorithm: VaultKeyAlgorithmValue): Promise<void> {
+  public static async inviteMember(webApi: WebApiService, groupId: string, manifestId: string, userId: string, grant: ManifestGrant, algorithm: VaultKeyAlgorithmValue): Promise<void> {
     await webApi.post<GrantManifestAccessRequest, GrantManifestAccessResponse>(`Groups/${groupId}/manifests/${manifestId}/access`, { userId, grant, algorithm });
   }
 
@@ -167,7 +168,22 @@ export class SharingService {
   }
 
   /**
-   * Withdraw an offer of access this group made that has not been answered yet.
+   * Delete a shared vault for good, taking it away from every member at once. The server requires proof of the
+   * caller's master password, so this runs the SRP handshake the account deletion flow also uses.
+   * @param webApi - API client to reuse.
+   * @param groupId - the group the vault belongs to.
+   * @param manifestId - the shared vault to delete.
+   * @param password - the caller's master password, proven to the server and forgotten.
+   */
+  public static async deleteSharedManifest(webApi: WebApiService, groupId: string, manifestId: string, password: string): Promise<void> {
+    const initiate = await webApi.post<object, DeleteSharedManifestInitiateResponse>(`Groups/${groupId}/manifests/${manifestId}/delete/initiate`, {});
+    const { passwordHashString } = await SrpAuthService.prepareCredentials(password, initiate.salt, initiate.encryptionType, initiate.encryptionSettings);
+    const proof = await SrpAuthService.deriveClientProof(initiate.salt, initiate.srpIdentity, passwordHashString, initiate.serverEphemeral);
+    await webApi.post<DeleteSharedManifestRequest, void>(`Groups/${groupId}/manifests/${manifestId}/delete/confirm`, proof, false);
+  }
+
+  /**
+   * Withdraw an invitation this group sent that has not been answered yet.
    * @param webApi - API client to reuse.
    * @param invitationId - the invitation to withdraw.
    */
@@ -176,7 +192,7 @@ export class SharingService {
   }
 
   /**
-   * Accept an offer of access addressed to this user, opening the shared vault it names.
+   * Accept an invitation addressed to this user, opening the shared vault it names.
    * @param webApi - API client to reuse.
    * @param invitationId - the invitation to accept.
    */
@@ -185,7 +201,7 @@ export class SharingService {
   }
 
   /**
-   * Decline an offer of access addressed to this user.
+   * Decline an invitation addressed to this user.
    * @param webApi - API client to reuse.
    * @param invitationId - the invitation to decline.
    */
@@ -247,6 +263,14 @@ export class SharingService {
    */
   public static async getSessionSharedManifests(): Promise<Record<string, SessionSharedManifest>> {
     return ((await storage.getItem(StorageKeys.SHARED_MANIFESTS)) as Record<string, SessionSharedManifest> | null) ?? {};
+  }
+
+  /**
+   * The session record of one shared manifest.
+   * @param manifestId - the manifest to look up.
+   */
+  public static async getSessionSharedManifest(manifestId: string): Promise<SessionSharedManifest | null> {
+    return Object.values(await this.getSessionSharedManifests()).find(record => record.manifestId.toLowerCase() === manifestId.toLowerCase()) ?? null;
   }
 
   /**
