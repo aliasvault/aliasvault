@@ -34,11 +34,11 @@
   </data>
   <!-- Field labels -->
   <data name="FieldLoginUsername">
-    <value>Username</value>
+    <value>Tên người dùng</value>
     <comment>Username field label</comment>
   </data>
   <data name="FieldLoginPassword">
-    <value>Password</value>
+    <value>Mật khẩu</value>
     <comment>Password field label</comment>
   </data>
   <data name="FieldLoginEmail">
@@ -90,7 +90,7 @@
     <comment>PIN field label</comment>
   </data>
   <data name="FieldNotesContent">
-    <value>Notes</value>
+    <value>Ghi chú</value>
     <comment>Notes field label</comment>
   </data>
   <!-- Custom field modal -->
@@ -111,7 +111,7 @@
     <comment>Text field type option</comment>
   </data>
   <data name="FieldTypePassword">
-    <value>Password</value>
+    <value>Mật khẩu</value>
     <comment>Password field type option</comment>
   </data>
   <data name="FieldTypeHidden">
@@ -148,7 +148,7 @@
     <comment>Add button text</comment>
   </data>
   <data name="Cancel">
-    <value>Cancel</value>
+    <value>Huỷ</value>
     <comment>Cancel button text</comment>
   </data>
   <!-- Default field label -->
