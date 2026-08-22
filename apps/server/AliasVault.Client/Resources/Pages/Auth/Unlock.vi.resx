@@ -59,71 +59,71 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="LoggingInWithWebAuthn" xml:space="preserve">
-    <value>Masuk dengan Kunci Akses...</value>
+    <value>Logging in with passkey...</value>
     <comment>Message shown while WebAuthn authentication is in progress</comment>
   </data>
   <data name="QuickUnlockDescription" xml:space="preserve">
-    <value>Segera buka brankas Anda menggunakan kode akses. Atau, masuklah dengan kata sandi Anda sebagai alternatif.</value>
+    <value>Quickly unlock your vault using your passkey. Or login with your password as a fallback.</value>
     <comment>Description explaining WebAuthn unlock options</comment>
   </data>
   <data name="UnlockWithWebAuthn" xml:space="preserve">
-    <value>Buka dengan kunci akses</value>
+    <value>Unlock with passkey</value>
     <comment>Button text for WebAuthn unlock</comment>
   </data>
   <data name="UnlockWithPassword" xml:space="preserve">
-    <value>Buka dengan Kata Sandi</value>
+    <value>Unlock with password</value>
     <comment>Button text for password unlock</comment>
   </data>
   <data name="EnterMasterPasswordDescription" xml:space="preserve">
-    <value>Masukkan kata sandi utama Anda untuk membuka brankas Anda.</value>
+    <value>Enter your master password to unlock your vault.</value>
     <comment>Description for password unlock form</comment>
   </data>
   <data name="YourPasswordLabel" xml:space="preserve">
-    <value>Kata sandi Anda</value>
+    <value>Your password</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="UnlockButton" xml:space="preserve">
-    <value>Buka</value>
+    <value>Unlock</value>
     <comment>Button text for unlock submission</comment>
   </data>
   <data name="SwitchAccountsText" xml:space="preserve">
-    <value>Ganti akun?</value>
+    <value>Switch accounts?</value>
     <comment>Text before logout link</comment>
   </data>
   <data name="LogOutLink" xml:space="preserve">
-    <value>Keluar</value>
+    <value>Log out</value>
     <comment>Link text for logout</comment>
   </data>
   <data name="UnlockingVaultMessage" xml:space="preserve">
-    <value>Membuka Brankas...</value>
+    <value>Unlocking vault...</value>
     <comment>Loading message while unlocking vault</comment>
   </data>
   <data name="UnlockRequestError" xml:space="preserve">
-    <value>Terjadi kesalahan saat memproses permintaan pembukaan kunci.</value>
+    <value>An error occurred while processing the unlock request.</value>
     <comment>Error message for unlock request processing</comment>
   </data>
   <data name="IncorrectPasswordError" xml:space="preserve">
-    <value>Kata sandi yang Anda masukkan salah. Silakan coba masukkan kata sandi Anda lagi, atau keluar dan masuk kembali.</value>
+    <value>The password is incorrect. Please try entering your password again, or log out and log in again.</value>
     <comment>Error message for incorrect password</comment>
   </data>
   <data name="SessionTimedOutError" xml:space="preserve">
-    <value>Sesi Anda telah kedaluwarsa. Silakan masuk kembali.</value>
+    <value>Your session has timed out. Please log in again.</value>
     <comment>Error message for session timeout</comment>
   </data>
   <data name="ConnectionFailedError" xml:space="preserve">
-    <value>Koneksi ke server AliasVault gagal. Silakan coba lagi (nanti).</value>
+    <value>Connection with the AliasVault servers failed. Please try again (later).</value>
     <comment>Error message for server connection failure</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
-    <value>Browser Anda saat ini tidak mendukung ekstensi WebAuthn PRF. Silakan masuk menggunakan kata sandi Anda.</value>
+    <value>Your current browser does not support the WebAuthn PRF extension. Please login with your password instead.</value>
     <comment>Error message when WebAuthn is not supported</comment>
   </data>
   <data name="GenericUnlockError" xml:space="preserve">
-    <value>Terjadi kesalahan saat memproses permintaan masuk. Silakan coba lagi (nanti).</value>
+    <value>An error occurred while processing the login request. Try again (later).</value>
     <comment>Generic error message for unlock failures</comment>
   </data>
   <data name="UnlockWithMobileButton" xml:space="preserve">
-    <value>Buka menggunakan Aplikasi Seluler</value>
+    <value>Unlock with Mobile App</value>
     <comment>Button text for unlocking with mobile app</comment>
   </data>
 </root>
