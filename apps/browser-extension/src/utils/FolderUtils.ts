@@ -27,15 +27,6 @@ export function isSharedFolder(folder: Pick<Folder, 'ManifestId'>, personalManif
 }
 
 /**
- * Whether a folder is the one this client renders a shared manifest as.
- * @param folder - The folder to classify
- * @returns True when the folder anchors a shared manifest
- */
-export function isAnchorFolder(folder: Pick<Folder, 'Id' | 'ManifestId'>): boolean {
-  return Boolean(folder.ManifestId) && folder.Id.toUpperCase() === String(folder.ManifestId).toUpperCase();
-}
-
-/**
  * Build a hierarchical tree from a flat array of folders.
  * @param folders - Flat array of folders
  * @returns Array of root-level folder tree nodes
@@ -222,62 +213,6 @@ export function truncateFolderPath(pathSegments: string[], maxSegments: number =
     '...',
     ...pathSegments.slice(-lastCount)
   ];
-}
-
-/**
- * Format folder path for display with separator.
- * @param pathSegments - Array of folder names
- * @param separator - Separator string (default: " > ")
- * @param truncate - Whether to truncate long paths (default: false)
- * @returns Formatted folder path string
- */
-export function formatFolderPath(
-  pathSegments: string[],
-  separator: string = ' > ',
-  truncate: boolean = false
-): string {
-  const segments = truncate ? truncateFolderPath(pathSegments) : pathSegments;
-  return segments.join(separator);
-}
-
-/**
- * Flatten a folder tree into a sorted array suitable for dropdowns.
- * Includes visual indentation in the name.
- * @param tree - Root-level folder tree nodes
- * @param excludeId - Optional folder ID to exclude (useful when moving folders)
- * @returns Flat array of folders with indented names
- */
-export function flattenFolderTree(
-  tree: FolderTreeNode[],
-  excludeId?: string
-): Array<Folder & { indentedName: string; depth: number }> {
-  const result: Array<Folder & { indentedName: string; depth: number }> = [];
-
-  /**
-   * Traverse a folder tree and flatten it into a sorted array.
-   */
-  const traverse = (nodes: FolderTreeNode[]): void => {
-    nodes.forEach(node => {
-      if (node.Id === excludeId) {
-        return; // Skip excluded folder and its children
-      }
-
-      const indent = '  '.repeat(node.depth); // Two spaces per level
-      result.push({
-        Id: node.Id,
-        Name: node.Name,
-        ParentFolderId: node.ParentFolderId,
-        Weight: node.Weight,
-        indentedName: `${indent}${node.Name}`,
-        depth: node.depth
-      });
-
-      traverse(node.children);
-    });
-  };
-
-  traverse(tree);
-  return result;
 }
 
 /**

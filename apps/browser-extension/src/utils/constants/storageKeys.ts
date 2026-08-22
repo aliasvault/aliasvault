@@ -83,6 +83,8 @@ export const StorageKeys = {
   VAULT_BLOB_CIPHER_CACHE: 'local:vaultBlobCipherCache',
   /** Blob hashes the server has stored (refreshed on every pull/push). */
   VAULT_SERVER_BLOB_HASHES: 'local:vaultServerBlobHashes',
+  /** Shared-vault key records (wrapped VEK grants). */
+  SHARED_MANIFESTS: 'local:sharedManifests',
 
   /*
    * -- Session state (cleared when the vault locks) --
@@ -102,8 +104,6 @@ export const StorageKeys = {
   NAVIGATION_HISTORY: 'session:navigationHistory',
   /** URL of the tab the popup was opened from. */
   LAST_TAB_URL: 'session:lastTabUrl',
-  /** Shared manifest records from the last pull, needed to push shared manifests back. */
-  SHARED_MANIFESTS: 'session:sharedManifests',
   /** The item that was most recently autofilled, used to prioritize it in the list. */
   RECENTLY_SELECTED_ITEM: 'session:aliasvault_recently_selected_item',
 
@@ -263,6 +263,7 @@ export const vaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.VAULT_BUCKET_REVISIONS,
   StorageKeys.VAULT_MANIFEST_SALT,
   StorageKeys.VAULT_PERSONAL_MANIFEST_ID,
+  StorageKeys.SHARED_MANIFESTS,
   StorageKeys.VAULT_CONTENT_FINGERPRINTS,
   StorageKeys.VAULT_BLOB_CIPHER_CACHE,
   StorageKeys.VAULT_SERVER_BLOB_HASHES,

@@ -1,4 +1,4 @@
-import { isAnchorFolder } from '@/utils/FolderUtils';
+import { multiManifestRendering } from '@/utils/MultiManifestRendering';
 
 import { t } from '@/i18n/StandaloneI18n';
 
@@ -37,8 +37,8 @@ export class FolderRepository extends BaseRepository {
    * Create a new folder.
    * @param name - The name of the folder
    * @param parentFolderId - Optional parent folder ID for nested folders
-   * @param id - Optional explicit folder ID (used when the id must be known before creation, e.g. an anchor folder
-   *   whose id is embedded in its server-side shared manifest); a new GUID is generated when omitted.
+   * @param id - Optional explicit folder ID (used when the id must be known before creation, e.g. the folder a
+   *   shared manifest is rendered as); a new GUID is generated when omitted.
    * @returns The ID of the created folder
    */
   public async create(name: string, parentFolderId?: string | null, id?: string): Promise<string> {
@@ -239,12 +239,12 @@ export class FolderRepository extends BaseRepository {
   }
 
   /**
-   * Refuse to delete the folder a shared vault is rendered as (see {@link isAnchorFolder}).
+   * Refuse to delete a folder that a shared vault is rendered as (see {@link multiManifestRendering}).
    * @param folderId - The folder about to be deleted
    */
   private async assertDeletable(folderId: string): Promise<void> {
     const folder = this.getById(folderId);
-    if (folder && isAnchorFolder(folder)) {
+    if (folder && multiManifestRendering.isManifestRoot(folder)) {
       throw new Error(await t('items.deleteSharedFolderHint'));
     }
   }
@@ -263,16 +263,6 @@ export class FolderRepository extends BaseRepository {
       await this.logoRepository.reconcileItemLogoScopes(this.now());
       return folders + items;
     });
-  }
-
-  /**
-   * Re-stamp a folder's whole subtree back into the vault's own (personal) manifest.
-   * @param folderId - The root of the subtree to re-stamp
-   * @returns The number of rows re-stamped, or 0 when the personal manifest is not registered yet
-   */
-  public async restampSubtreeToPersonal(folderId: string): Promise<number> {
-    const personalId = this.personalManifestId();
-    return personalId ? this.restampSubtree(folderId, personalId) : 0;
   }
 
   /**
