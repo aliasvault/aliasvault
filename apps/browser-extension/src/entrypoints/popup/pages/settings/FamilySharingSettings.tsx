@@ -3,51 +3,73 @@ import { useTranslation } from 'react-i18next';
 
 import AlertMessage from '@/entrypoints/popup/components/AlertMessage';
 import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
+import ConfirmPasswordModal from '@/entrypoints/popup/components/Dialogs/ConfirmPasswordModal';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
-import type { GroupInfo, GroupMemberInfo, GroupOverviewResponse } from '@/utils/dist/core/models/webapi';
+import type { GroupInfo, GroupMemberInfo, GroupOverviewResponse, SharedManifestInfo } from '@/utils/dist/core/models/webapi';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { SharingService } from '@/utils/SharingService';
+import { anchorFolderNames, SharingService } from '@/utils/SharingService';
 import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
 
-/** The member the confirmation dialog is about, together with the family they would be removed from. */
-type PendingRemoval = { group: GroupInfo; member: GroupMemberInfo; isSelf: boolean };
+/**
+ * What the confirmation dialog is about.
+ */
+type PendingRemoval =
+  | { kind: 'member'; group: GroupInfo; member: GroupMemberInfo; isSelf: boolean }
+  | { kind: 'access'; group: GroupInfo; manifest: SharedManifestInfo; member: GroupMemberInfo; isSelf: boolean };
 
+/**
+ * A shared vault deletion in progress: first a plain warning, then the master password confirmation.
+ */
+type PendingVaultDelete = { group: GroupInfo; manifest: SharedManifestInfo; stage: 'confirm' | 'password' };
+
+/** A failure the background script already put into words for the user. */
 class BackgroundActionError extends Error {}
+
+/** A failure the background script reported as a bare API error code. */
 class BackgroundApiError extends Error {}
 
 /**
- * Family sharing settings page: create a family's shared vault, invite people to it, and answer invitations others
- * sent.
+ * Family sharing settings page: create a family's shared vaults, invite the members of that family to them, and
+ * answer the invitations others sent.
  */
 const FamilySharingSettings: React.FC = () => {
   const { t } = useTranslation();
   const app = useApp();
   const webApi = useWebApi();
-  const { loadStoredDatabase } = useDb();
+  const { sqliteClient, loadStoredDatabase } = useDb();
   const { setIsInitialLoading } = useLoading();
 
   const [overview, setOverview] = useState<GroupOverviewResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [inviteUsernames, setInviteUsernames] = useState<Record<string, string>>({});
+  const [newVaultNames, setNewVaultNames] = useState<Record<string, string>>({});
+  const [vaultNames, setVaultNames] = useState<Record<string, string>>({});
   const [pendingRemoval, setPendingRemoval] = useState<PendingRemoval | null>(null);
+  const [pendingVaultDelete, setPendingVaultDelete] = useState<PendingVaultDelete | null>(null);
+  const [expandedRosters, setExpandedRosters] = useState<Record<string, boolean>>({});
+  const [invitationNames, setInvitationNames] = useState<Record<string, string>>({});
 
   const loadOverview = useCallback(async (): Promise<void> => {
     try {
-      setOverview(await SharingService.getOverview(webApi));
+      const loaded = await SharingService.getOverview(webApi);
+      setOverview(loaded);
+      setInvitationNames(sqliteClient ? await SharingService.openInvitationNames(sqliteClient, loaded.receivedInvitations) : {});
+      const records = await SharingService.getSessionSharedManifests();
+      const names = Object.fromEntries(Object.values(records).filter(record => record.name).map(record => [record.manifestId.toLowerCase(), record.name as string]));
+      setVaultNames({ ...names, ...(sqliteClient ? anchorFolderNames(sqliteClient) : {}) });
       setError(null);
     } catch {
       setError(t('sharing.family.errors.loadFailed'));
     } finally {
       setIsInitialLoading(false);
     }
-  }, [webApi, t, setIsInitialLoading]);
+  }, [webApi, sqliteClient, t, setIsInitialLoading]);
 
   useEffect(() => {
     loadOverview();
@@ -95,11 +117,13 @@ const FamilySharingSettings: React.FC = () => {
       : actionError instanceof ApiRequestError ? actionError.apiErrorCode : null;
 
     switch (code) {
-      case 'INVITE_RECIPIENT_NOT_FOUND': return t('sharing.family.errors.userNotFound');
       case 'INVITE_RECIPIENT_NOT_READY': return t('sharing.family.errors.userNotReady');
-      case 'ALREADY_GROUP_MEMBER': return t('sharing.family.errors.alreadyMember');
+      case 'NOT_GROUP_MEMBER': return t('sharing.family.errors.notFamilyMember');
+      case 'ACCESS_ALREADY_GRANTED': return t('sharing.family.errors.alreadyHasAccess');
       case 'INVITATION_ALREADY_EXISTS': return t('sharing.family.errors.alreadyInvited');
       case 'INVITATION_NOT_FOUND': return t('sharing.family.errors.invitationGone');
+      case 'LAST_MANIFEST_GRANT_HOLDER': return t('sharing.family.errors.lastMemberWithAccess');
+      case 'GROUP_MANIFEST_LIMIT_REACHED': return t('sharing.family.errors.vaultLimitReached');
       default: return code !== null ? `${fallback} [${code}]` : fallback;
     }
   };
@@ -117,34 +141,36 @@ const FamilySharingSettings: React.FC = () => {
   };
 
   /**
-   * Create the family's shared vault.
-   * @param group - the family to create the vault for.
+   * Create another shared vault for the family.
+   * @param group - the family to create it for.
    */
-  const createSharedVault = (group: GroupInfo): Promise<void> => run(async () => {
-    unwrap(await sendMessage('GROUP_CREATE_VAULT', { groupId: group.groupId }));
-    // The family's folder was written into the stored vault by the background script; this window is still holding the copy from before it.
-    await loadStoredDatabase();
-  }, t('sharing.family.errors.createVaultFailed'));
-
-  /**
-   * Invite the typed username to the family.
-   * @param group - the family to invite into.
-   */
-  const invite = (group: GroupInfo): Promise<void> => {
-    const username = (inviteUsernames[group.groupId] ?? '').trim();
-    if (username.length === 0) {
+  const createSharedVault = (group: GroupInfo): Promise<void> => {
+    const name = (newVaultNames[group.groupId] ?? '').trim();
+    if (name.length === 0) {
       return Promise.resolve();
     }
 
     return run(async () => {
-      unwrap(await sendMessage('GROUP_INVITE_MEMBER', { groupId: group.groupId, username }));
-      setInviteUsernames(previous => ({ ...previous, [group.groupId]: '' }));
-      setNotice(t('sharing.family.inviteSent'));
-    }, t('sharing.family.errors.inviteFailed'));
+      unwrap(await sendMessage('GROUP_CREATE_VAULT', { groupId: group.groupId, name }));
+      setNewVaultNames(previous => ({ ...previous, [group.groupId]: '' }));
+      await loadStoredDatabase();
+    }, t('sharing.family.errors.createVaultFailed'));
   };
 
   /**
-   * Accept an invitation, joining the family.
+   * Invite one member to one shared vault.
+   * @param group - the family the vault belongs to.
+   * @param manifest - the vault.
+   * @param member - the member being invited.
+   */
+  const inviteMember = (group: GroupInfo, manifest: SharedManifestInfo, member: GroupMemberInfo): Promise<void> => run(async () => {
+    unwrap(await sendMessage('GROUP_INVITE_MEMBER', { groupId: group.groupId, manifestId: manifest.manifestId, userId: member.userId }));
+    await loadStoredDatabase();
+    setNotice(t('sharing.family.invitationSent', { username: member.username }));
+  }, t('sharing.family.errors.inviteFailed'));
+
+  /**
+   * Accept an invitation, opening the shared vault it names.
    * @param invitationId - the invitation to accept.
    */
   const acceptInvitation = (invitationId: string): Promise<void> => run(async () => {
@@ -155,7 +181,7 @@ const FamilySharingSettings: React.FC = () => {
   }, t('sharing.family.errors.invitationGone'));
 
   /**
-   * Remove the member the confirmation dialog is about.
+   * Carry out whatever the confirmation dialog was about.
    */
   const confirmRemoval = (): Promise<void> => {
     const removal = pendingRemoval;
@@ -164,10 +190,63 @@ const FamilySharingSettings: React.FC = () => {
       return Promise.resolve();
     }
 
+    if (removal.kind === 'member') {
+      return run(async () => {
+        unwrap(await sendMessage('GROUP_REMOVE_MEMBER', { groupId: removal.group.groupId, userId: removal.member.userId }));
+      }, t('sharing.family.errors.removeMemberFailed'));
+    }
+
     return run(async () => {
-      unwrap(await sendMessage('GROUP_REMOVE_MEMBER', { groupId: removal.group.groupId, userId: removal.member.userId }));
+      unwrap(await sendMessage('GROUP_REVOKE_ACCESS', { groupId: removal.group.groupId, manifestId: removal.manifest.manifestId, userId: removal.member.userId }));
+      await loadStoredDatabase();
     }, t('sharing.family.errors.removeMemberFailed'));
   };
+
+  /**
+   * Delete a shared vault with password confirmation.
+   * @param password - the entered master password.
+   */
+  const deleteSharedVault = async (password: string): Promise<void> => {
+    const target = pendingVaultDelete;
+    if (!target) {
+      return;
+    }
+
+    try {
+      await SharingService.deleteSharedManifest(webApi, target.group.groupId, target.manifest.manifestId, password);
+    } catch (deleteError) {
+      if (deleteError instanceof ApiRequestError && deleteError.apiErrorCode === 'PASSWORD_MISMATCH') {
+        throw new Error(t('common.errors.wrongPassword'));
+      }
+
+      throw new Error(apiErrorMessage(deleteError, t('sharing.family.errors.deleteVaultFailed')));
+    }
+
+    setPendingVaultDelete(null);
+    await run(async () => {
+      await sendMessage('SYNC_VAULT');
+      await loadStoredDatabase();
+      setNotice(t('sharing.family.vaultDeleted'));
+    }, t('sharing.family.errors.deleteVaultFailed'));
+  };
+
+  /**
+   * Whether a family's roster is expanded.
+   * @param groupId - the family.
+   */
+  const isRosterExpanded = (groupId: string): boolean => expandedRosters[groupId] ?? false;
+
+  /**
+   * Toggle a family's roster open or shut.
+   * @param groupId - the family.
+   */
+  const toggleRoster = (groupId: string): void => setExpandedRosters(previous => ({ ...previous, [groupId]: !isRosterExpanded(groupId) }));
+
+  /**
+   * What to call a shared vault on screen.
+   * @param manifest - the vault.
+   */
+  const vaultLabel = (manifest: SharedManifestInfo): string => vaultNames[manifest.manifestId.toLowerCase()] ?? t('sharing.family.unnamedVault');
 
   /**
    * The role of a member as shown next to their name.
@@ -181,8 +260,32 @@ const FamilySharingSettings: React.FC = () => {
     }
   };
 
+  /**
+   * The title and message of the confirmation dialog.
+   */
+  const removalDialog = (): { title: string; message: string; confirmText: string } => {
+    if (!pendingRemoval) {
+      return { title: '', message: '', confirmText: t('common.remove') };
+    }
+
+    if (pendingRemoval.kind === 'member') {
+      return pendingRemoval.isSelf
+        ? { title: t('sharing.family.leaveFamily'), message: t('sharing.family.leaveFamilyConfirm'), confirmText: t('sharing.family.leaveFamily') }
+        : { title: t('common.remove'), message: t('sharing.family.removeMemberConfirm', { username: pendingRemoval.member.username }), confirmText: t('common.remove') };
+    }
+
+    return {
+      title: t('sharing.revoke'),
+      message: pendingRemoval.isSelf
+        ? t('sharing.family.leaveVaultConfirm', { vault: vaultLabel(pendingRemoval.manifest) })
+        : t('sharing.family.revokeAccessConfirm', { username: pendingRemoval.member.username, vault: vaultLabel(pendingRemoval.manifest) }),
+      confirmText: t('sharing.revoke'),
+    };
+  };
+
   const receivedInvitations = overview?.receivedInvitations ?? [];
   const groups = overview?.groups ?? [];
+  const dialog = removalDialog();
 
   return (
     <div className="space-y-6">
@@ -190,11 +293,27 @@ const FamilySharingSettings: React.FC = () => {
         isOpen={pendingRemoval !== null}
         onClose={() => setPendingRemoval(null)}
         onConfirm={confirmRemoval}
-        title={pendingRemoval?.isSelf ? t('sharing.family.leaveFamily') : t('common.remove')}
-        message={pendingRemoval?.isSelf
-          ? t('sharing.family.leaveFamilyConfirm')
-          : t('sharing.family.removeMemberConfirm', { username: pendingRemoval?.member.username ?? '' })}
-        confirmText={pendingRemoval?.isSelf ? t('sharing.family.leaveFamily') : t('common.remove')}
+        title={dialog.title}
+        message={dialog.message}
+        confirmText={dialog.confirmText}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={pendingVaultDelete?.stage === 'confirm'}
+        onClose={() => setPendingVaultDelete(null)}
+        onConfirm={() => setPendingVaultDelete(previous => (previous ? { ...previous, stage: 'password' } : previous))}
+        title={t('sharing.family.deleteVault')}
+        message={t('sharing.family.deleteVaultConfirm', { vault: pendingVaultDelete ? vaultLabel(pendingVaultDelete.manifest) : '' })}
+        confirmText={t('common.delete')}
+      />
+
+      <ConfirmPasswordModal
+        isOpen={pendingVaultDelete?.stage === 'password'}
+        onClose={() => setPendingVaultDelete(null)}
+        onConfirm={deleteSharedVault}
+        title={t('sharing.family.deleteVault')}
+        message={t('sharing.family.deleteVaultPasswordPrompt', { vault: pendingVaultDelete ? vaultLabel(pendingVaultDelete.manifest) : '' })}
+        confirmText={t('common.delete')}
       />
 
       <div>
@@ -217,7 +336,7 @@ const FamilySharingSettings: React.FC = () => {
             {receivedInvitations.map(invitation => (
               <div key={invitation.id} className="p-4 space-y-3">
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{t('sharing.family.invitationReceived', { name: invitation.groupName })}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{invitationNames[invitation.id] ?? t('sharing.family.unnamedVault')}</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t('sharing.family.invitedBy', { username: invitation.inviterUsername })}</p>
                 </div>
                 <div className="flex gap-2">
@@ -250,39 +369,74 @@ const FamilySharingSettings: React.FC = () => {
         const canAdminister = group.role === 'Owner' || group.role === 'Admin';
 
         return (
-          <section key={group.groupId}>
-            <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-3">{group.name}</h3>
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-700">
-              {/* Shared vault: the folder the family's items live in, created on request rather than automatically. */}
-              <div className="p-4 space-y-3">
-                <p className="font-medium text-gray-900 dark:text-white">{t('sharing.family.sharedVault')}</p>
-                {group.manifestId ? (
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('sharing.family.sharedVaultActive', { name: group.name })}</p>
-                ) : (
-                  <>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {canAdminister ? t('sharing.family.noSharedVaultAdmin') : t('sharing.family.noSharedVaultMember')}
-                    </p>
-                    {canAdminister && (
-                      <button
-                        disabled={busy}
-                        onClick={() => createSharedVault(group)}
-                        className="px-3 py-1.5 text-sm rounded-md bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white"
-                      >
-                        {t('sharing.family.createSharedVault')}
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
+          <section key={group.groupId} className="space-y-4">
+            {/* The family's members. */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+              <button onClick={() => toggleRoster(group.groupId)} className="flex items-center justify-between w-full text-left">
+                <span className="font-medium text-gray-900 dark:text-white">{t('sharing.members')} ({group.members.length})</span>
+                <svg className={`w-5 h-5 text-gray-500 transition-transform ${isRosterExpanded(group.groupId) ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
 
-              {/* Members, each with whether they can actually open the shared vault yet. */}
-              <div className="p-4 space-y-3">
-                <p className="font-medium text-gray-900 dark:text-white">{t('sharing.members')}</p>
+              {isRosterExpanded(group.groupId) && (
+                <div className="mt-3 space-y-3">
+                  <ul className="space-y-2">
+                    {group.members.map(member => {
+                      const isSelf = member.username === app.username;
+                      const canRemove = member.role !== 'Owner' && (isSelf || canAdminister);
+
+                      return (
+                        <li key={member.userId} className="flex items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-sm text-gray-900 dark:text-white truncate">
+                              {member.username}{isSelf && ` (${t('sharing.family.you')})`}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{roleLabel(member)}</p>
+                          </div>
+                          {canRemove && (
+                            <button
+                              disabled={busy}
+                              onClick={() => setPendingRemoval({ kind: 'member', group, member, isSelf })}
+                              className="shrink-0 px-2 py-1 text-xs rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50"
+                            >
+                              {isSelf ? t('sharing.family.leaveFamily') : t('common.remove')}
+                            </button>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('sharing.family.rosterManagedElsewhere')}</p>
+                </div>
+              )}
+            </div>
+
+            {/* One block per shared vault, each with the members who can open it. */}
+            {group.manifests.map(manifest => (
+              <div key={manifest.manifestId} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-900 dark:text-white">{vaultLabel(manifest)}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('sharing.family.sharedVaultActive', { name: vaultLabel(manifest) })}</p>
+                  </div>
+                  {canAdminister && (
+                    <button
+                      disabled={busy}
+                      onClick={() => setPendingVaultDelete({ group, manifest, stage: 'confirm' })}
+                      className="shrink-0 px-2 py-1 text-xs rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50"
+                    >
+                      {t('common.delete')}
+                    </button>
+                  )}
+                </div>
+
                 <ul className="space-y-2">
                   {group.members.map(member => {
                     const isSelf = member.username === app.username;
-                    const canRemove = member.role !== 'Owner' && (isSelf || canAdminister);
+                    const hasAccess = manifest.memberUserIds.includes(member.userId);
+                    const isInvited = manifest.pendingInvitations.some(invitation => invitation.inviteeUserId === member.userId);
+                    const invitation = manifest.pendingInvitations.find(candidate => candidate.inviteeUserId === member.userId);
 
                     return (
                       <li key={member.userId} className="flex items-center justify-between gap-2">
@@ -291,69 +445,85 @@ const FamilySharingSettings: React.FC = () => {
                             {member.username}{isSelf && ` (${t('sharing.family.you')})`}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {roleLabel(member)}
-                            {group.manifestId && ` · ${t('sharing.family.hasAccess')}`}
+                            {hasAccess ? t('sharing.family.hasAccess') : isInvited ? t('sharing.family.invited') : t('sharing.family.noAccess')}
                           </p>
                         </div>
-                        {canRemove && (
+
+                        {hasAccess && (isSelf || canAdminister) && (
                           <button
                             disabled={busy}
-                            onClick={() => setPendingRemoval({ group, member, isSelf })}
+                            onClick={() => setPendingRemoval({ kind: 'access', group, manifest, member, isSelf })}
                             className="shrink-0 px-2 py-1 text-xs rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50"
                           >
-                            {isSelf ? t('sharing.family.leaveFamily') : t('common.remove')}
+                            {t('sharing.revoke')}
+                          </button>
+                        )}
+
+                        {isInvited && canAdminister && invitation && (
+                          <button
+                            disabled={busy}
+                            onClick={() => run(() => SharingService.withdrawInvitation(webApi, invitation.id), t('sharing.family.errors.invitationGone'))}
+                            className="shrink-0 px-2 py-1 text-xs rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+                          >
+                            {t('sharing.family.withdraw')}
+                          </button>
+                        )}
+
+                        {!hasAccess && !isInvited && canAdminister && (
+                          <button
+                            disabled={busy || !member.publicKey}
+                            title={member.publicKey ? undefined : t('sharing.family.errors.userNotReady')}
+                            onClick={() => inviteMember(group, manifest, member)}
+                            className="shrink-0 px-2 py-1 text-xs rounded-md bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white"
+                          >
+                            {t('sharing.family.invite')}
                           </button>
                         )}
                       </li>
                     );
                   })}
-
-                  {group.pendingInvitations.map(invitation => (
-                    <li key={invitation.id} className="flex items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="text-sm text-gray-900 dark:text-white truncate">{invitation.inviteeUsername}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('sharing.family.invited')}</p>
-                      </div>
-                      <button
-                        disabled={busy}
-                        onClick={() => run(() => SharingService.withdrawInvitation(webApi, invitation.id), t('sharing.family.errors.invitationGone'))}
-                        className="shrink-0 px-2 py-1 text-xs rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
-                      >
-                        {t('sharing.family.withdraw')}
-                      </button>
-                    </li>
-                  ))}
                 </ul>
               </div>
+            ))}
 
-              {canAdminister && group.manifestId && (
-                <div className="p-4 space-y-3">
-                  <p className="font-medium text-gray-900 dark:text-white">{t('sharing.family.inviteMember')}</p>
-                  <form
-                    className="flex gap-2"
-                    onSubmit={event => {
-                      event.preventDefault();
-                      invite(group);
-                    }}
-                  >
-                    <input
-                      type="text"
-                      value={inviteUsernames[group.groupId] ?? ''}
-                      onChange={event => setInviteUsernames(previous => ({ ...previous, [group.groupId]: event.target.value }))}
-                      placeholder={t('sharing.family.usernamePlaceholder')}
-                      className="flex-1 min-w-0 px-3 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                    <button
-                      type="submit"
-                      disabled={busy}
-                      className="shrink-0 px-3 py-1.5 text-sm rounded-md bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white"
+            {/* Creating another shared vault. */}
+            {(canAdminister || group.manifests.length === 0) && (
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 space-y-3">
+                {group.manifests.length === 0 && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {canAdminister ? t('sharing.family.noSharedVaultAdmin') : t('sharing.family.noSharedVaultMember')}
+                  </p>
+                )}
+
+                {canAdminister && (
+                  <>
+                    <p className="font-medium text-gray-900 dark:text-white">{t('sharing.family.createSharedVault')}</p>
+                    <form
+                      className="flex gap-2"
+                      onSubmit={event => {
+                        event.preventDefault();
+                        createSharedVault(group);
+                      }}
                     >
-                      {t('sharing.family.invite')}
-                    </button>
-                  </form>
-                </div>
-              )}
-            </div>
+                      <input
+                        type="text"
+                        value={newVaultNames[group.groupId] ?? ''}
+                        onChange={event => setNewVaultNames(previous => ({ ...previous, [group.groupId]: event.target.value }))}
+                        placeholder={t('sharing.family.vaultNamePlaceholder')}
+                        className="flex-1 min-w-0 px-3 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      />
+                      <button
+                        type="submit"
+                        disabled={busy}
+                        className="shrink-0 px-3 py-1.5 text-sm rounded-md bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white"
+                      >
+                        {t('sharing.family.create')}
+                      </button>
+                    </form>
+                  </>
+                )}
+              </div>
+            )}
           </section>
         );
       })}
