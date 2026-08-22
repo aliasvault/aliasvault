@@ -119,11 +119,11 @@
   </resheader>
   <!-- Common UI elements -->
   <data name="Save" xml:space="preserve">
-    <value>Save</value>
+    <value>Lưu</value>
     <comment>Button text for saving changes</comment>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Cancel</value>
+    <value>Huỷ</value>
     <comment>Button text for canceling an action</comment>
   </data>
   <data name="Generate" xml:space="preserve">
@@ -131,7 +131,7 @@
     <comment>Button tooltip for generating a random value</comment>
   </data>
   <data name="Delete" xml:space="preserve">
-    <value>Delete</value>
+    <value>Xoá</value>
     <comment>Button text for deleting an item</comment>
   </data>
   <data name="Remove" xml:space="preserve">
@@ -143,7 +143,7 @@
     <comment>Display-only fallback name shown for a TOTP code that has no name set</comment>
   </data>
   <data name="Edit" xml:space="preserve">
-    <value>Edit</value>
+    <value>Sửa</value>
     <comment>Button text for editing an item</comment>
   </data>
   <data name="Duplicate" xml:space="preserve">
@@ -151,11 +151,11 @@
     <comment>Button text for duplicating an item</comment>
   </data>
   <data name="DuplicateSuccessMessage" xml:space="preserve">
-    <value>Item duplicated successfully.</value>
+    <value>Đã sao chép mục thành công.</value>
     <comment>Success message shown after duplicating an item</comment>
   </data>
   <data name="DuplicateErrorMessage" xml:space="preserve">
-    <value>Failed to duplicate item.</value>
+    <value>Không thể sao chép mục.</value>
     <comment>Error message shown when duplicating an item failed</comment>
   </data>
   <data name="ItemOptions" xml:space="preserve">
@@ -171,43 +171,43 @@
     <comment>Button text for hiding content</comment>
   </data>
   <data name="Close" xml:space="preserve">
-    <value>Close</value>
+    <value>Đóng</value>
     <comment>Button text for closing a dialog or modal</comment>
   </data>
   <data name="Back" xml:space="preserve">
-    <value>Back</value>
+    <value>Quay lại</value>
     <comment>Button text for going back</comment>
   </data>
   <data name="Next" xml:space="preserve">
-    <value>Next</value>
+    <value>Tiếp theo</value>
     <comment>Button text for proceeding to the next step</comment>
   </data>
   <data name="Loading" xml:space="preserve">
-    <value>Loading...</value>
+    <value>Đang tải...</value>
     <comment>Loading message displayed during async operations</comment>
   </data>
   <data name="Yes" xml:space="preserve">
-    <value>Yes</value>
+    <value>Có</value>
     <comment>Confirmation button text</comment>
   </data>
   <data name="No" xml:space="preserve">
-    <value>No</value>
+    <value>Không</value>
     <comment>Rejection button text</comment>
   </data>
   <data name="Ok" xml:space="preserve">
-    <value>OK</value>
+    <value>Ok</value>
     <comment>OK button text</comment>
   </data>
   <data name="Continue" xml:space="preserve">
-    <value>Continue</value>
+    <value>Tiếp tục</value>
     <comment>Button text to continue with an action</comment>
   </data>
   <data name="Confirm" xml:space="preserve">
-    <value>Confirm</value>
+    <value>Xác nhận</value>
     <comment>Button text to confirm an action</comment>
   </data>
   <data name="Refresh" xml:space="preserve">
-    <value>Refresh</value>
+    <value>Làm mới</value>
     <comment>Button text to refresh content</comment>
   </data>
   <!-- Common form elements -->
@@ -216,36 +216,36 @@
     <comment>Label for email input field</comment>
   </data>
   <data name="Password" xml:space="preserve">
-    <value>Password</value>
+    <value>Mật khẩu</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="Username" xml:space="preserve">
-    <value>Username</value>
+    <value>Tên người dùng</value>
     <comment>Label for username input field</comment>
   </data>
   <data name="Name" xml:space="preserve">
-    <value>Name</value>
+    <value>Tên</value>
     <comment>Label for name input field</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Description</value>
+    <value>Mô tả</value>
     <comment>Label for description input field</comment>
   </data>
   <data name="Title" xml:space="preserve">
-    <value>Title</value>
+    <value>Tiêu đề</value>
     <comment>Label for title input field</comment>
   </data>
   <data name="Website" xml:space="preserve">
-    <value>Website</value>
+    <value>Trang wed</value>
     <comment>Label for website input field</comment>
   </data>
   <data name="Search" xml:space="preserve">
-    <value>Search</value>
+    <value>Tìm kiếm</value>
     <comment>Label for search input field</comment>
   </data>
   <!-- Common error messages -->
   <data name="ErrorGeneric" xml:space="preserve">
-    <value>An error occurred. Please try again.</value>
+    <value>Đã xảy ra lỗi. Vui lòng thử lại.</value>
     <comment>Generic error message</comment>
   </data>
   <data name="ErrorUnknown" xml:space="preserve">
@@ -253,44 +253,44 @@
     <comment>Generic unknown error message</comment>
   </data>
   <data name="VaultTooLargeError" xml:space="preserve">
-    <value>The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.</value>
+    <value>Kho lưu trữ quá lớn để máy chủ chấp nhận. Hãy thử xóa bớt một số mục hoặc tệp đính kèm để giảm kích thước rồi thử lại.</value>
     <comment>Shown when the server rejects a vault upload with HTTP 413 because the encrypted vault exceeds the configured upload size limit</comment>
   </data>
   <data name="VaultSaveError" xml:space="preserve">
-    <value>Failed to save changes to the vault. Please try again.</value>
+    <value>Không thể lưu các thay đổi vào kho lưu trữ. Vui lòng thử lại.</value>
     <comment>Generic error shown when a vault save / sync to the server fails for an unexpected reason</comment>
   </data>
   <data name="ErrorValidation" xml:space="preserve">
-    <value>Please correct the errors below.</value>
+    <value>Vui lòng sửa các lỗi bên dưới.</value>
     <comment>Validation error message</comment>
   </data>
   <data name="ErrorRequired" xml:space="preserve">
-    <value>This field is required.</value>
+    <value>Trường này là bắt buộc.</value>
     <comment>Required field validation error</comment>
   </data>
   <data name="ErrorInvalidEmail" xml:space="preserve">
-    <value>Please enter a valid email address.</value>
+    <value>Vui lòng nhập địa chỉ email hợp lệ.</value>
     <comment>Invalid email validation error</comment>
   </data>
   <data name="ErrorPasswordMismatch" xml:space="preserve">
-    <value>Passwords do not match.</value>
+    <value>Mật khẩu không khớp.</value>
     <comment>Password confirmation mismatch error</comment>
   </data>
   <!-- Common status messages -->
   <data name="Success" xml:space="preserve">
-    <value>Success</value>
+    <value>Thành công</value>
     <comment>Success status message</comment>
   </data>
   <data name="Warning" xml:space="preserve">
-    <value>Warning</value>
+    <value>Cảnh báo</value>
     <comment>Warning status message</comment>
   </data>
   <data name="Error" xml:space="preserve">
-    <value>Error</value>
+    <value>Lỗi</value>
     <comment>Error status message</comment>
   </data>
   <data name="Info" xml:space="preserve">
-    <value>Info</value>
+    <value>Thông tin</value>
     <comment>Information status message</comment>
   </data>
   <!-- Loading screen messages -->
@@ -300,27 +300,27 @@
   </data>
   <!-- Validation error messages for forms -->
   <data name="ErrorPasswordMinLength" xml:space="preserve">
-    <value>The new password must be at least 10 characters long.</value>
+    <value>Mật khẩu mới phải có ít nhất 10 ký tự.</value>
     <comment>Error message for password minimum length validation</comment>
   </data>
   <data name="ErrorPasswordsDoNotMatch" xml:space="preserve">
-    <value>The new passwords do not match.</value>
+    <value>Mật khẩu mới không khớp.</value>
     <comment>Error message when password confirmation doesn't match</comment>
   </data>
   <data name="ErrorPasswordMinLengthGeneric" xml:space="preserve">
-    <value>Password must be at least 10 characters long.</value>
+    <value>Mật khẩu phải có ít nhất 10 ký tự.</value>
     <comment>Generic error message for password minimum length validation</comment>
   </data>
   <data name="ErrorPasswordsDoNotMatchGeneric" xml:space="preserve">
-    <value>Passwords do not match.</value>
+    <value>Mật khẩu không khớp.</value>
     <comment>Generic error message when passwords don't match</comment>
   </data>
   <data name="ErrorMustAcceptTerms" xml:space="preserve">
-    <value>You must accept the terms and conditions.</value>
+    <value>Bạn phải đồng ý với các điều khoản và điều kiện.</value>
     <comment>Error message for terms and conditions acceptance</comment>
   </data>
   <data name="ErrorSecretKeyRequired" xml:space="preserve">
-    <value>Secret key is required</value>
+    <value>Cần có khóa bí mật</value>
     <comment>Error message when secret key is required</comment>
   </data>
   <data name="ErrorUsernameRequired" xml:space="preserve">
@@ -328,7 +328,7 @@
     <comment>Error message when username is required</comment>
   </data>
   <data name="ErrorPasswordRequired" xml:space="preserve">
-    <value>Password is required</value>
+    <value>Yêu cầu nhập mật khẩu</value>
     <comment>Error message when password is required</comment>
   </data>
   <!-- General UI text -->
@@ -337,27 +337,27 @@
     <comment>Divider text between options</comment>
   </data>
   <data name="LockVault" xml:space="preserve">
-    <value>Lock vault</value>
+    <value>Khoá kho bảo mật</value>
     <comment>Tooltip text for lock vault button</comment>
   </data>
   <data name="Home" xml:space="preserve">
-    <value>Home</value>
+    <value>Trang chủ</value>
     <comment>Home breadcrumb text</comment>
   </data>
   <data name="Notes" xml:space="preserve">
-    <value>Notes</value>
+    <value>Ghi chú</value>
     <comment>Notes section heading</comment>
   </data>
   <data name="SyncVaultData" xml:space="preserve">
-    <value>Sync vault data</value>
+    <value>Đồng bộ dữ liệu kho bảo mật</value>
     <comment>Tooltip text for sync vault data button</comment>
   </data>
   <data name="SyncingChanges" xml:space="preserve">
-    <value>Syncing changes...</value>
+    <value>Đang đồng bộ thay đổi...</value>
     <comment>Status text when background sync is in progress</comment>
   </data>
   <data name="LoadingVault" xml:space="preserve">
-    <value>Loading vault...</value>
+    <value>Đang tải kho bảo mật...</value>
     <comment>Status text when vault is being loaded</comment>
   </data>
   <data name="EmailFormatHtml" xml:space="preserve">
@@ -369,19 +369,19 @@
     <comment>Email format switcher: plain text view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatSource" xml:space="preserve">
-    <value>Source</value>
+    <value>Nguồn</value>
     <comment>Email format switcher: raw HTML source view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatSwitchTitle" xml:space="preserve">
-    <value>Switch email format</value>
+    <value>Chuyển đổi định dạng email</value>
     <comment>Tooltip for the cycle button that switches between HTML / Text / Source views. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailItemLabel" xml:space="preserve">
-    <value>Item:</value>
+    <value>Mục:</value>
     <comment>Label for the credential/item row in the email header. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailItemNone" xml:space="preserve">
-    <value>None</value>
+    <value>Không</value>
     <comment>Shown next to the Item label when an email is not linked to any credential. Shared between email modal and email page.</comment>
   </data>
   <data name="ItemTypeLabel" xml:space="preserve">
