@@ -295,7 +295,7 @@
   </data>
   <!-- Loading screen messages -->
   <data name="RefreshPageText" xml:space="preserve">
-    <value>If loading seems stuck, you can click the button below to refresh the page.</value>
+    <value>Nếu quá trình tải có vẻ bị treo, bạn có thể nhấn nút bên dưới để tải lại trang.</value>
     <comment>Text shown above refresh button on loading screen</comment>
   </data>
   <!-- Validation error messages for forms -->
