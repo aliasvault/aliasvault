@@ -11,8 +11,11 @@ using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Filters;
 using AliasVault.Api.Helpers;
+using AliasVault.Auth;
+using AliasVault.Cryptography.Client;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
+using AliasVault.Shared.Models.WebApi.V1.Auth;
 using AliasVault.Shared.Models.WebApi.V2.Groups;
 using AliasVault.Shared.Providers.Time;
 using AliasVault.Shared.Server.Capabilities;
@@ -20,6 +23,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 /// <summary>
 /// Groups controller which manages the shared vaults of a group and who inside the group can open them.
@@ -27,8 +31,10 @@ using Microsoft.EntityFrameworkCore;
 /// <param name="dbContextFactory">The database context factory.</param>
 /// <param name="userManager">The user manager.</param>
 /// <param name="timeProvider">Time provider.</param>
+/// <param name="cache">Memory cache holding the server's SRP ephemeral between the delete initiate and confirm calls.</param>
+/// <param name="authLoggingService">Auth logging service, recording shared vault creation and the master password checks guarding deletion.</param>
 [ApiVersion("2")]
-public class GroupsController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, ITimeProvider timeProvider) : AuthenticatedRequestController(userManager)
+public class GroupsController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, ITimeProvider timeProvider, IMemoryCache cache, AuthLoggingService authLoggingService) : AuthenticatedRequestController(userManager)
 {
     private const string ManifestFormat = "manifest-v1";
 
@@ -198,6 +204,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.MANIFEST_ID_TAKEN, 400));
         }
 
+        await authLoggingService.LogAuthEventSuccessAsync(me.UserName!, AuthEventType.SharedVaultCreation);
+
         return Ok(new CreateSharedManifestResponse { ManifestId = manifest.ManifestId, RevisionNumber = manifest.RevisionNumber });
     }
 
@@ -351,6 +359,119 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             {
                 await ClientActionHelper.EnqueueForGroupAsync(context, ClientActionType.RotateManifestDeliveryKey, groupId, manifestId, timeProvider.UtcNow);
             }
+
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+        });
+
+        return Ok();
+    }
+
+    /// <summary>
+    /// Begin deleting one of the group's shared vaults.
+    /// </summary>
+    /// <param name="groupId">The group ID.</param>
+    /// <param name="manifestId">The shared vault to delete.</param>
+    /// <returns>The SRP handshake values for the confirm endpoint.</returns>
+    [HttpPost("{groupId:guid}/manifests/{manifestId:guid}/delete/initiate")]
+    public async Task<IActionResult> InitiateDeleteManifest(Guid groupId, Guid manifestId)
+    {
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var me = await GetCurrentUserAsync();
+        if (me == null)
+        {
+            return Unauthorized();
+        }
+
+        if (!await GroupHelper.IsSharedGroupAdminAsync(context, groupId, me.Id))
+        {
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_NOT_FOUND, 404));
+        }
+
+        if (!await context.VaultManifests.AnyAsync(m => m.ManifestId == manifestId && m.OwnerGroupId == groupId))
+        {
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+        }
+
+        var latestVaultEncryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, me);
+        var srpIdentity = me.SrpIdentity ?? me.UserName!.ToLowerInvariant();
+        var ephemeral = Srp.GenerateEphemeralServer(latestVaultEncryptionSettings.Verifier);
+        cache.Set(AuthHelper.CachePrefixEphemeral + srpIdentity, ephemeral.Secret, TimeSpan.FromMinutes(5));
+
+        return Ok(new LoginInitiateResponse(
+            latestVaultEncryptionSettings.Salt,
+            ephemeral.Public,
+            latestVaultEncryptionSettings.EncryptionType,
+            latestVaultEncryptionSettings.EncryptionSettings,
+            srpIdentity));
+    }
+
+    /// <summary>
+    /// Delete one of the group's shared vaults (confirmed with the master password).
+    /// </summary>
+    /// <param name="groupId">The group ID.</param>
+    /// <param name="manifestId">The shared vault to delete.</param>
+    /// <param name="model">The SRP proof of the caller's master password.</param>
+    /// <returns>Ok on success.</returns>
+    [HttpPost("{groupId:guid}/manifests/{manifestId:guid}/delete/confirm")]
+    public async Task<IActionResult> ConfirmDeleteManifest(Guid groupId, Guid manifestId, [FromBody] DeleteSharedManifestRequest model)
+    {
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var me = await GetCurrentUserAsync();
+        if (me == null)
+        {
+            return Unauthorized();
+        }
+
+        if (!await GroupHelper.IsSharedGroupAdminAsync(context, groupId, me.Id))
+        {
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_NOT_FOUND, 404));
+        }
+
+        var manifest = await context.VaultManifests.FirstOrDefaultAsync(m => m.ManifestId == manifestId && m.OwnerGroupId == groupId);
+        if (manifest == null)
+        {
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+        }
+
+        // Validate the SRP session (actual password check).
+        var (serverSession, activeSessionFound) = await AuthHelper.ValidateSrpSessionAsync(cache, context, me, model.ClientPublicEphemeral, model.ClientSessionProof);
+        if (serverSession is null)
+        {
+            await authLoggingService.LogAuthEventFailAsync(me.UserName!, AuthEventType.SharedVaultDeletion, activeSessionFound ? AuthFailureReason.InvalidPassword : AuthFailureReason.SrpSessionNotFound);
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PASSWORD_MISMATCH, 400));
+        }
+
+        await authLoggingService.LogAuthEventSuccessAsync(me.UserName!, AuthEventType.SharedVaultDeletion);
+
+        var strategy = context.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
+        {
+            await using var transaction = await context.Database.BeginTransactionAsync();
+
+            // Close any open invite.
+            foreach (var invitation in await context.GroupInvitations.Where(i => i.VaultManifestId == manifestId && i.State == GroupInvitationState.Pending).ToListAsync())
+            {
+                CloseInvitation(invitation, GroupInvitationState.Revoked);
+            }
+
+            // Delete any active grant.
+            var holders = await context.VaultManifestAccessKeys
+                .Where(k => k.VaultManifestId == manifestId && k.Type == ManifestKeyType.GrantKey)
+                .Select(k => k.UserId)
+                .Distinct()
+                .ToListAsync();
+            foreach (var holder in holders)
+            {
+                await GrantHelper.RevokeAccessAsync(context, manifestId, holder);
+            }
+
+            await context.SaveChangesAsync();
+
+            // Key rows and queued client actions reference the manifest without a cascading foreign key, so leftovers are deleted explicitly.
+            await context.VaultManifestAccessKeys.Where(k => k.VaultManifestId == manifestId).ExecuteDeleteAsync();
+            await context.ClientActions.Where(a => a.ManifestId == manifestId).ExecuteDeleteAsync();
+            context.VaultManifests.Remove(manifest);
 
             await context.SaveChangesAsync();
             await transaction.CommitAsync();

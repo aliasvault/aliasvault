@@ -14,6 +14,8 @@ var AuthEventType = /* @__PURE__ */ ((AuthEventType2) => {
   AuthEventType2[AuthEventType2["TwoFactorAuthEnable"] = 22] = "TwoFactorAuthEnable";
   AuthEventType2[AuthEventType2["TwoFactorAuthDisable"] = 23] = "TwoFactorAuthDisable";
   AuthEventType2[AuthEventType2["Register"] = 30] = "Register";
+  AuthEventType2[AuthEventType2["SharedVaultCreation"] = 50] = "SharedVaultCreation";
+  AuthEventType2[AuthEventType2["SharedVaultDeletion"] = 51] = "SharedVaultDeletion";
   AuthEventType2[AuthEventType2["AccountDeletion"] = 99] = "AccountDeletion";
   return AuthEventType2;
 })(AuthEventType || {});

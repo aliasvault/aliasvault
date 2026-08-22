@@ -90,6 +90,16 @@ public enum AuthFailureReason
 public class AuthLog
 {
     /// <summary>
+    /// Maximum stored length of <see cref="RequestPath"/>.
+    /// </summary>
+    public const int RequestPathMaxLength = 255;
+
+    /// <summary>
+    /// Maximum stored length of <see cref="Client"/>.
+    /// </summary>
+    public const int ClientMaxLength = 100;
+
+    /// <summary>
     /// Gets or sets the unique identifier for the authentication log entry.
     /// </summary>
     [Key]
@@ -165,7 +175,7 @@ public class AuthLog
     /// <summary>
     /// Gets or sets the request path of the authentication event.
     /// </summary>
-    [MaxLength(100)]
+    [MaxLength(RequestPathMaxLength)]
     public string? RequestPath { get; set; }
 
     /// <summary>
@@ -176,6 +186,6 @@ public class AuthLog
     /// <summary>
     /// Gets or sets the client application name and version.
     /// </summary>
-    [MaxLength(100)]
+    [MaxLength(ClientMaxLength)]
     public string? Client { get; set; }
 }

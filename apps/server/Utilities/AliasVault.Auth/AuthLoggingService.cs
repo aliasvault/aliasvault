@@ -46,8 +46,8 @@ public class AuthLoggingService(IServiceProvider serviceProvider, IHttpContextAc
             IsSuccess = true,
             FailureReason = null,
             IpAddress = ipAddress,
-            Client = clientHeader,
-            RequestPath = httpContext?.Request.Path,
+            Client = Truncate(clientHeader, AuthLog.ClientMaxLength),
+            RequestPath = Truncate(httpContext?.Request.Path.Value, AuthLog.RequestPathMaxLength),
             DeviceType = DetermineDeviceType(httpContext),
             OperatingSystem = DetermineOperatingSystem(httpContext),
             Browser = DetermineBrowser(httpContext),
@@ -92,8 +92,8 @@ public class AuthLoggingService(IServiceProvider serviceProvider, IHttpContextAc
             IsSuccess = false,
             FailureReason = failureReason,
             IpAddress = ipAddress,
-            Client = clientHeader,
-            RequestPath = httpContext?.Request.Path,
+            Client = Truncate(clientHeader, AuthLog.ClientMaxLength),
+            RequestPath = Truncate(httpContext?.Request.Path.Value, AuthLog.RequestPathMaxLength),
             DeviceType = DetermineDeviceType(httpContext),
             OperatingSystem = DetermineOperatingSystem(httpContext),
             Browser = DetermineBrowser(httpContext),
@@ -104,6 +104,14 @@ public class AuthLoggingService(IServiceProvider serviceProvider, IHttpContextAc
         dbContext.AuthLogs.Add(authAttempt);
         await dbContext.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Truncates a request-supplied value to its column's maximum length, so an oversized value never breaks the operation being logged.
+    /// </summary>
+    /// <param name="value">The value to store.</param>
+    /// <param name="maxLength">The column's maximum length.</param>
+    /// <returns>The value, cut down to the maximum length when longer.</returns>
+    private static string? Truncate(string? value, int maxLength) => value is not null && value.Length > maxLength ? value[..maxLength] : value;
 
     /// <summary>
     /// Determines the type of device based on the User-Agent header.

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 export type AlertType = 'error' | 'success' | 'warning' | 'info';
 
@@ -17,6 +17,13 @@ interface IAlertMessageProps {
  * @returns The rendered alert message component.
  */
 const AlertMessage: React.FC<IAlertMessageProps> = ({ type, message, className = '' }) => {
+  const alertRef = useRef<HTMLDivElement>(null);
+
+  // A message that appears outside the visible part of a scrolled page would otherwise go unnoticed.
+  useEffect(() => {
+    alertRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+  }, [message]);
+
   /**
    * Get the appropriate CSS classes based on alert type.
    * @returns CSS class string.
@@ -39,7 +46,7 @@ const AlertMessage: React.FC<IAlertMessageProps> = ({ type, message, className =
   };
 
   return (
-    <div className={`${getAlertClasses()} ${className}`}>
+    <div ref={alertRef} className={`${getAlertClasses()} scroll-mt-16 ${className}`}>
       {message}
     </div>
   );

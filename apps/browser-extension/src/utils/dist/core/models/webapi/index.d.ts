@@ -400,6 +400,14 @@ declare enum AuthEventType {
      */
     Register = 30,
     /**
+     * Represents creation of a shared vault.
+     */
+    SharedVaultCreation = 50,
+    /**
+     * Represents deletion of a shared vault, confirmed with the master password.
+     */
+    SharedVaultDeletion = 51,
+    /**
      * Represents a user account deletion event.
      */
     AccountDeletion = 99
@@ -625,6 +633,23 @@ type GrantManifestAccessRequest = {
 type GrantManifestAccessResponse = {
     invitationId: string;
 };
+/**
+ * The SRP handshake served by POST /v2/Groups/{groupId}/manifests/{manifestId}/delete/initiate.
+ */
+type DeleteSharedManifestInitiateResponse = {
+    salt: string;
+    serverEphemeral: string;
+    encryptionType: string;
+    encryptionSettings: string;
+    srpIdentity: string;
+};
+/**
+ * Delete a shared vault for good, carrying the SRP proof of the caller's master password.
+ */
+type DeleteSharedManifestRequest = {
+    clientPublicEphemeral: string;
+    clientSessionProof: string;
+};
 
 /**
  * The capability keys the server resolves and hands to clients on the status response.
@@ -649,4 +674,4 @@ type CapabilityKey = typeof CapabilityKeys[keyof typeof CapabilityKeys];
  */
 declare function isCapabilityEnabled(value: string | undefined): boolean;
 
-export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type CapabilityKey, CapabilityKeys, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type Email, type EmailAttachment, type EmailDecryptionKey, type FaviconExtractModel, type GrantManifestAccessRequest, type GrantManifestAccessResponse, type GroupInfo, type GroupMemberInfo, type GroupOverviewResponse, type GroupRole, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, type ManifestGrant, ManifestKeyType, type ManifestKeyTypeValue, type ManifestRevision, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type ReceivedManifestInvitation, type RefreshToken, type SentManifestInvitation, type SharedManifestInfo, type StatusResponse, type StatusResponseV2, type TokenModel, UnlockMethodType, type UnlockMethodTypeValue, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, VaultKeyAlgorithm, type VaultKeyAlgorithmValue, type VaultKeyGetResponse, type VaultKeyResponse, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse, isCapabilityEnabled };
+export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type CapabilityKey, CapabilityKeys, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type DeleteSharedManifestInitiateResponse, type DeleteSharedManifestRequest, type Email, type EmailAttachment, type EmailDecryptionKey, type FaviconExtractModel, type GrantManifestAccessRequest, type GrantManifestAccessResponse, type GroupInfo, type GroupMemberInfo, type GroupOverviewResponse, type GroupRole, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, type ManifestGrant, ManifestKeyType, type ManifestKeyTypeValue, type ManifestRevision, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type ReceivedManifestInvitation, type RefreshToken, type SentManifestInvitation, type SharedManifestInfo, type StatusResponse, type StatusResponseV2, type TokenModel, UnlockMethodType, type UnlockMethodTypeValue, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, VaultKeyAlgorithm, type VaultKeyAlgorithmValue, type VaultKeyGetResponse, type VaultKeyResponse, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse, isCapabilityEnabled };

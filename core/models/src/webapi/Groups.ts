@@ -113,3 +113,22 @@ export type GrantManifestAccessRequest = {
 export type GrantManifestAccessResponse = {
   invitationId: string;
 }
+
+/**
+ * The SRP handshake served by POST /v2/Groups/{groupId}/manifests/{manifestId}/delete/initiate.
+ */
+export type DeleteSharedManifestInitiateResponse = {
+  salt: string;
+  serverEphemeral: string;
+  encryptionType: string;
+  encryptionSettings: string;
+  srpIdentity: string;
+}
+
+/**
+ * Delete a shared vault for good, carrying the SRP proof of the caller's master password.
+ */
+export type DeleteSharedManifestRequest = {
+  clientPublicEphemeral: string;
+  clientSessionProof: string;
+}
