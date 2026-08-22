@@ -11,10 +11,6 @@ COPY apps/server .
 
 # Build and publish the application
 WORKDIR "/src/Services/AliasVault.SmtpService"
-
-# Add Kerberos libraries
-RUN apk add --upgrade krb5-libs
-
 RUN dotnet publish "./AliasVault.SmtpService.csproj" -c "$BUILD_CONFIGURATION" \
     -a "$TARGETARCH" \
     -o /app/publish \

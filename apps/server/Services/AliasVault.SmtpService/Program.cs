@@ -98,13 +98,13 @@ builder.Services.AddSingleton(
                 loadedCertificate.NotAfter.ToString("yyyy-MM-dd"));
             options.Endpoint(serverBuilder =>
                     serverBuilder
-                        .Port(2525, false)
+                        .Port(25, false)
                         .AllowUnsecureAuthentication()
                         .Certificate(loadedCertificate)
                         .SupportedSslProtocols(System.Security.Authentication.SslProtocols.Tls12))
                 .Endpoint(serverBuilder =>
                     serverBuilder
-                        .Port(5587, false)
+                        .Port(587, false)
                         .AllowUnsecureAuthentication()
                         .Certificate(loadedCertificate)
                         .SupportedSslProtocols(System.Security.Authentication.SslProtocols.Tls12));
@@ -124,10 +124,10 @@ builder.Services.AddSingleton(
 
             options.Endpoint(serverBuilder =>
                     serverBuilder
-                        .Port(2525, false))
+                        .Port(25, false))
                 .Endpoint(serverBuilder =>
                     serverBuilder
-                        .Port(5587, false));
+                        .Port(587, false));
         }
 
         return new SmtpServer.SmtpServer(options.Build(), provider.GetRequiredService<IServiceProvider>());
