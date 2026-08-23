@@ -1,5 +1,5 @@
 import { devLog, devWarn } from '@/utils/devLogger/DevLogger';
-import type { StatusResponseV2 } from '@/utils/dist/core/models/webapi';
+import type { PendingClientAction, StatusResponseV2 } from '@/utils/dist/core/models/webapi';
 import { SharingService } from '@/utils/SharingService';
 import type { SqliteClient } from '@/utils/SqliteClient';
 import type { WebApiService } from '@/utils/WebApiService';
@@ -7,14 +7,6 @@ import type { WebApiService } from '@/utils/WebApiService';
 /**
  * Carries out work the server hands this client with the status response.
  */
-
-/** One piece of work the server is asking this client to carry out. */
-export type PendingClientAction = {
-  id: string;
-  type: string;
-  manifestId?: string | null;
-  payload?: string | null;
-};
 
 /**
  * The action types this build knows how to carry out. The tokens are the server's `ClientActionType` names.
@@ -35,7 +27,7 @@ export class PendingActionProcessor {
    * @param status - the status response of the sync in progress.
    */
   public static pendingActions(status: StatusResponseV2): PendingClientAction[] {
-    return (status as StatusResponseV2 & { pendingActions?: PendingClientAction[] }).pendingActions ?? [];
+    return status.pendingActions ?? [];
   }
 
   /**

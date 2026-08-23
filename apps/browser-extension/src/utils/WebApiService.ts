@@ -28,6 +28,14 @@ const DEFAULT_REQUEST_TIMEOUT_MS = 5000;
 const VAULT_TRANSFER_TIMEOUT_MS = 180000;
 
 /**
+ * Path prefix whose requests carry vault ciphertext and therefore run on {@link VAULT_TRANSFER_TIMEOUT_MS}:
+ * `Vault` itself and every subpath of it, which includes the single-manifest fetch and the batched blob
+ * upload/download calls that run to several MB per request. Matched lowercased and unslashed, so sibling
+ * endpoints such as `VaultKey` keep the short timeout.
+ */
+const LARGE_TRANSFER_PATH = 'vault';
+
+/**
  * Type for the token response from the API.
  */
 type TokenResponse = {
@@ -201,7 +209,7 @@ export class WebApiService {
    */
   private buildTimeoutSignal(endpoint: string, headers: Headers, callerSignal?: AbortSignal | null): AbortSignal {
     const path = endpoint.split('?')[0].replace(/^\/+|\/+$/g, '').toLowerCase();
-    const isLargeTransfer = path === 'vault' ||
+    const isLargeTransfer = path === LARGE_TRANSFER_PATH || path.startsWith(`${LARGE_TRANSFER_PATH}/`) ||
       (headers.get('Accept') ?? '').toLowerCase().includes('application/octet-stream');
     const timeoutSignal = AbortSignal.timeout(
       isLargeTransfer ? VAULT_TRANSFER_TIMEOUT_MS : DEFAULT_REQUEST_TIMEOUT_MS

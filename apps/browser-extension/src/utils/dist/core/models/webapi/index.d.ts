@@ -76,6 +76,24 @@ type ManifestRevision = {
     revision: number;
 };
 /**
+ * The latest revision of a single data bucket, addressed by the manifest that owns it and its category.
+ */
+type BucketRevision = {
+    manifestId: string;
+    category: string;
+    revision: number;
+};
+/**
+ * A piece of work the server needs this client to carry out, because it needs something only a client holds
+ * (vault content, a vault key, a private key).
+ */
+type PendingClientAction = {
+    id: string;
+    type: string;
+    manifestId?: string | null;
+    payload?: string | null;
+};
+/**
  * Status response type (v2).
  */
 type StatusResponseV2 = {
@@ -85,6 +103,8 @@ type StatusResponseV2 = {
     personalManifestId: string | null;
     srpSalt: string;
     capabilities?: Record<string, string>;
+    bucketRevisions?: BucketRevision[];
+    pendingActions?: PendingClientAction[];
 };
 
 /**
@@ -674,4 +694,4 @@ type CapabilityKey = typeof CapabilityKeys[keyof typeof CapabilityKeys];
  */
 declare function isCapabilityEnabled(value: string | undefined): boolean;
 
-export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type CapabilityKey, CapabilityKeys, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type DeleteSharedManifestInitiateResponse, type DeleteSharedManifestRequest, type Email, type EmailAttachment, type EmailDecryptionKey, type FaviconExtractModel, type GrantManifestAccessRequest, type GrantManifestAccessResponse, type GroupInfo, type GroupMemberInfo, type GroupOverviewResponse, type GroupRole, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, type ManifestGrant, ManifestKeyType, type ManifestKeyTypeValue, type ManifestRevision, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type ReceivedManifestInvitation, type RefreshToken, type SentManifestInvitation, type SharedManifestInfo, type StatusResponse, type StatusResponseV2, type TokenModel, UnlockMethodType, type UnlockMethodTypeValue, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, VaultKeyAlgorithm, type VaultKeyAlgorithmValue, type VaultKeyGetResponse, type VaultKeyResponse, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse, isCapabilityEnabled };
+export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type BucketRevision, type CapabilityKey, CapabilityKeys, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type DeleteSharedManifestInitiateResponse, type DeleteSharedManifestRequest, type Email, type EmailAttachment, type EmailDecryptionKey, type FaviconExtractModel, type GrantManifestAccessRequest, type GrantManifestAccessResponse, type GroupInfo, type GroupMemberInfo, type GroupOverviewResponse, type GroupRole, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, type ManifestGrant, ManifestKeyType, type ManifestKeyTypeValue, type ManifestRevision, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type PendingClientAction, type ReceivedManifestInvitation, type RefreshToken, type SentManifestInvitation, type SharedManifestInfo, type StatusResponse, type StatusResponseV2, type TokenModel, UnlockMethodType, type UnlockMethodTypeValue, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, VaultKeyAlgorithm, type VaultKeyAlgorithmValue, type VaultKeyGetResponse, type VaultKeyResponse, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse, isCapabilityEnabled };
