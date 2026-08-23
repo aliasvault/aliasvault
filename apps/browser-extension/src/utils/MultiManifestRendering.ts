@@ -130,6 +130,14 @@ const subfolderRendering: MultiManifestRenderer = {
    * @param sqliteClient - The open local vault
    */
   displayNames(sqliteClient: SqliteClient): Record<string, string> {
+    /*
+     * A vault whose schema predates the manifest stamp holds nothing but the personal manifest, so it names none.
+     * This runs while migrating such a vault onto the current schema, where the column is not there yet.
+     */
+    if (!sqliteClient.hasColumn('Folders', 'ManifestId')) {
+      return {};
+    }
+
     const roots = sqliteClient.executeQuery<{ ManifestId: string; Name: string }>('SELECT ManifestId, Name FROM Folders WHERE IsDeleted = 0 AND ManifestId IS NOT NULL AND UPPER(Id) = UPPER(ManifestId)');
     return Object.fromEntries(roots.map(root => [root.ManifestId.toLowerCase(), root.Name]));
   },

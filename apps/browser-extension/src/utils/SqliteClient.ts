@@ -323,6 +323,16 @@ export class SqliteClient implements IDatabaseClient {
   }
 
   /**
+   * Whether a table has a given column.
+   * @param table - Table name
+   * @param column - Column name
+   * @returns True when the table exists and has the column
+   */
+  public hasColumn(table: string, column: string): boolean {
+    return this.executeQuery<{ name: string }>('SELECT name FROM pragma_table_info(?) WHERE name = ?', [table, column]).length > 0;
+  }
+
+  /**
    * Execute an INSERT, UPDATE, or DELETE query.
    * @param query - SQL query string
    * @param params - Query parameters
