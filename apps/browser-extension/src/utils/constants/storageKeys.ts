@@ -207,6 +207,15 @@ export const AUTH_STORAGE_KEYS: readonly StorageKey[] = [
   StorageKeys.CAPABILITIES,
 ];
 
+/** Keys holding the PIN unlock material: the PIN-wrapped vault key and the parameters that unwrap it. */
+export const PIN_STORAGE_KEYS: readonly StorageKey[] = [
+  StorageKeys.PIN_ENABLED,
+  StorageKeys.PIN_ENCRYPTED_KEY,
+  StorageKeys.PIN_SALT,
+  StorageKeys.PIN_LENGTH,
+  StorageKeys.PIN_FAILED_ATTEMPTS,
+];
+
 /** Keys that must not survive a vault lock: the encryption key plus anything derived from decrypted data. */
 export const VAULT_LOCK_STORAGE_KEYS: readonly StorageKey[] = [
   StorageKeys.ENCRYPTION_KEY,
@@ -250,9 +259,8 @@ export const LOCAL_PREFERENCE_STORAGE_KEYS: readonly StorageKey[] = [
 ];
 
 /**
- * Every key holding vault data or state derived from it, including the per-scope dynamic keys. Cleared on ANY
- * logout, forced or user-initiated: a session's vault never outlives it, so no stale blob, revision baseline or
- * dirty flag can meet the vault the next login pulls.
+ * Every key holding vault data or state derived from it, including the per-scope dynamic keys and the PIN
+ * unlock material. Cleared on ANY logout, forced or user-initiated.
  */
 export const vaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.ENCRYPTED_VAULT,
@@ -275,6 +283,7 @@ export const vaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.ENCRYPTED_ACCOUNT_KEY,
   StorageKeys.ACCOUNT_PUBLIC_KEY,
   StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY,
+  ...PIN_STORAGE_KEYS,
   ...ALL_VAULT_MUTATION_SCOPES.map(scope => dirtyScopeStorageKey(scope)),
   ...LEGACY_VAULT_DATA_STORAGE_KEYS,
 ];

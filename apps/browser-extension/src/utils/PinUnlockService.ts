@@ -2,7 +2,7 @@ import argon2 from 'argon2-browser/dist/argon2-bundled.min.js';
 import { browser } from 'wxt/browser';
 
 import { base64ToBytes, bytesToBase64 } from '@/utils/Base64';
-import { StorageKeys } from '@/utils/constants/storageKeys';
+import { PIN_STORAGE_KEYS, StorageKeys } from '@/utils/constants/storageKeys';
 
 import { storage } from '#imports';
 
@@ -271,17 +271,12 @@ export async function unlockWithPin(pin: string): Promise<string> {
 }
 
 /**
- * Disable PIN unlock and remove all stored (encrypted) data.
+ * Disable PIN unlock and remove all stored (encrypted) data. Logout does not depend on this: the same keys are
+ * part of `vaultDataStorageKeys()`, so every logout path clears them in the background.
  */
 export async function removeAndDisablePin(): Promise<void> {
   try {
-    await Promise.all([
-      storage.removeItem(StorageKeys.PIN_ENABLED),
-      storage.removeItem(StorageKeys.PIN_ENCRYPTED_KEY),
-      storage.removeItem(StorageKeys.PIN_SALT),
-      storage.removeItem(StorageKeys.PIN_LENGTH),
-      storage.removeItem(StorageKeys.PIN_FAILED_ATTEMPTS)
-    ]);
+    await storage.removeItems([...PIN_STORAGE_KEYS]);
   } catch (error) {
     console.error('[PinUnlockService] Failed to disable PIN:', error);
     throw error;
