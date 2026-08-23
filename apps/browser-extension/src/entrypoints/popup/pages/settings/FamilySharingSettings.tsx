@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import AlertMessage from '@/entrypoints/popup/components/AlertMessage';
 import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
 import ConfirmPasswordModal from '@/entrypoints/popup/components/Dialogs/ConfirmPasswordModal';
+import { HeaderIcon, HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
@@ -52,6 +53,7 @@ const FamilySharingSettings: React.FC = () => {
   const [pendingRemoval, setPendingRemoval] = useState<PendingRemoval | null>(null);
   const [pendingVaultDelete, setPendingVaultDelete] = useState<PendingVaultDelete | null>(null);
   const [expandedRosters, setExpandedRosters] = useState<Record<string, boolean>>({});
+  const [openVaultMenuId, setOpenVaultMenuId] = useState<string | null>(null);
   const [invitationNames, setInvitationNames] = useState<Record<string, string>>({});
 
   const loadOverview = useCallback(async (): Promise<void> => {
@@ -257,7 +259,7 @@ const FamilySharingSettings: React.FC = () => {
   /**
    * The title and message of the confirmation dialog.
    */
-  const removalDialog = (): { title: string; message: string; confirmText: string } => {
+  const removalDialog = (): { title: string; message: string; confirmText: string; warning?: string } => {
     if (!pendingRemoval) {
       return { title: '', message: '', confirmText: t('sharing.revoke') };
     }
@@ -274,6 +276,7 @@ const FamilySharingSettings: React.FC = () => {
       title: t('sharing.revoke'),
       message: t('sharing.family.revokeAccessConfirm', { username: pendingRemoval.member.username, vault: vaultLabel(pendingRemoval.manifest) }),
       confirmText: t('sharing.revoke'),
+      warning: t('sharing.family.revokeAccessWarning'),
     };
   };
 
@@ -290,6 +293,7 @@ const FamilySharingSettings: React.FC = () => {
         title={dialog.title}
         message={dialog.message}
         confirmText={dialog.confirmText}
+        warning={dialog.warning}
       />
 
       <ConfirmDeleteModal
@@ -407,14 +411,36 @@ const FamilySharingSettings: React.FC = () => {
                     <div key={manifest.manifestId} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <p className="font-medium text-gray-900 dark:text-white truncate">{vaultLabel(manifest)}</p>
+                        {/* Deleting a shared manifest is hidden behind a settings gear icon menu. */}
                         {canAdminister && (
-                          <button
-                            disabled={busy}
-                            onClick={() => setPendingVaultDelete({ group, manifest, stage: 'confirm' })}
-                            className="shrink-0 px-2 py-1 text-xs rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50"
-                          >
-                            {t('common.delete')}
-                          </button>
+                          <div className="relative shrink-0">
+                            <button
+                              disabled={busy}
+                              onClick={() => setOpenVaultMenuId(previous => (previous === manifest.manifestId ? null : manifest.manifestId))}
+                              title={t('common.settings')}
+                              aria-label={t('common.settings')}
+                              className="p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+                            >
+                              <HeaderIcon type={HeaderIconType.SETTINGS} className="w-4 h-4" />
+                            </button>
+
+                            {openVaultMenuId === manifest.manifestId && (
+                              <>
+                                <div className="fixed inset-0 z-10" onClick={() => setOpenVaultMenuId(null)} />
+                                <div className="absolute right-0 top-full mt-1 w-44 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-20">
+                                  <button
+                                    onClick={() => {
+                                      setOpenVaultMenuId(null);
+                                      setPendingVaultDelete({ group, manifest, stage: 'confirm' });
+                                    }}
+                                    className="w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                  >
+                                    {t('sharing.family.deleteVault')}
+                                  </button>
+                                </div>
+                              </>
+                            )}
+                          </div>
                         )}
                       </div>
 
