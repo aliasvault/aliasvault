@@ -255,8 +255,8 @@ namespace AliasServerDb.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<string>("RequestPath")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone");
@@ -1110,10 +1110,6 @@ namespace AliasServerDb.Migrations
                     b.Property<string>("ManifestCiphertextHash")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
 
                     b.Property<Guid>("OwnerGroupId")
                         .HasColumnType("uuid");

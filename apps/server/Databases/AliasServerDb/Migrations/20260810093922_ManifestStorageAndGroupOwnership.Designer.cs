@@ -293,8 +293,8 @@ namespace AliasServerDb.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<string>("RequestPath")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone");
@@ -834,6 +834,9 @@ namespace AliasServerDb.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("AccountKeyVersion")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -874,6 +877,9 @@ namespace AliasServerDb.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("AccountKeyVersion")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Algorithm")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -885,6 +891,11 @@ namespace AliasServerDb.Migrations
                     b.Property<string>("EncryptedAccountKey")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTime?>("LastUsedAt")
                         .HasColumnType("timestamp with time zone");
@@ -907,9 +918,9 @@ namespace AliasServerDb.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId", "Type")
+                    b.HasIndex("UserId", "Type", "Label")
                         .IsUnique()
-                        .HasDatabaseName("UX_UserUnlockKeys_UserId_Type");
+                        .HasDatabaseName("UX_UserUnlockKeys_UserId_Type_Label");
 
                     b.ToTable("UserUnlockKeys");
                 });
@@ -935,6 +946,9 @@ namespace AliasServerDb.Migrations
                     b.Property<byte[]>("EncryptedData")
                         .IsRequired()
                         .HasColumnType("bytea");
+
+                    b.Property<int>("KeyVersion")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("LastReferencedAt")
                         .HasColumnType("timestamp with time zone");
@@ -986,6 +1000,9 @@ namespace AliasServerDb.Migrations
                         .IsRequired()
                         .HasColumnType("bytea");
 
+                    b.Property<int>("KeyVersion")
+                        .HasColumnType("integer");
+
                     b.Property<long>("RevisionNumber")
                         .HasColumnType("bigint");
 
@@ -1019,6 +1036,9 @@ namespace AliasServerDb.Migrations
                     b.Property<byte[]>("EncryptedData")
                         .IsRequired()
                         .HasColumnType("bytea");
+
+                    b.Property<int>("KeyVersion")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1056,16 +1076,15 @@ namespace AliasServerDb.Migrations
                     b.Property<int>("FileSize")
                         .HasColumnType("integer");
 
+                    b.Property<int>("KeyVersion")
+                        .HasColumnType("integer");
+
                     b.Property<byte[]>("ManifestBlob")
                         .HasColumnType("bytea");
 
                     b.Property<string>("ManifestCiphertextHash")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
 
                     b.Property<Guid>("OwnerGroupId")
                         .HasColumnType("uuid");
@@ -1109,6 +1128,9 @@ namespace AliasServerDb.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int?>("AccountKeyVersion")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Algorithm")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -1120,6 +1142,9 @@ namespace AliasServerDb.Migrations
                     b.Property<string>("EncryptedVek")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("KeyVersion")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("LastUsedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1153,9 +1178,9 @@ namespace AliasServerDb.Migrations
                     b.HasIndex("VaultManifestId")
                         .HasDatabaseName("IX_VaultManifestAccessKeys_VaultManifestId");
 
-                    b.HasIndex("UserId", "Type", "VaultManifestId")
+                    b.HasIndex("UserId", "Type", "VaultManifestId", "KeyVersion")
                         .IsUnique()
-                        .HasDatabaseName("UX_VaultManifestAccessKeys_UserId_Type_Manifest");
+                        .HasDatabaseName("UX_VaultManifestAccessKeys_UserId_Type_Manifest_Version");
 
                     b.ToTable("VaultManifestAccessKeys");
                 });
@@ -1223,6 +1248,9 @@ namespace AliasServerDb.Migrations
                         .HasColumnType("text");
 
                     b.Property<int>("FileSize")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("KeyVersion")
                         .HasColumnType("integer");
 
                     b.Property<byte[]>("ManifestBlob")

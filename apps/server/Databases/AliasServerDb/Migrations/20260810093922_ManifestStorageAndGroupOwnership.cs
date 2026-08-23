@@ -14,7 +14,9 @@ namespace AliasServerDb.Migrations
     ///   "VaultManifestsHistory" tail, keyed by a newly minted manifest id,
     /// - per-user email encryption keys become per-manifest delivery keys.
     ///
-    /// The tables that only the manifest-v1 write path uses (buckets, blobs, access and unlock keys) start empty.
+    /// The tables that only the manifest-v1 write path uses (buckets, blobs, access and unlock keys) start empty. Every
+    /// ciphertext they hold carries the version of the key it was written with, so a future key rotation can tell the
+    /// generations apart.
     /// </summary>
     public partial class ManifestStorageAndGroupOwnership : Migration
     {
@@ -153,10 +155,10 @@ namespace AliasServerDb.Migrations
 
             migrationBuilder.AddColumn<Guid>(name: "ManifestId", table: "VaultManifests", type: "uuid", nullable: true);
             migrationBuilder.AddColumn<Guid>(name: "OwnerGroupId", table: "VaultManifests", type: "uuid", nullable: true);
-            migrationBuilder.AddColumn<string>(name: "Name", table: "VaultManifests", type: "character varying(255)", maxLength: 255, nullable: true);
             migrationBuilder.AddColumn<string>(name: "StorageFormat", table: "VaultManifests", type: "character varying(20)", maxLength: 20, nullable: true);
             migrationBuilder.AddColumn<byte[]>(name: "ManifestBlob", table: "VaultManifests", type: "bytea", nullable: true);
             migrationBuilder.AddColumn<string>(name: "ManifestCiphertextHash", table: "VaultManifests", type: "character varying(64)", maxLength: 64, nullable: true);
+            migrationBuilder.AddColumn<int>(name: "KeyVersion", table: "VaultManifests", type: "integer", nullable: false, defaultValue: 0);
 
             // A manifest-v1 revision carries no vault blob and no SRP credentials, so the columns that only the legacy
             // sqlite-blob format fills become nullable. NULL is the sole "not applicable" marker; the empty string is not.
@@ -179,23 +181,24 @@ namespace AliasServerDb.Migrations
                 name: "VaultManifestsHistory",
                 columns: table => new
                 {
-                    RevisionNumber = table.Column<long>(type: "bigint", nullable: false),
                     ManifestId = table.Column<Guid>(type: "uuid", nullable: false),
-                    VaultBlob = table.Column<string>(type: "text", nullable: true),
+                    RevisionNumber = table.Column<long>(type: "bigint", nullable: false),
                     StorageFormat = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     ManifestBlob = table.Column<byte[]>(type: "bytea", nullable: true),
                     ManifestCiphertextHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
-                    Version = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    KeyVersion = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     FileSize = table.Column<int>(type: "integer", nullable: false),
-                    Salt = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    Verifier = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     CredentialsCount = table.Column<int>(type: "integer", nullable: false),
                     EmailClaimsCount = table.Column<int>(type: "integer", nullable: false),
-                    EncryptionType = table.Column<string>(type: "text", nullable: true),
-                    EncryptionSettings = table.Column<string>(type: "text", nullable: true),
                     Client = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    VaultBlob = table.Column<string>(type: "text", nullable: true),
+                    Version = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    Salt = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Verifier = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    EncryptionType = table.Column<string>(type: "text", nullable: true),
+                    EncryptionSettings = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -423,6 +426,7 @@ namespace AliasServerDb.Migrations
                     UserId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     PublicKey = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
                     EncryptedPrivateKey = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
+                    AccountKeyVersion = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     IsPrimary = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -445,8 +449,10 @@ namespace AliasServerDb.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Type = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
+                    Label = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false, defaultValue: ""),
                     Algorithm = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
                     EncryptedAccountKey = table.Column<string>(type: "text", nullable: false),
+                    AccountKeyVersion = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     Metadata = table.Column<string>(type: "jsonb", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -473,7 +479,9 @@ namespace AliasServerDb.Migrations
                     Type = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
                     Algorithm = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
                     EncryptedVek = table.Column<string>(type: "text", nullable: false),
+                    KeyVersion = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     UserGrantKeyId = table.Column<Guid>(type: "uuid", nullable: true),
+                    AccountKeyVersion = table.Column<int>(type: "integer", nullable: true),
                     Metadata = table.Column<string>(type: "jsonb", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -505,6 +513,7 @@ namespace AliasServerDb.Migrations
                     Category = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     EncryptedData = table.Column<byte[]>(type: "bytea", nullable: false),
                     SizeBytes = table.Column<int>(type: "integer", nullable: false),
+                    KeyVersion = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     LastReferencedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -544,9 +553,10 @@ namespace AliasServerDb.Migrations
                 {
                     ManifestId = table.Column<Guid>(type: "uuid", nullable: false),
                     Category = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    EncryptedData = table.Column<byte[]>(type: "bytea", nullable: false),
                     RevisionNumber = table.Column<long>(type: "bigint", nullable: false),
+                    EncryptedData = table.Column<byte[]>(type: "bytea", nullable: false),
                     CiphertextHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
+                    KeyVersion = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -565,11 +575,12 @@ namespace AliasServerDb.Migrations
                 name: "VaultDataBucketsHistory",
                 columns: table => new
                 {
-                    RevisionNumber = table.Column<long>(type: "bigint", nullable: false),
                     ManifestId = table.Column<Guid>(type: "uuid", nullable: false),
                     Category = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    RevisionNumber = table.Column<long>(type: "bigint", nullable: false),
                     EncryptedData = table.Column<byte[]>(type: "bytea", nullable: false),
                     CiphertextHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
+                    KeyVersion = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -585,10 +596,10 @@ namespace AliasServerDb.Migrations
                 });
 
             migrationBuilder.CreateIndex(name: "UX_UserGrantKeys_User_Primary", table: "UserGrantKeys", column: "UserId", unique: true, filter: "\"IsPrimary\"");
-            migrationBuilder.CreateIndex(name: "UX_UserUnlockKeys_UserId_Type", table: "UserUnlockKeys", columns: new[] { "UserId", "Type" }, unique: true);
+            migrationBuilder.CreateIndex(name: "UX_UserUnlockKeys_UserId_Type_Label", table: "UserUnlockKeys", columns: new[] { "UserId", "Type", "Label" }, unique: true);
             migrationBuilder.CreateIndex(name: "IX_VaultManifestAccessKeys_UserGrantKeyId", table: "VaultManifestAccessKeys", column: "UserGrantKeyId");
             migrationBuilder.CreateIndex(name: "IX_VaultManifestAccessKeys_VaultManifestId", table: "VaultManifestAccessKeys", column: "VaultManifestId");
-            migrationBuilder.CreateIndex(name: "UX_VaultManifestAccessKeys_UserId_Type_Manifest", table: "VaultManifestAccessKeys", columns: new[] { "UserId", "Type", "VaultManifestId" }, unique: true);
+            migrationBuilder.CreateIndex(name: "UX_VaultManifestAccessKeys_UserId_Type_Manifest_Version", table: "VaultManifestAccessKeys", columns: new[] { "UserId", "Type", "VaultManifestId", "KeyVersion" }, unique: true);
             migrationBuilder.CreateIndex(name: "IX_VaultBlobObjects_OwnerUserId_Category", table: "VaultBlobObjects", columns: new[] { "OwnerUserId", "Category" });
         }
 
@@ -779,8 +790,8 @@ namespace AliasServerDb.Migrations
             migrationBuilder.AddPrimaryKey(name: "PK_VaultManifests", table: "VaultManifests", column: "Id");
 
             migrationBuilder.Sql("""
-                INSERT INTO "VaultManifests" ("Id", "ManifestId", "OwnerGroupId", "UserId", "Name", "VaultBlob", "StorageFormat", "ManifestBlob", "ManifestCiphertextHash", "Version", "RevisionNumber", "FileSize", "Salt", "Verifier", "CredentialsCount", "EmailClaimsCount", "EncryptionType", "EncryptionSettings", "Client", "CreatedAt", "UpdatedAt")
-                SELECT gen_random_uuid(), h."ManifestId", m."OwnerGroupId", m."UserId", m."Name", h."VaultBlob", h."StorageFormat", h."ManifestBlob", h."ManifestCiphertextHash", h."Version", h."RevisionNumber", h."FileSize", h."Salt", h."Verifier", h."CredentialsCount", h."EmailClaimsCount", h."EncryptionType", h."EncryptionSettings", h."Client", h."CreatedAt", h."UpdatedAt"
+                INSERT INTO "VaultManifests" ("Id", "ManifestId", "OwnerGroupId", "UserId", "VaultBlob", "StorageFormat", "ManifestBlob", "ManifestCiphertextHash", "Version", "RevisionNumber", "FileSize", "Salt", "Verifier", "CredentialsCount", "EmailClaimsCount", "EncryptionType", "EncryptionSettings", "Client", "CreatedAt", "UpdatedAt")
+                SELECT gen_random_uuid(), h."ManifestId", m."OwnerGroupId", m."UserId", h."VaultBlob", h."StorageFormat", h."ManifestBlob", h."ManifestCiphertextHash", h."Version", h."RevisionNumber", h."FileSize", h."Salt", h."Verifier", h."CredentialsCount", h."EmailClaimsCount", h."EncryptionType", h."EncryptionSettings", h."Client", h."CreatedAt", h."UpdatedAt"
                 FROM "VaultManifestsHistory" h
                 INNER JOIN "VaultManifests" m ON m."ManifestId" = h."ManifestId";
                 """);
@@ -790,7 +801,7 @@ namespace AliasServerDb.Migrations
 
             migrationBuilder.DropColumn(name: "ManifestId", table: "VaultManifests");
             migrationBuilder.DropColumn(name: "OwnerGroupId", table: "VaultManifests");
-            migrationBuilder.DropColumn(name: "Name", table: "VaultManifests");
+            migrationBuilder.DropColumn(name: "KeyVersion", table: "VaultManifests");
             migrationBuilder.DropColumn(name: "StorageFormat", table: "VaultManifests");
             migrationBuilder.DropColumn(name: "ManifestBlob", table: "VaultManifests");
             migrationBuilder.DropColumn(name: "ManifestCiphertextHash", table: "VaultManifests");

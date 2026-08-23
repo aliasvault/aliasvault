@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AliasServerDb.Migrations
 {
     [DbContext(typeof(AliasServerDbContext))]
-    [Migration("20260821193638_AddGroupInvitationEncryptedName")]
-    partial class AddGroupInvitationEncryptedName
+    [Migration("20260810154523_EmailMultiManifestAndStorageV2")]
+    partial class EmailMultiManifestAndStorageV2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -255,8 +255,8 @@ namespace AliasServerDb.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<string>("RequestPath")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone");
@@ -330,117 +330,6 @@ namespace AliasServerDb.Migrations
                         .IsUnique();
 
                     b.ToTable("BlockedIpRanges");
-                });
-
-            modelBuilder.Entity("AliasServerDb.CapabilityRule", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("CapabilityKey")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("ClientName")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<DateTime?>("EffectiveFrom")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("EffectiveUntil")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("Enabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<Guid?>("GroupId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Kind")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<string>("Tier")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UserId")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroupId");
-
-                    b.HasIndex("Tier");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("CapabilityKey", "Enabled");
-
-                    b.ToTable("CapabilityRules");
-                });
-
-            modelBuilder.Entity("AliasServerDb.ClientAction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("ManifestId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Payload")
-                        .HasColumnType("jsonb");
-
-                    b.Property<Guid?>("TargetGroupId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("TargetUserId")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TargetGroupId");
-
-                    b.HasIndex("TargetUserId");
-
-                    b.ToTable("ClientActions");
                 });
 
             modelBuilder.Entity("AliasServerDb.Email", b =>
@@ -613,11 +502,11 @@ namespace AliasServerDb.Migrations
 
                     b.HasKey("EmailClaimId", "VaultManifestId");
 
+                    b.HasIndex("VaultManifestId", "EmailClaimId");
+
                     b.HasIndex("EmailClaimId")
                         .HasDatabaseName("IX_EmailClaimLinks_EmailClaimId_Live")
                         .HasFilter("\"State\" <> 'Removed'");
-
-                    b.HasIndex("VaultManifestId", "EmailClaimId");
 
                     b.ToTable("EmailClaimLinks");
                 });
@@ -711,77 +600,6 @@ namespace AliasServerDb.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Groups");
-                });
-
-            modelBuilder.Entity("AliasServerDb.GroupInvitation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Algorithm")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("EncryptedName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("EncryptedVek")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("InviteeUserId")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("InviterUserId")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<DateTime?>("RespondedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("State")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("UserGrantKeyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("VaultManifestId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroupId");
-
-                    b.HasIndex("InviterUserId");
-
-                    b.HasIndex("UserGrantKeyId");
-
-                    b.HasIndex("InviteeUserId", "State");
-
-                    b.HasIndex("VaultManifestId", "InviteeUserId")
-                        .IsUnique()
-                        .HasDatabaseName("UX_GroupInvitations_Manifest_Invitee_Pending")
-                        .HasFilter("\"State\" = 'Pending'");
-
-                    b.ToTable("GroupInvitations");
                 });
 
             modelBuilder.Entity("AliasServerDb.GroupMember", b =>
@@ -1608,40 +1426,6 @@ namespace AliasServerDb.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("AliasServerDb.CapabilityRule", b =>
-                {
-                    b.HasOne("AliasServerDb.Group", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("AliasServerDb.AliasVaultUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("Group");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("AliasServerDb.ClientAction", b =>
-                {
-                    b.HasOne("AliasServerDb.Group", "TargetGroup")
-                        .WithMany()
-                        .HasForeignKey("TargetGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("AliasServerDb.AliasVaultUser", "TargetUser")
-                        .WithMany()
-                        .HasForeignKey("TargetUserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("TargetGroup");
-
-                    b.Navigation("TargetUser");
-                });
-
             modelBuilder.Entity("AliasServerDb.EmailAttachment", b =>
                 {
                     b.HasOne("AliasServerDb.Email", "Email")
@@ -1683,9 +1467,9 @@ namespace AliasServerDb.Migrations
                     b.HasOne("AliasServerDb.VaultManifestDeliveryKey", "VaultManifestDeliveryKey")
                         .WithMany("DecryptionKeys")
                         .HasForeignKey("VaultManifestDeliveryKeyId")
+                        .HasConstraintName("FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId");
+                        .IsRequired();
 
                     b.Navigation("Email");
 
@@ -1701,40 +1485,6 @@ namespace AliasServerDb.Migrations
                         .IsRequired();
 
                     b.Navigation("Email");
-                });
-
-            modelBuilder.Entity("AliasServerDb.GroupInvitation", b =>
-                {
-                    b.HasOne("AliasServerDb.Group", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AliasServerDb.AliasVaultUser", "Invitee")
-                        .WithMany()
-                        .HasForeignKey("InviteeUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AliasServerDb.AliasVaultUser", "Inviter")
-                        .WithMany()
-                        .HasForeignKey("InviterUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AliasServerDb.UserGrantKey", "UserGrantKey")
-                        .WithMany()
-                        .HasForeignKey("UserGrantKeyId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Group");
-
-                    b.Navigation("Invitee");
-
-                    b.Navigation("Inviter");
-
-                    b.Navigation("UserGrantKey");
                 });
 
             modelBuilder.Entity("AliasServerDb.GroupMember", b =>
@@ -1902,9 +1652,9 @@ namespace AliasServerDb.Migrations
                 {
                     b.Navigation("Attachments");
 
-                    b.Navigation("DecryptionKeys");
-
                     b.Navigation("Parts");
+
+                    b.Navigation("DecryptionKeys");
                 });
 
             modelBuilder.Entity("AliasServerDb.EmailClaim", b =>

@@ -1,12 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace AliasServerDb.Migrations
 {
-    /// <inheritdoc />
-    public partial class DropUnusedIdentityTables : Migration
+    /// <summary>
+    /// Drops the ASP.NET Identity tables that AliasVault does not use, and widens the audit log request path so the
+    /// longer v2 API routes still fit.
+    /// </summary>
+    public partial class DropUnusedIdentityTablesAndWidenAuthLogPath : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -25,11 +28,33 @@ namespace AliasServerDb.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserRoles");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "RequestPath",
+                table: "AuthLogs",
+                type: "character varying(255)",
+                maxLength: 255,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "character varying(100)",
+                oldMaxLength: 100,
+                oldNullable: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterColumn<string>(
+                name: "RequestPath",
+                table: "AuthLogs",
+                type: "character varying(100)",
+                maxLength: 100,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "character varying(255)",
+                oldMaxLength: 255,
+                oldNullable: true);
+
             migrationBuilder.CreateTable(
                 name: "AdminRoles",
                 columns: table => new

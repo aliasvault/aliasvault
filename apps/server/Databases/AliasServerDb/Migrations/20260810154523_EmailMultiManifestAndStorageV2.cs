@@ -1,17 +1,44 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace AliasServerDb.Migrations
 {
     /// <summary>
-    /// Adds a many-to-many relationship between emails and manifests, allowing an email to be claimed by multiple manifests.
+    /// Moves email storage to the multi-manifest model:
+    /// - an alias and a received email are both linked to the manifests that hold them instead of carrying a single
+    ///   manifest reference, so one address can be claimed by several manifests at once,
+    /// - the raw message moves to a binary column, is split into separately fetchable parts, and the attachment count
+    ///   becomes a column of its own,
+    /// - a group counts the first-time senders of its aliases in an anonymized bucket array.
     /// </summary>
-    public partial class AddEmailMultiManifest : Migration
+    public partial class EmailMultiManifestAndStorageV2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            LinkClaimsAndEmailsToManifests(migrationBuilder);
+            MoveMessageSourceToBytes(migrationBuilder);
+            AddDetachedMessageParts(migrationBuilder);
+            AddAnonymizedSenderCounts(migrationBuilder);
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            RemoveAnonymizedSenderCounts(migrationBuilder);
+            DropDetachedMessageParts(migrationBuilder);
+            RestoreMessageSourceText(migrationBuilder);
+            RestoreSingleManifestLinks(migrationBuilder);
+        }
+
+        /// <summary>
+        /// Replaces the single manifest reference on an alias and on a received email with a link table each.
+        /// </summary>
+        /// <param name="migrationBuilder">Migration builder.</param>
+        private static void LinkClaimsAndEmailsToManifests(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
                 name: "EmailClaimLinks",
@@ -96,8 +123,163 @@ namespace AliasServerDb.Migrations
             migrationBuilder.Sql("""CREATE INDEX "IX_EmailClaimLinks_EmailClaimId_Live" ON "EmailClaimLinks" ("EmailClaimId") WHERE "State" <> 'Removed';""");
         }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
+        /// <summary>
+        /// Moves the raw message to a binary column and gives the attachment count a column of its own.
+        /// </summary>
+        /// <param name="migrationBuilder">Migration builder.</param>
+        private static void MoveMessageSourceToBytes(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AlterColumn<string>(
+                name: "MessageSource",
+                table: "Emails",
+                type: "text",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "text");
+
+            migrationBuilder.AddColumn<int>(
+                name: "AttachmentCount",
+                table: "Emails",
+                type: "integer",
+                nullable: false,
+                defaultValue: 0);
+
+            // Backfill the count for emails that predate this column from their attachment records, so the column is
+            // authoritative for every row in the table.
+            migrationBuilder.Sql("""
+                UPDATE "Emails" SET "AttachmentCount" = counts."AttachmentCount"
+                FROM (SELECT "EmailId", COUNT(*) AS "AttachmentCount" FROM "EmailAttachments" GROUP BY "EmailId") AS counts
+                WHERE "Emails"."Id" = counts."EmailId";
+                """);
+
+            migrationBuilder.AddColumn<byte[]>(
+                name: "MessageSourceBytes",
+                table: "Emails",
+                type: "bytea",
+                nullable: true);
+
+            // Both columns hold AES ciphertext which is incompressible, so skip TOAST compression.
+            migrationBuilder.Sql("""
+                ALTER TABLE "Emails" ALTER COLUMN "MessageSourceBytes" SET STORAGE EXTERNAL;
+                ALTER TABLE "EmailAttachments" ALTER COLUMN "Bytes" SET STORAGE EXTERNAL;
+                """);
+        }
+
+        /// <summary>
+        /// Adds the table that holds the message body in separately fetchable parts.
+        /// </summary>
+        /// <param name="migrationBuilder">Migration builder.</param>
+        private static void AddDetachedMessageParts(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.CreateTable(
+                name: "EmailParts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    EmailId = table.Column<int>(type: "integer", nullable: false),
+                    PartIndex = table.Column<int>(type: "integer", nullable: false),
+                    Bytes = table.Column<byte[]>(type: "bytea", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EmailParts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EmailParts_Emails_EmailId",
+                        column: x => x.EmailId,
+                        principalTable: "Emails",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmailParts_EmailId_PartIndex",
+                table: "EmailParts",
+                columns: new[] { "EmailId", "PartIndex" },
+                unique: true);
+
+            // The part bodies are AES ciphertext which is incompressible, so skip TOAST compression.
+            migrationBuilder.Sql(@"ALTER TABLE ""EmailParts"" ALTER COLUMN ""Bytes"" SET STORAGE EXTERNAL;");
+        }
+
+        /// <summary>
+        /// Adds the anonymized first-time sender buckets and the per-alias flag that feeds them.
+        /// </summary>
+        /// <param name="migrationBuilder">Migration builder.</param>
+        private static void AddAnonymizedSenderCounts(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<int[]>(
+                name: "AnonymizedEmailAliasSenderCounts",
+                table: "Groups",
+                type: "integer[]",
+                nullable: false,
+                defaultValueSql: "array_fill(0, ARRAY[64])");
+
+            migrationBuilder.AddColumn<bool>(
+                name: "AnonymizedSenderCounted",
+                table: "EmailClaims",
+                type: "boolean",
+                nullable: false,
+                defaultValue: false);
+        }
+
+        /// <summary>
+        /// Drops the anonymized first-time sender buckets again.
+        /// </summary>
+        /// <param name="migrationBuilder">Migration builder.</param>
+        private static void RemoveAnonymizedSenderCounts(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "AnonymizedEmailAliasSenderCounts",
+                table: "Groups");
+
+            migrationBuilder.DropColumn(
+                name: "AnonymizedSenderCounted",
+                table: "EmailClaims");
+        }
+
+        /// <summary>
+        /// Drops the detached message parts.
+        /// </summary>
+        /// <param name="migrationBuilder">Migration builder.</param>
+        private static void DropDetachedMessageParts(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "EmailParts");
+        }
+
+        /// <summary>
+        /// Moves the raw message back to the text column and drops the attachment counter.
+        /// </summary>
+        /// <param name="migrationBuilder">Migration builder.</param>
+        private static void RestoreMessageSourceText(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.Sql(@"ALTER TABLE ""EmailAttachments"" ALTER COLUMN ""Bytes"" SET STORAGE EXTENDED;");
+
+            migrationBuilder.DropColumn(
+                name: "AttachmentCount",
+                table: "Emails");
+
+            migrationBuilder.DropColumn(
+                name: "MessageSourceBytes",
+                table: "Emails");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "MessageSource",
+                table: "Emails",
+                type: "text",
+                nullable: false,
+                defaultValue: "",
+                oldClrType: typeof(string),
+                oldType: "text",
+                oldNullable: true);
+        }
+
+        /// <summary>
+        /// Collapses the link tables back into the single manifest reference an alias and an email used to carry.
+        /// </summary>
+        /// <param name="migrationBuilder">Migration builder.</param>
+        private static void RestoreSingleManifestLinks(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql("""DROP INDEX IF EXISTS "IX_EmailClaimLinks_EmailClaimId_Live";""");
 
