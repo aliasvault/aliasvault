@@ -5,7 +5,6 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { removeAndDisablePin } from '@/utils/PinUnlockService';
 
 import { storage } from '#imports';
 
@@ -82,14 +81,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Clear in-memory database reference
     dbContext?.clearDatabase();
-
-    // Clear PIN unlock data (if any)
-    try {
-      await removeAndDisablePin();
-    } catch (error) {
-      console.error('Failed to remove PIN data:', error);
-      // Non-fatal error - continue with logout
-    }
 
     // Set global message that will be shown on the login page
     if (errorMessage) {
