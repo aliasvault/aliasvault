@@ -103,7 +103,7 @@ const Login: React.FC = () => {
      * KEK/VEK: for migrated accounts the derived key is only the KEK; fetch the vault key and decrypt the VEK,
      * which becomes the session encryption key. Legacy accounts keep using the derived key directly.
      */
-    const { encryptionKey } = await VaultKeyService.resolveEncryptionKey(passwordHashBase64, webApi);
+    const encryptionKey = await VaultKeyService.resolveEncryptionKey(passwordHashBase64, webApi);
 
     // Store the encryption key and derivation params separately
     await dbContext.storeEncryptionKey(encryptionKey);

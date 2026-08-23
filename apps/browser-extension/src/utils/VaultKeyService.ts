@@ -12,14 +12,6 @@ import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppError
 import { WebApiService } from '@/utils/WebApiService';
 
 /**
- * Result of resolving the vault encryption key after deriving the password key.
- */
-export type ResolvedEncryptionKey = {
-  encryptionKey: string;
-  encryptedVek: string | null;
-};
-
-/**
  * Result of fetching the vault key from the server.
  */
 export type FetchVaultKeyResult = {
@@ -56,7 +48,7 @@ export class VaultKeyService {
    * private key. All encrypted blobs are cached for offline unlock. For legacy users (server explicitly
    * reports no vault key) the derived key itself is the encryption key and any stale cached chain is cleared.
    */
-  public static async resolveEncryptionKey(derivedKeyBase64: string, webApi?: WebApiService): Promise<ResolvedEncryptionKey> {
+  public static async resolveEncryptionKey(derivedKeyBase64: string, webApi?: WebApiService): Promise<string> {
     const result = await VaultKeyService.fetchVaultKey(webApi);
 
     if (!result.supported) {
@@ -66,12 +58,12 @@ export class VaultKeyService {
 
     if (!result.vaultKey) {
       await storage.removeItems([StorageKeys.ENCRYPTED_VEK, StorageKeys.ENCRYPTED_ACCOUNT_KEY, StorageKeys.ACCOUNT_PUBLIC_KEY, StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY]);
-      return { encryptionKey: derivedKeyBase64, encryptedVek: null };
+      return derivedKeyBase64;
     }
 
     const vek = await VaultKeyService.decryptKeyChainOrThrow(result.vaultKey, derivedKeyBase64);
     await VaultKeyService.cacheVaultKeyBlobs(result.vaultKey);
-    return { encryptionKey: vek, encryptedVek: result.vaultKey.encryptedAccountKey };
+    return vek;
   }
 
   /**
@@ -81,7 +73,7 @@ export class VaultKeyService {
    * @throws Error with {@link AppErrorCode.VAULT_DECRYPT_FAILED} when decryption fails (wrong password).
    */
   public static async resolveEncryptionKeyOffline(derivedKeyBase64: string): Promise<string> {
-    return (await VaultKeyService.resolveFromLocalCache(derivedKeyBase64)).encryptionKey;
+    return VaultKeyService.resolveFromLocalCache(derivedKeyBase64);
   }
 
   /**
@@ -164,9 +156,9 @@ export class VaultKeyService {
    */
   private static async upgradeStoredKeyIfNeeded(storedKey: string): Promise<{ key: string; upgraded: boolean }> {
     try {
-      const resolved = await VaultKeyService.resolveFromLocalCache(storedKey);
-      if (resolved.encryptedVek !== null && resolved.encryptionKey !== storedKey) {
-        return { key: resolved.encryptionKey, upgraded: true };
+      const resolvedKey = await VaultKeyService.resolveFromLocalCache(storedKey);
+      if (resolvedKey !== storedKey) {
+        return { key: resolvedKey, upgraded: true };
       }
       return { key: storedKey, upgraded: false };
     } catch {
@@ -180,7 +172,7 @@ export class VaultKeyService {
    * when nothing is cached (legacy account).
    * @param derivedKeyBase64 - the password-derived key (the KEK)
    */
-  private static async resolveFromLocalCache(derivedKeyBase64: string): Promise<ResolvedEncryptionKey> {
+  private static async resolveFromLocalCache(derivedKeyBase64: string): Promise<string> {
     const encryptedAccountKey = (await storage.getItem(StorageKeys.ENCRYPTED_ACCOUNT_KEY)) as string | null;
     const encryptedVek = (await storage.getItem(StorageKeys.ENCRYPTED_VEK)) as string | null;
 
@@ -188,15 +180,15 @@ export class VaultKeyService {
       const accountKey = await VaultKeyService.decryptKeyOrThrow(encryptedAccountKey, derivedKeyBase64);
       const vek = encryptedVek ? await VaultKeyService.decryptKeyOrThrow(encryptedVek, accountKey) : accountKey;
       await VaultKeyService.stageSessionPrivateKey(accountKey, (await storage.getItem(StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY)) as string | null);
-      return { encryptionKey: vek, encryptedVek: encryptedAccountKey };
+      return vek;
     }
 
     if (encryptedVek) {
       // Pre-encrypted VEK cache: the VEK was encrypted directly with the KEK.
-      return { encryptionKey: await VaultKeyService.decryptKeyOrThrow(encryptedVek, derivedKeyBase64), encryptedVek };
+      return VaultKeyService.decryptKeyOrThrow(encryptedVek, derivedKeyBase64);
     }
 
-    return { encryptionKey: derivedKeyBase64, encryptedVek: null };
+    return derivedKeyBase64;
   }
 
   /**

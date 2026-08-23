@@ -297,7 +297,7 @@ const Unlock: React.FC = () => {
          * vault encryption key. Throws a decrypt-failed (E-203) error on a wrong password. Legacy accounts keep
          * using the derived key directly.
          */
-        passwordHashBase64 = (await VaultKeyService.resolveEncryptionKey(credentials.passwordHashBase64, webApi)).encryptionKey;
+        passwordHashBase64 = await VaultKeyService.resolveEncryptionKey(credentials.passwordHashBase64, webApi);
       } else {
         // Offline mode: use stored encryption params to derive key
         const storedParams = await sendMessage('GET_ENCRYPTION_KEY_DERIVATION_PARAMS');
