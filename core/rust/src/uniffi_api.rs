@@ -217,6 +217,22 @@ pub fn get_identity_age_ranges() -> Vec<String> {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Vault Sharing Functions
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Resolve which manifests the next push writes, personal manifest first.
+#[uniffi::export]
+pub fn vault_sharing_resolve_manifest_write_set(input_json: String) -> Result<String, VaultError> {
+    crate::vault_sharing::resolve_manifest_write_set_json(&input_json)
+}
+
+/// Split what the vault holds into what cannot be written and what access was lost.
+#[uniffi::export]
+pub fn vault_sharing_partition_manifest_access(input_json: String) -> Result<String, VaultError> {
+    crate::vault_sharing::partition_manifest_access_json(&input_json)
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Vault Codec Functions (manifest-v1 storage format) — JSON-string in/out.
 // ═══════════════════════════════════════════════════════════════════════════════
 

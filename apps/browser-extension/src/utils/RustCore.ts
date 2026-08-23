@@ -520,6 +520,61 @@ export async function vaultCodecComputeContentFingerprint(payloadJson: string): 
   return core.vaultCodecComputeContentFingerprint(payloadJson);
 }
 
+/** A shared manifest's key record. */
+export type SharingManifestRecord = {
+  manifestId: string;
+  salt: string;
+  name?: string | null;
+  canAdminister?: boolean;
+};
+
+/** One manifest the next push writes. */
+export type SharingWriteRecord = {
+  manifestId: string;
+  isPersonal: boolean;
+  salt: string;
+  name: string | null;
+  canAdminister: boolean;
+};
+
+/** The manifests a push writes, personal first, plus what was left out and why. */
+export type SharingWriteSet = {
+  records: SharingWriteRecord[];
+  skipped: Array<{ manifestId: string; reason: 'NO_ROWS_IN_VAULT' | 'KEY_DID_NOT_OPEN' }>;
+};
+
+/** What the vault holds but cannot write, and what it holds but has lost access to. */
+export type SharingAccessPartition = { unwritable: string[]; lost: string[] };
+
+/**
+ * Work out which manifests the next push writes, personal manifest first.
+ * @param input - the personal manifest, what the vault holds rows for, what opened, and the held records.
+ */
+export async function vaultSharingResolveManifestWriteSet(input: {
+  personalManifestId: string;
+  personalManifestSalt: string;
+  stampedManifestIds: string[];
+  openedManifestIds: string[];
+  heldRecords: SharingManifestRecord[];
+  displayNames: Record<string, string>;
+}): Promise<SharingWriteSet> {
+  await initRustCore();
+  return core.vaultSharingResolveManifestWriteSet(input) as SharingWriteSet;
+}
+
+/**
+ * Split what the local vault holds by what this account can still open.
+ * @param input - what the vault holds, what this session can write, and what the last snapshot served.
+ */
+export async function vaultSharingPartitionManifestAccess(input: {
+  manifestIdsInVault: string[];
+  writableManifestIds: string[];
+  grantedManifestIds: string[];
+}): Promise<SharingAccessPartition> {
+  await initRustCore();
+  return core.vaultSharingPartitionManifestAccess(input) as SharingAccessPartition;
+}
+
 /**
  * Read all non-empty values for a field key from an item, returning them as
  * a string array (single-value fields are wrapped to a 1-element array).

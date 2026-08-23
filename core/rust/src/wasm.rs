@@ -11,6 +11,7 @@ use crate::vault_codec::{
     self, CanonicalizeInput, DataBucket, ExtractBucketsInput, Manifest, MaterializeInput,
 };
 use crate::vault_merge::{merge_vaults, MergeInput, MergeOutput};
+use crate::vault_sharing::{self, ManifestAccessRequest, ManifestWriteSetRequest};
 use crate::vault_pruner::{prune_vault, PruneInput, PruneOutput};
 
 #[wasm_bindgen]
@@ -249,6 +250,35 @@ pub fn vault_codec_extract_encryption_key_for_public_key_js(manifest: JsValue, p
     let m: Manifest = serde_wasm_bindgen::from_value(manifest)
         .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest: {}", e)))?;
     codec_to_js(&vault_codec::extract_encryption_key_for_public_key(&m, public_key))
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Vault Sharing WASM Bindings
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Serialize a sharing output to a JsValue.
+fn sharing_to_js<T: serde::Serialize>(value: &T) -> Result<JsValue, JsValue> {
+    value
+        .serialize(&serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true).serialize_missing_as_null(true))
+        .map_err(|e| JsValue::from_str(&format!("Failed to serialize sharing output: {}", e)))
+}
+
+/// Resolve which manifests the next push writes, personal manifest first.
+/// Input: `ManifestWriteSetRequest`. Output: `ManifestWriteSet`.
+#[wasm_bindgen(js_name = vaultSharingResolveManifestWriteSet)]
+pub fn vault_sharing_resolve_manifest_write_set_js(input: JsValue) -> Result<JsValue, JsValue> {
+    let input: ManifestWriteSetRequest = serde_wasm_bindgen::from_value(input)
+        .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest-write-set request: {}", e)))?;
+    sharing_to_js(&vault_sharing::resolve_manifest_write_set(input))
+}
+
+/// Split what the vault holds into what cannot be written and what access was lost.
+/// Input: `ManifestAccessRequest`. Output: `ManifestAccessPartition`.
+#[wasm_bindgen(js_name = vaultSharingPartitionManifestAccess)]
+pub fn vault_sharing_partition_manifest_access_js(input: JsValue) -> Result<JsValue, JsValue> {
+    let input: ManifestAccessRequest = serde_wasm_bindgen::from_value(input)
+        .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest-access request: {}", e)))?;
+    sharing_to_js(&vault_sharing::partition_manifest_access(input))
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

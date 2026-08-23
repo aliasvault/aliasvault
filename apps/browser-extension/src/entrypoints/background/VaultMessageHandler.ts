@@ -1883,7 +1883,7 @@ async function pullAndMaterializeServerVault(syncState: VaultSyncState, encrypti
 async function pruneRowsOfLostManifests(encryptionKey: string): Promise<void> {
   try {
     const sqliteClient = await createVaultSqliteClient();
-    const dropped = vaultSyncService.dropRowsOfLostManifests(sqliteClient, vaultSyncService.manifestIdsServedByLastSnapshot());
+    const dropped = await vaultSyncService.dropRowsOfLostManifests(sqliteClient, vaultSyncService.manifestIdsServedByLastSnapshot());
     if (dropped.length === 0) {
       return;
     }

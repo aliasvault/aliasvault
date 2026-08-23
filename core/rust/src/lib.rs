@@ -2,6 +2,7 @@
 //!
 //! Cross-platform core functionality for AliasVault, including:
 //! - **vault_merge**: Vault merge using Last-Write-Wins (LWW) strategy
+//! - **vault_sharing**: Sharing write logic for multi-manifest vaults
 //! - **vault_pruner**: Prunes expired items from trash (30-day retention)
 //! - **credential_matcher**: Cross-platform credential filtering for autofill
 //! - **password_generator**: Password and passphrase (Diceware) generation
@@ -18,6 +19,7 @@ mod hex;
 mod rng;
 pub mod vault_merge;
 pub mod vault_codec;
+pub mod vault_sharing;
 pub mod vault_pruner;
 pub mod credential_matcher;
 pub mod email_parser;
@@ -37,6 +39,11 @@ pub use vault_codec::{
     validate_manifest, validate_data_bucket, BlobEntry,
     CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecRecord, CodecTableData, DataBucket, Manifest,
     MaterializeInput, MaterializedTables, ManifestSpec, ValidationResult,
+};
+pub use vault_sharing::{
+    partition_manifest_access, resolve_manifest_write_set, ManifestAccessPartition, ManifestAccessRequest,
+    ManifestWriteRecord, ManifestWriteSet, ManifestWriteSetRequest, SharedManifestRecord, SkippedManifest,
+    WriteSkipReason,
 };
 pub use vault_pruner::{
     prune_vault, PruneInput, PruneOutput, PruneStats,

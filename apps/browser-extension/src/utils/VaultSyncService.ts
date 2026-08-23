@@ -9,14 +9,14 @@ import { storage } from 'wxt/utils/storage';
 import { base64ToBytes } from '@/utils/Base64';
 import { bucketRevisionKey, StorageKeys } from '@/utils/constants/storageKeys';
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
-import { ManifestKeyType, VaultKeyAlgorithm, type VaultResponse } from '@/utils/dist/core/models/webapi';
+import { ManifestKeyType, VaultKeyAlgorithm, type BucketRevision, type VaultResponse } from '@/utils/dist/core/models/webapi';
 import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 import { buildEmailRouting } from '@/utils/EmailRouting';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { completeLegacyAccountKeyMigration, isLegacySqliteBlobSnapshot, legacyUnstampedRowAdoption, openLegacySqliteBlobSnapshot, prepareLegacyAccountKeyMigration, withOutdatedServerGuard, type LegacyAccountKeyMigration, type LegacySqliteBlobSnapshot } from '@/utils/legacy/LegacyStorageModelMigration';
 import { getManifestRevisions, getPersonalManifestId, recordManifestRevisions, replaceManifestRevisions, toManifestRevisionMap } from '@/utils/ManifestRevisions';
 import { multiManifestRendering } from '@/utils/MultiManifestRendering';
-import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateManifestSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecBlobEntry, type CodecCanonicalized, type CodecManifest, type CodecManifestSpec} from '@/utils/RustCore';
+import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateManifestSalt, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecBlobEntry, type CodecCanonicalized, type CodecManifest, type CodecManifestSpec, vaultSharingPartitionManifestAccess, vaultSharingResolveManifestWriteSet, type SharingAccessPartition} from '@/utils/RustCore';
 import { SharingService, type ManifestVekGrant, type SharedManifestRecord } from '@/utils/SharingService';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getStorageItem } from '@/utils/StorageUtility';
@@ -182,8 +182,8 @@ type ManifestDto = {
 /** A data bucket as carried in the GET snapshot / bundled upload. `category` matches the server enum name (e.g. "Settings"). */
 type BucketDto = { manifestId: string; category: string; blob?: string | null; ciphertextHash?: string | null; revision?: number };
 
-/** Per-kind revision as carried in upload responses. */
-type BucketRevisionDto = { manifestId: string; category: string; revision: number };
+/** Per-kind revision as carried in upload responses; the same shape the status response reports. */
+type BucketRevisionDto = BucketRevision;
 
 /**
  * Pick the user's personal manifest out of a snapshot. The server names it by id rather than flagging each entry, so
@@ -1335,14 +1335,27 @@ export class VaultSyncService {
    * @returns The manifest ids the vault holds but this session cannot write, empty when the two agree
    */
   public async findUnwritableManifests(sqliteClient: SqliteClient): Promise<string[]> {
-    const writable = new Set<string>([...(await SharingService.openSharedManifestVeks(sqliteClient)).keys()].map(manifestIdKey));
+    return (await this.partitionManifestAccess(sqliteClient, [])).unwritable;
+  }
+
+  /**
+   * Split what the vault holds against what this account may still open.
+   * @param sqliteClient - the open local vault
+   * @param grantedManifestIds - the manifests the last snapshot served, empty when that is not being asked
+   */
+  private async partitionManifestAccess(sqliteClient: SqliteClient, grantedManifestIds: Iterable<string>): Promise<SharingAccessPartition> {
+    const writable = [...(await SharingService.openSharedManifestVeks(sqliteClient)).keys()];
 
     const personalManifestId = await getPersonalManifestId();
     if (personalManifestId) {
-      writable.add(manifestIdKey(personalManifestId));
+      writable.push(personalManifestId);
     }
 
-    return [...VaultCodec.manifestIdsInVault(sqliteClient)].filter(manifestId => !writable.has(manifestIdKey(manifestId)));
+    return vaultSharingPartitionManifestAccess({
+      manifestIdsInVault: [...VaultCodec.manifestIdsInVault(sqliteClient)],
+      writableManifestIds: writable,
+      grantedManifestIds: [...grantedManifestIds],
+    });
   }
 
   /**
@@ -1366,14 +1379,8 @@ export class VaultSyncService {
    * @param grantedManifestIds - the manifests the snapshot just served, the personal one included
    * @returns The manifest ids whose rows were dropped, empty when there was nothing to drop
    */
-  public dropRowsOfLostManifests(sqliteClient: SqliteClient, grantedManifestIds: Iterable<string>): string[] {
-    const granted = new Set([...grantedManifestIds].map(manifestIdKey));
-    if (granted.size === 0) {
-      // Nothing is known about what this account may open, and guessing with the user's data is worse than keeping it.
-      return [];
-    }
-
-    const lost = [...VaultCodec.manifestIdsInVault(sqliteClient)].filter(manifestId => !granted.has(manifestIdKey(manifestId)));
+  public async dropRowsOfLostManifests(sqliteClient: SqliteClient, grantedManifestIds: Iterable<string>): Promise<string[]> {
+    const { lost } = await this.partitionManifestAccess(sqliteClient, grantedManifestIds);
     if (lost.length === 0) {
       return [];
     }
@@ -1390,6 +1397,9 @@ export class VaultSyncService {
 
   /**
    * Resolve every manifest this vault can write, personal manifest first, as one uniform list.
+   *
+   * The core decides which, so a second client cannot arrive at a different write set. It is told which
+   * manifests opened, never what they opened with.
    * @param sqliteClient - the open local vault
    */
   private async resolveManifestRecords(sqliteClient: SqliteClient): Promise<ManifestRecord[]> {
@@ -1399,43 +1409,32 @@ export class VaultSyncService {
       await storage.setItem(StorageKeys.VAULT_MANIFEST_SALT, manifestSalt);
     }
 
-    const records: ManifestRecord[] = [{
-      manifestId: await this.resolvePersonalManifestId(),
-      isPersonal: true,
-      salt: manifestSalt,
-      vek: null,
-      name: null,
-      canAdminister: false,
-    }];
-
-    const stampedManifestIds = new Set([...VaultCodec.manifestIdsInVault(sqliteClient)].map(manifestIdKey));
     const sharedVeks = await SharingService.openSharedManifestVeks(sqliteClient);
-    const manifestNames = multiManifestRendering.displayNames(sqliteClient);
-    for (const record of Object.values(await SharingService.getSharedManifestRecords())) {
-      if (!stampedManifestIds.has(manifestIdKey(record.manifestId))) {
-        devLog(`[V2Push] Shared manifest ${record.manifestId} has no rows in this vault; leaving it out of the write rather than emptying it server-side.`);
-        continue;
-      }
+    const writeSet = await vaultSharingResolveManifestWriteSet({
+      personalManifestId: await this.resolvePersonalManifestId(),
+      personalManifestSalt: manifestSalt,
+      stampedManifestIds: [...VaultCodec.manifestIdsInVault(sqliteClient)],
+      openedManifestIds: [...sharedVeks.keys()],
+      heldRecords: Object.values(await SharingService.getSharedManifestRecords()),
+      displayNames: multiManifestRendering.displayNames(sqliteClient),
+    });
 
-      // No key, no write.
-      const vek = sharedVeks.get(record.manifestId);
-      if (!vek) {
-        devWarn(`[V2Push] Shared manifest ${record.manifestId} did not open; leaving it out of the write.`);
-        continue;
-      }
-
-      records.push({
-        manifestId: record.manifestId,
-        isPersonal: false,
-        salt: record.salt,
-        vek,
-        // Re-read how this client renders the manifest on every push, so the name inside it follows a rename instead of staying at whatever the vault was called when it was created.
-        name: manifestNames[record.manifestId.toLowerCase()] ?? record.name ?? null,
-        canAdminister: record.canAdminister === true,
-      });
+    for (const skipped of writeSet.skipped) {
+      const why = skipped.reason === 'NO_ROWS_IN_VAULT'
+        ? 'has no rows in this vault; leaving it out of the write rather than emptying it server-side'
+        : 'did not open; leaving it out of the write';
+      devLog(`[V2Push] Shared manifest ${skipped.manifestId} ${why}.`);
     }
 
-    return records;
+    // Re-attach the keys. Without one a shared manifest falls back to the personal key downstream, so assert it.
+    const vekByManifestId = new Map([...sharedVeks].map(([manifestId, vek]) => [manifestIdKey(manifestId), vek]));
+    return writeSet.records.map(record => {
+      const vek = record.isPersonal ? null : vekByManifestId.get(manifestIdKey(record.manifestId)) ?? null;
+      if (!record.isPersonal && !vek) {
+        throw new Error(`VaultSyncService: manifest ${record.manifestId} is in the write set without a key, refusing to write it.`);
+      }
+      return { ...record, vek };
+    });
   }
 
   /**
