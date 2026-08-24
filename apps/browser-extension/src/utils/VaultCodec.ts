@@ -289,8 +289,7 @@ export class VaultCodec {
   }
 
   /**
-   * Normalize a SQLite-returned row into a JSON-safe shape  /**
-   * Normalize a SQLite-returned row into a JSON-safe shape — Uint8Array bytes become `{ __b64: ... }`.
+   * Normalize a SQLite-returned row into a JSON-safe shape: Uint8Array bytes become `{ __b64: ... }`.
    * @param row - raw row from sql.js
    */
   private static normalizeRowForJson(row: Record<string, unknown>): Record<string, unknown> {

@@ -15,14 +15,19 @@
 //!     overflow) route by stamp too.
 //!   - Bucketed tables (Settings) leave the routing set beforehand: one bucket type per manifest.
 //!
-//!   Each manifest is then made self-contained: it clones in the rows its own rows reference but does
-//!   not hold (see [`clone_referenced_rows`]) and drops the reproducible logos nothing references any
-//!   more (see [`prune_unreferenced_logos`]).
+//!   Each manifest is then made self-contained: it copies in the content its rows reference (see
+//!   below) and drops what nothing references any more (see [`prune_unreferenced_logos`]).
 //!
-//! **combine** (materialize side) normalizes each manifest's logos to its own id, stamps its rows with
-//! the manifest they arrived in, drops the `EncryptionKeys` rows it may not publish plus the bucketed,
-//! personal and bookkeeping tables no manifest may carry, folds in its data buckets, then repairs the
-//! references a namespace boundary leaves dangling.
+//! **combine** (materialize side) stamps every manifest's rows with the manifest they arrived in,
+//! re-minting the ids that derive from the scope, drops the `EncryptionKeys` rows it may not publish
+//! plus the bucketed, personal and bookkeeping tables no manifest may carry, folds in its data buckets,
+//! then repairs the references a namespace boundary leaves dangling.
+//!
+//! **Referenced content** is copied, never moved. A foreign key is composite, so a row in another
+//! namespace is as absent as a deleted one, and the manifest referencing it gets its own stamped copy:
+//! two members editing "the same" tag or logo then never overwrite each other. A row with an opaque id
+//! keeps it ([`clone_referenced_rows`]); a `Logos` id derives from the scope, so the copy re-mints it
+//! (see [`scoped_assets`](super::scoped_assets)).
 
 use std::collections::{HashMap, HashSet};
 
@@ -49,18 +54,13 @@ const FIELD_DEFINITIONS_TABLE: &str = "FieldDefinitions";
 const FIELD_DEFINITION_ID_COL: &str = "FieldDefinitionId";
 
 /// Rows referenced from inside a manifest: `(target_table, [(referencing_table, column)])`.
-///
-/// The foreign keys are composite, so a row in another namespace cannot satisfy them: a manifest that
-/// references one of these gets its own stamped copy (see [`clone_referenced_rows`]). `Logos` are
-/// copied through [`scoped_assets`](super::scoped_assets) instead, which re-mints ids from the natural
-/// key rather than keeping them.
 static REFERENCED_TABLES: &[(&str, &[(&str, &str)])] = &[
     ("Tags", &[("ItemTags", "TagId")]),
     ("FieldDefinitions", &[("FieldValues", "FieldDefinitionId"), ("FieldHistories", "FieldDefinitionId")]),
 ];
 
-/// The tables a caller must snapshot before routing so [`clone_referenced_rows`] can copy from them:
-/// every [`REFERENCED_TABLES`] target plus `Logos`, which the scoped-asset path pulls from.
+/// The tables a caller must snapshot before routing, so the referenced content can be copied out of
+/// them afterwards: every [`REFERENCED_TABLES`] target plus `Logos`.
 pub(super) fn referenced_tables() -> Vec<&'static str> {
     let mut out: Vec<&'static str> = vec![LOGOS_TABLE];
     out.extend(REFERENCED_TABLES.iter().map(|(target, _)| *target));
@@ -132,18 +132,6 @@ pub(super) struct ManifestPartition {
 
 /// Route every row of `tables` to the manifest that owns it, moving the rows of `specs` out into one
 /// partition each (in spec order) and leaving the writing manifest's rows behind in `tables`.
-///
-/// Ownership is the row's `ManifestId` stamp, for every table alike, including ones this build's
-/// registry does not know. Registered item-child tables (`FieldValues`, `ItemTags`, ...) are the one
-/// exception: they follow the item their own `(ManifestId, ItemId)` names and are restamped to agree
-/// with it, because that pair is their foreign key.
-///
-/// `writing_manifest_id` is the manifest the caller wrote this vault from, and is no fallback scope: it
-/// keeps exactly the rows stamped for it, and a row stamped for a manifest in neither place is dropped.
-///
-/// `snapshots` holds the vault-wide `Logos`, `Tags` and `FieldDefinitions` sets captured before routing
-/// (see [`REFERENCED_TABLES`]), so a manifest can clone in a row its own rows reference but that lives
-/// in another scope.
 pub(super) fn partition_by_manifest(
     tables: &mut HashMap<String, Vec<CodecRecord>>,
     specs: &[ManifestSpec],
@@ -346,10 +334,9 @@ pub(super) fn partition_by_manifest(
     }
 
     /*
-     * 6. Each manifest ends up self-contained: it gets its own copy of every row its rows reference but
-     * do not hold, taken from the vault-wide snapshot and stamped for this manifest. Logos additionally
-     * re-mint their id from the scope (see `scoped_assets`); the others keep theirs, since the same id
-     * in two manifests is simply two rows.
+     * 6. Each manifest ends up self-contained: every row it references but does not hold is copied out
+     * of the vault-wide snapshot and stamped for this manifest, keeping its id where the id is opaque
+     * and re-minting it where it derives from the scope.
      */
     let no_logos: Vec<CodecRecord> = Vec::new();
     let all_logos = snapshots.get(LOGOS_TABLE).unwrap_or(&no_logos);
@@ -364,15 +351,8 @@ pub(super) fn partition_by_manifest(
     Ok(partitions)
 }
 
-/// Give one manifest's table set its own copy of every row it references but does not hold.
-///
-/// The foreign keys are composite (`(ManifestId, TagId)`, `(ManifestId, FieldDefinitionId)`), so a tag
-/// sitting in another namespace is as absent as one that was deleted. The row is copied from
-/// `snapshots` (the vault-wide set captured before routing) and stamped for this manifest, keeping its
-/// id.
-///
-/// Copying rather than moving is the point: the manifest the row came from keeps its own, so two
-/// members editing "the same" tag never overwrite each other.
+/// Copy in every opaque-id row this manifest references but does not hold, out of `snapshots` (the
+/// vault-wide set captured before routing), stamped for this manifest and keeping its id.
 pub(super) fn clone_referenced_rows(tables: &mut HashMap<String, Vec<CodecRecord>>, scope: &str, snapshots: &HashMap<String, Vec<CodecRecord>>) {
     for (target, referencing) in REFERENCED_TABLES {
         let Some(source_rows) = snapshots.get(*target) else { continue };
@@ -410,15 +390,7 @@ pub(super) fn clone_referenced_rows(tables: &mut HashMap<String, Vec<CodecRecord
     }
 }
 
-/// Drop `Logos` rows no item in this table set references.
-///
-/// A logo left behind by an item that was deleted or moved to another manifest would otherwise sit in
-/// the manifest, and ship to every member of a shared one, forever. Losing one costs nothing: a favicon
-/// is refetched from the item's domain and a built-in logo is drawn from the catalog.
-///
-/// Uploads ([`is_custom_logo`]) are the exception, in every manifest alike: they are the one kind no
-/// client can reproduce, and they are what a logo picker offers as a library to pick from again. An
-/// upload therefore outlives the item that first used it and leaves only when the user removes it.
+/// Reproducible content like `Logos` can be refetched, so we drop rows no item in this table set references.
 pub(super) fn prune_unreferenced_logos(tables: &mut HashMap<String, Vec<CodecRecord>>) {
     let referenced: HashSet<String> = tables
         .get(ITEMS_TABLE)
@@ -429,25 +401,13 @@ pub(super) fn prune_unreferenced_logos(tables: &mut HashMap<String, Vec<CodecRec
     }
 }
 
-/// Combine the caller's own manifest tables with every other manifest's tables into one unified set.
-///
-/// Every manifest is held to the same rules: its rows are stamped with its own id, it may publish only
-/// its own key material, and it may carry no bucketed or bookkeeping tables.
-///
-/// Rows are keyed by `(ManifestId, Id)`, matching the primary key the local schema declares, so two
-/// manifests carrying the same `Id` produce two rows that live side by side.
-///
-/// Logos are normalized to their own manifest's id first: the materialized SQLite holds the union of
-/// all manifests under a `UNIQUE(ManifestId, Kind, Source)` index, so a manifest written by a writer
-/// that stamped the wrong scope would otherwise collide with the reader's own rows.
+/// Combine the caller's own manifest tables with every other manifest's tables into one unified set. 
+/// Every manifest is held to the same rules: its rows are stamped with its own id, it may publish only its own key material, and it may carry no bucketed or bookkeeping tables.
 pub(super) fn combine_manifest_tables(
     mut tables: HashMap<String, Vec<CodecRecord>>,
     base_manifest_id: &str,
     other_manifests: Vec<Manifest>,
 ) -> HashMap<String, Vec<CodecRecord>> {
-    // A bucketed table inside a manifest is malformed: its rows would land in the combined set twice,
-    // once from the manifest and once from the bucket that legitimately carries them, colliding on the
-    // primary key. The caller's own manifest is held to that rule like every other.
     tables.retain(|name, _| !is_bucketed_table(name));
     claim_manifest_scope(&mut tables, base_manifest_id);
 
@@ -474,7 +434,7 @@ pub(super) fn combine_manifest_tables(
 
         for (name, rows) in manifest.tables {
             /*
-             * Bucketed tables (Settings) sync as their own resource beside the manifest, so a manifest
+             * Bucketed tables sync as their own resource beside the manifest, so a manifest
              * carrying them is malformed however it was produced; a personal-only table has no business
              * in a manifest that is not this vault's own; and local bookkeeping and platform
              * skip-tables never travel inside one. Dropping them here also means a manifest authored by
@@ -519,10 +479,10 @@ pub(super) fn combine_manifest_tables(
 /// it home by its own stamp, instead of trusting whatever scope its author wrote into it (which would
 /// let one manifest inject rows into another's namespace through a table the registry cannot police).
 ///
-/// Order matters here. `Logos` are stamped by [`normalize_logo_scope`], which also re-mints their
-/// derived ids and repoints `Items.LogoId`, so they must not be stamped twice. `EncryptionKeys` are
-/// never stamped at all: there the stamp is a *claim* that [`retain_own_encryption_keys`] checks, and
-/// stamping first would make every claim true.
+/// Two tables are held out of the blanket stamp. `Logos` are stamped by [`normalize_logo_scope`], which
+/// re-mints their derived ids and repoints `Items.LogoId` in the same pass. `EncryptionKeys` are not
+/// stamped at all: there the stamp is a *claim* that [`retain_own_encryption_keys`] checks, and stamping
+/// first would make every claim true.
 fn claim_manifest_scope(tables: &mut HashMap<String, Vec<CodecRecord>>, manifest_id: &str) {
     normalize_logo_scope(tables, manifest_id);
     retain_own_encryption_keys(tables, manifest_id);

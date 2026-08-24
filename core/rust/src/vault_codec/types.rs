@@ -14,7 +14,8 @@ pub static BLOB_COLUMNS: &[(&str, &str, &str)] = &[
     ("Attachments", "Blob", "attachment"),
 ];
 
-/// Tables never serialized into the server-stored manifest: internal SQLite, platform, or EF bookkeeping.
+/// Tables never serialized into the server-stored manifest: internal SQLite, platform, or EF bookkeeping
+/// that is temporary and only used/required during runtime, and therefore should not become part of a persisted manifest.
 pub static SKIP_TABLES: &[&str] = &[
     "__EFMigrationsHistory",
     "__EFMigrationsLock",
