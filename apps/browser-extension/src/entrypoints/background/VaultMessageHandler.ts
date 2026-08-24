@@ -14,7 +14,7 @@ import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { readLegacySessionEncryptionKey } from '@/utils/legacy/LegacyStorageKeyFallbacks';
 import { requiresLegacyAccountKeyMigration } from '@/utils/legacy/LegacyStorageModelMigration';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
-import { getManifestRevisions, getPersonalManifestId, manifestsRequiringPull, recordManifestRevisions, toManifestRevisionMap } from '@/utils/ManifestRevisions';
+import { getManifestRevisions, manifestsRequiringPull, recordManifestRevisions, toManifestRevisionMap } from '@/utils/ManifestRevisions';
 import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
 import { multiManifestRendering } from '@/utils/MultiManifestRendering';
 import { PendingActionProcessor } from '@/utils/PendingActionProcessor';
@@ -44,7 +44,7 @@ import type { StringResponse as stringResponse } from '@/utils/types/messaging/S
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 import type { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
 import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope, isManifestScope } from '@/utils/types/VaultMutationScope';
-import { manifestIdKey, VaultCodec } from '@/utils/VaultCodec';
+import { VaultCodec } from '@/utils/VaultCodec';
 import { clearDirtyScopes, getDirtyScopes } from '@/utils/VaultDirtyState';
 import { VaultKeyService } from '@/utils/VaultKeyService';
 import { vaultRequiresManifestMigration, VaultMigrationKind, type VaultMigrationStatus } from '@/utils/VaultManifestMigration';
@@ -104,9 +104,6 @@ function serverManifestsNeedPull(serverManifests: ManifestRevision[], localRevis
  */
 let isSyncInProgress = false;
 let hasPendingSync = false;
-
-/** The shared manifests a pull was already forced for over a missing key record, so one the server stopped serving does not pull on every sync. */
-const manifestsPulledForSharedKeys = new Set<string>();
 
 /**
  * How many times one chain of syncs may restart itself over a push the server called outdated. A pull settles a
@@ -1661,14 +1658,10 @@ async function runSyncPreflight(webApi: WebApiService, options?: FullVaultSyncOp
   }
 
   /*
-   * Two states the revisions cannot see, both repaired by a pull: rows of a manifest this session cannot write
-   * (which the push would silently leave out, so it refuses instead), and rows of a shared manifest this session
-   * holds no key record for at all. The first only matters for a write, the second also for reading the manifest.
+   * One state the revisions cannot see, repaired by a pull: rows of a manifest this session cannot write, which
+   * the push would silently leave out, so it refuses instead. Only matters for a write.
    */
   if (syncState.isDirty && !needsPull && await vaultHoldsUnwritableManifests()) {
-    needsPull = true;
-  }
-  if (!needsPull && await vaultHoldsUnrecordedSharedManifests()) {
     needsPull = true;
   }
 
@@ -1691,37 +1684,6 @@ async function vaultHoldsUnwritableManifests(): Promise<boolean> {
     return true;
   } catch (error) {
     devWarn('[VaultSync] Could not check which manifests this session can write; leaving the pull decision to the revisions.', error);
-    return false;
-  }
-}
-
-/**
- * Whether the stored vault holds rows of shared manifests this account has no key record for, which a pull has to repair.
- */
-async function vaultHoldsUnrecordedSharedManifests(): Promise<boolean> {
-  try {
-    const recorded = new Set(Object.values(await SharingService.getSharedManifestRecords()).map(record => manifestIdKey(record.manifestId)));
-    for (const manifestId of recorded) {
-      manifestsPulledForSharedKeys.delete(manifestId);
-    }
-
-    const personalId = await getPersonalManifestId();
-    const personalManifestId = personalId ? manifestIdKey(personalId) : null;
-    const unrecorded = [...VaultCodec.manifestIdsInVault(await createVaultSqliteClient())]
-      .map(manifestIdKey)
-      .filter(manifestId => manifestId !== personalManifestId && !recorded.has(manifestId) && !manifestsPulledForSharedKeys.has(manifestId));
-    if (unrecorded.length === 0) {
-      return false;
-    }
-
-    for (const manifestId of unrecorded) {
-      manifestsPulledForSharedKeys.add(manifestId);
-    }
-
-    devWarn(`[VaultSync] Vault holds rows for shared manifest(s) this session has no key record for (${unrecorded.join(', ')}); pulling to re-record them.`);
-    return true;
-  } catch (error) {
-    devWarn('[VaultSync] Could not check which shared manifests this session holds key records for; leaving the pull decision to the revisions.', error);
     return false;
   }
 }
