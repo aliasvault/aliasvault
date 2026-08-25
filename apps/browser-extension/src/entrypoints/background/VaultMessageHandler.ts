@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { storage } from 'wxt/utils/storage';
 
+import { clearAllSavePromptState } from '@/entrypoints/background/SavePromptStateHandler';
+import { handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
+
 import { base64ToBytes } from '@/utils/Base64';
 import { AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, vaultDataStorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
 import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
@@ -62,7 +65,7 @@ import { t } from '@/i18n/StandaloneI18n';
  * - New vault from remote (login, sync): Clear cache by setting both to null, WITHOUT closing — an in-flight
  *   flow (e.g. a push holding the client across an HTTP await, or persistLocalVaultMutation re-adopting the
  *   client it just stored) may legitimately still use the detached instance.
- * - Lock/logout/clear vault: cleanupCachedSqliteClient().
+ * - Lock/logout/clear vault: clearInMemoryVaultState().
  */
 let cachedSqliteClient: SqliteClient | null = null;
 let cachedVaultBlob: string | null = null;
@@ -74,6 +77,17 @@ function cleanupCachedSqliteClient(): void {
   cachedSqliteClient?.close();
   cachedSqliteClient = null;
   cachedVaultBlob = null;
+  // The pre-push canonicalize result holds plaintext rows, plaintext blob bytes and unwrapped shared-manifest VEKs, so it dies with the vault it came from.
+  invalidateCanonicalizeCache();
+}
+
+/**
+ * Drop all plaintext state the background script holds in memory, on lock, logout and vault clear.
+ */
+function clearInMemoryVaultState(): void {
+  cleanupCachedSqliteClient();
+  clearAllSavePromptState();
+  handleClearTwoFactorState();
 }
 
 /**
@@ -380,7 +394,7 @@ export async function handleGetVault(
  */
 export async function handleLockVault(): Promise<messageBoolResponse> {
   await storage.removeItems([...VAULT_LOCK_STORAGE_KEYS]);
-  cleanupCachedSqliteClient();
+  clearInMemoryVaultState();
 
   return { success: true };
 }
@@ -402,7 +416,7 @@ export async function handleClearSession(): Promise<messageBoolResponse> {
   await LocalPreferencesService.resetPasswordUnlockFailedAttempts();
 
   // Cleanup cached sqlite client
-  cleanupCachedSqliteClient();
+  clearInMemoryVaultState();
 
   return { success: true };
 }
@@ -422,7 +436,7 @@ export async function handleClearVaultData(): Promise<messageBoolResponse> {
   await LocalPreferencesService.clearAll();
 
   // Free the decrypted vault held in service-worker memory alongside the persisted data it came from.
-  cleanupCachedSqliteClient();
+  clearInMemoryVaultState();
 
   return { success: true };
 }

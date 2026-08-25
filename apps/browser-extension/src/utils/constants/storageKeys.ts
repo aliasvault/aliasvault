@@ -221,6 +221,7 @@ export const VAULT_LOCK_STORAGE_KEYS: readonly StorageKey[] = [
   StorageKeys.ENCRYPTION_KEY,
   StorageKeys.ACCOUNT_PRIVATE_KEY,
   StorageKeys.PERSISTED_FORM_VALUES,
+  StorageKeys.RECENTLY_SELECTED_ITEM,
 ];
 
 /** Session keys cleared on logout: everything from a lock, plus the popup navigation state. */
