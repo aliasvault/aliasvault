@@ -1805,7 +1805,7 @@ async function pullAndMaterializeServerVault(syncState: VaultSyncState, encrypti
 
   try {
     if (syncState.isDirty) {
-      await pruneRowsOfLostManifests(encryptionKey);
+      await pruneRowsOfManifestsNoLongerServed(encryptionKey);
       const mergedResult = await mergeAndPushLocalChanges(vaultResponseJson, syncState, encryptionKey, grantSyncChangedVault);
       if (mergedResult) {
         return mergedResult;
@@ -1842,29 +1842,19 @@ async function pullAndMaterializeServerVault(syncState: VaultSyncState, encrypti
 }
 
 /**
- * Drop the rows of every manifest the snapshot just pulled no longer serves this account, so they do not survive
- * the merge that follows.
- *
- * A pull of a clean vault drops them by replacing the whole database; the merge path has to be told, because a
- * merge keeps local-only rows. Left in place they can never be written again, which makes every following push
- * refuse itself. What the snapshot served is the authority here, not what opened out of it: a manifest that fails
- * to decrypt once is still this account's.
+ * Drop the rows of every manifest the snapshot just pulled no longer serves this account.
  * @param encryptionKey - the key the stored vault is sealed with
  */
-async function pruneRowsOfLostManifests(encryptionKey: string): Promise<void> {
-  try {
-    const sqliteClient = await createVaultSqliteClient();
-    const dropped = await vaultSyncService.dropRowsOfLostManifests(sqliteClient, vaultSyncService.manifestIdsServedByLastSnapshot());
-    if (dropped.length === 0) {
-      return;
-    }
-
-    // Not a local change of the user's making, so it is stored without touching the dirty state or its sequence.
-    await handleStoreEncryptedVault({ vaultBlob: await EncryptionUtility.symmetricEncrypt(sqliteClient.exportToBase64(), encryptionKey) });
-    invalidateCanonicalizeCache();
-  } catch (error) {
-    devWarn('[VaultSync] Could not drop the rows of manifests this account no longer holds; the merge runs on the vault as it is.', error);
+async function pruneRowsOfManifestsNoLongerServed(encryptionKey: string): Promise<void> {
+  const sqliteClient = await createVaultSqliteClient();
+  const dropped = await vaultSyncService.dropRowsOfManifestsNoLongerServed(sqliteClient, vaultSyncService.manifestIdsServedByLastSnapshot());
+  if (dropped.length === 0) {
+    return;
   }
+
+  // Not a local change of the user's making, so it is stored without touching the dirty state or its sequence.
+  await handleStoreEncryptedVault({ vaultBlob: await EncryptionUtility.symmetricEncrypt(sqliteClient.exportToBase64(), encryptionKey) });
+  invalidateCanonicalizeCache();
 }
 
 /**

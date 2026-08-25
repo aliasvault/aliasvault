@@ -454,7 +454,8 @@ export class VaultSyncService {
     const pulledFingerprints: Record<string, string> = {};
 
     /*
-     * Open every manifest in the snapshot through one path, personal manifest first.
+     * Open every manifest in the snapshot through one path, personal manifest first. Every failure to resolve a
+     * key or open a blob throws on purpose.
      */
     const accountKeyVeks = new Map<string, string>([[personalDto.manifestId, vek]]);
     const resolved: ResolvedManifest[] = [];
@@ -463,35 +464,25 @@ export class VaultSyncService {
     for (const dto of [personalDto, ...(snapshot.manifests ?? []).filter(m => m.manifestId !== personalDto.manifestId)]) {
       const isPersonal = dto.manifestId === personalDto.manifestId;
       const manifestKey = await this.resolveManifestVek(dto, accountKeyVeks, isPersonal, resolved[0]?.manifest ?? null);
-      if (!manifestKey || !dto.blob) {
-        if (dto.manifestId === personalDto.manifestId) {
-          throw new Error(`VaultSyncService: no key resolved for the home manifest ${dto.manifestId} (key type "${dto.keyType ?? 'unspecified'}"), refusing to assemble.`);
+      if (!dto.blob) {
+        // A shared manifest served without content yet (created but never written); its grant and revision are still tracked.
+        const contentlessGrant = grantOf(dto);
+        if (!contentlessGrant) {
+          throw new Error(`VaultSyncService: shared manifest ${dto.manifestId} was served without content and without a grant, refusing to assemble.`);
         }
-        const contentlessGrant = manifestKey ? grantOf(dto) : null;
-        if (contentlessGrant) {
-          sharedManifestRecords[dto.manifestId] = {
-            manifestId: dto.manifestId,
-            ...contentlessGrant,
-            salt: await vaultCodecGenerateManifestSalt(),
-            name: null,
-            canAdminister: dto.canAdminister ?? false,
-          };
-          contentlessRevisions[dto.manifestId] = dto.revision;
-        }
+        sharedManifestRecords[dto.manifestId] = {
+          manifestId: dto.manifestId,
+          ...contentlessGrant,
+          salt: await vaultCodecGenerateManifestSalt(),
+          name: null,
+          canAdminister: dto.canAdminister ?? false,
+        };
+        contentlessRevisions[dto.manifestId] = dto.revision;
         continue;
       }
 
-      let entry: ResolvedManifest;
-      try {
-        devLog(`[V2Pull] Verifying ciphertext hash; decrypting + opening ${isPersonal ? 'personal manifest' : `shared manifest ${dto.manifestId}`}...`);
-        entry = await this.openManifest(dto, manifestKey, isPersonal);
-      } catch (e) {
-        if (isPersonal) {
-          throw e;
-        }
-        devWarn(`[V2Pull] Failed to open shared manifest ${dto.manifestId}, skipping it.`, e);
-        continue;
-      }
+      devLog(`[V2Pull] Verifying ciphertext hash; decrypting + opening ${isPersonal ? 'personal manifest' : `shared manifest ${dto.manifestId}`}...`);
+      const entry = await this.openManifest(dto, manifestKey, isPersonal);
       resolved.push(entry);
 
       devLog(`[V2Pull] Manifest ${entry.manifestId} opened (content hash verified, ${isPersonal ? 'personal' : `shared "${entry.manifest.name ?? 'unnamed'}"`}): tables: ${Object.entries(entry.manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
@@ -509,8 +500,7 @@ export class VaultSyncService {
 
       const grant = grantOf(dto);
       if (!grant) {
-        devWarn(`[V2Pull] Shared manifest ${entry.manifestId} carries no grant this account can re-open; leaving it out of this session's writable set.`);
-        continue;
+        throw new Error(`VaultSyncService: shared manifest ${entry.manifestId} carries no grant this account can re-open, refusing to assemble.`);
       }
 
       sharedManifestRecords[entry.manifestId] = {
@@ -535,28 +525,15 @@ export class VaultSyncService {
       }
       const bucketKey = keyByManifestId.get(bucketDto.manifestId);
       if (!bucketKey) {
-        devWarn(`[V2Pull] Data bucket "${bucketDto.category}" belongs to manifest ${bucketDto.manifestId}, which this vault did not open; skipping it.`);
-        continue;
+        throw new Error(`VaultSyncService: data bucket "${bucketDto.category}" belongs to manifest ${bucketDto.manifestId}, which this vault did not open, refusing to assemble.`);
       }
       const label = `"${bucketDto.category}" bucket of manifest ${bucketDto.manifestId}`;
       const bucketJson = await verifyDecryptUnpack(bucketDto.blob, bucketKey, bucketDto.ciphertextHash, label);
       const bucket = JSON.parse(bucketJson) as VaultDataBucket;
 
-      /*
-       * Bind the payload to the address the server delivered it under, the rule `openManifest` applies to
-       * a manifest. Materialize stamps every row of a bucket with the bucket's *embedded* manifest id, so
-       * a bucket whose plaintext names another manifest re-homes its rows into a namespace its author
-       * holds no key for: the reader ingests them, and the reader's next push splits them straight into
-       * that manifest's bucket. Anyone who shares a manifest with the victim can plant one.
-       */
+      // Bind the payload to the address the server delivered it under
       if (!manifestIdsEqual(bucket.manifestId, bucketDto.manifestId) || bucket.category !== bucketDto.category) {
-        const mismatch = `VaultSyncService: ${label} declares a different address (manifest ${bucket.manifestId}, category "${bucket.category}") inside its encrypted payload`;
-        if (manifestIdsEqual(bucketDto.manifestId, personalDto.manifestId)) {
-          throw new Error(`${mismatch}, refusing to assemble.`);
-        }
-        // Dropping a shared manifest's bucket costs nothing on push: canonicalize only emits a bucket for a manifest that has rows.
-        devWarn(`[V2Pull] ${mismatch}; skipping it.`);
-        continue;
+        throw new Error(`VaultSyncService: ${label} declares a different address (manifest ${bucket.manifestId}, category "${bucket.category}") inside its encrypted payload, refusing to assemble.`);
       }
 
       dataBuckets.push(bucket);
@@ -712,9 +689,9 @@ export class VaultSyncService {
    * @param accountKeyVeks - the VEKs already held per manifest id, keyed by the account key hierarchy
    * @param isPersonal - whether this is the manifest the snapshot named as the caller's own
    * @param personalManifest - the already-decrypted personal manifest (the durable home of rotated private keys), or null when none is open yet
-   * @returns The manifest's VEK, or null when this client holds no key for it.
+   * @returns The manifest's VEK. Throws when this client holds no key for it.
    */
-  private async resolveManifestVek(dto: ManifestDto, accountKeyVeks: Map<string, string>, isPersonal: boolean, personalManifest: CodecManifest | null): Promise<string | null> {
+  private async resolveManifestVek(dto: ManifestDto, accountKeyVeks: Map<string, string>, isPersonal: boolean, personalManifest: CodecManifest | null): Promise<string> {
     // A server that predates the field says nothing, and there the home manifest is the account-key one by definition.
     const keyType = dto.keyType ?? (isPersonal ? ManifestKeyType.AccountKey : ManifestKeyType.GrantKey);
 
@@ -722,20 +699,17 @@ export class VaultSyncService {
       const accountKeyVek = accountKeyVeks.get(dto.manifestId);
       if (!accountKeyVek) {
         // Our unlock chain produced a VEK for a different manifest than the one this key is filed under.
-        devWarn(`[V2Pull] Manifest ${dto.manifestId} is unlocked by the account key hierarchy, but this session holds no key for it; skipping it.`);
-        return null;
+        throw new Error(`VaultSyncService: manifest ${dto.manifestId} is unlocked by the account key hierarchy, but this session holds no key for it, refusing to assemble.`);
       }
       return accountKeyVek;
     }
 
     if (keyType !== ManifestKeyType.GrantKey) {
-      devWarn(`[V2Pull] Manifest ${dto.manifestId} states an unknown key type "${keyType}" (newer server?), skipping it.`);
-      return null;
+      throw new Error(`VaultSyncService: manifest ${dto.manifestId} states an unknown key type "${keyType}" (newer server?), refusing to assemble.`);
     }
 
     if (!personalManifest) {
-      devWarn(`[V2Pull] Manifest ${dto.manifestId} is opened through a grant, but no personal manifest is open to resolve the private key from; skipping it.`);
-      return null;
+      throw new Error(`VaultSyncService: manifest ${dto.manifestId} is opened through a grant, but no personal manifest is open to resolve the private key from, refusing to assemble.`);
     }
 
     return this.resolveGrantedVek(personalManifest, dto);
@@ -746,10 +720,9 @@ export class VaultSyncService {
    * @param personalManifest - the already-decrypted personal manifest, the durable home of rotated private keys
    * @param dto - the snapshot manifest carrying the grant
    */
-  private async resolveGrantedVek(personalManifest: CodecManifest, dto: ManifestDto): Promise<string | null> {
+  private async resolveGrantedVek(personalManifest: CodecManifest, dto: ManifestDto): Promise<string> {
     if (!dto.encryptedVek || !dto.encryptionPublicKey) {
-      devWarn(`[V2Pull] No key available for shared manifest ${dto.manifestId}, skipping it.`);
-      return null;
+      throw new Error(`VaultSyncService: shared manifest ${dto.manifestId} carries no grant to open it with, refusing to assemble.`);
     }
 
     /*
@@ -759,21 +732,18 @@ export class VaultSyncService {
      */
     const algorithm = dto.algorithm ?? VaultKeyAlgorithm.RsaOaepSha256;
     if (algorithm !== VaultKeyAlgorithm.RsaOaepSha256) {
-      devWarn(`[V2Pull] Shared manifest ${dto.manifestId} grants its VEK under an unsupported algorithm "${algorithm}" (newer server?), skipping it.`);
-      return null;
+      throw new Error(`VaultSyncService: shared manifest ${dto.manifestId} grants its VEK under an unsupported algorithm "${algorithm}" (newer server?), refusing to assemble.`);
     }
 
     const privateKeyJwk = await this.resolvePrivateKeyJwk(personalManifest, dto.encryptionPublicKey);
     if (!privateKeyJwk) {
-      devWarn(`[V2Pull] No key available for shared manifest ${dto.manifestId}, skipping it.`);
-      return null;
+      throw new Error(`VaultSyncService: no private key in this vault opens the grant on shared manifest ${dto.manifestId}, refusing to assemble.`);
     }
 
     try {
       return await SharingService.decryptManifestVek(dto.encryptedVek, privateKeyJwk);
     } catch (e) {
-      devWarn(`[V2Pull] Failed to decrypt VEK of shared manifest ${dto.manifestId}, skipping it.`, e);
-      return null;
+      throw new Error(`VaultSyncService: failed to decrypt the VEK of shared manifest ${dto.manifestId}, refusing to assemble. Underlying: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
@@ -1398,9 +1368,7 @@ export class VaultSyncService {
   }
 
   /**
-   * The manifests the last snapshot served this account, in the spelling the server used. This is what the account
-   * may still open, as opposed to what actually opened: a manifest whose blob fails to decrypt once is still one of
-   * this account's, so it must never be mistaken for one that was taken away.
+   * The manifests the last snapshot served this account. This is what the account may still open.
    * @returns The served manifest ids, empty when nothing has been pulled in this session
    */
   public manifestIdsServedByLastSnapshot(): string[] {
@@ -1409,16 +1377,11 @@ export class VaultSyncService {
 
   /**
    * Drop the rows of every manifest the server no longer serves this account.
-   *
-   * A manifest that is absent from the snapshot is one this account lost (access revoked, or the manifest deleted
-   * for everybody). Its rows cannot be written any more, and a merge keeps local-only rows, so without this they
-   * would survive every pull and make every following push refuse itself ({@link findUnwritableManifests}) with no
-   * way out. Dropping them is what a pull of a clean vault already does implicitly, by replacing the whole database.
    * @param sqliteClient - the open local vault, mutated in place
-   * @param grantedManifestIds - the manifests the snapshot just served, the personal one included
+   * @param grantedManifestIds - the manifests the snapshot last served
    * @returns The manifest ids whose rows were dropped, empty when there was nothing to drop
    */
-  public async dropRowsOfLostManifests(sqliteClient: SqliteClient, grantedManifestIds: Iterable<string>): Promise<string[]> {
+  public async dropRowsOfManifestsNoLongerServed(sqliteClient: SqliteClient, grantedManifestIds: Iterable<string>): Promise<string[]> {
     const { lost } = await this.partitionManifestAccess(sqliteClient, grantedManifestIds);
     if (lost.length === 0) {
       return [];
