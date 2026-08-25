@@ -1029,25 +1029,6 @@ async function persistLocalVaultMutation(sqliteClient: SqliteClient, encryptionK
 }
 
 /**
- * Whether a decrypted vault database is still on the pre-manifest-v1 schema.
- * 
- * TODO: delete once all users have migrated to the manifest-v1 storage model.
- * 
- * @param decryptedBase64 - base64 of the plaintext SQLite database
- */
-async function isLegacyStorageVault(decryptedBase64: string): Promise<boolean> {
-  const client = new SqliteClient();
-  try {
-    await client.initializeFromBase64(decryptedBase64);
-    return await client.requiresSchemaMigration();
-  } catch {
-    return false;
-  } finally {
-    client.close();
-  }
-}
-
-/**
  * Create a new sqlite client for the stored vault.
  * Uses a cache to avoid repeated decryption and initialization for read operations.
  * Throws when the vault is missing or locked.
@@ -1757,9 +1738,6 @@ async function announceSyncPhase(needsPull: boolean, isDirty: boolean): Promise<
 async function applyServerDirectedChanges(webApi: WebApiService, statusResponse: StatusResponseV2, syncState: VaultSyncState, encryptionKey: string, needsPull: boolean): Promise<boolean> {  
   const pendingActions = PendingActionProcessor.pendingActions(statusResponse);
   const sharedManifests = Object.values(await SharingService.getSharedManifestRecords());
-  if (pendingActions.length === 0 && sharedManifests.length === 0) {
-    return false;
-  }
 
   const sqliteClient = await createVaultSqliteClient();
 
@@ -1802,7 +1780,7 @@ async function pullAndMaterializeServerVault(syncState: VaultSyncState, encrypti
     case 'canonical':
       return await canonicalPullAndMerge(strategy.localClient, syncState, encryptionKey, grantSyncChangedVault);
     case 'legacy-sqlite':
-      return await legacyStatementPullAndMerge(syncState, encryptionKey, grantSyncChangedVault);
+      return await legacyStatementPullAndMerge(syncState, encryptionKey);
     case 'server-only':
       return await adoptServerVault(await fetchLatestVaultFromServer(), syncState);
     case 'abort':
@@ -2003,10 +1981,21 @@ async function adoptMergedVault(result: Extract<PullAndMergeResult, { kind: 'mer
  *
  * @param syncState - the sync state the merge runs against
  * @param encryptionKey - the key both vaults are encrypted with
- * @param grantSyncChangedVault - whether an earlier step already changed the stored vault
  */
-async function legacyStatementPullAndMerge(syncState: VaultSyncState, encryptionKey: string, grantSyncChangedVault: boolean): Promise<FullVaultSyncResult> {
+async function legacyStatementPullAndMerge(syncState: VaultSyncState, encryptionKey: string): Promise<FullVaultSyncResult> {
   const vaultResponse = await fetchLatestVaultFromServer();
+
+  /*
+   * The server has already moved to manifest-v1 while this device is still on the sqlite-blob storage model.
+   * The two have different column sets, and the statement merge addresses a row by the columns it carries, so
+   * the local rows would land unstamped and be dropped the next time the vault is canonicalized. The server
+   * vault is the newer of the two, so it is taken as-is; the local changes cannot be expressed in it and are
+   * given up, exactly as they are when a merge fails.
+   */
+  if (!vaultSyncService.lastSnapshotServedLegacySqliteBlob()) {
+    devWarn('[VaultSync] Local vault is still on the legacy storage model while the server serves manifest-v1; skipping the merge and taking the server vault.');
+    return await adoptServerVault(vaultResponse, syncState);
+  }
 
   try {
     const localEncryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string | null;
@@ -2016,17 +2005,6 @@ async function legacyStatementPullAndMerge(syncState: VaultSyncState, encryption
 
     const localDecrypted = bytesToBase64(await decryptVaultBlob(localEncryptedVault, encryptionKey));
     const serverDecrypted = bytesToBase64(await decryptVaultBlob(vaultResponse.vault.blob, encryptionKey));
-
-    /*
-     * Guard for the sqlite-blob to manifest-v1 migration window: this device has already migrated its vault onto the current
-     * schema but the push has not landed yet, while another (not-yet-updated) device advanced the server's
-     * legacy sqlite-blob. The two databases have different column sets, so merging them would throw an error.
-     * We assume here the migrated local vault is newer, so it's pushed as-is.
-     */
-    if (await isLegacyStorageVault(serverDecrypted) && !await isLegacyStorageVault(localDecrypted)) {
-      devWarn('[VaultSync] Server vault is still on the legacy storage format while the local vault is migrated; skipping the merge and pushing the local vault.');
-      return await pushOverLegacyServerVault(grantSyncChangedVault);
-    }
 
     const mergeResult = await vaultMergeService.merge(localDecrypted, serverDecrypted);
     if (!mergeResult.success) {
@@ -2910,7 +2888,7 @@ export async function handleGroupInviteMember(message: { groupId: string; manife
       return { success: false, apiErrorCode: 'INVITE_RECIPIENT_NOT_READY' };
     }
 
-    await SharingService.inviteMember(webApi, group.groupId, manifest.manifestId, member.userId, grant, VaultKeyAlgorithm.RsaOaepSha256);
+    await SharingService.inviteMember(webApi, group.groupId, manifest.manifestId, member.userId, grant, EncryptionUtility.algorithmForPublicKey(member.publicKey!));
 
     devLog(`[Sharing] Invited ${member.userId} to vault ${manifest.manifestId} with its key encrypted for them.`);
     return { success: true };

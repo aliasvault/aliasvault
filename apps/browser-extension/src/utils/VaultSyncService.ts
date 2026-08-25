@@ -390,6 +390,9 @@ export class VaultSyncService {
   /** The manifest ids the last snapshot carried, recorded before any of them is opened. */
   private lastServedManifestIds: string[] = [];
 
+  /** Whether the last snapshot was still on the legacy sqlite-blob storage format. */
+  private lastSnapshotWasLegacySqliteBlob: boolean = false;
+
   /**
    * Retrieve the latest vault from the server as a normalized {@link VaultResponse} (encrypted SQLite blob +
    * email routing + revision).
@@ -407,6 +410,7 @@ export class VaultSyncService {
     devLog('[V2Pull] Step 1/4: fetching vault snapshot (GET /v2/Vault)...');
     const snapshot = await this.fetchSnapshot();
     this.lastServedManifestIds = (snapshot.manifests ?? []).map(m => m.manifestId);
+    this.lastSnapshotWasLegacySqliteBlob = isLegacySqliteBlobSnapshot(snapshot);
     const personalManifest = selectPersonalManifest(snapshot);
     devLog(`[V2Pull] Step 1/4 done: storageFormat=${snapshot.storageFormat}, manifests=${snapshot.manifests?.length ?? 0}, personalRevision=${personalManifest?.revision}, manifestBlob=${personalManifest?.blob?.length ?? 0} chars, buckets=${snapshot.buckets?.length ?? 0}, blobRefs=${personalManifest?.blobReferences?.length ?? 0}`);
 
@@ -450,6 +454,7 @@ export class VaultSyncService {
 
     const snapshot = await snapshotPromise;
     this.lastServedManifestIds = (snapshot.manifests ?? []).map(m => m.manifestId);
+    this.lastSnapshotWasLegacySqliteBlob = isLegacySqliteBlobSnapshot(snapshot);
 
     // LEGACY: a server still on the sqlite-blob format cannot merge with a manifest-v1 vault; the caller pushes over it.
     if (isLegacySqliteBlobSnapshot(snapshot)) {
@@ -1729,6 +1734,16 @@ export class VaultSyncService {
    */
   public manifestIdsServedByLastSnapshot(): string[] {
     return [...this.lastServedManifestIds];
+  }
+
+  /**
+   * Whether the last snapshot was served in the legacy sqlite-blob storage format rather than manifest-v1.
+   *
+   * TODO: delete once all users have migrated to the manifest-v1 storage model.
+   * @returns True when the server has not migrated yet, false when it served manifest-v1 or nothing was pulled in this session
+   */
+  public lastSnapshotServedLegacySqliteBlob(): boolean {
+    return this.lastSnapshotWasLegacySqliteBlob;
   }
 
   /**
