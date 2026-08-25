@@ -4,7 +4,7 @@ import { storage } from 'wxt/utils/storage';
 import { clearAllSavePromptState } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
 
-import { base64ToBytes } from '@/utils/Base64';
+import { base64ToBytes, bytesToBase64 } from '@/utils/Base64';
 import { AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, vaultDataStorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
 import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
 import type { ItemUsageAction } from '@/utils/db';
@@ -46,12 +46,13 @@ import type { StringResponse as stringResponse } from '@/utils/types/messaging/S
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 import type { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
 import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope, isManifestScope } from '@/utils/types/VaultMutationScope';
+import { decryptVaultBlob, encryptVaultBlob } from '@/utils/VaultBlob';
 import { VaultCodec } from '@/utils/VaultCodec';
 import { clearDirtyScopes, getDirtyScopes } from '@/utils/VaultDirtyState';
 import { VaultKeyService } from '@/utils/VaultKeyService';
 import { vaultRequiresManifestMigration, VaultMigrationKind, type VaultMigrationStatus } from '@/utils/VaultManifestMigration';
 import { vaultMergeService } from '@/utils/VaultMergeService';
-import { type PullAndMergeResult, vaultSyncService, invalidateCanonicalizeCache } from '@/utils/VaultSyncService';
+import { type PullAndMergeResult, vaultSyncService, invalidateCanonicalizeCache, primeCanonicalizeCache } from '@/utils/VaultSyncService';
 import { WebApiService } from '@/utils/WebApiService';
 
 import { t } from '@/i18n/StandaloneI18n';
@@ -369,10 +370,8 @@ export async function handleGetVault(
       return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
     }
 
-    const decryptedVault = await EncryptionUtility.symmetricDecrypt(
-      encryptedVault,
-      encryptionKey
-    );
+    // The popup receives the database as base64: messages carry strings, not bytes.
+    const decryptedVault = bytesToBase64(await decryptVaultBlob(encryptedVault, encryptionKey));
 
     return {
       success: true,
@@ -995,7 +994,7 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient, options: { for
    */
   const currentKey = await handleGetEncryptionKey() ?? encryptionKey;
   if (vaultPruned || currentKey !== encryptionKey) {
-    const reEncrypted = await EncryptionUtility.symmetricEncrypt(sqliteClient.exportToBase64(), currentKey);
+    const reEncrypted = await encryptVaultBlob(sqliteClient.exportToBytes(), currentKey);
     await storage.setItem(StorageKeys.ENCRYPTED_VAULT, reEncrypted);
     cachedSqliteClient = sqliteClient;
     cachedVaultBlob = reEncrypted;
@@ -1014,8 +1013,7 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient, options: { for
  *   that data bucket instead of the whole manifest. Defaults to a full manifest push.
  */
 async function persistLocalVaultMutation(sqliteClient: SqliteClient, encryptionKey: string, scope?: VaultMutationScope) : Promise<void> {
-  const updatedVaultData = sqliteClient.exportToBase64();
-  const encryptedVault = await EncryptionUtility.symmetricEncrypt(updatedVaultData, encryptionKey);
+  const encryptedVault = await encryptVaultBlob(sqliteClient.exportToBytes(), encryptionKey);
   await handleStoreEncryptedVault({ vaultBlob: encryptedVault, markDirty: true, scope });
 
   /*
@@ -1073,14 +1071,11 @@ export async function createVaultSqliteClient() : Promise<SqliteClient> {
   }
 
   // Decrypt the vault
-  const decryptedVault = await EncryptionUtility.symmetricDecrypt(
-    encryptedVault,
-    encryptionKey
-  );
+  const decryptedVault = await decryptVaultBlob(encryptedVault, encryptionKey);
 
   // Initialize the SQLite client with the decrypted vault
   const sqliteClient = new SqliteClient();
-  await sqliteClient.initializeFromBase64(decryptedVault);
+  await sqliteClient.initializeFromBytes(decryptedVault);
 
   // Cache the client and vault blob
   cachedSqliteClient = sqliteClient;
@@ -1233,8 +1228,8 @@ export async function handleMigrateVaultManifest(): Promise<VaultManifestMigrati
 
     // Step 1: local migration. Store it dirty so the vault is usable immediately, with or without a server.
     if (needsSchemaMigration) {
-      const migratedBase64 = await vaultSyncService.migrateVaultToCurrentSchema(sqliteClient);
-      const migratedEncrypted = await EncryptionUtility.symmetricEncrypt(migratedBase64, encryptionKey);
+      const migratedBytes = await vaultSyncService.migrateVaultToCurrentSchema(sqliteClient);
+      const migratedEncrypted = await encryptVaultBlob(migratedBytes, encryptionKey);
       await handleStoreEncryptedVault({ vaultBlob: migratedEncrypted, markDirty: true });
 
       // Invalidate any local cached results that are now stale.
@@ -1380,8 +1375,8 @@ async function adoptRemoteVaultKeyIfNeeded(): Promise<boolean> {
 
     // Re-encrypt the locally persisted vault with the VEK before swapping the session key.
     if (encryptedVault) {
-      const decrypted = await EncryptionUtility.symmetricDecrypt(encryptedVault, sessionKey);
-      await storage.setItem(StorageKeys.ENCRYPTED_VAULT, await EncryptionUtility.symmetricEncrypt(decrypted, vek));
+      const decrypted = await decryptVaultBlob(encryptedVault, sessionKey);
+      await storage.setItem(StorageKeys.ENCRYPTED_VAULT, await encryptVaultBlob(decrypted, vek));
     }
 
     await resealSharedManifestRecords(vek);
@@ -1780,7 +1775,7 @@ async function applyServerDirectedChanges(webApi: WebApiService, statusResponse:
   }
 
   // A rotated delivery key or a re-rendered shared manifest is a normal local change, so it rides out on this very sync.
-  const reconciledVault = await EncryptionUtility.symmetricEncrypt(sqliteClient.exportToBase64(), encryptionKey);
+  const reconciledVault = await encryptVaultBlob(sqliteClient.exportToBytes(), encryptionKey);
   const stored = await handleStoreEncryptedVault({ vaultBlob: reconciledVault, markDirty: true });
   syncState.isDirty = true;
   syncState.mutationSequence = stored.mutationSequence;
@@ -1848,7 +1843,7 @@ async function choosePullStrategy(syncState: VaultSyncState, encryptionKey: stri
   // Create a fresh client decrypted from the stored blob for the merge input.
   const localClient = new SqliteClient();
   try {
-    await localClient.initializeFromBase64(await EncryptionUtility.symmetricDecrypt(localEncryptedVault, encryptionKey));
+    await localClient.initializeFromBytes(await decryptVaultBlob(localEncryptedVault, encryptionKey));
 
     /*
      * Both checks matter: requiresSchemaMigration deliberately answers false for a vault still on the
@@ -1955,6 +1950,12 @@ async function canonicalPullAndMerge(localClient: SqliteClient, syncState: Vault
     return await materializedVaultResult();
   }
 
+  /**
+   * The blob just stored is this merge's own output, so the push is handed the database and the canonical form
+   * the merge already produced.
+   */
+  await adoptMergedVault(result, storeResult.mutationSequence);
+
   const uploadResponse = await handleUploadVault();
   if (uploadResponse.success && uploadResponse.status === 0) {
     await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
@@ -1968,6 +1969,32 @@ async function canonicalPullAndMerge(localClient: SqliteClient, syncState: Vault
 
   await storeVaultMetadata(result.response);
   return await materializedVaultResult();
+}
+
+/**
+ * Adopt a just-stored merge output as this context's live vault: its SQLite becomes the cached client, and the
+ * canonical form the merge produced is handed to the push that follows.
+ *
+ * @param result - the merge whose vault was just stored
+ * @param mutationSequence - the mutation sequence the stored vault is at
+ */
+async function adoptMergedVault(result: Extract<PullAndMergeResult, { kind: 'merged' }>, mutationSequence: number): Promise<void> {
+  try {
+    const mergedClient = new SqliteClient();
+    await mergedClient.initializeFromBytes(result.mergedSqliteBytes);
+
+    // The store above cleared the cache without closing what was there, so there is nothing to close here.
+    cachedSqliteClient = mergedClient;
+    cachedVaultBlob = result.response.vault.blob;
+
+    if (result.pushCanonical) {
+      primeCanonicalizeCache(mergedClient, mutationSequence, result.pushCanonical);
+    } else {
+      devLog('[VaultSync] Merge output cannot stand in for the push canonicalize; the push derives it from the merged vault itself.');
+    }
+  } catch (error) {
+    devWarn('[VaultSync] Could not adopt the merged vault as the live one; the push reads it back from storage.', error);
+  }
 }
 
 /**
@@ -1987,8 +2014,8 @@ async function legacyStatementPullAndMerge(syncState: VaultSyncState, encryption
       return await adoptServerVault(vaultResponse, syncState);
     }
 
-    const localDecrypted = await EncryptionUtility.symmetricDecrypt(localEncryptedVault, encryptionKey);
-    const serverDecrypted = await EncryptionUtility.symmetricDecrypt(vaultResponse.vault.blob, encryptionKey);
+    const localDecrypted = bytesToBase64(await decryptVaultBlob(localEncryptedVault, encryptionKey));
+    const serverDecrypted = bytesToBase64(await decryptVaultBlob(vaultResponse.vault.blob, encryptionKey));
 
     /*
      * Guard for the sqlite-blob to manifest-v1 migration window: this device has already migrated its vault onto the current
@@ -2010,7 +2037,7 @@ async function legacyStatementPullAndMerge(syncState: VaultSyncState, encryption
     devLog('[VaultSync] Vault merge during sync completed:', mergeResult.stats);
 
     // Store merged vault. Use expectedMutationSeq to detect if a local mutation happened during merge.
-    const mergedEncryptedVault = await EncryptionUtility.symmetricEncrypt(mergeResult.mergedVaultBase64, encryptionKey);
+    const mergedEncryptedVault = await encryptVaultBlob(base64ToBytes(mergeResult.mergedVaultBase64), encryptionKey);
     const storeResult = await handleStoreEncryptedVault({ vaultBlob: mergedEncryptedVault, expectedMutationSeq: syncState.mutationSequence });
     if (!storeResult.success) {
       devLog('[VaultSync] Mutation detected during merge, re-syncing...');

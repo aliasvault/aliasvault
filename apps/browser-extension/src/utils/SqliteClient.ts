@@ -170,9 +170,15 @@ export class SqliteClient implements IDatabaseClient {
    * @param base64String - Base64 encoded SQLite database
    */
   public async initializeFromBase64(base64String: string): Promise<void> {
-    try {
-      const bytes = base64ToBytes(base64String);
+    return this.initializeFromBytes(base64ToBytes(base64String));
+  }
 
+  /**
+   * Initialize the SQLite database from the raw database bytes.
+   * @param bytes - the SQLite database
+   */
+  public async initializeFromBytes(bytes: Uint8Array): Promise<void> {
+    try {
       // Initialize SQL.js with the WASM file
       const SQL = await initSqlJs({
         /**
@@ -269,13 +275,21 @@ export class SqliteClient implements IDatabaseClient {
    * @returns Base64 encoded string of the database
    */
   public exportToBase64(): string {
+    return bytesToBase64(this.exportToBytes());
+  }
+
+  /**
+   * Export the SQLite database as raw bytes.
+   * @returns The database bytes
+   */
+  public exportToBytes(): Uint8Array {
     if (!this.db) {
       throw new Error('Database not initialized');
     }
 
     try {
       this.vacuumIfFragmented();
-      return bytesToBase64(this.db.export());
+      return this.db.export();
     } catch (error) {
       console.error('Error exporting SQLite database:', error);
       throw error;

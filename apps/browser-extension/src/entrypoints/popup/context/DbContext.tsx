@@ -71,7 +71,7 @@ type DbContextType = {
   /**
    * Load a decrypted vault into memory (SQLite client).
    */
-  loadDatabase: (decryptedVaultBase64: string) => Promise<SqliteClient>;
+  loadDatabase: (sqliteBytes: Uint8Array) => Promise<SqliteClient>;
   /**
    * Load the stored (encrypted) vault from background storage into memory.
    * Returns the SqliteClient if vault was loaded successfully, null otherwise.
@@ -232,9 +232,9 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   /**
    * Load a decrypted vault into memory (SQLite client).
    */
-  const loadDatabase = useCallback(async (decryptedVaultBase64: string) => {
+  const loadDatabase = useCallback(async (sqliteBytes: Uint8Array) => {
     const client = new SqliteClient();
-    await client.initializeFromBase64(decryptedVaultBase64);
+    await client.initializeFromBytes(sqliteBytes);
 
     setSqliteClient(client);
     setDbInitialized(true);

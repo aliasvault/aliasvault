@@ -3,9 +3,9 @@ import { useCallback, useRef } from 'react';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import { devLog } from '@/utils/devLogger/DevLogger';
-import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { isSilentScope, type VaultMutationOptions, type VaultMutationScope } from '@/utils/types/VaultMutationScope';
+import { encryptVaultBlob } from '@/utils/VaultBlob';
 
 /**
  * Hook to execute a vault mutation.
@@ -38,12 +38,8 @@ export function useVaultMutate(): {
     await operation();
 
     // Export and encrypt the updated vault
-    const base64Vault = dbContext.sqliteClient!.exportToBase64();
     const encryptionKey = await sendMessage('GET_ENCRYPTION_KEY') as string;
-    const encryptedVaultBlob = await EncryptionUtility.symmetricEncrypt(
-      base64Vault,
-      encryptionKey
-    );
+    const encryptedVaultBlob = await encryptVaultBlob(dbContext.sqliteClient!.exportToBytes(), encryptionKey);
 
     /*
      * Store the updated vault locally, mark dirty, increment mutation sequence. The scope records what

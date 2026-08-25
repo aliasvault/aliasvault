@@ -20,7 +20,6 @@ import { AppInfo } from '@/utils/AppInfo';
 import { SrpAuthService } from '@/utils/auth/SrpAuthService';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import type { VaultResponse, LoginResponse } from '@/utils/dist/core/models/webapi';
-import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCodes';
@@ -28,6 +27,7 @@ import { ClientUpgradeRequiredError } from '@/utils/types/errors/ClientUpgradeRe
 import { ServerUpdateRequiredError } from '@/utils/types/errors/ServerUpdateRequiredError';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
+import { decryptVaultBlob } from '@/utils/VaultBlob';
 import { VaultKeyService } from '@/utils/VaultKeyService';
 import { vaultSyncService } from '@/utils/VaultSyncService';
 
@@ -83,7 +83,7 @@ const Login: React.FC = () => {
     });
 
     // Decrypt and load the vault into memory
-    await dbContext.loadDatabase(await EncryptionUtility.symmetricDecrypt(vaultResponse.vault.blob, encryptionKey));
+    await dbContext.loadDatabase(await decryptVaultBlob(vaultResponse.vault.blob, encryptionKey));
   };
 
   /**

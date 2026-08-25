@@ -3,6 +3,7 @@
  */
 
 import { base64ToBytes as decodeBase64, bytesToBase64 as encodeBase64 } from '@/utils/Base64';
+import { devLog } from '@/utils/devLogger/DevLogger';
 
 import type {
   CodecManifest,
@@ -41,6 +42,11 @@ type BlobRef = {
  * The stamp a row carries while it belongs to no manifest yet.
  */
 export const UNSTAMPED_MANIFEST_ID = '00000000-0000-0000-0000-000000000000';
+
+/**
+ * Column sets already derived from a schema, keyed by the schema SQL that produced them.
+ */
+const schemaColumnsCache = new Map<string, Promise<Record<string, string[]>>>();
 
 /**
  * Whether a stamp names no manifest, so it must never be mistaken for one the vault holds rows for.
@@ -124,6 +130,24 @@ export class VaultCodec {
    * @param schemaSql - the COMPLETE_SCHEMA_SQL string for the target client version
    */
   public static async getSchemaColumns(schemaSql: string): Promise<Record<string, string[]>> {
+    let columns = schemaColumnsCache.get(schemaSql);
+    if (!columns) {
+      columns = this.readSchemaColumns(schemaSql).catch((error: unknown) => {
+        // A failed probe must not stay cached, or every later call inherits the failure.
+        schemaColumnsCache.delete(schemaSql);
+        throw error;
+      });
+      schemaColumnsCache.set(schemaSql, columns);
+    }
+
+    return Object.fromEntries(Object.entries(await columns).map(([table, cols]) => [table, [...cols]]));
+  }
+
+  /**
+   * Derive the column set of a schema by applying it to a throwaway database.
+   * @param schemaSql - the COMPLETE_SCHEMA_SQL string for the target client version
+   */
+  private static async readSchemaColumns(schemaSql: string): Promise<Record<string, string[]>> {
     const db = await this.createDatabase();
     try {
       db.run(schemaSql);
@@ -139,19 +163,19 @@ export class VaultCodec {
   }
 
   /**
-   * Insert the materialized tables into a fresh SQLite database and export it (base64).
+   * Insert the materialized tables into a fresh SQLite database and export it.
    * @param materialized - tables produced by the Rust `materialize_as_sqlite`
    * @param blobs - map of `hash -> plaintext bytes` (caller fetched + decrypted these)
    * @param schemaSql - the COMPLETE_SCHEMA_SQL string for the target client version
-   * @returns A base64-encoded SQLite database identical (in row content) to the original.
+   * @returns The SQLite database bytes, identical (in row content) to the original.
    */
-  public static async insertTables(materialized: CodecMaterialized, blobs: Map<string, Uint8Array>, schemaSql: string): Promise<string> {
+  public static async insertTables(materialized: CodecMaterialized, blobs: Map<string, Uint8Array>, schemaSql: string): Promise<Uint8Array> {
     const db = await this.createDatabase();
 
     try {
       // 1) Apply the schema.
       db.run(schemaSql);
-      console.info('[VaultCodec] Schema applied.');
+      devLog('[VaultCodec] Schema applied.');
 
       /*
        * SQLite enforces foreign keys immediately (no deferral), and tables are inserted in the order Rust
@@ -179,7 +203,7 @@ export class VaultCodec {
           continue;
         }
 
-        console.info(`[VaultCodec] Inserting ${rows.length} rows into "${tableName}"...`);
+        devLog(`[VaultCodec] Inserting ${rows.length} rows into "${tableName}"...`);
         for (const row of rows) {
           const cols = Object.keys(row);
           const values: unknown[] = cols.map(c => {
@@ -224,12 +248,12 @@ export class VaultCodec {
         const sample = fkViolations[0].values.slice(0, 5).map(v => `${v[0]} row ${v[1]} → missing parent in ${v[2]}`).join('; ');
         throw new Error(`VaultCodec: materialized database fails foreign key check (${fkViolations[0].values.length} violations): ${sample}`);
       }
-      console.info('[VaultCodec] Foreign key check passed.');
+      devLog('[VaultCodec] Foreign key check passed.');
 
       // 4) Export.
       const bytes = db.export();
-      console.info(`[VaultCodec] Reassembly complete: exported SQLite of ${bytes.length} bytes.`);
-      return encodeBase64(bytes);
+      devLog(`[VaultCodec] Reassembly complete: exported SQLite of ${bytes.length} bytes.`);
+      return bytes;
     } finally {
       db.close();
     }

@@ -121,7 +121,9 @@ fn merge_manifest_pair(
 
     let mut merged: HashMap<String, Vec<CodecRecord>> = HashMap::new();
     for name in table_names {
-        let base_rows = base_tables.remove(&name).unwrap_or_default();
+        let base_entry = base_tables.remove(&name);
+        let base_carried_table = base_entry.is_some();
+        let base_rows = base_entry.unwrap_or_default();
         let incoming_rows = incoming_tables.remove(&name).unwrap_or_default();
         let merged_rows = match SYNCABLE_TABLES.iter().find(|t| t.name == name) {
             Some(config) => {
@@ -131,7 +133,11 @@ fn merge_manifest_pair(
             // Not a syncable table (a skip table, or one from a newer writer): the base wins as-is.
             None => base_rows,
         };
-        if !merged_rows.is_empty() {
+        /*
+         * A table the base carried stays in the output even when it merged to nothing, so the merged
+         * manifest keeps the base's shape.
+         */
+        if base_carried_table || !merged_rows.is_empty() {
             merged.insert(name, merged_rows);
         }
     }
@@ -442,6 +448,30 @@ mod tests {
         assert_eq!(merged.buckets[0].category, "Settings");
         assert_eq!(merged.buckets[0].tables["Settings"][0]["Value"], json!("dark"), "the newer local setting wins inside the bucket");
         assert!(crate::vault_codec::validate_data_bucket(&merged.buckets[0]).ok);
+    }
+
+    #[test]
+    fn an_empty_table_the_server_carried_stays_in_the_merged_manifest() {
+        /*
+         * The merged manifest is pushed as-is and compared against a baseline canonicalize produced, and
+         * canonicalize keeps an empty table. Dropping it here rewrites the whole manifest on every merge.
+         */
+        let merged = merge_single(vec![], vec![]);
+        assert_eq!(merged.manifest.tables.get("Items").map(Vec::len), Some(0), "the server's empty table keeps its place in the merged manifest");
+
+        // The empty tables of a bucket the server served come back as that bucket, not as a missing one.
+        let output = merge_canonical(CanonicalMergeInput {
+            server_manifests: vec![items_manifest(PERSONAL, vec![])],
+            server_buckets: vec![DataBucket::new(PERSONAL, "Settings", [("Settings".to_string(), vec![])].into_iter().collect())],
+            contentless_server_manifest_ids: vec![],
+            local_manifests: vec![items_manifest(PERSONAL, vec![])],
+            local_buckets: vec![],
+            schema_columns: schema(),
+        })
+        .unwrap();
+        let buckets = &output.manifests[0].buckets;
+        assert_eq!(buckets.len(), 1, "the served bucket is still emitted when it holds no rows");
+        assert_eq!(buckets[0].tables.get("Settings").map(Vec::len), Some(0));
     }
 
     #[test]

@@ -6,7 +6,7 @@
 
 import { storage } from 'wxt/utils/storage';
 
-import { base64ToBytes } from '@/utils/Base64';
+import { base64ToBytes, bytesToBase64 } from '@/utils/Base64';
 import { bucketRevisionKey, StorageKeys } from '@/utils/constants/storageKeys';
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
 import { ManifestKeyType, VaultKeyAlgorithm, type BucketRevision, type VaultResponse } from '@/utils/dist/core/models/webapi';
@@ -21,6 +21,7 @@ import { SharingService, type ManifestVekGrant, type SharedManifestRecord } from
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getStorageItem } from '@/utils/StorageUtility';
 import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
+import { encryptVaultBlob } from '@/utils/VaultBlob';
 import { type VaultManifest, type VaultDataBucket, VaultCodec, manifestIdKey } from '@/utils/VaultCodec';
 import { VaultKeyService } from '@/utils/VaultKeyService';
 import { WebApiService } from '@/utils/WebApiService';
@@ -157,7 +158,7 @@ function batchByTransferCost<T>(items: T[], costOf: (item: T) => number): T[][] 
  * Result of a pull: the materialized SQLite plus its manifest revision.
  */
 type PullResult = {
-  sqliteBase64: string;
+  sqliteBytes: Uint8Array;
   manifestRevision: number;
 };
 
@@ -197,6 +198,8 @@ export type PullAndMergeResult =
       fallbackManifestIds: string[];
       droppedLocalManifestIds: string[];
       commitRevisions: () => Promise<void>;
+      mergedSqliteBytes: Uint8Array;
+      pushCanonical: CanonicalizedVaultSet | null;
     }
   | { kind: 'server-only'; response: VaultResponse; commitRevisions: () => Promise<void> };
 
@@ -339,7 +342,7 @@ type PushManifest = {
  * purpose: the codec treats every manifest alike and the push drives one loop over all of them. `isPersonal` marks the
  * few places where the user's own manifest genuinely differs (see {@link resolveManifestRecords}).
  */
-type ManifestRecord = {
+export type ManifestRecord = {
   manifestId: string;
   isPersonal: boolean;
   /** Salt this manifest's blob hashes are derived with. */
@@ -356,7 +359,7 @@ type ManifestRecord = {
  * The canonicalized vault plus the manifest records it was split against, personal manifest first (the order canonicalize
  * requires: the first spec is the manifest being written from).
  */
-type CanonicalizedVaultSet = {
+export type CanonicalizedVaultSet = {
   canonicalized: CodecCanonicalized;
   manifestRecords: ManifestRecord[];
 };
@@ -368,6 +371,16 @@ let canonicalizeCache: ({ client: SqliteClient; mutationSequence: number } & Can
  */
 export function invalidateCanonicalizeCache(): void {
   canonicalizeCache = null;
+}
+
+/**
+ * Hand the push a canonicalize result to prevent double-canonicalization where possible.
+ * @param client - the client the result describes; reused for this instance only
+ * @param mutationSequence - the sequence the vault is at; a mutation past it invalidates the result
+ * @param set - the canonicalized vault
+ */
+export function primeCanonicalizeCache(client: SqliteClient, mutationSequence: number, set: CanonicalizedVaultSet): void {
+  canonicalizeCache = { client, mutationSequence, ...set };
 }
 
 /**
@@ -412,8 +425,8 @@ export class VaultSyncService {
       // Manifest-v1 user: materialize the manifest + metadata + blobs into a SQLite blob, then encrypt it.
       devLog('[V2Pull] Step 2/4: manifest format: decrypting and reassembling local SQLite...');
       const pull = await this.materializeFromSnapshot(snapshot, encryptionKey);
-      devLog(`[V2Pull] Step 3/4: materialized SQLite (${pull.sqliteBase64.length} base64 chars); re-encrypting for local storage...`);
-      const encryptedVault = await EncryptionUtility.symmetricEncrypt(pull.sqliteBase64, encryptionKey);
+      devLog(`[V2Pull] Step 3/4: materialized SQLite (${pull.sqliteBytes.length} bytes); re-encrypting for local storage...`);
+      const encryptedVault = await encryptVaultBlob(pull.sqliteBytes, encryptionKey);
       devLog('[V2Pull] Step 4/4: re-encryption done, returning VaultResponse.');
       return this.buildResponse(encryptedVault, '2.0.0', pull.manifestRevision, snapshot);
     } catch (error) {
@@ -430,7 +443,12 @@ export class VaultSyncService {
    */
   public async pullAndMerge(encryptionKey: string, localClient: SqliteClient): Promise<PullAndMergeResult> {
     devLog('[V2Merge] Fetching vault snapshot for canonical merge (GET /v2/Vault)...');
-    const snapshot = await this.fetchSnapshot();
+
+    const snapshotPromise = this.fetchSnapshot();
+    const localCanonicalized = this.canonicalizeVault(localClient);
+    void localCanonicalized.catch(() => null);
+
+    const snapshot = await snapshotPromise;
     this.lastServedManifestIds = (snapshot.manifests ?? []).map(m => m.manifestId);
 
     // LEGACY: a server still on the sqlite-blob format cannot merge with a manifest-v1 vault; the caller pushes over it.
@@ -443,12 +461,13 @@ export class VaultSyncService {
       const opened = await this.openManifestsAndAdoptSyncState(snapshot, encryptionKey, { deferRevisionCommit: true });
 
       try {
-        return await this.mergeOntoOpenedManifests(opened, snapshot, encryptionKey, localClient);
+        const localSide = await this.localSideForMerge(localCanonicalized, localClient, opened);
+        return await this.mergeOntoOpenedManifests(opened, snapshot, encryptionKey, localSide);
       } catch (mergeError) {
         // Today's merge-failure fallback, from the same snapshot: the server vault stands, local changes are dropped.
         devError('[V2Merge] Canonical merge failed, falling back to the server vault:', mergeError);
-        const sqliteBase64 = await this.materializeToSqlite(opened.resolved.map(m => m.manifest), opened.dataBuckets, opened.blobMap);
-        const encryptedVault = await EncryptionUtility.symmetricEncrypt(sqliteBase64, encryptionKey);
+        const sqliteBytes = await this.materializeToSqlite(opened.resolved.map(m => m.manifest), opened.dataBuckets, opened.blobMap);
+        const encryptedVault = await encryptVaultBlob(sqliteBytes, encryptionKey);
         return { kind: 'server-only', response: this.buildResponse(encryptedVault, '2.0.0', opened.personalRevision, snapshot), commitRevisions: opened.commitManifestRevisions };
       }
     } catch (error) {
@@ -458,15 +477,55 @@ export class VaultSyncService {
   }
 
   /**
-   * The merge core of {@link pullAndMerge}: canonicalize the local vault, run the Rust canonical merge
-   * against the manifests just opened, validate the result per manifest, and materialize it.
+   * The local side of the merge.
+   * @param parallelRun - the canonicalize started before the fetch
+   * @param localClient - the local vault, for the re-run
+   * @param opened - the opened server manifests, which decide whether the parallel result still holds
+   */
+  private async localSideForMerge(parallelRun: Promise<CanonicalizedVaultSet>, localClient: SqliteClient, opened: OpenedManifestSet): Promise<CanonicalizedVaultSet> {
+    const set = await parallelRun;
+    const moved = this.groundMovedUnderCanonicalize(set.manifestRecords, opened);
+    if (moved === null) {
+      return set;
+    }
+
+    devWarn(`[V2Merge] This snapshot re-minted ${moved}; canonicalizing the local vault again so its blob hashes match the server's.`);
+    return this.canonicalizeVault(localClient);
+  }
+
+  /**
+   * What this snapshot changed under a canonicalize that ran before it was opened.
+   * @param records - the manifest records the parallel canonicalize was split against
+   * @param opened - the opened server manifests
+   */
+  private groundMovedUnderCanonicalize(records: ManifestRecord[], opened: OpenedManifestSet): string | null {
+    const personalRecord = records.find(record => record.isPersonal);
+    const serverPersonal = opened.resolved.find(entry => entry.isPersonal);
+    if (serverPersonal && !manifestIdsEqual(personalRecord?.manifestId, serverPersonal.manifestId)) {
+      return `the personal manifest id (${personalRecord?.manifestId ?? 'none'} became ${serverPersonal.manifestId})`;
+    }
+
+    const saltByManifestId = new Map(opened.resolved.map(entry => [manifestIdKey(entry.manifestId), entry.manifest.manifestSalt]));
+    for (const record of records) {
+      const serverSalt = saltByManifestId.get(manifestIdKey(record.manifestId));
+      if (serverSalt !== undefined && serverSalt !== record.salt) {
+        return `the blob salt of manifest ${record.manifestId}`;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * The merge core of {@link pullAndMerge}: run the Rust canonical merge of the local side against the manifests
+   * just opened, validate the result per manifest, and materialize it.
    * @param opened - the opened server manifests (the merge base)
    * @param snapshot - the raw snapshot (for the email-routing block of the response)
    * @param encryptionKey - the personal manifest's symmetric key
-   * @param localClient - the local vault, freshly decrypted from storage
+   * @param localSide - the canonicalized local vault, the incoming side of the merge
    */
-  private async mergeOntoOpenedManifests(opened: OpenedManifestSet, snapshot: GetResponseDto, encryptionKey: string, localClient: SqliteClient): Promise<PullAndMergeResult> {
-    const { canonicalized } = await this.canonicalizeVault(localClient);
+  private async mergeOntoOpenedManifests(opened: OpenedManifestSet, snapshot: GetResponseDto, encryptionKey: string, localSide: CanonicalizedVaultSet): Promise<PullAndMergeResult> {
+    const { canonicalized, manifestRecords } = localSide;
 
     const schemaColumns = await VaultCodec.getSchemaColumns(new VaultSqlGenerator().getCompleteSchemaSql());
     devLog(`[V2Merge] Merging ${canonicalized.manifests.length} local manifest(s) onto ${opened.resolved.length} server manifest(s)...`);
@@ -523,17 +582,19 @@ export class VaultSyncService {
 
     // Blob bytes for materialize: the server download plus everything the local canonicalize extracted.
     const blobMap = opened.blobMap;
+    const localBlobs = new Map<string, CodecBlobEntry>();
     for (const { blobs } of canonicalized.manifests) {
       for (const [hash, blob] of Object.entries(blobs)) {
+        localBlobs.set(hash, blob);
         if (!blobMap.has(hash)) {
           blobMap.set(hash, VaultCodec.base64ToBytes(blob.bytesBase64));
         }
       }
     }
-    this.assertMergedBlobRefsResolve(manifests, blobMap, opened.resolved[0]?.manifestId ?? '');
+    const mergedBlobs = this.resolveMergedBlobRefs(manifests, blobMap, opened.resolved[0]?.manifestId ?? '', localBlobs);
 
-    const sqliteBase64 = await this.materializeToSqlite(manifests, dataBuckets, blobMap);
-    const encryptedVault = await EncryptionUtility.symmetricEncrypt(sqliteBase64, encryptionKey);
+    const sqliteBytes = await this.materializeToSqlite(manifests, dataBuckets, blobMap);
+    const encryptedVault = await encryptVaultBlob(sqliteBytes, encryptionKey);
     devLog(`[V2Merge] Canonical merge complete: ${stats.conflicts} conflict(s), ${stats.recordsInserted} offline row(s) kept, ${fallbackManifestIds.length} validation fallback(s), ${mergeOutput.droppedLocalManifestIds.length} dropped local manifest(s).`);
 
     return {
@@ -543,6 +604,42 @@ export class VaultSyncService {
       fallbackManifestIds,
       droppedLocalManifestIds: mergeOutput.droppedLocalManifestIds,
       commitRevisions: opened.commitManifestRevisions,
+      mergedSqliteBytes: sqliteBytes,
+      pushCanonical: this.mergeOutputForPush(manifests, dataBuckets, mergedBlobs, manifestRecords, fallbackManifestIds.length > 0),
+    };
+  }
+
+  /**
+   * The merged vault in the shape the push writes from.
+   * @param manifests - the merged manifests, as materialized
+   * @param dataBuckets - the merged data buckets, as materialized
+   * @param blobsByManifest - the blob entries per manifest
+   * @param manifestRecords - the records the local side was split against
+   * @param hadFallbacks - whether any manifest fell back to the server's copy
+   */
+  private mergeOutputForPush(
+    manifests: VaultManifest[],
+    dataBuckets: VaultDataBucket[],
+    blobsByManifest: Map<string, Record<string, CodecBlobEntry>> | null,
+    manifestRecords: ManifestRecord[],
+    hadFallbacks: boolean
+  ): CanonicalizedVaultSet | null {
+    if (!blobsByManifest || hadFallbacks) {
+      return null;
+    }
+
+    const mergedIds = new Set(manifests.map(manifest => manifestIdKey(manifest.manifestId)));
+    const recordIds = manifestRecords.map(record => manifestIdKey(record.manifestId));
+    if (mergedIds.size !== recordIds.length || recordIds.some(id => !mergedIds.has(id))) {
+      return null;
+    }
+
+    return {
+      canonicalized: {
+        manifests: manifests.map(manifest => ({ manifest, blobs: blobsByManifest.get(manifestIdKey(manifest.manifestId)) ?? {} })),
+        dataBuckets,
+      },
+      manifestRecords,
     };
   }
 
@@ -565,15 +662,27 @@ export class VaultSyncService {
   }
 
   /**
-   * Every blob marker in the merged manifests must resolve to bytes, or materialize would silently insert
-   * NULL.
+   * Every blob marker in the merged manifests must resolve to bytes.
    * @param manifests - the manifests about to materialize
    * @param blobMap - the bytes available by hash
    * @param personalManifestId - the personal manifest's id
+   * @param localBlobs - the blob entries the local canonicalize produced, by hash
+   * @returns The blob entries per manifest id, or null when a marker resolved to no bytes or no kind
    */
-  private assertMergedBlobRefsResolve(manifests: VaultManifest[], blobMap: Map<string, Uint8Array>, personalManifestId: string): void {
+  private resolveMergedBlobRefs(
+    manifests: VaultManifest[],
+    blobMap: Map<string, Uint8Array>,
+    personalManifestId: string,
+    localBlobs: Map<string, CodecBlobEntry>
+  ): Map<string, Record<string, CodecBlobEntry>> | null {
+    const byManifestId = new Map<string, Record<string, CodecBlobEntry>>();
+    let complete = true;
+
     for (const manifest of manifests) {
       const isPersonal = manifestIdsEqual(manifest.manifestId, personalManifestId);
+      const blobs: Record<string, CodecBlobEntry> = {};
+      byManifestId.set(manifestIdKey(manifest.manifestId), blobs);
+
       for (const rows of Object.values(manifest.tables)) {
         for (const row of rows) {
           for (const value of Object.values(row)) {
@@ -581,17 +690,31 @@ export class VaultSyncService {
               continue;
             }
             const ref = value as { __blobRef: string; __blobKind?: string };
-            if (blobMap.has(ref.__blobRef)) {
+            const bytes = blobMap.get(ref.__blobRef);
+            if (!bytes) {
+              if (ref.__blobKind === 'attachment' && isPersonal) {
+                throw new Error(`VaultSyncService: merged vault references attachment blob ${ref.__blobRef} with no bytes available, refusing to materialize an incomplete vault.`);
+              }
+              devWarn(`[V2Merge] Merged ${ref.__blobKind ?? 'blob'} ${ref.__blobRef} has no bytes available; it will materialize as empty.`);
+              complete = false;
               continue;
             }
-            if (ref.__blobKind === 'attachment' && isPersonal) {
-              throw new Error(`VaultSyncService: merged vault references attachment blob ${ref.__blobRef} with no bytes available, refusing to materialize an incomplete vault.`);
+
+            const local = localBlobs.get(ref.__blobRef);
+            if (local) {
+              blobs[ref.__blobRef] = local;
+            } else if (ref.__blobKind) {
+              blobs[ref.__blobRef] = { kind: ref.__blobKind, bytesBase64: bytesToBase64(bytes) };
+            } else {
+              // A marker without a kind cannot be staged for upload; the push derives its own blob set instead.
+              complete = false;
             }
-            devWarn(`[V2Merge] Merged ${ref.__blobKind ?? 'blob'} ${ref.__blobRef} has no bytes available; it will materialize as empty.`);
           }
         }
       }
     }
+
+    return complete ? byManifestId : null;
   }
 
   /**
@@ -602,9 +725,9 @@ export class VaultSyncService {
    * It runs for a legacy `sqlite-blob` vault whose schema stops at the frozen sqlite-blob upgrade chain, and equally for a
    * manifest-v1 vault materialized by an older client whenever a newer COMPLETE_SCHEMA_SQL ships.
    * @param sqliteClient - the local vault to migrate
-   * @returns Base64 of the migrated SQLite database (plaintext; the caller encrypts and stores it)
+   * @returns The migrated SQLite database (plaintext bytes; the caller encrypts and stores it)
    */
-  public async migrateVaultToCurrentSchema(sqliteClient: SqliteClient): Promise<string> {
+  public async migrateVaultToCurrentSchema(sqliteClient: SqliteClient): Promise<Uint8Array> {
     devLog('[ManifestMigration] Migrating local vault onto the current schema (local round-trip, no server involved)...');
 
     try {
@@ -626,10 +749,10 @@ export class VaultSyncService {
       const schemaColumns = await VaultCodec.getSchemaColumns(schemaSql);
       const materialized = await vaultCodecMaterializeAsSqlite(canonicalized.manifests.map(m => m.manifest), canonicalized.dataBuckets, schemaColumns);
 
-      const sqliteBase64 = await VaultCodec.insertTables(materialized, blobMap, schemaSql);
+      const sqliteBytes = await VaultCodec.insertTables(materialized, blobMap, schemaSql);
 
-      devLog(`[ManifestMigration] Migration complete: ${blobMap.size} blobs re-embedded, ${sqliteBase64.length} base64 chars.`);
-      return sqliteBase64;
+      devLog(`[ManifestMigration] Migration complete: ${blobMap.size} blobs re-embedded, ${sqliteBytes.length} bytes.`);
+      return sqliteBytes;
     } catch (error) {
       devError('[ManifestMigration] FAILED to migrate the local vault:', error);
       throw new VaultProcessingError('vault-storage-migration', error);
@@ -651,8 +774,8 @@ export class VaultSyncService {
    */
   private async materializeFromSnapshot(snapshot: GetResponseDto, vek: string): Promise<PullResult> {
     const opened = await this.openManifestsAndAdoptSyncState(snapshot, vek);
-    const sqliteBase64 = await this.materializeToSqlite(opened.resolved.map(m => m.manifest), opened.dataBuckets, opened.blobMap);
-    return { sqliteBase64, manifestRevision: opened.personalRevision };
+    const sqliteBytes = await this.materializeToSqlite(opened.resolved.map(m => m.manifest), opened.dataBuckets, opened.blobMap);
+    return { sqliteBytes, manifestRevision: opened.personalRevision };
   }
 
   /**
@@ -868,7 +991,7 @@ export class VaultSyncService {
       try {
         blobMap.set(r.hash, await this.decryptBlobToBytes(ciphertext, blobKey));
         prunedCache[r.hash] = ciphertext;
-      } catch (e) {
+      } catch {
         devWarn(`[V2Sync] Referenced ${r.category} blob ${r.hash} failed to decrypt with the current key, continuing without it.`);
       }
     }
@@ -885,9 +1008,9 @@ export class VaultSyncService {
    * @param manifests - the manifests to combine, the caller's own first
    * @param dataBuckets - the data buckets belonging to those manifests
    * @param blobMap - plaintext bytes for every blob hash the manifests reference
-   * @returns Base64 of the materialized SQLite database (plaintext)
+   * @returns The materialized SQLite database (plaintext bytes)
    */
-  private async materializeToSqlite(manifests: VaultManifest[], dataBuckets: VaultDataBucket[], blobMap: Map<string, Uint8Array>): Promise<string> {
+  private async materializeToSqlite(manifests: VaultManifest[], dataBuckets: VaultDataBucket[], blobMap: Map<string, Uint8Array>): Promise<Uint8Array> {
     devLog(`[V2Pull] ${blobMap.size} blobs decrypted; running codec reassembly into a fresh SQLite (${manifests.length} manifest(s) combined)...`);
     const sqlGen = new VaultSqlGenerator();
     const schemaSql = sqlGen.getCompleteSchemaSql();
@@ -900,10 +1023,10 @@ export class VaultSyncService {
       devWarn(`[V2Pull] Newer-schema data preserved as overflow: ${overflowTableCount} unknown table(s), unknown columns on [${overflowColumnTables.join(', ')}]. It will round-trip on push but is not usable locally until the app is updated.`);
     }
 
-    const sqliteBase64 = await VaultCodec.insertTables(materialized, blobMap, schemaSql);
+    const sqliteBytes = await VaultCodec.insertTables(materialized, blobMap, schemaSql);
     devLog('[V2Pull] Codec reassembly complete.');
 
-    return sqliteBase64;
+    return sqliteBytes;
   }
 
   /**
@@ -1098,11 +1221,13 @@ export class VaultSyncService {
       devLog('[V2Push] Account-key migration: generated new VEK, AK and account keypair; vault content and all blobs will be re-encrypted and re-uploaded.');
     }
 
-    // 1) Canonicalize, reusing the pre-push no-op check's result when it is still current (same client instance, no mutations since).
+    /**
+     * Canonicalize.
+     */
     const currentMutationSequence = ((await storage.getItem(StorageKeys.MUTATION_SEQUENCE)) as number | null) ?? 0;
     const cachedSet = (canonicalizeCache && canonicalizeCache.client === sqliteClient && canonicalizeCache.mutationSequence === currentMutationSequence) ? canonicalizeCache : null;
     if (cachedSet) {
-      devLog('[V2Push] Reusing the canonicalize result from the pre-push no-op check.');
+      devLog('[V2Push] Reusing the canonicalize result already produced for this vault.');
     }
     const { canonicalized, manifestRecords } = cachedSet ?? await this.canonicalizeVault(sqliteClient);
     // Personal manifest first by construction (see `resolveManifestRecords`), which is also the order canonicalize requires.
@@ -1111,15 +1236,13 @@ export class VaultSyncService {
     const emailRouting = buildEmailRouting(canonicalized.manifests.map(m => m.manifest), privateEmailDomains);
 
     /*
-     * Debug: manifest-set summary + full unencrypted manifests + data buckets, inspectable in the console.
-     * TODO: delete the unencrypted-content logs below before release: they print plaintext vault data.
+     * Debug: manifest-set summary, shapes only.
      */
     const canonicalizedBuckets = canonicalized.dataBuckets;
     devLog(`[V2Push] Canonicalize produced ${canonicalized.manifests.length} manifest(s) + ${canonicalizedBuckets.length} data bucket(s).`);
-    devLog(`[V2Push] Unencrypted data buckets (${canonicalizedBuckets.length}):`, canonicalizedBuckets);
     for (const { manifest } of canonicalized.manifests) {
       const isPersonal = manifest.manifestId === personalRecord.manifestId;
-      devLog(`[V2Push] Unencrypted ${isPersonal ? 'personal manifest' : `manifest "${manifest.name ?? manifest.manifestId}"`}: tables: ${Object.entries(manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`, manifest);
+      devLog(`[V2Push] ${isPersonal ? 'Personal manifest' : `Shared manifest ${manifest.manifestId}`}: tables: ${Object.entries(manifest.tables).map(([t, rows]) => `${t}=${rows.length}`).join(', ')}`);
     }
 
     /*
@@ -1472,7 +1595,7 @@ export class VaultSyncService {
    */
   public async detectNoOpMutation(sqliteClient: SqliteClient, mutationSequence: number): Promise<boolean> {
     const canonicalizedSet = await this.canonicalizeVault(sqliteClient);
-    canonicalizeCache = { client: sqliteClient, mutationSequence, ...canonicalizedSet };
+    primeCanonicalizeCache(sqliteClient, mutationSequence, canonicalizedSet);
 
     const { canonicalized, manifestRecords } = canonicalizedSet;
     const fingerprints = await this.loadContentFingerprints();
