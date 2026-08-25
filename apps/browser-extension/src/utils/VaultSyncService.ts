@@ -113,10 +113,45 @@ const fingerprintManifestKey = (manifestId: string): string => `manifest:${manif
 /** Fingerprint record key for a data bucket, addressed by the manifest that owns it. */
 const fingerprintBucketKey = (manifestId: string, category: string): string => `bucket:${manifestId}:${category}`;
 
-/** Max accumulated base64 ciphertext characters per POST /v2/Vault/blobs call (~4 MB request body). */
-const BLOB_UPLOAD_BATCH_MAX_CHARS = 4 * 1024 * 1024;
-/** Hashes per POST /v2/Vault/blobs/download call. */
-const BLOB_DOWNLOAD_BATCH_SIZE = 100;
+/** Max amount of bytes that can be transferred in a single blob transfer request or response body. */
+const BLOB_TRANSFER_BATCH_MAX_CHARS = 4 * 1024 * 1024;
+/** Upper bound on the number of blobs in one transfer batch. */
+const BLOB_TRANSFER_BATCH_MAX_COUNT = 100;
+
+/** The number of base64 characters a payload of `sizeBytes` raw bytes occupies on the wire. */
+function base64Chars(sizeBytes: number): number {
+  return Math.ceil(sizeBytes / 3) * 4;
+}
+
+/**
+ * Split items into request batches bounded by both {@link BLOB_TRANSFER_BATCH_MAX_CHARS} and
+ * {@link BLOB_TRANSFER_BATCH_MAX_COUNT}. An item larger than the byte budget itself is transferred on its own as
+ * we can't split it across requests.
+ * @param items - the items to batch
+ * @param costOf - the base64 character cost one item adds to the request or response body
+ */
+function batchByTransferCost<T>(items: T[], costOf: (item: T) => number): T[][] {
+  const batches: T[][] = [];
+  let batch: T[] = [];
+  let chars = 0;
+  for (const item of items) {
+    const cost = costOf(item);
+    if (batch.length > 0 && (chars + cost > BLOB_TRANSFER_BATCH_MAX_CHARS || batch.length >= BLOB_TRANSFER_BATCH_MAX_COUNT)) {
+      batches.push(batch);
+      batch = [];
+      chars = 0;
+    }
+
+    batch.push(item);
+    chars += cost;
+  }
+
+  if (batch.length > 0) {
+    batches.push(batch);
+  }
+
+  return batches;
+}
 
 /**
  * Result of a pull: the materialized SQLite plus its manifest revision.
@@ -138,6 +173,7 @@ export type PushResult = {
 };
 
 type BlobRefDto = { hash: string; category: string };
+type StoredBlobRefDto = BlobRefDto & { sizeBytes: number };
 type BlobDto = { hash: string; category: string; encryptedDataBase64: string };
 
 /** A plaintext blob staged for upload: its bytes plus the key that encrypts it. */
@@ -153,7 +189,7 @@ type ResolvedManifest = {
   /** The key that decrypts this manifest and every blob it references. */
   vek: string;
   revision: number;
-  blobReferences: BlobRefDto[];
+  blobReferences: StoredBlobRefDto[];
   /** Fingerprint of the plaintext exactly as the server served it: the push-side change-detection baseline. */
   contentFingerprint: string;
 };
@@ -166,7 +202,7 @@ type ManifestDto = {
   blob?: string | null;
   ciphertextHash?: string | null;
   revision: number;
-  blobReferences?: BlobRefDto[];
+  blobReferences?: StoredBlobRefDto[];
   /** Whether the caller may grant/revoke access to this manifest and publish its email delivery key. */
   canAdminister?: boolean;
   /** How the caller's access to this manifest's VEK is encrypted. */
@@ -548,7 +584,7 @@ export class VaultSyncService {
 
     // Fetch any referenced blobs that aren't already in the local (encrypted) cache.
     const refOwners = new Map<string, ResolvedManifest>();
-    const refs: BlobRefDto[] = [];
+    const refs: StoredBlobRefDto[] = [];
     for (const entry of resolved) {
       for (const r of entry.blobReferences) {
         if (refOwners.has(r.hash)) {
@@ -559,12 +595,15 @@ export class VaultSyncService {
       }
     }
     const cache = await this.loadBlobCache();
-    const missingHashes = refs.map(r => r.hash).filter(h => !(h in cache));
-    devLog(`[V2Pull] Blob refs: ${refs.length} referenced, ${refs.length - missingHashes.length} cached locally, ${missingHashes.length} to download.`);
-    for (let i = 0; i < missingHashes.length; i += BLOB_DOWNLOAD_BATCH_SIZE) {
-      const chunk = missingHashes.slice(i, i + BLOB_DOWNLOAD_BATCH_SIZE);
-      const blobs = await webApi.post<{ hashes: string[] }, BlobDto[]>(BLOBS_DOWNLOAD_ENDPOINT, { hashes: chunk });
-      devLog(`[V2Pull] Downloaded blob batch ${Math.floor(i / BLOB_DOWNLOAD_BATCH_SIZE) + 1}: requested ${chunk.length}, received ${blobs.length}.`);
+    const missingRefs = refs.filter(r => !(r.hash in cache));
+    devLog(`[V2Pull] Blob refs: ${refs.length} referenced, ${refs.length - missingRefs.length} cached locally, ${missingRefs.length} to download.`);
+
+    // Batch downloads by the bytes each blob adds to the response, not by hash count.
+    const downloadBatches = batchByTransferCost(missingRefs, r => base64Chars(r.sizeBytes));
+    for (const [index, chunk] of downloadBatches.entries()) {
+      const chunkChars = chunk.reduce((sum, r) => sum + base64Chars(r.sizeBytes), 0);
+      const blobs = await webApi.post<{ hashes: string[] }, BlobDto[]>(BLOBS_DOWNLOAD_ENDPOINT, { hashes: chunk.map(r => r.hash) });
+      devLog(`[V2Pull] Downloaded blob batch ${index + 1}/${downloadBatches.length}: requested ${chunk.length} (${formatKb(chunkChars)}), received ${blobs.length}.`);
       for (const dto of blobs) {
         cache[dto.hash] = dto.encryptedDataBase64;
       }
@@ -1477,7 +1516,8 @@ export class VaultSyncService {
       ciphertexts.set(hash, ciphertext);
       devLog(`[V2Push] Blob ${hash.substring(0, 12)}… (${entry.kind}): raw ${formatKb(entry.bytes.length)} → encrypted ${formatKb(ciphertext.length)}.`);
 
-      if (batch.length > 0 && batchChars + ciphertext.length > BLOB_UPLOAD_BATCH_MAX_CHARS) {
+      // Flush before adding when this blob would take the request past either bound.
+      if (batch.length > 0 && (batchChars + ciphertext.length > BLOB_TRANSFER_BATCH_MAX_CHARS || batch.length >= BLOB_TRANSFER_BATCH_MAX_COUNT)) {
         devLog(`[V2Push] Uploading blob batch: ${batch.length} blobs, ${formatKb(batchChars)}.`);
         await webApi.post(BLOBS_VAULT_ENDPOINT, { blobs: batch, overwrite });
         batch = [];
@@ -1497,32 +1537,21 @@ export class VaultSyncService {
   }
 
   /**
-   * Encrypt raw blob bytes with the VEK. Result is base64-of-(IV ‖ ciphertext ‖ tag), which is what
-   * symmetricEncrypt produces. Bytes round-trip through symmetricEncrypt's string interface via latin-1.
+   * Encrypt raw blob bytes with the VEK. Result is base64-of-(IV | ciphertext | tag).
    * @param bytes - plaintext bytes
    * @param vek - symmetric encryption key
    */
   private async encryptBlobBytes(bytes: Uint8Array, vek: string): Promise<string> {
-    let s = '';
-    for (let i = 0; i < bytes.length; i++) {
-      s += String.fromCharCode(bytes[i]);
-    }
-
-    return EncryptionUtility.symmetricEncrypt(s, vek);
+    return EncryptionUtility.symmetricEncryptBytes(bytes, vek);
   }
 
   /**
-   * Decrypt a blob ciphertext (base64) and return raw plaintext bytes.
-   * @param encryptedDataBase64 - base64 IV‖ciphertext‖tag from the server
+   * Decrypt a blob ciphertext (base64) and return raw plaintext bytes. Counterpart of {@link encryptBlobBytes}.
+   * @param encryptedDataBase64 - base64 IV | ciphertext | tag from the server
    * @param vek - symmetric encryption key
    */
   private async decryptBlobToBytes(encryptedDataBase64: string, vek: string): Promise<Uint8Array> {
-    const plaintextLatin1 = await EncryptionUtility.symmetricDecrypt(encryptedDataBase64, vek);
-    const out = new Uint8Array(plaintextLatin1.length);
-    for (let i = 0; i < plaintextLatin1.length; i++) {
-      out[i] = plaintextLatin1.charCodeAt(i) & 0xff;
-    }
-    return out;
+    return EncryptionUtility.symmetricDecryptBytes(base64ToBytes(encryptedDataBase64), vek);
   }
 
   /**

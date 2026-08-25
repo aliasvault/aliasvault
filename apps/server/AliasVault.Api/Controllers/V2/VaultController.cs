@@ -129,11 +129,11 @@ public class VaultController(
         var currentRevisionByManifest = latestManifests.ToDictionary(m => m.ManifestId, m => m.RevisionNumber);
         var refsByManifest = (await context.VaultBlobReferences
                 .Where(r => manifestIds.Contains(r.ManifestId))
-                .Join(context.VaultBlobObjects, r => r.BlobHash, b => b.Hash, (r, b) => new { r.ManifestId, r.RevisionNumber, b.Hash, b.Category })
+                .Join(context.VaultBlobObjects, r => r.BlobHash, b => b.Hash, (r, b) => new { r.ManifestId, r.RevisionNumber, b.Hash, b.Category, b.SizeBytes })
                 .ToListAsync())
             .Where(x => currentRevisionByManifest.TryGetValue(x.ManifestId, out var rev) && rev == x.RevisionNumber)
             .GroupBy(x => x.ManifestId)
-            .ToDictionary(g => g.Key, g => g.GroupBy(x => x.Hash, StringComparer.Ordinal).Select(h => new BlobReference { Hash = h.Key, Category = h.First().Category }).ToList());
+            .ToDictionary(g => g.Key, g => g.GroupBy(x => x.Hash, StringComparer.Ordinal).Select(h => new BlobReference { Hash = h.Key, Category = h.First().Category, SizeBytes = h.First().SizeBytes }).ToList());
 
         var accessKeysByManifest = await GetAccessKeysAsync(context, user.Id, manifestIds);
         var encryptionPublicKeys = await GetEncryptionPublicKeysAsync(context, accessKeysByManifest.Values.Where(g => g.UserGrantKeyId != null).Select(g => g.UserGrantKeyId!.Value));
@@ -197,10 +197,10 @@ public class VaultController(
 
         var blobRefs = (await context.VaultBlobReferences
                 .Where(r => r.ManifestId == latest.ManifestId && r.RevisionNumber == latest.RevisionNumber)
-                .Join(context.VaultBlobObjects, r => r.BlobHash, b => b.Hash, (r, b) => new { b.Hash, b.Category })
+                .Join(context.VaultBlobObjects, r => r.BlobHash, b => b.Hash, (r, b) => new { b.Hash, b.Category, b.SizeBytes })
                 .Distinct()
                 .ToListAsync())
-            .Select(x => new BlobReference { Hash = x.Hash, Category = x.Category })
+            .Select(x => new BlobReference { Hash = x.Hash, Category = x.Category, SizeBytes = x.SizeBytes })
             .ToList();
 
         var manifest = new Manifest
