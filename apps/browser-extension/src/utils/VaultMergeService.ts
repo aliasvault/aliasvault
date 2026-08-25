@@ -32,11 +32,17 @@ type MergeInput = {
 }
 
 /**
+ * One SQL parameter as returned by the Rust merge: a plain sql.js value, or the `{ __b64 }` byte
+ * payload the row reader encodes BLOB columns as.
+ */
+type RustSqlParam = SqlValue | { __b64: string } | undefined;
+
+/**
  * SQL statement with parameters from Rust.
  */
 type SqlStatement = {
   sql: string;
-  params: SqlValue[];
+  params: RustSqlParam[];
 }
 
 /**
@@ -210,9 +216,7 @@ export class VaultMergeService {
          * server DB carries the newest codec overflow carrier untouched.
          */
         for (const stmt of mergeOutput.statements) {
-          // Convert undefined to null for sql.js (serde-wasm-bindgen may convert null to undefined)
-          const sanitizedParams = stmt.params.map(p => p === undefined ? null : p);
-          serverDb.run(stmt.sql, sanitizedParams);
+          serverDb.run(stmt.sql, stmt.params.map(toBindableParam));
         }
 
         // Export the merged (server-based) database
@@ -259,7 +263,7 @@ export class VaultMergeService {
     const pruneOutput = pruneVault(pruneInput) as PruneOutput;
 
     for (const stmt of pruneOutput.statements) {
-      client.executeUpdate(stmt.sql, stmt.params.map(p => p === undefined ? null : p));
+      client.executeUpdate(stmt.sql, stmt.params.map(toBindableParam));
     }
 
     if (pruneOutput.statements.length > 0) {
@@ -304,7 +308,9 @@ export class VaultMergeService {
   }
 
   /**
-   * Read all rows of a query as JSON objects.
+   * Read all rows of a query as JSON objects. BLOB columns come back from sql.js as Uint8Array,
+   * which neither JSON nor serde can round-trip; they are encoded as `{ __b64 }` payloads that
+   * {@link toBindableParam} decodes when a merge statement writes them back.
    * @param db - The database to query
    * @param query - The SELECT query to run
    * @returns Array of records as JSON objects
@@ -314,18 +320,29 @@ export class VaultMergeService {
     const stmt = db.prepare(query);
 
     while (stmt.step()) {
-      const obj = stmt.getAsObject();
-      /*
-       * Use JSON stringify/parse to sanitize the object for Rust/serde.
-       * This converts undefined to null and ensures clean JSON types.
-       */
-      const record = JSON.parse(JSON.stringify(obj)) as JsonRecord;
+      const row = stmt.getAsObject();
+      const record: JsonRecord = {};
+      for (const [column, value] of Object.entries(row)) {
+        record[column] = value instanceof Uint8Array ? { __b64: bytesToBase64(value) } : value ?? null;
+      }
       records.push(record);
     }
     stmt.free();
 
     return records;
   }
+}
+
+/**
+ * Decode one Rust-returned SQL parameter into a sql.js-bindable value: `{ __b64 }` byte payloads
+ * become Uint8Array, undefined becomes null.
+ * @param param - the parameter as returned by the Rust merge
+ */
+function toBindableParam(param: RustSqlParam): SqlValue {
+  if (param !== null && typeof param === 'object' && '__b64' in param) {
+    return base64ToBytes(param.__b64);
+  }
+  return param ?? null;
 }
 
 /**
