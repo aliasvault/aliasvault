@@ -11,9 +11,6 @@
 import type { StorageKey } from '@/utils/constants/storageKeys';
 
 export const LegacyStorageKeys = {
-  /** Pre-v0.22 encryption key location; read as a fallback for `StorageKeys.ENCRYPTION_KEY`. */
-  DERIVED_KEY: 'session:derivedKey',
-
   /** Pre-v0.26 Session locations migrated to local (see readLegacyStorageFallback) */
   SESSION_PUBLIC_EMAIL_DOMAINS: 'session:publicEmailDomains',
   SESSION_PRIVATE_EMAIL_DOMAINS: 'session:privateEmailDomains',

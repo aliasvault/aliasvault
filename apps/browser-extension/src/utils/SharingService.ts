@@ -5,7 +5,6 @@ import { StorageKeys } from '@/utils/constants/storageKeys';
 import { devWarn } from '@/utils/devLogger/DevLogger';
 import { VaultKeyAlgorithm, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type DeleteSharedManifestInitiateResponse, type DeleteSharedManifestRequest, type GrantManifestAccessRequest, type GrantManifestAccessResponse, type GroupMemberInfo, type GroupOverviewResponse, type ManifestGrant, type ReceivedManifestInvitation, type VaultKeyAlgorithmValue } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import { readLegacySessionEncryptionKey } from '@/utils/legacy/LegacyStorageKeyFallbacks';
 import { vaultCodecGenerateManifestSalt } from '@/utils/RustCore';
 import type { SqliteClient } from '@/utils/SqliteClient';
 import { VaultKeyService } from '@/utils/VaultKeyService';
@@ -265,7 +264,7 @@ export class SharingService {
    * The session vault encryption key, or null while the vault is locked.
    */
   private static async sessionEncryptionKey(): Promise<string | null> {
-    return ((await storage.getItem(StorageKeys.ENCRYPTION_KEY)) as string | null) ?? await readLegacySessionEncryptionKey();
+    return (await storage.getItem(StorageKeys.ENCRYPTION_KEY)) as string | null;
   }
 
   /**

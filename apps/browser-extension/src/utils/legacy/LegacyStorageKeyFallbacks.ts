@@ -44,11 +44,3 @@ export async function readLegacyStorageFallback<T>(key: StorageKey): Promise<T |
 
   return legacyValue;
 }
-
-/**
- * The session encryption key as stored before v0.22.0, when it lived under a different key name. Read only
- * after {@link StorageKeys.ENCRYPTION_KEY} came up empty.
- */
-export async function readLegacySessionEncryptionKey(): Promise<string | null> {
-  return await storage.getItem(LegacyStorageKeys.DERIVED_KEY) as string | null;
-}

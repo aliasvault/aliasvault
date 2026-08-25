@@ -11,7 +11,6 @@ import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/met
 import { FieldKey, ItemTypes, VaultDataBucketCategory, createSystemField, type Item, type PasswordSettings } from '@/utils/dist/core/models/vault';
 import { VaultKeyAlgorithm, type VaultResponse, type ManifestRevision, type StatusResponseV2 } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import { readLegacySessionEncryptionKey } from '@/utils/legacy/LegacyStorageKeyFallbacks';
 import { requiresLegacyAccountKeyMigration } from '@/utils/legacy/LegacyStorageModelMigration';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { getManifestRevisions, manifestsRequiringPull, recordManifestRevisions, toManifestRevisionMap } from '@/utils/ManifestRevisions';
@@ -707,11 +706,7 @@ export async function handleGeneratePassword(
  */
 export async function handleGetEncryptionKey(
 ) : Promise<string | null> {
-  // Try the current key name first (since 0.22.0)
-  const encryptionKey = await storage.getItem(StorageKeys.ENCRYPTION_KEY) as string | null;
-
-  // LEGACY: fall back to the pre-0.22.0 key name.
-  return encryptionKey ?? await readLegacySessionEncryptionKey();
+  return await storage.getItem(StorageKeys.ENCRYPTION_KEY) as string | null;
 }
 
 /**
