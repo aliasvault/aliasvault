@@ -157,6 +157,7 @@ public static class GroupHelper
 
         return await context.VaultManifests
             .Where(m => ids.Contains(m.ManifestId))
+            .Select(m => new { m.ManifestId, m.OwnerGroupId })
             .ToDictionaryAsync(m => m.ManifestId, m => m.OwnerGroupId);
     }
 }

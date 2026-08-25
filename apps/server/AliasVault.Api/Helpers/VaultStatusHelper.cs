@@ -8,6 +8,7 @@
 namespace AliasVault.Api.Helpers;
 
 using AliasServerDb;
+using AliasVault.Api.Models;
 using AliasVault.Shared.Models.WebApi.V2.Vault;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,11 +21,11 @@ public static class VaultStatusHelper
     /// The full manifest-revision list a status endpoint reports: every manifest the user can access.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="userId">The id of the user to build manifest revisions for.</param>
+    /// <param name="scope">The caller's manifest access scope.</param>
     /// <returns>The accessible manifest revision list.</returns>
-    public static async Task<List<ManifestRevision>> GetManifestRevisionsAsync(AliasServerDbContext context, string userId)
+    public static async Task<List<ManifestRevision>> GetManifestRevisionsAsync(AliasServerDbContext context, ManifestAccessScope scope)
     {
-        return await ManifestAccessHelper.AccessibleManifests(context, userId)
+        return await ManifestAccessHelper.AccessibleManifests(context, scope)
             .Select(x => new ManifestRevision { ManifestId = x.ManifestId, Revision = x.RevisionNumber })
             .ToListAsync();
     }

@@ -8,7 +8,9 @@
 namespace AliasVault.Api.Helpers;
 
 using AliasServerDb;
+using AliasVault.Api.Models;
 using AliasVault.Shared.Models.Enums;
+using Microsoft.EntityFrameworkCore;
 
 /// <summary>
 /// Helper for resolving which vault manifests a user can access.
@@ -16,15 +18,35 @@ using AliasVault.Shared.Models.Enums;
 public static class ManifestAccessHelper
 {
     /// <summary>
-    /// Every manifest the user can access: their own personal manifest, plus every shared manifest they hold a grant on.
+    /// Resolves the caller's access scope.
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="userId">The calling user.</param>
-    /// <returns>Query over the manifests the user can access, in any storage format.</returns>
-    public static IQueryable<VaultManifest> AccessibleManifests(AliasServerDbContext context, string userId)
+    /// <param name="personalGroupId">The caller's personal group, when already loaded. Looked up when null.</param>
+    /// <returns>The caller's access scope.</returns>
+    public static async Task<ManifestAccessScope> ResolveScopeAsync(AliasServerDbContext context, string userId, Guid? personalGroupId = null)
     {
-        return context.VaultManifests
-            .Where(m => context.AliasVaultUsers.Any(u => u.Id == userId && u.PersonalGroupId == m.OwnerGroupId)
-                || context.VaultManifestAccessKeys.Any(k => k.UserId == userId && k.Type == ManifestKeyType.GrantKey && k.VaultManifestId == m.ManifestId));
+        var groupId = personalGroupId ?? await context.AliasVaultUsers.Where(u => u.Id == userId).Select(u => u.PersonalGroupId).FirstOrDefaultAsync();
+        var grantedManifestIds = await context.VaultManifestAccessKeys
+            .Where(k => k.UserId == userId && k.Type == ManifestKeyType.GrantKey)
+            .Select(k => k.VaultManifestId)
+            .Distinct()
+            .ToListAsync();
+
+        return new ManifestAccessScope(groupId, grantedManifestIds);
+    }
+
+    /// <summary>
+    /// Every manifest the user can access: their own personal manifest, plus every shared manifest they hold a grant on.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="scope">The caller's access scope, from <see cref="ResolveScopeAsync"/>.</param>
+    /// <returns>Query over the manifests the user can access, in any storage format.</returns>
+    public static IQueryable<VaultManifest> AccessibleManifests(AliasServerDbContext context, ManifestAccessScope scope)
+    {
+        var personalGroupId = scope.PersonalGroupId;
+        var grantedManifestIds = scope.GrantedManifestIds;
+
+        return context.VaultManifests.Where(m => m.OwnerGroupId == personalGroupId || grantedManifestIds.Contains(m.ManifestId));
     }
 }

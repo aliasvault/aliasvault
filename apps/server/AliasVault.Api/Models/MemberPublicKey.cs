@@ -5,7 +5,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Api.Helpers;
+namespace AliasVault.Api.Models;
 
 /// <summary>
 /// The public key a shared manifest's key is sealed for when it is handed to somebody.

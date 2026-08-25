@@ -10,6 +10,7 @@ namespace AliasVault.Api.Controllers.V2;
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Helpers;
+using AliasVault.Api.Models;
 using AliasVault.Api.Services;
 using AliasVault.Api.Vault;
 using AliasVault.Api.Vault.RetentionRules;
@@ -88,9 +89,10 @@ public class VaultController(
         }
 
         var emailRouting = await BuildEmailRoutingAsync(context, user);
+        var accessScope = await ManifestAccessHelper.ResolveScopeAsync(context, user.Id, user.PersonalGroupId);
 
         // Every manifest the caller can open.
-        var latestManifests = await AccessibleManifests(context, user.Id)
+        var latestManifests = await AccessibleManifests(context, accessScope)
             .Select(x => new { x.ManifestId, x.ManifestBlob, x.ManifestCiphertextHash, x.RevisionNumber, x.OwnerGroupId, OwnerGroupType = x.OwnerGroup.Type })
             .ToListAsync();
 
@@ -188,7 +190,8 @@ public class VaultController(
         }
 
         // The caller can fetch a manifest owned by a group they own, or one granted to them (a shared manifest).
-        var latest = await AccessibleManifests(context, user.Id).FirstOrDefaultAsync(x => x.ManifestId == manifestId);
+        var accessScope = await ManifestAccessHelper.ResolveScopeAsync(context, user.Id, user.PersonalGroupId);
+        var latest = await AccessibleManifests(context, accessScope).FirstOrDefaultAsync(x => x.ManifestId == manifestId);
 
         if (latest == null)
         {
@@ -285,10 +288,12 @@ public class VaultController(
             bucketBlobs[(bucket.ManifestId, bucket.Category)] = bucketBlob;
         }
 
+        var accessScope = await ManifestAccessHelper.ResolveScopeAsync(context, user.Id, user.PersonalGroupId);
+
         var resolved = new List<(ManifestWrite Write, VaultManifest Row)>();
         foreach (var mw in model.Manifests)
         {
-            var row = await ManifestAccessHelper.AccessibleManifests(context, user.Id).FirstOrDefaultAsync(x => x.ManifestId == mw.ManifestId);
+            var row = await ManifestAccessHelper.AccessibleManifests(context, accessScope).FirstOrDefaultAsync(x => x.ManifestId == mw.ManifestId);
             if (row == null)
             {
                 return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
@@ -304,7 +309,7 @@ public class VaultController(
                 continue;
             }
 
-            if (!await ManifestAccessHelper.AccessibleManifests(context, user.Id).AnyAsync(x => x.ManifestId == bucketManifestId))
+            if (!await ManifestAccessHelper.AccessibleManifests(context, accessScope).AnyAsync(x => x.ManifestId == bucketManifestId))
             {
                 return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
             }
@@ -561,7 +566,7 @@ public class VaultController(
             {
                 // Only update email claims when the client sends a non-empty routing object. If null has been sent by client, we
                 // do not update the email claims (so to not delete any claims if they have been forgotten by the client).
-                await UpdateEmailClaimsAsync(context, user, model.EmailRouting);
+                await UpdateEmailClaimsAsync(context, user, accessScope, model.EmailRouting);
             }
 
             await context.SaveChangesAsync();
@@ -677,7 +682,8 @@ public class VaultController(
         var missing = wanted.Except(rows.Select(r => r.Hash), StringComparer.Ordinal).ToList();
         if (missing.Count > 0)
         {
-            var accessibleManifests = await AccessibleManifests(context, user.Id)
+            var accessScope = await ManifestAccessHelper.ResolveScopeAsync(context, user.Id, user.PersonalGroupId);
+            var accessibleManifests = await AccessibleManifests(context, accessScope)
                 .Where(m => m.OwnerGroup.Type == GroupType.Shared)
                 .Select(m => new { m.ManifestId, m.RevisionNumber })
                 .ToListAsync();
@@ -760,11 +766,11 @@ public class VaultController(
     /// Same access rule as <see cref="ManifestAccessHelper.AccessibleManifests"/>; only the format differs.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="userId">The calling user.</param>
+    /// <param name="scope">The caller's manifest access scope.</param>
     /// <returns>Query over the accessible manifest-v1 manifests.</returns>
-    private static IQueryable<VaultManifest> AccessibleManifests(AliasServerDbContext context, string userId)
+    private static IQueryable<VaultManifest> AccessibleManifests(AliasServerDbContext context, ManifestAccessScope scope)
     {
-        return ManifestAccessHelper.AccessibleManifests(context, userId).Where(m => m.StorageFormat == ManifestFormat);
+        return ManifestAccessHelper.AccessibleManifests(context, scope).Where(m => m.StorageFormat == ManifestFormat);
     }
 
     /// <summary>
@@ -991,8 +997,9 @@ public class VaultController(
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="user">The calling user.</param>
+    /// <param name="scope">The caller's manifest access scope.</param>
     /// <param name="routing">The pushed routing data: one entry per (address, manifest) pair, plus the manifests it speaks for.</param>
-    private async Task UpdateEmailClaimsAsync(AliasServerDbContext context, AliasVaultUser user, EmailRoutingPush routing)
+    private async Task UpdateEmailClaimsAsync(AliasServerDbContext context, AliasVaultUser user, ManifestAccessScope scope, EmailRoutingPush routing)
     {
         // Get all unique emails with calculated state (active wins from paused in case there are multiple).
         var pushedPairs = routing.EmailAddressList
@@ -1000,7 +1007,7 @@ public class VaultController(
             .Select(g => new { g.Key.Address, g.Key.ManifestId, State = g.All(x => x.Paused) ? EmailClaimLinkState.Paused : EmailClaimLinkState.Active })
             .ToList();
 
-        var accessibleManifests = (await ManifestAccessHelper.AccessibleManifests(context, user.Id).Select(m => m.ManifestId).ToListAsync()).ToHashSet();
+        var accessibleManifests = (await ManifestAccessHelper.AccessibleManifests(context, scope).Select(m => m.ManifestId).ToListAsync()).ToHashSet();
         var ownedManifests = (await context.VaultManifests
             .Where(m => context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner))
             .Select(m => m.ManifestId)
@@ -1048,12 +1055,14 @@ public class VaultController(
         // Per address: the manifests that carry it, each with the state the push puts that link in.
         var desiredByAddress = assertedPairs.GroupBy(p => p.Address).ToDictionary(g => g.Key, g => g.ToDictionary(p => p.ManifestId, p => p.State));
 
-        // Get the claims this push may update: every claim linked to a manifest inside the caller's update scope.
-        var userOwnedEmailClaims = await context.EmailClaims
+        // Get the claims this push may update.
+        var scopedEmailClaims = await context.EmailClaims
             .Include(c => c.Links)
-            .Where(c => c.Links.Any(l => updateScope.Contains(l.VaultManifestId) && l.State != EmailClaimLinkState.Removed)
-                || (c.Links.All(l => l.State == EmailClaimLinkState.Removed) && c.Links.Any(l => updateScope.Contains(l.VaultManifestId))))
+            .Where(c => c.Links.Any(l => updateScope.Contains(l.VaultManifestId)))
             .ToListAsync();
+        var userOwnedEmailClaims = scopedEmailClaims
+            .Where(c => c.Links.Any(l => updateScope.Contains(l.VaultManifestId) && l.State != EmailClaimLinkState.Removed) || c.Links.All(l => l.State == EmailClaimLinkState.Removed))
+            .ToList();
         var processed = new HashSet<string>();
         var supportedDomains = config.PrivateEmailDomains;
 

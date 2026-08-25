@@ -54,7 +54,8 @@ public class StatusController(IAliasServerDbContextFactory dbContextFactory, Use
 
         // Manifest revisions for every manifest this user can access, built via the shared helper, plus which of them
         // is their own: the client needs the id to tell its personal vault from the shared ones it syncs alongside.
-        var manifestRevisions = await VaultStatusHelper.GetManifestRevisionsAsync(context, user.Id);
+        var accessScope = await ManifestAccessHelper.ResolveScopeAsync(context, user.Id, user.PersonalGroupId);
+        var manifestRevisions = await VaultStatusHelper.GetManifestRevisionsAsync(context, accessScope);
         var personalManifestId = await GroupHelper.GetPersonalManifestIdAsync(context, user.PersonalGroupId);
 
         // Latest revision of every bucket available to the caller.
