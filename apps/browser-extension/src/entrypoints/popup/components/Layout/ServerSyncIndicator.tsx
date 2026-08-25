@@ -147,7 +147,7 @@ const ServerSyncIndicator: React.FC = () => {
       <button
         onClick={handleRetry}
         disabled={isRetrying}
-        className="flex items-center gap-1.5 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-md text-xs font-medium cursor-pointer hover:opacity-80 active:opacity-60 transition-colors"
+        className="flex items-center gap-1.5 mx-2 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-md text-xs font-medium cursor-pointer hover:opacity-80 active:opacity-60 transition-colors"
         title={t('sync.tapToRetry')}
       >
         <div className="relative">
@@ -188,7 +188,7 @@ const ServerSyncIndicator: React.FC = () => {
   if (showSyncing) {
     return (
       <div
-        className="flex items-center gap-1.5 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-md text-xs font-medium"
+        className="flex items-center gap-1.5 mx-2 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-md text-xs font-medium"
         title={t('common.syncingVault')}
       >
         <svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -207,7 +207,7 @@ const ServerSyncIndicator: React.FC = () => {
   if (dbContext.isUploading) {
     return (
       <div
-        className="flex items-center gap-1.5 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-md text-xs font-medium"
+        className="flex items-center gap-1.5 mx-2 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-md text-xs font-medium"
       >
         <svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -227,7 +227,7 @@ const ServerSyncIndicator: React.FC = () => {
       <button
         onClick={handleRetry}
         disabled={isRetrying}
-        className="flex items-center gap-1.5 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-md text-xs font-medium cursor-pointer hover:opacity-80 active:opacity-60 transition-colors"
+        className="flex items-center gap-1.5 mx-2 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-md text-xs font-medium cursor-pointer hover:opacity-80 active:opacity-60 transition-colors"
         title={t('sync.tapToRetry')}
       >
         {isRetrying ? (
