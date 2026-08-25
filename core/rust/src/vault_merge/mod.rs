@@ -3,6 +3,7 @@
 //! This module provides the core merge functionality that works on JSON table data.
 //! It generates SQL statements that clients can execute directly on their local database.
 
+mod canonical;
 mod types;
 
 use chrono::{DateTime, Utc};
@@ -10,6 +11,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::error::VaultResult;
+pub use canonical::{merge_canonical, merge_canonical_json, CanonicalManifestMerge, CanonicalMergeInput, CanonicalMergeOutput};
 pub use types::SYNCABLE_TABLE_NAMES;
 pub use types::{merge_table_names, SYNCABLE_TABLES, TableConfig};
 

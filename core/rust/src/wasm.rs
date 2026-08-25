@@ -10,7 +10,7 @@ use crate::password_generator::{available_languages, generate_password};
 use crate::vault_codec::{
     self, CanonicalizeInput, DataBucket, ExtractBucketsInput, Manifest, MaterializeInput,
 };
-use crate::vault_merge::{merge_vaults, MergeInput, MergeOutput};
+use crate::vault_merge::{merge_canonical, merge_vaults, CanonicalMergeInput, CanonicalMergeOutput, MergeInput, MergeOutput};
 use crate::vault_sharing::{self, ManifestAccessRequest, ManifestWriteSetRequest};
 use crate::vault_pruner::{prune_vault, PruneInput, PruneOutput};
 
@@ -48,7 +48,9 @@ pub fn get_syncable_table_names() -> Vec<String> {
 
 /// Merge vaults using LWW strategy.
 ///
-/// Takes a JsValue (MergeInput) and returns a JsValue (MergeOutput).
+/// Takes a JsValue (MergeInput) and returns a JsValue (MergeOutput). Serialized via `codec_to_js`
+/// so `{ __b64 }` byte params survive as plain objects (the default serializer would render them
+/// as JS Maps) and null params reach sql.js as null.
 #[wasm_bindgen(js_name = mergeVaults)]
 pub fn merge_vaults_js(input: JsValue) -> Result<JsValue, JsValue> {
     let input: MergeInput = serde_wasm_bindgen::from_value(input)
@@ -57,8 +59,7 @@ pub fn merge_vaults_js(input: JsValue) -> Result<JsValue, JsValue> {
     let output: MergeOutput = merge_vaults(input)
         .map_err(|e| JsValue::from_str(&format!("Merge failed: {}", e)))?;
 
-    serde_wasm_bindgen::to_value(&output)
-        .map_err(|e| JsValue::from_str(&format!("Failed to serialize output: {}", e)))
+    codec_to_js(&output)
 }
 
 /// Merge vaults using JSON strings (alternative API).
@@ -68,6 +69,21 @@ pub fn merge_vaults_js(input: JsValue) -> Result<JsValue, JsValue> {
 pub fn merge_vaults_json_js(input_json: &str) -> Result<String, JsValue> {
     crate::vault_merge::merge_vaults_json(input_json)
         .map_err(|e| JsValue::from_str(&format!("Merge failed: {}", e)))
+}
+
+/// Merge the local canonical vault onto the server canonical vault (manifest-v1 format).
+///
+/// Takes a JsValue (CanonicalMergeInput) and returns a JsValue (CanonicalMergeOutput): the merged
+/// manifests + data buckets, one entry per server manifest, rows out instead of SQL statements.
+#[wasm_bindgen(js_name = mergeCanonical)]
+pub fn merge_canonical_js(input: JsValue) -> Result<JsValue, JsValue> {
+    let input: CanonicalMergeInput = serde_wasm_bindgen::from_value(input)
+        .map_err(|e| JsValue::from_str(&format!("Failed to parse canonical merge input: {}", e)))?;
+
+    let output: CanonicalMergeOutput = merge_canonical(input)
+        .map_err(|e| JsValue::from_str(&format!("Canonical merge failed: {}", e)))?;
+
+    codec_to_js(&output)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

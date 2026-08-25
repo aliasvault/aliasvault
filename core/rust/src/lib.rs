@@ -30,7 +30,8 @@ pub mod argon2;
 
 pub use error::VaultError;
 pub use vault_merge::{
-    merge_vaults, MergeInput, MergeOutput, MergeStats, SqlStatement, TableData,
+    merge_canonical, merge_canonical_json, merge_vaults, CanonicalManifestMerge, CanonicalMergeInput,
+    CanonicalMergeOutput, MergeInput, MergeOutput, MergeStats, SqlStatement, TableData,
     SYNCABLE_TABLE_NAMES,
 };
 pub use vault_codec::{

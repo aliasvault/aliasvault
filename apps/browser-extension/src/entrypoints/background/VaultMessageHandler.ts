@@ -51,7 +51,7 @@ import { clearDirtyScopes, getDirtyScopes } from '@/utils/VaultDirtyState';
 import { VaultKeyService } from '@/utils/VaultKeyService';
 import { vaultRequiresManifestMigration, VaultMigrationKind, type VaultMigrationStatus } from '@/utils/VaultManifestMigration';
 import { vaultMergeService } from '@/utils/VaultMergeService';
-import { vaultSyncService, invalidateCanonicalizeCache } from '@/utils/VaultSyncService';
+import { type PullAndMergeResult, vaultSyncService, invalidateCanonicalizeCache } from '@/utils/VaultSyncService';
 import { WebApiService } from '@/utils/WebApiService';
 
 import { t } from '@/i18n/StandaloneI18n';
@@ -1794,129 +1794,168 @@ async function applyServerDirectedChanges(webApi: WebApiService, statusResponse:
 }
 
 /**
- * Pull the server's latest vault and merge any local changes onto it.
+ * Pull the server's latest vault and merge it with what is stored locally (if needed).
  *
  * @param syncState - the sync state the pull runs against
  * @param encryptionKey - the key the local and server vaults are encrypted with
  * @param grantSyncChangedVault - whether an earlier step already changed the stored vault
  */
 async function pullAndMaterializeServerVault(syncState: VaultSyncState, encryptionKey: string, grantSyncChangedVault: boolean): Promise<FullVaultSyncResult> {
-  const vaultResponseJson = await fetchLatestVaultFromServer();
+  const strategy = await choosePullStrategy(syncState, encryptionKey);
 
-  try {
-    if (syncState.isDirty) {
-      await pruneRowsOfManifestsNoLongerServed(encryptionKey);
-      const mergedResult = await mergeAndPushLocalChanges(vaultResponseJson, syncState, encryptionKey, grantSyncChangedVault);
-      if (mergedResult) {
-        return mergedResult;
-      }
-    }
-
-    /*
-     * No local changes (or merge failed) - just use server vault.
-     * Use expectedMutationSeq to detect concurrent mutations.
-     */
-    const storeResult = await handleStoreEncryptedVault({
-      vaultBlob: vaultResponseJson.vault.blob,
-      expectedMutationSeq: syncState.mutationSequence
-    });
-
-    if (!storeResult.success) {
-      devLog('[VaultSync] Mutation detected during sync, re-syncing...');
-      return handleFullVaultSync();
-    }
-
-    await storeVaultMetadata(vaultResponseJson);
-
-    return await materializedVaultResult();
-  } catch (error) {
-    if (error instanceof VaultVersionIncompatibleError) {
-      return syncResult({ success: false, requiresLogout: true, error: error.message });
-    }
-    // E-501: Vault decryption failed
-    throw new Error(formatErrorWithCode(
-      'Vault could not be decrypted, if the problem persists please logout and login again.',
-      AppErrorCode.VAULT_DECRYPT_FAILED
-    ));
+  switch (strategy.kind) {
+    case 'canonical':
+      return await canonicalPullAndMerge(strategy.localClient, syncState, encryptionKey, grantSyncChangedVault);
+    case 'legacy-sqlite':
+      return await legacyStatementPullAndMerge(syncState, encryptionKey, grantSyncChangedVault);
+    case 'server-only':
+      return await adoptServerVault(await fetchLatestVaultFromServer(), syncState);
+    case 'abort':
+      return strategy.result;
   }
 }
 
 /**
- * Drop the rows of every manifest the snapshot just pulled no longer serves this account.
- * @param encryptionKey - the key the stored vault is sealed with
+ * How a pull reconciles the server's vault with the local one.
  */
-async function pruneRowsOfManifestsNoLongerServed(encryptionKey: string): Promise<void> {
-  const sqliteClient = await createVaultSqliteClient();
-  const dropped = await vaultSyncService.dropRowsOfManifestsNoLongerServed(sqliteClient, vaultSyncService.manifestIdsServedByLastSnapshot());
-  if (dropped.length === 0) {
-    return;
-  }
-
-  // Not a local change of the user's making, so it is stored without touching the dirty state or its sequence.
-  await handleStoreEncryptedVault({ vaultBlob: await EncryptionUtility.symmetricEncrypt(sqliteClient.exportToBase64(), encryptionKey) });
-  invalidateCanonicalizeCache();
-}
+type PullStrategy =
+  /** Merge onto the server's vault at canonical level, per manifest, in Rust: the manifest-v1 path. */
+  | { kind: 'canonical'; localClient: SqliteClient }
+  /** LEGACY: merge at the SQLite statement level, for a local vault still on the pre-manifest-v1 storage model. */
+  | { kind: 'legacy-sqlite' }
+  /** Nothing to merge onto: the server's vault is taken as-is. */
+  | { kind: 'server-only' }
+  /** The local vault could not be opened; the sync reports this result instead of pulling. */
+  | { kind: 'abort'; result: FullVaultSyncResult };
 
 /**
- * Merge the local vault onto the server's latest vault and upload the result.
+ * Decide how the pull reconciles with the local vault, before anything is fetched.
  *
- * @param vaultResponse - the vault just pulled from the server
- * @param syncState - the sync state the merge runs against
- * @param encryptionKey - the key both vaults are encrypted with
- * @param grantSyncChangedVault - whether an earlier step already changed the stored vault
- * @returns The sync result, or null when there is nothing to merge onto and the caller should take the
- *   server vault as-is (no local vault stored, or the merge itself failed).
+ * @param syncState - the sync state the pull runs against
+ * @param encryptionKey - the key the local vault is encrypted with
  */
-async function mergeAndPushLocalChanges(
-  vaultResponse: VaultResponse,
-  syncState: VaultSyncState,
-  encryptionKey: string,
-  grantSyncChangedVault: boolean
-): Promise<FullVaultSyncResult | null> {
+async function choosePullStrategy(syncState: VaultSyncState, encryptionKey: string): Promise<PullStrategy> {
+  if (!syncState.isDirty) {
+    return { kind: 'server-only' };
+  }
+
   const localEncryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string | null;
   if (!localEncryptedVault) {
-    return null;
+    devLog('[VaultSync] No stored local vault to merge onto; taking the server vault as-is.');
+    return { kind: 'server-only' };
   }
 
-  const localDecrypted = await EncryptionUtility.symmetricDecrypt(localEncryptedVault, encryptionKey);
-  const serverDecrypted = await EncryptionUtility.symmetricDecrypt(vaultResponse.vault.blob, encryptionKey);
+  // Create a fresh client decrypted from the stored blob for the merge input.
+  const localClient = new SqliteClient();
+  try {
+    await localClient.initializeFromBase64(await EncryptionUtility.symmetricDecrypt(localEncryptedVault, encryptionKey));
 
-  /*
-   * Guard for the sqlite-blob to manifest-v1 migration window: this device has already migrated its vault onto the current
-   * schema but the push has not landed yet, while another (not-yet-updated) device advanced the server's
-   * legacy sqlite-blob. The two databases have different column sets, so merging them would throw an error.
-   * We assume here the migrated local vault is newer, so it's pushed as-is.
-   */
-  if (await isLegacyStorageVault(serverDecrypted) && !await isLegacyStorageVault(localDecrypted)) {
+    /*
+     * Both checks matter: requiresSchemaMigration deliberately answers false for a vault still on the
+     * legacy sqlite-blob chain, but such a vault cannot canonicalize (unstamped rows) and must merge
+     * via the legacy statement path.
+     */
+    if (await localClient.requiresLegacySqliteBlobMigration() || await localClient.requiresSchemaMigration()) {
+      devLog('[VaultSync] Local vault is on a legacy or stale schema; merging via the legacy statement path.');
+      localClient.close();
+      return { kind: 'legacy-sqlite' };
+    }
+  } catch (error) {
+    localClient.close();
+    return { kind: 'abort', result: mapVaultOpenError(error) };
+  }
+
+  return { kind: 'canonical', localClient };
+}
+
+/**
+ * Turn a failure to open a vault into the sync result to report: an incompatible vault version forces a
+ * logout, anything else is rethrown as a reportable decryption failure.
+ *
+ * @param error - the error the decrypt or open threw
+ */
+function mapVaultOpenError(error: unknown): FullVaultSyncResult {
+  if (error instanceof VaultVersionIncompatibleError) {
+    return syncResult({ success: false, requiresLogout: true, error: error.message });
+  }
+
+  // E-501: Vault decryption failed
+  throw new Error(formatErrorWithCode('Vault could not be decrypted, if the problem persists please logout and login again.', AppErrorCode.VAULT_DECRYPT_FAILED));
+}
+
+/**
+ * Store the server's vault as the local vault, replacing whatever was there.
+ *
+ * @param vaultResponse - the vault just pulled from the server
+ * @param syncState - the sync state the pull runs against, whose mutation sequence detects a concurrent local change
+ */
+async function adoptServerVault(vaultResponse: VaultResponse, syncState: VaultSyncState): Promise<FullVaultSyncResult> {
+  const storeResult = await handleStoreEncryptedVault({ vaultBlob: vaultResponse.vault.blob, expectedMutationSeq: syncState.mutationSequence });
+  if (!storeResult.success) {
+    devLog('[VaultSync] Mutation detected during sync, re-syncing...');
+    return handleFullVaultSync();
+  }
+
+  await storeVaultMetadata(vaultResponse);
+
+  try {
+    return await materializedVaultResult();
+  } catch (error) {
+    return mapVaultOpenError(error);
+  }
+}
+
+/**
+ * Canonical-merge path of a dirty pull: fetch the snapshot, merge the local vault onto it at canonical
+ * level (per manifest, in Rust), store the result, and push.
+ *
+ * @param localClient - the local vault, freshly decrypted from storage
+ * @param syncState - the sync state the pull runs against
+ * @param encryptionKey - the key the local vault and the snapshot are encrypted with
+ * @param grantSyncChangedVault - whether an earlier step already changed the stored vault
+ */
+async function canonicalPullAndMerge(localClient: SqliteClient, syncState: VaultSyncState, encryptionKey: string, grantSyncChangedVault: boolean): Promise<FullVaultSyncResult> {
+  // Network and vault-processing errors propagate unchanged, exactly like the plain pull path.
+  let result: PullAndMergeResult;
+  try {
+    result = await vaultSyncService.pullAndMerge(encryptionKey, localClient);
+  } finally {
+    // The merge is the only reader of this client and its result is fully materialized, so the sql.js database can go.
+    localClient.close();
+  }
+
+  if (result.kind === 'legacy-server') {
     devWarn('[VaultSync] Server vault is still on the legacy storage format while the local vault is migrated; skipping the merge and pushing the local vault.');
     return await pushOverLegacyServerVault(grantSyncChangedVault);
   }
 
-  const mergeResult = await vaultMergeService.merge(localDecrypted, serverDecrypted);
-
-  if (!mergeResult.success) {
-    console.error('Vault merge failed during sync, using server vault');
-    return null;
+  if (result.kind === 'merged') {
+    if (result.fallbackManifestIds.length > 0) {
+      devWarn(`[VaultSync] Canonical merge fell back to the server's rows for manifest(s) ${result.fallbackManifestIds.join(', ')}; local changes to them were dropped.`);
+    }
+    devLog('[VaultSync] Canonical vault merge completed:', result.stats);
   }
 
-  devLog('[VaultSync] Vault merge during sync completed:', mergeResult.stats);
-
-  const mergedEncryptedVault = await EncryptionUtility.symmetricEncrypt(mergeResult.mergedVaultBase64, encryptionKey);
-
-  // Store merged vault. Use expectedMutationSeq to detect if a local mutation happened during merge.
-  const storeResult = await handleStoreEncryptedVault({
-    vaultBlob: mergedEncryptedVault,
-    expectedMutationSeq: syncState.mutationSequence
-  });
-
+  // Store the merged (or server-only) vault; expectedMutationSeq detects a mutation racing the merge.
+  const storeResult = await handleStoreEncryptedVault({ vaultBlob: result.response.vault.blob, expectedMutationSeq: syncState.mutationSequence });
   if (!storeResult.success) {
-    devLog('[VaultSync] Mutation detected during merge, re-syncing...');
+    devLog('[VaultSync] Mutation detected during canonical merge, re-syncing...');
     return handleFullVaultSync();
   }
 
-  // Upload merged vault to server
-  const uploadResponse = await handleUploadVault();
+  /*
+   * Only now do the pulled revisions become the local truth: committing them before a raced store would
+   * clear needsPull while the merged content was never kept, and the resync would push the unmerged local
+   * vault over the other device's rows.
+   */
+  await result.commitRevisions();
 
+  if (result.kind === 'server-only') {
+    await storeVaultMetadata(result.response);
+    return await materializedVaultResult();
+  }
+
+  const uploadResponse = await handleUploadVault();
   if (uploadResponse.success && uploadResponse.status === 0) {
     await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
   } else if (uploadResponse.status === 2) {
@@ -1927,9 +1966,76 @@ async function mergeAndPushLocalChanges(
     return syncResult({ success: false, error: uploadResponse.error });
   }
 
-  await storeVaultMetadata(vaultResponse);
-
+  await storeVaultMetadata(result.response);
   return await materializedVaultResult();
+}
+
+/**
+ * LEGACY: pull that merges the local vault onto the server's at the SQLite statement level and uploads the
+ * result. A merge that cannot run or fails degrades to taking the server vault as-is.
+ *
+ * @param syncState - the sync state the merge runs against
+ * @param encryptionKey - the key both vaults are encrypted with
+ * @param grantSyncChangedVault - whether an earlier step already changed the stored vault
+ */
+async function legacyStatementPullAndMerge(syncState: VaultSyncState, encryptionKey: string, grantSyncChangedVault: boolean): Promise<FullVaultSyncResult> {
+  const vaultResponse = await fetchLatestVaultFromServer();
+
+  try {
+    const localEncryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string | null;
+    if (!localEncryptedVault) {
+      return await adoptServerVault(vaultResponse, syncState);
+    }
+
+    const localDecrypted = await EncryptionUtility.symmetricDecrypt(localEncryptedVault, encryptionKey);
+    const serverDecrypted = await EncryptionUtility.symmetricDecrypt(vaultResponse.vault.blob, encryptionKey);
+
+    /*
+     * Guard for the sqlite-blob to manifest-v1 migration window: this device has already migrated its vault onto the current
+     * schema but the push has not landed yet, while another (not-yet-updated) device advanced the server's
+     * legacy sqlite-blob. The two databases have different column sets, so merging them would throw an error.
+     * We assume here the migrated local vault is newer, so it's pushed as-is.
+     */
+    if (await isLegacyStorageVault(serverDecrypted) && !await isLegacyStorageVault(localDecrypted)) {
+      devWarn('[VaultSync] Server vault is still on the legacy storage format while the local vault is migrated; skipping the merge and pushing the local vault.');
+      return await pushOverLegacyServerVault(grantSyncChangedVault);
+    }
+
+    const mergeResult = await vaultMergeService.merge(localDecrypted, serverDecrypted);
+    if (!mergeResult.success) {
+      console.error('Vault merge failed during sync, using server vault');
+      return await adoptServerVault(vaultResponse, syncState);
+    }
+
+    devLog('[VaultSync] Vault merge during sync completed:', mergeResult.stats);
+
+    // Store merged vault. Use expectedMutationSeq to detect if a local mutation happened during merge.
+    const mergedEncryptedVault = await EncryptionUtility.symmetricEncrypt(mergeResult.mergedVaultBase64, encryptionKey);
+    const storeResult = await handleStoreEncryptedVault({ vaultBlob: mergedEncryptedVault, expectedMutationSeq: syncState.mutationSequence });
+    if (!storeResult.success) {
+      devLog('[VaultSync] Mutation detected during merge, re-syncing...');
+      return handleFullVaultSync();
+    }
+
+    // Upload merged vault to server
+    const uploadResponse = await handleUploadVault();
+
+    if (uploadResponse.success && uploadResponse.status === 0) {
+      await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
+    } else if (uploadResponse.status === 2) {
+      // Outdated: another device uploaded first, or the merged vault is not one this session may write whole.
+      return resyncAfterOutdatedPush('the merged vault');
+    } else {
+      console.error('Failed to upload merged vault:', uploadResponse.error);
+      return syncResult({ success: false, error: uploadResponse.error });
+    }
+
+    await storeVaultMetadata(vaultResponse);
+
+    return await materializedVaultResult();
+  } catch (error) {
+    return mapVaultOpenError(error);
+  }
 }
 
 /**

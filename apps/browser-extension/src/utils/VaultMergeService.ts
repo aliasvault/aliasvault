@@ -152,7 +152,9 @@ export class VaultMergeService {
   }
 
   /**
-   * Merge local vault changes with server vault using LWW strategy.
+   * LEGACY: SQLite statement-level merge, kept only for the frozen sqlite-blob storage format (a
+   * not-yet-migrated local vault). Manifest-v1 vaults merge at canonical level instead, see
+   * `VaultSyncService.pullAndMerge`. TODO: delete this function once all users have migrated to manifest-v1.
    *
    * Uses Rust WASM for the merge logic. The merge base is the SERVER vault (it is freshly
    * materialized with the newest schema and the newest codec overflow carrier), and the local
