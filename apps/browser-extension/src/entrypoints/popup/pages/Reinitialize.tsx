@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
-import useCurrentTabMatching from '@/entrypoints/popup/hooks/useCurrentTabMatching';
+import useCurrentTabInfo from '@/entrypoints/popup/hooks/useCurrentTabInfo';
 import { consumePendingRedirectUrl } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 
@@ -22,7 +22,7 @@ const Reinitialize: React.FC = () => {
   const location = useLocation();
   const { setIsInitialLoading } = useLoading();
   const { syncVault } = useVaultSync();
-  const { matchCurrentTab } = useCurrentTabMatching();
+  const { getCurrentTabInfo } = useCurrentTabInfo();
   const hasInitialized = useRef(false);
 
   // Auth and DB state
@@ -42,14 +42,14 @@ const Reinitialize: React.FC = () => {
 
   /**
    * Restore the last visited page and navigation history if it was visited within the memory duration.
-   * Compares with URL matching result: if user navigated away from matched page, restore their navigation.
+   * Compares with the current tab URL: if user navigated away from matched page, restore their navigation.
    */
   const restoreLastPage = useCallback(async (): Promise<void> => {
     /*
-     * Run URL matching so we can detect tab changes (used to decide between
+     * Read the current tab so we can detect tab changes (used to decide between
      * restoring the last page vs. showing a fresh index).
      */
-    const matchResult = await matchCurrentTab();
+    const tabInfo = await getCurrentTabInfo();
 
     const [{ lastPage, lastVisitTime, history: savedHistory }, lastTabUrl] = await Promise.all([
       NavigationStateService.getNavigationState(),
@@ -57,7 +57,7 @@ const Reinitialize: React.FC = () => {
     ]);
 
     // Check if user switched to a different tab (different URL)
-    const currentTabUrl = matchResult?.currentUrl;
+    const currentTabUrl = tabInfo?.currentUrl;
     const hasTabChanged = currentTabUrl && lastTabUrl && currentTabUrl !== lastTabUrl;
 
     if (lastPage && lastVisitTime) {
@@ -110,7 +110,7 @@ const Reinitialize: React.FC = () => {
 
     // Navigate to the items index: any current-site match is shown as a suggestion there.
     navigateToIndex();
-  }, [navigate, matchCurrentTab, navigateToIndex]);
+  }, [navigate, getCurrentTabInfo, navigateToIndex]);
 
   /**
    * Run sync in background. If server has newer vault, useVaultSync will:
