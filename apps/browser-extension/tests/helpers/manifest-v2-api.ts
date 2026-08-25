@@ -148,7 +148,6 @@ export async function pushManifest(
     buckets: [],
     newBlobs: [],
     emailRouting: null,
-    userEncryptionPublicKey: '',
   };
 
   const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/v2/Vault`, {

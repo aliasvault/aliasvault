@@ -538,24 +538,19 @@ public class VaultController(
                 newBucketRevisions.Add(new BucketRevision { ManifestId = bucket.ManifestId, Category = bucket.Category, Revision = rev });
             }
 
-            // 6) Personal-scoped email routing + public keys. The personal key is published scoped to the caller's
-            // personal manifest, the exact same flow as a shared manifest's delivery key below.
-            if (!string.IsNullOrEmpty(model.UserEncryptionPublicKey))
+            /*
+             * 6) Delivery keys. A manifest's keypair lives inside the manifest content, so its public half should only
+             * change in a write that changes that content.
+             */
+            var publishing = resolved.Where(r => !string.IsNullOrEmpty(r.Write.EncryptionPublicKey)).ToList();
+            if (publishing.Count > 0)
             {
-                var personalManifestId = await GroupHelper.GetPersonalManifestIdAsync(context, user.PersonalGroupId);
-                if (personalManifestId is not null)
+                // Only admins are allowed to publish a new shared manifest's key.
+                var sharedIds = publishing.Where(r => r.Row.OwnerGroupId != user.PersonalGroupId).Select(r => r.Row.ManifestId);
+                var publishable = await GetAdminAccessSharedManifestIdsAsync(context, user.Id, sharedIds);
+                foreach (var (mw, row) in publishing.Where(r => r.Row.OwnerGroupId == user.PersonalGroupId || publishable.Contains(r.Row.ManifestId)))
                 {
-                    await PublishManifestPublicKeyAsync(context, personalManifestId.Value, model.UserEncryptionPublicKey);
-                }
-            }
-
-            // Publish shared manifest delivery keys.
-            if (model.SharedManifestEncryptionPublicKeys.Count > 0)
-            {
-                var publishable = await GetAdminAccessSharedManifestIdsAsync(context, user.Id, model.SharedManifestEncryptionPublicKeys.Select(k => k.ManifestId));
-                foreach (var manifestKey in model.SharedManifestEncryptionPublicKeys.Where(k => publishable.Contains(k.ManifestId)))
-                {
-                    await PublishManifestPublicKeyAsync(context, manifestKey.ManifestId, manifestKey.PublicKey);
+                    await PublishManifestPublicKeyAsync(context, row.ManifestId, mw.EncryptionPublicKey!);
                 }
 
                 // Claim resolution below reads these rows back, so they must be visible to the query.

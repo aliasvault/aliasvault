@@ -307,8 +307,8 @@ type ManifestWriteDto = {
   currentRevision: number;
   credentialsCount: number;
   blobReferences: BlobRefDto[];
-  /** The new VEK (set by legacy migration). */
   encryptedVek?: string;
+  encryptionPublicKey?: string;
 };
 
 /** Per-manifest result of a write: the new revision (Ok) or the current server revision (Outdated). */
@@ -1231,7 +1231,7 @@ export class VaultSyncService {
     }
     const { canonicalized, manifestRecords } = cachedSet ?? await this.canonicalizeVault(sqliteClient);
     // Personal manifest first by construction (see `resolveManifestRecords`), which is also the order canonicalize requires.
-    const [personalRecord, ...sharedRecords] = manifestRecords;
+    const [personalRecord] = manifestRecords;
     const privateEmailDomains = (await getStorageItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS)) ?? [];
     const emailRouting = buildEmailRouting(canonicalized.manifests.map(m => m.manifest), privateEmailDomains);
 
@@ -1363,6 +1363,21 @@ export class VaultSyncService {
       const ciphertextHash = await vaultCodecComputeCiphertextHash(ciphertext);
       devLog(`[V2Push] ${label}: raw ${formatKb(plaintext.length)} → compressed ${formatKb(compressedBytes)} → encrypted ${formatKb(ciphertext.length)}.`);
 
+      /*
+       * Publish the public half of this manifest's RSA key pair, which is used to e.g. encrypt incoming emails.
+       * Only admins are allowed to publish a new shared manifest's key.
+       */
+      const mayPublish = candidate.isPersonal || recordByManifestId.get(candidate.manifestId)?.canAdminister === true;
+      const manifestKey = mayPublish ? sqliteClient.encryptionKeys.getActiveForManifest(candidate.manifestId) : null;
+      if (mayPublish && !manifestKey && !candidate.isPersonal) {
+        /*
+         * Sharing a folder mints its keypair in the same vault mutation, so an owned shared manifest without one
+         * means that mutation was interrupted after the manifest was created server-side. Aliases in its subtree
+         * stay personal (readable by the owner only) until sharing is toggled again.
+         */
+        devWarn(`[V2Push] ${label} is missing its email keypair; its aliases stay personal until sharing is re-enabled.`);
+      }
+
       manifestWrites.push({
         manifestId: candidate.manifestId,
         manifestBlob: ciphertext,
@@ -1375,6 +1390,7 @@ export class VaultSyncService {
          * A migration always forces a personal-manifest write (see the gate above), so the key can never be stranded without one.
          */
         ...(candidate.isPersonal && migration ? { encryptedVek: migration.encryptedVek } : {}),
+        ...(manifestKey ? { encryptionPublicKey: manifestKey.PublicKey } : {}),
       });
       writtenManifestFingerprints[candidate.manifestId] = fingerprint;
     }
@@ -1428,43 +1444,12 @@ export class VaultSyncService {
       uploadedCiphertexts.set(hash, ciphertext);
     }
 
-    /*
-     * Publish the public half of the vault's active personal keypair, which is e.g. used by SMTP services to encrypt mail for personal aliases.
-     */
-    const primaryKey = sqliteClient.encryptionKeys.getPrimary();
-
-    /*
-     * Publish the public half of each shared manifest's email keypair that this user administers, which is e.g. used by SMTP services to encrypt
-     * mail for the manifest's aliases. Only an admin of the owning group publishes: the server records the delivery key per manifest, so a plain
-     * member publishing too would leave it ambiguous which row is the manifest's active key. Members still *claim* shared aliases (below). They
-     * just resolve the key the admin published.
-     */
-    const sharedManifestEncryptionPublicKeys: Array<{ manifestId: string; publicKey: string }> = [];
-    for (const record of sharedRecords) {
-      if (!record.canAdminister) {
-        continue;
-      }
-      const manifestKey = sqliteClient.encryptionKeys.getActiveForManifest(record.manifestId);
-      if (manifestKey) {
-        sharedManifestEncryptionPublicKeys.push({ manifestId: record.manifestId, publicKey: manifestKey.PublicKey });
-      } else {
-        /*
-         * Sharing a folder mints its keypair in the same vault mutation, so an owned shared manifest without one
-         * means that mutation was interrupted after the manifest was created server-side. Aliases in its subtree
-         * stay personal (readable by the owner only) until sharing is toggled again.
-         */
-        devWarn(`[V2Push] Shared manifest ${record.manifestId} is missing its email keypair; its aliases stay personal until sharing is re-enabled.`);
-      }
-    }
-
     const payload = {
       username,
       manifests: manifestWrites,
       buckets: bucketDtos,
       newBlobs: [] as BlobDto[],
       emailRouting,
-      userEncryptionPublicKey: primaryKey?.PublicKey ?? '',
-      sharedManifestEncryptionPublicKeys,
       // LEGACY: only the one-time KEK/VEK migration push carries a key hierarchy for the server to store.
       accountKeys: migration?.accountKeys ?? null,
     };
@@ -1661,7 +1646,7 @@ export class VaultSyncService {
     const webApi = new WebApiService();
     /** POST the single-bucket write with the given believed-current revision (called again on the rebase retry). */
     const postBucket = (currentRevision: number): Promise<VaultWriteResponseDto> => webApi.post<Record<string, unknown>, VaultWriteResponseDto>(VAULT_ENDPOINT, {
-      username, manifests: [], buckets: [{ manifestId, category, blob: ciphertext, ciphertextHash, currentRevision }], newBlobs: [], emailRouting: null, userEncryptionPublicKey: '',
+      username, manifests: [], buckets: [{ manifestId, category, blob: ciphertext, ciphertextHash, currentRevision }], newBlobs: [], emailRouting: null,
     });
 
     /** This bucket's revision as the server reported it, matched on both halves of its address. */

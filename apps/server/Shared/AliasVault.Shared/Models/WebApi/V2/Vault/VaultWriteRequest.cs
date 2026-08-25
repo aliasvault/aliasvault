@@ -28,16 +28,6 @@ public class VaultWriteRequest
     public EmailRoutingPush? EmailRouting { get; set; }
 
     /// <summary>
-    /// Gets or sets the user's public encryption key.
-    /// </summary>
-    public string? UserEncryptionPublicKey { get; set; }
-
-    /// <summary>
-    /// Gets or sets the shared manifests' public encryption keys.
-    /// </summary>
-    public List<SharedManifestEncryptionPublicKey> SharedManifestEncryptionPublicKeys { get; set; } = [];
-
-    /// <summary>
     /// Gets or sets the encrypted Account Key and KEK derivation parameters for the given unlock method.
     /// </summary>
     public AccountKeysUpload? AccountKeys { get; set; }

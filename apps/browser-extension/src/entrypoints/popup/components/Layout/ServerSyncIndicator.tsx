@@ -7,10 +7,10 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 /**
- * Minimum time (ms) to show the syncing indicator.
- * Ensures user sees confirmation that a new vault was downloaded. Kept just long enough to register as a state
- * rather than a flicker: a pull of an ordinary vault finishes in a few hundred ms, so a longer floor is the
- * indicator waiting on itself rather than on the sync.
+ * Minimum time (ms) an in-flight indicator stays visible once it has appeared.
+ * A sync that resolves in tens of milliseconds would otherwise flicker the badge, so we hold it just long enough
+ * to register as a state rather than a flicker. This also bridges the short idle gap between two chained syncs,
+ * which would otherwise flicker the badge off and straight back on.
  */
 const MIN_SYNC_DISPLAY_TIME = 400;
 
@@ -22,13 +22,54 @@ const MIN_SYNC_DISPLAY_TIME = 400;
 const PENDING_DISPLAY_DELAY = 1000;
 
 /**
+ * Keep the syncing indicator visible for a minimum amount of time, measured from the moment it first turned on to prevent flickering.
+ * @param active - the underlying state the indicator reflects
+ * @param minVisibleMs - how long the indicator has to stay visible at minimum
+ * @returns Whether the indicator should be rendered.
+ */
+const useMinimumVisible = (active: boolean, minVisibleMs: number): boolean => {
+  const [visible, setVisible] = useState(active);
+  const shownAtRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (active) {
+      if (shownAtRef.current === null) {
+        shownAtRef.current = Date.now();
+      }
+      setVisible(true);
+      return;
+    }
+
+    // Never shown, so there is nothing to hold on to.
+    if (shownAtRef.current === null) {
+      return;
+    }
+
+    const remaining = minVisibleMs - (Date.now() - shownAtRef.current);
+    if (remaining <= 0) {
+      shownAtRef.current = null;
+      setVisible(false);
+      return;
+    }
+
+    const timer = setTimeout((): void => {
+      shownAtRef.current = null;
+      setVisible(false);
+    }, remaining);
+    return (): void => clearTimeout(timer);
+  }, [active, minVisibleMs]);
+
+  return visible;
+};
+
+/**
  * Sync status indicator component.
  * Displays clickable status badges for offline mode, syncing, and pending sync.
  *
  * Priority order (highest to lowest):
  * 1. Offline (amber) - network unavailable, clickable to retry
  * 2. Syncing (green spinner) - downloading new vault (minimum display time)
- * 3. Uploading (blue spinner) - uploading local changes to server
+ * 3. Uploading (blue spinner) - uploading local changes to server (minimum display time)
  * 4. Pending (blue pulsing) - local changes waiting to be uploaded, clickable to retry
  * 5. Hidden - when synced
  *
@@ -41,9 +82,9 @@ const ServerSyncIndicator: React.FC = () => {
   const dbContext = useDb();
   const [isRetrying, setIsRetrying] = useState(false);
 
-  // Track syncing state with minimum display time
-  const [showSyncing, setShowSyncing] = useState(false);
-  const syncStartTimeRef = useRef<number | null>(null);
+  // Hold both in-flight indicators up long enough that a fast sync never flashes them
+  const showSyncing = useMinimumVisible(dbContext.isSyncing, MIN_SYNC_DISPLAY_TIME);
+  const showUploading = useMinimumVisible(dbContext.isUploading, MIN_SYNC_DISPLAY_TIME);
 
   // Track pending state with a grace delay so transient dirty windows never flash the badge
   const [showPending, setShowPending] = useState(false);
@@ -59,36 +100,6 @@ const ServerSyncIndicator: React.FC = () => {
     const timer = setTimeout((): void => setShowPending(true), PENDING_DISPLAY_DELAY);
     return (): void => clearTimeout(timer);
   }, [dbContext.hasUnsyncedUserChanges]);
-
-  /**
-   * Handle syncing state changes with minimum display time.
-   * When syncing starts, show indicator immediately.
-   * When syncing ends, wait until minimum time has passed.
-   */
-  useEffect(() => {
-    if (dbContext.isSyncing) {
-      // Sync started - show immediately and record start time
-      setShowSyncing(true);
-      syncStartTimeRef.current = Date.now();
-    } else if (syncStartTimeRef.current !== null) {
-      // Sync ended - wait for minimum display time
-      const elapsed = Date.now() - syncStartTimeRef.current;
-      const remaining = MIN_SYNC_DISPLAY_TIME - elapsed;
-
-      if (remaining > 0) {
-        const timer = setTimeout((): void => {
-          setShowSyncing(false);
-          syncStartTimeRef.current = null;
-        }, remaining);
-        return (): void => {
-          clearTimeout(timer);
-        };
-      } else {
-        setShowSyncing(false);
-        syncStartTimeRef.current = null;
-      }
-    }
-  }, [dbContext.isSyncing]);
 
   /**
    * Handle tap to force sync retry.
@@ -204,7 +215,7 @@ const ServerSyncIndicator: React.FC = () => {
   }
 
   // Priority 3: Uploading indicator (not clickable, shows progress)
-  if (dbContext.isUploading) {
+  if (showUploading) {
     return (
       <div
         className="flex items-center gap-1.5 mx-2 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-md text-xs font-medium"

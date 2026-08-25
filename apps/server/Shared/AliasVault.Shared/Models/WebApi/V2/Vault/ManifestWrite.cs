@@ -32,6 +32,11 @@ public class ManifestWrite
     public List<BlobReference> BlobReferences { get; set; } = [];
 
     /// <summary>
+    /// Gets or sets the public half of this manifest's active RSA key pair (used to e.g. encrypt incoming emails).
+    /// </summary>
+    public string? EncryptionPublicKey { get; set; }
+
+    /// <summary>
     /// Gets or sets the encrypted VEK of the vault encryption key encrypted with the password-derived KEK using AES-256-GCM.
     /// Set on the legacy user's first manifest-v1 write, where the client re-encrypts the whole vault under a fresh VEK;
     /// the server creates the password VaultKey for this manifest in the same transaction. Null on every subsequent write.

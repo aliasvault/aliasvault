@@ -20,15 +20,6 @@ export class EncryptionKeyRepository extends BaseRepository {
   }
 
   /**
-   * Get the user's active personal keypair.
-   * @returns The active personal keypair, or null when absent
-   */
-  public getPrimary(): EncryptionKey | null {
-    const personalManifestId = this.personalManifestId();
-    return personalManifestId ? this.getActiveForManifest(personalManifestId) : null;
-  }
-
-  /**
    * Get a manifest's active keypair, whose public half is published to the server as that manifest's delivery
    * key. Returns null for a manifest that has no keypair in this vault.
    * @param manifestId - The manifest id the keypair is stamped with
