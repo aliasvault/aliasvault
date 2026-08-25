@@ -1,15 +1,18 @@
-import React, { createContext, useContext, useEffect, useMemo, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { createContext, useContext, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { AUTH_FLOW_PATHS } from '@/entrypoints/popup/utils/routes';
 
+import type { NavigationStackState } from '@/utils/NavigationStack';
+import { createNavigationStack, seedNavigationStack, trackNavigation } from '@/utils/NavigationStack';
 import type { NavigationHistoryEntry } from '@/utils/NavigationStateService';
 import { NavigationStateService } from '@/utils/NavigationStateService';
 
 type NavigationContextType = {
   storeCurrentPage: () => Promise<void>;
+  seedNavigationStack: (entries: NavigationHistoryEntry[]) => void;
   isFullyInitialized: boolean;
   requiresAuth: boolean;
 };
@@ -22,6 +25,10 @@ const NavigationContext = createContext<NavigationContextType | undefined>(undef
 export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const navigationType = useNavigationType();
+
+  // The pages visited in this popup, which is what a restore replays so back keeps working across popup opens.
+  const navigationStack = useRef<NavigationStackState>(createNavigationStack());
 
   // Auth and DB state
   const { isInitialized: authInitialized, isLoggedIn } = useApp();
@@ -32,7 +39,15 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const requiresAuth = isFullyInitialized && (!isLoggedIn || !dbAvailable);
 
   /**
-   * Store the current page path, timestamp, and navigation history in storage.
+   * Adopt a restored navigation stack so it keeps growing from where the previous popup left off.
+   * @param entries - The restored entries, oldest first
+   */
+  const seedStack = useCallback((entries: NavigationHistoryEntry[]): void => {
+    navigationStack.current = seedNavigationStack(entries);
+  }, []);
+
+  /**
+   * Track the current page in the navigation stack and persist it together with the visit time.
    */
   const storeCurrentPage = useCallback(async (): Promise<void> => {
     // Pages that are not allowed to be stored as these are auth conditional pages or dedicated popup pages.
@@ -45,30 +60,15 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     ];
 
     // Only store the page if we're fully initialized and don't need auth
-    if (isFullyInitialized && !requiresAuth && !notAllowedPaths.includes(location.pathname)) {
-      // Split the path into segments and build up the history
-      const segments = location.pathname.split('/').filter(Boolean);
-      const historyEntries: NavigationHistoryEntry[] = [];
-
-      // Build history entries for each segment
-      let currentPath = '';
-      for (let i = 0; i < segments.length; i++) {
-        currentPath += '/' + segments[i];
-
-        /*
-         * For settings subpages, include both /settings and the subpage
-         * For email details, include both /emails and the specific email
-         */
-        historyEntries.push({
-          pathname: currentPath,
-          search: location.search,
-          hash: location.hash,
-        });
-      }
-
-      await NavigationStateService.storeNavigationState(location.pathname, historyEntries);
+    if (!isFullyInitialized || requiresAuth || notAllowedPaths.includes(location.pathname)) {
+      return;
     }
-  }, [location, isFullyInitialized, requiresAuth]);
+
+    const entry: NavigationHistoryEntry = { pathname: location.pathname, search: location.search, hash: location.hash };
+    navigationStack.current = trackNavigation(navigationStack.current, entry, navigationType);
+
+    await NavigationStateService.storeNavigationState(location.pathname, navigationStack.current.stack);
+  }, [location, navigationType, isFullyInitialized, requiresAuth]);
 
   // Store the current page whenever it changes
   useEffect(() => {
@@ -112,9 +112,10 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // Return the context value
   const contextValue = useMemo(() => ({
     storeCurrentPage,
+    seedNavigationStack: seedStack,
     isFullyInitialized,
     requiresAuth
-  }), [storeCurrentPage, isFullyInitialized, requiresAuth]);
+  }), [storeCurrentPage, seedStack, isFullyInitialized, requiresAuth]);
 
   return (
     <NavigationContext.Provider value={contextValue}>

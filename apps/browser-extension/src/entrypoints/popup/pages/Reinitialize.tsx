@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
+import { useNavigation } from '@/entrypoints/popup/context/NavigationContext';
 import useCurrentTabMatching from '@/entrypoints/popup/hooks/useCurrentTabMatching';
 import { consumePendingRedirectUrl } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
@@ -23,6 +24,7 @@ const Reinitialize: React.FC = () => {
   const { setIsInitialLoading } = useLoading();
   const { syncVault } = useVaultSync();
   const { matchCurrentTab } = useCurrentTabMatching();
+  const { seedNavigationStack } = useNavigation();
   const hasInitialized = useRef(false);
 
   // Auth and DB state
@@ -78,20 +80,19 @@ const Reinitialize: React.FC = () => {
         const shouldUseFreshMatch = hasTabChanged || isOnDefaultIndexPage;
 
         if (!shouldUseFreshMatch) {
-          // Restore user's navigation since they navigated away from auto-matched page
-          if (savedHistory && savedHistory.length > 1) {
-            // Navigate to the base route first
-            const firstEntry = savedHistory[0];
-            const firstPath = firstEntry.pathname + (firstEntry.search || '');
-            navigate(firstPath, { replace: true });
-            // Then navigate to the final destination with search params
-            const finalPath = lastPage + (lastHistoryEntry?.search || '');
-            navigate(finalPath, { replace: false });
-          } else {
-            // Simple navigation for non-nested routes
-            const fullPath = lastPage + (lastHistoryEntry?.search || '');
-            navigate(fullPath, { replace: true });
-          }
+          /*
+           * Restore the user's navigation since they navigated away from the auto-matched page. The full
+           * stack is replayed, not just its first and last page, so the back button walks the same trail
+           * the user took (e.g. items > folder > item) instead of dropping them back on the index.
+           */
+          const entries = savedHistory && savedHistory.length > 0 && lastHistoryEntry?.pathname === lastPage
+            ? savedHistory
+            : [{ pathname: lastPage, search: lastHistoryEntry?.search ?? '', hash: '' }];
+
+          seedNavigationStack(entries);
+          entries.forEach((entry, index) => {
+            navigate(entry.pathname + (entry.search || ''), { replace: index === 0 });
+          });
           return;
         }
       }
@@ -110,7 +111,7 @@ const Reinitialize: React.FC = () => {
 
     // Navigate to the items index: any current-site match is shown as a suggestion there.
     navigateToIndex();
-  }, [navigate, matchCurrentTab, navigateToIndex]);
+  }, [navigate, matchCurrentTab, navigateToIndex, seedNavigationStack]);
 
   /**
    * Run sync in background. If server has newer vault, useVaultSync will:
