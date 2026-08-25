@@ -510,12 +510,12 @@ export class VaultSyncService {
       }
       manifests.push(entry.manifest);
       dataBuckets.push(...entry.buckets);
-      stats.tablesProcessed += entry.stats.tables_processed;
-      stats.recordsFromLocal += entry.stats.records_from_local;
-      stats.recordsFromServer += entry.stats.records_from_server;
-      stats.recordsCreatedLocally += entry.stats.records_created_locally;
+      stats.tablesProcessed += entry.stats.tablesProcessed;
+      stats.recordsFromLocal += entry.stats.recordsFromLocal;
+      stats.recordsFromServer += entry.stats.recordsFromServer;
+      stats.recordsCreatedLocally += entry.stats.recordsCreatedLocally;
       stats.conflicts += entry.stats.conflicts;
-      stats.recordsInserted += entry.stats.records_inserted;
+      stats.recordsInserted += entry.stats.recordsInserted;
     }
     for (const dropped of mergeOutput.droppedLocalManifestIds) {
       devWarn(`[V2Merge] Local manifest ${dropped} is no longer served; its rows are dropped from the merged vault.`);

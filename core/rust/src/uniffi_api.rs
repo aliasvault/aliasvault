@@ -34,7 +34,7 @@ pub fn get_syncable_table_names() -> Vec<String> {
 ///   {
 ///     "success": true,
 ///     "statements": [{"sql": "UPDATE ...", "params": [...]}],
-///     "stats": {"tables_processed": 11, "conflicts": 0, ...}
+///     "stats": {"tablesProcessed": 11, "conflicts": 0, ...}
 ///   }
 ///   ```
 #[uniffi::export]

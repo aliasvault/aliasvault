@@ -49,12 +49,12 @@ type SqlStatement = {
  * Statistics from Rust merge.
  */
 type RustMergeStats = {
-  tables_processed: number;
-  records_from_local: number;
-  records_from_server: number;
-  records_created_locally: number;
+  tablesProcessed: number;
+  recordsFromLocal: number;
+  recordsFromServer: number;
+  recordsCreatedLocally: number;
   conflicts: number;
-  records_inserted: number;
+  recordsInserted: number;
 }
 
 /**
@@ -228,10 +228,10 @@ export class VaultMergeService {
           success: mergeOutput.success,
           mergedVaultBase64,
           stats: {
-            tablesProcessed: mergeOutput.stats.tables_processed,
-            recordsFromLocal: mergeOutput.stats.records_from_local,
-            recordsFromServer: mergeOutput.stats.records_from_server,
-            recordsCreatedLocally: mergeOutput.stats.records_created_locally,
+            tablesProcessed: mergeOutput.stats.tablesProcessed,
+            recordsFromLocal: mergeOutput.stats.recordsFromLocal,
+            recordsFromServer: mergeOutput.stats.recordsFromServer,
+            recordsCreatedLocally: mergeOutput.stats.recordsCreatedLocally,
             conflicts: mergeOutput.stats.conflicts,
           },
         };

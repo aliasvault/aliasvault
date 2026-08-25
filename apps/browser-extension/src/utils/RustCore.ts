@@ -398,6 +398,39 @@ export async function vaultCodecMaterializeAsSqlite(
   return core.vaultCodecMaterializeAsSqlite({ manifests, dataBuckets, schemaColumns }) as CodecMaterialized;
 }
 
+/** Input of the canonical merge: server side is the base, local side the incoming changes. */
+export type CodecCanonicalMergeInput = {
+  serverManifests: CodecManifest[];
+  serverBuckets: CodecDataBucket[];
+  contentlessServerManifestIds: string[];
+  localManifests: CodecManifest[];
+  localBuckets: CodecDataBucket[];
+  schemaColumns: Record<string, string[]>;
+};
+
+/** One manifest's merged result: the server manifest with merged tables, plus its merged buckets. */
+export type CodecCanonicalManifestMerge = {
+  manifestId: string;
+  manifest: CodecManifest;
+  buckets: CodecDataBucket[];
+  stats: { tablesProcessed: number; recordsFromLocal: number; recordsFromServer: number; recordsCreatedLocally: number; conflicts: number; recordsInserted: number };
+};
+
+/** Output of the canonical merge. */
+export type CodecCanonicalMergeOutput = {
+  manifests: CodecCanonicalManifestMerge[];
+  droppedLocalManifestIds: string[];
+};
+
+/**
+ * Merge the local canonical vault onto the server canonical vault (the base), one manifest at a
+ * time, rows out.
+ */
+export async function vaultCodecMergeCanonical(input: CodecCanonicalMergeInput): Promise<CodecCanonicalMergeOutput> {
+  await initRustCore();
+  return core.mergeCanonical(input) as CodecCanonicalMergeOutput;
+}
+
 /**
  * Extract the encryption-key row whose `PublicKey` matches `publicKey` from a decrypted manifest.
  */

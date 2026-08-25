@@ -47,6 +47,7 @@ pub struct SqlStatement {
 
 /// Statistics about what was merged.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 pub struct MergeStats {
     /// Number of tables processed

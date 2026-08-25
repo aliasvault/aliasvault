@@ -17,25 +17,25 @@ public class MergeStats
     /// <summary>
     /// Gets or sets the number of tables processed.
     /// </summary>
-    [JsonPropertyName("tables_processed")]
+    [JsonPropertyName("tablesProcessed")]
     public int TablesProcessed { get; set; }
 
     /// <summary>
     /// Gets or sets records where local version was kept.
     /// </summary>
-    [JsonPropertyName("records_from_local")]
+    [JsonPropertyName("recordsFromLocal")]
     public int RecordsFromLocal { get; set; }
 
     /// <summary>
     /// Gets or sets records where server version was used (updates).
     /// </summary>
-    [JsonPropertyName("records_from_server")]
+    [JsonPropertyName("recordsFromServer")]
     public int RecordsFromServer { get; set; }
 
     /// <summary>
     /// Gets or sets records that only existed locally (created offline).
     /// </summary>
-    [JsonPropertyName("records_created_locally")]
+    [JsonPropertyName("recordsCreatedLocally")]
     public int RecordsCreatedLocally { get; set; }
 
     /// <summary>
@@ -47,6 +47,6 @@ public class MergeStats
     /// <summary>
     /// Gets or sets records inserted from server (server-only records).
     /// </summary>
-    [JsonPropertyName("records_inserted")]
+    [JsonPropertyName("recordsInserted")]
     public int RecordsInserted { get; set; }
 }
