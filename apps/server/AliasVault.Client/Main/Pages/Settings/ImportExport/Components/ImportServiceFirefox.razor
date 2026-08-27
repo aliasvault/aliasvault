@@ -1,7 +1,6 @@
 @using AliasVault.ImportExport.Models
 @using AliasVault.ImportExport.Importers
 @using Microsoft.Extensions.Localization
-@using System.Text
 @inject NavigationManager NavigationManager
 @inject GlobalNotificationService GlobalNotificationService
 @inject IStringLocalizerFactory LocalizerFactory
@@ -23,7 +22,7 @@
 
     private static async Task<ImportFileResult> ProcessFile(string filename, byte[] fileBytes)
     {
-        var fileContents = Encoding.UTF8.GetString(fileBytes);
+        var fileContents = await BaseImporter.DecodeFileContentAsync(fileBytes);
         return await FirefoxImporter.ImportFromCsvAsync(fileContents);
     }
 }
