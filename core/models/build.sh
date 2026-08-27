@@ -17,15 +17,16 @@ echo "📦 Building $package_name..."
 npm install
 
 echo ""
-echo "🔄 Generating vault data bucket categories (C#, TS, Swift, Kotlin) from Rust source..."
-# Run before the build so the generated TS lands in src/ and is compiled into dist/ (and linted).
-node scripts/generate-bucket-categories.cjs
-
-echo ""
 echo "🔄 Generating vault key vocabulary (C#, TS, Swift, Kotlin)..."
 node scripts/generate-key-vocabulary.cjs
 
-npm run lint && npm run test && npm run build
+npm run lint && npm run build
+
+echo ""
+echo "🔄 Generating vault table registry (Rust) and bucket categories (C#, Swift, Kotlin)..."
+node scripts/generate-vault-table-registry.cjs
+
+npm run test
 
 echo ""
 echo "🔄 Generating platform-specific models (C#, Swift, Kotlin)..."

@@ -16,3 +16,4 @@ export * from './CredentialCompat';
 export * from './ItemMethods';
 export * from './SystemFieldRegistry';
 export * from './FieldHistory';
+export * from './VaultTableRegistry';
