@@ -11,6 +11,7 @@ using System.IO.Compression;
 using System.Text;
 using AliasServerDb;
 using AliasVault.Cryptography.Server;
+using AliasVault.Shared.Models.Enums;
 
 /// <summary>
 /// Tests for the EmailEncryption class, covering the source-only storage format (gzipped MessageSourceBytes)
@@ -31,7 +32,7 @@ public class EmailEncryptionTests
         email.MessageSourceBytes = gzippedSource;
         email.AttachmentCount = 1;
 
-        var deliveryKey = new VaultManifestDeliveryKey { Id = Guid.NewGuid(), VaultManifestId = Guid.NewGuid(), PublicKey = RsaEncryptionTests.PublicKey, IsPrimary = true };
+        var deliveryKey = new VaultManifestDeliveryKey { Id = Guid.NewGuid(), VaultManifestId = Guid.NewGuid(), Algorithm = VaultKeyAlgorithm.RsaOaepSha256, PublicKey = RsaEncryptionTests.PublicKey, IsPrimary = true };
         var encrypted = EmailEncryption.EncryptEmail(email, [deliveryKey]);
         Assert.Multiple(() =>
         {
@@ -68,7 +69,7 @@ public class EmailEncryptionTests
         email.MessagePlain = "Legacy plain body";
         email.MessageHtml = "<p>Legacy html body</p>";
 
-        var deliveryKey = new VaultManifestDeliveryKey { Id = Guid.NewGuid(), VaultManifestId = Guid.NewGuid(), PublicKey = RsaEncryptionTests.PublicKey, IsPrimary = true };
+        var deliveryKey = new VaultManifestDeliveryKey { Id = Guid.NewGuid(), VaultManifestId = Guid.NewGuid(), Algorithm = VaultKeyAlgorithm.RsaOaepSha256, PublicKey = RsaEncryptionTests.PublicKey, IsPrimary = true };
         var encrypted = EmailEncryption.EncryptEmail(email, [deliveryKey]);
         Assert.Multiple(() =>
         {

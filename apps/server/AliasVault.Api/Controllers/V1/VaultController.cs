@@ -591,6 +591,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         var newPublicKeyEntry = new VaultManifestDeliveryKey
         {
             VaultManifestId = personalManifestId,
+            Algorithm = VaultKeyAlgorithm.RsaOaepSha256,
             PublicKey = newPublicKey,
             IsPrimary = true,
             CreatedAt = timeProvider.UtcNow,

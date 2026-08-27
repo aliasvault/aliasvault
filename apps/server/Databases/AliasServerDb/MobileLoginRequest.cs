@@ -7,6 +7,8 @@
 
 namespace AliasServerDb;
 
+using System.ComponentModel.DataAnnotations;
+using AliasVault.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
@@ -23,6 +25,13 @@ public class MobileLoginRequest
     /// Gets or sets the unique identifier for this login request.
     /// </summary>
     public string Id { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the algorithm <see cref="ClientPublicKey"/> is for, which is what the mobile app must
+    /// encrypt <see cref="EncryptedDecryptionKey"/> with.
+    /// </summary>
+    [StringLength(30)]
+    public VaultKeyAlgorithm Algorithm { get; set; } = VaultKeyAlgorithm.RsaOaepSha256;
 
     /// <summary>
     /// Gets or sets the public key from the client (base64 encoded).

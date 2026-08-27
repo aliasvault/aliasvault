@@ -8,6 +8,7 @@ namespace AliasServerDb;
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using AliasVault.Shared.Models.Enums;
 
 /// <summary>
 /// A user's account-level asymmetric keypair, used exclusively for encrypting shared-manifest VEK
@@ -33,6 +34,12 @@ public class UserGrantKey
     /// </summary>
     [ForeignKey("UserId")]
     public virtual AliasVaultUser User { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the algorithm this keypair is for, which is what a sharer must encrypt a VEK with.
+    /// </summary>
+    [StringLength(30)]
+    public required VaultKeyAlgorithm Algorithm { get; set; }
 
     /// <summary>
     /// Gets or sets the public half (JWK).

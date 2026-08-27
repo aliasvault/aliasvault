@@ -470,6 +470,7 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasIndex(e => e.UserId).IsUnique().HasFilter("\"IsPrimary\"").HasDatabaseName("UX_UserGrantKeys_User_Primary");
+            builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
         });
 
         /*
@@ -533,14 +534,19 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
 
             // One active delivery key per manifest.
             builder.HasIndex(k => k.VaultManifestId).IsUnique().HasFilter("\"IsPrimary\"").HasDatabaseName("UX_VaultManifestDeliveryKeys_Manifest_Primary");
+            builder.Property(k => k.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
         });
 
         // Configure MobileLoginRequest - AliasVaultUser relationship
-        modelBuilder.Entity<MobileLoginRequest>()
-            .HasOne(m => m.User)
-            .WithMany()
-            .HasForeignKey(m => m.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<MobileLoginRequest>(builder =>
+        {
+            builder.HasOne(m => m.User)
+                .WithMany()
+                .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Property(m => m.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
+        });
 
         // Configure VaultDataBucket.
         modelBuilder.Entity<VaultDataBucket>(builder =>

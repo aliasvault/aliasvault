@@ -478,6 +478,7 @@ public class VaultController(
                         {
                             Id = Guid.NewGuid(),
                             UserId = user.Id,
+                            Algorithm = VaultKeyAlgorithm.RsaOaepSha256,
                             PublicKey = accountKeys.AccountPublicKey!,
                             EncryptedPrivateKey = accountKeys.EncryptedAccountPrivateKey!,
                             IsPrimary = true,
@@ -1299,6 +1300,7 @@ public class VaultController(
         context.VaultManifestDeliveryKeys.Add(new VaultManifestDeliveryKey
         {
             VaultManifestId = vaultManifestId,
+            Algorithm = VaultKeyAlgorithm.RsaOaepSha256,
             PublicKey = newPublicKey,
             IsPrimary = true,
             CreatedAt = timeProvider.UtcNow,

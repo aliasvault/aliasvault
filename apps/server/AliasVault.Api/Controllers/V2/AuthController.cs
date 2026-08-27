@@ -507,6 +507,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
                     {
                         Id = Guid.NewGuid(),
                         UserId = user.Id,
+                        Algorithm = VaultKeyAlgorithm.RsaOaepSha256,
                         PublicKey = model.AccountPublicKey!,
                         EncryptedPrivateKey = model.EncryptedAccountPrivateKey!,
                         IsPrimary = true,

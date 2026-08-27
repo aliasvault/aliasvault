@@ -8,6 +8,7 @@ namespace AliasServerDb;
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using AliasVault.Shared.Models.Enums;
 
 /// <summary>
 /// VaultManifestDeliveryKey object: the published public half of a manifest's asymmetric keypair.
@@ -30,6 +31,12 @@ public class VaultManifestDeliveryKey
     /// </summary>
     [ForeignKey("VaultManifestId")]
     public virtual VaultManifest VaultManifest { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the algorithm this key is for, which is what a sender must encrypt to it with.
+    /// </summary>
+    [StringLength(30)]
+    public required VaultKeyAlgorithm Algorithm { get; set; }
 
     /// <summary>
     /// Gets or sets the public key.

@@ -8,6 +8,7 @@
 namespace AliasVault.IntegrationTests;
 
 using AliasServerDb;
+using AliasVault.Shared.Models.Enums;
 
 /// <summary>
 /// Helper that seeds a test user with their personal group, owner membership, vault manifest and primary delivery key.
@@ -52,7 +53,7 @@ public static class TestUserSeeder
         dbContext.VaultManifests.Add(manifest);
 
         // At most one primary delivery key exists per manifest (unique filtered index).
-        var deliveryKey = new VaultManifestDeliveryKey { Id = Guid.NewGuid(), VaultManifestId = manifest.ManifestId, PublicKey = publicKey, IsPrimary = true, CreatedAt = now, UpdatedAt = now };
+        var deliveryKey = new VaultManifestDeliveryKey { Id = Guid.NewGuid(), VaultManifestId = manifest.ManifestId, Algorithm = VaultKeyAlgorithm.RsaOaepSha256, PublicKey = publicKey, IsPrimary = true, CreatedAt = now, UpdatedAt = now };
         dbContext.VaultManifestDeliveryKeys.Add(deliveryKey);
         await dbContext.SaveChangesAsync();
 
