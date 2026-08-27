@@ -10,6 +10,7 @@
 namespace AliasVault.UnitTests.Utilities;
 
 using System.IO.Compression;
+using System.Text;
 using AliasClientDb;
 using AliasClientDb.Models;
 using AliasVault.ImportExport;
@@ -1358,8 +1359,8 @@ public class ImportExportTests
         // Act
         var importedCredentials = await RoboformImporter.ImportFromCsvAsync(fileContent);
 
-        // Assert - Should import 4 records
-        Assert.That(importedCredentials, Has.Count.EqualTo(4));
+        // Assert - Should import 5 records
+        Assert.That(importedCredentials, Has.Count.EqualTo(5));
 
         // Test regular login credential
         var comCredential = importedCredentials.First(c => c.ServiceName == "Com");
@@ -1409,6 +1410,15 @@ public class ImportExportTests
             Assert.That(businessCredential.Password, Is.EqualTo("businesspassword"));
             Assert.That(businessCredential.FolderPath, Is.EqualTo("Business"));
             Assert.That(businessCredential.ItemType, Is.EqualTo(ImportedItemType.Login));
+        });
+
+        // Test secure note with a multi-line note body
+        var multilineNote = importedCredentials.First(c => c.ServiceName == "Multiline safenote");
+        Assert.Multiple(() =>
+        {
+            Assert.That(multilineNote.Notes, Does.StartWith("First note line"));
+            Assert.That(multilineNote.Notes, Does.Contain("Fourth note line after a blank one"));
+            Assert.That(multilineNote.ItemType, Is.EqualTo(ImportedItemType.Note));
         });
     }
 
