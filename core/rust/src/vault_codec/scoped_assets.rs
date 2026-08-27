@@ -21,25 +21,17 @@ use serde_json::{json, Value};
 
 use super::manifest::CodecRecord;
 use super::types::MANIFEST_ID_COL;
-
-const LOGOS_TABLE: &str = "Logos";
-const ITEMS_TABLE: &str = "Items";
-const LOGO_ID_COL: &str = "LogoId";
-const KIND_COL: &str = "Kind";
-const SOURCE_COL: &str = "Source";
-const ID_COL: &str = "Id";
-const FILE_DATA_COL: &str = "FileData";
-const UPDATED_AT_COL: &str = "UpdatedAt";
+use crate::vault_model::names::{FILE_DATA_COL, ID_COL, ITEMS_TABLE, KIND_COL, LOGOS_TABLE, LOGO_ID_COL, SOURCE_COL, UPDATED_AT_COL};
 
 /// The kind of a logo fetched automatically from an item's URL. Also what a row that carries no
 /// `Kind` at all means: it was written before the column existed, when every logo was a favicon.
-pub const KIND_FAVICON: &str = "favicon";
+pub use crate::vault_model::names::LOGO_KIND_FAVICON as KIND_FAVICON;
 
 /// The kind of a logo picked from the built-in catalog.
-pub const KIND_BUILTIN: &str = "builtin";
+pub use crate::vault_model::names::LOGO_KIND_BUILTIN as KIND_BUILTIN;
 
 /// The kind of a logo the user uploaded.
-pub const KIND_CUSTOM: &str = "custom";
+pub use crate::vault_model::names::LOGO_KIND_CUSTOM as KIND_CUSTOM;
 
 /// Domain-separation prefix for favicon ids. It predates the `Kind` column and is kept verbatim so
 /// every favicon row that already exists keeps its id: changing it would re-mint the logo of every

@@ -11,6 +11,11 @@ use std::collections::HashMap;
 
 use crate::error::VaultResult;
 use crate::vault_merge::SqlStatement;
+use crate::vault_model::names::{
+    ATTACHMENTS_TABLE, DELETED_AT_COL, FIELD_HISTORIES_TABLE, FIELD_VALUES_TABLE, FILE_DATA_COL, ID_COL,
+    IS_DELETED_COL, ITEMS_TABLE, ITEM_ID_COL, ITEM_STATS_TABLE, ITEM_TAGS_TABLE, KIND_COL, LOGOS_TABLE,
+    LOGO_ID_COL, PASSKEYS_TABLE, TOTP_CODES_TABLE,
+};
 
 /// A record is a map of column names to JSON values.
 pub type Record = HashMap<String, serde_json::Value>;
@@ -49,7 +54,7 @@ pub struct PruneInput {
 }
 
 fn default_retention_days() -> u32 {
-    30
+    crate::vault_model::TRASH_RETENTION_DEFAULT_DAYS
 }
 
 /// Statistics about what was pruned.
@@ -69,6 +74,16 @@ pub struct PruneStats {
     /// Number of per-item statistics rows soft-deleted along with their item.
     #[serde(default)]
     pub item_stats_pruned: u32,
+    /// Number of item-tag join rows permanently deleted.
+    #[serde(default)]
+    pub item_tags_pruned: u32,
+    /// Number of field history rows permanently deleted.
+    #[serde(default)]
+    pub field_histories_pruned: u32,
+    /// Rows of item-child tables that have no dedicated counter (a table added to the registry
+    /// after these stats were defined).
+    #[serde(default)]
+    pub other_children_pruned: u32,
     /// Number of orpha logos soft-deleted (no remaining active item references them)
     #[serde(default)]
     pub logos_pruned: u32,
@@ -82,7 +97,7 @@ pub struct PruneStats {
 
 /// The `Logos.Kind` of an automatically fetched favicon. A row without
 /// a `Kind` predates the column and is a favicon by definition.
-const KIND_FAVICON: &str = "favicon";
+use crate::vault_model::names::LOGO_KIND_FAVICON as KIND_FAVICON;
 
 /// Output of the prune operation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -111,22 +126,37 @@ pub struct PruneTableQuery {
 /// to a 1-byte presence marker (via `substr`) to avoid serializing large binary
 /// data to JSON on every prune.
 pub fn get_prune_table_queries() -> Vec<PruneTableQuery> {
-    [
-        ("Items", "SELECT Id, IsDeleted, DeletedAt, LogoId FROM Items"),
-        ("FieldValues", "SELECT ItemId, IsDeleted FROM FieldValues"),
-        ("Attachments", "SELECT Id, ItemId, IsDeleted, substr(Blob, 1, 1) AS Blob FROM Attachments"),
-        ("TotpCodes", "SELECT ItemId, IsDeleted FROM TotpCodes"),
-        ("Passkeys", "SELECT ItemId, IsDeleted FROM Passkeys"),
-        ("ItemStats", "SELECT Id, IsDeleted FROM ItemStats"),
-        ("Logos", "SELECT Id, Kind, IsDeleted, substr(FileData, 1, 1) AS FileData FROM Logos"),
-    ]
-    .iter()
-    .map(|(name, query)| PruneTableQuery {
-        name: (*name).to_string(),
-        query: (*query).to_string(),
-    })
-    .collect()
+    let mut queries = vec![PruneTableQuery {
+        name: ITEMS_TABLE.to_string(),
+        query: format!("SELECT {}, {}, {}, {} FROM {}", ID_COL, IS_DELETED_COL, DELETED_AT_COL, LOGO_ID_COL, ITEMS_TABLE),
+    }];
+    // One query per registered item-child table (TableConfig::item_child), so a table added to the
+    // registry is read by the pruner automatically.
+    for child in crate::vault_merge::SYNCABLE_TABLES.iter().filter(|t| t.item_child) {
+        let query = match blob_column_for(child.name) {
+            Some(blob_col) => format!("SELECT {}, {}, {}, substr({}, 1, 1) AS {} FROM {}", ID_COL, ITEM_ID_COL, IS_DELETED_COL, blob_col, blob_col, child.name),
+            None => format!("SELECT {}, {} FROM {}", item_ref_column(child.name), IS_DELETED_COL, child.name),
+        };
+        queries.push(PruneTableQuery { name: child.name.to_string(), query });
+    }
+    queries.push(PruneTableQuery {
+        name: LOGOS_TABLE.to_string(),
+        query: format!("SELECT {}, {}, {}, substr({}, 1, 1) AS {} FROM {}", ID_COL, KIND_COL, IS_DELETED_COL, FILE_DATA_COL, FILE_DATA_COL, LOGOS_TABLE),
+    });
+    queries
 }
+
+/// The column of an item-child table that carries the owning item's id: `Id` for ItemStats
+/// (its `Id` *is* the item's id), `ItemId` everywhere else.
+fn item_ref_column(table_name: &str) -> &'static str {
+    if table_name == ITEM_STATS_TABLE { ID_COL } else { ITEM_ID_COL }
+}
+
+/// The extracted blob column of a table, if it has one (see `vault_model::BLOB_COLUMNS`).
+fn blob_column_for(table_name: &str) -> Option<&'static str> {
+    crate::vault_model::BLOB_COLUMNS.iter().find(|(t, _, _)| *t == table_name).map(|(_, col, _)| *col)
+}
+
 
 /// Main entry point: prune expired items from trash.
 ///
@@ -154,7 +184,7 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
     let cutoff_date = now - Duration::days(input.retention_days as i64);
 
     // Items table is required for both passes (trash purge + logo orphan check).
-    let items_table = match input.tables.iter().find(|t| t.name == "Items") {
+    let items_table = match input.tables.iter().find(|t| t.name == ITEMS_TABLE) {
         Some(t) => t,
         None => {
             return Ok(PruneOutput {
@@ -207,79 +237,36 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
         });
         stats.items_pruned += 1;
 
-        // Mark related FieldValues as deleted
-        if let Some(field_values_table) = input.tables.iter().find(|t| t.name == "FieldValues") {
-            let related_count = count_related_records(&field_values_table.records, "ItemId", item_id);
-            if related_count > 0 {
-                statements.push(SqlStatement {
-                    sql: "UPDATE FieldValues SET IsDeleted = 1, UpdatedAt = ? WHERE ItemId = ? AND IsDeleted = 0".to_string(),
-                    params: vec![
-                        serde_json::json!(now_str),
-                        serde_json::json!(item_id),
-                    ],
-                });
-                stats.field_values_pruned += related_count;
+        /*
+         * Tombstone the rows of every registered item-child table (TableConfig::item_child) for
+         * this item, so a table added to the registry is swept automatically. A child with an
+         * extracted blob column has its bytes dropped in the same statement, leaving the column
+         * non-null while reclaiming the storage on the next save.
+         */
+        for child in crate::vault_merge::SYNCABLE_TABLES.iter().filter(|t| t.item_child) {
+            let Some(child_table) = input.tables.iter().find(|t| t.name == child.name) else { continue };
+            let match_col = item_ref_column(child.name);
+            let related_count = count_related_records(&child_table.records, match_col, item_id);
+            if related_count == 0 {
+                continue;
             }
-        }
-
-        // Mark related Attachments as deleted and drop their blob bytes. Leaves the 
-        // column non-null while reclaiming the storage on the next save.
-        if let Some(attachments_table) = input.tables.iter().find(|t| t.name == "Attachments") {
-            let related_count = count_related_records(&attachments_table.records, "ItemId", item_id);
-            if related_count > 0 {
-                statements.push(SqlStatement {
-                    sql: "UPDATE Attachments SET IsDeleted = 1, Blob = X'', UpdatedAt = ? WHERE ItemId = ? AND IsDeleted = 0".to_string(),
-                    params: vec![
-                        serde_json::json!(now_str),
-                        serde_json::json!(item_id),
-                    ],
-                });
-                stats.attachments_pruned += related_count;
-            }
-        }
-
-        // Mark related TotpCodes as deleted
-        if let Some(totp_table) = input.tables.iter().find(|t| t.name == "TotpCodes") {
-            let related_count = count_related_records(&totp_table.records, "ItemId", item_id);
-            if related_count > 0 {
-                statements.push(SqlStatement {
-                    sql: "UPDATE TotpCodes SET IsDeleted = 1, UpdatedAt = ? WHERE ItemId = ? AND IsDeleted = 0".to_string(),
-                    params: vec![
-                        serde_json::json!(now_str),
-                        serde_json::json!(item_id),
-                    ],
-                });
-                stats.totp_codes_pruned += related_count;
-            }
-        }
-
-        // Mark related Passkeys as deleted
-        if let Some(passkeys_table) = input.tables.iter().find(|t| t.name == "Passkeys") {
-            let related_count = count_related_records(&passkeys_table.records, "ItemId", item_id);
-            if related_count > 0 {
-                statements.push(SqlStatement {
-                    sql: "UPDATE Passkeys SET IsDeleted = 1, UpdatedAt = ? WHERE ItemId = ? AND IsDeleted = 0".to_string(),
-                    params: vec![
-                        serde_json::json!(now_str),
-                        serde_json::json!(item_id),
-                    ],
-                });
-                stats.passkeys_pruned += related_count;
-            }
-        }
-
-        // Tombstone the item's statistics row.
-        if let Some(item_stats_table) = input.tables.iter().find(|t| t.name == "ItemStats") {
-            let related_count = count_related_records(&item_stats_table.records, "Id", item_id);
-            if related_count > 0 {
-                statements.push(SqlStatement {
-                    sql: "UPDATE ItemStats SET IsDeleted = 1, UpdatedAt = ? WHERE Id = ? AND IsDeleted = 0".to_string(),
-                    params: vec![
-                        serde_json::json!(now_str),
-                        serde_json::json!(item_id),
-                    ],
-                });
-                stats.item_stats_pruned += related_count;
+            let blob_clear = blob_column_for(child.name).map(|col| format!(", {} = X''", col)).unwrap_or_default();
+            statements.push(SqlStatement {
+                sql: format!("UPDATE {} SET IsDeleted = 1{}, UpdatedAt = ? WHERE {} = ? AND IsDeleted = 0", child.name, blob_clear, match_col),
+                params: vec![
+                    serde_json::json!(now_str),
+                    serde_json::json!(item_id),
+                ],
+            });
+            match child.name {
+                FIELD_VALUES_TABLE => stats.field_values_pruned += related_count,
+                ATTACHMENTS_TABLE => stats.attachments_pruned += related_count,
+                TOTP_CODES_TABLE => stats.totp_codes_pruned += related_count,
+                PASSKEYS_TABLE => stats.passkeys_pruned += related_count,
+                ITEM_STATS_TABLE => stats.item_stats_pruned += related_count,
+                ITEM_TAGS_TABLE => stats.item_tags_pruned += related_count,
+                FIELD_HISTORIES_TABLE => stats.field_histories_pruned += related_count,
+                _ => stats.other_children_pruned += related_count,
             }
         }
     }
@@ -294,7 +281,7 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
      * in their logo library even after the item that first used it is gone. Those are removed only
      * when the user deletes them, and Pass 4 then reclaims the bytes.
      */
-    if let Some(logos_table) = input.tables.iter().find(|t| t.name == "Logos") {
+    if let Some(logos_table) = input.tables.iter().find(|t| t.name == LOGOS_TABLE) {
         let expired_set: std::collections::HashSet<&str> =
             expired_item_ids.iter().map(|s| s.as_str()).collect();
 
@@ -350,7 +337,7 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
     // This pass empties those blobs in place. The attachments tombstoned by 
     // Pass 1 in this same call are already cleared there, so this pass only 
     // catches historical leftovers.
-    if let Some(attachments_table) = input.tables.iter().find(|t| t.name == "Attachments") {
+    if let Some(attachments_table) = input.tables.iter().find(|t| t.name == ATTACHMENTS_TABLE) {
         for attachment in &attachments_table.records {
             let is_deleted = attachment.get("IsDeleted")
                 .map(|v| v.as_i64() == Some(1) || v.as_bool() == Some(true))
@@ -380,7 +367,7 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
     // soft-deleted but still have FileData bytes take up space for no reason. For favicons this
     // could have occurred in older clients (before 0.29.x); for an uploaded logo it is the normal
     // path, a user deleting one from their logo library tombstones the row here.
-    if let Some(logos_table) = input.tables.iter().find(|t| t.name == "Logos") {
+    if let Some(logos_table) = input.tables.iter().find(|t| t.name == LOGOS_TABLE) {
         for logo in &logos_table.records {
             let is_deleted = logo.get("IsDeleted")
                 .map(|v| v.as_i64() == Some(1) || v.as_bool() == Some(true))
@@ -1120,5 +1107,48 @@ mod tests {
 
         assert_eq!(output.stats.attachment_blobs_cleared, 0);
         assert!(output.statements.is_empty());
+    }
+
+    #[test]
+    fn prune_queries_cover_every_item_child_table() {
+        let names: Vec<String> = get_prune_table_queries().iter().map(|q| q.name.clone()).collect();
+        for child in crate::vault_merge::SYNCABLE_TABLES.iter().filter(|t| t.item_child) {
+            assert!(names.contains(&child.name.to_string()), "pruner does not read item child table {}", child.name);
+        }
+        assert!(names.contains(&ITEMS_TABLE.to_string()));
+        assert!(names.contains(&LOGOS_TABLE.to_string()));
+    }
+
+    #[test]
+    fn test_prune_cascades_to_field_histories_and_item_tags() {
+        let now = Utc::now();
+        let now_str = now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+        let old_date = (now - Duration::days(60)).format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+
+        let mut history = HashMap::new();
+        history.insert("ItemId".to_string(), serde_json::json!("item-1"));
+        history.insert("IsDeleted".to_string(), serde_json::json!(0));
+        let mut item_tag = HashMap::new();
+        item_tag.insert("ItemId".to_string(), serde_json::json!("item-1"));
+        item_tag.insert("IsDeleted".to_string(), serde_json::json!(0));
+
+        let input = PruneInput {
+            tables: vec![
+                TableData { name: "Items".to_string(), records: vec![make_item_record("item-1", Some(&old_date), false)] },
+                TableData { name: "FieldHistories".to_string(), records: vec![history] },
+                TableData { name: "ItemTags".to_string(), records: vec![item_tag] },
+            ],
+            retention_days: 30,
+            current_time: now_str,
+        };
+
+        let output = prune_vault(input).unwrap();
+
+        assert_eq!(output.stats.items_pruned, 1);
+        assert_eq!(output.stats.field_histories_pruned, 1);
+        assert_eq!(output.stats.item_tags_pruned, 1);
+        let sql: Vec<&str> = output.statements.iter().map(|s| s.sql.as_str()).collect();
+        assert!(sql.iter().any(|s| s.starts_with("UPDATE FieldHistories SET IsDeleted = 1")), "field history rows must die with their item: {:?}", sql);
+        assert!(sql.iter().any(|s| s.starts_with("UPDATE ItemTags SET IsDeleted = 1")), "item tag rows must die with their item: {:?}", sql);
     }
 }

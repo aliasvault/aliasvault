@@ -40,24 +40,13 @@ use super::types::{
     MANIFEST_ID_COL, OVERFLOW_TABLE,
 };
 use crate::error::{VaultError, VaultResult};
+use crate::vault_model::names::{
+    FIELD_DEFINITIONS_TABLE, FIELD_DEFINITION_ID_COL, FIELD_HISTORIES_TABLE, FIELD_VALUES_TABLE, FOLDERS_TABLE,
+    FOLDER_ID_COL, ID_COL, IS_DELETED_COL, IS_PRIMARY_COL, ITEMS_TABLE, ITEM_ID_COL, ITEM_TAGS_TABLE, LOGOS_TABLE,
+    LOGO_ID_COL, PARENT_FOLDER_ID_COL, PUBLIC_KEY_COL, TAGS_TABLE, TAG_ID_COL,
+};
 
-const FOLDERS_TABLE: &str = "Folders";
-const ITEMS_TABLE: &str = "Items";
-const LOGOS_TABLE: &str = "Logos";
-const PARENT_FOLDER_ID_COL: &str = "ParentFolderId";
-const ITEM_ID_COL: &str = "ItemId";
-const ID_COL: &str = "Id";
-const TAGS_TABLE: &str = "Tags";
-const ITEM_TAGS_TABLE: &str = "ItemTags";
-const TAG_ID_COL: &str = "TagId";
-const FIELD_DEFINITIONS_TABLE: &str = "FieldDefinitions";
-const FIELD_DEFINITION_ID_COL: &str = "FieldDefinitionId";
-
-/// Rows referenced from inside a manifest: `(target_table, [(referencing_table, column)])`.
-static REFERENCED_TABLES: &[(&str, &[(&str, &str)])] = &[
-    ("Tags", &[("ItemTags", "TagId")]),
-    ("FieldDefinitions", &[("FieldValues", "FieldDefinitionId"), ("FieldHistories", "FieldDefinitionId")]),
-];
+use crate::vault_model::REFERENCED_TABLES;
 
 /// The tables a caller must snapshot before routing, so the referenced content can be copied out of
 /// them afterwards: every [`REFERENCED_TABLES`] target plus `Logos`.
@@ -394,7 +383,7 @@ pub(super) fn clone_referenced_rows(tables: &mut HashMap<String, Vec<CodecRecord
 pub(super) fn prune_unreferenced_logos(tables: &mut HashMap<String, Vec<CodecRecord>>) {
     let referenced: HashSet<String> = tables
         .get(ITEMS_TABLE)
-        .map(|rows| rows.iter().filter_map(|r| str_col(r, "LogoId")).map(str::to_string).collect())
+        .map(|rows| rows.iter().filter_map(|r| str_col(r, LOGO_ID_COL)).map(str::to_string).collect())
         .unwrap_or_default();
     if let Some(logos) = tables.get_mut(LOGOS_TABLE) {
         logos.retain(|row| is_custom_logo(row) || str_col(row, ID_COL).map(|id| referenced.contains(id)).unwrap_or(false));
@@ -522,7 +511,7 @@ fn null_dangling_parent_folders(tables: &mut HashMap<String, Vec<CodecRecord>>) 
 
 /// Null every `Items.FolderId` that doesn't resolve to a folder *in the same manifest*.
 fn null_dangling_item_folders(tables: &mut HashMap<String, Vec<CodecRecord>>) {
-    null_dangling_reference(tables, ITEMS_TABLE, FOLDERS_TABLE, "FolderId");
+    null_dangling_reference(tables, ITEMS_TABLE, FOLDERS_TABLE, FOLDER_ID_COL);
 }
 
 /// Null every `FieldDefinitionId` that names no definition in the referencing row's own manifest.
@@ -531,7 +520,7 @@ fn null_dangling_item_folders(tables: &mut HashMap<String, Vec<CodecRecord>>) {
 /// keeps the user's value and loses only the metadata this vault does not hold anyway. Dropping the row
 /// instead would throw away what the user actually typed.
 fn null_dangling_field_definitions(tables: &mut HashMap<String, Vec<CodecRecord>>) {
-    for table in ["FieldValues", "FieldHistories"] {
+    for table in [FIELD_VALUES_TABLE, FIELD_HISTORIES_TABLE] {
         null_dangling_reference(tables, table, FIELD_DEFINITIONS_TABLE, FIELD_DEFINITION_ID_COL);
     }
 }
@@ -619,7 +608,7 @@ pub fn extract_encryption_key_for_public_key(manifest: &Manifest, public_key: &s
         .tables
         .get(ENCRYPTION_KEYS_TABLE)?
         .iter()
-        .find(|row| str_col(row, "PublicKey") == Some(public_key) && str_col(row, MANIFEST_ID_COL) == scope && !is_truthy(row.get("IsDeleted")))
+        .find(|row| str_col(row, PUBLIC_KEY_COL) == Some(public_key) && str_col(row, MANIFEST_ID_COL) == scope && !is_truthy(row.get(IS_DELETED_COL)))
         .cloned()
 }
 
@@ -632,7 +621,7 @@ pub fn active_encryption_key(manifest: &Manifest) -> Option<CodecRecord> {
         .tables
         .get(ENCRYPTION_KEYS_TABLE)?
         .iter()
-        .find(|row| is_truthy(row.get("IsPrimary")) && str_col(row, MANIFEST_ID_COL) == scope && !is_truthy(row.get("IsDeleted")))
+        .find(|row| is_truthy(row.get(IS_PRIMARY_COL)) && str_col(row, MANIFEST_ID_COL) == scope && !is_truthy(row.get(IS_DELETED_COL)))
         .cloned()
 }
 

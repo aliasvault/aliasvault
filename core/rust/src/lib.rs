@@ -17,6 +17,7 @@
 pub mod error;
 mod hex;
 mod rng;
+pub mod vault_model;
 pub mod vault_merge;
 pub mod vault_codec;
 pub mod vault_sharing;

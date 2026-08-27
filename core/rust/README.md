@@ -366,7 +366,9 @@ pub fn my_function() -> VaultResult<String> {
 | `src/lib.rs` | Entry point, exports all modules |
 | `src/error.rs` | `VaultError` and `VaultResult` types |
 | `src/vault_merge/mod.rs` | LWW merge implementation |
-| `src/vault_merge/types.rs` | Table configurations, composite keys |
+| `src/vault_merge/types.rs` | Re-exports the table registry for merge call sites |
+| `src/vault_model/mod.rs` | `TableConfig` type; owns the generated registry data |
+| `src/vault_model/generated.rs` | Registry data generated from `core/models/src/vault/VaultTableRegistry.ts` (do not edit) |
 | `src/vault_pruner/mod.rs` | Trash cleanup implementation |
 | `src/credential_matcher/mod.rs` | Autofill filtering algorithm |
 | `src/credential_matcher/domain.rs` | URL/domain extraction utilities |

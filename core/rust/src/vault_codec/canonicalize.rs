@@ -26,6 +26,7 @@ use super::types::{
     manifest_scoped_tables, row_identity, MANIFEST_ID_COL, OVERFLOW_TABLE, SCHEMA_VERSION,
 };
 use crate::error::VaultResult;
+use crate::vault_model::names::LOGOS_TABLE;
 
 /// Canonicalize normalized tables into the split resources: the manifest, one data bucket per declared
 /// category (see [`BUCKET_TABLES`](super::types::BUCKET_TABLES)), and the content-addressed blob map.
@@ -81,7 +82,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         .filter_map(|name| all_tables.get(name).map(|rows| (name.to_string(), rows.clone())))
         .collect();
     let no_rows: Vec<CodecRecord> = Vec::new();
-    let all_logos = snapshots.get("Logos").unwrap_or(&no_rows);
+    let all_logos = snapshots.get(LOGOS_TABLE).unwrap_or(&no_rows);
 
     let other_specs: Vec<ManifestSpec> = input.manifests.iter().skip(1).cloned().collect();
     let other_ids = other_specs.iter().map(|spec| spec.manifest_id.clone());

@@ -6,19 +6,10 @@ use serde_json::json;
 
 use super::manifest::CodecRecord;
 use super::types::{MANIFEST_ID_COL, MULTI_VALUE_FIELD_KEYS};
-
-const FIELD_VALUES_TABLE: &str = "FieldValues";
-const FIELD_HISTORIES_TABLE: &str = "FieldHistories";
-const FIELD_DEFINITIONS_TABLE: &str = "FieldDefinitions";
-const ITEM_TAGS_TABLE: &str = "ItemTags";
-const ID_COL: &str = "Id";
-const ITEM_ID_COL: &str = "ItemId";
-const TAG_ID_COL: &str = "TagId";
-const FIELD_KEY_COL: &str = "FieldKey";
-const FIELD_DEFINITION_ID_COL: &str = "FieldDefinitionId";
-const VALUE_INDEX_COL: &str = "ValueIndex";
-const CHANGED_AT_COL: &str = "ChangedAt";
-const IS_MULTI_VALUE_COL: &str = "IsMultiValue";
+use crate::vault_model::names::{
+    CHANGED_AT_COL, FIELD_DEFINITIONS_TABLE, FIELD_DEFINITION_ID_COL, FIELD_HISTORIES_TABLE, FIELD_KEY_COL,
+    FIELD_VALUES_TABLE, ID_COL, IS_MULTI_VALUE_COL, ITEM_ID_COL, ITEM_TAGS_TABLE, TAG_ID_COL, VALUE_INDEX_COL,
+};
 
 /// Domain-separation prefix for derived field value ids.
 const FIELD_VALUE_ID_NAMESPACE: &str = "aliasvault:fieldvalue:v1";

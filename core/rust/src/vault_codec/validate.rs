@@ -5,6 +5,10 @@
 use serde::{Deserialize, Serialize};
 
 use super::manifest::{DataBucket, Manifest, CodecRecord};
+use crate::vault_model::names::{
+    FIELD_DEFINITIONS_TABLE, FIELD_DEFINITION_ID_COL, FIELD_VALUES_TABLE, FOLDERS_TABLE, FOLDER_ID_COL, ID_COL,
+    ITEMS_TABLE, ITEM_ID_COL, ITEM_TAGS_TABLE, KIND_COL, LOGOS_TABLE, LOGO_KIND_FAVICON, SOURCE_COL, TAGS_TABLE, TAG_ID_COL,
+};
 
 /// Outcome of a structural validation run.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -80,7 +84,7 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
     }
 
     // Items and Folders are restamped by canonicalize: a mismatched stamp here means a codec bug.
-    for name in ["Items", "Folders"] {
+    for name in [ITEMS_TABLE, FOLDERS_TABLE] {
         if table(manifest, name).iter().any(|r| str_field(r, super::types::MANIFEST_ID_COL) != expected_scope) {
             failed.push("content-scope-mismatch".to_string());
             explain.push(format!("{} carries rows stamped for another manifest", name));
@@ -88,59 +92,59 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
         }
     }
 
-    let items = table(manifest, "Items");
-    let folders = table(manifest, "Folders");
-    let tags = table(manifest, "Tags");
-    let item_tags = table(manifest, "ItemTags");
-    let field_values = table(manifest, "FieldValues");
-    let field_defs = table(manifest, "FieldDefinitions");
+    let items = table(manifest, ITEMS_TABLE);
+    let folders = table(manifest, FOLDERS_TABLE);
+    let tags = table(manifest, TAGS_TABLE);
+    let item_tags = table(manifest, ITEM_TAGS_TABLE);
+    let field_values = table(manifest, FIELD_VALUES_TABLE);
+    let field_defs = table(manifest, FIELD_DEFINITIONS_TABLE);
 
-    let item_ids: std::collections::HashSet<&str> = items.iter().filter_map(|i| str_field(i, "Id")).collect();
-    let folder_ids: std::collections::HashSet<&str> = folders.iter().filter_map(|f| str_field(f, "Id")).collect();
-    let tag_ids: std::collections::HashSet<&str> = tags.iter().filter_map(|t| str_field(t, "Id")).collect();
-    let field_def_ids: std::collections::HashSet<&str> = field_defs.iter().filter_map(|f| str_field(f, "Id")).collect();
+    let item_ids: std::collections::HashSet<&str> = items.iter().filter_map(|i| str_field(i, ID_COL)).collect();
+    let folder_ids: std::collections::HashSet<&str> = folders.iter().filter_map(|f| str_field(f, ID_COL)).collect();
+    let tag_ids: std::collections::HashSet<&str> = tags.iter().filter_map(|t| str_field(t, ID_COL)).collect();
+    let field_def_ids: std::collections::HashSet<&str> = field_defs.iter().filter_map(|f| str_field(f, ID_COL)).collect();
 
     // Referential integrity.
     for item in items {
-        if let Some(folder_id) = str_field(item, "FolderId") {
+        if let Some(folder_id) = str_field(item, FOLDER_ID_COL) {
             if !folder_ids.contains(folder_id) {
                 failed.push("item-folder-fk-broken".to_string());
-                explain.push(format!("Item {} references missing folder {}", str_field(item, "Id").unwrap_or(""), folder_id));
+                explain.push(format!("Item {} references missing folder {}", str_field(item, ID_COL).unwrap_or(""), folder_id));
                 break;
             }
         }
     }
 
     for it in item_tags {
-        if let Some(item_id) = str_field(it, "ItemId") {
+        if let Some(item_id) = str_field(it, ITEM_ID_COL) {
             if !item_ids.contains(item_id) {
                 failed.push("itemtag-item-fk-broken".to_string());
-                explain.push(format!("ItemTag {} references missing item {}", str_field(it, "Id").unwrap_or(""), item_id));
+                explain.push(format!("ItemTag {} references missing item {}", str_field(it, ID_COL).unwrap_or(""), item_id));
                 break;
             }
         }
     }
     for it in item_tags {
-        if let Some(tag_id) = str_field(it, "TagId") {
+        if let Some(tag_id) = str_field(it, TAG_ID_COL) {
             if !tag_ids.contains(tag_id) {
                 failed.push("itemtag-tag-fk-broken".to_string());
-                explain.push(format!("ItemTag {} references missing tag {}", str_field(it, "Id").unwrap_or(""), tag_id));
+                explain.push(format!("ItemTag {} references missing tag {}", str_field(it, ID_COL).unwrap_or(""), tag_id));
                 break;
             }
         }
     }
 
     for fv in field_values {
-        if let Some(item_id) = str_field(fv, "ItemId") {
+        if let Some(item_id) = str_field(fv, ITEM_ID_COL) {
             if !item_ids.contains(item_id) {
                 failed.push("fieldvalue-item-fk-broken".to_string());
-                explain.push(format!("FieldValue {} references missing item {}", str_field(fv, "Id").unwrap_or(""), item_id));
+                explain.push(format!("FieldValue {} references missing item {}", str_field(fv, ID_COL).unwrap_or(""), item_id));
                 break;
             }
         }
     }
     for fv in field_values {
-        if let Some(field_def_id) = str_field(fv, "FieldDefinitionId") {
+        if let Some(field_def_id) = str_field(fv, FIELD_DEFINITION_ID_COL) {
             if !field_def_ids.contains(field_def_id) {
                 failed.push("fieldvalue-fielddef-fk-broken".to_string());
                 break;
@@ -160,12 +164,12 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
      * A logo belongs to exactly one manifest: (ManifestId, Kind, Source) must be UNIQUE in the
      * client schema.
      */
-    let logos = table(manifest, "Logos");
+    let logos = table(manifest, LOGOS_TABLE);
     let logo_keys: std::collections::HashSet<(String, String)> = logos
         .iter()
-        .filter_map(|l| Some((str_field(l, "Kind").unwrap_or("favicon").to_lowercase(), str_field(l, "Source")?.to_lowercase())))
+        .filter_map(|l| Some((str_field(l, KIND_COL).unwrap_or(LOGO_KIND_FAVICON).to_lowercase(), str_field(l, SOURCE_COL)?.to_lowercase())))
         .collect();
-    let logos_with_source = logos.iter().filter(|l| str_field(l, "Source").is_some()).count();
+    let logos_with_source = logos.iter().filter(|l| str_field(l, SOURCE_COL).is_some()).count();
     if logo_keys.len() != logos_with_source {
         failed.push("logo-sources-not-unique".to_string());
     }

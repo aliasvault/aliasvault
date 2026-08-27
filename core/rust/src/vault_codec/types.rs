@@ -1,69 +1,18 @@
 //! Format constants for the manifest-v1 storage layout.
 //!
-//! These constants are defined here so every platform shares the exact same rules.
+//! The datamodel registry data (tables, keys, bucket layout, blob columns, sentinels) lives in
+//! [`crate::vault_model`], generated from the TypeScript source of truth in
+//! core/models/src/vault/VaultTableRegistry.ts; this module re-exports it for the codec and adds
+//! the codec-owned accessors on top.
 
-// ---------------------------------------------------------------------------
-// Static / const definitions
-// ---------------------------------------------------------------------------
-
-/// The SQLite columns whose contents are extracted into content-addressed blobs rather than
-/// kept inline in the manifest. Tuple form `(table_name, blob_column, kind_label)`. The kind label
-/// is reported to the server on upload (used for metrics / retention).
-pub static BLOB_COLUMNS: &[(&str, &str, &str)] = &[
-    ("Logos", "FileData", "favicon"),
-    ("Attachments", "Blob", "attachment"),
-];
-
-/// Tables never serialized into the server-stored manifest: internal SQLite, platform, or EF bookkeeping
-/// that is temporary and only used/required during runtime, and therefore should not become part of a persisted manifest.
-pub static SKIP_TABLES: &[&str] = &[
-    "__EFMigrationsHistory",
-    "__EFMigrationsLock",
-    "sqlite_sequence",
-    "android_metadata",
-    "Manifests",
-];
-
-/// Tables split out of the manifest into a data bucket, keyed by category, so each bucket syncs on its
-/// own server revision without rewriting the manifest. Tuple form `(table_name, bucket_category)`;
-/// `category` mirrors the server `VaultDataBucketCategory`. Several tables may share a category to sync together.
-pub static BUCKET_TABLES: &[(&str, &str)] = &[
-    ("Settings", "Settings"),
-    ("ItemStats", "Stats"),
-];
-
-/// Tables that belong exclusively to the user's own (personal) vault, never to a shared manifest.
-/// Empty today, and deliberately independent of [`BUCKET_TABLES`]: a bucketed table is kept out of the
-/// manifest blob, which is a different question from which manifests may hold its rows at all. Kept as
-/// the declaration point for a future personal-only table.
-pub static PERSONAL_TABLES: &[&str] = &[];
-
-/// System field keys whose field holds multiple values. A value of such a field owns its row id
-/// (two devices each adding a value are adding two different things) and are not derived.
-pub static MULTI_VALUE_FIELD_KEYS: &[&str] = &["login.url"];
-
-/// The per-manifest delivery-keypair table. Every manifest carries its own asymmetric keypair(s),
-/// stamped with that manifest's id (`ManifestId`).
-pub const ENCRYPTION_KEYS_TABLE: &str = "EncryptionKeys";
-
-/// The scope column every stamped table carries: the id of the manifest that owns the row.
-pub const MANIFEST_ID_COL: &str = "ManifestId";
-
-/// Local bookkeeping table materialize writes into the vault DB: one row per manifest this
-/// vault is materialized from (`Id`, `Name`).
-pub const MANIFESTS_TABLE: &str = "Manifests";
+pub use crate::vault_model::{
+    BLOB_COLUMNS, BUCKET_TABLES, ENCRYPTION_KEYS_TABLE, MANIFESTS_TABLE, MANIFEST_ID_COL,
+    MULTI_VALUE_FIELD_KEYS, OVERFLOW_ROW_ID, OVERFLOW_TABLE, PERSONAL_TABLES, SKIP_TABLES,
+    UNSTAMPED_SCOPE_SENTINEL,
+};
 
 /// Manifest / metadata schema version.
 pub const SCHEMA_VERSION: u32 = 1;
-
-/// Client-local SQLite table that carries the codec overflow inside the vault database itself (see
-/// `CodecOverflow`): materialize writes a single row `{ Id: OVERFLOW_ROW_ID, Data: <json> }`, and
-/// canonicalize / extract_bucket consume it to build the manifest.
-pub const OVERFLOW_TABLE: &str = "CodecOverflows";
-
-/// Fixed sentinel primary key of the single `OVERFLOW_TABLE` row (deterministic on purpose:
-/// materialize output must not depend on a random source).
-pub const OVERFLOW_ROW_ID: &str = "00000000-0000-0000-0000-00000000c0de";
 
 // ---------------------------------------------------------------------------
 // Accessor methods
@@ -100,9 +49,6 @@ pub fn bucket_categories() -> Vec<&'static str> {
 pub fn tables_for_category(category: &str) -> Vec<&'static str> {
     BUCKET_TABLES.iter().filter(|(_, c)| *c == category).map(|(t, _)| *t).collect()
 }
-
-/// All zero GUID used for default values which indicate unstamped rows.
-pub const UNSTAMPED_SCOPE_SENTINEL: &str = "00000000-0000-0000-0000-000000000000";
 
 /// True when a `ManifestId` value names no manifest.
 pub fn is_unstamped_scope(scope: Option<&str>) -> bool {
