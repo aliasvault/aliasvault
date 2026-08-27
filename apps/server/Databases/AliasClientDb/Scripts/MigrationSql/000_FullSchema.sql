@@ -1803,3 +1803,55 @@ VALUES ('20260813090206_2.1.4-AddFieldValueIsDisabled', '10.0.10');
 
 COMMIT;
 
+BEGIN TRANSACTION;
+ALTER TABLE "FieldValues" ADD "ValueIndex" INTEGER NOT NULL DEFAULT 0;
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260827095434_2.1.5-AddFieldValueValueIndex', '10.0.10');
+
+COMMIT;
+
+BEGIN TRANSACTION;
+DROP INDEX "IX_ItemTags_ManifestId_ItemId_TagId";
+
+CREATE TABLE "ef_temp_ItemTags" (
+    "ManifestId" TEXT NOT NULL,
+    "ItemId" TEXT NOT NULL,
+    "TagId" TEXT NOT NULL,
+    "CreatedAt" TEXT NOT NULL,
+    "IsDeleted" INTEGER NOT NULL,
+    "UpdatedAt" TEXT NOT NULL,
+    CONSTRAINT "PK_ItemTags" PRIMARY KEY ("ManifestId", "ItemId", "TagId"),
+    CONSTRAINT "FK_ItemTags_Items_ManifestId_ItemId" FOREIGN KEY ("ManifestId", "ItemId") REFERENCES "Items" ("ManifestId", "Id") ON DELETE CASCADE,
+    CONSTRAINT "FK_ItemTags_Tags_ManifestId_TagId" FOREIGN KEY ("ManifestId", "TagId") REFERENCES "Tags" ("ManifestId", "Id") ON DELETE CASCADE
+);
+
+INSERT INTO "ef_temp_ItemTags" ("ManifestId", "ItemId", "TagId", "CreatedAt", "IsDeleted", "UpdatedAt")
+SELECT "ManifestId", "ItemId", "TagId", "CreatedAt", "IsDeleted", "UpdatedAt"
+FROM "ItemTags";
+
+COMMIT;
+
+PRAGMA foreign_keys = 0;
+
+BEGIN TRANSACTION;
+DROP TABLE "ItemTags";
+
+ALTER TABLE "ef_temp_ItemTags" RENAME TO "ItemTags";
+
+COMMIT;
+
+PRAGMA foreign_keys = 1;
+
+BEGIN TRANSACTION;
+CREATE INDEX "IX_ItemTags_ItemId" ON "ItemTags" ("ItemId");
+
+CREATE INDEX "IX_ItemTags_ManifestId_TagId" ON "ItemTags" ("ManifestId", "TagId");
+
+CREATE INDEX "IX_ItemTags_TagId" ON "ItemTags" ("TagId");
+
+COMMIT;
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260827095516_2.1.6-ItemTagKeyedByItemAndTag', '10.0.10');
+

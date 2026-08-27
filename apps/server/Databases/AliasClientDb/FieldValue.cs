@@ -67,6 +67,12 @@ public class FieldValue : ManifestScopedEntity
     public int Weight { get; set; } = 0;
 
     /// <summary>
+    /// Gets or sets the position of this value within its field. Always 0 for single-value fields;
+    /// values of a multi-value field are numbered 0..n.
+    /// </summary>
+    public int ValueIndex { get; set; } = 0;
+
+    /// <summary>
     /// Gets or sets a value indicating whether this field value should be considered disabled (e.g. applies to email aliases).
     /// </summary>
     public bool IsDisabled { get; set; }

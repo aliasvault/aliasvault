@@ -208,7 +208,7 @@ public static class VaultExportService
     {
         return new AvuxItemTag
         {
-            Id = itemTag.Id,
+            Id = Guid.NewGuid(),
             ItemId = itemTag.ItemId,
             TagId = itemTag.TagId,
         };

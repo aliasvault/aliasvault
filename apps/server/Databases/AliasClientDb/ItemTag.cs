@@ -17,11 +17,6 @@ using AliasClientDb.Abstracts;
 public class ItemTag : ManifestScopedEntity
 {
     /// <summary>
-    /// Gets or sets the item-tag relationship ID.
-    /// </summary>
-    public Guid Id { get; set; }
-
-    /// <summary>
     /// Gets or sets the item ID foreign key.
     /// </summary>
     [Required]

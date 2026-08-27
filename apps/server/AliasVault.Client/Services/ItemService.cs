@@ -440,7 +440,6 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         {
             var newItemTag = new ItemTag
             {
-                Id = Guid.NewGuid(),
                 ItemId = newItem.Id,
                 TagId = itemTag.TagId,
             };

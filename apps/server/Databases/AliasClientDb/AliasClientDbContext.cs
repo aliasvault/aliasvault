@@ -155,16 +155,14 @@ public class AliasClientDbContext : DbContext
         modelBuilder.Entity<EncryptionKey>().HasKey(e => new { e.ManifestId, e.Id });
         modelBuilder.Entity<FieldValue>().HasKey(e => new { e.ManifestId, e.Id });
         modelBuilder.Entity<FieldHistory>().HasKey(e => new { e.ManifestId, e.Id });
-        modelBuilder.Entity<ItemTag>().HasKey(e => new { e.ManifestId, e.Id });
         modelBuilder.Entity<Tag>().HasKey(e => new { e.ManifestId, e.Id });
         modelBuilder.Entity<FieldDefinition>().HasKey(e => new { e.ManifestId, e.Id });
         modelBuilder.Entity<Attachment>().HasKey(e => new { e.ManifestId, e.Id });
         modelBuilder.Entity<Passkey>().HasKey(e => new { e.ManifestId, e.Id });
         modelBuilder.Entity<TotpCode>().HasKey(e => new { e.ManifestId, e.Id });
         modelBuilder.Entity<ItemStat>().HasKey(e => new { e.ManifestId, e.Id });
-
-        // Settings are named by Key rather than Id.
         modelBuilder.Entity<Setting>().HasKey(e => new { e.ManifestId, e.Key });
+        modelBuilder.Entity<ItemTag>().HasKey(e => new { e.ManifestId, e.ItemId, e.TagId });
 
         // Configure Attachment - Item relationship
         modelBuilder.Entity<Attachment>()
@@ -316,10 +314,6 @@ public class AliasClientDbContext : DbContext
 
         modelBuilder.Entity<ItemTag>()
             .HasIndex(it => it.TagId);
-
-        modelBuilder.Entity<ItemTag>()
-            .HasIndex(it => new { it.ManifestId, it.ItemId, it.TagId })
-            .IsUnique();
     }
 
     /// <summary>

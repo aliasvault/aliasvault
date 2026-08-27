@@ -1842,7 +1842,6 @@ public class ImportExportTests
         {
             new()
             {
-                Id = Guid.NewGuid(),
                 ItemId = items[0].Id,
                 TagId = tags[0].Id,
             },
