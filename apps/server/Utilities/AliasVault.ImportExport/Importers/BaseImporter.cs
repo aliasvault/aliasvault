@@ -8,6 +8,7 @@
 namespace AliasVault.ImportExport.Importers;
 
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using AliasClientDb;
 using AliasClientDb.Models;
@@ -38,6 +39,18 @@ public static class BaseImporter
             HeaderValidated = null, // Don't validate header names
             PrepareHeaderForMatch = args => args.Header?.ToLower().Trim().Replace(" ", string.Empty) ?? string.Empty,
         };
+    }
+
+    /// <summary>
+    /// Decodes uploaded file bytes into text.
+    /// </summary>
+    /// <param name="fileBytes">The raw bytes of the uploaded file.</param>
+    /// <returns>The decoded file content.</returns>
+    public static async Task<string> DecodeFileContentAsync(byte[] fileBytes)
+    {
+        using var stream = new MemoryStream(fileBytes);
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        return await reader.ReadToEndAsync();
     }
 
     /// <summary>

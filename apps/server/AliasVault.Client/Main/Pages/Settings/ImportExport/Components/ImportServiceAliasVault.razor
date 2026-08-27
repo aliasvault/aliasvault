@@ -6,7 +6,6 @@
 @using AliasVault.ImportExport.Importers
 @using AliasVault.ImportExport
 @using Microsoft.Extensions.Localization
-@using System.Text
 
 <ImportServiceCard
     @ref="importServiceCard"
@@ -43,7 +42,7 @@
             else if (filename.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
             {
                 // Process as text CSV file
-                var fileContents = Encoding.UTF8.GetString(fileBytes);
+                var fileContents = await BaseImporter.DecodeFileContentAsync(fileBytes);
                 return await ItemCsvService.ImportItemsFromCsv(fileContents);
             }
             else
