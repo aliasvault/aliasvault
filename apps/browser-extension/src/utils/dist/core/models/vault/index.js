@@ -110,6 +110,10 @@ var VaultDataBucketCategory = {
    */
   Stats: "Stats"
 };
+var VaultDataBucketCategoryDescriptions = {
+  Settings: "User client settings (sort order, autofill prefs, identity defaults, etc.).",
+  Stats: "Per-item usage statistics (last used, use counts)."
+};
 
 // src/vault/Item.ts
 var ItemTypes = {
@@ -481,4 +485,127 @@ function createCustomField(options) {
 // src/vault/FieldHistory.ts
 var MAX_FIELD_HISTORY_RECORDS = 10;
 
-export { FieldCategories, FieldKey, FieldTypes, ItemTypes, LogoKinds, MAX_FIELD_HISTORY_RECORDS, SystemFieldRegistry, TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD, TOTP_SUPPORTED_ALGORITHMS, VaultDataBucketCategory, createCustomField, createSystemField, fieldAppliesToType, getAllSystemFieldKeys, getDefaultFieldsForItemType, getFieldConfigForType, getFieldValue, getFieldValues, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, groupFields, groupFieldsByCategory, hasField, isFieldShownByDefault, isSystemField, isSystemFieldPrefix, itemToCredential, normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod };
+// src/vault/VaultTableRegistry.ts
+var VAULT_MANIFEST_ID_COLUMN = "ManifestId";
+var VAULT_TABLES = [
+  { Name: "Items", ManifestScoped: true, PrimaryKey: ["Id"], ItemChild: false },
+  /*
+   * ItemStats is keyed by the item it describes: Id IS the item's id, so recording a use is an
+   * upsert and two devices never mint competing rows. Listed after Items so a merge inserts the
+   * item first.
+   */
+  { Name: "ItemStats", ManifestScoped: true, PrimaryKey: ["Id"], ItemChild: true, BucketCategory: "Stats" },
+  /*
+   * FieldValues legacy statement merge: a field value matches on the field it belongs to (FieldKey
+   * for system fields, FieldDefinitionId for custom ones; exactly one is set), so independently
+   * minted rows of the same field converge. Canonical merge: both sides are normalized first,
+   * which strips the derived id of every single-value row, so adding Id to the key makes a
+   * single-value row match by its field (id part empty on both sides) while a multi-value row
+   * matches by its OWNED id: two devices each adding a login.url are two different rows that must
+   * both survive, and the id, unlike ValueIndex, is stable under reordering.
+   */
+  {
+    Name: "FieldValues",
+    ManifestScoped: true,
+    PrimaryKey: ["Id"],
+    ItemChild: true,
+    LegacyMergeKey: ["ManifestId", "ItemId", "FieldKey", "FieldDefinitionId"],
+    CanonicalMergeKey: ["ManifestId", "ItemId", "FieldKey", "FieldDefinitionId", "Id"]
+  },
+  { Name: "Folders", ManifestScoped: true, PrimaryKey: ["Id"], ItemChild: false },
+  {
+    Name: "Tags",
+    ManifestScoped: true,
+    PrimaryKey: ["Id"],
+    ItemChild: false,
+    ReferencedBy: [{ Table: "ItemTags", Column: "TagId" }]
+  },
+  /*
+   * ItemTags is a pure join table keyed by its natural key; it carries no surrogate id so two devices tagging the same item converge on one row.
+   */
+  { Name: "ItemTags", ManifestScoped: true, PrimaryKey: ["ItemId", "TagId"], ItemChild: true },
+  {
+    Name: "Attachments",
+    ManifestScoped: true,
+    PrimaryKey: ["Id"],
+    ItemChild: true,
+    BlobColumn: { Column: "Blob", Kind: "attachment" }
+  },
+  { Name: "TotpCodes", ManifestScoped: true, PrimaryKey: ["Id"], ItemChild: true },
+  { Name: "Passkeys", ManifestScoped: true, PrimaryKey: ["Id"], ItemChild: true },
+  {
+    Name: "FieldDefinitions",
+    ManifestScoped: true,
+    PrimaryKey: ["Id"],
+    ItemChild: false,
+    ReferencedBy: [{ Table: "FieldValues", Column: "FieldDefinitionId" }, { Table: "FieldHistories", Column: "FieldDefinitionId" }]
+  },
+  /*
+   * FieldHistories canonical merge: every history row derives its id from (item, field, ChangedAt),
+   * so after normalization the natural key IS the identity: concurrent changes union (distinct
+   * ChangedAt), same-millisecond snapshots converge. Legacy statement merge keeps plain
+   * (ManifestId, Id).
+   */
+  {
+    Name: "FieldHistories",
+    ManifestScoped: true,
+    PrimaryKey: ["Id"],
+    ItemChild: true,
+    CanonicalMergeKey: ["ManifestId", "ItemId", "FieldKey", "FieldDefinitionId", "ChangedAt"]
+  },
+  {
+    Name: "Logos",
+    ManifestScoped: true,
+    PrimaryKey: ["Id"],
+    ItemChild: false,
+    BlobColumn: { Column: "FileData", Kind: "favicon" }
+  },
+  { Name: "EncryptionKeys", ManifestScoped: true, PrimaryKey: ["Id"], ItemChild: false },
+  {
+    Name: "Settings",
+    ManifestScoped: true,
+    PrimaryKey: ["Key"],
+    ItemChild: false,
+    BucketCategory: "Settings"
+  }
+];
+var VAULT_COLUMN_NAMES = [
+  "Id",
+  "ItemId",
+  "TagId",
+  "FieldKey",
+  "FieldDefinitionId",
+  "ValueIndex",
+  "ChangedAt",
+  "IsMultiValue",
+  "ParentFolderId",
+  "FolderId",
+  "LogoId",
+  "Kind",
+  "Source",
+  "FileData",
+  "Blob",
+  "UpdatedAt",
+  "DeletedAt",
+  "PublicKey",
+  "IsPrimary",
+  "IsDeleted"
+];
+var VAULT_BUCKET_CATEGORIES = ["Settings", "Stats"];
+var VAULT_SKIP_TABLES = [
+  "__EFMigrationsHistory",
+  "__EFMigrationsLock",
+  "sqlite_sequence",
+  "android_metadata",
+  "Manifests"
+];
+var VAULT_PERSONAL_TABLES = [];
+var MULTI_VALUE_FIELD_KEYS = Object.values(SystemFieldRegistry).filter((field) => field.IsMultiValue).map((field) => field.FieldKey.toLowerCase());
+var ENCRYPTION_KEYS_TABLE = "EncryptionKeys";
+var MANIFESTS_TABLE = "Manifests";
+var CODEC_OVERFLOW_TABLE = "CodecOverflows";
+var CODEC_OVERFLOW_ROW_ID = "00000000-0000-0000-0000-00000000c0de";
+var UNSTAMPED_SCOPE_SENTINEL = "00000000-0000-0000-0000-000000000000";
+var TRASH_RETENTION_DEFAULT_DAYS = 30;
+
+export { CODEC_OVERFLOW_ROW_ID, CODEC_OVERFLOW_TABLE, ENCRYPTION_KEYS_TABLE, FieldCategories, FieldKey, FieldTypes, ItemTypes, LogoKinds, MANIFESTS_TABLE, MAX_FIELD_HISTORY_RECORDS, MULTI_VALUE_FIELD_KEYS, SystemFieldRegistry, TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD, TOTP_SUPPORTED_ALGORITHMS, TRASH_RETENTION_DEFAULT_DAYS, UNSTAMPED_SCOPE_SENTINEL, VAULT_BUCKET_CATEGORIES, VAULT_COLUMN_NAMES, VAULT_MANIFEST_ID_COLUMN, VAULT_PERSONAL_TABLES, VAULT_SKIP_TABLES, VAULT_TABLES, VaultDataBucketCategory, VaultDataBucketCategoryDescriptions, createCustomField, createSystemField, fieldAppliesToType, getAllSystemFieldKeys, getDefaultFieldsForItemType, getFieldConfigForType, getFieldValue, getFieldValues, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, groupFields, groupFieldsByCategory, hasField, isFieldShownByDefault, isSystemField, isSystemFieldPrefix, itemToCredential, normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod };
