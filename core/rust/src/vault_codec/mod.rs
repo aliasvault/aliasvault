@@ -9,6 +9,7 @@
 
 mod compress;
 mod canonicalize;
+pub(crate) mod normalize;
 mod hash;
 mod manifest;
 mod materialize;
@@ -33,7 +34,8 @@ pub use scoped_assets::{KIND_BUILTIN as LOGO_KIND_BUILTIN, KIND_CUSTOM as LOGO_K
 pub use sharing::{active_encryption_key, extract_encryption_key_for_public_key};
 pub use types::{
     bucket_categories, bucket_category_for, is_bucketed_table, is_personal_table, tables_for_category, BLOB_COLUMNS, BUCKET_TABLES,
-    ENCRYPTION_KEYS_TABLE, MANIFESTS_TABLE, MANIFEST_ID_COL, OVERFLOW_TABLE, PERSONAL_TABLES, SCHEMA_VERSION, SKIP_TABLES,
+    ENCRYPTION_KEYS_TABLE, MANIFESTS_TABLE, MANIFEST_ID_COL, MULTI_VALUE_FIELD_KEYS, OVERFLOW_TABLE, PERSONAL_TABLES, SCHEMA_VERSION,
+    SKIP_TABLES,
 };
 pub use validate::ValidationResult;
 

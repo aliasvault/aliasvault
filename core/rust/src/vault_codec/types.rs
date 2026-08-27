@@ -38,6 +38,10 @@ pub static BUCKET_TABLES: &[(&str, &str)] = &[
 /// the declaration point for a future personal-only table.
 pub static PERSONAL_TABLES: &[&str] = &[];
 
+/// System field keys whose field holds multiple values. A value of such a field owns its row id
+/// (two devices each adding a value are adding two different things) and are not derived.
+pub static MULTI_VALUE_FIELD_KEYS: &[&str] = &["login.url"];
+
 /// The per-manifest delivery-keypair table. Every manifest carries its own asymmetric keypair(s),
 /// stamped with that manifest's id (`ManifestId`).
 pub const ENCRYPTION_KEYS_TABLE: &str = "EncryptionKeys";
@@ -118,9 +122,9 @@ pub fn is_bucketed_table(table_name: &str) -> bool {
     bucket_category_for(table_name).is_some()
 }
 
-/// Get the primary key column for a table.
-pub fn primary_key_for(table_name: &str) -> &'static str {
-    crate::vault_merge::SYNCABLE_TABLES.iter().find(|t| t.name == table_name).map(|t| t.primary_key).unwrap_or("Id")
+/// Get the primary key columns for a table.
+pub fn primary_key_columns_for(table_name: &str) -> &'static [&'static str] {
+    crate::vault_merge::SYNCABLE_TABLES.iter().find(|t| t.name == table_name).map(|t| t.primary_key_columns).unwrap_or(&["Id"])
 }
 
 /// True when `table_name`'s rows are namespaced per manifest.
@@ -148,8 +152,10 @@ pub fn row_identity(table_name: &str, row: &super::manifest::CodecRecord) -> Opt
     if !columns.contains(&MANIFEST_ID_COL) && row.get(MANIFEST_ID_COL).filter(|value| !value.is_null()).is_some() {
         columns.insert(0, MANIFEST_ID_COL);
     }
-    // A row with no primary key cannot be addressed at all.
-    row.get(primary_key_for(table_name))?;
+    // A row missing any primary key column cannot be addressed at all.
+    for column in primary_key_columns_for(table_name) {
+        row.get(*column)?;
+    }
     Some(
         columns
             .iter()

@@ -142,6 +142,10 @@ fn merge_manifest_pair(
         }
     }
 
+    // A union of concurrently added multi-value rows can leave two rows at the same ValueIndex;
+    // re-normalizing the output renumbers them, so a merged manifest is normalized like any other.
+    crate::vault_codec::normalize::normalize_row_shapes(&mut merged);
+
     let mut buckets = unknown_server_buckets;
     for category in bucket_categories() {
         let mut bucket_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
@@ -200,7 +204,15 @@ fn merge_rows(
     stats: &mut MergeStats,
 ) -> Vec<CodecRecord> {
     let identity_columns = config.identity_columns();
-    let match_columns: &[&str] = if config.uses_composite_key() { config.composite_key_columns } else { &identity_columns };
+    // Rows arrive normalized to the wire shape here, so a canonical-only key may rely on stripped
+    // derived ids (see the FieldValues registry comment).
+    let match_columns: &[&str] = if !config.canonical_key_columns.is_empty() {
+        config.canonical_key_columns
+    } else if config.uses_composite_key() {
+        config.composite_key_columns
+    } else {
+        &identity_columns
+    };
     let known_columns: Option<HashSet<&str>> = schema_columns.get(config.name).map(|cols| cols.iter().map(String::as_str).collect());
 
     // Winner per match key among incoming rows; on duplicates the latest UpdatedAt wins.
@@ -302,7 +314,8 @@ mod tests {
             ("Items".to_string(), vec!["ManifestId".to_string(), "Id".to_string(), "Name".to_string(), "UpdatedAt".to_string()]),
             ("Settings".to_string(), vec!["ManifestId".to_string(), "Key".to_string(), "Value".to_string(), "UpdatedAt".to_string()]),
             ("ItemStats".to_string(), vec!["ManifestId".to_string(), "Id".to_string(), "LastUsedAt".to_string(), "UpdatedAt".to_string()]),
-            ("FieldValues".to_string(), vec!["ManifestId".to_string(), "Id".to_string(), "ItemId".to_string(), "FieldKey".to_string(), "Value".to_string(), "UpdatedAt".to_string()]),
+            ("FieldValues".to_string(), vec!["ManifestId".to_string(), "Id".to_string(), "ItemId".to_string(), "FieldKey".to_string(), "FieldDefinitionId".to_string(), "ValueIndex".to_string(), "Value".to_string(), "UpdatedAt".to_string()]),
+            ("ItemTags".to_string(), vec!["ManifestId".to_string(), "ItemId".to_string(), "TagId".to_string(), "UpdatedAt".to_string()]),
             ("Attachments".to_string(), vec!["ManifestId".to_string(), "Id".to_string(), "Blob".to_string(), "UpdatedAt".to_string()]),
         ]
         .into_iter()
@@ -387,15 +400,15 @@ mod tests {
     }
 
     #[test]
-    fn field_values_keep_the_base_identity_on_a_semantic_match() {
-        // FieldValues match on (ManifestId, ItemId, FieldKey): a winning local row minted under a
-        // different Id updates the base row, which keeps its own Id.
-        let field_value = |id: &str, value: &str, updated_at: &str| -> CodecRecord {
+    fn field_values_match_semantically_and_carry_no_surrogate_id() {
+        // A single-value FieldValue arrives in wire shape (no Id, position 0) and matches on its
+        // natural key: both sides converge to one row holding the winning value, still id-less.
+        let field_value = |value: &str, updated_at: &str| -> CodecRecord {
             [
                 ("ManifestId".to_string(), json!(PERSONAL)),
-                ("Id".to_string(), json!(id)),
                 ("ItemId".to_string(), json!("item-1")),
                 ("FieldKey".to_string(), json!("username")),
+                ("ValueIndex".to_string(), json!(0)),
                 ("Value".to_string(), json!(value)),
                 ("UpdatedAt".to_string(), json!(updated_at)),
             ]
@@ -403,20 +416,178 @@ mod tests {
             .collect()
         };
 
+        let rows = merge_field_values(vec![field_value("old", "2024-01-01T00:00:00Z")], vec![field_value("new", "2024-01-09T00:00:00Z")]);
+        assert_eq!(rows.len(), 1);
+        assert!(rows[0].get("Id").is_none(), "a single-value row's id is derived at materialize, never carried on the wire");
+        assert_eq!(rows[0]["Value"], json!("new"), "and the row carries the winning value");
+    }
+
+    /// A `login.url` FieldValues row: multi-value, so it owns its id on the wire.
+    fn url_value(id: &str, index: i64, value: &str, updated_at: &str) -> CodecRecord {
+        [
+            ("ManifestId".to_string(), json!(PERSONAL)),
+            ("Id".to_string(), json!(id)),
+            ("ItemId".to_string(), json!("item-1")),
+            ("FieldKey".to_string(), json!("login.url")),
+            ("ValueIndex".to_string(), json!(index)),
+            ("Value".to_string(), json!(value)),
+            ("UpdatedAt".to_string(), json!(updated_at)),
+        ]
+        .into_iter()
+        .collect()
+    }
+
+    fn merge_field_values(server: Vec<CodecRecord>, local: Vec<CodecRecord>) -> Vec<CodecRecord> {
         let output = merge_canonical(CanonicalMergeInput {
-            server_manifests: vec![manifest(PERSONAL, [("FieldValues".to_string(), vec![field_value("fv-base", "old", "2024-01-01T00:00:00Z")])].into_iter().collect())],
+            server_manifests: vec![manifest(PERSONAL, [("FieldValues".to_string(), server)].into_iter().collect())],
             server_buckets: vec![],
             contentless_server_manifest_ids: vec![],
-            local_manifests: vec![manifest(PERSONAL, [("FieldValues".to_string(), vec![field_value("fv-local", "new", "2024-01-09T00:00:00Z")])].into_iter().collect())],
+            local_manifests: vec![manifest(PERSONAL, [("FieldValues".to_string(), local)].into_iter().collect())],
             local_buckets: vec![],
             schema_columns: schema(),
         })
         .unwrap();
+        output.manifests[0].manifest.tables["FieldValues"].clone()
+    }
 
-        let rows = &output.manifests[0].manifest.tables["FieldValues"];
+    #[test]
+    fn multi_value_edit_converges_on_the_owned_id() {
+        // The same owned id on both sides is the same row edited: LWW, one row out.
+        let rows = merge_field_values(
+            vec![url_value("url-1", 0, "https://a.example", "2024-01-01T00:00:00Z")],
+            vec![url_value("url-1", 0, "https://a-edited.example", "2024-01-09T00:00:00Z")],
+        );
         assert_eq!(rows.len(), 1);
-        assert_eq!(rows[0]["Id"], json!("fv-base"), "the base row keeps its own Id");
-        assert_eq!(rows[0]["Value"], json!("new"), "but carries the winning value");
+        assert_eq!(rows[0]["Id"], json!("url-1"), "the row keeps its owned id");
+        assert_eq!(rows[0]["Value"], json!("https://a-edited.example"));
+    }
+
+    #[test]
+    fn multi_value_concurrent_adds_both_survive() {
+        // Two devices each add a 2nd url while offline: both additions land at position 1 under
+        // different owned ids. Position is not identity, so the union keeps both, renumbered.
+        let rows = merge_field_values(
+            vec![url_value("url-a", 0, "https://a.example", "2024-01-01T00:00:00Z"), url_value("url-b", 1, "https://b.example", "2024-01-05T00:00:00Z")],
+            vec![url_value("url-a", 0, "https://a.example", "2024-01-01T00:00:00Z"), url_value("url-c", 1, "https://c.example", "2024-01-06T00:00:00Z")],
+        );
+        let mut values: Vec<&str> = rows.iter().map(|r| r["Value"].as_str().unwrap()).collect();
+        values.sort();
+        assert_eq!(values, vec!["https://a.example", "https://b.example", "https://c.example"]);
+        let mut indexes: Vec<i64> = rows.iter().map(|r| r["ValueIndex"].as_i64().unwrap()).collect();
+        indexes.sort();
+        assert_eq!(indexes, vec![0, 1, 2], "colliding positions are renumbered in the merged output");
+    }
+
+    #[test]
+    fn multi_value_reorder_does_not_duplicate() {
+        // Reordering changes only ValueIndex; the owned id keeps the rows matched, so no row doubles.
+        let rows = merge_field_values(
+            vec![url_value("url-a", 0, "https://a.example", "2024-01-01T00:00:00Z"), url_value("url-b", 1, "https://b.example", "2024-01-01T00:00:00Z")],
+            vec![url_value("url-b", 0, "https://b.example", "2024-01-09T00:00:00Z"), url_value("url-a", 1, "https://a.example", "2024-01-09T00:00:00Z")],
+        );
+        assert_eq!(rows.len(), 2);
+        let by_id: HashMap<&str, i64> = rows.iter().map(|r| (r["Id"].as_str().unwrap(), r["ValueIndex"].as_i64().unwrap())).collect();
+        assert_eq!(by_id["url-b"], 0, "the reorder won");
+        assert_eq!(by_id["url-a"], 1);
+    }
+
+    #[test]
+    fn both_sides_holding_the_same_two_urls_stay_two_rows() {
+        // The historic corruption case: before the id-based key, the 2nd url's value replaced the
+        // 1st on an ordinary push. Identical sides must merge to exactly themselves.
+        let two = vec![url_value("url-a", 0, "https://a.example", "2024-01-01T00:00:00Z"), url_value("url-b", 1, "https://b.example", "2024-01-02T00:00:00Z")];
+        let rows = merge_field_values(two.clone(), two);
+        assert_eq!(rows.len(), 2);
+        let by_id: HashMap<&str, &str> = rows.iter().map(|r| (r["Id"].as_str().unwrap(), r["Value"].as_str().unwrap())).collect();
+        assert_eq!(by_id["url-a"], "https://a.example");
+        assert_eq!(by_id["url-b"], "https://b.example");
+    }
+
+    #[test]
+    fn custom_field_values_of_one_item_do_not_collapse() {
+        // Custom fields carry no FieldKey (only a FieldDefinitionId); before FieldDefinitionId joined
+        // the key they all collapsed onto one empty-string key.
+        let custom = |def: &str, value: &str, updated_at: &str| -> CodecRecord {
+            [
+                ("ManifestId".to_string(), json!(PERSONAL)),
+                ("Id".to_string(), json!(format!("cv-{}", def))),
+                ("ItemId".to_string(), json!("item-1")),
+                ("FieldKey".to_string(), serde_json::Value::Null),
+                ("FieldDefinitionId".to_string(), json!(def)),
+                ("Value".to_string(), json!(value)),
+                ("UpdatedAt".to_string(), json!(updated_at)),
+            ]
+            .into_iter()
+            .collect()
+        };
+        let rows = merge_field_values(
+            vec![custom("fd-pin", "1234", "2024-01-01T00:00:00Z"), custom("fd-member", "M-77", "2024-01-01T00:00:00Z")],
+            vec![custom("fd-pin", "9999", "2024-01-09T00:00:00Z"), custom("fd-member", "M-77", "2024-01-01T00:00:00Z")],
+        );
+        assert_eq!(rows.len(), 2, "each custom field keeps its own row");
+        let mut values: Vec<&str> = rows.iter().map(|r| r["Value"].as_str().unwrap()).collect();
+        values.sort();
+        assert_eq!(values, vec!["9999", "M-77"]);
+    }
+
+    #[test]
+    fn field_histories_union_by_changed_at_and_converge_on_the_same_snapshot() {
+        // History rows derive their id from (item, field, ChangedAt): concurrent changes on two
+        // devices carry different timestamps and union; the same snapshot on both sides is one row.
+        let history = |changed_at: &str, snapshot: &str| -> CodecRecord {
+            [
+                ("ManifestId".to_string(), json!(PERSONAL)),
+                ("ItemId".to_string(), json!("item-1")),
+                ("FieldKey".to_string(), json!("login.password")),
+                ("ChangedAt".to_string(), json!(changed_at)),
+                ("ValueSnapshot".to_string(), json!(snapshot)),
+                ("UpdatedAt".to_string(), json!(changed_at)),
+            ]
+            .into_iter()
+            .collect()
+        };
+        let shared = history("2024-01-01 10:00:00.000", "both-know-this");
+        let output = merge_canonical(CanonicalMergeInput {
+            server_manifests: vec![manifest(PERSONAL, [("FieldHistories".to_string(), vec![shared.clone(), history("2024-02-01 10:00:00.000", "server-only")])].into_iter().collect())],
+            server_buckets: vec![],
+            contentless_server_manifest_ids: vec![],
+            local_manifests: vec![manifest(PERSONAL, [("FieldHistories".to_string(), vec![shared, history("2024-02-01 11:30:00.000", "local-only")])].into_iter().collect())],
+            local_buckets: vec![],
+            schema_columns: schema(),
+        })
+        .unwrap();
+        let rows = &output.manifests[0].manifest.tables["FieldHistories"];
+        let mut snapshots: Vec<&str> = rows.iter().map(|r| r["ValueSnapshot"].as_str().unwrap()).collect();
+        snapshots.sort();
+        assert_eq!(snapshots, vec!["both-know-this", "local-only", "server-only"]);
+        assert!(rows.iter().all(|r| r.get("Id").is_none()), "merged history rows stay id-less on the wire");
+    }
+
+    #[test]
+    fn item_tags_converge_on_their_natural_key() {
+        // Two devices tag the same item with the same tag: the id-less join rows are one row.
+        let tag_row = |updated_at: &str| -> CodecRecord {
+            [
+                ("ManifestId".to_string(), json!(PERSONAL)),
+                ("ItemId".to_string(), json!("item-1")),
+                ("TagId".to_string(), json!("tag-1")),
+                ("UpdatedAt".to_string(), json!(updated_at)),
+            ]
+            .into_iter()
+            .collect()
+        };
+        let output = merge_canonical(CanonicalMergeInput {
+            server_manifests: vec![manifest(PERSONAL, [("ItemTags".to_string(), vec![tag_row("2024-01-01T00:00:00Z")])].into_iter().collect())],
+            server_buckets: vec![],
+            contentless_server_manifest_ids: vec![],
+            local_manifests: vec![manifest(PERSONAL, [("ItemTags".to_string(), vec![tag_row("2024-01-09T00:00:00Z")])].into_iter().collect())],
+            local_buckets: vec![],
+            schema_columns: schema(),
+        })
+        .unwrap();
+        let rows = &output.manifests[0].manifest.tables["ItemTags"];
+        assert_eq!(rows.len(), 1, "the same (item, tag) link is one row on both sides");
+        assert!(rows[0].get("Id").is_none());
     }
 
     #[test]

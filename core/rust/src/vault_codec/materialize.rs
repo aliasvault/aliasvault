@@ -44,7 +44,11 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     let others: Vec<Manifest> = manifests;
 
     let base_manifest_id = base.manifest_id.clone();
-    let combined = super::sharing::combine_manifest_tables(base.tables, &base_manifest_id, others);
+    let mut combined = super::sharing::combine_manifest_tables(base.tables, &base_manifest_id, others);
+
+    // The wire omits derived row ids (single-value FieldValues, FieldHistories); mint them back so the
+    // SQLite projection has the primary keys it expects back, identical on every device.
+    super::normalize::mint_missing_derived_ids(&mut combined);
 
     let mut overflow = CodecOverflow::default();
     let mut tables: Vec<CodecTableData> = Vec::with_capacity(combined.len() + data_buckets.len());

@@ -100,9 +100,11 @@ fn every_bucketed_table_is_manifest_scoped_with_a_composite_identity() {
             table,
             category
         );
+        let mut expected = vec![super::types::MANIFEST_ID_COL];
+        expected.extend_from_slice(super::types::primary_key_columns_for(table));
         assert_eq!(
             super::types::identity_columns_for(table),
-            vec![super::types::MANIFEST_ID_COL, super::types::primary_key_for(table)],
+            expected,
             "bucketed table {} must be addressed by (ManifestId, primary key)",
             table
         );
@@ -836,4 +838,151 @@ pub(super) fn materialize_input(own: Manifest, others: Vec<Manifest>, data_bucke
 pub(super) fn materialize_manifests(manifests: Vec<Manifest>, data_buckets: Vec<DataBucket>) -> MaterializeInput {
     let schema = fitting_schema(manifests.iter(), &data_buckets);
     MaterializeInput { manifests, data_buckets, schema_columns: schema }
+}
+
+// ---------------------------------------------------------------------------
+// Derived ids + wire shape (see normalize.rs)
+// ---------------------------------------------------------------------------
+
+/// The FieldValues rows of the first canonicalized manifest, keyed by their Value marker.
+fn field_values_by_value(out: &CanonicalizedVault) -> HashMap<String, CodecRecord> {
+    out.first().manifest.tables["FieldValues"]
+        .iter()
+        .map(|r| (r["Value"].as_str().unwrap().to_string(), r.clone()))
+        .collect()
+}
+
+#[test]
+fn canonicalize_strips_derived_ids_and_renumbers_multi_value_rows() {
+    let out = canonicalize_from_sqlite(basic_input(vec![
+        CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i-1"))])] },
+        CodecTableData {
+            name: "FieldDefinitions".to_string(),
+            records: vec![row(&[("Id", json!("fd-multi")), ("IsMultiValue", json!(1))]), row(&[("Id", json!("fd-single")), ("IsMultiValue", json!(0))])],
+        },
+        CodecTableData {
+            name: "FieldValues".to_string(),
+            records: vec![
+                row(&[("Id", json!("fv-1")), ("ItemId", json!("i-1")), ("FieldKey", json!("login.username")), ("Value", json!("me"))]),
+                row(&[("Id", json!("u-1")), ("ItemId", json!("i-1")), ("FieldKey", json!("login.url")), ("Value", json!("https://a.example"))]),
+                row(&[("Id", json!("u-2")), ("ItemId", json!("i-1")), ("FieldKey", json!("login.url")), ("Value", json!("https://b.example"))]),
+                row(&[("Id", json!("c-1")), ("ItemId", json!("i-1")), ("FieldDefinitionId", json!("fd-multi")), ("Value", json!("multi-a"))]),
+                row(&[("Id", json!("c-2")), ("ItemId", json!("i-1")), ("FieldDefinitionId", json!("fd-multi")), ("Value", json!("multi-b"))]),
+                row(&[("Id", json!("c-3")), ("ItemId", json!("i-1")), ("FieldDefinitionId", json!("fd-single")), ("Value", json!("single-c"))]),
+            ],
+        },
+        CodecTableData { name: "Tags".to_string(), records: vec![row(&[("Id", json!("t-1"))])] },
+        CodecTableData { name: "ItemTags".to_string(), records: vec![row(&[("Id", json!("it-legacy")), ("ItemId", json!("i-1")), ("TagId", json!("t-1"))])] },
+    ]))
+    .unwrap();
+
+    let fv = field_values_by_value(&out);
+    assert!(fv["me"].get("Id").is_none(), "a single-value system field's id never reaches the wire");
+    assert_eq!(fv["me"]["ValueIndex"], json!(0));
+    assert!(fv["single-c"].get("Id").is_none(), "a single-value custom field's id never reaches the wire");
+    assert_eq!(fv["https://a.example"]["Id"], json!("u-1"), "a multi-value system field's value owns its id");
+    assert_eq!(fv["https://b.example"]["Id"], json!("u-2"));
+    assert_eq!((fv["https://a.example"]["ValueIndex"].as_i64().unwrap(), fv["https://b.example"]["ValueIndex"].as_i64().unwrap()), (0, 1), "values are renumbered in read order");
+    assert_eq!(fv["multi-a"]["Id"], json!("c-1"), "a multi-value custom field's value owns its id");
+    assert_eq!(fv["multi-b"]["Id"], json!("c-2"));
+
+    let item_tags = &out.first().manifest.tables["ItemTags"];
+    assert_eq!(item_tags.len(), 1);
+    assert!(item_tags[0].get("Id").is_none(), "ItemTags carries no id at all");
+}
+
+#[test]
+fn canonicalize_strips_field_history_ids() {
+    let out = canonicalize_from_sqlite(basic_input(vec![
+        CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i-1"))])] },
+        CodecTableData {
+            name: "FieldHistories".to_string(),
+            records: vec![
+                row(&[("Id", json!("fh-1")), ("ItemId", json!("i-1")), ("FieldKey", json!("login.password")), ("ChangedAt", json!("2026-01-01 10:00:00.000")), ("ValueSnapshot", json!("old-pass"))]),
+                row(&[("Id", json!("fh-2")), ("ItemId", json!("i-1")), ("FieldKey", json!("login.password")), ("ChangedAt", json!("2026-02-01 10:00:00.000")), ("ValueSnapshot", json!("newer-pass"))]),
+            ],
+        },
+    ]))
+    .unwrap();
+
+    let rows = &out.first().manifest.tables["FieldHistories"];
+    assert_eq!(rows.len(), 2, "distinct ChangedAt values are distinct history rows");
+    assert!(rows.iter().all(|r| r.get("Id").is_none()), "every history row derives its id; none reaches the wire");
+}
+
+#[test]
+fn canonicalize_collapses_duplicate_single_value_rows_to_the_newest() {
+    // Two rows for one single-value field (two local writers racing before their next sync) must
+    // converge instead of reaching the wire as colliding rows.
+    let out = canonicalize_from_sqlite(basic_input(vec![
+        CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i-1"))])] },
+        CodecTableData {
+            name: "FieldValues".to_string(),
+            records: vec![
+                row(&[("Id", json!("fv-old")), ("ItemId", json!("i-1")), ("FieldKey", json!("login.username")), ("Value", json!("stale")), ("UpdatedAt", json!("2024-01-01 00:00:00.000"))]),
+                row(&[("Id", json!("fv-new")), ("ItemId", json!("i-1")), ("FieldKey", json!("login.username")), ("Value", json!("fresh")), ("UpdatedAt", json!("2024-06-01 00:00:00.000"))]),
+            ],
+        },
+    ]))
+    .unwrap();
+
+    let rows = &out.first().manifest.tables["FieldValues"];
+    assert_eq!(rows.len(), 1);
+    assert_eq!(rows[0]["Value"], json!("fresh"));
+}
+
+#[test]
+fn materialize_mints_missing_field_value_ids() {
+    let manifest = Manifest {
+        schema_version: SCHEMA_VERSION,
+        manifest_salt: "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff".to_string(),
+        canonicalized_at: "2026-01-01T00:00:00.000Z".to_string(),
+        manifest_id: PERSONAL_MANIFEST.to_string(),
+        name: None,
+        tables: [
+            ("Items".to_string(), vec![row(&[("ManifestId", json!(PERSONAL_MANIFEST)), ("Id", json!("i-1"))])]),
+            (
+                "FieldValues".to_string(),
+                vec![
+                    // Single-value wire shape: no id, explicit position; the id is minted here.
+                    row(&[("ManifestId", json!(PERSONAL_MANIFEST)), ("ItemId", json!("i-1")), ("FieldKey", json!("login.username")), ("ValueIndex", json!(0)), ("Value", json!("me"))]),
+                    // Multi-value: the owned id rides along untouched.
+                    row(&[("ManifestId", json!(PERSONAL_MANIFEST)), ("Id", json!("u-1")), ("ItemId", json!("i-1")), ("FieldKey", json!("login.url")), ("ValueIndex", json!(0)), ("Value", json!("https://a.example"))]),
+                ],
+            ),
+            ("Tags".to_string(), vec![row(&[("ManifestId", json!(PERSONAL_MANIFEST)), ("Id", json!("t-1"))])]),
+            ("ItemTags".to_string(), vec![row(&[("ManifestId", json!(PERSONAL_MANIFEST)), ("ItemId", json!("i-1")), ("TagId", json!("t-1"))])]),
+            ("FieldHistories".to_string(), vec![row(&[("ManifestId", json!(PERSONAL_MANIFEST)), ("ItemId", json!("i-1")), ("FieldKey", json!("login.password")), ("ChangedAt", json!("2026-01-01 10:00:00.000")), ("ValueSnapshot", json!("old-pass"))])]),
+        ]
+        .into_iter()
+        .collect(),
+        extra: HashMap::new(),
+    };
+
+    let schema: HashMap<String, Vec<String>> = [
+        ("Items".to_string(), vec!["ManifestId".to_string(), "Id".to_string()]),
+        ("FieldValues".to_string(), vec!["ManifestId".to_string(), "Id".to_string(), "ItemId".to_string(), "FieldKey".to_string(), "FieldDefinitionId".to_string(), "ValueIndex".to_string(), "Value".to_string()]),
+        ("Tags".to_string(), vec!["ManifestId".to_string(), "Id".to_string()]),
+        ("ItemTags".to_string(), vec!["ManifestId".to_string(), "ItemId".to_string(), "TagId".to_string()]),
+        ("FieldHistories".to_string(), vec!["ManifestId".to_string(), "Id".to_string(), "ItemId".to_string(), "FieldKey".to_string(), "FieldDefinitionId".to_string(), "ChangedAt".to_string(), "ValueSnapshot".to_string()]),
+        (MANIFESTS_TABLE.to_string(), vec!["Id".to_string(), "Name".to_string()]),
+    ]
+    .into_iter()
+    .collect();
+
+    let out = materialize_as_sqlite(MaterializeInput { manifests: vec![manifest], data_buckets: vec![], schema_columns: schema }).unwrap();
+    let tables: HashMap<&str, &Vec<CodecRecord>> = out.tables.iter().map(|t| (t.name.as_str(), &t.records)).collect();
+
+    let fv: HashMap<&str, &CodecRecord> = tables["FieldValues"].iter().map(|r| (r["Value"].as_str().unwrap(), r)).collect();
+    let expected_username_id = super::normalize::field_value_id_for(PERSONAL_MANIFEST, "i-1", "login.username", "", 0);
+    assert_eq!(fv["me"]["Id"], json!(expected_username_id), "materialize mints the derived id");
+    assert_eq!(fv["https://a.example"]["Id"], json!("u-1"), "an owned multi-value id is kept verbatim");
+
+    assert_eq!(tables["ItemTags"].len(), 1, "the id-less join row inserts as-is");
+
+    let history = &tables["FieldHistories"][0];
+    let expected_history_id = super::normalize::field_history_id_for(PERSONAL_MANIFEST, "i-1", "login.password", "", "2026-01-01 10:00:00.000");
+    assert_eq!(history["Id"], json!(expected_history_id), "materialize mints the derived history id");
+
+    assert!(out.overflow.is_empty());
 }

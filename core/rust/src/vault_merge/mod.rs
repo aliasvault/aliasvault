@@ -285,7 +285,7 @@ fn key_part(value: &serde_json::Value) -> String {
 /// Get the UpdatedAt timestamp from a record.
 /// Handles both RFC3339 format (2025-12-11T06:50:10.674Z) and
 /// SQLite format (2025-12-11 06:50:10.674).
-fn get_updated_at(record: &Record) -> Option<DateTime<Utc>> {
+pub(crate) fn get_updated_at(record: &Record) -> Option<DateTime<Utc>> {
     record
         .get("UpdatedAt")
         .and_then(|v| v.as_str())
@@ -641,11 +641,11 @@ mod tests {
     #[test]
     fn settings_and_encryption_keys_are_syncable() {
         let settings = SYNCABLE_TABLES.iter().find(|t| t.name == "Settings").unwrap();
-        assert_eq!(settings.primary_key, "Key");
+        assert_eq!(settings.primary_key_columns, &["Key"]);
         assert!(!settings.uses_composite_key(), "a key already names one setting per manifest; no semantic match key is needed");
 
         let keys = SYNCABLE_TABLES.iter().find(|t| t.name == "EncryptionKeys").unwrap();
-        assert_eq!(keys.primary_key, "Id");
+        assert_eq!(keys.primary_key_columns, &["Id"]);
 
         assert!(SYNCABLE_TABLE_NAMES.contains(&"Settings"));
         assert!(SYNCABLE_TABLE_NAMES.contains(&"EncryptionKeys"));
@@ -705,7 +705,7 @@ mod tests {
         // never go back to composite-key matching on Source.
         let cfg = SYNCABLE_TABLES.iter().find(|t| t.name == "Logos").unwrap();
         assert!(!cfg.uses_composite_key());
-        assert_eq!(cfg.primary_key, "Id");
+        assert_eq!(cfg.primary_key_columns, &["Id"]);
     }
 
     #[test]
@@ -744,7 +744,9 @@ mod tests {
     fn scoped_row(config: &TableConfig, manifest_id: &str, updated_at: &str, payload: &str) -> Record {
         let mut record: Record = HashMap::new();
         record.insert(crate::vault_codec::MANIFEST_ID_COL.to_string(), serde_json::json!(manifest_id));
-        record.insert(config.primary_key.to_string(), serde_json::json!("row-1"));
+        for column in config.primary_key_columns {
+            record.insert((*column).to_string(), serde_json::json!("row-1"));
+        }
         for column in config.composite_key_columns {
             record.entry((*column).to_string()).or_insert_with(|| serde_json::json!("k"));
         }
@@ -804,7 +806,8 @@ mod tests {
 
             let set_clause = sql.trim_start_matches(&prefix).split(" WHERE ").next().unwrap();
             assert!(!set_clause.contains(crate::vault_codec::MANIFEST_ID_COL), "{}: an update must never rewrite the row's manifest ({})", config.name, sql);
-            assert!(sql.ends_with(&format!("WHERE ManifestId = ? AND {} = ?", config.primary_key)), "{}: the base row is addressed by its full identity ({})", config.name, sql);
+            let expected_where = format!("WHERE {}", config.identity_columns().iter().map(|c| format!("{} = ?", c)).collect::<Vec<_>>().join(" AND "));
+            assert!(sql.ends_with(&expected_where), "{}: the base row is addressed by its full identity ({})", config.name, sql);
         }
     }
 

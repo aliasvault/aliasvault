@@ -16,6 +16,7 @@ use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
 use serde_json::{json, Value};
 
+use super::normalize::normalize_row_shapes;
 use super::hash::salted_blob_hash;
 use super::scoped_assets::{normalize_logo_scope, reconcile_logo_references};
 use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecOverflow, DataBucket, Manifest, ManifestSpec, CodecRecord};
@@ -92,6 +93,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
     normalize_logo_scope(&mut all_tables, &writing_manifest_id);
     prune_unreferenced_logos(&mut all_tables);
     clone_referenced_rows(&mut all_tables, &writing_manifest_id, &snapshots);
+    normalize_row_shapes(&mut all_tables);
 
     let mut blobs: HashMap<String, BlobEntry> = HashMap::new();
     let mut manifest_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
@@ -119,7 +121,8 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
     });
 
     // Each remaining partition becomes its own manifest, its blobs hashed with its own per-manifest salt.
-    for partition in partitions {
+    for mut partition in partitions {
+        normalize_row_shapes(&mut partition.tables);
         let mut partition_blobs: HashMap<String, BlobEntry> = HashMap::new();
         let partition_tables: HashMap<String, Vec<CodecRecord>> = partition
             .tables

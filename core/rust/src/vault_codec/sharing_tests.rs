@@ -71,6 +71,23 @@ fn ids(records: &[CodecRecord]) -> Vec<&str> {
     out
 }
 
+/// FieldValues rows are identified by their `Value` marker.
+fn values(records: &[CodecRecord]) -> Vec<&str> {
+    let mut out: Vec<&str> = records.iter().filter_map(|r| r.get("Value").and_then(|v| v.as_str())).collect();
+    out.sort();
+    out
+}
+
+/// ItemTags rows are identified by their natural key.
+fn tag_links(records: &[CodecRecord]) -> Vec<(String, String)> {
+    let mut out: Vec<(String, String)> = records
+        .iter()
+        .filter_map(|r| Some((r.get("ItemId")?.as_str()?.to_string(), r.get("TagId")?.as_str()?.to_string())))
+        .collect();
+    out.sort();
+    out
+}
+
 /// The scoped logo id the codec derives for `(manifest id, source)`, what tests assert against, since
 /// a logo's identity is a function of its manifest and domain rather than whatever id the writer minted.
 fn logo_id(scope: &str, source: &str) -> String {
@@ -271,8 +288,8 @@ fn split_routes_item_scoped_tables_generically() {
     let out = canonicalize_owner();
     let shared = &out.rest()[0].manifest;
 
-    assert_eq!(ids(rows(shared, "FieldValues")), vec!["fv-shared", "fv-sub"]);
-    assert_eq!(ids(rows(&out.first().manifest, "FieldValues")), vec!["fv-personal"]);
+    assert_eq!(values(rows(shared, "FieldValues")), vec!["family", "hunter2"]);
+    assert_eq!(values(rows(&out.first().manifest, "FieldValues")), vec!["me"]);
 
     assert_eq!(ids(rows(shared, "TotpCodes")), vec!["totp-shared"]);
     assert!(rows(&out.first().manifest, "TotpCodes").is_empty());
@@ -280,8 +297,8 @@ fn split_routes_item_scoped_tables_generically() {
     assert_eq!(ids(rows(shared, "Attachments")), vec!["att-shared"]);
     assert_eq!(ids(rows(&out.first().manifest, "Attachments")), vec!["att-personal"]);
 
-    assert_eq!(ids(rows(shared, "ItemTags")), vec!["it-2", "it-3"]);
-    assert_eq!(ids(rows(&out.first().manifest, "ItemTags")), vec!["it-1"]);
+    assert_eq!(tag_links(rows(shared, "ItemTags")), vec![("i-shared".into(), "tag-both".into()), ("i-sub".into(), "tag-shared-only".into())]);
+    assert_eq!(tag_links(rows(&out.first().manifest, "ItemTags")), vec![("i-personal".into(), "tag-both".into())]);
 }
 
 #[test]
@@ -802,7 +819,7 @@ fn split_with_a_single_spec_drops_rows_of_manifests_it_does_not_carry() {
     assert_eq!(ids(rows(&out.first().manifest, "Items")), vec!["i-nofolder", "i-personal"]);
     assert_eq!(ids(rows(&out.first().manifest, "Folders")), vec!["f-personal"]);
     // The rows hanging off a dropped item go with it rather than dangling.
-    assert_eq!(ids(rows(&out.first().manifest, "FieldValues")), vec!["fv-personal"]);
+    assert_eq!(values(rows(&out.first().manifest, "FieldValues")), vec!["me"]);
     assert!(rows(&out.first().manifest, "TotpCodes").is_empty());
 
     // The serialized output carries the one manifest, with nothing flagging it and no folder anchor.
@@ -890,10 +907,10 @@ fn owner_split_then_combine_roundtrips_to_original_tables() {
 
     assert_eq!(ids(&map["Items"]), vec!["i-nofolder", "i-personal", "i-shared", "i-sub"]);
     assert_eq!(ids(&map["Folders"]), vec!["f-personal", "f-shared", "f-sub"]);
-    assert_eq!(ids(&map["FieldValues"]), vec!["fv-personal", "fv-shared", "fv-sub"]);
+    assert_eq!(values(&map["FieldValues"]), vec!["family", "hunter2", "me"]);
     assert_eq!(ids(&map["Attachments"]), vec!["att-personal", "att-shared"]);
     assert_eq!(ids(&map["TotpCodes"]), vec!["totp-shared"]);
-    assert_eq!(ids(&map["ItemTags"]), vec!["it-1", "it-2", "it-3"]);
+    assert_eq!(tag_links(&map["ItemTags"]), vec![("i-personal".into(), "tag-both".into()), ("i-shared".into(), "tag-both".into()), ("i-sub".into(), "tag-shared-only".into())]);
     /*
      * Tags and field definitions are manifest-scoped like the rest: the two the shared items carry
      * exist once in each manifest that uses them, side by side under `(ManifestId, Id)`. The base keeps
@@ -971,7 +988,7 @@ fn recipient_combine_materializes_shared_manifest_into_their_vault() {
     // Recipient sees their own rows plus the shared subtree.
     assert_eq!(ids(&map["Folders"]), vec!["f-mine", "f-shared", "f-sub"]);
     assert_eq!(ids(&map["Items"]), vec!["i-mine", "i-shared", "i-sub"]);
-    assert_eq!(ids(&map["FieldValues"]), vec!["fv-shared", "fv-sub"]);
+    assert_eq!(values(&map["FieldValues"]), vec!["family", "hunter2"]);
     /*
      * The owner and the recipient both hold a netflix.com logo, legitimately different images (fetched
      * at different times, or one of them uploaded by hand). They must BOTH survive, in their own
@@ -1021,7 +1038,7 @@ fn recipient_roundtrip_reproduces_shared_manifest_without_leaking_into_personal(
     let shared = &pushed.rest()[0].manifest;
     assert_eq!(ids(rows(shared, "Items")), vec!["i-shared", "i-sub"]);
     assert_eq!(ids(rows(shared, "Folders")), vec!["f-shared", "f-sub"]);
-    assert_eq!(ids(rows(shared, "FieldValues")), vec!["fv-shared", "fv-sub"]);
+    assert_eq!(values(rows(shared, "FieldValues")), vec!["family", "hunter2"]);
     assert_eq!(ids(rows(shared, "Tags")), vec!["tag-both", "tag-shared-only"]);
 
     // Recipient's personal manifest holds only their own rows, no shared items/folders leaked in.
@@ -1234,7 +1251,7 @@ fn combine_drops_child_rows_naming_an_item_the_manifest_does_not_hold() {
 
     let re = materialize_as_sqlite(materialize_input(personal, vec![hostile], vec![])).unwrap();
     let map = materialized_map(&re);
-    assert_eq!(ids(&map["FieldValues"]), vec!["fv-mine"], "the foreign row never reaches the reader's item");
+    assert_eq!(values(&map["FieldValues"]), vec!["me"], "the foreign row never reaches the reader's item");
 }
 
 #[test]
@@ -2047,8 +2064,8 @@ fn split_never_follows_a_bare_item_id_into_another_manifest() {
     assert!(manifest_mentions(personal, "personal_secret"), "and they must still be in the manifest they belong to");
 
     // Each manifest keeps exactly its own child rows, and the shared one keeps working.
-    assert_eq!(ids(rows(personal, "FieldValues")), vec!["fv-personal"]);
-    assert_eq!(ids(rows(shared, "FieldValues")), vec!["fv-shared"]);
+    assert_eq!(values(rows(personal, "FieldValues")), vec!["personal_secret"]);
+    assert_eq!(values(rows(shared, "FieldValues")), vec!["shared_secret"]);
     assert_eq!(ids(rows(personal, "TotpCodes")), vec!["totp-personal"]);
     assert_eq!(ids(rows(shared, "TotpCodes")), vec!["totp-shared"]);
     for name in ["Attachments", "Passkeys", "FieldHistories", "ItemTags"] {
@@ -2088,7 +2105,7 @@ fn split_keeps_child_rows_when_a_manifest_this_vault_lost_shares_their_item_id()
     let out = canonicalize_from_sqlite(raw_input_with_shares(tables, vec![])).unwrap();
     let personal = &out.first().manifest;
     assert_eq!(ids(rows(personal, "Items")), vec!["i-dup"], "the revoked manifest's item is dropped, the live one kept");
-    assert_eq!(ids(rows(personal, "FieldValues")), vec!["fv-personal"], "the live item keeps its own child rows");
+    assert_eq!(values(rows(personal, "FieldValues")), vec!["personal_secret"], "the live item keeps its own child rows");
     assert!(!manifest_mentions(personal, "gone"), "the revoked manifest's rows are not adopted into the personal one");
 }
 
@@ -2105,7 +2122,7 @@ fn split_still_follows_an_item_whose_children_were_left_unstamped() {
 
     // `input_with_shares` stamps everything the fixture left unstamped as personal, child rows included.
     let shared = &out.rest()[0].manifest;
-    assert_eq!(ids(rows(shared, "FieldValues")), vec!["fv-shared", "fv-sub"], "children followed their item across the boundary");
+    assert_eq!(values(rows(shared, "FieldValues")), vec!["family", "hunter2"], "children followed their item across the boundary");
     assert!(rows(shared, "FieldValues").iter().all(|r| r["ManifestId"] == json!("m-f-shared")), "and were re-stamped to agree with it");
 }
 
