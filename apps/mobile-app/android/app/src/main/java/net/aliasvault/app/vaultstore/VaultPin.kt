@@ -6,9 +6,6 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import android.util.Log
-import com.lambdapioneer.argon2kt.Argon2Kt
-import com.lambdapioneer.argon2kt.Argon2Mode
-import com.lambdapioneer.argon2kt.Argon2Version
 import org.json.JSONObject
 import java.security.KeyStore
 import java.security.SecureRandom
@@ -85,17 +82,9 @@ class VaultPin(
         private const val KEYSTORE_ALIAS_DATA_ENCRYPTION = "aliasvault_pin_data_encryption_key"
 
         /**
-         * Argon2id parameters for PIN key derivation.
-         * These parameters are chosen for security against brute-force attacks:
-         * - Memory: 65536 KB (64 MB) - makes GPU attacks much harder
-         * - Iterations: 3 - standard for Argon2id
-         * - Parallelism: 1 - suitable for mobile environment
-         * - Output: 32 bytes for AES-256-GCM
+         * Argon2id settings for PIN unlock.
          */
-        private const val ARGON2_ITERATIONS = 3
-        private const val ARGON2_MEMORY_KB = 65536 // 64 MB
-        private const val ARGON2_PARALLELISM = 1
-        private const val ARGON2_OUTPUT_LENGTH = 32
+        private const val ARGON2_SETTINGS = """{"MemorySize":65536,"Iterations":3,"DegreeOfParallelism":1}"""
 
         /**
          * AES-GCM parameters.
@@ -299,21 +288,7 @@ class VaultPin(
     @Throws(Exception::class)
     private fun derivePinKey(pin: String, salt: ByteArray): ByteArray {
         try {
-            val pinBytes = pin.toByteArray(Charsets.UTF_8)
-            val argon2 = Argon2Kt()
-
-            val hashResult = argon2.hash(
-                mode = Argon2Mode.ARGON2_ID,
-                password = pinBytes,
-                salt = salt,
-                tCostInIterations = ARGON2_ITERATIONS,
-                mCostInKibibyte = ARGON2_MEMORY_KB,
-                parallelism = ARGON2_PARALLELISM,
-                hashLengthInBytes = ARGON2_OUTPUT_LENGTH,
-                version = Argon2Version.V13,
-            )
-
-            return hashResult.rawHashAsByteArray()
+            return uniffi.aliasvault_core.argon2DeriveKeyBytes(pin.toByteArray(Charsets.UTF_8), salt, ARGON2_SETTINGS)
         } catch (e: Exception) {
             Log.e(TAG, "Argon2 PIN hashing failed", e)
             throw Exception("Argon2 PIN hashing failed", e)

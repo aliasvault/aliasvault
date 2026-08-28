@@ -2367,7 +2367,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - SignalArgon2 (1.3.2)
   - SQLite.swift (0.14.1):
     - SQLite.swift/standard (= 0.14.1)
   - SQLite.swift/standard (0.14.1)
@@ -2492,7 +2491,6 @@ DEPENDENCIES:
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNWorklets (from `../node_modules/react-native-worklets`)
-  - SignalArgon2 (~> 1.3.2)
   - SQLite.swift (~> 0.14.0)
   - SwiftLint
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -2501,7 +2499,6 @@ SPEC REPOS:
   trunk:
     - Macaw
     - OpenSSL-Universal
-    - SignalArgon2
     - SQLite.swift
     - SwiftLint
     - SWXMLHash
@@ -2856,12 +2853,11 @@ SPEC CHECKSUMS:
   RNScreens: 991cc417cd396602a6cf59a42139e5a9d91462a9
   RNSVG: 04044c3abcf177fd674a1a3d13097efa1adebcbe
   RNWorklets: 4931990f73bc8f347586918b2e13f11dfadf3b75
-  SignalArgon2: 1c24183835ca861e6af06631c18b1671cdf35571
   SQLite.swift: 2992550ebf3c5b268bf4352603e3df87d2a4ed72
   SwiftLint: f84fc7d844e9cde0dc4f5013af608a269e317aba
   SWXMLHash: dd733a457e9c4fe93b1538654057aefae4acb382
   Yoga: 77dfa8673de2874e1855002ae59c68b8be9b007b
 
-PODFILE CHECKSUM: 0ca3b97c7d314c366f932396ff15a5318564a137
+PODFILE CHECKSUM: c259fdf017060f6f592731838af8fe1d2eab07d0
 
 COCOAPODS: 1.16.2

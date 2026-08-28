@@ -2,9 +2,6 @@ package net.aliasvault.app.vaultstore
 
 import android.util.Base64
 import android.util.Log
-import com.lambdapioneer.argon2kt.Argon2Kt
-import com.lambdapioneer.argon2kt.Argon2Mode
-import com.lambdapioneer.argon2kt.Argon2Version
 import net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreOperationCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreProvider
@@ -92,25 +89,7 @@ class VaultCrypto(
     ): ByteArray {
         require(encryptionType == "Argon2Id") { "Unsupported encryption type: $encryptionType" }
 
-        val settings = JSONObject(encryptionSettings)
-        val iterations = settings.getInt("Iterations")
-        val memorySize = settings.getInt("MemorySize")
-        val parallelism = settings.getInt("DegreeOfParallelism")
-
-        val argon2 = Argon2Kt()
-
-        val hashResult = argon2.hash(
-            mode = Argon2Mode.ARGON2_ID,
-            password = password.toByteArray(Charsets.UTF_8),
-            salt = salt.toByteArray(Charsets.UTF_8),
-            tCostInIterations = iterations,
-            mCostInKibibyte = memorySize,
-            parallelism = parallelism,
-            hashLengthInBytes = 32,
-            version = Argon2Version.V13,
-        )
-
-        return hashResult.rawHashAsByteArray()
+        return uniffi.aliasvault_core.argon2DeriveKey(password, salt, encryptionSettings)
     }
 
     // endregion

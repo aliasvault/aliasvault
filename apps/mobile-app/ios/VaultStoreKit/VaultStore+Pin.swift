@@ -1,7 +1,7 @@
 import Foundation
 import CryptoKit
 import Security
-import SignalArgon2
+import RustCoreFramework
 import VaultModels
 import VaultUtils
 
@@ -14,6 +14,9 @@ extension VaultStore {
     private static let pinLengthKey = "pinLength"
     private static let pinFailedAttemptsKey = "pinFailedAttempts"
     private static let maxPinAttempts = 4
+
+    /// Argon2id cost parameters for PIN key derivation.
+    private static let pinArgon2Settings = "{\"MemorySize\":65536,\"Iterations\":3,\"DegreeOfParallelism\":1}"
 
     // MARK: - PIN Status Methods
 
@@ -169,21 +172,11 @@ extension VaultStore {
             throw NSError(domain: "VaultStore", code: 28, userInfo: [NSLocalizedDescriptionKey: "Failed to convert PIN to data"])
         }
 
-        // Use SignalArgon2 to hash PIN via Argon2id
-        guard let derivedKeyTuple = try? Argon2.hash(
-            iterations: 3,
-            memoryInKiB: 65536, // 64 MB
-            threads: 1,
-            password: pinData,
-            salt: salt,
-            desiredLength: 32,
-            variant: .id,
-            version: .v13
-        ) else {
+        guard let derivedKey = try? RustCoreFramework.argon2DeriveKeyBytes(password: pinData, salt: salt, encryptionSettings: Self.pinArgon2Settings) else {
             throw NSError(domain: "VaultStore", code: 29, userInfo: [NSLocalizedDescriptionKey: "Argon2 PIN hashing failed"])
         }
 
-        return derivedKeyTuple.raw
+        return derivedKey
     }
 
     /// Store PIN encrypted data in keychain (without biometric protection)

@@ -205,6 +205,19 @@ mod tests {
         assert!(matches!(Argon2Params::from_settings_json("{\"MemorySize\":\"lots\"}"), Err(Argon2Error::InvalidSettings(_))));
     }
 
+    /// Known-answer vectors for the byte-salt path the mobile PIN unlock takes.
+    #[test]
+    fn test_known_answer_byte_salt() {
+        const SALT: &[u8] = &[0x00, 0xFF, 0x80, 0x01, 0xC0, 0xAF, 0x7F, 0xFE, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80];
+
+        let cheap = argon2_derive_key(b"123456", SALT, CHEAP).unwrap();
+        assert_eq!(bytes_to_hex(&cheap), "27BA8FB75AA770D41358073B80AE7F411B1C1EC5AA25F342473BC479B721485D");
+
+        let pin_params = Argon2Params { memory_kib: 65536, iterations: 3, parallelism: 1 };
+        let pin = argon2_derive_key(b"123456", SALT, pin_params).unwrap();
+        assert_eq!(bytes_to_hex(&pin), "98130FBB995A7BCE6937911146E95D92752716BF3CB0445A221C5439CB587679");
+    }
+
     /// The salt is hashed as the characters of the string, never as decoded bytes.
     #[test]
     fn test_salt_is_hashed_as_utf8_bytes() {

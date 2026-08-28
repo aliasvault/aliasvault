@@ -354,6 +354,24 @@ pub fn argon2_derive_key(password: String, salt: String, encryption_settings: St
     crate::argon2::argon2_derive_key_from_settings(&password, &salt, &encryption_settings)
 }
 
+/// Derive a key from a password using Argon2id, taking the password and salt as raw bytes.
+///
+/// Note: the mobile PIN unlock draws its salt from the Keychain/Keystore as random bytes, which are
+/// not valid UTF-8 and require this direct byte-salt entry point.
+///
+/// # Arguments
+/// * `password` - The password bytes
+/// * `salt` - The salt bytes, at least 8 bytes long
+/// * `encryption_settings` - The `EncryptionSettings` JSON, or an empty string for the defaults
+///
+/// # Returns
+/// The derived key as 32 bytes
+#[uniffi::export]
+pub fn argon2_derive_key_bytes(password: Vec<u8>, salt: Vec<u8>, encryption_settings: String) -> Result<Vec<u8>, Argon2Error> {
+    let params = crate::argon2::Argon2Params::from_settings_json(&encryption_settings)?;
+    crate::argon2::argon2_derive_key(&password, &salt, params)
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SRP (Secure Remote Password) Functions
 // ═══════════════════════════════════════════════════════════════════════════════

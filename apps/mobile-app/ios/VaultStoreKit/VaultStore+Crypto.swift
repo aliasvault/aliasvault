@@ -2,7 +2,7 @@ import Foundation
 import CryptoKit
 import LocalAuthentication
 import Security
-import SignalArgon2
+import RustCoreFramework
 import VaultUtils
 
 /// Extension for the VaultStore class to handle encryption/decryption
@@ -16,40 +16,11 @@ extension VaultStore {
             throw NSError(domain: "VaultStore", code: 13, userInfo: [NSLocalizedDescriptionKey: "Unsupported encryption type: \(encryptionType)"])
         }
 
-        // Parse encryption settings JSON
-        guard let settingsData = encryptionSettings.data(using: .utf8),
-              let settings = try? JSONSerialization.jsonObject(with: settingsData, options: []) as? [String: Any],
-              let iterations = settings["Iterations"] as? UInt32,
-              let memorySize = settings["MemorySize"] as? UInt32,
-              let parallelism = settings["DegreeOfParallelism"] as? UInt32 else {
-            throw NSError(domain: "VaultStore", code: 14, userInfo: [NSLocalizedDescriptionKey: "Invalid encryption settings"])
-        }
-
-        // Convert password and salt to Data
-        guard let passwordData = password.data(using: .utf8) else {
-            throw NSError(domain: "VaultStore", code: 16, userInfo: [NSLocalizedDescriptionKey: "Invalid password"])
-        }
-
-        guard let saltData = salt.data(using: .utf8) else {
-            throw NSError(domain: "VaultStore", code: 15, userInfo: [NSLocalizedDescriptionKey: "Invalid salt"])
-        }
-
-        // Use SignalArgon2 to hash the password via Argon2id
-        guard let derivedKeyTuple = try? Argon2.hash(
-            iterations: iterations,
-            memoryInKiB: memorySize,
-            threads: parallelism,
-            password: passwordData,
-            salt: saltData,
-            desiredLength: 32,
-            variant: .id,
-            version: .v13
-        ) else {
+        guard let derivedKey = try? RustCoreFramework.argon2DeriveKey(password: password, salt: salt, encryptionSettings: encryptionSettings) else {
             throw NSError(domain: "VaultStore", code: 17, userInfo: [NSLocalizedDescriptionKey: "Argon2 hashing failed"])
         }
 
-        // Return only the raw Data from the tuple
-        return derivedKeyTuple.raw
+        return derivedKey
     }
 
     /// Store the encryption key in memory only (no keychain persistence).
