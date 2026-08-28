@@ -314,8 +314,11 @@ async function uploadInitialVault(
   username: string,
   encryptionKey: Uint8Array
 ): Promise<void> {
-  // Intentionally the v1 endpoint: the initial vault is a legacy sqlite-blob (the v2 endpoint is
-  // manifest-only). This mirrors a pre-manifest account; the extension migrates it on first save.
+  /*
+   * Intentionally the v1 endpoint: the initial vault is a legacy sqlite-blob (the v2 endpoint is
+   * manifest-only). This mirrors a pre-manifest account, so the first login lands on the extension's
+   * upgrade gate; `completeVaultUpgrade` in the fixtures clicks it through to manifest-v1.
+   */
   const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v1/';
 
   // Create an empty vault database

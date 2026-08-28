@@ -35,6 +35,12 @@ export type VaultSnapshot = {
   buckets?: Array<{ category: string; blob: string; ciphertextHash: string; revision: number }>;
 };
 
+/** The account-key unlock chain from GET /v2/VaultKey/{type} (fields relevant to these tests). */
+type VaultKeyEnvelope = {
+  encryptedAccountKey: string;
+  encryptedVek?: string | null;
+};
+
 /** A decrypted manifest-v1 manifest: known top-level fields plus free-form tables. */
 export type DecryptedManifest = {
   schemaVersion: number;
@@ -76,10 +82,35 @@ export function requirePersonalManifest(snapshot: VaultSnapshot): SnapshotManife
 }
 
 /**
+ * Resolves the key the vault content is actually encrypted with.
+ *
+ * @param apiBaseUrl - The base URL of the API
+ * @param token - Bearer token
+ * @param derivedKey - The user's Argon2Id password-derived key
+ * @returns The key that encrypts this account's vault content
+ */
+export async function resolveVaultEncryptionKey(apiBaseUrl: string, token: string, derivedKey: Uint8Array): Promise<Uint8Array> {
+  const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/v2/VaultKey/password`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    throw new Error(`GET /v2/VaultKey failed with status ${response.status}: ${await response.text()}`);
+  }
+
+  const { vaultKey } = (await response.json()) as { vaultKey?: VaultKeyEnvelope | null };
+  if (!vaultKey) {
+    return derivedKey;
+  }
+
+  const accountKey = await symmetricDecryptBytes(vaultKey.encryptedAccountKey, derivedKey);
+  return vaultKey.encryptedVek ? symmetricDecryptBytes(vaultKey.encryptedVek, accountKey) : accountKey;
+}
+
+/**
  * Decrypts and unpacks a manifest blob into its JSON object (content hash verified by the codec).
  *
  * @param blobBase64 - The encrypted manifest blob from the snapshot
- * @param encryptionKey - The user's derived vault encryption key
+ * @param encryptionKey - The key the vault content is encrypted with, from `resolveVaultEncryptionKey`
  * @returns The decrypted manifest object
  */
 export async function openManifest(blobBase64: string, encryptionKey: Uint8Array): Promise<DecryptedManifest> {
@@ -99,7 +130,7 @@ export async function openManifest(blobBase64: string, encryptionKey: Uint8Array
  * @param manifestId - The manifest this write targets
  * @param currentRevision - The revision this upload is based on (server assigns currentRevision + 1)
  * @param blobReferences - Blob references to carry over to the new revision
- * @param encryptionKey - The user's derived vault encryption key
+ * @param encryptionKey - The key the vault content is encrypted with, from `resolveVaultEncryptionKey`
  * @returns The new manifest revision number assigned by the server
  */
 export async function pushManifest(

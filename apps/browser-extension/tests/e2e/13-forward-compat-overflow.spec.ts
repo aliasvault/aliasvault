@@ -16,7 +16,7 @@
  * 5. The newer client pulls again — the rename is applied AND the unknown column/table are intact
  */
 import { test, expect, TestClient, FieldSelectors } from '../fixtures';
-import { getVaultSnapshot, openManifest, pushManifest, pollUntil, requirePersonalManifest, type DecryptedManifest } from '../helpers/manifest-v2-api';
+import { getVaultSnapshot, openManifest, pushManifest, pollUntil, requirePersonalManifest, resolveVaultEncryptionKey, type DecryptedManifest } from '../helpers/manifest-v2-api';
 import type { TestUser } from '../helpers/test-api';
 
 test.describe.serial('13. Forward-compat overflow', () => {
@@ -31,6 +31,8 @@ test.describe.serial('13. Forward-compat overflow', () => {
 
   /** Manifest revision created by the simulated newer client in 13.2. */
   let injectedRevision: number;
+  /** The account's personal manifest id, which the codec stamps onto every row it carries. */
+  let personalManifestId: string;
 
   test.afterAll(async () => {
     await client?.cleanup();
@@ -58,7 +60,7 @@ test.describe.serial('13. Forward-compat overflow', () => {
 
   test('13.2 a newer client should inject an unknown column and table into the server manifest', async () => {
     const token = user.token!.token;
-    const { manifest, personal } = await openLatestManifest(baseApiUrl, token, user.encryptionKey!);
+    const { manifest, personal, vaultKey } = await openLatestManifest(baseApiUrl, token, user.encryptionKey!);
 
     // Simulate a newer client's schema additions: a column this extension build doesn't know on an
     // existing row, and a whole table it doesn't know at all.
@@ -67,7 +69,8 @@ test.describe.serial('13. Forward-compat overflow', () => {
     item!.AliasEnabled = true;
     manifest.tables.FutureFeatures = [futureTableRow];
 
-    injectedRevision = await pushManifest(baseApiUrl, token, user.username, personal.manifestId, manifest, personal.revision, personal.blobReferences, user.encryptionKey!);
+    personalManifestId = personal.manifestId;
+    injectedRevision = await pushManifest(baseApiUrl, token, user.username, personal.manifestId, manifest, personal.revision, personal.blobReferences, vaultKey);
     expect(injectedRevision).toBeGreaterThan(personal.revision);
   });
 
@@ -103,23 +106,34 @@ test.describe.serial('13. Forward-compat overflow', () => {
     expect(item, 'renamed credential row should be present').toBeTruthy();
     expect(item!.AliasEnabled, 'unknown column must survive the old-client push').toBe(true);
 
-    // The unknown table re-emitted verbatim.
-    expect(manifest.tables.FutureFeatures, 'unknown table must survive the old-client push').toEqual([futureTableRow]);
+    /*
+     * The unknown table re-emitted with its payload intact. It does not come back as-is: rows the
+     * codec carries through the overflow are stamped with the manifest they arrived in, and that stamp
+     * is what routes them back into this manifest on the next push.
+     */
+    const futureRows = manifest.tables.FutureFeatures ?? [];
+    expect(futureRows, 'unknown table must survive the old-client push').toHaveLength(1);
+    expect(futureRows[0], 'unknown table row must keep every column the newer client wrote').toMatchObject(futureTableRow);
+    expect(futureRows[0].ManifestId, 'carried row is stamped with the manifest that routes it back').toBe(personalManifestId);
   });
 });
 
 /**
  * Polls until the server snapshot is manifest-v1, then decrypts and returns its personal manifest.
  *
+ * The vault key is resolved per attempt: the same push that flips the account to manifest-v1 also
+ * moves it onto the account-key model, so the key that opens the blob only exists once that landed.
+ *
  * @param apiUrl - The base URL of the API
  * @param token - Bearer token
- * @param encryptionKey - The user's derived vault encryption key
- * @returns The decrypted manifest and its snapshot entry
+ * @param derivedKey - The user's Argon2Id password-derived key
+ * @returns The decrypted manifest, its snapshot entry, and the key that opened it
  */
-async function openLatestManifest(apiUrl: string, token: string, encryptionKey: Uint8Array): Promise<{ manifest: DecryptedManifest; personal: ReturnType<typeof requirePersonalManifest> }> {
+async function openLatestManifest(apiUrl: string, token: string, derivedKey: Uint8Array): Promise<{ manifest: DecryptedManifest; personal: ReturnType<typeof requirePersonalManifest>; vaultKey: Uint8Array }> {
   return pollUntil(async () => {
     const snapshot = await getVaultSnapshot(apiUrl, token);
     const personal = requirePersonalManifest(snapshot);
-    return { manifest: await openManifest(personal.blob, encryptionKey), personal };
+    const vaultKey = await resolveVaultEncryptionKey(apiUrl, token, derivedKey);
+    return { manifest: await openManifest(personal.blob, vaultKey), personal, vaultKey };
   });
 }
