@@ -9,11 +9,10 @@
  */
 
 import { createHash } from 'crypto';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 
-import { initSync, vaultCodecPackPayload, vaultCodecUnpackPayload } from '../../src/utils/dist/core/rust/aliasvault_core.js';
+import { vaultCodecPackPayload, vaultCodecUnpackPayload } from '../../src/utils/dist/core/rust/aliasvault_core.js';
 
+import { ensureRustCore } from './rust-core';
 import { normalizeUsername, symmetricDecryptBytes, symmetricEncryptBytes } from './test-api';
 
 /** One manifest entry in the v2 GET snapshot. */
@@ -44,19 +43,6 @@ export type DecryptedManifest = {
   tables: Record<string, Array<Record<string, unknown>>>;
   [key: string]: unknown;
 };
-
-let wasmInitialized = false;
-
-/**
- * Initializes the Rust core WASM module from the extension's dist (idempotent).
- */
-function ensureWasm(): void {
-  if (!wasmInitialized) {
-    const wasmPath = join(process.cwd(), 'src/utils/dist/core/rust/aliasvault_core_bg.wasm');
-    initSync({ module: readFileSync(wasmPath) });
-    wasmInitialized = true;
-  }
-}
 
 /**
  * Fetches the v2 vault snapshot for the authenticated user.
@@ -97,7 +83,7 @@ export function requirePersonalManifest(snapshot: VaultSnapshot): SnapshotManife
  * @returns The decrypted manifest object
  */
 export async function openManifest(blobBase64: string, encryptionKey: Uint8Array): Promise<DecryptedManifest> {
-  ensureWasm();
+  ensureRustCore();
   const packedBytes = await symmetricDecryptBytes(blobBase64, encryptionKey);
   return JSON.parse(vaultCodecUnpackPayload(packedBytes)) as DecryptedManifest;
 }
@@ -126,7 +112,7 @@ export async function pushManifest(
   blobReferences: Array<{ hash: string; category: string }>,
   encryptionKey: Uint8Array
 ): Promise<number> {
-  ensureWasm();
+  ensureRustCore();
   const packedBytes = vaultCodecPackPayload(JSON.stringify(manifest));
   const manifestBlob = await symmetricEncryptBytes(packedBytes, encryptionKey);
   const manifestCiphertextHash = createHash('sha256').update(Buffer.from(manifestBlob, 'base64')).digest('hex');

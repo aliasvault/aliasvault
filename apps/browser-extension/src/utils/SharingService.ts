@@ -172,7 +172,7 @@ export class SharingService {
    */
   public static async deleteSharedManifest(webApi: WebApiService, groupId: string, manifestId: string, password: string): Promise<void> {
     const initiate = await webApi.post<object, DeleteSharedManifestInitiateResponse>(`Groups/${groupId}/manifests/${manifestId}/delete/initiate`, {});
-    const { passwordHashString } = await SrpAuthService.prepareCredentials(password, initiate.salt, initiate.encryptionType, initiate.encryptionSettings);
+    const { passwordHashString } = await SrpAuthService.prepareCredentials(password, initiate.salt, initiate.encryptionSettings);
     const proof = await SrpAuthService.deriveClientProof(initiate.salt, initiate.srpIdentity, passwordHashString, initiate.serverEphemeral);
     await webApi.post<DeleteSharedManifestRequest, void>(`Groups/${groupId}/manifests/${manifestId}/delete/confirm`, proof, false);
   }

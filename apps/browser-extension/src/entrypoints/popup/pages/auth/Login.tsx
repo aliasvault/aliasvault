@@ -235,12 +235,7 @@ const Login: React.FC = () => {
       const loginResponse = await srpUtil.initiateLogin(normalizedUsername);
 
       // Derive key from password using Argon2id and prepare credentials
-      const { passwordHashString, passwordHashBase64 } = await SrpAuthService.prepareCredentials(
-        credentials.password,
-        loginResponse.salt,
-        loginResponse.encryptionType,
-        loginResponse.encryptionSettings
-      );
+      const { passwordHashString, passwordHashBase64 } = await SrpAuthService.prepareCredentials(credentials.password, loginResponse.salt, loginResponse.encryptionSettings);
 
       // Validate login with SRP protocol
       const validationResponse = await srpUtil.validateLogin(

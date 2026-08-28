@@ -3,25 +3,22 @@
  *
  * This module provides utilities for interacting with the AliasVault API
  * during E2E tests, including user registration using SRP protocol.
- *
- * Note: This module uses Node.js native argon2 for password hashing,
- * while the browser extension uses argon2-browser. The SRP protocol
- * logic is shared where possible.
  */
 
-// Import argon2 for Node.js environment (different from browser version)
 import { webcrypto } from 'crypto';
 import { readFileSync, unlinkSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 
-import argon2 from 'argon2';
 import Database from 'better-sqlite3';
 import * as OTPAuth from 'otpauth';
 import * as srp from 'secure-remote-password/client.js';
 
+import { argon2DeriveKey } from '../../src/utils/dist/core/rust/aliasvault_core.js';
 // Get the vault schema SQL from the core vault package
 import { COMPLETE_SCHEMA_SQL, VAULT_VERSIONS } from '../../src/utils/dist/core/vault/index.mjs';
+
+import { ensureRustCore } from './rust-core';
 
 /**
  * Token model returned from successful registration/login.
@@ -85,10 +82,6 @@ const DEFAULT_ENCRYPTION = {
     MemorySize: 19456,
     Iterations: 2,
   }),
-  // Parsed settings for argon2 usage
-  iterations: 2,
-  memorySize: 19456,
-  parallelism: 1,
 };
 
 /**
@@ -131,30 +124,15 @@ function bytesToHexString(bytes: Uint8Array): string {
 }
 
 /**
- * Derives a key from password using Argon2Id (Node.js version).
- *
- * Note: This uses the native argon2 module for Node.js, which is different
- * from the argon2-browser WASM module used in the browser extension.
+ * Derives a key from password using Argon2Id, through the extension's own Rust core.
  *
  * @param password - The password to derive the key from
- * @param salt - The salt string
+ * @param salt - The salt string, hashed as its UTF-8 bytes
  * @returns The derived key as Uint8Array
  */
-async function deriveKeyFromPassword(password: string, salt: string): Promise<Uint8Array> {
-  // Note: argon2 in Node.js expects salt as Buffer
-  const saltBuffer = Buffer.from(salt, 'utf8');
-
-  const hash = await argon2.hash(password, {
-    type: argon2.argon2id,
-    salt: saltBuffer,
-    timeCost: DEFAULT_ENCRYPTION.iterations,
-    memoryCost: DEFAULT_ENCRYPTION.memorySize,
-    parallelism: DEFAULT_ENCRYPTION.parallelism,
-    hashLength: 32,
-    raw: true,
-  });
-
-  return new Uint8Array(hash);
+function deriveKeyFromPassword(password: string, salt: string): Uint8Array {
+  ensureRustCore();
+  return argon2DeriveKey(password, salt, DEFAULT_ENCRYPTION.settings);
 }
 
 /**
@@ -300,7 +278,7 @@ async function prepareRegistration(
   const salt = srp.generateSalt();
 
   // Derive key from password using Argon2Id
-  const encryptionKey = await deriveKeyFromPassword(password, salt);
+  const encryptionKey = deriveKeyFromPassword(password, salt);
 
   // Convert to uppercase hex string (expected by server)
   const passwordHashString = bytesToHexString(encryptionKey);

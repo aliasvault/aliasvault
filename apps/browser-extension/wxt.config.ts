@@ -79,7 +79,6 @@ export default defineConfig({
         resources: [
           "webauthn.js",
           "src/sql-wasm.wasm",
-          "src/argon2.wasm",
           "src/aliasvault_core_bg.wasm"
         ],
         matches: ["<all_urls>"]
@@ -104,10 +103,6 @@ export default defineConfig({
       asciiOnlyJsPlugin(),
       viteStaticCopy({
         targets: [
-          {
-            src: 'node_modules/argon2-browser/dist/argon2.wasm',
-            dest: 'src'
-          },
           {
             src: 'node_modules/sql.js/dist/sql-wasm.wasm',
             dest: 'src'

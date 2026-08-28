@@ -215,6 +215,14 @@ export async function extractEmailAttachment(source: Uint8Array, index: number, 
 }
 
 /**
+ * Derive a 32-byte key from a password using Argon2id.
+ */
+export async function argon2DeriveKey(password: string, salt: string, encryptionSettings: string): Promise<Uint8Array> {
+  await initRustCore();
+  return core.argon2DeriveKey(password, salt, encryptionSettings);
+}
+
+/**
  * Generate a random 32-byte seed as a 64-character hex string, suitable for the
  * `seed` argument of {@link generatePassword}.
  */

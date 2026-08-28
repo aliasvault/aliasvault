@@ -1,8 +1,8 @@
-import argon2 from 'argon2-browser/dist/argon2-bundled.min.js';
 import { browser } from 'wxt/browser';
 
 import { base64ToBytes, bytesToBase64 } from '@/utils/Base64';
 import { PIN_STORAGE_KEYS, StorageKeys } from '@/utils/constants/storageKeys';
+import { argon2DeriveKey } from '@/utils/RustCore';
 
 import { storage } from '#imports';
 
@@ -337,40 +337,27 @@ async function assembleSaltWithPepper(randomSalt: Uint8Array): Promise<Uint8Arra
 }
 
 /**
+ * Argon2id cost parameters for PIN key derivation.
+ */
+const PIN_ARGON2_SETTINGS = '{"MemorySize":65536,"Iterations":3,"DegreeOfParallelism":1}';
+
+/**
  * Derive encryption key from PIN using Argon2id
- *
- * Uses Argon2id with high memory cost (64 MB) to make brute-force attacks
- * significantly more expensive. This is especially important for PINs which
- * have lower entropy than passwords.
- *
- * The salt parameter should be the COMBINED salt (random salt + extension pepper)
- * created by assembleSaltWithPepper().
- *
- * Parameters chosen for security:
- * - Memory: 65536 KB (64 MB) - makes GPU attacks much harder
- * - Iterations: 3 - standard for Argon2id
- * - Parallelism: 1 - suitable for browser environment
- * - Output: 32 bytes for AES-256-GCM
  */
 async function derivePinKey(pin: string, salt: Uint8Array): Promise<CryptoKey> {
-  // Convert salt to base64 string (required by argon2-browser)
+  /*
+   * The salt is hashed as the characters of this base64 string, not as the bytes it decodes to.
+   * Every PIN ever set was derived that way, so decoding here would lock users out of their vault.
+   */
   const saltBase64 = bytesToBase64(salt);
 
-  // Derive key using Argon2id
-  const hash = await argon2.hash({
-    pass: pin,
-    salt: saltBase64,
-    time: 3,
-    mem: 65536,
-    parallelism: 1,
-    hashLen: 32,
-    type: 2,
-  });
+  // Derive key using Argon2id, stating the PIN cost parameters instead of the account's
+  const hash = await argon2DeriveKey(pin, saltBase64, PIN_ARGON2_SETTINGS);
 
   // Import the derived key into WebCrypto API
   const pinKey = await crypto.subtle.importKey(
     'raw',
-    hash.hash,
+    hash,
     { name: 'AES-GCM', length: 256 },
     false,
     ['encrypt', 'decrypt']

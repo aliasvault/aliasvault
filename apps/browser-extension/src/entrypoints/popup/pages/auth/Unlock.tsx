@@ -279,12 +279,7 @@ const Unlock: React.FC = () => {
         const loginResponse = await srpUtil.initiateLogin(authContext.username!);
 
         // Derive key from password using user's encryption settings
-        const credentials = await SrpAuthService.prepareCredentials(
-          password,
-          loginResponse.salt,
-          loginResponse.encryptionType,
-          loginResponse.encryptionSettings
-        );
+        const credentials = await SrpAuthService.prepareCredentials(password, loginResponse.salt, loginResponse.encryptionSettings);
         // Store encryption params for future offline unlock
         await dbContext.storeEncryptionKeyDerivationParams({
           salt: loginResponse.salt,
@@ -310,12 +305,7 @@ const Unlock: React.FC = () => {
         }
 
         // Derive key from password using stored encryption settings
-        const credentials = await SrpAuthService.prepareCredentials(
-          password,
-          storedParams.salt,
-          storedParams.encryptionType,
-          storedParams.encryptionSettings
-        );
+        const credentials = await SrpAuthService.prepareCredentials(password, storedParams.salt, storedParams.encryptionSettings);
 
         /*
          * KEK/VEK offline: decrypt the locally cached encrypted VEK with the derived key. Throws a decrypt-failed

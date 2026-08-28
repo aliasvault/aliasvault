@@ -315,16 +315,10 @@ export class SrpAuthService {
   public static async prepareCredentials(
     password: string,
     salt: string,
-    encryptionType: string,
     encryptionSettings: string
   ): Promise<PreparedCredentials> {
     // Derive key from password using Argon2Id
-    const passwordHash = await EncryptionUtility.deriveKeyFromPassword(
-      password,
-      salt,
-      encryptionType,
-      encryptionSettings
-    );
+    const passwordHash = await EncryptionUtility.deriveKeyFromPassword(password, salt, encryptionSettings);
 
     return {
       passwordHashString: SrpAuthService.bytesToHexString(passwordHash),
@@ -367,12 +361,7 @@ export class SrpAuthService {
     const srpIdentity = SrpAuthService.generateSrpIdentity();
 
     // Derive key from password using default Argon2Id settings
-    const credentials = await SrpAuthService.prepareCredentials(
-      password,
-      salt,
-      DEFAULT_ENCRYPTION.type,
-      DEFAULT_ENCRYPTION.settings
-    );
+    const credentials = await SrpAuthService.prepareCredentials(password, salt, DEFAULT_ENCRYPTION.settings);
 
     // Generate SRP private key and verifier using srpIdentity (not username)
     const privateKey = await SrpAuthService.derivePrivateKey(salt, srpIdentity, credentials.passwordHashString);
@@ -497,12 +486,7 @@ export class SrpAuthService {
       const loginResponse = (await initiateResponse.json()) as LoginResponse;
 
       // Step 2: Prepare credentials
-      const credentials = await SrpAuthService.prepareCredentials(
-        password,
-        loginResponse.salt,
-        loginResponse.encryptionType,
-        loginResponse.encryptionSettings
-      );
+      const credentials = await SrpAuthService.prepareCredentials(password, loginResponse.salt, loginResponse.encryptionSettings);
 
       // Step 3: Generate the SRP proof for this login response
       const proof = await SrpAuthService.deriveLoginProof(loginResponse, normalizedUsername, credentials.passwordHashString);

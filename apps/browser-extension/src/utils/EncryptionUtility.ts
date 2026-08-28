@@ -1,12 +1,10 @@
 import { Buffer } from 'buffer';
 
-import argon2 from 'argon2-browser/dist/argon2-bundled.min.js';
-
 import { base64ToBytes, bytesToBase64 } from '@/utils/Base64';
 import { devWarn } from '@/utils/devLogger/DevLogger';
 import type { EncryptionKey } from '@/utils/dist/core/models/vault';
 import type { Email, EmailDecryptionKey, MailboxEmail } from '@/utils/dist/core/models/webapi';
-import { parseEmailSource, type ParsedEmailAttachment } from '@/utils/RustCore';
+import { argon2DeriveKey, parseEmailSource, type ParsedEmailAttachment } from '@/utils/RustCore';
 
 /**
  * A decrypted email. Its metadata (subject, sender) is decrypted from the individually encrypted fields, while
@@ -40,28 +38,10 @@ export class EncryptionUtility {
   public static async deriveKeyFromPassword(
     password: string,
     salt: string,
-    encryptionType: string = 'Argon2Id',
     encryptionSettings: string = '{"Iterations":2,"MemorySize":19456,"DegreeOfParallelism":1}'
   ): Promise<Uint8Array> {
-    const settings = JSON.parse(encryptionSettings);
-
     try {
-      if (encryptionType !== 'Argon2Id') {
-        throw new Error('Unsupported encryption type');
-      }
-
-      const hash = await argon2.hash({
-        pass: password,
-        salt: salt,
-        time: settings.Iterations,
-        mem: settings.MemorySize,
-        parallelism: settings.DegreeOfParallelism,
-        hashLen: 32,
-        type: 2, // 0 = Argon2d, 1 = Argon2i, 2 = Argon2id
-      });
-
-      // Return bytes
-      return hash.hash;
+      return await argon2DeriveKey(password, salt, encryptionSettings);
     } catch (error) {
       console.error('Argon2 hashing failed:', error);
       throw error;
