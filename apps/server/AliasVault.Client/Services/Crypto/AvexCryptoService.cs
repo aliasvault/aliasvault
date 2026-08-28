@@ -10,6 +10,7 @@ namespace AliasVault.Client.Services.Crypto;
 using System.Text;
 using System.Text.Json;
 using AliasVault.Client.Services.JsInterop;
+using AliasVault.Client.Services.JsInterop.RustCore;
 using AliasVault.ImportExport.Constants;
 using AliasVault.ImportExport.Models.Exports;
 using AliasVault.Shared.Core;
@@ -21,14 +22,17 @@ using AliasVault.Shared.Core;
 public class AvexCryptoService
 {
     private readonly JsInteropService jsInteropService;
+    private readonly RustCoreService rustCoreService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AvexCryptoService"/> class.
     /// </summary>
     /// <param name="jsInteropService">The JS interop service.</param>
-    public AvexCryptoService(JsInteropService jsInteropService)
+    /// <param name="rustCoreService">The Rust core service.</param>
+    public AvexCryptoService(JsInteropService jsInteropService, RustCoreService rustCoreService)
     {
         this.jsInteropService = jsInteropService;
+        this.rustCoreService = rustCoreService;
     }
 
     /// <summary>
@@ -46,11 +50,7 @@ public class AvexCryptoService
 
         // 2. Derive key using Argon2id (same as existing vault encryption)
         var saltBase64 = Convert.ToBase64String(salt);
-        var key = await AliasVault.Cryptography.Client.Encryption.DeriveKeyFromPasswordAsync(
-            exportPassword,
-            saltBase64,
-            AliasVault.Cryptography.Client.Defaults.EncryptionType,
-            AliasVault.Cryptography.Client.Defaults.EncryptionSettings);
+        var key = await this.rustCoreService.Argon2DeriveKeyAsync(exportPassword, saltBase64, AliasVault.Cryptography.Client.Defaults.EncryptionSettings);
 
         // 3. Encrypt the .avux bytes using AES-256-GCM via JavaScript
         var encryptedPayload = await this.jsInteropService.SymmetricEncryptBytes(avuxBytes, key);
@@ -133,18 +133,16 @@ public class AvexCryptoService
         var encryptedPayload = new byte[encryptedPayloadLength];
         Buffer.BlockCopy(avexBytes, (int)payloadOffset, encryptedPayload, 0, encryptedPayloadLength);
 
-        // 4. Derive key using Argon2id (C# library works in Blazor WASM)
-        if (header.Kdf.Type != "Argon2Id" && header.Kdf.Type != "Argon2id")
+        /*
+         * 4. Derive key using Argon2id via the Rust core.
+         */
+        if (header.Kdf.Type.ToLowerInvariant() != "argon2id")
         {
             throw new InvalidOperationException($"Unsupported KDF type: {header.Kdf.Type}. Only Argon2id is supported.");
         }
 
         var kdfSettings = JsonSerializer.Serialize(header.Kdf.Params);
-        var key = await AliasVault.Cryptography.Client.Encryption.DeriveKeyFromPasswordAsync(
-            exportPassword,
-            header.Kdf.Salt,
-            header.Kdf.Type,
-            kdfSettings);
+        var key = await this.rustCoreService.Argon2DeriveKeyAsync(exportPassword, header.Kdf.Salt, kdfSettings);
 
         // 5. Decrypt payload
         byte[] avuxBytes;

@@ -54,7 +54,7 @@ public class UserRegistrationService(HttpClient httpClient, AuthenticationStateP
             // Generate salt using Rust WASM
             var salt = await rustCoreService.SrpGenerateSaltAsync();
 
-            var passwordHash = await Encryption.DeriveKeyFromPasswordAsync(password, salt, encryptionType, encryptionSettings);
+            var passwordHash = await rustCoreService.Argon2DeriveKeyAsync(password, salt, encryptionSettings);
             var passwordHashString = BitConverter.ToString(passwordHash).Replace("-", string.Empty);
 
             // Derive SRP private key and verifier using the same salt

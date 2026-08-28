@@ -182,7 +182,7 @@
             var srpIdentity = loginResponse.SrpIdentity ?? username;
 
             // Verify password using SRP
-            var passwordHash = await Encryption.DeriveKeyFromPasswordAsync(_passwordModel.Password, loginResponse.Salt, loginResponse.EncryptionType, loginResponse.EncryptionSettings);
+            var passwordHash = await RustCoreService.Argon2DeriveKeyAsync(_passwordModel.Password, loginResponse.Salt, loginResponse.EncryptionSettings);
             var passwordHashString = BitConverter.ToString(passwordHash).Replace("-", string.Empty);
 
             ClientEphemeral = await RustCoreService.SrpGenerateEphemeralAsync();

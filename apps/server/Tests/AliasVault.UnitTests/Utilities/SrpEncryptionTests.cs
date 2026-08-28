@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="SrpArgonEncryptionTests.cs" company="aliasvault">
+// <copyright file="SrpEncryptionTests.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
@@ -8,20 +8,20 @@
 namespace AliasVault.UnitTests.Utilities;
 
 using System.Security.Cryptography;
+using System.Text;
 using AliasVault.Cryptography.Client;
 using SecureRemotePassword;
 
 /// <summary>
-/// Tests for the SrpArgonEncryption class.
+/// Tests for the SRP protocol and the symmetric encryption the server shares with the clients.
 /// </summary>
-public class SrpArgonEncryptionTests
+public class SrpEncryptionTests
 {
     /// <summary>
-    /// Test basic encryption and decryption using default encryption logic (Argon2id and AES-256).
+    /// Test basic encryption and decryption using default encryption logic (AES-256).
     /// </summary>
-    /// <returns>Task.</returns>
     [Test]
-    public async Task TestBasicEncrypt()
+    public void TestBasicEncrypt()
     {
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         string password = "your-password";
@@ -29,8 +29,7 @@ public class SrpArgonEncryptionTests
 
         string plaintext = "Hello, World!";
 
-        // Derive a key from the password using Argon2id
-        byte[] key = await Encryption.DeriveKeyFromPasswordAsync(password, salt);
+        byte[] key = DeriveTestKey(password, salt);
         Console.WriteLine($"Derived key: {key.Length} bytes (hex: {Convert.ToHexString(key).Replace("-", string.Empty)})");
 
         // SymmetricEncrypt the plaintext
@@ -70,25 +69,23 @@ public class SrpArgonEncryptionTests
     }
 
     /// <summary>
-    /// Test basic encryption and decryption using default encryption logic (Argon2id and AES-256).
+    /// Test that a key derived from a different password cannot decrypt the ciphertext.
     /// </summary>
-    /// <returns>Task.</returns>
     [Test]
-    public async Task TestNotEqualsPassword()
+    public void TestNotEqualsPassword()
     {
         string password = "your-password";
         string salt = "your-salt"; // Use a secure random salt in production
 
         string plaintext = "Hello, World!";
 
-        // Derive a key from the password using Argon2id
-        byte[] key = await Cryptography.Client.Encryption.DeriveKeyFromPasswordAsync(password, salt);
+        byte[] key = DeriveTestKey(password, salt);
 
         // SymmetricEncrypt the plaintext
         string encrypted = Cryptography.Server.Encryption.SymmetricEncrypt(plaintext, key);
 
         // SymmetricDecrypt the ciphertext using a different key
-        byte[] key2 = await Cryptography.Client.Encryption.DeriveKeyFromPasswordAsync("your-password2", salt);
+        byte[] key2 = DeriveTestKey("your-password2", salt);
 
         Assert.Throws<AuthenticationTagMismatchException>(() => Cryptography.Server.Encryption.SymmetricDecrypt(encrypted, key2));
     }
@@ -96,9 +93,8 @@ public class SrpArgonEncryptionTests
     /// <summary>
     /// Test the SRP authentication flow to ensure it works correctly.
     /// </summary>
-    /// <returns>Async task.</returns>
     [Test]
-    public async Task TestSrpAuthentication()
+    public void TestSrpAuthentication()
     {
         var email = "test@example.com";
         var password = "myPassword";
@@ -108,7 +104,7 @@ public class SrpArgonEncryptionTests
         var client = new SrpClient();
         var salt = client.GenerateSalt();
 
-        byte[] passwordHash = await Cryptography.Client.Encryption.DeriveKeyFromPasswordAsync(password, salt);
+        byte[] passwordHash = DeriveTestKey(password, salt);
         var passwordHashString = Convert.ToHexString(passwordHash).Replace("-", string.Empty);
         var srpSignup = Srp.PasswordChangeAsync(client, salt, email, passwordHashString);
 
@@ -148,15 +144,13 @@ public class SrpArgonEncryptionTests
     /// <summary>
     /// Test byte array encryption and decryption overload methods.
     /// </summary>
-    /// <returns>Task.</returns>
     [Test]
-    public async Task TestByteArrayEncryption()
+    public void TestByteArrayEncryption()
     {
         string password = "your-password";
         string salt = "your-salt";
 
-        // Derive a key from the password using Argon2id
-        byte[] key = await Cryptography.Client.Encryption.DeriveKeyFromPasswordAsync(password, salt);
+        byte[] key = DeriveTestKey(password, salt);
 
         // Generate random byte array of 1000 bytes
         byte[] plainBytes = new byte[1000];
@@ -173,4 +167,14 @@ public class SrpArgonEncryptionTests
         var decrypted = Cryptography.Server.Encryption.SymmetricDecrypt(cipherBytes, key);
         Assert.That(decrypted, Is.EqualTo(plainBytes));
     }
+
+    /// <summary>
+    /// Derives a deterministic 32-byte key from a password and salt. The key derivation the
+    /// clients ship lives in the Rust core; these tests only need a key to encrypt with, so they
+    /// do not pull in a second Argon2 implementation to get one.
+    /// </summary>
+    /// <param name="password">Password.</param>
+    /// <param name="salt">Salt.</param>
+    /// <returns>The derived key as 32 bytes.</returns>
+    private static byte[] DeriveTestKey(string password, string salt) => SHA256.HashData(Encoding.UTF8.GetBytes(password + salt));
 }

@@ -229,6 +229,24 @@ public class RustCoreService : IAsyncDisposable
     }
 
     /// <summary>
+    /// Derive a key from a password using Argon2id.
+    /// </summary>
+    /// <param name="password">The password, hashed as its UTF-8 bytes.</param>
+    /// <param name="salt">The salt, hashed as its UTF-8 bytes.</param>
+    /// <param name="encryptionSettings">The encryption settings JSON, or null for the defaults.</param>
+    /// <returns>The derived key as 32 bytes.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if WASM module is unavailable.</exception>
+    public async Task<byte[]> Argon2DeriveKeyAsync(string password, string salt, string? encryptionSettings = null)
+    {
+        if (!await WaitForAvailabilityAsync())
+        {
+            throw new InvalidOperationException("Rust WASM module is not available.");
+        }
+
+        return await jsRuntime.InvokeAsync<byte[]>("rustCoreArgon2DeriveKey", password, salt, encryptionSettings ?? string.Empty);
+    }
+
+    /// <summary>
     /// Generate a random salt for SRP registration.
     /// </summary>
     /// <returns>64-character uppercase hex string (32 bytes).</returns>

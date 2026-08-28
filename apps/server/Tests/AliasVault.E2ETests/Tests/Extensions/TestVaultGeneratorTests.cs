@@ -9,7 +9,6 @@ namespace AliasVault.E2ETests.Tests.Extensions;
 
 using System.Diagnostics;
 using System.Reflection;
-using AliasVault.Cryptography.Client;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
@@ -143,15 +142,17 @@ public class TestVaultGeneratorTests : BrowserExtensionPlaywrightTest
         var tempVaultPath = Path.Combine(vaultOutputDir, "test-encrypted-vault.txt");
         await File.WriteAllTextAsync(tempVaultPath, vault.VaultBlob);
 
-        // Generate the decryption key using the same method as the login page
-        var decryptionKey = await Encryption.DeriveKeyFromPasswordAsync(
-            TestUserPassword,
-            vault.Salt,
-            vault.EncryptionType,
-            vault.EncryptionSettings);
-
-        // Convert the key to base64 which is how its expected by the other test suites.
-        var decryptionKeyBase64 = Convert.ToBase64String(decryptionKey);
+        /*
+         * Derive the decryption key through the client's own Rust WASM binding, the same call the
+         * login page makes, so the key printed below cannot drift from what the app derives. The
+         * page returns it base64 encoded, which is how the other test suites expect it.
+         */
+        var decryptionKeyBase64 = await Page.EvaluateAsync<string>(
+            @"async ([password, salt, settings]) => {
+                const key = await window.rustCoreArgon2DeriveKey(password, salt, settings);
+                return btoa(String.fromCharCode(...key));
+            }",
+            new[] { TestUserPassword, vault.Salt ?? string.Empty, vault.EncryptionSettings ?? string.Empty });
 
         Console.WriteLine("\n=== TEST VAULT GENERATION COMPLETE ===");
         Console.WriteLine("Test vault has been generated with the following details:");

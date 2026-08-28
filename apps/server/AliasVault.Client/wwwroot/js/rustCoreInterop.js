@@ -427,6 +427,33 @@ window.rustCoreGetIdentityAgeRanges = async function() {
 };
 
 // ============================================================================
+// Argon2id Key Derivation Functions
+// ============================================================================
+
+/**
+ * Derive a key from a password using Argon2id.
+ *
+ * The salt is hashed as the characters of the string the server sent, not as the
+ * bytes it decodes to, which is what every AliasVault client has always done.
+ * @param {string} password - The password, hashed as its UTF-8 bytes.
+ * @param {string} salt - The salt, hashed as its UTF-8 bytes.
+ * @param {string} encryptionSettings - The EncryptionSettings JSON, or an empty string for the defaults.
+ * @returns {Promise<Uint8Array>} The derived key as 32 bytes.
+ */
+window.rustCoreArgon2DeriveKey = async function(password, salt, encryptionSettings) {
+    if (!await initRustCore()) {
+        throw new Error('Rust WASM module not available');
+    }
+
+    try {
+        return wasmModule.argon2DeriveKey(password, salt, encryptionSettings);
+    } catch (error) {
+        console.error('[RustCore] Argon2 derive key failed:', error);
+        throw error;
+    }
+};
+
+// ============================================================================
 // SRP (Secure Remote Password) Functions
 // ============================================================================
 

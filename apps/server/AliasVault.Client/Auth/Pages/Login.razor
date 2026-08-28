@@ -269,7 +269,7 @@ else
         var srpIdentity = loginResponse.SrpIdentity ?? username;
 
         // 3. Client derives shared session key.
-        _passwordHash = await Encryption.DeriveKeyFromPasswordAsync(_loginModel.Password, loginResponse.Salt, loginResponse.EncryptionType, loginResponse.EncryptionSettings);
+        _passwordHash = await RustCoreService.Argon2DeriveKeyAsync(_loginModel.Password, loginResponse.Salt, loginResponse.EncryptionSettings);
         var passwordHashString = BitConverter.ToString(_passwordHash).Replace("-", string.Empty);
 
         _clientEphemeral = await RustCoreService.SrpGenerateEphemeralAsync();

@@ -10,7 +10,7 @@ namespace AliasVault.Client.Services.Auth;
 using System.Net.Http.Json;
 using System.Text.Json;
 using AliasVault.Client.Services.Auth.Enums;
-using AliasVault.Cryptography.Client;
+using AliasVault.Client.Services.JsInterop.RustCore;
 using AliasVault.Shared.Models.WebApi.V1.Auth;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -24,7 +24,8 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 /// <param name="environment">IWebAssemblyHostEnvironment instance.</param>
 /// <param name="config">Config instance.</param>
 /// <param name="jsInteropService">JSInteropService instance.</param>
-public sealed class AuthService(HttpClient httpClient, ILocalStorageService localStorage, IWebAssemblyHostEnvironment environment, Config config, JsInteropService jsInteropService)
+/// <param name="rustCoreService">RustCoreService instance.</param>
+public sealed class AuthService(HttpClient httpClient, ILocalStorageService localStorage, IWebAssemblyHostEnvironment environment, Config config, JsInteropService jsInteropService, RustCoreService rustCoreService)
 {
     /// <summary>
     /// Test string value that is stored in local storage in encrypted state. This is used to validate the encryption key
@@ -312,11 +313,7 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
             }
 
             // Derive password hash using server parameters
-            byte[] passwordHash = await Encryption.DeriveKeyFromPasswordAsync(
-                password,
-                loginResponse.Salt,
-                loginResponse.EncryptionType,
-                loginResponse.EncryptionSettings);
+            byte[] passwordHash = await rustCoreService.Argon2DeriveKeyAsync(password, loginResponse.Salt, loginResponse.EncryptionSettings);
 
             // Verify the password locally using the derived password hash
             var isValidPassword = await ValidateEncryptionKeyAsync(passwordHash);
