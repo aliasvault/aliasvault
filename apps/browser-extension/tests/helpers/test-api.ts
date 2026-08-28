@@ -12,9 +12,8 @@ import { join } from 'path';
 
 import Database from 'better-sqlite3';
 import * as OTPAuth from 'otpauth';
-import * as srp from 'secure-remote-password/client.js';
 
-import { argon2DeriveKey } from '../../src/utils/dist/core/rust/aliasvault_core.js';
+import { argon2DeriveKey, srpDerivePrivateKey, srpDeriveVerifier, srpGenerateSalt } from '../../src/utils/dist/core/rust/aliasvault_core.js';
 // Get the vault schema SQL from the core vault package
 import { COMPLETE_SCHEMA_SQL, VAULT_VERSIONS } from '../../src/utils/dist/core/vault/index.mjs';
 
@@ -274,18 +273,18 @@ async function prepareRegistration(
 ): Promise<{ request: RegisterRequest; salt: string; encryptionKey: Uint8Array }> {
   const normalizedUsername = normalizeUsername(username);
 
-  // Generate salt using SRP client
-  const salt = srp.generateSalt();
+  ensureRustCore();
 
-  // Derive key from password using Argon2Id
+  // Generate salt and derive key from password
+  const salt = srpGenerateSalt();
   const encryptionKey = deriveKeyFromPassword(password, salt);
 
   // Convert to uppercase hex string (expected by server)
   const passwordHashString = bytesToHexString(encryptionKey);
 
   // Generate SRP private key and verifier
-  const privateKey = srp.derivePrivateKey(salt, normalizedUsername, passwordHashString);
-  const verifier = srp.deriveVerifier(privateKey);
+  const privateKey = srpDerivePrivateKey(salt, normalizedUsername, passwordHashString);
+  const verifier = srpDeriveVerifier(privateKey);
 
   return {
     request: {
