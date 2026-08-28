@@ -335,30 +335,30 @@ pub fn vault_codec_extract_encryption_key_for_public_key(manifest_json: String, 
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Argon2id Key Derivation Functions
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub use crate::argon2::Argon2Error;
+
+/// Derive a key from a password using Argon2id.
+///
+/// # Arguments
+/// * `password` - The password, hashed as its UTF-8 bytes
+/// * `salt` - The salt, hashed as its UTF-8 bytes, at least 8 bytes long
+/// * `encryption_settings` - The `EncryptionSettings` JSON, or an empty string for the defaults
+///
+/// # Returns
+/// The derived key as 32 bytes
+#[uniffi::export]
+pub fn argon2_derive_key(password: String, salt: String, encryption_settings: String) -> Result<Vec<u8>, Argon2Error> {
+    crate::argon2::argon2_derive_key_from_settings(&password, &salt, &encryption_settings)
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // SRP (Secure Remote Password) Functions
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub use crate::srp::{SrpEphemeral, SrpSession, SrpError};
-
-/// Derive a key from a password using Argon2Id.
-///
-/// Uses the AliasVault default parameters:
-/// - Iterations: 2
-/// - Memory: 19456 KiB
-/// - Parallelism: 1
-/// - Output length: 32 bytes
-///
-/// # Arguments
-/// * `password` - The password to hash
-/// * `salt` - Salt as a string (will be UTF-8 encoded)
-///
-/// # Returns
-/// Derived key as uppercase hex string (64 characters = 32 bytes)
-#[uniffi::export]
-pub fn argon2_hash_password(password: String, salt: String) -> Result<String, SrpError> {
-    crate::argon2::argon2_hash_password(&password, &salt)
-        .map_err(|e| SrpError::InvalidParameter(e.to_string()))
-}
 
 /// Generate a cryptographic salt for SRP.
 /// Returns a 32-byte random salt as an uppercase hex string.

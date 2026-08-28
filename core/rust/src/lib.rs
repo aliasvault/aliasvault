@@ -8,7 +8,7 @@
 //! - **password_generator**: Password and passphrase (Diceware) generation
 //! - **identity_generator**: Random identity (alias persona) generation
 //! - **srp**: Secure Remote Password (SRP-6a) protocol for authentication
-//! - **argon2**: Argon2id password hashing
+//! - **argon2**: Argon2id key derivation
 //!
 //! This library accepts data as JSON and returns results as JSON.
 //! Each platform (browser, iOS, Android, .NET) handles its own I/O
@@ -63,7 +63,7 @@ pub use srp::{
     srp_generate_ephemeral_server, srp_derive_session_server,
     SrpEphemeral, SrpSession, SrpError,
 };
-pub use crate::argon2::{argon2_hash_password, Argon2Error};
+pub use crate::argon2::{argon2_derive_key, argon2_derive_key_from_settings, Argon2Error, Argon2Params};
 
 // WASM bindings
 #[cfg(feature = "wasm")]

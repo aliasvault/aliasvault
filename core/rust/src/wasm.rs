@@ -445,6 +445,25 @@ pub fn get_identity_age_ranges_js() -> Vec<String> {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Argon2id Key Derivation WASM Bindings
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Derive a key from a password using Argon2id.
+///
+/// # Arguments
+/// * `password` - The password, hashed as its UTF-8 bytes
+/// * `salt` - The salt, hashed as its UTF-8 bytes, at least 8 bytes long
+/// * `encryption_settings` - The `EncryptionSettings` JSON, or an empty string for the defaults
+///
+/// # Returns
+/// The derived key as 32 bytes
+#[wasm_bindgen(js_name = argon2DeriveKey)]
+pub fn argon2_derive_key_js(password: &str, salt: &str, encryption_settings: &str) -> Result<Vec<u8>, JsValue> {
+    crate::argon2::argon2_derive_key_from_settings(password, salt, encryption_settings)
+        .map_err(|e| JsValue::from_str(&format!("Argon2 error: {}", e)))
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // SRP (Secure Remote Password) WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════
 
