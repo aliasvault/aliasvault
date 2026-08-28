@@ -9,7 +9,7 @@ import net.aliasvault.app.vaultstore.models.VaultSql
 import net.aliasvault.app.vaultstore.models.VaultVersions
 import org.json.JSONArray
 import org.json.JSONObject
-import uniffi.aliasvault_core.argon2HashPassword
+import uniffi.aliasvault_core.argon2DeriveKey
 import uniffi.aliasvault_core.srpDerivePrivateKey
 import uniffi.aliasvault_core.srpDeriveVerifier
 import uniffi.aliasvault_core.srpGenerateSalt
@@ -89,18 +89,6 @@ object TestUserRegistration {
     fun bytesToHex(data: ByteArray): String =
         data.joinToString("") { "%02X".format(it) }
 
-    /**
-     * Convert hex string to ByteArray.
-     */
-    fun hexToBytes(hex: String): ByteArray {
-        val cleanHex = hex.removePrefix("0x").removePrefix("0X").trim()
-        require(cleanHex.length % 2 == 0) { "Invalid hex string length" }
-
-        return ByteArray(cleanHex.length / 2) { i ->
-            cleanHex.substring(i * 2, i * 2 + 2).toInt(16).toByte()
-        }
-    }
-
     // endregion
 
     // region Registration
@@ -120,8 +108,9 @@ object TestUserRegistration {
         // Generate salt using Rust core
         val salt = srpGenerateSalt()
 
-        // Derive key from password using Rust core Argon2
-        val passwordHashHex = argon2HashPassword(password, salt)
+        // Derive key from password using Rust core Argon2, against the parameters the request declares
+        val encryptionKey = argon2DeriveKey(password, salt, TestConfiguration.EncryptionDefaults.settingsJson)
+        val passwordHashHex = bytesToHex(encryptionKey)
 
         // Derive SRP private key and verifier using Rust core
         val privateKey = srpDerivePrivateKey(salt, normalizedUsername, passwordHashHex)
@@ -165,7 +154,6 @@ object TestUserRegistration {
             )
 
             // Upload initial empty vault
-            val encryptionKey = hexToBytes(passwordHashHex)
             uploadInitialVault(
                 apiBaseUrl = apiBaseUrl,
                 token = tokenResponse.token,
