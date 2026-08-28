@@ -31,6 +31,32 @@ runs:
         chmod +x build-and-distribute.sh
         ./build-and-distribute.sh
 
+    - name: Fail on stale generated files
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        # The build above which (re)builds both Git committed files as well as non-committed files, should not result in any changes to the files listed below.
+        # If there are Git changes, it means a source edit was committed without running the generators which could lead to inconsistencies.
+        GATED_PATHS=(
+          "core/rust/src/vault_model/generated.rs"
+          "core/rust/src/password_generator/defaults.rs"
+          "apps/server/Databases/AliasClientDb/Models"
+          "apps/browser-extension/src/utils/dist/core/models"
+          "apps/mobile-app/utils/dist/core/models"
+          "apps/mobile-app/ios/VaultModels"
+          "apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/models"
+        )
+        CHANGES=$(git status --porcelain -- "${GATED_PATHS[@]}")
+        if [ -n "$CHANGES" ]; then
+          echo "$CHANGES"
+          git --no-pager diff -- "${GATED_PATHS[@]}"
+          echo ""
+          echo "Error: the generated files listed above are stale relative to their sources."
+          echo "Run 'core/build-and-distribute.sh' (or 'core/models/build.sh') locally and commit the result."
+          exit 1
+        fi
+        echo "Generated files are in sync with their sources."
+
     - name: Verify core library distribution
       shell: bash
       working-directory: ${{ inputs.working-directory }}
