@@ -262,4 +262,9 @@ public enum ApiErrorCode
     /// The capability the request needs is not enabled for this account on this server.
     /// </summary>
     CAPABILITY_NOT_AVAILABLE,
+
+    /// <summary>
+    /// The supplied KEK derivation parameters are not within expected bounds.
+    /// </summary>
+    INVALID_ENCRYPTION_PARAMETERS,
 }

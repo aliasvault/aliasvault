@@ -358,6 +358,20 @@ type PasswordChangeInitiateResponse = {
 };
 
 /**
+ * Request for POST /v2/Auth/change-password: new SRP credentials plus the Account Key rewrapped with the
+ * KEK derived from the new password. A v2 password change touches no vault data (AK, VEK and grants are unchanged).
+ */
+type PasswordChangeRequest = {
+    currentClientPublicEphemeral: string;
+    currentClientSessionProof: string;
+    newPasswordSalt: string;
+    newPasswordVerifier: string;
+    newEncryptedAccountKey: string;
+    newEncryptionType: string;
+    newEncryptionSettings: string;
+};
+
+/**
  * Represents a request to change the users password including a new vault that is encrypted with the new password.
  */
 type VaultPasswordChangeRequest = Vault & {
@@ -694,4 +708,4 @@ type CapabilityKey = typeof CapabilityKeys[keyof typeof CapabilityKeys];
  */
 declare function isCapabilityEnabled(value: string | undefined): boolean;
 
-export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type BucketRevision, type CapabilityKey, CapabilityKeys, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type DeleteSharedManifestInitiateResponse, type DeleteSharedManifestRequest, type Email, type EmailAttachment, type EmailDecryptionKey, type FaviconExtractModel, type GrantManifestAccessRequest, type GrantManifestAccessResponse, type GroupInfo, type GroupMemberInfo, type GroupOverviewResponse, type GroupRole, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, type ManifestGrant, ManifestKeyType, type ManifestKeyTypeValue, type ManifestRevision, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type PendingClientAction, type ReceivedManifestInvitation, type RefreshToken, type SentManifestInvitation, type SharedManifestInfo, type StatusResponse, type StatusResponseV2, type TokenModel, UnlockMethodType, type UnlockMethodTypeValue, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, VaultKeyAlgorithm, type VaultKeyAlgorithmValue, type VaultKeyGetResponse, type VaultKeyResponse, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse, isCapabilityEnabled };
+export { type ApiErrorResponse, AuthEventType, type AuthLogModel, type BadRequestResponse, type BucketRevision, type CapabilityKey, CapabilityKeys, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type DeleteAccountInitiateRequest, type DeleteAccountInitiateResponse, type DeleteAccountRequest, type DeleteSharedManifestInitiateResponse, type DeleteSharedManifestRequest, type Email, type EmailAttachment, type EmailDecryptionKey, type FaviconExtractModel, type GrantManifestAccessRequest, type GrantManifestAccessResponse, type GroupInfo, type GroupMemberInfo, type GroupOverviewResponse, type GroupRole, type LoginRequest, type LoginResponse, type MailboxBulkRequest, type MailboxBulkResponse, type MailboxEmail, type ManifestGrant, ManifestKeyType, type ManifestKeyTypeValue, type ManifestRevision, type MobileLoginInitiateRequest, type MobileLoginInitiateResponse, type MobileLoginPollResponse, type MobileLoginSubmitRequest, type PasswordChangeInitiateResponse, type PasswordChangeRequest, type PendingClientAction, type ReceivedManifestInvitation, type RefreshToken, type SentManifestInvitation, type SharedManifestInfo, type StatusResponse, type StatusResponseV2, type TokenModel, UnlockMethodType, type UnlockMethodTypeValue, type ValidateLoginRequest, type ValidateLoginRequest2Fa, type ValidateLoginResponse, type Vault, VaultKeyAlgorithm, type VaultKeyAlgorithmValue, type VaultKeyGetResponse, type VaultKeyResponse, type VaultPasswordChangeRequest, type VaultPostResponse, type VaultResponse, isCapabilityEnabled };
