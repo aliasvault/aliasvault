@@ -11,6 +11,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using AliasServerDb;
 using AliasVault.Api.Headers;
 using AliasVault.Api.Helpers;
@@ -604,6 +605,12 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
         }
 
+        // Validate the new KDF parameters.
+        if (!IsValidKekDerivationParams(model.NewEncryptionType, model.NewEncryptionSettings))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_ENCRYPTION_PARAMETERS, 400));
+        }
+
         // Validate the SRP session (actual current password check).
         var (serverSession, activeSessionFound) = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.CurrentClientPublicEphemeral, model.CurrentClientSessionProof);
         if (serverSession is null)
@@ -623,8 +630,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         var unlockKeyMetadata = VaultKeyMetadata.Parse(unlockKey.Metadata);
         unlockKeyMetadata.Salt = model.NewPasswordSalt;
         unlockKeyMetadata.SrpVerifier = model.NewPasswordVerifier;
-        unlockKeyMetadata.EncryptionType = Defaults.EncryptionType;
-        unlockKeyMetadata.EncryptionSettings = Defaults.EncryptionSettings;
+        unlockKeyMetadata.EncryptionType = model.NewEncryptionType;
+        unlockKeyMetadata.EncryptionSettings = model.NewEncryptionSettings;
         unlockKey.Metadata = unlockKeyMetadata.ToJson();
         unlockKey.EncryptedAccountKey = model.NewEncryptedAccountKey;
         unlockKey.UpdatedAt = timeProvider.UtcNow;
@@ -989,6 +996,57 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         await context.SaveChangesAsync();
 
         return Ok(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_SUCCESSFULLY_DELETED, 200));
+    }
+
+    /// <summary>
+    /// Whether the KDF parameters a client derived its new KEK with are Argon2id at or above the current defaults.
+    /// </summary>
+    /// <param name="encryptionType">The KDF type.</param>
+    /// <param name="encryptionSettings">The KDF settings JSON.</param>
+    /// <returns>True when the parameters are safe to store and advertise at the next login.</returns>
+    private static bool IsValidKekDerivationParams(string encryptionType, string encryptionSettings)
+    {
+        if (encryptionType != Defaults.EncryptionType)
+        {
+            return false;
+        }
+
+        try
+        {
+            using var settings = JsonDocument.Parse(encryptionSettings);
+            if (!settings.RootElement.TryGetProperty("DegreeOfParallelism", out var parallelism) || !parallelism.TryGetInt32(out var parallelismValue))
+            {
+                return false;
+            }
+
+            if (!settings.RootElement.TryGetProperty("MemorySize", out var memorySize) || !memorySize.TryGetInt32(out var memorySizeValue))
+            {
+                return false;
+            }
+
+            if (!settings.RootElement.TryGetProperty("Iterations", out var iterations) || !iterations.TryGetInt32(out var iterationsValue))
+            {
+                return false;
+            }
+
+            // Check if any parameter is less than the allowed minimum, return false.
+            if (parallelismValue < Defaults.Argon2IdDegreeOfParallelism || memorySizeValue < Defaults.Argon2IdMemorySize || iterationsValue < Defaults.Argon2IdIterations)
+            {
+                return false;
+            }
+
+            // Check if any parameter exceeds the allowed maximum, return false.
+            if (parallelismValue > 16 || memorySizeValue > 2097152 || iterationsValue > 32)
+            {
+                return false;
+            }
+
+            return true;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 
     /// <summary>
