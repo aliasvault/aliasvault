@@ -1813,6 +1813,79 @@ public struct VaultSql {
         VALUES ('20260813090206_2.1.4-AddFieldValueIsDisabled', '10.0.10');
         
         COMMIT;
+        
+        BEGIN TRANSACTION;
+        ALTER TABLE \"FieldValues\" ADD \"ValueIndex\" INTEGER NOT NULL DEFAULT 0;
+        
+        INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\")
+        VALUES ('20260827095434_2.1.5-AddFieldValueValueIndex', '10.0.10');
+        
+        COMMIT;
+        
+        BEGIN TRANSACTION;
+        DROP TRIGGER IF EXISTS \"TR_Items_ResyncChildManifestIds\";
+        
+        DROP INDEX \"IX_ItemTags_ManifestId_ItemId_TagId\";
+        
+        CREATE TABLE \"ef_temp_ItemTags\" (
+            \"ManifestId\" TEXT NOT NULL,
+            \"ItemId\" TEXT NOT NULL,
+            \"TagId\" TEXT NOT NULL,
+            \"CreatedAt\" TEXT NOT NULL,
+            \"IsDeleted\" INTEGER NOT NULL,
+            \"UpdatedAt\" TEXT NOT NULL,
+            CONSTRAINT \"PK_ItemTags\" PRIMARY KEY (\"ManifestId\", \"ItemId\", \"TagId\"),
+            CONSTRAINT \"FK_ItemTags_Items_ManifestId_ItemId\" FOREIGN KEY (\"ManifestId\", \"ItemId\") REFERENCES \"Items\" (\"ManifestId\", \"Id\") ON DELETE CASCADE,
+            CONSTRAINT \"FK_ItemTags_Tags_ManifestId_TagId\" FOREIGN KEY (\"ManifestId\", \"TagId\") REFERENCES \"Tags\" (\"ManifestId\", \"Id\") ON DELETE CASCADE
+        );
+        
+        INSERT INTO \"ef_temp_ItemTags\" (\"ManifestId\", \"ItemId\", \"TagId\", \"CreatedAt\", \"IsDeleted\", \"UpdatedAt\")
+        SELECT \"ManifestId\", \"ItemId\", \"TagId\", \"CreatedAt\", \"IsDeleted\", \"UpdatedAt\"
+        FROM \"ItemTags\";
+        
+        COMMIT;
+        
+        PRAGMA foreign_keys = 0;
+        
+        BEGIN TRANSACTION;
+        DROP TABLE \"ItemTags\";
+        
+        ALTER TABLE \"ef_temp_ItemTags\" RENAME TO \"ItemTags\";
+        
+        COMMIT;
+        
+        PRAGMA foreign_keys = 1;
+        
+        BEGIN TRANSACTION;
+        CREATE INDEX \"IX_ItemTags_ItemId\" ON \"ItemTags\" (\"ItemId\");
+        
+        CREATE INDEX \"IX_ItemTags_ManifestId_TagId\" ON \"ItemTags\" (\"ManifestId\", \"TagId\");
+        
+        CREATE INDEX \"IX_ItemTags_TagId\" ON \"ItemTags\" (\"TagId\");
+        
+        COMMIT;
+        
+        INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\")
+        VALUES ('20260827095516_2.1.6-ItemTagKeyedByItemAndTag', '10.0.10');
+        
+        BEGIN TRANSACTION;
+        CREATE TRIGGER IF NOT EXISTS \"TR_Items_ResyncChildManifestIds\"
+        AFTER UPDATE OF \"ManifestId\" ON \"Items\"
+        FOR EACH ROW WHEN OLD.\"ManifestId\" <> NEW.\"ManifestId\"
+        BEGIN
+            UPDATE \"FieldValues\" SET \"ManifestId\" = NEW.\"ManifestId\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = OLD.\"ManifestId\";
+            UPDATE \"FieldHistories\" SET \"ManifestId\" = NEW.\"ManifestId\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = OLD.\"ManifestId\";
+            UPDATE \"ItemTags\" SET \"ManifestId\" = NEW.\"ManifestId\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = OLD.\"ManifestId\";
+            UPDATE \"Attachments\" SET \"ManifestId\" = NEW.\"ManifestId\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = OLD.\"ManifestId\";
+            UPDATE \"Passkeys\" SET \"ManifestId\" = NEW.\"ManifestId\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = OLD.\"ManifestId\";
+            UPDATE \"TotpCodes\" SET \"ManifestId\" = NEW.\"ManifestId\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = OLD.\"ManifestId\";
+            UPDATE \"ItemStats\" SET \"ManifestId\" = NEW.\"ManifestId\" WHERE \"Id\" = NEW.\"Id\" AND \"ManifestId\" = OLD.\"ManifestId\";
+        END;
+        
+        INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\")
+        VALUES ('20260829082058_2.1.7-RestoreItemChildManifestTrigger', '10.0.10');
+        
+        COMMIT;
         """
 
     /// Migration SQL scripts indexed by migration number.

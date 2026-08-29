@@ -11,7 +11,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 /// <summary>
-/// The per-method specific fields of a <see cref="VaultManifestAccessKey"/> stored in a JSON column.
+/// The per-method specific fields of a <see cref="UserUnlockKey"/> stored in a JSON column.
 /// </summary>
 public sealed class VaultKeyMetadata
 {
