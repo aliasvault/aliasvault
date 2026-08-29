@@ -4,27 +4,29 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
-      "build": "tsup",
-      "clean": "rm -rf dist",
-      "test": "vitest run",
-      "test:watch": "vitest",
-      "test:coverage": "vitest run --coverage",
-      "lint": "eslint src",
-      "lint:custom": "eslint",
-      "lint:fix": "eslint src --fix",
-      "generate": "node scripts/generate-vault-sql.cjs"
-  },
+        "build": "tsup",
+        "clean": "rm -rf dist",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage",
+        "lint": "eslint src",
+        "lint:custom": "eslint",
+        "lint:fix": "eslint src --fix",
+        "generate": "node scripts/generate-vault-sql.cjs"
+    },
     "files": [
         "dist"
     ],
     "license": "AGPL-3.0",
     "devDependencies": {
+        "@types/sql.js": "^1.4.11",
         "@typescript-eslint/eslint-plugin": "^8.21.0",
         "@typescript-eslint/parser": "^8.21.0",
+        "@vitest/coverage-v8": "^4.1.8",
         "eslint": "^9.19.0",
+        "sql.js": "^1.14.2",
         "tsup": "^8.4.0",
         "typescript": "^5.3.3",
-        "vitest": "^4.1.8",
-        "@vitest/coverage-v8": "^4.1.8"
+        "vitest": "^4.1.8"
     }
 }

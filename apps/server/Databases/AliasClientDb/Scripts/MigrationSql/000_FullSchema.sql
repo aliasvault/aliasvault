@@ -1812,6 +1812,8 @@ VALUES ('20260827095434_2.1.5-AddFieldValueValueIndex', '10.0.10');
 COMMIT;
 
 BEGIN TRANSACTION;
+DROP TRIGGER IF EXISTS "TR_Items_ResyncChildManifestIds";
+
 DROP INDEX "IX_ItemTags_ManifestId_ItemId_TagId";
 
 CREATE TABLE "ef_temp_ItemTags" (
@@ -1854,4 +1856,23 @@ COMMIT;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
 VALUES ('20260827095516_2.1.6-ItemTagKeyedByItemAndTag', '10.0.10');
+
+BEGIN TRANSACTION;
+CREATE TRIGGER IF NOT EXISTS "TR_Items_ResyncChildManifestIds"
+AFTER UPDATE OF "ManifestId" ON "Items"
+FOR EACH ROW WHEN OLD."ManifestId" <> NEW."ManifestId"
+BEGIN
+    UPDATE "FieldValues" SET "ManifestId" = NEW."ManifestId" WHERE "ItemId" = NEW."Id" AND "ManifestId" = OLD."ManifestId";
+    UPDATE "FieldHistories" SET "ManifestId" = NEW."ManifestId" WHERE "ItemId" = NEW."Id" AND "ManifestId" = OLD."ManifestId";
+    UPDATE "ItemTags" SET "ManifestId" = NEW."ManifestId" WHERE "ItemId" = NEW."Id" AND "ManifestId" = OLD."ManifestId";
+    UPDATE "Attachments" SET "ManifestId" = NEW."ManifestId" WHERE "ItemId" = NEW."Id" AND "ManifestId" = OLD."ManifestId";
+    UPDATE "Passkeys" SET "ManifestId" = NEW."ManifestId" WHERE "ItemId" = NEW."Id" AND "ManifestId" = OLD."ManifestId";
+    UPDATE "TotpCodes" SET "ManifestId" = NEW."ManifestId" WHERE "ItemId" = NEW."Id" AND "ManifestId" = OLD."ManifestId";
+    UPDATE "ItemStats" SET "ManifestId" = NEW."ManifestId" WHERE "Id" = NEW."Id" AND "ManifestId" = OLD."ManifestId";
+END;
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260829082058_2.1.7-RestoreItemChildManifestTrigger', '10.0.10');
+
+COMMIT;
 

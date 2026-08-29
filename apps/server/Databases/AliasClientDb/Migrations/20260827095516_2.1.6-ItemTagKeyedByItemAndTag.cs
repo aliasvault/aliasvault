@@ -12,6 +12,9 @@ namespace AliasClientDb.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Drop the ItemTags trigges in order to rebuild the table with the new primary key, afterwards in next migration we add it back.
+            migrationBuilder.Sql(ItemChildManifestTriggerSql.Drop);
+
             migrationBuilder.DropPrimaryKey(
                 name: "PK_ItemTags",
                 table: "ItemTags");
@@ -33,6 +36,8 @@ namespace AliasClientDb.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql(ItemChildManifestTriggerSql.Drop);
+
             migrationBuilder.DropPrimaryKey(
                 name: "PK_ItemTags",
                 table: "ItemTags");

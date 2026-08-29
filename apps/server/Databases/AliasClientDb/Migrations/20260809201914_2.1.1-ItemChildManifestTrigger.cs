@@ -8,16 +8,6 @@ namespace AliasClientDb.Migrations
     /// <inheritdoc />
     public partial class _211ItemChildManifestTrigger : Migration
     {
-        /// <summary>
-        /// The tables whose rows are owned by an item through an ItemId foreign key.
-        /// </summary>
-        private static readonly string[] ItemIdChildTables = ["FieldValues", "FieldHistories", "ItemTags", "Attachments", "Passkeys", "TotpCodes"];
-
-        /// <summary>
-        /// Name of the trigger that keeps item-scoped rows stamped with their item's manifest.
-        /// </summary>
-        private const string TriggerName = "TR_Items_ResyncChildManifestIds";
-
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -28,28 +18,13 @@ namespace AliasClientDb.Migrations
              * every local read until the next push heals it server-side. This trigger ensures all clients that
              * use this sqlite structure will automatically re-stamp when an item is moved between manifests.
              */
-            var body = new System.Text.StringBuilder();
-            foreach (var table in ItemIdChildTables)
-            {
-                body.AppendLine($"    UPDATE \"{table}\" SET \"ManifestId\" = NEW.\"ManifestId\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = OLD.\"ManifestId\";");
-            }
-
-            body.AppendLine($"    UPDATE \"ItemStats\" SET \"ManifestId\" = NEW.\"ManifestId\" WHERE \"Id\" = NEW.\"Id\" AND \"ManifestId\" = OLD.\"ManifestId\";");
-
-            migrationBuilder.Sql($"""
-                CREATE TRIGGER IF NOT EXISTS "{TriggerName}"
-                AFTER UPDATE OF "ManifestId" ON "Items"
-                FOR EACH ROW WHEN OLD."ManifestId" <> NEW."ManifestId"
-                BEGIN
-                {body.ToString().TrimEnd()}
-                END;
-                """);
+            migrationBuilder.Sql(ItemChildManifestTriggerSql.Create);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql($"DROP TRIGGER IF EXISTS \"{TriggerName}\";");
+            migrationBuilder.Sql(ItemChildManifestTriggerSql.Drop);
         }
     }
 }
