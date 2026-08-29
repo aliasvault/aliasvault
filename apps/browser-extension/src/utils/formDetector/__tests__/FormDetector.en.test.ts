@@ -116,7 +116,7 @@ describe('FormDetector English tests', () => {
       const dom = createTestDom(htmlFile);
       const document = dom.window.document;
       const focusedElement = document.getElementById('MotPasse');
-      const formDetector = new FormDetector(document, focusedElement);
+      const formDetector = new FormDetector(document, focusedElement ?? undefined);
       const result = formDetector.getForm();
       expect(result?.totpField).toBeNull();
     });
