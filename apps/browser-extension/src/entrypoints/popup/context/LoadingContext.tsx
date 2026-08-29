@@ -63,7 +63,7 @@ export const LoadingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   return (
     <LoadingContext.Provider value={value}>
-      <LoadingSpinnerFullScreen message={loadingMessage} />
+      <LoadingSpinnerFullScreen />
       {children}
     </LoadingContext.Provider>
   );

@@ -95,6 +95,10 @@ export async function handleWebAuthnCreate(data: any): Promise<any> {
       focused: true
     });
 
+    if (!popup) {
+      throw new Error('Failed to open the passkey popup window');
+    }
+
     // Wait for response from popup
     return new Promise((resolve, reject) => {
       pendingRequests.set(requestId, { resolve, reject, windowId: popup.id });
@@ -153,6 +157,10 @@ export async function handleWebAuthnGet(data: any): Promise<any> {
       height: 600,
       focused: true
     });
+
+    if (!popup) {
+      throw new Error('Failed to open the passkey popup window');
+    }
 
     // Wait for response from popup
     return new Promise((resolve, reject) => {
