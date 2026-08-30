@@ -663,7 +663,7 @@
   "app": {
     "status": {
       "unlockingVault": "Déverrouillage du coffre-fort",
-      "decryptingVault": "Décryptage du coffre-fort"
+      "decryptingVault": "Déchiffrage du coffre-fort"
     },
     "navigation": {
       "login": "Se connecter",
