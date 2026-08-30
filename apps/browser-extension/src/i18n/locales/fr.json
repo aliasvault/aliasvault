@@ -484,7 +484,7 @@
     "autoCopyTotpOnAutofill": "Copie automatique du code à authentification à deux facteurs dans le presse-papiers",
     "autoCopyTotpOnAutofillDescription": "Copier automatiquement le premier code 2FA dans le presse-papiers après le remplissage automatique des identifiants",
     "loginSave": {
-      "title": "Invite de sauvegarde d'identifiants",
+      "title": "Invite de sauvegarde des identifiants",
       "description": "Afficher une invite pour enregistrer les identifiants de connexion lorsque vous soumettez un formulaire de connexion sur un site Web.",
       "blockedSites": "Sites bloqués",
       "blockedSitesDescription": "Les sites où l'invite de sauvegarde n'apparaîtra jamais.",
