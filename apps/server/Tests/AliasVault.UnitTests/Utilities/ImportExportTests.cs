@@ -766,6 +766,7 @@ public class ImportExportTests
             Assert.That(gmailCredential.Password, Is.EqualTo("your_password"));
             Assert.That(gmailCredential.Notes, Is.EqualTo("Important email account"));
             Assert.That(gmailCredential.TwoFactorSecret, Is.Empty);
+            Assert.That(gmailCredential.FolderPath, Is.EqualTo("Personal"));
         });
 
         // Test Facebook credential from template
@@ -778,6 +779,7 @@ public class ImportExportTests
             Assert.That(facebookCredential.Password, Is.EqualTo("your_password"));
             Assert.That(facebookCredential.Notes, Is.EqualTo("Social media account"));
             Assert.That(facebookCredential.TwoFactorSecret, Is.Empty);
+            Assert.That(facebookCredential.FolderPath, Is.EqualTo("Personal/Social"));
         });
 
         // Test GitHub credential with TOTP from template
@@ -790,6 +792,7 @@ public class ImportExportTests
             Assert.That(githubCredential.Password, Is.EqualTo("your_password"));
             Assert.That(githubCredential.Notes, Is.EqualTo("Development platform"));
             Assert.That(githubCredential.TwoFactorSecret, Is.EqualTo("your_totp_secret_here"));
+            Assert.That(githubCredential.FolderPath, Is.EqualTo("Work"));
         });
 
         // Test Secure Note (no username/password) from template
@@ -802,6 +805,7 @@ public class ImportExportTests
             Assert.That(secureNoteCredential.Password, Is.Empty);
             Assert.That(secureNoteCredential.Notes, Is.EqualTo("Important information or notes without login credentials"));
             Assert.That(secureNoteCredential.TwoFactorSecret, Is.Empty);
+            Assert.That(secureNoteCredential.FolderPath, Is.Null);
         });
     }
 
@@ -1066,7 +1070,7 @@ public class ImportExportTests
 
         // Assert
         Assert.That(template, Is.Not.Null);
-        Assert.That(template, Does.Contain("service_name,url,username,password,totp_secret,notes"));
+        Assert.That(template, Does.Contain("service_name,url,username,password,totp_secret,notes,folder"));
         Assert.That(template, Does.Contain("Gmail"));
         Assert.That(template, Does.Contain("Facebook"));
         Assert.That(template, Does.Contain("GitHub"));
