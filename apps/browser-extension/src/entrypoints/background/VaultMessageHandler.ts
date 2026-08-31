@@ -17,7 +17,7 @@ import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
-import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
+import { AppErrorCode, formatErrorWithCode, hasErrorCode } from '@/utils/types/errors/AppErrorCodes';
 import { ClientUpgradeRequiredError } from '@/utils/types/errors/ClientUpgradeRequiredError';
 import { NetworkError } from '@/utils/types/errors/NetworkError';
 import { PayloadTooLargeError } from '@/utils/types/errors/PayloadTooLargeError';
@@ -32,7 +32,7 @@ import type { SaveLoginResponse } from '@/utils/types/messaging/SaveLoginRespons
 import type { StringResponse as stringResponse } from '@/utils/types/messaging/StringResponse';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 import type { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
-import { vaultMergeService } from '@/utils/VaultMergeService';
+import { vaultMergeService, type MergeResult } from '@/utils/VaultMergeService';
 import { WebApiService } from '@/utils/WebApiService';
 
 import { t } from '@/i18n/StandaloneI18n';
@@ -1167,24 +1167,20 @@ export async function handleCheckSyncStatus(): Promise<SyncStatusCheckResult> {
 /**
  * Persists a sync error message to local storage so the popup can surface it
  * even when the failing sync was triggered from the background (e.g. follow-up
- * syncs after pending mutations). Cleared on the next successful sync.
- *
- * Skips errors that already have dedicated UX:
- * - requiresLogout: handled by the forced re-login flow
- * - wasOffline: handled by the offline indicator
+ * syncs after pending mutations). Any other result clears the stored message, so a stale
+ * error cannot keep re-opening the dialog after it stopped applying.
  */
 async function persistSyncErrorState(result: FullVaultSyncResult): Promise<void> {
-  if (result.requiresLogout || result.wasOffline) {
-    return;
-  }
-
   const errorMessage = result.errorKey
     ? await t('common.errors.' + result.errorKey)
     : result.error;
 
-  if (errorMessage) {
+  // requiresLogout and wasOffline have dedicated UX: the forced re-login flow and the offline indicator.
+  const dedicatedError = result.requiresLogout || result.wasOffline;
+
+  if (errorMessage && !dedicatedError) {
     await storage.setItem('local:lastSyncError', errorMessage);
-  } else if (result.success) {
+  } else {
     await storage.removeItem('local:lastSyncError');
   }
 }
@@ -1198,6 +1194,24 @@ export async function handleFullVaultSync(): Promise<FullVaultSyncResult> {
   const result = await handleFullVaultSyncInternal();
   await persistSyncErrorState(result);
   return result;
+}
+
+/**
+ * Check for pending migrations, ignoring errors from the check itself. Only an incompatible
+ * vault version error surfaces as that requires/forces a logout.
+ */
+async function checkPendingMigrations(): Promise<boolean> {
+  try {
+    const sqliteClient = await createVaultSqliteClient();
+    return await sqliteClient.hasPendingMigrations();
+  } catch (error) {
+    if (error instanceof VaultVersionIncompatibleError) {
+      throw error;
+    }
+
+    console.error('[VaultSync] Ignoring failed pending migration check:', error);
+    return false;
+  }
 }
 
 /**
@@ -1297,7 +1311,14 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
             const localDecrypted = await EncryptionUtility.symmetricDecrypt(localEncryptedVault, encryptionKey);
             const serverDecrypted = await EncryptionUtility.symmetricDecrypt(vaultResponseJson.vault.blob, encryptionKey);
 
-            const mergeResult = await vaultMergeService.merge(localDecrypted, serverDecrypted);
+            let mergeResult: MergeResult;
+            try {
+              mergeResult = await vaultMergeService.merge(localDecrypted, serverDecrypted);
+            } catch (error) {
+              console.error('[VaultSync] Vault merge threw during sync:', error);
+              // E-701: Merge failed
+              throw new Error(formatErrorWithCode(await t('common.errors.mergeFailed'), AppErrorCode.MERGE_FAILED));
+            }
 
             if (mergeResult.success) {
               devLog('[VaultSync] Vault merge during sync completed:', mergeResult.stats);
@@ -1346,8 +1367,7 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
               });
 
               // Check for pending migrations
-              const sqliteClient = await createVaultSqliteClient();
-              const hasPendingMigrations = await sqliteClient.hasPendingMigrations();
+              const hasPendingMigrations = await checkPendingMigrations();
 
               return { success: true, hasNewVault: true, wasOffline: false, upgradeRequired: hasPendingMigrations, requiresLogout: false };
             } else {
@@ -1379,15 +1399,22 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
         });
 
         // Check for pending migrations
-        const sqliteClient = await createVaultSqliteClient();
-        const hasPendingMigrations = await sqliteClient.hasPendingMigrations();
+        const hasPendingMigrations = await checkPendingMigrations();
 
         return { success: true, hasNewVault: true, wasOffline: false, upgradeRequired: hasPendingMigrations, requiresLogout: false };
       } catch (error) {
         if (error instanceof VaultVersionIncompatibleError) {
           return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, error: error.message };
         }
-        // E-501: Vault decryption failed
+
+        console.error('[VaultSync] Failed to process server vault:', error);
+
+        // Keep an already-coded error instead of masking it as a decryption failure.
+        if (hasErrorCode(error)) {
+          throw error;
+        }
+
+        // E-203: Vault decryption failed
         throw new Error(formatErrorWithCode(
           'Vault could not be decrypted, if the problem persists please logout and login again.',
           AppErrorCode.VAULT_DECRYPT_FAILED
@@ -1508,8 +1535,8 @@ async function handleFullVaultSyncInternal(): Promise<FullVaultSyncResult> {
     // For all other errors, include an error code so users can report it
     const baseMessage = err instanceof Error ? err.message : 'Unknown error during vault sync';
     // Check if message already has an error code (E-XXX format)
-    const hasErrorCode = /E-\d{3}/.test(baseMessage);
-    const errorMessage = hasErrorCode
+    const alreadyHasErrorCode = /E-\d{3}/.test(baseMessage);
+    const errorMessage = alreadyHasErrorCode
       ? baseMessage
       : formatErrorWithCode(baseMessage, AppErrorCode.UNKNOWN_ERROR);
     return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: errorMessage };
