@@ -899,23 +899,10 @@ else
             if (response.IsSuccessStatusCode)
             {
                 var emailBulkResponse = await response.Content.ReadFromJsonAsync<EmailBulkResponse>();
-                var successfulCount = emailBulkResponse?.SuccessfulEmailIds.Count;
+                var deletedEmailIds = emailBulkResponse?.SuccessfulEmailIds ?? [];
 
-                if (successfulCount == CheckedEmailIds.Count)
-                {
-                    // Notify all emails deleted successfully.
-                    GlobalNotificationService.AddSuccessMessage(string.Format(Localizer["BulkDeleteEmailSuccess"], successfulCount), true);
-                }
-                else
-                {
-                    // Notify some errors, some deleted
-                    var errorCount = requestModel.Ids.Count() - successfulCount;
-                    GlobalNotificationService.AddErrorMessage(string.Format(Localizer["BulkDeleteEmailFailedMessage"], successfulCount, errorCount), true);
-                }
-
-                // Handle each email successfully deleted 
-                var successfulEmailIds = emailBulkResponse != null ? emailBulkResponse.SuccessfulEmailIds : [];
-                await HandleEmailsDeleted(successfulEmailIds);
+                GlobalNotificationService.AddSuccessMessage(string.Format(Localizer["BulkDeleteEmailSuccess"], deletedEmailIds.Count), true);
+                await HandleEmailsDeleted(deletedEmailIds);
             }
             else
             {

@@ -90,10 +90,6 @@
     <value>All {0} email(s) deleted successfully</value>
     <comment>Success message when multiple emails are deleted. {0} is placeholder for total number of deleted emails</comment>
   </data>
-  <data name="BulkDeleteEmailFailedMessage" xml:space="preserve">
-    <value>Failed to delete multiple emails. Requested: {0}, deleted successfully: {1}.</value>
-    <comment>Error message when multiple emails are deleted.  {0} is placeholder for total requested and {1} for the number of deleted emails</comment>
-  </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
     <value>You are not using any private email addresses (yet). Create a new alias and use a private email address supported by AliasVault. All emails received by these private email addresses will show up here.</value>
     <comment>Message when no email addresses are configured</comment>
