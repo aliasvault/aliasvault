@@ -110,6 +110,7 @@ else
                         {
                             <EmailRow
                                 Email="email"
+                                OnEmailCheck="CheckEmail"
                                 OnEmailClick="ShowAliasVaultEmailInModal"
                                 IsChecked="@(CheckedEmailIds.Contains(email.Id))"
                                 IsSelected="false"
@@ -673,7 +674,7 @@ else
     }
 
     /// <summary>
-    /// Check an email for bulk actions (desktop layout).
+    /// Check an email for bulk actions.
     /// </summary>
     private void CheckEmail(int emailId)
     {

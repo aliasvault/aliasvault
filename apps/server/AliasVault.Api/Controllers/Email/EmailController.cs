@@ -37,13 +37,7 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        var user = await GetCurrentUserAsync();
-        if (user is null)
-        {
-            return Unauthorized("Not authenticated.");
-        }
-
-        var (email, errorResult) = await RetrieveEmailAsync(id, user, context);
+        var (email, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
         if (errorResult != null)
         {
             return errorResult;
@@ -93,13 +87,7 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        var user = await GetCurrentUserAsync();
-        if (user is null)
-        {
-            return Unauthorized("Not authenticated.");
-        }
-
-        var (email, errorResult) = await RetrieveEmailAsync(id, user, context);
+        var (email, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
         if (errorResult != null)
         {
             return errorResult;
@@ -132,13 +120,7 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        var user = await GetCurrentUserAsync();
-        if (user is null)
-        {
-            return Unauthorized("Not authenticated.");
-        }
-
-        var (email, errorResult) = await RetrieveEmailAsync(id, user, context);
+        var (email, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
         if (errorResult != null)
         {
             return errorResult;
@@ -175,7 +157,7 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
         }
 
         // Sanitize input
-        model.Ids = [.. model.Ids.Distinct().ToList().FindAll(id => id > 0)];
+        model.Ids = [.. model.Ids.Where(id => id > 0).Distinct()];
 
         if (model.Ids.Count == 0)
         {
@@ -193,10 +175,12 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
             }
         }
 
-        List<int> deletedEmails = [];
         try
         {
-            await context.Emails.Where(e => model.Ids.Contains(e.Id)).ExecuteDeleteAsync();
+            await context.Emails
+                .Where(e => model.Ids.Contains(e.Id))
+                .Where(e => context.UserEmailClaims.Any(c => c.UserId == user.Id && !c.Disabled && c.Address == e.To.Trim().ToLower()))
+                .ExecuteDeleteAsync();
         }
         catch (Exception ex)
         {
@@ -212,10 +196,27 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
     }
 
     /// <summary>
-    /// Retrieves the requested email.
+    /// Authenticates the user and retrieves the requested email.
     /// </summary>
     /// <param name="id">The email ID to retrieve.</param>
-    /// <param name="user">The authenticated Alis Vault user.</param>
+    /// <param name="context">The database context.</param>
+    /// <returns>A tuple containing the email, and an IActionResult if there's an error.</returns>
+    private async Task<(Email? Email, IActionResult? ErrorResult)> AuthenticateAndRetrieveEmailAsync(int id, AliasServerDbContext context)
+    {
+        var user = await GetCurrentUserAsync();
+        if (user is null)
+        {
+            return (null, Unauthorized("Not authenticated."));
+        }
+
+        return await RetrieveEmailAsync(id, user, context);
+    }
+
+    /// <summary>
+    /// Retrieves the requested email for an already authenticated user.
+    /// </summary>
+    /// <param name="id">The email ID to retrieve.</param>
+    /// <param name="user">The authenticated AliasVault user.</param>
     /// <param name="context">The database context.</param>
     /// <returns>A tuple containing the email, and an IActionResult if there's an error.</returns>
     private async Task<(Email? Email, IActionResult? ErrorResult)> RetrieveEmailAsync(int id, AliasVaultUser user, AliasServerDbContext context)
