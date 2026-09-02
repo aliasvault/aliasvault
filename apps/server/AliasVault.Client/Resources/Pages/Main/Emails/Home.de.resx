@@ -75,19 +75,19 @@
     <comment>Refresh button text</comment>
   </data>
   <data name="DeleteSelectedEmails" xml:space="preserve">
-    <value>Delete {0} selected email(s)</value>
+    <value>Lösche {0} ausgewählte E-Mail(s)</value>
     <comment>Delete selected emails button text</comment>
   </data>
   <data name="BulkDeleteEmailTitle" xml:space="preserve">
-    <value>Delete email(s)</value>
+    <value>E-Mail(s) löschen</value>
     <comment>Delete multiple emails confirmation dialog title</comment>
   </data>
   <data name="BulkDeleteEmailConfirmation" xml:space="preserve">
-    <value>Are you sure you want to delete {0} email(s)? This action cannot be undone.</value>
+    <value>Bist Du sicher, dass Du {0} E-Mail(s) löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.</value>
     <comment>Delete multiple emails confirmation message. {0} is placeholder for total number of to be deleted emails</comment>
   </data>
   <data name="BulkDeleteEmailSuccess" xml:space="preserve">
-    <value>All {0} email(s) deleted successfully</value>
+    <value>{0} E-Mail(s) erfolgreich gelöscht</value>
     <comment>Success message when multiple emails are deleted. {0} is placeholder for total number of deleted emails</comment>
   </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
