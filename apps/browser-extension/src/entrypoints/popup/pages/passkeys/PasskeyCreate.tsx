@@ -36,7 +36,7 @@ const PasskeyCreate: React.FC = () => {
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const { isLocked } = useVaultLockRedirect();
-  const [existingPasskeys, setExistingPasskeys] = useState<Array<Passkey & { Username?: string | null; ServiceName?: string | null }>>([]);
+  const [existingPasskeys, setExistingPasskeys] = useState<Array<Passkey & { Username?: string | null; Email?: string | null; ServiceName?: string | null }>>([]);
   const [matchingItems, setMatchingItems] = useState<Item[]>([]);
   const [selectedPasskeyToReplace, setSelectedPasskeyToReplace] = useState<string | null>(null);
   const [selectedItemToAttach, setSelectedItemToAttach] = useState<string | null>(null);
@@ -132,14 +132,15 @@ const PasskeyCreate: React.FC = () => {
                 /*
                  * Filter items that:
                  * 1. Match the RP origin URL
-                 * 2. Have username/password (are login items)
+                 * 2. Have username/email/password (are login items)
                  * 3. Don't already have a passkey
                  */
                 const itemsWithoutPasskeys = allItems.filter((item) => {
-                  // Must have username or password to be a login item
+                  // Must have username, email or password to be a login item
                   const username = getFieldValue(item, FieldKey.LoginUsername);
+                  const email = getFieldValue(item, FieldKey.LoginEmail);
                   const password = getFieldValue(item, FieldKey.LoginPassword);
-                  if (!username && !password) {
+                  if (!username && !email && !password) {
                     return false;
                   }
                   // Check if this item already has a passkey
@@ -213,6 +214,13 @@ const PasskeyCreate: React.FC = () => {
     setSelectedPasskeyToReplace(null);
     setSelectedItemToAttach(null);
     setShowCreateForm(true);
+  };
+
+  /**
+   * Get the account identifier to show for an item: username, or email when no username is set.
+   */
+  const getItemAccountLabel = (item: Item): string => {
+    return getFieldValue(item, FieldKey.LoginUsername) || getFieldValue(item, FieldKey.LoginEmail) || '';
   };
 
   /**
@@ -629,7 +637,7 @@ const PasskeyCreate: React.FC = () => {
                           {passkey.ServiceName}
                         </div>
                         <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
-                          <span className="truncate">{passkey.DisplayName}</span>
+                          <span className="truncate">{passkey.Username || passkey.Email || passkey.DisplayName}</span>
                         </div>
                       </div>
                       <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -699,9 +707,9 @@ const PasskeyCreate: React.FC = () => {
                           <div className="font-medium text-gray-900 dark:text-white text-sm truncate">
                             {item.Name}
                           </div>
-                          {getFieldValue(item, FieldKey.LoginUsername) && (
+                          {getItemAccountLabel(item) && (
                             <div className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                              {getFieldValue(item, FieldKey.LoginUsername)}
+                              {getItemAccountLabel(item)}
                             </div>
                           )}
                         </div>

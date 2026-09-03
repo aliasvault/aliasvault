@@ -23,6 +23,7 @@ export type PasskeyRow = {
  */
 export type PasskeyWithItemRow = PasskeyRow & {
   Username?: string | null;
+  Email?: string | null;
   ServiceName?: string | null;
 }
 
@@ -31,6 +32,7 @@ export type PasskeyWithItemRow = PasskeyRow & {
  */
 export type PasskeyWithItem = Passkey & {
   Username?: string | null;
+  Email?: string | null;
   ServiceName?: string | null;
 };
 
@@ -72,12 +74,13 @@ export class PasskeyMapper {
   /**
    * Map a single database row to a Passkey with item information.
    * @param row - Raw passkey row with item data
-   * @returns Passkey with Username and ServiceName
+   * @returns Passkey with Username, Email and ServiceName
    */
   public static mapRowWithItem(row: PasskeyWithItemRow): PasskeyWithItem {
     return {
       ...this.mapRow(row),
       Username: row.Username,
+      Email: row.Email,
       ServiceName: row.ServiceName
     };
   }
@@ -94,7 +97,7 @@ export class PasskeyMapper {
   /**
    * Map multiple database rows to Passkey objects with item information.
    * @param rows - Raw passkey rows with item data
-   * @returns Array of Passkey with Username and ServiceName
+   * @returns Array of Passkey with Username, Email and ServiceName
    */
   public static mapRowsWithItem(rows: PasskeyWithItemRow[]): PasskeyWithItem[] {
     return rows.map(row => this.mapRowWithItem(row));
