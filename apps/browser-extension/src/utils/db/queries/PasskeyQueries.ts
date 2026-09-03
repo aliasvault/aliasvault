@@ -23,7 +23,8 @@ export class PasskeyQueries {
       p.UpdatedAt,
       p.IsDeleted,
       i.Name as ServiceName,
-      (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.FieldKey = '${FieldKey.LoginUsername}' AND fv.IsDeleted = 0 LIMIT 1) as Username
+      (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.FieldKey = '${FieldKey.LoginUsername}' AND fv.IsDeleted = 0 LIMIT 1) as Username,
+      (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.FieldKey = '${FieldKey.LoginEmail}' AND fv.IsDeleted = 0 LIMIT 1) as Email
     FROM Passkeys p
     INNER JOIN Items i ON p.ItemId = i.Id`;
 
@@ -64,7 +65,8 @@ export class PasskeyQueries {
       p.UpdatedAt,
       p.IsDeleted,
       i.Name as ServiceName,
-      (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.FieldKey = '${FieldKey.LoginUsername}' AND fv.IsDeleted = 0 LIMIT 1) as Username
+      (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.FieldKey = '${FieldKey.LoginUsername}' AND fv.IsDeleted = 0 LIMIT 1) as Username,
+      (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.FieldKey = '${FieldKey.LoginEmail}' AND fv.IsDeleted = 0 LIMIT 1) as Email
     FROM Passkeys p
     INNER JOIN Items i ON p.ItemId = i.Id
     WHERE p.RpId = ? AND p.IsDeleted = 0
@@ -89,7 +91,8 @@ export class PasskeyQueries {
       p.UpdatedAt,
       p.IsDeleted,
       i.Name as ServiceName,
-      (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.FieldKey = '${FieldKey.LoginUsername}' AND fv.IsDeleted = 0 LIMIT 1) as Username
+      (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.FieldKey = '${FieldKey.LoginUsername}' AND fv.IsDeleted = 0 LIMIT 1) as Username,
+      (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.FieldKey = '${FieldKey.LoginEmail}' AND fv.IsDeleted = 0 LIMIT 1) as Email
     FROM Passkeys p
     INNER JOIN Items i ON p.ItemId = i.Id
     WHERE p.Id = ? AND p.IsDeleted = 0
