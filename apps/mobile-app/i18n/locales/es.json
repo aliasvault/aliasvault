@@ -145,7 +145,7 @@
     },
     "androidAutofillSettings": {
       "headerText": "Puede configurar AliasVault para que proporcione la funcionalidad nativa de contraseña y de autorrelleno de contraseñas en Android. Siga las instrucciones de abajo para habilitarlo.",
-      "docsLink": "View more Android specific information here.",
+      "docsLink": "Ver más información específica de Android aquí.",
       "passkeyNotice": "Las claves de acceso se crean a través de Android Credential Manager (Android 14+). Para almacenarlas en AliasVault, asegúrese de que el autorrelleno a continuación está habilitado.",
       "howToEnable": "Cómo habilitar Autorellenar y llaves de acceso:",
       "step1": "1. Abre la configuración de Android a través del botón de abajo, y cambia el \"servicio preferido de autorrelleno\" a \"AliasVault\"",
