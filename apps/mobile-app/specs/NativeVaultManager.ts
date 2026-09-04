@@ -141,6 +141,9 @@ export interface Spec extends TurboModule {
   // statusText is the message to display on the scanner screen (defaults to "Scan QR code" if null/empty).
   scanQRCode(prefixes: string[] | null, statusText: string | null): Promise<string | null>;
 
+  // Favicon URL handling and selection.
+  selectFaviconTarget(urls: string[]): Promise<string | null>;
+
   // Password generator (uses the native Rust core, shared with the other AliasVault clients)
   // Generate a password or passphrase from a JSON-serialized PasswordSettings object.
   generatePassword(settingsJson: string): Promise<string>;

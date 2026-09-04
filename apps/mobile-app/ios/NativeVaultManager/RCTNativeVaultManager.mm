@@ -339,6 +339,12 @@
     [vaultManager scanQRCode:prefixes statusText:statusText resolver:resolve rejecter:reject];
 }
 
+// MARK: - Favicon
+
+- (void)selectFaviconTarget:(NSArray<NSString *> *)urls resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager selectFaviconTarget:urls resolver:resolve rejecter:reject];
+}
+
 // MARK: - Password Generator
 
 - (void)generatePassword:(NSString *)settingsJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {

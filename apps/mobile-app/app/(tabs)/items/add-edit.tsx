@@ -16,6 +16,7 @@ import type { Attachment, Item, ItemField, TotpCode, ItemType, FieldType, Passwo
 import { ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType, FieldCategories, FieldTypes } from '@/utils/dist/core/models/vault';
 import type { FaviconExtractModel } from '@/utils/dist/core/models/webapi';
 import emitter from '@/utils/EventEmitter';
+import { selectFaviconTarget } from '@/utils/FaviconUtility';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 import * as IdentityGenerator from '@/utils/IdentityGeneratorUtility';
 import * as PasswordGenerator from '@/utils/PasswordGeneratorUtility';
@@ -817,17 +818,12 @@ export default function AddEditItemScreen(): React.ReactNode {
       UpdatedAt: new Date().toISOString()
     };
 
-    // Extract favicon from URL if present (only show loading for this network operation)
-    const urlValue = fieldValues['login.url'];
-    const urlString = Array.isArray(urlValue) ? urlValue[0] : urlValue;
-    const shouldFetchFavicon = urlString && urlString !== 'https://' && urlString !== 'http://';
+    // Extract favicon from URL if present.
+    const faviconTarget = await selectFaviconTarget(fieldValues['login.url']);
 
-    if (shouldFetchFavicon && dbContext.sqliteClient) {
-      // Extract source domain for deduplication check
-      const source = dbContext.sqliteClient.logos.extractSourceFromUrl(urlString);
-
+    if (faviconTarget && dbContext.sqliteClient) {
       // Only fetch favicon if no logo exists for this source (deduplication)
-      const hasExistingLogo = source !== 'unknown' && await dbContext.sqliteClient.logos.hasLogoForSource(source);
+      const hasExistingLogo = await dbContext.sqliteClient.logos.hasLogoForSource(faviconTarget.source);
 
       if (!hasExistingLogo) {
         // Only show loading indicator when fetching favicon
@@ -839,7 +835,7 @@ export default function AddEditItemScreen(): React.ReactNode {
             setTimeout(() => reject(new Error('Favicon extraction timed out')), 5000)
           );
 
-          const faviconPromise = webApi.get<FaviconExtractModel>('Favicon/Extract?url=' + encodeURIComponent(urlString));
+          const faviconPromise = webApi.get<FaviconExtractModel>('Favicon/Extract?url=' + encodeURIComponent(faviconTarget.url));
           const faviconResponse = await Promise.race([faviconPromise, timeoutPromise]) as FaviconExtractModel;
           if (faviconResponse?.image) {
             const decodedImage = Uint8Array.from(Buffer.from(faviconResponse.image as string, 'base64'));
@@ -849,8 +845,8 @@ export default function AddEditItemScreen(): React.ReactNode {
           // Favicon extraction failed or timed out - not critical, continue with save
         }
       }
-    } else if (!shouldFetchFavicon) {
-      // URL is empty or just a placeholder - clear any existing logo
+    } else if (!faviconTarget) {
+      // No valid URL found: clear any existing logo.
       itemToSave.Logo = undefined;
     }
 

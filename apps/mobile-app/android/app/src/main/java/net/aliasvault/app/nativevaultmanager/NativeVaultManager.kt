@@ -1953,6 +1953,32 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
+     * Pick which of an item's URLs a favicon should be fetched from, and the Logos.Source
+     * key it is stored under.
+     * @param urls The item's URLs, in the order the item lists them.
+     * @param promise Resolves with a JSON string, or null when no URL qualifies.
+     */
+    @ReactMethod
+    override fun selectFaviconTarget(urls: ReadableArray, promise: Promise) {
+        try {
+            val urlList = (0 until urls.size()).mapNotNull { urls.getString(it) }
+            val target = uniffi.aliasvault_core.selectFaviconTarget(urlList)
+            if (target == null) {
+                promise.resolve(null)
+                return
+            }
+
+            val json = JSONObject()
+                .put("url", target.url)
+                .put("source", target.source)
+            promise.resolve(json.toString())
+        } catch (e: Exception) {
+            Log.e(TAG, "Error selecting favicon target", e)
+            promise.reject("ERR_SELECT_FAVICON_TARGET", "Failed to select favicon target: ${e.message}", e)
+        }
+    }
+
+    /**
      * Generate a password or passphrase from a JSON-serialized PasswordSettings object.
      * The "Type" field selects the generator ("basic" or "diceware").
      * @param settingsJson The JSON-serialized password settings.

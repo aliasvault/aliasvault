@@ -1,5 +1,6 @@
 import type { Item, ItemField, TotpCode, Attachment, FieldHistory } from '@/utils/dist/core/models/vault';
 import { FieldKey, MAX_FIELD_HISTORY_RECORDS } from '@/utils/dist/core/models/vault';
+import { selectFaviconTarget } from '@/utils/FaviconUtility';
 
 import { BaseRepository } from '../BaseRepository';
 import { ItemQueries, FieldValueQueries, FieldDefinitionQueries, FieldHistoryQueries, TagQueries } from '../queries/ItemQueries';
@@ -360,22 +361,25 @@ export class ItemRepository extends BaseRepository {
       const now = this.now();
       const itemId = item.Id || this.generateId();
 
-      // 1. Insert Item
+      // 1. Resolve the logo.
+      const logoId = await this.resolveLogoId(item, now);
+
+      // 2. Insert Item
       await this.client.executeUpdate(ItemQueries.INSERT_ITEM, [
         itemId,
         item.Name,
         item.ItemType,
-        null, // LogoId - handled separately if needed
+        logoId,
         item.FolderId || null,
         now,
         now,
         0
       ]);
 
-      // 2. Insert FieldValues
+      // 3. Insert FieldValues
       await this.insertFieldValues(itemId, item.Fields, item.ItemType, now);
 
-      // 3. Insert TOTP codes
+      // 4. Insert TOTP codes
       for (const totp of totpCodes) {
         if (totp.IsDeleted) continue;
 
@@ -385,7 +389,7 @@ export class ItemRepository extends BaseRepository {
         [totp.Id || this.generateId(), totp.Name, totp.SecretKey, itemId, now, now, 0]);
       }
 
-      // 4. Insert Attachments
+      // 5. Insert Attachments
       for (const attachment of attachments) {
         await this.client.executeUpdate(`
           INSERT INTO Attachments (Id, Filename, Blob, ItemId, CreatedAt, UpdatedAt, IsDeleted)
@@ -1010,29 +1014,26 @@ export class ItemRepository extends BaseRepository {
    * @returns The logo ID, or null if no logo
    */
   private async resolveLogoId(item: Item, currentDateTime: string): Promise<string | null> {
-    // If no logo repository is set, we can't handle logos
     if (!this.logoRepository) {
       return null;
     }
 
-    // Get URL field for source extraction
+    // Derive the source key from the same URL the favicon was fetched for.
     const urlField = item.Fields?.find(f => f.FieldKey === 'login.url');
-    const urlValue = urlField?.Value;
-    const urlString = Array.isArray(urlValue) ? urlValue[0] : urlValue;
-    const source = this.logoRepository.extractSourceFromUrl(urlString);
+    const target = await selectFaviconTarget(urlField?.Value);
+
+    // No valid URL found: clear any existing logo.
+    if (!target) {
+      return null;
+    }
 
     // If item has Logo data, create or reuse a logo entry
     if (item.Logo) {
       const logoData = this.logoRepository.convertLogoToUint8Array(item.Logo);
-      if (logoData) {
-        return this.logoRepository.getOrCreate(source, logoData, currentDateTime);
-      }
-    } else if (source !== 'unknown') {
-      // No logo data provided, but we have a valid URL - try to find existing logo for this source
-      return this.logoRepository.getIdForSource(source);
+      return logoData ? this.logoRepository.getOrCreate(target.source, logoData, currentDateTime) : null;
     }
 
-    // No logo data and no valid URL - return null to clear any existing logo
-    return null;
+    // No logo data provided, but we have a valid URL. Try to find any logo for this source.
+    return this.logoRepository.getIdForSource(target.source);
   }
 }

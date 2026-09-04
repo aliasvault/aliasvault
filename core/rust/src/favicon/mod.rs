@@ -55,20 +55,33 @@ pub fn select_favicon_target(urls: &[String]) -> Option<FaviconTarget> {
         }
 
         Some(FaviconTarget {
-            url: with_scheme(trimmed),
+            url: canonical_fetch_url(trimmed),
             source,
         })
     })
 }
 
-/// Prefix a scheme-less URL with `https://`, matching what the favicon API does server side.
-fn with_scheme(url: &str) -> String {
-    let lower = url.to_ascii_lowercase();
-    if lower.starts_with("http://") || lower.starts_with("https://") {
-        url.to_string()
-    } else {
-        format!("https://{}", url)
-    }
+/// Canonicalize the URL for fetching a favicon from, including trimming and lowercasing.
+fn canonical_fetch_url(url: &str) -> String {
+    let (scheme, rest) = match url.find("://") {
+        Some(index)
+            if url[..index].eq_ignore_ascii_case("http")
+                || url[..index].eq_ignore_ascii_case("https") =>
+        {
+            (url[..index].to_ascii_lowercase(), &url[index + 3..])
+        }
+        _ => ("https".to_string(), url),
+    };
+
+    let authority_end = rest.find(['/', '?', '#']).unwrap_or(rest.len());
+    let (authority, path) = rest.split_at(authority_end);
+
+    let (userinfo, host) = match authority.rfind('@') {
+        Some(index) => authority.split_at(index + 1),
+        None => ("", authority),
+    };
+
+    format!("{}://{}{}{}", scheme, userinfo, host.to_ascii_lowercase(), path)
 }
 
 /// The lowercased scheme a URL is written with, or `None` when it carries none.
@@ -259,6 +272,23 @@ mod tests {
     }
 
     #[test]
+    fn test_casing_is_ignored() {
+        let lower = select_favicon_target(&urls(&["facebook.com"])).unwrap();
+        for variant in ["Example.com", "example.com", "https://example.com"] {
+            let target = select_favicon_target(&urls(&[variant])).unwrap();
+            assert_eq!(target.source, "example.com", "source for {variant}");
+            assert_eq!(target.url, lower.url, "fetch URL for {variant}");
+        }
+
+        let target = select_favicon_target(&urls(&["Www.Example.com"])).unwrap();
+        assert_eq!(target.source, "example.com");
+        assert_eq!(target.url, "https://www.example.com");
+
+        let target = select_favicon_target(&urls(&["HTTPS://Example.COM/Login?Token=AbC"])).unwrap();
+        assert_eq!(target.url, "https://example.com/Login?Token=AbC");
+    }
+
+    #[test]
     fn test_select_adds_missing_scheme_to_fetch_url() {
         let target = select_favicon_target(&urls(&["www.example.com"])).unwrap();
         assert_eq!(target.url, "https://www.example.com");
@@ -269,4 +299,3 @@ mod tests {
         assert_eq!(target.source, "mediaserver:32400");
     }
 }
-
