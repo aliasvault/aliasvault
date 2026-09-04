@@ -1,10 +1,8 @@
 @using AliasClientDb.Models
-@using AliasVault.Client.Main.Components.Layout
-@using AliasVault.Client.Services.JsInterop
+@using AliasVault.Client.Main.Components.Forms
 @using Microsoft.Extensions.Localization
 
 @inject IStringLocalizerFactory LocalizerFactory
-@inject JsInteropService JsInteropService
 
 <div class="relative">
     <button type="button"
@@ -82,53 +80,11 @@
 </div>
 
 @* Custom Field Modal *@
-<FormModal
+<CustomFieldModal
     IsOpen="ShowCustomFieldModal"
-    Title="@Localizer["AddCustomField"]"
-    ConfirmText="@Localizer["Add"]"
-    CancelText="@Localizer["Cancel"]"
-    ConfirmButtonClass="bg-primary-600 hover:bg-primary-500 dark:bg-primary-700 dark:hover:bg-primary-600"
-    MaxWidth="md"
+    InitialLabel="@CustomFieldLabel"
     OnClose="CloseCustomFieldModal"
-    OnConfirm="HandleAddCustomField">
-    <Icon>
-        <svg class="h-6 w-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-        </svg>
-    </Icon>
-    <ChildContent>
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    @Localizer["FieldLabel"]
-                </label>
-                <input type="text"
-                       id="custom-field-label-input"
-                       @bind="CustomFieldLabel"
-                       @bind:event="oninput"
-                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
-                       placeholder="@Localizer["EnterFieldName"]" />
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    @Localizer["FieldType"]
-                </label>
-                <select @bind="CustomFieldType"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white">
-                    <option value="Text">@Localizer["FieldTypeText"]</option>
-                    <option value="Password">@Localizer["FieldTypePassword"]</option>
-                    <option value="Hidden">@Localizer["FieldTypeHidden"]</option>
-                    <option value="Email">@Localizer["FieldTypeEmail"]</option>
-                    <option value="URL">@Localizer["FieldTypeUrl"]</option>
-                    <option value="Phone">@Localizer["FieldTypePhone"]</option>
-                    <option value="Number">@Localizer["FieldTypeNumber"]</option>
-                    <option value="Date">@Localizer["FieldTypeDate"]</option>
-                    <option value="TextArea">@Localizer["FieldTypeTextArea"]</option>
-                </select>
-            </div>
-        </div>
-    </ChildContent>
-</FormModal>
+    OnSubmit="OnAddCustomField" />
 
 @code {
     private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Items.AddFieldMenu", "AliasVault.Client");
@@ -196,7 +152,6 @@
     private bool IsOpen { get; set; }
     private bool ShowCustomFieldModal { get; set; }
     private string CustomFieldLabel { get; set; } = string.Empty;
-    private string CustomFieldType { get; set; } = "Text";
 
     private void ToggleMenu()
     {
@@ -226,34 +181,18 @@
         CloseMenu();
     }
 
-    private async Task OpenCustomFieldModal()
+    private void OpenCustomFieldModal()
     {
         ShowCustomFieldModal = true;
         // Auto-generate a default label based on existing custom field count
         CustomFieldLabel = string.Format(Localizer["DefaultFieldLabel"].Value, CustomFieldCount + 1);
-        CustomFieldType = "Text";
         CloseMenu();
-
-        // Wait for the modal to render, then focus and select the input text
-        await Task.Delay(50);
-        await JsInteropService.FocusAndSelectElementById("custom-field-label-input");
     }
 
-    private Task CloseCustomFieldModal()
+    private void CloseCustomFieldModal()
     {
         ShowCustomFieldModal = false;
         CustomFieldLabel = string.Empty;
-        CustomFieldType = "Text";
-        return Task.CompletedTask;
-    }
-
-    private async Task HandleAddCustomField()
-    {
-        if (!string.IsNullOrWhiteSpace(CustomFieldLabel))
-        {
-            await OnAddCustomField.InvokeAsync((CustomFieldLabel.Trim(), CustomFieldType));
-            await CloseCustomFieldModal();
-        }
     }
 
     private string GetFieldLabel(string fieldKey)
