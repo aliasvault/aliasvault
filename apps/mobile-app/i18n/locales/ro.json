@@ -360,6 +360,7 @@
     },
     "addField": "Adaugă Câmp",
     "addCustomField": "Adaugă Câmp Personalizat",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Câmpuri Personalizate",
     "fieldLabel": "Etichetă Câmp",
     "fieldType": "Tip Câmp",
