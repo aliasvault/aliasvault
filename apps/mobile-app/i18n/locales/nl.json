@@ -360,6 +360,7 @@
     },
     "addField": "Veld toevoegen",
     "addCustomField": "Aangepast veld toevoegen",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Extra velden",
     "fieldLabel": "Veldlabel",
     "fieldType": "Veldtype",
