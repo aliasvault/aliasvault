@@ -1307,6 +1307,28 @@ public class VaultManager: NSObject {
     /// Generate a password or passphrase from a JSON-serialized PasswordSettings object.
     /// The "Type" field selects the generator ("basic" or "diceware").
     @objc
+    // MARK: - Favicon
+
+    /// Pick which of an item's URLs a favicon should be fetched from, and the Logos.Source
+    /// key it is stored under. Resolves to a JSON string, or nil when no URL qualifies.
+    @objc
+    func selectFaviconTarget(_ urls: [String],
+                             resolver resolve: @escaping RCTPromiseResolveBlock,
+                             rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard let target = RustCoreFramework.selectFaviconTarget(urls: urls) else {
+            resolve(nil)
+            return
+        }
+
+        do {
+            let payload = ["url": target.url, "source": target.source]
+            let data = try JSONSerialization.data(withJSONObject: payload)
+            resolve(String(data: data, encoding: .utf8))
+        } catch {
+            reject("FAVICON_TARGET_ERROR", "Failed to serialize favicon target: \(error.localizedDescription)", error)
+        }
+    }
+
     func generatePassword(_ settingsJson: String,
                           resolver resolve: @escaping RCTPromiseResolveBlock,
                           rejecter reject: @escaping RCTPromiseRejectBlock) {
