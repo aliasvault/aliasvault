@@ -1200,12 +1200,16 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
                     existingField.UpdatedAt = updateDateTime;
                 }
 
-                // Also update the FieldDefinition label if it has changed
+                // Also update the FieldDefinition if its label, type or hidden state has changed
                 if (newField.FieldDefinition != null && existingField.FieldDefinition != null)
                 {
-                    if (existingField.FieldDefinition.Label != newField.FieldDefinition.Label)
+                    if (existingField.FieldDefinition.Label != newField.FieldDefinition.Label ||
+                        existingField.FieldDefinition.FieldType != newField.FieldDefinition.FieldType ||
+                        existingField.FieldDefinition.IsHidden != newField.FieldDefinition.IsHidden)
                     {
                         existingField.FieldDefinition.Label = newField.FieldDefinition.Label;
+                        existingField.FieldDefinition.FieldType = newField.FieldDefinition.FieldType;
+                        existingField.FieldDefinition.IsHidden = newField.FieldDefinition.IsHidden;
                         existingField.FieldDefinition.UpdatedAt = updateDateTime;
                     }
                 }
