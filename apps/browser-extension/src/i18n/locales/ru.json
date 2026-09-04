@@ -283,6 +283,8 @@
     "creating": "Создание",
     "editing": "Редактирование",
     "addCustomField": "Добавить свое поле",
+    "editCustomField": "Edit custom field",
+    "deleteCustomField": "Delete custom field",
     "fieldLabel": "Название поля",
     "enterFieldName": "Введите название поля",
     "fieldType": "Тип поля",
