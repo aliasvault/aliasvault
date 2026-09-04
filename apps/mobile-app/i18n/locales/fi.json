@@ -360,6 +360,7 @@
     },
     "addField": "Lisää kenttä",
     "addCustomField": "Lisää räätälöity kenttä",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Räätälöidyt kentät",
     "fieldLabel": "Kentän otsikko",
     "fieldType": "Kentän tyyppi",
