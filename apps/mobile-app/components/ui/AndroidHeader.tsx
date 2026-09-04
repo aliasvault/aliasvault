@@ -15,12 +15,10 @@ type HeaderButton = {
 interface IAndroidHeaderProps {
   title: string;
   headerButtons?: HeaderButton[];
-  /** Optional callback when title is pressed (enables dropdown mode) */
   onTitlePress?: () => void;
-  /** Show dropdown arrow expanded state */
   isDropdownOpen?: boolean;
-  /** Optional subtitle shown next to title (e.g., item count) */
   subtitle?: string;
+  onLogoPress?: () => void;
 }
 
 /**
@@ -28,7 +26,7 @@ interface IAndroidHeaderProps {
  * @param {IAndroidHeaderProps} props - The component props
  * @returns {React.ReactNode} The Android header component
  */
-export function AndroidHeader({ title, headerButtons = [], onTitlePress, isDropdownOpen, subtitle }: IAndroidHeaderProps): React.ReactNode {
+export function AndroidHeader({ title, headerButtons = [], onTitlePress, isDropdownOpen, subtitle, onLogoPress }: IAndroidHeaderProps): React.ReactNode {
   const colors = useColors();
 
   const styles = StyleSheet.create({
@@ -102,7 +100,13 @@ export function AndroidHeader({ title, headerButtons = [], onTitlePress, isDropd
           />
         </Pressable>
       )}
-      <Logo width={40} height={40} style={styles.logo} />
+      {onLogoPress ? (
+        <Pressable onPress={onLogoPress}>
+          <Logo width={40} height={40} style={styles.logo} />
+        </Pressable>
+      ) : (
+        <Logo width={40} height={40} style={styles.logo} />
+      )}
       {onTitlePress ? (
         <Pressable
           onPress={onTitlePress}

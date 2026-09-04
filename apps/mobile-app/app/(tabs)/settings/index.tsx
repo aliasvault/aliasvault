@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
-import { useRef, useState, useCallback } from 'react';
+import { router, useFocusEffect, useNavigation } from 'expo-router';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Animated, Platform, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -9,6 +9,7 @@ import { AppInfo } from '@/utils/AppInfo';
 import { AppUnlockUtility } from '@/utils/AppUnlockUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useDeveloperToolsUnlock } from '@/hooks/useDeveloperToolsUnlock';
 import { useLogout } from '@/hooks/useLogout';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
@@ -16,6 +17,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
+import { AndroidHeader } from '@/components/ui/AndroidHeader';
 import { CollapsibleHeader } from '@/components/ui/CollapsibleHeader';
 import { InlineSkeletonLoader } from '@/components/ui/InlineSkeletonLoader';
 import { TitleContainer } from '@/components/ui/TitleContainer';
@@ -38,6 +40,7 @@ export default function SettingsScreen() : React.ReactNode {
   const { logoutUserInitiated } = useLogout();
   const { loadApiUrl, getDisplayUrl } = useApiUrl();
   const navigate = useNavigationDebounce();
+  const navigation = useNavigation();
   const [scrollY] = useState(() => new Animated.Value(0));
   const scrollViewRef = useRef<ScrollView>(null);
   const [autoLockDisplay, setAutoLockDisplay] = useState<string>('');
@@ -45,6 +48,7 @@ export default function SettingsScreen() : React.ReactNode {
   const [authMethodDisplay, setAuthMethodDisplay] = useState<string>('');
   const [serverVersion, setServerVersion] = useState<string | null>(null);
   const [isFirstLoad, setIsFirstLoad] = useMinDurationLoading(true, 100);
+  const { isEnabled: isDeveloperToolsEnabled, registerTap, refresh: refreshDeveloperTools } = useDeveloperToolsUnlock();
 
   useFocusEffect(
     useCallback(() => {
@@ -127,8 +131,29 @@ export default function SettingsScreen() : React.ReactNode {
       };
 
       loadData();
-    }, [getAutoLockTimeout, setIsFirstLoad, loadApiUrl, t])
+      refreshDeveloperTools();
+    }, [getAutoLockTimeout, setIsFirstLoad, loadApiUrl, refreshDeveloperTools, t])
   );
+
+  /*
+   * Replace the header declared in the settings layout, so the logo can carry the hidden
+   * developer tools unlock gesture. Android only, on iOS the TitleContainer logo carries it.
+   */
+  useEffect(() => {
+    if (Platform.OS !== 'android') {
+      return;
+    }
+
+    navigation.setOptions({
+      /**
+       * Define the custom Android header, matching the one in the settings layout.
+       * @returns {React.ReactNode} The header component
+       */
+      headerTitle: (): React.ReactNode => (
+        <AndroidHeader title={t('settings.title')} onLogoPress={registerTap} />
+      ),
+    });
+  }, [navigation, registerTap, t]);
 
   /**
    * Handle the vault unlock press.
@@ -297,6 +322,11 @@ export default function SettingsScreen() : React.ReactNode {
       flex: 1,
       fontSize: 16,
     },
+    settingItemTextDeveloper: {
+      color: colors.red,
+      flex: 1,
+      fontSize: 16,
+    },
     settingItemValue: {
       color: colors.textMuted,
       flexShrink: 1,
@@ -346,7 +376,7 @@ export default function SettingsScreen() : React.ReactNode {
         scrollIndicatorInsets={{ bottom: 40 }}
         style={styles.scrollView}
       >
-        <TitleContainer title={t('settings.title')} />
+        <TitleContainer title={t('settings.title')} onLogoPress={registerTap} />
         <UsernameDisplay />
         <View style={styles.section}>
           {Platform.OS === 'ios' && (
@@ -516,6 +546,24 @@ export default function SettingsScreen() : React.ReactNode {
           </TouchableOpacity>
         </View>
 
+        {isDeveloperToolsEnabled && (
+          <View style={styles.section}>
+            {/* Note: developer only screen, not required to be translated */}
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={() => navigate(() => router.push('/(tabs)/settings/developer-tools'))}
+            >
+              <View style={styles.settingItemIcon}>
+                <Ionicons name="code-slash" size={20} color={colors.red} />
+              </View>
+              <View style={styles.settingItemContent}>
+                <ThemedText style={styles.settingItemTextDeveloper}>Developer tools</ThemedText>
+                <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+              </View>
+            </TouchableOpacity>
+          </View>
+        )}
+
         <View style={styles.section}>
           <TouchableOpacity
             style={styles.settingItem}
@@ -530,7 +578,7 @@ export default function SettingsScreen() : React.ReactNode {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.versionContainer}>
+        <TouchableOpacity style={styles.versionContainer} onPress={registerTap} activeOpacity={1}>
           <ThemedText style={styles.versionText}>
             <ThemedText style={styles.versionLabel}>{t('settings.appVersion')}:</ThemedText> {AppInfo.VERSION}
           </ThemedText>
@@ -539,7 +587,7 @@ export default function SettingsScreen() : React.ReactNode {
               <ThemedText style={styles.versionLabel}>{t('settings.serverVersion')}:</ThemedText> {serverVersion} ({getDisplayUrl()})
             </ThemedText>
           )}
-        </View>
+        </TouchableOpacity>
       </Animated.ScrollView>
 
       {/* Floating Action Button for QR Scanner - shown for testing both options */}
