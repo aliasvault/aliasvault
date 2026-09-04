@@ -360,6 +360,7 @@
     },
     "addField": "Tambah kolom",
     "addCustomField": "Tambah Kolom Khusus",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Kolom Kustom",
     "fieldLabel": "Bidang Label",
     "fieldType": "Tipe Field",
