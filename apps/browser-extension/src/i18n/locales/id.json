@@ -283,6 +283,8 @@
     "creating": "Membuat",
     "editing": "Mengedit",
     "addCustomField": "Tambahkan kolom khusus",
+    "editCustomField": "Edit custom field",
+    "deleteCustomField": "Delete custom field",
     "fieldLabel": "Bidang Label",
     "enterFieldName": "Masukkan nama field",
     "fieldType": "Tipe Field",
