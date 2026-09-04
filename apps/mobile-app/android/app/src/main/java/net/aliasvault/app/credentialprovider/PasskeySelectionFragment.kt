@@ -63,10 +63,7 @@ class PasskeySelectionFragment : Fragment() {
                 val subtitleView = itemView.findViewById<TextView>(R.id.passkeySubtitle)
 
                 displayNameView.text = itemInfo.serviceName ?: viewModel.rpId
-                val subtitle = buildString {
-                    itemInfo.username?.let { append(it) }
-                }
-                subtitleView.text = subtitle.ifEmpty { itemInfo.url ?: viewModel.rpId }
+                subtitleView.text = itemInfo.accountLabel ?: itemInfo.url ?: viewModel.rpId
 
                 itemView.setOnClickListener {
                     viewModel.onMergeSelected(itemInfo)
@@ -91,8 +88,8 @@ class PasskeySelectionFragment : Fragment() {
 
                 displayNameView.text = passkeyInfo.passkey.displayName
                 val subtitle = buildString {
-                    passkeyInfo.username?.let { append(it) }
-                    if (passkeyInfo.username != null && passkeyInfo.serviceName != null) {
+                    passkeyInfo.accountLabel?.let { append(it) }
+                    if (passkeyInfo.accountLabel != null && passkeyInfo.serviceName != null) {
                         append(" • ")
                     }
                     passkeyInfo.serviceName?.let { append(it) }

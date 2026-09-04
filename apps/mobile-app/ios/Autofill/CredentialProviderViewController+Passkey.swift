@@ -269,6 +269,7 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                     displayName: result.passkey.displayName,
                     serviceName: result.serviceName,
                     username: result.username,
+                    email: result.email,
                     rpId: result.passkey.rpId,
                     userId: result.passkey.userHandle
                 )
@@ -290,6 +291,7 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                     serviceName: item.serviceName,
                     url: item.url,
                     username: item.username,
+                    email: item.email,
                     hasPassword: item.hasPassword,
                     createdAt: item.createdAt,
                     updatedAt: item.updatedAt
