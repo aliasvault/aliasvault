@@ -144,10 +144,8 @@
       "alreadyConfigured": "我已完成配置"
     },
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ 实验性功能",
-      "warningDescription": "Android 系统的自动填充与密码支持目前处于实验阶段。",
-      "warningLink": "在此进一步了解",
       "headerText": "您可以为 AliasVault 配置 Android 原生密码和通行密钥自动填充功能，请依照以下说明进行启用。",
+      "docsLink": "View more Android specific information here.",
       "passkeyNotice": "通行密钥是通过 Android 凭据管理器（Android 14+）创建的。要将其存储在 AliasVault 中，请确保已启用下方的自动填充。",
       "howToEnable": "如何启用自动填充与通行密钥：",
       "step1": "1. 点击下方按钮进入 Android 设置，将「自动填充首选服务」更改为「AliasVault」",
