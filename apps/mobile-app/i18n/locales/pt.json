@@ -360,6 +360,7 @@
     },
     "addField": "Adicionar Campo",
     "addCustomField": "Adicionar Campo Personalizado",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Campos Personalizados",
     "fieldLabel": "Nome do Campo",
     "fieldType": "Tipo do Campo",
