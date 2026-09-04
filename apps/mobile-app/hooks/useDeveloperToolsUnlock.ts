@@ -1,7 +1,12 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Toast from 'react-native-toast-message';
 
-import { DeveloperToolsService } from '@/services/DeveloperToolsService';
+/**
+ * Storage key for the developer tools toggle. Kept out of LocalPreferencesService on purpose:
+ * that service holds account preferences that are wiped on logout, while this is a device setting.
+ */
+const STORAGE_KEY = 'developer_tools_enabled';
 
 /**
  * Taps needed on the settings logo or version footer to reveal the developer tools.
@@ -13,10 +18,34 @@ const REQUIRED_TAPS = 20;
  */
 const TAP_TIMEOUT_MS = 3000;
 
+/**
+ * Read whether the developer tools have been unlocked on this device.
+ */
+async function readEnabled(): Promise<boolean> {
+  try {
+    return await AsyncStorage.getItem(STORAGE_KEY) === 'true';
+  } catch (error) {
+    console.error('Failed to read developer tools state:', error);
+    return false;
+  }
+}
+
+/**
+ * Store whether the developer tools are unlocked.
+ */
+async function writeEnabled(enabled: boolean): Promise<void> {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEY, enabled.toString());
+  } catch (error) {
+    console.error('Failed to store developer tools state:', error);
+  }
+}
+
 type DeveloperToolsUnlock = {
   isEnabled: boolean;
   registerTap: () => void;
   refresh: () => void;
+  hide: () => Promise<void>;
 };
 
 /**
@@ -28,7 +57,7 @@ export function useDeveloperToolsUnlock(): DeveloperToolsUnlock {
   const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const refresh = useCallback((): void => {
-    DeveloperToolsService.isEnabled().then(setIsEnabled);
+    readEnabled().then(setIsEnabled);
   }, []);
 
   useEffect(() => {
@@ -62,7 +91,7 @@ export function useDeveloperToolsUnlock(): DeveloperToolsUnlock {
 
     tapCount.current = 0;
 
-    DeveloperToolsService.setEnabled(true).then(() => {
+    writeEnabled(true).then(() => {
       setIsEnabled(true);
       Toast.show({
         type: 'success',
@@ -73,5 +102,14 @@ export function useDeveloperToolsUnlock(): DeveloperToolsUnlock {
     });
   }, [isEnabled]);
 
-  return { isEnabled, registerTap, refresh };
+  /**
+   * Hide the developer tools again, putting the unlock gesture back at the start.
+   */
+  const hide = useCallback(async (): Promise<void> => {
+    tapCount.current = 0;
+    await writeEnabled(false);
+    setIsEnabled(false);
+  }, []);
+
+  return { isEnabled, registerTap, refresh, hide };
 }

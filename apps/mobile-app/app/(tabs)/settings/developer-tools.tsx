@@ -1,17 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { router } from 'expo-router';
+import { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
+import { useAppReviewDebug } from '@/hooks/useAppReviewPrompt';
 import { useColors } from '@/hooks/useColorScheme';
+import { useDeveloperToolsUnlock } from '@/hooks/useDeveloperToolsUnlock';
 
 import { ThemedButton } from '@/components/themed/ThemedButton';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
-import { AppReviewService, type AppReviewState } from '@/services/AppReviewService';
-import { DeveloperToolsService } from '@/services/DeveloperToolsService';
 
 /**
  * Row in one of the state readouts below.
@@ -27,31 +27,21 @@ type StateRow = {
  */
 export default function DeveloperToolsScreen(): React.ReactNode {
   const colors = useColors();
-  const [reviewState, setReviewState] = useState<AppReviewState | null>(null);
-
-  const loadReviewState = useCallback(async (): Promise<void> => {
-    setReviewState(await AppReviewService.getState());
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      loadReviewState();
-    }, [loadReviewState])
-  );
+  const { state: reviewState, reset: resetReviewState, requestNow: requestReviewNow } = useAppReviewDebug();
+  const { hide: hideDeveloperTools } = useDeveloperToolsUnlock();
 
   /**
    * Ask the OS for its review prompt right now, skipping every condition.
    */
   const handleRequestReview = useCallback(async (): Promise<void> => {
-    const requested = await AppReviewService.requestReviewNow();
-  }, []);
+    await requestReviewNow();
+  }, [requestReviewNow]);
 
   /**
    * Forget the recorded uses and asks, as if the app was freshly installed.
    */
   const handleResetReviewState = useCallback(async (): Promise<void> => {
-    await AppReviewService.reset();
-    await loadReviewState();
+    await resetReviewState();
 
     Toast.show({
       type: 'success',
@@ -59,16 +49,16 @@ export default function DeveloperToolsScreen(): React.ReactNode {
       position: 'bottom',
       visibilityTime: 2000,
     });
-  }, [loadReviewState]);
+  }, [resetReviewState]);
 
   /**
    * Hide the developer tools again, which also puts the unlock gesture back at the start. Useful
    * to get the app into a clean state for app store screenshots.
    */
   const handleHideDeveloperTools = useCallback(async (): Promise<void> => {
-    await DeveloperToolsService.setEnabled(false);
+    await hideDeveloperTools();
     router.back();
-  }, []);
+  }, [hideDeveloperTools]);
 
   const reviewRows: StateRow[] = reviewState ? [
     {
