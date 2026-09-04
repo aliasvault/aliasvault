@@ -15,6 +15,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using AliasVault.Client.Services.JsInterop.RustCore;
 using AliasVault.Shared.Models.WebApi.Favicon;
 
 /// <summary>
@@ -45,43 +46,6 @@ public sealed class FaviconService(HttpClient httpClient)
     }
 
     /// <summary>
-    /// Normalizes a URL to a lowercase host without leading "www.". Returns false for URLs that
-    /// can't be parsed; callers should skip those rather than fall back to a different key.
-    /// </summary>
-    /// <param name="url">The URL to normalize.</param>
-    /// <param name="domain">The normalized domain.</param>
-    /// <returns>True if the URL was parseable.</returns>
-    public static bool TryNormalizeDomain(string url, out string domain)
-    {
-        domain = string.Empty;
-        if (string.IsNullOrWhiteSpace(url))
-        {
-            return false;
-        }
-
-        try
-        {
-            var host = new Uri(url).Host.ToLowerInvariant();
-            if (host.StartsWith("www.", StringComparison.Ordinal))
-            {
-                host = host[4..];
-            }
-
-            if (string.IsNullOrEmpty(host))
-            {
-                return false;
-            }
-
-            domain = host;
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    /// <summary>
     /// Extracts the favicon for a single URL.
     /// </summary>
     /// <param name="url">The URL to fetch the favicon for.</param>
@@ -101,43 +65,38 @@ public sealed class FaviconService(HttpClient httpClient)
     }
 
     /// <summary>
-    /// Extracts favicons for many URLs in batches, deduplicating by normalized domain so the
-    /// same domain is only fetched once even if many items reference it.
+    /// Extracts favicons for many targets in batches, deduplicating by source key so the same
+    /// source is only fetched once even if many items reference it.
     /// </summary>
-    /// <param name="urls">URLs to extract favicons for. Duplicates by domain are collapsed.</param>
+    /// <param name="targets">Targets to extract favicons for. Duplicates by source are collapsed.</param>
     /// <param name="progress">
-    /// Optional progress callback. Receives the number of unique domains processed so far
-    /// (regardless of fetch success). The total reported is the count of unique domains, not
-    /// the count of input URLs.
+    /// Optional progress callback. Receives the number of unique sources processed so far
+    /// (regardless of fetch success). The total reported is the count of unique sources, not
+    /// the count of input targets.
     /// </param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The favicon dictionary plus the operation status.</returns>
-    public async Task<BulkExtractResult> ExtractBulkAsync(IEnumerable<string> urls, IProgress<int>? progress = null, CancellationToken cancellationToken = default)
+    public async Task<BulkExtractResult> ExtractBulkAsync(IEnumerable<FaviconTarget> targets, IProgress<int>? progress = null, CancellationToken cancellationToken = default)
     {
         var favicons = new Dictionary<string, byte[]>();
 
-        // Deduplicate by domain up front so a 5000-item vault that all uses 200 unique domains
+        // Deduplicate by source up front so a 5000-item vault that all uses 200 unique sources
         // makes 200 fetches, not 5000.
-        var domainToUrl = new Dictionary<string, string>();
-        foreach (var url in urls)
+        var urlBySource = new Dictionary<string, string>();
+        foreach (var target in targets)
         {
-            if (string.IsNullOrWhiteSpace(url))
+            if (!urlBySource.ContainsKey(target.Source))
             {
-                continue;
-            }
-
-            if (TryNormalizeDomain(url, out var domain) && !domainToUrl.ContainsKey(domain))
-            {
-                domainToUrl[domain] = url;
+                urlBySource[target.Source] = target.Url;
             }
         }
 
-        if (domainToUrl.Count == 0)
+        if (urlBySource.Count == 0)
         {
             return new BulkExtractResult(favicons, BulkExtractStatus.Completed);
         }
 
-        var entries = domainToUrl.ToList();
+        var entries = urlBySource.ToList();
         int processed = 0;
 
         for (int i = 0; i < entries.Count; i += BatchSize)
@@ -192,7 +151,7 @@ public sealed class FaviconService(HttpClient httpClient)
 
             if (body?.Results != null)
             {
-                // Match results back to the domains we asked for. Server echoes the URL, but matching
+                // Match results back to the sources we asked for. Server echoes the URL, but matching
                 // by index is robust against any normalization differences.
                 for (int j = 0; j < body.Results.Count && j < chunk.Count; j++)
                 {
@@ -212,10 +171,10 @@ public sealed class FaviconService(HttpClient httpClient)
     }
 
     /// <summary>
-    /// Result of a bulk extraction call. Favicons are keyed by normalized domain so callers
-    /// can reuse a single fetched favicon across all items that share that domain.
+    /// Result of a bulk extraction call. Favicons are keyed by source so callers can reuse a
+    /// single fetched favicon across all items that share that source.
     /// </summary>
-    /// <param name="Favicons">Dictionary of normalized domain to favicon bytes.</param>
+    /// <param name="Favicons">Dictionary of Logos.Source key to favicon bytes.</param>
     /// <param name="Status">Outcome of the operation.</param>
     public record BulkExtractResult(Dictionary<string, byte[]> Favicons, BulkExtractStatus Status);
 }
