@@ -360,6 +360,7 @@
     },
     "addField": "Dodaj pole",
     "addCustomField": "Dodaj pole niestandardowe",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Pola niestandardowe",
     "fieldLabel": "Etykieta pola",
     "fieldType": "Typ pola",
