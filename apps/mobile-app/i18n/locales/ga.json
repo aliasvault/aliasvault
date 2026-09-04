@@ -360,6 +360,7 @@
     },
     "addField": "Cuir Réimse leis",
     "addCustomField": "Cuir Réimse Saincheaptha leis",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Réimsí Saincheaptha",
     "fieldLabel": "Lipéad Réimse",
     "fieldType": "Cineál Réimse",
