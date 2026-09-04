@@ -360,6 +360,7 @@
     },
     "addField": "Lägg till fält",
     "addCustomField": "Lägg till anpassad fält",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Anpassade fält",
     "fieldLabel": "Fältetikett",
     "fieldType": "Fälttyp",
