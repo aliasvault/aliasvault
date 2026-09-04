@@ -1,6 +1,7 @@
 import type { Item, ItemField, Attachment, TotpCode, FieldHistory } from '@/utils/dist/core/models/vault';
 import { FieldKey, MAX_FIELD_HISTORY_RECORDS } from '@/utils/dist/core/models/vault';
 import { getFolderPath } from '@/utils/FolderUtils';
+import { selectFaviconTarget, toUrlList } from '@/utils/RustCore';
 
 import { BaseRepository, type IDatabaseClient } from '../BaseRepository';
 import { FieldMapper, type FieldRow } from '../mappers/FieldMapper';
@@ -189,7 +190,7 @@ export class ItemRepository extends BaseRepository {
       const itemId = item.Id || this.generateId();
 
       // 1. Handle Logo
-      const logoId = this.resolveLogoId(item, currentDateTime);
+      const logoId = await this.resolveLogoIdAsync(item, currentDateTime);
 
       // 2. Insert Item
       this.client.executeUpdate(ItemQueries.INSERT_ITEM, [
@@ -363,7 +364,7 @@ export class ItemRepository extends BaseRepository {
       const currentDateTime = this.now();
 
       // 1. Handle Logo
-      const logoId = this.resolveLogoId(item, currentDateTime);
+      const logoId = await this.resolveLogoIdAsync(item, currentDateTime);
 
       // 2. Update Item only if item-level fields changed
       const existing = this.client.executeQuery<{
@@ -585,22 +586,21 @@ export class ItemRepository extends BaseRepository {
   /**
    * Resolve the logo ID for an item (create new or reuse existing).
    */
-  private resolveLogoId(item: Item, currentDateTime: string): string | null {
+  private async resolveLogoIdAsync(item: Item, currentDateTime: string): Promise<string | null> {
     const urlField = item.Fields?.find(f => f.FieldKey === 'login.url');
-    const urlValue = urlField?.Value;
-    const urlString = Array.isArray(urlValue) ? urlValue[0] : urlValue;
-    const source = this.logoRepository.extractSourceFromUrl(urlString);
+    const target = await selectFaviconTarget(toUrlList(urlField?.Value));
+
+    // No URL a favicon can come from: the item carries no logo.
+    if (!target) {  
+      return null;
+    }
 
     if (item.Logo) {
       const logoData = this.logoRepository.convertLogoToUint8Array(item.Logo);
-      if (logoData) {
-        return this.logoRepository.getOrCreate(source, logoData, currentDateTime);
-      }
-    } else if (source !== 'unknown') {
-      return this.logoRepository.getIdForSource(source);
+      return logoData ? this.logoRepository.getOrCreate(target.source, logoData, currentDateTime) : null;
     }
 
-    return null;
+    return this.logoRepository.getIdForSource(target.source);
   }
 
   /**
