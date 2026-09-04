@@ -283,6 +283,8 @@
     "creating": "Aanmaken",
     "editing": "Bewerken",
     "addCustomField": "Voeg eigen veld toe",
+    "editCustomField": "Edit custom field",
+    "deleteCustomField": "Delete custom field",
     "fieldLabel": "Veldlabel",
     "enterFieldName": "Voer de veldnaam in",
     "fieldType": "Veldtype",
