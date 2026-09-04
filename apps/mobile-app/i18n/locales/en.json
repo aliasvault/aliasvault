@@ -360,6 +360,7 @@
     },
     "addField": "Add Field",
     "addCustomField": "Add Custom Field",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Custom Fields",
     "fieldLabel": "Field Label",
     "fieldType": "Field Type",

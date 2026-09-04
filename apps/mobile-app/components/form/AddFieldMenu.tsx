@@ -5,8 +5,6 @@ import {
   View,
   StyleSheet,
   Modal,
-  TextInput,
-  ScrollView,
   TouchableOpacity,
   TouchableWithoutFeedback,
 } from 'react-native';
@@ -18,7 +16,8 @@ import { useColors } from '@/hooks/useColorScheme';
 
 import { ThemedText } from '@/components/themed/ThemedText';
 import { RobustPressable } from '@/components/ui/RobustPressable';
-import { ModalWrapper } from '@/components/common/ModalWrapper';
+
+import { CustomFieldModal } from './CustomFieldModal';
 
 /**
  * Configuration for an optional section (not field-based).
@@ -105,21 +104,6 @@ const getSectionIcon = (key: string): keyof typeof MaterialIcons.glyphMap => {
 };
 
 /**
- * Available field types for custom fields.
- */
-const FIELD_TYPE_OPTIONS: { value: FieldType; labelKey: string }[] = [
-  { value: 'Text', labelKey: 'itemTypes.fieldTypes.text' },
-  { value: 'Password', labelKey: 'itemTypes.fieldTypes.password' },
-  { value: 'Hidden', labelKey: 'itemTypes.fieldTypes.hidden' },
-  { value: 'Email', labelKey: 'itemTypes.fieldTypes.email' },
-  { value: 'URL', labelKey: 'itemTypes.fieldTypes.url' },
-  { value: 'Phone', labelKey: 'itemTypes.fieldTypes.phone' },
-  { value: 'Number', labelKey: 'itemTypes.fieldTypes.number' },
-  { value: 'Date', labelKey: 'itemTypes.fieldTypes.date' },
-  { value: 'TextArea', labelKey: 'itemTypes.fieldTypes.textArea' },
-];
-
-/**
  * A dropdown menu for adding optional fields and sections to an item.
  * Dynamically determines which options to show based on system field registry
  * and current field visibility.
@@ -134,8 +118,6 @@ export const AddFieldMenu: React.FC<AddFieldMenuProps> = ({
   const colors = useColors();
   const [isOpen, setIsOpen] = useState(false);
   const [showCustomFieldModal, setShowCustomFieldModal] = useState(false);
-  const [customFieldLabel, setCustomFieldLabel] = useState('');
-  const [customFieldType, setCustomFieldType] = useState<FieldType>('Text');
 
   const styles = StyleSheet.create({
     addButton: {
@@ -153,78 +135,6 @@ export const AddFieldMenu: React.FC<AddFieldMenuProps> = ({
       fontSize: 14,
       fontWeight: '600',
       marginLeft: 8,
-    },
-    customFieldModalButtons: {
-      flexDirection: 'row',
-      gap: 12,
-      marginTop: 16,
-    },
-    customFieldModalButton: {
-      alignItems: 'center',
-      borderRadius: 8,
-      flex: 1,
-      paddingVertical: 12,
-    },
-    customFieldModalButtonPrimary: {
-      backgroundColor: colors.primary,
-    },
-    customFieldModalButtonSecondary: {
-      backgroundColor: colors.accentBackground,
-      borderColor: colors.accentBorder,
-      borderWidth: 1,
-    },
-    customFieldModalButtonText: {
-      fontWeight: '600',
-    },
-    customFieldModalButtonTextPrimary: {
-      color: colors.primarySurfaceText,
-    },
-    customFieldModalButtonTextSecondary: {
-      color: colors.text,
-    },
-    customFieldModalInput: {
-      backgroundColor: colors.accentBackground,
-      borderColor: colors.accentBorder,
-      borderRadius: 8,
-      borderWidth: 1,
-      color: colors.text,
-      fontSize: 16,
-      marginBottom: 16,
-      paddingHorizontal: 12,
-      paddingVertical: 10,
-    },
-    customFieldModalLabel: {
-      color: colors.text,
-      fontSize: 14,
-      fontWeight: '600',
-      marginBottom: 8,
-    },
-    fieldTypeChip: {
-      backgroundColor: colors.accentBackground,
-      borderColor: colors.accentBorder,
-      borderRadius: 16,
-      borderWidth: 1,
-      marginRight: 8,
-      paddingHorizontal: 14,
-      paddingVertical: 8,
-    },
-    fieldTypeChipSelected: {
-      backgroundColor: colors.primary,
-      borderColor: colors.primary,
-    },
-    fieldTypeChipText: {
-      color: colors.text,
-      fontSize: 14,
-    },
-    fieldTypeChipTextSelected: {
-      color: colors.primarySurfaceText,
-    },
-    fieldTypeContainer: {
-      flexDirection: 'row',
-      paddingBottom: 16,
-    },
-    fieldTypeScrollView: {
-      marginBottom: 0,
     },
     menuContainer: {
       backgroundColor: colors.background,
@@ -282,29 +192,6 @@ export const AddFieldMenu: React.FC<AddFieldMenuProps> = ({
   }, []);
 
   /**
-   * Handle adding the custom field.
-   */
-  const handleAddCustomField = useCallback((): void => {
-    if (!customFieldLabel.trim()) {
-      return;
-    }
-
-    callbacks.onAddCustomField(customFieldLabel, customFieldType);
-    setCustomFieldLabel('');
-    setCustomFieldType('Text');
-    setShowCustomFieldModal(false);
-  }, [customFieldLabel, customFieldType, callbacks]);
-
-  /**
-   * Handle closing the custom field modal.
-   */
-  const handleCloseCustomFieldModal = useCallback((): void => {
-    setCustomFieldLabel('');
-    setCustomFieldType('Text');
-    setShowCustomFieldModal(false);
-  }, []);
-
-  /**
    * Build menu options based on optional system fields and sections.
    */
   const menuOptions = useMemo((): MenuOption[] => {
@@ -336,79 +223,6 @@ export const AddFieldMenu: React.FC<AddFieldMenuProps> = ({
 
     return options;
   }, [optionalSystemFields, visibleFieldKeys, optionalSections, t, handleAddSystemField, handleAddSection]);
-
-  const customFieldModalContent = (
-    <>
-      <ThemedText style={styles.customFieldModalLabel}>
-        {t('itemTypes.fieldLabel')}
-      </ThemedText>
-      <TextInput
-        style={styles.customFieldModalInput}
-        value={customFieldLabel}
-        onChangeText={setCustomFieldLabel}
-        placeholder={t('itemTypes.enterFieldName')}
-        placeholderTextColor={colors.textMuted}
-        autoFocus
-      />
-
-      <ThemedText style={styles.customFieldModalLabel}>
-        {t('itemTypes.fieldType')}
-      </ThemedText>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.fieldTypeScrollView}
-        contentContainerStyle={styles.fieldTypeContainer}
-      >
-        {FIELD_TYPE_OPTIONS.map(option => (
-          <TouchableOpacity
-            key={option.value}
-            style={[
-              styles.fieldTypeChip,
-              customFieldType === option.value && styles.fieldTypeChipSelected,
-            ]}
-            onPress={() => setCustomFieldType(option.value as FieldType)}
-            activeOpacity={0.7}
-          >
-            <ThemedText
-              style={[
-                styles.fieldTypeChipText,
-                customFieldType === option.value && styles.fieldTypeChipTextSelected,
-              ]}
-            >
-              {t(option.labelKey)}
-            </ThemedText>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      <View style={styles.customFieldModalButtons}>
-        <TouchableOpacity
-          style={[styles.customFieldModalButton, styles.customFieldModalButtonSecondary]}
-          onPress={handleCloseCustomFieldModal}
-          activeOpacity={0.7}
-        >
-          <ThemedText style={[styles.customFieldModalButtonText, styles.customFieldModalButtonTextSecondary]}>
-            {t('common.cancel')}
-          </ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.customFieldModalButton,
-            styles.customFieldModalButtonPrimary,
-            !customFieldLabel.trim() && { opacity: 0.5 },
-          ]}
-          onPress={handleAddCustomField}
-          disabled={!customFieldLabel.trim()}
-          activeOpacity={0.7}
-        >
-          <ThemedText style={[styles.customFieldModalButtonText, styles.customFieldModalButtonTextPrimary]}>
-            {t('common.add')}
-          </ThemedText>
-        </TouchableOpacity>
-      </View>
-    </>
-  );
 
   return (
     <>
@@ -475,16 +289,11 @@ export const AddFieldMenu: React.FC<AddFieldMenuProps> = ({
       </Modal>
 
       {/* Custom Field Modal - Uses ModalWrapper for centered dialog */}
-      <ModalWrapper
+      <CustomFieldModal
         isOpen={showCustomFieldModal}
-        onClose={handleCloseCustomFieldModal}
-        title={t('itemTypes.addCustomField')}
-        keyboardAvoiding
-        showHeaderBorder={false}
-        showFooterBorder={false}
-      >
-        {customFieldModalContent}
-      </ModalWrapper>
+        onClose={() => setShowCustomFieldModal(false)}
+        onSubmit={callbacks.onAddCustomField}
+      />
     </>
   );
 };
