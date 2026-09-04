@@ -159,6 +159,12 @@ export default function AndroidAutofillScreen() : React.ReactNode {
       fontSize: 16,
       fontWeight: '600',
     },
+    docsLink: {
+      color: colors.primary,
+      fontSize: 15,
+      lineHeight: 22,
+      textDecorationLine: 'underline',
+    },
     headerText: {
       color: colors.textMuted,
       fontSize: 13,
@@ -251,7 +257,10 @@ export default function AndroidAutofillScreen() : React.ReactNode {
             </ThemedText>
           </View>
           <ThemedText style={styles.instructionStep}>
-            {t('settings.androidAutofillSettings.step2')}
+            {t('settings.androidAutofillSettings.step2')}{' '}
+            <ThemedText style={styles.docsLink} onPress={handleOpenDocs}>
+              {t('settings.androidAutofillSettings.docsLink')}
+            </ThemedText>
           </ThemedText>
           {shouldShowAutofillReminder && (
             <View style={styles.buttonContainer}>
