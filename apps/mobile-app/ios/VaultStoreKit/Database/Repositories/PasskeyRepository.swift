@@ -84,6 +84,7 @@ public class PasskeyRepository: BaseRepository {
             let serviceName = row["Name"] as? String
             let url = row["Url"] as? String
             let itemUsername = row["Username"] as? String
+            let itemEmail = row["Email"] as? String
             let password = row["Password"] as? String
             let hasPassword = password != nil && !password!.isEmpty
 
@@ -100,6 +101,7 @@ public class PasskeyRepository: BaseRepository {
                 serviceName: serviceName,
                 url: url,
                 username: itemUsername,
+                email: itemEmail,
                 hasPassword: hasPassword,
                 createdAt: createdAt,
                 updatedAt: updatedAt
@@ -127,6 +129,7 @@ public class PasskeyRepository: BaseRepository {
             let urlsString = row["Urls"] as? String
             let urls = urlsString?.components(separatedBy: ",").filter { !$0.isEmpty } ?? []
             let itemUsername = row["Username"] as? String
+            let itemEmail = row["Email"] as? String
             let password = row["Password"] as? String
             let hasPassword = password != nil && !password!.isEmpty
 
@@ -138,6 +141,7 @@ public class PasskeyRepository: BaseRepository {
                 serviceName: serviceName,
                 urls: urls,
                 username: itemUsername,
+                email: itemEmail,
                 hasPassword: hasPassword,
                 createdAt: createdAt,
                 updatedAt: updatedAt
@@ -522,27 +526,30 @@ public struct ItemWithCredentialInfoData {
     /// All URLs associated with this item (supports multi-value URL fields)
     public let urls: [String]
     public let username: String?
+    public let email: String?
     public let hasPassword: Bool
     public let createdAt: Date
     public let updatedAt: Date
 
-    public init(itemId: UUID, serviceName: String?, url: String?, username: String?, hasPassword: Bool, createdAt: Date, updatedAt: Date) {
+    public init(itemId: UUID, serviceName: String?, url: String?, username: String?, email: String? = nil, hasPassword: Bool, createdAt: Date, updatedAt: Date) {
         self.itemId = itemId
         self.serviceName = serviceName
         self.url = url
         self.urls = url.map { [$0] } ?? []
         self.username = username
+        self.email = email
         self.hasPassword = hasPassword
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
 
-    public init(itemId: UUID, serviceName: String?, urls: [String], username: String?, hasPassword: Bool, createdAt: Date, updatedAt: Date) {
+    public init(itemId: UUID, serviceName: String?, urls: [String], username: String?, email: String? = nil, hasPassword: Bool, createdAt: Date, updatedAt: Date) {
         self.itemId = itemId
         self.serviceName = serviceName
         self.url = urls.first
         self.urls = urls
         self.username = username
+        self.email = email
         self.hasPassword = hasPassword
         self.createdAt = createdAt
         self.updatedAt = updatedAt
