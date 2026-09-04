@@ -144,10 +144,8 @@
       "alreadyConfigured": "Al geconfigureerd"
     },
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ Experimentele functie",
-      "warningDescription": "Autofill en passkey support voor Android is momenteel in een experimentele staat.",
-      "warningLink": "Lees er hier meer over",
       "headerText": "Je kunt AliasVault instellen als autofill en passkey provider in Android. Volg de instructies hieronder om deze in te schakelen.",
+      "docsLink": "View more Android specific information here.",
       "passkeyNotice": "Passkeys worden gemaakt via Android Credential Manager (Android 14+). Om ze op te slaan in AliasVault, moet Autofill hieronder ingeschakeld zijn.",
       "howToEnable": "Autofill & passkeys inschakelen:",
       "step1": "1. Open Android Instellingen via de onderstaande knop en verander de \"Autofill preferred service\" naar \"AliasVault\"",
