@@ -144,10 +144,8 @@
       "alreadyConfigured": "Olen jo määrittänyt sen"
     },
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ Kokeellinen ominaisuus",
-      "warningDescription": "Androidin automaattinen täyttö ja todennusavain -tuki on tällä hetkellä kokeellisessa tilassa.",
-      "warningLink": "Lue lisää siitä täältä",
       "headerText": "Voit määrittää AliasVaultin tarjoamaan natiivin salasanan automaattinen täyttö -toiminnon Androidissa. Ota se käyttöön noudattamalla alla olevia ohjeita.",
+      "docsLink": "View more Android specific information here.",
       "passkeyNotice": "Todennusavaimet on luotu Androidin käyttöoikeustietojen hallinnan (Android 14+) kautta. Tallentaaksesi ne AliasVaultiin, varmista, että Alla oleva automaattinen täyttö on käytössä.",
       "howToEnable": "Kuinka ottaa käyttöön automaattisen täytön ja salasanat:",
       "step1": "1. Avaa Android-asetukset alla olevan painikkeen kautta ja vaihda \"automaattisen täytön ensisijainen palvelu\" \"AliasVault\":ksi",
