@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import DraggableFlatList, {
   RenderItemParams,
@@ -12,7 +12,8 @@ import { HapticsUtility } from '@/utils/HapticsUtility';
 import { useColors } from '@/hooks/useColorScheme';
 
 import { AdvancedPasswordField } from './AdvancedPasswordField';
-import { EditableFieldLabel } from './EditableFieldLabel';
+import { CustomFieldLabel } from './CustomFieldLabel';
+import { CustomFieldModal } from './CustomFieldModal';
 import { FormField } from './FormField';
 import { HiddenField } from './HiddenField';
 import { ResizableTextArea } from './ResizableTextArea';
@@ -32,7 +33,7 @@ type CustomFieldItemProps = {
   field: CustomFieldDefinition;
   value: string;
   onValueChange: (value: string) => void;
-  onLabelChange: (newLabel: string) => void;
+  onEdit: () => void;
   onDelete: () => void;
   drag: () => void;
 };
@@ -44,7 +45,7 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
   field,
   value,
   onValueChange,
-  onLabelChange,
+  onEdit,
   onDelete,
   drag,
 }) => {
@@ -108,9 +109,9 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
     <View style={styles.container}>
       {/* Label row with inline, right-aligned drag handle */}
       <View style={styles.labelContainer}>
-        <EditableFieldLabel
+        <CustomFieldLabel
           label={field.label}
-          onLabelChange={onLabelChange}
+          onEdit={onEdit}
           onDelete={onDelete}
           drag={drag}
         />
@@ -126,7 +127,7 @@ type DraggableCustomFieldsListProps = {
   fieldValues: Record<string, string | string[]>;
   onFieldsReorder: (reorderedFields: CustomFieldDefinition[]) => void;
   onFieldValueChange: (tempId: string, value: string) => void;
-  onFieldLabelChange: (tempId: string, newLabel: string) => void;
+  onFieldUpdate: (tempId: string, label: string, fieldType: FieldType) => void;
   onFieldDelete: (tempId: string) => void;
 };
 
@@ -139,9 +140,16 @@ export const DraggableCustomFieldsList: React.FC<DraggableCustomFieldsListProps>
   fieldValues,
   onFieldsReorder,
   onFieldValueChange,
-  onFieldLabelChange,
+  onFieldUpdate,
   onFieldDelete,
 }) => {
+  const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
+  const editingField = customFields.find((f) => f.tempId === editingFieldId);
+  const editingValues = useMemo(
+    () => editingField ? { label: editingField.label, fieldType: editingField.fieldType } : undefined,
+    [editingField]
+  );
+
   /**
    * Handle drag begin
    */
@@ -172,33 +180,51 @@ export const DraggableCustomFieldsList: React.FC<DraggableCustomFieldsListProps>
           field={item}
           value={(fieldValues[item.tempId] as string) || ''}
           onValueChange={(value) => onFieldValueChange(item.tempId, value)}
-          onLabelChange={(newLabel) => onFieldLabelChange(item.tempId, newLabel)}
+          onEdit={() => setEditingFieldId(item.tempId)}
           onDelete={() => onFieldDelete(item.tempId)}
           drag={drag}
         />
       </View>
     );
-  }, [fieldValues, onFieldValueChange, onFieldLabelChange, onFieldDelete]);
+  }, [fieldValues, onFieldValueChange, onFieldDelete]);
 
   /**
    * Key extractor for FlatList
    */
   const keyExtractor = useCallback((item: CustomFieldDefinition) => item.tempId, []);
 
+  /**
+   * Apply the edits made in the custom field modal to the field being edited.
+   */
+  const handleEditSubmit = useCallback((label: string, fieldType: FieldType) => {
+    if (editingFieldId) {
+      onFieldUpdate(editingFieldId, label, fieldType);
+    }
+  }, [editingFieldId, onFieldUpdate]);
+
   if (customFields.length === 0) {
     return null;
   }
 
   return (
-    <DraggableFlatList
-      data={customFields}
-      onDragBegin={handleDragBegin}
-      onDragEnd={handleDragEnd}
-      keyExtractor={keyExtractor}
-      renderItem={renderItem}
-      containerStyle={styles.container}
-      scrollEnabled={false}
-    />
+    <>
+      <DraggableFlatList
+        data={customFields}
+        onDragBegin={handleDragBegin}
+        onDragEnd={handleDragEnd}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        containerStyle={styles.container}
+        scrollEnabled={false}
+      />
+
+      <CustomFieldModal
+        isOpen={editingValues !== undefined}
+        initialValues={editingValues}
+        onClose={() => setEditingFieldId(null)}
+        onSubmit={handleEditSubmit}
+      />
+    </>
   );
 };
 

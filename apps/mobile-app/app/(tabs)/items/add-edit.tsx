@@ -54,6 +54,12 @@ const VALID_ITEM_TYPES: ItemType[] = [ItemTypes.Login, ItemTypes.Alias, ItemType
 const DEFAULT_ITEM_TYPE: ItemType = ItemTypes.Login;
 
 /**
+ * Whether a custom field of the given type should be masked in the UI.
+ */
+const isMaskedFieldType = (fieldType: FieldType): boolean =>
+  fieldType === FieldTypes.Password || fieldType === FieldTypes.Hidden;
+
+/**
  * Add or edit an item screen.
  */
 export default function AddEditItemScreen(): React.ReactNode {
@@ -670,7 +676,7 @@ export default function AddEditItemScreen(): React.ReactNode {
       tempId,
       label,
       fieldType,
-      isHidden: false,
+      isHidden: isMaskedFieldType(fieldType),
       displayOrder: applicableSystemFields.length + customFields.length + 1
     };
 
@@ -692,11 +698,11 @@ export default function AddEditItemScreen(): React.ReactNode {
   }, []);
 
   /**
-   * Update custom field label handler.
+   * Update custom field handler. Both the label and the field type can be changed.
    */
-  const handleUpdateCustomFieldLabel = useCallback((tempId: string, newLabel: string) => {
+  const handleUpdateCustomField = useCallback((tempId: string, label: string, fieldType: FieldType) => {
     setCustomFields(prev => prev.map(f =>
-      f.tempId === tempId ? { ...f, label: newLabel } : f
+      f.tempId === tempId ? { ...f, label, fieldType, isHidden: isMaskedFieldType(fieldType) } : f
     ));
     setHasUnsavedChanges(true);
   }, []);
@@ -1588,7 +1594,7 @@ export default function AddEditItemScreen(): React.ReactNode {
                   fieldValues={fieldValues}
                   onFieldsReorder={handleCustomFieldsReorder}
                   onFieldValueChange={(tempId, value) => handleFieldChange(tempId, value)}
-                  onFieldLabelChange={handleUpdateCustomFieldLabel}
+                  onFieldUpdate={handleUpdateCustomField}
                   onFieldDelete={handleDeleteCustomField}
                 />
               </FormSection>
