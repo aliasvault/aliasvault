@@ -360,6 +360,7 @@
     },
     "addField": "Mező hozzáadása",
     "addCustomField": "Egyedi mező hozzáadása",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Egyedi mezők",
     "fieldLabel": "Mező cím",
     "fieldType": "Mező típus",
