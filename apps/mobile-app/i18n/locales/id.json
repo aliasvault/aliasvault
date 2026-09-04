@@ -144,10 +144,8 @@
       "alreadyConfigured": "Saya sudah mengonfigurasinya"
     },
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ Fitur Eksperimental",
-      "warningDescription": "Fitur pengisian otomatis dan passkey untuk Android saat ini masih dalam tahap percobaan.",
-      "warningLink": "Baca selengkapnya di sini",
       "headerText": "Anda dapat mengonfigurasi AliasVault agar menyediakan fitur pengisian otomatis kata sandi dan passkey bawaan di Android. Ikuti petunjuk di bawah ini untuk mengaktifkannya.",
+      "docsLink": "View more Android specific information here.",
       "passkeyNotice": "Kunci akses dibuat melalui Android Credential Manager (Android 14 ke atas). Untuk menyimpannya di AliasVault, pastikan fitur Pengisian Otomatis di bawah ini telah diaktifkan.",
       "howToEnable": "Cara mengaktifkan Pengisian Otomatis & Kunci Akses:",
       "step1": "1. Buka Pengaturan Android melalui tombol di bawah ini, lalu ubah “layanan pilihan untuk pengisian otomatis” menjadi “AliasVault”",
