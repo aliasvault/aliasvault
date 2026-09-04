@@ -221,42 +221,11 @@ export default function AndroidAutofillScreen() : React.ReactNode {
       lineHeight: 20,
       marginTop: 8,
     },
-    warningContainer: {
-      backgroundColor: colors.accentBackground,
-      marginBottom: 16,
-      padding: 16,
-    },
-    warningDescription: {
-      color: colors.text,
-      fontSize: 14,
-      lineHeight: 20,
-    },
-    warningLink: {
-      color: colors.primary,
-      fontSize: 14,
-      textDecorationLine: 'underline',
-    },
-    warningTitle: {
-      color: colors.text,
-      fontSize: 16,
-      fontWeight: '600',
-      marginBottom: 8,
-    },
   });
 
   return (
     <ThemedContainer>
       <ThemedScrollView>
-        <View style={styles.warningContainer}>
-          <ThemedText style={styles.warningTitle}>{t('settings.androidAutofillSettings.warningTitle')}</ThemedText>
-          <ThemedText style={styles.warningDescription}>
-            {t('settings.androidAutofillSettings.warningDescription')}{' '}
-            <ThemedText style={styles.warningLink} onPress={handleOpenDocs}>
-              {t('settings.androidAutofillSettings.warningLink')}
-            </ThemedText>
-          </ThemedText>
-        </View>
-
         <View>
           <ThemedText style={styles.headerText}>
             {t('settings.androidAutofillSettings.headerText')}
