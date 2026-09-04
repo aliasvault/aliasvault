@@ -283,6 +283,8 @@
     "creating": "Opretter",
     "editing": "Redigerer",
     "addCustomField": "Tilføj brugerdefineret felt",
+    "editCustomField": "Edit custom field",
+    "deleteCustomField": "Delete custom field",
     "fieldLabel": "Feltnavn",
     "enterFieldName": "Indtast feltnavn",
     "fieldType": "Felttype",
