@@ -416,24 +416,6 @@ export class SqliteClient implements IDatabaseClient {
   }
 
   /**
-   * Extract and normalize source domain from a URL string.
-   * @param urlString - The URL to extract the domain from
-   * @returns The normalized source domain (e.g., 'github.com'), or 'unknown' if extraction fails
-   */
-  public static extractSourceFromUrl(urlString: string | undefined | null): string {
-    if (!urlString) {
-      return 'unknown';
-    }
-
-    try {
-      const url = new URL(urlString.startsWith('http') ? urlString : `https://${urlString}`);
-      return url.hostname.toLowerCase().replace(/^www\./, '');
-    } catch {
-      return 'unknown';
-    }
-  }
-
-  /**
    * Detect MIME type from file signature (magic numbers).
    * @param bytes - Binary data to analyze
    * @returns MIME type string

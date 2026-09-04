@@ -62,6 +62,36 @@ export async function extractRootDomain(domain: string): Promise<string> {
 }
 
 /**
+ * The URL a favicon is fetched from, paired with the `Logos.Source` key it is stored under.
+ */
+export type FaviconTarget = {
+  url: string;
+  source: string;
+};
+
+/**
+ * Read a URL field value as an ordered list, accepting the single-string and multi-value
+ * shapes a field can hold.
+ */
+export function toUrlList(urlValue: string | string[] | undefined | null): string[] {
+  if (!urlValue) {
+    return [];
+  }
+
+  const urlList = Array.isArray(urlValue) ? urlValue : [urlValue];
+  return urlList.filter((url): url is string => Boolean(url?.trim()));
+}
+
+/**
+ * Pick which of an item's URLs a favicon comes from, and the key to store it under.
+ * Returns null when no URL qualifies.
+ */
+export async function selectFaviconTarget(urls: string[]): Promise<FaviconTarget | null> {
+  await initRustCore();
+  return core.selectFaviconTarget(urls) as FaviconTarget | null;
+}
+
+/**
  * Generate a password or passphrase from the given settings.
  *
  * The `Type` field selects the generator: `'basic'` (character-set password)

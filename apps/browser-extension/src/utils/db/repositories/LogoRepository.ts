@@ -74,26 +74,6 @@ export class LogoRepository extends BaseRepository {
   }
 
   /**
-   * Extract and normalize source domain from a URL string.
-   * Uses lowercase and removes www. prefix for case-insensitive matching.
-   * @param urlString The URL to extract the domain from
-   * @returns The normalized source domain (e.g., 'github.com'), or 'unknown' if extraction fails
-   */
-  public extractSourceFromUrl(urlString: string | undefined | null): string {
-    if (!urlString) {
-      return 'unknown';
-    }
-
-    try {
-      const url = new URL(urlString.startsWith('http') ? urlString : `https://${urlString}`);
-      // Normalize hostname: lowercase and remove www. prefix
-      return url.hostname.toLowerCase().replace(/^www\./, '');
-    } catch {
-      return 'unknown';
-    }
-  }
-
-  /**
    * Convert logo data from various formats to Uint8Array.
    * @param logo The logo data in various possible formats
    * @returns Uint8Array of logo data, or null if conversion fails
