@@ -360,6 +360,7 @@
     },
     "addField": "Tilføj felt",
     "addCustomField": "Tilføj brugerdefineret felt",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Brugerdefinerede felter",
     "fieldLabel": "Feltmærkat",
     "fieldType": "Felttype",
