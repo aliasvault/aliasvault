@@ -280,8 +280,8 @@ struct ExistingItemRow: View {
                     .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
 
                 HStack(spacing: 4) {
-                    if let username = item.username {
-                        Text(username)
+                    if let accountLabel = item.accountLabel {
+                        Text(accountLabel)
                             .font(.caption)
                             .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.textMuted : ColorConstants.Light.textMuted)
                     }
