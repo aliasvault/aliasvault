@@ -360,6 +360,7 @@
     },
     "addField": "Feld hinzufügen",
     "addCustomField": "Benutzerdefiniertes Feld hinzufügen",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Benutzerdefinierte Felder",
     "fieldLabel": "Feldbezeichnung",
     "fieldType": "Feldtyp",
