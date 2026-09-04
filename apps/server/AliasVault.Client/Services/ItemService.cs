@@ -1020,6 +1020,18 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     }
 
     /// <summary>
+    /// Gets an item's login URLs in display order.
+    /// </summary>
+    /// <param name="item">The item to read the URLs from.</param>
+    /// <returns>The URLs a favicon may be fetched from, in order.</returns>
+    public static List<string> GetUrlsForFavicon(Item item)
+    {
+        return GetFieldValues(item, FieldKey.LoginUrl)
+            .Where(url => !string.IsNullOrWhiteSpace(url) && url != DefaultServiceUrl)
+            .ToList();
+    }
+
+    /// <summary>
     /// Sets or updates a field value on an item.
     /// </summary>
     /// <param name="item">The item to update.</param>
@@ -1677,24 +1689,21 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     }
 
     /// <summary>
-    /// Extract favicon from service URL if available. If successful, links the item to the logo.
-    /// Checks for existing logo first to avoid unnecessary API calls (deduplication).
-    /// If URL is empty or just the placeholder, clears any existing logo from the item.
+    /// Extract favicon from the item's URLs if one is usable. If successful, links the item to
+    /// the logo. Checks for existing logo first to avoid unnecessary API calls (deduplication).
+    /// If no valid URL is found, clears any existing logo from the item.
     /// </summary>
     /// <param name="item">The Item to extract the favicon for.</param>
     /// <returns>Task.</returns>
     private async Task ExtractFaviconAsync(Item item)
     {
-        var url = GetFieldValue(item, FieldKey.LoginUrl);
-        if (url == null || string.IsNullOrEmpty(url) || url == DefaultServiceUrl)
+        // The Rust core picks the URL to fetch from and the key to store it under together, so
+        // app URLs (androidapp://...) are skipped rather than keyed on their scheme.
+        var target = await rustCoreService.SelectFaviconTargetAsync(GetUrlsForFavicon(item));
+        if (target is null)
         {
-            // URL is empty or just the placeholder - clear any existing logo
+            // No URL a favicon can come from - clear any existing logo
             item.LogoId = null;
-            return;
-        }
-
-        if (!FaviconService.TryNormalizeDomain(url, out var domain))
-        {
             return;
         }
 
@@ -1703,17 +1712,17 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
             var context = await dbService.GetDbContextAsync();
 
             // Look up by Source regardless of IsDeleted — Logos.Source has a UNIQUE index, so a
-            // soft-deleted row with the same domain still occupies the slot and we'd hit a UNIQUE
+            // soft-deleted row with the same source still occupies the slot and we'd hit a UNIQUE
             // violation on insert. Filter against IsDeleted/empty FileData when deciding whether
             // it's safe to reuse without re-fetching.
-            var existingLogo = await context.Logos.FirstOrDefaultAsync(l => l.Source == domain);
+            var existingLogo = await context.Logos.FirstOrDefaultAsync(l => l.Source == target.Source);
             if (existingLogo != null && !existingLogo.IsDeleted && existingLogo.FileData is { Length: > 0 })
             {
                 item.LogoId = existingLogo.Id;
                 return;
             }
 
-            var image = await faviconService.ExtractAsync(url);
+            var image = await faviconService.ExtractAsync(target.Url);
             if (image is null)
             {
                 return;
@@ -1734,7 +1743,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
                 var newLogo = new Logo
                 {
                     Id = Guid.NewGuid(),
-                    Source = domain,
+                    Source = target.Source,
                     FileData = image,
                     FetchedAt = now,
                     CreatedAt = now,

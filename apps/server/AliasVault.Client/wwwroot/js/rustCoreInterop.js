@@ -224,6 +224,25 @@ window.rustCoreExtractRootDomain = async function(domain) {
 };
 
 /**
+ * Pick which of an item's URLs a favicon should be fetched from, and the Logos.Source key
+ * it is stored under.
+ * @param {string[]} urls - The item's URLs, in the order the item lists them.
+ * @returns {Promise<{url: string, source: string} | null>} The target, or null when no URL qualifies.
+ */
+window.rustCoreSelectFaviconTarget = async function(urls) {
+    if (!await initRustCore()) {
+        return null;
+    }
+
+    try {
+        return wasmModule.selectFaviconTarget(urls) ?? null;
+    } catch (error) {
+        console.error('[RustCore] Select favicon target failed:', error);
+        return null;
+    }
+};
+
+/**
  * Generate a password or passphrase from JSON-serialized PasswordSettings.
  * The "Type" field selects the generator ("basic" or "diceware").
  * @param {string} settingsJson - JSON string containing PasswordSettings.

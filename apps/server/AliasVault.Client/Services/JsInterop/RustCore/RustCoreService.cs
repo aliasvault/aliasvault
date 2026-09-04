@@ -185,6 +185,30 @@ public class RustCoreService : IAsyncDisposable
     }
 
     /// <summary>
+    /// Picks which of an item's URLs a favicon should be fetched from, and the Logos.Source
+    /// key it is stored under.
+    /// </summary>
+    /// <param name="urls">The item's URLs, in the order the item lists them.</param>
+    /// <returns>The target, or null when no URL qualifies, meaning the item carries no logo.</returns>
+    public async Task<FaviconTarget?> SelectFaviconTargetAsync(IEnumerable<string> urls)
+    {
+        var urlList = urls.Where(u => !string.IsNullOrWhiteSpace(u)).ToArray();
+        if (urlList.Length == 0 || !await IsAvailableAsync())
+        {
+            return null;
+        }
+
+        try
+        {
+            return await jsRuntime.InvokeAsync<FaviconTarget?>("rustCoreSelectFaviconTarget", new object[] { urlList });
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Extract domain from URL.
     /// </summary>
     /// <param name="url">The URL to extract domain from.</param>

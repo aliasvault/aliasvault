@@ -8,6 +8,8 @@
 @inject IStringLocalizerFactory LocalizerFactory
 @inject AliasVault.Client.Services.Crypto.AvexCryptoService AvexCrypto
 @inject JsInteropService JsInteropService
+@inject AliasVault.Client.Services.JsInterop.RustCore.RustCoreService RustCoreService
+@using AliasVault.Client.Services.JsInterop.RustCore
 @using Microsoft.Extensions.Localization
 @using AliasVault.ImportExport
 @using AliasVault.ImportExport.Exceptions
@@ -703,21 +705,21 @@
         FaviconExtractionCancellation = new CancellationTokenSource();
         StateHasChanged();
 
-        // Only extract favicons for credentials that don't already have them and have URLs.
-        var urls = ImportedCredentials
-            .Where(c => c.FaviconBytes == null)
-            .Select(c => c.ServiceUrls?.FirstOrDefault())
-            .Where(u => !string.IsNullOrEmpty(u))
-            .Cast<string>()
-            .ToList();
+        /*
+         * Only extract favicons for credentials that don't already have them and have a URL one
+         * can be fetched from.
+         */
+        var targetsBySource = new Dictionary<string, FaviconTarget>();
+        foreach (var credential in ImportedCredentials.Where(c => c.FaviconBytes == null))
+        {
+            var target = await RustCoreService.SelectFaviconTargetAsync(credential.ServiceUrls ?? []);
+            if (target is not null)
+            {
+                targetsBySource.TryAdd(target.Source, target);
+            }
+        }
 
-        // The dialog reports progress as "domains processed" rather than "credentials processed",
-        // since the FaviconService dedupes by domain and that's the actual unit of fetch work.
-        TotalFaviconsToExtract = urls
-            .Select(u => FaviconService.TryNormalizeDomain(u, out var d) ? d : null)
-            .Where(d => d != null)
-            .Distinct()
-            .Count();
+        TotalFaviconsToExtract = targetsBySource.Count;
 
         // Task.Delay(1) inside the progress callback lets Blazor actually paint between batches.
         var progress = new Progress<int>(async count =>
@@ -727,7 +729,7 @@
             await Task.Delay(1);
         });
 
-        var result = await FaviconService.ExtractBulkAsync(urls, progress, FaviconExtractionCancellation.Token);
+        var result = await FaviconService.ExtractBulkAsync(targetsBySource.Values, progress, FaviconExtractionCancellation.Token);
         foreach (var kvp in result.Favicons)
         {
             ExtractedFavicons[kvp.Key] = kvp.Value;
@@ -962,152 +964,85 @@
     {
         // Find the corresponding imported credential
         var importedCredential = ImportedCredentials.FirstOrDefault(c => c.ServiceName == item.Name);
-
-        // Check if the credential has embedded favicon bytes (from .avux or other sources)
-        if (importedCredential?.FaviconBytes != null)
+        var target = await RustCoreService.SelectFaviconTargetAsync(ItemService.GetUrlsForFavicon(item));
+        if (target is not null)
         {
-            // Get URL domain for deduplication key
-            var url = ItemService.GetFieldValue(item, FieldKey.LoginUrl);
-            string domain;
+            // Bytes embedded in the import file win. If not available, use what was fetched for this source.
+            var faviconBytes = importedCredential?.FaviconBytes
+                ?? (ExtractedFavicons.TryGetValue(target.Source, out var fetched) ? fetched : null);
 
-            if (!string.IsNullOrEmpty(url))
+            try
             {
-                try
-                {
-                    domain = new Uri(url).Host.ToLowerInvariant();
-                    if (domain.StartsWith("www."))
-                    {
-                        domain = domain[4..];
-                    }
-                }
-                catch
-                {
-                    // Invalid URL, use item name as fallback
-                    domain = (item.Name ?? "unknown").ToLowerInvariant();
-                }
+                await AssignLogoForSource(item, target.Source, faviconBytes);
             }
-            else
+            catch (Exception ex)
             {
-                // No URL, use item name as fallback
-                domain = (item.Name ?? "unknown").ToLowerInvariant();
-            }
-
-            // Check if we already created a logo for this domain in this import session
-            if (ImportSessionLogoIds.TryGetValue(domain, out var sessionLogoId))
-            {
-                item.LogoId = sessionLogoId;
-            }
-            else
-            {
-                var context = await DbService.GetDbContextAsync();
-
-                // Lookup ignores IsDeleted because Logos.Source is UNIQUE — a soft-deleted row
-                // with the same domain still occupies the slot and would block a new insert.
-                var existingLogo = await context.Logos.FirstOrDefaultAsync(l => l.Source == domain);
-                if (existingLogo != null && !existingLogo.IsDeleted && existingLogo.FileData is { Length: > 0 })
-                {
-                    // Healthy existing logo — reuse without overwriting.
-                    item.LogoId = existingLogo.Id;
-                    ImportSessionLogoIds[domain] = existingLogo.Id;
-                }
-                else if (existingLogo != null)
-                {
-                    // Refill a soft-deleted or pruner-emptied row with the imported bytes so the
-                    // new item gets a usable logo, instead of inheriting an empty blob.
-                    var nowUtc = DateTime.UtcNow;
-                    existingLogo.IsDeleted = false;
-                    existingLogo.FileData = importedCredential.FaviconBytes;
-                    existingLogo.FetchedAt = nowUtc;
-                    existingLogo.UpdatedAt = nowUtc;
-                    item.LogoId = existingLogo.Id;
-                    ImportSessionLogoIds[domain] = existingLogo.Id;
-                }
-                else
-                {
-                    var logo = new AliasClientDb.Logo
-                    {
-                        Id = Guid.NewGuid(),
-                        Source = domain,
-                        FileData = importedCredential.FaviconBytes,
-                        FetchedAt = DateTime.UtcNow,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow,
-                    };
-                    context.Logos.Add(logo);
-                    item.LogoId = logo.Id;
-                    ImportSessionLogoIds[domain] = logo.Id;
-                }
-            }
-        }
-        else
-        {
-            // No embedded favicon - try to use extracted favicons
-            var url = ItemService.GetFieldValue(item, FieldKey.LoginUrl);
-            if (!string.IsNullOrEmpty(url))
-            {
-                try
-                {
-                    // Extract and normalize domain for deduplication
-                    var domain = new Uri(url).Host.ToLowerInvariant();
-                    if (domain.StartsWith("www."))
-                    {
-                        domain = domain[4..];
-                    }
-
-                    // First check if we already created a logo for this domain in this import session
-                    if (ImportSessionLogoIds.TryGetValue(domain, out var sessionLogoId))
-                    {
-                        item.LogoId = sessionLogoId;
-                    }
-                    else
-                    {
-                        var context = await DbService.GetDbContextAsync();
-
-                        var existingLogo = await context.Logos.FirstOrDefaultAsync(l => l.Source == domain);
-                        if (existingLogo != null && !existingLogo.IsDeleted && existingLogo.FileData is { Length: > 0 })
-                        {
-                            item.LogoId = existingLogo.Id;
-                            ImportSessionLogoIds[domain] = existingLogo.Id;
-                        }
-                        else if (ExtractedFavicons.TryGetValue(domain, out var favicon))
-                        {
-                            var nowUtc = DateTime.UtcNow;
-                            if (existingLogo != null)
-                            {
-                                existingLogo.IsDeleted = false;
-                                existingLogo.FileData = favicon;
-                                existingLogo.FetchedAt = nowUtc;
-                                existingLogo.UpdatedAt = nowUtc;
-                                item.LogoId = existingLogo.Id;
-                                ImportSessionLogoIds[domain] = existingLogo.Id;
-                            }
-                            else
-                            {
-                                var logo = new AliasClientDb.Logo
-                                {
-                                    Id = Guid.NewGuid(),
-                                    Source = domain,
-                                    FileData = favicon,
-                                    FetchedAt = nowUtc,
-                                    CreatedAt = nowUtc,
-                                    UpdatedAt = nowUtc,
-                                };
-                                context.Logos.Add(logo);
-                                item.LogoId = logo.Id;
-                                ImportSessionLogoIds[domain] = logo.Id;
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Log error but continue import - favicon is not critical
-                    Logger.LogWarning(ex, "Failed to process favicon for item {ItemName}", item.Name);
-                }
+                // Log error but continue import - favicon is not critical
+                Logger.LogWarning(ex, "Failed to process favicon for item {ItemName}", item.Name);
             }
         }
 
         await ItemService.InsertEntryAsync(item, false, false);
+    }
+
+    /// <summary>
+    /// Links an item to the logo for a source, creating or refilling the row when bytes are available.
+    /// </summary>
+    /// <param name="item">The item to link.</param>
+    /// <param name="source">The Logos.Source key.</param>
+    /// <param name="faviconBytes">The favicon bytes to store, or null when none are available.</param>
+    private async Task AssignLogoForSource(Item item, string source, byte[]? faviconBytes)
+    {
+        // Check if we already created a logo for this source in this import session
+        if (ImportSessionLogoIds.TryGetValue(source, out var sessionLogoId))
+        {
+            item.LogoId = sessionLogoId;
+            return;
+        }
+
+        var context = await DbService.GetDbContextAsync();
+
+        // Lookup ignores IsDeleted because Logos.Source is UNIQUE: a soft-deleted row with the
+        // same source still occupies the slot and would block a new insert.
+        var existingLogo = await context.Logos.FirstOrDefaultAsync(l => l.Source == source);
+        if (existingLogo != null && !existingLogo.IsDeleted && existingLogo.FileData is { Length: > 0 })
+        {
+            // Healthy existing logo — reuse without overwriting.
+            item.LogoId = existingLogo.Id;
+            ImportSessionLogoIds[source] = existingLogo.Id;
+            return;
+        }
+
+        if (faviconBytes == null)
+        {
+            return;
+        }
+
+        var nowUtc = DateTime.UtcNow;
+        if (existingLogo != null)
+        {
+            // Refill a soft-deleted or pruner-emptied row with the bytes we have so the new item gets a usable logo.
+            existingLogo.IsDeleted = false;
+            existingLogo.FileData = faviconBytes;
+            existingLogo.FetchedAt = nowUtc;
+            existingLogo.UpdatedAt = nowUtc;
+            item.LogoId = existingLogo.Id;
+            ImportSessionLogoIds[source] = existingLogo.Id;
+            return;
+        }
+
+        var logo = new AliasClientDb.Logo
+        {
+            Id = Guid.NewGuid(),
+            Source = source,
+            FileData = faviconBytes,
+            FetchedAt = nowUtc,
+            CreatedAt = nowUtc,
+            UpdatedAt = nowUtc,
+        };
+        context.Logos.Add(logo);
+        item.LogoId = logo.Id;
+        ImportSessionLogoIds[source] = logo.Id;
     }
 
     /// <summary>
