@@ -45,6 +45,82 @@ public class FaviconExtractorTests
     }
 
     /// <summary>
+    /// Check that relative icon hrefs resolve against the page's base href rather than the page URL.
+    /// Single-page apps (Blazor, Angular) declare base href="/" and reference "favicon.png" relative
+    /// to it, so a page served under a sub-path such as /user/login must still resolve to the site root.
+    /// </summary>
+    [Test]
+    public void ResolvesIconHrefsAgainstBaseHref()
+    {
+        var html = Encoding.UTF8.GetBytes(
+            "<html><head><base href=\"/\" />" +
+            "<link rel=\"icon\" type=\"image/png\" href=\"favicon.png\" />" +
+            "</head></html>");
+
+        var candidates = FaviconExtractor.FaviconExtractor.GetFaviconCandidateUrls(html, new Uri("https://example.com/user/login"));
+
+        Assert.That(candidates, Is.EqualTo(new[] { "https://example.com/favicon.png", "https://example.com/favicon.ico" }));
+    }
+
+    /// <summary>
+    /// Check that without a base href element relative hrefs resolve against the page URL, as a browser
+    /// would, and that the conventional /favicon.ico at the origin is appended as the last candidate.
+    /// </summary>
+    [Test]
+    public void ResolvesIconHrefsAgainstPageUrlWithoutBase()
+    {
+        var html = Encoding.UTF8.GetBytes("<html><head><link rel=\"icon\" href=\"icons/favicon.png\" /></head></html>");
+
+        var candidates = FaviconExtractor.FaviconExtractor.GetFaviconCandidateUrls(html, new Uri("https://example.com/user/login"));
+
+        Assert.That(candidates, Is.EqualTo(new[] { "https://example.com/user/icons/favicon.png", "https://example.com/favicon.ico" }));
+    }
+
+    /// <summary>
+    /// Check that a base href pointing at another host is honored, while the default /favicon.ico
+    /// still comes from the origin the page was served from.
+    /// </summary>
+    [Test]
+    public void ResolvesIconHrefsAgainstCrossOriginBase()
+    {
+        var html = Encoding.UTF8.GetBytes(
+            "<html><head><base href=\"https://cdn.example.net/assets/\" />" +
+            "<link rel=\"icon\" href=\"favicon.png\" />" +
+            "</head></html>");
+
+        var candidates = FaviconExtractor.FaviconExtractor.GetFaviconCandidateUrls(html, new Uri("https://example.com/"));
+
+        Assert.That(candidates, Is.EqualTo(new[] { "https://cdn.example.net/assets/favicon.png", "https://example.com/favicon.ico" }));
+    }
+
+    /// <summary>
+    /// Check candidate ordering, de-duplication, entity decoding, and that unusable hrefs are skipped
+    /// rather than aborting the whole extraction.
+    /// </summary>
+    [Test]
+    public void OrdersAndFiltersIconCandidates()
+    {
+        var html = Encoding.UTF8.GetBytes(
+            "<html><head>" +
+            "<link rel=\"shortcut icon\" href=\"/favicon.ico\" />" +
+            "<link rel=\"apple-touch-icon\" href=\"https://cdn.example.com/touch.png?v=1&amp;s=2\" />" +
+            "<link rel=\"icon\" sizes=\"32x32\" href=\"/icon-32.png\" />" +
+            "<link rel=\"icon\" sizes=\"32x32\" href=\"/icon-32.png\" />" +
+            "<link rel=\"icon\" href=\"http://[malformed\" />" +
+            "<link rel=\"icon\" href=\"\" />" +
+            "</head></html>");
+
+        var candidates = FaviconExtractor.FaviconExtractor.GetFaviconCandidateUrls(html, new Uri("https://example.com/"));
+
+        Assert.That(candidates, Is.EqualTo(new[]
+        {
+            "https://example.com/icon-32.png",
+            "https://cdn.example.com/touch.png?v=1&s=2",
+            "https://example.com/favicon.ico",
+        }));
+    }
+
+    /// <summary>
     /// Check that SkiaSharp's native library actually loads. It is missing its dependencies on some
     /// runtime images, and because every decode failure is swallowed as "not a usable image" that
     /// shows up as favicon extraction silently failing for every non-SVG icon rather than as an error.
