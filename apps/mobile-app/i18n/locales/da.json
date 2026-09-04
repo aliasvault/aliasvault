@@ -145,7 +145,7 @@
     },
     "androidAutofillSettings": {
       "headerText": "Du kan konfigurere AliasVault til at levere indbygget autofyld af adgangskoder og passkeys i Android. Følg instruktionerne herunder for at aktivere det.",
-      "docsLink": "View more Android specific information here.",
+      "docsLink": "Se flere specifikke Android oplysninger her.",
       "passkeyNotice": "Passkeys oprettes via Android Credential Manager (Android 14+). For at gemme dem i AliasVault skal du sikre, at Autofyld herunder er aktiveret.",
       "howToEnable": "Sådan aktiverer du Autofyld & Passkeys:",
       "step1": "1. Åbn Android-indstillinger via knappen herunder, og skift den \"foretrukne autofyld-tjeneste\" til \"AliasVault\"",
