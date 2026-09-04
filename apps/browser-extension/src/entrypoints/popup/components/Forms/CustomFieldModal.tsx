@@ -113,12 +113,12 @@ const CustomFieldModal: React.FC<CustomFieldModalProps> = ({
             <option value={FieldTypes.Text}>{t('itemTypes.fieldTypes.text')}</option>
             <option value={FieldTypes.Password}>{t('itemTypes.fieldTypes.password')}</option>
             <option value={FieldTypes.Hidden}>{t('itemTypes.fieldTypes.hidden')}</option>
-            <option value={FieldTypes.Email}>{t('itemTypes.fieldTypes.email')}</option>
+            <option value={FieldTypes.TextArea}>{t('itemTypes.fieldTypes.textArea')}</option>
             <option value={FieldTypes.URL}>{t('itemTypes.fieldTypes.url')}</option>
+            <option value={FieldTypes.Email}>{t('itemTypes.fieldTypes.email')}</option>
             <option value={FieldTypes.Phone}>{t('itemTypes.fieldTypes.phone')}</option>
             <option value={FieldTypes.Number}>{t('itemTypes.fieldTypes.number')}</option>
             <option value={FieldTypes.Date}>{t('itemTypes.fieldTypes.date')}</option>
-            <option value={FieldTypes.TextArea}>{t('itemTypes.fieldTypes.textArea')}</option>
           </select>
         </div>
       </div>
