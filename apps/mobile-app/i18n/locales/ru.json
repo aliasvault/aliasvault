@@ -360,6 +360,7 @@
     },
     "addField": "Добавить поле",
     "addCustomField": "Добавить своё поле",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Пользовательские поля",
     "fieldLabel": "Название поля",
     "fieldType": "Тип поля",
