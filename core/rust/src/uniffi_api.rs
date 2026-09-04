@@ -123,6 +123,26 @@ pub fn extract_root_domain(domain: String) -> String {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Favicon Functions
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Pick the favicon target for an item from its URLs, in the order the item lists them.
+///
+/// Returns the URL to fetch from and the `Logos.Source` key to store the result under, or
+/// `None` when no URL qualifies.
+#[uniffi::export]
+pub fn select_favicon_target(urls: Vec<String>) -> Option<crate::favicon::FaviconTarget> {
+    crate::favicon::select_favicon_target(&urls)
+}
+
+/// Derive the `Logos.Source` key for a URL.
+/// Returns an empty string when the URL is not something a favicon can be fetched from.
+#[uniffi::export]
+pub fn favicon_source_key(url: String) -> String {
+    crate::favicon::favicon_source_key(&url)
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Password Generator Functions
 // ═══════════════════════════════════════════════════════════════════════════════
 

@@ -155,6 +155,31 @@ pub fn extract_root_domain_js(domain: &str) -> String {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Favicon WASM Bindings
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Pick the favicon target for an item from its URLs, in the order the item lists them.
+///
+/// Returns the URL to fetch from and the `Logos.Source` key to store the result under, or
+/// `null` when no URL qualifies.
+#[wasm_bindgen(js_name = selectFaviconTarget)]
+pub fn select_favicon_target_js(urls: Vec<String>) -> Result<JsValue, JsValue> {
+    match crate::favicon::select_favicon_target(&urls) {
+        Some(target) => serde_wasm_bindgen::to_value(&target)
+            .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e))),
+        None => Ok(JsValue::NULL),
+    }
+}
+
+/// Derive the `Logos.Source` key for a URL.
+///
+/// Returns an empty string when the URL is not something a favicon can be fetched from.
+#[wasm_bindgen(js_name = faviconSourceKey)]
+pub fn favicon_source_key_js(url: &str) -> String {
+    crate::favicon::favicon_source_key(url)
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Password Generator WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════
 

@@ -4,6 +4,7 @@
 //! - **vault_merge**: Vault merge using Last-Write-Wins (LWW) strategy
 //! - **vault_pruner**: Prunes expired items from trash (30-day retention)
 //! - **credential_matcher**: Cross-platform credential filtering for autofill
+//! - **favicon**: Favicon handling and source selection
 //! - **password_generator**: Password and passphrase (Diceware) generation
 //! - **identity_generator**: Random identity (alias persona) generation
 //! - **srp**: Secure Remote Password (SRP-6a) protocol for authentication
@@ -19,6 +20,7 @@ mod rng;
 pub mod vault_merge;
 pub mod vault_pruner;
 pub mod credential_matcher;
+pub mod favicon;
 pub mod password_generator;
 pub mod identity_generator;
 pub mod srp;
@@ -36,6 +38,7 @@ pub use credential_matcher::{
     filter_credentials, extract_domain, extract_root_domain,
     AutofillMatchingMode, CredentialMatcherInput, CredentialMatcherOutput,
 };
+pub use favicon::{favicon_source_key, select_favicon_target, FaviconTarget};
 pub use password_generator::{generate_password, PasswordSettings};
 pub use identity_generator::{generate_identity, Identity, IdentityRequest};
 pub use srp::{
