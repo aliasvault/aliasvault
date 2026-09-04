@@ -186,6 +186,50 @@ describe('FormDetector TOTP tests', () => {
     });
   });
 
+  describe('English TOTP form 14 detection (2FA field sharing classes with login fields)', () => {
+    const htmlFile = 'en-totp-form14.html';
+    let document: Document;
+    let formDetector: FormDetector;
+
+    beforeEach(() => {
+      const dom = createTestDom(htmlFile);
+      document = dom.window.document;
+    });
+
+    testField(FormField.Totp, 'totp', htmlFile);
+
+    /*
+     * The 2FA input shares the "login-text-input login-input" classes with the username and
+     * password inputs, which matches the generic "login" username pattern. Its own name/id
+     * says "totp", so it must still be classified as a TOTP field and not as a credential field.
+     */
+    it('should detect the 2FA code input field as TOTP and not as username', () => {
+      const totpInput = document.getElementById('totp') as HTMLInputElement;
+      expect(totpInput).toBeTruthy();
+
+      formDetector = new FormDetector(document, totpInput);
+
+      const detectedType = formDetector.getDetectedFieldType();
+      expect(detectedType).toBe(DetectedFieldType.Totp);
+    });
+
+    it('should still detect the username field in the same form as username', () => {
+      const usernameInput = document.getElementById('username') as HTMLInputElement;
+      expect(usernameInput).toBeTruthy();
+
+      formDetector = new FormDetector(document, usernameInput);
+
+      const detectedType = formDetector.getDetectedFieldType();
+      expect(detectedType).toBe(DetectedFieldType.Username);
+    });
+
+    it('should recognize the form as a login form', () => {
+      formDetector = new FormDetector(document, document.body);
+
+      expect(formDetector.containsLoginForm()).toBe(true);
+    });
+  });
+
   describe('Email verification form should NOT be detected as TOTP', () => {
     it('should NOT detect English email verification form as TOTP', () => {
       const htmlFile = 'en-email-verification-form1.html';

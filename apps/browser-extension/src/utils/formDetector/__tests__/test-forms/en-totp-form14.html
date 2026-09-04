@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" class="default">
+
+<head>
+  <title>Sign In</title>
+</head>
+
+<body>
+  <div class="container-scroller">
+    <div class="container-fluid page-body-wrapper full-page-wrapper">
+      <div class="content-wrapper d-flex align-items-center auth auth-bg-1 theme-one">
+        <div class="row w-100">
+          <div class="col-lg-4 mx-auto">
+
+            <div id="login-form-background" class="auto-form-wrapper login-modal" style="background: rgb(34, 36, 55);">
+              <div id="login_opacity" data-value="100" hidden></div>
+              <div class="text-center auto-form-logo">
+                <img src="/static/assets/images/logo_long.svg">
+              </div>
+              <form id="login-form">
+                <input type="hidden" name="_xsrf" value="2|934886e1|b328fbba3e747ffe23c15d290ec4808f|1787949506">
+                <div id="login-inputs"></div>
+                <div class="form-group">
+                  <div id="error-field" class="alert alert-danger" role="alert"></div>
+                </div>
+                <div class="form-group">
+                  <label class="label">Username</label>
+                  <div class="input-group">
+                    <input type="text" class="form-control login-text-input login-input" placeholder="Username"
+                      name="username" id="username" required="true">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="label">Password</label>
+                  <div class="input-group">
+                    <input type="password" class="form-control login-text-input login-input" placeholder="Password"
+                      name="password" id="password" required="true">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="label full-width" data-backupcode="Enter Backup Code"
+                    data-2fa="Enter Authenticator Code" id="multi-label"><span id="auth-code-label">Enter Authenticator
+                      Code</span>&nbsp;<span class="badge badge-pill badge-info">(If MFA is Enabled)</span>
+                    <div class="input-group flex-container">
+                      <div id="totp_container">
+                        <input type="text" class="form-control login-text-input login-input" placeholder="000000"
+                          name="totp" id="totp" autocomplete="off">
+                      </div>
+                      <select required class="form-control form-control-lg select-css" id="2fa-type" name="type">
+                        <option value="totp">Authenticator App</option>
+                        <option value="backup_code">Backup Code</option>
+                      </select>
+                    </div>
+                  </label>
+                </div>
+                <div class="form-group">
+                  <button class="login-input btn btn-primary submit-btn btn-block">Log In</button>
+                </div>
+                <div id="passkey-section" class="form-group" style="display: none;">
+                  <div class="text-center my-2">
+                    <span class="text-muted">or</span>
+                  </div>
+                  <button type="button" id="passkey-login-btn" class="btn btn-outline-primary btn-block">
+                    <i class="mdi mdi-key"></i>&nbsp;Sign in with a Passkey
+                  </button>
+                </div>
+                <div class="form-group d-flex justify-content-between">
+                  <div class="form-check form-check-flat mt-0">
+                    &nbsp;
+                  </div>
+                  <button onclick="resetPass()" id="#resetPass" form=""
+                    class="btn btn-outline-primary btn-sm forgot-password ">Forgot Password</button>
+                </div>
+
+                <div class="text-block text-center my-3">
+                  <a href="/status" class="text-small forgot-password">View Public Status Page</a>
+                </div>
+              </form>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- content-wrapper ends -->
+  </div>
+  <!-- page-body-wrapper ends -->
+</body>
+
+</html>
