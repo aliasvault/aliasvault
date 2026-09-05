@@ -95,7 +95,7 @@
   </data>
   <!-- Custom field modal -->
   <data name="EditCustomField">
-    <value>Edit Custom Field</value>
+    <value>Benutzerdefiniertes Feld bearbeiten</value>
     <comment>Title of the modal when editing an existing custom field</comment>
   </data>
   <data name="FieldLabel">
