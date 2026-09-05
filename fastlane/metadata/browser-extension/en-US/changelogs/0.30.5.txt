@@ -1,0 +1,5 @@
+- Improve passkey creation wizard to show more details for existing entries
+- Improve autofill
+- View and edit custom field types after creation
+- Improve favicon handling
+- Fix bugs
