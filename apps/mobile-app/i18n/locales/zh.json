@@ -360,7 +360,7 @@
     },
     "addField": "添加字段",
     "addCustomField": "添加自定义字段",
-    "editCustomField": "Edit Custom Field",
+    "editCustomField": "编辑自定义字段",
     "customFields": "自定义字段",
     "fieldLabel": "字段标签",
     "fieldType": "字段类型",
