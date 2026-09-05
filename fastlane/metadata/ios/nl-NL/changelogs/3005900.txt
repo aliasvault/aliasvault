@@ -1,0 +1,3 @@
+- Passkey create wizard verbeterd om meer gegevens te tonen voor bestaande credentials
+- Bekijk en wijzig custom veld types na aanmaken
+- Verbeterde favicon ophaal logica
